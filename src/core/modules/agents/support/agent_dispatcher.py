@@ -116,7 +116,7 @@ class AgentDispatcher:
         return self.repository.save_change(agent, agent.ended(context.timestamp, self.types.behaviours(agent.role)), context)
 
     def move_program(self, launch: Agent, resumed: Agent, context: Context) -> Agent:
-        self.end_row(launch, replace(context, actor=launch.actor()))
+        self.end_row(launch, replace(context, actor=Actor(launch.id, ActorType.AGENT)))
         return self.repository.update(resumed, context, ended_at=None, pid=launch.pid, process_started_at=launch.process_started_at,
                                       launch_agent_id=launch.id, launch_name=launch.original_launch_name)
 

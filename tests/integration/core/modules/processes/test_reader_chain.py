@@ -41,7 +41,7 @@ def test_a_test_reader_is_not_judged_on_a_python_setup_command(played):
 def test_only_the_owner_is_told_to_read_a_shared_sample(played):
     story = played(ForcedReaders)
     sample = worker_run(story)
-    second = story.agent_actor(story.new_row_id("agent start s-second claude worker --environment main"))
+    second = Actor(story.new_row_id("agent start s-second claude worker --environment main"), ActorType.AGENT)
     story.run_command(StartProcess.single_part(second.id, "custom-build another", "/work", CommandCategory.TEST_RUN, 30), second, 1)
     expect_count_open(story, 2)
     end_run(story, sample, "compile\n" * 8 + "done\n")

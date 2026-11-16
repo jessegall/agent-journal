@@ -16,7 +16,7 @@ def worker_run(story, worker: Actor, line: str) -> int:
 def test_a_worker_reads_and_lists_only_its_own_outputs(new_story):
     story = new_story(fixture=BuilderStarted)
     main_run = ended_run(story, "pytest -q", "ok\n")
-    worker = story.agent_actor(story.new_row_id("agent start s-9 claude worker --environment main"))
+    worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
     agent_row = worker_run(story, worker, "make build")
     story.expect_refusal(f"output read {main_run.id} --all", "is not yours", actor=worker)
     story.expect_text(f"output status {agent_row}", f"{agent_row}  running", actor=worker)

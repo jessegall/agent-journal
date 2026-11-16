@@ -58,9 +58,9 @@ def s28_an_untracked_new_file_comes_back(story, repository: GitRepository, worke
 
 def s30_the_new_base_is_recorded_and_the_count_starts_there(story, repository: GitRepository, worker: Actor) -> None:
     base_tax(repository)
-    story.expect_text(f"worker status {agent_number(story, worker.agent_id())}", f"1 behind {ENVIRONMENT_BRANCH}", actor=story.agent)
+    story.expect_text(f"worker status {agent_number(story, worker.id)}", f"1 behind {ENVIRONMENT_BRANCH}", actor=story.agent)
     story.expect_text(UPDATE, ON_THE_BASE, actor=worker)
-    story.expect_text(f"worker status {agent_number(story, worker.agent_id())}", f"0 behind {ENVIRONMENT_BRANCH}", actor=story.agent)
+    story.expect_text(f"worker status {agent_number(story, worker.id)}", f"0 behind {ENVIRONMENT_BRANCH}", actor=story.agent)
 
 
 def s32_already_up_to_date_changes_nothing(story, repository: GitRepository, worker: Actor) -> None:

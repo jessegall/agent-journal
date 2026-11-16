@@ -30,7 +30,7 @@ class BundledSequences(StoryFixture):
         story.run_listeners()
         BootingWork().run(story.container)
         story.run_listeners()
-        story.helper = story.agent_actor(story.new_row_id(f"agent start sub-1 claude helper --parent {story.agent.id} --environment main"))
+        story.helper = Actor(story.new_row_id(f"agent start sub-1 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
 
 
 @pytest.fixture

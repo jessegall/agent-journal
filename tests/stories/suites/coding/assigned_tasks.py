@@ -16,7 +16,7 @@ class AssignedLaterTask(StoryFixture):
 
     def steps(self, story):
         story.expect_success('task make "Later job" --brief "Do it"', actor=story.agent)
-        story.expect_success(f"task assign {LATER} --to {agent_number(story, story.agent.agent_id())}", actor=story.agent)
+        story.expect_success(f"task assign {LATER} --to {agent_number(story, story.agent.id)}", actor=story.agent)
 
 
 def task_row(story, task_id):

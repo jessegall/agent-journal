@@ -40,5 +40,5 @@ def test_an_ended_worker_whose_question_the_main_agent_holds_starts_no_merger_fo
             MergerRetry()(story.container)
             story.run_listeners()
         story.expect_rows(not merger_has_work(story), merger_agent(story) is None, detail="the main agent holds the ended worker's question, so the merger could not act on its ask")
-    story.expect_success(f'message send "the build tool is installed now" --to agent:{agent_number(story, worker.worker.agent_id())}', actor=story.agent)
+    story.expect_success(f'message send "the build tool is installed now" --to agent:{agent_number(story, worker.worker.id)}', actor=story.agent)
     story.expect_rows(not is_with_main_agent(story, worker.worker.id), merger_has_work(story), detail="once the main agent wrote to the worker, the merger has its ask to merge")

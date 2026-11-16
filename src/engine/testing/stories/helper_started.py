@@ -13,5 +13,5 @@ class HelperStarted(HelperExpectation, StoryFixture):
 
     def steps(self, story: Story) -> None:
         story.run("environment make main /work/journal")
-        story.agent = story.agent_actor(story.new_row_id("agent start main-1 claude main --environment main"))
-        story.helper = story.agent_actor(story.new_row_id(f"agent start {HELPER_LAUNCH_NAME} claude helper --parent {story.agent.id} --environment main"))
+        story.agent = Actor(story.new_row_id("agent start main-1 claude main --environment main"), ActorType.AGENT)
+        story.helper = Actor(story.new_row_id(f"agent start {HELPER_LAUNCH_NAME} claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)

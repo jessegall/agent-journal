@@ -67,7 +67,7 @@ def test_the_old_terminal_of_a_replaced_session_is_answered_replaced_and_makes_n
 
 def test_a_worker_that_starts_a_main_beside_the_running_one_is_refused_and_nothing_changes(new_story):
     story = new_story(fixture=UserBuilder)
-    worker = story.agent_actor(story.new_row_id(f"agent start w-1 claude worker --parent {story.agent.id} --environment main"))
+    worker = Actor(story.new_row_id(f"agent start w-1 claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_refusal("agent start s-9 claude main --environment main", "may not run agent start", actor=worker)
     expect_single_main_row(story)
     story.expect_text("agent show 1 --environment main", "session: s-1", actor=story.user)

@@ -63,7 +63,7 @@ def notified_reader_story(requested_reader_story):
 def test_a_worker_may_not_add_remove_or_choose_a_reader_even_with_skip_guard(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run('reader add local --commands "custom-build*" --lines "done"', actor=story.agent)
-    worker = story.agent_actor(story.new_row_id("agent start s-9 claude worker --environment main"))
+    worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
     for line, refusal in (('reader add blocked --commands "custom-build*" --lines "done"', "has no skip"), ('reader remove local', "A worker may not run reader remove"), ('reader default local', "A worker may not run reader default")):
         story.expect_refusal(line + " --skip-guard processes.reader-owner", refusal, actor=worker)
     story.expect_text("reader list", "local", actor=story.agent)
@@ -82,7 +82,7 @@ def test_a_worker_run_with_a_poor_reader_or_none_gets_only_the_ended_line(new_st
     story = new_story(fixture=BuilderStarted)
     story.run(f"setting set {ProcessSetting.READERS_FORCED.key} off --environment main")
     story.run('reader add poor --commands "poor-build*" --lines "never printed" --summary "never printed"', actor=story.agent)
-    worker = story.agent_actor(story.new_row_id("agent start s-8 claude worker --environment main"))
+    worker = Actor(story.new_row_id("agent start s-8 claude worker --environment main"), ActorType.AGENT)
     bus = story.container.get(Bus)
     for line in ("poor-build run", "unread-build run"):
         process = bus.run(StartProcess(worker.id, None, line, "/work/main", CommandCategory.BUILD, 30,
@@ -178,7 +178,7 @@ def test_a_stopped_worker_is_started_again_when_its_waiting_run_ends(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run(f"setting set {ProcessSetting.READERS_FORCED.key} on --environment main")
-    worker = story.agent_actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent))
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     bus = story.container.get(Bus)
     process = bus.run(StartProcess.single_part(worker.id, "stopped-build run", "/work", CommandCategory.BUILD, 30), worker, environment_id=1)
     story.run(f"process background {process.id}", actor=worker)
@@ -198,7 +198,7 @@ def test_a_running_sample_uses_the_saved_reader_from_the_start(new_story):
 
 def test_the_main_agent_gets_one_line_and_no_chat_mark_for_two_workers_on_one_command(requested_reader_story):
     story = requested_reader_story
-    second = story.agent_actor(story.new_row_id("agent start s-second claude worker --environment main"))
+    second = Actor(story.new_row_id("agent start s-second claude worker --environment main"), ActorType.AGENT)
     story.run_command(StartProcess.single_part(second.id, "custom-build another", "/work", CommandCategory.TEST_RUN, 30), second, 1)
     reply = story.hook("s-1", HookSamples.prompt("continue"))
     story.expect_rows(sum("Reader request" in line for line in reply.lines) == 2)

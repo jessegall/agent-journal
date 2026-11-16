@@ -81,6 +81,6 @@ def expect_prompt_lines(story, expected) -> None:
 
 def test_another_agent_that_runs_the_command_of_a_docked_card_is_refused_and_makes_no_second_approval(new_story):
     story = new_story(fixture=AgentTriggerMade)
-    helper = story.agent_actor(story.new_row_id(f"agent start helper-1 claude helper --parent {story.agent.id} --environment main"))
+    helper = Actor(story.new_row_id(f"agent start helper-1 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_refusal("trigger enable 1 --reason needed", "approval 1 already asks a user for this on its docked card", actor=helper)
     story.expect_absent("approval list", "approval 2", actor=story.user)

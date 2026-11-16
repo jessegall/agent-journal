@@ -27,7 +27,7 @@ class AliasAccess:
             return Refusal(f"{alias.name} belongs to a plugin that is switched off", "a user switches the plugin on in its window")
         if alias.agent_access or caller.actor.type is not ActorType.AGENT or (alias.category and alias.category.is_long_running):
             return None
-        agent = self.queries.query(Agent).find(caller.actor.agent_id())
+        agent = self.queries.query(Agent).find(caller.actor.id)
         if self.types.behaviours(agent.role).has_restricted_aliases:
             return Refusal(f"a {agent.role} runs only the aliases marked for agents, and {alias.name} is not", f"ask the main agent to mark it: journal alias edit {alias.name} --agents")
         return None

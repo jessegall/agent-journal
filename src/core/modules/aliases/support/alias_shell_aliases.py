@@ -42,7 +42,7 @@ class AliasShellAliases(ShellAliases):
 
     def caller_checkout(self, caller: Caller) -> Checkout:
         if caller.actor.type is ActorType.AGENT:
-            return self.checkouts.checkout(caller.actor.agent_id())
+            return self.checkouts.checkout(caller.actor.id)
         return Checkout.project_checkout(self.home.project_folder, "")
 
     def resolved_line(self, line: str) -> str:

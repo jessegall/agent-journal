@@ -65,7 +65,7 @@ class SendWorkerSubcommand(Subcommand[Command[object], AgentLine]):
             raise Refusal("--phase needs --plan", "add --plan <plan>")
         if arguments.plan is not None and arguments.task:
             raise Refusal("a send takes tasks or a plan, not both", "drop the task numbers or drop --plan")
-        if arguments.take and not self.agents.is_main(caller.actor.agent_id()):
+        if arguments.take and not self.agents.is_main(caller.actor.id):
             raise Refusal(CLAIM_RULE, "ask the main agent to move the task")
         commands = WorkerTestCommandEntry.parsed(arguments.test_command)
         with self.scopes.opened(caller.read_actor_id, caller.environment_id):

@@ -92,7 +92,7 @@ class AgentHookRoute(HookRoute):
         agent = self.agent(event)
         if agent is None:
             return self.ended_agent_reply(event)
-        actor = agent.actor()
+        actor = Actor(agent.id, ActorType.AGENT)
         reply = self.recorded(event, agent, actor, self.assembler.assembled(event, agent, actor))
         self.timing.stamp("driver_decided")
         if reply.hook_call_id is not None:

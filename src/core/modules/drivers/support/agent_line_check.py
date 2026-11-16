@@ -32,4 +32,4 @@ class AgentLineCheck(CallerLineCheck):
         owner = self.actors.row_owner(caller.actor.id)
         if owner is not None and owner.is_main:
             return None
-        return self.commands.refusal(self.agents.find_unscoped(caller.actor.agent_id()), [line])
+        return self.commands.refusal(self.agents.find_unscoped(caller.actor.id), [line])

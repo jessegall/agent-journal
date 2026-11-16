@@ -27,7 +27,7 @@ class HelperBeside(StoryFixture):
     parent = ReplySession
 
     def steps(self, story):
-        story.helper = story.agent_actor(story.new_row_id(f"agent start {HELPER_SESSION} claude helper --parent {story.agent.id} --environment main"))
+        story.helper = Actor(story.new_row_id(f"agent start {HELPER_SESSION} claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
         story.hook(HELPER_SESSION, HookSamples.session_start())
 
 
@@ -58,18 +58,18 @@ def test_a_worker_messaged_by_its_main_agent_is_held_after_the_countdown_and_fre
     story = new_story(fixture=WorkerBeside)
     story.advance(timedelta(seconds=30))
     worker = Actor(story.story_rows(Agent, role="worker")[0].id, ActorType.AGENT)
-    story.expect_success(f'message send "Look at src/cart.py again" --to agent:{agent_number(story, worker.agent_id())}', actor=story.agent)
+    story.expect_success(f'message send "Look at src/cart.py again" --to agent:{agent_number(story, worker.id)}', actor=story.agent)
     story.expect_success("message read 1", actor=worker)
     story.expect_hook_allowed(WORKER_SESSION, VIEW_LINE, expected_agent_message(UnansweredMessageReminder.declared(), messages=1))
     use_tools(story, WORKER_SESSION, 12)
     story.expect_hook_refusal(WORKER_SESSION, EDIT, BLOCK)
-    story.expect_success(f'message send "On it" --to agent:{agent_number(story, story.agent.agent_id())}', actor=worker)
+    story.expect_success(f'message send "On it" --to agent:{agent_number(story, story.agent.id)}', actor=worker)
     story.expect_absent_hook_line(WORKER_SESSION, EDIT, "answer message 1")
 
 
 def test_a_main_agent_messaged_by_a_worker_is_held_after_the_countdown_and_freed_by_its_reply(new_story):
     story = beside_story(new_story)
-    story.expect_success(f'message send "The total is wrong" --to agent:{agent_number(story, story.agent.agent_id())}', actor=story.helper)
+    story.expect_success(f'message send "The total is wrong" --to agent:{agent_number(story, story.agent.id)}', actor=story.helper)
     story.expect_success("message read 1", actor=story.agent)
     story.expect_hook_allowed("s-1", VIEW_LINE, expected_agent_message(UnansweredMessageReminder.declared(), messages=1))
     use_tools(story, "s-1", 12)
@@ -97,8 +97,8 @@ def test_a_journal_line_holds_nobody(new_story):
 
 def test_a_main_agent_that_wrote_many_messages_since_an_answered_report_is_checked_within_the_read_limit(new_story):
     story = beside_story(new_story)
-    story.expect_success(f'message send "Read the cart" --to agent:{agent_number(story, story.helper.agent_id())}', actor=story.agent)
-    story.expect_success(f'message send "The total is wrong" --to agent:{agent_number(story, story.agent.agent_id())}', actor=story.helper)
+    story.expect_success(f'message send "Read the cart" --to agent:{agent_number(story, story.helper.id)}', actor=story.agent)
+    story.expect_success(f'message send "The total is wrong" --to agent:{agent_number(story, story.agent.id)}', actor=story.helper)
     story.expect_success("message read 2", actor=story.agent)
     story.expect_success('message reply 2 "Fixing it"', actor=story.agent)
     for number in range(READ_LIMIT_ROWS + 10):
@@ -110,11 +110,11 @@ def test_a_main_agent_that_wrote_many_messages_since_an_answered_report_is_check
 
 def test_a_helper_that_wrote_many_messages_since_an_answered_one_is_checked_within_the_read_limit(new_story):
     story = beside_story(new_story)
-    story.expect_success(f'message send "Read the totals" --to agent:{agent_number(story, story.helper.agent_id())}', actor=story.agent)
+    story.expect_success(f'message send "Read the totals" --to agent:{agent_number(story, story.helper.id)}', actor=story.agent)
     story.expect_success("message read 1", actor=story.helper)
-    story.expect_success(f'message send "Reading it" --to agent:{agent_number(story, story.agent.agent_id())}', actor=story.helper)
+    story.expect_success(f'message send "Reading it" --to agent:{agent_number(story, story.agent.id)}', actor=story.helper)
     for number in range(READ_LIMIT_ROWS + 10):
-        story.expect_success(f'message send "Step {number} is done" --to agent:{agent_number(story, story.agent.agent_id())}', actor=story.helper)
+        story.expect_success(f'message send "Step {number} is done" --to agent:{agent_number(story, story.agent.id)}', actor=story.helper)
     limit_reads(story)
     story.expect_absent_hook_line(HELPER_SESSION, EDIT, "answer message")
     story.expect_rows(story.story_rows(JournalException) == (), detail=str(story.story_rows(JournalException)))
@@ -122,7 +122,7 @@ def test_a_helper_that_wrote_many_messages_since_an_answered_one_is_checked_with
 
 def test_a_report_read_before_the_main_agent_started_again_waits_on_no_reply_after_the_restart(new_story):
     story = beside_story(new_story)
-    story.expect_success(f'message send "The cart is done" --to agent:{agent_number(story, story.agent.agent_id())}', actor=story.helper)
+    story.expect_success(f'message send "The cart is done" --to agent:{agent_number(story, story.agent.id)}', actor=story.helper)
     story.expect_success("message read 1", actor=story.agent)
     story.expect_hook_allowed("s-1", VIEW_LINE, expected_agent_message(UnansweredMessageReminder.declared(), messages=1))
     story.advance(timedelta(minutes=5))

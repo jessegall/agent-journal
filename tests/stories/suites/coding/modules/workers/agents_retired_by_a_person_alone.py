@@ -17,7 +17,7 @@ def test_a_merger_start_on_another_program_reviews_and_a_worker_merge_retire_no_
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     ended_merger(story)
     story.expect_success(PROGRAM_SAVE.format(program="codex"), actor=story.user)
     merger_launch(story)

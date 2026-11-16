@@ -36,6 +36,6 @@ def test_a_correction_takes_its_task_out_of_the_done_count_and_keeps_the_rest_of
     expect_row(json.loads(initial_progress)["rows"][0], task_count=1, completed_count=1)
     story.advance(timedelta(hours=1))
     story.expect_success('worker report "The proof is ready"', actor=worker)
-    story.expect_success(f'worker send --wait {agent_number(story, worker.agent_id())} "Correct the total"', actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Correct the total"', actor=story.agent)
     current_progress = story.run("worker progress --environment main --json", actor=story.agent).output_text
     expect_value_5(current_progress, {"rows": [{**json.loads(initial_progress)["rows"][0], "completed_count": 0}]})

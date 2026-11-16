@@ -103,8 +103,8 @@ def test_a_person_lifts_a_silent_run_hold_and_the_agent_is_told_and_works_on(new
     story.advance(timedelta(seconds=HANG_SECONDS + 1))
     story.expect_hook_refusal("s-1", EDIT, f"Output {process.id} printed nothing for")
     story.expect_success("process holds", f"hold on output {process.id}: read it; stop it; a user releases it", actor=story.agent)
-    story.expect_refusal(f"process lift-hold {agent_number(story, story.agent.agent_id())} --environment main", "only a user lifts a hold", actor=story.agent)
-    story.expect_success(f"process lift-hold {agent_number(story, story.agent.agent_id())} --environment main", "1 holds lifted", actor=story.user)
+    story.expect_refusal(f"process lift-hold {agent_number(story, story.agent.id)} --environment main", "only a user lifts a hold", actor=story.agent)
+    story.expect_success(f"process lift-hold {agent_number(story, story.agent.id)} --environment main", "1 holds lifted", actor=story.user)
     story.expect_hook_allowed("s-1", EDIT, expected_agent_message(FreezeLiftedMessage.declared()))
 
 
@@ -115,6 +115,6 @@ def test_a_person_lifts_a_workers_reader_block_and_the_worker_is_told_and_held_b
     story.expect_hook_refusal("s-reader", EDIT, "reader")
     story.expect_text("process holds", "block of reader request 1: add or fix the reader; mark the command unreadable", actor=worker)
     person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    story.expect_success(f"process lift-hold {agent_number(story, worker.agent_id())} --environment main", "1 holds lifted", actor=person)
+    story.expect_success(f"process lift-hold {agent_number(story, worker.id)} --environment main", "1 holds lifted", actor=person)
     story.expect_hook_allowed("s-reader", HookSamples.prompt("go on"), expected_agent_message(BlockLiftedMessage.declared(), request=1))
     story.expect_hook_allowed("s-reader", EDIT)

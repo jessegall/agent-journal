@@ -11,7 +11,7 @@ from core.modules.viewer.commands.support.window_setting_keys import TOUR_COMPLE
 def test_a_delegated_plan_shows_its_agent_on_the_plan_bar_the_plan_page_the_tasks_and_the_agent_card(new_story):
     story = planned_story(new_story)
     recorded_test_launches(story)
-    worker = story.agent_actor(story.new_row_id('worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 1 --name "Lady Lovelace"', actor=story.agent))
+    worker = Actor(story.new_row_id('worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 1 --name "Lady Lovelace"', actor=story.agent), ActorType.AGENT)
     story.expect_success(f"setting set {TOUR_COMPLETED} true --project")
     with server_story(story) as server:
         expect_browser(server, "planWorkers.browser.mjs", [str(worker.id), "/tmp/journal-worker-530-plan-workers"])

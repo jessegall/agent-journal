@@ -69,7 +69,7 @@ def test_an_open_task_no_worker_has_lets_the_main_agent_stop_with_no_worker_line
 
 def test_tasks_a_released_worker_gave_back_let_the_main_agent_stop_with_no_worker_line(two_task_worker):
     story, worker = two_task_worker
-    story.expect_success(f'worker release {agent_number(story, worker.agent_id())} "wrong job"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.id)} "wrong job"', actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 

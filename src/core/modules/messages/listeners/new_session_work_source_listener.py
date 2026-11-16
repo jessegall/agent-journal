@@ -22,4 +22,4 @@ class NewSessionWorkSourceListener(SaveListener[Changed[Agent]]):
 
     def handle(self, event: Changed[Agent], context: Context) -> None:
         if event.row.is_main and event.old_row is not None and event.old_row.session != event.row.session:
-            self.sources.clear(replace(context, actor=event.row.actor(), environment_id=event.row.environment_id))
+            self.sources.clear(replace(context, actor=Actor(event.row.id, ActorType.AGENT), environment_id=event.row.environment_id))

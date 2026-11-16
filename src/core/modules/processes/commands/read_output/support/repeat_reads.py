@@ -36,7 +36,7 @@ class RepeatReads:
             return
         if command.is_repeat_allowed:
             return
-        if self.folder.read_mark(command.process_id, self.mark(command, context.actor)) > self.resets.last_compaction(context.actor.agent_id()):
+        if self.folder.read_mark(command.process_id, self.mark(command, context.actor)) > self.resets.last_compaction(context.actor.id):
             raise Refusal(f"you read output {command.process_id} this way already and it is still in your context", "add --again to read it anyway")
 
     def note(self, command: ReadOutput, actor: Actor, read_at: str) -> None:
@@ -49,7 +49,7 @@ class RepeatReads:
             self.folder.write_read_mark(command.process_id, CHECKED_MARK, read_at)
 
     def poll_hint(self, actor: Actor) -> str:
-        if self.queries.query(Agent).find(actor.agent_id()).role == AgentRole.MAIN:
+        if self.queries.query(Agent).find(actor.id).role == AgentRole.MAIN:
             return MAIN_POLL_HINT
         return HELPER_POLL_HINT
 

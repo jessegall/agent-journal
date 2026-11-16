@@ -20,7 +20,7 @@ def agent(new_story):
 
 
 def control(story, value: str) -> list[str]:
-    return ["agent", "control", str(agent_number(story, story.agent.agent_id())), "context", value]
+    return ["agent", "control", str(agent_number(story, story.agent.id)), "context", value]
 
 
 def test_d2_d8_a_person_asks_in_the_viewer_once_and_a_second_compact_or_a_clear_is_refused_naming_the_open_one(agent):

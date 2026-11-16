@@ -51,7 +51,7 @@ def test_the_planning_skill_says_to_keep_phases_small(new_story):
 
 def test_a_helper_edits_and_makes_ready_a_plan_it_made(new_story):
     story = new_story(fixture=UserJoined)
-    helper = story.agent_actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"))
+    helper = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_success('plan make "Helper plan" --environment main', actor=helper)
     story.expect_success('plan edit 1 --brief "Reach the goal"', "brief: Reach the goal", actor=helper)
     story.expect_success('phase make --plan 1 "Build" --goal "it builds"', actor=helper)

@@ -20,7 +20,7 @@ CART_REMOVAL = HookSamples.shell("rm src/cart.py", ShellPart("rm", "edit", ["src
 
 
 def started_worker(story: Story) -> Actor:
-    return story.agent_actor(story.new_row_id(f"agent start {WORKER_SESSION} claude worker --parent {story.agent.id} --environment main"))
+    return Actor(story.new_row_id(f"agent start {WORKER_SESSION} claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
 
 
 def worker_with_started_task(story: Story) -> Actor:

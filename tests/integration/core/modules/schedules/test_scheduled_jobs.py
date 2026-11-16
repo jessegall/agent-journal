@@ -32,7 +32,7 @@ class OneTimeBuildJob(ScheduledBuildJob):
 
 
 def running(story) -> str:
-    return f"scheduled-job running --agent {agent_number(story, story.agent.agent_id())}"
+    return f"scheduled-job running --agent {agent_number(story, story.agent.id)}"
 
 
 

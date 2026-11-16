@@ -28,7 +28,7 @@ def test_a_main_agent_reads_a_workers_report_by_the_workers_number_not_its_row_i
     story.run_command(RecordParentReport(worker.id, story.agent.id, "Handed in"), worker, 1)
     story.run_listeners()
     story.expect_text(f"agent-line list --agent {story.agent.id}", "worker 2 reported in message:1")
-    story.expect_absent(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, worker.agent_id())} reports")
+    story.expect_absent(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, worker.id)} reports")
 
 
 def test_an_earlier_main_session_reads_as_earlier_and_only_the_current_main_reads_main_agent(new_story):

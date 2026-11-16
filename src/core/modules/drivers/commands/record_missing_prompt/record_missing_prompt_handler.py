@@ -17,5 +17,5 @@ class RecordMissingPromptHandler(Handler[RecordMissingPrompt, HookCall]):
         self.repository = repository
 
     def handle(self, command: RecordMissingPrompt, context: Context) -> HookCall:
-        return self.repository.save(HookCall(session_agent_id=context.actor.agent_id(), creator_id=context.actor.id, hook=HookEventName.PROMPT, event_id=f"transcript-{uuid4().hex}",
+        return self.repository.save(HookCall(session_agent_id=context.actor.id, creator_id=context.actor.id, hook=HookEventName.PROMPT, event_id=f"transcript-{uuid4().hex}",
                                              summary=HookCall.summarize(command.text)), context)

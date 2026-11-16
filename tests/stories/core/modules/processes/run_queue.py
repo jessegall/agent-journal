@@ -57,7 +57,7 @@ def test_each_environment_queues_its_runs_by_its_own_long_lane_capacity(new_stor
     story.expect_success(f"setting set {ProcessSetting.STARTER_CAP_PERCENT.key} 100 --environment web", actor=story.user)
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment web", actor=story.user)
     main_first, main_second, main_third = queued(story, "make one"), queued(story, "make two"), queued(story, "make three")
-    story.agent = story.agent_actor(story.new_row_id("agent start s-9 claude worker --environment web"))
+    story.agent = Actor(story.new_row_id("agent start s-9 claude worker --environment web"), ActorType.AGENT)
     web_first, web_second = queued(story, "make four"), queued(story, "make five")
     expect_slot_5(story, main_first, main_second, main_third, (True, True, False))
     expect_slot_4(story, web_first, web_second, (True, False))

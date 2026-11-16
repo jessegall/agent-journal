@@ -27,7 +27,7 @@ def test_a_worker_that_keeps_stopping_is_sent_back_with_its_tasks_as_often_as_it
         story.run_listeners()
         story.hook(session, HookSamples.session_start())
     lines = worker_lines(story, story.worker.id)
-    worker = f"worker:{agent_number(story, story.worker.agent_id())}"
+    worker = f"worker:{agent_number(story, story.worker.id)}"
     story.expect_rows(lines.count(f"{CONTINUE_TEXT}, task:1, task:2:") == 2, main_agent_lines(story).count(f"{worker} ended with") == 1, detail=f"{lines} | {main_agent_lines(story)}")
 
 

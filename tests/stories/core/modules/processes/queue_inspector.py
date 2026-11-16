@@ -15,7 +15,7 @@ def test_the_inspector_reads_live_spots_wait_order_start_times_and_recent_output
     story = install_runner(new_story(fixture=UserBuilder))
     story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=story.user)
     story.expect_success(f"setting set {ProcessSetting.POOL_CAPACITY_LONG.key} 4 --environment main", actor=story.user)
-    story.agent = story.agent_actor(story.new_row_id("agent start inspector-worker claude worker --environment main"))
+    story.agent = Actor(story.new_row_id("agent start inspector-worker claude worker --environment main"), ActorType.AGENT)
     first = start_process(story, "make package", category=CommandCategory.BUILD)
     story.advance(timedelta(seconds=5))
     second = start_process(story, "make checks", category=CommandCategory.TEST_RUN)

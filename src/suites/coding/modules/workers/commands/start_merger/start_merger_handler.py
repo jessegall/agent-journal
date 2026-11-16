@@ -41,7 +41,7 @@ class StartMergerHandler(Handler[StartMerger, None]):
         try:
             if main_agent is None:
                 raise Refusal("no main agent runs")
-            self.assign_job(main_agent.actor(), context)
+            self.assign_job(Actor(main_agent.id, ActorType.AGENT), context)
         except Exception as failure:
             fallback = command.fallback_line.text if isinstance(command.fallback_line, AgentMessage) else command.fallback_line
             reason = failure.reason if isinstance(failure, Refusal) else f"an unexpected fault, {type(failure).__name__}: {failure}"

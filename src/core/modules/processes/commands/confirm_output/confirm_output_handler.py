@@ -18,7 +18,7 @@ class ConfirmOutputHandler(Handler[ConfirmOutput, Watch]):
 
     def handle(self, command: ConfirmOutput, context: Context) -> Watch:
         process = self.access.process(context.actor, command.process_id)
-        watch = self.watches.open(context.actor.agent_id()).filter(process_id=process.id).first()
+        watch = self.watches.open(context.actor.id).filter(process_id=process.id).first()
         if watch is None:
             raise Refusal(f"you are not waiting on output {process.id}", f"journal output read {process.id} --summary")
         if not watch.awaits_confirm:

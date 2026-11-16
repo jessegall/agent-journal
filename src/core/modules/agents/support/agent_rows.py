@@ -90,7 +90,7 @@ class AgentRows:
     def require_main(self, actor: Actor, action: str) -> None:
         if not actor.is_agent():
             return
-        caller = self.find(actor.agent_id())
+        caller = self.find(actor.id)
         if not caller.is_main:
             raise Refusal(f"a {caller.role} cannot {action}", "ask the main agent or a user")
 

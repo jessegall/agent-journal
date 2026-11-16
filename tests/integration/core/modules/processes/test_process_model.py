@@ -13,7 +13,7 @@ OUTPUTS = "output list --process 1"
 
 @pytest.fixture
 def agent(journal) -> Actor:
-    return journal.agent_actor(journal.new_row_id("agent start s-1 claude main --environment main"))
+    return Actor(journal.new_row_id("agent start s-1 claude main --environment main"), ActorType.AGENT)
 
 
 def text_of(journal, line: str, actor: Actor | None = None) -> str:

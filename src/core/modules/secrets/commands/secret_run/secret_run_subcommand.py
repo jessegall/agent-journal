@@ -34,7 +34,7 @@ class SecretRunSubcommand(ReadSubcommand[SecretRunOutcome]):
 
     def read(self, arguments: Namespace, caller: Caller) -> SecretRunOutcome:
         secret = self.secrets.find_title(arguments.secret)
-        if not secret.helpers and caller.actor.type is ActorType.AGENT and self.queries.query(Agent).find(caller.actor.agent_id()).role != AgentRole.MAIN:
+        if not secret.helpers and caller.actor.type is ActorType.AGENT and self.queries.query(Agent).find(caller.actor.id).role != AgentRole.MAIN:
             raise UserApprovalRefusal(f"Allow helpers to use the secret {secret.title} and run the requested command?",
                                ("secret", "allow", str(secret.id), "--helpers"), continued_arguments=self.run_arguments(arguments), returns_output=True)
         try:

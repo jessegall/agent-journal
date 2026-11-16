@@ -27,7 +27,7 @@ def test_a_resumed_session_gets_no_start_lines_but_the_one_saying_it_continues(p
 
 
 def continued_line(story) -> str:
-    return ContinuedSessionMessage.declared().agent_message(agent=agent_number(story, story.agent.agent_id())).text
+    return ContinuedSessionMessage.declared().agent_message(agent=agent_number(story, story.agent.id)).text
 
 
 def test_a_main_agent_that_was_working_is_idle_when_started_again_and_told_once_that_it_continues(played):

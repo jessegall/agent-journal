@@ -23,7 +23,7 @@ def worker_batch(new_story):
     repository = repository_environment(story)
     story.expect_success('task make "Tax" --brief "Calculate tax" --environment main')
     story.expect_success('task make "Receipt" --brief "Print receipt" --environment main')
-    worker = story.agent_actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2 3", actor=story.agent))
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2 3", actor=story.agent), ActorType.AGENT)
     return story, repository, worker
 
 
@@ -37,7 +37,7 @@ def test_a_worker_reads_its_current_task_and_remaining_assignments(worker_batch)
 
 def test_the_main_agent_reads_a_workers_status_in_pages(worker_batch):
     story, _, worker = worker_batch
-    status = json.loads(story.run(f"worker status {agent_number(story, worker.agent_id())} --page 2 --limit 1 --json", actor=story.agent).output_text)
+    status = json.loads(story.run(f"worker status {agent_number(story, worker.id)} --page 2 --limit 1 --json", actor=story.agent).output_text)
     story.expect_rows(status["assignments"]["total"] == 2, status["assignments"]["page"] == 2,
                       [task["id"] for task in status["assignments"]["rows"]] == [3])
 
@@ -50,10 +50,10 @@ def test_worker_status_lists_tests_waiting_for_the_queue(worker_batch, monkeypat
     story.expect_success('proof make 1 --task 1 "cart story" --test "python tests/cart.py"', actor=worker)
     story.expect_success(COMMIT, actor=worker)
     story.run_listeners()
-    status = json.loads(story.run(f"worker status {agent_number(story, worker.agent_id())} --json", actor=story.agent).output_text)
+    status = json.loads(story.run(f"worker status {agent_number(story, worker.id)} --json", actor=story.agent).output_text)
     story.expect_rows(status["current_task"]["state"] == "testing", status["tests"]["total"] == 1,
                       status["tests"]["rows"][0]["test_command"] == "pytest tests/cart.py")
-    story.expect_text(f"worker status {agent_number(story, worker.agent_id())}", "Current task: 1", "Tests waiting: 1", "Assignments remaining: 2", actor=story.agent)
+    story.expect_text(f"worker status {agent_number(story, worker.id)}", "Current task: 1", "Tests waiting: 1", "Assignments remaining: 2", actor=story.agent)
 
 
 def test_status_refuses_an_unbounded_page(worker_batch):
@@ -83,7 +83,7 @@ def test_a_refused_status_read_does_not_release_the_compaction_block(worker_batc
 
 def test_557_the_status_of_a_worker_carries_the_agent_state_the_status_command_prints(worker_batch):
     story, _, worker = worker_batch
-    number = agent_number(story, worker.agent_id())
+    number = agent_number(story, worker.id)
     agent_status = json.loads(story.run(f"agent status {number} --json --environment main", actor=story.agent).output_text)
     status = json.loads(story.run(f"worker status {number} --json", actor=story.agent).output_text)
     story.expect_rows(status["agent_state"] == agent_status["state"], detail=f"{agent_status} | {status}")

@@ -20,14 +20,14 @@ def second_task_story(new_story) -> Story:
 def worker_on_first_task(new_story) -> Story:
     """One worker, story.worker, was sent task 1 and started it; task 2 is open and nobody's."""
     story = second_task_story(new_story)
-    story.worker = story.agent_actor(story.new_row_id(DISPATCH, actor=story.agent))
+    story.worker = Actor(story.new_row_id(DISPATCH, actor=story.agent), ActorType.AGENT)
     return story
 
 
 def worker_on_two_tasks(new_story) -> Story:
     """One worker, story.worker, was sent tasks 1 and 2 and started task 1."""
     story = second_task_story(new_story)
-    story.worker = story.agent_actor(story.new_row_id(TWO_TASK_DISPATCH, actor=story.agent))
+    story.worker = Actor(story.new_row_id(TWO_TASK_DISPATCH, actor=story.agent), ActorType.AGENT)
     return story
 
 

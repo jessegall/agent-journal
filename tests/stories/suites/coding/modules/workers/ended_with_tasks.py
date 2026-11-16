@@ -76,7 +76,7 @@ def test_no_line_comes_once_the_worker_runs_again(two_task_worker):
 
 def test_no_line_comes_once_the_worker_is_released(ended_with_open_tasks):
     story = ended_with_open_tasks
-    story.expect_success(f'worker release {agent_number(story, story.worker.agent_id())} "Its tasks go to another worker"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, story.worker.id)} "Its tasks go to another worker"', actor=story.agent)
     next_round(story)
     lines = main_agent_lines(story)
     story.expect_rows(lines.count(ended_worker_line(story, story.worker.id)) == 1, detail=lines)
@@ -93,7 +93,7 @@ def test_once_its_work_is_merged_a_worker_that_ended_holds_nothing_and_no_line_c
     story = ended_with_unmerged_work
     story.repository.checkout(ENVIRONMENT_BRANCH)
     request_merge(story, story.worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, story.worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, story.worker.id)}", actor=story.agent)
     story.run_listeners()
     next_round(story)
     next_round(story)

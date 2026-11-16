@@ -19,7 +19,7 @@ class EditProofSubcommand(MakeProofSubcommand):
         self.worktrees = worktrees
 
     def command(self, arguments: Namespace, caller: Caller) -> MakeProof:
-        worktree = self.worktrees.worker_worktree(caller.actor.agent_id())
+        worktree = self.worktrees.worker_worktree(caller.actor.id)
         if worktree is None:
             raise Refusal("only a worker with a worktree out makes proofs", "journal worker-worktree list shows the worktrees")
         proof = self.proofs.worktree_proofs(worktree.id).filter(task_id=worktree.task_id).find(arguments.point)

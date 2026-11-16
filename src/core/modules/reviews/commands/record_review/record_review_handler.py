@@ -34,7 +34,7 @@ class RecordReviewHandler(Handler[RecordReview, Review]):
     def answered(self, command: RecordReview, context: Context) -> Review:
         if command.review_id is not None:
             return self.reviews.find(command.review_id)
-        reviewed = self.reviews.reviewer(context.actor.agent_id()).newest().first()
+        reviewed = self.reviews.reviewer(context.actor.id).newest().first()
         if reviewed is not None:
             return reviewed
         reviewing = self.reviews.filter(state=ReviewState.REVIEWING).oldest().first()

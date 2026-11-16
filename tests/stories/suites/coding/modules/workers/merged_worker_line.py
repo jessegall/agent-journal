@@ -31,6 +31,6 @@ def checked_work(new_story):
 def test_a_merge_by_a_person_agent_messages_the_main_agent_and_wakes_it_when_idle(checked_work):
     story, worker = checked_work.story, checked_work.worker
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())} --environment main", actor=story.user)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)} --environment main", actor=story.user)
     merged_lines = merged_worker_lines(story, worker)
     story.expect_rows(len(merged_lines) == 1, merged_lines[0].wakes_agent, merged_lines[0].state is AgentLineState.WAITING)

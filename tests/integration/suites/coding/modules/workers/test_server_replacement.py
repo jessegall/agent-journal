@@ -64,9 +64,9 @@ def test_a_queued_proof_is_started_by_the_new_server_and_counts(played, monkeypa
     story.advance(datetime.now(timezone.utc) - story.clock.timestamp().value)
     monkeypatch.setenv("JOURNAL_HOME", str(story.home.folder.resolve()))
     repository = repository_environment(story)
-    worker = story.agent_actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent))
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
-    story.expect_success(f'worker send --wait {agent_number(story, worker.agent_id())} "go on" --test-command "probe=python3 -c"', actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "go on" --test-command "probe=python3 -c"', actor=story.agent)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story" --test "probe pass tests/cart.py"', actor=worker)
     story.expect_success(f"setting set {MERGER_ENABLED} false --project", actor=story.user)
     with server_story(story):

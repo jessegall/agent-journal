@@ -66,4 +66,4 @@ def test_a_workers_long_silent_build_is_told_and_warned_but_never_asked_the_five
                       not any("still runs after" in line for line in lines), detail="\n".join(lines))
     story.expect_success(f"process show {build.id}", actor=story.agent)
     story.expect_success(f"process-part list --process {build.id}", actor=story.agent)
-    story.expect_success(f"process holds --agent {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"process holds --agent {agent_number(story, worker.id)}", actor=story.agent)

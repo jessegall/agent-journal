@@ -41,7 +41,7 @@ def worker_scenario(new_story):
 
 
 def dispatch(scenario: Scenario, tasks: str = "1") -> Actor:
-    return scenario.story.agent_actor(scenario.story.new_row_id(f"worker dispatch --test-command python=pytest --model sonnet {tasks}", actor=scenario.story.agent))
+    return Actor(scenario.story.new_row_id(f"worker dispatch --test-command python=pytest --model sonnet {tasks}", actor=scenario.story.agent), ActorType.AGENT)
 
 
 @pytest.fixture

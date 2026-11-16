@@ -19,7 +19,7 @@ def answers_after_an_end(story, end: Callable[[], None]) -> dict[str, bool]:
     given end, with no launcher to start it again; the reconcile tick of task 8482 will act on these answers,
     and until it exists the stories read them."""
     story.home.socket(LAUNCHER_SOCKET).unlink(missing_ok=True)
-    story.run(JOB.format(number=agent_number(story, story.worker.agent_id())), actor=story.agent)
+    story.run(JOB.format(number=agent_number(story, story.worker.id)), actor=story.agent)
     end()
     policy, worker = story.container.get(DispatchPolicy), story.row(Agent, story.worker.id)
     with story.container.get(Scopes).read_scope((), None, 1):

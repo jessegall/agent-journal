@@ -31,7 +31,7 @@ def test_a6_plan_focus_with_no_number_prints_the_focus_says_which_and_lists_the_
 
 def test_a16_a_new_main_agent_in_a_new_session_starts_on_the_default_and_is_told_so(new_story):
     story = new_story(fixture=ThreeStartedPlans)
-    later_agent = story.agent_actor(story.new_row_id("agent start s-2 claude main --environment main"))
+    later_agent = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
     story.expect_success(PLAN_FOCUS, f"plan 1 is your focus: {DEFAULT_FOCUS}", actor=later_agent)
 
 

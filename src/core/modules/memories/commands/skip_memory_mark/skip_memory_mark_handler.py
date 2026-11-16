@@ -16,7 +16,7 @@ class SkipMemoryMarkHandler(Handler[SkipMemoryMark, MemoryMark]):
         self.marks, self.repository = marks, repository
 
     def handle(self, command: SkipMemoryMark, context: Context) -> MemoryMark:
-        marks = self.marks.open_marks(context.actor.agent_id())
+        marks = self.marks.open_marks(context.actor.id)
         if not marks:
             raise Refusal("you have no open memory mark to skip", "a mark opens when your context window passes one")
         return self.repository.save(marks[0].skip(context.timestamp, context.actor, command.reason), context)

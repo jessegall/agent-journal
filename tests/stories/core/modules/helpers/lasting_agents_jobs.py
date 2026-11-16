@@ -53,7 +53,7 @@ def test_an_idle_helper_of_one_environment_is_not_offered_to_a_start_in_another(
     story = idle_helper
     helper = helper_agent(story)
     story.expect_success("environment make staging /work/staging")
-    staging_main = story.agent_actor(story.new_row_id("agent start s-20 claude main --environment staging"))
+    staging_main = Actor(story.new_row_id("agent start s-20 claude main --environment staging"), ActorType.AGENT)
     launches(story, START.replace("--environment main", "--environment staging"), actor=staging_main)
     kept = researchers(story)
     story.expect_rows(len(kept) == 2, kept[1].environment_id != helper.environment_id, len(read_jobs(story, helper)) == 1, helper_agent(story).session == helper.session, detail=str(kept))

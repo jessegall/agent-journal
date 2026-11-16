@@ -38,13 +38,13 @@ def permanent_acceptance(story: Story, request: ApprovalRequest, scope: str) -> 
 
 
 def resume_request(story: Story) -> None:
-    story.expect_success(f"agent pause {agent_number(story, story.agent.agent_id())}", actor=story.user)
-    story.expect_refusal(f"agent resume {agent_number(story, story.agent.agent_id())} --reason needed", REQUESTED, actor=story.agent)
+    story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
+    story.expect_refusal(f"agent resume {agent_number(story, story.agent.id)} --reason needed", REQUESTED, actor=story.agent)
 
 
 def resume_approved(story: Story) -> None:
-    story.expect_success(f"agent pause {agent_number(story, story.agent.agent_id())}", actor=story.user)
-    story.expect_text(f"agent resume {agent_number(story, story.agent.agent_id())} --reason needed", "accepted approval", actor=story.agent)
+    story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
+    story.expect_text(f"agent resume {agent_number(story, story.agent.id)} --reason needed", "accepted approval", actor=story.agent)
 
 
 class ResumeRequested(StoryFixture):

@@ -61,7 +61,7 @@ def merged_worker(played):
     story.expect_success(f'memory make "{MEMORY_TEXT}" --weight 5', actor=story.worker)
     story.repository.checkout(ENVIRONMENT_BRANCH)
     request_merge(story, story.worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, story.worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, story.worker.id)}", actor=story.agent)
     story.run_listeners()
     return story
 
@@ -83,7 +83,7 @@ def report_full_window(story) -> None:
 
 def test_a_dispatch_at_the_kept_limit_is_refused_naming_the_idle_worker_to_send_to_and_the_person_who_retires(merged_worker):
     story = merged_worker
-    number = agent_number(story, story.worker.agent_id())
+    number = agent_number(story, story.worker.id)
     story.expect_success(KEPT_LIMIT)
     task_id = story.new_row_id('task make "Add the tax" --brief "Add the tax to the cart total"', actor=story.agent)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
@@ -99,7 +99,7 @@ def test_a_person_who_retires_a_worker_with_unmerged_work_is_refused(played):
     person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     worker = delivered_worker(story, repository_environment(story))
     story.run_command(EndInactiveWorker(worker.id), story.agent)
-    story.expect_refusal(f'agent retire {agent_number(story, worker.agent_id())} --reason "Its task is done" --environment main', "unmerged work", actor=person)
+    story.expect_refusal(f'agent retire {agent_number(story, worker.id)} --reason "Its task is done" --environment main', "unmerged work", actor=person)
     story.expect_rows(story.row(Agent, worker.id).retired_at is None)
 
 

@@ -85,7 +85,7 @@ def test_a_report_ends_the_job_and_stays_out_of_the_chat(new_story, helper_fixtu
 
 def test_a_report_to_a_parent_that_ended_for_good_goes_to_the_running_main_agent(new_story):
     story = new_story(fixture=StartedHelper)
-    second = story.agent_actor(story.new_row_id("agent start s-2 claude main --environment main"))
+    second = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
     story.run(f"agent end {story.agent.id}", actor=story.user)
     story.hook(helper_agent(story).session, stop_with_report("The cart adds tax twice."))
     story.expect_text(LINES.format(agent=second.id), expected_agent_message(ParentReportMessage.declared()))
@@ -166,7 +166,7 @@ def test_a_program_that_exits_after_its_report_only_ends_its_row(new_story):
 def test_a_main_agents_exit_leaves_its_row(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_success(f"agent exited {story.agent.id} 0")
-    story.expect_text(f"agent show {agent_number(story, story.agent.agent_id())}", "role: main")
+    story.expect_text(f"agent show {agent_number(story, story.agent.id)}", "role: main")
 
 
 def test_a_helper_that_ends_with_its_job_open_tells_the_parent(new_story):
@@ -187,12 +187,12 @@ def test_a_silent_helper_ends_with_no_agent_to_carry_the_tick(new_story):
 
 def test_a_paused_parent_keeps_its_helpers_job_open_and_takes_it_back_on_resume(new_story):
     story = new_story(fixture=StartedHelper)
-    story.expect_success(f"agent pause {agent_number(story, story.agent.agent_id())}", actor=story.user)
+    story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
     story.expect_success(f"agent end {helper_agent(story).id}", actor=story.user)
     story.run_listeners()
     story.expect_rows(read_jobs(story, helper_agent(story))[0].ended_at is None)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
-    story.expect_success(f"agent resume {agent_number(story, story.agent.agent_id())}", actor=story.user)
+    story.expect_success(f"agent resume {agent_number(story, story.agent.id)}", actor=story.user)
     story.run_listeners()
     launcher.drain_requests()
     story.expect_rows(len(launcher.requests) == 1)
@@ -201,7 +201,7 @@ def test_a_paused_parent_keeps_its_helpers_job_open_and_takes_it_back_on_resume(
 def test_a_new_main_agent_takes_over_a_running_helper_and_its_report(new_story):
     story = new_story(fixture=StartedHelper)
     story.run(f"agent end {story.agent.id}", actor=story.user)
-    second = story.agent_actor(story.new_row_id("agent start s-2 claude main --environment main"))
+    second = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
     story.expect_rows(helper_agent(story).parent_id == second.id)
     story.hook(helper_agent(story).session, stop_with_report("The cart adds tax twice."))
     story.expect_text(LINES.format(agent=second.id), expected_agent_message(ParentReportMessage.declared()))
@@ -211,7 +211,7 @@ def test_a_new_main_agent_takes_over_a_running_helper_and_its_report(new_story):
 def test_a_new_main_agent_takes_the_report_lines_left_on_the_ended_one(new_story):
     story = reported(new_story, StartedHelper, "Nothing left to read.")
     story.run(f"agent end {story.agent.id}", actor=story.user)
-    second = story.agent_actor(story.new_row_id("agent start s-2 claude main --environment main"))
+    second = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
     story.expect_text(LINES.format(agent=second.id), expected_agent_message(ParentReportMessage.declared()))
     story.expect_text("message reports --environment main", f"message:{helper_report(story).id}", actor=second)
     story.expect_text(f"message read {helper_report(story).id}", "Nothing left to read.", actor=second)
@@ -285,5 +285,5 @@ def test_unread_reports_are_found_by_their_agent_and_their_words(new_story):
     story = new_story(fixture=ReportedHelper)
     report = helper_report(story)
     story.expect_text(f"message reports --agent {agent_number(story, helper_agent(story).id)} --environment main", f"message:{report.id}", actor=story.agent)
-    story.expect_text(f"message reports --agent {agent_number(story, story.agent.agent_id())} --environment main", "no unread reports", actor=story.agent)
+    story.expect_text(f"message reports --agent {agent_number(story, story.agent.id)} --environment main", "no unread reports", actor=story.agent)
     story.expect_text("message reports --search 'total wrong' --environment main", "The total is wrong.", actor=story.agent)

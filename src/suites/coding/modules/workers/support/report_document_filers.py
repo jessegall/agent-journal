@@ -17,6 +17,6 @@ class ReportDocumentFilers(DocumentFilers):
     def check(self, actor: Actor) -> None:
         if actor.type is not ActorType.AGENT:
             return
-        profile = self.agents.find_unscoped(actor.agent_id()).profile
+        profile = self.agents.find_unscoped(actor.id).profile
         if profile in REPORTING_PROFILES:
             raise Refusal(f"{profile} files reports, not documents", 'journal report make "<title>" --abstract "<one line>" --body "<markdown>" files a report')

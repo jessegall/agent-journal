@@ -237,7 +237,7 @@ def test_the_merger_reads_the_logs_of_a_worker_that_delivered_and_they_count_as_
     worker = delivered_worker(story, repository_environment(story))
     story.expect_success(f'task log 1 "{LOG_LINE}"', actor=worker)
     merger = running_merger(story, worker)
-    story.expect_success(f"worker logs {agent_number(story, worker.agent_id())}", actor=merger)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=merger)
     expect_value(logs_read_at(story, worker) is None, False)
 
 

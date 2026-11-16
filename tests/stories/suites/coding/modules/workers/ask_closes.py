@@ -11,9 +11,9 @@ __all__ = ["merger_disabled_worker", "missing_program", "running_worker", "worke
 
 def test_a_text_send_to_a_worker_with_nothing_assigned_files_no_task_and_wakes_it_with_the_text(running_worker):
     story = running_worker
-    story.expect_success(f'worker release {agent_number(story, story.worker.agent_id())} "not needed" --abandon "the story drops the work"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, story.worker.id)} "not needed" --abandon "the story drops the work"', actor=story.agent)
     tasks = len(story.story_rows(Task))
-    story.expect_success(f'worker send --wait {agent_number(story, story.worker.agent_id())} "Look at the tax rounding"', actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, story.worker.id)} "Look at the tax rounding"', actor=story.agent)
     story.expect_rows(len(story.story_rows(Task)) == tasks, detail=str([task.title for task in story.story_rows(Task)]))
     delivered = [(str(message.type), message.recipient, message.text) for message in story.story_rows(Message)]
     story.expect_rows(("peer", f"worker {story.worker.id}", "Look at the tax rounding") in delivered, detail=str(delivered))

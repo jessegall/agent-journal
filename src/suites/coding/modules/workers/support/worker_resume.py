@@ -143,7 +143,7 @@ class WorkerResume:
         stopped_at = worker.ended_at if worker.ended_at is not None else worker.creation_timestamp()
         self.bus.run(ReportWorkerProgramRecovery(worker.id, stopped_at, WorkerProgramResumedMessage.declared().agent_message(worker=worker.id)), Actor.core(), environment_id=worktree.environment_id)
         if self.requirement.is_required:
-            worker_actor = worker.actor()
+            worker_actor = Actor(worker.id, ActorType.AGENT)
             self.bus.run(ResetTaskReads(worker.id), worker_actor, environment_id=worktree.environment_id)
             self.bus.run(BlockAgent(worker.id, TaskBriefFirstMessage.declared().agent_message(task=worktree.task_id), TaskBriefRead(worktree.task_id)),
                          worker_actor, environment_id=worktree.environment_id)

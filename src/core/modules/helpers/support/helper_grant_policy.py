@@ -11,5 +11,5 @@ class HelperGrantPolicy:
         self.agents = agents
 
     def check(self, alternatives: tuple[str, ...], context: Context) -> None:
-        if context.actor.type is ActorType.AGENT and self.agents.find(context.actor.agent_id()).parent_id is not None:
+        if context.actor.type is ActorType.AGENT and self.agents.find(context.actor.id).parent_id is not None:
             raise Refusal("only a user or the main agent grants what a helper may run", "ask the main agent")

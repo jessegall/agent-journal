@@ -75,8 +75,8 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
         self.checked_staging(actor)
 
     def checked_staging(self, actor: Actor) -> Staging:
-        worktree = self.worktrees.worker_worktree(actor.agent_id())
-        point = self.guidance.point(actor.agent_id())
+        worktree = self.worktrees.worker_worktree(actor.id)
+        point = self.guidance.point(actor.id)
         if worktree is None or worktree.state is not WorktreeState.CUT or point.step is WorkerStep.BLOCKED:
             raise Refusal(point.line)
         staging = point.round.required_staging()
@@ -92,7 +92,7 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
 
     def prepare(self, command: CommitWorkerWork, actor: Actor) -> None:
         staging = self.checked_staging(actor)
-        worktree = self.worktrees.required_worker_worktree(actor.agent_id())
+        worktree = self.worktrees.required_worker_worktree(actor.id)
         self.task_commit.commit(worktree, self.commit_tasks(worktree, staging), actor, command.differences)
 
     def commit_tasks(self, worktree: Worktree, staging: Staging) -> tuple[Task, ...]:
@@ -101,7 +101,7 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
         return (self.rows.required(Task, worktree.task_id),)
 
     def handle(self, command: CommitWorkerWork, context: Context) -> CommitOutcome:
-        committed = self.worktrees.required_worker_worktree(context.actor.agent_id())
+        committed = self.worktrees.required_worker_worktree(context.actor.id)
         staging = self.staging.read(committed)
         tasks = tuple(task for task in self.commit_tasks(committed, staging) if task.id in committed.commit_tasks())
         open_tasks = staging.started_except(committed.commit_tasks())
@@ -112,9 +112,9 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
         for task in tasks:
             if task.state is TaskState.STARTED:
                 self.repository.save_change(task, task.moved(TaskLifecycle.test), context)
-        unit = self.units.unit(context.actor.agent_id())
+        unit = self.units.unit(context.actor.id)
         if self.delivers(open_tasks, unit):
-            self.free_task.give_next(context.actor.agent_id(), tuple(task.id for task in tasks), context)
+            self.free_task.give_next(context.actor.id, tuple(task.id for task in tasks), context)
         worktree = self.repository.save_change(committed, self.moved_worktree(committed, open_tasks, tasks, unit, context), context)
         submission = self.proof_queue.submit_ready(worktree, tasks, context)
         if submission is Submission.UNTESTED:
@@ -123,7 +123,7 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
         run_notes = tuple(WORKER_RUN_TEXT.format(phase=reach.phase_id) for reach in reaches)
         step_text = self.next_step_text(tasks, open_tasks, submission)
         if unit.has_several_tasks:
-            unit_line = self.unit_text(self.units.unit(context.actor.agent_id()))
+            unit_line = self.unit_text(self.units.unit(context.actor.id))
             step_text = f"{step_text}\n{unit_line}" if open_tasks else unit_line
         return CommitOutcome(tasks, worktree, submission, step_text, (*staging.notes(), *run_notes))
 
@@ -138,7 +138,7 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
     def moved_worktree(self, worktree: Worktree, open_tasks: tuple[Task, ...], tasks: tuple[Task, ...], unit: WorkUnit, context: Context) -> Worktree:
         if not self.delivers(open_tasks, unit):
             next_task_id = open_tasks[0].id if open_tasks else tasks[-1].id
-            stop_requested_at = context.timestamp if open_tasks and self.compaction.exceeds_limit(context.actor.agent_id()) else None
+            stop_requested_at = context.timestamp if open_tasks and self.compaction.exceeds_limit(context.actor.id) else None
             return worktree.moved(WorktreeLifecycle.advance, task_id=next_task_id, commit_count=worktree.commit_count + 1, stop_requested_at=stop_requested_at)
         return worktree.moved(WorktreeLifecycle.deliver, delivered_at=context.timestamp, logs_read_at=None, logs_output_id=None, tests_passed_at=None, returned_at=None,
                               merge_ready_at=self.proof_queue.merge_ready_time(tasks[0], context), commit_count=worktree.commit_count + 1)

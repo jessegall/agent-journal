@@ -35,7 +35,7 @@ def failed_worker_story(split_story):
 
 def test_nothing_set_dispatches_as_today_on_codex(split_story):
     story = split_story
-    parent = story.agent_actor(story.new_row_id('agent start codex-parent codex main --environment main'))
+    parent = Actor(story.new_row_id('agent start codex-parent codex main --environment main'), ActorType.AGENT)
     worker = dispatch(story, actor=parent)
     expect_program(story, worker, 'codex', 'gpt-6.1-terra')
 
@@ -98,7 +98,7 @@ def test_exit_on_a_limit_opens_an_outage(failed_worker_story):
     story.expect_text('provider-outage list', 'claude', 'rate limit')
     rows = json.loads(story.run('provider-outage list --json').output_text)['rows']
     story.expect_rows(datetime.fromisoformat(rows[0]['ends_at']) == story.clock.timestamp().value + timedelta(minutes=15))
-    story.expect_text(f'agent show {agent_number(story, worker.agent_id())}', 'ended_at:')
+    story.expect_text(f'agent show {agent_number(story, worker.id)}', 'ended_at:')
     story.expect_rows(len(worker_starts(launcher, worker)) == 1, detail=str(worker_starts(launcher, worker)))
 
 

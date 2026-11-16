@@ -11,6 +11,6 @@ WORKER_SESSION = "w-lists"
 @pytest.fixture
 def worker_story(new_story):
     story = new_story(fixture=OpenTaskBuilder)
-    worker = story.agent_actor(story.new_row_id(f"agent start {WORKER_SESSION} claude worker --parent {story.agent.id} --environment main"))
+    worker = Actor(story.new_row_id(f"agent start {WORKER_SESSION} claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
     story.expect_success(lines.TASK_START, actor=worker)
     return story, worker

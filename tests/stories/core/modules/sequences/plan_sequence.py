@@ -21,7 +21,7 @@ class StandardSequences(StoryFixture):
 
 
 def read_worker(story) -> Actor:
-    return story.agent_actor(story.new_row_id("agent start s-worker claude worker --environment main"))
+    return Actor(story.new_row_id("agent start s-worker claude worker --environment main"), ActorType.AGENT)
 
 
 def run_agent_ids(story) -> list[int]:
@@ -47,7 +47,7 @@ def test_a_worker_may_not_make_a_plan_so_no_plan_sequence_starts_for_it(new_stor
 
 def test_a_helper_making_a_plan_follows_the_plan_sequence_and_the_chat_shows_no_mark(new_story):
     story = new_story(fixture=StandardSequences, environment="main")
-    helper = story.agent_actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id}"))
+    helper = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id}"), ActorType.AGENT)
     story.run(lines.NEW_PLAN, actor=helper)
     story.run_listeners()
     expect_run_agents(story, [helper.id])

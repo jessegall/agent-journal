@@ -62,7 +62,7 @@ def test_23_a_task_that_waits_on_a_task_of_another_agent_is_listed_to_start_once
     audit = story.new_row_id('task make "Audit" --brief "The audit"', actor=story.agent)
     receipts = story.new_row_id('task make "Receipts" --brief "The receipts"', actor=story.agent)
     story.expect_success(f"task depend {receipts} --on {audit}", actor=story.agent)
-    story.expect_success(f"worker send --wait {agent_number(story, worker.worker.agent_id())} --task {receipts}", actor=story.agent)
+    story.expect_success(f"worker send --wait {agent_number(story, worker.worker.id)} --task {receipts}", actor=story.agent)
     listed_while_waiting = startable_ids(worker)
     story.expect_success(f'task cancel {audit} --reason "no audit is needed"', actor=story.user)
     story.run_listeners()

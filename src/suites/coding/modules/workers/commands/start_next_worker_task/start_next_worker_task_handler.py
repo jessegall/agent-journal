@@ -32,7 +32,7 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         self.rows, self.worktrees, self.repository, self.bus, self.guidance = rows, worktrees, repository, bus, guidance
 
     def check_rows(self, command: StartNextWorkerTask, actor: Actor) -> None:
-        self.following_task(actor.agent_id())
+        self.following_task(actor.id)
 
     def following_task(self, worker_id: int) -> Task:
         point = self.guidance.point(worker_id)
@@ -44,9 +44,9 @@ class StartNextWorkerTaskHandler(Handler[StartNextWorkerTask, Task]):
         return point.round.following
 
     def handle(self, command: StartNextWorkerTask, context: Context) -> Task:
-        following = self.following_task(context.actor.agent_id())
+        following = self.following_task(context.actor.id)
         started = self.bus.dispatch(StartTask(following.id), context)
-        worktree = self.worktrees.required_worker_worktree(context.actor.agent_id())
+        worktree = self.worktrees.required_worker_worktree(context.actor.id)
         if self.rows.required(Task, worktree.task_id).state is not TaskState.STARTED:
             self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
         return started

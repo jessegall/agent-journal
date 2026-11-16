@@ -13,7 +13,7 @@ WORKER_FACT = "My worktree is clean"
 
 
 def started_agent(story, session, role="worker"):
-    return story.agent_actor(story.new_row_id(f"agent start {session} claude {role} --environment main"))
+    return Actor(story.new_row_id(f"agent start {session} claude {role} --environment main"), ActorType.AGENT)
 
 
 def read_agent(story, session):

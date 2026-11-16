@@ -21,7 +21,7 @@ class ActedJournal:
 
     @staticmethod
     def started(journal: IntegrationJournal) -> "ActedJournal":
-        agent = journal.agent_actor(journal.new_row_id(MAIN_AGENT_START))
+        agent = Actor(journal.new_row_id(MAIN_AGENT_START), ActorType.AGENT)
         return ActedJournal(journal, agent, journal.make_user())
 
     @property

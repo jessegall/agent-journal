@@ -25,7 +25,7 @@ def test_a_person_dispatches_a_worker_that_starts_no_program_and_its_session_hoo
     repository = repository_environment(story)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     try:
-        worker = story.agent_actor(story.new_row_id(MISSING_PROGRAM, actor=person(story)))
+        worker = Actor(story.new_row_id(MISSING_PROGRAM, actor=person(story)), ActorType.AGENT)
         story.run_listeners()
         story.expect_rows(launcher.requests == [], story.row(Agent, worker.id).session == SESSION)
         story.expect_text("worker-worktree list", f"worker-{worker.id}")
@@ -35,10 +35,10 @@ def test_a_person_dispatches_a_worker_that_starts_no_program_and_its_session_hoo
         story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
         story.expect_success(COMMIT, actor=worker)
         story.expect_success("proof check 1", "state: checked", actor=story.agent)
-        story.expect_success(f"worker logs {agent_number(story, worker.agent_id())}", actor=story.agent)
+        story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
         repository.checkout(ENVIRONMENT_BRANCH)
         request_merge(story, worker)
-        story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
+        story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
         story.expect_success(lines.TASK_DETAILS, "state: completed")
     finally:
         launcher.server.close()

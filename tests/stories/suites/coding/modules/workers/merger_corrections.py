@@ -171,7 +171,7 @@ def test_97_101_107_a_deferred_path_a_path_that_passed_and_a_word_that_is_no_tes
 
 def test_105_only_the_merger_defers_a_test(next_task_stories_failed):
     story, worker = next_task_stories_failed.story, next_task_stories_failed.worker
-    refused = story.run(f'merger defer-test {agent_number(story, worker.worker.agent_id())} "{LATER_STORIES}" --why "{WHY}"', actor=worker.worker)
+    refused = story.run(f'merger defer-test {agent_number(story, worker.worker.id)} "{LATER_STORIES}" --why "{WHY}"', actor=worker.worker)
     story.expect_rows(refused.code != 0, rows(worker, DEFERRALS) == [], detail=refused.output_text)
 
 

@@ -342,7 +342,7 @@ def test_only_a_person_changes_the_split(split_story):
                                           (f'setting set {SPLIT} "claude 50,codex 50" --project', None)])
 def test_only_a_person_changes_the_split_child_agents_cannot_write(split_story, role, line, refusal):
     story = split_story
-    child = story.agent_actor(story.new_row_id(f'agent start child-session claude {role} --parent {story.agent.id} --environment main'))
+    child = Actor(story.new_row_id(f'agent start child-session claude {role} --parent {story.agent.id} --environment main'), ActorType.AGENT)
     story.expect_refusal(line, refusal or role, actor=child)
     story.expect_absent(f'setting show {SPLIT}', 'claude 50')
     story.expect_text('worker-route list --environment main', 'nothing found')

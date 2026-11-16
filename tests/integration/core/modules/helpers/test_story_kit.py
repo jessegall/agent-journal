@@ -11,7 +11,7 @@ from engine.testing.examples.hook_samples import HookSamples
 def test_a_helper_keeps_the_session_the_journal_chose_when_another_comes_under_its_launch_name(played):
     story = played(HelperStarted)
     story.hook("helper-session", HookSamples.helper(HELPER_LAUNCH_NAME))
-    story.expect_no_text(f"agent show {agent_number(story, story.helper.agent_id())}", "session: helper-session")
+    story.expect_no_text(f"agent show {agent_number(story, story.helper.id)}", "session: helper-session")
 
 
 def test_a_helper_sends_hooks_as_itself(played):

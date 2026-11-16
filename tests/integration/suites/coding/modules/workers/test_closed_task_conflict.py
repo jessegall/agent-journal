@@ -24,7 +24,7 @@ def test_worker_send_runs_git_outside_its_transaction(played, monkeypatch):
         return synced(git, worktree)
 
     monkeypatch.setattr(WorktreeGit, "sync", watched_sync)
-    story.expect_text(f'worker send --wait {agent_number(story, worker.agent_id())} "Finish the total"', "takes the job", actor=story.agent)
+    story.expect_text(f'worker send --wait {agent_number(story, worker.id)} "Finish the total"', "takes the job", actor=story.agent)
     story.expect_rows(transaction_flags == [False])
 
 

@@ -44,7 +44,7 @@ class HelperOnSequence(StoryFixture):
     parent = StartedSequence
 
     def steps(self, story) -> None:
-        story.helper = story.agent_actor(story.new_row_id(f"agent start s-helper claude helper --parent {story.agent.id} --environment main"))
+        story.helper = Actor(story.new_row_id(f"agent start s-helper claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
         story.expect_success("sequence run 1", actor=story.helper)
 
 
@@ -54,7 +54,7 @@ class WorkerOnSequence(StoryFixture):
     parent = StartedSequence
 
     def steps(self, story) -> None:
-        story.worker = story.agent_actor(story.new_row_id("agent start s-worker claude worker --environment main"))
+        story.worker = Actor(story.new_row_id("agent start s-worker claude worker --environment main"), ActorType.AGENT)
         story.expect_success("sequence run 1", actor=story.worker)
 
 

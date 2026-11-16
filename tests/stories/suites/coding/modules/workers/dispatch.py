@@ -37,7 +37,7 @@ def test_a_dispatch_in_an_environment_that_names_no_branch_is_refused_and_makes_
 def test_a_worker_that_dispatches_a_worker_is_refused_and_makes_nothing(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
-    worker = story.agent_actor(story.new_row_id(f"{WORKER_START} --parent {story.agent.id}"))
+    worker = Actor(story.new_row_id(f"{WORKER_START} --parent {story.agent.id}"), ActorType.AGENT)
     actors = tuple(story.story_rows(ActorRecord))
     story.expect_refusal(DISPATCH, "a worker dispatches no workers", actor=worker)
     story.expect_success("worker-worktree list", "nothing found")

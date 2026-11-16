@@ -21,7 +21,7 @@ def base_tax(repository: GitRepository) -> None:
 def s58_two_worktrees_updating_each_get_back_only_their_own_changes(story, repository, worker: Actor) -> None:
     setting(story, "worker-run-limit", 2)
     task_id = story.new_row_id('task make "The second part" --brief "done when it is done"', actor=story.agent)
-    second = story.agent_actor(story.new_row_id(DISPATCH.replace(" 1", f" {task_id}"), actor=story.agent))
+    second = Actor(story.new_row_id(DISPATCH.replace(" 1", f" {task_id}"), actor=story.agent), ActorType.AGENT)
     (repository.worktree_folder(worker.id) / "cart.py").write_text("TOTAL = 1\n")
     (repository.worktree_folder(second.id) / "cart.py").write_text("TOTAL = 2\n")
     base_tax(repository)
@@ -43,7 +43,7 @@ def s61_the_merger_only_orders_and_changes_no_file(story, repository, worker: Ac
     stale_check(story)
     previous = repository.git("status", "--porcelain", folder=repository.folder).stdout
     worker_head = repository.git("rev-parse", "HEAD", folder=repository.worktree_folder(worker.id)).stdout
-    story.expect_success(f'merger update {agent_number(story, worker.agent_id())} --why "plan_checkpoints.py moved on both sides"', actor=merger(story))
+    story.expect_success(f'merger update {agent_number(story, worker.id)} --why "plan_checkpoints.py moved on both sides"', actor=merger(story))
     after = repository.git("status", "--porcelain", folder=repository.folder).stdout
     story.expect_rows(after == previous, repository.git("rev-parse", "HEAD", folder=repository.worktree_folder(worker.id)).stdout == worker_head, detail=f"{previous!r} {after!r}")
 
@@ -66,5 +66,5 @@ def test_updates_of_many_worktrees_stay_each_in_their_own_worktree(new_story, ca
     story = new_story(fixture=MergerBeside)
     repository = repository_environment(story, real_git=True)
     setting(story, "behind-commits-to-check", 1)
-    worker = story.agent_actor(story.new_row_id(DISPATCH, actor=story.agent))
+    worker = Actor(story.new_row_id(DISPATCH, actor=story.agent), ActorType.AGENT)
     case(story, repository, worker)

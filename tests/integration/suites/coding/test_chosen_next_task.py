@@ -26,7 +26,7 @@ def worker_with_task(two_tasks):
     story, second, _ = two_tasks
     repository_environment(story)
     worker = dispatched_worker(story)
-    story.expect_success(f"task assign {second} --to {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"task assign {second} --to {agent_number(story, worker.id)}", actor=story.agent)
     return story, worker, second
 
 
@@ -39,18 +39,18 @@ def test_a_chosen_task_goes_before_a_critical_task(two_tasks):
 
 def test_the_main_agent_chooses_for_a_worker(worker_with_task):
     story, worker, second = worker_with_task
-    story.expect_success(f"task next {second} --agent {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"task next {second} --agent {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_rows(story.container.get(WorkerNextTask).following(worker.id).id == second)
 
 
 def test_a_worker_cannot_choose_for_another_agent(worker_with_task):
     story, worker, second = worker_with_task
-    story.expect_refusal(f"task next {second} --agent {agent_number(story, story.agent.agent_id())}", "may not run task next", actor=worker)
+    story.expect_refusal(f"task next {second} --agent {agent_number(story, story.agent.id)}", "may not run task next", actor=worker)
 
 
 def test_a_task_that_belongs_to_another_agent_is_refused(worker_with_task):
     story, worker, second = worker_with_task
-    story.expect_refusal(f"task next {second}", f"task {second} is assigned to worker {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_refusal(f"task next {second}", f"task {second} is assigned to worker {agent_number(story, worker.id)}", actor=story.agent)
 
 
 @pytest.mark.parametrize(("line", "state"), [('task cancel {task} --reason "No longer needed"', "cancelled"), ('task block {task} --reason "Waits on a key"', "blocked")])
@@ -71,9 +71,9 @@ def test_a_chosen_task_blocked_afterwards_waits_and_is_next_once_it_opens(two_ta
 
 def test_a_chosen_task_given_to_another_agent_is_no_longer_next(worker_with_task):
     story, worker, second = worker_with_task
-    story.expect_success(f"task assign {second} --to {agent_number(story, story.agent.agent_id())}", actor=story.agent)
+    story.expect_success(f"task assign {second} --to {agent_number(story, story.agent.id)}", actor=story.agent)
     story.expect_success(f"task next {second}", actor=story.agent)
-    story.expect_success(f"task assign {second} --to {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"task assign {second} --to {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_rows(next_for_main_agent(story) != second)
 
 

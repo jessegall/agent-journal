@@ -131,9 +131,9 @@ def test_a_main_agent_at_five_skips_loses_the_skip_and_the_person_is_told_and_gi
 
 def test_a_worker_at_five_skips_is_raised_to_its_main_agent_not_the_person(new_story):
     story = new_story(fixture=UserBuilder)
-    worker = story.agent_actor(story.new_row_id(f"agent start s-worker claude worker --parent {story.agent.id} --environment main"))
+    worker = Actor(story.new_row_id(f"agent start s-worker claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
     guard_skips(story, worker, 5)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, worker.agent_id())} skipped 5 refusals in a row")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, worker.id)} skipped 5 refusals in a row")
     story.expect_absent("message list --environment main", "skipped 5", actor=story.user)
 
 

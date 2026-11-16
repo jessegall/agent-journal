@@ -28,7 +28,7 @@ def test_the_merge_hooks_set_on_a_profile_start_as_processes_after_its_worker_is
         modal = Modal(viewer)
         modal.save({MERGE_HOOKS: json.dumps(hooks)}, HELPER_TYPES)
         expect_value(modal.value(HELPER_TYPES, MERGE_HOOKS), hooks)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.run_listeners()
     hooks_run = [process for process in story.story_rows(Process) if process.is_merge_hook]
     expect_value([MergeHookLine.hook(process.line) for process in hooks_run], [f'echo "$JOURNAL_COMMIT_AFTER" >> hooked.txt', "exit 3"])

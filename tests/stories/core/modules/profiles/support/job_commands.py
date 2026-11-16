@@ -87,7 +87,7 @@ def run_helper_command(story, profile: str, command: str) -> None:
     definition = profile_definition(story, profile)
     prefix = " ".join(shlex.split(command)[:2])
     assert f"journal {prefix}" in definition.body, (profile, prefix)
-    story.expect_success(f"agent edit {agent_number(story, story.helper.agent_id())} --profile {profile}")
+    story.expect_success(f"agent edit {agent_number(story, story.helper.id)} --profile {profile}")
     sample = HookSamples.shell(f"journal {command}", ShellPart("journal", CommandCategory.JOURNAL, shlex.split(command), subcommand=command.split()[0])).with_fields(helper="sub-1")
     story.expect_hook_allowed("s-1", sample)
     story.expect_success(command, actor=story.helper)

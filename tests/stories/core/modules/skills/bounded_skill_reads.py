@@ -14,4 +14,4 @@ def test_agent_skill_unread_with_128_skill_rows_reads_in_statements_of_50(new_st
     story.seed(AgentSkillSeed, SEEDED_SKILL_ROWS, session_agent_id=story.agent.id)
     due_notes(story)
     limit_reads(story)
-    story.expect_success(f"agent-skill unread {agent_number(story, story.agent.agent_id())}", "journal-notes")
+    story.expect_success(f"agent-skill unread {agent_number(story, story.agent.id)}", "journal-notes")

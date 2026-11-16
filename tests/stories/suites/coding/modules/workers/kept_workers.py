@@ -49,21 +49,21 @@ def test_a_worker_with_unmerged_work_is_not_retired(new_story):
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
     stopped(story, worker)
-    story.expect_refusal(f"agent retire {agent_number(story, worker.agent_id())} {REASON}", "unmerged work", actor=story.agent)
+    story.expect_refusal(f"agent retire {agent_number(story, worker.id)} {REASON}", "unmerged work", actor=story.agent)
 
 
 def test_retire_settles_what_a_worker_holds(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
-    general = story.run(f"worker send --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
+    general = story.run(f"worker send --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_rows(general.code == 1)
     stopped(story, worker)
-    story.expect_success(f"agent retire {agent_number(story, worker.agent_id())} {REASON}", f"retired {agent_label(story, worker.id)}", actor=story.user)
+    story.expect_success(f"agent retire {agent_number(story, worker.id)} {REASON}", f"retired {agent_label(story, worker.id)}", actor=story.user)
     story.expect_success("worker-worktree show 1", "state: removed")
     story.expect_success("task show 1", "state: open")
     repository.expect_no_folder(worker.id)
-    retired = story.run(f'worker send --wait {agent_number(story, worker.agent_id())} "Another job"', actor=story.agent)
+    retired = story.run(f'worker send --wait {agent_number(story, worker.id)} "Another job"', actor=story.agent)
     story.expect_rows(retired.code == 5, "retired" in retired.output_text)
 
 
@@ -82,7 +82,7 @@ def test_a_retire_runs_git_outside_the_transaction(new_story):
             internal.append(database.has_transaction)
         return git(self, *arguments, **options)
     with patch.object(WorktreeGit, "git", recording_git):
-        story.expect_success(f"agent retire {agent_number(story, worker.agent_id())} {REASON}", actor=story.user)
+        story.expect_success(f"agent retire {agent_number(story, worker.id)} {REASON}", actor=story.user)
     story.expect_rows(bool(internal), not any(internal))
 
 
@@ -92,7 +92,7 @@ def test_at_the_kept_maximum_a_dispatch_is_refused_naming_the_kept_workers(new_s
     story.expect_success(f"setting set {WORKER_KEPT_LIMIT} 1 --environment main", actor=story.user)
     worker = dispatched_worker(story)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
-    story.expect_refusal(f"worker dispatch --test-command python=pytest --model sonnet {task_id}", f"the limit of 1 workers is reached: agent:{agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_refusal(f"worker dispatch --test-command python=pytest --model sonnet {task_id}", f"the limit of 1 workers is reached: agent:{agent_number(story, worker.id)}", actor=story.agent)
 
 
 def test_a_worker_resume_at_the_run_limit_is_held_and_starts_when_a_place_frees(new_story):
@@ -106,7 +106,7 @@ def test_a_worker_resume_at_the_run_limit_is_held_and_starts_when_a_place_frees(
     story.run_listeners()
     story.expect_success(f"setting set {WORKER_RUN_LIMIT} 0 --environment main", actor=story.user)
     story.advance(timedelta(seconds=1))
-    story.expect_success(f'worker send --wait {agent_number(story, worker.agent_id())} "Add the tax"', actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Add the tax"', actor=story.agent)
     story.run_listeners()
     WorkerResumeRetry()(story.container)
     limit_start_count = len(launcher.starts)
@@ -121,7 +121,7 @@ def test_a_task_sent_to_a_delivered_worker_waits_and_the_delivery_stays_mergeabl
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
-    story.expect_success(f"worker send --wait {agent_number(story, worker.agent_id())} --task {task_id}", actor=story.agent)
+    story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {task_id}", actor=story.agent)
     story.expect_text(f"task show {task_id}", "state: open", actor=story.agent)
     story.expect_text(f"task info {task_id}", f"assigned to: agent {worker.id}", actor=story.agent)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
@@ -135,10 +135,10 @@ def test_the_merge_of_a_delivered_worker_starts_the_task_sent_while_it_waited(ne
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
-    story.expect_success(f"worker send --wait {agent_number(story, worker.agent_id())} --task {task_id}", actor=story.agent)
-    story.expect_success(f"worker logs {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {task_id}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
     story.expect_text(f"task show {task_id}", "state: started", f"holder_id: {worker.id}", actor=story.agent)
     worktree = story.first_row(Worktree, session_agent_id=worker.id)
@@ -150,11 +150,11 @@ def test_a_merged_worker_gets_a_new_cut_on_its_session(new_story):
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
-    story.expect_success(f"worker send --wait {agent_number(story, worker.agent_id())} --task {task_id}", actor=story.agent)
+    story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {task_id}", actor=story.agent)
     story.expect_text(f"task show {task_id}", "state: started", f"holder_id: {worker.id}", actor=story.agent)
     worktree = story.first_row(Worktree, session_agent_id=worker.id)
     newest = story.container.get(WorktreeQuery).newest_worktree(worker.id)
@@ -165,9 +165,9 @@ def test_an_unmerged_branch_is_never_overwritten(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
-    story.expect_success(f'worker release {agent_number(story, worker.agent_id())} "Not needed"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.id)} "Not needed"', actor=story.agent)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
-    story.expect_refusal(f"worker send --wait {agent_number(story, worker.agent_id())} --task {task_id}", "unmerged work", actor=story.agent)
+    story.expect_refusal(f"worker send --wait {agent_number(story, worker.id)} --task {task_id}", "unmerged work", actor=story.agent)
 
 
 def test_a_dispatch_with_an_idle_worker_is_refused_with_its_send_line_and_fresh_passes(new_story, monkeypatch):
@@ -175,13 +175,13 @@ def test_a_dispatch_with_an_idle_worker_is_refused_with_its_send_line_and_fresh_
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     monkeypatch.setattr(ClaudeCodeProvider, "session_matches_folder", lambda provider, folder, session: True)
     stopped(story, worker)
     second, third = (story.new_row_id(f'task make "Task {number}"', actor=story.agent) for number in (2, 3))
-    story.expect_refusal(f"worker dispatch --test-command python=pytest --model sonnet {second} {third}", f"journal worker send {agent_number(story, worker.agent_id())} --task {second} {third}", actor=story.agent)
+    story.expect_refusal(f"worker dispatch --test-command python=pytest --model sonnet {second} {third}", f"journal worker send {agent_number(story, worker.id)} --task {second} {third}", actor=story.agent)
     new_worker = dispatched_worker(story, f"worker dispatch --test-command python=pytest --model sonnet --fresh 'Another model of thinking' {second} {third}")
     worktree = story.first_row(Worktree, session_agent_id=new_worker.id)
     story.expect_rows(worktree.new_agent_reason == "Another model of thinking")
@@ -193,16 +193,16 @@ def test_a_worker_whose_task_was_cancelled_can_be_released(new_story):
     repository_environment(story)
     worker = dispatched_worker(story)
     story.expect_success('task cancel 1 --reason "Not needed"', actor=story.user)
-    story.expect_success(f'worker release {agent_number(story, worker.agent_id())} "Its task was cancelled"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.id)} "Its task was cancelled"', actor=story.agent)
     story.expect_rows(story.first_row(Worktree, session_agent_id=worker.id) is None)
 
 
 def merged_kept_worker(story, repository):
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     return worker
 
 
@@ -211,7 +211,7 @@ def test_a_send_with_an_open_dependency_assigns_the_task_to_wait_and_cuts_no_wor
     worker = merged_kept_worker(story, repository_environment(story))
     first, second = (story.new_row_id(f'task make "Task {number}"', actor=story.agent) for number in (2, 3))
     story.expect_success(f"task depend {second} --on {first}", actor=story.agent)
-    story.expect_success(f"worker send --wait {agent_number(story, worker.agent_id())} --task {second}", actor=story.agent)
+    story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {second}", actor=story.agent)
     story.expect_rows(story.first_row(Worktree, session_agent_id=worker.id) is None, assignee_of(story, story.row(Task, second)) == worker.id)
 
 
@@ -225,7 +225,7 @@ def test_a_failed_cut_leaves_no_worktree_and_the_real_error(new_story, monkeypat
         raise Refusal("the cut failed")
 
     monkeypatch.setattr(WorktreeGit, "cut", refused_cut)
-    story.expect_refusal(f"worker send --wait {agent_number(story, worker.agent_id())} --task {task_id}", "the cut failed", actor=story.agent)
+    story.expect_refusal(f"worker send --wait {agent_number(story, worker.id)} --task {task_id}", "the cut failed", actor=story.agent)
     story.expect_rows(story.first_row(Worktree, session_agent_id=worker.id) is None)
 
 
@@ -234,7 +234,7 @@ def test_a_send_while_tests_run_is_refused_and_nothing_moves(new_story, monkeypa
     worker = delivered_worker(story, repository_environment(story))
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
     monkeypatch.setattr(WorkerProofQueue, "tests_pending", lambda queue, worktree: True)
-    story.expect_refusal(f"worker send --wait {agent_number(story, worker.agent_id())} --task {task_id}", "are running", actor=story.agent)
+    story.expect_refusal(f"worker send --wait {agent_number(story, worker.id)} --task {task_id}", "are running", actor=story.agent)
     story.expect_text(f"task show {task_id}", "state: open", actor=story.agent)
 
 
@@ -272,10 +272,10 @@ def test_a_task_sent_after_merge_is_started_in_a_new_worktree_that_keeps_the_lin
     worker = checked_worker(story, repository, "worker dispatch --test-command python=pytest --model sonnet --library-link node_modules 1")
     repository.checkout(ENVIRONMENT_BRANCH)
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     session = worker_session(story, worker)
     task = story.new_row_id('task make "Fix the findings" --brief "Fix what the merge found" --environment main', actor=story.agent)
-    story.expect_success(f"worker send --wait {agent_number(story, worker.agent_id())} --task {task}", actor=story.agent)
+    story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {task}", actor=story.agent)
     worktree = story.first_row(Worktree, session_agent_id=worker.id)
     story.expect_rows(worktree.task_id == task)
     story.expect_text(f"task show {task}", "Fix the findings", "state: started", f"holder_id: {worker.id}", actor=story.agent)
@@ -292,5 +292,5 @@ def test_retire_hides_the_lines_still_waiting_for_the_worker(new_story):
     with story.container.get(Database).transaction():
         story.container.get(MessageSender).send_text(worker.id, "A line the worker never took", "sample.raw", Context(Actor.core(), story.clock.timestamp(), ReadMessage(1)))
     story.expect_text(f"agent-line list --agent {worker.id} --json", '"state": "waiting"', actor=story.user)
-    story.expect_success(f"agent retire {agent_number(story, worker.agent_id())} {REASON}", f"retired {agent_label(story, worker.id)}", actor=story.user)
+    story.expect_success(f"agent retire {agent_number(story, worker.id)} {REASON}", f"retired {agent_label(story, worker.id)}", actor=story.user)
     story.expect_text(f"agent-line list --agent {worker.id} --json", '"state": "hidden"', actor=story.user)

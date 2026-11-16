@@ -34,7 +34,7 @@ def test_each_exit_of_the_silent_run_hold_works_again_when_the_hold_comes_back(n
         story.expect_success(f"output read {process.id} --tail 5", actor=story.agent)
         story.expect_hook_allowed("s-1", EDIT)
         blocked_repeat(story, process)
-    number = agent_number(story, story.agent.agent_id())
+    number = agent_number(story, story.agent.id)
     for _ in range(2):
         story.expect_success(f"process lift-hold {number} --environment main", "1 holds lifted", actor=story.user)
         story.expect_hook_allowed("s-1", EDIT)
@@ -45,7 +45,7 @@ def test_a_person_lifts_a_workers_reader_block_each_time_one_comes(new_story):
     story = new_story(fixture=ForcedReaders)
     worker = reader_worker(story)
     person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    number = agent_number(story, worker.agent_id())
+    number = agent_number(story, worker.id)
     for request, line in ((1, "custom-build run"), (2, "other-build run")):
         worker_run(story, line)
         story.expect_hook_refusal("s-reader", EDIT, expected_agent_message(ReaderBlockMessage.declared()))

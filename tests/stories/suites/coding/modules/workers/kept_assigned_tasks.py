@@ -11,6 +11,6 @@ def test_assigned_tasks_refresh_when_a_task_is_assigned(worker_batch):
     story, _, worker = worker_batch
     story.expect_text("worker status", "Assignments remaining: 2", actor=worker)
     story.expect_success('task make "Refund" --brief "Pay a refund" --environment main')
-    story.expect_success(f"worker send {agent_number(story, worker.agent_id())} --task 4", actor=story.agent)
+    story.expect_success(f"worker send {agent_number(story, worker.id)} --task 4", actor=story.agent)
     status = json.loads(story.run("worker status --json", actor=worker).output_text)
     story.expect_rows([task["id"] for task in status["assignments"]["rows"]] == [2, 3, 4])

@@ -54,7 +54,7 @@ class BuilderPlanAndPhase(StoryFixture):
 
 def test_a_task_assigned_by_hand_is_skipped_and_keeps_its_assignee(new_story):
     story = new_story(fixture=AnyTaskRule)
-    story.expect_success(f"task assign {TASK_ID} --to {agent_number(story, story.agent.agent_id())} {ENVIRONMENT}", actor=story.user)
+    story.expect_success(f"task assign {TASK_ID} --to {agent_number(story, story.agent.id)} {ENVIRONMENT}", actor=story.user)
     story.expect_success(f"task edit {TASK_ID} --complexity 3 {ENVIRONMENT}", actor=story.user)
     decision = task_decision(story, TASK_ID)
     story.expect_rows(decision.outcome == "has_assignee", decision.rule_id is None, rule_given(story, TASK_ID) == [], detail=str(decision))
@@ -79,7 +79,7 @@ def test_a_rule_that_names_the_plan_gives_its_task(new_story):
 def test_a_task_of_an_assigned_plan_gets_the_plans_agent_and_the_rule_skips_it(new_story):
     story = new_story(fixture=BuilderPlanAndPhase)
     task_id = story.new_row_id(f'task make "Fit the doors" --phase 1 {ENVIRONMENT}', actor=story.user)
-    story.expect_success(f"plan assign 1 --to {agent_number(story, story.agent.agent_id())} {ENVIRONMENT}", actor=story.user)
+    story.expect_success(f"plan assign 1 --to {agent_number(story, story.agent.id)} {ENVIRONMENT}", actor=story.user)
     story.expect_success(f"task edit {task_id} --complexity 2 {ENVIRONMENT}", actor=story.user)
     decision = task_decision(story, task_id)
     story.expect_rows(decision.outcome == "has_assignee", [row.actor_id for row in task_assignments(story, task_id)] == [story.agent.id],

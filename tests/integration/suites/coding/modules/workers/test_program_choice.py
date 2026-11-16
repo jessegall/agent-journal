@@ -84,9 +84,9 @@ def test_worker_on_an_out_program_does_not_restart(failed_worker_story):
     WorkerResumeRetry()(story.container)
     lines = story.run(f'agent-line list --agent {story.agent.id}').output_text
     story.expect_rows(lines.count(f'worker:{worker.id} stopped') == 1)
-    story.expect_text(f'worker status {agent_number(story, worker.agent_id())}', 'Program: claude', 'rate limit', 'until', '09:15', f'journal worker release {agent_number(story, worker.agent_id())}')
+    story.expect_text(f'worker status {agent_number(story, worker.id)}', 'Program: claude', 'rate limit', 'until', '09:15', f'journal worker release {agent_number(story, worker.id)}')
     story.expect_rows(len(worker_starts(launcher, worker)) == 1, detail=str(worker_starts(launcher, worker)))
-    story.expect_text(f'agent show {agent_number(story, worker.agent_id())}', 'ended_at:')
+    story.expect_text(f'agent show {agent_number(story, worker.id)}', 'ended_at:')
 
 
 def test_worker_on_an_out_program_does_not_restart_until_the_outage_ends(failed_worker_story):

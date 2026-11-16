@@ -66,15 +66,15 @@ def test_refusal_skip_with_207_refused_calls_makes_no_read_cut_report(new_story)
 def test_agent_resume_with_many_ended_children_makes_no_read_cut_report(new_story):
     story = new_story(fixture=LargeJournal)
     story.bind(TerminalTyping, FakeTyping())
-    story.expect_success(f"agent pause {agent_number(story, story.agent.agent_id())}", actor=story.user)
+    story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
     limit_reads(story)
-    story.expect_success(f"agent resume {agent_number(story, story.agent.agent_id())}", actor=story.user)
+    story.expect_success(f"agent resume {agent_number(story, story.agent.id)}", actor=story.user)
 
 
 def test_agent_skill_unread_with_128_skill_rows_makes_no_read_cut_report(new_story):
     story = new_story(fixture=LargeJournal)
     limit_reads(story)
-    story.expect_success(f"agent-skill unread {agent_number(story, story.agent.agent_id())}")
+    story.expect_success(f"agent-skill unread {agent_number(story, story.agent.id)}")
 
 
 def test_each_fixed_read_reads_at_most_51_rows_where_it_read_207_to_1000_before(new_story):

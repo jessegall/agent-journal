@@ -32,12 +32,12 @@ class LargeJournal(StoryFixture):
     parent = UserBuilder
 
     def steps(self, story):
-        story.helper = story.agent_actor(story.new_row_id(f"agent start s-helper claude helper --parent {story.agent.id} --environment main"))
+        story.helper = Actor(story.new_row_id(f"agent start s-helper claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
         story.run(f"agent start s-worker claude worker --parent {story.agent.id} --environment main", actor=story.user)
         for line in SEED_LINES:
             story.expect_success(f"{line} --environment main", actor=story.agent)
         for line in PERSON_SEED_LINES:
-            story.expect_success(f"{line.format(agent=agent_number(story, story.agent.agent_id()))} --environment main", actor=story.user)
+            story.expect_success(f"{line.format(agent=agent_number(story, story.agent.id))} --environment main", actor=story.user)
         for number in range(ROW_EVENTS):
             story.expect_success(f'plan edit 1 --brief "A right cart total, edit {number}" --environment main', actor=story.agent)
             story.expect_success(f'check edit 1 --brief "Passes when the cart is right, edit {number}" --environment main', actor=story.user)
@@ -49,7 +49,7 @@ class LargeJournal(StoryFixture):
         for number in range(COMMAND_ROWS):
             story.expect_success(f'task make "Cart part {number}" --brief "Part {number} of the cart; done when it counts" --environment main', actor=story.agent)
             story.expect_success(f"task block {number + 3} --on task:1 --environment main", actor=story.agent)
-            story.expect_success(f'message send "Cart note {number}" --to agent:{agent_number(story, story.agent.agent_id())} --environment main', actor=story.user)
+            story.expect_success(f'message send "Cart note {number}" --to agent:{agent_number(story, story.agent.id)} --environment main', actor=story.user)
             story.expect_success(f"agent start s-helper-{number} claude helper --parent {story.agent.id} --environment main")
         for session in ("s-1", "s-helper", "s-worker"):
             for sample in (HookSamples.session_start(), HookSamples.prompt("go on"), EDIT, HookSamples.stop()):

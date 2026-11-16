@@ -105,7 +105,7 @@ def merged_work(played):
 @pytest.mark.xfail(reason="task 10228: the played journal launches no merger, so the merged work has none to read it", strict=True)
 def test_empty_merger_checks_keep_mechanical_judging(merged_work):
     story, worker, merger = merged_work.story, merged_work.worker, merged_work.merger
-    story.expect_no_text(f"merger merge --wait {agent_number(story, worker.agent_id())}", "run:", actor=merger)
+    story.expect_no_text(f"merger merge --wait {agent_number(story, worker.id)}", "run:", actor=merger)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 
@@ -113,7 +113,7 @@ def test_empty_merger_checks_keep_mechanical_judging(merged_work):
 def test_s39_configured_merger_checks_are_listed_after_the_merge_with_the_commit(merged_work):
     story, worker, merger = merged_work.story, merged_work.worker, merged_work.merger
     story.expect_success(f"setting set {MERGER_COMMANDS} '[\"journal sins --branch={{commit}}\"]' --project", actor=story.user)
-    story.expect_text(f"merger merge --wait {agent_number(story, worker.agent_id())}", "run: journal sins --branch=", actor=merger)
+    story.expect_text(f"merger merge --wait {agent_number(story, worker.id)}", "run: journal sins --branch=", actor=merger)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 
@@ -123,7 +123,7 @@ def test_manual_merge_keeps_mechanical_judging(played):
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
     story.expect_text("task show 1", "state: completed", actor=story.agent)
 
 
@@ -135,4 +135,4 @@ def test_s42_the_own_test_failure_limit_is_a_setting_and_counts_failures_already
         bus.run(RecordOwnTestFailure(worker.id, 1, WORKER_RUN_LINE), Actor.core(), environment_id=1)
     story.expect_success(f"setting set {WORKER_RUN_FAILURE_LIMIT} 3 --environment main", actor=story.user)
     story.expect_success("worker commit --wait --differences none", actor=worker)
-    story.expect_text(f"worker logs {agent_number(story, worker.agent_id())}", "! its own runs failed 3 times: tests/stories/cart.py", actor=story.agent)
+    story.expect_text(f"worker logs {agent_number(story, worker.id)}", "! its own runs failed 3 times: tests/stories/cart.py", actor=story.agent)

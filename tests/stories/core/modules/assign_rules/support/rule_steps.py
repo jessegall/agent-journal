@@ -80,7 +80,7 @@ class PersonRulesAndWorker(StoryFixture):
     parent = TwoPersonRules
 
     def steps(self, story: Story) -> None:
-        story.helper = story.agent_actor(story.new_row_id(f"agent start w-1 claude worker --parent {story.agent.id} --environment main"))
+        story.helper = Actor(story.new_row_id(f"agent start w-1 claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
         story.run(f"assign-rule disable {MIGRATION_RULE} {ENVIRONMENT}", actor=story.user)
 
     def expect(self, story: Story) -> None:

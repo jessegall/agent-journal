@@ -39,7 +39,7 @@ class UnreadReportsSubcommand(ReadSubcommand[UnreadReports]):
     def read(self, arguments: Namespace, caller: Caller) -> UnreadReports:
         reports = self.queries.query(Message).filter(type=MessageType.AGENT, is_chat_visible=False).matching(IsNull("read_at"))
         if self.reads_caller_reports(caller):
-            reports = reports.filter(target_agent_id=caller.actor.agent_id())
+            reports = reports.filter(target_agent_id=caller.actor.id)
         else:
             reports = reports.matching(IsNull("target_agent_id"))
         if arguments.agent is not None:
@@ -50,7 +50,7 @@ class UnreadReportsSubcommand(ReadSubcommand[UnreadReports]):
         return UnreadReports(tuple(reversed(page.rows)), page.total, arguments.page)
 
     def reads_caller_reports(self, caller: Caller) -> bool:
-        return caller.actor.type is ActorType.AGENT and not self.agents.is_main(caller.actor.agent_id())
+        return caller.actor.type is ActorType.AGENT and not self.agents.is_main(caller.actor.id)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, UnreadReports):

@@ -85,7 +85,7 @@ def test_each_environment_keeps_its_own_process_count(process_log):
     ended_run(process_log, "make main-second", "second\n")
     assert process_log.run("environment make web /work/web", process_log.user).code == 0
     assert process_log.run(f"setting set {ProcessSetting.PROCESSES_KEPT.key} 1 --environment web", process_log.user).code == 0
-    web = process_log.agent_actor(process_log.new_row_id("agent start web-main claude main --environment web"))
+    web = Actor(process_log.new_row_id("agent start web-main claude main --environment web"), ActorType.AGENT)
     bus = process_log.container.get(Bus)
     for number in range(2):
         process = bus.run(StartProcess.single_part(web.id, f"make web-{number}", "/work/web", CommandCategory.BUILD, 30), web, environment_id=2)

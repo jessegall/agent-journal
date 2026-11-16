@@ -17,13 +17,13 @@ class WorkerTaskSources(AssignedWorkSources):
         self.worktrees, self.queries, self.kept = worktrees, queries, kept
 
     def task_source(self, task_id: int, context: Context | Caller) -> WorkSourceCopy | None:
-        worktree = self.worktrees.worker_worktree(context.actor.agent_id())
+        worktree = self.worktrees.worker_worktree(context.actor.id)
         if worktree is None or worktree.task_id != task_id or worktree.state is not WorktreeState.CUT:
             return None
         return self.current(context)
 
     def current(self, context: Context | Caller) -> WorkSourceCopy | None:
-        worktree = self.worktrees.worker_worktree(context.actor.agent_id())
+        worktree = self.worktrees.worker_worktree(context.actor.id)
         if worktree is None:
             return None
         if worktree.state is not WorktreeState.CUT:

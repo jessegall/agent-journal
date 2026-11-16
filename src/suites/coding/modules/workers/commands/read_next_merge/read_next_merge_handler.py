@@ -38,7 +38,7 @@ class ReadNextMergeHandler(Handler[ReadNextMerge, str]):
         self.agents, self.queries, self.worktrees, self.log_lines, self.repository, self.log_read = agents, queries, worktrees, log_lines, repository, log_read
 
     def handle(self, command: ReadNextMerge, context: Context) -> str:
-        if context.actor.is_agent() and self.oversight.is_overseer(self.agents.find(context.actor.agent_id())):
+        if context.actor.is_agent() and self.oversight.is_overseer(self.agents.find(context.actor.id)):
             return self.waiting_text(self.work.unread_lines(), self.work.next_worktree())
         require_merger(self.agents, context)
         visit = self.repository.save(MergerVisit(), context)

@@ -31,10 +31,10 @@ def test_a_difference_is_an_important_line_the_merge_asks_an_answer_to(new_story
     repository, worker = proved_worker(story)
     story.expect_success(f'worker commit --wait --differences "{OMISSION}"', actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
-    story.expect_text(f"worker logs {agent_number(story, worker.agent_id())}", f"! {OMISSION}", actor=story.agent)
+    story.expect_text(f"worker logs {agent_number(story, worker.id)}", f"! {OMISSION}", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.agent_id())}", "important log lines you have not answered", actor=story.agent)
-    story.expect_success(f'worker merge --wait {agent_number(story, worker.agent_id())} --read-important "The phone width follows in its own task"', actor=story.agent)
+    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", "important log lines you have not answered", actor=story.agent)
+    story.expect_success(f'worker merge --wait {agent_number(story, worker.id)} --read-important "The phone width follows in its own task"', actor=story.agent)
     story.expect_text("task overview 1", "main agent on the important lines: The phone width follows in its own task")
 
 
@@ -44,9 +44,9 @@ def test_the_logs_give_a_notes_first_words_and_a_task_shows_them_whole(new_story
     story.expect_success('task log 1 "one two three four five six seven eight nine ten"', actor=worker)
     story.expect_success('task log 1 --important "I could not work out the rounding"', actor=worker)
     story.expect_success("worker commit --wait --differences none", actor=worker)
-    summary = story.run(f"worker logs {agent_number(story, worker.agent_id())}", actor=story.agent).output_text
+    summary = story.run(f"worker logs {agent_number(story, worker.id)}", actor=story.agent).output_text
     story.expect_rows("! I could not work out the rounding" in summary, "one two three four five six seven eight" in summary, "nine ten" not in summary)
-    story.expect_text(f"worker logs {agent_number(story, worker.agent_id())} --task 1", "one two three four five six seven eight nine ten", actor=story.agent)
+    story.expect_text(f"worker logs {agent_number(story, worker.id)} --task 1", "one two three four five six seven eight nine ten", actor=story.agent)
 
 
 

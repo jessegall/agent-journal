@@ -28,5 +28,5 @@ class RunGrantedCommandHandler(Handler[RunGrantedCommand, Process]):
         grant = self.queries.query(HelperGrant).filter(helper_id=context.actor.id, program=command.command_parts[0]).first()
         if grant is None or not grant.allows(command.command_parts):
             raise Refusal(f"{line} is not granted to you", "ask the main agent for a grant")
-        folder = str(self.checkouts.checkout(context.actor.agent_id()).root)
+        folder = str(self.checkouts.checkout(context.actor.id).root)
         return self.bus.dispatch(StartProcess.single_part(context.actor.id, line, folder, CommandCategory.UNKNOWN, GRANTED_RUN_LIMIT_SECONDS), context)

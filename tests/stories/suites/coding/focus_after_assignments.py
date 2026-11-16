@@ -48,13 +48,13 @@ def test_e5_the_order_reads_tasks_reserved_through_the_assignments(new_story):
     for task_id in (1, 2, 3, 4, 5):
         story.run(f'task block {task_id} --until-user --reason "Ada decides"', actor=story.user)
     story.run("plan focus 3", actor=story.agent)
-    story.expect_success(f"task assign 6 --to {agent_number(story, story.agent.agent_id())}", actor=story.user)
+    story.expect_success(f"task assign 6 --to {agent_number(story, story.agent.id)}", actor=story.user)
     story.expect_rows(next_task_id(story) == 6, next_task_id(story, 6) is None)
 
 
 def test_e6_a_plan_task_a_person_gives_the_main_agent_by_hand_counts_as_reserved_by_hand_and_waits_behind_the_other_plans(new_story):
     story = new_story(fixture=ChoresRuleAndPortFocus)
-    story.expect_success(f"task assign 2 --to {agent_number(story, story.agent.agent_id())}", actor=story.user)
+    story.expect_success(f"task assign 2 --to {agent_number(story, story.agent.id)}", actor=story.user)
     focus_first = next_task_id(story)
     for task_id in (5, 6):
         story.run(f'task block {task_id} --until-user --reason "Ada decides"', actor=story.user)
@@ -67,6 +67,6 @@ def test_a_worker_s_rule_task_comes_after_its_focus_work(new_story):
     worker = dispatched_worker(story)
     story.run(f'assign-rule make --target agent --agent row:{worker.id} --condition "tag has {RULE_TAG}" --environment main', actor=story.user)
     chore = rule_task(story, "Oil the crane")
-    story.expect_success(f"task assign 5 --to {agent_number(story, worker.agent_id())}", actor=story.user)
+    story.expect_success(f"task assign 5 --to {agent_number(story, worker.id)}", actor=story.user)
     story.run("plan focus 3", actor=worker)
     story.expect_rows(task_decision(story, chore).actor_id == worker.id, worker_next_task_id(story, worker) == 5, detail=str(task_decision(story, chore)))

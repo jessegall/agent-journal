@@ -10,7 +10,7 @@ class WorkerGrantPolicy(HelperGrantPolicy):
     """Adds the merger to who may grant, for a run that names its test files."""
 
     def check(self, alternatives: tuple[str, ...], context: Context) -> None:
-        if context.actor.type is not ActorType.AGENT or self.agents.find(context.actor.agent_id()).role != Merger.key:
+        if context.actor.type is not ActorType.AGENT or self.agents.find(context.actor.id).role != Merger.key:
             super().check(alternatives, context)
         elif WorkerTestArguments.is_full_suite(alternatives):
             raise Refusal(FULL_SUITE_REFUSAL, "name the test files in the grant")

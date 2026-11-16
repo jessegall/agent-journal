@@ -31,10 +31,10 @@ class ReaderWriters:
     def agent_requests(self, actor: Actor) -> tuple[ReaderRequest, ...]:
         if actor.type is not ActorType.AGENT:
             return ()
-        agent = self.agents.find(actor.agent_id())
+        agent = self.agents.find(actor.id)
         if not self.types.behaviours(agent.role).requires_readers:
             return ()
-        return self.requests.agent_open_rows(actor.agent_id())
+        return self.requests.agent_open_rows(actor.id)
 
     def check_request(self, actor: Actor, request: ReaderRequest) -> None:
         if self.allows(actor):
@@ -53,4 +53,4 @@ class ReaderWriters:
                       "stop, or read on; you are started again once the reader exists")
 
     def allows(self, actor: Actor) -> bool:
-        return actor.type is not ActorType.AGENT or self.agents.is_main(actor.agent_id())
+        return actor.type is not ActorType.AGENT or self.agents.is_main(actor.id)

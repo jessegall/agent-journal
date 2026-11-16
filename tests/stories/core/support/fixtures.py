@@ -30,7 +30,7 @@ class AgentStarted(StoryFixture):
     parent = MainEnvironment
 
     def steps(self, story: Story) -> None:
-        story.agent = story.agent_actor(story.new_row_id(lines.AGENT_START))
+        story.agent = Actor(story.new_row_id(lines.AGENT_START), ActorType.AGENT)
 
     def expect(self, story: Story) -> None:
         story.expect_success("agent show 1", "session: s-1", "environment_id: 1", actor=story.agent)
@@ -42,7 +42,7 @@ class ProcessAgent(StoryFixture):
     parent = MainEnvironment
 
     def steps(self, story: Story) -> None:
-        story.agent = story.agent_actor(story.new_row_id(lines.AGENT_START_WITH_PROCESS))
+        story.agent = Actor(story.new_row_id(lines.AGENT_START_WITH_PROCESS), ActorType.AGENT)
 
     def expect(self, story: Story) -> None:
         story.expect_success("agent show 1", "session: s-7", "pid: 700", actor=story.agent)

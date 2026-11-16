@@ -84,6 +84,6 @@ def test_a_lower_sequence_ending_leaves_the_one_on_top_running(new_story):
 
 def test_two_agents_keep_stacks_of_their_own(new_story):
     story = new_story(fixture=ReleaseAndCleanup, environment="main")
-    helper = story.agent_actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id}"))
+    helper = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id}"), ActorType.AGENT)
     story.expect_success("sequence run 1", actor=story.agent)
     story.expect_success("sequence run 1", "sequence 1, step 1: Run the suite", actor=helper)

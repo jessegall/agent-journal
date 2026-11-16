@@ -64,7 +64,7 @@ def clashed(new_story):
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("cart.py", "TOTAL = 2\n", "Another total")
-    story.expect_text(f"worker merge --wait {agent_number(story, worker.agent_id())}", "clashed on cart.py", actor=story.agent)
+    story.expect_text(f"worker merge --wait {agent_number(story, worker.id)}", "clashed on cart.py", actor=story.agent)
     return story, worker, repository
 
 

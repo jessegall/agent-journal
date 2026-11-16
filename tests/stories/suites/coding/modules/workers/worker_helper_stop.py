@@ -53,6 +53,6 @@ def test_a_helpers_report_keeps_the_workers_task_and_worktree(new_story):
 
 def test_a_workers_release_stops_its_helpers_first(new_story):
     story, worker = worker_with_helper(new_story)
-    story.expect_success(f'worker release {agent_number(story, worker.agent_id())} "No longer needed"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.id)} "No longer needed"', actor=story.agent)
     story.run_listeners()
     story.expect_rows(read_helper(story, worker).ended_at is not None)

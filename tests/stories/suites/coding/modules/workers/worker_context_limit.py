@@ -53,7 +53,7 @@ def compacting_worker(ended_worker):
 
 def with_job(story, worker):
     launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET))
-    story.run(f'worker send --wait {agent_number(story, worker.agent_id())} "{JOB}"', actor=story.agent)
+    story.run(f'worker send --wait {agent_number(story, worker.id)} "{JOB}"', actor=story.agent)
     story.run_listeners()
     return launcher
 
@@ -88,7 +88,7 @@ def finished_task_ids(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_success('task make "Add the tax" --brief "Add the tax" --environment main', actor=story.agent)
-    worker = story.agent_actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2", actor=story.agent))
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
     story.expect_success("task overview 1", actor=worker)
     repository.changed(worker.id, "cart.py", "TOTAL = 1\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1, by reading"', actor=worker)

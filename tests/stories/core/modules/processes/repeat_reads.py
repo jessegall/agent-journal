@@ -37,7 +37,7 @@ def test_a_running_output_the_agent_read_once_is_refused_in_every_form_until_it_
 
 def test_a_helper_and_a_worker_are_told_to_go_idle_and_not_what_a_main_agent_does(new_story):
     story = install_runner(new_story(fixture=BuilderHelper))
-    worker = story.agent_actor(story.new_row_id(f"agent start sub-2 claude worker --parent {story.agent.id} --environment main"))
+    worker = Actor(story.new_row_id(f"agent start sub-2 claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
     for agent in (story.helper, worker):
         process = moved_run_of(story, agent, "make test", category=CommandCategory.TEST_RUN)
         story.expect_success(f"output read {process.id} --summary", actor=agent)

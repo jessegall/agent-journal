@@ -64,7 +64,7 @@ def dispatch(story, tasks='1', flags='', actor=None):
 
 
 def expect_program(story, worker, program, model=''):
-    story.expect_text(f'agent show {agent_number(story, worker.agent_id())}', f'program: {program}', *([f'program_model: {model}'] if model else []))
+    story.expect_text(f'agent show {agent_number(story, worker.id)}', f'program: {program}', *([f'program_model: {model}'] if model else []))
 
 
 def new_task(story, title, flags=''):

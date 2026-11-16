@@ -17,7 +17,7 @@ def test_a_second_test_round_of_the_same_task_gets_its_own_mark(played):
     started = recorded_test_launches(story)
     repository = repository_environment(story)
     story.expect_success('task edit 1 --brief "- Cart\n- Tax"', actor=story.agent)
-    worker = story.agent_actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent))
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", "TOTAL = 2\n")
     story.expect_success('proof make 1 --task 1 "cart.py:1" --test "python tests/cart.py"', actor=worker)
     story.expect_success('proof make 2 --task 1 "tax.py:1, read by hand"', actor=worker)
@@ -27,7 +27,7 @@ def test_a_second_test_round_of_the_same_task_gets_its_own_mark(played):
     first = story.first_row(ChatMark, key="worker-tests:1:1")
     story.expect_rows(first is not None, first.state is ChatMarkState.ENDED)
 
-    story.expect_success(f'worker send --wait {agent_number(story, worker.agent_id())} "Add the tax test"', actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Add the tax test"', actor=story.agent)
     repository.changed(worker.id, "tax.py", "TAX = 1\n")
     story.expect_success('proof make 2 --task 1 "tax.py:1" --test "python tests/tax.py"', actor=worker)
     story.expect_success("worker commit --wait --differences none", actor=worker)

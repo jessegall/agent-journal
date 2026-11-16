@@ -81,9 +81,6 @@ class ActorTable(RoundState):
             self.agent_answers[actor_id] = bool(self.database.rows(Statement(ACTOR_ROW.sql, (actor_id, ActorType.AGENT.value))))
         return self.agent_answers[actor_id]
 
-    def actor_id(self, agent_id: int) -> int:
-        return int(self.database.rows(Statement(AGENT_ACTOR_ID.sql, [agent_id]))[0]["id"])
-
     def agent_id(self, actor_id: int) -> int | None:
         if actor_id not in self.agent_ids:
             rows = self.database.rows(Statement(ACTOR_AGENT_ID.sql, [actor_id]))

@@ -32,7 +32,7 @@ class CommandCheck:
     # a guard runs on a row's save, where the context's command may be one its entry point command dispatched, so the
     # guard names the entry point command it guards
     def admit(self, entry_point: type[Command[object]], context: Context) -> None:
-        agent = self.agents.find(context.actor.agent_id())
+        agent = self.agents.find(context.actor.id)
         reference = AgentReference(agent.id, agent.parent_id, agent.environment_id, agent.role)
         for policy in self.entry_point_policies(entry_point, agent):
             refusals = policy.entry_point_refusals(context.command, reference)

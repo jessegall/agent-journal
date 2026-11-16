@@ -22,7 +22,7 @@ def test_a_proof_test_waits_in_the_queue_until_the_run_holding_the_spot_ends(pla
     story.run("agent start s-reader claude worker --environment main")
     holder = worker_run(story, "make holder")
     repository = repository_environment(story)
-    worker = story.agent_actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent))
+    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)
 
