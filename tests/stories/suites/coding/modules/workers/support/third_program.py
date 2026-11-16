@@ -38,5 +38,5 @@ class ThirdProgramModule(Module):
     """Adds the third provider used by the program choice story."""
 
     name = "sample.third-program"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     providers = [ThirdProgram]

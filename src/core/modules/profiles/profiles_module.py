@@ -16,7 +16,7 @@ class ProfilesModule(Module):
     name = "journal.core.profiles"
     seed_reason = "its rows are files the journal writes at every start"
     move_reason = PROFILES_MOVE_REASON
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.settings"]
     settings = PROFILE_SETTINGS
     handlers = [ResetProfileHandler, RemoveProfileHandler]

@@ -21,7 +21,7 @@ class UsageModule(Module):
 
     name = "journal.core.usage"
     seed_reason = "usage is what the agent programs report, which a demo has none of"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = USAGE_DEPENDENCIES
     models = [StatisticModelDeclaration]
     migrations = [StatisticsTableMigration]

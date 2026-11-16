@@ -25,7 +25,7 @@ class RemindersModule(Module):
     lines = [DueReminderLines]
     seed_reason = "a reminder speaks at a time the demo does not reach"
     move_reason = "version 4's reminders move with the memories"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = REMINDERS_DEPENDENCIES
     models = [ReminderModelDeclaration]
     migrations = [EnvironmentReminderIndexMigration, OpenReminderIndexMigration, RemindersTableMigration]

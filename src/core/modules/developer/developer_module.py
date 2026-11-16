@@ -30,7 +30,7 @@ class DeveloperModule(Module):
     move_reason = "request history is temporary diagnostic data"
     name = "journal.core.developer"
     seed_reason = "its settings are the user's own choice"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEVELOPER_DEPENDENCIES
     settings = DEVELOPER_SETTINGS
     models = [PrivateDataMarkModelDeclaration]

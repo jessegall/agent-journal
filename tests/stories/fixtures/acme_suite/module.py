@@ -5,7 +5,7 @@ from .acme_suite import AcmeSuite
 
 class AcmeSuiteModule(Module):
     name = "acme.suite"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.suites.coding"]
 
 

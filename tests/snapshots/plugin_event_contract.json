@@ -337,7 +337,6 @@
       "launch_failed_at",
       "launch_name",
       "launched_at",
-      "number",
       "parent_id",
       "paused_at",
       "pid",
@@ -373,7 +372,6 @@
       "launch_failed_at",
       "launch_name",
       "launched_at",
-      "number",
       "parent_id",
       "paused_at",
       "pid",
@@ -409,7 +407,6 @@
       "launch_failed_at",
       "launch_name",
       "launched_at",
-      "number",
       "parent_id",
       "paused_at",
       "pid",
@@ -445,7 +442,6 @@
       "launch_failed_at",
       "launch_name",
       "launched_at",
-      "number",
       "parent_id",
       "paused_at",
       "pid",
@@ -481,7 +477,6 @@
       "launch_failed_at",
       "launch_name",
       "launched_at",
-      "number",
       "parent_id",
       "paused_at",
       "pid",
@@ -495,99 +490,6 @@
       "role",
       "session",
       "usage_limit_ends_at"
-    ]
-  },
-  "core.agents.agent_fold.created": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "actor_row",
-      "agent_row",
-      "environment_id",
-      "folded_agent_id",
-      "folded_at",
-      "folded_number",
-      "sessions",
-      "survivor_id"
-    ]
-  },
-  "core.agents.agent_fold.deleted": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "actor_row",
-      "agent_row",
-      "environment_id",
-      "folded_agent_id",
-      "folded_at",
-      "folded_number",
-      "sessions",
-      "survivor_id"
-    ]
-  },
-  "core.agents.agent_fold.updated": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "actor_row",
-      "agent_row",
-      "environment_id",
-      "folded_agent_id",
-      "folded_at",
-      "folded_number",
-      "sessions",
-      "survivor_id"
-    ]
-  },
-  "core.agents.agent_fold_row.created": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "environment_id",
-      "fold_id",
-      "row",
-      "rule",
-      "table_name"
-    ]
-  },
-  "core.agents.agent_fold_row.deleted": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "environment_id",
-      "fold_id",
-      "row",
-      "rule",
-      "table_name"
-    ]
-  },
-  "core.agents.agent_fold_row.updated": {
-    "forms": [
-      "commit",
-      "guard",
-      "listen"
-    ],
-    "fields": [
-      "environment_id",
-      "fold_id",
-      "row",
-      "rule",
-      "table_name"
     ]
   },
   "core.agents.agent_session.created": {
@@ -2886,7 +2788,6 @@
       "listen"
     ],
     "fields": [
-      "agent_number",
       "cause",
       "compaction_id",
       "notice",
@@ -2900,7 +2801,6 @@
       "listen"
     ],
     "fields": [
-      "agent_number",
       "cause",
       "compaction_id",
       "notice",
@@ -2914,7 +2814,6 @@
       "listen"
     ],
     "fields": [
-      "agent_number",
       "cause",
       "compaction_id",
       "notice",

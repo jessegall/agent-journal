@@ -21,7 +21,7 @@ class ProjectRulesModule(Module):
     name = "journal.core.project-rules"
     lines = [StartRulesLines]
     seed_reason = "the demo shows no rules yet"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = PROJECT_RULES_DEPENDENCIES
     models = [ProjectRuleModelDeclaration]
     migrations = [RulesTableMigration, MemoryRulesMigration, PlainMemoriesMigration]

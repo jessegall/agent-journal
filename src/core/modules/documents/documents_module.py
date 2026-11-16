@@ -30,7 +30,7 @@ class DocumentsModule(Module):
     time, a document's revisions, and links between rows."""
 
     name = "journal.core.documents"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DOCUMENTS_DEPENDENCIES
     skills = DOCUMENTS_SKILLS
     agent_messages = [DocumentOpenMessage, DocumentStopRefusalMessage]

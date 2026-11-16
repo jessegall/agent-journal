@@ -38,7 +38,7 @@ class ChatSampleModule(Module):
     type is declared by none."""
 
     name = "chatsample"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.chat", "journal.core.tasks", "journal.core.memories", "journal.core.viewer"]
     marks = [MarkDeclaration(SampleMarkType.EVENT_TYPE, SampleMarkVariant, FAMILY, "Sample moment", "words", buttons=[MarkButton("words", "Edit", "task edit {row_id}")]),
              MarkDeclaration(SampleMarkType.PROCESS, SampleMarkVariant, FAMILY, "Sample process", "words", process=True)]
@@ -95,7 +95,7 @@ class ExceptionSampleModule(Module):
     """A sample module with one command that fails."""
 
     name = "exceptionsample"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.chat"]
     handlers = [FailingCommandHandler]
     subcommands = [FailingCommandSubcommand]

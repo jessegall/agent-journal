@@ -15,7 +15,7 @@ class EnvironmentsModule(Module):
     """Adds environments, the checkouts where work happens, and lets --environment name one."""
 
     name = "journal.core.environments"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.actors"]
     models = [EnvironmentModelDeclaration]
     subcommands = [EnvironmentListSubcommand]

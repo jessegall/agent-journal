@@ -30,7 +30,7 @@ class SkillsModule(Module):
     name = "journal.core.skills"
     agent_messages = SKILL_AGENT_MESSAGES
     move_reason = "version 4 kept skills as files, not as a table"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     block_conditions = [SkillsRead, SkillLoaded]
     settings = SKILL_SETTINGS
     dependencies = SKILLS_DEPENDENCIES

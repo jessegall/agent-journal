@@ -36,14 +36,14 @@ class PersonSeed(Seed):
 
 
 class AgentSeed(Seed):
-    """A worker or a helper that has ended and is retired, numbered zero and below in its environment, so the
-    agents of a story keep their numbers."""
+    """A worker or a helper that has ended and is retired, with an id of zero and below, so the agents of a story
+    keep their ids."""
 
     table = "agents"
 
     def columns(self, index: int, facts: SeedFacts) -> dict[str, object]:
         return {"id": facts.row_id("actors", index), "actor_id": facts.row_id("actors", index), "environment_id": facts.environment_id, "creator_id": CORE_ACTOR_ID, "session": f"seeded-session-{index + 1}",
-                "program": "claude", "role": "worker" if index % 3 else "helper", "number": -index, "given_name": f"Seeded {index + 1}",
+                "program": "claude", "role": "worker" if index % 3 else "helper", "given_name": f"Seeded {index + 1}",
                 "ended_at": facts.timestamp, "retired_at": facts.timestamp, "retirement_reason": "its work is done"}
 
 

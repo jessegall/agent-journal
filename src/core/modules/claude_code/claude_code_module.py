@@ -12,7 +12,7 @@ class ClaudeCodeModule(Module):
     policies = [NativeMemoryPolicy]
     seed_reason = "it keeps no rows"
     move_reason = "version 4 had no table for an agent program"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     providers = [ClaudeCodeProvider]
     agent_messages = CLAUDE_CODE_AGENT_MESSAGES
     settings = CLAUDE_CODE_SETTINGS

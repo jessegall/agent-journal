@@ -5,12 +5,12 @@ from engine.database.schema_columns import SchemaColumns
 from engine.database.statement import Statement
 from engine.errors.refusal import Refusal
 from core.modules.agents.support.column_rule import ColumnRule
+from core.modules.agents.support.agent_removal import AGENT_MODELS
 
 AGENT_IDS = Statement("SELECT id FROM agents ORDER BY id", scan_reason=SCHEMA_REASON)
 UNMATCHED_ACTORS = Statement("SELECT agents.id AS id FROM agents LEFT JOIN actors ON actors.id = agents.id"
                              " WHERE agents.actor_id != agents.id OR actors.id IS NULL OR actors.type != 'agent'", scan_reason=SCHEMA_REASON)
 LOW_ACTORS = Statement("SELECT id FROM actors WHERE id BETWEEN 1 AND ? AND id NOT IN (SELECT id FROM agents)", [FIRST_OTHER_ACTOR_ID - 1], scan_reason=SCHEMA_REASON)
-AGENT_MODELS = ("agent", "agents")
 SAMPLE_TABLES = ("tasks", "messages", "documents", "reports")
 RENUMBER_TABLES = ("agent_renumbers", "agent_renumber_summary")
 

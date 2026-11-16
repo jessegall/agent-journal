@@ -19,7 +19,7 @@ class VoicesModule(Module):
     name = "journal.core.voices"
     move_reason = "version 4 kept the voice as settings, which move with the settings"
     seed_reason = "the voice is a setting with a default"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = VOICES_DEPENDENCIES
     settings = VOICES_SETTINGS
     subcommands = [VoiceListSubcommand, ChooseVoiceSubcommand, SetVoiceAddressSubcommand, VoiceShowSubcommand]

@@ -1,3 +1,4 @@
+from engine.actor.actor import MAIN_AGENT_ID
 import json
 
 from engine.database.database import Database
@@ -12,7 +13,6 @@ TABLES_EXIST = Statement("SELECT count(*) AS n FROM sqlite_master WHERE type = '
                          scan_reason=SCHEMA_REASON)
 ANNOUNCED = "UPDATE agent_renumbers SET announced_at = ? WHERE old_id = ?"
 SUMMARY_ANNOUNCED = "UPDATE agent_renumber_summary SET announced_at = ? WHERE id = 1"
-MAIN_AGENT_ID = 1
 MAIN_ROLE = "main"
 
 

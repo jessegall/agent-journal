@@ -23,7 +23,7 @@ class TemplatesModule(Module):
 
     name = "journal.core.templates"
     templates = TEMPLATES_TEMPLATES
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = TEMPLATES_DEPENDENCIES
     skills = TEMPLATES_SKILLS
     models = [TemplateModelDeclaration]

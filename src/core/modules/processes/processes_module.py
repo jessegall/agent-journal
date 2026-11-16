@@ -55,7 +55,7 @@ class ProcessesModule(Module):
     agent_messages = PROCESS_AGENT_MESSAGES
     tick_handlers = PROCESSES_TICK_HANDLERS
     skills = PROCESSES_SKILLS
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     block_conditions = PROCESSES_BLOCK_CONDITIONS
     settings = PROCESS_SETTINGS
     moves = [ProcessesMove]

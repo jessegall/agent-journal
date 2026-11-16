@@ -18,7 +18,7 @@ class ReviewsModule(Module):
 
     name = "journal.core.reviews"
     move_reason = "version 4 kept plan reviews in plan_reviews, which the plans module moves"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     settings = REVIEW_SETTINGS
     dependencies = REVIEWS_DEPENDENCIES
     models = REVIEWS_MODELS

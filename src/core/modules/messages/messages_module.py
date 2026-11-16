@@ -41,7 +41,7 @@ class MessagesModule(Module):
     agent_listeners = [MessageStepListener]
     agent_messages = MESSAGE_AGENT_MESSAGES
     settings = MESSAGE_SETTINGS
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     block_conditions = [MessagesRead, MessagesAnswered]
     dependencies = MESSAGES_DEPENDENCIES
     models = [MessageModelDeclaration, MessageWorkSourceModelDeclaration]

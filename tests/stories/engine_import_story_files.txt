@@ -38,7 +38,6 @@ tests/stories/core/modules/approvals/approval_commands.py
 tests/stories/core/modules/approvals/person_actions.py
 tests/stories/core/modules/approvals/recipients.py
 tests/stories/core/modules/approvals/restart_recovery.py
-tests/stories/core/modules/approvals/standing_approvals.py
 tests/stories/core/modules/approvals/support/legacy_setting_requests.py
 tests/stories/core/modules/assign_rules/auto_assign.py
 tests/stories/core/modules/assign_rules/rule_edits.py

@@ -27,7 +27,7 @@ class DumpsModule(Module):
 
     name = "journal.core.dumps"
     lines = [OpenDumpLines]
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DUMPS_DEPENDENCIES
     skills = DUMPS_SKILLS
     models = [DumpModelDeclaration, DumpItemModelDeclaration]

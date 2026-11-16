@@ -25,7 +25,7 @@ class ShelvesModule(Module):
     """A module that adds a read line and a change line no helper type lists."""
 
     name = "sample.shelves"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.agents"]
     subcommands = [ShelfShow, ShelfStock]
 
@@ -34,7 +34,7 @@ class WideProfileModule(Module):
     """A module whose helper profile names a line its type does not list."""
 
     name = "sample.wide-profile"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.agents"]
     profiles = [AgentProfile("sample-wide", "Widens its type", agent_type="helper", commands=CommandAllowList(lines=("setting set",)))]
 
@@ -56,7 +56,7 @@ class ListlessClerk(HelperType):
 
 class ClerkModule(Module):
     name = "sample.clerk"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.agents"]
 
 
@@ -86,7 +86,7 @@ class ListingClerk(ShowingClerk):
 
 class ListingClerkModule(Module):
     name = "sample.listing-clerk"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.agents"]
 
 

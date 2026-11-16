@@ -36,7 +36,7 @@ class AgentsModule(Module):
     name = "journal.core.agents"
     effects = [UnusedLauncherEffect]
     policies = [ProgramSettingsPolicy]
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = AGENTS_MODELS
     moves = [AgentsMove]

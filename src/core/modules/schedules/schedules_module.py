@@ -23,7 +23,7 @@ class SchedulesModule(Module):
     effects = [ScheduledJobEffect, ScheduledJobRunEffect]
     agent_messages = SCHEDULE_AGENT_MESSAGES
     moves = [SchedulesMove]
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = SCHEDULES_DEPENDENCIES
     seeders = [SchedulesSeeder]
     models = [ScheduledJobModelDeclaration]

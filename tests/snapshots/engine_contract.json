@@ -8,6 +8,7 @@
       ],
       "methods": [
         "is_agent(self) -> bool",
+        "agent_id(self) -> int",
         "given_agent(actor: 'Actor | None') -> bool",
         "is_person(self) -> bool",
         "core(cls) -> 'Actor'"
@@ -19,6 +20,15 @@
       ],
       "fields": [],
       "methods": []
+    },
+    "actor.errors.not_an_agent_refusal.NotAnAgentRefusal": {
+      "bases": [
+        "Refusal"
+      ],
+      "fields": [],
+      "methods": [
+        "of_type(cls, actor_type: ActorType) -> 'NotAnAgentRefusal'"
+      ]
     },
     "agent.agent_area.AgentArea": {
       "bases": [
@@ -42,7 +52,7 @@
       "bases": [],
       "fields": [
         "role: str",
-        "number: int"
+        "agent_id: int"
       ],
       "methods": [
         "title(self) -> str",
@@ -1365,7 +1375,8 @@
         "process_id: int | None"
       ],
       "methods": [
-        "read_actor_id(self) -> int | None"
+        "read_actor_id(self) -> int | None",
+        "read_agent_id(self) -> int | None"
       ]
     },
     "caller.caller_area.CallerArea": {
@@ -1630,21 +1641,25 @@
         "folders(self) -> tuple[Path, ...]"
       ]
     },
-    "cli.agent_number.AgentId": {
+    "cli.agent_id.AgentId": {
       "bases": [
         "int"
       ],
-      "fields": [
-        "is_row_id: bool"
-      ],
+      "fields": [],
       "methods": []
     },
-    "cli.agent_number_arguments.AgentIdArguments": {
+    "cli.agent_id_arguments.AgentIdArguments": {
       "bases": [],
       "fields": [],
       "methods": [
-        "replace_numbers(self, arguments: Namespace, environment_id: int | None) -> None",
-        "row_id(self, number: AgentId, environment_id: int | None) -> NumberedAgentId"
+        "check(self, arguments: Namespace, environment_id: int | None) -> None"
+      ]
+    },
+    "cli.agent_ids.AgentIds": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "checked(self, agent_id: int, environment_id: int | None) -> int"
       ]
     },
     "cli.alias_options.AliasOptions": {
@@ -1827,17 +1842,6 @@
         "command_fields(self) -> tuple[Field[Any], ...]"
       ]
     },
-    "cli.numbered_agent_id.NumberedAgentId": {
-      "bases": [
-        "int"
-      ],
-      "fields": [
-        "number: int"
-      ],
-      "methods": [
-        "with_number(cls, row_id: int, number: int) -> Self"
-      ]
-    },
     "cli.parsed_line.ParsedLine": {
       "bases": [],
       "fields": [
@@ -1863,17 +1867,6 @@
       "fields": [],
       "methods": [
         "lines(self, model_name: str, row_id: int, exceptions: tuple[str, ...], limit: int) -> list[str]"
-      ]
-    },
-    "cli.row_numbers.AgentIds": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "row_id(self, model_name: str, number: int, environment_id: int | None) -> int",
-        "number(self, model_name: str, row_id: int) -> int",
-        "agent_id: int -> int",
-        "environment_number(self, model_name: str, row_id: int, environment_id: int | None) -> int",
-        "numbers(self, model_name: str, row_ids: set[int]) -> dict[int, int]"
       ]
     },
     "cli.shell_aliases.ShellAliases": {
@@ -2409,9 +2402,15 @@
         "core_actor(self, timestamp: str) -> None",
         "module_actor(self, module: str, timestamp: str) -> int",
         "module_actors(self, modules: Sequence[str], timestamp: str) -> dict[str, int]",
+        "next_other_actor_id(self) -> int",
+        "next_agent_actor_id(self) -> int",
+        "printed(self, actor_id: int) -> str",
+        "actor_text(self, actor_id: int) -> str",
+        "main_agent_actor_id(self) -> int",
         "module_actor_id(self, module: str) -> int",
         "module_actor_ids(self) -> dict[str, int]",
-        "agent_actor_id(self, session: str) -> int | None",
+        "session_agent_id(self, session: str) -> int | None",
+        "session_actor_id(self, session: str) -> int | None",
         "session_role(self, session: str) -> str | None",
         "is_agent(self, actor_id: int) -> bool",
         "row_owner(self, actor_id: int | None) -> RowOwner | None",
@@ -2474,6 +2473,15 @@
       ],
       "fields": [],
       "methods": []
+    },
+    "database.core_actor_zero_migration.CoreActorZeroMigration": {
+      "bases": [
+        "RebuildMigration"
+      ],
+      "fields": [],
+      "methods": [
+        "rebuild(self, database: Database) -> None"
+      ]
     },
     "database.core_tables_migration.CoreTablesMigration": {
       "bases": [
@@ -2605,6 +2613,32 @@
         "complete_viewer_read(self, person_id: int, client_id: str, command_id: str, joined_callers: int) -> int"
       ]
     },
+    "database.id_column_set.IdColumnSet": {
+      "bases": [],
+      "fields": [
+        "plain: tuple[tuple[str, str], ...]",
+        "pairs: tuple[tuple[str, str, str], ...]"
+      ],
+      "methods": []
+    },
+    "database.id_columns.IdColumns": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "found(schema: Sequence[SchemaColumn]) -> IdColumnSet",
+        "has_agent_reference(column: SchemaColumn) -> bool",
+        "check_placed(schema: Sequence[SchemaColumn], tables: set[str], plain: tuple[tuple[str, str], ...]) -> None"
+      ]
+    },
+    "database.id_rewrite.IdRewrite": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "rewritten(self, mapping: Mapping[int, int], columns: IdColumnSet) -> dict[str, int]",
+        "refuse_taken(self) -> None",
+        "moved(self, plain: tuple[tuple[str, str], ...], pairs: tuple[tuple[str, str, str], ...], source: str, target: str) -> dict[str, int]"
+      ]
+    },
     "database.index_table.IndexTable": {
       "bases": [],
       "fields": [],
@@ -2724,6 +2758,22 @@
         "release(self) -> None"
       ]
     },
+    "database.other_actor_range_migration.OtherActorRangeMigration": {
+      "bases": [
+        "Migration"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "database.other_actors_high_migration.OtherActorsHighMigration": {
+      "bases": [
+        "RebuildMigration"
+      ],
+      "fields": [],
+      "methods": [
+        "rebuild(self, database: Database) -> None"
+      ]
+    },
     "database.performance_costs.PerformanceCosts": {
       "bases": [],
       "fields": [],
@@ -2807,6 +2857,13 @@
         "count(self, table: str, column: str, ids: list[int]) -> int",
         "pair_count(self, table: str, model_column: str, id_column: str, models: tuple[str, ...], ids: list[int]) -> int",
         "rows(self, table: str, column: str, ids: list[int]) -> list[dict[str, object]]",
+        "has_table(self, table: str) -> bool",
+        "has_column(self, table: str, column: str) -> bool",
+        "is_required(self, table: str, column: str) -> bool",
+        "has_value_outside(self, table: str, column: str, ids: list[int]) -> bool",
+        "has_pair_outside(self, table: str, model_column: str, id_column: str, models: tuple[str, ...], ids: list[int]) -> bool",
+        "newest_row(self, table: str) -> dict[str, object] | None",
+        "set_null(self, table: str, column: str, ids: list[int]) -> int",
         "rewrite(self, table: str, column: str, ids: list[int], target_id: int) -> int",
         "pair_rewrite(self, table: str, model_column: str, id_column: str, models: tuple[str, ...], ids: list[int], target_id: int) -> int",
         "delete(self, table: str, ids: list[int]) -> int",
@@ -2837,6 +2894,18 @@
         "database: Database"
       ],
       "methods": []
+    },
+    "database.removal_counts.RemovalCounts": {
+      "bases": [],
+      "fields": [
+        "deleted: dict[str, int]",
+        "nulled: dict[str, int]"
+      ],
+      "methods": [
+        "add_deleted(self, table: str, count: int) -> None",
+        "add_nulled(self, table: str, count: int) -> None",
+        "add(self, other: 'RemovalCounts') -> None"
+      ]
     },
     "database.repeated_finding.RepeatedFinding": {
       "bases": [],
@@ -2929,6 +2998,14 @@
         "matching_row_id(self, table: str, values: Mapping[str, object]) -> int | None"
       ]
     },
+    "database.row_removal.RowRemoval": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "removed(self, table: str, ids: Collection[int]) -> RemovalCounts",
+        "refuse_kept(self, table: str, column: str, row: dict[str, object]) -> None"
+      ]
+    },
     "database.schema.Schema": {
       "bases": [],
       "fields": [],
@@ -3005,6 +3082,14 @@
         "joined(self, tail: 'Statement', separator: str) -> 'Statement'",
         "all_joined(cls, statements: tuple['Statement', ...], separator: str) -> 'Statement'",
         "result(self, connection: sqlite3.Connection) -> sqlite3.Cursor"
+      ]
+    },
+    "database.stored_json_ids.StoredJsonIds": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "rewritten(self, map_table: str) -> int",
+        "moved(self, value: object, mapping: dict[int, int]) -> object"
       ]
     },
     "database.table_statements.TableStatements": {
@@ -6353,7 +6438,7 @@
         "search_rank: ClassVar[int]",
         "search_ignored_start: ClassVar[str]",
         "shared_rows: ClassVar[bool]",
-        "numbered: ClassVar[bool]",
+        "holds_agents: ClassVar[bool]",
         "shown_properties: ClassVar[Sequence[str]]",
         "listed_properties: ClassVar[Sequence[str]]",
         "change_names: ClassVar[Sequence[str]]",
@@ -10241,6 +10326,7 @@
         "has_reader_disconnected(self) -> bool",
         "line(self, text: str) -> None",
         "row(self, record: object) -> None",
+        "printed(self, column: str, value: object) -> object",
         "page(self, page: Page[object], columns: Sequence[str]) -> None",
         "refusal(self, refusal: Refusal) -> None",
         "explanation(self, explanation: Explanation) -> None",
@@ -11976,5 +12062,5 @@
       ]
     }
   },
-  "engine_version": "5.0.0"
+  "engine_version": "6.0.0"
 }

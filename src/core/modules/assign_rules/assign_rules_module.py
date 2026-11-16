@@ -25,7 +25,7 @@ class AssignRulesModule(Module):
     name = "journal.core.assign_rules"
     seed_reason = "a rule assigns new tasks, which the demo does not make"
     move_reason = "version 4 has no assign rules"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ASSIGN_RULES_DEPENDENCIES
     models = [AssignRuleModelDeclaration, AssignRuleConditionModelDeclaration, AssignDecisionModelDeclaration]
     migrations = ASSIGN_RULES_MIGRATIONS

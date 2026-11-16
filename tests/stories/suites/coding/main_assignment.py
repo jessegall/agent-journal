@@ -1,3 +1,4 @@
+from core.modules.tasks.agent_messages.stop_task_message import StopTaskMessage
 from datetime import timedelta
 
 from engine.actor.actor import Actor
@@ -140,4 +141,4 @@ def test_a_task_the_timed_step_round_hands_over_is_held_by_the_main_agent_whose_
                                                        Context(Actor.core(), story.clock.timestamp(), RunAgentStep(0)))
     story.container.get(Bus).run(RunAgentStep(request.id), Actor.core(), environment_id=1)
     expect_value(story.row(Task, 1).holder_id, story.agent.id)
-    story.expect_hook_refusal("s-1", HookSamples.stop(), "task:1 is in hand")
+    story.expect_hook_refusal("s-1", HookSamples.stop(), expected_agent_message(StopTaskMessage.declared(), task=1))

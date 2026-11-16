@@ -9,6 +9,6 @@ class CodexModule(Module):
     name = "journal.core.codex"
     seed_reason = "it keeps no rows"
     move_reason = "version 4 had no table for an agent program"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     providers = [CodexProvider]
     settings = CODEX_SETTINGS

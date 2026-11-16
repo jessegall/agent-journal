@@ -34,7 +34,7 @@ class SampleProfileClerk(Helper):
 
 class ProfileModule(Module):
     name = "sample.profiles"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.agents"]
     profiles = [AgentProfile("module-reader", "Reads one question", "Read the files.", agent_type="helper")]
 
@@ -93,7 +93,7 @@ class ClerkDriver(Driver):
 
 class ClerkModule(Module):
     name = "sample.clerks"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.agents", "journal.suites.coding"]
     helper_types = [SampleProfileClerk]
     profiles = [AgentProfile("sample-clerk", "Reads contracts", "Read the contracts.", agent_type="clerk", model="sonnet", codex_model="gpt-6.1-terra")]

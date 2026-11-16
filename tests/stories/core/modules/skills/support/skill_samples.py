@@ -10,49 +10,49 @@ TASKS = SkillDeclaration("journal-chores", "How to work a task", keywords=["task
 
 class GoodSkillsModule(Module):
     name = "goodskills"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     skills = [NOTES, TASKS]
 
 
 class TwiceSkillsModule(Module):
     name = "twiceskills"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     skills = [NOTES, NOTES]
 
 
 class OutsideNameModule(Module):
     name = "outsideskills"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     skills = [SkillDeclaration("notes", "How to take notes")]
 
 
 class MissingFileModule(Module):
     name = "missingskills"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     skills = [SkillDeclaration("journal-absent", "A skill with no file")]
 
 
 class GhostEventModule(Module):
     name = "ghostskills"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     skills = [SkillDeclaration("journal-notes", "How to take notes", events=["ghost.*"])]
 
 
 class PlanSkillsModule(Module):
     name = "planskills"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     skills = [SkillDeclaration("journal-roadmaps", "How to follow a plan", keywords=["plan"])]
 
 
 class DueSkillsModule(Module):
     name = "dueskills"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     skills = [SkillDeclaration("journal-notes", "How to take notes", keywords=["note"], commands=["note"]),
               SkillDeclaration("journal-chores", "How to work a task", keywords=["tasks"], commands=["chore"], events=["task.start"])]
@@ -60,7 +60,7 @@ class DueSkillsModule(Module):
 
 class LongPathSkillsModule(Module):
     name = "longpathskills"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     skills = [SkillDeclaration("journal-commandments-plain-code-words-and-the-architecture-of-process-reader-requests",
                                "How to write process reader requests")]

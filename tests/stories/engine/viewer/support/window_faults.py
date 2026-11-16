@@ -23,35 +23,35 @@ def stacked_state(name: str, entry: str = "board.html", reads: list[str] | None 
 
 class DuplicateWindowModule(Module):
     name = "twice"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     windows = [stacked_state("twice.board"), stacked_state("twice.board")]
 
 
 class ForeignNameModule(Module):
     name = "foreign"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     windows = [stacked_state("other.board")]
 
 
 class MissingEntryModule(Module):
     name = "missing"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     windows = [stacked_state("missing.board", entry="absent.html")]
 
 
 class UnknownReadModule(Module):
     name = "reads"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     windows = [stacked_state("reads.board", reads=["task fly"])]
 
 
 class ChatCommandExtensionModule(Module):
     name = "extender"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = [*DEPENDENCIES, "journal.core.messages"]
     window_extensions = [WindowExtension("messages.chat", runs=["task start"])]
 
@@ -62,77 +62,77 @@ class ChatReadExtensionModule(ChatCommandExtensionModule):
 
 class UnknownRunModule(Module):
     name = "runs"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     windows = [stacked_state("runs.board", runs=["task list"])]
 
 
 class UnknownEventModule(Module):
     name = "events"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     windows = [stacked_state("events.board", reads=["task list"], events=["rocket.launch"])]
 
 
 class UncoveredEventModule(Module):
     name = "uncovered"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     windows = [stacked_state("uncovered.board", reads=["task list"], events=["plan.*"])]
 
 
 class PageWindowModule(Module):
     name = "pages"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     windows = [WindowDeclaration("pages.board", "Board", "board.html", WindowLoading.COMPONENT, skeleton=[SkeletonPart.line()])]
 
 
 class NewerKitModule(Module):
     name = "kits"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     windows = [stacked_state("kits.board", kit=">=2,<3")]
 
 
 class TwiceOptionModule(Module):
     name = "options"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     windows = [WindowDeclaration("options.board", "Board", "board.html", WindowLoading.STACKED_STATE, skeleton=[SkeletonPart.line()], options=[ToggleOption("flush", "Flush"), ToggleOption("flush", "Flush all")])]
 
 
 class UnreadShareModule(Module):
     name = "shares"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     windows = [WindowDeclaration("shares.board", "Board", "board.html", WindowLoading.STACKED_STATE, skeleton=[SkeletonPart.line()], reads=["task list"], shared_reads=["plan show id"])]
 
 
 class UnreadCountModule(Module):
     name = "counts"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     windows = [WindowDeclaration("counts.board", "Board", "board.html", WindowLoading.STACKED_STATE, skeleton=[SkeletonPart.line()], reads=["task list"], count="plan list")]
 
 
 class UnknownIconModule(Module):
     name = "icons"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     windows = [WindowDeclaration("icons.board", "Board", "board.html", WindowLoading.STACKED_STATE, skeleton=[SkeletonPart.line()], icon="rocket")]  # pyright: ignore[reportArgumentType]
 
 
 class OutsideChoiceModule(Module):
     name = "choices"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     windows = [WindowDeclaration("choices.board", "Board", "board.html", WindowLoading.STACKED_STATE, skeleton=[SkeletonPart.line()], options=[ChoiceOption("range", "Range", [("week", "Week")], "year")])]
 
 
 class FlatFloatModule(Module):
     name = "floats"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     windows = [WindowDeclaration("floats.board", "Board", "board.html", WindowLoading.STACKED_STATE, skeleton=[SkeletonPart.line()], float_size=WindowSize(0, 300))]
 
@@ -166,14 +166,14 @@ class ForeignPresetSuite(Suite):
 
 class ForeignPresetModule(Module):
     name = "presets"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = [*DEPENDENCIES, "journal.core.drivers"]
     windows = [stacked_state("presets.board")]
 
 
 class NoSkeletonModule(Module):
     name = "bare"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = DEPENDENCIES
     windows = [WindowDeclaration("bare.board", "Board", "board.html", WindowLoading.STACKED_STATE)]
 

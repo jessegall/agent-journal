@@ -31,7 +31,7 @@ class AliasesModule(Module):
 
     name = "journal.core.aliases"
     policies = [AliasExpansionPolicy, SavedCommandPolicy, UnknownCommandPolicy]
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ALIASES_DEPENDENCIES
     models = [AliasModelDeclaration, ModelDeclaration(CommandType)]
     views = [SavedCommand]

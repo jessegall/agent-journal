@@ -23,19 +23,19 @@ class DepotScout(HelperType):
 
 class ShopModule(Module):
     name = "folder.shop"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.agents"]
 
 
 class CartsModule(Module):
     name = "folder.carts"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["folder.shop"]
 
 
 class DepotModule(Module):
     name = "folder.depot"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.agents"]
 
 
@@ -64,7 +64,7 @@ class DepotScoutSuite(Suite):
 
 class YardModule(Module):
     name = "folder.yard"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
 
 
 class YardSuite(Suite):
@@ -76,7 +76,7 @@ class YardSuite(Suite):
 
 class BundleModule(Module):
     name = "folder.bundle"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["folder.shop", "folder.yard"]
 
 
@@ -90,7 +90,7 @@ class BundleSuite(Suite):
 
 class LoneBundleModule(Module):
     name = "folder.lone-bundle"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
 
 
 class LoneBundleSuite(Suite):

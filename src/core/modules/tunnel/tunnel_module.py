@@ -13,7 +13,7 @@ class TunnelModule(Module):
     name = "journal.core.tunnel"
     seed_reason = "it keeps no rows, only a service the settings choose"
     move_reason = "version 4 kept its tunnel in settings, which the settings module moves"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.settings"]
     settings = [TunnelSettingValues]
     tunnels = [NoTunnel]

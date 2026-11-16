@@ -16,7 +16,7 @@ class SettingRequestsModule(Module):
     """Sends setting changes that require a user to the shared approval dock."""
 
     name = "journal.core.setting-requests"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     move_reason = "this table is new in version 5, so version 4 holds nothing to carry over"
     seed_reason = "the demo shows no setting requests"
     dependencies = SETTING_REQUESTS_DEPENDENCIES

@@ -17,7 +17,7 @@ class McpModule(Module):
     agent programs at launch, and the Integrations window."""
 
     name = "journal.core.mcp"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.secrets"]
     seeders = [McpSeeder]
     models = [McpServerModelDeclaration]

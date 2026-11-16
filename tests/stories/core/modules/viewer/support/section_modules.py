@@ -23,26 +23,26 @@ def section(name: str, *slots: str, place: WindowPlace = WindowPlace.SECTION) ->
 
 class UnknownSlotModule(Module):
     name = "wrong_slot"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.plans"]
     windows = [section("wrong_slot.notes", "inspector.plna")]
 
 
 class UndependedSlotModule(Module):
     name = "not_depending"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     windows = [section("not_depending.notes", "inspector.plan")]
 
 
 class NoSlotModule(Module):
     name = "no_slot"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     windows = [section("no_slot.notes")]
 
 
 class SlotsModulePane(Module):
     name = "pane_slots"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.plans"]
     windows = [section("pane_slots.notes", "inspector.plan", place=WindowPlace.PANE)]
 
@@ -59,21 +59,21 @@ class SectionSuite(Suite):
 
 class SuiteNamesSectionModule(Module):
     name = "section_suite"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.plans"]
     windows = [section("section_suite.notes", "inspector.plan")]
 
 
 class InspectorSlotModuleButton(Module):
     name = "inspector_button"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.plans"]
     buttons = [ButtonDeclaration("inspector_button.press", ("inspector.plan",), "Press", "plan show {row_id}")]
 
 
 class GoodSectionModule(Module):
     name = "good_section"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.plans"]
     windows = [section("good_section.notes", "inspector.plan")]
 

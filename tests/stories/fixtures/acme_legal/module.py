@@ -14,7 +14,7 @@ class AcmeLegalModule(Module):
     """Holds a task for legal review."""
 
     name = "acme.legal"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.tasks", "journal.suites.coding"]
     added_states = (StateAddition(Task, ADDED_STATE, "Legal hold", TaskState.BLOCKED, TaskState.OPEN,
                                         (Move("hold", [TaskState.OPEN], ADDED_STATE), Move("release-hold", [ADDED_STATE], TaskState.OPEN))),)

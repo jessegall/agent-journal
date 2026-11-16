@@ -3,5 +3,5 @@ from engine.module.module import Module
 
 class LoopFirst(Module):
     name = "folder.loop-first"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["folder.loop-first"]

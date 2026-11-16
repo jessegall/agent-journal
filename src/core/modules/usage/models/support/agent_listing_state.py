@@ -10,7 +10,6 @@ from core.modules.usage.support.stack_summary import StackSummary
 @dataclass(frozen=True, kw_only=True)
 class AgentListingState:
     id: int
-    number: int
     environment_id: int
     session: str
     role: AgentRole

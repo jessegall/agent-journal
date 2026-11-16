@@ -13,7 +13,7 @@ class SearchModule(Module):
     name = "journal.core.search"
     move_reason = "version 4 search kept no rows of its own"
     seed_reason = "it reads the rows the other modules seed"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = SEARCH_DEPENDENCIES
     subcommands = [SearchFindSubcommand]
     marks = [SearchMark]

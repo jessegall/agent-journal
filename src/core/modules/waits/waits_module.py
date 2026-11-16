@@ -29,7 +29,7 @@ class WaitsModule(Module):
     effects = [WorkEndsWaitEffect]
     lines = [LongWaitLines]
     move_reason = "version 4 had no table for waits"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.chat"]
     models = [WaitModelDeclaration, WaitTargetModelDeclaration]
     migrations = WAITS_MIGRATIONS

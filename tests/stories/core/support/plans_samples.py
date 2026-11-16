@@ -23,7 +23,7 @@ class ProtectedTaskGuard(Guard[Moved[Task]]):
 
 class ProtectedTasksModule(Module):
     name = "protected-tasks"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.tasks"]
     guards = [ProtectedTaskGuard]
 
@@ -41,6 +41,6 @@ class FailingWorkerNotice(CommitListener[Moved[Task]]):
 
 class FailingNoticeModule(Module):
     name = "failing-notice"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.tasks"]
     listeners = [FailingWorkerNotice]

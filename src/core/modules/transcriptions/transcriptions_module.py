@@ -20,7 +20,7 @@ class TranscriptionsModule(Module):
 
     name = "journal.core.transcriptions"
     move_reason = "version 4 had no transcriptions"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = TRANSCRIPTIONS_DEPENDENCIES
     skills = TRANSCRIPTIONS_SKILLS
     models = [ModelDeclaration(Transcription)]

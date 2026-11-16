@@ -30,7 +30,7 @@ class QuestionsModule(Module):
     name = "journal.core.questions"
     policies = [OwnQuestionToolPolicy]
     agent_messages = QUESTION_AGENT_MESSAGES
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     block_conditions = [QuestionAnswered, QuestionsClosed]
     dependencies = QUESTIONS_DEPENDENCIES
     models = [QuestionModelDeclaration]

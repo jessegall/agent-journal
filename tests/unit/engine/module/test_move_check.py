@@ -13,19 +13,19 @@ def move(reads: list[str], drops: list[str] | None = None, id_modules: list[str]
 
 class First(Module):
     name = "first"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     moves = [move(["notes"])]
 
 
 class Second(Module):
     name = "second"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     moves = [move(["notes"], ["drafts"])]
 
 
 class Reader(Module):
     name = "reader"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["first"]
     moves = [move(["tags"], id_modules=["first"])]
 
@@ -37,7 +37,7 @@ def test_a_table_two_modules_claim_is_named_once_with_no_other_problem():
 def test_a_table_dropped_by_one_move_and_claimed_by_another_is_claimed_twice():
     class Dropper(Module):
         name = "dropper"
-        requires_engine = ">=5,<6"
+        requires_engine = ">=6,<7"
         moves = [move(["others"], ["notes"])]
 
     assert list(MoveCheck().problems([First, Dropper])) == ["two moves claim the version 4 table notes"]
@@ -50,7 +50,7 @@ def test_moves_that_claim_different_tables_and_read_ids_of_a_dependency_pass():
 def test_a_move_reading_ids_of_a_module_not_installed_or_not_depended_on_is_named():
     class Unlinked(Module):
         name = "unlinked"
-        requires_engine = ">=5,<6"
+        requires_engine = ">=6,<7"
         moves = [move(["solo"], id_modules=["first", "absent"])]
 
     assert MoveCheck().problems([First, Unlinked]) == ("the move of unlinked reads ids of absent, which is not installed",
@@ -63,7 +63,7 @@ def test_a_move_without_a_name_or_without_tables_it_reads_is_refused():
 
     class NamelessModule(Module):
         name = "unnamed"
-        requires_engine = ">=5,<6"
+        requires_engine = ">=6,<7"
         moves = [Bare]
 
     assert list(MoveCheck().problems([NamelessModule])) == ["the move Bare of unnamed states no name or no tables it reads or drops"]

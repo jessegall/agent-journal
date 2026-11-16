@@ -58,7 +58,7 @@ class WorkersModule(Module):
     window_extensions = WORKERS_WINDOW_EXTENSIONS
     agent_messages = WORKERS_MODULE_AGENT_MESSAGES
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     settings = WORKER_SETTINGS
     dependencies = WORKERS_DEPENDENCIES
     buttons = WORKERS_BUTTONS

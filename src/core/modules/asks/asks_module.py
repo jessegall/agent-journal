@@ -23,7 +23,7 @@ class AsksModule(Module):
     parent."""
 
     name = "journal.core.asks"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ASKS_DEPENDENCIES
     models = [AskModelDeclaration, AskStepModelDeclaration, AskStackModelDeclaration]
     migrations = ASKS_MIGRATIONS

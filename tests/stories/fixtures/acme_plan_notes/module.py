@@ -13,7 +13,7 @@ from .note_plan_subcommand import NotePlanSubcommand
 
 class AcmePlanNotesModule(Module):
     name = "acme.plan_notes"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["journal.core.plans", "journal.core.viewer", "journal.suites.coding"]
     handlers = [NotePlanHandler]
     subcommands = [NotePlanSubcommand]

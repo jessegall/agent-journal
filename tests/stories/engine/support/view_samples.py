@@ -35,13 +35,13 @@ class ItemState(ViewModel):
 
 class MissingColumnModule(Module):
     name = "item-titles"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["items"]
     views = [ItemTitle]
 
 
 class ExtraColumnModule(Module):
     name = "item-states"
-    requires_engine = ">=5,<6"
+    requires_engine = ">=6,<7"
     dependencies = ["items"]
     views = [ItemState]
