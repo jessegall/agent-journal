@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 
 from engine.database.database import Database
 from engine.driver.hook_event import HookEvent
@@ -11,17 +10,8 @@ from core.modules.memories.support.marks.mark_tracker import MarkTracker
 from core.modules.memories.support.memory_settings import MARK_SPACING_TOKENS_SETTING, MARK_TOOL_USES_SETTING, MARKS_SETTING
 from core.modules.settings.bindings.support.context_share import ContextShare
 
+from core.modules.memories.support.marks.mark_reached import MarkReached
 WEIGHED_REASON = "at a mark the agent weighs every memory it holds"
-
-
-@dataclass(frozen=True)
-class MarkReached:
-    """A memory mark the agent's context passed: its percent, the tool uses before the agent is blocked, and the
-    memories it weighs, heaviest first."""
-
-    percent: int
-    tool_uses: int
-    memory_ids: tuple[int, ...]
 
 
 class ReachedMark:

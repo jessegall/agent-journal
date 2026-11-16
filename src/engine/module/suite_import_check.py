@@ -1,25 +1,12 @@
 import ast
 import re
-from dataclasses import dataclass
 from pathlib import Path
 
 from engine.file.file_access import FileAccess
 
+from engine.module.suite_refusal import SuiteRefusal
 ENGINE_FOLDER = Path(__file__).resolve().parents[1]
 INTERNAL_USE = re.compile(r"use = AreaUse\.INTERNAL\b")
-
-
-@dataclass(frozen=True)
-class SuiteRefusal:
-    """One line of a suite's folder that breaks the engine's contract: the file, the line and why."""
-
-    file: str
-    line: int
-    reason: str
-
-    @property
-    def text(self) -> str:
-        return f"{self.file}:{self.line}: {self.reason}"
 
 
 class SuiteImportCheck:

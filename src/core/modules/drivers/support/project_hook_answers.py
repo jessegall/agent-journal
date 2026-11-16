@@ -1,12 +1,10 @@
 from collections.abc import Sequence
-from dataclasses import dataclass, field
 
 from engine.cli.agent_number import AGENT_MODEL_NAME
 from engine.cli.row_numbers import RowNumbers
 from engine.command.command import Command
 from engine.driver.project_hook_answer import ProjectHookAnswer
 from engine.driver.hook_event import HookEvent
-from engine.driver.agent_message import AgentMessage
 from engine.provider.providers import Providers
 from engine.query.conditions.contains_some import ContainsSome
 from engine.query.queries import Queries
@@ -16,22 +14,8 @@ from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.agent_messages.managed_hook_line_message import ManagedHookLineMessage
 from core.modules.drivers.agent_messages.managed_hook_refusal_message import ManagedHookRefusalMessage
 
+from core.modules.drivers.support.project_hooks_answer import ProjectHooksAnswer
 MANAGED_HOOKS_KEY = "drivers.managed-hooks"
-
-
-@dataclass(frozen=True)
-class ProjectHooksAnswer:
-    """What the project's own hooks answered one hook: the refusal they gave, the lines new since each last
-    spoke, the notices that record them, the input one replaced and the hook that replaced it, the lines a
-    hook that takes none dropped, and their terminal text."""
-
-    refusal: AgentMessage | None
-    agent_messages: tuple[AgentMessage, ...]
-    commands: tuple[Command[object], ...]
-    updated_input: dict[str, object] = field(default_factory=dict[str, object])
-    source_name: str = ""
-    dropped_lines: int = 0
-    terminal: str = ""
 
 
 class ProjectHookAnswers:

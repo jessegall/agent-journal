@@ -1,10 +1,9 @@
-from dataclasses import dataclass, replace
+from dataclasses import replace
 
 from engine.agent.agent_checkouts import AgentCheckouts
 from engine.agent.agent_role_reader import AgentRoleReader
 from engine.agent.agent_write_folder import AgentWriteFolder
 from engine.driver.hook_event import HookEvent
-from engine.driver.agent_message import AgentMessage
 from engine.driver.shell_line import ShellLine
 from engine.enums.access import Access
 from engine.file.project_reads import ProjectReads
@@ -16,21 +15,10 @@ from core.modules.processes.agent_messages.sandbox_folder_missing_message import
 from core.modules.processes.agent_messages.sandbox_parse_error_message import SandboxParseErrorMessage
 from core.modules.processes.agent_messages.sandbox_runner_missing_message import SandboxRunnerMissingMessage
 from core.modules.processes.support.foreground_limit import ForegroundLimit
-from core.modules.processes.support.foreground_run import ForegroundRun
 from core.modules.processes.support.runner_binary import RunnerBinary
 
+from core.modules.processes.support.runner_decision import RunnerDecision
 RUNNER_REWRITE_KEY = "processes.runner-rewrite"
-
-
-@dataclass(frozen=True)
-class RunnerDecision:
-    """How the runner takes a shell line: refused, with the sandbox line that says why; run as written, because the
-    runner is not installed; or run through the runner, with the run it is given."""
-
-    refusal: AgentMessage | None = None
-    runner_missing: bool = False
-    run: ForegroundRun | None = None
-    shell: ShellLine | None = None
 
 
 class RunnerPlan:

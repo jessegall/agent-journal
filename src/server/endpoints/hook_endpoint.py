@@ -11,7 +11,8 @@ from engine.database.request_watch import RequestWatch
 from engine.enums.log_level import LogLevel
 from engine.enums.process_type import ProcessType
 from engine.file.file_access import FileAccess
-from engine.file.file_tally import FileCalls, FileTally
+from engine.file.file_calls import FileCalls
+from engine.file.file_tally import FileTally
 from engine.process.door.request_records import REFUSED_HOOK_EXIT_CODE
 from core.modules.processes.support.request_log import RequestLog
 from core.modules.processes.support.request_log_entry import RequestLogEntry

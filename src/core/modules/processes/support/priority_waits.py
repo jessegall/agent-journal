@@ -1,5 +1,4 @@
 from core.modules.processes.conditions.priority_wait_figures import PriorityWaitFigures
-from dataclasses import dataclass
 
 from engine.enums.execution_priority import ExecutionPriority
 from engine.query.conditions.greater import Greater
@@ -8,21 +7,7 @@ from engine.time.timestamp import HOUR_SECONDS, Timestamp
 from core.modules.processes.models.process import Process
 
 
-
-@dataclass(frozen=True)
-class PriorityWait:
-    """How the runs of one priority waited over the last hour: how many started, the longest and the average wait."""
-
-    priority: ExecutionPriority
-    count: int
-    longest_seconds: float
-    average_seconds: float
-
-    @property
-    def described(self) -> str:
-        return f"{self.priority.label}: {self.count} runs started, longest wait {self.longest_seconds:.0f} s, average {self.average_seconds:.0f} s"
-
-
+from core.modules.processes.support.priority_wait import PriorityWait
 class PriorityWaits:
     """The waits of the runs of the short and long lanes that started in the last hour, for each priority they
     entered at, so a person sees whether the settings starve anything."""

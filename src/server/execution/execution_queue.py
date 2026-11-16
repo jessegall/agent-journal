@@ -3,7 +3,7 @@ import itertools
 import threading
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
-from dataclasses import dataclass, replace
+from dataclasses import replace
 
 from engine.execution.execution_order import ExecutionOrder
 from engine.execution.execution_ticket import ExecutionTicket
@@ -12,18 +12,8 @@ from server.errors.client_left_error import ClientLeftError
 from server.errors.lane_busy_error import LaneBusyError
 from server.execution.instant_entry import InstantEntry
 
+from server.execution.queued_ticket import QueuedTicket
 RECHECK_SECONDS = 0.5
-
-
-@dataclass
-class QueuedTicket:
-    """A ticket in the instant lane with its place, the session that owns it and whether its client still waits."""
-
-    number: int
-    ticket: ExecutionTicket
-    owner: str
-    entered_at: float
-    is_client_waiting: Callable[[], bool]
 
 
 class ExecutionQueue:

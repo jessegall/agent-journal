@@ -1,25 +1,12 @@
 from argparse import ArgumentParser, Namespace
-from dataclasses import dataclass
 
 from engine.caller.caller import Caller
 from engine.errors.refusal import Refusal
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.processes.support.execution_class_preview import ExecutionClassPreview
 
+from core.modules.processes.commands.list_execution_classes.class_preview import ClassPreview
 UNMATCHED = "no recent line would have matched"
-
-
-@dataclass(frozen=True)
-class ClassPreview:
-    """The newest lines a class would have matched, as lines a person reads and as JSON."""
-
-    matched: tuple[str, ...]
-
-    def lines(self) -> list[str]:
-        return [f"{len(self.matched)} recent lines would have matched:", *self.matched] if self.matched else [UNMATCHED]
-
-    def json(self) -> dict[str, object]:
-        return {"lines": list(self.matched)}
 
 
 class PreviewExecutionClassSubcommand(ReadSubcommand[ClassPreview]):

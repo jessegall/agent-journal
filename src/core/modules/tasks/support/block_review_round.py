@@ -1,4 +1,4 @@
-from dataclasses import dataclass, replace
+from dataclasses import replace
 
 from engine.driver.span_queries import SpanQueries
 from engine.query.conditions.greater import Greater
@@ -17,27 +17,16 @@ from core.modules.tasks.agent_messages.block_review_message import BlockReviewMe
 from core.modules.tasks.agent_messages.block_review_required_message import BlockReviewRequiredMessage
 from core.modules.tasks.agent_messages.user_block_review_message import UserBlockReviewMessage
 
-from engine.command.command import Command
 from engine.driver.hook_event import HookEvent
-from engine.driver.agent_message import AgentMessage
 from engine.request.request_values import RequestValues
 
+from core.modules.tasks.support.block_review_answer import BlockReviewAnswer
 BLOCKED_TASKS_REASON = "every task the agent blocked by hand is checked for a review of its block"
 
 SKIPPED_REVIEWS_READ = 20
 from engine.time.clock import Clock
 
 BLOCK_REVIEW_KEY = "tasks.unopenable-blocks"
-
-
-@dataclass(frozen=True)
-class BlockReviewAnswer:
-    """One round of the blocked tasks' reminder: a line for each task due, the command that records the round, and
-    the line and condition of the hold its third pass opens."""
-
-    notices: tuple[AgentMessage, ...]
-    record: Command[object] | None
-    hold: tuple[AgentMessage, TaskBlocksReviewed] | None
 
 
 class BlockReviewRound:

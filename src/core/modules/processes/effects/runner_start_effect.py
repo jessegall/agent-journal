@@ -13,7 +13,8 @@ from core.modules.processes.agent_messages.runner_start_failed_message import Ru
 from core.modules.processes.support.run_count_lines import RunCountLines
 from core.modules.processes.support.runner_binary import RunnerBinary
 from core.modules.processes.support.runner_line import RunnerLine
-from core.modules.processes.support.runner_plan import RUNNER_REWRITE_KEY, RunnerDecision, RunnerPlan
+from core.modules.processes.support.runner_decision import RunnerDecision
+from core.modules.processes.support.runner_plan import RunnerPlan
 
 BACKGROUND_FLAG = "run_in_background"
 

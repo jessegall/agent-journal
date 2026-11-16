@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 
 from engine.driver.hook_event import HookEvent
 from engine.enums.hook_event_name import HookEventName
@@ -6,19 +5,11 @@ from engine.query.queries import Queries
 from engine.request.request_values import RequestValues
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
-from core.modules.messages.models.message import Message
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.support.waiting_message_lines import WAITING_MESSAGE_SOURCE
 
+from core.modules.messages.support.undelivered_batch import UndeliveredBatch
 LISTED_MESSAGES = 5
-
-
-@dataclass(frozen=True)
-class UndeliveredBatch:
-    """The oldest messages waiting for an agent that this hook delivers, and how many wait in all."""
-
-    messages: tuple[Message, ...]
-    waiting: int
 
 
 class UndeliveredMessages:

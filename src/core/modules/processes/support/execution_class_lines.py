@@ -3,7 +3,7 @@ from engine.execution.classes.builtin_classes import BUILTIN_CLASSES
 from engine.query.queries import Queries
 from core.modules.processes.models.execution_class_row import ExecutionClassRow
 from core.modules.processes.support.stored_execution_classes import STORED_CLASSES_REASON
-from core.modules.processes.support.execution_class_table import ClassTableEntry
+from core.modules.processes.support.class_table_entry import ClassTableEntry
 
 
 class ExecutionClassLines:

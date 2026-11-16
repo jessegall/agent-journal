@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 
 from engine.command.command import Command
 from engine.driver.hook_event import HookEvent
@@ -16,17 +15,9 @@ from core.modules.processes.support.run_folder_ends import RunFolderEnds
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
 
+from core.modules.processes.support.orphaned_runs import OrphanedRuns
 RUNNING_RUNS_REASON = "every run the agent started and still has running is checked for an orphan"
 TICK_INTERVAL_SECONDS = 150
-
-
-@dataclass(frozen=True)
-class OrphanedRuns:
-    """The runs of one agent found ended or lost: the lines that tell it of the lost ones, and the commands that end
-    them."""
-
-    agent_messages: tuple[AgentMessage, ...]
-    commands: tuple[Command[object], ...]
 
 
 class OrphanCheck:

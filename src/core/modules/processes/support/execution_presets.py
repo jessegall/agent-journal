@@ -1,25 +1,11 @@
 import os
 from collections.abc import Callable
-from dataclasses import dataclass
 
 from engine.errors.refusal import Refusal
 
 
-@dataclass(frozen=True)
-class ExecutionPreset:
-    """One machine preset: each lane's capacity and the share of a lane one starter may hold, for a core count."""
-
-    name: str
-    instant: Callable[[int], int]
-    short: Callable[[int], int]
-    long: Callable[[int], int]
-    starter_cap_percent: int
-
-    def capacities(self, cores: int) -> tuple[int, int, int]:
-        return self.instant(cores), self.short(cores), self.long(cores)
-
-
 # the one table of presets; medium on 8 cores gives the defaults of doc 1266 (instant 24, short 12, long 8)
+from core.modules.processes.support.execution_preset import ExecutionPreset
 PRESETS = (
     ExecutionPreset("small", lambda cores: 2 * cores, lambda cores: cores, lambda cores: max(4, cores // 2), 50),
     ExecutionPreset("medium", lambda cores: 3 * cores, lambda cores: cores * 3 // 2, lambda cores: cores, 50),

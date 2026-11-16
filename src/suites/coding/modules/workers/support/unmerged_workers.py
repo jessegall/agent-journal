@@ -22,23 +22,13 @@ from suites.coding.modules.workers.agent_messages.worker_unmerged_due_message im
 from suites.coding.modules.workers.support.work_units import UNIT_TASKS_REASON
 
 
-from dataclasses import dataclass
-from engine.command.command import Command
 from engine.driver.hook_event import HookEvent
 from engine.request.request_values import RequestValues
 from engine.time.clock import Clock
 
+from suites.coding.modules.workers.support.unmerged_answer import UnmergedAnswer
 BLOCKING_REMINDER_COUNT = 3
 UNMERGED_WORKER_KEY = "workers.unmerged-worker"
-
-
-@dataclass(frozen=True)
-class UnmergedAnswer:
-    """The lines that name each worker whose delivered work waits for a merge, and the commands that close the merge
-    holds of workers that no longer wait."""
-
-    agent_messages: tuple[AgentMessage, ...]
-    stale: tuple[Command[object], ...]
 
 
 class UnmergedWorkers:

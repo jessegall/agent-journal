@@ -1,6 +1,5 @@
 from engine.enums.execution_priority import ExecutionPriority
 from dataclasses import replace
-from engine.execution.classes.person_classes import PersonClasses
 from engine.enums.execution_source import ExecutionSource
 from engine.enums.starter_type import StarterType
 from engine.enums.window_priority import WindowPriority
@@ -11,17 +10,11 @@ from engine.execution.execution_ticket import ExecutionTicket
 from engine.time.timestamp import Timestamp
 from server.execution.session_starters import SessionStarters
 
+from server.execution.no_person_classes import NoPersonClasses
 JOURNAL = ExecutionStarter(StarterType.JOURNAL)
 # the lines that give capacity back: the runner's end of a run or a part, and halting or resuming the queue
 RELEASE_LINES = frozenset({("process", "end"), ("process", "part-end"), ("process", "orphan"), ("queue", "halt"), ("queue", "resume")})
 PERSON = ExecutionStarter(StarterType.PERSON)
-
-
-class NoPersonClasses(PersonClasses):
-    """The instant lane takes the built-in classes only: a person's class names a shell line or a plugin."""
-
-    def classes(self) -> tuple:
-        return ()
 
 
 class ExecutionPriorities:

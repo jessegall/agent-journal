@@ -2,7 +2,8 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 from engine.caller.caller import Caller
-from engine.module.suite_import_check import SuiteImportCheck, SuiteRefusal
+from engine.module.suite_refusal import SuiteRefusal
+from engine.module.suite_import_check import SuiteImportCheck
 from engine.subcommand.output import Output
 from engine.subcommand.read_subcommand import ReadSubcommand
 from engine.types.type_guards import is_tuple

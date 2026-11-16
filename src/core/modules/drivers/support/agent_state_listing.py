@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 
 from engine.agent_step.stack_codec import StackCodec
 from engine.query.queries import Queries
@@ -6,17 +5,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_stack import AgentStack
 
 
-@dataclass(frozen=True)
-class OpenState:
-    """One stacked state of an agent's stack, for a screen: its state type, its state's name, the row its need
-    is about, and since when."""
-
-    state: str
-    name: str
-    rows: tuple[str, ...]
-    since: str
-
-
+from core.modules.drivers.support.open_state import OpenState
 class AgentStateListing:
     """The stacked states of an agent's stack from the bottom, as a screen lists them."""
 

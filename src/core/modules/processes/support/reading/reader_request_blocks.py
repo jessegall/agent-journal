@@ -5,7 +5,8 @@ from engine.agent.agent_role_reader import AgentRoleReader
 from engine.driver.hook_event import HookEvent
 from engine.request.request_values import RequestValues
 from core.modules.drivers.support.minute_tick import MinuteTick
-from core.modules.processes.support.reading.reader_request_answer import ReaderHelpHold, ReaderRequestAnswer
+from core.modules.processes.support.reading.reader_help_hold import ReaderHelpHold
+from core.modules.processes.support.reading.reader_request_answer import ReaderRequestAnswer
 from engine.driver.open_hold import OpenHold
 from engine.driver.conditions.time_reached import TimeReached
 from engine.driver.interval import Interval

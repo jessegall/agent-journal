@@ -1,7 +1,5 @@
-from dataclasses import dataclass
 
 from engine.driver.hook_event import HookEvent
-from engine.driver.agent_message import AgentMessage
 from engine.request.request_values import RequestValues
 from engine.time.clock import Clock
 from core.modules.drivers.support.displayed_blocks import DisplayedBlocks
@@ -15,14 +13,7 @@ from core.modules.messages.support.repeated_messages import RepeatedMessages
 from core.modules.messages.support.turn_reply_targets import TurnReplyTargets
 
 
-@dataclass(frozen=True)
-class AgentTextShown:
-    """What a finished text block of the agent gives: a line about it, and the chat message it becomes."""
-
-    agent_message: AgentMessage | None
-    message: SendMessage | None
-
-
+from core.modules.messages.support.agent_text_shown import AgentTextShown
 class AgentTextAnswer:
     """Each finished text block the main agent writes in a turn becomes a chat message of the agent, unless
     the filter keeps it out; a text held for following a reply is shown once a tool comes. Read once a hook,

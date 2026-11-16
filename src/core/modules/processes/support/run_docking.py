@@ -1,6 +1,5 @@
 from collections import defaultdict
 
-from engine.driver.agent_message import AgentMessage
 from core.modules.processes.agent_messages.run_name_message import RunNameMessage
 from engine.driver.interval import Interval
 from engine.driver.span_queries import SpanQueries
@@ -20,13 +19,12 @@ from core.modules.processes.support.process_settings import ProcessSettings
 from core.modules.processes.support.run_visibility import RunVisibility
 from core.modules.processes.support.run_title import RunTitle
 
-from dataclasses import dataclass
-from engine.command.command import Command
 from engine.driver.hook_event import HookEvent
 from engine.database.database import Database
 from engine.request.request_values import RequestValues
 from engine.time.clock import Clock
 
+from core.modules.processes.support.docked_runs import DockedRuns
 DOCK_RUNS_REASON = "every long run the dock considers is read with its parts and output"
 
 
@@ -34,16 +32,6 @@ RUNS_CONSIDERED = 2
 
 
 LONG_RUN_DOCK_KEY = "processes.long-run-dock"
-
-
-@dataclass(frozen=True)
-class DockedRuns:
-    """The lines asking a name for each docked run that has none, and the commands that dock the runs now due."""
-
-    agent_messages: tuple[AgentMessage, ...]
-    commands: tuple[Command[object], ...]
-    # the docked runs, those docked now among them, whose output has no descriptive title
-    untitled: tuple[int, ...] = ()
 
 
 class RunDocking:

@@ -1,8 +1,5 @@
-from dataclasses import dataclass
 
-from engine.command.command import Command
 from engine.driver.hook_event import HookEvent
-from engine.driver.agent_message import AgentMessage
 from engine.driver.part import Part
 from engine.driver.shell_line import ShellLine
 from engine.enums.command_category import CommandCategory
@@ -20,17 +17,8 @@ from suites.coding.modules.workers.support.commit_window import CommitWindow
 from suites.coding.modules.workers.support.worker_steps import WorkerSteps
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 
+from suites.coding.modules.workers.support.phase_test_answer import PhaseTestAnswer
 PHASE_TESTS_KEY = "workers.phase-tests"
-
-
-@dataclass(frozen=True)
-class PhaseTestAnswer:
-    """What a worker's test runs get between two commits: the refusal once the allowance is spent, or a line for each
-    run with the runs left and the commands that count them."""
-
-    refusal: AgentMessage | None = None
-    agent_messages: tuple[AgentMessage, ...] = ()
-    records: tuple[Command[object], ...] = ()
 
 
 class PhaseTestRuns:

@@ -1,27 +1,13 @@
 import sys
 from pathlib import Path
-from collections import Counter
 from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar
-from dataclasses import dataclass, field
 
+from engine.file.file_calls import FileCalls
 DOOR_FOLDER = str(Path(__file__).resolve().parent) + "/"
 SOURCE_ROOT = str(Path(__file__).resolve().parents[2]) + "/"
 CALLER_DEPTH = 8
-
-
-@dataclass(frozen=True)
-class FileCalls:
-    """The file system calls of one hook or request: how many of each kind, a check, a read and an entry listed,
-    and the code line outside the file door that made them."""
-
-    kinds: Counter[str] = field(default_factory=Counter)
-    origins: Counter[str] = field(default_factory=Counter)
-
-    @property
-    def total(self) -> int:
-        return sum(self.kinds.values())
 
 
 ACTIVE_COUNTS: ContextVar[FileCalls | None] = ContextVar("file_tally", default=None)

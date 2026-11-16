@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 
 from engine.command.command import Command
 from engine.driver.hook_event import HookEvent
@@ -11,15 +10,8 @@ from core.modules.processes.agent_messages.active_output_message import ActiveOu
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.watch_query import WatchQuery
 
+from core.modules.processes.support.watched_progress import WatchedProgress
 PROGRESS_STEP_PERCENT = 10
-
-
-@dataclass(frozen=True)
-class WatchedProgress:
-    """The lines about the runs an agent watches, and the commands that record the percent each line gave."""
-
-    agent_messages: tuple[AgentMessage, ...]
-    commands: tuple[Command[object], ...]
 
 
 class WatchProgress:

@@ -17,7 +17,7 @@ from core.modules.processes.models.process_queue_row import ProcessQueueRow
 from core.modules.processes.models.enums.queue_section import QueueSection
 from core.modules.processes.support.active_queue_runs import ActiveQueueRuns
 from core.modules.processes.support.process_queue_page import ProcessQueuePage
-from core.modules.processes.support.lane_load import ExecutionSnapshot
+from core.modules.processes.support.execution_snapshot import ExecutionSnapshot
 from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_source import ExecutionSource
 from engine.enums.starter_type import StarterType

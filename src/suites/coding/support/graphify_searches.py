@@ -1,7 +1,5 @@
-from dataclasses import dataclass
 
 from engine.driver.hook_event import HookEvent
-from engine.driver.agent_message import AgentMessage
 from engine.driver.search_category import CODE, GRAPHIFY as GRAPHIFY_SEARCH, SearchCategory
 from engine.enums.hook_event_name import HookEventName
 from engine.journal.journal_home import JournalHome
@@ -13,17 +11,9 @@ from suites.coding.agent_messages.use_graphify_message import UseGraphifyMessage
 from suites.coding.support.graphify_settings import GRAPHIFY_BLOCK_AFTER, GRAPHIFY_AGENT_MESSAGE_AFTER
 from suites.coding.support.graphify_tool import GRAPHIFY
 
+from suites.coding.support.graphify_answer import GraphifyAnswer
 SCANNED_BLOCK_TOOL_USES = 3
 GRAPHIFY_SEARCH_KEY = "tools.graphify-search"
-
-
-@dataclass(frozen=True)
-class GraphifyAnswer:
-    """What a search of the code that does not use Graphify gets: a refusal past the block count, or a line from the
-    agent message count on."""
-
-    refusal: AgentMessage | None = None
-    agent_message: AgentMessage | None = None
 
 
 class GraphifySearches:
