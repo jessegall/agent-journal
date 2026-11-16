@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 LONGEST_LINE_CHARACTERS = 120
 LONGEST_NOTICE_CHARACTERS = 800
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
-AGENT_MESSAGE_LIST_NAMES = re.compile(r"NUDGES$")
+AGENT_MESSAGE_LIST_NAMES = re.compile(r"AGENT_MESSAGES$")
 # what a line may name: a row's number, a count, or a short fact that is no row's words (an instruction is the program's own fixed sentence)
 ALLOWED_PLACEHOLDERS = frozenset({"approval", "recipient", "code", "plugin", "targets", "route", "exception", "line", "trigger", "remaining", "reminder", "tool", "limit", "place", "doc",
     "uses", "action", "agent", "block", "branch", "category", "check", "count", "dump", "emoji", "environment", "folder", "job", "kept", "left", "limit", "lines", "memories", "memory", "message",
@@ -81,7 +81,7 @@ def test_a_line_carries_a_row_by_its_id_never_by_its_words(name, text, path):
 def test_every_line_is_in_a_register_of_its_module(name, text, path):
     module = next(parent for parent in path.parents if list(parent.glob("*_module.py")))
     module_sources = [source_text(source) for source in (module / "support").glob("*.py")] + [source_text(source) for source in module.glob("*_module.py")]
-    registered = any(re.search(rf"(NUDGES = \[[^\]]*\b{name}\b|nudges = \[[^\]]*\b{name}\b)", file_text) for file_text in module_sources)
+    registered = any(re.search(rf"(AGENT_MESSAGES = \[[^\]]*\b{name}\b|agent_messages = \[[^\]]*\b{name}\b)", file_text) for file_text in module_sources)
     assert registered, f"{name} of {path} is in no register"
 
 

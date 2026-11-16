@@ -76,6 +76,17 @@ func (folder Folder) Started(position int) bool {
 	return err == nil
 }
 
+// StartTold says a runner already told the journal that the part began, so the runner that takes over a moved run
+// tells it only when no runner did.
+func (folder Folder) StartTold(position int) bool {
+	_, err := os.Stat(filepath.Join(folder.Path, fmt.Sprintf("%d.start-told", position)))
+	return err == nil
+}
+
+func (folder Folder) WriteStartTold(position int) error {
+	return os.WriteFile(filepath.Join(folder.Path, fmt.Sprintf("%d.start-told", position)), nil, 0o644)
+}
+
 func (folder Folder) End() (int, bool) { return folder.number("end") }
 
 // MoveAsked says the journal wants the run in the background now, because a message waits for its agent.

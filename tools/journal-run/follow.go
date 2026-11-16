@@ -105,7 +105,7 @@ func (tracker *Tracker) Watch() {
 		if _, ended := tracker.Folder.Status(position); ended {
 			tracker.Reported[position] = true
 		}
-		if tracker.Folder.Started(position) {
+		if tracker.Folder.StartTold(position) {
 			tracker.markStarted(position)
 		}
 	}
@@ -171,6 +171,7 @@ func (tracker *Tracker) partStarted(position int) {
 		return
 	}
 	tracker.report("process", "part-start", strconv.Itoa(tracker.Options.Process), "--position", strconv.Itoa(position))
+	_ = tracker.Folder.WriteStartTold(position)
 }
 
 func (tracker *Tracker) partEnded(stdout io.Writer, position, code int) {

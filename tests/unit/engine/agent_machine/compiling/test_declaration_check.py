@@ -44,7 +44,7 @@ def test_the_sample_declarations_compile_clean() -> None:
 @pytest.mark.parametrize("contribution, fix", [
     (ContributionDeclaration("messages.worker-needs", ContributionType.NEED, "messages.unread", ("robot",), "Working"), "agent type robot has no driver"),
     (ContributionDeclaration("messages.odd-needs", ContributionType.NEED, state_name="Sleeping"), "state Sleeping is unknown"),
-    (ContributionDeclaration("messages.pause-needs", ContributionType.NEED, state_name="Paused"), "a need may not ask for Paused"),
+    (ContributionDeclaration("messages.pause-needs", ContributionType.NEED, state_name="Paused"), "a state source may not ask for Paused"),
     (ContributionDeclaration("agent_stack", ContributionType.SUBJECT), "the machine's own tables are no subject"),
     (ContributionDeclaration("messages.late-line", ContributionType.LINE, events=(HookEventName.STOP,)), "give the line a waiting carrier"),
     (ContributionDeclaration("messages.bus-listener", ContributionType.AGENT_LISTENER, constructor_types=("Bus",)), "it takes a Bus"),

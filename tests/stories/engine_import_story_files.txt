@@ -87,15 +87,15 @@ tests/stories/core/modules/drivers/bypass_log.py
 tests/stories/core/modules/drivers/compaction_hostile.py
 tests/stories/core/modules/drivers/compaction_repeat.py
 tests/stories/core/modules/drivers/context_compactions.py
-tests/stories/core/modules/drivers/project_hook_runs.py
+tests/stories/core/modules/drivers/external_lines.py
 tests/stories/core/modules/drivers/hook_durations.py
 tests/stories/core/modules/drivers/hooks_through_the_server.py
 tests/stories/core/modules/drivers/journal_started.py
 tests/stories/core/modules/drivers/managed_answers.py
 tests/stories/core/modules/drivers/managed_failures.py
-tests/stories/core/modules/drivers/external_lines.py
 tests/stories/core/modules/drivers/permission_requests.py
 tests/stories/core/modules/drivers/private_corpus.py
+tests/stories/core/modules/drivers/project_hook_runs.py
 tests/stories/core/modules/drivers/refusal_skips.py
 tests/stories/core/modules/drivers/removed_choices.py
 tests/stories/core/modules/drivers/repeated_file_reads.py
@@ -252,8 +252,8 @@ tests/stories/core/modules/processes/repeat_reads.py
 tests/stories/core/modules/processes/repeated_exits.py
 tests/stories/core/modules/processes/request_reader.py
 tests/stories/core/modules/processes/run_cadence.py
-tests/stories/core/modules/processes/run_cadence_failures.py
 tests/stories/core/modules/processes/run_cadence_agent_messages.py
+tests/stories/core/modules/processes/run_cadence_failures.py
 tests/stories/core/modules/processes/run_cadence_odd_users.py
 tests/stories/core/modules/processes/run_queue.py
 tests/stories/core/modules/processes/shell_sandbox.py

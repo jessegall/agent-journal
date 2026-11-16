@@ -13,7 +13,7 @@ from core.modules.drivers.commands.hook_call_show.hook_call_show_subcommand impo
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 
-REFUSAL = RuleAnswer(refusal="task:1 is in hand")
+REFUSAL = RuleAnswer(refusal="a sample refusal")
 
 
 def shown(call: HookCall):
@@ -22,11 +22,11 @@ def shown(call: HookCall):
 
 
 def test_a_stop_saves_each_check_and_hook_call_show_prints_each_source_with_its_outcome():
-    checks = (StopCheck("tasks.carry-on-at-stop", DecisionClass.HOLD, "task:1 is in hand", True),)
+    checks = (StopCheck("tasks.carry-on-at-stop", DecisionClass.HOLD, "a sample refusal", True),)
     metadata = RuleAnswers([RuleRecord("tasks.carry-on-at-stop", REFUSAL.outcome, REFUSAL)], stop_checks=checks).metadata()
     call = HookCall(id=7, session_agent_id=1, environment_id=1, creator_id=1, hook=HookEventName.STOP, event_id="f", answer=HookAnswer.REFUSED,
                     metadata=Metadata({DRIVERS_MODULE: metadata}))
-    assert metadata["stop_checks"] == [{"rule": "tasks.carry-on-at-stop", "outcome": "refused", "reason": "task:1 is in hand", "applied": True}]
+    assert metadata["stop_checks"] == [{"rule": "tasks.carry-on-at-stop", "outcome": "refused", "reason": "a sample refusal", "applied": True}]
     assert shown(call).rules == "tasks.carry-on-at-stop: refused"
 
 

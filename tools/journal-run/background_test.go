@@ -138,6 +138,48 @@ func TestAFollowerKeepsWritingTheHeartbeatOfARunThatMoved(t *testing.T) {
 	}
 }
 
+func watchedStartReports(t *testing.T, told bool) []string {
+	setup := options(t, "sleep 5")
+	folder := NewFolder(setup.Home, setup.Process)
+	if err := folder.Start(setup.Line, Parts(setup.Line), "true"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(folderOf(setup)+"/1.started", nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if told {
+		if err := folder.WriteStartTold(1); err != nil {
+			t.Fatal(err)
+		}
+	}
+	client := newClient()
+	tracker := Tracker{Options: setup, Client: client, Folder: folder, Parts: 1, Reported: map[int]bool{}}
+	go tracker.Watch()
+	time.Sleep(3 * pollInterval)
+	if err := folder.WriteEnd(0); err != nil {
+		t.Fatal(err)
+	}
+	starts := []string{}
+	for _, line := range client.reported() {
+		if strings.HasPrefix(line, "process part-start") {
+			starts = append(starts, line)
+		}
+	}
+	return starts
+}
+
+func TestAFollowerTellsTheStartOfAPartThatBeganJustBeforeTheRunMoved(t *testing.T) {
+	if starts := watchedStartReports(t, false); len(starts) != 1 {
+		t.Fatalf("the untold start was told %d times: %q", len(starts), starts)
+	}
+}
+
+func TestAFollowerDoesNotTellAStartTheForegroundRunnerAlreadyTold(t *testing.T) {
+	if starts := watchedStartReports(t, true); len(starts) != 0 {
+		t.Fatalf("the told start was told again: %q", starts)
+	}
+}
+
 func TestASlowTestRunMovesToTheBackground(t *testing.T) {
 	bin := t.TempDir()
 	if err := os.WriteFile(bin+"/pytest", []byte("#!/bin/sh\nsleep 3\necho done\n"), 0o755); err != nil {
