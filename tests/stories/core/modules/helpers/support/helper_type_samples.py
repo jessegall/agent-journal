@@ -23,7 +23,7 @@ class ScribeDriver(Driver):
     agent_type = Scribe.key
     gathers = [HelperAgentDriver]
     rank_order = HelperAgentDriver.rank_order
-    work_stop = WorkStop.HANDOVER
+    work_stop = WorkStop.JOB_REPORT
 
 
 class ScribeModule(Module):

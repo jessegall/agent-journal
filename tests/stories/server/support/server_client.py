@@ -18,7 +18,7 @@ from tests.integration.support.server_client import DirectRun, ServerClient
 from tests.integration.support.server_harness import SYSTEM_CLOCK, TEST_HOOK_LIMIT_SECONDS, TEST_INSTANT_CAPACITY, TEST_STOP_LIMIT_SECONDS, TIMEOUT_SECONDS, ViewerFactory, local_viewer, running_server
 from tests.stories.server.support.story_line_route import StoryLineRoute
 from core.modules.skills.models.agent_skill import AgentSkill
-from server.handover.code_folders import CodeFolders
+from server.takeover.code_folders import CodeFolders
 from server.door.journal_door import JournalDoor
 from server.door.local_journal_door import LocalJournalDoor
 from server.context.server_context import IDLE_CONNECTION_SECONDS, ServerContext

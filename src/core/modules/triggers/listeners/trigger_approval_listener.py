@@ -24,7 +24,7 @@ class TriggerApprovalListener(CommitListener[Changed[Trigger] | RegistrySynced])
         self.bus, self.actors, self.queries = bus, actors, queries
 
     def handle(self, event: Changed[Trigger] | RegistrySynced, logged: LoggedEvent) -> None:
-        triggers = tuple(self.queries.query(Trigger).filter(needs_enabling=True).get()) if isinstance(event, RegistrySynced) else (event.row,)
+        triggers = tuple(self.queries.query(Trigger).filter(requires_enabling=True).get()) if isinstance(event, RegistrySynced) else (event.row,)
         for trigger in triggers:
             self.update_request(trigger, logged)
 
@@ -32,7 +32,7 @@ class TriggerApprovalListener(CommitListener[Changed[Trigger] | RegistrySynced])
         actor = self.actors.actor("journal.core.triggers")
         arguments = ("trigger", "enable", str(trigger.id))
         environment_id = logged.environment_id
-        if trigger.needs_enabling and trigger.ended_at is None:
+        if trigger.requires_enabling and trigger.ended_at is None:
             if environment_id is None:
                 environment_id = self.queries.query(Agent).find(trigger.creator_id).environment_id
             approval = UserApprovalRefusal(f"Enable the trigger {trigger.name or trigger.text}?", arguments,

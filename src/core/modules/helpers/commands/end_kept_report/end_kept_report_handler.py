@@ -1,7 +1,7 @@
 from engine.command.context import Context
 from engine.command.handler import Handler
 from engine.repository.repository import Repository
-from core.modules.drivers.models.enums.handover_state import HandoverState
+from core.modules.drivers.models.enums.job_report_state import JobReportState
 from core.modules.helpers.commands.end_kept_report.end_kept_report import EndKeptReport
 from core.modules.helpers.support.kept_reports import KeptReports
 
@@ -16,5 +16,5 @@ class EndKeptReportHandler(Handler[EndKeptReport, str]):
 
     def handle(self, command: EndKeptReport, context: Context) -> str:
         job = self.reports.required_job(command.helper_id)
-        self.repository.save(job.changed(ended_at=context.timestamp, handover_state=HandoverState.REPORT_MISSING), context)
+        self.repository.save(job.changed(ended_at=context.timestamp, report_state=JobReportState.REPORT_MISSING), context)
         return f"job {job.id} ended with no report"

@@ -7,7 +7,7 @@ from pathlib import Path
 from socketserver import UnixStreamServer
 from urllib.parse import urlparse
 
-from server.handover.handover_descriptors import QUEUED_CONNECTIONS
+from server.takeover.takeover_descriptors import QUEUED_CONNECTIONS
 from server.viewer.hosted_closed_doors import HostedClosedDoors
 from server.viewer.hosted_door import HostedDoor
 from server.viewer.hosted_headers import HostedHeaders

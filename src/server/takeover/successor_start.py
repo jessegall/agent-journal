@@ -11,7 +11,7 @@ from pathlib import Path
 from engine.version.code_versions import CodeVersions
 from engine.journal.journal_home import JournalHome
 from engine.enums.log_level import LogLevel
-from server.handover.handover_descriptors import READY_BYTE, HandoverDescriptors
+from server.takeover.takeover_descriptors import READY_BYTE, TakeoverDescriptors
 from engine.serving.server_files import ServerFiles
 from engine.file.file_access import FileAccess
 
@@ -30,7 +30,7 @@ class SuccessorStart:
     def run(self, tag: str) -> bool:
         ready_reader, ready_writer = os.pipe()
         exit_reader, self.exit_writer = os.pipe()
-        descriptors = HandoverDescriptors(self.journal_socket.fileno(), self.viewer_socket.fileno(), self.files.lock_descriptor(), ready_writer, exit_reader)
+        descriptors = TakeoverDescriptors(self.journal_socket.fileno(), self.viewer_socket.fileno(), self.files.lock_descriptor(), ready_writer, exit_reader)
         process = self.started(CodeVersions(self.home).version(tag), descriptors)
         os.close(ready_writer)
         os.close(exit_reader)
@@ -43,7 +43,7 @@ class SuccessorStart:
             self.files.log_line(f"code version {tag} failed its proof; this server keeps serving", LogLevel.WARNING)
         return ready
 
-    def started(self, version: Path, descriptors: HandoverDescriptors) -> subprocess.Popen[bytes]:
+    def started(self, version: Path, descriptors: TakeoverDescriptors) -> subprocess.Popen[bytes]:
         environment = {**os.environ, PYTHON_PATH_VARIABLE: str(version)}
         with FileAccess.writer(self.files.log, "a") as log:
             return subprocess.Popen([sys.executable, str(version / "server" / "server.py"), "--home", str(self.home.folder), "--take-over", descriptors.text],

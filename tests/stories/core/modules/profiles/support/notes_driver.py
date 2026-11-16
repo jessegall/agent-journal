@@ -10,4 +10,4 @@ class NotesDriver(Driver):
     agent_type = "reader"
     gathers = [HelperAgentDriver]
     rank_order = HelperAgentDriver.rank_order
-    work_stop = WorkStop.HANDOVER
+    work_stop = WorkStop.JOB_REPORT

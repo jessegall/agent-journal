@@ -25,6 +25,6 @@ class LineHistoryWriter:
         for key in given_keys:
             row = stored.get(key)
             if row is None:
-                self.repository.save(AgentLineHistory(session_agent_id=agent_id, source_key=key, last_said_at=context.timestamp), context)
-            elif row.last_said_at != context.timestamp:
-                self.repository.save(replace(row, last_said_at=context.timestamp), context)
+                self.repository.save(AgentLineHistory(session_agent_id=agent_id, source_key=key, last_given_at=context.timestamp), context)
+            elif row.last_given_at != context.timestamp:
+                self.repository.save(replace(row, last_given_at=context.timestamp), context)

@@ -103,8 +103,8 @@ class StoredAgentViewReader(AgentViewReader):
 
     def read_versions(self, row: AgentStack | None, agent: Agent, driver_version: DriverVersion | None) -> ReadVersions:
         program_version = self.stacks.program_version(agent.program)
-        return ReadVersions(row.version if row is not None else 0, driver_version.epoch if driver_version is not None else 0,
-                           program_version.epoch if program_version is not None else 0)
+        return ReadVersions(row.version if row is not None else 0, driver_version.change_count if driver_version is not None else 0,
+                           program_version.change_count if program_version is not None else 0)
 
     def stack(self, row: AgentStack | None, agent: Agent) -> Stack:
         # a row a permission change made before the agent's first step holds no stacked state yet, and reads as a fresh stack

@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from pathlib import Path
 
-from server.handover.code_folders import CodeFolders
+from server.takeover.code_folders import CodeFolders
 
 
 class SampleCodeFolders(CodeFolders):

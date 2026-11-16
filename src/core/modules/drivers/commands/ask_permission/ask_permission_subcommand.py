@@ -15,7 +15,7 @@ class AskPermissionSubcommand(ChangePermissionRequestSubcommand[AskPermission]):
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("action")
         parser.add_argument("--reason", required=True)
-        parser.add_argument("--person", action="store_true", dest="needs_person")
+        parser.add_argument("--person", action="store_true", dest="requires_person")
 
     def command(self, arguments: Namespace, caller: Caller) -> AskPermission:
-        return AskPermission(arguments.action, arguments.reason, arguments.needs_person)
+        return AskPermission(arguments.action, arguments.reason, arguments.requires_person)

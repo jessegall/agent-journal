@@ -185,7 +185,7 @@ class DesignDeclarations:
     def drivers() -> list[DriverDeclaration]:
         main_order = RankOrder(POLICY_ORDER, MAIN_BLOCK_ORDER)
         return [DriverDeclaration("core.main", "main", "core", (), main_order, WorkStop.REFUSE_DURING_WORK, Responder.PERSON),
-                DriverDeclaration("core.helper", "helper", "core", (), RankOrder(POLICY_ORDER, HELPER_BLOCK_ORDER), WorkStop.HANDOVER, Responder.PARENT),
+                DriverDeclaration("core.helper", "helper", "core", (), RankOrder(POLICY_ORDER, HELPER_BLOCK_ORDER), WorkStop.JOB_REPORT, Responder.PARENT),
                 DriverDeclaration("coding.main", "main", "coding", ["core.main"], main_order, WorkStop.REFUSE_DURING_WORK, Responder.PERSON),
                 DriverDeclaration("coding.worker", "worker", "coding", (), RankOrder(POLICY_ORDER, WORKER_BLOCK_ORDER), WorkStop.REFUSE_DURING_WORK, Responder.PARENT),
                 DriverDeclaration("coding.merger", "merger", "coding", (), RankOrder(POLICY_ORDER, HELPER_BLOCK_ORDER), WorkStop.MERGE_CONTRACT, Responder.PARENT)]

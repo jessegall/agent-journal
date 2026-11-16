@@ -1,7 +1,7 @@
 from enum import StrEnum
 
 
-class HandoverState(StrEnum):
+class JobReportState(StrEnum):
     """Where a helper job's handover stands."""
 
     PENDING = "pending"

@@ -4,8 +4,8 @@ from pathlib import Path
 
 from engine.version.code_versions import CodeVersions
 from engine.journal.journal_home import JournalHome
-from server.handover.handover_descriptors import READY_BYTE, HandoverDescriptors
-from server.handover.successor_proof import SuccessorProof
+from server.takeover.takeover_descriptors import READY_BYTE, TakeoverDescriptors
+from server.takeover.successor_proof import SuccessorProof
 
 
 class WaitingServer:
@@ -13,7 +13,7 @@ class WaitingServer:
     tells the old server it is ready, and waits for that server to exit before it takes the code link, so the
     two never serve at once."""
 
-    def __init__(self, home: JournalHome, descriptors: HandoverDescriptors) -> None:
+    def __init__(self, home: JournalHome, descriptors: TakeoverDescriptors) -> None:
         self.home, self.descriptors = home, descriptors
 
     def journal_socket(self) -> socket.socket:

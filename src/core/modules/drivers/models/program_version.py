@@ -9,7 +9,7 @@ class ProgramVersion(Model):
 
     model_name = "program_version"
     table = "program_versions"
-    cli_name = "program-epoch"
+    cli_name = "program-version"
 
     program: str
-    epoch: int = 0
+    change_count: int = 0

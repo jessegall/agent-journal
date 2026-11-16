@@ -11,4 +11,4 @@ class TableLineHistory(LineHistory):
 
     def last_given(self, source_key: str, agent_id: int) -> Timestamp | None:
         row = self.histories.rows(agent_id).get(source_key)
-        return row.last_said_at if row is not None else None
+        return row.last_given_at if row is not None else None

@@ -61,9 +61,9 @@ class ReadVersionsWriters:
         with self.scopes.command_scope((), context.actor, environment_id):
             epoch = self.queries.query(DriverVersion).first()
             if epoch is None:
-                self.repository.save(DriverVersion(epoch=1, started_at=started_at), context)
+                self.repository.save(DriverVersion(change_count=1, started_at=started_at), context)
                 return
-            self.repository.save_change(epoch, epoch.changed(epoch=epoch.epoch + 1, started_at=started_at or epoch.started_at), context)
+            self.repository.save_change(epoch, epoch.changed(change_count=epoch.change_count + 1, started_at=started_at or epoch.started_at), context)
 
     # a project-wide driving setting reaches every environment
     def bump_environments(self, context: Context) -> None:
@@ -78,6 +78,6 @@ class ReadVersionsWriters:
     def bump_program(self, program: str, context: Context) -> None:
         epoch = self.queries.query(ProgramVersion).filter(program=program).first()
         if epoch is None:
-            self.repository.save(ProgramVersion(program=program, epoch=1), context)
+            self.repository.save(ProgramVersion(program=program, change_count=1), context)
             return
-        self.repository.save_change(epoch, epoch.changed(epoch=epoch.epoch + 1), context)
+        self.repository.save_change(epoch, epoch.changed(change_count=epoch.change_count + 1), context)

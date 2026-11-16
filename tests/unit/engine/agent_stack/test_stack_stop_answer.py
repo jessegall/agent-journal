@@ -54,17 +54,17 @@ def test_a_started_task_refuses_the_stop_of_a_main_agent() -> None:
 
 
 def test_a_helper_stop_on_its_open_job_is_the_handover() -> None:
-    answer = stack(working(WorkType.JOB, True)).stop_answer(WorkStop.HANDOVER, None)
-    assert (answer.answer_type, answer.work) == (StopAnswerType.HANDOVER, WorkReference(WorkType.JOB, 6, "task 6"))
+    answer = stack(working(WorkType.JOB, True)).stop_answer(WorkStop.JOB_REPORT, None)
+    assert (answer.answer_type, answer.work) == (StopAnswerType.JOB_REPORT, WorkReference(WorkType.JOB, 6, "task 6"))
 
 
 def test_a_running_sequence_on_a_helper_refuses_its_stop() -> None:
-    assert stack(working(WorkType.SEQUENCE, True)).stop_answer(WorkStop.HANDOVER, None).answer_type is StopAnswerType.REFUSED
+    assert stack(working(WorkType.SEQUENCE, True)).stop_answer(WorkStop.JOB_REPORT, None).answer_type is StopAnswerType.REFUSED
 
 
 def test_a_wait_on_top_of_the_work_lets_the_stop_through_and_hands_in_nothing() -> None:
     waiting = Waiting((), WaitMode.ANY, True, "waits on question 2")
-    assert stack(working(WorkType.JOB, True), waiting).stop_answer(WorkStop.HANDOVER, None).answer_type is StopAnswerType.ALLOWED
+    assert stack(working(WorkType.JOB, True), waiting).stop_answer(WorkStop.JOB_REPORT, None).answer_type is StopAnswerType.ALLOWED
 
 
 def test_every_hold_with_a_stop_scope_refuses_before_the_work_answer() -> None:

@@ -88,7 +88,7 @@ class ClerkDriver(Driver):
     agent_type = "clerk"
     gathers = [HelperAgentDriver]
     rank_order = HelperAgentDriver.rank_order
-    work_stop = WorkStop.HANDOVER
+    work_stop = WorkStop.JOB_REPORT
 
 
 class ClerkModule(Module):

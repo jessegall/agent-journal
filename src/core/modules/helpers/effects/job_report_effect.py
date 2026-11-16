@@ -32,7 +32,7 @@ class JobReportEffect(Effect):
     events = (HookEventName.STOP,)
     agent_types = [HELPER_TYPE]
     # the work stop under which this type's allowed stop hands its job in
-    report_contract: ClassVar[WorkStop] = WorkStop.HANDOVER
+    report_contract: ClassVar[WorkStop] = WorkStop.JOB_REPORT
     timing = EffectTiming.PERMITTED
     is_required = True
     completes_work = True
@@ -64,6 +64,6 @@ class JobReportEffect(Effect):
         if event is None or job is None:
             return RuleAnswer(refusal=UnsavedReportMessage.declared().agent_message().text)
         keep = RecordUnsavedReport(job.id, self.report_text.text(event, helper))
-        if job.handover_failures == 0:
+        if job.report_failures == 0:
             return RuleAnswer(refusal=UnsavedReportMessage.declared().agent_message().text, commands=(keep,))
         return RuleAnswer(commands=(keep,))

@@ -40,9 +40,9 @@ from engine.enums.responder import Responder
 from engine.enums.stop_answer_type import StopAnswerType
 from engine.enums.transform_slot import TransformSlot
 
-HANDOVER_KEY = "drivers.handover"
-HANDOVER_RANK = "drivers.handover"
-HANDOVER_TEXT = "The job is handed over to the parent with this stop's text."
+JOB_REPORT_KEY = "drivers.handover"
+JOB_REPORT_RANK = "drivers.handover"
+JOB_REPORT_TEXT = "The job is handed over to the parent with this stop's text."
 STEP_EVENT_ID = "step-{version}"
 FALLBACK_KEY = "drivers.transform-fallback"
 FALLBACK_RANK = "safety.all"
@@ -104,9 +104,9 @@ class AgentStateMachine:
         if not question.is_stop() or not decision.admits() or stack.has(Paused) or stack.has(Compacting):
             return decision
         answer = stack.work_level_top().state.stop_answer(view.work_stop)
-        if answer.answer_type is not StopAnswerType.HANDOVER:
+        if answer.answer_type is not StopAnswerType.JOB_REPORT:
             return decision
-        return Decision(DecisionClass.ALLOW, Reason(HANDOVER_KEY, DecisionClass.ALLOW, HANDOVER_RANK, HANDOVER_TEXT, handover=answer.work))
+        return Decision(DecisionClass.ALLOW, Reason(JOB_REPORT_KEY, DecisionClass.ALLOW, JOB_REPORT_RANK, JOB_REPORT_TEXT, job_report=answer.work))
 
     @staticmethod
     def escalated(decision: Decision, counts: RefusalCounts, view: AgentView) -> Decision:

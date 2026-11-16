@@ -13,8 +13,8 @@ class DriverVersion(EnvironmentScoped, Model):
 
     model_name = "driver_version"
     table = "driver_versions"
-    cli_name = "driver-epoch"
+    cli_name = "driver-version"
 
     environment_id: int = 0
-    epoch: int = 0
+    change_count: int = 0
     started_at: Timestamp | None = None

@@ -20,19 +20,19 @@ JOB = RequiredState(Working(WorkReference(WorkType.JOB, 5, "job 5"), True, Reaso
 
 
 def test_a_stop_that_rests_through_an_escalation_hands_nothing_in():
-    view = replace(ViewSamples.view("helper", WorkStop.HANDOVER), states=(JOB,))
+    view = replace(ViewSamples.view("helper", WorkStop.JOB_REPORT), states=(JOB,))
     escalated = replace(view, escalation=Escalation(1, EscalationType.STOPS, Responder.PARENT, (), (JOB_KEY,), 5))
     assert JobReportEffect.is_report_stop(view) and not JobReportEffect.is_report_stop(escalated)
 
 
 def test_a_stop_that_rests_because_an_escalation_defers_a_hold_on_it_hands_nothing_in():
     block_plan = OpenBlock("documents.open", 3, Reason("documents.open", DecisionClass.BLOCK, "documents.open", "close your document"), True, True, True, True, False)
-    view = replace(ViewSamples.view("helper", WorkStop.HANDOVER), states=(JOB,), blocks=(block_plan,),
+    view = replace(ViewSamples.view("helper", WorkStop.JOB_REPORT), states=(JOB,), blocks=(block_plan,),
                    escalation=Escalation(1, EscalationType.STOPS, Responder.PARENT, (3,), (), 5))
     assert not JobReportEffect.is_report_stop(view)
 
 
 def test_a_stop_under_an_open_escalation_hands_nothing_in_even_when_it_defers_neither_the_job_nor_a_hold():
-    view = replace(ViewSamples.view("helper", WorkStop.HANDOVER), states=(JOB,),
+    view = replace(ViewSamples.view("helper", WorkStop.JOB_REPORT), states=(JOB,),
                    escalation=Escalation(1, EscalationType.TOOLS, Responder.PARENT, (8,), (), 5))
     assert not JobReportEffect.is_report_stop(view)

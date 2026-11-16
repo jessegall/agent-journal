@@ -4,7 +4,7 @@ from engine.database.reported_findings import ReportedFindings
 from engine.journal.journal_home import JournalHome
 from engine.provider.transcript_entries import TranscriptEntries
 from engine.time.timestamp import Timestamp
-from server.handover.code_version import CodeVersion
+from server.takeover.code_version import CodeVersion
 from server.hook.hook_database import HookDatabase
 from engine.driver.hook_limits import AGENT_HOOK_LIMIT_SECONDS, HOOK_LIMIT_SECONDS, STOP_LIMIT_SECONDS
 from server.door.journal_door import JournalDoor

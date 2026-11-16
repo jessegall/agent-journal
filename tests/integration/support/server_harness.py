@@ -25,8 +25,8 @@ from server.context.server_context import IDLE_CONNECTION_SECONDS, ServerContext
 from server.door.journal_door import JournalDoor
 from server.door.local_journal_door import LocalJournalDoor
 from server.execution.session_starters import SessionStarters
-from server.handover.code_folders import CodeFolders
-from server.handover.code_version import CodeVersion
+from server.takeover.code_folders import CodeFolders
+from server.takeover.code_version import CodeVersion
 from server.hook.hook_database import HookDatabase
 from server.request.journal_server import JournalServer
 from server.request.request_handler import EXIT_CODE_TRAILER, RequestHandler

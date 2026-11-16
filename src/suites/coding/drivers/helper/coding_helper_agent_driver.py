@@ -14,6 +14,6 @@ class CodingHelperAgentDriver(Driver):
     suite = "coding"
     gathers = [HelperAgentDriver]
     rank_order = HelperAgentDriver.rank_order
-    work_stop = WorkStop.HANDOVER
+    work_stop = WorkStop.JOB_REPORT
     responder = Responder.PARENT
     instructions = [CONTEXT_LINE]

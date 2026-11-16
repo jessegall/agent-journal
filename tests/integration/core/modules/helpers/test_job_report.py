@@ -3,7 +3,7 @@ from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.models.hook_call import HookCall
-from core.modules.drivers.models.enums.handover_state import HandoverState
+from core.modules.drivers.models.enums.job_report_state import JobReportState
 from core.modules.helpers.agent_messages.unsaved_report_message import UnsavedReportMessage
 from core.modules.messages.commands.record_parent_report.record_parent_report_handler import RecordParentReportHandler
 from core.modules.messages.models.message import Message
@@ -54,7 +54,7 @@ def test_a_report_whose_save_fails_refuses_the_stop_once_then_keeps_its_text_and
     first, second = stop_twice_with_a_failing_save(story, helper)
     job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).newest().first()
     assert first.refusal == UnsavedReportMessage.declared().agent_message().text and not second.refusal
-    assert (job.handover_state, job.failed_text, job.ended_at) == (HandoverState.CAPTURE_FAILED, REPORT, None)
+    assert (job.report_state, job.failed_text, job.ended_at) == (JobReportState.CAPTURE_FAILED, REPORT, None)
 
 
 def test_a_kept_report_is_saved_again_by_its_retry_once_the_save_works(played):
@@ -64,7 +64,7 @@ def test_a_kept_report_is_saved_again_by_its_retry_once_the_save_works(played):
     story.container.rebuild(RecordParentReportHandler, RecordParentReportHandler)
     story.expect_success(f"helper report-retry {helper.number}", actor=story.user)
     job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).newest().first()
-    assert (job.handover_state, job.returned, job.ended_at is not None) == (HandoverState.COMPLETED, REPORT, True)
+    assert (job.report_state, job.returned, job.ended_at is not None) == (JobReportState.COMPLETED, REPORT, True)
 
 
 def test_a_dropped_kept_report_ends_its_job_with_no_report(played):
@@ -73,4 +73,4 @@ def test_a_dropped_kept_report_ends_its_job_with_no_report(played):
     stop_twice_with_a_failing_save(story, helper)
     story.expect_success(f"helper report-drop {helper.number}", actor=story.user)
     job = story.container.get(Queries).query(HelperJob).filter(helper_id=helper.id).newest().first()
-    assert (job.handover_state, job.ended_at is not None) == (HandoverState.REPORT_MISSING, True)
+    assert (job.report_state, job.ended_at is not None) == (JobReportState.REPORT_MISSING, True)

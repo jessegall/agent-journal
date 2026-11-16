@@ -15,7 +15,7 @@ from engine.enums.state_end import StateEnd
 from engine.enums.work_type import WorkType
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
-from core.modules.drivers.models.enums.handover_state import HandoverState
+from core.modules.drivers.models.enums.job_report_state import JobReportState
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 
@@ -43,7 +43,7 @@ class JobWorkStates(StateSource):
         for agent in agents:
             job = self.jobs.open_job(agent.agent_id) if agent.agent_type == HELPER_TYPE else None
             # a job whose report save failed twice waits for its retry or drop, so the helper rests
-            if job is not None and job.handover_state is not HandoverState.CAPTURE_FAILED:
+            if job is not None and job.report_state is not JobReportState.CAPTURE_FAILED:
                 stop_reason = Reason(JOB_STOP_KEY, DecisionClass.BLOCK, JOB_RANK, f"job {job.id} is open")
                 agent_jobs[agent.agent_id] = (RequiredState(Working(WorkReference(WorkType.JOB, job.id, f"job {job.id}"), True, stop_reason), JOB_RANK,
                                                     StateKey("Working", RowReference(JOB_SUBJECT, job.id), f"job:{job.id}")),)
@@ -53,5 +53,5 @@ class JobWorkStates(StateSource):
     def ends(self, subjects: Sequence[RowReference]) -> Mapping[RowReference, StateEnd]:
         job_ids = [subject.row_id for subject in subjects if subject.model == JOB_SUBJECT]
         jobs = self.queries.query(HelperJob).matching(Among("id", job_ids)).every_row(ENDED_JOBS_REASON) if job_ids else []
-        return {RowReference(JOB_SUBJECT, job.id): StateEnd.SUBMITTED if job.handover_state is HandoverState.COMPLETED else StateEnd.CLOSED
+        return {RowReference(JOB_SUBJECT, job.id): StateEnd.SUBMITTED if job.report_state is JobReportState.COMPLETED else StateEnd.CLOSED
                 for job in jobs if job.ended_at is not None}

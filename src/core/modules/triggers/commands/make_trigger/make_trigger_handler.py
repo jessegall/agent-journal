@@ -25,4 +25,4 @@ class MakeTriggerHandler(Handler[MakeTrigger, Trigger]):
         if command.action is TriggerAction.SKILL and not any(skill.folder == command.details.skill for skill in self.catalogue.skills()):
             raise Refusal(f"skill {command.details.skill} is not available", "choose a skill from journal skill list")
         text = f"Read {command.details.skill}" if command.action is TriggerAction.SKILL else command.text
-        return self.repository.save(Trigger(creator_id=context.actor.id, phrases=tuple(command.phrases), action=command.action, text=text, needs_enabling=self.approval.person_required(context.actor), **asdict(command.details)), context)
+        return self.repository.save(Trigger(creator_id=context.actor.id, phrases=tuple(command.phrases), action=command.action, text=text, requires_enabling=self.approval.person_required(context.actor), **asdict(command.details)), context)

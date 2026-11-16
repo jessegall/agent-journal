@@ -17,5 +17,5 @@ class PermissionAnswerers:
         if context.actor.type is ActorType.USER:
             return
         main = MainAgentFinder.newest(self.queries)
-        if request.needs_person or context.actor.id == request.asker_id or main is None or main.id != context.actor.id:
+        if request.requires_person or context.actor.id == request.asker_id or main is None or main.id != context.actor.id:
             raise Refusal(f"only the main agent, or a user where the action needs one, answers request {request.id}")

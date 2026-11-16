@@ -21,6 +21,6 @@ class PermissionRequest(EnvironmentScoped, Model):
     asker_id: int
     action: str
     reason: str
-    needs_person: bool = False
+    requires_person: bool = False
     responder_id: int | None = None
     state: PermissionState = PermissionState.REQUESTED

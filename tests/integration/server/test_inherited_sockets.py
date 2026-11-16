@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, Mock
 import pytest
 
 from engine.journal.journal_home import JournalHome
-from server.handover.handover_descriptors import QUEUED_CONNECTIONS, HandoverDescriptors
+from server.takeover.takeover_descriptors import QUEUED_CONNECTIONS, TakeoverDescriptors
 from server.request.journal_server import JournalServer
 from engine.serving.server_files import ServerFiles
 from server.viewer.viewer_listener import ViewerListener
@@ -77,5 +77,5 @@ def test_the_lock_stays_held_while_its_descriptor_moves_to_the_next_server(tmp_p
 
 
 def test_descriptors_travel_as_text():
-    descriptors = HandoverDescriptors(3, 4, 5, 6, 7)
-    assert HandoverDescriptors.parsed(descriptors.text) == descriptors
+    descriptors = TakeoverDescriptors(3, 4, 5, 6, 7)
+    assert TakeoverDescriptors.parsed(descriptors.text) == descriptors

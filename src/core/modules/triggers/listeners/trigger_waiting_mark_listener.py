@@ -19,10 +19,10 @@ class TriggerWaitingMarkListener(MarkListener[Changed[Trigger]]):
         trigger = event.row
         name = trigger.name or trigger.text
         if "ended_at" in logged.data and trigger.ended_at is not None:
-            if trigger.needs_enabling:
+            if trigger.requires_enabling:
                 self.shown(logged, trigger, TriggerMarkVariant.REMOVED, f"Trigger removed: {name}", True)
-        elif "needs_enabling" in logged.data:
-            if trigger.needs_enabling:
+        elif "requires_enabling" in logged.data:
+            if trigger.requires_enabling:
                 self.shown(logged, trigger, TriggerMarkVariant.WAITING, f"An agent made a trigger that waits for you: {name}", False)
             else:
                 self.shown(logged, trigger, TriggerMarkVariant.ENABLED, f"Trigger enabled: {name}", True)

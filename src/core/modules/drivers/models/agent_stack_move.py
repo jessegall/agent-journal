@@ -23,7 +23,7 @@ class AgentStackMove(Prunable, Model):
     move_type: StackMoveType
     stacked_state_key: str
     reason_text: str
-    version_before: int
+    previous_version: int
     version_after: int
     step_cause: str
     hook_call_id: int | None = None

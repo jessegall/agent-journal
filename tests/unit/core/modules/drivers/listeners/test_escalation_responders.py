@@ -57,9 +57,9 @@ def test_a_retirement_cancels_the_agents_own_escalations_and_passes_its_children
 
 def test_a_driving_setting_moves_the_epoch_but_keeps_the_journals_start():
     saved: list[DriverVersion] = []
-    epoch = DriverVersion(epoch=4, started_at=BOOT)
+    epoch = DriverVersion(change_count=4, started_at=BOOT)
     queries = SimpleNamespace(query=lambda model: SimpleNamespace(first=lambda: epoch))
     repository = SimpleNamespace(save_change=lambda old, new, context: saved.append(new))
     writers = ReadVersionsWriters(queries, repository, SimpleNamespace(), SimpleNamespace(command_scope=lambda *values: nullcontext()))
     writers.bump_environment(1, SimpleNamespace(actor=None, timestamp=LATER))
-    assert (saved[0].epoch, saved[0].started_at) == (5, BOOT)
+    assert (saved[0].change_count, saved[0].started_at) == (5, BOOT)

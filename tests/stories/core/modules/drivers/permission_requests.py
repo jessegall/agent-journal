@@ -39,7 +39,7 @@ def test_a_helpers_write_is_refused_asked_allowed_once_and_run_and_a_second_run_
 def test_an_allowed_request_lets_through_only_the_thing_it_named(new_story):
     story, session, helper = helper_story(new_story)
     story.expect_success(f'permission ask {DESIGN} --reason "save the design page" --person', actor=helper)
-    story.expect_rows(requests(story)[0].needs_person)
+    story.expect_rows(requests(story)[0].requires_person)
     story.expect_hook_refusal(session, design_edit("docs/designs/cart/other.html"), REFUSED)
 
 

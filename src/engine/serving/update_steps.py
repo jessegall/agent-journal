@@ -1,5 +1,5 @@
 PROOF = "proof"
-HANDOVER = "handover"
+TAKEOVER = "handover"
 SERVING = "serving"
 FINISHED = "finished"
 FAILED = "failed"

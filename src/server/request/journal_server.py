@@ -2,7 +2,7 @@ import selectors
 import socket
 import threading
 from socketserver import BaseRequestHandler, UnixStreamServer
-from server.handover.handover_descriptors import QUEUED_CONNECTIONS
+from server.takeover.takeover_descriptors import QUEUED_CONNECTIONS
 from server.context.server_context import ServerContext
 from server.work.tracked_requests import TrackedRequests
 

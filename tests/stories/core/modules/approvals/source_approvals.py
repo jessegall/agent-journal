@@ -49,7 +49,7 @@ def test_a_waiting_trigger_uses_the_shared_dock(waiting_trigger, trigger_viewer,
     story, request = waiting_trigger
     trigger_viewer.value("messages.chat", ["approval", decision, str(request.id)])
     trigger = story.row(Trigger, 1)
-    story.expect_rows((not trigger.needs_enabling) if decision == "accept" else trigger.ended_at is not None)
+    story.expect_rows((not trigger.requires_enabling) if decision == "accept" else trigger.ended_at is not None)
 
 
 @pytest.fixture

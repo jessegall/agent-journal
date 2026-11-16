@@ -15,4 +15,4 @@ class EnableTriggerHandler(Handler[EnableTrigger, Trigger]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: EnableTrigger, context: Context) -> Trigger:
-        return self.repository.update(self.queries.query(Trigger).find(command.trigger_id), context, needs_enabling=False)
+        return self.repository.update(self.queries.query(Trigger).find(command.trigger_id), context, requires_enabling=False)

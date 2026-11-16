@@ -19,7 +19,7 @@ class ReadVersionsRows:
                                         lambda: self.queries.query(AgentStack).filter(session_agent_id=agent_id).first())
 
     def driver_version(self) -> DriverVersion | None:
-        return self.request_values.read("drivers.driver-epoch", self.database.change_mark, lambda: self.queries.query(DriverVersion).first())
+        return self.request_values.read("drivers.driver-version", self.database.change_mark, lambda: self.queries.query(DriverVersion).first())
 
     def program_version(self, program: str) -> ProgramVersion | None:
-        return self.request_values.read(f"drivers.program-epoch:{program}", self.database.change_mark, lambda: self.queries.query(ProgramVersion).filter(program=program).first())
+        return self.request_values.read(f"drivers.program-version:{program}", self.database.change_mark, lambda: self.queries.query(ProgramVersion).filter(program=program).first())

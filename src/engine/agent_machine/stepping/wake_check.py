@@ -42,7 +42,7 @@ class WakeCheck:
     @staticmethod
     def has_open_job(view: AgentView, stack: Stack) -> bool:
         top = stack.work_level_top().state
-        return view.work_stop is WorkStop.HANDOVER and isinstance(top, Working) and top.work.is_job()
+        return view.work_stop is WorkStop.JOB_REPORT and isinstance(top, Working) and top.work.is_job()
 
     @staticmethod
     def work_number(stack: Stack) -> str:

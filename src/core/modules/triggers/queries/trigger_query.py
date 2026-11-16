@@ -20,7 +20,7 @@ class TriggerQuery(Query[Trigger]):
         return list(self.kept.read(open_triggers, lambda: tuple(open_triggers.get()), name="triggers.open_rows"))
 
     def active(self) -> list[Trigger]:
-        return [trigger for trigger in self.open() if trigger.paused_at is None and not trigger.needs_enabling]
+        return [trigger for trigger in self.open() if trigger.paused_at is None and not trigger.requires_enabling]
 
     def phrased(self) -> list[Trigger]:
         return [trigger for trigger in self.active() if not trigger.is_scheduled]

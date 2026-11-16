@@ -37,8 +37,8 @@ class AskPermissionHandler(Handler[AskPermission, PermissionRequest]):
             Among("state", (PermissionState.REQUESTED, PermissionState.ALLOWED))).first()
         if open_request is not None:
             return open_request
-        request = self.repository.save(PermissionRequest(asker_id=context.actor.id, action=command.action, reason=command.reason, needs_person=command.needs_person), context)
-        if command.needs_person:
+        request = self.repository.save(PermissionRequest(asker_id=context.actor.id, action=command.action, reason=command.reason, requires_person=command.requires_person), context)
+        if command.requires_person:
             question = f"Allow {AgentLabel.labelled(self.queries.query(Agent).find(context.actor.id)).text} to do this once: {command.action}?"
             self.bus.dispatch(RequestUserApproval(UserApprovalRefusal(question, command=AllowPermission(request.id), request_reason=command.reason), (), context.actor.id), context)
             return request

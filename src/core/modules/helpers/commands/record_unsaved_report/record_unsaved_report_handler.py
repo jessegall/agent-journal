@@ -4,7 +4,7 @@ from engine.driver.message_sender import MessageSender
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.drivers.models.enums.handover_state import HandoverState
+from core.modules.drivers.models.enums.job_report_state import JobReportState
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.helpers.commands.record_unsaved_report.record_unsaved_report import RecordUnsavedReport
 from core.modules.helpers.agent_messages.kept_report_message import KeptReportMessage
@@ -25,11 +25,11 @@ class RecordUnsavedReportHandler(Handler[RecordUnsavedReport, None]):
 
     def handle(self, command: RecordUnsavedReport, context: Context) -> None:
         job = self.queries.query(HelperJob).find(command.job_id)
-        failures = job.handover_failures + 1
+        failures = job.report_failures + 1
         if failures < KEPT_TEXT_FAILURES:
-            self.repository.save(job.changed(handover_failures=failures), context)
+            self.repository.save(job.changed(report_failures=failures), context)
             return
-        self.repository.save(job.changed(handover_failures=failures, handover_state=HandoverState.CAPTURE_FAILED, failed_text=command.text), context)
+        self.repository.save(job.changed(report_failures=failures, report_state=JobReportState.CAPTURE_FAILED, failed_text=command.text), context)
         helper = self.agents.find(job.helper_id) if job.helper_id is not None else None
         # the parent is told once, as the text is first kept; a later failed retry adds nothing
         if helper is not None and helper.parent_id is not None and failures == KEPT_TEXT_FAILURES:

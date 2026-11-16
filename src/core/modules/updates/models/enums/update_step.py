@@ -10,7 +10,7 @@ class UpdateStep(StrEnum):
     new server serves, then the update is finished or was refused."""
 
     PROOF = "proof"
-    HANDOVER = "handover"
+    TAKEOVER = "handover"
     SERVING = "serving"
     FINISHED = "finished"
     FAILED = "failed"
@@ -40,7 +40,7 @@ class UpdateStep(StrEnum):
     def text(self, version: str) -> str:
         if self is UpdateStep.PROOF:
             return "Updating the server: proving the new code"
-        if self is UpdateStep.HANDOVER:
+        if self is UpdateStep.TAKEOVER:
             return "Updating the server: the running server hands over"
         if self is UpdateStep.SERVING:
             return "Updating the server: the new server took over"

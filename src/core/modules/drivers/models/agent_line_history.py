@@ -13,4 +13,4 @@ class AgentLineHistory(Model):
 
     session_agent_id: int
     source_key: str
-    last_said_at: Timestamp
+    last_given_at: Timestamp

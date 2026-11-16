@@ -5,9 +5,9 @@ from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
 from engine.setting.setting_values import SettingValues
 from core.modules.agents.support.agent_rows import AgentRows
-from core.modules.drivers.models.enums.handover_state import HandoverState
+from core.modules.drivers.models.enums.job_report_state import JobReportState
 from core.modules.drivers.models.helper_job import HelperJob
-from core.modules.drivers.support.driver_settings import HANDOVER_RETRIES_SETTING
+from core.modules.drivers.support.driver_settings import REPORT_RETRIES_SETTING
 from core.modules.helpers.commands.record_unsaved_report.record_unsaved_report import RecordUnsavedReport
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 
@@ -22,10 +22,10 @@ class KeptReportRetries:
     the report once."""
 
     def __call__(self, container: Container) -> None:
-        tries = container.get(SettingValues).number(HANDOVER_RETRIES_SETTING)
-        jobs = container.get(Queries).query(HelperJob).every_environment(KEPT_REPORTS_REASON).filter(handover_state=HandoverState.CAPTURE_FAILED, ended_at=None).every_row(KEPT_REPORTS_REASON)
+        tries = container.get(SettingValues).number(REPORT_RETRIES_SETTING)
+        jobs = container.get(Queries).query(HelperJob).every_environment(KEPT_REPORTS_REASON).filter(report_state=JobReportState.CAPTURE_FAILED, ended_at=None).every_row(KEPT_REPORTS_REASON)
         for job in jobs:
-            if job.helper_id is None or job.handover_failures >= STOP_SAVE_FAILURES + tries:
+            if job.helper_id is None or job.report_failures >= STOP_SAVE_FAILURES + tries:
                 continue
             helper = container.get(AgentRows).find_unscoped(job.helper_id)
             if helper.parent_id is None:

@@ -60,7 +60,7 @@ def home(tmp_path: Path, request) -> Generator[JournalHome]:
     assert InstallJournal(project, SOURCE).run() == 0
     journal = JournalHome(project / ".journal")
     if getattr(request, "param", "") == "takeover-error":
-        (journal.folder / "src" / "server" / "handover" / "successor_start.py").write_text(
+        (journal.folder / "src" / "server" / "takeover" / "successor_start.py").write_text(
             "class SuccessorStart:\n"
             "    def __init__(self, *args): pass\n"
             "    def run(self, tag): raise OSError('takeover connection failed')\n"

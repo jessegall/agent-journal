@@ -24,7 +24,7 @@ def saved(story, view, step):
 
 def epoch(story) -> int:
     row = story.container.get(Queries).query(DriverVersion).every_environment("one test's environments").first()
-    return row.epoch if row is not None else 0
+    return row.change_count if row is not None else 0
 
 
 def test_a_pause_written_after_the_view_was_read_keeps_that_step_from_saving(played):

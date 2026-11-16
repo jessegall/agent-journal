@@ -69,7 +69,7 @@ class StoredStepWriter(StepWriter):
         row = self.saved_stack(row, view, step, context)
         for move in record.moves:
             self.repository.save(AgentStackMove(session_agent_id=view.agent.agent_id, move_type=move.move_type, stacked_state_key=f"{move.stacked_state_key.state_name}:{move.stacked_state_key.generation}" if move.stacked_state_key is not None else "",
-                                                reason_text=move.reason_text, version_before=view.read_versions.stack_version, version_after=row.version,
+                                                reason_text=move.reason_text, previous_version=view.read_versions.stack_version, version_after=row.version,
                                                 step_cause=STEP_CAUSE, hook_call_id=hook_call_id, stacked_state_end=move.stacked_state_end, actor_id=move.actor_id), context)
         self.open_blocks(record.blocks_opened, view, record, context)
         self.close_blocks(record.blocks_closed, context)
@@ -106,8 +106,8 @@ class StoredStepWriter(StepWriter):
     def read_versions_matches(self, row: AgentStack | None, view: AgentView) -> bool:
         driver_version = self.stacks.driver_version()
         program_version = self.stacks.program_version(view.program_name)
-        current = (row.version if row is not None else 0, driver_version.epoch if driver_version is not None else 0,
-                   program_version.epoch if program_version is not None else 0)
+        current = (row.version if row is not None else 0, driver_version.change_count if driver_version is not None else 0,
+                   program_version.change_count if program_version is not None else 0)
         return current == (view.read_versions.stack_version, view.read_versions.driver_version, view.read_versions.program_version)
 
     @staticmethod

@@ -27,8 +27,8 @@ class StopAnswer:
         return cls(StopAnswerType.REFUSED, tuple(reasons))
 
     @classmethod
-    def handover(cls, work: WorkReference) -> "StopAnswer":
-        return cls(StopAnswerType.HANDOVER, work=work)
+    def job_report(cls, work: WorkReference) -> "StopAnswer":
+        return cls(StopAnswerType.JOB_REPORT, work=work)
 
     @classmethod
     def safety_rest(cls) -> "StopAnswer":

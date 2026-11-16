@@ -24,7 +24,7 @@ from engine.agent_machine.states.pause_fact import PauseFact
 from engine.agent_machine.record.question import Question
 from engine.agent_machine.record.refusal_counts import RefusalCounts
 from engine.agent_machine.record.rewrite import Rewrite
-from engine.agent_machine.stepping.agent_state_machine import FALLBACK_KEY, HANDOVER_KEY, AgentStateMachine
+from engine.agent_machine.stepping.agent_state_machine import FALLBACK_KEY, JOB_REPORT_KEY, AgentStateMachine
 from engine.agent_machine.stepping.constraints import PAUSE_KEY
 from engine.driver.block_condition import BlockCondition
 from engine.driver.agent_message import AgentMessage
@@ -67,7 +67,7 @@ def journal_line(line: str, *parts: Sequence[str]) -> Question:
     return QuestionSamples.question(HookSamples.shell(line, *(ShellPart("journal", CommandCategory.JOURNAL, list(arguments)) for arguments in parts)))
 
 
-WORK_STOPS = {"main": WorkStop.REFUSE_DURING_WORK, "helper": WorkStop.HANDOVER}
+WORK_STOPS = {"main": WorkStop.REFUSE_DURING_WORK, "helper": WorkStop.JOB_REPORT}
 
 
 def view(agent_type: str = "main", **changes: object) -> AgentView:
@@ -98,7 +98,7 @@ def test_a_wait_on_top_of_the_work_lets_the_stop_through_and_resets_the_counts()
 
 def test_a_helper_stop_on_its_open_job_hands_the_job_in() -> None:
     record = AgentStateMachine().step(view("helper", states=(working(WorkType.JOB),)), STOP).record
-    assert (record.decision.admits(), record.shown_reason.key, record.shown_reason.handover) == (True, HANDOVER_KEY, WorkReference(WorkType.JOB, 6, "task 6"))
+    assert (record.decision.admits(), record.shown_reason.key, record.shown_reason.job_report) == (True, JOB_REPORT_KEY, WorkReference(WorkType.JOB, 6, "task 6"))
 
 
 def test_a_block_refuses_an_edit_past_its_grace_and_lets_a_read_through() -> None:
@@ -191,7 +191,7 @@ def test_a_paused_agent_may_answer_with_a_message_and_rest_but_not_edit_or_hand_
     assert machine.step(paused(), EDIT).record.shown_reason.key == PAUSE_KEY
     assert machine.step(paused(blocks=(block("documents.open", "documents.open", is_strict=True),)), journal_line("journal message send hi", ("message", "send", "hi"))).record.decision.admits()
     rest = machine.step(paused("helper", states=(working(WorkType.JOB),)), STOP).record
-    assert (rest.decision.admits(), rest.shown_reason.handover) == (True, None)
+    assert (rest.decision.admits(), rest.shown_reason.job_report) == (True, None)
 
 
 

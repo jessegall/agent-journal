@@ -1,6 +1,6 @@
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
-from core.modules.drivers.models.enums.handover_state import HandoverState
+from core.modules.drivers.models.enums.job_report_state import JobReportState
 from core.modules.drivers.models.helper_job import HelperJob
 
 
@@ -11,7 +11,7 @@ class KeptReports:
         self.queries = queries
 
     def kept_job(self, helper_id: int) -> HelperJob | None:
-        return self.queries.query(HelperJob).filter(helper_id=helper_id, handover_state=HandoverState.CAPTURE_FAILED, ended_at=None).newest().first()
+        return self.queries.query(HelperJob).filter(helper_id=helper_id, report_state=JobReportState.CAPTURE_FAILED, ended_at=None).newest().first()
 
     def required_job(self, helper_id: int) -> HelperJob:
         job = self.kept_job(helper_id)

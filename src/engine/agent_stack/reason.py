@@ -19,7 +19,7 @@ class Reason:
     text: str
     lifting_lines: tuple[str, ...] = ()
     subject: RowReference | None = None
-    handover: WorkReference | None = field(default=None, compare=False)
+    job_report: WorkReference | None = field(default=None, compare=False)
     # a safety refusal has no skip, which the refusal skip command reads from the record
     is_safety: bool = False
 

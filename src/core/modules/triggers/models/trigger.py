@@ -43,7 +43,7 @@ class Trigger(Model):
     conditions: str = "[]"
     extra_actions: str = "[]"
     paused_at: Timestamp | None = None
-    needs_enabling: bool = False
+    requires_enabling: bool = False
 
     def __post_init__(self) -> None:
         if self.action is TriggerAction.SKILL and self.next_at is not None:

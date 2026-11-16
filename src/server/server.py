@@ -40,9 +40,9 @@ from server.execution.round_tickets import RoundTickets
 from server.work.booting_work import BootingWork
 from server.work.boot_mark import BootMark
 from server.work.code_sync_work import CodeSyncWork
-from server.handover.code_version import CodeVersion
-from server.handover.code_folders import CodeFolders
-from server.handover.handover_descriptors import HandoverDescriptors
+from server.takeover.code_version import CodeVersion
+from server.takeover.code_folders import CodeFolders
+from server.takeover.takeover_descriptors import TakeoverDescriptors
 from server.door.hosted_journal_door import HostedJournalDoor
 from server.door.local_journal_door import LocalJournalDoor
 from server.request.journal_server import JournalServer
@@ -74,7 +74,7 @@ from server.request.request_handler import RequestHandler
 from server.tick.server_backup import ServerBackup
 from server.tick.inactive_server_shutdown import InactiveServerShutdown
 from engine.serving.server_files import ServerFiles
-from server.handover.waiting_server import WaitingServer
+from server.takeover.waiting_server import WaitingServer
 from functools import partial
 from server.execution.write_turn_queue import WriteTurnQueue
 from server.work.rounds.per_round_container import PerRoundContainer
@@ -148,7 +148,7 @@ def main(argv: list[str]) -> int:
         start_check.check_host()
     except Refusal as refusal:
         return refused_start_code(files, refusal)
-    waiting_server = WaitingServer(home, HandoverDescriptors.parsed(arguments.take_over)) if arguments.take_over else None
+    waiting_server = WaitingServer(home, TakeoverDescriptors.parsed(arguments.take_over)) if arguments.take_over else None
     if waiting_server is not None:
         files.keep_lock_descriptor(waiting_server.descriptors.lock)
     elif files.acquire_lock():

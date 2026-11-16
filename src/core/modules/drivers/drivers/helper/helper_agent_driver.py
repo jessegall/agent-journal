@@ -13,5 +13,5 @@ class HelperAgentDriver(Driver):
     agent_type = "helper"
     suite = "core"
     rank_order = HELPER_RANK_ORDER
-    work_stop = WorkStop.HANDOVER
+    work_stop = WorkStop.JOB_REPORT
     responder = Responder.PARENT

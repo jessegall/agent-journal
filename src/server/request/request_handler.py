@@ -33,7 +33,7 @@ from server.work.server_instance import server_instance
 from server.request.journal_server import JournalServer
 from server.work.listeners.listener_wake import ListenerWake
 from server.door.socket_peer import socket_peer
-from server.handover.successor_start import SuccessorStart
+from server.takeover.successor_start import SuccessorStart
 from contextlib import nullcontext
 
 EXIT_CODE_TRAILER = "Journal-Exit-Code"

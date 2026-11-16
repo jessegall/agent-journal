@@ -9,7 +9,7 @@ from engine.journal.journal_home import JournalHome
 from engine.errors.refusal import Refusal
 from engine.connection.unix_connection import UnixConnection
 from engine.enums.log_level import LogLevel
-from engine.serving.update_steps import FAILED, FINISHED, HANDOVER, PROOF, SERVING, UpdateSteps
+from engine.serving.update_steps import FAILED, FINISHED, TAKEOVER, PROOF, SERVING, UpdateSteps
 from engine.serving.server_files import ServerFiles
 from engine.serving.server_limits import PROOF_LIMIT_SECONDS
 from engine.serving.launcher_replacement import LauncherReplacement
@@ -44,7 +44,7 @@ class CodeDelivery:
             self.steps.record(PROOF)
         self.request_takeover(tag, running_pid)
         if running_pid:
-            self.steps.record(HANDOVER)
+            self.steps.record(TAKEOVER)
             self.wait_new_server(running_pid)
             self.steps.record(SERVING)
 
@@ -62,7 +62,7 @@ class CodeDelivery:
             self.files.log_line(f"code version {tag} handover failed: {type(error).__name__}: {error}", LogLevel.ERROR)
             self.steps.record(FAILED, error.text if isinstance(error, Refusal) else str(error))
             return
-        self.steps.record(HANDOVER if running_pid else FINISHED, tag)
+        self.steps.record(TAKEOVER if running_pid else FINISHED, tag)
 
     def request_takeover(self, tag: str, running_pid: str) -> None:
         if not running_pid:
