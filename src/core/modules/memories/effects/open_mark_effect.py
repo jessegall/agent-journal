@@ -20,6 +20,6 @@ class OpenMarkEffect(EventEffect):
     def __init__(self, marks: ReachedMark) -> None:
         self.marks = marks
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         mark = self.marks.reached(event, agent_id) if event is not None else None
         return [OpenMemoryMark(agent_id, mark.percent)] if mark is not None else []

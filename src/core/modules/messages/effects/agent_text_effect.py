@@ -19,6 +19,6 @@ class AgentTextEffect(EventEffect):
     def __init__(self, answer: AgentTextAnswer) -> None:
         self.answer = answer
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         message = self.answer.shown(event, agent_id).message if event is not None else None
         return [message] if message is not None else []

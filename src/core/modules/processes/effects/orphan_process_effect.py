@@ -17,5 +17,5 @@ class OrphanProcessEffect(EventEffect):
     def __init__(self, check: OrphanCheck) -> None:
         self.check = check
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         return self.check.orphaned(event, agent_id).commands

@@ -14,7 +14,7 @@ class SessionEndEffect(EventEffect):
     key = "drivers.session-end"
     events = [HookEventName.SESSION_END]
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         if event is None or event.is_launch_clear_end:
             return []
         return [EndAgent(agent_id)]

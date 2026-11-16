@@ -18,5 +18,5 @@ class PhraseTriggerEffect(EventEffect):
     def __init__(self, match: PhraseTriggerMatch) -> None:
         self.match = match
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         return self.match.answer(event, agent_id).commands if event is not None else []

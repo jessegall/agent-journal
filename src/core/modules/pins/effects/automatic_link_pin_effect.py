@@ -15,7 +15,7 @@ class AutomaticLinkPinEffect(EventEffect):
     def __init__(self, check: LinkPinCheck) -> None:
         self.check = check
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         tool = event.tool
         if tool is None:
             return []

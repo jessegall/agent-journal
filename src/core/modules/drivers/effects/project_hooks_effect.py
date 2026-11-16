@@ -16,5 +16,5 @@ class ProjectHooksEffect(EventEffect):
     def __init__(self, answers: ProjectHookAnswers) -> None:
         self.answers = answers
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         return self.answers.answer(event, agent_id).commands if event is not None else []

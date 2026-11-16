@@ -22,7 +22,7 @@ class LeftoverRunEffect(EventEffect):
     def __init__(self, processes: ProcessQuery, types: HelperTypeBook, roles: AgentRoleReader) -> None:
         self.processes, self.types, self.roles = processes, types, roles
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         if event is None or event.is_continuing or self.types.behaviours(self.roles.role(agent_id)).continues_runs:
             return []
         return [OrphanProcess(process.id) for process in self.processes.agent_started(agent_id).running().every_row(LEFTOVER_RUNS_REASON)]

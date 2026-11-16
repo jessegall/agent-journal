@@ -22,5 +22,5 @@ class InactiveWorkerStopEffect(EventEffect):
     def __init__(self, idle: InactiveWorkers) -> None:
         self.inactive_workers = idle
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         return [EndInactiveWorker(worktree.session_agent_id) for worktree in self.inactive_workers.idle(event, agent_id)]

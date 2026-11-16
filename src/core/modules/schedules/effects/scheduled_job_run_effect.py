@@ -29,9 +29,9 @@ class ScheduledJobRunEffect(Effect):
 
     def commands(self, view: AgentView, record: "DecisionRecord") -> Sequence[Command[object]]:
         event = record.action.event
-        return self.commands_of(event, view.agent.agent_id) if event is not None else []
+        return self.effect_commands(event, view.agent.agent_id) if event is not None else []
 
-    def commands_of(self, event: HookEvent, agent_id: int) -> list[Command[object]]:
+    def effect_commands(self, event: HookEvent, agent_id: int) -> list[Command[object]]:
         prompt = (event.prompt or "").strip()
         jobs = self.queries.query(ScheduledJob).filter(session_agent_id=agent_id).matching(IsNull("ended_at")).get()
         return [RecordScheduledJobRun(job.id) for job in jobs if job.prompt.strip() == prompt]

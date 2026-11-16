@@ -18,7 +18,7 @@ class OrphanWorktreeEffect(EventEffect):
     def __init__(self, clock: Clock) -> None:
         self.clock = clock
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         if self.clock.timestamp().value.minute != 0:
             return []
         return [RemoveOrphanWorktrees()]

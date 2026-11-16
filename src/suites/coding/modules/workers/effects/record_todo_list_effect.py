@@ -16,7 +16,7 @@ class RecordTodoListEffect(EventEffect):
     key = "workers.record-todo-list"
     events = [HookEventName.POST_TOOL_USE]
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         tool = event.tool
         tool_input = event.raw.get("tool_input")
         todos = tool_input.get("todos") if tool is not None and tool.name == TODO_TOOL and is_mapping(tool_input) else None

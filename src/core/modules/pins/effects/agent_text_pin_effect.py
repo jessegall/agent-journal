@@ -19,6 +19,6 @@ class AgentTextPinEffect(EventEffect):
     def __init__(self, check: LinkPinCheck) -> None:
         self.check = check
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         text = LinkPinCheck.finished_text(event)
         return self.check.change_request_pins(text) if text is not None else []

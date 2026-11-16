@@ -19,5 +19,5 @@ class UnusedLauncherEffect(EventEffect):
     def __init__(self, processes: LauncherProcesses) -> None:
         self.processes = processes
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         return [*(StopUnusedLauncher(serving.pid, unused.pid) for serving, unused in self.processes.unused())]

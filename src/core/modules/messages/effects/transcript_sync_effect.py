@@ -45,7 +45,7 @@ class TranscriptSyncEffect(EventEffect):
         self.queries, self.providers, self.transcripts, self.hook_calls, self.texts, self.settings, self.targets = queries, providers, transcripts, hook_calls, texts, settings, targets
         self.clock, self.minute_tick = clock, minute_tick
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         return self.commands_at(event if event is not None else self.minute_tick.event(agent_id), agent_id)
 
     def commands_at(self, event: HookEvent, agent_id: int) -> list[Command[object]]:

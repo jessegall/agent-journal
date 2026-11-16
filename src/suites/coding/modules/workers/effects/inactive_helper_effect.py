@@ -17,5 +17,5 @@ class InactiveHelperEffect(EventEffect):
     events = [HookEventName.TICK]
     agent_types = [AgentRole.MAIN.value, Worker.key]
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         return [SendSilentAgentLines()]

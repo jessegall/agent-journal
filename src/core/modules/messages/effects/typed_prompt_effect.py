@@ -25,7 +25,7 @@ class TypedPromptEffect(EventEffect):
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         text = (event.prompt or "").strip() if event is not None else ""
         if not text or text.startswith(PROGRAM_COMMAND) or TranscriptAuthor.author(USER_AUTHOR, text) != USER_AUTHOR or self.is_scheduled_job(agent_id, text):
             return []

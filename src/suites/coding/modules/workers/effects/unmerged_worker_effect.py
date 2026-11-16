@@ -18,5 +18,5 @@ class UnmergedWorkerEffect(EventEffect):
     def __init__(self, unmerged: UnmergedWorkers) -> None:
         self.unmerged = unmerged
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         return self.unmerged.answer(event, agent_id).stale

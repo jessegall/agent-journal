@@ -28,10 +28,10 @@ class ScheduledJobEffect(Effect):
 
     def commands(self, view: AgentView, record: "DecisionRecord") -> Sequence[Command[object]]:
         event = record.action.event
-        return ScheduledJobEffect.commands_of(event, view.agent.agent_id) if event is not None else []
+        return ScheduledJobEffect.effect_commands(event, view.agent.agent_id) if event is not None else []
 
     @staticmethod
-    def commands_of(event: HookEvent, agent_id: int) -> list[Command[object]]:
+    def effect_commands(event: HookEvent, agent_id: int) -> list[Command[object]]:
         tool = event.tool
         if tool is None or tool.name not in (SCHEDULE_TOOL, REMOVAL_TOOL):
             return []

@@ -25,8 +25,8 @@ class EventEffect(Effect):
         cls.includes_steps = HookEventName.TICK in cls.events
 
     def commands(self, view: AgentView, record: "DecisionRecord") -> Sequence[Command[object]]:
-        return self.commands_of(record.action.event, view.agent.agent_id)
+        return self.effect_commands(record.action.event, view.agent.agent_id)
 
     # the commands this event runs; no event is the agent's minute step
     @abstractmethod
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]: ...
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]: ...

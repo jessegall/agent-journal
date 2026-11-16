@@ -17,5 +17,5 @@ class WatchLinesEffect(EventEffect):
     def __init__(self, progress: WatchProgress) -> None:
         self.progress = progress
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         return self.progress.progress(event, agent_id).commands if event is not None else []

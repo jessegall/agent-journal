@@ -18,5 +18,5 @@ class MessageReadEffect(EventEffect):
     def __init__(self, reads: MessageReads) -> None:
         self.reads = reads
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         return [NoteMessageRead(message.id) for message in self.reads.unread(event, agent_id)] if event is not None else []

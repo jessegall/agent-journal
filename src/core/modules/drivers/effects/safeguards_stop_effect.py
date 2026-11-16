@@ -26,7 +26,7 @@ class SafeguardsStopEffect(EventEffect):
     def __init__(self, queries: Queries, hook_calls: HookCallQuery) -> None:
         self.queries, self.hook_calls = queries, hook_calls
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         stop = SafeguardsStop.read(event)
         if stop is None:
             return []

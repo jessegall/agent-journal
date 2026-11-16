@@ -18,6 +18,6 @@ class SequenceTriggerEffect(EventEffect):
     def __init__(self, triggered: HookTriggeredSequence) -> None:
         self.triggered = triggered
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         sequence_id = self.triggered.sequence_id(event, agent_id) if event is not None else None
         return [MoveSequenceRun(START, sequence_id)] if sequence_id is not None else []

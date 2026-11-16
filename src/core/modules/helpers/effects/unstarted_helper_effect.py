@@ -26,7 +26,7 @@ class UnstartedHelperEffect(EventEffect):
     def __init__(self, agents: AgentRows, hook_calls: HookCallQuery, settings: SettingValues, spans: SpanQueries, clock: Clock) -> None:
         self.agents, self.hook_calls, self.settings, self.spans, self.clock = agents, hook_calls, settings, spans, clock
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         limit, now = Interval(self.settings.seconds(UNSTARTED_HELPER_SECONDS)), self.clock.timestamp()
         return [RecordAgentLaunchFailure(helper.id) for helper in self.agents.running_with_read_access(agent_id) if self.is_silent(helper, agent_id, limit, now)]
 

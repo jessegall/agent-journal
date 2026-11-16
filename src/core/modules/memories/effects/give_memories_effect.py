@@ -21,6 +21,6 @@ class GiveMemoriesEffect(EventEffect):
     def __init__(self, memories: KeywordMemories) -> None:
         self.memories = memories
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         memory_ids = self.memories.memory_ids(event, agent_id) if event is not None else ()
         return [GiveMemories(agent_id, memory_ids, DeliveryCause.KEYWORD)] if memory_ids else []

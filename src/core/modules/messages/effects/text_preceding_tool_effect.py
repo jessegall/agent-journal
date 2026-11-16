@@ -25,7 +25,7 @@ class TextPrecedingToolEffect(EventEffect):
     def __init__(self, hook_calls: HookCallQuery, messages: MessageQuery, texts: AgentTextFilter) -> None:
         self.hook_calls, self.messages, self.texts = hook_calls, messages, texts
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         if event is None or event.tool is None:
             return []
         calls = self.hook_calls.display_calls_after_turn(agent_id, event.event_id)

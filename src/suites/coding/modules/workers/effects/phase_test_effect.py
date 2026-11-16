@@ -20,5 +20,5 @@ class PhaseTestEffect(EventEffect):
     def __init__(self, runs: PhaseTestRuns) -> None:
         self.runs = runs
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         return self.runs.answer(event, agent_id).records if event is not None else []

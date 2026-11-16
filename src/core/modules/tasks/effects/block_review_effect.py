@@ -18,6 +18,6 @@ class BlockReviewEffect(EventEffect):
     def __init__(self, review: BlockReviewRound) -> None:
         self.review = review
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         record = self.review.answer(event, agent_id).record if event is not None else None
         return [record] if record is not None else []

@@ -28,7 +28,7 @@ class FullContextCompactionEffect(EventEffect):
     def __init__(self, limit_check: ContextLimitCheck, clock: Clock) -> None:
         self.limit_check, self.clock = limit_check, clock
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         if event is None or not self.is_full_context(event.raw) or self.limit_check.is_compaction_requested(agent_id, self.clock.timestamp()):
             return []
         return [CompactAgentContext(agent_id)]

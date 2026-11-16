@@ -17,5 +17,5 @@ class LongRunDockEffect(EventEffect):
     def __init__(self, docking: RunDocking) -> None:
         self.docking = docking
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         return self.docking.docked(event, agent_id).commands

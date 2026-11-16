@@ -27,7 +27,7 @@ class CompactionWakeEffect(EventEffect):
     def __init__(self, hook_calls: HookCallQuery, compactions: ContextCompactions, clock: Clock, agents: AgentRows) -> None:
         self.hook_calls, self.compactions, self.clock, self.agents = hook_calls, compactions, clock, agents
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         if self.agents.find(agent_id).is_paused:
             return []
         return [WakeCompactedAgent(agent_id)] if self.is_waiting_after_compaction(agent_id) else []

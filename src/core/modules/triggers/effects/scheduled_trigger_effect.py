@@ -20,5 +20,5 @@ class ScheduledTriggerEffect(EventEffect):
     def __init__(self, due: DueTriggers) -> None:
         self.due = due
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         return [FireTrigger(trigger.id) for trigger in self.due.due(event, agent_id)]

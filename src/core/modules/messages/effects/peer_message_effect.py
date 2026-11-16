@@ -35,7 +35,7 @@ class PeerMessageEffect(EventEffect):
     def __init__(self, queries: Queries, providers: Providers, transcripts: TranscriptEntries, minute_tick: MinuteTick) -> None:
         self.queries, self.providers, self.transcripts, self.minute_tick = queries, providers, transcripts, minute_tick
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         event = event if event is not None else self.minute_tick.event(agent_id)
         provider = self.providers.provider(event.program)
         path = provider.transcript_path(event)

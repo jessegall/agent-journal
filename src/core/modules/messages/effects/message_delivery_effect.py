@@ -17,6 +17,6 @@ class MessageDeliveryEffect(EventEffect):
     def __init__(self, undelivered: UndeliveredMessages) -> None:
         self.undelivered = undelivered
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         batch = self.undelivered.batch(event, agent_id)
         return [RecordMessageDelivery(message.id) for message in batch.messages] if batch is not None else []

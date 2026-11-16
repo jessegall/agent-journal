@@ -18,5 +18,5 @@ class PluginEffect(EventEffect):
     def __init__(self, run: PluginHookRun) -> None:
         self.run = run
 
-    def commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
+    def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         return self.run.answer(event, agent_id).commands
