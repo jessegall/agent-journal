@@ -1,5 +1,4 @@
 from tests.stories.core.modules.tasks.support.holder_assignee_check import assignee_of
-from tests.stories.core.support.agent_labels import agent_number
 from engine.query.queries import Queries
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
@@ -16,7 +15,7 @@ class AssignedLaterTask(StoryFixture):
 
     def steps(self, story):
         story.expect_success('task make "Later job" --brief "Do it"', actor=story.agent)
-        story.expect_success(f"task assign {LATER} --to {agent_number(story, story.agent.id)}", actor=story.agent)
+        story.expect_success(f"task assign {LATER} --to {story.agent.id}", actor=story.agent)
 
 
 def task_row(story, task_id):

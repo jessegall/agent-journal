@@ -6,7 +6,6 @@ from core.modules.agents.support.dispatch_policy import DispatchPolicy
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from engine.scope.scopes import Scopes
 from suites.coding.modules.workers.support.worker_policy import WorkerPolicy
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.gone_workers import missing_program, running_worker, worker_story
 
 __all__ = ["missing_program", "running_worker", "worker_story"]
@@ -19,7 +18,7 @@ def answers_after_an_end(story, end: Callable[[], None]) -> dict[str, bool]:
     given end, with no launcher to start it again; the reconcile tick of task 8482 will act on these answers,
     and until it exists the stories read them."""
     story.home.socket(LAUNCHER_SOCKET).unlink(missing_ok=True)
-    story.run(JOB.format(number=agent_number(story, story.worker.id)), actor=story.agent)
+    story.run(JOB.format(number=story.worker.id), actor=story.agent)
     end()
     policy, worker = story.container.get(DispatchPolicy), story.row(Agent, story.worker.id)
     with story.container.get(Scopes).read_scope((), None, 1):

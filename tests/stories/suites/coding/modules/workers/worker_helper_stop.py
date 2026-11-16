@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 from core.modules.messages.models.message import Message
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.testing.fake_launcher import FakeLauncher
@@ -37,7 +36,7 @@ def test_a_worker_may_stop_while_its_helper_works(new_story):
 
 def test_a_worker_with_no_helper_running_is_held_to_its_task(new_story):
     story, worker = worker_with_helper(new_story)
-    story.expect_success(f"helper stop {agent_number(story, read_helper(story, worker).id)}", actor=worker)
+    story.expect_success(f"helper stop {read_helper(story, worker).id}", actor=worker)
     story.expect_hook_refusal(worker_session(story, worker), HookSamples.stop(), "Task 1")
 
 
@@ -53,6 +52,6 @@ def test_a_helpers_report_keeps_the_workers_task_and_worktree(new_story):
 
 def test_a_workers_release_stops_its_helpers_first(new_story):
     story, worker = worker_with_helper(new_story)
-    story.expect_success(f'worker release {agent_number(story, worker.id)} "No longer needed"', actor=story.agent)
+    story.expect_success(f'worker release {worker.id} "No longer needed"', actor=story.agent)
     story.run_listeners()
     story.expect_rows(read_helper(story, worker).ended_at is not None)

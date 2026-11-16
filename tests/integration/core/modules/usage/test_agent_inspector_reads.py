@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 import json
 
 import pytest
@@ -20,7 +19,7 @@ def forty_task_inspector(played):
     story.new_row_id('agent start unrelated-worker codex worker --environment main')
     for number in range(39):
         task = story.new_row_id(f'task make "Inspector task {number}" --brief "Details that are not shown on the agent card" --environment main', actor=story.agent)
-        story.expect_success(f'task assign {task} --to {agent_number(story, worker)}', actor=story.agent)
+        story.expect_success(f'task assign {task} --to {worker}', actor=story.agent)
         story.expect_success(f'task log {task} "History that is not shown on the agent card"', actor=story.agent)
     with server_story(story, listener_thread_started=False) as server:
         yield server, server.expect_viewer_login(server.viewer_key('Ada')), worker
@@ -29,7 +28,7 @@ def forty_task_inspector(played):
 def test_inspector_facts_select_one_agent(forty_task_inspector):
     server, cookie, worker = forty_task_inspector
     answer = server.viewer_line_value(cookie, {'window': 'viewer.shell', 'environment': 'main',
-                                              'line': ['usage', 'agents', '--closed', '--agent', str(agent_number(server.story, worker))]})
+                                              'line': ['usage', 'agents', '--closed', '--agent', str(worker)]})
     server.story.expect_rows([row['id'] for row in answer['rows']] == [worker], len(answer['rows'][0]['tasks']) == 40)
 
 

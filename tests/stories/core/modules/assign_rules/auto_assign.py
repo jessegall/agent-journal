@@ -4,7 +4,6 @@ from engine.enums.actor_type import ActorType
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.assign_rules.support.rule_steps import COMPLEXITY_RULE, condition_values, ENVIRONMENT, MIGRATION_RULE, new_task, TwoPersonRules, rule_line, SonnetWorkerAndFreeTask, task_assignments, task_decision
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
 
 FIRST_RULE = 1
@@ -35,7 +34,7 @@ class RetiredWorkerAndMainRule(StoryFixture):
         story.helper = Actor(story.new_row_id(f"agent start w-9 claude worker --parent {story.agent.id} {ENVIRONMENT}"), ActorType.AGENT)
         story.run(f"assign-rule make --target agent --agent row:{story.helper.id} --condition any {ENVIRONMENT}", actor=story.user)
         story.run(f"agent end {story.helper.id}")
-        story.run(f'agent retire {agent_number(story, story.helper.id)} --reason "not needed"', actor=story.user)
+        story.run(f'agent retire {story.helper.id} --reason "not needed"', actor=story.user)
         story.run(rule_line("any"), actor=story.user)
 
     def expect(self, story: Story) -> None:
@@ -75,7 +74,7 @@ def test_a_rule_whose_worker_is_retired_is_skipped_and_the_next_rule_applies(new
     story = new_story(fixture=RetiredWorkerAndMainRule)
     task_id = new_task(story, '"Fix the login"')
     decision = task_decision(story, task_id)
-    expected = f"rule {FIRST_RULE} skipped: worker {agent_number(story, story.helper.id)} is retired; rule {SECOND_RULE} applied: given to the main agent"
+    expected = f"rule {FIRST_RULE} skipped: worker {story.helper.id} is retired; rule {SECOND_RULE} applied: given to the main agent"
     story.expect_rows(decision.outcome == "assigned", decision.rule_id == SECOND_RULE, decision.reason == expected, detail=str(decision))
 
 

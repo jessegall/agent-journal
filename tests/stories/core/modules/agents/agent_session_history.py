@@ -12,7 +12,6 @@ from engine.database.statement import Statement
 from engine.testing.examples.hook_samples import HookSamples
 from tests.integration.core.modules.helpers.test_cold_sessions import aged
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, helper_agent, resumable_session
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.engine.upgrade.agent_number_migration import AgentsWithoutNumbers, agent_rows
 
@@ -55,7 +54,7 @@ def session_row_count(story) -> int:
 
 
 def sessions_of(story, agent_id: int) -> str:
-    return story.run(f"agent sessions {agent_number(story, agent_id)} --environment main", actor=story.user).output_text
+    return story.run(f"agent sessions {agent_id} --environment main", actor=story.user).output_text
 
 
 def agent_count(story) -> int:
@@ -64,7 +63,7 @@ def agent_count(story) -> int:
 
 def job_launch(story, launcher_answer: bytes = b"started 701\n") -> dict:
     launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=launcher_answer)
-    story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=story.agent)
+    story.expect_success(f'helper send {helper_agent(story).id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
     launcher.server.close()
@@ -120,14 +119,14 @@ def test_a_helper_whose_transcript_is_gone_starts_a_new_session_and_is_told_the_
     command = " ".join(job_launch(story)["command"])
     story.expect_rows(helper_agent(story).id == helper.id, helper_agent(story).session != helper.session, helper.session not in command,
                       UNAVAILABLE_TEXT in command, NEW_SESSION_TEXT in command, detail=command)
-    story.expect_absent(f"agent show {agent_number(story, helper.id)} --environment main", f"session: {helper.session}", actor=story.user)
-    story.expect_text(f"agent sessions {agent_number(story, helper.id)} --environment main", helper.session, "conversation_missing", actor=story.user)
+    story.expect_absent(f"agent show {helper.id} --environment main", f"session: {helper.session}", actor=story.user)
+    story.expect_text(f"agent sessions {helper.id} --environment main", helper.session, "conversation_missing", actor=story.user)
 
 
 def test_a_replacement_the_launcher_cannot_start_keeps_its_new_session_and_the_retry_starts_that_session(cold_helper):
     story = cold_helper
     helper = helper_agent(story)
-    story.run(f'helper send {agent_number(story, helper.id)} "{JOB}"', actor=story.agent)
+    story.run(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     unstarted_session = helper_agent(story).session
     story.expect_rows(unstarted_session != helper.session)
@@ -140,7 +139,7 @@ def test_a_replacement_the_launcher_cannot_start_keeps_its_new_session_and_the_r
 def test_after_a_server_stop_between_replacement_and_launch_the_next_job_starts_the_unstarted_session(cold_helper):
     story = cold_helper
     helper = helper_agent(story)
-    story.run(f'helper send {agent_number(story, helper.id)} "{JOB}"', actor=story.agent)
+    story.run(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     unstarted_session = helper_agent(story).session
     story.expect_rows(unstarted_session != helper.session)
     command = " ".join(job_launch(story)["command"])

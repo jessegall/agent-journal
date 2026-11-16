@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 import socket
 import threading
 
@@ -18,9 +17,9 @@ def test_an_agents_terminal_lines_are_read_from_the_launchers_log_and_after_a_li
     terminal_file = story.home.terminal_file(story.agent.id)
     terminal_file.parent.mkdir(parents=True)
     terminal_file.write_text(TERMINAL_LINES)
-    story.expect_success(f"agent terminal {agent_number(story, story.agent.id)}", "1  ready", "2  Reading cart.py", "3  The total is in cents now")
-    story.expect_success(f"agent terminal {agent_number(story, story.agent.id)} --after 2", "3  The total is in cents now")
-    story.expect_absent(f"agent terminal {agent_number(story, story.agent.id)} --after 2", "1  ready", "2  Reading cart.py")
+    story.expect_success(f"agent terminal {story.agent.id}", "1  ready", "2  Reading cart.py", "3  The total is in cents now")
+    story.expect_success(f"agent terminal {story.agent.id} --after 2", "3  The total is in cents now")
+    story.expect_absent(f"agent terminal {story.agent.id} --after 2", "1  ready", "2  Reading cart.py")
 
 
 def test_a_menu_the_launcher_answered_shows_in_the_chat_with_what_it_pressed(new_story):
@@ -106,6 +105,6 @@ def test_a_resumed_session_reads_and_types_in_the_terminal_of_the_launch_it_runs
     terminal_file.write_text("1\tready\n")
     typing = FakeTyping()
     story.replace(TerminalTyping, typing)
-    story.expect_success(f"agent terminal {agent_number(story, story.agent.id)}", "1  ready")
+    story.expect_success(f"agent terminal {story.agent.id}", "1  ready")
     story.expect_success(f'agent type {story.agent.id} "ls"', actor=story.user)
     story.expect_rows(typing.typed == [(launch_id, "ls")])

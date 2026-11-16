@@ -3,7 +3,6 @@ from core.modules.agents.models.agent import Agent
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.helpers.lifetime_reviewers import START_REVIEW, launches, review_job, reviewers
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.merger_rotation import PROGRAM_SAVE, ended_merger, merger_launch
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
@@ -17,7 +16,7 @@ def test_a_merger_start_on_another_program_reviews_and_a_worker_merge_retire_no_
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
     ended_merger(story)
     story.expect_success(PROGRAM_SAVE.format(program="codex"), actor=story.user)
     merger_launch(story)

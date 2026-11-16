@@ -8,7 +8,6 @@ from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
 from engine.scope.scopes import Scopes
 from core.modules.questions.models.question import Question
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.merger_behind_decisions import MergerBeside, diverge_file, merger, worker_lines
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, repository_environment
 from tests.stories.suites.coding.modules.workers.worktree_behind_check import checks, stale_check, setting
@@ -34,7 +33,7 @@ def clashed(story, repository, worker: Actor) -> None:
     """The merger ordered an update over a file both sides changed, and the update left its markers open."""
     diverge_file(repository, worker, CLASHING_FILE, CLASHING_FILE)
     stale_check(story)
-    story.expect_success(f'merger update {agent_number(story, worker.id)} --why "{CLASHING_FILE} moved on both sides"', actor=merger(story))
+    story.expect_success(f'merger update {worker.id} --why "{CLASHING_FILE} moved on both sides"', actor=merger(story))
     story.expect_refusal("worker update --wait", "The update clashes", actor=worker)
 
 
@@ -47,7 +46,7 @@ def s42_markers_still_open_after_the_wait_reach_the_merger_to_advise_once(story,
     clashed(story, repository, worker)
     waited(story)
     story.expect_rows(sum("update left conflict markers open" in text for text in merger_texts(story)) == 1, detail=str(merger_texts(story)))
-    story.expect_success(f'merger advise {agent_number(story, worker.id)} "keep both totals in {CLASHING_FILE}, then commit"', actor=merger(story))
+    story.expect_success(f'merger advise {worker.id} "keep both totals in {CLASHING_FILE}, then commit"', actor=merger(story))
 
 
 def s43_advice_that_did_not_help_is_passed_to_the_main_agent_with_the_reason(story, repository, worker: Actor) -> None:
@@ -55,16 +54,16 @@ def s43_advice_that_did_not_help_is_passed_to_the_main_agent_with_the_reason(sto
     waited(story)
     waited(story)
     story.expect_rows(any("still has conflict markers after your advice" in text for text in merger_texts(story)), detail=str(merger_texts(story)))
-    story.expect_success(f'merger pass {agent_number(story, worker.id)} "markers still open in {CLASHING_FILE} after one piece of advice"', actor=merger(story))
+    story.expect_success(f'merger pass {worker.id} "markers still open in {CLASHING_FILE} after one piece of advice"', actor=merger(story))
     check = checks(story)[0]
-    story.expect_text(f"agent-line list --agent {story.agent.id}", StalePassedMessage.declared().agent_message(worker=agent_number(story, worker.id), check=check.id).text)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", StalePassedMessage.declared().agent_message(worker=worker.id, check=check.id).text)
     story.expect_text(f"behind-check show {check.id}", f"markers still open in {CLASHING_FILE} after one piece of advice")
     story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.PASSED], detail=str(checks(story)))
 
 
 def s45_the_main_agent_orders_the_update_as_the_merger_would(story, repository, worker: Actor) -> None:
     diverge_file(repository, worker, CLASHING_FILE, CLASHING_FILE)
-    story.expect_success(f"worker update {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker update {worker.id}", actor=story.agent)
     story.expect_rows(expected_agent_message(UpdateOrderedMessage.declared()).matches_text(worker_lines(story, worker)), [check.state for check in checks(story)] == [BehindCheckState.ORDERED],
                       detail=worker_lines(story, worker))
 
@@ -72,8 +71,8 @@ def s45_the_main_agent_orders_the_update_as_the_merger_would(story, repository, 
 def s46_the_main_agent_leaves_a_passed_worker_alone(story, repository, worker: Actor) -> None:
     diverge_file(repository, worker, CLASHING_FILE, CLASHING_FILE)
     stale_check(story)
-    story.expect_success(f'merger pass {agent_number(story, worker.id)} "too large to judge"', actor=merger(story))
-    story.expect_success(f'merger leave {agent_number(story, worker.id)} --why "it merges tomorrow"', actor=story.agent)
+    story.expect_success(f'merger pass {worker.id} "too large to judge"', actor=merger(story))
+    story.expect_success(f'merger leave {worker.id} --why "it merges tomorrow"', actor=story.agent)
     story.expect_rows([(check.state, check.reason) for check in checks(story)] == [(BehindCheckState.IGNORED, "it merges tomorrow")], detail=str(checks(story)))
 
 
@@ -89,13 +88,13 @@ def s50_the_merger_cannot_leave_a_worktree_at_the_forced_count(story, repository
     diverge_file(repository, worker, CLASHING_FILE, CLASHING_FILE)
     stale_check(story)
     setting(story, "forced-update-commits", 1)
-    story.expect_refusal(f'merger leave {agent_number(story, worker.id)} --why "it merges tomorrow"', "never left", actor=merger(story))
+    story.expect_refusal(f'merger leave {worker.id} --why "it merges tomorrow"', "never left", actor=merger(story))
 
 
 def s47_releasing_the_worker_closes_its_open_check_as_gone(story, repository, worker: Actor) -> None:
     diverge_file(repository, worker, CLASHING_FILE, CLASHING_FILE)
     stale_check(story)
-    story.expect_success(f'worker release {agent_number(story, worker.id)} "the task goes to another worker"', actor=story.agent)
+    story.expect_success(f'worker release {worker.id} "the task goes to another worker"', actor=story.agent)
     story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.REMOVED], detail=str(checks(story)))
 
 
@@ -110,7 +109,7 @@ def s48_no_step_of_an_update_asks_the_person_anything(story, repository, worker:
 def f52_an_ordered_update_not_run_is_reminded_twice_then_the_merger_hears(story, repository, worker: Actor) -> None:
     diverge_file(repository, worker, CLASHING_FILE, CLASHING_FILE)
     stale_check(story)
-    story.expect_success(f'merger update {agent_number(story, worker.id)} --why "{CLASHING_FILE} moved on both sides"', actor=merger(story))
+    story.expect_success(f'merger update {worker.id} --why "{CLASHING_FILE} moved on both sides"', actor=merger(story))
     for _ in range(3):
         waited(story)
     reminders = len(expected_agent_message(UpdateReminderMessage.declared()).pattern().findall(worker_lines(story, worker)))
@@ -118,7 +117,7 @@ def f52_an_ordered_update_not_run_is_reminded_twice_then_the_merger_hears(story,
 
 
 def g60_a_worker_naming_another_worker_is_refused(story, repository, worker: Actor) -> None:
-    story.expect_refusal(f"worker update {agent_number(story, story.agent.id)}", "a worker updates only its own worktree", actor=worker)
+    story.expect_refusal(f"worker update {story.agent.id}", "a worker updates only its own worktree", actor=worker)
 
 
 CASES: list[Callable[..., None]] = [s42_markers_still_open_after_the_wait_reach_the_merger_to_advise_once, s43_advice_that_did_not_help_is_passed_to_the_main_agent_with_the_reason,

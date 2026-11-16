@@ -9,7 +9,6 @@ from tests.stories.core.modules.agents.agent_kind_controls import ALLOWED_MODELS
 from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, read_jobs, resumable_session
 from tests.stories.core.modules.helpers.occupant_rotation import job_launch
 from tests.stories.core.modules.helpers.support.rotating_helper import START_ROTATING, EndedEachLaunchHelper, story_with_profile_file
-from tests.stories.core.support.agent_labels import agent_number
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 from suites.coding.support.shipped_profiles import WORKER_PROFILE
 
@@ -26,7 +25,7 @@ def rotating(new_story):
 
 
 def job_line(story) -> str:
-    return f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"'
+    return f'helper send {helper_agent(story).id} "{JOB}"'
 
 
 def test_agent_with_resume_disabled_for_helpers_refuses_a_job_for_an_idle_each_launch_agent(rotating):
@@ -64,7 +63,7 @@ def test_when_no_program_has_an_allowed_model_the_job_is_refused_as_a_start_is_a
 
 def test_a_start_of_the_profile_is_refused_with_the_send_line_of_the_idle_agent_though_its_conversation_is_gone(new_story):
     story = story_with_profile_file(new_story, EndedEachLaunchHelper)
-    number = agent_number(story, helper_agent(story).id)
+    number = helper_agent(story).id
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_refusal(TILL_START, f'helper {number} is idle: journal helper send {number} "<job>"', actor=story.agent)
     story.expect_success(f'{TILL_START} --fresh "A second view"', actor=story.agent)
@@ -85,7 +84,7 @@ def profile_files(story) -> dict[str, bytes]:
 
 def agent_jobs_and_files(story) -> tuple[str, str, dict[str, bytes]]:
     helper = helper_agent(story)
-    shown = story.run(f"agent show {agent_number(story, helper.id)} --environment main --json", actor=story.user).output_text
+    shown = story.run(f"agent show {helper.id} --environment main --json", actor=story.user).output_text
     return shown, story.run(f"helper-job list --helper {helper.id} --oldest --json", actor=story.user).output_text, profile_files(story)
 
 

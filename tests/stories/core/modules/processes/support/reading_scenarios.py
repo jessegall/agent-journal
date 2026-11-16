@@ -92,6 +92,6 @@ def received(story: Story, session: str = "s-1") -> str:
     return "\n".join([*informed(story, session), *informed(story, session)])
 
 
-def agent_number(story: Story, agent_id: int) -> int:
+def agent_id: int -> int:
     """The number an agent's card shows, which its buttons send."""
     return story.story_rows(Agent, id=agent_id)[0].number

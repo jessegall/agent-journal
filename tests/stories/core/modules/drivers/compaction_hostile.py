@@ -6,7 +6,6 @@ from core.modules.drivers.models.enums.compaction_state import CompactionState
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.drivers.context_compactions import compactions
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.compaction_never_twice import compacted, expect_compaction_count, backdate_context
 from tests.stories.suites.coding.modules.workers.context_limit import COMPACTION_START, LIMIT_TOKENS, SESSION, LimitEnabled, has_context, stops, typing_recorded
 
@@ -21,7 +20,7 @@ def limited(new_story):
 
 def test_j1_a_helper_that_runs_the_context_control_of_the_main_agent_is_refused_and_no_compaction_is_recorded(limited):
     helper = Actor(limited.new_row_id(f"agent start helper-session claude helper --parent {limited.agent.id} --environment main"), ActorType.AGENT)
-    outcome = limited.run(f"agent control {agent_number(limited, limited.agent.id)} context compact", actor=helper)
+    outcome = limited.run(f"agent control {limited.agent.id} context compact", actor=helper)
     expect_compaction_count(limited, 0)
     limited.expect_rows(outcome.code != 0, compactions(limited) == [], detail=outcome.output_text)
 

@@ -8,7 +8,6 @@ from engine.enums.actor_type import ActorType
 from suites.coding.modules.workers.listeners.support.worker_test_starts import WorkerTestStarts
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import StalledWorkerTestRuns
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
@@ -62,7 +61,7 @@ def test_a_running_proof_of_a_removed_worktree_is_left_alone_by_the_tick(two_tas
     story, worker, _ = two_tasks
     story.expect_success(COMMIT, actor=worker)
     story.run_listeners()
-    story.expect_success(f'worker release {agent_number(story, worker.id)} "not needed" --abandon "the story drops the work"', actor=story.agent)
+    story.expect_success(f'worker release {worker.id} "not needed" --abandon "the story drops the work"', actor=story.agent)
     story.advance(timedelta(minutes=31))
     story.run_tick_handler("stalled worker tests")
     story.expect_absent("proof show 1", "stuck", actor=story.agent)
@@ -115,7 +114,7 @@ def test_with_nothing_to_run_and_a_proof_left_to_check_the_worker_goes_on(played
 
 def test_a_worktree_released_with_its_test_running_ends_that_test_and_the_tick_goes_on(running_proof):
     story, worker, _ = running_proof
-    story.expect_success(f'worker release {agent_number(story, worker.id)} "the cart moved on" --abandon "the cart is done another way"', actor=story.agent)
+    story.expect_success(f'worker release {worker.id} "the cart moved on" --abandon "the cart is done another way"', actor=story.agent)
     story.run_listeners()
     story.expect_text("proof show 1", "state: short", "was abandoned or removed while this test waited or ran", actor=story.agent)
     stalled_tick(story)

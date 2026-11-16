@@ -3,7 +3,6 @@ import json
 from core.modules.settings.bindings.support.context_share import CONTEXT_LIMIT_ENABLED, CONTEXT_LIMIT_PROFILES, CONTEXT_LIMIT_TOKENS
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.usage.support.status_files import save_status_file
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.support.main_controls_fixture import person_viewer
 from tests.stories.support.story_checks import expect_value
@@ -25,7 +24,7 @@ class PlannerAndResearcher(StoryFixture):
         story.expect_success(f"setting set {CONTEXT_LIMIT_TOKENS} 400000 --project", actor=story.user)
         for session, profile in (("planner-session", f"{PLANNER_PROFILE.name}"), ("researcher-session", f"{RESEARCHER_PROFILE.name}")):
             row_id = story.new_row_id(f"agent start {session} claude helper --parent {story.agent.id} --environment main")
-            story.expect_success(f"agent edit {agent_number(story, row_id)} --profile {profile}")
+            story.expect_success(f"agent edit {row_id} --profile {profile}")
 
 
 def set_cap_on_the_screen(viewer, profile: str, cap: str) -> None:

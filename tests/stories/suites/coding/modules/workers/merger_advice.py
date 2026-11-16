@@ -1,6 +1,5 @@
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.core.support.agent_labels import agent_number
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -68,7 +67,7 @@ class AdvisedWorker:
         return self.case.merger
 
     def advise(self, text: str = ADVICES[0]) -> LineOutcome:
-        return self.story.run(f'merger advise {agent_number(self.story, self.worker.id)} "{text}"', actor=self.merger)
+        return self.story.run(f'merger advise {self.worker.id} "{text}"', actor=self.merger)
 
     def advised(self, text: str = ADVICES[0], used: int = 1) -> None:
         outcome = self.advise(text)
@@ -120,16 +119,16 @@ class AdvisedWorker:
         self.story.expect_success(FIRST_PROOF, actor=self.worker)
         self.story.expect_success(COMMIT, actor=self.worker)
         self.story.expect_success("proof check 1", "state: checked", actor=self.story.agent)
-        self.story.expect_success(f"worker logs {agent_number(self.story, self.worker.id)}", actor=self.story.agent)
+        self.story.expect_success(f"worker logs {self.worker.id}", actor=self.story.agent)
         self.case.repository.checkout(ENVIRONMENT_BRANCH)
 
     def merged(self) -> None:
         request_merge(self.story, self.worker)
-        self.story.expect_success(f"worker merge --wait {agent_number(self.story, self.worker.id)}", actor=self.story.agent)
+        self.story.expect_success(f"worker merge --wait {self.worker.id}", actor=self.story.agent)
 
     def given_new_work(self) -> None:
         task = self.story.new_row_id('task make "Add the shipping line" --environment main')
-        self.story.expect_success(f"worker send --wait {agent_number(self.story, self.worker.id)} --task {task}", actor=self.story.agent)
+        self.story.expect_success(f"worker send --wait {self.worker.id} --task {task}", actor=self.story.agent)
 
 
 @pytest.fixture
@@ -195,7 +194,7 @@ def test_a_burst_of_lines_about_one_worker_becomes_one_advice(advising):
         advising.story.expect_success(f'worker report "{line}"', actor=advising.worker)
     advising.visit()
     advising.advised(ADVICES[0], 1)
-    expect_refused_with(advising.story, f'merger advise {agent_number(advising.story, advising.worker.id)} "{ADVICES[1]}"', VISIT_LIMIT_LINE, "one", actor=advising.merger)
+    expect_refused_with(advising.story, f'merger advise {advising.worker.id} "{ADVICES[1]}"', VISIT_LIMIT_LINE, "one", actor=advising.merger)
     advising.story.expect_rows(len(advising.messages()) == 1, detail=str(advising.messages()))
 
 
@@ -211,7 +210,7 @@ def test_a_visit_with_nothing_waiting_is_still_a_new_visit(advising):
 def test_an_advice_at_an_unchanged_point_is_refused(advising):
     advising.advised(ADVICES[0], 1)
     advising.visit()
-    expect_refused_with(advising.story, f'merger advise {agent_number(advising.story, advising.worker.id)} "{ADVICES[1]}"', UNCHANGED_POINT_LINE, actor=advising.merger)
+    expect_refused_with(advising.story, f'merger advise {advising.worker.id} "{ADVICES[1]}"', UNCHANGED_POINT_LINE, actor=advising.merger)
     advising.story.expect_rows(len(advising.messages()) == 1, detail=str(advising.messages()))
 
 
@@ -237,12 +236,12 @@ def test_each_worker_has_its_own_count_and_its_own_advice_in_a_visit(advising):
 @pytest.mark.parametrize("sender", ["worker", "main"])
 def test_only_the_merger_advises(advising, sender):
     actor, refusal = (advising.worker, "may not run merger advise") if sender == "worker" else (advising.story.agent, MERGER_ROLE_REFUSAL)
-    expect_refused_with(advising.story, f'merger advise {agent_number(advising.story, advising.worker.id)} "{ADVICES[0]}"', refusal, actor=actor)
+    expect_refused_with(advising.story, f'merger advise {advising.worker.id} "{ADVICES[0]}"', refusal, actor=actor)
     advising.story.expect_rows(advising.merger_message_rows() == (), detail=str(advising.merger_message_rows()))
 
 
 def test_a_merged_worker_cannot_be_advised_until_it_has_new_work(merged_worker):
-    expect_refused_with(merged_worker.story, f'merger advise {agent_number(merged_worker.story, merged_worker.worker.id)} "{ADVICES[0]}"', IDLE_WORKER_LINE, actor=merged_worker.merger)
+    expect_refused_with(merged_worker.story, f'merger advise {merged_worker.worker.id} "{ADVICES[0]}"', IDLE_WORKER_LINE, actor=merged_worker.merger)
 
 
 def test_the_count_starts_anew_at_the_commit_of_the_worker_and_for_its_work_after_the_merge(twice_advised_and_delivered):
@@ -255,7 +254,7 @@ def test_the_count_starts_anew_at_the_commit_of_the_worker_and_for_its_work_afte
 def test_a_failed_merge_does_not_reset_the_count(twice_advised_and_delivered):
     advised = twice_advised_and_delivered
     advised.case.repository.uncommitted("cart.py", "TOTAL = 5\n")
-    expect_refused_with(advised.story, f"worker merge --wait {agent_number(advised.story, advised.worker.id)}", "uncommitted changes to cart.py", actor=advised.story.agent)
+    expect_refused_with(advised.story, f"worker merge --wait {advised.worker.id}", "uncommitted changes to cart.py", actor=advised.story.agent)
     advised.post_questions(2)
     advised.visit()
     advised.advised(ADVICES[2], 2)
@@ -264,23 +263,23 @@ def test_a_failed_merge_does_not_reset_the_count(twice_advised_and_delivered):
 def test_the_journal_own_lines_do_not_count(advising):
     advising.story.expect_success('worker report "The cart needs a second look"', actor=advising.worker)
     advising.visit()
-    advising.story.expect_success(f'merger findings {agent_number(advising.story, advising.worker.id)} "The total is off by one"', actor=advising.merger)
+    advising.story.expect_success(f'merger findings {advising.worker.id} "The total is off by one"', actor=advising.merger)
     advising.story.run_listeners()
     advising.story.expect_rows(advising.merger_message_rows() == (), detail=str(advising.merger_message_rows()))
     advising.advised(ADVICES[0], 1)
 
 
 def test_the_merger_cannot_message_a_worker_directly_and_is_told_advise(advising):
-    expect_refused_with(advising.story, f'message send "{ADVICES[0]}" --to agent:{agent_number(advising.story, advising.worker.id)}', "only through advise", ADVISE_COMMAND, actor=advising.merger)
+    expect_refused_with(advising.story, f'message send "{ADVICES[0]}" --to agent:{advising.worker.id}', "only through advise", ADVISE_COMMAND, actor=advising.merger)
     advising.story.expect_rows(advising.messages() == (), detail=str(advising.messages()))
 
 
 def test_the_merger_can_still_message_the_main_agent(advising):
-    advising.story.expect_success(f'message send "The merge waits on a clean checkout" --to agent:{agent_number(advising.story, advising.story.agent.id)}', actor=advising.merger)
+    advising.story.expect_success(f'message send "The merge waits on a clean checkout" --to agent:{advising.story.agent.id}', actor=advising.merger)
 
 
 def test_a_worker_message_to_the_merger_is_not_refused(advising):
-    advising.story.expect_success(f'message send "Rebased on the branch" --to agent:{agent_number(advising.story, advising.merger.id)}', actor=advising.worker)
+    advising.story.expect_success(f'message send "Rebased on the branch" --to agent:{advising.merger.id}', actor=advising.worker)
 
 
 def test_the_asks_count_starts_again_after_the_merge(merged_after_five_asks):

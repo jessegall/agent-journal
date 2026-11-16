@@ -4,7 +4,6 @@ import pytest
 
 from core.modules.claude_code.providers.claude_code_provider import COMPACTION_INSTRUCTIONS
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.context_limit import PRE_COMPACT, SESSION, LimitEnabled, stops, typing_recorded
 
 HELPER_SESSION = "s-helper"
@@ -36,7 +35,7 @@ def test_a_manual_compact_with_the_persons_text_keeps_it(agent):
 
 
 def test_the_compact_button_types_a_plain_compact(agent):
-    agent.expect_success(f"agent control {agent_number(agent, agent.agent.id)} context compact --environment main", actor=agent.user)
+    agent.expect_success(f"agent control {agent.agent.id} context compact --environment main", actor=agent.user)
     stops(agent)
     agent.expect_rows([line for line in agent.typing.typed if line.startswith("/compact")] == ["/compact"], detail=str(agent.typing.typed))
 

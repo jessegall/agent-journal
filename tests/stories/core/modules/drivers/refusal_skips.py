@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 from uuid import uuid4
 
@@ -133,7 +132,7 @@ def test_a_worker_at_five_skips_is_raised_to_its_main_agent_not_the_person(new_s
     story = new_story(fixture=UserBuilder)
     worker = Actor(story.new_row_id(f"agent start s-worker claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
     guard_skips(story, worker, 5)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{agent_number(story, worker.id)} skipped 5 refusals in a row")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"agent:{worker.id} skipped 5 refusals in a row")
     story.expect_absent("message list --environment main", "skipped 5", actor=story.user)
 
 

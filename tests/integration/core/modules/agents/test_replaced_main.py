@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from engine.process.leftover_process import LeftoverProcess

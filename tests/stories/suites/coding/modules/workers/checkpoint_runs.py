@@ -11,7 +11,6 @@ from suites.coding.modules.workers.support.checkpoint_listing import CheckpointL
 from suites.coding.modules.workers.support.checkpoint_runner import CheckpointRunner
 from suites.coding.modules.workers.support.worker_run_windows import WorkerRunWindows
 from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import StalledWorkerTestRuns
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -63,7 +62,7 @@ def commit_tasks(worker: StoryWorker, *test_lines: str) -> None:
 
 
 def merge(worker: StoryWorker) -> None:
-    number = agent_number(worker.story, worker.worker.id)
+    number = worker.worker.id
     worker.repository.checkout(ENVIRONMENT_BRANCH)
     for _ in range(3):
         worker.end_all_tests()

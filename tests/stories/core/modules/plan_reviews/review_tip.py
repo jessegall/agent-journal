@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 import json
 
 from engine.actor.actor import Actor
@@ -23,8 +22,8 @@ def test_the_tip_of_a_plan_under_review_says_who_still_reads_and_who_reported_wi
     story.expect_success(REPORT.format(title="First critique"), actor=Actor(first.id, ActorType.AGENT))
     report = max(row.id for row in story.story_rows(Report))
     lines = tip_lines(story)
-    name = f"Helper {agent_number(story, first.id)}"
-    alternate = f"Helper {agent_number(story, second.id)}"
+    name = f"Helper {first.id}"
+    alternate = f"Helper {second.id}"
     story.expect_rows(lines == ["2 reviewers: 1 reported, 1 still reading", f"{name}: report {report}", f"{alternate}: still reading"], detail=str(lines))
 
 

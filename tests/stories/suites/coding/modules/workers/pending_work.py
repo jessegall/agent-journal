@@ -1,6 +1,5 @@
 from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
-from tests.stories.core.support.agent_labels import agent_number
 import json
 from datetime import timedelta
 
@@ -63,7 +62,7 @@ def waiting_place(new_story, monkeypatch, request):
     story.expect_success(f"agent end {second.id}", actor=story.agent)
     story.expect_success(f"setting set {WORKER_RUN_LIMIT} 1 --environment main", actor=story.user)
     story.advance(timedelta(seconds=1))
-    story.expect_success(f'worker send --wait {agent_number(story, second.id)} "Continue the job"', actor=story.agent)
+    story.expect_success(f'worker send --wait {second.id} "Continue the job"', actor=story.agent)
     story.run_listeners()
     with server_story(story, listener_thread_started=False) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
@@ -106,13 +105,13 @@ def test_delivery_holds_the_place_while_tests_and_the_merger_run_then_merge_free
         actor = Actor(merger.id, ActorType.AGENT)
         story.expect_text("merger next", agent_label(story, first.id), actor=actor)
         repository.checkout(ENVIRONMENT_BRANCH)
-        story.expect_success(f"merger merge --wait {agent_number(story, first.id)}", actor=actor)
+        story.expect_success(f"merger merge --wait {first.id}", actor=actor)
     else:
         story.expect_rows(merger is None)
         repository.checkout(ENVIRONMENT_BRANCH)
-        story.expect_success(f"worker logs {agent_number(story, first.id)}", actor=story.agent)
+        story.expect_success(f"worker logs {first.id}", actor=story.agent)
         request_merge(story, first)
-        story.expect_success(f"worker merge --wait {agent_number(story, first.id)}", actor=story.agent)
+        story.expect_success(f"worker merge --wait {first.id}", actor=story.agent)
     WorkerResumeRetry()(story.container)
     story.expect_rows(launches.count(second.id) == 2)
 
@@ -130,7 +129,7 @@ def test_unchecked_work_keeps_its_status_and_place_when_sent_back(new_story, mon
     with server_story(story, listener_thread_started=False) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         expect_working(server, cookie, worker.id, "judging")
-        story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Correct the calculation"', actor=story.agent)
+        story.expect_success(f'worker send --wait {worker.id} "Correct the calculation"', actor=story.agent)
         story.run_listeners()
         expect_working(server, cookie, worker.id, "changes requested")
         story.expect_rows(worker.id in launches)
@@ -141,12 +140,12 @@ def test_work_returned_to_the_main_agent_keeps_the_place_until_release(waiting_p
     story, _, first, second, tests, launches, _, server, cookie = waiting_place
     ended(story, tests[0], 0)
     merger = merger_agent(story)
-    story.expect_success(f'merger pass {agent_number(story, first.id)} "Needs a decision"', actor=Actor(merger.id, ActorType.AGENT))
+    story.expect_success(f'merger pass {first.id} "Needs a decision"', actor=Actor(merger.id, ActorType.AGENT))
     story.expect_text("merger-line list", "Needs a decision", actor=story.agent)
     story.expect_text(f"agent-line list --agent {story.agent.id}", expected_agent_message(MergerLineAvailableMessage.declared()), actor=story.agent)
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "Needs a decision", actor=story.agent)
     expect_working(server, cookie, first.id, "with the main agent")
     story.expect_rows(launches.count(second.id) == 1)
-    story.expect_success(f'worker release {agent_number(story, first.id)} "Keep the branch for later"', actor=story.agent)
+    story.expect_success(f'worker release {first.id} "Keep the branch for later"', actor=story.agent)
     WorkerResumeRetry()(story.container)
     story.expect_rows(launches.count(second.id) == 2)

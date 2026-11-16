@@ -1,5 +1,4 @@
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.core.support.agent_labels import agent_number
 from engine.cli.shell_handoff import RUNNER_VARIABLE
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
@@ -90,7 +89,7 @@ def worker_git_command(worker_command, name):
     if name is WorkerOperationName.MERGE:
         story.expect_success(COMMIT, actor=worker)
         story.expect_success("proof check 1", actor=story.agent)
-        story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+        story.expect_success(f"worker logs {worker.id}", actor=story.agent)
         repository.checkout(ENVIRONMENT_BRANCH)
     return worker_command
 
@@ -133,7 +132,7 @@ def test_worker_commands_return_before_slow_git_and_notify_once(worker_git_comma
         return original_command_output(bus, value, command)
 
     monkeypatch.setattr(Bus, "result", checked_result)
-    line = f"worker {name} --differences none" if name.is_handoff else f'worker {name} {agent_number(story, worker.id)}'
+    line = f"worker {name} --differences none" if name.is_handoff else f'worker {name} {worker.id}'
     if name is WorkerOperationName.JOB:
         line += ' "Add the receipt"'
     actor = worker if name.is_handoff else story.agent
@@ -171,8 +170,8 @@ def test_worker_commands_return_before_slow_git_and_notify_once(worker_git_comma
 def test_a_merge_that_succeeds_makes_no_conflict_line_when_the_worker_has_a_next_task(worker_git_command):
     story, _, worker, _ = worker_git_command
     task = story.new_row_id('task make "The next task" --brief "Add the receipt"', actor=story.agent)
-    story.expect_success(f"worker send {agent_number(story, worker.id)} --wait --task {task}", actor=story.agent)
-    story.expect_text(f"worker merge {agent_number(story, worker.id)}", "command accepted", actor=story.agent)
+    story.expect_success(f"worker send {worker.id} --wait --task {task}", actor=story.agent)
+    story.expect_text(f"worker merge {worker.id}", "command accepted", actor=story.agent)
     operation = story.newest_row(WorkerOperation)
     outcome = run_operation_copy(story, operation)
     story.expect_rows(outcome.code == 0, detail=outcome.output_text)
@@ -186,8 +185,8 @@ def test_a_merge_that_succeeds_makes_no_conflict_line_when_the_worker_has_a_next
 def test_a_second_command_on_the_same_worker_is_refused(worker_command):
     story, _, worker, launches = worker_command
     story.expect_text('worker commit --differences none', "command accepted", actor=worker)
-    story.expect_refusal(f'worker send {agent_number(story, worker.id)} "Another job"', "has a command running", actor=story.agent)
-    story.expect_refusal(f'worker send {agent_number(story, worker.id)} --wait "Another job"', "has a command running", actor=story.agent)
+    story.expect_refusal(f'worker send {worker.id} "Another job"', "has a command running", actor=story.agent)
+    story.expect_refusal(f'worker send {worker.id} --wait "Another job"', "has a command running", actor=story.agent)
     story.expect_rows(len(launches) == 1)
 
 
@@ -258,7 +257,7 @@ def test_a_worker_can_stop_after_hand_in_and_resumes_when_the_command_ends(worke
 
 def test_an_accepted_command_cannot_execute_twice(worker_command):
     story, _, worker, _ = worker_command
-    story.expect_text(f'worker send {agent_number(story, worker.id)} "The receipt"', "command accepted", actor=story.agent)
+    story.expect_text(f'worker send {worker.id} "The receipt"', "command accepted", actor=story.agent)
     operation = story.newest_row(WorkerOperation)
     story.expect_rows(run_operation(story, operation).code == 0)
     second = run_operation(story, operation)
@@ -287,7 +286,7 @@ def test_a_queued_send_keeps_the_request_selected_when_it_was_accepted(new_story
     worker = dispatched_worker(story)
     scenario.switch(1)
     monkeypatch.setattr(QueuedProcessLaunch, "start", lambda *_args: None)
-    story.expect_text(f'worker send {agent_number(story, worker.id)} "Use the original request"', "command accepted", actor=story.agent)
+    story.expect_text(f'worker send {worker.id} "Use the original request"', "command accepted", actor=story.agent)
     operation = story.newest_row(WorkerOperation)
     scenario.switch(2)
     if requester_ends:
@@ -304,7 +303,7 @@ def test_a_queued_send_keeps_the_request_selected_when_it_was_accepted(new_story
 
 
 def merged_operation(story, worker):
-    story.expect_text(f"worker merge {agent_number(story, worker.id)}", "command accepted", actor=story.agent)
+    story.expect_text(f"worker merge {worker.id}", "command accepted", actor=story.agent)
     operation = story.newest_row(WorkerOperation)
     outcome = run_operation_copy(story, operation)
     story.expect_rows(outcome.code == 0, detail=outcome.output_text)
@@ -323,9 +322,9 @@ def test_tasks_sent_while_a_delivery_waited_go_to_the_worker_as_one_batch_after_
     story, _, worker, _ = worker_git_command
     first = story.new_row_id('task make "The receipt" --brief "Add the receipt"', actor=story.agent)
     second = story.new_row_id('task make "The invoice" --brief "Add the invoice"', actor=story.agent)
-    story.expect_success(f"worker send {agent_number(story, worker.id)} --wait --task {first} {second}", actor=story.agent)
+    story.expect_success(f"worker send {worker.id} --wait --task {first} {second}", actor=story.agent)
     merged_operation(story, worker)
-    story.expect_text(f"worker status {agent_number(story, worker.id)}", f"task {first}:", f"task {second}:", actor=story.agent)
+    story.expect_text(f"worker status {worker.id}", f"task {first}:", f"task {second}:", actor=story.agent)
     story.expect_rows("workers.worker_without_tasks" not in main_line_keys(story), detail=str(main_line_keys(story)))
 
 

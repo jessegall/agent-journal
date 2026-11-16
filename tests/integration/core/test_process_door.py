@@ -25,7 +25,6 @@ from core.modules.processes.support.request_log_entry import RequestLogEntry
 from core.modules.processes.ticks.request_log_import import RequestLogImport
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.core.support.agent_labels import agent_number
 
 
 

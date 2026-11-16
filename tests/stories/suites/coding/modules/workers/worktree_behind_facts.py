@@ -3,7 +3,6 @@ from collections.abc import Callable
 
 import pytest
 
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.base_branch import checkout_of, committed_on, worker_commits
@@ -81,4 +80,4 @@ def test_a_worktree_counts_the_first_parent_commits_of_its_base_it_lacks_and_the
     case.setup(story, repository)
     worker = dispatched_worker(story)
     command, *texts = case.after_dispatch(story, repository, worker.id)
-    story.expect_text(f"{command} {agent_number(story, worker.id)}", *texts, actor=story.agent)
+    story.expect_text(f"{command} {worker.id}", *texts, actor=story.agent)

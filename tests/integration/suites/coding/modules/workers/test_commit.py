@@ -2,7 +2,6 @@ import pytest
 
 from core.modules.plugins.support.plugin_step_check import PluginStepCheck
 from tests.integration.core.modules.plugins.test_worker_steps import step_plugin_story
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.integration.suites.coding.modules.workers.test_hand_in_rebase import MAIN_TAX, MERGED_TAX, WORKER_TAX, moved_base_worker
 from tests.integration.suites.coding.modules.workers.test_refused_steps import REASON

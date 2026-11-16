@@ -21,7 +21,6 @@ from tests.stories.core.modules.helpers.helper_reports import LINES
 from tests.stories.core.modules.agents.support import sample_suite_start
 from tests.stories.core.modules.agents.support.sample_suite_start import SampleSuiteStart
 from tests.stories.core.modules.agents.support.strict_policy import STRICT_POLICY, StrictPolicy
-from tests.stories.core.support.agent_labels import agent_number
 from engine.module.module_imports import ModuleImports
 
 PROGRAM_RUNS = b"running\n"
@@ -34,7 +33,7 @@ RECORDED_PROCESS = "--pid 700 --process-started-at 2026-10-31T09:00:00+00:00"
 
 
 def agent_status(story) -> str:
-    return story.run(f"agent status {agent_number(story, helper_agent(story).id)} --environment main", actor=story.user).output_text
+    return story.run(f"agent status {helper_agent(story).id} --environment main", actor=story.user).output_text
 
 
 def main_lines(story) -> str:
@@ -55,7 +54,7 @@ def ended_helper(played):
 def test_546_a_job_for_an_agent_whose_program_the_launcher_still_holds_starts_nothing_and_the_agent_reads_as_running(ended_helper):
     story = ended_helper
     blocked = launcher(story, answer=PROGRAM_RUNS)
-    story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=story.agent)
+    story.expect_success(f'helper send {helper_agent(story).id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     blocked.drain_requests()
     shown, lines = agent_status(story), main_lines(story)
@@ -74,7 +73,7 @@ def test_547_two_starts_of_one_agent_at_once_start_one_program_and_the_other_is_
 
 def test_549_after_a_restart_an_agent_whose_recorded_process_is_not_listed_is_found_again_from_the_launcher_and_not_started_twice(played, monkeypatch):
     story = played(StartedHelper)
-    story.expect_success(f"agent edit {agent_number(story, helper_agent(story).id)} {RECORDED_PROCESS}", actor=story.user)
+    story.expect_success(f"agent edit {helper_agent(story).id} {RECORDED_PROCESS}", actor=story.user)
     blocked = launcher(story, answer=PROGRAM_RUNS, request_count=0)
     monkeypatch.setattr(ProcessTable, "rows", lambda table: [])
     story.tick(story.row(Agent, story.agent.id).session)
@@ -86,7 +85,7 @@ def test_549_after_a_restart_an_agent_whose_recorded_process_is_not_listed_is_fo
 
 def test_550_a_start_that_cannot_reach_the_launcher_reads_as_failed_and_leaves_one_line_however_many_ticks_follow(ended_helper):
     story = ended_helper
-    story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=story.agent)
+    story.expect_success(f'helper send {helper_agent(story).id} "{JOB}"', actor=story.agent)
     for _ in range(3):
         story.run_listeners()
         story.tick(story.row(Agent, story.agent.id).session)
@@ -96,7 +95,7 @@ def test_550_a_start_that_cannot_reach_the_launcher_reads_as_failed_and_leaves_o
 
 def test_557_the_status_command_reads_running_and_after_a_stop_through_the_dispatcher_ended_with_who_stopped_it(played):
     story = played(StartedHelper)
-    number = agent_number(story, helper_agent(story).id)
+    number = helper_agent(story).id
     launcher(story, request_count=0, answers=(PROGRAM_RUNS, STOPPED, WITHOUT_PROGRAM))
     story.expect_text(f"agent status {number} --environment main", "state: running", actor=story.user)
     story.expect_success(f"agent stop-program {number} --environment main", "stop: program_ended", actor=story.user)
@@ -105,7 +104,7 @@ def test_557_the_status_command_reads_running_and_after_a_stop_through_the_dispa
 
 def test_557_the_list_of_agents_and_the_row_of_an_agent_carry_the_agent_state_its_own_command_prints(played):
     story = played(StartedHelper)
-    number = agent_number(story, helper_agent(story).id)
+    number = helper_agent(story).id
     launcher(story, answer=PROGRAM_RUNS, request_count=0)
     listed = {row["number"]: row for row in json.loads(story.run("agent list --json --environment main", actor=story.user).output_text)["rows"]}
     story.expect_rows(listed[number].get("agent_state") == "running", detail=str(listed[number]))

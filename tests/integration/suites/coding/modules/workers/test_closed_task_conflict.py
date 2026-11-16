@@ -1,5 +1,4 @@
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
-from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from engine.database.database import Database
@@ -24,7 +23,7 @@ def test_worker_send_runs_git_outside_its_transaction(played, monkeypatch):
         return synced(git, worktree)
 
     monkeypatch.setattr(WorktreeGit, "sync", watched_sync)
-    story.expect_text(f'worker send --wait {agent_number(story, worker.id)} "Finish the total"', "takes the job", actor=story.agent)
+    story.expect_text(f'worker send --wait {worker.id} "Finish the total"', "takes the job", actor=story.agent)
     story.expect_rows(transaction_flags == [False])
 
 

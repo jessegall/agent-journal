@@ -1871,7 +1871,7 @@
       "methods": [
         "row_id(self, model_name: str, number: int, environment_id: int | None) -> int",
         "number(self, model_name: str, row_id: int) -> int",
-        "agent_number(self, agent_id: int) -> int",
+        "agent_id: int -> int",
         "environment_number(self, model_name: str, row_id: int, environment_id: int | None) -> int",
         "numbers(self, model_name: str, row_ids: set[int]) -> dict[int, int]"
       ]

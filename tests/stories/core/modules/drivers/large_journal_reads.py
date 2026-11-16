@@ -4,7 +4,6 @@ from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.drivers.agent_pause import FakeTyping
 from tests.stories.core.modules.drivers.refusal_skips import guard_skips
 from tests.stories.core.modules.helpers.helper_jobs import START, EndedHelper, helper_agent
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.large_reads import seeded_children, seeded_finished_jobs
 from tests.stories.core.support.read_limit import limit_reads
 from tests.stories.core.support.seeds.large_read_seeds import AgentSkillSeed, HookCallRefusalSeed, SavedBuildSeed
@@ -66,15 +65,15 @@ def test_refusal_skip_with_207_refused_calls_makes_no_read_cut_report(new_story)
 def test_agent_resume_with_many_ended_children_makes_no_read_cut_report(new_story):
     story = new_story(fixture=LargeJournal)
     story.bind(TerminalTyping, FakeTyping())
-    story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
+    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     limit_reads(story)
-    story.expect_success(f"agent resume {agent_number(story, story.agent.id)}", actor=story.user)
+    story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
 
 
 def test_agent_skill_unread_with_128_skill_rows_makes_no_read_cut_report(new_story):
     story = new_story(fixture=LargeJournal)
     limit_reads(story)
-    story.expect_success(f"agent-skill unread {agent_number(story, story.agent.id)}")
+    story.expect_success(f"agent-skill unread {story.agent.id}")
 
 
 def test_each_fixed_read_reads_at_most_51_rows_where_it_read_207_to_1000_before(new_story):

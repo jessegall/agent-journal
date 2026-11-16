@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from tests.integration.core.modules.usage.test_agent_rows import StatesAgents
@@ -35,7 +34,7 @@ def test_a_card_requests_its_tool_and_transcript_without_the_list(agents_window)
     server, cookie = agents_window
     agent_id = helper_agent(server.story).id
     status, answer = server.window_data(cookie, keys=f"tool,transcript.{agent_id}", window="agents.agents",
-                                 query=f"environment=main&tool.agent={agent_number(server.story, agent_id)}")
+                                 query=f"environment=main&tool.agent={agent_id}")
     server.story.expect_rows(status == 200, set(answer["keys"]) == {"tool", f"transcript.{agent_id}"},
                              all(response["code"] == 0 for response in answer["keys"].values()))
 

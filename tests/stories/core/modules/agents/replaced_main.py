@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from engine.process.leftover_process import LeftoverProcess
@@ -31,18 +30,18 @@ def test_two_launches_at_once_are_one_main_agent_on_the_session_of_the_last(new_
     first_id = story.new_row_id("agent start launch-a claude main --environment main")
     second_id = story.new_row_id("agent start launch-b claude main --environment main")
     story.expect_rows(first_id == second_id)
-    story.expect_text(f"agent show {agent_number(story, second_id)}", "session: launch-b")
-    story.expect_absent(f"agent show {agent_number(story, second_id)}", "ended_at: 20")
+    story.expect_text(f"agent show {second_id}", "session: launch-b")
+    story.expect_absent(f"agent show {second_id}", "ended_at: 20")
 
 
 def test_a_worker_that_starts_ends_no_main(replaced_story):
     story, old = replaced_story
     story.run(f"agent start w-1 claude worker --parent {old.id} --environment main")
-    story.expect_absent(f"agent show {agent_number(story, old.id)}", "ended_at: 20")
+    story.expect_absent(f"agent show {old.id}", "ended_at: 20")
 
 
 def test_an_agent_cannot_register_a_main_agent_that_would_end_the_running_one(replaced_story):
     story, running = replaced_story
     story.expect_refusal("agent start story-ada-1 claude main --environment main", f"main agent {running.id} runs in this environment, and an agent does not replace it",
                          actor=running)
-    story.expect_absent(f"agent show {agent_number(story, running.id)}", "ended_at: 20")
+    story.expect_absent(f"agent show {running.id}", "ended_at: 20")

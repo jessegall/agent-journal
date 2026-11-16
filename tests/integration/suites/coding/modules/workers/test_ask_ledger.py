@@ -12,7 +12,6 @@ from suites.coding.modules.workers.commands.return_unhandled_merger_lines.return
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.worker_questions import CLOCK_FORMAT
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.merger_cases import MergerCase, case  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
@@ -106,7 +105,7 @@ def test_a_merger_that_read_an_ask_and_did_nothing_gets_it_again_and_after_the_s
 def test_the_mergers_answer_reaches_the_worker_ends_its_wait_and_a_second_answer_is_refused(case):
     helper_question(case)
     line = questions(case.story)[0]
-    case.story.expect_success(f'merger answer {line.id} "{ANSWER}"', f"answer sent to worker {agent_number(case.story, case.worker.id)}", actor=case.merger)
+    case.story.expect_success(f'merger answer {line.id} "{ANSWER}"', f"answer sent to worker {case.worker.id}", actor=case.merger)
     answered = questions(case.story)[0]
     case.story.expect_rows(answered.outcome is AskOutcome.ANSWERED, waits_of(case.story, case.worker)[0].state is not WaitState.OPEN, ANSWER in case.worker_messages(), detail=case.worker_messages())
     expect_refused_with(case.story, f'merger answer {line.id} "{ANSWER}"', f"line {line.id} is settled: answered at {answered.closed_at.value.strftime(CLOCK_FORMAT)}", actor=case.merger)
@@ -143,7 +142,7 @@ def test_an_ask_about_a_cancelled_task_closes_as_moot_with_a_line_in_the_tasks_l
 def test_the_asks_of_a_released_worker_close_as_moot(case):
     helper_question(case, SECOND_QUESTION, AskTopic.TESTS)
     helper_question(case)
-    case.story.expect_success(f'worker release {agent_number(case.story, case.worker.id)} "the worker left"', actor=case.story.agent)
+    case.story.expect_success(f'worker release {case.worker.id} "the worker left"', actor=case.story.agent)
     case.story.run_listeners()
     case.story.expect_rows(all(line.outcome is AskOutcome.MOOT for line in questions(case.story)), detail=str(questions(case.story)))
 
@@ -194,10 +193,10 @@ def test_a_person_retiring_a_worker_with_tasks_left_leaves_the_merger_one_line_a
     story = case.story
     for number in range(2, 6):
         story.expect_success(f'task make "Job {number}" --brief "Do job {number}" --environment main', actor=story.agent)
-        story.expect_success(f"worker send --wait {agent_number(story, case.worker.id)} --task {number}", actor=story.agent)
+        story.expect_success(f"worker send --wait {case.worker.id} --task {number}", actor=story.agent)
     helper_question(case)
     story.end_session(case.worker)
-    story.expect_success(f'agent retire {agent_number(story, case.worker.id)} --reason "no longer needed"', actor=story.user)
+    story.expect_success(f'agent retire {case.worker.id} --reason "no longer needed"', actor=story.user)
     story.run_listeners()
     lines = [line.text for line in story.story_rows(MergerLine) if "ended with" in line.text]
     story.expect_rows(len(lines) == 1, all(f"task:{number}" in lines[0] for number in range(1, 4)), "and 2 more tasks" in lines[0], questions(story)[0].outcome is AskOutcome.MOOT,

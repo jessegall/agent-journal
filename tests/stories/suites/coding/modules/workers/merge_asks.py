@@ -2,7 +2,6 @@ import pytest
 
 from tests.stories.suites.coding.modules.workers.free_commits import three_committed_worker, two_committed_worker, first_committed_worker  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.phase_steps import group_worker, single_worker  # noqa: F401
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import BUILD_TEST
 from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_tasks_singly
 from tests.stories.suites.coding.modules.workers.support.held_tasks import prove_task
@@ -108,10 +107,10 @@ def test_60_refused_up_to_a_task_not_committed_or_a_commit_not_on_the_branch(fir
 
 
 def test_63_main_cannot_merge_a_unit_of_more_that_did_not_ask(committed_worker):
-    committed_worker.story.expect_refusal(f"worker merge --wait {agent_number(committed_worker.story, committed_worker.worker.id)}", "has not asked for its merge", actor=committed_worker.story.agent)
+    committed_worker.story.expect_refusal(f"worker merge --wait {committed_worker.worker.id}", "has not asked for its merge", actor=committed_worker.story.agent)
 
 
 def test_64_a_worker_cannot_merge(committed_worker):
     prove_task(committed_worker, 1, 1, TEST_LINE)
-    outcome = committed_worker.story.run(f"worker merge --wait {agent_number(committed_worker.story, committed_worker.worker.id)}", actor=committed_worker.worker)
+    outcome = committed_worker.story.run(f"worker merge --wait {committed_worker.worker.id}", actor=committed_worker.worker)
     committed_worker.story.expect_rows(outcome.code != 0, detail=outcome.output_text)

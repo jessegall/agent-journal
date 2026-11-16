@@ -4,7 +4,6 @@ from suites.coding.modules.workers.migrations.m072_plan_worker_backfill import P
 from engine.database.statement import Statement
 from engine.database.database import Database
 from suites.coding.modules.workers.support.work_units import WorkUnits
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, start_planned_worker, unplanned_group_worker
 
 
@@ -21,7 +20,7 @@ def test_tasks_sent_together_are_one_list_unit(played):
 def test_a_phase_of_a_plan_worked_by_another_agent_is_the_unit_and_a_plan_assigned_to_the_worker_is_the_unit(played):
     worker = start_planned_worker(played, PHASE_DISPATCH)
     phase_unit = worker_unit(worker)
-    worker.story.expect_success(f"plan assign 1 --to {agent_number(worker.story, worker.worker.id)} --environment main", actor=worker.story.user)
+    worker.story.expect_success(f"plan assign 1 --to {worker.worker.id} --environment main", actor=worker.story.user)
     plan_unit = worker_unit(worker)
     worker.story.expect_rows(phase_unit.plan is None, phase_unit.phase is not None and phase_unit.phase.id == 1, phase_unit.task_ids == (1, 2, 3),
                              plan_unit.plan is not None and plan_unit.plan.id == 1, plan_unit.phase is None, detail=f"{phase_unit} / {plan_unit}")
@@ -45,7 +44,7 @@ def test_the_status_of_a_plan_worker_opens_with_its_unit_and_its_build_line_name
 def test_the_plan_card_names_the_worker_that_works_the_plan_and_no_agent_before_one_is_assigned(played):
     worker = start_planned_worker(played, PHASE_DISPATCH)
     previous = plan_card(worker)
-    worker.story.expect_success(f"plan assign 1 --to {agent_number(worker.story, worker.worker.id)} --environment main", actor=worker.story.user)
+    worker.story.expect_success(f"plan assign 1 --to {worker.worker.id} --environment main", actor=worker.story.user)
     after = plan_card(worker)
     worker.story.expect_rows(previous["assignee"] is None, after["assignee"] is not None and after["assignee"]["id"] == worker.worker.id, detail=f"{previous} / {after}")
 

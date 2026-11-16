@@ -4,7 +4,6 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 
 from tests.stories.core.modules.tasks.support.holder_assignee_check import assert_holders_are_assignees, task_assignees
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.holder_fixtures import free_third_task
 
 FREE_TASK = 3
@@ -17,11 +16,11 @@ def free_task(new_story):
 
 
 def worker_label(story) -> str:
-    return f"worker {agent_number(story, story.worker.id)}"
+    return f"worker {story.worker.id}"
 
 
 def test_a_worker_that_runs_task_assign_is_refused_only_a_person_or_the_main_agent_assigns(free_task):
-    free_task.expect_refusal(f"task assign {FREE_TASK} --to {agent_number(free_task, free_task.worker.id)}", "may not run task assign", actor=free_task.worker)
+    free_task.expect_refusal(f"task assign {FREE_TASK} --to {free_task.worker.id}", "may not run task assign", actor=free_task.worker)
     free_task.expect_rows(FREE_TASK not in task_assignees(free_task), detail=str(task_assignees(free_task)))
 
 
@@ -32,20 +31,20 @@ def test_a_helper_that_runs_journal_assign_is_refused(free_task):
 
 
 def test_the_main_agent_may_run_task_assign(free_task):
-    free_task.expect_success(f"task assign {FREE_TASK} --to {agent_number(free_task, free_task.worker.id)}", actor=free_task.agent)
+    free_task.expect_success(f"task assign {FREE_TASK} --to {free_task.worker.id}", actor=free_task.agent)
     assert_holders_are_assignees(free_task)
     free_task.expect_text(f"task info {FREE_TASK}", f"assigned to: agent {free_task.worker.id}", actor=free_task.agent)
 
 
 def test_an_agent_that_starts_a_task_assigned_to_the_main_agent_is_refused(free_task):
-    free_task.expect_success(f"task assign {FREE_TASK} --to {agent_number(free_task, free_task.agent.id)}", actor=free_task.agent)
+    free_task.expect_success(f"task assign {FREE_TASK} --to {free_task.agent.id}", actor=free_task.agent)
     free_task.expect_refusal(f"task start {FREE_TASK}", f"task {FREE_TASK} is assigned to main agent", actor=free_task.worker)
     assert_holders_are_assignees(free_task)
     free_task.expect_text(f"task show {FREE_TASK}", "state: open", actor=free_task.agent)
 
 
 def test_an_agent_that_starts_a_task_assigned_to_another_worker_is_refused(free_task):
-    free_task.expect_success(f"task assign {FREE_TASK} --to {agent_number(free_task, free_task.worker.id)}", actor=free_task.agent)
+    free_task.expect_success(f"task assign {FREE_TASK} --to {free_task.worker.id}", actor=free_task.agent)
     free_task.expect_refusal(f"task start {FREE_TASK}", f"task {FREE_TASK} is assigned to {worker_label(free_task)}", actor=free_task.agent)
     assert_holders_are_assignees(free_task)
 

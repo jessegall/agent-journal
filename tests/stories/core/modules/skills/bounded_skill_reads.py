@@ -1,5 +1,4 @@
 from tests.stories.core.modules.skills.agent_skills import due_notes, started
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.read_limit import limit_reads
 from tests.stories.core.support.seeds.large_read_seeds import AgentSkillSeed
 
@@ -14,4 +13,4 @@ def test_agent_skill_unread_with_128_skill_rows_reads_in_statements_of_50(new_st
     story.seed(AgentSkillSeed, SEEDED_SKILL_ROWS, session_agent_id=story.agent.id)
     due_notes(story)
     limit_reads(story)
-    story.expect_success(f"agent-skill unread {agent_number(story, story.agent.id)}", "journal-notes")
+    story.expect_success(f"agent-skill unread {story.agent.id}", "journal-notes")

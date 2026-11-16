@@ -1,7 +1,6 @@
 from tests.stories.suites.coding.modules.workers.merge_asks import committed_worker, running_plan_worker  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.phase_steps import group_worker, planned_worker  # noqa: F401
 from tests.stories.suites.coding.modules.workers.free_commits import worktree_state
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_tasks_singly
@@ -22,7 +21,7 @@ def test_80_the_journal_restarts_during_a_worker_run(running_plan_worker):
 
 def test_81_a_release_with_committed_work_is_refused(group_worker):
     commit_tasks_singly(group_worker, (1,))
-    number = agent_number(group_worker.story, group_worker.worker.id)
+    number = group_worker.worker.id
     group_worker.story.expect_refusal(f'worker release {number} "not needed"', f"worker {number} has committed work", actor=group_worker.story.agent)
     group_worker.story.expect_success(f'worker release {number} --abandon "the cart is dropped"', actor=group_worker.story.agent)
 
@@ -40,7 +39,7 @@ def test_a_release_of_a_delivered_worker_with_an_uncommitted_file_is_refused_unt
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
-    number = agent_number(story, worker.id)
+    number = worker.id
     repository.changed(worker.id, "fix_notes.txt", "edited after the return")
     story.expect_refusal(f'worker release {number} "not needed"', f"worker {number} has uncommitted files", actor=story.agent)
     story.expect_success(f'worker release {number} --abandon "the fix is dropped"', actor=story.agent)

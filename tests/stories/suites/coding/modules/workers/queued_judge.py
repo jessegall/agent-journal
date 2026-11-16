@@ -4,7 +4,6 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.plugins.support.event_stories import install_event_plugin
 from tests.stories.core.modules.plugins.support.runner_binaries import recording_runner_at
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, DISPATCH, FIRST_PROOF, checked_worker, dispatched_worker, repository_environment
@@ -79,7 +78,7 @@ def test_a_judge_run_a_guard_on_a_merge_queued_sends_the_merge_back_when_it_exit
                          processes=[{"kind": "judge", "title": "Judging the merge", "category": "check"}])
     recording_runner_at(story.home)
     target_tip = repository.tip(ENVIRONMENT_BRANCH)
-    story.expect_text(f"worker merge --wait {agent_number(story, worker.id)}", "was refused before anything was merged", "cart.py line 3: the total is wrong", actor=story.agent)
+    story.expect_text(f"worker merge --wait {worker.id}", "was refused before anything was merged", "cart.py line 3: the total is wrong", actor=story.agent)
     story.expect_rows(repository.tip(ENVIRONMENT_BRANCH) == target_tip)
 
 

@@ -3,7 +3,6 @@ from tests.stories.suites.coding.modules.workers.support.phase_steps import grou
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 import pytest
 
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import merge
 from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_tasks_singly
 from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, StoryWorker, start_planned_worker, unplanned_group_worker
@@ -80,7 +79,7 @@ def test_73_important_log_lines_still_need_the_answer_of_the_main_agent(group_wo
     commit_tasks_singly(group_worker, (1, 2, 3))
     group_worker.end_all_tests()
     group_worker.story.expect_success(REQUEST_MERGE, actor=group_worker.worker)
-    number = agent_number(group_worker.story, group_worker.worker.id)
+    number = group_worker.worker.id
     group_worker.repository.checkout(ENVIRONMENT_BRANCH)
     group_worker.story.run(f"worker logs {number}", actor=group_worker.story.agent)
     group_worker.story.expect_refusal(f"worker merge --wait {number}", "important", actor=group_worker.story.agent)
@@ -96,7 +95,7 @@ def test_an_ask_is_heard_by_the_main_agent_with_the_merger_off(group_worker):
 
 def test_a_send_onto_a_waiting_ask_keeps_the_ask_and_queues_the_task(requested_worker):
     task_id = requested_worker.story.new_row_id('task make "Receipts" --brief "Print them" --environment main', actor=requested_worker.story.agent)
-    requested_worker.story.run(f"worker send {agent_number(requested_worker.story, requested_worker.worker.id)} --task {task_id}", actor=requested_worker.story.agent)
+    requested_worker.story.run(f"worker send {requested_worker.worker.id} --task {task_id}", actor=requested_worker.story.agent)
     requested_worker.story.expect_text(MERGE_REQUEST, "state: waiting", actor=requested_worker.story.agent)
 
 
@@ -128,7 +127,7 @@ def test_a_task_released_from_the_unit_stays_open_when_the_unit_merges(two_commi
 def test_a_task_in_testing_with_no_proof_of_its_own_is_left_open_and_named_by_the_merge(two_committed_worker):
     two_committed_worker.story.run("task start 3", actor=two_committed_worker.worker)
     two_committed_worker.story.run("task test 3", actor=two_committed_worker.worker)
-    number = agent_number(two_committed_worker.story, two_committed_worker.worker.id)
+    number = two_committed_worker.worker.id
     two_committed_worker.repository.checkout(ENVIRONMENT_BRANCH)
     for _ in range(3):
         two_committed_worker.end_all_tests()

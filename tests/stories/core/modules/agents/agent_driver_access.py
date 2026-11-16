@@ -8,7 +8,6 @@ from tests.stories.core.modules.agents.agent_driver import CODEX_MODEL, DRIVER
 from tests.stories.core.modules.helpers.helper_jobs import JOB, EndedHelper, helper_agent
 from tests.stories.core.modules.helpers.lifetime_reviewers import refusal_text
 from tests.stories.core.modules.usage.support.status_files import full_status
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.program_split import outage
 from tests.stories.support.program_states import real_program_states
 
@@ -36,13 +35,13 @@ def test_the_main_agent_changes_the_driver_of_its_helper(ended):
 
 def test_a_helper_that_changes_the_driver_of_another_agent_is_refused_naming_who_may(ended):
     helper = helper_agent(ended)
-    main_number = agent_number(ended, ended.agent.id)
+    main_number = ended.agent.id
     ended.expect_refusal(DRIVER.format(number=main_number, program="codex", model=CODEX_MODEL), "A read-only helper may not run agent driver", actor=Actor(helper.id, ActorType.AGENT))
     ended.expect_text(f"agent show {main_number} --environment main", "program: claude", actor=ended.user)
 
 
 def test_an_agent_that_changes_its_own_driver_is_refused(ended):
-    main_number = agent_number(ended, ended.agent.id)
+    main_number = ended.agent.id
     ended.expect_refusal(DRIVER.format(number=main_number, program="codex", model=CODEX_MODEL), "an agent does not change its own driver", actor=ended.agent)
     ended.expect_text(f"agent show {main_number} --environment main", "program: claude", actor=ended.user)
 

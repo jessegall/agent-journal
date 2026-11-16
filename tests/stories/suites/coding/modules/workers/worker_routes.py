@@ -1,5 +1,4 @@
 from core.modules.agents.models.agent import Agent
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.modules.drivers.support.confirmed_skips import confirmed_skip
 import json
 from typing import NamedTuple
@@ -44,7 +43,7 @@ def delivered_worker_story(split_story):
 def merged_worker_story(delivered_worker_story, monkeypatch):
     story, repository, worker = delivered_worker_story
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f'worker merge {agent_number(story, worker.id)}', actor=story.agent)
+    story.expect_success(f'worker merge {worker.id}', actor=story.agent)
     monkeypatch.setattr(ClaudeCodeProvider, 'session_matches_folder', lambda provider, folder, session: True)
     stopped(story, worker)
     return story, worker
@@ -130,7 +129,7 @@ def test_batch_across_programs_is_refused_unrouted_goes_with_the_routed_task(spl
     second = new_task(story, 'Routed batch task', '--tag batch --confirm')
     worker = dispatch(story, f'1 {second}')
     expect_program(story, worker, 'codex')
-    story.expect_text(f'worker status {agent_number(story, worker.id)} --json', 'Routed batch task')
+    story.expect_text(f'worker status {worker.id} --json', 'Routed batch task')
 
 
 def test_batch_across_programs_is_refused_plan_names_phase(split_story, split_viewer):
@@ -201,7 +200,7 @@ def test_task_assign_holds_the_route(split_story):
     worker = dispatch(story, flags='--program claude')
     route = story.new_row_id('worker-route make --program codex --tags assigned --environment main', actor=story.agent)
     task = new_task(story, 'Assigned task', '--tag assigned --confirm')
-    story.expect_refusal(f'task assign {task} --to {agent_number(story, worker.id)}', f'Route {route}', actor=story.agent)
+    story.expect_refusal(f'task assign {task} --to {worker.id}', f'Route {route}', actor=story.agent)
     story.expect_absent(f"task info {task}", f"assigned to: agent {worker.id}")
 
 
@@ -213,8 +212,8 @@ def test_task_assign_holds_the_route_started_task_is_released_too(split_story):
     task_id = new_task(story, 'Claude worker')
     claude = dispatch(story, str(task_id), '--program claude')
     queued = new_task(story, 'Codex follow-up')
-    story.expect_success(f'task assign {queued} --to {agent_number(story, worker.id)}', actor=story.agent)
-    story.expect_refusal(f'task assign 1 --to {agent_number(story, claude.id)}', f'Route {route}', actor=story.agent)
+    story.expect_success(f'task assign {queued} --to {worker.id}', actor=story.agent)
+    story.expect_refusal(f'task assign 1 --to {claude.id}', f'Route {route}', actor=story.agent)
     story.expect_text('task show 1', f'holder_id: {worker.id}', 'state: started')
 
 
@@ -223,7 +222,7 @@ def test_task_assign_holds_the_route_person_passes(split_story, split_viewer):
     worker = dispatch(story, flags='--program claude')
     story.expect_success('worker-route make --program codex --tags person --environment main', actor=story.agent)
     task = new_task(story, 'Person assigned task', '--tag person --confirm')
-    split_viewer.value('tasks.tasks', ['task', 'assign', str(task), '--to', str(agent_number(story, worker.id))])
+    split_viewer.value('tasks.tasks', ['task', 'assign', str(task), '--to', str(worker.id)])
     story.expect_text(f"task info {task}", f"assigned to: agent {worker.id}")
 
 
@@ -233,7 +232,7 @@ def test_task_assign_holds_the_route_out_program_passes(split_story):
     outage(story)
     story.expect_success('worker-route make --program codex --tags outage --environment main', actor=story.agent)
     task = new_task(story, 'Out program task', '--tag outage --confirm')
-    story.expect_success(f'task assign {task} --to {agent_number(story, worker.id)}', actor=story.agent)
+    story.expect_success(f'task assign {task} --to {worker.id}', actor=story.agent)
     story.expect_text(f"task info {task}", f"assigned to: agent {worker.id}")
 
 
@@ -323,10 +322,10 @@ def test_job_to_a_known_worker_stays_on_its_program(unmerged_worker_story):
     story.expect_success(f'task edit {task_id} --brief "Change cart.py again"', actor=story.agent)
     arguments = ['worker', 'dispatch', str(task_id), '--model', 'sonnet']
     story.expect_hook_refusal('s-1', HookSamples.shell(f'journal worker dispatch {task_id} --model sonnet', ShellPart('journal', CommandCategory.JOURNAL, arguments, subcommand='worker')),
-                              f'worker:{agent_number(story, worker.id)} changed these files')
-    story.expect_refusal(f'worker send {agent_number(story, worker.id)} --wait --task {task_id}', 'Route 1', actor=story.agent)
+                              f'worker:{worker.id} changed these files')
+    story.expect_refusal(f'worker send {worker.id} --wait --task {task_id}', 'Route 1', actor=story.agent)
     confirmed_skip(story, "workers.route-holds", story.agent, "Keep the existing worker for this comparison")
-    story.expect_success(f'worker send {agent_number(story, worker.id)} --wait --task {task_id} --skip-guard workers.route-holds '
+    story.expect_success(f'worker send {worker.id} --wait --task {task_id} --skip-guard workers.route-holds '
                          '--skip-reason "Keep the existing worker for this comparison"', actor=story.agent)
     expect_program(story, worker, 'claude')
     story.expect_text(f'task show {task_id}', 'state: open')

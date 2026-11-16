@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 import json
 
 import pytest
@@ -20,8 +19,8 @@ class ResumeRequested(StoryFixture):
     parent = UserJoined
 
     def steps(self, story: FixtureJournal) -> None:
-        story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
-        story.expect_refusal(f"agent resume {agent_number(story, story.agent.id)} --reason needed", "A user was asked in the dock", actor=story.agent)
+        story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
+        story.expect_refusal(f"agent resume {story.agent.id} --reason needed", "A user was asked in the dock", actor=story.agent)
 
 
 @pytest.fixture

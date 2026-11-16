@@ -1,5 +1,4 @@
 from tests.stories.core.support.agent_labels import agent_label
-from tests.stories.core.support.agent_labels import agent_number
 import json
 from datetime import datetime, timedelta, timezone
 
@@ -74,7 +73,7 @@ def ended_worker(running_worker):
 
 def test_a_worker_resumed_before_the_stop_of_its_end_keeps_its_new_program(running_worker):
     story = running_worker
-    story.expect_success(f'worker send --wait {agent_number(story, story.worker.id)} "Add the tax"', f"{agent_label(story, story.worker.id)} takes the job", actor=story.agent)
+    story.expect_success(f'worker send --wait {story.worker.id} "Add the tax"', f"{agent_label(story, story.worker.id)} takes the job", actor=story.agent)
     story.use_processes()
     story.tick(MAIN_SESSION)
     launcher = start_launcher(story, f"started {RESUMED_PID}\n".encode(), request_count=2)
@@ -82,7 +81,7 @@ def test_a_worker_resumed_before_the_stop_of_its_end_keeps_its_new_program(runni
     story.expect_rows(len(launcher.requests) == 1, "command" in launcher.requests[0])
     story.run_listeners()
     story.expect_rows(not any("stop" in request for request in launcher.requests))
-    story.expect_text(f"agent show {agent_number(story, story.worker.id)}", f"pid: {RESUMED_PID}")
+    story.expect_text(f"agent show {story.worker.id}", f"pid: {RESUMED_PID}")
 
 
 def test_a_launch_that_holds_the_session_keeps_the_stop_of_the_end_away(ended_worker):
@@ -116,7 +115,7 @@ def worker_with_waiting_job(running_worker):
     start_launcher(story, b"running\n", request_count=10)
     story.expect_success(f"agent end {story.worker.id}", actor=story.agent)
     story.advance(timedelta(seconds=1))
-    story.run(f'worker send --wait {agent_number(story, story.worker.id)} "Add the tax"', actor=story.agent)
+    story.run(f'worker send --wait {story.worker.id} "Add the tax"', actor=story.agent)
     story.run_listeners()
     return story
 
@@ -126,7 +125,7 @@ def test_a_resume_answered_as_running_stops_the_program_and_starts_again(worker_
     launcher = replaced_launcher(story, b"running\n", b"stopped\n", f"started {RESUMED_PID}\n".encode())
     WorkerResumeRetry()(story.container)
     story.expect_rows("command" in launcher.requests[0], launcher.requests[1] == {"agent_id": story.worker.id, "stop": True}, "command" in launcher.requests[2])
-    story.expect_text(f"agent show {agent_number(story, story.worker.id)}", f"pid: {RESUMED_PID}")
+    story.expect_text(f"agent show {story.worker.id}", f"pid: {RESUMED_PID}")
     story.expect_text(f"agent-line list --agent {story.worker.id}", "entered")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "could not resume")
 
@@ -137,7 +136,7 @@ def test_a_program_the_launcher_still_holds_is_told_to_the_main_agent_once_with_
     WorkerResumeRetry()(story.container)
     WorkerResumeRetry()(story.container)
     notices = story.run("merger-line list").output_text
-    story.expect_rows(notices.count(f"agent:{agent_number(story, story.worker.id)} could not resume: the launcher still holds its program, process {WORKER_PID}") == 1)
+    story.expect_rows(notices.count(f"agent:{story.worker.id} could not resume: the launcher still holds its program, process {WORKER_PID}") == 1)
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "the launcher still holds its program")
 
 
@@ -164,21 +163,21 @@ def test_a_restarted_worker_keeps_its_new_process_through_its_first_hook(ended_w
     new_process = ProcessRow(WORKER_PID + 1, 1, RUNNING_PROGRAM.started_at)
     ended_worker.use_processes(new_process)
     launcher = start_launcher(ended_worker, f"started {new_process.pid}\n".encode())
-    ended_worker.expect_success(f'worker send --wait {agent_number(ended_worker, worker.id)} "Add the tax"', actor=ended_worker.agent)
+    ended_worker.expect_success(f'worker send --wait {worker.id} "Add the tax"', actor=ended_worker.agent)
     ended_worker.run_listeners()
     launcher.drain_requests()
     ended_worker.hook(worker_session(ended_worker, worker), HookSamples.session_start())
-    ended_worker.expect_text(f"agent show {agent_number(ended_worker, worker.id)}", f"pid: {new_process.pid}")
-    ended_worker.expect_no_text(f"agent show {agent_number(ended_worker, worker.id)}", "ended_at:")
+    ended_worker.expect_text(f"agent show {worker.id}", f"pid: {new_process.pid}")
+    ended_worker.expect_no_text(f"agent show {worker.id}", "ended_at:")
     ended_worker.tick(MAIN_SESSION)
-    ended_worker.expect_no_text(f"agent show {agent_number(ended_worker, worker.id)}", "ended_at:")
+    ended_worker.expect_no_text(f"agent show {worker.id}", "ended_at:")
 
 
 def test_a_send_to_a_paused_worker_says_it_waits_for_the_resume(running_worker):
     worker = running_worker.worker
-    running_worker.expect_success(f"agent pause {agent_number(running_worker, worker.id)}", actor=running_worker.agent)
+    running_worker.expect_success(f"agent pause {worker.id}", actor=running_worker.agent)
     running_worker.use_processes()
-    running_worker.expect_text(f'worker send --wait {agent_number(running_worker, worker.id)} "Add the tax"', "is paused: the job waits until journal agent resume", actor=running_worker.agent)
+    running_worker.expect_text(f'worker send --wait {worker.id} "Add the tax"', "is paused: the job waits until journal agent resume", actor=running_worker.agent)
 
 
 def test_a_helper_whose_end_hook_was_lost_is_ended_at_a_tick(new_story):
@@ -188,17 +187,17 @@ def test_a_helper_whose_end_hook_was_lost_is_ended_at_a_tick(new_story):
     helper = story.new_row_id(f'helper start {RESEARCHER_PROFILE.name} --brief "Read src/cart.py" --environment main', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
-    story.expect_text(f"agent show {agent_number(story, helper)}", f"pid: {WORKER_PID}")
+    story.expect_text(f"agent show {helper}", f"pid: {WORKER_PID}")
     story.use_processes()
     story.tick(MAIN_SESSION)
-    story.expect_text(f"agent show {agent_number(story, helper)}", "ended_at: 2026")
+    story.expect_text(f"agent show {helper}", "ended_at: 2026")
 
 
 def test_a_launcher_that_answers_no_pid_leaves_no_old_process_on_the_worker(running_worker):
     worker = running_worker.worker
     running_worker.expect_success(f"agent end {worker.id}", actor=running_worker.agent)
     launcher = start_launcher(running_worker, b"started\n")
-    running_worker.expect_text(f'worker send --wait {agent_number(running_worker, worker.id)} "Add the tax"', "the job waits until it starts", actor=running_worker.agent)
+    running_worker.expect_text(f'worker send --wait {worker.id} "Add the tax"', "the job waits until it starts", actor=running_worker.agent)
     running_worker.run_listeners()
     launcher.drain_requests()
-    running_worker.expect_no_text(f"agent show {agent_number(running_worker, worker.id)}", "pid:")
+    running_worker.expect_no_text(f"agent show {worker.id}", "pid:")

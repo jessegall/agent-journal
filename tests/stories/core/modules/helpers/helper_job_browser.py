@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 import json
 
 from core.modules.agents.testing.fake_launcher import FakeLauncher

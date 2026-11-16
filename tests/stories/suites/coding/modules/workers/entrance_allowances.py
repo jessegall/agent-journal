@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.gone_workers import start_launcher
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
@@ -18,4 +17,4 @@ def test_a_worker_that_may_not_start_helpers_and_a_main_agent_that_may_not_merge
     repository.checkout(ENVIRONMENT_BRANCH)
     request_merge(story, worker)
     story.expect_success(f"setting set {MAIN_MERGES_WORKERS} false --environment main", actor=story.user)
-    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", "The main agent merges no worker here", actor=story.agent)
+    story.expect_refusal(f"worker merge --wait {worker.id}", "The main agent merges no worker here", actor=story.agent)

@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from engine.actor.actor import Actor
@@ -45,7 +44,7 @@ def two_task_worker(new_story):
 
 
 def base_merged(story, worker):
-    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "go on"', actor=story.agent)
+    story.expect_success(f'worker send --wait {worker.id} "go on"', actor=story.agent)
 
 
 def test_a_worker_whose_base_moved_sends_the_judge_only_its_own_files(judged_worker):

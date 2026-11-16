@@ -3,7 +3,6 @@ import pytest
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.tasks.support.holder_assignee_check import assert_holders_are_assignees, task_assignees
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 
@@ -20,17 +19,17 @@ def delegated(new_story):
 
 
 def test_task_assign_writes_the_assignment_and_a_task_has_one_assignee_at_a_time(delegated):
-    delegated.expect_success(f"task assign 3 --to {agent_number(delegated, delegated.worker.id)}", actor=delegated.agent)
+    delegated.expect_success(f"task assign 3 --to {delegated.worker.id}", actor=delegated.agent)
     assert_holders_are_assignees(delegated)
     delegated.expect_rows(task_assignees(delegated).get(3) == [delegated.worker.id], detail=str(task_assignees(delegated)))
-    delegated.expect_success(f"task assign 3 --to {agent_number(delegated, delegated.agent.id)}", actor=delegated.agent)
+    delegated.expect_success(f"task assign 3 --to {delegated.agent.id}", actor=delegated.agent)
     assert_holders_are_assignees(delegated)
     delegated.expect_rows(task_assignees(delegated).get(3) == [delegated.agent.id], detail=str(task_assignees(delegated)))
 
 
 def test_a_release_of_a_worker_leaves_its_waiting_tasks_without_an_assignment(delegated):
     assert_holders_are_assignees(delegated)
-    delegated.expect_success(f'worker release {agent_number(delegated, delegated.worker.id)} "not needed"', actor=delegated.agent)
+    delegated.expect_success(f'worker release {delegated.worker.id} "not needed"', actor=delegated.agent)
     assert_holders_are_assignees(delegated)
     delegated.expect_text("task info 2", "assigned to: nobody", actor=delegated.agent)
     delegated.expect_rows(2 not in task_assignees(delegated), detail=str(task_assignees(delegated)))
@@ -39,7 +38,7 @@ def test_a_release_of_a_worker_leaves_its_waiting_tasks_without_an_assignment(de
 def test_a_cancelled_assigned_task_keeps_its_holders_assigned(delegated):
     delegated.expect_success('task cancel 2 --reason "not needed"', actor=delegated.agent)
     assert_holders_are_assignees(delegated)
-    delegated.expect_success(f'worker release {agent_number(delegated, delegated.worker.id)} "not needed"', actor=delegated.agent)
+    delegated.expect_success(f'worker release {delegated.worker.id} "not needed"', actor=delegated.agent)
     assert_holders_are_assignees(delegated)
 
 

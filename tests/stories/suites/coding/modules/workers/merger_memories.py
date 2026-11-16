@@ -8,7 +8,6 @@ from engine.actor.actor import Actor
 from engine.command.bus import Bus
 from engine.query.queries import Queries
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.merger_cases import MERGER_QUESTION, merger_case
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
@@ -28,7 +27,7 @@ def visiting(new_story):
 
 
 def advised_with_memory(case) -> None:
-    case.story.expect_success(f'merger advise {agent_number(case.story, case.worker.id)} "{TIMEOUT_TEXT}"', actor=case.merger)
+    case.story.expect_success(f'merger advise {case.worker.id} "{TIMEOUT_TEXT}"', actor=case.merger)
     case.story.expect_success(f'memory make "{TIMEOUT_MEMORY}" --weight 5', actor=case.merger)
 
 
@@ -57,7 +56,7 @@ def test_the_next_session_of_the_merger_is_told_its_memories_and_lists_the_advic
 
 
 def test_the_merger_writes_a_memory_of_a_decision_it_passed_to_the_main_agent(visiting):
-    visiting.story.expect_success(f"{MERGER_QUESTION} --worker {agent_number(visiting.story, visiting.worker.id)}", actor=visiting.merger)
+    visiting.story.expect_success(f"{MERGER_QUESTION} --worker {visiting.worker.id}", actor=visiting.merger)
     visiting.story.expect_success(f'memory make "{DECISION_MEMORY}" --weight 5', actor=visiting.merger)
     visiting.story.expect_text("memory list", DECISION_MEMORY, actor=visiting.merger)
 

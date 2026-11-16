@@ -1,6 +1,5 @@
 from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
-from tests.stories.core.support.agent_labels import agent_number
 import subprocess
 from datetime import timedelta
 
@@ -158,9 +157,9 @@ def test_a_worker_commits_three_tasks_one_after_the_other_each_tested_and_is_mer
     # all pass: the main agent is told to merge, and the merge keeps all three completed
     story.expect_text(f"agent-line list --agent {story.agent.id}", expected_agent_message(WorkerTestsPassedMessage.declared()), actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
     expect_states(story, task1="completed", task2="completed", task3="completed")
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")
 
@@ -176,4 +175,4 @@ def test_a_worker_with_queued_tasks_is_not_reported_while_its_own_tests_run(play
     story.end_session(worker)
     story.advance(timedelta(minutes=20))
     story.tick("s-1")
-    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")

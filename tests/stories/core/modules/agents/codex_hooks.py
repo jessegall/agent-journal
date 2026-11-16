@@ -10,7 +10,6 @@ from core.modules.agents.testing.fake_launcher import FakeLauncher
 from core.modules.codex.providers.codex_provider import CodexProvider
 from tests.stories.core.modules.helpers.program_split import helper_split_story
 from tests.stories.core.modules.helpers.start_helper import START, started
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.program_split import real_program_checks
 
 PERSON_CONFIG = 'model = "gpt-6.1-sol"\n'
@@ -40,7 +39,7 @@ def journal_hooks(story) -> ProgramHooks:
 def test_a_codex_helper_starts_on_the_journal_s_trusted_folder_and_the_person_config_stays(codex_project):
     story, folder, person_config = codex_project
     helper, _ = started(story, f'{START} --program codex --model gpt-6.1-sol')
-    story.expect_text(f'agent show {agent_number(story, helper)}', 'program: codex')
+    story.expect_text(f'agent show {helper}', 'program: codex')
     story.expect_success(f'program trust codex "{folder}"', 'ready')
     story.expect_rows(person_config.read_text() == PERSON_CONFIG, journal_hooks(story).is_complete())
 

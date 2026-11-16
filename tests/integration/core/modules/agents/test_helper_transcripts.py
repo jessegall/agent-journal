@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 from engine.enums.actor_type import ActorType
 from engine.testing.stories.story_fixture import StoryFixture
 
@@ -39,7 +38,7 @@ def deliver_line(story, agent_id: int, creator_id: int, text: str) -> None:
 def test_a_workers_own_rows_say_worker_and_not_assistant(played, tmp_path, monkeypatch):
     read_transcript(tmp_path, monkeypatch, "s-2", row("assistant", "The cart is fixed"))
     story = played(TranscriptWorker)
-    story.expect_text(f"agent transcript {agent_number(story, story.helper.id)}", "1  worker  assistant  The cart is fixed")
+    story.expect_text(f"agent transcript {story.helper.id}", "1  worker  assistant  The cart is fixed")
 
 
 def test_a_row_the_journal_sent_a_worker_is_tagged_journal_and_one_the_main_agent_sent_is_tagged_main_agent(played, tmp_path, monkeypatch):
@@ -48,7 +47,7 @@ def test_a_row_the_journal_sent_a_worker_is_tagged_journal_and_one_the_main_agen
     worker = story.helper.id
     deliver_line(story, worker, 1, "Your tests failed: two")
     deliver_line(story, worker, story.agent.id, "Fix the footer too")
-    story.expect_text(f"agent transcript {agent_number(story, worker)}", "1  journal  user  Your tests failed: two", "2  main agent  user  Fix the footer too")
+    story.expect_text(f"agent transcript {worker}", "1  journal  user  Your tests failed: two", "2  main agent  user  Fix the footer too")
 
 
 def test_the_transcript_of_a_worker_with_more_lines_than_one_read_may_load_still_names_who_sent_a_row(played, tmp_path, monkeypatch):
@@ -60,14 +59,14 @@ def test_the_transcript_of_a_worker_with_more_lines_than_one_read_may_load_still
     deliver_line(story, worker, story.agent.id, "Fix the footer too")
     database = story.container.get(Database)
     database.read_limit_rows, database.collected_large_reads = READ_LIMIT_ROWS, None
-    story.expect_text(f"agent transcript {agent_number(story, worker)}", "1  main agent  user  Fix the footer too")
+    story.expect_text(f"agent transcript {worker}", "1  main agent  user  Fix the footer too")
     story.expect_rows(not database.collected_large_reads, detail=str(database.collected_large_reads))
 
 
 def test_a_row_of_a_worker_that_no_line_matches_is_tagged_journal_and_never_user(played, tmp_path, monkeypatch):
     read_transcript(tmp_path, monkeypatch, "s-2", row("user", "Tell me what to do"))
     story = played(TranscriptWorker)
-    story.expect_text(f"agent transcript {agent_number(story, story.helper.id)}", "1  journal  user  Tell me what to do")
+    story.expect_text(f"agent transcript {story.helper.id}", "1  journal  user  Tell me what to do")
 
 
 def test_a_row_is_matched_to_a_line_by_the_text_it_holds_not_by_how_it_opens(played, tmp_path, monkeypatch):
@@ -75,25 +74,25 @@ def test_a_row_is_matched_to_a_line_by_the_text_it_holds_not_by_how_it_opens(pla
     story = played(TranscriptWorker)
     worker = story.helper.id
     deliver_line(story, worker, story.agent.id, "[journal] look at the cart")
-    story.expect_text(f"agent transcript {agent_number(story, worker)}", "1  journal  user  [journal] your next task", "2  main agent  user  [journal] look at the cart")
+    story.expect_text(f"agent transcript {worker}", "1  journal  user  [journal] your next task", "2  main agent  user  [journal] look at the cart")
 
 
 def test_a_monitor_event_in_a_workers_transcript_stays_a_monitor_row(played, tmp_path, monkeypatch):
     read_transcript(tmp_path, monkeypatch, "s-2", row("user", "<task-notification>ended</task-notification>"))
     story = played(TranscriptWorker)
-    story.expect_text(f"agent transcript {agent_number(story, story.helper.id)}", "1  monitor  user  <task-notification>ended</task-notification>")
+    story.expect_text(f"agent transcript {story.helper.id}", "1  monitor  user  <task-notification>ended</task-notification>")
 
 
 def test_the_main_agents_rows_keep_user_and_assistant(played, tmp_path, monkeypatch):
     read_transcript(tmp_path, monkeypatch, "s-1", row("user", "Fix the cart"), row("assistant", "Done"))
     story = played(BuilderStarted)
-    story.expect_text(f"agent transcript {agent_number(story, story.agent.id)}", "1  user  user  Fix the cart", "2  assistant  assistant  Done")
+    story.expect_text(f"agent transcript {story.agent.id}", "1  user  user  Fix the cart", "2  assistant  assistant  Done")
 
 
 def test_each_row_carries_its_time_from_the_session_file(played, tmp_path, monkeypatch):
     read_transcript(tmp_path, monkeypatch, "s-1", row("user", "Fix the cart", "2026-11-03T05:00:01.000Z"), row("assistant", "Done", "2026-11-03T05:00:09.000Z"))
     story = played(BuilderStarted)
-    story.expect_text(f"agent transcript {agent_number(story, story.agent.id)} --json", '"time": "2026-11-03T05:00:01.000Z"', '"time": "2026-11-03T05:00:09.000Z"')
+    story.expect_text(f"agent transcript {story.agent.id} --json", '"time": "2026-11-03T05:00:01.000Z"', '"time": "2026-11-03T05:00:09.000Z"')
 
 
 def test_a_codex_row_carries_its_time_too(played, tmp_path, monkeypatch):
@@ -103,7 +102,7 @@ def test_a_codex_row_carries_its_time_too(played, tmp_path, monkeypatch):
     rollout.write_text(json.dumps({"timestamp": FIXED_TIME, "type": "response_item", "payload": {"role": "user", "content": [{"type": "input_text", "text": "Write the tests"}]}}) + "\n")
     story = played(BuilderStarted)
     codex = story.new_row_id("agent start t-1 codex main --environment main")
-    story.expect_text(f"agent transcript {agent_number(story, codex)} --json", f'"time": "{FIXED_TIME}"')
+    story.expect_text(f"agent transcript {codex} --json", f'"time": "{FIXED_TIME}"')
 
 
 class TranscriptWorker(StoryFixture):

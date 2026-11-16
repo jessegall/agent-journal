@@ -6,7 +6,6 @@ from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.assign_rules.support.rule_steps import (COMPLEXITY_RULE, ENVIRONMENT, MIGRATION_RULE, SonnetWorkerAndFreeTask, TwoPersonRules, listed_decisions, new_task, rule_line,
                                                                         rule_places, task_assignments, task_decision)
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
 
 CART_RULE = 1
@@ -69,7 +68,7 @@ class RuleTasksStartedAndHandGiven(StoryFixture):
         started = new_task(story, '"Fix the clock" --complexity 5')
         story.expect_success(f"task start {started} {ENVIRONMENT}", actor=story.agent)
         hand_given = new_task(story, '"Fix the door"')
-        story.expect_success(f"task assign {hand_given} --to {agent_number(story, story.agent.id)} {ENVIRONMENT}", actor=story.user)
+        story.expect_success(f"task assign {hand_given} --to {story.agent.id} {ENVIRONMENT}", actor=story.user)
         story.run(f"assign-rule edit {COMPLEXITY_RULE} --target agent --agent row:{story.helper.id} {ENVIRONMENT}", actor=story.user)
 
     def expect(self, story: Story) -> None:
@@ -133,7 +132,7 @@ def test_a_rule_on_a_retired_worker_keeps_its_warning_until_one_edit_moves_it(ne
     retired = story.new_row_id(f"agent start w-9 claude worker --parent {story.agent.id} {ENVIRONMENT}")
     story.run(f"assign-rule make --target agent --agent row:{retired} --condition any {ENVIRONMENT}", actor=story.user)
     story.run(f"agent end {retired}")
-    story.run(f'agent retire {agent_number(story, retired)} --reason "not needed"', actor=story.user)
+    story.run(f'agent retire {retired} --reason "not needed"', actor=story.user)
     warned = story.run(f"assign-rule board {ENVIRONMENT}", actor=story.user).output_text
     worker = Actor(story.new_row_id(f"agent start w-10 claude worker --parent {story.agent.id} {ENVIRONMENT}"), ActorType.AGENT)
     story.expect_success(f"assign-rule edit 1 --target agent --agent row:{worker.id} {ENVIRONMENT}", actor=story.user)

@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 import json
 
 from suites.coding.modules.workers.support.available_work import AvailableWork
@@ -24,7 +23,7 @@ def delegated_cards(story) -> list[dict[str, object]]:
 
 def test_a_reserved_task_is_not_offered_to_send_to_a_worker(played):
     story = played(OpenTaskOrchestrator)
-    story.expect_success(f"task assign 1 --to {agent_number(story, story.agent.id)}", actor=story.agent)
+    story.expect_success(f"task assign 1 --to {story.agent.id}", actor=story.agent)
     with scope_line(story):
         answer = story.container.get(AvailableWork).answer(story.agent.id)
     expect_value(answer.delegatable, ())

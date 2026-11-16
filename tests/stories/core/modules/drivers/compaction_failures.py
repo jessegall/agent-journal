@@ -11,7 +11,6 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.drivers.compaction_askers import SHELL_WINDOW, control
 from tests.stories.core.modules.drivers.context_compactions import compactions
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.compaction_never_twice import MissingLauncherTyping, compacted, expect_compaction_count, backdate_context
 from tests.stories.suites.coding.modules.workers.context_limit import LIMIT_TOKENS, PRE_COMPACT, SESSION, LimitEnabled, has_context, stops, typing_recorded
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
@@ -65,7 +64,7 @@ def test_f1_a_line_that_never_starts_fails_after_ten_minutes_and_the_person_and_
     expect_compaction_count(limited, 0)
     lines = main_agent_lines(limited)
     limited.expect_rows(states(limited) == [CompactionState.FAILED], notice_count(limited, CompactionNoticeType.UNSTARTED) == 1,
-                        lines.count(CompactionNoticeMessage.declared().agent_message(agent=agent_number(limited, limited.agent.id), notice=1).text) == 1, detail=f"{states(limited)} {lines}")
+                        lines.count(CompactionNoticeMessage.declared().agent_message(agent=limited.agent.id, notice=1).text) == 1, detail=f"{states(limited)} {lines}")
 
 
 def test_f9_after_a_request_that_failed_a_person_sends_the_compaction_by_hand_and_it_takes_the_place_of_the_failed_row(limited):
@@ -109,7 +108,7 @@ def test_f6_a_compaction_whose_program_ends_before_it_finished_is_given_up(limit
 
 
 def test_f10_an_open_request_of_a_paused_agent_is_given_up_and_nothing_more_is_typed_to_it(limited):
-    limited.expect_success(f"agent pause {agent_number(limited, limited.agent.id)}", actor=limited.user)
+    limited.expect_success(f"agent pause {limited.agent.id}", actor=limited.user)
     limited.advance(FAULT_WAIT)
     faults_reported(limited)
     expect_compaction_count(limited, 0)

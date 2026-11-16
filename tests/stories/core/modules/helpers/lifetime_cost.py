@@ -11,7 +11,6 @@ from tests.integration.core.modules.helpers.test_cold_sessions import with_job
 from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, resumable_session
 from tests.stories.core.modules.helpers.support.rotating_helper import EndedColdRotationHelper, EndedContinueHelper, EndedEachLaunchHelper, story_with_profile_file
 from tests.stories.core.modules.usage.support.status_files import save_status_file
-from tests.stories.core.support.agent_labels import agent_number
 
 IDLE_MINUTES = 30
 CONTEXT_PERCENT = 80
@@ -31,7 +30,7 @@ def reported_cost(story, session: str, spent_usd: float) -> None:
 def finished_job(story) -> None:
     """Sends the helper its next job, lets the launcher start it and ends the helper."""
     launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"started 701\n")
-    story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=story.agent)
+    story.expect_success(f'helper send {helper_agent(story).id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
     launcher.server.close()

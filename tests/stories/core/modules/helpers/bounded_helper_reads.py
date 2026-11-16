@@ -1,7 +1,6 @@
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from tests.stories.core.modules.drivers.agent_pause import FakeTyping
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, helper_agent
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.large_reads import seeded_children, seeded_finished_jobs
 from tests.stories.core.support.read_limit import limit_reads
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
@@ -24,6 +23,6 @@ def test_agent_resume_reads_only_the_running_children_with_a_filter(new_story):
     story = new_story(fixture=EndedHelper)
     seeded_children(story, story.agent.id, 120)
     story.bind(TerminalTyping, FakeTyping())
-    story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
+    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     limit_reads(story)
-    story.expect_success(f"agent resume {agent_number(story, story.agent.id)}", actor=story.user)
+    story.expect_success(f"agent resume {story.agent.id}", actor=story.user)

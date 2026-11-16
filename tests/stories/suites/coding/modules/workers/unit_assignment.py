@@ -3,7 +3,6 @@ import json
 import pytest
 
 from tests.stories.suites.coding.modules.workers.support.phase_steps import group_worker, pair_worker, phase_worker, planned_worker  # noqa: F401
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.phase_steps import unplanned_group_worker
 from tests.integration.suites.coding.modules.workers.test_work_units import plan_card, worker_unit
 from tests.stories.support.story_checks import expect_value, expect_value_4, expect_value_with
@@ -12,7 +11,7 @@ from tests.stories.support.story_checks import expect_value, expect_value_4, exp
 
 
 def number_of(worker) -> int:
-    return agent_number(worker.story, worker.worker.id)
+    return worker.worker.id
 
 
 def test_01_a_dispatch_on_a_plan_assigns_the_plan(planned_worker):

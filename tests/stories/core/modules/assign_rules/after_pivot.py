@@ -1,7 +1,6 @@
 import json
 
 from tests.stories.core.modules.assign_rules.support.rule_steps import ENVIRONMENT, listed_decisions, recorded_decision, rule_line, task_assignments
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
 
 TASK_ID = 1
@@ -34,7 +33,7 @@ def test_rules_and_try_work_after_rules_assign(new_story):
 
 def test_an_existing_journal_synced_twice_has_empty_rule_tables_and_its_assignments_name_no_rule(new_story):
     story = new_story(fixture=OrchestratorWithPerson)
-    story.expect_success(f"task assign {TASK_ID} --to {agent_number(story, story.agent.id)} {ENVIRONMENT}", actor=story.user)
+    story.expect_success(f"task assign {TASK_ID} --to {story.agent.id} {ENVIRONMENT}", actor=story.user)
     sync_codes = [story.synced()[0] for _ in range(2)]
     rules = json.loads(story.run(f"assign-rule list --json {ENVIRONMENT}", actor=story.user).output_text)["rows"]
     story.expect_rows(sync_codes == [0, 0], rules == [], listed_decisions(story, TASK_ID) == [], [given.rule_id for given in task_assignments(story, TASK_ID)] == [None],

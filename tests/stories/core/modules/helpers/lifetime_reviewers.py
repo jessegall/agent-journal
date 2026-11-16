@@ -10,7 +10,6 @@ from engine.enums.actor_type import ActorType
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.helpers.helper_jobs import read_jobs, resumable_session
 from tests.stories.core.modules.helpers.program_split import helper_split_story, helper_viewer
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.suites.coding.modules.workers.support.program_split import set_split
 from suites.coding.support.shipped_profiles import PLAN_REVIEWER_PROFILE
@@ -53,7 +52,7 @@ def reviewers(story) -> list[Agent]:
 
 
 def review_job(story, reviewer: Agent, plan: int) -> str:
-    return f'helper send {agent_number(story, reviewer.id)} "Review plan {plan}" --plan {plan}'
+    return f'helper send {reviewer.id} "Review plan {plan}" --plan {plan}'
 
 
 class StartedReviewer(StoryFixture):
@@ -85,7 +84,7 @@ def idle_reviewer(new_story):
 def test_a_steering_line_to_a_reviewer_whose_job_runs_is_added_to_the_open_job(new_story):
     story = new_story(fixture=StartedReviewer)
     reviewer = reviewers(story)[0]
-    story.expect_success(f'helper send {agent_number(story, reviewer.id)} "Also read phase 2" --steer', actor=story.agent)
+    story.expect_success(f'helper send {reviewer.id} "Also read phase 2" --steer', actor=story.agent)
     jobs = read_jobs(story, reviewer)
     story.expect_rows(len(jobs) == 1, "Also read phase 2" in jobs[0].brief, reviewers(story)[0].session == reviewer.session)
 
@@ -94,7 +93,7 @@ def test_a_person_retires_an_ended_reviewer_and_the_next_start_makes_a_new_agent
     story = idle_reviewer
     retired = reviewers(story)[0]
     story.expect_success(f'memory make "{REVIEW_MEMORY}" --weight 5', actor=Actor(retired.id, ActorType.AGENT))
-    story.expect_success(f'agent retire {agent_number(story, retired.id)} --reason "Its reviews are done" --environment main', actor=story.user)
+    story.expect_success(f'agent retire {retired.id} --reason "Its reviews are done" --environment main', actor=story.user)
     launches(story, START_REVIEW.format(plan=6))
     current = reviewers(story)
     story.expect_rows(len(current) == 2, current[0].retired_at is not None, current[1].retired_at is None, current[1].number > retired.number, detail=str(current))

@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 from engine.enums.command_category import CommandCategory
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from engine.testing.examples.hook_samples import HookSamples
@@ -27,7 +26,7 @@ def test_a_resumed_session_gets_no_start_lines_but_the_one_saying_it_continues(p
 
 
 def continued_line(story) -> str:
-    return ContinuedSessionMessage.declared().agent_message(agent=agent_number(story, story.agent.id)).text
+    return ContinuedSessionMessage.declared().agent_message(agent=story.agent.id).text
 
 
 def test_a_main_agent_that_was_working_is_idle_when_started_again_and_told_once_that_it_continues(played):

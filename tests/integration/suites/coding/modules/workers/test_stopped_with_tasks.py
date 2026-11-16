@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 
 import pytest
@@ -53,7 +52,7 @@ def waiting_lines_entered(story) -> None:
 def two_task_worker(running_worker):
     story = running_worker
     story.expect_success('task make "Print the receipt" --brief "Print it" --environment main', actor=story.agent)
-    story.expect_success(f"worker send --wait {agent_number(story, story.worker.id)} --task 2", actor=story.agent)
+    story.expect_success(f"worker send --wait {story.worker.id} --task 2", actor=story.agent)
     return story
 
 
@@ -94,7 +93,7 @@ def test_a_worker_that_keeps_ending_with_the_merger_on_is_named_to_the_main_agen
     ended(story)
     story.tick(MAIN_SESSION)
     lines = main_agent_lines(story)
-    story.expect_rows(lines.count(f"worker:{agent_number(story, story.worker.id)} ended with") == 1, detail=lines)
+    story.expect_rows(lines.count(f"worker:{story.worker.id} ended with") == 1, detail=lines)
 
 
 def test_a_worker_that_keeps_ending_with_a_blocked_current_task_names_its_open_task_to_the_main_agent(two_task_worker):
@@ -106,20 +105,20 @@ def test_a_worker_that_keeps_ending_with_a_blocked_current_task_names_its_open_t
     story.advance(timedelta(minutes=1))
     launcher = retried(story)
     lines = main_agent_lines(story)
-    story.expect_rows(launcher.requests == [], f"worker:{agent_number(story, story.worker.id)} ended with" in lines, "task:2" in lines, detail=lines)
+    story.expect_rows(launcher.requests == [], f"worker:{story.worker.id} ended with" in lines, "task:2" in lines, detail=lines)
 
 
 def test_a_worker_handing_on_to_an_open_task_is_pointed_at_it(worker_command):
     story, _, worker, _ = worker_command
     story.expect_success('task make "Print the receipt" --brief "Print it" --environment main', actor=story.agent)
-    story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task 2", actor=story.agent)
+    story.expect_success(f"worker send --wait {worker.id} --task 2", actor=story.agent)
     outcome = story.run("worker commit --differences none", actor=worker)
     story.expect_rows(CONTINUE_TASK_2 in outcome.output_text, "stop or go on" not in outcome.output_text, detail=outcome.output_text)
 
 
 def test_a_main_agent_merging_a_worker_keeps_its_own_line(worker_command):
     story, _, worker, _ = worker_command
-    outcome = story.run(f'worker send {agent_number(story, worker.id)} "The receipt"', actor=story.agent)
+    outcome = story.run(f'worker send {worker.id} "The receipt"', actor=story.agent)
     story.expect_rows("command accepted" in outcome.output_text, CONTINUE_TASK_2 not in outcome.output_text, STOP_WAITING not in outcome.output_text, detail=outcome.output_text)
 
 
@@ -152,7 +151,7 @@ def test_a_worker_that_still_has_an_open_task_of_its_own_is_given_no_free_task(w
     story, _, worker, _ = worker_command
     story.expect_success('task make "Print the receipt" --brief "Print it" --complexity 2 --environment main', actor=story.agent)
     story.expect_success('task make "Weigh the parcel" --brief "Weigh it" --complexity 2 --environment main', actor=story.agent)
-    story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task 3", actor=story.agent)
+    story.expect_success(f"worker send --wait {worker.id} --task 3", actor=story.agent)
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.expect_no_text("task info 2", f"assigned to: agent {worker.id}", actor=story.agent)
 
@@ -176,6 +175,6 @@ def test_a_worker_is_not_given_a_task_that_waits_on_another(worker_command):
 def test_a_worker_is_not_given_a_task_reserved_for_the_main_agent(worker_command):
     story, _, worker, _ = worker_command
     story.expect_success('task make "Print the receipt" --brief "Print it" --complexity 2 --environment main', actor=story.agent)
-    story.expect_success(f"task assign 2 --to {agent_number(story, story.agent.id)}", actor=story.agent)
+    story.expect_success(f"task assign 2 --to {story.agent.id}", actor=story.agent)
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.expect_text("task info 2", f"assigned to: agent {story.agent.id}", actor=story.agent)

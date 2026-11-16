@@ -10,7 +10,6 @@ from tests.stories.core.modules.helpers.lifetime_combinations import launched_jo
 from tests.stories.core.modules.helpers.rotation_mid_job import session_rows
 from tests.stories.core.modules.helpers.support.rotating_helper import EndedColdRotationHelper, story_with_profile_file
 from tests.stories.core.modules.usage.support.status_files import save_status_file
-from tests.stories.core.support.agent_labels import agent_number
 
 SILENT_MINUTES = 180
 LIMIT_TOKENS = 400000

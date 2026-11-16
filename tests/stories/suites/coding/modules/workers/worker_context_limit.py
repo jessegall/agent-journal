@@ -1,5 +1,4 @@
 from suites.coding.modules.workers.models.worktree import Worktree
-from tests.stories.core.support.agent_labels import agent_number
 import json
 
 import pytest
@@ -53,7 +52,7 @@ def compacting_worker(ended_worker):
 
 def with_job(story, worker):
     launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET))
-    story.run(f'worker send --wait {agent_number(story, worker.id)} "{JOB}"', actor=story.agent)
+    story.run(f'worker send --wait {worker.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     return launcher
 

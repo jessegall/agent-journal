@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 import pytest
 from datetime import timedelta
 
@@ -61,7 +60,7 @@ def test_the_setting_sets_the_hours_a_worker_may_be_idle(new_story):
     story.expect_success("worker-worktree show 1", "state: cut")
     story.advance(hours(idle_hours(story)))
     story.tick(MAIN_SESSION)
-    story.expect_text(f"agent show {agent_number(story, worker.id)}", "ended_at: ")
+    story.expect_text(f"agent show {worker.id}", "ended_at: ")
 
 
 def test_the_hourly_sweep_keeps_unmerged_work_and_its_tip_as_a_ref(new_story):

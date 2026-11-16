@@ -8,7 +8,6 @@ from core.modules.helpers.ticks.unstarted_job_starts import UnstartedJobStarts
 from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, read_jobs, resumable_session
 from tests.stories.core.modules.helpers.occupant_rotation import job_launch
 from tests.stories.core.modules.helpers.support.rotating_helper import SAVE_ROTATING, EndedEachLaunchHelper, StartedEachLaunchHelper, real_program_states, story_with_profile_file
-from tests.stories.core.support.agent_labels import agent_number
 
 STEERING_TEXT = "Also read src/tax.py."
 FIRST_BRIEF = "Read src/cart.py"
@@ -27,12 +26,12 @@ def rotating(new_story):
 
 
 def session_rows(story) -> list[dict]:
-    number = agent_number(story, helper_agent(story).id)
+    number = helper_agent(story).id
     return json.loads(story.run(f"agent sessions {number} --environment main --json", actor=story.user).output_text)["rows"]
 
 
 def steered(story) -> None:
-    story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} --steer "{STEERING_TEXT}"', actor=story.agent)
+    story.expect_success(f'helper send {helper_agent(story).id} --steer "{STEERING_TEXT}"', actor=story.agent)
 
 
 def launches_after_the_program_died(story) -> list[dict]:
@@ -68,11 +67,11 @@ def test_a_helper_that_dies_in_a_job_resumes_its_session_or_gets_a_new_one_with_
 def test_a_paused_main_agent_that_resumes_gets_the_same_session_of_its_helper_back(working):
     helper = helper_agent(working)
     resumable_session(working, helper)
-    working.expect_success(f"agent pause {agent_number(working, working.agent.id)}", actor=working.user)
+    working.expect_success(f"agent pause {working.agent.id}", actor=working.user)
     working.expect_success(f"agent end {helper.id}", actor=working.user)
     working.run_listeners()
     launcher = FakeLauncher.accepting(working.home.socket("launcher"), answer=b"started 701\n")
-    working.expect_success(f"agent resume {agent_number(working, working.agent.id)}", actor=working.user)
+    working.expect_success(f"agent resume {working.agent.id}", actor=working.user)
     working.run_listeners()
     launcher.drain_requests()
     working.expect_rows(len(launcher.requests) == 1, helper_agent(working).session == helper.session, helper.session in launcher.requests[0]["command"], detail=str(launcher.requests))
@@ -108,7 +107,7 @@ def test_a_changed_occupant_leaves_the_open_job_alone_and_decides_the_next_launc
 def test_a_second_send_while_the_first_job_is_open_is_refused_and_only_one_occupant_is_made(rotating):
     helper = helper_agent(rotating)
     job_launch(rotating)
-    rotating.expect_refusal(f'helper send {agent_number(rotating, helper.id)} "A second job"', "--steer", actor=rotating.agent)
+    rotating.expect_refusal(f'helper send {helper.id} "A second job"', "--steer", actor=rotating.agent)
     rows = session_rows(rotating)
     rotating.expect_rows(len(rows) == 2, rows[1]["end_reason"] == "each_launch", rows[0]["session"] == helper_agent(rotating).session, detail=str(rows))
 
@@ -116,7 +115,7 @@ def test_a_second_send_while_the_first_job_is_open_is_refused_and_only_one_occup
 def test_a_stopped_helper_ends_its_job_as_stopped_and_the_next_send_makes_a_new_occupant(working):
     helper = helper_agent(working)
     resumable_session(working, helper)
-    working.expect_success(f"helper stop {agent_number(working, helper.id)}", actor=working.user)
+    working.expect_success(f"helper stop {helper.id}", actor=working.user)
     working.run_listeners()
     working.expect_rows(read_jobs(working, helper)[0].returned == "Stopped", detail=str(read_jobs(working, helper)[0]))
     command = job_launch(working)["command"]

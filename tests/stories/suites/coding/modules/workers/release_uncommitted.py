@@ -1,11 +1,10 @@
 from tests.stories.suites.coding.modules.workers.support.phase_steps import single_worker  # noqa: F401
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE
 
 
 def test_a_release_is_refused_while_the_worker_has_uncommitted_files_and_goes_through_with_abandon(single_worker):
     story = single_worker.story
     single_worker.repository.changed(single_worker.worker.id, "cart.py", CART_CHANGE)
-    number = agent_number(story, single_worker.worker.id)
+    number = single_worker.worker.id
     story.expect_refusal(f'worker release {number} "wrong job"', "has uncommitted files", actor=story.agent)
     story.expect_success(f'worker release {number} --abandon "wrong job"', actor=story.agent)

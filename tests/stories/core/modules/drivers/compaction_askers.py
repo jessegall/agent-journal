@@ -6,7 +6,6 @@ from core.modules.claude_code.providers.claude_code_provider import COMPACT_LINE
 from core.modules.drivers.models.enums.compaction_reason import CompactionReason
 from core.modules.drivers.models.enums.compaction_state import CompactionState
 from tests.stories.core.modules.drivers.context_compactions import compactions
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.context_limit import LIMIT_TOKENS, PRE_COMPACT, SESSION, LimitEnabled, has_context, stops, typing_recorded
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
@@ -20,7 +19,7 @@ def agent(new_story):
 
 
 def control(story, value: str) -> list[str]:
-    return ["agent", "control", str(agent_number(story, story.agent.id)), "context", value]
+    return ["agent", "control", str(story.agent.id), "context", value]
 
 
 def test_d2_d8_a_person_asks_in_the_viewer_once_and_a_second_compact_or_a_clear_is_refused_naming_the_open_one(agent):
@@ -38,7 +37,7 @@ def test_d2_d8_a_person_asks_in_the_viewer_once_and_a_second_compact_or_a_clear_
 
 def test_d3_a_stop_over_the_limit_right_after_a_person_asked_types_no_second_compaction(agent):
     has_context(agent, LIMIT_TOKENS)
-    agent.expect_success(" ".join(["agent", "control", str(agent_number(agent, agent.agent.id)), "context", "compact", "--environment", "main"]), actor=agent.user)
+    agent.expect_success(" ".join(["agent", "control", str(agent.agent.id), "context", "compact", "--environment", "main"]), actor=agent.user)
     stops(agent)
     rows = compactions(agent)
     agent.expect_rows(len(rows) == 1, rows[0].reason is CompactionReason.PERSON, agent.typing.typed.count(COMPACT_LINE) == 1, detail=str(rows))

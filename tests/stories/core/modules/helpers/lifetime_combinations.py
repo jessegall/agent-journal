@@ -8,7 +8,6 @@ from tests.integration.core.modules.helpers.test_cold_sessions import with_job
 from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, resumable_session
 from tests.stories.core.modules.helpers.support.rotating_helper import EndedColdRotationHelper, EndedContinueHelper, EndedEachLaunchHelper, real_program_states, story_with_profile_file
 from tests.stories.core.modules.usage.support.status_files import save_status_file
-from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.models.agent import Agent
 
 LIMIT_TOKENS = 400000
@@ -27,7 +26,7 @@ def cooling(new_story):
 
 def launched_job(story) -> dict:
     launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"started 701\n")
-    story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=story.agent)
+    story.expect_success(f'helper send {helper_agent(story).id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
     launcher.server.close()
@@ -60,11 +59,11 @@ def test_a_when_cold_helper_that_is_warm_or_small_and_a_continue_helper_that_is_
 
 
 def test_a_when_cold_helper_that_is_cold_and_large_gets_a_new_session_on_its_program_and_number(cooling):
-    number = agent_number(cooling, helper_agent(cooling).id)
+    number = helper_agent(cooling).id
     helper, request = with_job(cooling, cooling.number_default(COLD_SESSION_MINUTES), cooling.number_default(COLD_SESSION_CONTEXT_PERCENT))
     current = helper_agent(cooling)
     cooling.expect_rows(current.session != helper.session, current.program == helper.program, request["command"][0] == "claude",
-                        agent_number(cooling, current.id) == number, detail=str(request["command"][:2]))
+                        current.id == number, detail=str(request["command"][:2]))
 
 
 def test_a_when_cold_helper_never_changes_program_while_its_own_is_out(cooling):
@@ -73,7 +72,7 @@ def test_a_when_cold_helper_never_changes_program_while_its_own_is_out(cooling):
     ends_at = (cooling.clock.timestamp().value + timedelta(minutes=30)).isoformat()
     cooling.expect_success(f'provider-outage make claude "rate limit" --ends-at {ends_at}', actor=cooling.agent)
     launcher = FakeLauncher.accepting(cooling.home.socket("launcher"), answer=b"started 701\n")
-    cooling.run(f'helper send {agent_number(cooling, helper.id)} "{JOB}"', actor=cooling.agent)
+    cooling.run(f'helper send {helper.id} "{JOB}"', actor=cooling.agent)
     cooling.run_listeners()
     launcher.drain_requests()
     cooling.expect_rows(helper_agent(cooling).program == "claude", not any(request["command"][0] == "codex" for request in launcher.requests), detail=str(launcher.requests))

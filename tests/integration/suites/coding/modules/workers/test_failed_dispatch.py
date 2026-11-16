@@ -1,6 +1,5 @@
 from suites.coding.modules.workers.types.worker import Worker
 from core.modules.agents.models.agent import Agent
-from tests.stories.core.support.agent_labels import agent_number
 import json
 
 import pytest
@@ -77,6 +76,6 @@ def test_a_worker_release_clears_a_worktree_left_in_state_new(dispatch_story):
     opened = story.run_command(OpenWorkerWorktree(StartAgent("s-left", "claude", Worker.key, story.agent.id), 1), story.agent, 1)
     worker_id = opened.worker.id
     story.expect_text("worker-worktree show 1", "state: new", actor=story.agent)
-    story.expect_success(f'worker release {agent_number(story, worker_id)} "its dispatch failed"', actor=story.agent)
+    story.expect_success(f'worker release {worker_id} "its dispatch failed"', actor=story.agent)
     story.expect_rows(open_worktrees(story) == [])
     story.expect_success(DISPATCH, actor=story.agent)

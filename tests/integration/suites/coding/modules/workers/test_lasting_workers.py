@@ -18,7 +18,6 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.ticks.worker_resume_retry import WorkerResumeRetry
 from tests.stories.core.modules.helpers import lifetime_reviewers
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.cold_workers import stopped_worker, with_job
 from tests.stories.suites.coding.modules.workers.gone_workers import MAIN_SESSION, ended_worker, missing_program, running_worker
@@ -61,7 +60,7 @@ def merged_worker(played):
     story.expect_success(f'memory make "{MEMORY_TEXT}" --weight 5', actor=story.worker)
     story.repository.checkout(ENVIRONMENT_BRANCH)
     request_merge(story, story.worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, story.worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {story.worker.id}", actor=story.agent)
     story.run_listeners()
     return story
 
@@ -83,7 +82,7 @@ def report_full_window(story) -> None:
 
 def test_a_dispatch_at_the_kept_limit_is_refused_naming_the_idle_worker_to_send_to_and_the_person_who_retires(merged_worker):
     story = merged_worker
-    number = agent_number(story, story.worker.id)
+    number = story.worker.id
     story.expect_success(KEPT_LIMIT)
     task_id = story.new_row_id('task make "Add the tax" --brief "Add the tax to the cart total"', actor=story.agent)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
@@ -99,7 +98,7 @@ def test_a_person_who_retires_a_worker_with_unmerged_work_is_refused(played):
     person = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     worker = delivered_worker(story, repository_environment(story))
     story.run_command(EndInactiveWorker(worker.id), story.agent)
-    story.expect_refusal(f'agent retire {agent_number(story, worker.id)} --reason "Its task is done" --environment main', "unmerged work", actor=person)
+    story.expect_refusal(f'agent retire {worker.id} --reason "Its task is done" --environment main', "unmerged work", actor=person)
     story.expect_rows(story.row(Agent, worker.id).retired_at is None)
 
 

@@ -5,7 +5,6 @@ from core.modules.helpers.listeners.helper_program_listener import HelperProgram
 from core.modules.helpers.ticks.unstarted_job_starts import UnstartedJobStarts
 from engine.journal.journal_home import LAUNCHER_SOCKET
 from tests.stories.core.modules.helpers.helper_jobs import JOB, EndedHelper, helper_agent, resumable_session
-from tests.stories.core.support.agent_labels import agent_number
 
 
 def test_a_job_whose_start_was_lost_is_started_by_the_tick_after_a_minute_and_a_helper_with_a_program_is_not_started_twice(played, monkeypatch):
@@ -13,7 +12,7 @@ def test_a_job_whose_start_was_lost_is_started_by_the_tick_after_a_minute_and_a_
     story = played(EndedHelper)
     resumable_session(story, helper_agent(story))
     monkeypatch.setattr(HelperProgramListener, "handle", lambda listener, event, logged: None)
-    story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=story.agent)
+    story.expect_success(f'helper send {helper_agent(story).id} "{JOB}"', actor=story.agent)
     launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), request_count=0, answers=(b"\n", b"started 801\n", b"running\n"))
     UnstartedJobStarts()(story.container)
     story.expect_rows(launcher.starts == [], detail="within the first minute the start may still be under way")

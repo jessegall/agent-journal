@@ -6,7 +6,6 @@ from engine.enums.actor_type import ActorType
 from engine.enums.command_category import CommandCategory
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
 from tests.stories.core.support.coding_fixtures import UserBuilder
-from tests.stories.core.support.agent_labels import agent_number
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 
@@ -77,6 +76,6 @@ def test_an_agents_processes_tab_lists_only_that_agents_running_waiting_and_fini
     waiting = start_process(story, "make checks", category=CommandCategory.TEST_RUN)
     story.agent = Actor(different, ActorType.AGENT)
     start_process(story, "make site", category=CommandCategory.BUILD)
-    queue = json.loads(story.run(f"queue list --environment 1 --agent {agent_number(story, worker)} --json", actor=story.user).output_text)
+    queue = json.loads(story.run(f"queue list --environment 1 --agent {worker} --json", actor=story.user).output_text)
     story.expect_rows([row["id"] for row in queue["running"]] == [running.id], [row["id"] for row in queue["waiting"]] == [waiting.id],
                       [row["id"] for row in queue["recent"]] == [finished.id], detail=json.dumps(queue)[:400])

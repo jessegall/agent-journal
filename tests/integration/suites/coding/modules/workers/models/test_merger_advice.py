@@ -10,7 +10,6 @@ from suites.coding.modules.workers.models.merger_advice import MergerAdvice
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.support.shipped_profiles import HELPER_PROFILES
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.merger_cases import MergerCase
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
@@ -59,7 +58,7 @@ class AdvisedWorker:
         return self.case.merger
 
     def advise(self, text: str = ADVICES[0]) -> LineOutcome:
-        return self.story.run(f'merger advise {agent_number(self.story, self.worker.id)} "{text}"', actor=self.merger)
+        return self.story.run(f'merger advise {self.worker.id} "{text}"', actor=self.merger)
 
     def advised(self, text: str = ADVICES[0], used: int = 1) -> None:
         outcome = self.advise(text)
@@ -111,16 +110,16 @@ class AdvisedWorker:
         self.story.expect_success(FIRST_PROOF, actor=self.worker)
         self.story.expect_success(COMMIT, actor=self.worker)
         self.story.expect_success("proof check 1", "state: checked", actor=self.story.agent)
-        self.story.expect_success(f"worker logs {agent_number(self.story, self.worker.id)}", actor=self.story.agent)
+        self.story.expect_success(f"worker logs {self.worker.id}", actor=self.story.agent)
         self.case.repository.checkout(ENVIRONMENT_BRANCH)
 
     def merged(self) -> None:
         request_merge(self.story, self.worker)
-        self.story.expect_success(f"worker merge --wait {agent_number(self.story, self.worker.id)}", actor=self.story.agent)
+        self.story.expect_success(f"worker merge --wait {self.worker.id}", actor=self.story.agent)
 
     def given_new_work(self) -> None:
         task = self.story.new_row_id('task make "Add the shipping line" --environment main')
-        self.story.expect_success(f"worker send --wait {agent_number(self.story, self.worker.id)} --task {task}", actor=self.story.agent)
+        self.story.expect_success(f"worker send --wait {self.worker.id} --task {task}", actor=self.story.agent)
 
 
 def test_the_merger_profile_and_skill_name_advise_and_its_limits():

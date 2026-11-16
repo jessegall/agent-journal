@@ -3,7 +3,6 @@ from tests.stories.suites.coding.modules.workers.plan_dispatch import expect_que
 from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 import json
 
-from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.chat.models.chat_mark import ChatMark
@@ -40,7 +39,7 @@ def test_a_dispatch_for_a_phase_shows_a_mark_that_the_plan_was_handed_over(playe
     recorded_test_launches(story)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 1", actor=story.agent), ActorType.AGENT)
     story.run_listeners()
-    expect_marks_text(story, f"Worker {agent_number(story, worker.id)} was given 3 tasks")
+    expect_marks_text(story, f"Worker {worker.id} was given 3 tasks")
     marks = tuple(story.story_rows(ChatMark, variant=WorkerMarkVariant.ASSIGNED))
     story.expect_rows(len(marks) == 1, marks[0].target_id == worker.id,
                       all(text in marks[0].detail for text in ("Task 1: Fix the cart", "Task 2: Tax", "Task 3: Totals")))

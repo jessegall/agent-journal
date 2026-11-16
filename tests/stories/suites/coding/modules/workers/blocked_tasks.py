@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 from engine.testing.examples.hook_samples import HookSamples
 from suites.coding.modules.workers.agent_messages.worker_task_blocked_message import WorkerTaskBlockedMessage
 from tests.stories.core.support.coding_fixtures import StartedTaskBuilder, OpenTaskOrchestrator
@@ -16,7 +15,7 @@ def test_a_worker_blocking_its_task_tells_the_main_agent_with_the_reason(new_sto
     worker = dispatched_worker(story)
     session = worker_session(story, worker)
     story.expect_success('task block 1 --reason "the build tool is missing"', actor=worker)
-    notice = WorkerTaskBlockedMessage.declared().agent_message(worker=agent_number(story, worker.id), task=1, reason="the build tool is missing").text
+    notice = WorkerTaskBlockedMessage.declared().agent_message(worker=worker.id, task=1, reason="the build tool is missing").text
     story.expect_text(f"agent-line list --agent {story.agent.id}", notice)
     stop = story.hook(session, HookSamples.stop())
     expect_reply_allowed(stop)
@@ -39,4 +38,4 @@ def test_with_the_merger_on_a_task_a_worker_blocked_reaches_the_main_agent_at_on
     story.expect_success('task block 1 --reason "the build tool is missing"', actor=worker)
     lines = story.run(f"agent-line list --agent {story.agent.id}").output_text
     merger_lines = story.run("merger-line list --environment main", actor=story.agent).output_text
-    story.expect_rows(lines.count(WorkerTaskBlockedMessage.declared().agent_message(worker=agent_number(story, worker.id), task=1).text) == 1, "blocked task" not in merger_lines, detail=lines + merger_lines)
+    story.expect_rows(lines.count(WorkerTaskBlockedMessage.declared().agent_message(worker=worker.id, task=1).text) == 1, "blocked task" not in merger_lines, detail=lines + merger_lines)

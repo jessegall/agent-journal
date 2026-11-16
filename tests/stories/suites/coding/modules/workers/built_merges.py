@@ -2,7 +2,6 @@ import json
 
 import pytest
 
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT, request_merge
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, repository_environment
@@ -61,9 +60,9 @@ def worker_changes_single_view(story, repository, task_id: int, dispatch: str, v
 
 def merged(story, worker, proof_id: int) -> None:
     story.expect_success(f"proof check {proof_id}", "state: checked", actor=story.agent)
-    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
 
 
 def test_two_workers_that_rebuilt_the_same_built_file_merge_one_after_the_other_and_the_build_matches_both_sources(new_story):
@@ -89,9 +88,9 @@ def test_a_build_that_fails_after_a_built_file_clash_refuses_the_merge_and_leave
     repository.committed(BUILT_FILE, joined((CHANGED_TEXTS[0], FIRST_TEXTS[1])), "The build of the first view")
     tip = repository.tip(ENVIRONMENT_BRANCH)
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
-    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     request_merge(story, worker)
-    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", "the build of the built files failed", actor=story.agent)
+    story.expect_refusal(f"worker merge --wait {worker.id}", "the build of the built files failed", actor=story.agent)
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, tip)
     repository.expect_clean_checkout("app")
     repository.expect_file(ENVIRONMENT_BRANCH, BUILT_FILE, joined((CHANGED_TEXTS[0], FIRST_TEXTS[1])))

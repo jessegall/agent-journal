@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 import subprocess
 
 import pytest

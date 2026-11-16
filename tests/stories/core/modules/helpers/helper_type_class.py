@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.fixtures import MainEnvironment
 
 SAMPLES = "tests.stories.core.modules.helpers.support.helper_type_samples"
@@ -28,5 +27,5 @@ def test_an_ended_agent_of_a_type_no_module_registers_any_more_is_shown_retired_
     scribe = story.new_row_id("agent start scribe-session claude scribe --environment main")
     story.expect_success(f"agent end {scribe}", actor=story.user)
     story.expect_sync_without(f"{SAMPLES}:RetiringModule")
-    story.expect_text(f"agent show {agent_number(story, scribe)}", "role: scribe", actor=story.user)
+    story.expect_text(f"agent show {scribe}", "role: scribe", actor=story.user)
     story.expect_text("agent cards --show retired", "scribe-session  scribe", "  retired  ended", actor=story.user)

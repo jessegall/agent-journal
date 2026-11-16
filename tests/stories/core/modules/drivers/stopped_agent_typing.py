@@ -3,7 +3,6 @@ from datetime import timedelta
 import pytest
 
 from engine.testing.examples.hook_samples import HookSamples
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.context_limit import COMPACTION_START, PRE_COMPACT, SESSION, LimitEnabled, typing_recorded
 
 
@@ -16,12 +15,12 @@ def agent(new_story):
 
 
 def test_the_model_control_is_typed_into_the_stopped_agents_terminal(agent):
-    agent.expect_success(f"agent control {agent_number(agent, agent.agent.id)} model opus --environment main", actor=agent.user)
+    agent.expect_success(f"agent control {agent.agent.id} model opus --environment main", actor=agent.user)
     agent.expect_rows("/model opus" in agent.typing.typed, detail=str(agent.typing.typed))
 
 
 def test_pause_and_resume_lines_are_typed_into_the_stopped_agents_terminal(agent):
-    number = agent_number(agent, agent.agent.id)
+    number = agent.agent.id
     agent.expect_success(f"agent pause {number}", actor=agent.user)
     agent.expect_success(f"agent resume {number}", actor=agent.user)
     agent.run_listeners()

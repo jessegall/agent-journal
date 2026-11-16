@@ -1,7 +1,6 @@
 import pytest
 
 from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
-from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.agents.models.agent import Agent
@@ -63,7 +62,7 @@ def test_s07_the_designer_starts_only_once_a_person_turns_it_on_and_reads_withou
     story.home.socket("launcher").unlink()
     story.expect_success(f"setting set {DESIGNER} on --environment main", actor=story.user)
     helper_id, launcher = started(story, START_DESIGNER)
-    story.expect_text(f"agent show {agent_number(story, helper_id)}", f"profile: {DESIGNER_PROFILE.name}", "access: read", actor=story.user)
+    story.expect_text(f"agent show {helper_id}", f"profile: {DESIGNER_PROFILE.name}", "access: read", actor=story.user)
 
 
 @pytest.fixture

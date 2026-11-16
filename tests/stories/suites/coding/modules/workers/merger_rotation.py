@@ -12,7 +12,6 @@ from suites.coding.modules.workers.commands.start_merger.start_merger import Sta
 from suites.coding.modules.workers.support.merger_work import MergerWork
 from tests.stories.core.modules.helpers.helper_jobs import resumable_session
 from tests.stories.core.modules.helpers.support.rotating_helper import real_program_states
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
@@ -73,7 +72,7 @@ def test_a_later_merger_start_opens_a_job_on_the_idle_merger_under_a_new_session
     command = merger_launch(merging)["command"]
     current = mergers(merging)
     merging.expect_rows(len(current) == 1, current[0].id == merger.id, current[0].session != merger.session, "--resume" not in command,
-                        agent_number(merging, current[0].id) == agent_number(merging, merger.id), detail=str(command[:4]))
+                        current[0].id == merger.id, detail=str(command[:4]))
 
 
 def test_a_merger_profile_changed_to_codex_gives_the_same_agent_a_codex_session_and_retires_nobody(merging):

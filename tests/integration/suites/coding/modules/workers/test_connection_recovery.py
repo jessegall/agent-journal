@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 import json
 from suites.coding.modules.workers.support.worker_job import SILENT_AGENT_SOURCE
 from collections.abc import Callable
@@ -86,7 +85,7 @@ class RecoveryCase:
 
     def stopped_lines(self) -> int:
         rows = json.loads(self.story.run("merger-line list --json", actor=self.story.agent).output_text)["rows"]
-        return sum(f"worker:{agent_number(self.story, self.worker.id)} has stopped" in row["text"] for row in rows)
+        return sum(f"worker:{self.worker.id} has stopped" in row["text"] for row in rows)
 
     def lines(self, agent_id, source=RECOVERY_SOURCE):
         return list(self.story.story_rows(AgentLine, session_agent_id=agent_id, source=source))
@@ -136,7 +135,7 @@ def reconnected_recovery(offline_recovery):
 
 @pytest.fixture
 def running_recovery(recovery):
-    recovery.story.expect_success(f"agent edit {agent_number(recovery.story, recovery.worker.id)} --pid {WORKER_PID}")
+    recovery.story.expect_success(f"agent edit {recovery.worker.id} --pid {WORKER_PID}")
     recovery.process_running = True
     return recovery
 
@@ -162,7 +161,7 @@ def nested_recovery(recovery):
     recovery.story.end_session(recovery.worker)
     recovery.launches.clear()
     recovery.launch_hook = lambda: recovery.story.expect_success(
-        f'worker send --wait {agent_number(recovery.story, recovery.worker.id)} "Continue the assigned task"', actor=recovery.story.agent)
+        f'worker send --wait {recovery.worker.id} "Continue the assigned task"', actor=recovery.story.agent)
     recovery.advance(SILENT_SECONDS)
     recovery.tick()
     return recovery
@@ -191,7 +190,7 @@ def test_silent_recovery_waits_for_a_growing_gap_and_stops_after_three_attempts(
     recovery.story.expect_rows(len(recovery.launches) == 3)
     notices = recovery.lines(recovery.story.agent.id, FAILED_SOURCE)
     rows = json.loads(recovery.story.run("merger-line list --json", actor=recovery.story.agent).output_text)["rows"]
-    matching = [row for row in rows if f"agent:{agent_number(recovery.story, recovery.worker.id)} could not resume" in row["text"]]
+    matching = [row for row in rows if f"agent:{recovery.worker.id} could not resume" in row["text"]]
     recovery.story.expect_rows(len(matching) == 1, "3 waking lines got no hook" in matching[0]["text"],
                                any(expected_agent_message(MergerLineAvailableMessage.declared()).matches_text(line.text) for line in notices), detail=f"{matching} | {[line.text for line in notices]}")
 
@@ -208,12 +207,12 @@ def test_a_live_worker_must_stop_before_its_session_can_resume(resumed_running_w
 
 def test_worker_send_does_not_resume_a_session_whose_process_is_still_active(recovery):
     recovery.process_running = True
-    recovery.story.expect_success(f"agent edit {agent_number(recovery.story, recovery.worker.id)} --pid {WORKER_PID}")
-    recovery.story.expect_text(f"agent show {agent_number(recovery.story, recovery.worker.id)}", f"pid: {WORKER_PID}")
+    recovery.story.expect_success(f"agent edit {recovery.worker.id} --pid {WORKER_PID}")
+    recovery.story.expect_text(f"agent show {recovery.worker.id}", f"pid: {WORKER_PID}")
     recovery.story.end_session(recovery.worker)
-    recovery.story.expect_text(f"agent show {agent_number(recovery.story, recovery.worker.id)}", f"pid: {WORKER_PID}")
+    recovery.story.expect_text(f"agent show {recovery.worker.id}", f"pid: {WORKER_PID}")
     recovery.advance(121)
-    recovery.story.expect_success(f'worker send --wait {agent_number(recovery.story, recovery.worker.id)} "Go on with task 1"', actor=recovery.story.agent)
+    recovery.story.expect_success(f'worker send --wait {recovery.worker.id} "Go on with task 1"', actor=recovery.story.agent)
     recovery.story.run_listeners()
     recovery.story.expect_rows(not recovery.launches, not recovery.stopped)
 
@@ -327,10 +326,10 @@ def test_a_stopped_worker_with_work_is_reported_after_fifteen_minutes_and_every_
 
 def test_a_paused_worker_is_not_reported_as_stopped(recovery):
     story, worker = recovery.story, recovery.worker
-    story.expect_success(f"agent pause {agent_number(story, worker.id)}", actor=story.user)
+    story.expect_success(f"agent pause {worker.id}", actor=story.user)
     recovery.advance(20 * 60)
     story.tick("s-1")
-    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")
 
 
 def test_a_delivery_without_tests_passed_is_reported_as_stopped(recovery):
@@ -370,7 +369,7 @@ def test_a_stopped_worker_with_a_running_command_is_not_reported(running_command
     story.end_session(worker)
     recovery.advance(20 * 60)
     story.tick("s-1")
-    story.expect_no_text(f"agent-line list --agent {main.id}", f"worker:{agent_number(story, worker.id)} has stopped")
+    story.expect_no_text(f"agent-line list --agent {main.id}", f"worker:{worker.id} has stopped")
 
 
 def test_a_worker_waiting_for_a_place_is_not_reported_and_starts_when_a_place_frees(recovery):
@@ -378,10 +377,10 @@ def test_a_worker_waiting_for_a_place_is_not_reported_and_starts_when_a_place_fr
     story.end_session(worker)
     story.expect_success(f"setting set {WORKER_RUN_LIMIT} 0 --environment main", actor=story.user)
     recovery.advance(1)
-    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Continue the task"', actor=story.agent)
+    story.expect_success(f'worker send --wait {worker.id} "Continue the task"', actor=story.agent)
     recovery.advance(20 * 60)
     story.tick("s-1")
-    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")
     story.expect_success(f"setting set {WORKER_RUN_LIMIT} 2 --environment main", actor=story.user)
     WorkerResumeRetry()(story.container)
     story.expect_rows(len(recovery.launches) > 0)
@@ -401,7 +400,7 @@ def test_a_message_to_a_stopped_worker_starts_it(person_stopped_worker):
     story, worker = recovery.story, recovery.worker
     recovery.launches.clear()
     recovery.advance(1)
-    story.expect_success(f'message send "Look again" --to agent:{agent_number(story, worker.id)}', actor=story.agent)
+    story.expect_success(f'message send "Look again" --to agent:{worker.id}', actor=story.agent)
     story.run_listeners()
     story.tick("s-1")
     WorkerResumeRetry()(story.container)
@@ -414,7 +413,7 @@ def test_a_message_to_a_stopped_worker_waits_for_a_place_and_starts_when_one_fre
     story.expect_success(f"setting set {WORKER_RUN_LIMIT} 0 --environment main", actor=story.user)
     recovery.launches.clear()
     recovery.advance(1)
-    story.expect_success(f'message send "Look again" --to agent:{agent_number(story, worker.id)}', actor=story.agent)
+    story.expect_success(f'message send "Look again" --to agent:{worker.id}', actor=story.agent)
     story.run_listeners()
     story.tick("s-1")
     story.expect_rows(not recovery.launches)

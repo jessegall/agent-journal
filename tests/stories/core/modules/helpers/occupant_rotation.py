@@ -14,7 +14,6 @@ from tests.stories.core.modules.helpers.helper_jobs import JOB, helper_agent, re
 from tests.stories.core.modules.helpers.program_split import helper_split_story, helper_viewer
 from tests.stories.suites.coding.modules.workers.support.program_split import set_split
 from tests.stories.core.modules.helpers.support.rotating_helper import ROTATING_BODY, SAVE_ROTATING, START_ROTATING, EndedEachLaunchHelper, installed_program_checks, real_program_states, story_with_profile_file
-from tests.stories.core.support.agent_labels import agent_number
 
 REPORT_STEP_TEXT = "When the job is done, stop with your report as your last words."
 __all__ = ["helper_split_story", "helper_viewer"]
@@ -31,7 +30,7 @@ def rotating(new_story):
 
 def job_launch(story, actor=None) -> dict:
     launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"started 701\n")
-    story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=actor or story.agent)
+    story.expect_success(f'helper send {helper_agent(story).id} "{JOB}"', actor=actor or story.agent)
     story.run_listeners()
     launcher.drain_requests()
     launcher.server.close()
@@ -47,7 +46,7 @@ def job_rows(story) -> list[dict]:
 def test_the_first_start_gives_the_agent_a_session_and_its_job_is_keyed_by_it(rotating):
     helper = helper_agent(rotating)
     jobs = read_jobs(rotating, helper)
-    rotating.expect_rows(agent_number(rotating, helper.id) == 2, bool(helper.session), [job.tool_key for job in jobs] == [helper.session])
+    rotating.expect_rows(helper.id == 2, bool(helper.session), [job.tool_key for job in jobs] == [helper.session])
 
 
 def test_a_send_to_the_ended_agent_opens_a_job_under_a_new_session_that_starts_from_the_profile_body(rotating):
@@ -57,9 +56,9 @@ def test_a_send_to_the_ended_agent_opens_a_job_under_a_new_session_that_starts_f
     current, jobs = helper_agent(rotating), read_jobs(rotating, helper)
     rotating.expect_rows(current.id == helper.id, current.session != helper.session, helper.session not in command, current.session in command,
                          "--resume" not in command, len(jobs) == 2, jobs[1].cost_baseline == 0, jobs[1].tool_key.startswith(current.session), detail=command)
-    history = json.loads(rotating.run(f"agent sessions {agent_number(rotating, helper.id)} --environment main --json", actor=rotating.user).output_text)["rows"]
+    history = json.loads(rotating.run(f"agent sessions {helper.id} --environment main --json", actor=rotating.user).output_text)["rows"]
     rotating.expect_rows([(row["session"], row["end_reason"]) for row in history] == [(current.session, None), (helper.session, "each_launch")], detail=str(history))
-    number = agent_number(rotating, helper_agent(rotating).id)
+    number = helper_agent(rotating).id
     places = [brief.find(part) for part in (f"You are helper {number}.", ROTATING_BODY, JOB, REPORT_STEP_TEXT)]
     rotating.expect_rows(places[0] == 0, places == sorted(places), -1 not in places, detail=brief)
 
@@ -80,10 +79,10 @@ def test_a_profile_changed_to_codex_while_the_agent_idles_gives_a_codex_occupant
     launch = job_launch(rotating)
     current = helper_agent(rotating)
     rotating.expect_rows(launch["command"][0] == "codex", current.id == helper.id, current.program == "codex", current.retired_at is None,
-                         agent_number(rotating, current.id) == agent_number(rotating, helper.id), detail=str(launch["command"][:2]))
+                         current.id == helper.id, detail=str(launch["command"][:2]))
 
 
-    rotating.expect_text(f"agent show {agent_number(rotating, current.id)} --environment main", "program: codex", f"session: {current.session}", actor=rotating.user)
+    rotating.expect_text(f"agent show {current.id} --environment main", "program: codex", f"session: {current.session}", actor=rotating.user)
     rotating.expect_rows([row["program"] for row in job_rows(rotating)] == ["claude", "codex"], detail=str(job_rows(rotating)))
 
 
@@ -137,7 +136,7 @@ def test_when_no_program_can_start_the_send_is_refused_and_nothing_changes(rotat
     monkeypatch.setattr(shutil, "which", lambda name: None)
     launcher = FakeLauncher.accepting(rotating.home.socket("launcher"))
     start = rotating.run('helper start rotating --brief "Read src/tax.py" --fresh "A second view" --environment main', actor=rotating.agent)
-    job_refusal = rotating.run(f'helper send {agent_number(rotating, helper.id)} "{JOB}"', actor=rotating.agent)
+    job_refusal = rotating.run(f'helper send {helper.id} "{JOB}"', actor=rotating.agent)
     rotating.expect_rows(start.code != 0, job_refusal.code != 0, job_refusal.output_text.partition(":")[0] == start.output_text.partition(":")[0], detail=f"{start.output_text} / {job_refusal.output_text}")
     launcher.drain_requests()
     rotating.expect_rows(helper_agent(rotating).session == helper.session, len(read_jobs(rotating, helper)) == 1, launcher.requests == [])
@@ -145,11 +144,11 @@ def test_when_no_program_can_start_the_send_is_refused_and_nothing_changes(rotat
 
 def test_a_launch_that_cannot_start_ends_the_job_with_a_report_and_the_next_send_tries_a_new_occupant(rotating):
     helper = helper_agent(rotating)
-    rotating.expect_success(f'helper send {agent_number(rotating, helper.id)} "{JOB}"', actor=rotating.agent)
+    rotating.expect_success(f'helper send {helper.id} "{JOB}"', actor=rotating.agent)
     rotating.run_listeners()
     failed_session = helper_agent(rotating).session
     jobs = read_jobs(rotating, helper)
-    rotating.expect_rows(len(jobs) == 2, jobs[1].ended_at is not None, jobs[1].returned == FAILED_START_TEXT, agent_number(rotating, helper.id) == 2, detail=str(jobs[-1]))
+    rotating.expect_rows(len(jobs) == 2, jobs[1].ended_at is not None, jobs[1].returned == FAILED_START_TEXT, helper.id == 2, detail=str(jobs[-1]))
     rotating.expect_text(f"agent-line list --agent {rotating.agent.id}", "failed to start")
     job_launch(rotating)
     rotating.expect_rows(helper_agent(rotating).session not in (helper.session, failed_session), len(read_jobs(rotating, helper)) == 3)

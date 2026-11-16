@@ -2,7 +2,6 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.testing.stories.story import Story
 from tests.stories.core.modules.assign_rules.support.rule_steps import ENVIRONMENT, FREE_TASK_ID, recorded_decision, SonnetWorkerAndFreeTask
-from tests.stories.core.support.agent_labels import agent_number
 
 MODEL_FLAGS = "--target model --program claude --model sonnet"
 
@@ -12,7 +11,7 @@ def title_rule(story: Story, target_flags: str, extra: str = "") -> int:
 
 
 def worker_flags(story: Story, worker: Actor) -> str:
-    return f"--target agent --agent {agent_number(story, worker.id)}"
+    return f"--target agent --agent {worker.id}"
 
 
 def expect_decision(story: Story, outcome: str, actor_id: int | None, *reason_parts: str) -> None:
@@ -34,7 +33,7 @@ def test_a_kind_with_no_worker_skips_the_rule(new_story):
 
 def test_a_paused_worker_is_passed_over_for_a_kind_and_kept_as_the_one_named(new_story):
     story = new_story(fixture=SonnetWorkerAndFreeTask)
-    story.expect_success(f"agent pause {agent_number(story, story.helper.id)}", actor=story.user)
+    story.expect_success(f"agent pause {story.helper.id}", actor=story.user)
     title_rule(story, MODEL_FLAGS)
     expect_decision(story, "skipped", None, "no agent of claude sonnet can take it now")
     worker_rule = title_rule(story, worker_flags(story, story.helper))
@@ -72,5 +71,5 @@ def test_a_full_queue_skips_the_rule_and_the_next_rule_wins(new_story):
     story = new_story(fixture=SonnetWorkerAndFreeTask)
     capped = title_rule(story, worker_flags(story, story.helper), "--queue-limit 1")
     fallback = title_rule(story, "--target main")
-    label = f"worker {agent_number(story, story.helper.id)}"
+    label = f"worker {story.helper.id}"
     expect_decision(story, "assigned", story.agent.id, f"rule {capped} skipped: {label} holds 1 of 1", f"rule {fallback} applied")

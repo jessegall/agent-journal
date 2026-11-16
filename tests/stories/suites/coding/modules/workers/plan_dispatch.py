@@ -1,6 +1,5 @@
 import json
 
-from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.chat.models.chat_mark import ChatMark

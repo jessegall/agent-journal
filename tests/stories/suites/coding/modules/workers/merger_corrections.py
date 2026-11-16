@@ -6,7 +6,6 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from core.modules.messages.models.message import Message
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.checkpoint_failures import end_run, expect_returned, produce_output
 from tests.stories.suites.coding.modules.workers.checkpoint_runs import sole_branch_runs, CART_COMMAND, PASSES, REACHES, commit_tasks, merge, rows, run_lines
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
@@ -42,7 +41,7 @@ class FailedOwnTest:
         return self.worker.story
 
     def defer(self, paths: str = LATER_STORIES, flags: str = ""):
-        number = agent_number(self.story, self.worker.worker.id)
+        number = self.worker.worker.id
         return self.story.run(f'merger defer-test {number} "{paths}" --why "{WHY}"{flags}', actor=self.merger)
 
 
@@ -88,7 +87,7 @@ def deferred(next_task_stories_failed) -> FailedOwnTest:
 def test_214_a_merger_defers_the_stories_of_a_later_task_the_own_test_of_a_checkpoint_failed_on(next_task_stories_failed):
     case, story = next_task_stories_failed, next_task_stories_failed.story
     main_agent_line_count = len(case.worker.main_agent_lines())
-    story.expect_text(f'merger defer-test {agent_number(story, case.worker.worker.id)} "{LATER_STORIES}" --why "{WHY}"', "until the checkpoint of phase 2", actor=case.merger)
+    story.expect_text(f'merger defer-test {case.worker.worker.id} "{LATER_STORIES}" --why "{WHY}"', "until the checkpoint of phase 2", actor=case.merger)
     deferral = rows(case.worker, DEFERRALS)[0]
     story.expect_text("task-log list --task 3", WORKER_TEST, SHORTER_TEST, WHY, actor=story.agent)
     expect_returned(case.worker, 3)
@@ -171,7 +170,7 @@ def test_97_101_107_a_deferred_path_a_path_that_passed_and_a_word_that_is_no_tes
 
 def test_105_only_the_merger_defers_a_test(next_task_stories_failed):
     story, worker = next_task_stories_failed.story, next_task_stories_failed.worker
-    refused = story.run(f'merger defer-test {agent_number(story, worker.worker.id)} "{LATER_STORIES}" --why "{WHY}"', actor=worker.worker)
+    refused = story.run(f'merger defer-test {worker.worker.id} "{LATER_STORIES}" --why "{WHY}"', actor=worker.worker)
     story.expect_rows(refused.code != 0, rows(worker, DEFERRALS) == [], detail=refused.output_text)
 
 

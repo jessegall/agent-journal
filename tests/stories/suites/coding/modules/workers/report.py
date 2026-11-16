@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 
 from engine.actor.actor import Actor

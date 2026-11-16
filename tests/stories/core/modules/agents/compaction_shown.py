@@ -4,7 +4,6 @@ from core.modules.drivers.models.enums.compaction_reason import CompactionReason
 from core.modules.drivers.models.enums.compaction_state import CompactionState
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.drivers.context_compactions import compactions
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.context_limit import COMPACTION_START, LIMIT_TOKENS, PRE_COMPACT, SESSION, LimitEnabled, has_context, stops, typing_recorded
 from tests.stories.suites.coding.modules.workers.support.program_split import viewer_client
 
@@ -32,7 +31,7 @@ def test_i2_i4_a_person_sees_the_open_request_of_an_agent_and_its_inspector_name
     story = typing_recorded(new_story(fixture=LimitEnabled))
     has_context(story, LIMIT_TOKENS)
     stops(story)
-    number = str(agent_number(story, story.agent.id))
+    number = str(story.agent.id)
     with viewer_client(story) as person:
         usage = person.value(SHELL_WINDOW, ["usage", "show", "--json"])
         inspector = person.value(SHELL_WINDOW, ["usage", "inspector", number, "--json"])

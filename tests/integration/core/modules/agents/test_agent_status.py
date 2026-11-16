@@ -9,7 +9,6 @@ from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.helpers.helper_jobs import StartedHelper, helper_agent
 from tests.stories.core.modules.helpers.helper_reports import stop_with_report
-from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.agent_messages.parent_report_message import ParentReportMessage
 from engine.testing.expectations.expected_message import expected_agent_message
 
@@ -28,7 +27,7 @@ def running_helper(played):
 
 
 def shown(story) -> str:
-    return story.run(f"agent show {agent_number(story, story.helper.id)} --environment main", actor=story.user).output_text
+    return story.run(f"agent show {story.helper.id} --environment main", actor=story.user).output_text
 
 
 def test_543_the_row_of_an_agent_whose_program_runs_is_not_ended_by_its_report_or_by_the_session_end_of_an_earlier_program_and_ends_when_the_program_is_gone(running_helper):

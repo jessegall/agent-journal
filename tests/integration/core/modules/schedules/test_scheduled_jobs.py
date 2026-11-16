@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 from engine.testing.stories.story_fixture import StoryFixture
 
 from datetime import timedelta
@@ -32,7 +31,7 @@ class OneTimeBuildJob(ScheduledBuildJob):
 
 
 def running(story) -> str:
-    return f"scheduled-job running --agent {agent_number(story, story.agent.id)}"
+    return f"scheduled-job running --agent {story.agent.id}"
 
 
 

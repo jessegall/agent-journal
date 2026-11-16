@@ -3,7 +3,6 @@ from suites.coding.modules.workers.models.merge_ask import MergeAsk
 from suites.coding.modules.workers.support.escalations import Escalations
 from suites.coding.modules.workers.support.merger_work import MergerWork
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE
 from tests.stories.suites.coding.modules.workers.merge_asks import committed_list
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
@@ -40,5 +39,5 @@ def test_an_ended_worker_whose_question_the_main_agent_holds_starts_no_merger_fo
             MergerRetry()(story.container)
             story.run_listeners()
         story.expect_rows(not merger_has_work(story), merger_agent(story) is None, detail="the main agent holds the ended worker's question, so the merger could not act on its ask")
-    story.expect_success(f'message send "the build tool is installed now" --to agent:{agent_number(story, worker.worker.id)}', actor=story.agent)
+    story.expect_success(f'message send "the build tool is installed now" --to agent:{worker.worker.id}', actor=story.agent)
     story.expect_rows(not is_with_main_agent(story, worker.worker.id), merger_has_work(story), detail="once the main agent wrote to the worker, the merger has its ask to merge")

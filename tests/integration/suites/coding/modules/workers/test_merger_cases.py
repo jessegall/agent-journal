@@ -11,7 +11,6 @@ from suites.coding.modules.workers.commands.record_worker_refusal.record_worker_
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.agent_messages.worker_libraries_linked_message import WorkerLibrariesLinkedMessage
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.merger import merger_agent
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
@@ -43,7 +42,7 @@ class MergerCase:
     merger: Actor
 
     def scope(self) -> str:
-        outcome = self.story.run(f"merger scope {agent_number(self.story, self.worker.id)}", actor=self.merger)
+        outcome = self.story.run(f"merger scope {self.worker.id}", actor=self.merger)
         assert outcome.code == 0, outcome.output_text
         return outcome.output_text
 

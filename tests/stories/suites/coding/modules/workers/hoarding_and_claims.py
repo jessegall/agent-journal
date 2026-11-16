@@ -2,7 +2,6 @@ from tests.stories.suites.coding.modules.workers.support.commit_command import r
 from datetime import timedelta
 
 from suites.coding.modules.workers.models.merger_line import MergerLine
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.failed_tests import TWO_POINT_BRIEF, expect_proof_states, expect_task_states
 from tests.stories.suites.coding.modules.workers.group_stop import MERGER_OFF
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
@@ -18,7 +17,7 @@ MAIN_SESSION = "s-1"
 
 
 def merge_outcome(worker: StoryWorker):
-    number = agent_number(worker.story, worker.worker.id)
+    number = worker.worker.id
     worker.repository.checkout(ENVIRONMENT_BRANCH)
     worker.story.run(f"worker logs {number}", actor=worker.story.agent)
     return worker.story.run(f"worker merge --wait {number}", actor=worker.story.agent)
@@ -61,7 +60,7 @@ def test_69_a_worker_that_started_five_tasks_and_did_none_is_named_with_its_task
     story.advance(IDLE_WAIT)
     story.tick(MAIN_SESSION)
     stopped_lines = [line.text for line in story.story_rows(MergerLine) if "has stopped" in line.text]
-    released = story.run(f'worker release {agent_number(story, worker.worker.id)} "it did none of its tasks"', actor=story.user)
+    released = story.run(f'worker release {worker.worker.id} "it did none of its tasks"', actor=story.user)
     story.expect_rows(len(stopped_lines) == 1, released.code == 0, detail=f"{stopped_lines} | {released.output_text}")
     story.expect_rows(all(f"task:{task_id}" in stopped_lines[0] for task_id in HOARDED_TASK_IDS), detail=stopped_lines[0])
 

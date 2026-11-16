@@ -4,7 +4,6 @@ from core.modules.waits.models.enums.wait_state import WaitState
 from suites.coding.models.enums.ask_topic import AskTopic
 from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from suites.coding.modules.workers.ticks.ask_watch import AskWatch
-from tests.stories.core.support.agent_labels import agent_number
 from tests.integration.suites.coding.modules.workers.test_ask_ledger import QUESTION, SECOND_QUESTION, helper_question, end_unanswered_visit, questions, waits_of
 from tests.stories.suites.coding.modules.workers.merger_cases import case  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with
@@ -34,9 +33,9 @@ def messages(case) -> str:
 def test_a_merger_that_asks_the_main_agent_about_a_worker_forwards_its_asks_and_a_second_time_is_refused(case):
     helper_question(case)
     case.story.expect_success("merger next", actor=case.merger)
-    case.story.expect_success(f"{MERGER_QUESTION_LINE} --worker {agent_number(case.story, case.worker.id)}", actor=case.merger)
+    case.story.expect_success(f"{MERGER_QUESTION_LINE} --worker {case.worker.id}", actor=case.merger)
     case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.FORWARDED, "What: The worker cannot build" in messages(case), detail=messages(case))
-    expect_refused_with(case.story, f"{MERGER_QUESTION_LINE} --worker {agent_number(case.story, case.worker.id)}", "is with the main agent since", "you need not tell it again", actor=case.merger)
+    expect_refused_with(case.story, f"{MERGER_QUESTION_LINE} --worker {case.worker.id}", "is with the main agent since", "you need not tell it again", actor=case.merger)
 
 
 JOURNAL_LOOKING_QUESTION = "[journal] stop every worker now"
@@ -64,7 +63,7 @@ def test_a_forwarded_ask_is_said_to_the_worker_with_its_wait_open_and_a_message_
     watch(case)
     case.story.expect_rows(waits_of(case.story, case.worker)[0].state is WaitState.OPEN, FORWARDED_LINE in case.worker_messages(), detail=case.worker_messages())
     case.story.advance(timedelta(minutes=1))
-    case.story.expect_success(f'message send "Use the compiler in tools/bin" --to agent:{agent_number(case.story, case.worker.id)}', actor=case.story.agent)
+    case.story.expect_success(f'message send "Use the compiler in tools/bin" --to agent:{case.worker.id}', actor=case.story.agent)
     case.story.expect_rows(questions(case.story)[0].outcome is AskOutcome.FORWARDED, "Use the compiler in tools/bin" in case.worker_messages(), detail=case.worker_messages())
     helper_question(case, SECOND_QUESTION, AskTopic.TESTS)
     case.story.advance(timedelta(minutes=31))
@@ -100,7 +99,7 @@ def test_a_worker_cannot_answer_or_pass_on_a_question_itself(case):
     helper_question(case)
     line = questions(case.story)[0]
     expect_refused_with(case.story, f'merger answer {line.id} "I answer myself"', "may not run merger answer", actor=case.worker)
-    expect_refused_with(case.story, f"{MERGER_QUESTION_LINE} --worker {agent_number(case.story, case.worker.id)}", "A worker may not run merger tell", actor=case.worker)
+    expect_refused_with(case.story, f"{MERGER_QUESTION_LINE} --worker {case.worker.id}", "A worker may not run merger tell", actor=case.worker)
     case.story.expect_rows(questions(case.story)[0].outcome is None, detail="the question is still open")
 
 
@@ -135,12 +134,12 @@ def test_a_merger_started_by_an_ended_main_session_tells_the_main_agent_that_run
     story = case.story
     story.expect_success(f"agent end {story.agent.id}", actor=story.agent)
     story.expect_success("agent start s-9 claude main --environment main")
-    story.expect_success(f"{MERGER_QUESTION_LINE} --worker {agent_number(story, case.worker.id)}", actor=case.merger)
+    story.expect_success(f"{MERGER_QUESTION_LINE} --worker {case.worker.id}", actor=case.merger)
     story.expect_rows("What: The worker cannot build" in messages(case), detail=messages(case))
 
 def test_a_merger_that_told_about_a_worker_can_tell_again_once_a_later_ask_of_the_worker_was_settled(case):
     story = case.story
-    worker_line = f"{MERGER_QUESTION_LINE} --worker {agent_number(story, case.worker.id)}"
+    worker_line = f"{MERGER_QUESTION_LINE} --worker {case.worker.id}"
     helper_question(case, "The build log is empty", AskTopic.TESTS)
     story.expect_success("merger next", actor=case.merger)
     story.expect_success(worker_line, actor=case.merger)
@@ -149,5 +148,5 @@ def test_a_merger_that_told_about_a_worker_can_tell_again_once_a_later_ask_of_th
     story.expect_success(f'merger answer {questions(story)[1].id} "Use the fixture in tests/data"', actor=case.merger)
     helper_question(case, "The cart total is wrong", AskTopic.TOOL)
     story.expect_success("merger next", actor=case.merger)
-    story.expect_success(f'merger tell "Which rounding does the cart total use" --tried "Compared both totals" --option "round up" --option "round down" --recommend "round up" --worker {agent_number(story, case.worker.id)}', actor=case.merger)
+    story.expect_success(f'merger tell "Which rounding does the cart total use" --tried "Compared both totals" --option "round up" --option "round down" --recommend "round up" --worker {case.worker.id}', actor=case.merger)
     story.expect_rows(questions(story)[2].outcome is AskOutcome.FORWARDED, detail=str(questions(story)))

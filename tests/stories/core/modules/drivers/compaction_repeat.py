@@ -11,7 +11,6 @@ from core.modules.drivers.models.enums.compaction_state import CompactionState
 from suites.coding.modules.workers.commands.compact_agent_context.compact_agent_context import CompactAgentContext
 from tests.stories.core.modules.drivers.context_compactions import compactions
 from tests.stories.core.modules.usage.support.status_files import save_status_file
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.compaction_never_twice import HardLimitEnabled
 from tests.stories.suites.coding.modules.workers.context_limit import COMPACTION_START, HARD, LIMIT_TOKENS, PRE_COMPACT, SESSION, LimitEnabled, has_context, stops, typing_recorded
 
@@ -127,7 +126,7 @@ def test_g5_two_main_agents_over_the_limit_together_each_get_their_own_row_and_t
 
 
 def test_g6_a_person_clicking_compact_twice_has_the_second_click_refused_naming_the_open_one(agent):
-    line = " ".join(["agent", "control", str(agent_number(agent, agent.agent.id)), "context", "compact", "--environment", "main"])
+    line = " ".join(["agent", "control", str(agent.agent.id), "context", "compact", "--environment", "main"])
     agent.expect_success(line, actor=agent.user)
     agent.expect_refusal(line, OPEN_REFUSAL, actor=agent.user)
     rows = compactions(agent)

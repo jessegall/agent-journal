@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 from engine.database.database import Database
 from engine.viewer.person_lines import PERSON_LINES
 from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT
@@ -17,8 +16,8 @@ LAYOUT = "viewer-layout current --suite coding --page home --environment main"
 def test_a_person_stops_a_runaway_helper_from_its_card(played):
     story = played(StartedHelper)
     helper = helper_agent(story)
-    WindowStory(story).expect_window_allowed("agents.helpers", f"helper stop {agent_number(story, helper.id)}")
-    story.expect_success(f"helper stop {agent_number(story, helper.id)}", actor=story.user)
+    WindowStory(story).expect_window_allowed("agents.helpers", f"helper stop {helper.id}")
+    story.expect_success(f"helper stop {helper.id}", actor=story.user)
     story.expect_rows(helper_agent(story).ended_at is not None)
 
 

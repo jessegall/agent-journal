@@ -1,5 +1,4 @@
 from suites.coding.modules.workers.models.worktree import Worktree
-from tests.stories.core.support.agent_labels import agent_number
 from datetime import timedelta
 
 import pytest
@@ -32,7 +31,7 @@ def with_job(story, minutes, percent):
     full_status(story, worker.session, percent, 0.0)
     story.advance(timedelta(minutes=minutes))
     launcher = start_launcher(story, f"started {RESUMED_PID}\n".encode())
-    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "{JOB}"', actor=story.agent)
+    story.expect_success(f'worker send --wait {worker.id} "{JOB}"', actor=story.agent)
     story.expect_success(f"agent end {worker.id}", actor=story.user)
     story.container.get(WorkerResume).resume(story.row(Agent, worker.id), story.agent)
     launcher.drain_requests()
@@ -46,7 +45,7 @@ def test_a_cold_worker_starts_a_new_session_and_keeps_its_agent_and_worktree(sto
     worktree = stopped_worker.first_row(Worktree, session_agent_id=worker.id)
     prompt = " ".join(request["command"])
     stopped_worker.expect_rows(replaced.session != worker.session, request["session"] == replaced.session, "--resume" not in request["command"], worktree.folder == folder,
-                               f"You are worker {agent_number(stopped_worker, worker.id)}." in prompt, JOB in prompt, f"journal task overview {worktree.task_id}" in prompt, detail=prompt)
+                               f"You are worker {worker.id}." in prompt, JOB in prompt, f"journal task overview {worktree.task_id}" in prompt, detail=prompt)
 
 
 @pytest.mark.parametrize("minutes, percent", [(49, 100), (50, 19), (0, 0)], ids=["warm", "small and under an hour", "just stopped"])

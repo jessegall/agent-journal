@@ -5,7 +5,6 @@ from core.modules.processes.models.process import Process
 from suites.coding.modules.workers.support.merge_hook_line import MergeHookLine
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner
 from core.modules.agents.models.agent import Agent
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -28,7 +27,7 @@ def test_the_merge_hooks_set_on_a_profile_start_as_processes_after_its_worker_is
         modal = Modal(viewer)
         modal.save({MERGE_HOOKS: json.dumps(hooks)}, HELPER_TYPES)
         expect_value(modal.value(HELPER_TYPES, MERGE_HOOKS), hooks)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
     story.run_listeners()
     hooks_run = [process for process in story.story_rows(Process) if process.is_merge_hook]
     expect_value([MergeHookLine.hook(process.line) for process in hooks_run], [f'echo "$JOURNAL_COMMIT_AFTER" >> hooked.txt', "exit 3"])

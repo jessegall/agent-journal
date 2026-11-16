@@ -1,6 +1,5 @@
 from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
-from tests.stories.core.support.agent_labels import agent_number
 from suites.coding.modules.workers.models.merger_line import MergerLine
 import json
 import subprocess
@@ -88,9 +87,9 @@ def test_all_tests_passing_checks_the_proofs_and_tells_the_main_agent_and_the_me
     expect_marks_text(story, "passed")
     story.expect_text(f"agent-line list --agent {story.agent.id}", expected_agent_message(WorkerTestsPassedMessage.declared()), actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
 
 
@@ -145,14 +144,14 @@ def test_passed_tests_with_a_proof_with_no_test_ask_for_the_check_not_the_merge(
     story, repository, worker, started = mixed_proof_story(played)
     ended(story, started[0], 0)
     lines = story.run(f"agent-line list --agent {story.agent.id}")
-    lines.expect_text(ProofCheckMessage.declared().agent_message(worker=agent_number(story, worker.id), task=1, proofs="2").text)
-    lines.expect_no_text(f"journal worker merge {agent_number(story, worker.id)}")
+    lines.expect_text(ProofCheckMessage.declared().agent_message(worker=worker.id, task=1, proofs="2").text)
+    lines.expect_no_text(f"journal worker merge {worker.id}")
     expect_marks_text(story, "passed")
     story.expect_success("proof check 2", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker logs {worker.id}", actor=story.agent)
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {worker.id}", actor=story.agent)
 
 
 def test_a_task_with_an_unchecked_proof_stays_in_testing_after_its_tests_pass(played):
@@ -187,7 +186,7 @@ def test_picked_tests_run_after_proof_tests_on_the_rebased_worktree(played):
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("base.txt", "rebased\n", "Base change")
-    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "go on" --test-command "probe=python3 -c"', actor=story.agent)
+    story.expect_success(f'worker send --wait {worker.id} "go on" --test-command "probe=python3 -c"', actor=story.agent)
     story.expect_success('proof make 1 --task 1 "cart.py:1, the cart story" --test "probe \'from pathlib import Path; assert Path(\\\"base.txt\\\").exists()\' tests/cart.py"', actor=worker)
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.run_listeners()
@@ -317,7 +316,7 @@ def test_three_failed_hand_ins_of_a_task_give_the_main_agent_a_line_the_worker_n
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.run_listeners()
     ended(story, started[3], 0)
-    story.expect_text(f"worker logs {agent_number(story, worker.id)}", "! failed 3 hand-ins", actor=story.agent)
+    story.expect_text(f"worker logs {worker.id}", "! failed 3 hand-ins", actor=story.agent)
 
 
 def test_every_third_failed_hand_in_in_a_row_puts_a_line_before_the_merger(played):
@@ -330,7 +329,7 @@ def test_every_third_failed_hand_in_in_a_row_puts_a_line_before_the_merger(playe
         story.run_listeners()
     expect_value(review_lines(story), [])
     ended(story, started[2], 1)
-    expect_value(review_lines(story), [f"worker:{agent_number(story, worker.id)} failed 3 hand-ins in a row on task:1: work out where it goes wrong and tell it"])
+    expect_value(review_lines(story), [f"worker:{worker.id} failed 3 hand-ins in a row on task:1: work out where it goes wrong and tell it"])
 
 
 def review_lines(story) -> list[str]:
@@ -345,11 +344,11 @@ def test_a_worker_waiting_for_tests_or_merge_is_not_reported_as_stopped(played):
     story.end_session(worker)
     story.advance(timedelta(minutes=20))
     story.tick("s-1")
-    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")
     ended(story, started[0], 0)
     story.advance(timedelta(minutes=20))
     story.tick("s-1")
-    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} has stopped")
+    story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{worker.id} has stopped")
 
 
 def test_a_queued_proof_survives_the_workers_first_hook_on_a_freshly_started_server_and_counts(played):
@@ -449,7 +448,7 @@ def test_the_picked_tests_run_on_the_work_merged_into_a_base_that_moved_after_th
 
 def test_a_release_of_the_worker_ends_the_proof_test_that_waited_or_ran_for_its_worktree(played):
     story, _, worker, _ = queued_story(played)
-    story.expect_success(f'worker release {agent_number(story, worker.id)} --abandon "the worker is gone"', actor=story.agent)
+    story.expect_success(f'worker release {worker.id} --abandon "the worker is gone"', actor=story.agent)
     story.run_listeners()
     story.expect_text("proof show 1", "state: short", "was abandoned or removed while this test waited or ran", actor=story.agent)
 
@@ -460,7 +459,7 @@ def test_a_worker_whose_commit_passed_with_every_other_task_of_its_unit_blocked_
     repository = repository_environment(story)
     worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
     second = story.new_row_id('task make "Later work" --brief "Waits on the main agent" --environment main', actor=story.agent)
-    story.expect_success(f"worker send {agent_number(story, worker.id)} --task {second}", actor=story.agent)
+    story.expect_success(f"worker send {worker.id} --task {second}", actor=story.agent)
     story.expect_success(f'task block {second} --reason "waits on the main agent engine task"', actor=worker)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(PROOF, actor=worker)

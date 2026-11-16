@@ -4,7 +4,6 @@ import pytest
 
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.merger_behind_decisions import MergerBeside, diverge_file, merger
 from tests.stories.suites.coding.modules.workers.support.base_branch import checkout_of, committed_on
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, repository_environment
@@ -43,7 +42,7 @@ def s61_the_merger_only_orders_and_changes_no_file(story, repository, worker: Ac
     stale_check(story)
     previous = repository.git("status", "--porcelain", folder=repository.folder).stdout
     worker_head = repository.git("rev-parse", "HEAD", folder=repository.worktree_folder(worker.id)).stdout
-    story.expect_success(f'merger update {agent_number(story, worker.id)} --why "plan_checkpoints.py moved on both sides"', actor=merger(story))
+    story.expect_success(f'merger update {worker.id} --why "plan_checkpoints.py moved on both sides"', actor=merger(story))
     after = repository.git("status", "--porcelain", folder=repository.folder).stdout
     story.expect_rows(after == previous, repository.git("rev-parse", "HEAD", folder=repository.worktree_folder(worker.id)).stdout == worker_head, detail=f"{previous!r} {after!r}")
 

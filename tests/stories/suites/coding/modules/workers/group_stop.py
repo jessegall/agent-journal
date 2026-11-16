@@ -1,6 +1,5 @@
 from tests.stories.suites.coding.modules.workers.support.phase_steps import pair_worker  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
-from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from engine.testing.examples.hook_samples import HookSamples
@@ -119,7 +118,7 @@ def test_a_worker_with_an_open_ask_still_reaches_its_parent_when_it_ends(phase_w
     phase_worker.story.expect_success(MERGER_OFF, actor=phase_worker.story.user)
     phase_worker.story.expect_success('wait stuck "the plan is unclear"', actor=phase_worker.worker)
     phase_worker.program_ended()
-    phase_worker.story.expect_text(f"agent-line list --agent {phase_worker.story.agent.id}", f"worker:{agent_number(phase_worker.story, phase_worker.worker.id)} ended with")
+    phase_worker.story.expect_text(f"agent-line list --agent {phase_worker.story.agent.id}", f"worker:{phase_worker.worker.id} ended with")
 
 
 @pytest.fixture
@@ -131,7 +130,7 @@ def merger_disabled_worker(new_story):
 
 def test_a_worker_with_no_task_left_may_stop(merger_disabled_worker):
     story, worker = merger_disabled_worker
-    story.expect_success(f'worker release {agent_number(story, worker.id)} "done with it"', actor=story.agent)
+    story.expect_success(f'worker release {worker.id} "done with it"', actor=story.agent)
     story.expect_hook_allowed(worker_session(story, worker), HookSamples.stop())
 
 

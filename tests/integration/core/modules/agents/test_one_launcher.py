@@ -11,7 +11,6 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.launcher_service import LauncherService
 from core.modules.agents.testing.fake_launcher import FakeLauncher
 from tests.stories.core.modules.helpers.helper_jobs import EndedHelper, JOB, helper_agent, resumable_session
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import UserBuilder
 
 FIRST_LAUNCHER_PID, SECOND_LAUNCHER_PID, THIRD_LAUNCHER_PID = 7001, 7002, 7003
@@ -37,7 +36,7 @@ def test_548_a_launcher_whose_process_runs_and_is_slow_to_answer_is_not_replaced
     started_launchers: list[str] = []
     monkeypatch.setattr(LauncherService, "start", lambda service: started_launchers.append("launcher") or False)
     resumable_session(story, helper_agent(story))
-    story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=story.agent)
+    story.expect_success(f'helper send {helper_agent(story).id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     story.expect_rows(started_launchers == [], story.home.socket(LAUNCHER_SOCKET).exists(), detail=f"launchers started: {started_launchers}, the socket file is there: {story.home.socket(LAUNCHER_SOCKET).exists()}")
 

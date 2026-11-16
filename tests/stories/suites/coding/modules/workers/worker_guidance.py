@@ -1,5 +1,4 @@
 from tests.stories.suites.coding.modules.workers.support.phase_steps import pair_worker  # noqa: F401
-from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
 from core.modules.drivers.models.agent_line import AgentLine
@@ -64,7 +63,7 @@ def clashed(new_story):
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("cart.py", "TOTAL = 2\n", "Another total")
-    story.expect_text(f"worker merge --wait {agent_number(story, worker.id)}", "clashed on cart.py", actor=story.agent)
+    story.expect_text(f"worker merge --wait {worker.id}", "clashed on cart.py", actor=story.agent)
     return story, worker, repository
 
 
@@ -86,7 +85,7 @@ def test_a_proven_task_in_no_plan_is_committed_with_worker_commit_and_tested_on_
 def test_the_run_allowance_follows_its_setting(phase_worker):
     phase_worker.story.expect_success(RUNS_SETTING, actor=phase_worker.story.user)
     phase_worker.story.expect_text("worker status", "Own test runs left: 5", actor=phase_worker.worker)
-    phase_worker.story.expect_text(f"worker status {agent_number(phase_worker.story, phase_worker.worker.id)}", "Own test runs left: 5", actor=phase_worker.story.agent)
+    phase_worker.story.expect_text(f"worker status {phase_worker.worker.id}", "Own test runs left: 5", actor=phase_worker.story.agent)
 
 
 def test_a_worker_of_a_task_in_no_plan_has_the_same_count_of_its_own_runs(pair_worker):
@@ -99,7 +98,7 @@ def test_the_json_status_holds_the_point_and_the_counts(phase_worker):
 
 
 def test_the_main_agent_reads_the_same_line_as_the_worker(phase_worker):
-    main_view = phase_worker.story.run(f"worker status {agent_number(phase_worker.story, phase_worker.worker.id)}", actor=phase_worker.story.agent).output_text
+    main_view = phase_worker.story.run(f"worker status {phase_worker.worker.id}", actor=phase_worker.story.agent).output_text
     phase_worker.story.expect_rows(main_view.splitlines()[0] == phase_worker.status_line())
 
 

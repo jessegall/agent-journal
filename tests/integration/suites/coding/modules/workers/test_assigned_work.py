@@ -2,7 +2,6 @@ import json
 
 from engine.actor.actor import Actor
 from suites.coding.modules.workers.support.available_work import AvailableWork
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.plan_assignment import story_with_two_workers
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
@@ -26,7 +25,7 @@ def test_the_main_agent_assigns_a_task_to_a_worker_and_the_workers_next_task_and
     story = worker.story
     receipt = story.new_row_id(RECEIPT, actor=story.agent)
     story.expect_rows(startable_ids(story, worker.worker) == [])
-    story.expect_success(f"task assign {receipt} --to {agent_number(story, worker.worker.id)}", actor=story.agent)
+    story.expect_success(f"task assign {receipt} --to {worker.worker.id}", actor=story.agent)
     story.expect_text(f"task info {receipt}", f"assigned to: agent {worker.worker.id}", actor=story.agent)
     story.expect_rows(startable_ids(story, worker.worker) == [receipt], detail=worker.status())
     story.expect_success("worker next --wait", actor=worker.worker)
@@ -63,7 +62,7 @@ def test_the_moment_a_task_is_assigned_to_a_worker_status_the_next_task_start_an
     story.expect_success('task block 1 --reason "waits for a user"', actor=worker.worker)
     story.expect_rows(not worker.stop().refusal, detail=worker.status())
     receipt = story.new_row_id(RECEIPT, actor=story.agent)
-    story.expect_success(f"task assign {receipt} --to {agent_number(story, worker.worker.id)}", actor=story.agent)
+    story.expect_success(f"task assign {receipt} --to {worker.worker.id}", actor=story.agent)
     story.expect_rows(startable_ids(story, worker.worker) == [receipt], detail=worker.status())
     assigned_stop = worker.stop().refusal
     story.expect_rows(f"Task {receipt}" in assigned_stop, detail=assigned_stop)
@@ -74,7 +73,7 @@ def test_the_moment_a_task_is_assigned_to_a_worker_status_the_next_task_start_an
 def test_a_task_assigned_to_worker_a_is_not_offered_to_worker_b_whatever_its_priority(played):
     story, first, second = story_with_two_workers(played)
     urgent = story.new_row_id('task make "Urgent job" --priority critical --environment main', actor=story.agent)
-    story.expect_success(f"task assign {urgent} --to {agent_number(story, first.id)}", actor=story.agent)
+    story.expect_success(f"task assign {urgent} --to {first.id}", actor=story.agent)
     story.expect_rows(urgent in startable_ids(story, first), urgent not in startable_ids(story, second))
 
 

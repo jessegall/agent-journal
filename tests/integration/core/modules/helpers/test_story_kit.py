@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.models.agent import Agent
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
@@ -11,7 +10,7 @@ from engine.testing.examples.hook_samples import HookSamples
 def test_a_helper_keeps_the_session_the_journal_chose_when_another_comes_under_its_launch_name(played):
     story = played(HelperStarted)
     story.hook("helper-session", HookSamples.helper(HELPER_LAUNCH_NAME))
-    story.expect_no_text(f"agent show {agent_number(story, story.helper.id)}", "session: helper-session")
+    story.expect_no_text(f"agent show {story.helper.id}", "session: helper-session")
 
 
 def test_a_helper_sends_hooks_as_itself(played):

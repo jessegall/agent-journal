@@ -2,7 +2,6 @@ import pytest
 
 from tests.stories.core.modules.assignments.support.assignment_reads import assigned, row_actors
 from tests.stories.core.modules.plans.support.assigned_plans import PlanWithTwoPhases, phase_task_ids, plan_worker
-from tests.stories.core.support.agent_labels import agent_number
 from suites.coding.support.coding_settings import WRITES_CODE_SETTING
 
 WRITES_CODE = f"{WRITES_CODE_SETTING}"
@@ -57,7 +56,7 @@ def test_plan_assign_with_no_to_records_the_first_running_main_agent_and_leaves_
 
 def test_a_main_agent_that_writes_no_code_takes_no_task_and_the_whole_plan_assign_is_refused_and_nothing_is_half_assigned(plan):
     plan.expect_success(f"setting set {WRITES_CODE} off --environment main")
-    plan.expect_refusal(f"plan assign 1 --to {agent_number(plan, plan.agent.id)} --environment main", "goes to a worker", actor=plan.user)
+    plan.expect_refusal(f"plan assign 1 --to {plan.agent.id} --environment main", "goes to a worker", actor=plan.user)
     plan.expect_rows(row_actors(plan, "plan") == {}, row_actors(plan, "phase") == {}, row_actors(plan, "task") == {}, detail=str(row_actors(plan, "task")))
 
 
@@ -89,7 +88,7 @@ def test_a_started_task_held_by_another_actor_is_skipped_by_a_parents_cascade_no
 def test_plan_assign_keeps_tasks_given_to_others_and_says_so_and_with_override_moves_every_task(plan):
     assigned(plan, "task 1", worker_id(plan, 1))
     assigned(plan, "task 2", worker_id(plan, 2))
-    target = agent_number(plan, plan.agent.id)
+    target = plan.agent.id
     plan.expect_text(f"plan assign 1 --to {target} --environment main", "kept 2 tasks", actor=plan.agent)
     plan.expect_rows(row_actors(plan, "task").get(1) == worker_id(plan, 1), row_actors(plan, "task").get(2) == worker_id(plan, 2), detail=str(row_actors(plan, "task")))
     plan.expect_success(f"plan assign 1 --to {target} --override --environment main", actor=plan.agent)

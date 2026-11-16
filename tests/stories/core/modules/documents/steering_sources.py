@@ -5,7 +5,6 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.stories.story_fixture import StoryFixture
 
 from tests.stories.core.modules.documents.support.trail_fixtures import feature, scenario, viewer_answer, Scenario, TrailReady
-from tests.stories.core.support.agent_labels import agent_number
 from core.modules.messages.agent_messages.message_updated_notice import MessageUpdatedNotice
 from engine.testing.expectations.expected_message import expected_agent_message
 from core.modules.questions.agent_messages.question_answered_message import QuestionAnsweredMessage
@@ -92,7 +91,7 @@ def test_context_reads_the_latest_explicitly_selected_request_text(new_story):
 
 def test_answer_can_reuse_its_existing_person_message(scenario):
     scenario.command('question ask "Which rounding?" --context "A story asks this so its card and answer can be checked." --options "Up" "Nearest"')
-    supplied = scenario.person("messages.chat", "message", "send", "Nearest", "--target-agent", str(agent_number(scenario.story, scenario.story.agent.id)))
+    supplied = scenario.person("messages.chat", "message", "send", "Nearest", "--target-agent", str(scenario.story.agent.id))
     initial_feed = scenario.person("messages.chat", "message", "feed")["rows"]
     scenario.person("questions.questions", "question", "answer", "1", "--answer", "Nearest", "--message-id", str(supplied["id"]))
     after = scenario.person("messages.chat", "message", "feed")["rows"]
@@ -115,7 +114,7 @@ def test_person_answer_refuses_a_source_with_wrong_author_or_addressee(scenario,
         supplied = json.loads(scenario.command('message send "A" --json').output_text)
     elif invalid == "other-recipient":
         second_agent_id = scenario.story.new_row_id("agent start private-answer-worker claude worker --environment main")
-        supplied = scenario.person("messages.chat", "message", "send", "A", "--target-agent", str(agent_number(scenario.story, second_agent_id)))
+        supplied = scenario.person("messages.chat", "message", "send", "A", "--target-agent", str(second_agent_id))
     else:
         author = scenario.story.new_row_id('actor make user "Grace"')
         supplied_answer = viewer_answer(scenario.story, "messages.chat", ["message", "send", "A"], person_id=author)

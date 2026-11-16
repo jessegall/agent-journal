@@ -2,7 +2,6 @@ import json
 
 from engine.actor.actor import Actor
 from suites.coding.modules.workers.support.available_work import AvailableWork
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.plan_assignment import story_with_two_workers
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
@@ -35,7 +34,7 @@ def test_available_work_lists_only_unassigned_tasks(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.expect_success(RECEIPT, actor=story.agent)
-    story.expect_success(f"task assign 2 --to {agent_number(story, story.agent.id)}", actor=story.agent)
+    story.expect_success(f"task assign 2 --to {story.agent.id}", actor=story.agent)
     story.expect_rows(delegatable(story) == (1,), detail=str(delegatable(story)))
 
 

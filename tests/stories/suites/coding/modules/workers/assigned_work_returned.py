@@ -4,7 +4,6 @@ from core.modules.tasks.models.task import Task
 from tests.stories.suites.coding.modules.workers.support.phase_steps import single_worker  # noqa: F401
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
 from tests.stories.suites.coding.modules.workers.support.phase_steps import dispatched_story_worker
@@ -15,7 +14,7 @@ def test_a_helper_whose_worktree_is_not_cut_takes_no_task(new_story):
     story = new_story(fixture=MainControlsActors)
     story.expect_success('task make "Fix the cart" --brief "Do it" --environment main', actor=story.agent)
     for name in ("helper", "worker"):
-        story.expect_refusal(f"task assign 1 --to {agent_number(story, agent_actors(story)[name].id)}", "takes no task", actor=story.agent)
+        story.expect_refusal(f"task assign 1 --to {agent_actors(story)[name].id}", "takes no task", actor=story.agent)
     story.expect_text("task info 1", "assigned to: nobody", actor=story.agent)
 
 
@@ -33,7 +32,7 @@ def test_a_worker_that_is_released_gives_back_its_waiting_tasks_open_and_blocked
     repository_environment(story)
     worker = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2 3")
     story.expect_success('task block 3 --reason "needs an answer"', actor=story.agent)
-    story.expect_success(f'worker release {agent_number(story, worker.worker.id)} "wrong job"', actor=story.agent)
+    story.expect_success(f'worker release {worker.worker.id} "wrong job"', actor=story.agent)
     story.expect_text("task show 2", "state: open", actor=story.agent)
     story.expect_text("task show 3", "state: blocked", actor=story.agent)
     for task in (2, 3):
@@ -42,12 +41,12 @@ def test_a_worker_that_is_released_gives_back_its_waiting_tasks_open_and_blocked
 
 def test_a_worker_that_is_released_returns_its_started_task_to_open_and_unassigned(single_worker):
     story = single_worker.story
-    story.expect_success(f'worker release {agent_number(story, single_worker.worker.id)} "wrong job"', actor=story.agent)
+    story.expect_success(f'worker release {single_worker.worker.id} "wrong job"', actor=story.agent)
     task = story.row(Task, 1)
     story.expect_rows(task.state is TaskState.OPEN, task.holder_id is None, not story.story_rows(Assignment, subject_model="task", subject_id=1), detail=f"the released worker's started task is open and unassigned: {task}")
 
 
 def test_a_worker_whose_last_started_task_is_moved_away_by_someone_else_is_refused_with_the_last_task_of_worker_message(single_worker):
     story = single_worker.story
-    story.expect_refusal(f"task assign 1 --to {agent_number(story, story.agent.id)}", "is the last of", actor=story.agent)
+    story.expect_refusal(f"task assign 1 --to {story.agent.id}", "is the last of", actor=story.agent)
     story.expect_text("task show 1", "state: started", f"holder_id: {single_worker.worker.id}", actor=story.agent)

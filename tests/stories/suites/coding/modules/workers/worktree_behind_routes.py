@@ -6,7 +6,6 @@ from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.base_branch import worker_commits
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
@@ -44,7 +43,7 @@ def f54_abandoning_the_worktree_closes_its_check_as_gone(story, repository: GitR
     worker_commits(repository, worker.id, 1)
     base_commits(repository, 3)
     stale_check(story)
-    story.expect_success(f'worker release {agent_number(story, worker.id)} --abandon "the worker left"', actor=story.agent)
+    story.expect_success(f'worker release {worker.id} --abandon "the worker left"', actor=story.agent)
     story.expect_rows([check.state for check in checks(story)] == [BehindCheckState.REMOVED], detail=str(checks(story)))
 
 

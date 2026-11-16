@@ -17,7 +17,6 @@ from tests.stories.core.modules.helpers.restricted_read_access import StartedCod
 from tests.stories.core.modules.usage.support.status_files import save_status_file
 from tests.stories.core.support.coding_fixtures import UserBuilder
 from tests.stories.core.modules.documents.support.trail_fixtures import viewer
-from tests.stories.core.support.agent_labels import agent_number
 from core.modules.agents.agent_messages.parent_report_message import ParentReportMessage
 from engine.testing.expectations.expected_message import expected_agent_message
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
@@ -58,7 +57,7 @@ def test_the_agent_card_reads_reports_through_the_viewer(new_story):
     story = new_story(fixture=ReportedHelper)
     report = helper_report(story)
     story.expect_success(f"message read {report.id}", actor=story.agent)
-    answer = viewer(story, "agents.agents", ["message", "agent-reports", "--agent", str(agent_number(story, helper_agent(story).id))])
+    answer = viewer(story, "agents.agents", ["message", "agent-reports", "--agent", str(helper_agent(story).id)])
     story.expect_rows([row["id"] for row in answer["rows"]] == [report.id], answer["rows"][0]["text"] == "The total is wrong.")
 
 
@@ -105,7 +104,7 @@ def test_a_resumed_helper_reports_its_next_job_the_same_way(new_story):
     story = new_story(fixture=EndedHelper)
     resumable_session(story, helper_agent(story))
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
-    story.expect_success(f'helper send {agent_number(story, helper_agent(story).id)} "{JOB}"', actor=story.agent)
+    story.expect_success(f'helper send {helper_agent(story).id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
     story.hook(helper_agent(story).session, HookSamples.session_start())
@@ -122,7 +121,7 @@ def test_two_jobs_in_a_row_that_end_without_a_report_both_close(new_story):
     story.expect_text(f"message read {helper_report(story).id}", "", actor=story.agent)
     resumable_session(story, helper)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
-    story.expect_success(f'helper send {agent_number(story, helper.id)} "{JOB}"', actor=story.agent)
+    story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
     story.hook(helper.session, HookSamples.session_start())
@@ -166,7 +165,7 @@ def test_a_program_that_exits_after_its_report_only_ends_its_row(new_story):
 def test_a_main_agents_exit_leaves_its_row(new_story):
     story = new_story(fixture=StartedHelper)
     story.expect_success(f"agent exited {story.agent.id} 0")
-    story.expect_text(f"agent show {agent_number(story, story.agent.id)}", "role: main")
+    story.expect_text(f"agent show {story.agent.id}", "role: main")
 
 
 def test_a_helper_that_ends_with_its_job_open_tells_the_parent(new_story):
@@ -187,12 +186,12 @@ def test_a_silent_helper_ends_with_no_agent_to_carry_the_tick(new_story):
 
 def test_a_paused_parent_keeps_its_helpers_job_open_and_takes_it_back_on_resume(new_story):
     story = new_story(fixture=StartedHelper)
-    story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
+    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     story.expect_success(f"agent end {helper_agent(story).id}", actor=story.user)
     story.run_listeners()
     story.expect_rows(read_jobs(story, helper_agent(story))[0].ended_at is None)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
-    story.expect_success(f"agent resume {agent_number(story, story.agent.id)}", actor=story.user)
+    story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
     story.run_listeners()
     launcher.drain_requests()
     story.expect_rows(len(launcher.requests) == 1)
@@ -276,7 +275,7 @@ def test_a_helper_a_trigger_starts_reports_to_the_main_agent(new_story):
 def test_a_message_the_main_agent_sends_a_helper_is_not_among_the_main_agents_reports(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_agent(story)
-    delivered = story.new_row_id(f'message send "Look at the tax as well" --to agent:{agent_number(story, helper.id)} --environment main', actor=story.agent)
+    delivered = story.new_row_id(f'message send "Look at the tax as well" --to agent:{helper.id} --environment main', actor=story.agent)
     story.expect_text("message reports --environment main", "no unread reports", actor=story.agent)
     story.expect_text("message reports --environment main", f"message:{delivered}", actor=Actor(helper.id, ActorType.AGENT))
 
@@ -284,6 +283,6 @@ def test_a_message_the_main_agent_sends_a_helper_is_not_among_the_main_agents_re
 def test_unread_reports_are_found_by_their_agent_and_their_words(new_story):
     story = new_story(fixture=ReportedHelper)
     report = helper_report(story)
-    story.expect_text(f"message reports --agent {agent_number(story, helper_agent(story).id)} --environment main", f"message:{report.id}", actor=story.agent)
-    story.expect_text(f"message reports --agent {agent_number(story, story.agent.id)} --environment main", "no unread reports", actor=story.agent)
+    story.expect_text(f"message reports --agent {helper_agent(story).id} --environment main", f"message:{report.id}", actor=story.agent)
+    story.expect_text(f"message reports --agent {story.agent.id} --environment main", "no unread reports", actor=story.agent)
     story.expect_text("message reports --search 'total wrong' --environment main", "The total is wrong.", actor=story.agent)

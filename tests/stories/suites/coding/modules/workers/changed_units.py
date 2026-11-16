@@ -1,6 +1,5 @@
 from tests.stories.suites.coding.modules.workers.free_commits import three_committed_worker, two_committed_worker  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.phase_steps import group_worker, planned_worker  # noqa: F401
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_tasks_singly
 from tests.integration.suites.coding.modules.workers.test_work_units import plan_card, worker_unit
 
@@ -23,7 +22,7 @@ def test_a_plan_given_to_another_agent_mid_unit_leaves_the_worker_its_committed_
 def test_a_release_while_an_ask_waits_is_refused(three_committed_worker):
     three_committed_worker.end_all_tests()
     three_committed_worker.story.expect_success(REQUEST_MERGE, actor=three_committed_worker.worker)
-    number = agent_number(three_committed_worker.story, three_committed_worker.worker.id)
+    number = three_committed_worker.worker.id
     outcome = three_committed_worker.story.run(f'worker release {number} "not needed"', actor=three_committed_worker.story.agent)
     three_committed_worker.story.expect_text("merge-ask show 1 --environment main", "state:", actor=three_committed_worker.story.agent)
     three_committed_worker.story.expect_rows(outcome.code == 0 or "committed work" in outcome.output_text, detail=outcome.output_text)

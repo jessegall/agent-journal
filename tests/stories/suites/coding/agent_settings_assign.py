@@ -7,7 +7,6 @@ from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from tests.stories.core.modules.assign_rules.support.decision_seeds import AssignDecisionSeed
 from tests.stories.core.modules.assign_rules.support.rule_steps import SonnetWorkerAndFreeTask
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
 from tests.stories.server.support.server_client import SYSTEM_CLOCK, server_story
 from tests.integration.support.server_harness import viewer_answer
@@ -92,7 +91,7 @@ class RetiredWorkerRule(StoryFixture):
         worker_id = story.new_row_id(f"agent start w-9 claude worker --parent {story.agent.id} --environment main")
         story.run(f"assign-rule make --target agent --agent row:{worker_id} --condition any --environment main", actor=story.user)
         story.run(f"agent end {worker_id}")
-        story.run(f'agent retire {agent_number(story, worker_id)} --reason "not needed"', actor=story.user)
+        story.run(f'agent retire {worker_id} --reason "not needed"', actor=story.user)
 
     def expect(self, story: Story) -> None:
         story.expect_text("assign-rule list --environment main", "agent", actor=story.user)

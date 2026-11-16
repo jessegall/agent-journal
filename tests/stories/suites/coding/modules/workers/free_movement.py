@@ -2,7 +2,6 @@ import pytest
 
 from engine.database.database import READ_LIMIT_ROWS, Database
 from core.modules.chat.models.journal_exception import JournalException
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH
 from tests.stories.suites.coding.modules.workers.support.held_tasks import worker_with_tasks, proofs, prove_task, unplanned_worker_with_tasks
 from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, PLAN_DISPATCH, TEST_LINE, StoryWorker, approve_plan, dispatched_story_worker, planned_story
@@ -87,7 +86,7 @@ def test_62_a_start_and_a_proof_of_a_task_one_worker_started_are_refused_to_anot
     second = task_worker.added_worker(f"{DISPATCH.removesuffix(' 1')} {receipts}")
     refused = task_worker.story.run("task start 1", actor=second.worker)
     refused_proof = prove_task(second, 1, 1)
-    holder_terms = f"task 1 is held by worker {agent_number(task_worker.story, task_worker.worker.id)}"
+    holder_terms = f"task 1 is held by worker {task_worker.worker.id}"
     task_worker.story.expect_rows(refused.code != 0, holder_terms in refused.output_text, refused_proof.code != 0, holder_terms in refused_proof.output_text, proofs(task_worker) == (),
                                detail=f"{refused.output_text} | {refused_proof.output_text}")
 
@@ -101,7 +100,7 @@ def test_a_task_of_the_unit_another_worker_started_after_its_proof_is_listed_ref
     story.expect_success('task release 1 --reason "another worker takes it over" --environment main', actor=story.user)
     receipts = story.new_row_id('task make "Receipts" --environment main', actor=story.agent)
     second = two_tasks.added_worker(f"{DISPATCH.removesuffix(' 1')} {receipts}")
-    story.expect_success(f"task assign 1 --to {agent_number(story, two_tasks.worker.id)} --environment main", actor=story.agent)
+    story.expect_success(f"task assign 1 --to {two_tasks.worker.id} --environment main", actor=story.agent)
     story.expect_success("task start 1 --environment main", actor=story.user)
     status = two_tasks.status()
     refused = prove_task(two_tasks, 1, 1, TEST_LINE)

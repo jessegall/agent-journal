@@ -5,7 +5,6 @@ from engine.database.statement import Statement
 
 from engine.testing.expectations.expect_reply import expect_reply_allowed
 
-from tests.stories.core.support.agent_labels import agent_number
 
 from core.modules.processes.models.enums.process_state import ProcessState
 from suites.coding.modules.workers.models.merger_line import MergerLine
@@ -174,7 +173,7 @@ def test_195_a_task_returned_after_its_merge_gets_a_new_worktree_cut_from_the_he
 
 def test_a_short_proof_left_on_a_released_worktree_fails_no_later_run_once_a_new_worktree_proved_its_point(failed_cart_proof):
     worker, story = failed_cart_proof, failed_cart_proof.story
-    number = agent_number(story, worker.worker.id)
+    number = worker.worker.id
     story.expect_success(f'worker release {number} "its work is taken in by hand"', actor=story.agent)
     story.expect_success(f"worker send {number} --task 1 --wait", actor=story.agent)
     worker.repository.changed(worker.worker.id, "cart.py", FIXED_CART)

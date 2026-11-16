@@ -6,7 +6,6 @@ from core.modules.drivers.models.enums.compaction_state import CompactionState
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.drivers.context_compactions import compactions
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.compaction_never_twice import compacted, expect_compaction_count, backdate_context
 from tests.stories.suites.coding.modules.workers.context_limit import COMPACTION_START, LIMIT_TOKENS, SESSION, LimitEnabled, has_context, stops, typing_recorded
 

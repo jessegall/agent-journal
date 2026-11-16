@@ -1,4 +1,3 @@
-from tests.stories.core.support.agent_labels import agent_number
 import json
 from datetime import timedelta
 
@@ -56,7 +55,7 @@ def with_job(story, minutes, percent):
     resumable_session(story, helper)
     aged(story, minutes, percent)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"started 701\n")
-    story.expect_success(f'helper send {agent_number(story, helper.id)} "{JOB}"', actor=story.agent)
+    story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
     return helper, launcher.requests[0]
@@ -67,7 +66,7 @@ def test_a_cold_helper_starts_a_new_session_under_the_same_agent_and_is_told_who
     replaced = helper_agent(ended_helper)
     prompt = " ".join(request["command"])
     ended_helper.expect_rows(replaced.id == helper.id, replaced.session != helper.session, request["session"] == replaced.session, "--resume" not in request["command"],
-                             replaced.session in request["command"], f"You are helper {agent_number(ended_helper, helper.id)}." in prompt, JOB in prompt, not is_cold(ended_helper), detail=str(request))
+                             replaced.session in request["command"], f"You are helper {helper.id}." in prompt, JOB in prompt, not is_cold(ended_helper), detail=str(request))
 
 
 def test_a_warm_helper_resumes_its_own_session(ended_helper):
@@ -115,7 +114,7 @@ def test_a_limited_helper_starts_a_new_session_when_it_is_sent_a_job(limited_hel
     story, helper = limited_helper, helper_agent(limited_helper)
     resumable_session(story, helper)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"), answer=b"started 701\n")
-    story.expect_success(f'helper send {agent_number(story, helper.id)} "{JOB}"', actor=story.agent)
+    story.expect_success(f'helper send {helper.id} "{JOB}"', actor=story.agent)
     story.run_listeners()
     launcher.drain_requests()
     story.expect_rows(helper_agent(story).session != helper.session, "--resume" not in launcher.requests[0]["command"], detail=str(launcher.requests[0]))

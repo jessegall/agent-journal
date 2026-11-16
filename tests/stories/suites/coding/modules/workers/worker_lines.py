@@ -1,5 +1,4 @@
 from suites.coding.modules.workers.models.worktree import Worktree
-from tests.stories.core.support.agent_labels import agent_number
 from core.modules.tasks.support.task_agent_messages import LOG_REQUEST_WRITES
 from core.modules.tasks.states.unlogged_write_states import UNLOGGED_WRITES_CEILING
 from core.modules.drivers.models.message_record import MessageRecord

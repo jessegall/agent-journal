@@ -4,7 +4,6 @@ import json
 import pytest
 
 from suites.coding.modules.workers.ticks.worker_tests.stalled_worker_test_runs import StalledWorkerTestRuns
-from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -29,8 +28,8 @@ def proof_states(worker: StoryWorker) -> dict[int, str]:
 def merge(worker: StoryWorker):
     worker.repository.checkout(ENVIRONMENT_BRANCH)
     request_merge(worker.story, worker.worker)
-    worker.story.run(f"worker logs {agent_number(worker.story, worker.worker.id)}", actor=worker.story.agent)
-    return worker.story.run(f"worker merge --wait {agent_number(worker.story, worker.worker.id)}", actor=worker.story.agent)
+    worker.story.run(f"worker logs {worker.worker.id}", actor=worker.story.agent)
+    return worker.story.run(f"worker merge --wait {worker.worker.id}", actor=worker.story.agent)
 
 
 def worktree_row(worker: StoryWorker) -> dict[str, object]:

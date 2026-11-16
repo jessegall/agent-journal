@@ -14,7 +14,6 @@ from suites.coding.modules.workers.models.enums.ask_outcome import AskOutcome
 from suites.coding.modules.workers.models.merger_line import MergerLine
 from suites.coding.modules.workers.support.worker_settings import SILENT_RECOVERY_ATTEMPTS, STOPPED_WORKER_RUN_MINUTES, WORKER_RESUME_LIMIT
 from suites.coding.modules.workers.ticks.stopped_worker_runs import StoppedWorkerRuns
-from tests.stories.core.support.agent_labels import agent_number
 from tests.integration.suites.coding.modules.workers.test_stopped_with_tasks import MERGER_ON, ended, main_agent_lines, missing_program, running_worker, two_task_worker, worker_story  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.work_setting_stories import SHOWN_SETTINGS, apply_work_setting, set_resume_limit
 from suites.coding.modules.workers.agent_messages.worker_restarted_message import WorkerRestartedMessage
@@ -40,7 +39,7 @@ def background_run(story) -> Process:
 
 
 def worker_label(story) -> str:
-    return f"worker:{agent_number(story, story.worker.id)}"
+    return f"worker:{story.worker.id}"
 
 
 @pytest.mark.parametrize("resume_limit, restart_line_count, main_agent_line_count", [(3, 1, 0), (0, 0, 1)])
