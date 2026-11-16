@@ -1,7 +1,7 @@
 import json
 
 from core.modules.asks.models.ask import Ask
-from core.modules.asks.models.ask_level import AskLevel
+from core.modules.asks.models.support.ask_level import AskLevel
 from engine.time.timestamp import Timestamp
 
 STACK = json.dumps([{"profile": "overseer", "answer_minutes": 5, "pass_minutes": 2}, {"profile": "journal-merger", "answer_minutes": 10, "pass_minutes": 3}])

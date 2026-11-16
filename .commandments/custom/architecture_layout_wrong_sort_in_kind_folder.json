@@ -68,13 +68,16 @@
             },
             {
                 "testCode": true
+            },
+            {
+                "fileMatches": "_area\\.py$"
             }
         ]
     },
     "sin": {
         "name": "wrong-sort-in-kind-folder",
         "description": "An errors folder holds a class that is no error, or an enums folder a class that is no enum.",
-        "rule": "An errors folder holds errors and refusals, an enums folder holds enums; move any other class to the folder of its sort.",
+        "rule": "An errors folder holds errors and refusals, an enums folder holds enums; move any other class to the folder of its sort. An area's own marker, its <area>_area.py, is the one way an engine folder declares itself and stays in it.",
         "skill": "plain-code-words"
     }
 }

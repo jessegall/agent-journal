@@ -3,7 +3,7 @@ import json
 import pytest
 
 from engine.errors.refusal import Refusal
-from core.modules.asks.models.ask_level import AskLevel
+from core.modules.asks.models.support.ask_level import AskLevel
 from core.modules.asks.models.ask_stack import AskStack
 
 

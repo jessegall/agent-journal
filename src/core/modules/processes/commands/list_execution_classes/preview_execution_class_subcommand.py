@@ -5,7 +5,7 @@ from engine.errors.refusal import Refusal
 from engine.subcommand.read_subcommand import ReadSubcommand
 from core.modules.processes.support.execution_class_preview import ExecutionClassPreview
 
-from core.modules.processes.commands.list_execution_classes.class_preview import ClassPreview
+from core.modules.processes.commands.support.class_preview import ClassPreview
 UNMATCHED = "no recent line would have matched"
 
 

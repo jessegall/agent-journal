@@ -4,7 +4,7 @@ from pathlib import Path
 
 from engine.file.file_access import FileAccess
 
-from engine.module.suite_refusal import SuiteRefusal
+from engine.module.errors.suite_refusal import SuiteRefusal
 ENGINE_FOLDER = Path(__file__).resolve().parents[1]
 INTERNAL_USE = re.compile(r"use = AreaUse\.INTERNAL\b")
 

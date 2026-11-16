@@ -5,7 +5,7 @@ from engine.errors.refusal import Refusal
 from engine.model.environment_scoped import EnvironmentScoped
 from engine.model.model import Model
 from engine.time.timestamp import Timestamp
-from core.modules.asks.models.ask_level import AskLevel
+from core.modules.asks.models.support.ask_level import AskLevel
 
 PARENT_NAMES = ("parent", "main")
 
