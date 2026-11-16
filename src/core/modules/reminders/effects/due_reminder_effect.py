@@ -27,4 +27,4 @@ class DueReminderEffect(Effect):
         self.reminders, self.clock = reminders, clock
 
     def commands(self, view: AgentView, record: "DecisionRecord") -> Sequence[Command[object]]:
-        return [RecordReminderFired(reminder.id) for reminder in self.reminders.due(view.agent.agent_id, self.clock.timestamp())]
+        return [RecordReminderFired(reminder.id) for reminder in self.reminders.due(view.agent.agent_id, self.clock.timestamp(), record.action.event)]

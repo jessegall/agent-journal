@@ -19,7 +19,7 @@ class SampleCondition:
 
 
 def outcome(condition) -> ConditionOutcome:
-    condition_check = BlockConditionCheck(SimpleNamespace(built=lambda name, text: condition), None, None, None, None, SimpleNamespace(reported=lambda *values: None))
+    condition_check = BlockConditionCheck(SimpleNamespace(built=lambda name, text: condition), None, None, None, SimpleNamespace(reported=lambda *values: None))
     row = SimpleNamespace(condition_name="sample", condition_text="", creation_timestamp=lambda: None)
     return condition_check.outcome(row, SimpleNamespace(environment_id=1))
 

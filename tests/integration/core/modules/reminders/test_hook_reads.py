@@ -8,7 +8,7 @@ from tests.stories.support.story_checks import expect_count_shown, expect_value,
 
 PROMPT = HookSamples.prompt("go on")
 REMINDERS = 12
-REMINDER_READS_ALLOWED = 4
+REMINDER_READS_ALLOWED = 1
 TRANSCRIPT_LINES = 4000
 
 
@@ -65,13 +65,21 @@ def selects_during(story, work) -> list[str]:
     return [statement for statement in statements if statement.lstrip().upper().startswith("SELECT") and ("reminders" in statement or "hook_calls" in statement)]
 
 
-def test_a_hook_reads_the_open_reminders_and_counts_tool_uses_in_a_few_queries(played):
-    story = played(BuilderStarted)
-    for number in range(REMINDERS):
+def made_reminders(story, first: int) -> None:
+    for number in range(first, first + REMINDERS):
         story.expect_success(f'reminder make "Log {number}" --every-tool-uses 1000 --every-tasks 1000 --environment main', actor=story.agent)
+
+
+def test_a_hook_reads_the_open_reminders_once_and_more_reminders_cost_it_no_more_queries(played):
+    story = played(BuilderStarted)
+    made_reminders(story, 0)
     story.hook("s-1", PROMPT)
-    reads = selects_during(story, lambda: story.hook("s-1", PROMPT))
-    expect_visited_limit(reads, REMINDER_READS_ALLOWED)
+    fewer = selects_during(story, lambda: story.hook("s-1", PROMPT))
+    made_reminders(story, REMINDERS)
+    story.hook("s-1", PROMPT)
+    more = selects_during(story, lambda: story.hook("s-1", PROMPT))
+    expect_visited_limit([read for read in more if "FROM reminders" in read], REMINDER_READS_ALLOWED)
+    expect_value(len(more), len(fewer))
 
 
 def transcript_story(played, tmp_path):

@@ -9,7 +9,7 @@ from engine.enums.condition_outcome import ConditionOutcome
 from engine.log.error_log import ErrorLog
 from engine.module.block_conditions import BlockConditions
 from engine.time.clock import Clock
-from core.modules.agents.support.agent_rows import AgentRows
+from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_block import AgentBlock
 from core.modules.drivers.support.actor_loader import ActorLoader
 
@@ -20,13 +20,13 @@ class BlockConditionCheck:
     its module is gone, is unavailable, which never passes and asks a person to repair the hold. A step
     outside a hook judges nothing, and its rows wait for the agent's next hook."""
 
-    def __init__(self, conditions: BlockConditions, agents: AgentRows, loader: ActorLoader, clock: Clock, container: Container, errors: ErrorLog) -> None:
-        self.conditions, self.agents, self.loader, self.clock, self.container, self.errors = conditions, agents, loader, clock, container, errors
+    def __init__(self, conditions: BlockConditions, loader: ActorLoader, clock: Clock, container: Container, errors: ErrorLog) -> None:
+        self.conditions, self.loader, self.clock, self.container, self.errors = conditions, loader, clock, container, errors
 
-    def outcomes(self, rows: Sequence[AgentBlock], question: Question, agent_id: int) -> dict[int, ConditionOutcome]:
+    def outcomes(self, rows: Sequence[AgentBlock], question: Question, agent: Agent) -> dict[int, ConditionOutcome]:
         if question.event is None or not rows:
             return {}
-        hook = AgentHook.actor_hook(question.event, self.loader.loaded(self.agents.find(agent_id)), self.clock.timestamp())
+        hook = AgentHook.actor_hook(question.event, self.loader.loaded(agent), self.clock.timestamp())
         self.conditions.prepare([(row.condition_name, row.condition_text) for row in rows], self.container)
         # rows that ask the same condition from the same opening, such as one hold for each task of a delivery, are judged once
         judged: dict[tuple[str, str, str], ConditionOutcome] = {}
