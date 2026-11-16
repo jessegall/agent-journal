@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from engine.database.statement import Statement
 from engine.model.model import Model
 from engine.model.table import Table
@@ -22,6 +23,13 @@ class TableStatements:
         prefix = f"{assignments}, " if changed else ""
         return Statement(f"UPDATE {self.table.name} SET {prefix}version = version + 1, updated_at = ? WHERE id = ? AND version = ?",
                          (*changed.values(), timestamp.text, row_id, version))
+
+    def update_many(self, versions: Sequence[tuple[int, int]], changed: dict[str, object], timestamp: Timestamp) -> Statement:
+        assignments = ", ".join(f"{column} = ?" for column in changed)
+        prefix = f"{assignments}, " if changed else ""
+        rows = ", ".join("(?, ?)" for _ in versions)
+        return Statement(f"UPDATE {self.table.name} SET {prefix}version = version + 1, updated_at = ? WHERE (id, version) IN (VALUES {rows})",
+                         (*changed.values(), timestamp.text, *(value for version in versions for value in version)))
 
     def delete(self, row_id: int, version: int) -> Statement:
         return Statement(f"DELETE FROM {self.table.name} WHERE id = ? AND version = ?", (row_id, version))

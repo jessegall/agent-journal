@@ -42,6 +42,29 @@ class Repository:
     def update(self, stored: M, context: Context, **values: object) -> M:
         return self.save_change(stored, stored.changed(**values), context)
 
+    def update_many(self, stored_rows: Sequence[M], context: Context, **values: object) -> list[M]:
+        changes = [change for change in (Change(row, self.scopes.applied(row.changed(**values)), context) for row in stored_rows) if not change.is_empty]
+        if len({(type(change.row), tuple(change.stored_fields)) for change in changes}) > 1:
+            raise ValueError("update_many needs rows of one model that change the same fields")
+        if not changes:
+            return list(stored_rows)
+        skipped = [self.guards.helper_question(change) for change in changes]
+        table = self.tables.table(type(changes[0].row))
+        changed = table.row(changes[0].row, changes[0].stored_fields)
+        versions = [(change.row.id, change.row.version) for change in changes]
+        updated_count = self.guarded(lambda: self.database.update(TableStatements(table).update_many(versions, changed, context.timestamp)), table, False)
+        if updated_count != len(changes):
+            raise StaleRowError(changes[0].row.cli_name, changes[0].row.id)
+        saved_rows = []
+        for change, skipped_guards in zip(changes, skipped, strict=True):
+            saved = change.row.saved(change.row.id, change.row.version + 1, context.timestamp)
+            self.event_rows.remember(saved)
+            saved_change = replace(change, new_row=replace(saved, move=change.row.move))
+            self.log.write(saved_change, skipped_guards)
+            self.listeners.run_save_listeners(saved_change)
+            saved_rows.append(saved)
+        return saved_rows
+
     def save_metadata(self, stored: M, metadata: Metadata, context: Context) -> M:
         return self.save_change(stored, replace(stored, metadata=metadata), context, stores_metadata=True)
 

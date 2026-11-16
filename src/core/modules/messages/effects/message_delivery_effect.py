@@ -9,7 +9,7 @@ from core.modules.messages.support.undelivered_messages import UndeliveredMessag
 
 
 class MessageDeliveryEffect(EventEffect):
-    """Records the delivery of each message the hook named to its target agent."""
+    """Records the delivery of the messages the hook named to its target agent, in one write."""
 
     key = MESSAGE_DELIVERY_KEY
     events = DELIVERY_EVENTS
@@ -19,4 +19,4 @@ class MessageDeliveryEffect(EventEffect):
 
     def effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]:
         batch = self.undelivered.batch(event, agent_id)
-        return [RecordMessageDelivery(message) for message in batch.messages] if batch is not None else []
+        return [RecordMessageDelivery(tuple(batch.messages))] if batch is not None and batch.messages else []

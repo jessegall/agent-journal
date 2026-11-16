@@ -7,6 +7,8 @@ from engine.event.event_pattern import EventPattern
 from engine.container.container import Container
 from engine.database.database import Database
 from engine.database.statement import Statement
+from engine.database.table_statements import TableStatements
+from engine.model.tables import Tables
 from engine.guard.errors.guard_refusal import GuardRefusal
 from engine.model.model import Model
 from engine.dotted_path.dotted_path import DottedPath
@@ -144,3 +146,30 @@ def test_a_deleted_row_is_gone_and_logged(tmp_path):
     container.get(Repository).delete(saved, context(MakeItem(title="Dune")))
     assert container.get(Database).rows(Statement("SELECT count(*) FROM items"))[0][0] == 0
     assert container.get(EventLog).event(2).event == "item.delete"
+
+
+def test_update_many_logs_each_change_and_writes_nothing_for_an_unchanged_row(tmp_path):
+    container = sample_container(tmp_path, empty_registry())
+    first = save(container, Item(title="Dune"))
+    newest = container.get(EventLog).newest_id()
+    updated = container.get(Repository).update_many((first,), context(MakeItem(title="Dune")), title="Emma")
+    unchanged = container.get(Repository).update_many(updated, context(MakeItem(title="Dune")), title="Emma")
+    assert [(row.version, row.title) for row in (*updated, *unchanged)] == [(2, "Emma"), (2, "Emma")]
+    assert container.get(EventLog).newest_id() == newest + 1
+
+
+def test_update_many_writes_several_rows_by_their_ids_and_versions_in_one_statement(tmp_path):
+    container = sample_container(tmp_path, empty_registry())
+    rows = [save(container, Item(title=title)) for title in ("Dune", "Emma")]
+    table = container.get(Tables).table(Item)
+    statement = TableStatements(table).update_many([(row.id, row.version) for row in rows], {"state": "paused"}, context(MakeItem(title="Dune")).timestamp)
+    assert container.get(Database).update(statement) == 2
+    assert [row.state.value for row in container.get(Queries).query(Item).every_row("the two sample items")] == ["paused", "paused"]
+
+
+def test_update_many_refuses_a_row_changed_since_it_was_read(tmp_path):
+    container = sample_container(tmp_path, empty_registry())
+    first = save(container, Item(title="Dune"))
+    save(container, first.moved(ItemLifecycle.pause))
+    with pytest.raises(StaleRowError):
+        container.get(Repository).update_many((first,), context(MakeItem(title="Dune")), title="Persuasion")

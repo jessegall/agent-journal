@@ -39,4 +39,4 @@ class WaitingMessageTypingListener(CommitListener[Created[AgentLine]]):
             return
         current = self.rows.required(Message, message.id)
         if current.delivered_at is None:
-            self.bus.run(RecordMessageDelivery(current), actor)
+            self.bus.run(RecordMessageDelivery((current,)), actor)
