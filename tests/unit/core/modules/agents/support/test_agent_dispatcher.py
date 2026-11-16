@@ -179,7 +179,7 @@ def test_reconcile_opens_a_row_that_ended_while_its_program_runs_and_records_it(
     parts.launcher(RUNNING)
     parts.dispatcher.reconcile(CONTEXT)
     assert [(row.id, row.ended_at) for row in parts.repository.saved_rows] == [(41, None)]
-    assert parts.log_lines == [f"helper 2 {OPENED_ROW_TEXT}"]
+    assert parts.log_lines == [f"helper 41 {OPENED_ROW_TEXT}"]
 
 
 def test_reconcile_leaves_ended_a_row_the_policy_calls_gone_for_good_though_its_program_runs():
@@ -195,7 +195,7 @@ def test_reconcile_ends_an_open_row_whose_started_program_is_gone_and_leaves_one
     parts.launcher(NOTHING)
     parts.dispatcher.reconcile(CONTEXT)
     assert parts.repository.ended_ids == [41]
-    assert f"helper 2 {ENDED_ROW_TEXT}" in parts.log_lines
+    assert f"helper 41 {ENDED_ROW_TEXT}" in parts.log_lines
 
 
 def test_the_dispatcher_writes_the_opening_of_a_row_and_the_process_of_a_session():
