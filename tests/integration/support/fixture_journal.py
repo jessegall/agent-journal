@@ -1,4 +1,3 @@
-import json
 import shlex
 from datetime import timedelta
 from dataclasses import dataclass, field
@@ -12,7 +11,6 @@ from engine.actor.actor import Actor
 from engine.container.container import Container
 from engine.database.repeated_work import RepeatedWork
 from engine.driver.hook_reply import HookReply
-from engine.enums.actor_type import ActorType
 from engine.journal.journal_home import JournalHome
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.query.queries import Queries
@@ -21,9 +19,6 @@ from engine.caller.process_table import ProcessTable
 from engine.testing.fakes.fixed_process_table import FixedProcessTable
 from engine.module.module_finder import ModuleFinder
 from engine.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
-from engine.file.file_access import FileAccess
-from engine.command.bus import Bus
-from engine.command.command import Command
 from engine.testing.expectations.text_match import ExpectedText, contains_line, contains_text
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_reader import SettingReader
@@ -59,7 +54,7 @@ class FixtureLine:
 
 
 @dataclass
-class FixtureJournal(KitRows):
+class FixtureJournal(KitRows[tuple[int, str]]):
     """An integration journal copied from a story fixture's template, with the agent, user and helper that
     fixture made, so a mechanical story moved to tests/integration starts from the same state. A person's line
     runs in the main environment and an agent's in its own, as in a story."""
@@ -150,9 +145,6 @@ class FixtureJournal(KitRows):
         answer = self.run(line, actor)
         assert not any(contains_text(answer.output_text, text) for text in texts), (line, answer)
 
-    def row(self, model: type, row_id: int):
-        return self.container.get(Queries).query(model).find(row_id)
-
     def run_listeners(self) -> None:
         with self.journal.database.repeated_work.request():
             self.container.get(CommitListenerRunner).run()
@@ -172,9 +164,6 @@ class FixtureJournal(KitRows):
     def expect_refusal(self, line: str, reason: ExpectedText, actor: Actor | None = None) -> None:
         answer = self.run(line, actor)
         assert answer.code == 1 and contains_text(answer.output_text, reason), (line, reason, answer)
-
-    def run_command(self, command: Command[R], actor: Actor, environment_id: int | None = None) -> R:
-        return self.container.get(Bus).run(command, actor, environment_id=environment_id)
 
     # the session end hook ends the agent as itself, with no journal line; its commit listeners run after it
     def end_session(self, agent: Actor) -> None:
@@ -239,9 +228,6 @@ class FixtureJournal(KitRows):
         finally:
             writer.close()
 
-    def system_log_text(self) -> str:
-        return FileAccess.read(self.home.system_log) if FileAccess.exists(self.home.system_log) else ""
-
     def synced(self) -> tuple[int, str]:
         stream = io.StringIO()
         code = self.container.get(ModuleSyncLine).run(list(SYNC_ARGV), stream)
@@ -251,8 +237,3 @@ class FixtureJournal(KitRows):
         answer = self.run(line, actor)
         places = [answer.output_text.find(text) for text in texts]
         assert answer.code == 0 and -1 not in places and places == sorted(places), (line, texts, answer)
-
-    def synced_with(self, module: str) -> tuple[int, str]:
-        modules = json.loads(FileAccess.read(self.home.module_list))
-        FileAccess.write(self.home.module_list, json.dumps([*modules, module]))
-        return self.synced()

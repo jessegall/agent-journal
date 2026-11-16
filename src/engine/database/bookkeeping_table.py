@@ -27,8 +27,7 @@ class BookkeepingTable:
 
     # a row an older one names may have been pruned since
     def kept_row(self, row_id: int) -> sqlite3.Row | None:
-        rows = self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE id = ?", [row_id]))
-        return rows[0] if rows else None
+        return self.first_row(Statement(f"SELECT * FROM {self.table} WHERE id = ?", [row_id]))
 
     def newest_page(self, number: int, size: int, parsed: Callable[[sqlite3.Row], T]) -> Page[T]:
         rows = self.database.rows(Statement(f"SELECT * FROM {self.table} ORDER BY id DESC LIMIT ? OFFSET ?", (size, (number - 1) * size)))
@@ -38,7 +37,10 @@ class BookkeepingTable:
         return self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE id > ? ORDER BY id LIMIT ?", (row_id, limit)))
 
     def latest_event(self, event: str) -> sqlite3.Row | None:
-        rows = self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE name = ? ORDER BY id DESC LIMIT 1", [event]))
+        return self.first_row(Statement(f"SELECT * FROM {self.table} WHERE name = ? ORDER BY id DESC LIMIT 1", [event]))
+
+    def first_row(self, statement: Statement) -> sqlite3.Row | None:
+        rows = self.database.rows(statement)
         return rows[0] if rows else None
 
     def newest_row_rows(self, history: RowHistory) -> list[sqlite3.Row]:

@@ -23,6 +23,7 @@ from suites.coding.modules.workers.agent_messages.update_reminder_message import
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.support.worker_settings import UPDATE_REMINDERS, UPDATE_WAIT_MINUTES
+from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 CHECKS_REASON = "every behind check in that state is reminded of"
 CONFLICT_LINES = (ConflictOpenMessage.declared(), ConflictRepeatedMessage.declared())
@@ -76,5 +77,5 @@ class RemindBehindUpdatesHandler(Handler[RemindBehindUpdates, None]):
         if check.reminders < limit:
             self.message_sender.send(worktree.session_agent_id, UpdateReminderMessage.declared(), STALE_SOURCE, context, count=check.commits_lagging)
         else:
-            self.inbox.send_agent_message(UpdateSkippedMessage.declared().agent_message(worker=self.numbers.agent_number(worktree.session_agent_id)), STALE_SOURCE, context)
+            self.inbox.send_agent_message(AgentNumberMessages.message(self.numbers, UpdateSkippedMessage, "worker", worktree.session_agent_id), STALE_SOURCE, context)
         self.repository.save_change(check, check.reminded(), context)

@@ -25,6 +25,6 @@ class PreviewExecutionClassSubcommand(ReadSubcommand[ClassPreview]):
         parser.add_argument("--plugin", default="", help="the plugin whose runs the class takes")
 
     def read(self, arguments: Namespace, caller: Caller) -> ClassPreview:
-        if ExecutionClassOptions.names_no_lines(arguments):
+        if ExecutionClassOptions.is_without_lines(arguments):
             raise Refusal("a preview needs a line pattern or a plugin", "add --pattern or --plugin")
         return ClassPreview(tuple(self.preview.matched(arguments.pattern, arguments.plugin)))

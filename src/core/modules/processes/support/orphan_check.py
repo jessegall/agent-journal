@@ -31,8 +31,7 @@ class OrphanCheck:
         self.processes, self.ends, self.folder, self.settings, self.spans, self.clock, self.request_values = processes, ends, folder, settings, spans, clock, request_values
 
     def orphaned(self, event: HookEvent | None, agent_id: int) -> OrphanedRuns:
-        event_id = event.event_id if event is not None else "step"
-        return self.request_values.read(f"processes.orphans:{agent_id}:{event_id}", lambda: event_id, lambda: self.found(agent_id))
+        return self.request_values.step_value(f"processes.orphans:{agent_id}", HookEvent.step_key(event), lambda: self.found(agent_id))
 
     def found(self, agent_id: int) -> OrphanedRuns:
         current_time = self.clock.timestamp()

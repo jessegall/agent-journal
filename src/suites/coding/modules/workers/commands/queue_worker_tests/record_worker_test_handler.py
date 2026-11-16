@@ -32,6 +32,7 @@ from core.modules.plans.support.task_plans import TaskPlans
 from suites.coding.modules.workers.models.affected_test import AffectedTest
 from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from suites.coding.modules.workers.support.worker_guidance import WorkerGuidance
+from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 AFFECTED_TESTS_REASON = "every affected test of the worktree is checked for one still running"
 
@@ -71,7 +72,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         waiting = self.finish_tasks(worktree, context)
         for task_id in sorted({row.task_id for row in waiting}):
             proof_ids = ', '.join(str(row.id) for row in waiting if row.task_id == task_id)
-            self.main_agent_line.send_agent_message(ProofCheckMessage.declared().agent_message(worker=self.numbers.agent_number(worktree.session_agent_id), task=task_id, proofs=proof_ids), LINE_SOURCE, context)
+            self.main_agent_line.send_agent_message(AgentNumberMessages.message(self.numbers, ProofCheckMessage, "worker", worktree.session_agent_id, task=task_id, proofs=proof_ids), LINE_SOURCE, context)
 
     def finish_checked(self, worktree: Worktree, context: Context) -> None:
         self.finish_tasks(worktree, context)
@@ -101,7 +102,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         self.repository.save_change(worktree, worktree.moved(WorktreeLifecycle.mark_tests_passed, tests_passed_at=context.timestamp, merge_ready_at=context.timestamp), context)
         if self.settings.flag(MERGER_ENABLED):
             return
-        self.main_agent_line.send_agent_message(WorkerTestsPassedMessage.declared().agent_message(worker=self.numbers.agent_number(worktree.session_agent_id)), LINE_SOURCE, context)
+        self.main_agent_line.send_agent_message(AgentNumberMessages.message(self.numbers, WorkerTestsPassedMessage, "worker", worktree.session_agent_id), LINE_SOURCE, context)
 
     def complete_tested(self, tasks: dict[int, Task], proofs: tuple[Proof, ...], context: Context) -> list[Task]:
         self.plans.prepare(sorted(tasks))

@@ -45,6 +45,11 @@ class HookEvent:
     child_agent: str = ""
     role: str = ""
 
+    # the key of the hook an event is, or of the agent's step when there is none
+    @staticmethod
+    def step_key(event: "HookEvent | None") -> str:
+        return event.event_id if event is not None else "step"
+
     @classmethod
     def tick(cls, program: str, session: str, event_id: str, hook_timestamp_ms: int, actor: str, environment: str) -> "HookEvent":
         return cls(HOOK_EVENT_VERSION, program, HookEventName.TICK, session, event_id, hook_timestamp_ms, actor, environment, None, None, {})

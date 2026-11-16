@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from engine.file.file_access import FileAccess
-from engine.text.listed_lines import ListedLines
+from engine.text.list_file_entries import ListFileEntries
 
 INTERNAL_STORY_FILES = "tests/stories/internal_story_files.txt"
 
@@ -14,7 +14,7 @@ class InternalStoryFiles:
         self.root = root
         list_file = root / INTERNAL_STORY_FILES
         lines = FileAccess.read(list_file).splitlines() if FileAccess.is_file(list_file) else []
-        self.files = frozenset(ListedLines.of(lines))
+        self.files = frozenset(ListFileEntries.parsed(lines))
 
     def lists(self, story_file: Path) -> bool:
         if not story_file.is_relative_to(self.root):

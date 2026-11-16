@@ -19,8 +19,7 @@ class InactiveWorkers:
         self.worktrees, self.activities, self.settings, self.clock, self.request_values = worktrees, activities, settings, clock, request_values
 
     def idle(self, event: HookEvent | None, agent_id: int) -> list[Worktree]:
-        event_id = event.event_id if event is not None else "step"
-        return self.request_values.read(f"workers.idle:{agent_id}:{event_id}", lambda: event_id, lambda: self.found(event, agent_id))
+        return self.request_values.step_value(f"workers.idle:{agent_id}", HookEvent.step_key(event), lambda: self.found(event, agent_id))
 
     def found(self, event: HookEvent | None, agent_id: int) -> list[Worktree]:
         hours = self.settings.number(WORKER_IDLE_HOURS)

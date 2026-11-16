@@ -20,7 +20,7 @@ class ExecutionClassOptions:
 
     # a class of a person's own names the lines that belong to it: a pattern, a plugin or both
     @staticmethod
-    def names_no_lines(arguments: Namespace) -> bool:
+    def is_without_lines(arguments: Namespace) -> bool:
         return not arguments.pattern and not arguments.plugin
 
     @staticmethod

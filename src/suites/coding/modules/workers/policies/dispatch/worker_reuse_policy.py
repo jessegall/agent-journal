@@ -14,6 +14,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.agent_messages.worker_reuse_message import WorkerReuseMessage
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.dispatch_arguments import DISPATCH_ARGUMENTS
+from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 KEPT_WORK_STATES = (WorktreeState.CUT, WorktreeState.DELIVERED)
 
@@ -42,7 +43,7 @@ class WorkerReusePolicy(EventPolicy):
                 continue
             worker_id = self.worker_with_files(part)
             if worker_id is not None:
-                return WorkerReuseMessage.declared().agent_message(worker=self.numbers.agent_number(worker_id))
+                return AgentNumberMessages.message(self.numbers, WorkerReuseMessage, "worker", worker_id)
         return None
 
     def worker_with_files(self, part: Part) -> int | None:

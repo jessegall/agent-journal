@@ -9,7 +9,7 @@ from engine.execution.classes.execution_classes import ExecutionClasses
 from engine.execution.execution_starter import ExecutionStarter
 from engine.execution.execution_subject import ExecutionSubject
 from core.modules.agents.models.agent import Agent
-from core.modules.processes.commands.start_process.start_process import StartProcess
+from core.modules.processes.support.classes.run_start import RunStart
 from core.modules.processes.support.classes.process_classes import ProcessClasses
 
 
@@ -19,7 +19,7 @@ class StartProcessClasses:
     def __init__(self, classes: ExecutionClasses, process_classes: ProcessClasses) -> None:
         self.classes, self.process_classes = classes, process_classes
 
-    def chosen(self, command: StartProcess, agent: Agent) -> ExecutionClass:
+    def chosen(self, command: RunStart, agent: Agent) -> ExecutionClass:
         starter = self.starter(command, agent)
         # a plugin's kind keeps its plugin's class, even one named like a journal kind such as merge
         if command.plugin:
@@ -37,7 +37,7 @@ class StartProcessClasses:
         return self.process_classes.category_class(recorded or [command.category], command.line, agent)
 
     @staticmethod
-    def starter(command: StartProcess, agent: Agent) -> ExecutionStarter:
+    def starter(command: RunStart, agent: Agent) -> ExecutionStarter:
         if command.plugin:
             return ExecutionStarter(StarterType.PLUGIN, plugin_name=command.plugin)
         return ProcessClasses.agent_starter(agent)

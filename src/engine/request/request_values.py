@@ -30,6 +30,10 @@ class RequestValues:
         if self.is_open:
             self.values[key] = (version_reader(), value)
 
+    # a value read once for the hook, or the step, it is asked in
+    def step_value(self, name: str, step_key: str, loader: Callable[[], T]) -> T:
+        return self.read(f"{name}:{step_key}", lambda: step_key, loader)
+
     def read(self, key: str, version_reader: Callable[[], object], loader: Callable[[], T]) -> T:
         if not self.is_open:
             return loader()

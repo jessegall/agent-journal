@@ -11,6 +11,7 @@ from suites.coding.modules.workers.agent_messages.worker_task_blocked_message im
 from engine.event.moved import Moved
 from engine.command.context import Context
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
+from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 
 class BlockedWorkerTaskListener(SaveListener[Moved[Task]]):
@@ -33,5 +34,5 @@ class BlockedWorkerTaskListener(SaveListener[Moved[Task]]):
         if worker.id != context.actor.id:
             self.message_sender.send(worker.id, BlockedWorkerTaskMessage.declared(), self.name, context, task=task.id)
             return
-        notice = WorkerTaskBlockedMessage.declared().agent_message(worker=self.numbers.agent_number(worker.id), task=task.id)
+        notice = AgentNumberMessages.message(self.numbers, WorkerTaskBlockedMessage, "worker", worker.id, task=task.id)
         self.main_agent_line.send_agent_message(notice, self.name, context)

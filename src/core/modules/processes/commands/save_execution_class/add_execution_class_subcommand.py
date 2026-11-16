@@ -25,7 +25,7 @@ class AddExecutionClassSubcommand(Subcommand[SaveExecutionClass, str]):
         ExecutionClassOptions.add_arguments(parser)
 
     def command(self, arguments: Namespace, caller: Caller) -> SaveExecutionClass:
-        if ExecutionClassOptions.names_no_lines(arguments):
+        if ExecutionClassOptions.is_without_lines(arguments):
             raise Refusal("a class of your own needs the lines that belong to it", "add --pattern \"<regular expression>\" or --plugin <name>")
         start = ExecutionClass(arguments.class_name, ExecutionLength.LONG, 1, ExecutionPriority.AGENT, line_pattern=arguments.pattern, plugin=arguments.plugin)
         return SaveExecutionClass(ExecutionClassOptions.changed(start, arguments), is_override=False)

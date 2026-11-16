@@ -2,6 +2,7 @@
 import {computed, ref} from "vue";
 import {ActionsMenu, AgentBadge, Btn, TextInput, peekRef, useWindow, vContext} from "@journal/window-kit";
 import {askerOf, clockOf, planOf, questionMenu} from "./questionWords.js";
+import {useQuestionSettling} from "./questionSettling.js";
 
 // one question of the Questions window: the number, the asking agent as a chip, the plan as a link, More and the clock time in its head; the question, its context, the options as
 // plain rows with a star after the recommended one, then Other and Answer. Picking selects, Answer sends, typing clears the pick; a done card shows its answer in quiet colours
@@ -10,30 +11,12 @@ const emit = defineEmits(["changed"]);
 const view = useWindow();
 const picked = ref("");
 const typed = ref("");
-const settled = ref(null);
-const refusal = ref("");
-const elaborated = ref(false);
+const {settled, refusal, elaborated, answer, close, elaborate} = useQuestionSettling(() => props.row, (line) => view.run(line), emit);
 const shown = computed(() => ({...props.row, ...settled.value}));
 const chosen = computed(() => typed.value.trim() || picked.value);
 const plan = planOf(props.row);
 
-async function settle(change, line) {
-    settled.value = change;
-    refusal.value = "";
-    const answer = await view.run(line);
-    if (answer.ok) return void emit("changed");
-    settled.value = null;
-    refusal.value = answer.error;
-}
-const send = () => chosen.value && settle({state: "answered", answer: chosen.value}, ["question", "answer", String(props.row.id), "--answer", chosen.value]);
-const close = () => settle({state: "closed"}, ["question", "close", String(props.row.id)]);
-async function elaborate() {
-    elaborated.value = true;
-    const answer = await view.run(["message", "send", `Elaborate on question ${props.row.id}: ask it again with more context on each option and which you would pick, and you choose.`]);
-    if (answer.ok) return;
-    elaborated.value = false;
-    refusal.value = answer.error;
-}
+const send = () => chosen.value && answer(chosen.value);
 const items = () => questionMenu(props.row, {elaborate, close, elaborated: elaborated.value});
 const pick = (option) => {
     picked.value = option;

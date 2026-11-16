@@ -40,8 +40,6 @@ from engine.driver.hook_event import HookEvent
 from engine.driver.hook_reply import HookReply
 from engine.driver.hook_route import HookRoute
 from engine.command.script_policy import ScriptPolicy
-from engine.command.bus import Bus
-from engine.command.command import Command
 from engine.module.journal_container import synced_container
 from engine.listener.commit.commit_listener_runner import CommitListenerRunner
 from engine.hosting.hosting import Hosting
@@ -97,7 +95,7 @@ COMMITTING_JOURNAL = StoryJournal()
 AGENT_LINE_PAUSE_SECONDS = 0.2
 
 
-class Story(KitRows):
+class Story(KitRows[tuple[int, str]]):
     """One story on a journal of its template that rolls back at its end, the public entry a plugin's stories
     use: it loads the modules named, runs command lines as text through the same console, container and
     registry as a real run, moves its clock by hand, reads rows and refusals, and checks what came back. It
@@ -206,9 +204,6 @@ class Story(KitRows):
         with seeder.filling():
             return seeder.seed(seed(), count, **fixed)
 
-    def run_command(self, command: Command[R], actor: Actor, environment_id: int | None = None) -> R:
-        return self.container.get(Bus).run(command, actor, environment_id=environment_id)
-
     # the session end hook ends the agent as itself, with no journal line, so no command list judges it; its commit
     # listeners run after it, as they do after a line
     def end_session(self, agent: Actor) -> None:
@@ -249,9 +244,6 @@ class Story(KitRows):
     def use_processes(self, *rows: ProcessRow) -> None:
         self.steps.append(f"process table {rows!r}")
         self.process_table.fixed_rows = list(rows)
-
-    def row(self, model: type[M], row_id: int) -> M:
-        return self.container.get(Queries).query(model).find(row_id)
 
     # The default a module declares for a setting, so a story counts from it and a new default breaks no story.
     def setting_default(self, key: str) -> SettingDefault:
@@ -332,11 +324,6 @@ class Story(KitRows):
             writer.execute("ROLLBACK")
         finally:
             writer.close()
-
-    # Runs a module's tick handler by its name, as the server's ticker would, on the story's journal.
-    def run_tick(self, name: str) -> None:
-        handler = next(handler for module in DEFAULT_MODULES for handler in module.tick_handler_declarations() if handler.label == name)
-        handler.handler(self.container)
 
     def tick_handler_points(self, tick_handler: Callable[[Container], object]) -> Points | None:
         tools = self.container.get(PerformanceTools)
@@ -483,9 +470,6 @@ class Story(KitRows):
         FileAccess.mkdir(self.home.status_folder, parents=True, exist_ok=True)
         FileAccess.write(self.home.status_folder / f"{session}.json", json.dumps({"session_id": session, "context_window": {"used_percentage": percent}}))
 
-    def system_log_text(self) -> str:
-        return FileAccess.read(self.home.system_log) if FileAccess.exists(self.home.system_log) else ""
-
     def expect_sync_refusal(self, module: str, text: str) -> None:
         registry_text = Registry.read(self.container.get(Database)).entries_text()
         code, output_text = self.synced_with(module)
@@ -562,11 +546,6 @@ class Story(KitRows):
         FileAccess.write(self.home.module_list, json.dumps([listed for listed in modules if listed != module]))
         code, output_text = self.synced()
         self.expected(code == 0, f"module sync without {module} gave {code}: {output_text}")
-
-    def synced_with(self, module: str) -> tuple[int, str]:
-        modules = json.loads(FileAccess.read(self.home.module_list))
-        FileAccess.write(self.home.module_list, json.dumps([*modules, module]))
-        return self.synced()
 
     def synced(self) -> tuple[int, str]:
         stream = io.StringIO()

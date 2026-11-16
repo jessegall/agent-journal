@@ -1,3 +1,4 @@
+from engine.testing.stories.kit_rows import KitRows
 import io
 import json
 import shlex
@@ -5,13 +6,11 @@ from dataclasses import dataclass
 from typing import cast
 from uuid import uuid4
 
-from core.modules import DEFAULT_MODULES
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from engine.caller.caller import Caller
 from engine.cli.console import Console
 from engine.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
-from engine.file.file_access import FileAccess
 from engine.container.container import Container
 from engine.database.database import Database
 from engine.database.repeated_work import RepeatedWork
@@ -35,7 +34,7 @@ class LineAnswer:
     text: str
 
 
-class IntegrationJournal:
+class IntegrationJournal(KitRows["LineAnswer"]):
     """A journal on a synced home that an integration test drives through its real console and database: the
     machinery runs as it does in the server, with no story kit around it."""
 
@@ -75,17 +74,6 @@ class IntegrationJournal:
 
     def make_user(self, name: str = "Ada") -> Actor:
         return Actor(self.new_row_id(f'actor make user "{name}"'), ActorType.USER)
-
-    # runs a module's tick handler by its name, as the server's ticker would
-    def run_tick(self, name: str) -> None:
-        handler = next(handler for module in DEFAULT_MODULES for handler in module.tick_handler_declarations() if handler.label == name)
-        handler.handler(self.container)
-
-    # the module list gains the module and the journal syncs, as an install does; a passed sync reopens the container
-    def synced_with(self, module: str) -> LineAnswer:
-        modules = json.loads(FileAccess.read(self.home.module_list))
-        FileAccess.write(self.home.module_list, json.dumps([*modules, module]))
-        return self.synced()
 
     # the journal syncs its module list again, as an install does; a passed sync reopens the container
     def synced(self) -> LineAnswer:

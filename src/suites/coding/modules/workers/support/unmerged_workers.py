@@ -47,9 +47,8 @@ class UnmergedWorkers:
         return f"journal worker merge {self.numbers.agent_number(worktree.session_agent_id)}"
 
     def answer(self, event: HookEvent | None, agent_id: int) -> UnmergedAnswer:
-        event_id = event.event_id if event is not None else "step"
         # read once a step, so the lines and the holds they close agree
-        return self.request_values.read(f"workers.unmerged:{agent_id}:{event_id}", lambda: event_id, lambda: self.found(agent_id))
+        return self.request_values.step_value(f"workers.unmerged:{agent_id}", HookEvent.step_key(event), lambda: self.found(agent_id))
 
     def found(self, agent_id: int) -> UnmergedAnswer:
         agent_messages: list[AgentMessage] = []

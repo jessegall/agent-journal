@@ -46,9 +46,8 @@ class RunDocking:
         self.queries, self.room, self.settings, self.spans, self.clock, self.request_values, self.database = queries, room, settings, spans, clock, request_values, database
 
     def docked(self, event: HookEvent | None, agent_id: int) -> DockedRuns:
-        event_id = event.event_id if event is not None else "step"
         # read once a hook whatever changes meanwhile: a run it docks is no longer new to the next read
-        return self.request_values.read(f"processes.dock:{agent_id}:{event_id}", lambda: event_id, lambda: self.found(agent_id))
+        return self.request_values.step_value(f"processes.dock:{agent_id}", HookEvent.step_key(event), lambda: self.found(agent_id))
 
     def found(self, agent_id: int) -> DockedRuns:
         current_time = self.clock.timestamp()

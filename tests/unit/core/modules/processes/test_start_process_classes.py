@@ -6,7 +6,7 @@ from engine.execution.classes.execution_classes import ExecutionClasses
 from core.modules.agents.models.agent import Agent
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.support.part_spec import PartSpec
-from core.modules.processes.commands.start_process.support.start_process_classes import StartProcessClasses
+from core.modules.processes.support.classes.start_process_classes import StartProcessClasses
 from core.modules.processes.support.classes.process_classes import ProcessClasses
 
 MAIN = Agent(id=1, creator_id=1, session="s-1", program="claude", role="main")

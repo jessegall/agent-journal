@@ -8,6 +8,7 @@ from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
 from suites.coding.modules.workers.agent_messages.inactive_worker_stop_message import InactiveWorkerStopMessage
 from suites.coding.modules.workers.support.inactive_workers import InactiveWorkers
+from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 IDLE_WORKER_STOP_KEY = "workers.idle-worker-stop"
 
@@ -23,5 +24,5 @@ class InactiveWorkerStopLines(EventLineSource):
         self.inactive_workers, self.numbers = idle, numbers
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        return [InactiveWorkerStopMessage.declared().agent_message(worker=self.numbers.agent_number(worktree.session_agent_id), task=worktree.task_id)
+        return [AgentNumberMessages.message(self.numbers, InactiveWorkerStopMessage, "worker", worktree.session_agent_id, task=worktree.task_id)
                 for worktree in self.inactive_workers.idle(event, agent_id)]

@@ -3,6 +3,7 @@ import {ref} from "vue";
 import {TextInput, TimeAgo, peekRef, useWindow} from "@journal/window-kit";
 import QuestionActions from "./QuestionActions.vue";
 import QuestionWindowCard from "./QuestionWindowCard.vue";
+import {useQuestionSettling} from "./questionSettling.js";
 
 // one question as version 4 asked it: a card with the options under each other, the recommended one tagged, and a box for an answer in the user's own words;
 // an answer shows the moment it is given and goes back if the server refuses it;
@@ -11,34 +12,13 @@ const props = defineProps({row: {type: Object, required: true}, flush: Boolean, 
 const emit = defineEmits(["changed"]);
 const context = useWindow();
 const typed = ref("");
-const settled = ref(null);
-const refusal = ref("");
-const elaborated = ref(false);
-
-async function settle(change, words) {
-    settled.value = change;
-    refusal.value = "";
-    const result = await context.run(words);
-    if (result.ok) return void emit("changed");
-    settled.value = null;
-    refusal.value = result.error;
-}
+const {settled, refusal, elaborated, answer, close, elaborate} = useQuestionSettling(() => props.row, (line) => context.run(line), emit);
 
 const shown = () => ({...props.row, ...settled.value});
-const answer = (text) => settle({state: "answered", answer: text}, ["question", "answer", String(props.row.id), "--answer", text]);
-const close = () => settle({state: "closed"}, ["question", "close", String(props.row.id)]);
 
 function sendTyped() {
     const text = typed.value.trim();
     if (text) answer(text);
-}
-
-async function elaborate() {
-    elaborated.value = true;
-    const result = await context.run(["message", "send", `Elaborate on question ${props.row.id}: ask it again with more context on each option and which you would pick, and you choose.`]);
-    if (result.ok) return;
-    elaborated.value = false;
-    refusal.value = result.error;
 }
 </script>
 

@@ -5,6 +5,7 @@ from engine.cli.row_numbers import RowNumbers
 from engine.command.context import Context
 from suites.coding.modules.workers.support.merger_inbox import MergerInbox
 from suites.coding.modules.workers.agent_messages.unit_blocked_message import UnitBlockedMessage
+from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 UNIT_TASKS_REASON = "the tasks left in a worker's unit are looked at for one that is not blocked"
 
@@ -23,4 +24,4 @@ class BlockedUnitNotice:
             return
         waits = "; ".join(f"task:{task.id} waits on {task.reason}" for task in remaining)
         committed_ids = ", ".join(f"task:{task.id}" for task in committed)
-        self.main_agent_line.send_agent_message(UnitBlockedMessage.declared().agent_message(worker=self.numbers.agent_number(worker_id), committed=committed_ids, waits=waits), UnitBlockedMessage.declared().key, context)
+        self.main_agent_line.send_agent_message(AgentNumberMessages.message(self.numbers, UnitBlockedMessage, "worker", worker_id, committed=committed_ids, waits=waits), UnitBlockedMessage.declared().key, context)

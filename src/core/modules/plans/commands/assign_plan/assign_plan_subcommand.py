@@ -5,10 +5,10 @@ from engine.caller.caller import Caller
 from engine.subcommand.subcommand import Subcommand
 from core.modules.plans.commands.assign_plan.assign_plan import AssignPlan
 from core.modules.assignments.support.cascade import Cascade
-from engine.subcommand.output import Output
+from core.modules.assignments.support.cascade_output import CascadeOutput
 
 
-class AssignPlanSubcommand(Subcommand[AssignPlan, Cascade]):
+class AssignPlanSubcommand(CascadeOutput, Subcommand[AssignPlan, Cascade]):
     """`journal plan assign <plan> [--phase <phase>] [--to <n>] [--override]`: gives the plan or the phase to the
     agent named, with the tasks that have no assignee yet, or every task with --override; with no agent named
     the plan goes to the main agent and its tasks stay as they are."""
@@ -25,7 +25,3 @@ class AssignPlanSubcommand(Subcommand[AssignPlan, Cascade]):
 
     def command(self, arguments: Namespace, caller: Caller) -> AssignPlan:
         return AssignPlan(arguments.plan_id, arguments.agent_id, arguments.phase_id, arguments.override)
-
-    def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, Cascade):
-            output.write(value.text, value.json())

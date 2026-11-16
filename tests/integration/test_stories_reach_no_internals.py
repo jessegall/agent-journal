@@ -4,7 +4,7 @@ from pathlib import Path
 from engine.testing.stories.internal_story_files import INTERNAL_STORY_FILES
 from engine.testing.stories.story_body import INTERNAL_ACCESS
 from tests.unit.source_tree import source_tree
-from engine.text.listed_lines import ListedLines
+from engine.text.list_file_entries import ListFileEntries
 
 ROOT = Path(__file__).resolve().parents[2]
 STORIES = ROOT / "tests" / "stories"
@@ -32,7 +32,7 @@ def story_files(folder: Path = STORIES) -> list[Path]:
 
 
 def listed() -> list[str]:
-    return list(ListedLines.of(LIST_FILE.read_text().splitlines()))
+    return list(ListFileEntries.parsed(LIST_FILE.read_text().splitlines()))
 
 
 def test_no_unlisted_story_reaches_internals():

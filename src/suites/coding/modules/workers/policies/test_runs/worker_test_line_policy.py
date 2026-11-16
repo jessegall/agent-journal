@@ -9,6 +9,7 @@ from core.modules.processes.support.reader_demands import ASKING_FLAGS
 from suites.coding.modules.workers.agent_messages.worker_test_commands_missing_message import WorkerTestCommandsMissingMessage
 from suites.coding.modules.workers.agent_messages.worker_test_line_refusal_message import WorkerTestLineRefusalMessage
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
+from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 
 class WorkerTestLinePolicy(EventPolicy):
@@ -35,4 +36,4 @@ class WorkerTestLinePolicy(EventPolicy):
 
     def refused_line(self, worker_id: int) -> AgentMessage:
         names = self.names.names_text(worker_id)
-        return WorkerTestLineRefusalMessage.declared().agent_message(names=names) if names else WorkerTestCommandsMissingMessage.declared().agent_message(worker=self.numbers.agent_number(worker_id))
+        return WorkerTestLineRefusalMessage.declared().agent_message(names=names) if names else AgentNumberMessages.message(self.numbers, WorkerTestCommandsMissingMessage, "worker", worker_id)

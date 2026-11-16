@@ -16,6 +16,7 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 from suites.coding.modules.workers.agent_messages.worker_unstarted_message import WorkerUnstartedMessage
 from suites.coding.modules.workers.support.worker_worktrees import WorkerWorktrees
 from suites.coding.modules.workers.support.worker_settings import UNSTARTED_WORKER_SECONDS
+from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 
 class UnstartedWorkerLines(EventLineSource):
@@ -33,7 +34,7 @@ class UnstartedWorkerLines(EventLineSource):
         activities = self.activities.read(event, agent_id)
         workers = [activities[worktree.session_agent_id] for worktree in self.worktrees.main_worktrees() if worktree.state is WorktreeState.CUT and worktree.session_agent_id in activities]
         limit = Interval(self.settings.seconds(UNSTARTED_WORKER_SECONDS))
-        return [WorkerUnstartedMessage.declared().agent_message(worker=self.numbers.agent_number(worker.id), seconds=limit.seconds) for worker in workers if self.is_unstarted(worker, agent_id, limit)]
+        return [AgentNumberMessages.message(self.numbers, WorkerUnstartedMessage, "worker", worker.id, seconds=limit.seconds) for worker in workers if self.is_unstarted(worker, agent_id, limit)]
 
     def is_unstarted(self, worker: AgentActivity, agent_id: int, limit: Interval) -> bool:
         return worker.ended_at is None and limit.has_passed(self.spans, agent_id, worker.created_at, self.clock.timestamp()) and worker.last_hook_at is None

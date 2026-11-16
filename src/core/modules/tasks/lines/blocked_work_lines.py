@@ -34,4 +34,4 @@ class BlockedWorkLines(EventLineSource):
         blocked = assigner.blocked_tasks() if assigner is not None else ()
         if not blocked:
             return []
-        return [BlockedTasksMessage.declared().agent_message(tasks=TaskNumberList.text(blocked))]
+        return [TaskNumberList.message(BlockedTasksMessage, blocked)]

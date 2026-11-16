@@ -14,6 +14,7 @@ from core.modules.drivers.agent_messages.managed_hook_line_message import Manage
 from core.modules.drivers.agent_messages.managed_hook_refusal_message import ManagedHookRefusalMessage
 
 from core.modules.drivers.support.project_hooks_answer import ProjectHooksAnswer
+from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 MANAGED_HOOKS_KEY = "drivers.managed-hooks"
 
 
@@ -38,18 +39,18 @@ class ProjectHookAnswers:
         # an event that takes lines gets them again only once they change from what that hook last said
         reads_text = provider.reads_hook_text(event.event)
         takes_instructions = reads_text and event.event not in provider.line_events
-        lines = [line for answer in answers for line in (self.listed_lines(answer.name, answer.lines) if takes_instructions else self.new_lines(agent_id, answer.name, answer.lines))]
+        lines = [line for answer in answers for line in (self.list_file_entries(answer.name, answer.lines) if takes_instructions else self.new_lines(agent_id, answer.name, answer.lines))]
         commands: list[Command[object]] = [RecordAgentNotice(agent_id, line, MANAGED_HOOKS_KEY) for line in lines] if reads_text else []
         agent_messages = [ManagedHookLineMessage.declared().agent_message(line=line) for line in lines] if reads_text else []
         refusal = None
         if refusal_text:
             commands.append(RecordAgentNotice(agent_id, refusal_text, MANAGED_HOOKS_KEY))
-            refusal = ManagedHookRefusalMessage.declared().agent_message(agent=self.numbers.agent_number(agent_id))
+            refusal = AgentNumberMessages.message(self.numbers, ManagedHookRefusalMessage, "agent", agent_id)
         return ProjectHooksAnswer(refusal, tuple(agent_messages), tuple(commands), dict(rewritten.updated_input) if rewritten is not None else {}, rewritten.name if rewritten is not None else "",
                                  0 if reads_text else len(lines), "\n".join(answer.terminal for answer in answers if answer.terminal))
 
     @staticmethod
-    def listed_lines(name: str, reported: Sequence[str]) -> list[str]:
+    def list_file_entries(name: str, reported: Sequence[str]) -> list[str]:
         return [f"{name}: {text}" for text in reported]
 
     def new_lines(self, agent_id: int, name: str, reported: Sequence[str]) -> list[str]:

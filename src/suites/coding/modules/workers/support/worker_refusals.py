@@ -10,6 +10,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worker_refusal_count import WorkerRefusalCount
 from suites.coding.modules.workers.agent_messages.worker_refusal_message import WORKER_REFUSAL_INTERVAL
 from suites.coding.modules.workers.agent_messages.worker_refusal_message import WorkerRefusalMessage
+from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 REFUSAL_LIMIT_COUNT = 5
 REFUSAL_COUNTDOWN = CountDown("workers.worker_refusal", "worker refusal", TimeWindow(REFUSAL_LIMIT_COUNT), is_silent=True)
@@ -31,7 +32,7 @@ class WorkerRefusals:
         if refusal.notice_at is not None and refusal.notice_at.elapsed_seconds(context.timestamp) < WORKER_REFUSAL_INTERVAL.seconds:
             return
         count = self.countdowns.used_count(REFUSAL_COUNTDOWN, worktree.session_agent_id)
-        notice = WorkerRefusalMessage.declared().agent_message(worker=self.numbers.agent_number(worktree.session_agent_id), count=count, task=worktree.task_id)
+        notice = AgentNumberMessages.message(self.numbers, WorkerRefusalMessage, "worker", worktree.session_agent_id, count=count, task=worktree.task_id)
         self.main_agent_line.send_agent_message(notice, "workers.repeated-refusal", context)
         self.repository.save(refusal.changed(notice_at=context.timestamp), context)
 

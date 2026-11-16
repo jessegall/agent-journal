@@ -16,6 +16,7 @@ from core.modules.drivers.models.permission_request import PermissionRequest
 from core.modules.drivers.agent_messages.permission_requested_message import PermissionRequestedMessage
 from core.modules.agents.support.agent_label import AgentLabel
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 SOURCE = "drivers.permission"
 
@@ -43,5 +44,5 @@ class AskPermissionHandler(Handler[AskPermission, PermissionRequest]):
             return request
         main = MainAgentFinder.newest(self.queries)
         if main is not None:
-            self.bus.dispatch(RecordAgentMessage(main.id, PermissionRequestedMessage.declared().agent_message(agent=self.numbers.agent_number(context.actor.id), request=request.id), SOURCE), context)
+            self.bus.dispatch(RecordAgentMessage(main.id, AgentNumberMessages.message(self.numbers, PermissionRequestedMessage, "agent", context.actor.id, request=request.id), SOURCE), context)
         return request

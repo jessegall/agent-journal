@@ -7,6 +7,7 @@ from pathlib import Path
 from engine.enums.agent_role import AgentRole
 from suites.coding.modules.workers.support.worker_worktrees import WorkerWorktrees
 from suites.coding.modules.workers.agent_messages.worker_file_message import WorkerFileMessage
+from core.modules.agents.support.agent_number_messages import AgentNumberMessages
 
 
 class WorkerFilePolicy(EventPolicy):
@@ -26,5 +27,5 @@ class WorkerFilePolicy(EventPolicy):
             return None
         for worktree in self.worktrees.main_worktrees():
             if any(Path(path).is_relative_to(worktree.folder) for path in tool.files):
-                return WorkerFileMessage.declared().agent_message(worker=self.numbers.agent_number(worktree.session_agent_id))
+                return AgentNumberMessages.message(self.numbers, WorkerFileMessage, "worker", worktree.session_agent_id)
         return None
