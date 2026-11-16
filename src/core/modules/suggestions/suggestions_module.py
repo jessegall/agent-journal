@@ -1,4 +1,4 @@
-from core.modules.suggestions.support.suggestions_migrations import SUGGESTIONS_MIGRATIONS
+from core.modules.suggestions.declarations.suggestions_migrations import SUGGESTIONS_MIGRATIONS
 from core.modules.suggestions.windows.suggestions_windows import SUGGESTIONS_WINDOWS
 from core.modules.suggestions.models.declarations.suggestion_model_declaration import SuggestionModelDeclaration
 from engine.module.module import Module

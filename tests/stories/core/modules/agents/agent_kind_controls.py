@@ -143,10 +143,10 @@ def helper_profiles(story) -> dict[str, dict]:
 
 def test_s21_inheritance_an_explicit_profile_limit_changes_only_that_profile(new_story):
     story = new_story(fixture=UserBuilder)
-    story.expect_success(f"setting set {PROFILE_LIMITS} {shlex.quote(json.dumps([f'{DEBUGGER_PROFILE.name}:1:2']))} --environment main", actor=story.user)
+    story.expect_success(f"setting set {PROFILE_LIMITS} {shlex.quote(json.dumps([f'{DEBUGGER_PROFILE.name}:1']))} --environment main", actor=story.user)
     profiles = helper_profiles(story)
     debugger, researcher = profiles[f"{DEBUGGER_PROFILE.name}"], profiles[f"{RESEARCHER_PROFILE.name}"]
-    expect_value(((debugger["run_limit"], debugger["kept_limit"]), (researcher["run_limit"], researcher["kept_limit"])), ((1, 2), (4, 8)))
+    expect_value(((debugger["run_limit"], debugger["kept_limit"]), (researcher["run_limit"], researcher["kept_limit"])), ((1, 0), (4, 0)))
 
 
 def test_pending_openings_share_one_limit(split_story, split_viewer):

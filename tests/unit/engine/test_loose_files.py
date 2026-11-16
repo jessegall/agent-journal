@@ -24,7 +24,7 @@ def test_336_core_base_is_removed_and_the_engine_holds_only_folders_and_its_pack
 def test_356_the_helper_type_folder_holds_the_helper_type_and_its_parts_and_no_file_declares_them_a_second_time():
     folder_files = sorted(path.name for path in HELPER_TYPE_FOLDER.iterdir() if path.is_file())
     declared = {name: files_declaring(class_line) for name, class_line in HELPER_TYPE_CLASSES.items()}
-    assert folder_files == ['__init__.py', 'command_allow_list.py', 'helper_behaviours.py', 'helper_type.py', 'helper_type_area.py', 'helper_type_book.py', 'helper_type_entry.py', 'journal_line.py', 'main_agent.py'], str(folder_files)
+    assert folder_files == ['__init__.py', 'command_allow_list.py', 'helper_behaviours.py', 'helper_lines.py', 'helper_type.py', 'helper_type_area.py', 'helper_type_book.py', 'helper_type_entry.py', 'journal_line.py', 'main_agent.py'], str(folder_files)
     assert all((files == [f'src/engine/helper_type/{name}'] for name, files in declared.items())), str(declared)
     assert not list(SOURCE_FOLDER.rglob('core/base/helper_type*'))
     assert not list(SOURCE_FOLDER.rglob('core/base/agent_type*'))

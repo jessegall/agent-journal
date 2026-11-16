@@ -1,4 +1,4 @@
-from core.modules.voices.support.voices_dependencies import VOICES_DEPENDENCIES
+from core.modules.voices.declarations.voices_dependencies import VOICES_DEPENDENCIES
 from engine.module.module import Module
 from core.modules.voices.commands.set_voice_address.set_voice_address_handler import SetVoiceAddressHandler
 from core.modules.voices.commands.set_voice_address.set_voice_address_subcommand import SetVoiceAddressSubcommand

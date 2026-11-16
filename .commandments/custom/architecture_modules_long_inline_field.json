@@ -15,7 +15,7 @@
     "sin": {
         "name": "long-inline-module-field",
         "description": "A module field is a list or a declaration written over several lines in the module's class, so the module no longer reads as a list of names.",
-        "rule": "Give the value a name in a file of its own in the module's support folder, <module>_<field>.py, and set the field to that name: handlers = WORKERS_HANDLERS. A field of one short line stays inline.",
+        "rule": "Give the value a name in a file of its own in the module's declarations folder, <module>_<field>.py, and set the field to that name: handlers = WORKERS_HANDLERS. A field of one short line stays inline.",
         "skill": "module-registration"
     }
 }

@@ -1,4 +1,4 @@
-from core.modules.tools.support.tools_subcommands import TOOLS_SUBCOMMANDS
+from core.modules.tools.declarations.tools_subcommands import TOOLS_SUBCOMMANDS
 from core.modules.tools.windows.tools_windows import TOOLS_WINDOWS
 from engine.module.module import Module
 from core.modules.tools.commands.install_tool.install_tool_handler import InstallToolHandler

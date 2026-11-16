@@ -22,7 +22,7 @@ __all__ = ["helper_split_story", "helper_viewer"]
 REVIEWER = f"{PLAN_REVIEWER_PROFILE.name}"
 START_REVIEW = f"helper start {PLAN_REVIEWER_PROFILE.name} --plan {{plan}} --brief 'Review plan {{plan}}' --environment main"
 NEW_AGENT_REASON = "A second view of the plan"
-LIMITS = f"setting set {HELPER_PROFILE_LIMITS} '[\"{PLAN_REVIEWER_PROFILE.name}:8:3\"]' --project"
+LIMITS = f"setting set {HELPER_PROFILE_LIMITS} '[\"{PLAN_REVIEWER_PROFILE.name}:3\"]' --project"
 REVIEW_MEMORY = "Plan 5 lacked a phase for the migration"
 
 
@@ -148,21 +148,14 @@ def test_a_second_review_of_the_same_plan_by_one_reviewer_is_refused_and_names_a
     story.expect_rows("reviewed plan 5" in refusal, f"journal helper send {second.number}" in refusal, "--fresh" in refusal, detail=refusal)
 
 
-def test_three_reviews_at_once_run_on_three_reviewers_and_a_fourth_is_refused_at_the_kept_limit(new_story):
+def test_three_reviews_at_once_run_on_three_reviewers_and_a_fourth_is_refused_at_the_run_limit(new_story):
     story = new_story(fixture=StartedReviewer)
     story.expect_success(LIMITS, actor=story.user)
     launches(story, START_REVIEW.format(plan=6), START_REVIEW.format(plan=7))
     current = reviewers(story)
     story.expect_rows(len(current) == 3, all(reviewer.ended_at is None for reviewer in current), detail=str(current))
     refusal = refusal_text(story, START_REVIEW.format(plan=8))
-    story.expect_rows(f"3 of {REVIEWER} exist" in refusal, "wait for a report" in refusal, len(reviewers(story)) == 3, detail=refusal)
-
-
-def test_a_reviewer_start_at_the_kept_limit_names_the_idle_reviewer_to_send_to(idle_reviewer):
-    story = idle_reviewer
-    story.expect_success(LIMITS.replace(":8:3", ":8:1"), actor=story.user)
-    refusal = refusal_text(story, START_REVIEW.format(plan=6))
-    story.expect_rows(f'journal helper send {reviewers(story)[0].number} "<job>"' in refusal, len(reviewers(story)) == 1, detail=refusal)
+    story.expect_rows(f"3 of {REVIEWER} run" in refusal, len(reviewers(story)) == 3, detail=refusal)
 
 
 def test_many_reviews_one_after_another_leave_one_reviewer_agent_with_its_number(idle_reviewer):

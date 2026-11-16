@@ -1,13 +1,13 @@
-from core.modules.tasks.support.tasks_block_conditions import TASKS_BLOCK_CONDITIONS
-from core.modules.tasks.support.tasks_dependencies import TASKS_DEPENDENCIES
-from core.modules.tasks.support.tasks_models import TASKS_MODELS
-from core.modules.tasks.support.tasks_migrations import TASKS_MIGRATIONS
-from core.modules.tasks.support.tasks_subcommands import TASKS_SUBCOMMANDS
-from core.modules.tasks.support.tasks_handlers import TASKS_HANDLERS
-from core.modules.tasks.support.tasks_guards import TASKS_GUARDS
-from core.modules.tasks.support.tasks_views import TASKS_VIEWS
-from core.modules.tasks.support.tasks_listeners import TASKS_LISTENERS
-from core.modules.tasks.support.tasks_lines import TASKS_LINES
+from core.modules.tasks.declarations.tasks_block_conditions import TASKS_BLOCK_CONDITIONS
+from core.modules.tasks.declarations.tasks_dependencies import TASKS_DEPENDENCIES
+from core.modules.tasks.declarations.tasks_models import TASKS_MODELS
+from core.modules.tasks.declarations.tasks_migrations import TASKS_MIGRATIONS
+from core.modules.tasks.declarations.tasks_subcommands import TASKS_SUBCOMMANDS
+from core.modules.tasks.declarations.tasks_handlers import TASKS_HANDLERS
+from core.modules.tasks.declarations.tasks_guards import TASKS_GUARDS
+from core.modules.tasks.declarations.tasks_views import TASKS_VIEWS
+from core.modules.tasks.declarations.tasks_listeners import TASKS_LISTENERS
+from core.modules.tasks.declarations.tasks_lines import TASKS_LINES
 from core.modules.tasks.states.task_work_states import TaskWorkStates
 from core.modules.tasks.states.unlogged_write_states import UnloggedWriteStates
 from core.modules.tasks.states.block_review_states import BlockReviewStates
@@ -29,8 +29,8 @@ from core.modules.tasks.tick_handlers.task_state_round_tick_handler import TaskS
 
 
 class TasksModule(Module):
-    """Adds tasks, units of work current by an agent, with their log lines and dependencies, and the rules
-    that keep an agent at its task."""
+    """Adds tasks, units of work an agent has in hand, with their log lines and dependencies, and the states
+    and holds that keep an agent at its task."""
 
     name = "journal.core.tasks"
     agent_messages = TASK_AGENT_MESSAGES

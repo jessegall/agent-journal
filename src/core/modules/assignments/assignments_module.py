@@ -1,4 +1,4 @@
-from core.modules.assignments.support.assignments_migrations import ASSIGNMENTS_MIGRATIONS
+from core.modules.assignments.declarations.assignments_migrations import ASSIGNMENTS_MIGRATIONS
 from core.modules.assignments.models.declarations.assignment_model_declaration import AssignmentModelDeclaration
 from engine.module.module import Module
 from core.modules.assignments.commands.assign_row.assign_row_handler import AssignRowHandler

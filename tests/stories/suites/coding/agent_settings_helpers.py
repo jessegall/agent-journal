@@ -91,11 +91,11 @@ def test_a_profiles_own_limits_leave_the_line_of_every_profile_and_the_line_leav
     _, tab = helpers
     all_profiles = tab.modal.value("helper-type.read-only", READONLY_RUN)
     expect_value(tab.modal.value("helper-type.read-only", PROFILE_LIMITS), [])
-    tab.modal.save({PROFILE_LIMITS: f'["{RESEARCHER_PROFILE.name}:2:5"]'}, "helper-type.read-only")
+    tab.modal.save({PROFILE_LIMITS: f'["{RESEARCHER_PROFILE.name}:2"]'}, "helper-type.read-only")
     expect_value(tab.modal.value("helper-type.read-only", READONLY_RUN), all_profiles)
     expect_value(tab.profiles()[f"{RESEARCHER_PROFILE.name}"]["run_limit"], 2)
     tab.modal.save({READONLY_RUN: str(int(all_profiles) + 1)}, "helper-type.read-only")
-    expect_value(tab.modal.value("helper-type.read-only", PROFILE_LIMITS), [f"{RESEARCHER_PROFILE.name}:2:5"])
+    expect_value(tab.modal.value("helper-type.read-only", PROFILE_LIMITS), [f"{RESEARCHER_PROFILE.name}:2"])
     expect_value(tab.profiles()[f"{RESEARCHER_PROFILE.name}"]["run_limit"], 2)
 
 

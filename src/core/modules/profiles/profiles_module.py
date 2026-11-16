@@ -1,4 +1,4 @@
-from core.modules.profiles.support.profiles_move_reason import PROFILES_MOVE_REASON
+from core.modules.profiles.declarations.profiles_move_reason import PROFILES_MOVE_REASON
 from core.modules.profiles.windows.profiles_windows import PROFILES_WINDOWS
 from core.modules.profiles.commands.remove_profile.remove_profile_handler import RemoveProfileHandler
 from core.modules.profiles.commands.remove_profile.remove_profile_subcommand import RemoveProfileSubcommand

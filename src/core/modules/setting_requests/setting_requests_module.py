@@ -1,4 +1,4 @@
-from core.modules.setting_requests.support.setting_requests_dependencies import SETTING_REQUESTS_DEPENDENCIES
+from core.modules.setting_requests.declarations.setting_requests_dependencies import SETTING_REQUESTS_DEPENDENCIES
 from core.modules.setting_requests.models.declarations.setting_request_model_declaration import SettingRequestModelDeclaration
 from core.modules.setting_requests.migrations.m003_setting_request_environment_index import SettingRequestEnvironmentIndexMigration
 from engine.module.module import Module

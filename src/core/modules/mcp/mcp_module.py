@@ -1,4 +1,4 @@
-from core.modules.mcp.support.mcp_subcommands import MCP_SUBCOMMANDS
+from core.modules.mcp.declarations.mcp_subcommands import MCP_SUBCOMMANDS
 from core.modules.mcp.windows.mcp_windows import MCP_WINDOWS
 from core.modules.mcp.models.declarations.mcp_server_model_declaration import McpServerModelDeclaration
 from engine.module.module import Module

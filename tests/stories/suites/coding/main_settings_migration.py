@@ -27,9 +27,9 @@ def test_s50_a_fresh_environment_reads_auto_from_its_declared_default(new_story)
 
 def test_s50_explicit_limits_and_merge_commands_stay_as_set(new_story):
     story = new_story(fixture=UserBuilder)
-    story.expect_success(f"setting set {PROFILE_LIMITS} {shlex.quote(json.dumps([f'{MERGER_PROFILE.name}:1:2']))} --environment main", actor=story.user)
+    story.expect_success(f"setting set {PROFILE_LIMITS} {shlex.quote(json.dumps([f'{MERGER_PROFILE.name}:1']))} --environment main", actor=story.user)
     story.expect_success(f"setting set {MERGE_COMMANDS} {shlex.quote(json.dumps(['git push']))} --project", actor=story.user)
     story.expect_success(f"setting set {RUN_LIMIT} 3 --environment main", actor=story.user)
-    story.expect_text(f"setting show {PROFILE_LIMITS} --environment main", f"{MERGER_PROFILE.name}:1:2", actor=story.user)
+    story.expect_text(f"setting show {PROFILE_LIMITS} --environment main", f"{MERGER_PROFILE.name}:1", actor=story.user)
     story.expect_text(f"setting show {MERGE_COMMANDS} --environment main", "git push", actor=story.user)
     expect_value(story.run(f"setting show {RUN_LIMIT} --environment main", story.user).output_text.count("3"), 1)

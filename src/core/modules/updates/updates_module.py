@@ -1,4 +1,4 @@
-from core.modules.updates.support.updates_subcommands import UPDATES_SUBCOMMANDS
+from core.modules.updates.declarations.updates_subcommands import UPDATES_SUBCOMMANDS
 from core.modules.updates.windows.updates_windows import UPDATES_WINDOWS
 from core.modules.updates.models.declarations.release_install_model_declaration import ReleaseInstallModelDeclaration
 from core.modules.updates.models.declarations.release_model_declaration import ReleaseModelDeclaration

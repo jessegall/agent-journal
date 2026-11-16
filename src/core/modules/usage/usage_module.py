@@ -1,5 +1,5 @@
-from core.modules.usage.support.usage_dependencies import USAGE_DEPENDENCIES
-from core.modules.usage.support.usage_subcommands import USAGE_SUBCOMMANDS
+from core.modules.usage.declarations.usage_dependencies import USAGE_DEPENDENCIES
+from core.modules.usage.declarations.usage_subcommands import USAGE_SUBCOMMANDS
 from core.modules.usage.windows.usage_windows import USAGE_WINDOWS
 from core.modules.usage.models.declarations.statistic_model_declaration import StatisticModelDeclaration
 from core.modules.usage.models.agent_listing import AgentListing

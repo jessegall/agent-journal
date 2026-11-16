@@ -1,5 +1,5 @@
-from core.modules.dumps.support.dumps_dependencies import DUMPS_DEPENDENCIES
-from core.modules.dumps.support.dumps_subcommands import DUMPS_SUBCOMMANDS
+from core.modules.dumps.declarations.dumps_dependencies import DUMPS_DEPENDENCIES
+from core.modules.dumps.declarations.dumps_subcommands import DUMPS_SUBCOMMANDS
 from core.modules.dumps.wake_causes.dump_arrived_wake import DumpArrivedWake
 from core.modules.dumps.lines.open_dump_lines import OpenDumpLines
 from core.modules.dumps.windows.dumps_windows import DUMPS_WINDOWS

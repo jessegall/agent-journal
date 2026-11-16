@@ -1,5 +1,5 @@
-from core.modules.templates.support.templates_dependencies import TEMPLATES_DEPENDENCIES
-from core.modules.templates.support.templates_subcommands import TEMPLATES_SUBCOMMANDS
+from core.modules.templates.declarations.templates_dependencies import TEMPLATES_DEPENDENCIES
+from core.modules.templates.declarations.templates_subcommands import TEMPLATES_SUBCOMMANDS
 from core.modules.templates.windows.extensions.chat_templates_extension import ChatTemplatesExtension
 from core.modules.templates.windows.templates_windows import TEMPLATES_WINDOWS
 from core.modules.templates.models.declarations.template_model_declaration import TemplateModelDeclaration

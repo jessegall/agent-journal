@@ -18,10 +18,15 @@ class OutputTitleRequestCloseListener(SaveListener[Changed[Process] | Changed[Ou
 
     def handle(self, event: Changed[Process] | Changed[Output], context: Context) -> None:
         row = event.row
-        if isinstance(row, Process) and row.state in OPEN:
-            return
-        if isinstance(row, Output) and not row.title.strip():
+        if not self.closes_the_request(event):
             return
         request = self.requests.open_for_process(row.id if isinstance(row, Process) else row.process_id)
         if request is not None:
             self.repository.update(request, context, closed_at=context.timestamp)
+
+    @staticmethod
+    def closes_the_request(event: Changed[Process] | Changed[Output]) -> bool:
+        row, old_row = event.row, event.old_row
+        if isinstance(row, Process):
+            return row.moved_at is not None and row.state not in OPEN and (old_row is None or old_row.state in OPEN)
+        return bool(row.title.strip()) and (old_row is None or old_row.title != row.title)

@@ -6,12 +6,11 @@ from engine.query.queries import Queries
 from engine.scope.environment_scope import EnvironmentScope
 from engine.scope.scopes import Scopes
 from engine.setting.setting_values import SettingValues
-from engine.time.timestamp import Timestamp
+from engine.time.timestamp import HOUR_SECONDS, Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.helpers.support.helper_settings import HELPER_IDLE_HOURS
 
-HOUR_SECONDS = 3600
 UNUSED_HELPERS_REASON = "the ended read-only helpers of every environment past their idle hours, a few a day"
 
 

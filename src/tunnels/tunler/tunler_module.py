@@ -1,5 +1,5 @@
-from tunnels.tunler.support.tunler_subcommands import TUNLER_SUBCOMMANDS
-from tunnels.tunler.support.tunler_handlers import TUNLER_HANDLERS
+from tunnels.tunler.declarations.tunler_subcommands import TUNLER_SUBCOMMANDS
+from tunnels.tunler.declarations.tunler_handlers import TUNLER_HANDLERS
 from tunnels.tunler.windows.tunler_windows import TUNLER_WINDOWS
 from tunnels.tunler.settings.tunler_setting_values import TunlerSettingValues
 from engine.module.module import Module

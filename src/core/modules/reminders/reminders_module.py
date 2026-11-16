@@ -1,4 +1,4 @@
-from core.modules.reminders.support.reminders_dependencies import REMINDERS_DEPENDENCIES
+from core.modules.reminders.declarations.reminders_dependencies import REMINDERS_DEPENDENCIES
 from core.modules.reminders.lines.due_reminder_lines import DueReminderLines
 from core.modules.reminders.effects.due_reminder_effect import DueReminderEffect
 from core.modules.reminders.states.due_reminder_states import DueReminderStates

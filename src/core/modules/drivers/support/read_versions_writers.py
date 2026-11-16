@@ -13,6 +13,7 @@ from core.modules.drivers.models.program_version import ProgramVersion
 from core.modules.environments.models.environment import Environment
 
 CHILD_AGENTS_REASON = "the running agents one level of a tree started, a handful each, a few levels deep"
+MOVED_STACKS_REASON = "the stacks of the agents one write moves: one agent, or a running tree of a few"
 ENVIRONMENTS_REASON = "the environments of one project, a handful"
 
 
@@ -37,10 +38,17 @@ class ReadVersionsWriters:
         if not unmoved:
             return
         self.moved_agents.update(unmoved)
+        stacks = self.current_stacks(unmoved)
         for agent_id in unmoved:
-            row = self.stacks.current_stack(agent_id)
+            row = stacks.get(agent_id)
             moved = row.changed(permission_changes=row.permission_changes + 1) if row is not None else AgentStack(session_agent_id=agent_id, permission_changes=1)
             self.stacks.remember(self.repository.save_change(row, moved, context))
+
+    def current_stacks(self, agent_ids: list[int]) -> dict[int, AgentStack]:
+        if len(agent_ids) == 1:
+            row = self.stacks.current_stack(agent_ids[0])
+            return {agent_ids[0]: row} if row is not None else {}
+        return {row.session_agent_id: row for row in self.queries.query(AgentStack).matching(Among("session_agent_id", agent_ids)).every_row(MOVED_STACKS_REASON)}
 
     # a pause or a resume reaches every running agent below the one it names, read a level at a time; an ended
     # agent answers no hook until it starts again, and its start reads its view anew

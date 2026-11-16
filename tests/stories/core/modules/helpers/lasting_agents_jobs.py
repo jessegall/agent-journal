@@ -7,13 +7,11 @@ from engine.enums.actor_type import ActorType
 from tests.stories.core.modules.helpers.helper_jobs import JOB, START, EndedHelper, helper_agent, read_jobs, resumable_session
 from tests.stories.core.modules.helpers.lifetime_reviewers import launches, refusal_text
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
-from core.modules.helpers.support.helper_settings import HELPER_PROFILE_LIMITS
 
 
 MEMORY_TEXT = "The cart rounds each line before it adds them"
 NEW_AGENT_REASON = "A second reader for the tax file"
 TAX_START = f'helper start {RESEARCHER_PROFILE.name} --brief "Read src/tax.py" --environment main'
-KEPT_LIMIT = f"setting set {HELPER_PROFILE_LIMITS} '[\"{RESEARCHER_PROFILE.name}:8:2\"]' --project"
 
 
 @pytest.fixture
@@ -43,14 +41,12 @@ def test_a_start_while_a_helper_of_the_profile_is_idle_is_refused_naming_its_num
     story.expect_rows(f'helper {helper.number} is idle: journal helper send {helper.number} "<job>"' in refusal, '--fresh "<why>"' in refusal, len(researchers(story)) == 1, detail=refusal)
 
 
-def test_a_start_with_the_fresh_flag_makes_a_second_helper_keeps_the_reason_and_counts_against_the_kept_limit(idle_helper):
+def test_a_start_with_the_fresh_flag_makes_a_second_helper_and_keeps_the_reason(idle_helper):
     story = idle_helper
-    story.expect_success(KEPT_LIMIT, actor=story.user)
     launches(story, f"{TAX_START} --fresh '{NEW_AGENT_REASON}'")
     kept = researchers(story)
     job = story.first_row(HelperJob, helper_id=kept[1].id)
-    refusal = refusal_text(story, f"{START} --fresh 'A third reader'")
-    story.expect_rows(len(kept) == 2, job.new_agent_reason == NEW_AGENT_REASON, f"2 of {RESEARCHER_PROFILE.name} exist" in refusal, len(researchers(story)) == 2, detail=refusal)
+    story.expect_rows(len(kept) == 2, job.new_agent_reason == NEW_AGENT_REASON, detail=str(kept))
 
 
 def test_an_idle_helper_of_one_environment_is_not_offered_to_a_start_in_another(idle_helper):

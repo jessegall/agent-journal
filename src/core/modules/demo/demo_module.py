@@ -1,4 +1,4 @@
-from core.modules.demo.support.demo_tick_handlers import DEMO_TICK_HANDLERS
+from core.modules.demo.declarations.demo_tick_handlers import DEMO_TICK_HANDLERS
 from engine.module.module import Module
 from core.modules.demo.commands.demo_seed.demo_seed_subcommand import DemoSeedSubcommand
 from core.modules.demo.commands.demo_start.demo_start_subcommand import DemoStartSubcommand

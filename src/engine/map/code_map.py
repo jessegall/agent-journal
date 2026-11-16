@@ -79,7 +79,7 @@ class CodeMap:
 
     def module_line(self, name: str, file: Path) -> str:
         classes = self.classes(file)
-        return f"{LEVEL_INDENT}{name}{LEVEL_INDENT}{self.purpose(file, classes)}{self.needed_modules(classes)}"
+        return f"{LEVEL_INDENT}{name}{LEVEL_INDENT}{self.purpose(file, classes)}{self.needed_modules(file, classes)}"
 
     def suite_lines(self) -> list[str]:
         lines = []
@@ -103,10 +103,19 @@ class CodeMap:
             raise MissingSummaryError(folder, f"write a docstring on the class in {file.name} that says what the folder is for")
         return " ".join(described[-1].split())
 
-    def needed_modules(self, classes: list[ast.ClassDef]) -> str:
-        declared_value = self.class_values(classes).get("dependencies")
+    def needed_modules(self, file: Path, classes: list[ast.ClassDef]) -> str:
+        declared_value = self.declared_list(file, self.class_values(classes).get("dependencies"))
         module_names = [item.value for item in declared_value.elts if isinstance(item, ast.Constant)] if isinstance(declared_value, ast.List) else []
         return f" Needs: {', '.join(str(module_name) for module_name in module_names)}." if module_names else ""
+
+    def declared_list(self, file: Path, value: ast.expr | None) -> ast.expr | None:
+        if not isinstance(value, ast.Name):
+            return value
+        imported = next((node for node in ast.parse(FileAccess.read(file)).body if isinstance(node, ast.ImportFrom) and node.module and any(alias.name == value.id for alias in node.names)), None)
+        source = self.source.joinpath(*imported.module.split(".")).with_suffix(".py") if imported is not None and imported.module else None
+        if source is None or not FileAccess.is_file(source):
+            return None
+        return next((node.value for node in ast.parse(FileAccess.read(source)).body if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == value.id for target in node.targets)), None)
 
     def folder_names(self, folder: Path) -> list[str]:
         if not FileAccess.is_dir(folder):

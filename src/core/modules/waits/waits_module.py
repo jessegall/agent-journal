@@ -1,4 +1,4 @@
-from core.modules.waits.support.waits_migrations import WAITS_MIGRATIONS
+from core.modules.waits.declarations.waits_migrations import WAITS_MIGRATIONS
 from core.modules.waits.listeners.wait_step_listener import WaitStepListener
 from core.modules.waits.states.wait_states import WaitStates
 from core.modules.waits.lines.long_wait_lines import LongWaitLines

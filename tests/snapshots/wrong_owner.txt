@@ -1,6 +1,6 @@
 7: src/core/modules/agents/commands/remove_instruction_import/support/instruction_import_question.py: is imported from src/core/modules/agents/commands/warn_instruction_imports
 7: src/core/modules/aliases/commands/set_alias_silence/support/alias_silence.py: is imported from src/core/modules/aliases/listeners
-7: src/core/modules/aliases/commands/support/alias_saved_subcommand.py: is imported from src/core/modules/aliases
+7: src/core/modules/aliases/commands/support/alias_saved_subcommand.py: is imported from src/core/modules/aliases/declarations
 7: src/core/modules/plugins/commands/support/plugin_health_check.py: is imported from src/server/tick
 7: src/core/modules/plugins/commands/support/plugin_service_round.py: is imported from src/core/modules/plugins/listeners
 7: src/core/modules/processes/commands/read_output/support/output_texts.py: is imported from src/core/modules/processes/commands/peek_output

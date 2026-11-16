@@ -1,5 +1,5 @@
-from core.modules.transcriptions.support.transcriptions_dependencies import TRANSCRIPTIONS_DEPENDENCIES
-from core.modules.transcriptions.support.transcriptions_subcommands import TRANSCRIPTIONS_SUBCOMMANDS
+from core.modules.transcriptions.declarations.transcriptions_dependencies import TRANSCRIPTIONS_DEPENDENCIES
+from core.modules.transcriptions.declarations.transcriptions_subcommands import TRANSCRIPTIONS_SUBCOMMANDS
 from core.modules.transcriptions.windows.transcriptions_windows import TRANSCRIPTIONS_WINDOWS
 from core.modules.transcriptions.skills.declarations.transcriptions_skills import TRANSCRIPTIONS_SKILLS
 from core.modules.transcriptions.migrations.m002_environment_index import TranscriptionsEnvironmentIndexMigration

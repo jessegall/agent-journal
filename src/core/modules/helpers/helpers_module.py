@@ -1,5 +1,5 @@
-from core.modules.helpers.support.helpers_dependencies import HELPERS_DEPENDENCIES
-from core.modules.helpers.support.helpers_tick_handlers import HELPERS_TICK_HANDLERS
+from core.modules.helpers.declarations.helpers_dependencies import HELPERS_DEPENDENCIES
+from core.modules.helpers.declarations.helpers_tick_handlers import HELPERS_TICK_HANDLERS
 from core.modules.helpers.effects.hand_in_retry_effect import HandInRetryEffect
 from core.modules.helpers.effects.unstarted_helper_effect import UnstartedHelperEffect
 from core.modules.helpers.states.job_work_states import JobWorkStates

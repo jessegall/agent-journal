@@ -1,4 +1,4 @@
-from core.modules.chat.support.chat_migrations import CHAT_MIGRATIONS
+from core.modules.chat.declarations.chat_migrations import CHAT_MIGRATIONS
 from core.modules.chat.models.declarations.chat_mark_model_declaration import ChatMarkModelDeclaration
 from core.modules.chat.models.declarations.journal_exception_model_declaration import JournalExceptionModelDeclaration
 from engine.module.module import Module

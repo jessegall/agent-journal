@@ -341,7 +341,6 @@ tests/stories/core/modules/tasks/column_removed.py
 tests/stories/core/modules/tasks/log_requests.py
 tests/stories/core/modules/tasks/marks.py
 tests/stories/core/modules/tasks/several_tasks.py
-tests/stories/core/modules/tasks/stops_with_work.py
 tests/stories/core/modules/tasks/support/assignment_migration_fixtures.py
 tests/stories/core/modules/tasks/support/two_workers.py
 tests/stories/core/modules/tasks/task_assignment_writers.py

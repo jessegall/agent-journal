@@ -7,7 +7,7 @@ from engine.enums.command_category import CommandCategory
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from tests.stories.core.modules.processes.support.process_samples import end_run
+from tests.stories.core.modules.processes.support.process_samples import end_run, moved_run_of
 from tests.stories.core.modules.processes.support.reader_block_fixtures import ForcedReaders, reader_worker, worker_run
 from suites.coding.support.coding_settings import WORKER_TEST_LIMIT
 from core.modules.processes.models.enums.process_setting import ProcessSetting
@@ -63,9 +63,8 @@ def test_a_worker_test_of_an_unknown_tool_under_a_limit_asks_for_the_count_reade
     limited.expect_rows("count" in request.reason, detail=request.reason)
 
 
-def test_a_long_worker_run_is_asked_for_a_title_like_a_main_agents_and_asked_for_no_reader(readers_disabled):
-    process = worker_run(readers_disabled, "custom-build run", CommandCategory.BUILD)
-    readers_disabled.advance(timedelta(seconds=10))
+def test_a_worker_run_moved_to_the_background_is_asked_for_a_title_like_a_main_agents_and_asked_for_no_reader(readers_disabled):
+    process = moved_run_of(readers_disabled, reader_worker(readers_disabled), "custom-build run", CommandCategory.BUILD)
     lines = hook_lines(readers_disabled, WORKER, HookSamples.prompt("go on"))
     readers_disabled.expect_rows(any(f"Output {process.id} is titled by its raw command" in line for line in lines),
                                  not readers_disabled.container.get(ReaderRequestQuery).open().filter(creator_id=reader_worker(readers_disabled).id).exists(), detail="\n".join(lines))

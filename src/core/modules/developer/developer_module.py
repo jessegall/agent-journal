@@ -1,5 +1,5 @@
-from core.modules.developer.support.developer_dependencies import DEVELOPER_DEPENDENCIES
-from core.modules.developer.support.developer_subcommands import DEVELOPER_SUBCOMMANDS
+from core.modules.developer.declarations.developer_dependencies import DEVELOPER_DEPENDENCIES
+from core.modules.developer.declarations.developer_subcommands import DEVELOPER_SUBCOMMANDS
 from core.modules.developer.windows.developer_windows import DEVELOPER_WINDOWS
 from core.modules.developer.models.declarations.private_data_mark_model_declaration import PrivateDataMarkModelDeclaration
 from core.modules.developer.migrations.m003_private_data_mark_environment_index import PrivateDataMarkEnvironmentIndexMigration

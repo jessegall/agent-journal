@@ -8,7 +8,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 CUSTOM = ROOT / ".commandments" / "custom"
 RULE = "architecture_drivers_text_names_two_roles"
-SAMPLE = "nudges/two_roles.py"
+SAMPLE = "agent_messages/two_roles.py"
 
 
 def test_the_detector_exists_is_enrolled_and_names_the_calls_it_reads():

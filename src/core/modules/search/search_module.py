@@ -1,4 +1,4 @@
-from core.modules.search.support.search_dependencies import SEARCH_DEPENDENCIES
+from core.modules.search.declarations.search_dependencies import SEARCH_DEPENDENCIES
 from core.modules.search.windows.search_windows import SEARCH_WINDOWS
 from engine.module.module import Module
 from core.modules.search.commands.search_find.search_find_subcommand import SearchFindSubcommand

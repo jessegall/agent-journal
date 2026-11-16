@@ -1,4 +1,4 @@
-from core.modules.project_rules.support.project_rules_dependencies import PROJECT_RULES_DEPENDENCIES
+from core.modules.project_rules.declarations.project_rules_dependencies import PROJECT_RULES_DEPENDENCIES
 from core.modules.project_rules.lines.start_rules_lines import StartRulesLines
 from core.modules.project_rules.windows.project_rules_windows import PROJECT_RULES_WINDOWS
 from core.modules.project_rules.models.declarations.project_rule_model_declaration import ProjectRuleModelDeclaration
