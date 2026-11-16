@@ -9,6 +9,7 @@ from engine.serving.server_files import ServerFiles
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.send_journal_started_line.send_journal_started_line import SendJournalStartedLine
 
+TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 RELEASED_SESSIONS_REASON = "every kept agent of a released session is woken"
 
 
@@ -25,6 +26,6 @@ class ReleasedSessionWake:
         blocked = files.blocked_sessions()
         sessions = tuple(dict.fromkeys(blocked.claimed_lines()))
         if sessions:
-            for agent in container.get(Queries).query(Agent).matching(Among("session", sessions)).matching(IsNull("retired_at")).every_row(RELEASED_SESSIONS_REASON):
+            for agent in container.get(Queries).query(Agent).all_environments(TIMED_JOB_REASON).matching(Among("session", sessions)).matching(IsNull("retired_at")).every_row(RELEASED_SESSIONS_REASON):
                 container.get(Bus).run(SendJournalStartedLine(agent.id), Actor.core(), environment_id=agent.environment_id)
         blocked.archive()

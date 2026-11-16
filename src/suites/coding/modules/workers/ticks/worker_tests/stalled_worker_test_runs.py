@@ -22,6 +22,7 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_settings import HUNG_PROOF_RUN_MINUTES
 
+TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 STALLED_RUNS_REASON = "the run of every proof still shown as running is looked at"
 RUNNING_CHECKPOINT_TESTS_REASON = "every test of a checkpoint run still shown as running is looked at"
 STARTED_PLANS_REASON = "every started plan is looked at for a checkpoint run that has no tests"
@@ -56,7 +57,7 @@ class StalledWorkerTestRuns:
     # oldest running reach, which does nothing for a run that has tests, and ends the reach when the run has none to make.
     @staticmethod
     def start_reaches_with_no_tests(container: Container) -> None:
-        for plan in container.get(Queries).query(Plan).filter(state=PlanState.STARTED).every_row(STARTED_PLANS_REASON):
+        for plan in container.get(Queries).query(Plan).all_environments(TIMED_JOB_REASON).filter(state=PlanState.STARTED).every_row(STARTED_PLANS_REASON):
             container.get(Bus).run(StartCheckpointRun(plan.id), Actor.core(), environment_id=plan.environment_id)
 
     @staticmethod
@@ -66,7 +67,7 @@ class StalledWorkerTestRuns:
         current = container.get(Clock).timestamp()
         hung_minutes = int(container.get(SettingValues).number(HUNG_PROOF_RUN_MINUTES))
         hung_seconds = hung_minutes * 60
-        processes = {process.id: process for process in container.get(Queries).query(Process).matching(Among("id", [proof.process_id for proof in running])).every_row(STALLED_RUNS_REASON)}
+        processes = {process.id: process for process in container.get(Queries).query(Process).all_environments(TIMED_JOB_REASON).matching(Among("id", [proof.process_id for proof in running])).every_row(STALLED_RUNS_REASON)}
         for proof in running:
             process = processes.get(proof.process_id)
             if process is None:
@@ -86,8 +87,8 @@ class StalledWorkerTestRuns:
         if not running:
             return
         current = container.get(Clock).timestamp()
-        processes = {process.id: process for process in queries.query(Process).matching(Among("id", [test.process_id for test in running])).every_row(CHECKPOINT_RUNS_REASON)}
-        reaches = {reach.id: reach for reach in queries.query(CheckpointReach).matching(Among("id", [test.reach_id for test in running])).every_row(CHECKPOINT_RUNS_REASON)}
+        processes = {process.id: process for process in queries.query(Process).all_environments(TIMED_JOB_REASON).matching(Among("id", [test.process_id for test in running])).every_row(CHECKPOINT_RUNS_REASON)}
+        reaches = {reach.id: reach for reach in queries.query(CheckpointReach).all_environments(TIMED_JOB_REASON).matching(Among("id", [test.reach_id for test in running])).every_row(CHECKPOINT_RUNS_REASON)}
         for test in running:
             process = processes.get(test.process_id)
             if process is not None and (process.ended_at is None or process.ended_at.elapsed_seconds(current) <= ENDED_GRACE_SECONDS):

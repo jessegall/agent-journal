@@ -8,6 +8,7 @@ from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.watch_query import WatchQuery
 from core.modules.processes.support.output_check_schedule import OutputCheckSchedule
 
+TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 RUNNING_REASON = "the tick checks every open watch of every running run"
 
 
@@ -17,7 +18,7 @@ class OutputChecks:
     def __call__(self, container: Container) -> bool:
         timestamp = container.get(Clock).timestamp()
         schedule = container.get(OutputCheckSchedule)
-        running = {process.id: process for process in container.get(ProcessQuery).running().every_row(RUNNING_REASON)}
+        running = {process.id: process for process in container.get(ProcessQuery).all_environments(TIMED_JOB_REASON).running().every_row(RUNNING_REASON)}
         due = [watch for watch in container.get(WatchQuery).filter(state=WatchState.OPEN).every_row(RUNNING_REASON) if watch.process_id in running and schedule.wait_elapsed(watch, timestamp)]
         for watch in due:
             container.get(Bus).run(CheckOutput(watch.id), Actor.core(), environment_id=running[watch.process_id].environment_id)

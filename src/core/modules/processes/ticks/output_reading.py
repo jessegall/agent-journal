@@ -16,6 +16,7 @@ from core.modules.processes.support.run_slots import RunSlots
 from core.modules.processes.support.prepared_read import PreparedRead
 from core.modules.processes.support.reader_step import ReaderStep
 
+TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 WARNING_REPEAT_TICKS = 5
 GROWN_RUN_POINTS = 5
 
@@ -46,7 +47,7 @@ class OutputReading:
         grown_ids = tuple(process_id for process_id, offset in container.get(OutputQuery).running_reader_offsets().items() if new_output.has_grown(process_id, offset))
         if not grown_ids:
             return 0
-        processes = container.get(ProcessQuery).find_many(grown_ids)
+        processes = container.get(ProcessQuery).all_environments(TIMED_JOB_REASON).find_many(grown_ids)
         process_outputs = {output.process_id: output for output in container.get(OutputQuery).process_outputs(grown_ids)}
         updated = [(process, process_outputs[process.id]) for process in processes if process.id in process_outputs and new_output.has_new_output(process_outputs[process.id])]
         for process, output in updated:

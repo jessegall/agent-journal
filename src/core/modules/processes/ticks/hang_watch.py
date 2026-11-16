@@ -16,6 +16,7 @@ from core.modules.processes.support.output_folder import CPU_FILE, OutputFolder
 from core.modules.processes.support.cadence.run_silences import RunSilences
 from core.modules.processes.support.process_settings import ProcessSettings
 
+TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 RUNNING_REASON = "the tick looks at every run that is running"
 STOP_AFTER_CHECKS = 3
 JOURNAL_LINE_START = "journal "
@@ -32,7 +33,7 @@ class HangWatch:
     for that run, as a commit waits for its judge, and is never stopped as hung while it waits."""
 
     def __call__(self, container: Container) -> bool:
-        running = tuple(container.get(ProcessQuery).running().every_row(RUNNING_REASON))
+        running = tuple(container.get(ProcessQuery).all_environments(TIMED_JOB_REASON).running().every_row(RUNNING_REASON))
         listing = container.get(GroupCpuTime).listing() if running else None
         if listing is None:
             return False

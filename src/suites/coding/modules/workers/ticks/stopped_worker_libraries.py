@@ -10,6 +10,7 @@ from suites.coding.modules.workers.commands.record_worktree_libraries.record_wor
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.library_folders import LibraryFolders
 
+TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 STOPPED_SECONDS = 15 * 60
 
 
@@ -22,7 +23,7 @@ class StoppedWorkerLibraries:
         stamp = container.get(Clock).timestamp()
         queries, libraries, bus = container.get(Queries), container.get(LibraryFolders), container.get(Bus)
         worktrees = container.get(WorktreeQuery).open_worktrees()
-        workers = {worker.id: worker for worker in queries.query(Agent).find_many(list(dict.fromkeys(row.session_agent_id for row in worktrees)))}
+        workers = {worker.id: worker for worker in queries.query(Agent).all_environments(TIMED_JOB_REASON).find_many(list(dict.fromkeys(row.session_agent_id for row in worktrees)))}
         dropped = False
         for worktree in worktrees:
             links, copies = json.loads(worktree.library_links), json.loads(worktree.library_copies)

@@ -12,6 +12,9 @@ from core.modules.plugins.support.plugin_queue import PluginQueue
 from core.modules.plugins.support.plugin_folder_times import PluginFolderTimes
 
 
+TIMED_JOB_REASON = "a timed job visits the rows of every environment"
+
+
 class PluginCardReading:
     """Claims the cards in every plugin's queue whose folder changed since the last look, so a mark shows
     as soon as its answer is written; the line for the agent stays queued for the agent's next hook, the
@@ -28,7 +31,7 @@ class PluginCardReading:
             remaining_unclaimed = False
             with closing(queue.claim_cards()) as claims:
                 for claim in claims:
-                    agent = queries.query(Agent).filter(id=claim.answer.agent_id).first()
+                    agent = queries.query(Agent).all_environments(TIMED_JOB_REASON).filter(id=claim.answer.agent_id).first()
                     if agent is None:
                         remaining_unclaimed = True
                         continue

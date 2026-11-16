@@ -8,6 +8,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.request_agent_step.request_agent_step import RequestAgentStep
 from core.modules.drivers.models.agent_stack import AgentStack
 
+TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 MINUTE_STEP = "drivers.minute-step"
 STACKS_REASON = "the minute step reaches every agent with a stack, one row each"
 
@@ -20,6 +21,6 @@ class AgentMinuteSteps:
     def __call__(self, container: Container) -> None:
         queries, bus = container.get(Queries), container.get(Bus)
         stacked = [stack.session_agent_id for stack in queries.query(AgentStack).every_row(STACKS_REASON) if stack.has_stacked_states]
-        agents = sorted((agent for agent in queries.query(Agent).find_many(stacked) if agent.retired_at is None), key=lambda agent: agent.environment_id)
+        agents = sorted((agent for agent in queries.query(Agent).all_environments(TIMED_JOB_REASON).find_many(stacked) if agent.retired_at is None), key=lambda agent: agent.environment_id)
         for environment_id, environment_agents in groupby(agents, key=lambda agent: agent.environment_id):
             bus.run(RequestAgentStep(tuple(agent.id for agent in environment_agents), MINUTE_STEP), Actor.core(), environment_id=environment_id)

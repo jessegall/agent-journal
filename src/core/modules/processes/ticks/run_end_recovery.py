@@ -13,6 +13,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 from engine.scope.scopes import Scopes
 from core.modules.processes.support.process_settings import ProcessSettings
 
+TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 RUNNING_REASON = "the tick recovers the end of every run still marked running"
 
 
@@ -24,7 +25,7 @@ class RunEndRecovery:
     A run the runner reported first is skipped; one run's refusal leaves the others to go on."""
 
     def __call__(self, container: Container) -> bool:
-        results = [self.end_run(container, process) for process in tuple(container.get(ProcessQuery).running().every_row(RUNNING_REASON))]
+        results = [self.end_run(container, process) for process in tuple(container.get(ProcessQuery).all_environments(TIMED_JOB_REASON).running().every_row(RUNNING_REASON))]
         return any(results)
 
     def end_run(self, container: Container, process: Process) -> bool:

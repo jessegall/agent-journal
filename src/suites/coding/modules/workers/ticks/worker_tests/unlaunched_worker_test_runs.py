@@ -12,6 +12,7 @@ from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 
+TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 UNLAUNCHED_REASON = "every running run may be a worker test that never launched"
 CHECKPOINT_TESTS_REASON = "every test of a checkpoint run still shown as running may be one that never launched"
 
@@ -25,13 +26,13 @@ class UnlaunchedWorkerTestRuns:
 
     def __call__(self, container: Container) -> None:
         folder, current = container.get(OutputFolder), container.get(Clock).timestamp()
-        runs = {process.id: process for process in container.get(ProcessQuery).running().every_row(UNLAUNCHED_REASON)}
+        runs = {process.id: process for process in container.get(ProcessQuery).all_environments(TIMED_JOB_REASON).running().every_row(UNLAUNCHED_REASON)}
         stalled = [(runs[proof.process_id], proof.test_command) for proof in container.get(ProofQuery).test_rows()
                    if proof.state is ProofState.RUNNING and proof.process_id in runs and self.is_unlaunched(runs[proof.process_id], folder, current)]
         checkpoint_tests = container.get(Queries).query(CheckpointTest).matching(Among("state", RUNNING_STATES)).every_row(CHECKPOINT_TESTS_REASON)
         stalled += [(runs[test.process_id], runs[test.process_id].line) for test in checkpoint_tests
                     if test.process_id in runs and self.is_unlaunched(runs[test.process_id], folder, current)]
-        agents = {agent.id: agent for agent in container.get(Queries).query(Agent).find_many([process.session_agent_id for process, _ in stalled])}
+        agents = {agent.id: agent for agent in container.get(Queries).query(Agent).all_environments(TIMED_JOB_REASON).find_many([process.session_agent_id for process, _ in stalled])}
         for process, line in stalled:
             container.get(WorkerTestLaunch).start(process, line, agents[process.session_agent_id].session)
 

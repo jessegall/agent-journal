@@ -10,6 +10,7 @@ from core.modules.processes.queries.process_query import ProcessQuery
 from suites.coding.modules.workers.commands.report_stopped_worker_runs.report_stopped_worker_runs import SOURCE_KEY_PREFIX, ReportStoppedWorkerRuns
 from suites.coding.modules.workers.models.merger_line import MergerLine
 
+TIMED_JOB_REASON = "a timed job visits the rows of every environment"
 STOPPED_RUNS_REASON = "the tick reports in every environment with a run of a stopped worker"
 
 
@@ -19,8 +20,8 @@ class StoppedWorkerRuns:
 
     def __call__(self, container: Container) -> None:
         queries = container.get(Queries)
-        runs = tuple(container.get(ProcessQuery).running().every_row(STOPPED_RUNS_REASON))
-        owners = queries.query(Agent).find_many(sorted({run.session_agent_id for run in runs}))
+        runs = tuple(container.get(ProcessQuery).all_environments(TIMED_JOB_REASON).running().every_row(STOPPED_RUNS_REASON))
+        owners = queries.query(Agent).all_environments(TIMED_JOB_REASON).find_many(sorted({run.session_agent_id for run in runs}))
         stopped_workers = [owner for owner in owners if owner.role == Worker.key and owner.ended_at is not None]
         open_lines = queries.query(MergerLine).matching(Prefix("source_key", SOURCE_KEY_PREFIX)).matching(IsNull("outcome")).every_row(STOPPED_RUNS_REASON)
         for environment_id in sorted({row.environment_id for row in (*stopped_workers, *open_lines)}):

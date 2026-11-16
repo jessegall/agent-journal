@@ -9,6 +9,9 @@ from core.modules.docking.models.dock import Dock
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 
 
+TIMED_JOB_REASON = "a timed job visits the rows of every environment"
+
+
 class DockItemLeaves:
     """Removes docked items whose scheduled departure has arrived."""
 
@@ -18,7 +21,7 @@ class DockItemLeaves:
             return False
         actor = container.get(ModuleActors).actor(MODULE_NAME)
         bus, queries = container.get(Bus), container.get(Queries)
-        docks = {dock.id: dock for dock in queries.query(Dock).find_many(list({item.dock_id for item in items}))}
+        docks = {dock.id: dock for dock in queries.query(Dock).all_environments(TIMED_JOB_REASON).find_many(list({item.dock_id for item in items}))}
         for item in items:
             bus.run(RemoveDockItem(item.id), actor, environment_id=docks[item.dock_id].environment_id)
         return True
