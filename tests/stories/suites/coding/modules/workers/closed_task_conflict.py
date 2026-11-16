@@ -21,7 +21,7 @@ def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new
     story.expect_text("task show 1", "state: completed", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("cart.py", "TOTAL = 2\n", "Another total")
-    story.expect_text(command.format(worker=agent_number(story, worker.id)), notice, actor=story.agent)
+    story.expect_text(command.format(worker=agent_number(story, worker.agent_id())), notice, actor=story.agent)
     story.expect_text(f"agent-line list --agent {worker.id}", "clashes on cart.py")
     story.expect_text("task show 1", "state: started", f"holder_id: {worker.id}")
     path = repository.worktree_folder(worker.id) / "cart.py"
@@ -32,9 +32,9 @@ def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new
     story.expect_success("worker commit --wait --differences none", actor=worker)
     if proof_goes_short:
         story.expect_success("proof check 1", "state: checked", actor=story.agent)
-    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.agent_id())}", actor=story.agent)
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")
 
 
@@ -53,13 +53,13 @@ def test_a_task_that_comes_back_from_a_clash_has_its_proof_short_and_is_proved_a
     story, repository, worker = checked_story
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("cart.py", "TOTAL = 2\n", "Another total")
-    story.expect_text(f"worker merge --wait {agent_number(story, worker.id)}", "clashed on cart.py", actor=story.agent)
+    story.expect_text(f"worker merge --wait {agent_number(story, worker.agent_id())}", "clashed on cart.py", actor=story.agent)
     story.expect_text("proof show 1", "state: short", "settle them and prove it again", actor=story.agent)
     repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
     story.expect_success(FIRST_PROOF, "point: 1", actor=worker)
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
-    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.agent_id())}", actor=story.agent)
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
     repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")

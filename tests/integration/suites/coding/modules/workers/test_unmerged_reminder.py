@@ -35,7 +35,7 @@ def delivered_work(played):
 
 def test_a_worker_whose_delivered_work_is_not_merged_is_named_to_its_main_agent_again_every_interval(delivered_work):
     story, repository, worker = delivered_work
-    reminder = f"worker:{agent_number(story, worker.id)} committed task:1, not merged"
+    reminder = f"worker:{agent_number(story, worker.agent_id())} committed task:1, not merged"
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.tick(MAIN_SESSION)
     story.tick(MAIN_SESSION)
@@ -48,15 +48,15 @@ def test_a_worker_whose_delivered_work_is_not_merged_is_named_to_its_main_agent_
 def test_a_worker_whose_delivered_work_is_merged_is_not_named_again(delivered_work):
     story, repository, worker = delivered_work
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
-    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
-    reminder = f"worker:{agent_number(story, worker.id)} committed task:1, not merged"
+    story.expect_success(f"worker logs {agent_number(story, worker.agent_id())}", actor=story.agent)
+    reminder = f"worker:{agent_number(story, worker.agent_id())} committed task:1, not merged"
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.tick(MAIN_SESSION)
     story.expect_rows(story.run(main_lines).output_text.count(reminder) == 1)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.agent_id())}", actor=story.agent)
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
     story.advance(REMINDER_INTERVAL)
     story.tick(MAIN_SESSION)
     story.expect_rows(story.run(main_lines).output_text.count(reminder) == 1)
@@ -66,10 +66,10 @@ def test_a_worker_whose_work_is_released_is_not_named_again(played):
     story = played(MainAgentMerges)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
-    reminder = f"worker:{agent_number(story, worker.id)} committed task:1, not merged"
+    reminder = f"worker:{agent_number(story, worker.agent_id())} committed task:1, not merged"
     main_lines = f"agent-line list --agent {story.agent.id}"
     story.tick(MAIN_SESSION)
-    story.expect_success(f'worker release {agent_number(story, worker.id)} "not wanted"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.agent_id())} "not wanted"', actor=story.agent)
     story.advance(REMINDER_INTERVAL)
     story.tick(MAIN_SESSION)
     story.expect_rows(story.run(main_lines).output_text.count(reminder) == 1)
@@ -81,7 +81,7 @@ def test_a_worker_that_has_delivered_nothing_is_not_named(played):
     worker = dispatched_worker(story)
     story.advance(REMINDER_INTERVAL)
     story.tick(MAIN_SESSION)
-    story.expect_rows(f"worker:{agent_number(story, worker.id)} delivered" not in story.run(f"agent-line list --agent {story.agent.id}").output_text)
+    story.expect_rows(f"worker:{agent_number(story, worker.agent_id())} delivered" not in story.run(f"agent-line list --agent {story.agent.id}").output_text)
 
 
 def remind(story, count: int) -> None:
@@ -114,11 +114,11 @@ def test_a_merged_worker_with_a_new_worktree_has_no_merge_due_block(played):
     remind(story, 3)
     expect_value(len(merge_block_rows(story, worker.id)), 1)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.agent_id())}", actor=story.agent)
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
     expect_value(merge_block_rows(story, worker.id), [])
-    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Another job"', actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, worker.agent_id())} "Another job"', actor=story.agent)
     story.tick(MAIN_SESSION)
     expect_value(merge_block_rows(story, worker.id), [])
     remind(story, 3)
@@ -133,11 +133,11 @@ def test_a_merge_block_left_by_an_older_server_is_closed_on_the_next_tick(played
     remind(story, 3)
     expect_value(len(merge_block_rows(story, worker.id)), 1)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.agent_id())}", actor=story.agent)
     with monkeypatch.context() as old_server:
         old_server.setattr(WorkerMergeBlockListener, "handle", lambda self, event, context: None)
         request_merge(story, worker)
-        story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+        story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
     expect_value(len(merge_block_rows(story, worker.id)), 1)
     story.tick(MAIN_SESSION)
     expect_value(merge_block_rows(story, worker.id), [])

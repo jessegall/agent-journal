@@ -61,7 +61,7 @@ def test_the_migration_clears_a_stored_main_target_and_keeps_a_worker_s(played):
     story = played(MainAndWorkerMemories)
     worker = read_agent(story, "s-9")
     first = story.new_row_id(f'message send "{PERSON_MESSAGE}" --environment main', story.user)
-    second = story.new_row_id(f'message send "{PERSON_MESSAGE}" --target-agent {agent_number(story, worker.id)} --environment main', story.user)
+    second = story.new_row_id(f'message send "{PERSON_MESSAGE}" --target-agent {agent_number(story, worker.agent_id())} --environment main', story.user)
     database = story.container.get(Database)
     database.update(Statement(f"UPDATE messages SET target_agent_id = {story.agent.id} WHERE id = {first}"))
     for sql in MainMessageTargetsMigration.statements:

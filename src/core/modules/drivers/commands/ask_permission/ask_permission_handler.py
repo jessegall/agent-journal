@@ -34,14 +34,14 @@ class AskPermissionHandler(Handler[AskPermission, DriverGrant]):
         self.queries, self.repository, self.bus = queries, repository, bus
 
     def handle(self, command: AskPermission, context: Context) -> DriverGrant:
-        open_request = self.queries.query(DriverGrant).filter(grant_type=GrantType.PERMISSION, asker_id=context.actor.id, policy_key=command.action).matching(
+        open_request = self.queries.query(DriverGrant).filter(grant_type=GrantType.PERMISSION, asker_id=context.actor.agent_id(), policy_key=command.action).matching(
             Among("grant_state", (GrantState.OPEN, GrantState.APPROVED))).first()
         if open_request is not None:
             return open_request
-        request = self.repository.save(DriverGrant(session_agent_id=context.actor.id, grant_type=GrantType.PERMISSION, policy_key=command.action,
-                                                asker_id=context.actor.id, reason=command.reason, requires_approval=command.requires_person), context)
+        request = self.repository.save(DriverGrant(session_agent_id=context.actor.agent_id(), grant_type=GrantType.PERMISSION, policy_key=command.action,
+                                                asker_id=context.actor.agent_id(), reason=command.reason, requires_approval=command.requires_person), context)
         if command.requires_person:
-            question = f"Allow {AgentLabel.labelled(self.queries.query(Agent).find(context.actor.id)).text} to do this once: {command.action}?"
+            question = f"Allow {AgentLabel.labelled(self.queries.query(Agent).find(context.actor.agent_id())).text} to do this once: {command.action}?"
             self.bus.dispatch(RequestUserApproval(UserApprovalRefusal(question, command=AllowPermission(request.id), request_reason=command.reason), (), context.actor.id), context)
             return request
         main = MainAgentFinder.newest(self.queries)

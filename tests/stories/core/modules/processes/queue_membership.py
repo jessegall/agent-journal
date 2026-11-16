@@ -19,14 +19,14 @@ class QueuedWorker(StoryFixture):
         story.expect_success(f"setting set {ProcessSetting.POOL_CAPACITY_LONG.key} 4 --environment main", actor=story.user)
         story.expect_success(f"setting set {WORKER_TEST_LIMIT} 0 --environment main", actor=story.user)
         story.expect_success(f"setting set {ProcessSetting.READERS_FORCED.key} false --environment main", actor=story.user)
-        story.agent = Actor(story.new_row_id("agent start queued-tester claude worker --environment main"), ActorType.AGENT)
+        story.agent = story.agent_actor(story.new_row_id("agent start queued-tester claude worker --environment main"))
 
 
 def test_finished_reads_and_searches_of_any_agent_stay_out_of_the_queue(new_story):
     story = new_story(fixture=UserBuilder)
     for role in ("main", "worker"):
         if role == "worker":
-            story.agent = Actor(story.new_row_id("agent start queue-reader claude worker --environment main"), ActorType.AGENT)
+            story.agent = story.agent_actor(story.new_row_id("agent start queue-reader claude worker --environment main"))
         for category in (CommandCategory.READ, CommandCategory.SEARCH):
             process = start_process(story, "rg cart src", category=category)
             end_run(story, process, "cart.py\n")

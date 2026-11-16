@@ -39,7 +39,7 @@ class HelperLimits:
 
     def checked_parent(self, context: Context | Caller) -> Agent:
         if context.actor.type is ActorType.AGENT:
-            return self.checked_agent(self.agents.find(context.actor.id))
+            return self.checked_agent(self.agents.find(context.actor.agent_id()))
         if context.environment_id is None:
             raise Refusal("a helper starts in one environment", "name it with --environment")
         main = MainAgentFinder.newest(self.queries)

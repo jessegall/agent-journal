@@ -33,6 +33,6 @@ def test_a_test_failing_five_times_in_a_workers_own_runs_is_kept_from_the_worker
         bus.run(RecordOwnTestFailure(worker.id, 1, WORKER_RUN_LINE), Actor.core(), environment_id=1)
     story.expect_rows("failed 5 times" not in story.run("task overview 1", actor=worker).output_text)
     story.expect_success("worker commit --wait --differences none", actor=worker)
-    story.expect_text(f"worker logs {agent_number(story, worker.id)}", "! its own runs failed 5 times: tests/stories/cart.py", actor=story.agent)
+    story.expect_text(f"worker logs {agent_number(story, worker.agent_id())}", "! its own runs failed 5 times: tests/stories/cart.py", actor=story.agent)
 
 

@@ -35,7 +35,7 @@ class HelperReach:
     def new_parent(self, helper: Agent, actor: Actor) -> int | None:
         if actor.type is not ActorType.AGENT or actor.id == helper.parent_id:
             return None
-        sender = self.agents.find(actor.id)
+        sender = self.agents.find(actor.agent_id())
         parent = self.agents.find(helper.parent_id) if helper.parent_id is not None else None
         is_older_main = parent is None or parent.role == AgentRole.MAIN
         return sender.id if sender.role == AgentRole.MAIN and is_older_main else None

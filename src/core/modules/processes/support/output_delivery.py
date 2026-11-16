@@ -17,7 +17,7 @@ class OutputDelivery:
     def pending(self, text: str, data: object, process_id: int | None, json_output: bool, context: Context) -> int | None:
         if process_id is None:
             return None
-        process = self.queries.query(Process).filter(id=process_id, session_agent_id=context.actor.id).first()
+        process = self.queries.query(Process).filter(id=process_id, session_agent_id=context.actor.agent_id()).first()
         rendered = json.dumps(data, sort_keys=True) if json_output else text
         if process is not None and process.limit_seconds > 0 and len(rendered.encode()) + 1 > OUTPUT_LIMIT_BYTES:
             return process.id

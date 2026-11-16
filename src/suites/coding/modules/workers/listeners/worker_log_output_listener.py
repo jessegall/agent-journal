@@ -27,7 +27,7 @@ class WorkerLogOutputListener(SaveListener[Updated[Output]]):
         if not event.row.has_new_full_read(event.old_row):
             return
         process = self.queries.query(Process).find(event.row.process_id)
-        if process.session_agent_id != context.actor.id:
+        if process.session_agent_id != context.actor.agent_id():
             return
         lines = self.queries.query(MergerLine).filter(read_output_id=process.id).get()
         for line in lines:

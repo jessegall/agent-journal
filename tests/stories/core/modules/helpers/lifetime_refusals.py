@@ -90,7 +90,7 @@ def agent_jobs_and_files(story) -> tuple[str, str, dict[str, bytes]]:
 
 
 def worker_actor(story) -> Actor:
-    return Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
+    return story.agent_actor(story.new_row_id("agent start s-9 claude worker --environment main"))
 
 
 def helper_actor(story) -> Actor:

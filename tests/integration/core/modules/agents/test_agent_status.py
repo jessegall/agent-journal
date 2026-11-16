@@ -28,7 +28,7 @@ def running_helper(played):
 
 
 def shown(story) -> str:
-    return story.run(f"agent show {agent_number(story, story.helper.id)} --environment main", actor=story.user).output_text
+    return story.run(f"agent show {agent_number(story, story.helper.agent_id())} --environment main", actor=story.user).output_text
 
 
 def test_543_the_row_of_an_agent_whose_program_runs_is_not_ended_by_its_report_or_by_the_session_end_of_an_earlier_program_and_ends_when_the_program_is_gone(running_helper):

@@ -58,7 +58,7 @@ def test_a_plan_with_nothing_placed_has_an_empty_timeline(played):
 
 def test_the_outline_names_the_worker_holding_a_task_and_not_the_main_agent(played):
     story = played(CheckpointPlan)
-    worker = Actor(story.new_row_id("agent start s-worker claude worker --environment main"), ActorType.AGENT)
+    worker = story.agent_actor(story.new_row_id("agent start s-worker claude worker --environment main"))
     story.run(lines.TASK_START, actor=worker)
     story.run("task start 2", actor=story.agent)
     phases = json.loads(story.run("plan inspect 1 --json", actor=story.agent).output_text)["phases"]

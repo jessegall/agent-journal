@@ -131,7 +131,7 @@ def merger_disabled_worker(new_story):
 
 def test_a_worker_with_no_task_left_may_stop(merger_disabled_worker):
     story, worker = merger_disabled_worker
-    story.expect_success(f'worker release {agent_number(story, worker.id)} "done with it"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.agent_id())} "done with it"', actor=story.agent)
     story.expect_hook_allowed(worker_session(story, worker), HookSamples.stop())
 
 

@@ -150,7 +150,7 @@ def test_at_the_limit_a_start_names_the_running_helpers_and_an_ended_one_gives_i
 def test_each_environment_counts_its_own_helpers(new_story):
     story = new_story(fixture=OneHelperAllowed)
     story.run("environment make staging /work/staging")
-    staging_main = Actor(story.new_row_id("agent start s-20 claude main --environment staging"), ActorType.AGENT)
+    staging_main = story.agent_actor(story.new_row_id("agent start s-20 claude main --environment staging"))
     story.run(f"setting set {HELPER_RUN_LIMIT} 1 --environment staging", actor=story.user)
     started(story)
     started(story, START.replace("main", "staging"), staging_main)

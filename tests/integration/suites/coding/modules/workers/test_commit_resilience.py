@@ -98,7 +98,7 @@ def test_65_a_worker_released_after_an_interim_commit_leaves_its_started_task_op
     worker, story = two_of_three_proved, two_of_three_proved.story
     story.expect_success(COMMIT, actor=worker.worker)
     prove_task(worker, 3, 1)
-    story.expect_success(f'worker release {agent_number(story, worker.worker.id)} --abandon "the plan changed"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.worker.agent_id())} --abandon "the plan changed"', actor=story.agent)
     expect_open_undelegated(worker, 3)
     story.expect_rows(proofs(worker)[-1].state is ProofState.SHOWN, bool(branch_tip(worker)), detail=str(proofs(worker)[-1]))
 
@@ -130,5 +130,5 @@ def test_while_more_workers_run_than_the_limit_a_finished_worker_gets_no_free_ta
     outcome = story.run(COMMIT, actor=worker.worker)
     story.expect_rows(outcome.code == 0, detail=outcome.output_text)
     expect_open_undelegated(worker, free_task)
-    story.expect_refusal(f"worker send {agent_number(story, worker.worker.id)} --task {free_task}", "the running limit is 0", actor=story.agent)
+    story.expect_refusal(f"worker send {agent_number(story, worker.worker.agent_id())} --task {free_task}", "the running limit is 0", actor=story.agent)
     expect_open_undelegated(worker, free_task)

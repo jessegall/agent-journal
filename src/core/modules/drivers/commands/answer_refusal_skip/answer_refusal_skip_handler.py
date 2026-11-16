@@ -27,7 +27,7 @@ class AnswerRefusalSkipHandler(Handler[AnswerRefusalSkip, DriverGrant]):
 
     def handle(self, command: AnswerRefusalSkip, context: Context) -> DriverGrant:
         skip = self.queries.query(DriverGrant).find(command.skip_id)
-        if skip.session_agent_id != context.actor.id:
+        if skip.session_agent_id != context.actor.agent_id():
             raise Refusal(f"skip {skip.id} is not yours", "answer only a skip you made")
         if skip.is_answered:
             raise Refusal(f"skip {skip.id} was answered already, and its answer is final", "make a new skip if the refusal meets you again")

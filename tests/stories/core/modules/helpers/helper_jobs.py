@@ -93,13 +93,13 @@ def test_a_send_to_an_ended_helper_opens_a_new_job_and_resumes_it(new_story):
 
 def test_a_send_refuses_an_agent_that_is_no_helper(new_story):
     story = new_story(fixture=StartedHelper)
-    story.expect_refusal(f'helper send {agent_number(story, story.agent.id)} "{JOB}"', "is no helper", actor=story.agent)
+    story.expect_refusal(f'helper send {agent_number(story, story.agent.agent_id())} "{JOB}"', "is no helper", actor=story.agent)
 
 
 def test_another_agent_may_not_send_to_a_helper_and_the_parent_is_named(new_story):
     story = new_story(fixture=StartedHelper)
     helper = helper_agent(story)
-    second_worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
+    second_worker = story.agent_actor(story.new_row_id("agent start s-9 claude worker --environment main"))
     story.expect_refusal(f'helper send {agent_number(story, helper.id)} "{JOB}" --reason needed', "The main agent was asked to review this request", actor=second_worker)
 
 
@@ -119,7 +119,7 @@ def test_a_stop_ends_the_helper_and_its_job(new_story):
 
 def test_another_agent_may_not_stop_a_helper(new_story):
     story = new_story(fixture=StartedHelper)
-    second_worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
+    second_worker = story.agent_actor(story.new_row_id("agent start s-9 claude worker --environment main"))
     story.expect_refusal(f"helper stop {agent_number(story, helper_agent(story).id)} --reason needed", "The main agent was asked to review this request", actor=second_worker)
 
 

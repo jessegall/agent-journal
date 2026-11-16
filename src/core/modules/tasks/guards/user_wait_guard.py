@@ -24,7 +24,7 @@ class UserWaitGuard(Guard[Moved[Task]]):
     def check(self, event: Moved[Task], context: Context) -> None:
         if context.actor.type is not ActorType.AGENT:
             return
-        if self.queries.query(Agent).find(context.actor.id).role == AgentRole.MAIN:
+        if self.queries.query(Agent).find(context.actor.agent_id()).role == AgentRole.MAIN:
             return
         if any(wait.target == USER_TARGET for wait in self.waits.pending_task(event.row.id)):
             raise Refusal(f"task {event.row.id} needs its main agent to review the wait", "its wait reason records what is needed")

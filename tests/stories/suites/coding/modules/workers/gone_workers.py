@@ -74,7 +74,7 @@ def ended_worker(running_worker):
 
 def test_a_worker_resumed_before_the_stop_of_its_end_keeps_its_new_program(running_worker):
     story = running_worker
-    story.expect_success(f'worker send --wait {agent_number(story, story.worker.id)} "Add the tax"', f"{agent_label(story, story.worker.id)} takes the job", actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, story.worker.agent_id())} "Add the tax"', f"{agent_label(story, story.worker.id)} takes the job", actor=story.agent)
     story.use_processes()
     story.tick(MAIN_SESSION)
     launcher = start_launcher(story, f"started {RESUMED_PID}\n".encode(), request_count=2)
@@ -82,7 +82,7 @@ def test_a_worker_resumed_before_the_stop_of_its_end_keeps_its_new_program(runni
     story.expect_rows(len(launcher.requests) == 1, "command" in launcher.requests[0])
     story.run_listeners()
     story.expect_rows(not any("stop" in request for request in launcher.requests))
-    story.expect_text(f"agent show {agent_number(story, story.worker.id)}", f"pid: {RESUMED_PID}")
+    story.expect_text(f"agent show {agent_number(story, story.worker.agent_id())}", f"pid: {RESUMED_PID}")
 
 
 def test_a_launch_that_holds_the_session_keeps_the_stop_of_the_end_away(ended_worker):
@@ -116,7 +116,7 @@ def worker_with_waiting_job(running_worker):
     start_launcher(story, b"running\n", request_count=10)
     story.expect_success(f"agent end {story.worker.id}", actor=story.agent)
     story.advance(timedelta(seconds=1))
-    story.run(f'worker send --wait {agent_number(story, story.worker.id)} "Add the tax"', actor=story.agent)
+    story.run(f'worker send --wait {agent_number(story, story.worker.agent_id())} "Add the tax"', actor=story.agent)
     story.run_listeners()
     return story
 
@@ -126,7 +126,7 @@ def test_a_resume_answered_as_running_stops_the_program_and_starts_again(worker_
     launcher = replaced_launcher(story, b"running\n", b"stopped\n", f"started {RESUMED_PID}\n".encode())
     WorkerResumeRetry()(story.container)
     story.expect_rows("command" in launcher.requests[0], launcher.requests[1] == {"agent_id": story.worker.id, "stop": True}, "command" in launcher.requests[2])
-    story.expect_text(f"agent show {agent_number(story, story.worker.id)}", f"pid: {RESUMED_PID}")
+    story.expect_text(f"agent show {agent_number(story, story.worker.agent_id())}", f"pid: {RESUMED_PID}")
     story.expect_text(f"agent-line list --agent {story.worker.id}", "entered")
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "could not resume")
 
@@ -137,7 +137,7 @@ def test_a_program_the_launcher_still_holds_is_told_to_the_main_agent_once_with_
     WorkerResumeRetry()(story.container)
     WorkerResumeRetry()(story.container)
     notices = story.run("merger-line list").output_text
-    story.expect_rows(notices.count(f"agent:{agent_number(story, story.worker.id)} could not resume: the launcher still holds its program, process {WORKER_PID}") == 1)
+    story.expect_rows(notices.count(f"agent:{agent_number(story, story.worker.agent_id())} could not resume: the launcher still holds its program, process {WORKER_PID}") == 1)
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", "the launcher still holds its program")
 
 

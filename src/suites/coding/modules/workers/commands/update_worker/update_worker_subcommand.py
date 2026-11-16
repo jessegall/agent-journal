@@ -39,7 +39,7 @@ class UpdateWorkerSubcommand(Subcommand[Command[object], UpdateOutcome]):
         matching = arguments.worker_id
         if matching is None or matching == caller.actor.id:
             return self.requests.command(UpdateWorker(caller.process_id), caller.actor.id, ["worker", self.name], arguments, caller)
-        if not self.agents.is_main(caller.actor.id):
+        if not self.agents.is_main(caller.actor.agent_id()):
             raise Refusal(WORKER_WORKTREE_RULE, "run journal worker update with no worker to update your own")
         return OrderWorkerUpdate(matching, MAIN_AGENT_ORDER)
 

@@ -20,8 +20,8 @@ class ResumeRequested(StoryFixture):
     parent = UserJoined
 
     def steps(self, story: FixtureJournal) -> None:
-        story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
-        story.expect_refusal(f"agent resume {agent_number(story, story.agent.id)} --reason needed", "A user was asked in the dock", actor=story.agent)
+        story.expect_success(f"agent pause {agent_number(story, story.agent.agent_id())}", actor=story.user)
+        story.expect_refusal(f"agent resume {agent_number(story, story.agent.agent_id())} --reason needed", "A user was asked in the dock", actor=story.agent)
 
 
 @pytest.fixture

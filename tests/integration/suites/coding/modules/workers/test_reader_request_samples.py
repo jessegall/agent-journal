@@ -31,7 +31,7 @@ def reader_scoped_story(reader_sample_story):
 
 def test_each_worker_gets_its_own_request_and_sample(reader_scoped_story):
     story = reader_scoped_story
-    second = Actor(story.new_row_id("agent start s-second claude worker --environment main"), ActorType.AGENT)
+    second = story.agent_actor(story.new_row_id("agent start s-second claude worker --environment main"))
     process = story.run_command(StartProcess.single_part(second.id, "custom-build run", "/work/main", CommandCategory.TEST_RUN, 30), second, 1)
     requests = tuple(story.container.get(ReaderRequestQuery).open().agent(second.id).every_row(TEST_ROWS_REASON))
     story.expect_rows(len(requests) == 1, requests[0].creator_id == second.id,
@@ -49,7 +49,7 @@ def test_another_command_of_the_same_program_has_its_own_sample(reader_scoped_st
 
 def test_a_worker_saves_against_its_sample_and_leaves_a_foreign_request_open(reader_scoped_story):
     story = reader_scoped_story
-    second = Actor(story.new_row_id("agent start s-other claude worker --environment main"), ActorType.AGENT)
+    second = story.agent_actor(story.new_row_id("agent start s-other claude worker --environment main"))
     process = story.run_command(StartProcess.single_part(second.id, "custom-build run", "/work/main", CommandCategory.TEST_RUN, 30), second, 1)
     end_run(story, process, "compiling\n" * 8 + "finished elsewhere\n")
     story.expect_success('reader add local-build --commands "custom-build*" --title "Custom tests" --lines done --summary done --step PASSED --count "collected ([0-9]+)" --count-command "{part} --list"', actor=reader_worker(story))

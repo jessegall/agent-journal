@@ -139,7 +139,7 @@ def test_retire_needs_a_reason_and_an_ended_agent(played):
 def test_retire_permissions(played):
     story = played(EndedHelper)
     helper = helper_agent(story)
-    story.expect_refusal(f"agent retire {agent_number(story, story.agent.id)} {REASON}", "main agent is not retired", actor=story.agent)
+    story.expect_refusal(f"agent retire {agent_number(story, story.agent.agent_id())} {REASON}", "main agent is not retired", actor=story.agent)
     story.expect_refusal(f"agent retire {agent_number(story, helper.id)} {REASON}", "only a user or the main agent retires", actor=Actor(helper.id, ActorType.AGENT))
     story.expect_success(f"agent retire {agent_number(story, helper.id)} {REASON}", actor=story.user)
 
@@ -158,7 +158,7 @@ def test_retired_row_stays_retired(played):
 def test_session_gone_with_open_job_can_be_settled_and_retired(played):
     story = played(StartedHelper)
     helper = helper_agent(story)
-    story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
+    story.expect_success(f"agent pause {agent_number(story, story.agent.agent_id())}", actor=story.user)
     story.expect_success(f"agent end {helper.id}", actor=story.user)
     story.run_listeners()
     story.expect_refusal(f'agent retire {agent_number(story, helper.id)} --reason "session gone"', f"journal helper stop {agent_number(story, helper.id)}", actor=story.user)
@@ -290,7 +290,7 @@ def test_a_new_main_takes_over_an_idle_helper_and_gets_its_report(played):
     helper = helper_agent(story)
     resumable_session(story, helper)
     story.run(f"agent end {story.agent.id}", actor=story.user)
-    second = Actor(story.new_row_id("agent start s-2 claude main --environment main"), ActorType.AGENT)
+    second = story.agent_actor(story.new_row_id("agent start s-2 claude main --environment main"))
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     story.expect_success(f'helper send {agent_number(story, helper.id)} "One more job"', actor=second)
     job = story.newest_row(HelperJob, helper_id=helper.id)

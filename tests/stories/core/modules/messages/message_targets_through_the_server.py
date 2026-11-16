@@ -40,7 +40,7 @@ class TargetedSession(StoryFixture):
         repository_environment(story)
         story.worker = dispatched_worker(story)
         story.worker_session = worker_session(story, story.worker)
-        story.helper = Actor(story.new_row_id(f"agent start h-1 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+        story.helper = story.agent_actor(story.new_row_id(f"agent start h-1 claude helper --parent {story.agent.id} --environment main"))
         story.run("task overview 1", actor=story.worker)
         story.hook(story.worker_session, HookSamples.prompt("Work"))
         story.hook("h-1", HookSamples.prompt("Read"))

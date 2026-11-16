@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
 from engine.actor.actor import Actor
+from engine.database.actor_table import ActorTable
 from engine.command.bus import Bus
 from engine.command.command import Command
 from engine.container.container import Container
@@ -34,6 +35,9 @@ class KitRows(ABC, Generic[SyncAnswer]):
     newest, whether one exists and how many, each of a model filtered by its values, the registry, and a
     line's output with the rows it created or updated written out. A story and an integration journal read
     them alike: the commands, rows, timed handlers, system log and syncs of the journal a test drives."""
+
+    def agent_actor(self, agent_id: int) -> Actor:
+        return Actor.agent(self.container.get(ActorTable).actor_id(agent_id), agent_id)
 
     container: Container
     home: JournalHome

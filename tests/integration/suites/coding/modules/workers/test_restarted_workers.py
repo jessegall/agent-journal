@@ -16,7 +16,7 @@ def silent_worker(running_worker):
     start_launcher(story, b"running\n", request_count=10)
     story.expect_success(f"agent end {story.worker.id}", actor=story.agent)
     story.advance(timedelta(hours=2))
-    story.run(f'worker send --wait {agent_number(story, story.worker.id)} "Add the tax"', actor=story.agent)
+    story.run(f'worker send --wait {agent_number(story, story.worker.agent_id())} "Add the tax"', actor=story.agent)
     story.run_listeners()
     return story
 

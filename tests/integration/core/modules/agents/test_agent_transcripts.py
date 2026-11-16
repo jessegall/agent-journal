@@ -140,7 +140,7 @@ class ClaudeTranscriptAgent(StoryFixture):
     parent = MainEnvironment
 
     def steps(self, story):
-        story.agent = Actor(story.new_row_id(lines.AGENT_START), ActorType.AGENT)
+        story.agent = story.agent_actor(story.new_row_id(lines.AGENT_START))
 
 
 @pytest.fixture

@@ -28,7 +28,7 @@ def test_a_wait_that_ends_on_its_task_tells_the_agent_at_its_next_hook(new_story
 
 def test_a_wait_another_agent_ends_still_tells_the_agent_that_waits(new_story):
     story = new_story(SAMPLES, fixture=LeadWaiting, environment="main")
-    worker = Actor(story.new_row_id("agent start s-9 claude worker"), ActorType.AGENT)
+    worker = story.agent_actor(story.new_row_id("agent start s-9 claude worker"))
     story.expect_success(lines.TASK_START, "state: started", actor=worker)
     story.run('task close 1 --outcome "Cart works"', actor=worker)
     story.expect_text(f"agent-line list --agent {story.agent.id} --state waiting", "wait:1 is over", actor=story.agent)

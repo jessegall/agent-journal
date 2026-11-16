@@ -24,7 +24,7 @@ class PersonMain(StoryFixture):
 
     def steps(self, story: Story) -> None:
         story.run("setting delete 1")
-        story.agent = Actor(story.new_row_id("agent start s-1 claude main --environment main"), ActorType.AGENT)
+        story.agent = story.agent_actor(story.new_row_id("agent start s-1 claude main --environment main"))
         story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
 
 
@@ -62,7 +62,7 @@ def test_a_person_set_refusal_has_no_skip(plain_story):
 
 
 def test_a_worker_also_requests_a_persons_approval(plain_story):
-    worker = Actor(plain_story.new_row_id(f"agent start w-1 claude worker --parent {plain_story.agent.id} --environment main"), ActorType.AGENT)
+    worker = plain_story.agent_actor(plain_story.new_row_id(f"agent start w-1 claude worker --parent {plain_story.agent.id} --environment main"))
     plain_story.expect_text(REQUEST_LINE, "A user was asked in the dock", actor=worker)
 
 

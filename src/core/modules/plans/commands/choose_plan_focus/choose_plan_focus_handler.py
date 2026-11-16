@@ -29,7 +29,7 @@ class ChoosePlanFocusHandler(Handler[ChoosePlanFocus, tuple[str, ...]]):
 
     def handle(self, command: ChoosePlanFocus, context: Context) -> tuple[str, ...]:
         is_person = not context.actor.is_agent()
-        agent = self.main_agent() if is_person else self.queries.query(Agent).find(context.actor.id)
+        agent = self.main_agent() if is_person else self.queries.query(Agent).find(context.actor.agent_id())
         heading = [PERSON_HEADING] if is_person else []
         if command.clears:
             return (*heading, CLEARED_LINE, *self.report.lines(self.focus.clear(agent, context)))

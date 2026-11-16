@@ -55,7 +55,7 @@ def story_repository(story: Story) -> GitRepository:
 
 
 def dispatched_worker(story: Story, line: str = DISPATCH) -> Actor:
-    return Actor(story.new_row_id(line, actor=story.agent), ActorType.AGENT)
+    return story.agent_actor(story.new_row_id(line, actor=story.agent))
 
 
 def delivered_worker(story: Story, repository: GitRepository, line: str = DISPATCH) -> Actor:
@@ -69,18 +69,18 @@ def delivered_worker(story: Story, repository: GitRepository, line: str = DISPAT
 def checked_worker(story: Story, repository: GitRepository, line: str = DISPATCH) -> Actor:
     worker = delivered_worker(story, repository, line)
     story.expect_success("proof check 1", "state: checked", actor=story.agent)
-    story.expect_success(f"worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.agent_id())}", actor=story.agent)
     return worker
 
 
 def worker_session(story: Story, worker: Actor) -> str:
-    details = story.run(f"agent show {agent_number(story, worker.id)}").output_text.splitlines()
+    details = story.run(f"agent show {agent_number(story, worker.agent_id())}").output_text.splitlines()
     return next(line for line in details if line.startswith("session: ")).removeprefix("session: ")
 
 
 def merged_worker_lines(story: Story, worker: Actor) -> list[AgentLine]:
     lines = story.container.get(Queries).query(AgentLine).filter(session_agent_id=story.agent.id).every_row(TEST_ROWS_REASON)
-    return [line for line in lines if line.text == f"worker:{agent_number(story, worker.id)} was merged"]
+    return [line for line in lines if line.text == f"worker:{agent_number(story, worker.agent_id())} was merged"]
 
 
 def expect_clean_environment(story: Story, repository: GitRepository) -> None:

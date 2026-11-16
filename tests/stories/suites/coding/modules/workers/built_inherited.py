@@ -22,7 +22,7 @@ def built_and_released(story, repository, dispatch=DISPATCH):
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success(FIRST_PROOF, actor=worker)
     story.expect_success(COMMIT, actor=worker)
-    story.expect_success(f'worker release {agent_number(story, worker.id)} --abandon "the worker left"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.agent_id())} --abandon "the worker left"', actor=story.agent)
     return worker
 
 

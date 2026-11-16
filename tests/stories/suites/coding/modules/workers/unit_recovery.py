@@ -40,7 +40,7 @@ def test_a_release_of_a_delivered_worker_with_an_uncommitted_file_is_refused_unt
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = delivered_worker(story, repository)
-    number = agent_number(story, worker.id)
+    number = agent_number(story, worker.agent_id())
     repository.changed(worker.id, "fix_notes.txt", "edited after the return")
     story.expect_refusal(f'worker release {number} "not needed"', f"worker {number} has uncommitted files", actor=story.agent)
     story.expect_success(f'worker release {number} --abandon "the fix is dropped"', actor=story.agent)

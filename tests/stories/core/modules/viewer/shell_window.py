@@ -20,9 +20,9 @@ def test_the_shell_reads_visible_keys_and_requests_activity_and_fitness_separate
         status, activity = server.window_data(cookie, keys="activity", window="viewer.shell", query=query + "&tab=activity")
         story.expect_rows(status == 200, set(activity["keys"]) == {"activity"}, activity["keys"]["activity"]["code"] == 0,
                           len(activity["keys"]["activity"]["value"]["rows"]) <= 30)
-        status, fitness = server.window_data(cookie, keys="fitness", window="viewer.shell", query=query + f"&fitness.agent={agent_number(story, story.agent.id)}")
+        status, fitness = server.window_data(cookie, keys="fitness", window="viewer.shell", query=query + f"&fitness.agent={agent_number(story, story.agent.agent_id())}")
         story.expect_rows(status == 200, set(fitness["keys"]) == {"fitness"}, fitness["keys"]["fitness"]["code"] == 0)
         status, controls = server.window_data(cookie, keys="controls,skills,programs", window="viewer.shell",
-                                       query=query + f"&controls.agent={agent_number(story, story.agent.id)}&skills.agent={story.agent.id}")
+                                       query=query + f"&controls.agent={agent_number(story, story.agent.agent_id())}&skills.agent={story.agent.id}")
         story.expect_rows(status == 200, set(controls["keys"]) == {"controls", "skills", "programs"},
                           all(key["code"] == 0 for key in controls["keys"].values()))

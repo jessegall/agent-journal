@@ -19,8 +19,8 @@ class TableOverviewReads(OverviewReads):
     def check(self, actor: Actor, command_name: str, target: str, is_required: bool) -> None:
         if actor.type is not ActorType.AGENT or is_required:
             return
-        read = self.queries.query(OverviewRead).filter(session_agent_id=actor.id, command_name=command_name, target=target).descending("id").first()
-        if read is not None and read.created_at is not None and read.created_at.text > self.resets.last_reset(actor.id):
+        read = self.queries.query(OverviewRead).filter(session_agent_id=actor.agent_id(), command_name=command_name, target=target).descending("id").first()
+        if read is not None and read.created_at is not None and read.created_at.text > self.resets.last_reset(actor.agent_id()):
             raise Refusal("you read this overview already and it is still in your context")
 
     def note(self, actor: Actor, command_name: str, target: str) -> None:

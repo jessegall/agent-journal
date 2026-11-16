@@ -33,7 +33,7 @@ def test_a_worker_that_is_released_gives_back_its_waiting_tasks_open_and_blocked
     repository_environment(story)
     worker = dispatched_story_worker(story, "worker dispatch --test-command python=pytest --model sonnet 1 2 3")
     story.expect_success('task block 3 --reason "needs an answer"', actor=story.agent)
-    story.expect_success(f'worker release {agent_number(story, worker.worker.id)} "wrong job"', actor=story.agent)
+    story.expect_success(f'worker release {agent_number(story, worker.worker.agent_id())} "wrong job"', actor=story.agent)
     story.expect_text("task show 2", "state: open", actor=story.agent)
     story.expect_text("task show 3", "state: blocked", actor=story.agent)
     for task in (2, 3):
@@ -49,5 +49,5 @@ def test_a_worker_that_is_released_returns_its_started_task_to_open_and_unassign
 
 def test_a_worker_whose_last_started_task_is_moved_away_by_someone_else_is_refused_with_the_last_task_of_worker_message(single_worker):
     story = single_worker.story
-    story.expect_refusal(f"task assign 1 --to {agent_number(story, story.agent.id)}", "is the last of", actor=story.agent)
+    story.expect_refusal(f"task assign 1 --to {agent_number(story, story.agent.agent_id())}", "is the last of", actor=story.agent)
     story.expect_text("task show 1", "state: started", f"holder_id: {single_worker.worker.id}", actor=story.agent)

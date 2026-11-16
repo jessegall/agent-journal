@@ -22,7 +22,7 @@ class ClaimWorkerOperationHandler(Handler[ClaimWorkerOperation, WorkerOperation]
     def handle(self, command: ClaimWorkerOperation, context: Context) -> WorkerOperation:
         operation = self.queries.query(WorkerOperation).filter(worker_id=command.worker_id, process_id=command.process_id).first()
         process = self.queries.query(Process).find(command.process_id)
-        if operation is None or process.session_agent_id != context.actor.id:
+        if operation is None or process.session_agent_id != context.actor.agent_id():
             raise Refusal("only the queued process runs this worker command")
         if operation.started_at is not None or operation.ended_at is not None or process.state not in RUNNING_STATES:
             raise Refusal(f"worker command in output {process.id} already started or ended")

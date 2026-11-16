@@ -26,7 +26,7 @@ class HelperApproval(NamedTuple):
 @pytest.fixture
 def helper_request(new_story):
     story = new_story(fixture=UserBuilder)
-    helper = Actor(story.new_row_id(f"agent start help-shop claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+    helper = story.agent_actor(story.new_row_id(f"agent start help-shop claude helper --parent {story.agent.id} --environment main"))
     story.expect_refusal("phone pair --reason needed", "main agent was asked", actor=helper)
     approval = story.first_row(ApprovalRequest, requester_id=helper.id)
     return HelperApproval(story, helper, approval)

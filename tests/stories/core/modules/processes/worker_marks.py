@@ -26,7 +26,7 @@ def worker_run(story, worker: Actor, line: str, category: CommandCategory) -> in
 
 
 def new_worker(story) -> Actor:
-    return Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
+    return story.agent_actor(story.new_row_id("agent start s-9 claude worker --environment main"))
 
 
 def test_a_command_that_is_no_test_run_or_build_makes_no_chat_mark_and_no_docked_card_for_any_agent_also_past_the_seconds_that_dock_a_run(new_story):

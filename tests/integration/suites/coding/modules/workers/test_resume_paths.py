@@ -16,7 +16,7 @@ def test_555_a_worker_and_a_helper_that_ended_are_started_again_on_the_same_path
     launcher = start_launcher(story, b"started 801\n", request_count=10)
     story.expect_success(f"agent end {story.worker.id}", actor=story.agent)
     story.advance(timedelta(seconds=1))
-    story.run(f'worker send --wait {agent_number(story, story.worker.id)} "Add the tax"', actor=story.agent)
+    story.run(f'worker send --wait {agent_number(story, story.worker.agent_id())} "Add the tax"', actor=story.agent)
     story.run_listeners()
     story.expect_success(START, actor=story.agent)
     story.run_listeners()

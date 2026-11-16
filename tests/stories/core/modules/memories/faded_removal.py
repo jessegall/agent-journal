@@ -26,7 +26,7 @@ def test_a_memory_of_any_type_faded_to_zero_is_removed(new_story):
 
 def test_a_helpers_compaction_removes_only_its_own_faded_fact(new_story):
     story = new_story(fixture=BuilderStarted)
-    helper = Actor(story.new_row_id("agent start s-9 codex worker --environment main"), ActorType.AGENT)
+    helper = story.agent_actor(story.new_row_id("agent start s-9 codex worker --environment main"))
     agent_row = story.new_row_id('memory make "My temporary fact" --weight 1 --environment main', actor=helper)
     environment = story.new_row_id('memory make "Environment context" --weight 1 --environment main')
     compacted(story, "s-9")

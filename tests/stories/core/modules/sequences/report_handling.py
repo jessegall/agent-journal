@@ -14,7 +14,7 @@ def report_handling_runs(story) -> list[SequenceRun]:
 
 def test_a_helpers_report_starts_the_report_sequence_for_the_main_agent_which_ends_only_after_a_comment_on_it(new_story):
     story = new_story(fixture=StandardSequences)
-    helper = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+    helper = story.agent_actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"))
     story.expect_success('report make "Cart trace" --abstract "Where the total goes wrong" --body "The total rounds twice." --environment main', actor=helper)
     story.run_listeners()
     runs = report_handling_runs(story)

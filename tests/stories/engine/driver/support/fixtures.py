@@ -28,7 +28,7 @@ class LeadStarted(StoryFixture):
         story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
 
     def expect(self, story: Story) -> None:
-        story.expect_success(f"agent show {agent_number(story, story.agent.id)}", "session: s-1")
+        story.expect_success(f"agent show {agent_number(story, story.agent.agent_id())}", "session: s-1")
 
 
 class LeadLocked(StoryFixture):

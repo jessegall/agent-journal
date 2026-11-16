@@ -105,7 +105,7 @@ class BuilderHelper(HelperExpectation, StoryFixture):
     parent = BuilderStarted
 
     def steps(self, story: Story) -> None:
-        story.helper = Actor(story.new_row_id(f"agent start sub-1 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+        story.helper = story.agent_actor(story.new_row_id(f"agent start sub-1 claude helper --parent {story.agent.id} --environment main"))
 
 
 class StartedTaskBuilder(StoryFixture):

@@ -13,5 +13,5 @@ class MarkCloser:
     def close(self, context: Context) -> None:
         if context.actor.type is not ActorType.AGENT:
             return
-        for mark in self.marks.open_marks(context.actor.id):
+        for mark in self.marks.open_marks(context.actor.agent_id()):
             self.repository.save(mark.weigh(context.timestamp, context.actor), context)

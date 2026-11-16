@@ -27,7 +27,7 @@ class ReadWorkerLogsHandler(Handler[ReadWorkerLogs, str]):
     def handle(self, command: ReadWorkerLogs, context: Context) -> str:
         reviews_logs = self.reviews_logs(context)
         is_merger = not reviews_logs and self.is_merger(context)
-        is_overseer = context.actor.is_agent() and self.oversight.is_overseer(self.agents.find(context.actor.id))
+        is_overseer = context.actor.is_agent() and self.oversight.is_overseer(self.agents.find(context.actor.agent_id()))
         if not (reviews_logs or is_merger or is_overseer):
             raise Refusal("your role reviews no worker's logs", "ask the main agent to read them")
         worktree = self.worktrees.worker_worktree(command.worker_id)
@@ -44,9 +44,9 @@ class ReadWorkerLogsHandler(Handler[ReadWorkerLogs, str]):
         return text
 
     def is_merger(self, context: Context) -> bool:
-        return context.actor.is_agent() and self.agents.has_role(context.actor.id, Merger.key)
+        return context.actor.is_agent() and self.agents.has_role(context.actor.agent_id(), Merger.key)
 
     def reviews_logs(self, context: Context) -> bool:
         if not context.actor.is_agent():
             return False
-        return self.environments.grants(context.required_environment_id(), context.actor.id) or self.agents.is_main(context.actor.id)
+        return self.environments.grants(context.required_environment_id(), context.actor.id) or self.agents.is_main(context.actor.agent_id())

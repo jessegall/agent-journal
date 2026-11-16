@@ -53,22 +53,22 @@ class SkipRefusalHandler(Handler[SkipRefusal, DriverGrant]):
             raise Refusal("say why this refusal does not apply", "--skip-reason '<why>'" if command.is_used else "--reason '<why>'")
         if command.is_used:
             return self.confirmed_skip_used(actor, command.name, context)
-        last = self.queries.query(DriverGrant).filter(session_agent_id=actor.id, grant_type=GrantType.REFUSAL_SKIP).newest().first()
+        last = self.queries.query(DriverGrant).filter(session_agent_id=actor.agent_id(), grant_type=GrantType.REFUSAL_SKIP).newest().first()
         if last is not None and last.consecutive_skips >= MOST_SKIP_COUNT and last.restored_at is None:
-            agent = self.queries.query(Agent).find(actor.id)
+            agent = self.queries.query(Agent).find(actor.agent_id())
             if agent.is_main or agent.parent_id is None:
                 raise self.restoration_approval(agent)
             raise Refusal(f"you skipped {MOST_SKIP_COUNT} refusals in a row and lost the skip", "obey the refusal until the skip is restored")
         skipped_at = last.created_at.text if last is not None and last.created_at is not None else ""
         self.check_refused(actor, command.name, skipped_at)
-        skip = self.repository.save(DriverGrant(session_agent_id=actor.id, grant_type=GrantType.REFUSAL_SKIP, policy_key=command.name,
-                                             asker_id=actor.id, reason=command.reason.strip(), consecutive_skips=self.skip_count(actor, last, command.name, skipped_at)), context)
+        skip = self.repository.save(DriverGrant(session_agent_id=actor.agent_id(), grant_type=GrantType.REFUSAL_SKIP, policy_key=command.name,
+                                             asker_id=actor.agent_id(), reason=command.reason.strip(), consecutive_skips=self.skip_count(actor, last, command.name, skipped_at)), context)
         if skip.consecutive_skips == MOST_SKIP_COUNT:
-            self.raised(actor.id, context)
+            self.raised(actor.agent_id(), context)
         return skip
 
     def confirmed_skip_used(self, actor: Actor, name: str, context: Context) -> DriverGrant:
-        skip = self.queries.query(DriverGrant).filter(session_agent_id=actor.id, grant_type=GrantType.REFUSAL_SKIP, policy_key=name, grant_state=GrantState.CONFIRMED, requires_approval=False).newest().first()
+        skip = self.queries.query(DriverGrant).filter(session_agent_id=actor.agent_id(), grant_type=GrantType.REFUSAL_SKIP, policy_key=name, grant_state=GrantState.CONFIRMED, requires_approval=False).newest().first()
         if skip is None:
             raise Refusal(f"{name} has no confirmed skip of yours: a skip is held until you confirm it with what you tried",
                           f"journal refusal skip {name} --reason '<why it is wrong here>', then confirm it")
@@ -77,7 +77,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, DriverGrant]):
     def check_refused(self, actor: Actor, name: str, skipped_at: str) -> None:
         if self.refusals.guard_refused_past(actor.id, name.partition(":")[0], skipped_at):
             return
-        call = self.queries.query(HookCall).filter(session_agent_id=actor.id, answer=HookAnswer.REFUSED).newest().first()
+        call = self.queries.query(HookCall).filter(session_agent_id=actor.agent_id(), answer=HookAnswer.REFUSED).newest().first()
         rules = call.refused_rules if call is not None and call.creation_timestamp().text > skipped_at else ()
         refused = next((rule for rule in rules if rule.get("rule") == name), None)
         if refused is None:
@@ -93,7 +93,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, DriverGrant]):
     # Whether a rule or guard other than the named one refused the agent after the time; a refused call that names no
     # rule counts as another.
     def different_rule_refused(self, actor: Actor, skipped_at: str, name: str) -> bool:
-        calls = self.queries.query(HookCall).where(session_agent_id=actor.id, answer=HookAnswer.REFUSED).where("created_at", ">", skipped_at)
+        calls = self.queries.query(HookCall).where(session_agent_id=actor.agent_id(), answer=HookAnswer.REFUSED).where("created_at", ">", skipped_at)
         if calls.matching(MetadataListDiffers(DRIVERS_MODULE, "rules", "outcome", "refused", "rule", name)).exists():
             return True
         return bool(self.refusals.guards_refused_past(actor.id, skipped_at) - {name})

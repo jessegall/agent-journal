@@ -26,7 +26,7 @@ def test_the_main_agent_assigns_a_task_to_a_worker_and_the_workers_next_task_and
     story = worker.story
     receipt = story.new_row_id(RECEIPT, actor=story.agent)
     story.expect_rows(startable_ids(story, worker.worker) == [])
-    story.expect_success(f"task assign {receipt} --to {agent_number(story, worker.worker.id)}", actor=story.agent)
+    story.expect_success(f"task assign {receipt} --to {agent_number(story, worker.worker.agent_id())}", actor=story.agent)
     story.expect_text(f"task info {receipt}", f"assigned to: agent {worker.worker.id}", actor=story.agent)
     story.expect_rows(startable_ids(story, worker.worker) == [receipt], detail=worker.status())
     story.expect_success("worker next --wait", actor=worker.worker)
@@ -63,7 +63,7 @@ def test_the_moment_a_task_is_assigned_to_a_worker_status_the_next_task_start_an
     story.expect_success('task block 1 --reason "waits for a user"', actor=worker.worker)
     story.expect_rows(not worker.stop().refusal, detail=worker.status())
     receipt = story.new_row_id(RECEIPT, actor=story.agent)
-    story.expect_success(f"task assign {receipt} --to {agent_number(story, worker.worker.id)}", actor=story.agent)
+    story.expect_success(f"task assign {receipt} --to {agent_number(story, worker.worker.agent_id())}", actor=story.agent)
     story.expect_rows(startable_ids(story, worker.worker) == [receipt], detail=worker.status())
     assigned_stop = worker.stop().refusal
     story.expect_rows(f"Task {receipt}" in assigned_stop, detail=assigned_stop)

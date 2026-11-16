@@ -22,6 +22,6 @@ class TaskTagAccessGuard(Guard[Changed[TaskTag]]):
     def check(self, event: Changed[TaskTag], context: Context) -> None:
         if context.actor.type is not ActorType.AGENT or isinstance(context.command, TaskCreation):
             return
-        agent = self.queries.query(Agent).find(context.actor.id)
+        agent = self.queries.query(Agent).find(context.actor.agent_id())
         if agent.access == Access.READ:
             raise Refusal("a read-only helper tags only when making a task", "ask the main agent to change existing tags")

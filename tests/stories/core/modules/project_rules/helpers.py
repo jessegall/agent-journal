@@ -32,7 +32,7 @@ def test_a_worker_and_a_helper_start_with_the_rules_and_none_of_the_main_agents_
 
 def test_a_worker_that_starts_again_is_told_only_of_the_memories_it_made_itself(new_story):
     story = new_story(fixture=SharedMemoryKept)
-    worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
+    worker = story.agent_actor(story.new_row_id("agent start s-9 claude worker --environment main"))
     story.hook("s-9", HookSamples.session_start())
     story.expect_success(f'memory make "{WORKTREE_MEMORY}" --environment main', actor=worker)
     story.expect_hook_allowed("s-9", HookSamples.session_start().with_raw({"source": "compact"}), "1 memories to read")
@@ -48,7 +48,7 @@ def test_a_main_agents_memory_never_reaches_a_worker_by_its_keyword(new_story):
 
 def test_a_workers_compaction_fades_only_what_it_made_itself(new_story):
     story = new_story(fixture=SharedMemoryKept)
-    worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
+    worker = story.agent_actor(story.new_row_id("agent start s-9 claude worker --environment main"))
     agent_row_id = story.new_row_id(f'memory make "{WORKTREE_MEMORY}" --environment main', actor=worker)
     story.hook("s-9", HookSamples.sample("compact"))
     story.hook("s-9", HookSamples.session_start().with_raw({"source": "compact"}))
@@ -59,8 +59,8 @@ def test_a_workers_compaction_fades_only_what_it_made_itself(new_story):
 
 def test_what_a_worker_keeps_reaches_neither_the_main_agent_nor_a_second_worker(new_story):
     story = new_story(fixture=SharedMemoryKept)
-    worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
-    second_worker = Actor(story.new_row_id("agent start s-10 claude worker --environment main"), ActorType.AGENT)
+    worker = story.agent_actor(story.new_row_id("agent start s-9 claude worker --environment main"))
+    second_worker = story.agent_actor(story.new_row_id("agent start s-10 claude worker --environment main"))
     story.expect_success(f'memory make "{WORKTREE_MEMORY}" --environment main', actor=worker)
     story.expect_absent("memory list --environment main", SHARED_MEMORY, actor=worker)
     story.expect_text("memory list --environment main", WORKTREE_MEMORY, actor=worker)

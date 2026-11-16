@@ -28,7 +28,7 @@ def staging_agent(story):
 
 
 def staging_worker(story):
-    return Actor(story.new_row_id("agent start s-3 claude worker --environment staging"), ActorType.AGENT)
+    return story.agent_actor(story.new_row_id("agent start s-3 claude worker --environment staging"))
 
 
 class TwoWorkingEnvironments(StoryFixture):

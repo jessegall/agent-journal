@@ -79,7 +79,7 @@ def test_a_judge_run_a_guard_on_a_merge_queued_sends_the_merge_back_when_it_exit
                          processes=[{"kind": "judge", "title": "Judging the merge", "category": "check"}])
     recording_runner_at(story.home)
     target_tip = repository.tip(ENVIRONMENT_BRANCH)
-    story.expect_text(f"worker merge --wait {agent_number(story, worker.id)}", "was refused before anything was merged", "cart.py line 3: the total is wrong", actor=story.agent)
+    story.expect_text(f"worker merge --wait {agent_number(story, worker.agent_id())}", "was refused before anything was merged", "cart.py line 3: the total is wrong", actor=story.agent)
     story.expect_rows(repository.tip(ENVIRONMENT_BRANCH) == target_tip)
 
 

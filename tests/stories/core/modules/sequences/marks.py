@@ -20,7 +20,7 @@ class HelperActiveRelease(StoryFixture):
     parent = ReleaseSequence
 
     def steps(self, story):
-        helper = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+        helper = story.agent_actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"))
         story.expect_success("sequence run 1", actor=helper)
         story.expect_success("sequence follow", actor=helper)
 

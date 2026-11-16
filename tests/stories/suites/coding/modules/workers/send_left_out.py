@@ -29,5 +29,5 @@ def test_a_send_goes_on_when_the_only_change_in_the_worktree_is_one_a_commit_can
     repository = repository_environment(story)
     worker = dispatched_worker(story)
     nested_repository_with_new_file(repository, worker)
-    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Keep the total in cents"', actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, worker.agent_id())} "Keep the total in cents"', actor=story.agent)
     story.expect_text("worker-worktree list", "cut", actor=story.agent)

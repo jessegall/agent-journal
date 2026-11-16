@@ -12,7 +12,7 @@ def title_rule(story: Story, target_flags: str, extra: str = "") -> int:
 
 
 def worker_flags(story: Story, worker: Actor) -> str:
-    return f"--target agent --agent {agent_number(story, worker.id)}"
+    return f"--target agent --agent {agent_number(story, worker.agent_id())}"
 
 
 def expect_decision(story: Story, outcome: str, actor_id: int | None, *reason_parts: str) -> None:
@@ -34,7 +34,7 @@ def test_a_kind_with_no_worker_skips_the_rule(new_story):
 
 def test_a_paused_worker_is_passed_over_for_a_kind_and_kept_as_the_one_named(new_story):
     story = new_story(fixture=SonnetWorkerAndFreeTask)
-    story.expect_success(f"agent pause {agent_number(story, story.helper.id)}", actor=story.user)
+    story.expect_success(f"agent pause {agent_number(story, story.helper.agent_id())}", actor=story.user)
     title_rule(story, MODEL_FLAGS)
     expect_decision(story, "skipped", None, "no agent of claude sonnet can take it now")
     worker_rule = title_rule(story, worker_flags(story, story.helper))
@@ -50,7 +50,7 @@ def test_an_ended_worker_is_skipped_since_a_task_cannot_be_assigned_to_it(new_st
 
 def test_a_worker_with_no_cut_worktree_is_skipped_naming_the_cause(new_story):
     story = new_story(fixture=SonnetWorkerAndFreeTask)
-    bare = Actor(story.new_row_id(f"agent start w-9 claude worker --parent {story.agent.id} {ENVIRONMENT}"), ActorType.AGENT)
+    bare = story.agent_actor(story.new_row_id(f"agent start w-9 claude worker --parent {story.agent.id} {ENVIRONMENT}"))
     rule_id = title_rule(story, worker_flags(story, bare))
     expect_decision(story, "skipped", None, f"rule {rule_id} skipped", "takes no task")
 
@@ -64,7 +64,7 @@ def test_no_main_agent_running_skips_the_rule_for_the_main_agent(new_story):
 
 def test_a_helper_is_never_a_target(new_story):
     story = new_story(fixture=SonnetWorkerAndFreeTask)
-    helper = Actor(story.new_row_id(f"agent start sub-9 claude helper --parent {story.agent.id} {ENVIRONMENT}"), ActorType.AGENT)
+    helper = story.agent_actor(story.new_row_id(f"agent start sub-9 claude helper --parent {story.agent.id} {ENVIRONMENT}"))
     story.expect_refusal(f'assign-rule make {worker_flags(story, helper)} --condition any {ENVIRONMENT}', "helpers take no task", actor=story.user)
 
 
@@ -72,5 +72,5 @@ def test_a_full_queue_skips_the_rule_and_the_next_rule_wins(new_story):
     story = new_story(fixture=SonnetWorkerAndFreeTask)
     capped = title_rule(story, worker_flags(story, story.helper), "--queue-limit 1")
     fallback = title_rule(story, "--target main")
-    label = f"worker {agent_number(story, story.helper.id)}"
+    label = f"worker {agent_number(story, story.helper.agent_id())}"
     expect_decision(story, "assigned", story.agent.id, f"rule {capped} skipped: {label} holds 1 of 1", f"rule {fallback} applied")

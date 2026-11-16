@@ -85,7 +85,7 @@ def test_fifty_runs_at_once_are_judged_in_one_tick_within_its_limits(new_story):
 def test_two_environments_judge_their_runs_by_their_own_thresholds(new_story):
     story = install_runner(new_story(fixture=RoomyUserBuilder))
     story.expect_success("environment make elsewhere /work/elsewhere", actor=story.user)
-    different = Actor(story.new_row_id("agent start s-elsewhere claude main --environment elsewhere"), ActorType.AGENT)
+    different = story.agent_actor(story.new_row_id("agent start s-elsewhere claude main --environment elsewhere"))
     story.expect_success(f"setting set {ProcessSetting.FIRST_OUTPUT_SECONDS.key} 60 --environment elsewhere", actor=story.user)
     here = moved_run(story, "make here", CommandCategory.BUILD)
     there = project_hook_run(story, different)

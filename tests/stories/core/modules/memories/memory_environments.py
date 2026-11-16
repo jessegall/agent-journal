@@ -7,7 +7,7 @@ STAGING_START = "agent start s-20 claude main --environment staging"
 
 
 def staging_main(story):
-    return Actor(story.new_row_id(STAGING_START), ActorType.AGENT)
+    return story.agent_actor(story.new_row_id(STAGING_START))
 
 
 class StagingEnvironment(StoryFixture):

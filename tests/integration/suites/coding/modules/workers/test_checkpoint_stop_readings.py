@@ -40,7 +40,7 @@ def background_run(story) -> Process:
 
 
 def worker_label(story) -> str:
-    return f"worker:{agent_number(story, story.worker.id)}"
+    return f"worker:{agent_number(story, story.worker.agent_id())}"
 
 
 @pytest.mark.parametrize("resume_limit, restart_line_count, main_agent_line_count", [(3, 1, 0), (0, 0, 1)])

@@ -103,7 +103,7 @@ class PlannerHelper(StoryFixture):
     parent = StandardSequences
 
     def steps(self, story) -> None:
-        story.helper = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+        story.helper = story.agent_actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"))
         story.expect_success('plan make "Version 5 core" --environment main', actor=story.helper)
         story.run_listeners()
         story.expect_success("sequence follow", actor=story.helper)
@@ -260,7 +260,7 @@ def test_the_agent_cannot_stop_on_any_step_of_the_plan_sequence(new_story, fixtu
 
 def test_making_a_plan_ready_ends_its_sequence_and_the_run_on_another_plan_stays_open(new_story):
     story = new_story(fixture=ReadyStep)
-    planner = Actor(story.new_row_id("agent start s-planner claude helper --environment main"), ActorType.AGENT)
+    planner = story.agent_actor(story.new_row_id("agent start s-planner claude helper --environment main"))
     story.run('plan make "Other" --environment main', actor=planner)
     story.run_listeners()
     story.expect_success("plan ready 1", actor=story.agent)

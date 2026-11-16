@@ -24,6 +24,6 @@ def test_agent_resume_reads_only_the_running_children_with_a_filter(new_story):
     story = new_story(fixture=EndedHelper)
     seeded_children(story, story.agent.id, 120)
     story.bind(TerminalTyping, FakeTyping())
-    story.expect_success(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
+    story.expect_success(f"agent pause {agent_number(story, story.agent.agent_id())}", actor=story.user)
     limit_reads(story)
-    story.expect_success(f"agent resume {agent_number(story, story.agent.id)}", actor=story.user)
+    story.expect_success(f"agent resume {agent_number(story, story.agent.agent_id())}", actor=story.user)

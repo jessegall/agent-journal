@@ -50,7 +50,7 @@ def test_a_worker_gets_its_reader_request_before_the_main_agent(worker_reader_sa
 
 def test_a_different_worker_cannot_save_the_request_draft(worker_reader_sample):
     story = worker_reader_sample
-    worker = Actor(story.new_row_id("agent start s-other claude worker --environment main"), ActorType.AGENT)
+    worker = story.agent_actor(story.new_row_id("agent start s-other claude worker --environment main"))
     story.expect_refusal("reader draft 1 --save", "own open reader request", actor=worker)
 
 

@@ -26,7 +26,7 @@ class OpenWaitHandler(Handler[OpenWait, Wait]):
         if command.type is WaitType.ROWS and not command.targets:
             raise Refusal("a wait for rows needs the rows that end it", "add --target tasks:<id>")
         resolved = [self.resolve_target(target) for target in command.targets]
-        wait = self.repository.save(Wait(session_agent_id=context.actor.id, creator_id=context.actor.id, type=command.type, focus=command.focus,
+        wait = self.repository.save(Wait(session_agent_id=context.actor.agent_id(), creator_id=context.actor.id, type=command.type, focus=command.focus,
                                          opened_at=context.timestamp), context)
         for table, row_id in resolved:
             self.repository.save(WaitTarget(wait_id=wait.id, creator_id=context.actor.id, row_table=table, row_id=row_id), context)

@@ -16,5 +16,5 @@ class RecordTypedPromptHandler(Handler[RecordTypedPrompt, Message]):
         self.repository = repository
 
     def handle(self, command: RecordTypedPrompt, context: Context) -> Message:
-        return self.repository.save(Message(session_agent_id=context.actor.id, creator_id=context.actor.id, type=MessageType.USER, text=command.text,
+        return self.repository.save(Message(session_agent_id=context.actor.agent_id(), creator_id=context.actor.id, type=MessageType.USER, text=command.text,
                                             read_at=context.timestamp, delivered_at=context.timestamp, peer_key=PROMPT_MESSAGE_KEY), context)

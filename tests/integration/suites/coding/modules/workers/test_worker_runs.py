@@ -46,7 +46,7 @@ def worker_with_background_run(played):
     story = played(MergerOffOrchestrator)
     repository_environment(story)
     story.run(f"setting set {WORKER_TEST_LIMIT} 0 --environment main")
-    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent), ActorType.AGENT)
+    worker = story.agent_actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1", actor=story.agent))
     bus = story.container.get(Bus)
     part = PartSpec("make test", "make", False, CommandCategory.TEST_RUN)
     run = bus.run(StartProcess(worker.id, None, "make test", "/work", CommandCategory.TEST_RUN, 30, [part]), worker, environment_id=1)
@@ -115,7 +115,7 @@ def test_with_the_merger_off_a_worker_stopped_past_the_limit_on_a_run_that_goes_
     StoppedWorkerRuns()(story.container)
     StoppedWorkerRuns()(story.container)
     texts = stopped_run_texts(story)
-    story.expect_rows(texts == [WorkerLateRunMessage.declared().agent_message(worker=agent_number(story, worker.id), output=run.id).text], detail=str(texts))
+    story.expect_rows(texts == [WorkerLateRunMessage.declared().agent_message(worker=agent_number(story, worker.agent_id()), output=run.id).text], detail=str(texts))
     story.expect_text(f"agent-line list --agent {story.agent.id}", expected_agent_message(MergerLineAvailableMessage.declared()))
 
 
@@ -123,13 +123,13 @@ def test_a_paused_worker_stays_stopped_when_its_run_ends(played, monkeypatch):
     story, worker, run, bus = worker_with_background_run(played)
     hands = []
     monkeypatch.setattr(AgentLauncher, "hand", lambda self, *arguments: hands.append(arguments))
-    story.expect_success(f"agent pause {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"agent pause {agent_number(story, worker.agent_id())}", actor=story.agent)
     story.end_session(worker)
     bus.run(EndProcess(run.id, 0, 10, 1), worker, environment_id=1)
     story.run_listeners()
     WorkerResumeRetry()(story.container)
     expect_absent_value(hands)
-    story.expect_text(f"agent show {agent_number(story, worker.id)}", "paused_at:", actor=story.agent)
+    story.expect_text(f"agent show {agent_number(story, worker.agent_id())}", "paused_at:", actor=story.agent)
 
 
 def test_a_worker_with_a_run_going_may_stop(played):
@@ -140,7 +140,7 @@ def test_a_worker_with_a_run_going_may_stop(played):
 def test_stops_with_a_run_of_its_own_going_use_no_restarts_so_the_stop_after_the_run_starts_the_worker_again(worker_with_a_run):
     story, worker, run, bus = worker_with_a_run
     session = worker_session(story, worker)
-    worker_label = f"worker:{agent_number(story, worker.id)}"
+    worker_label = f"worker:{agent_number(story, worker.agent_id())}"
     for _ in range(story.number_default(WORKER_RESUME_LIMIT) + 2):
         story.end_session(worker)
         story.run_listeners()
@@ -192,7 +192,7 @@ def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(played):
     story.end_session(worker)
     story.hook(session, HookSamples.session_start())
     story.end_session(worker)
-    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} ended with task:1")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.agent_id())} ended with task:1")
     story.hook(session, HookSamples.session_start())
     story.advance(timedelta(minutes=1))
     story.expect_success('task block 1 --reason "waits on a user"', actor=worker)
@@ -206,14 +206,14 @@ def test_a_worker_gets_its_restarts_anew_when_it_starts_a_task_again(played):
 def test_a_worker_whose_program_the_launcher_runs_is_stopped_through_the_launcher(played):
     story, worker, _, _ = worker_with_background_run(played)
     launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), answer=b"stopped\n")
-    story.expect_success(f"agent stop {agent_number(story, worker.id)}", f"stopped {agent_label(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"agent stop {agent_number(story, worker.agent_id())}", f"stopped {agent_label(story, worker.id)}", actor=story.agent)
     expect_requests_launcher_2(launcher, 1, {"agent_id": worker.id, "stop": True})
-    story.expect_text(f"agent show {agent_number(story, worker.id)}", "ended_at:", actor=story.agent)
+    story.expect_text(f"agent show {agent_number(story, worker.agent_id())}", "ended_at:", actor=story.agent)
 
 
 def test_a_worker_no_launcher_runs_is_refused_a_stop_and_keeps_its_tasks(played):
     story, worker, _, _ = worker_with_background_run(played)
-    story.expect_refusal(f"agent stop {agent_number(story, worker.id)}", "does not know the process", actor=story.agent)
+    story.expect_refusal(f"agent stop {agent_number(story, worker.agent_id())}", "does not know the process", actor=story.agent)
     story.expect_text("task info 1", f"assigned to: agent {worker.id}", actor=story.agent)
 
 
@@ -246,7 +246,7 @@ def test_a_worker_that_stopped_with_a_run_going_is_not_told_to_carry_on_and_show
     story.run_listeners()
     story.expect_absent(f"agent-line list --agent {worker.id}", "You ended with tasks left")
     story.expect_absent("chat-mark list --environment 1", "stopped with")
-    story.expect_success(f"agent show {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"agent show {agent_number(story, worker.agent_id())}", actor=story.agent)
     story.expect_success("message list --limit 5", actor=story.agent)
 
 

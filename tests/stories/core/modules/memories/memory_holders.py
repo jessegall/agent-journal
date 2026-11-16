@@ -36,7 +36,7 @@ def test_one_read_names_each_agent_that_holds_a_memory_with_its_counts(new_story
     started_agent(story, "s-10")
     with story.repeated_work.request():
         read = holders(story)
-    story.expect_rows([(row["agent_id"], row["role"], row["name"], row["active_memories"], row["removed_memories"]) for row in read["rows"]] == [(worker.id, "worker", f"Worker {agent_number(story, worker.id)}", 1, 0)])
+    story.expect_rows([(row["agent_id"], row["role"], row["name"], row["active_memories"], row["removed_memories"]) for row in read["rows"]] == [(worker.id, "worker", f"Worker {agent_number(story, worker.agent_id())}", 1, 0)])
     story.expect_rows(read["total"] == 1)
 
 
@@ -94,7 +94,7 @@ def test_agents_are_found_by_a_word_of_their_name_or_number(new_story):
     worker = read_agent(story, "s-9")
     helper = started_agent(story, "s-10", "helper")
     worker_memory(story, "s-10", "A helper's note", helper)
-    story.expect_rows(names(story, f"--name worker") == [f"Worker {agent_number(story, worker.id)}"])
+    story.expect_rows(names(story, f"--name worker") == [f"Worker {agent_number(story, worker.agent_id())}"])
     story.expect_rows(names(story, f"--name {helper.id}") == [f"Helper {agent_number(story, helper.id)}"])
     story.expect_rows(names(story, "--name nobody") == [])
 

@@ -14,7 +14,7 @@ def delegated(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
-    story.worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2", actor=story.agent), ActorType.AGENT)
+    story.worker = story.agent_actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet 1 2", actor=story.agent))
     story.run('task make "Third job" --brief "Do the third job" --environment main', actor=story.agent)
     return story
 

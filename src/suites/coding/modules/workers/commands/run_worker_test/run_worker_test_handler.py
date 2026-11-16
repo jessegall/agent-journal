@@ -28,7 +28,7 @@ class RunWorkerTestHandler(Handler[RunWorkerTest, WorkerTestRun]):
         self.worktrees, self.names, self.bus, self.libraries = worktrees, names, bus, libraries
 
     def handle(self, command: RunWorkerTest, context: Context) -> WorkerTestRun:
-        worktree = self.worktrees.worker_worktree(context.actor.id)
+        worktree = self.worktrees.worker_worktree(context.actor.agent_id())
         if worktree is None:
             raise Refusal("only a worker with a worktree out runs a named test", "journal worker dispatch gives a worker its test commands")
         missing = self.libraries.missing(worktree)

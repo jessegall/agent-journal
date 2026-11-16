@@ -109,7 +109,7 @@ def test_a_paused_agent_or_main_agent_starts_no_run_that_takes_a_place_until_it_
     main_while_worker_paused = agent_run(story, RowOwner(MAIN_AGENT, 1), shell)
     story.run(f"agent resume {agent_number(story, worker.agent)}", actor=story.user)
     resumed = agent_run(story, worker, shell)
-    story.run(f"agent pause {agent_number(story, story.agent.id)}", actor=story.user)
+    story.run(f"agent pause {agent_number(story, story.agent.agent_id())}", actor=story.user)
     with pytest.raises(Refusal, match="your agent is paused"):
         agent_run(story, RowOwner(MAIN_AGENT, 1), shell)
     story.expect_rows(quick_while_paused.exit_code == 0, main_while_worker_paused.exit_code == 0, resumed.exit_code == 0)

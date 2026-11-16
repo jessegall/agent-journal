@@ -42,7 +42,7 @@ def test_a_launch_over_a_socket_nobody_answers_removes_it_and_goes_on_with_a_lau
     story.run_listeners()
     service.launcher.drain_requests()
     story.expect_rows(len(service.launcher.starts) == 1, service.launcher.starts[0]["agent_id"] == worker.id)
-    story.expect_text(f"agent show {agent_number(story, worker.id)}", f"pid: {WORKER_PID}")
+    story.expect_text(f"agent show {agent_number(story, worker.agent_id())}", f"pid: {WORKER_PID}")
 
 
 def test_a_stop_over_a_socket_nobody_answers_removes_it_and_starts_no_launcher(worker_story, monkeypatch):
@@ -65,9 +65,9 @@ def test_the_recovery_resumes_a_worker_gone_when_the_server_starts_and_leaves_a_
     GoneWorkerRecovery()(story.container)
     launcher.drain_requests()
     story.expect_rows(len(launcher.starts) == starts, all(start["agent_id"] == story.worker.id for start in launcher.starts))
-    story.expect_no_text(f"agent show {agent_number(story, story.worker.id)}", "ended_at:")
+    story.expect_no_text(f"agent show {agent_number(story, story.worker.agent_id())}", "ended_at:")
     if starts:
-        story.expect_text(f"agent show {agent_number(story, story.worker.id)}", f"pid: {RESUMED_PID}")
+        story.expect_text(f"agent show {agent_number(story, story.worker.agent_id())}", f"pid: {RESUMED_PID}")
 
 
 def test_a_worker_with_started_work_and_no_job_or_delegated_task_is_resumed(running_worker):

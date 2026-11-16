@@ -60,7 +60,7 @@ def test_a_later_tick_reads_fresh_activity_after_a_worker_acts(four_workers):
                       any("id IN" in call.args[1].sql for call in activity_reads))
     story.expect_no_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, workers[0].id)} used no tool")
     for worker in workers[1:]:
-        story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.id)} used no tool")
+        story.expect_text(f"agent-line list --agent {story.agent.id}", f"worker:{agent_number(story, worker.agent_id())} used no tool")
 
 
 def test_a_worker_dispatch_reads_its_whole_task_batch_once_per_transaction(four_tasks):

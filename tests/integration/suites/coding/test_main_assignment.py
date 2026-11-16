@@ -76,7 +76,7 @@ class UnfinishedTaskMain(StoryFixture):
         story.expect_success('plan make "Later work" --brief "A plan the user has not approved"', actor=story.agent)
         story.expect_success('phase make --plan 1 "First" --goal "The first step is done"', actor=story.agent)
         story.expect_success('task make "In the plan" --brief "A task of a plan that has not started" --phase 1', actor=story.agent)
-        story.expect_success(f"task assign 2 --to {agent_number(story, story.agent.id)}", actor=story.agent)
+        story.expect_success(f"task assign 2 --to {agent_number(story, story.agent.agent_id())}", actor=story.agent)
 
 
 
@@ -87,7 +87,7 @@ def test_a_stop_of_a_main_agent_with_more_unfinished_tasks_than_one_read_may_loa
     story = played(UnfinishedTaskMain)
     for number in range(SEVERAL_TASKS):
         task = story.new_row_id(f'task make "Step {number}" --brief "One more step"', actor=story.agent)
-        story.run(f"task assign {task} --to {agent_number(story, story.agent.id)}", actor=story.agent)
+        story.run(f"task assign {task} --to {agent_number(story, story.agent.agent_id())}", actor=story.agent)
     story.container.get(Database).read_limit_rows = READ_LIMIT_ROWS
     reply = story.hook("s-1", HookSamples.stop())
     faults = [row.message for row in story.story_rows(JournalException)]

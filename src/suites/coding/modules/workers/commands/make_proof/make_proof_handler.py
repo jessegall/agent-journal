@@ -29,7 +29,7 @@ class MakeProofHandler(Handler[MakeProof, Proof]):
         self.rows, self.access = rows, access
 
     def handle(self, command: MakeProof, context: Context) -> Proof:
-        worktree = self.worktrees.worker_worktree(context.actor.id)
+        worktree = self.worktrees.worker_worktree(context.actor.agent_id())
         if worktree is None:
             raise Refusal("only a worker with a worktree out makes proofs", "journal worker-worktree list shows the worktrees")
         task_proofs = self.proofs.worktree_proofs(worktree.id).filter(task_id=command.task_id)

@@ -81,4 +81,4 @@ def test_a_worktree_counts_the_first_parent_commits_of_its_base_it_lacks_and_the
     case.setup(story, repository)
     worker = dispatched_worker(story)
     command, *texts = case.after_dispatch(story, repository, worker.id)
-    story.expect_text(f"{command} {agent_number(story, worker.id)}", *texts, actor=story.agent)
+    story.expect_text(f"{command} {agent_number(story, worker.agent_id())}", *texts, actor=story.agent)

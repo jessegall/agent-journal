@@ -123,4 +123,4 @@ def test_the_holds_of_an_agent_whose_session_ended_are_dropped(new_story):
     process = worker_background_run(story)
     story.end_session(worker)
     story.run_listeners()
-    story.expect_no_text(f"process holds --agent {agent_number(story, worker.id)} --environment main", f"hold on output {process.id}", actor=story.agent)
+    story.expect_no_text(f"process holds --agent {agent_number(story, worker.agent_id())} --environment main", f"hold on output {process.id}", actor=story.agent)

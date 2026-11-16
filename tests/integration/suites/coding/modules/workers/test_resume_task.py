@@ -38,7 +38,7 @@ def test_a_task_sent_to_a_stopped_worker_resumes_it_once(played, monkeypatch, pr
     if merged:
         repository.checkout(ENVIRONMENT_BRANCH)
         request_merge(story, worker)
-        story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+        story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
     else:
         story.expect_success(f"agent end {worker.id}", actor=story.agent)
     story.run_listeners()
@@ -69,13 +69,13 @@ def test_a_task_sent_to_a_stopped_worker_resumes_it_once(played, monkeypatch, pr
     monkeypatch.setattr(AgentLauncher, "hand", start_once)
     launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), answer=answer, request_count=1)
     try:
-        story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {task_id}", actor=story.agent)
+        story.expect_success(f"worker send --wait {agent_number(story, worker.agent_id())} --task {task_id}", actor=story.agent)
         story.run_listeners()
         if not merged:
             story.expect_rows(not launcher.starts, not launches, detail=str(launches))
             repository.checkout(ENVIRONMENT_BRANCH)
             request_merge(story, worker)
-            story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+            story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
             story.run_listeners()
         story.expect_rows(len(launcher.starts) == 1, launches == [worker.id], detail=str(launches))
         launch = launcher.starts[0]

@@ -21,7 +21,7 @@ class ReadLimitWithHelper(StoryFixture):
     parent = UserJoined
 
     def steps(self, story):
-        story.helper = Actor(story.new_row_id(f"agent start s-helper claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+        story.helper = story.agent_actor(story.new_row_id(f"agent start s-helper claude helper --parent {story.agent.id} --environment main"))
 
 
 LINE = "task list"

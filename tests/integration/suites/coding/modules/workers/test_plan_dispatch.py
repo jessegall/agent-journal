@@ -19,7 +19,7 @@ def read_outline(story) -> dict:
 def test_a_dispatch_for_a_phase_hands_the_worker_that_phases_open_tasks_in_plan_order(played):
     story = planned_story(played)
     recorded_test_launches(story)
-    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 1", actor=story.agent), ActorType.AGENT)
+    worker = story.agent_actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 1", actor=story.agent))
     expect_agents(read_outline(story), (True, [(1, True), (2, True), (3, True)]))
     board = json.loads(story.run("plan board --environment main --json", actor=story.agent).output_text)["plans"][0]
     expect_agents(board, (True, [(1, True), (2, True), (3, True)]))
@@ -38,9 +38,9 @@ def test_a_dispatch_for_a_whole_plan_hands_the_worker_every_open_task_phase_by_p
 def test_a_dispatch_for_a_phase_shows_a_mark_that_the_plan_was_handed_over(played):
     story = planned_story(played)
     recorded_test_launches(story)
-    worker = Actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 1", actor=story.agent), ActorType.AGENT)
+    worker = story.agent_actor(story.new_row_id("worker dispatch --test-command python=pytest --model sonnet --plan 1 --phase 1", actor=story.agent))
     story.run_listeners()
-    expect_marks_text(story, f"Worker {agent_number(story, worker.id)} was given 3 tasks")
+    expect_marks_text(story, f"Worker {agent_number(story, worker.agent_id())} was given 3 tasks")
     marks = tuple(story.story_rows(ChatMark, variant=WorkerMarkVariant.ASSIGNED))
     story.expect_rows(len(marks) == 1, marks[0].target_id == worker.id,
                       all(text in marks[0].detail for text in ("Task 1: Fix the cart", "Task 2: Tax", "Task 3: Totals")))

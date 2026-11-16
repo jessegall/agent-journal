@@ -49,7 +49,7 @@ class RecordProgramExitHandler(Handler[RecordProgramExit, None]):
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.is_main or self.is_earlier_run(agent, command):
             return
-        actor = Actor(agent.id, ActorType.AGENT)
+        actor = agent.actor()
         terminal = self.reasons.terminal_tail(agent)
         if command.exit_code != 0 and not command.launch_ended:
             problem = self.reasons.program_problem(agent, terminal)

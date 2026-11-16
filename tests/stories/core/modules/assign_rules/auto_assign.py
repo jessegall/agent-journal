@@ -32,10 +32,10 @@ class RetiredWorkerAndMainRule(StoryFixture):
     parent = OrchestratorWithPerson
 
     def steps(self, story: Story) -> None:
-        story.helper = Actor(story.new_row_id(f"agent start w-9 claude worker --parent {story.agent.id} {ENVIRONMENT}"), ActorType.AGENT)
+        story.helper = story.agent_actor(story.new_row_id(f"agent start w-9 claude worker --parent {story.agent.id} {ENVIRONMENT}"))
         story.run(f"assign-rule make --target agent --agent row:{story.helper.id} --condition any {ENVIRONMENT}", actor=story.user)
         story.run(f"agent end {story.helper.id}")
-        story.run(f'agent retire {agent_number(story, story.helper.id)} --reason "not needed"', actor=story.user)
+        story.run(f'agent retire {agent_number(story, story.helper.agent_id())} --reason "not needed"', actor=story.user)
         story.run(rule_line("any"), actor=story.user)
 
     def expect(self, story: Story) -> None:
@@ -75,7 +75,7 @@ def test_a_rule_whose_worker_is_retired_is_skipped_and_the_next_rule_applies(new
     story = new_story(fixture=RetiredWorkerAndMainRule)
     task_id = new_task(story, '"Fix the login"')
     decision = task_decision(story, task_id)
-    expected = f"rule {FIRST_RULE} skipped: worker {agent_number(story, story.helper.id)} is retired; rule {SECOND_RULE} applied: given to the main agent"
+    expected = f"rule {FIRST_RULE} skipped: worker {agent_number(story, story.helper.agent_id())} is retired; rule {SECOND_RULE} applied: given to the main agent"
     story.expect_rows(decision.outcome == "assigned", decision.rule_id == SECOND_RULE, decision.reason == expected, detail=str(decision))
 
 

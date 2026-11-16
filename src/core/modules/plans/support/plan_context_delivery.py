@@ -39,5 +39,5 @@ class PlanContextDelivery:
     def acknowledge(self, plan: Plan, context: Context) -> None:
         event_id = self.start_event(plan)
         if event_id is not None and not self.has_read(plan.id, event_id, context.actor.id):
-            self.repository.save(PlanContextRead(plan_id=plan.id, start_event_id=event_id, session_agent_id=context.actor.id,
+            self.repository.save(PlanContextRead(plan_id=plan.id, start_event_id=event_id, session_agent_id=context.actor.agent_id(),
                                                 creator_id=context.actor.id), context)

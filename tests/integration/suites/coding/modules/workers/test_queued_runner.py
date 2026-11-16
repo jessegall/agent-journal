@@ -68,9 +68,9 @@ def test_a_queued_worker_command_runs_through_the_real_runner_and_cli(worker_run
         task_id = story.new_row_id('task make "The next cart change" --brief "Add the receipt"', actor=story.agent)
     if command_name == "next":
         arguments = ["worker", "next"]
-        story.expect_success(f"worker send {agent_number(story, worker.id)} --wait --task {task_id}", actor=story.agent)
+        story.expect_success(f"worker send {agent_number(story, worker.agent_id())} --wait --task {task_id}", actor=story.agent)
     if command_name == "send":
-        arguments = ["worker", "send", str(agent_number(story, worker.id)), "--task", str(task_id)]
+        arguments = ["worker", "send", str(agent_number(story, worker.agent_id())), "--task", str(task_id)]
         actor = story.agent
     agent = story.row(Agent, actor.id)
     accepted = subprocess.run([str(binary), *arguments], capture_output=True, text=True, timeout=20,

@@ -34,7 +34,7 @@ class CommitWorkerWorkSubcommand(Subcommand[Command[object], CommitOutcome]):
 
     def command(self, arguments: Namespace, caller: Caller) -> Command[object]:
         differences = required_differences(arguments)
-        worktree = self.worktrees.worker_worktree(caller.actor.id)
+        worktree = self.worktrees.worker_worktree(caller.actor.agent_id())
         if worktree is not None:
             self.step_check.check(worktree, DELIVERY_EVENTS, f"fix each of these in your worktree, then run journal worker {self.name} again")
         return self.requests.command(CommitWorkerWork(differences), caller.actor.id, ["worker", self.name, "--differences", differences], arguments, caller)

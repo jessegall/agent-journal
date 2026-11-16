@@ -44,7 +44,7 @@ class WorkSources:
                 self.authorized_sources[key] = previous
 
     def current(self, context: Context | Caller) -> MessageWorkSource | None:
-        sources = self.queries.query(MessageWorkSource).filter(agent_id=context.actor.id, environment_id=context.environment_id)
+        sources = self.queries.query(MessageWorkSource).filter(agent_id=context.actor.agent_id(), environment_id=context.environment_id)
         return self.kept.read(sources, sources.first, name="messages.work-source")
 
     def select(self, message: Message, origin: WorkSourceOrigin, context: Context) -> MessageWorkSource:
@@ -52,7 +52,7 @@ class WorkSources:
             raise Refusal("an agent selects a request in one environment")
         if message.type not in PERSON_MESSAGE_TYPES or message.environment_id != context.environment_id:
             raise Refusal("select a user request from this environment")
-        if not self.messages.addressed(context.actor.id).filter(id=message.id).exists():
+        if not self.messages.addressed(context.actor.agent_id()).filter(id=message.id).exists():
             raise Refusal("this message is addressed to another agent", "read your messages with journal message unread")
         return self.store(message, origin, context, context.environment_id)
 
@@ -62,7 +62,7 @@ class WorkSources:
         if selected is not None:
             return self.repository.update(selected, context, message_id=message.id, origin=origin, provisional=provisional,
                                           used=False, selection_number=selected.selection_number + 1)
-        return self.repository.save(MessageWorkSource(creator_id=context.actor.id, agent_id=context.actor.id,
+        return self.repository.save(MessageWorkSource(creator_id=context.actor.id, agent_id=context.actor.agent_id(),
                                                      environment_id=environment_id, message_id=message.id,
                                                      origin=origin, provisional=provisional), context)
 
@@ -98,12 +98,12 @@ class WorkSources:
         authorized = self.authorized_sources.get((context.actor.id, context.environment_id))
         if authorized is not None:
             return authorized
-        if context.actor.type is not ActorType.AGENT or self.agents.find_unscoped(context.actor.id).ended_at is not None:
+        if context.actor.type is not ActorType.AGENT or self.agents.find_unscoped(context.actor.agent_id()).ended_at is not None:
             return None
         assigned = self.assignments.current(context)
         if assigned is not None:
             return assigned
-        job = self.jobs.open_job(context.actor.id)
+        job = self.jobs.open_job(context.actor.agent_id())
         if job is not None:
             return WorkSourceCopy(job.source_message_id, job.source_version, job.environment_id, job.source_unavailable,
                                       selecting_actor_id=job.creator_id)

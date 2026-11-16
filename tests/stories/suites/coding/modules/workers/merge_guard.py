@@ -23,7 +23,7 @@ def guarded_merge_story(new_story, script: str, **entry: object):
 def test_a_plugin_guard_refuses_a_merge_before_anything_is_merged_and_the_worker_gets_the_findings(new_story):
     story, repository, worker = guarded_merge_story(new_story, "refuse.sh")
     target_tip = repository.tip(ENVIRONMENT_BRANCH)
-    story.expect_text(f"worker merge --wait {agent_number(story, worker.id)}", "was refused before anything was merged", "not today", actor=story.agent)
+    story.expect_text(f"worker merge --wait {agent_number(story, worker.agent_id())}", "was refused before anything was merged", "not today", actor=story.agent)
     story.expect_rows(repository.tip(ENVIRONMENT_BRANCH) == target_tip)
     job = story.newest_row(Message)
     story.expect_rows(job is not None and "was refused before anything was merged" in job.text and "not today" in job.text)

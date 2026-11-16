@@ -30,7 +30,7 @@ def test_a_main_agent_s_compaction_fades_its_environment_s_memories_of_every_typ
 
 def test_a_main_agent_s_compaction_leaves_a_helper_s_own_facts(new_story):
     story = new_story(fixture=BuilderStarted)
-    helper = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
+    helper = story.agent_actor(story.new_row_id("agent start s-9 claude worker --environment main"))
     agent_row_id = story.new_row_id('memory make "My worktree is clean" --environment main', actor=helper)
     compacted(story)
     story.expect_success(f"memory show {agent_row_id}", "weight: 5")

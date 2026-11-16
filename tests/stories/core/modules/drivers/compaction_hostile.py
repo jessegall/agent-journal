@@ -20,7 +20,7 @@ def limited(new_story):
 
 
 def test_j1_a_helper_that_runs_the_context_control_of_the_main_agent_is_refused_and_no_compaction_is_recorded(limited):
-    helper = Actor(limited.new_row_id(f"agent start helper-session claude helper --parent {limited.agent.id} --environment main"), ActorType.AGENT)
+    helper = limited.agent_actor(limited.new_row_id(f"agent start helper-session claude helper --parent {limited.agent.id} --environment main"))
     outcome = limited.run(f"agent control {agent_number(limited, limited.agent.id)} context compact", actor=helper)
     expect_compaction_count(limited, 0)
     limited.expect_rows(outcome.code != 0, compactions(limited) == [], detail=outcome.output_text)

@@ -32,7 +32,7 @@ def test_i2_i4_a_person_sees_the_open_request_of_an_agent_and_its_inspector_name
     story = typing_recorded(new_story(fixture=LimitEnabled))
     has_context(story, LIMIT_TOKENS)
     stops(story)
-    number = str(agent_number(story, story.agent.id))
+    number = str(agent_number(story, story.agent.agent_id()))
     with viewer_client(story) as person:
         usage = person.value(SHELL_WINDOW, ["usage", "show", "--json"])
         inspector = person.value(SHELL_WINDOW, ["usage", "inspector", number, "--json"])

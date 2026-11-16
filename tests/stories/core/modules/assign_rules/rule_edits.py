@@ -69,7 +69,7 @@ class RuleTasksStartedAndHandGiven(StoryFixture):
         started = new_task(story, '"Fix the clock" --complexity 5')
         story.expect_success(f"task start {started} {ENVIRONMENT}", actor=story.agent)
         hand_given = new_task(story, '"Fix the door"')
-        story.expect_success(f"task assign {hand_given} --to {agent_number(story, story.agent.id)} {ENVIRONMENT}", actor=story.user)
+        story.expect_success(f"task assign {hand_given} --to {agent_number(story, story.agent.agent_id())} {ENVIRONMENT}", actor=story.user)
         story.run(f"assign-rule edit {COMPLEXITY_RULE} --target agent --agent row:{story.helper.id} {ENVIRONMENT}", actor=story.user)
 
     def expect(self, story: Story) -> None:
@@ -135,7 +135,7 @@ def test_a_rule_on_a_retired_worker_keeps_its_warning_until_one_edit_moves_it(ne
     story.run(f"agent end {retired}")
     story.run(f'agent retire {agent_number(story, retired)} --reason "not needed"', actor=story.user)
     warned = story.run(f"assign-rule board {ENVIRONMENT}", actor=story.user).output_text
-    worker = Actor(story.new_row_id(f"agent start w-10 claude worker --parent {story.agent.id} {ENVIRONMENT}"), ActorType.AGENT)
+    worker = story.agent_actor(story.new_row_id(f"agent start w-10 claude worker --parent {story.agent.id} {ENVIRONMENT}"))
     story.expect_success(f"assign-rule edit 1 --target agent --agent row:{worker.id} {ENVIRONMENT}", actor=story.user)
     story.expect_text(f"assign-rule show 1 {ENVIRONMENT}", f"target_agent_id: {worker.id}", actor=story.user)
     story.expect_rows("its agent is retired" in warned, "its agent is retired" not in story.run(f"assign-rule board {ENVIRONMENT}", actor=story.user).output_text, detail=warned)

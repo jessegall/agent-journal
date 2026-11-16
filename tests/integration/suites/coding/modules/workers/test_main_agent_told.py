@@ -15,7 +15,7 @@ def story_with_worker(new_story, typing=None):
     story = new_story(fixture=BuilderStarted)
     if typing is not None:
         story.replace(TerminalTyping, typing)
-    worker = Actor(story.new_row_id(f"agent start s-9 claude worker --parent {story.agent.id} --environment main"), ActorType.AGENT)
+    worker = story.agent_actor(story.new_row_id(f"agent start s-9 claude worker --parent {story.agent.id} --environment main"))
     return story, worker
 
 

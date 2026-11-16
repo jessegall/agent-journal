@@ -35,6 +35,7 @@ from engine.database.points import Points
 from engine.module.performance_tools import PerformanceTools
 from collections.abc import Callable
 from engine.database.database import Database
+from engine.database.statement import Statement
 from engine.database.schema import Schema
 from engine.driver.hook_event import HookEvent
 from engine.driver.hook_reply import HookReply
@@ -154,10 +155,6 @@ class Story(KitRows[tuple[int, str]]):
     @helper.setter
     def helper(self, helper: Actor) -> None:
         self.state = replace(self.state, helper=helper)
-
-    @staticmethod
-    def agent_actor(agent_id: int) -> Actor:
-        return Actor(agent_id, ActorType.AGENT)
 
     def close(self) -> None:
         self.container.get(Database).close()
@@ -560,8 +557,14 @@ class Story(KitRows[tuple[int, str]]):
         self.expected(all(checks), f"a row check failed: {checks}" if detail is None else str(detail))
 
 
+STORY_ACTOR_ID_OFFSET = 10000
+STORY_ACTOR_OFFSET = Statement("INSERT OR IGNORE INTO actors (id, creator_id, type, name, created_at, updated_at)"
+                               " VALUES (?, 1, 'agent', 'story actor id offset', '2026-01-01T00:00:00+00:00', '2026-01-01T00:00:00+00:00')", [STORY_ACTOR_ID_OFFSET])
+
+
 def story_container(home: JournalHome, clock: ManualClock, process_table: "FixedProcessTable", journal: StoryJournal = COMMITTING_JOURNAL) -> Container:
     container = synced_container(home)
+    container.get(Database).update(STORY_ACTOR_OFFSET)
     journal.defer_writes(container.get(Database))
     container.bind(ScriptPolicy, ScriptPolicy(guards_run=True, commit_limit_ms=None))
     container.bind(Clock, clock)

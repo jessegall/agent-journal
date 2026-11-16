@@ -39,24 +39,24 @@ def typing_story(played):
 
 def test_the_controls_list_the_programs_choices_without_their_lines(played):
     story, _ = typing_story(played)
-    groups = json.loads(story.run(f"agent controls {agent_number(story, story.agent.id)} --json", actor=story.user).output_text)["groups"]
+    groups = json.loads(story.run(f"agent controls {agent_number(story, story.agent.agent_id())} --json", actor=story.user).output_text)["groups"]
     expect_key_group_groups(groups, ["model", "effort", "context"])
     expect_choices_groups_with(groups, {"value": "opus", "label": "Opus"})
 
 
 def test_a_choice_types_the_programs_own_line(played):
     story, typing = typing_story(played)
-    story.expect_success(f"agent control {agent_number(story, story.agent.id)} model opus", f"applied to {agent_label(story, story.agent.id)}", actor=story.user)
-    story.expect_success(f"agent control {agent_number(story, story.agent.id)} effort high", actor=story.user)
-    story.expect_success(f"agent control {agent_number(story, story.agent.id)} context compact", actor=story.user)
+    story.expect_success(f"agent control {agent_number(story, story.agent.agent_id())} model opus", f"applied to {agent_label(story, story.agent.id)}", actor=story.user)
+    story.expect_success(f"agent control {agent_number(story, story.agent.agent_id())} effort high", actor=story.user)
+    story.expect_success(f"agent control {agent_number(story, story.agent.agent_id())} context compact", actor=story.user)
     story.expect_rows(typing.typed == [(story.agent.id, "/model opus"), (story.agent.id, "/effort high"), (story.agent.id, COMPACT_LINE)])
 
 
 def test_a_choice_the_program_does_not_offer_and_an_ended_agent_are_refused(played):
     story, typing = typing_story(played)
-    story.expect_refusal(f"agent control {agent_number(story, story.agent.id)} model nope", "model nope is not a choice", actor=story.user)
+    story.expect_refusal(f"agent control {agent_number(story, story.agent.agent_id())} model nope", "model nope is not a choice", actor=story.user)
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
-    story.expect_refusal(f"agent control {agent_number(story, story.agent.id)} model opus", "has ended", actor=story.user)
+    story.expect_refusal(f"agent control {agent_number(story, story.agent.agent_id())} model opus", "has ended", actor=story.user)
     story.expect_rows(typing.typed == [])
 
 
@@ -117,7 +117,7 @@ def different_program_launcher(story) -> None:
 def stopped_main_agent(played, request):
     story = played(UserJoined)
     request.param(story)
-    story.expect_success(f"agent stop {agent_number(story, story.agent.id)}", f"stopped {agent_label(story, story.agent.id)}", actor=story.user)
+    story.expect_success(f"agent stop {agent_number(story, story.agent.agent_id())}", f"stopped {agent_label(story, story.agent.id)}", actor=story.user)
     return story
 
 
@@ -128,7 +128,7 @@ def test_a_main_with_no_process_and_no_launcher_that_answers_ends_when_stopped(s
 def test_stopping_an_ended_agent_is_refused(played):
     story = played(UserJoined)
     story.expect_success(f"agent end {story.agent.id}", actor=story.user)
-    story.expect_refusal(f"agent stop {agent_number(story, story.agent.id)}", "has ended already", actor=story.user)
+    story.expect_refusal(f"agent stop {agent_number(story, story.agent.agent_id())}", "has ended already", actor=story.user)
 
 
 def launch_settings_handed(story, program: str, request: dict) -> bool:

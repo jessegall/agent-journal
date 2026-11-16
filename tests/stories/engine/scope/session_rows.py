@@ -101,7 +101,7 @@ def test_a_message_with_no_target_reaches_a_new_main_session(new_story):
 def test_a_message_to_a_worker_keeps_its_target(new_story):
     story = new_story(fixture=MainAndWorkerMemories)
     worker = read_agent(story, "s-9")
-    message_id = story.new_row_id(f'message send "{PERSON_MESSAGE}" --target-agent {agent_number(story, worker.id)} --environment main', story.user)
+    message_id = story.new_row_id(f'message send "{PERSON_MESSAGE}" --target-agent {agent_number(story, worker.agent_id())} --environment main', story.user)
     story.expect_rows(story.row(Message, message_id).target_agent_id == worker.id)
 
 

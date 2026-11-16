@@ -52,7 +52,7 @@ def test_a_task_that_is_open_or_is_no_task_cannot_be_focused(started_tasks):
 
 def test_a_task_another_agent_started_cannot_be_focused(new_story):
     story = new_story(fixture=HelperStarted)
-    worker = Actor(story.new_row_id("agent start s-worker claude worker --environment main"), ActorType.AGENT)
+    worker = story.agent_actor(story.new_row_id("agent start s-worker claude worker --environment main"))
     story.run('task make "The count" --environment main', actor=worker)
     story.run("task start 1", actor=worker)
     story.expect_refusal("task focus 1", "task 1 is started by another agent", actor=story.agent)

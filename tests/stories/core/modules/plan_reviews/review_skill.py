@@ -39,7 +39,7 @@ def test_the_main_agent_must_read_the_review_applying_skill_when_the_critique_re
 def test_a_helper_that_made_the_plan_must_read_the_skill_when_the_critique_report_arrives(new_story):
     story = new_story(fixture=UserBuilder)
     story.run("skill write")
-    helper = Actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"), ActorType.AGENT)
+    helper = story.agent_actor(story.new_row_id(f"agent start s-2 claude helper --parent {story.agent.id} --environment main"))
     story.expect_success('template make "Read it" --brief "Say what is wrong" --applies-to plan --purpose critique', actor=story.user)
     story.expect_success('plan make "Helper plan" --environment main', actor=helper)
     story.expect_success("plan ready 1", actor=helper)

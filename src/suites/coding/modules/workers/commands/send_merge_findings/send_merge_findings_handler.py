@@ -39,7 +39,7 @@ class SendMergeFindingsHandler(Handler[SendMergeFindings, None]):
         if main_agent is None:
             raise Refusal("no main agent runs")
         self.bus.run(SendWorker(command.worker_id, f"{MERGER_FINDINGS_PREFIX}{command.findings}"),
-                     Actor(main_agent.id, ActorType.AGENT), environment_id=context.environment_id)
+                     main_agent.actor(), environment_id=context.environment_id)
         self.count_refusal(command.worker_id, context)
 
     def count_refusal(self, worker_id: int, context: Context) -> None:

@@ -22,7 +22,7 @@ class MergeAdviceGuard(Guard[Created[Message]]):
         receiver_id = event.row.target_agent_id
         if receiver_id is None or context.actor.type is not ActorType.AGENT or self.is_counted(context):
             return
-        if self.agents.find(context.actor.id).role == Merger.key and self.agents.find(receiver_id).role == Worker.key:
+        if self.agents.find(context.actor.agent_id()).role == Merger.key and self.agents.find(receiver_id).role == Worker.key:
             raise Refusal("you talk to a worker only through advise", 'journal merger advise <worker> "<text>" (five between two commits of the worker)')
 
     @staticmethod

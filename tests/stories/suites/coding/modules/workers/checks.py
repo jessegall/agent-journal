@@ -70,5 +70,5 @@ def test_a_proof_is_returned_and_a_job_sent_while_the_delivered_workers_task_is_
     story.expect_success("task retest 1", "state: started", actor=story.agent)
     story.expect_success('proof short 1 "wrong task"', 'state: short', actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, 'state: started')
-    story.expect_success(f'worker send --wait {agent_number(story, worker.id)} "Go on with it"', actor=story.agent)
+    story.expect_success(f'worker send --wait {agent_number(story, worker.agent_id())} "Go on with it"', actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, 'state: started')

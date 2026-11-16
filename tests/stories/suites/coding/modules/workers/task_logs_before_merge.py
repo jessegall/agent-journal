@@ -17,18 +17,18 @@ def test_merge_waits_for_the_main_agent_to_read_the_workers_logs(new_story):
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.expect_success("proof check 1", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", f"journal worker logs {agent_number(story, worker.id)}", actor=story.agent)
-    story.expect_success(f"worker logs {agent_number(story, worker.id)}", "task 1: Fix the cart", "outcome: its proofs are checked", "1 notes: Changed the cart", actor=story.agent)
+    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.agent_id())}", f"journal worker logs {agent_number(story, worker.agent_id())}", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.agent_id())}", "task 1: Fix the cart", "outcome: its proofs are checked", "1 notes: Changed the cart", actor=story.agent)
     request_merge(story, worker)
-    story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
 
 
 def test_a_worker_cannot_mark_its_own_logs_read(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = unread_worker(story, repository)
-    story.expect_refusal(f"worker logs {agent_number(story, worker.id)}", "main agent", actor=worker)
-    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.id)}", f"journal worker logs {agent_number(story, worker.id)}", actor=story.agent)
+    story.expect_refusal(f"worker logs {agent_number(story, worker.agent_id())}", "main agent", actor=worker)
+    story.expect_refusal(f"worker merge --wait {agent_number(story, worker.agent_id())}", f"journal worker logs {agent_number(story, worker.agent_id())}", actor=story.agent)
 
 
 def unread_worker(story, repository):
@@ -52,4 +52,4 @@ def test_logs_include_each_task_in_a_worker_batch(new_story):
     story.expect_success('proof make 1 --task 2 "tax.py:1"', actor=worker)
     story.expect_success("worker commit --wait --differences none", actor=worker)
     request_merge(story, worker)
-    story.expect_success(f"worker logs {agent_number(story, worker.id)}", "task 1: Fix the cart", "1 notes: Cart finished", "task 2: Calculate tax", "1 notes: Tax finished", actor=story.agent)
+    story.expect_success(f"worker logs {agent_number(story, worker.agent_id())}", "task 1: Fix the cart", "1 notes: Cart finished", "task 2: Calculate tax", "1 notes: Tax finished", actor=story.agent)

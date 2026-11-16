@@ -203,7 +203,7 @@ def test_a_run_that_waited_in_the_queue_docks_only_after_5_seconds_of_running(pl
     story = install_runner(played(RoomyUserBuilder))
     story.expect_success(f"setting set {ProcessSetting.POOL_CAPACITY_LONG.key} 4 --environment main", actor=story.user)
     story.expect_success(f"setting set {ProcessSetting.READERS_FORCED.key} false --environment main", actor=story.user)
-    story.agent = Actor(story.new_row_id("agent start queue-worker claude worker --environment main"), ActorType.AGENT)
+    story.agent = story.agent_actor(story.new_row_id("agent start queue-worker claude worker --environment main"))
     first = started_run(story, "deploy one", category=CommandCategory.BUILD)
     second = start_process(story, "deploy two", category=CommandCategory.BUILD)
     story.run_listeners()

@@ -47,11 +47,11 @@ def test_an_entered_line_without_a_process_does_not_block_a_new_task_start(new_s
     task_id = story.new_row_id('task make "Another task" --brief "Read the totals"', actor=story.agent)
     launcher = FakeLauncher.accepting(story.home.socket(LAUNCHER_SOCKET), answer=b"started 123456789\n")
     try:
-        story.expect_success(f"worker send --wait {agent_number(story, worker.id)} --task {task_id}", actor=story.agent)
+        story.expect_success(f"worker send --wait {agent_number(story, worker.agent_id())} --task {task_id}", actor=story.agent)
         story.run_listeners()
         story.expect_rows(not launcher.starts)
         request_merge(story, worker)
-        story.expect_success(f"worker merge --wait {agent_number(story, worker.id)}", actor=story.agent)
+        story.expect_success(f"worker merge --wait {agent_number(story, worker.agent_id())}", actor=story.agent)
         story.run_listeners()
         story.expect_rows(len(launcher.starts) == 1)
         story.expect_rows(story.row(Agent, worker.id).ended_at is None)
