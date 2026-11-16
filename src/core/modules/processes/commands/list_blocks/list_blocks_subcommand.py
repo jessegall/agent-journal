@@ -1,3 +1,4 @@
+from engine.cli.agent_id import AgentId
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -25,7 +26,7 @@ class ListBlocksSubcommand(ReadSubcommand[tuple[str, ...]]):
         self.held_runs, self.queries, self.agent_ids, self.clock = blocked_runs, queries, agent_ids, clock
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("--agent", type=int, help="the number of the agent; yours when left out")
+        parser.add_argument("--agent", type=AgentId, help="the id of the agent; yours when left out")
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[str, ...]:
         agent_id = self.agent_ids.checked(arguments.agent, caller.environment_id) if arguments.agent is not None else caller.actor.id

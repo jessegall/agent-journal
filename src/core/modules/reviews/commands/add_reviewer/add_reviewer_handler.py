@@ -11,7 +11,7 @@ from core.modules.reviews.support.review_settings import ReviewSettings
 
 
 class AddReviewerHandler(Handler[AddReviewer, Reviewer]):
-    """Starts the agent session of a new reviewer and saves the reviewer under the agent's number."""
+    """Starts the agent session of a new reviewer and saves the reviewer under the agent's id."""
 
     command = AddReviewer
     caller_prepares = True

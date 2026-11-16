@@ -2,7 +2,7 @@ RECIPIENT_PREFIX = "worker "
 
 
 class WorkerRecipient:
-    """How a message names the worker it is for: the word worker and its agent number."""
+    """How a message names the worker it is for: the word worker and its agent id."""
 
     @staticmethod
     def text(worker_id: int) -> str:

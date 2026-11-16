@@ -1,3 +1,4 @@
+from engine.cli.agent_id import AgentId
 from argparse import ArgumentParser, Namespace
 
 from engine.caller.caller import Caller
@@ -17,7 +18,7 @@ class ReleaseBlockSubcommand(Subcommand[ReleaseBlock, int]):
         self.agent_ids = agent_ids
 
     def arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument("agent", type=int, help="the number of the agent")
+        parser.add_argument("agent", type=AgentId, help="the id of the agent")
 
     def command(self, arguments: Namespace, caller: Caller) -> ReleaseBlock:
         return ReleaseBlock(self.agent_ids.checked(arguments.agent, caller.environment_id))
