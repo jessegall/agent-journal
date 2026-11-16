@@ -139,8 +139,8 @@ def test_a_workers_message_moves_only_its_foreground_run(targeted_chat):
     story.hook(story.worker_session, LINT)
     post_target(server, cookie, story.worker, "Interrupt the worker command")
     story.run_listeners()
-    expect_value(story.step("run file text", 1, "move"), "")
-    expect_value(story.step("run file text", 2, "move"), "1")
+    main_move, worker_move = story.step("run file text", 1, "move"), story.step("run file text", 2, "move")
+    story.expect_rows(main_move == "", worker_move == "1", detail=f"the worker's message moved only its own run: {main_move!r} {worker_move!r}")
 
 
 def test_main_chat_hides_worker_messages(targeted_chat):

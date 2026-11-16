@@ -49,7 +49,8 @@ def test_a_monitor_set_while_the_run_still_waited_lets_the_agent_stop_once_the_r
     process = started_run(story, "make test")
     story.hook("s-1", monitor(f"journal output monitor {process.id}"))
     story.run_command(MoveProcess(process.id), story.agent, 1)
-    expect_absent_reply_refusal(story.hook("s-1", HookSamples.stop()), "set a Monitor")
+    reply = story.hook("s-1", HookSamples.stop())
+    story.expect_rows("set a Monitor" not in reply.refusal, detail=f"a monitor set before the move lets the stop pass: {reply.refusal}")
 
 
 def test_a_monitor_whose_life_ended_before_the_run_moved_does_not_let_the_agent_stop(new_story):

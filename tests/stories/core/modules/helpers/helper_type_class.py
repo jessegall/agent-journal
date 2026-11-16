@@ -18,7 +18,8 @@ def test_two_suites_that_register_the_same_helper_type_stop_the_boot_naming_both
     story.expect_sync_success(f"{SAMPLES}:ScribeSuite")
     story.expect_sync_refusal(f"{SAMPLES}:CopyScribeSuite", "suite copy-scribe and suite scribe both register helper type scribe")
     story.expect_sync_without(f"{SAMPLES}:CopyScribeSuite")
-    story.expect_text("suite show scribe", "scribe: scribe.scribe", actor=story.user)
+    shown = story.run("suite show scribe", actor=story.user).output_text
+    story.expect_rows("scribe: scribe.scribe" in shown, detail=f"after the refused copy the first suite keeps its helper type: {shown}")
 
 
 def test_an_ended_agent_of_a_type_no_module_registers_any_more_is_shown_retired_with_its_stored_key(new_story):

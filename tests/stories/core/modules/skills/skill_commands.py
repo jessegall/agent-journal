@@ -1,6 +1,5 @@
 import pytest
 
-from engine.command.bus import Bus
 from engine.registry.registry import Registry
 from engine.database.database import Database
 from core.modules.skills.commands.load_skill.load_skill import LoadSkill
@@ -32,7 +31,8 @@ def test_require_does_nothing_for_a_skill_the_agent_holds_loaded_in_its_current_
 def test_require_makes_a_skill_read_in_an_older_text_due_again(required_notes_skill):
     story = required_notes_skill
     story.run_command(LoadSkill(story.agent.id, "journal-notes", "an-old-digest"), story.agent)
-    story.expect_success(f"skill require {story.agent.id} journal-notes", "load this first with the Skill tool: journal-notes")
+    outcome = story.run(f"skill require {story.agent.id} journal-notes")
+    story.expect_rows(outcome.code == 0, "load this first with the Skill tool: journal-notes" in outcome.output_text, detail=f"a skill read in an older text is due again: {outcome.output_text}")
 
 
 

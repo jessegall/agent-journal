@@ -42,7 +42,8 @@ def delivered(scenario, session="s-1"):
 
 
 def test_a_plan_without_tasks_still_delivers_context(scenario):
-    feature("Plan 1 started" in "\n".join(delivered(scenario).lines), "zero-task plan had no context pointer")
+    lines = delivered(scenario).lines
+    scenario.story.expect_rows("Plan 1 started" in "\n".join(lines), detail=f"a plan with no tasks still points to its context: {lines}")
 
 
 def test_plan_edits_do_not_redeliver_start_context(acknowledged_scenario):

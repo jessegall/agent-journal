@@ -19,20 +19,9 @@ def guarded(runs, command: str, timeout: int = 10, **fields: object) -> None:
     runs.managed({"PreToolUse": [{"matcher": "Bash", "hooks": [{**entry(command, **fields), "timeout": timeout}]}]})
 
 
-def test_on_failure_block_refuses_a_hook_that_times_out(runs):
-    guarded(runs, "sleep 5", timeout=1, onFailure="block")
-    answer = runs.tool("Bash", {"command": "ls"})
-    expect_true(REFUSED_TOOL in answer.stdout, (answer.stdout, answer.stderr))
-
-
-def test_on_failure_block_refuses_a_hook_that_crashes(runs):
-    guarded(runs, "exit 7", onFailure="block")
-    answer = runs.tool("Bash", {"command": "ls"})
-    expect_true(REFUSED_TOOL in answer.stdout, (answer.stdout, answer.stderr))
-
-
-def test_on_failure_block_refuses_unreadable_output(runs):
-    guarded(runs, "printf 'not json {'", onFailure="block")
+@pytest.mark.parametrize(("command", "timeout"), [("sleep 5", 1), ("exit 7", 10), ("printf 'not json {'", 10)], ids=["times-out", "crashes", "unreadable-output"])
+def test_on_failure_block_refuses_a_hook_that_times_out_crashes_or_prints_unreadable_output(runs, command, timeout):
+    guarded(runs, command, timeout=timeout, onFailure="block")
     answer = runs.tool("Bash", {"command": "ls"})
     expect_true(REFUSED_TOOL in answer.stdout, (answer.stdout, answer.stderr))
 

@@ -77,7 +77,8 @@ def test_a_tick_of_the_clock_keeps_a_runs_progress_current(new_story):
     story.step("run printed", process_id, 1, "[ 42%]\n")
     output_tick = OutputReading()
     expect_handler(output_tick, story, True)
-    expect_progress(story, process_id, 42)
+    progress = story.container.get(ProcessQuery).find(process_id).progress
+    story.expect_rows(progress == 42, detail=f"the tick kept the run's progress at {progress}")
     expect_handler(output_tick, story, False)
 
 

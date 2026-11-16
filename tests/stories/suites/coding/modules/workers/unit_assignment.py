@@ -45,7 +45,8 @@ def test_06_the_brief_names_the_unit(planned_worker):
 
 
 def test_07_the_status_names_the_unit_under_the_point(planned_worker):
-    expect_value_4(planned_worker.status().splitlines()[1].startswith("Unit: plan 1, Rebuild the cart."))
+    status = planned_worker.status()
+    planned_worker.story.expect_rows(status.splitlines()[1].startswith("Unit: plan 1, Rebuild the cart."), detail=f"the unit under the point: {status}")
 
 
 @pytest.mark.xfail(strict=True, reason="task 9016: the generic agent list takes no line from a module yet")

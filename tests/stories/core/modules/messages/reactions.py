@@ -43,22 +43,17 @@ def test_words_are_no_face(new_story):
     story.expect_refusal('message react 1 "nice"', "nice is no face", actor=story.agent)
 
 
-def test_the_agent_is_told_of_a_face_the_user_puts_on_but_not_of_its_own_or_one_taken_off(new_story):
+def test_the_agent_is_told_and_woken_by_a_face_the_user_puts_on_but_not_of_its_own_or_one_taken_off(new_story):
     story = reaction_story(new_story)
     story.hook("s-1", HookSamples.stop())
     story.run('message react 1 "👍"', actor=story.agent)
     story.expect_absent_hook_line("s-1", HookSamples.stop(), "the user reacted")
     story.run('message react 1 "🎉"', actor=story.user)
+    line = next(iter(story.story_rows(AgentLine, session_agent_id=story.agent.id, source=REACTION_SOURCE)))
+    story.expect_rows(line.wakes_agent, detail=f"the line of the user's face wakes the agent: {line}")
     expect_reply_line(story.hook("s-1", HookSamples.stop()), "The user reacted to message:1")
     story.run('message react 1 "🎉"', actor=story.user)
     story.expect_absent_hook_line("s-1", HookSamples.stop(), "the user reacted")
-
-
-def test_a_face_the_user_puts_on_wakes_the_agent(new_story):
-    story = reaction_story(new_story)
-    story.run('message react 1 "🎉"', actor=story.user)
-    line = next(iter(story.story_rows(AgentLine, session_agent_id=story.agent.id, source=REACTION_SOURCE)))
-    story.expect_rows(line.wakes_agent)
 
 
 def test_the_chat_feed_carries_the_faces(new_story):

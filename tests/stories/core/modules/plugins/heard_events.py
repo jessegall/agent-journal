@@ -39,4 +39,5 @@ def test_a_hears_entry_with_an_interval_gets_one_delivery_within_it(new_story):
     story = received_story(new_story, [{"event": "tool_starting", "every_minutes": 5}])
     story.hook("s-1", LISTING_SAMPLE)
     story.hook("s-1", LISTING_SAMPLE)
-    story.expect_rows(tool_deliveries(story) == 1)
+    deliveries = tool_deliveries(story)
+    story.expect_rows(deliveries == 1, detail=f"two tool uses within the five minute interval made {deliveries} deliveries")

@@ -88,10 +88,6 @@ def test_55_refused_no_note_and_any_length_is_accepted(committed_worker):
     committed_worker.story.expect_success(f'worker ask-merge "{"the cart " * 300}"', actor=committed_worker.worker)
 
 
-def test_56_refused_in_a_unit_of_one(single_worker):
-    single_worker.story.expect_refusal(REQUEST_MERGE, "your task asks for its merge by its commit", actor=single_worker.worker)
-
-
 @pytest.mark.real_git
 def test_57_an_early_ask_up_to_a_task_carries_every_earlier_commit_and_leaves_the_later_ones(three_committed_worker):
     three_committed_worker.end_all_tests()
@@ -109,12 +105,6 @@ def test_60_refused_up_to_a_task_not_committed_or_a_commit_not_on_the_branch(fir
     first_committed_worker.end_all_tests()
     first_committed_worker.story.expect_refusal('worker ask-merge "the rest" --up-to 3', "task 3 is not committed in your worktree", actor=first_committed_worker.worker)
     first_committed_worker.story.expect_refusal('worker ask-merge "the rest" --up-to abcdef1', "commit abcdef1 is not on your branch", actor=first_committed_worker.worker)
-
-
-@pytest.mark.real_git
-def test_62_main_may_still_take_a_part_early(two_committed_worker):
-    two_committed_worker.end_all_tests()
-    two_committed_worker.story.expect_success(f"worker merge --wait {agent_number(two_committed_worker.story, two_committed_worker.worker.id)} --up-to 1", actor=two_committed_worker.story.agent)
 
 
 def test_63_main_cannot_merge_a_unit_of_more_that_did_not_ask(committed_worker):

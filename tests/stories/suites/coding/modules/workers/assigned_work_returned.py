@@ -1,3 +1,6 @@
+from core.modules.assignments.models.assignment import Assignment
+from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.models.task import Task
 from tests.stories.suites.coding.modules.workers.support.phase_steps import single_worker  # noqa: F401
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
@@ -40,8 +43,8 @@ def test_a_worker_that_is_released_gives_back_its_waiting_tasks_open_and_blocked
 def test_a_worker_that_is_released_returns_its_started_task_to_open_and_unassigned(single_worker):
     story = single_worker.story
     story.expect_success(f'worker release {agent_number(story, single_worker.worker.id)} "wrong job"', actor=story.agent)
-    story.expect_text("task show 1", "state: open", actor=story.agent)
-    story.expect_text("task info 1", "assigned to: nobody", actor=story.agent)
+    task = story.row(Task, 1)
+    story.expect_rows(task.state is TaskState.OPEN, task.holder_id is None, not story.story_rows(Assignment, subject_model="task", subject_id=1), detail=f"the released worker's started task is open and unassigned: {task}")
 
 
 def test_a_worker_whose_last_started_task_is_moved_away_by_someone_else_is_refused_with_the_last_task_of_worker_message(single_worker):

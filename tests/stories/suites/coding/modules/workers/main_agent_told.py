@@ -8,7 +8,6 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.messages.commands.record_parent_report.record_parent_report import RecordParentReport
 from tests.stories.core.modules.messages.delivery import KeptTyping
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from tests.stories.support.story_checks import expect_outcome_with
 
 
 def story_with_worker(new_story, typing=None):
@@ -36,8 +35,7 @@ def test_a_workers_report_says_it_wakes_the_main_agent_and_stays_visible(new_sto
     story, worker = story_with_worker(new_story)
     report(story, worker)
     line = story.newest_row(AgentLine, session_agent_id=story.agent.id)
-    expect_value(bool(line.wakes_agent), True)
-    expect_outcome_with(line, "reported in message")
+    story.expect_rows(line.wakes_agent, "reported in message" in line.text, detail=f"the worker's report line wakes the main agent: {line}")
 
 
 def test_a_report_that_only_states_progress_is_refused_with_the_way_to_log_it(new_story):

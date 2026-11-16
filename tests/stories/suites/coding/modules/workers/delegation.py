@@ -19,7 +19,6 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import d
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator, BuilderHelper
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
-from engine.testing.expectations.expect_reply import expect_absent_reply_refusal
 from tests.stories.support.story_checks import expect_value
 from suites.coding.modules.workers.agent_messages.worker_task_reassignment_message import WorkerTaskReassignmentMessage
 from suites.coding.modules.workers.agent_messages.worker_task_reassigned_message import WorkerTaskReassignedMessage
@@ -49,7 +48,8 @@ def judge_worker(new_story):
 def test_a_judge_named_inside_a_workers_quoted_text_is_no_judge_run(judge_worker):
     story, _, worker = judge_worker
     line = HookSamples.shell('journal task log 1 "I will run journal sins next"', ShellPart("journal", CommandCategory.JOURNAL, ["task", "log", "1", "I will run journal sins next"], subcommand="task"))
-    expect_absent_reply_refusal(story.hook(worker_session(story, worker), line), "a worker judges only its own changes")
+    reply = story.hook(worker_session(story, worker), line)
+    story.expect_rows("a worker judges only its own changes" not in reply.refusal, detail=f"a judge named in quoted text is no judge run: {reply.refusal}")
 
 
 def test_the_chat_marks_can_be_read_by_type_for_the_recent_activity_of_the_workers(new_story):

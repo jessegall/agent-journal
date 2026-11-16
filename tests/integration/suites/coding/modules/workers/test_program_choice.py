@@ -94,7 +94,8 @@ def test_worker_on_an_out_program_does_not_restart_until_the_outage_ends(failed_
     story.advance(timedelta(minutes=15, seconds=1))
     WorkerResumeRetry()(story.container)
     story.run_listeners()
-    story.expect_rows(len(worker_starts(launcher, worker)) == 2, detail=str(worker_starts(launcher, worker)))
+    starts = worker_starts(launcher, worker)
+    story.expect_rows(len(starts) == 2, detail=f"the worker starts again once the outage ends: {starts}")
 
 
 

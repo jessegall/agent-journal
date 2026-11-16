@@ -7,7 +7,6 @@ from engine.driver.conditions.ran_command import RanCommand
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.engine.driver.support.fixtures import LeadStarted
-from tests.stories.engine.driver.support.hook_agents import hook_agent
 from tests.stories.engine.driver.support.samples import SAMPLES
 from engine.command.bus import Bus
 from engine.actor.actor import Actor
@@ -57,7 +56,7 @@ def test_a_block_ends_when_its_condition_is_true(new_story):
 def test_conditions_combine(condition_story, ends):
     story = condition_story
     edit = story.hook("s-1", HookSamples.edit("src/cart.py"))
-    expect_changed_bool(edit, ends)
+    story.expect_rows(bool(edit.refusal) is not ends, detail=f"combined conditions that end ({ends}) refuse the edit: {edit.refusal}")
 
 
 @pytest.fixture

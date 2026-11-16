@@ -1,18 +1,15 @@
+import pytest
+
 from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.core.support.agent_labels import agent_number
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.sandbox.shell_sandbox import ShellSandbox
 from core.modules.agents.models.agent import Agent
-from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.agents.testing.fake_launcher import FakeLauncher
-from core.modules.helpers.testing.story_helper_programs import StoryHelperPrograms
-from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from tests.stories.core.modules.helpers.start_helper import started
 from tests.stories.core.support.coding_fixtures import UserBuilder, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
-from tests.integration.suites.coding.modules.workers.test_test_queue import PROOF, recording_launch
-from tests.stories.support.story_checks import expect_value
+from tests.integration.suites.coding.modules.workers.test_test_queue import PROOF
 from tests.stories.core.support.agent_labels import agent_label
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.support.coding_settings import DESIGNER_ENABLED_SETTING
@@ -69,10 +66,16 @@ def test_s07_the_designer_starts_only_once_a_person_turns_it_on_and_reads_withou
     story.expect_text(f"agent show {agent_number(story, helper_id)}", f"profile: {DESIGNER_PROFILE.name}", "access: read", actor=story.user)
 
 
-def test_s48_the_merger_keeps_its_claim_after_the_merger_setting_is_turned_off(new_story):
+@pytest.fixture
+def claimed_merge(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     worker = merger_delivery(story)
-    merger = read_merger(story)
+    return story, worker, read_merger(story)
+
+
+def test_s48_the_merger_keeps_its_claim_after_the_merger_setting_is_turned_off(claimed_merge):
+    story, worker, merger = claimed_merge
     story.expect_success(f"setting set {MERGER} off --project", actor=story.user)
-    expect_value(read_merger(story).id, merger.id)
+    kept = read_merger(story)
+    story.expect_rows(kept.id == merger.id, detail=f"the merger kept its claim with the merger setting off: {kept}")
     story.expect_text("merger next", agent_label(story, worker.id), actor=Actor(merger.id, ActorType.AGENT))

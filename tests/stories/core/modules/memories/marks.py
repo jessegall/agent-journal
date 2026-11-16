@@ -1,12 +1,11 @@
 import pytest
 
-from datetime import timedelta
 
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, expect_mark_count
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from engine.testing.expectations.expect_row import expect_row
-from tests.stories.core.modules.chat.support.mark_samples import expect_absent_marks_text, expect_marks_text, marks_text
+from tests.stories.core.modules.chat.support.mark_samples import expect_marks_text, marks_text
 
 FACT = 'memory make "The cart total is in cents" --environment main'
 CART_EDIT = HookSamples.edit("src/cart.py")
@@ -64,7 +63,8 @@ def test_a_memory_given_back_by_a_keyword_shows_a_reminded_mark(new_story):
     story.run_listeners()
     story.expect_hook_allowed("s-1", CART_EDIT, "memory:1 applies now")
     story.run_listeners()
-    expect_marks_text(story, "Reminded the agent: The cart total is in cents")
+    shown = marks_text(story)
+    story.expect_rows("Reminded the agent: The cart total is in cents" in shown, detail=f"a memory given back by its keyword shows its reminded mark: {shown}")
 
 
 def test_a_compaction_shows_a_compacted_mark(new_story):

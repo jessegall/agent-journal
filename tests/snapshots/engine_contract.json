@@ -440,7 +440,8 @@
         "start_line: ClassVar[bool]",
         "channel: ClassVar[LineChannel]",
         "category: ClassVar[LineCategory]",
-        "interval_key: ClassVar[str]"
+        "interval_key: ClassVar[str]",
+        "reads_line_history: ClassVar[bool]"
       ],
       "methods": [
         "lines(self, question: Question, view: AgentView) -> Sequence[Line]"
@@ -3011,7 +3012,9 @@
       "fields": [],
       "methods": [
         "insert(self, row: dict[str, object], timestamp: Timestamp) -> Statement",
+        "insert_many(self, rows: Sequence[dict[str, object]], timestamp: Timestamp) -> Statement",
         "update(self, row_id: int, version: int, changed: dict[str, object], timestamp: Timestamp) -> Statement",
+        "update_many(self, versions: Sequence[tuple[int, int]], changed: dict[str, object], timestamp: Timestamp) -> Statement",
         "delete(self, row_id: int, version: int) -> Statement",
         "read(self, row_id: int) -> Statement",
         "count(self) -> Statement",
@@ -6182,14 +6185,15 @@
         "marker_values(self, area: str) -> tuple[str, str]",
         "class_values(self, classes: list[ast.ClassDef]) -> dict[str, ast.expr]",
         "classes(self, file: Path) -> list[ast.ClassDef]",
+        "parsed(self, file: Path) -> ast.Module",
         "module_lines(self) -> list[str]",
         "module_line(self, name: str, file: Path) -> str",
         "suite_lines(self) -> list[str]",
         "tunnel_lines(self) -> list[str]",
         "described_purpose(self, file: Path) -> str",
         "purpose(self, file: Path, classes: list[ast.ClassDef]) -> str",
-        "needed_modules(self, file: Path, classes: list[ast.ClassDef]) -> str",
-        "declared_list(self, file: Path, value: ast.expr | None) -> ast.expr | None",
+        "needed_modules(self, tree: ast.Module, classes: list[ast.ClassDef]) -> str",
+        "declared_list(self, tree: ast.Module, value: ast.expr | None) -> ast.expr | None",
         "folder_names(self, folder: Path) -> list[str]",
         "has_cache_files_alone(folder: Path) -> bool"
       ]
@@ -9693,6 +9697,9 @@
       "methods": [
         "save(self, model: M, context: Context) -> M",
         "update(self, stored: M, context: Context) -> M",
+        "insert_many(self, models: Sequence[M], context: Context) -> list[M]",
+        "update_many(self, stored_rows: Sequence[M], context: Context) -> list[M]",
+        "logged(self, saved: M, change: Change[M], skipped: frozenset[str]) -> None",
         "save_metadata(self, stored: M, metadata: Metadata, context: Context) -> M",
         "save_change(self, stored: M | None, model: M, context: Context, stores_metadata: bool) -> M",
         "merge(self, existing: M | None, model: M, context: Context) -> M",
