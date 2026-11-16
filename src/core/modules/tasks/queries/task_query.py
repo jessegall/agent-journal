@@ -29,6 +29,7 @@ FOLLOWED_PLAN_STATES = ("approved", "started")
 TASK_PAGE_ROWS = 50
 BLOCKED_TASKS_REASON = "an agent's current tasks are every task it holds started, which its open-task setting bounds"
 LISTED_TASKS_REASON = "the tasks one step names by number, a few at most; a number with no task is no task"
+OWN_TASKS_REASON = "an agent's own tasks, held or assigned, are read by the agent, the same in every environment"
 ASSIGNED_TASKS_REASON = "the tasks assigned to an agent are its whole unit of work, which can hold more than fifty tasks"
 
 class TaskQuery(Query[Task], KeptRowChanges[Task]):
@@ -57,10 +58,10 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
         return AssigneeAmong(Task, (actor_id,))
 
     def assignee_tasks(self, actor_id: int) -> Self:
-        return self.matching(self.assignee(actor_id))
+        return self.all_environments(OWN_TASKS_REASON).matching(self.assignee(actor_id))
 
     def assigned(self, actor_id: int) -> tuple[Task, ...]:
-        tasks = self.open_tasks().matching(self.assignee(actor_id)).oldest()
+        tasks = self.open_tasks().all_environments(OWN_TASKS_REASON).matching(self.assignee(actor_id)).oldest()
         return self.kept.owner_read(tasks, lambda: tuple(tasks.every_row(ASSIGNED_TASKS_REASON)), name="tasks.queued_tasks")
 
     def unfinished_assigned(self, actor_id: int) -> tuple[Task, ...]:
@@ -68,7 +69,7 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
         return self.kept.owner_read(tasks, lambda: tuple(tasks.every_row(ASSIGNED_TASKS_REASON)), name="tasks.unfinished_assigned")
 
     def assigned_ready(self, actor_id: int) -> tuple[Task, ...]:
-        tasks = self.open_tasks().matching(self.assignee(actor_id)).matching(self.no_open_dependency()).oldest()
+        tasks = self.open_tasks().all_environments(OWN_TASKS_REASON).matching(self.assignee(actor_id)).matching(self.no_open_dependency()).oldest()
         return self.kept.owner_read(tasks, lambda: tuple(tasks.every_row(ASSIGNED_TASKS_REASON)), name="tasks.next_delegated")
 
     def assigned_blocked(self, actor_id: int) -> tuple[Task, ...]:
@@ -94,7 +95,7 @@ class TaskQuery(Query[Task], KeptRowChanges[Task]):
         return self.matching(IsNull("closed_at"))
 
     def holder(self, agent_id: int) -> Self:
-        return self.filter(holder_id=agent_id)
+        return self.all_environments(OWN_TASKS_REASON).filter(holder_id=agent_id)
 
     def started(self) -> Self:
         return self.filter(state=TaskState.STARTED)
