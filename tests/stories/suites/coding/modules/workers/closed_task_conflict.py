@@ -2,12 +2,13 @@ from tests.stories.suites.coding.modules.workers.support.commit_command import r
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
-from engine.database.database import Database
+from engine.actor.actor import Actor
+from engine.testing.stories.story import Story
+
 from engine.testing.examples.hook_samples import HookSamples
-from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import FIRST_PROOF, checked_worker, repository_environment, worker_session
-from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
+from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH, GitRepository
 
 
 @pytest.mark.parametrize("command,notice,proof_goes_short", [("worker merge --wait {worker}", "clashed on cart.py", True),
@@ -40,11 +41,16 @@ def test_a_conflict_reopens_the_closed_task_before_asking_the_worker_to_edit(new
 
 
 
-@pytest.mark.real_git
-def test_a_task_that_comes_back_from_a_clash_has_its_proof_short_and_is_proved_and_committed_again(new_story):
+@pytest.fixture
+def checked_story(new_story) -> tuple[Story, GitRepository, Actor]:
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
-    worker = checked_worker(story, repository)
+    return story, repository, checked_worker(story, repository)
+
+
+@pytest.mark.real_git
+def test_a_task_that_comes_back_from_a_clash_has_its_proof_short_and_is_proved_and_committed_again(checked_story):
+    story, repository, worker = checked_story
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("cart.py", "TOTAL = 2\n", "Another total")
     story.expect_text(f"worker merge --wait {agent_number(story, worker.id)}", "clashed on cart.py", actor=story.agent)

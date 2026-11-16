@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.phase_steps import pair_worker  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.commit_command import request_merge
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
@@ -84,12 +85,11 @@ def test_a_worker_whose_two_tasks_are_committed_stops_quietly(new_story):
     expect_silent_stop(worker)
 
 
-def test_a_single_task_committed_with_its_next_task_not_started_stops_quietly(new_story):
-    worker = unplanned_worker(new_story)
-    worker.prove_commit(TEST_LINE)
-    worker.story.expect_hook_allowed(worker.session, HookSamples.stop())
-    worker.program_ended()
-    expect_silent_stop(worker)
+def test_a_single_task_committed_with_its_next_task_not_started_stops_quietly(pair_worker):
+    pair_worker.prove_commit(TEST_LINE)
+    pair_worker.story.expect_hook_allowed(pair_worker.session, HookSamples.stop())
+    pair_worker.program_ended()
+    expect_silent_stop(pair_worker)
 
 
 def test_a_worker_whose_commit_in_a_started_plan_waits_for_its_merge_stops_quietly(committed):
@@ -115,26 +115,28 @@ def test_a_worker_whose_program_crashed_while_building_is_started_again(crashed_
     crashed_building.story.expect_rows(any(expected_agent_message(WorkerRestartedMessage.declared()).matches_text(line) and "started again" in line for line in crashed_building.main_agent_lines()), len(unfinished_lines(crashed_building)) == 1)
 
 
-def test_a_worker_with_an_open_ask_still_reaches_its_parent_when_it_ends(new_story):
-    worker = start_planned_worker(new_story, PHASE_DISPATCH)
-    worker.story.expect_success(MERGER_OFF, actor=worker.story.user)
-    worker.story.expect_success('wait stuck "the plan is unclear"', actor=worker.worker)
-    worker.program_ended()
-    worker.story.expect_text(f"agent-line list --agent {worker.story.agent.id}", f"worker:{agent_number(worker.story, worker.worker.id)} ended with")
+def test_a_worker_with_an_open_ask_still_reaches_its_parent_when_it_ends(phase_worker):
+    phase_worker.story.expect_success(MERGER_OFF, actor=phase_worker.story.user)
+    phase_worker.story.expect_success('wait stuck "the plan is unclear"', actor=phase_worker.worker)
+    phase_worker.program_ended()
+    phase_worker.story.expect_text(f"agent-line list --agent {phase_worker.story.agent.id}", f"worker:{agent_number(phase_worker.story, phase_worker.worker.id)} ended with")
 
 
-def test_a_worker_with_no_task_left_may_stop(new_story):
+@pytest.fixture
+def merger_off_worker(new_story):
     story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
-    worker = dispatched_worker(story)
+    return story, dispatched_worker(story)
+
+
+def test_a_worker_with_no_task_left_may_stop(merger_off_worker):
+    story, worker = merger_off_worker
     story.expect_success(f'worker release {agent_number(story, worker.id)} "done with it"', actor=story.agent)
     story.expect_hook_allowed(worker_session(story, worker), HookSamples.stop())
 
 
-def test_a_worker_with_only_blocked_tasks_may_stop_and_tells_who_blocked_them(new_story):
-    story = new_story(fixture=MergerOffOrchestrator)
-    repository_environment(story)
-    worker = dispatched_worker(story)
+def test_a_worker_with_only_blocked_tasks_may_stop_and_tells_who_blocked_them(merger_off_worker):
+    story, worker = merger_off_worker
     story.expect_success('task block 1 --reason "waits on a user"', actor=worker)
     reply = story.expect_hook_allowed(worker_session(story, worker), HookSamples.stop())
     story.expect_rows(reply is None or expected_agent_message(WorkerTaskBlockedMessage.declared()).matches_text(' '.join(reply.lines)))

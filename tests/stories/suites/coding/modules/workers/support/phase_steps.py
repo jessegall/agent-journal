@@ -1,3 +1,5 @@
+import pytest
+
 from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.core.modules.processes.support.roomy_fixtures import RoomyOrchestratorWithPerson
 from core.modules.processes.models.enums.process_state import ProcessState
@@ -221,3 +223,28 @@ def unplanned_group_worker(new_story) -> StoryWorker:
 def expect_task_states(worker: StoryWorker, state: str, *task_ids: int) -> None:
     for task_id in task_ids:
         worker.story.expect_text(f"task show {task_id}", f"state: {state}", actor=worker.story.agent)
+
+
+@pytest.fixture
+def group_worker(new_story) -> StoryWorker:
+    return unplanned_group_worker(new_story)
+
+
+@pytest.fixture
+def planned_worker(new_story) -> StoryWorker:
+    return start_planned_worker(new_story)
+
+
+@pytest.fixture
+def phase_worker(new_story) -> StoryWorker:
+    return start_planned_worker(new_story, PHASE_DISPATCH)
+
+
+@pytest.fixture
+def single_worker(new_story) -> StoryWorker:
+    return single_task_worker(new_story)
+
+
+@pytest.fixture
+def pair_worker(new_story) -> StoryWorker:
+    return unplanned_worker(new_story)

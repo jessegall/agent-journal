@@ -78,15 +78,12 @@ def test_a_negative_wait_is_refused(worker):
     worker.story.expect_refusal(SECONDS_SET.format(seconds=-1), "at least 0", actor=worker.story.user)
 
 
-def test_a_named_test_past_the_wait_asks_its_run_to_go_to_the_background(worker):
+@pytest.mark.parametrize(("ends_in_time", "is_asked"), [(False, True), (True, False)])
+def test_a_named_test_past_the_wait_is_asked_to_go_to_the_background_and_one_that_ends_in_time_is_not(worker, ends_in_time, is_asked):
+    if ends_in_time:
+        end_run_during_wait(worker.story, "ok\n")
     worker.story.run(TEST_RUN, actor=worker.worker)
-    expect_value(worker.story.step("run asked to move", newest_run(worker.story).id), True)
-
-
-def test_a_named_test_that_ends_in_time_is_not_asked_to_move(worker):
-    end_run_during_wait(worker.story, "ok\n")
-    worker.story.run(TEST_RUN, actor=worker.worker)
-    expect_value(worker.story.step("run asked to move", newest_run(worker.story).id), False)
+    expect_value(worker.story.step("run asked to move", newest_run(worker.story).id), is_asked)
 
 
 def test_a_named_test_launches_and_holds_the_call_with_the_settings_queue_wait(worker, launches):

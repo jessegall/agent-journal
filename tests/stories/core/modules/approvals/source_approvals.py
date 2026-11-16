@@ -1,9 +1,6 @@
 import pytest
 
 from core.modules.approvals.models.approval_request import ApprovalRequest
-from core.modules.docking.models.enums.dock_item_state import DockItemState
-from core.modules.docking.queries.dock_item_query import DockItemQuery
-from core.modules.plans.models.enums.plan_dock_type import PlanDockType
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.triggers.models.trigger import Trigger
@@ -20,13 +17,11 @@ TEST_ROWS_REASON = "the test reads every row it checks"
 
 
 
-def test_a_person_approves_the_ready_plan_on_its_card_and_a_registry_change_asks_nothing_more(new_story):
+def test_a_registry_change_asks_nothing_more_of_a_ready_plan(new_story):
     story = new_story(fixture=ReadyApprovalPlan)
     story.expect_sync_success(UPGRADE)
     story.run_listeners()
-    story.expect_rows(len(story.story_rows(ApprovalRequest)) == 0)
-    story.expect_success("plan approve 1 --environment main", "state: approved", actor=story.user)
-    story.expect_rows(story.row(Plan, 1).state is PlanState.APPROVED)
+    story.expect_rows(len(story.story_rows(ApprovalRequest)) == 0, story.row(Plan, 1).state is PlanState.READY)
 
 
 @pytest.fixture

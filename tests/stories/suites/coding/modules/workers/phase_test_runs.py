@@ -1,7 +1,8 @@
 import pytest
 
+from tests.stories.suites.coding.modules.workers.support.phase_steps import pair_worker  # noqa: F401
 from engine.testing.expectations.expect_reply import expect_reply_allowed, expect_reply_refusal
-from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker, unplanned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 
@@ -33,10 +34,9 @@ def failed_commit(worker) -> None:
     worker.end_tests(1)
 
 
-def test_a_worker_of_an_unplanned_task_with_failed_tests_runs_a_test_without_spending_its_count(new_story):
-    worker = unplanned_worker(new_story)
-    failed_commit(worker)
-    worker.story.expect_success(f"setting set {WORKER_PHASE_TEST_RUNS} 0 --environment main", actor=worker.story.user)
-    worker.story.expect_rows("Point: fix" in worker.status(), detail=worker.status())
-    expect_reply_allowed(worker.run_test())
+def test_a_worker_of_an_unplanned_task_with_failed_tests_runs_a_test_without_spending_its_count(pair_worker):
+    failed_commit(pair_worker)
+    pair_worker.story.expect_success(f"setting set {WORKER_PHASE_TEST_RUNS} 0 --environment main", actor=pair_worker.story.user)
+    pair_worker.story.expect_rows("Point: fix" in pair_worker.status(), detail=pair_worker.status())
+    expect_reply_allowed(pair_worker.run_test())
 

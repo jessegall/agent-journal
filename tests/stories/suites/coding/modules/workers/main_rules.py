@@ -1,22 +1,11 @@
-from tests.stories.core.support.agent_labels import agent_number
 from engine.testing.examples.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from suites.coding.modules.workers.agent_messages.proof_check_message import ProofCheckMessage
 from engine.testing.expectations.expected_message import expected_agent_message
 from suites.coding.modules.workers.support.worker_settings import MOST_OPEN_TASKS
 
 MAIN_SESSION = "s-1"
-
-
-def test_a_main_agent_is_refused_its_stop_until_it_checks_a_proof_with_no_test(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository = repository_environment(story)
-    worker = delivered_worker(story, repository)
-    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), expected_agent_message(ProofCheckMessage.declared()))
-    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), expected_agent_message(ProofCheckMessage.declared()))
-    story.expect_success("proof check 1", actor=story.agent)
-    story.expect_hook_allowed(MAIN_SESSION, HookSamples.stop())
 
 
 def test_a_worker_is_refused_a_second_started_task_when_the_most_it_may_hold_is_one(new_story):
@@ -28,7 +17,7 @@ def test_a_worker_is_refused_a_second_started_task_when_the_most_it_may_hold_is_
     story.expect_refusal("task start 2", "you hold 1 task, the most allowed", actor=worker)
 
 
-def test_a_proof_waits_for_the_task_to_be_handed_in(new_story):
+def test_a_proof_waits_for_its_task_to_be_handed_in_and_the_main_agent_is_refused_its_stop_until_it_checks_the_proof_with_no_test(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     worker = dispatched_worker(story)
@@ -37,6 +26,9 @@ def test_a_proof_waits_for_the_task_to_be_handed_in(new_story):
     story.expect_hook_allowed(MAIN_SESSION, HookSamples.stop())
     story.expect_success("worker commit --wait --differences none", actor=worker)
     story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), expected_agent_message(ProofCheckMessage.declared()))
+    story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), expected_agent_message(ProofCheckMessage.declared()))
+    story.expect_success("proof check 1", actor=story.agent)
+    story.expect_hook_allowed(MAIN_SESSION, HookSamples.stop())
 
 
 def test_the_refused_stop_names_the_task_of_each_proof_that_waits(new_story):
@@ -49,6 +41,5 @@ def test_the_refused_stop_names_the_task_of_each_proof_that_waits(new_story):
     story.expect_success(f"task start {second_id}", actor=worker)
     story.expect_success(f'proof make 1 --task {second_id} "cart.py:1, the second story"', actor=worker)
     story.expect_success("worker commit --wait --differences none", actor=worker)
-    number = agent_number(story, worker.id)
     story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), expected_agent_message(ProofCheckMessage.declared()))
     story.expect_hook_refusal(MAIN_SESSION, HookSamples.stop(), expected_agent_message(ProofCheckMessage.declared()))

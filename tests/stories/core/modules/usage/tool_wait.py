@@ -1,3 +1,7 @@
+import pytest
+
+from engine.testing.stories.story import Story
+
 from datetime import timedelta
 
 from engine.testing.examples.hook_samples import HookSamples
@@ -44,10 +48,16 @@ def test_a_monitor_started_after_the_notice_is_named_again(new_story):
     story.expect_text("usage tool --environment main", "waiting for journal update", actor=story.user)
 
 
-def test_an_agent_stops_waiting_for_a_monitored_run_once_the_run_has_ended(new_story):
+@pytest.fixture
+def ended_monitored_run(new_story) -> Story:
     story = install_runner(new_story(fixture=UserJoined))
     process = moved_run(story, "make build")
     story.hook("s-1", monitor_start(BUILD, process.id))
     end_run(story, process, "done\n")
+    return story
+
+
+def test_an_agent_stops_waiting_for_a_monitored_run_once_the_run_has_ended(ended_monitored_run):
+    story = ended_monitored_run
     story.hook("s-1", HookSamples.stop())
     story.expect_absent("usage tool --environment main", BUILD, actor=story.user)

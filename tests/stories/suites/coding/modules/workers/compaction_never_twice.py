@@ -96,11 +96,6 @@ def agent(new_story):
     return typing_recorded(new_story(fixture=LimitEnabled))
 
 
-@pytest.fixture
-def hard_agent(new_story):
-    return typing_recorded(new_story(fixture=HardLimitEnabled))
-
-
 def modified_at_story_time(story, point=None):
     """The status file is modified at a moment of the story's clock, which stands apart from the machine's."""
     seconds = (point or story.clock.timestamp().value).timestamp()
@@ -159,17 +154,6 @@ def test_a_stop_after_a_compaction_with_the_old_reading_types_nothing(new_story,
     agent.hook(SESSION, HookSamples.prompt("check the cart"))
     agent.hook(SESSION, HookSamples.stop())
     expect_compaction_count(agent, 0)
-
-
-def test_b4_a_tool_past_the_second_limit_after_the_stops_compaction_is_allowed_and_types_nothing(hard_agent):
-    agent = hard_agent
-    has_context(agent, HARD)
-    agent.hook(SESSION, HookSamples.prompt("fix the cart"))
-    agent.hook(SESSION, HookSamples.stop())
-    expect_compaction_count(agent, 1)
-    compacted(agent, "manual")
-    agent.expect_hook_allowed(SESSION, HookSamples.edit("src/cart.py"))
-    expect_compaction_count(agent, 1)
 
 
 def test_b6_the_first_tool_after_the_wake_sees_the_old_number_and_is_allowed_with_nothing_typed(new_story):

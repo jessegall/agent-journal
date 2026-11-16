@@ -1,9 +1,10 @@
+from tests.stories.suites.coding.modules.workers.support.phase_steps import single_worker  # noqa: F401
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder, OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
-from tests.stories.suites.coding.modules.workers.support.phase_steps import dispatched_story_worker, single_task_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import dispatched_story_worker
 from tests.stories.suites.coding.support.main_controls_fixture import MainControlsActors, agent_actors
 
 
@@ -36,16 +37,14 @@ def test_a_worker_that_is_released_gives_back_its_waiting_tasks_open_and_blocked
         story.expect_text(f"task info {task}", "assigned to: nobody", actor=story.agent)
 
 
-def test_a_worker_that_is_released_returns_its_started_task_to_open_and_unassigned(new_story):
-    worker = single_task_worker(new_story)
-    story = worker.story
-    story.expect_success(f'worker release {agent_number(story, worker.worker.id)} "wrong job"', actor=story.agent)
+def test_a_worker_that_is_released_returns_its_started_task_to_open_and_unassigned(single_worker):
+    story = single_worker.story
+    story.expect_success(f'worker release {agent_number(story, single_worker.worker.id)} "wrong job"', actor=story.agent)
     story.expect_text("task show 1", "state: open", actor=story.agent)
     story.expect_text("task info 1", "assigned to: nobody", actor=story.agent)
 
 
-def test_a_worker_whose_last_started_task_is_moved_away_by_someone_else_is_refused_with_the_last_task_of_worker_message(new_story):
-    worker = single_task_worker(new_story)
-    story = worker.story
+def test_a_worker_whose_last_started_task_is_moved_away_by_someone_else_is_refused_with_the_last_task_of_worker_message(single_worker):
+    story = single_worker.story
     story.expect_refusal(f"task assign 1 --to {agent_number(story, story.agent.id)}", "is the last of", actor=story.agent)
-    story.expect_text("task show 1", "state: started", f"holder_id: {worker.worker.id}", actor=story.agent)
+    story.expect_text("task show 1", "state: started", f"holder_id: {single_worker.worker.id}", actor=story.agent)

@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.phase_steps import pair_worker  # noqa: F401
 from tests.stories.core.support.agent_labels import agent_number
 import pytest
 
@@ -7,7 +8,7 @@ from tests.stories.suites.coding.modules.workers.support.dispatch_steps import F
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.held_tasks import worker_with_tasks, prove_task, unplanned_worker_with_tasks
-from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, PLAN_DISPATCH, SECOND_TEST_LINE, TEST_LINE, start_planned_worker, unplanned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import PHASE_DISPATCH, PLAN_DISPATCH, SECOND_TEST_LINE, TEST_LINE, start_planned_worker, StoryWorker
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 
@@ -67,15 +68,19 @@ def clashed(new_story):
     return story, worker, repository
 
 
+
+@pytest.fixture
+def proven_pair_worker(pair_worker: StoryWorker) -> StoryWorker:
+    pair_worker.prove(TEST_LINE)
+    return pair_worker
+
 def test_a_proven_task_of_a_started_plan_is_committed_with_worker_commit_and_tested_at_the_checkpoint(plan_worker):
     plan_worker.prove(SECOND_TEST_LINE)
     expect_step(plan_worker, "commit", "journal worker commit", "checkpoint")
 
 
-def test_a_proven_task_in_no_plan_is_committed_with_worker_commit_and_tested_on_the_commit(new_story):
-    worker = unplanned_worker(new_story)
-    worker.prove(TEST_LINE)
-    expect_step(worker, "commit", "journal worker commit", "tests it on your commit")
+def test_a_proven_task_in_no_plan_is_committed_with_worker_commit_and_tested_on_the_commit(proven_pair_worker):
+    expect_step(proven_pair_worker, "commit", "journal worker commit", "tests it on your commit")
 
 
 def test_the_run_allowance_follows_its_setting(phase_worker):
@@ -84,9 +89,8 @@ def test_the_run_allowance_follows_its_setting(phase_worker):
     phase_worker.story.expect_text(f"worker status {agent_number(phase_worker.story, phase_worker.worker.id)}", "Own test runs left: 5", actor=phase_worker.story.agent)
 
 
-def test_a_worker_of_a_task_in_no_plan_has_the_same_count_of_its_own_runs(new_story):
-    worker = unplanned_worker(new_story)
-    worker.story.expect_text("worker status", "Own test runs left: 3", actor=worker.worker)
+def test_a_worker_of_a_task_in_no_plan_has_the_same_count_of_its_own_runs(pair_worker):
+    pair_worker.story.expect_text("worker status", "Own test runs left: 3", actor=pair_worker.worker)
 
 
 def test_the_json_status_holds_the_point_and_the_counts(phase_worker):
@@ -106,21 +110,25 @@ def test_an_interim_commit_in_a_started_plan_says_what_status_says(proven):
     expect_voice(proven, outcome.output_text)
 
 
-def test_the_failed_tests_line_outside_a_phase_says_what_status_says(new_story):
-    worker = unplanned_worker(new_story)
-    worker.prove_commit(TEST_LINE)
-    worker.story.run_listeners()
-    worker.end_tests(1)
-    expect_voice(worker, next(line for line in worker.worker_lines() if "tests failed" in line))
+def test_the_failed_tests_line_outside_a_phase_says_what_status_says(proven_pair_worker):
+    proven_pair_worker.story.run(COMMIT, actor=proven_pair_worker.worker)
+    proven_pair_worker.story.run_listeners()
+    proven_pair_worker.end_tests(1)
+    expect_voice(proven_pair_worker, next(line for line in proven_pair_worker.worker_lines() if "tests failed" in line))
 
 
-def test_the_passed_tests_line_of_an_interim_commit_says_what_status_says(new_story):
+@pytest.fixture
+def interim_committed_worker(new_story) -> StoryWorker:
     worker = unplanned_worker_with_tasks(new_story)
     prove_task(worker, 1, 1, TEST_LINE)
     worker.story.run(COMMIT, actor=worker.worker)
     worker.story.run_listeners()
-    worker.end_tests(0)
-    expect_voice(worker, next(line for line in worker.worker_lines() if "Your commit's tests passed" in line))
+    return worker
+
+
+def test_the_passed_tests_line_of_an_interim_commit_says_what_status_says(interim_committed_worker):
+    interim_committed_worker.end_tests(0)
+    expect_voice(interim_committed_worker, next(line for line in interim_committed_worker.worker_lines() if "Your commit's tests passed" in line))
 
 
 def test_a_clash_names_the_clashed_files_at_status_and_in_its_line(clashed):

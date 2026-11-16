@@ -1,9 +1,10 @@
 import pytest
 
+from tests.stories.suites.coding.modules.workers.support.phase_steps import planned_worker  # noqa: F401
 from suites.coding.modules.workers.models.affected_test import AffectedTest
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
 from tests.stories.suites.coding.modules.workers.support.held_tasks import worker_with_tasks, prove_task
-from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story, start_planned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import SECOND_TEST_LINE, TEST_LINE, StoryWorker, dispatched_story_worker, planned_story
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
 from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND
 from tests.stories.suites.coding.modules.workers.support.phase_steps import expect_task_states
@@ -36,9 +37,8 @@ def two_workers(new_story):
     return first, first.added_worker("worker dispatch --test-command python=pytest --model sonnet 2 3")
 
 
-def test_a_worker_cannot_make_a_proof_at_the_point_of_a_phases_own_test(new_story):
-    worker = start_planned_worker(new_story)
-    worker.story.expect_refusal('proof make 0 --task 1 "cart.py:1, the phase"', "start at 1", actor=worker.worker)
+def test_a_worker_cannot_make_a_proof_at_the_point_of_a_phases_own_test(planned_worker):
+    planned_worker.story.expect_refusal('proof make 0 --task 1 "cart.py:1, the phase"', "start at 1", actor=planned_worker.worker)
 
 
 def test_the_phases_own_test_runs_in_the_background_on_the_commit_of_its_last_task_in_a_started_plan(new_story):

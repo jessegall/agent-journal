@@ -1,3 +1,4 @@
+from tests.stories.suites.coding.modules.workers.support.phase_steps import group_worker  # noqa: F401
 from tests.stories.suites.coding.modules.workers.support.recorded_test_launches import recorded_test_launches
 from tests.stories.core.support.agent_labels import agent_number
 from suites.coding.support.shipped_profiles import RESEARCHER_PROFILE
@@ -13,7 +14,6 @@ from suites.coding.modules.workers.models.merger_line import MergerLine
 from tests.stories.core.modules.processes.support.process_samples import end_run, start_process
 from engine.actor.actor import Actor
 from engine.enums.actor_type import ActorType
-from engine.driver.agent_message import AgentMessage
 from engine.query.queries import Queries
 from engine.errors.refusal import Refusal
 from engine.file.file_access import FileAccess
@@ -22,7 +22,6 @@ from core.modules.agents.support.agent_rows import AgentRows
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.drivers.models.agent_line import AgentLine
 from engine.sandbox.shell_sandbox import ShellSandbox
-from core.modules.helpers.support.helper_programs import HelperPrograms
 from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.support.helper_program_choice import HelperProgramChoice
 from core.modules.helpers.commands.start_helper.start_helper_handler import StartHelperHandler
@@ -31,21 +30,18 @@ from core.modules.drivers.models.helper_job import HelperJob
 from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from suites.coding.modules.workers.ticks.merger_retry import MergerRetry
 from core.modules.agents.testing.fake_launcher import FakeLauncher
-from core.modules.helpers.testing.story_helper_programs import StoryHelperPrograms
-from engine.testing.stories.story_shell_sandbox import StoryShellSandbox
 from core.modules.profiles.support.profile_files import ProfileFiles
 from tests.stories.core.modules.processes.support.process_samples import install_runner
 from engine.enums.command_category import CommandCategory
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator, UserBuilder
 from tests.stories.engine.driver.support.hook_agents import hook_agent
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import checked_worker, delivered_worker, dispatched_worker, merged_worker_lines, repository_environment, worker_session
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, dispatched_worker, merged_worker_lines, repository_environment, worker_session
 from tests.stories.suites.coding.modules.workers.merge import expect_marks_text
-from tests.integration.suites.coding.modules.workers.test_test_queue import PROOF, ended, queued_story, recording_launch
+from tests.integration.suites.coding.modules.workers.test_test_queue import PROOF, ended, queued_story
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 from suites.coding.modules.workers.agent_messages.merger_passed_message import MergerPassedMessage
 from tests.stories.core.support.agent_labels import agent_label
-from tests.stories.core.modules.helpers.helper_jobs import helper_agent
 from tests.stories.suites.coding.modules.workers.quiet_helpers import StartedMerger
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import running_launcher
 from suites.coding.modules.workers.agent_messages.merger_passed_message import MergerPassedMessage
@@ -58,7 +54,6 @@ from suites.coding.support.shipped_profiles import MERGER_PROFILE
 from suites.coding.support.shipped_profiles import PLANNER_PROFILE
 from suites.coding.modules.workers.support.worker_settings import MERGER_COMMANDS
 from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_tasks_singly
-from tests.stories.suites.coding.modules.workers.support.phase_steps import unplanned_group_worker
 
 
 
@@ -234,25 +229,24 @@ def test_a_worker_sent_one_task_given_the_next_free_task_on_its_commit_waits_for
     story.expect_text("merger next", "no worker waits", actor=actor)
 
 
-def test_a_unit_committed_whole_gets_the_free_task_only_on_its_ask_and_reaches_the_merger_without_it(new_story):
-    worker = unplanned_group_worker(new_story)
-    story = worker.story
-    number = agent_number(story, worker.worker.id)
+def test_a_unit_committed_whole_gets_the_free_task_only_on_its_ask_and_reaches_the_merger_without_it(group_worker):
+    story = group_worker.story
+    number = agent_number(story, group_worker.worker.id)
     free_task = story.new_row_id('task make "Check rounding" --brief "Check the rounding" --complexity 1 --environment main', actor=story.agent)
     for task_id in (1, 2, 3):
-        commit_tasks_singly(worker, (task_id,))
-        worker.end_test(worker.started[-1])
+        commit_tasks_singly(group_worker, (task_id,))
+        group_worker.end_test(group_worker.started[-1])
     given = f'"helper_name": "Worker {number}"'
     story.expect_rows(given not in story.run(f"task inspect {free_task} --json", actor=story.agent).output_text)
     with running_launcher(story):
-        story.expect_success(REQUEST_MERGE, actor=worker.worker)
+        story.expect_success(REQUEST_MERGE, actor=group_worker.worker)
         story.run_listeners()
     story.expect_text("merge-ask show 1 --environment main", "unit_name: tasks 1, 2, 3", "task_ids: 1,2,3", actor=story.agent)
     story.expect_text(f"task inspect {free_task} --json", given, actor=story.agent)
     actor = Actor(merger_agent(story).id, ActorType.AGENT)
-    story.expect_text("merger next", agent_label(story, worker.worker.id), "merge-ask 1", actor=actor)
-    worker.repository.checkout(ENVIRONMENT_BRANCH)
-    story.expect_text(f"merger merge --wait {number}", f"{agent_label(story, worker.worker.id)} merged into", actor=actor)
+    story.expect_text("merger next", agent_label(story, group_worker.worker.id), "merge-ask 1", actor=actor)
+    group_worker.repository.checkout(ENVIRONMENT_BRANCH)
+    story.expect_text(f"merger merge --wait {number}", f"{agent_label(story, group_worker.worker.id)} merged into", actor=actor)
     story.expect_text(f"task show {free_task}", "state: started", actor=story.agent)
 
 

@@ -102,13 +102,21 @@ def test_e7_with_the_limit_switched_off_nothing_is_due_and_switched_on_again_the
     expect_compaction_count(limited, 1)
 
 
-def test_e9_a_context_that_passes_both_limits_between_two_readings_is_asked_to_compact_once(new_story):
+@pytest.fixture
+def hard_context_edit(new_story):
     agent = typing_recorded(new_story(fixture=HardLimitEnabled))
     agent.hook(SESSION, HookSamples.prompt("fix the cart"))
     has_context(agent, HARD)
-    agent.expect_hook_refusal(SESSION, EDIT, "no more tools, stop now")
+    edit_reply = agent.hook(SESSION, EDIT)
     stops(agent)
+    return agent, edit_reply
+
+
+def test_e9_a_context_that_passes_both_limits_between_two_readings_is_asked_to_compact_once_and_a_tool_after_the_compaction_is_allowed(hard_context_edit):
+    agent, edit_reply = hard_context_edit
+    agent.expect_rows("no more tools, stop now" in edit_reply.refusal, detail=edit_reply.refusal)
     expect_compaction_count(agent, 1)
     compacted(agent, "manual")
+    agent.expect_hook_allowed(SESSION, HookSamples.edit("src/cart.py"))
     stops(agent)
     expect_compaction_count(agent, 1)

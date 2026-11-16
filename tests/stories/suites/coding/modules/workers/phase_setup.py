@@ -1,8 +1,9 @@
+from tests.stories.suites.coding.modules.workers.support.phase_steps import planned_worker  # noqa: F401
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_steps import WorkerSteps
 from tests.stories.support.story_checks import expect_value
 from tests.stories.suites.coding.modules.workers.support.commit_command import COMMIT
-from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker, unplanned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, unplanned_worker
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND
 from suites.coding.modules.workers.support.worker_settings import PROJECT_TEST_COMMAND
 
@@ -15,14 +16,12 @@ def read_worktree(worker):
     return worker.story.first_row(Worktree, session_agent_id=worker.worker.id)
 
 
-def test_a_worker_dispatched_on_a_plan_holds_its_first_task_and_the_plan_is_started(new_story):
-    planned_worker = start_planned_worker(new_story)
+def test_a_worker_dispatched_on_a_plan_holds_its_first_task_and_the_plan_is_started(planned_worker):
     planned_worker.story.expect_text("task show 1", "state: started", f"holder_id: {planned_worker.worker.id}", actor=planned_worker.story.agent)
     planned_worker.story.expect_text("plan show 1", "state: started", actor=planned_worker.story.agent)
 
 
-def test_a_short_proof_is_a_failure(new_story):
-    planned_worker = start_planned_worker(new_story)
+def test_a_short_proof_is_a_failure(planned_worker):
     steps = read_steps(planned_worker)
     planned_worker.edit_prove()
     expect_value(not steps.has_open_failure(read_worktree(planned_worker)), True)

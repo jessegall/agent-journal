@@ -20,7 +20,7 @@ from tests.stories.suites.coding.modules.workers.support.git_repository import G
 from tests.stories.suites.coding.modules.workers.support.judge_plugin import SINFUL_TEXT, judge_plugin_folder
 from tests.stories.suites.coding.modules.workers.support.merger_launcher import expect_refused_with, running_launcher
 from tests.stories.suites.coding.modules.workers.support.phase_steps import start_planned_worker
-from tests.stories.support.story_checks import expect_value, expect_value_with
+from tests.stories.support.story_checks import expect_value
 from core.modules.helpers.agent_messages.helper_granted_message import HelperGrantedMessage
 from engine.testing.expectations.expected_message import expected_agent_message
 from suites.coding.modules.workers.agent_messages.worker_libraries_linked_message import WorkerLibrariesLinkedMessage

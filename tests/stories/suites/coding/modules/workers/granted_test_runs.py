@@ -6,7 +6,7 @@ import pytest
 
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.processes.support.runner_binary import RunnerBinary
-from tests.stories.suites.coding.modules.workers.support.phase_steps import TEST_LINE, start_planned_worker
+from tests.stories.suites.coding.modules.workers.support.phase_steps import start_planned_worker
 from tests.stories.support.story_checks import expect_value, expect_value_with
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 

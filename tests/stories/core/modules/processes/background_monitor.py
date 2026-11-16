@@ -8,7 +8,7 @@ from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, monitor, moved_run, started_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from engine.testing.expectations.expect_reply import expect_absent_reply_refusal, expect_reply_allowed
+from engine.testing.expectations.expect_reply import expect_absent_reply_refusal
 
 BUILD = HookSamples.shell("make build", ShellPart("make", CommandCategory.UNKNOWN, ["build"]))
 
@@ -32,7 +32,8 @@ def test_each_running_output_needs_its_own_monitor(running):
 def test_a_run_that_ended_no_longer_holds_the_stop(running):
     story, process = running
     end_run(story, process, "done\n")
-    expect_absent_reply_refusal(story.hook("s-1", HookSamples.stop()), "set a Monitor")
+    reply = story.hook("s-1", HookSamples.stop())
+    story.expect_rows("set a Monitor" not in reply.refusal, detail=reply.refusal)
 
 
 def test_a_run_that_ended_while_the_agent_worked_needs_no_monitor_at_the_stop(running):

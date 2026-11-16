@@ -1,5 +1,8 @@
 from tests.stories.core.support.agent_labels import agent_number
+import pytest
+
 from engine.actor.actor import Actor
+from engine.testing.stories.story import Story
 from engine.enums.command_category import CommandCategory
 from engine.enums.actor_type import ActorType
 from engine.testing.examples.hook_samples import HookSamples
@@ -50,20 +53,22 @@ def test_tasks_a_running_worker_has_queued_let_the_main_agent_stop(new_story):
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
-def test_an_open_task_no_worker_has_lets_the_main_agent_stop_with_no_worker_line(new_story):
+@pytest.fixture
+def two_task_worker(new_story) -> tuple[Story, Actor]:
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
+    return story, dispatched_worker(story, "worker dispatch --test-command python=pytest 1 2 --model sonnet")
+
+
+def test_an_open_task_no_worker_has_lets_the_main_agent_stop_with_no_worker_line(two_task_worker):
+    story, _ = two_task_worker
     story.run('task make "Third job" --brief "Do the third job" --environment main', actor=story.agent)
-    story.run("worker dispatch --test-command python=pytest 1 2 --model sonnet", actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.stop())
 
 
-def test_tasks_a_released_worker_gave_back_let_the_main_agent_stop_with_no_worker_line(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository_environment(story)
-    story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
-    worker = dispatched_worker(story, "worker dispatch --test-command python=pytest 1 2 --model sonnet")
+def test_tasks_a_released_worker_gave_back_let_the_main_agent_stop_with_no_worker_line(two_task_worker):
+    story, worker = two_task_worker
     story.expect_success(f'worker release {agent_number(story, worker.id)} "wrong job"', actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.stop())
 

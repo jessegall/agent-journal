@@ -25,7 +25,7 @@ def test_the_main_agent_edits_no_file_in_a_workers_worktree(new_story):
     story.expect_hook_allowed("s-1", HookSamples.edit("/elsewhere/cart.py"))
 
 
-def test_a_line_on_a_clock_waits_out_its_time_though_the_number_in_it_changes(new_story):
+def test_a_worker_silent_for_thirty_minutes_is_told_to_log_and_the_line_waits_out_its_time_though_the_number_in_it_changes(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
     worker = dispatched_worker(story)
@@ -40,17 +40,6 @@ def test_a_line_on_a_clock_waits_out_its_time_though_the_number_in_it_changes(ne
     story.expect_hook_allowed(session, finished, expected_agent_message(WorkerLogDueMessage.declared()))
     records = list(story.story_rows(MessageRecord, session_agent_id=worker.id, key=WorkerLogDueMessage.declared().key))
     story.expect_rows(len(records) == 1, records[0].delivery_count == 2)
-
-
-def test_a_worker_silent_for_thirty_minutes_is_told_to_log(new_story):
-    story = new_story(fixture=OpenTaskOrchestrator)
-    repository_environment(story)
-    worker = dispatched_worker(story)
-    session = worker_session(story, worker)
-    finished = HookSamples.edit("cart.py").with_fields(event="post_tool_use")
-    story.expect_absent_hook_line(session, finished, "you logged nothing")
-    story.advance(timedelta(minutes=31))
-    story.expect_hook_allowed(session, finished, expected_agent_message(WorkerLogDueMessage.declared()))
 
 
 def test_a_workers_writes_wait_past_the_hold_count_until_it_logs_its_task(new_story):

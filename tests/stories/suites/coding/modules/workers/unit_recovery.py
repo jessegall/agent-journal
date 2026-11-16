@@ -1,44 +1,39 @@
+from tests.stories.suites.coding.modules.workers.merge_asks import committed_worker, running_plan_worker  # noqa: F401
+from tests.stories.suites.coding.modules.workers.support.phase_steps import group_worker, planned_worker  # noqa: F401
 from tests.stories.suites.coding.modules.workers.free_commits import worktree_state
 from tests.stories.core.support.agent_labels import agent_number
 from tests.stories.core.support.coding_fixtures import OpenTaskOrchestrator
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import delivered_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.free_commits import REQUEST_MERGE, commit_tasks_singly
-from tests.stories.suites.coding.modules.workers.merge_asks import committed_list, running_plan
-from tests.stories.suites.coding.modules.workers.support.phase_steps import start_planned_worker, unplanned_group_worker
 
 """Book G of doc 1252: interruption and recovery; nothing committed is lost and someone is told at every stop."""
 
 
-def test_79_a_crashed_worker_resumes_with_its_unit(new_story):
-    worker = start_planned_worker(new_story)
-    commit_tasks_singly(worker, (1,))
-    worker.program_ended()
-    worker.story.expect_rows(worker.status().splitlines()[1].startswith("Unit: plan 1"), detail=worker.status())
+def test_79_a_crashed_worker_resumes_with_its_unit(planned_worker):
+    commit_tasks_singly(planned_worker, (1,))
+    planned_worker.program_ended()
+    planned_worker.story.expect_rows(planned_worker.status().splitlines()[1].startswith("Unit: plan 1"), detail=planned_worker.status())
 
 
-def test_80_the_journal_restarts_during_a_worker_run(new_story):
-    worker = running_plan(new_story)
-    worker.program_ended()
-    worker.story.expect_rows(len(worker.started) > 0, detail=worker.status())
+def test_80_the_journal_restarts_during_a_worker_run(running_plan_worker):
+    running_plan_worker.program_ended()
+    running_plan_worker.story.expect_rows(len(running_plan_worker.started) > 0, detail=running_plan_worker.status())
 
 
-def test_81_a_release_with_committed_work_is_refused(new_story):
-    worker = unplanned_group_worker(new_story)
-    commit_tasks_singly(worker, (1,))
-    number = agent_number(worker.story, worker.worker.id)
-    worker.story.expect_refusal(f'worker release {number} "not needed"', f"worker {number} has committed work", actor=worker.story.agent)
-    worker.story.expect_success(f'worker release {number} --abandon "the cart is dropped"', actor=worker.story.agent)
+def test_81_a_release_with_committed_work_is_refused(group_worker):
+    commit_tasks_singly(group_worker, (1,))
+    number = agent_number(group_worker.story, group_worker.worker.id)
+    group_worker.story.expect_refusal(f'worker release {number} "not needed"', f"worker {number} has committed work", actor=group_worker.story.agent)
+    group_worker.story.expect_success(f'worker release {number} --abandon "the cart is dropped"', actor=group_worker.story.agent)
 
 
-def test_82_an_ask_that_waits_long_is_shown_as_unmerged_work(new_story):
-    worker = committed_list(new_story)
-    worker.story.expect_success(REQUEST_MERGE, actor=worker.worker)
-    worker.story.expect_rows(worktree_state(worker) == "delivered", detail=worker.status())
+def test_82_an_ask_that_waits_long_is_shown_as_unmerged_work(committed_worker):
+    committed_worker.story.expect_success(REQUEST_MERGE, actor=committed_worker.worker)
+    committed_worker.story.expect_rows(worktree_state(committed_worker) == "delivered", detail=committed_worker.status())
 
 
-def test_83_a_worker_idle_at_merge_due_is_told_its_line(new_story):
-    worker = committed_list(new_story)
-    worker.story.expect_rows("journal worker ask-merge" in worker.status_line(), detail=worker.status())
+def test_83_a_worker_idle_at_merge_due_is_told_its_line(committed_worker):
+    committed_worker.story.expect_rows("journal worker ask-merge" in committed_worker.status_line(), detail=committed_worker.status())
 
 
 def test_a_release_of_a_delivered_worker_with_an_uncommitted_file_is_refused_until_abandon(new_story):
