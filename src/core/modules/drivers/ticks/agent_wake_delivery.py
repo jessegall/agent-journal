@@ -5,7 +5,11 @@ from engine.log.error_log import ErrorLog
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.time.clock import Clock
-from core.modules.drivers.commands.deliver_agent_wake.deliver_agent_wake import DeliverAgentWake
+from core.modules.drivers.commands.claim_agent_wake.claim_agent_wake import ClaimAgentWake
+from core.modules.drivers.commands.claim_agent_wake.claim_agent_wake_handler import TYPING_TRANSPORT
+from core.modules.drivers.commands.record_wake_delivery.record_wake_delivery import RecordWakeDelivery
+from core.modules.drivers.commands.reopen_agent_wake.reopen_agent_wake import ReopenAgentWake
+from core.modules.drivers.support.waiting_line_typing import WaitingLineTyping
 from core.modules.drivers.models.agent_wake import AgentWake
 from core.modules.drivers.models.enums.wake_state import WakeState
 
@@ -16,7 +20,9 @@ MOVING_STATES = (WakeState.OPEN, WakeState.CLAIMED, WakeState.DELIVERED)
 class AgentWakeDelivery:
     """The wake delivery owner's round, every few seconds and at boot (doc 1310 section 6.4): each open
     obligation, each delivered one past its retry time and each claim whose lease ran out (a dead server's,
-    at boot) takes its next move in a write of its own; one that fails is logged and the others go on."""
+    at boot) is claimed in a write of its own, sent after it (a main agent's lines typed into its terminal, a
+    headless agent's left waiting for its resume) and recorded as delivered, or put back to open when sending
+    failed; one that fails is logged and the others go on."""
 
     def __call__(self, container: Container) -> None:
         timestamp = container.get(Clock).timestamp()
@@ -25,10 +31,25 @@ class AgentWakeDelivery:
             if not self.requires_move(wake, timestamp):
                 continue
             try:
-                container.get(Bus).run(DeliverAgentWake(wake.id), Actor.core(), environment_id=wake.environment_id)
+                self.moved(container, wake)
             # one wake that fails is logged and waits for the next round, and never keeps the others from theirs
             except Exception as error:
                 container.get(ErrorLog).reported(["agent wake delivery", str(wake.id)], error, wake.environment_id)
+
+    # the claim's write, the transport after it, and the delivery's write: a typed line is never sent inside a write
+    @staticmethod
+    def moved(container: Container, wake: AgentWake) -> None:
+        bus = container.get(Bus)
+        claimed = bus.run(ClaimAgentWake(wake.id), Actor.core(), environment_id=wake.environment_id)
+        if claimed is None:
+            return
+        try:
+            if claimed.transport == TYPING_TRANSPORT:
+                container.get(WaitingLineTyping).release_waiting_lines(claimed.session_agent_id, Actor.core().id)
+        except Exception as error:
+            bus.run(ReopenAgentWake(claimed.id, str(error)), Actor.core(), environment_id=claimed.environment_id)
+            raise
+        bus.run(RecordWakeDelivery(claimed.id), Actor.core(), environment_id=claimed.environment_id)
 
     @staticmethod
     def requires_move(wake: AgentWake, timestamp) -> bool:
