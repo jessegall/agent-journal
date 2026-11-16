@@ -1,4 +1,5 @@
 from engine.file.file_access import FileAccess
+import getpass
 import os
 import subprocess
 import sys
@@ -15,11 +16,14 @@ from install.backup.version_four import ANSWER, VersionFour
 INSTALLED = 3
 REFUSED = 1
 SYNC_LIMIT_SECONDS = 120
+JOURNAL_VARIABLE_PREFIX = "JOURNAL_"
 
 
 class InstallJournal:
     """Puts version 5 into a project: its code copied into .journal/src, its own database synced from the core
-    modules, and nothing started. It leaves a project that holds a version 4 journal as it is."""
+    modules with the person who installs it made a user, so their terminal and their viewer link are a user's,
+    and nothing started; the lines it runs carry none of the JOURNAL_ variables of a journal it was started
+    from. It leaves a project that holds a version 4 journal as it is."""
 
     def __init__(self, project: Path, source: Path) -> None:
         self.project, self.source = project, source
@@ -34,7 +38,7 @@ class InstallJournal:
             return INSTALLED
         FileAccess.mkdir(self.home.folder, parents=True, exist_ok=True)
         try:
-            CodeReplacement(self.home).run([self.copy_code, self.sync])
+            CodeReplacement(self.home).run([self.copy_code, self.sync, self.person])
         except Refusal as refusal:
             print(refusal.text, file=sys.stderr)
             return REFUSED
@@ -51,11 +55,17 @@ class InstallJournal:
         CodeVersions(self.home).install(self.source, Clock())
 
     def sync(self) -> None:
-        environment = {**os.environ, HOME_VARIABLE: str(self.home.folder)}
-        finished = subprocess.run([sys.executable, str(self.entry_point()), "module", "sync"], cwd=self.project, env=environment,
+        self.journal_line("the first module sync", "module", "sync")
+
+    def person(self) -> None:
+        self.journal_line("making the person who installs a user", "actor", "make", "user", getpass.getuser())
+
+    def journal_line(self, step: str, *argv: str) -> None:
+        environment = {**{name: value for name, value in os.environ.items() if not name.startswith(JOURNAL_VARIABLE_PREFIX)}, HOME_VARIABLE: str(self.home.folder)}
+        finished = subprocess.run([sys.executable, str(self.entry_point()), *argv], cwd=self.project, env=environment,
                                   capture_output=True, text=True, timeout=SYNC_LIMIT_SECONDS)
         if finished.returncode != 0:
-            raise SystemExit(f"the first module sync failed: {finished.stdout}{finished.stderr}")
+            raise SystemExit(f"{step} failed: {finished.stdout}{finished.stderr}")
 
 
 if __name__ == "__main__":
