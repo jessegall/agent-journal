@@ -14,14 +14,11 @@ NEXT_OTHER_ACTOR_ID = Statement("SELECT max(?, coalesce(max(id), 0) + 1) AS id F
 NEXT_AGENT_ACTOR_ID = Statement("SELECT coalesce(max(id), 0) + 1 AS id FROM actors WHERE id BETWEEN 1 AND ?")
 MODULE_ACTOR_ID = Statement("SELECT id FROM actors WHERE type = ? AND name = ?")
 SESSION_AGENT_ID = Statement("SELECT id FROM agents WHERE session = ? UNION ALL SELECT session_agent_id AS id FROM agent_sessions WHERE session = ?")
-AGENT_ACTOR_ID = Statement("SELECT actor_id AS id FROM agents WHERE id = ?")
-ACTOR_AGENT_ID = Statement("SELECT id FROM agents WHERE actor_id = ?")
 MODULE_ACTOR_IDS = Statement("SELECT id, name FROM actors WHERE type = 'module'", full_table_reason="One row for each installed module, never for stored journal rows.")
 ACTOR_ROW = Statement("SELECT 1 FROM actors WHERE id = ? AND type = ?")
 AGENT_ROLE = Statement("SELECT role FROM agents WHERE id = ?")
-ACTOR_AGENT_OWNER = Statement("SELECT id, role, environment_id FROM agents WHERE actor_id = ?")
-TEST_ENVIRONMENT_GRANT = Statement("SELECT 1 FROM environments JOIN agents ON agents.id = environments.test_agent_id"
-                                   " WHERE environments.id = ? AND environments.test = 1 AND agents.actor_id = ?")
+AGENT_OWNER = Statement("SELECT id, role, environment_id FROM agents WHERE id = ?")
+TEST_ENVIRONMENT_GRANT = Statement("SELECT 1 FROM environments WHERE id = ? AND test = 1 AND test_agent_id = ?")
 MODULE_ACTORS_SIGNATURE = Statement("SELECT count(*), coalesce(sum(id), 0), coalesce(sum(version), 0), max(updated_at) FROM actors WHERE type = 'module'")
 ENVIRONMENT_SIGNATURE = Statement("SELECT id, version, updated_at FROM environments WHERE id = ?")
 NEWEST_MAIN_AGENT_ID = Statement("SELECT id FROM agents WHERE environment_id = ? AND role = 'main' ORDER BY id DESC LIMIT 1")
@@ -38,12 +35,10 @@ class ActorTable(RoundState):
         self.kept = KeptRows(database)
         self.agent_answers: dict[int, bool] = {}
         self.row_owners: dict[int, RowOwner | None] = {}
-        self.agent_ids: dict[int, int | None] = {}
 
     def reset(self) -> None:
         self.agent_answers = {}
         self.row_owners = {}
-        self.agent_ids = {}
 
     def core_actor(self, timestamp: str) -> None:
         self.database.update(Statement(CORE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.CORE.value, timestamp, timestamp)))
@@ -75,11 +70,7 @@ class ActorTable(RoundState):
 
     def session_actor_id(self, session: str) -> int | None:
         rows = self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.AGENT.value, session)))
-        if rows:
-            return int(rows[0]["id"])
-        agent_id = self.session_agent_id(session)
-        agent_rows = self.database.rows(Statement(AGENT_ACTOR_ID.sql, [agent_id])) if agent_id is not None else []
-        return int(agent_rows[0]["id"]) if agent_rows else None
+        return int(rows[0]["id"]) if rows else self.session_agent_id(session)
 
     # the role of the agent a session belongs to, none for a session no agent row has yet
     def session_role(self, session: str) -> str | None:
@@ -92,12 +83,6 @@ class ActorTable(RoundState):
             self.agent_answers[actor_id] = bool(self.database.rows(Statement(ACTOR_ROW.sql, (actor_id, ActorType.AGENT.value))))
         return self.agent_answers[actor_id]
 
-    def agent_id(self, actor_id: int) -> int | None:
-        if actor_id not in self.agent_ids:
-            rows = self.database.rows(Statement(ACTOR_AGENT_ID.sql, [actor_id]))
-            self.agent_ids[actor_id] = int(rows[0]["id"]) if rows else None
-        return self.agent_ids[actor_id]
-
     def row_owner(self, actor_id: int | None) -> RowOwner | None:
         if actor_id is None:
             return None
@@ -106,7 +91,7 @@ class ActorTable(RoundState):
         return self.row_owners[actor_id]
 
     def stored_owner(self, actor_id: int) -> RowOwner | None:
-        rows = self.database.rows(Statement(ACTOR_AGENT_OWNER.sql, [actor_id]))
+        rows = self.database.rows(Statement(AGENT_OWNER.sql, [actor_id]))
         if not rows:
             return None
         agent = MAIN_AGENT if rows[0]["role"] == AgentRole.MAIN else int(rows[0]["id"])

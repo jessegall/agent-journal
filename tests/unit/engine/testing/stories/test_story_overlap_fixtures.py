@@ -60,7 +60,7 @@ def test_first(user_exists):
     user_exists.expect_success('actor list')
 
 def test_second(user_exists):
-    user_exists.expect_success('actor show 1')
+    user_exists.expect_success('actor show 0')
 ''')
     pytest_run = pytester.runpytest_subprocess("-q", "--tb=short")
     assert pytest_run.ret == pytest.ExitCode.OK

@@ -64,10 +64,9 @@ class Scopes(RoundState):
         raise Refusal(f"{indefinite_article(model.cli_name)} {model.cli_name} needs an environment", "name it with --environment")
 
     def with_session(self, model: M, actor_id: int) -> M:
-        agent_id = self.actors.agent_id(actor_id)
         if isinstance(model, SessionBound) and model.session_agent_id is None:
-            return replace(model, session_agent_id=agent_id)
-        if isinstance(model, SessionPrivate) and model.session_agent_id != agent_id:
+            return replace(model, session_agent_id=actor_id)
+        if isinstance(model, SessionPrivate) and model.session_agent_id != actor_id:
             return replace(model, state=model.hidden_state)
         return model
 
@@ -76,7 +75,7 @@ class Scopes(RoundState):
         if owner is None or environment_id is None or owner.environment_id == environment_id:
             return
         if not self.actors.is_granted_test_environment(actor.id, environment_id):
-            raise Refusal(f"agent {self.actors.agent_id(actor.id)} works only in its own environment, environment {owner.environment_id}", "leave out --environment")
+            raise Refusal(f"agent {actor.id} works only in its own environment, environment {owner.environment_id}", "leave out --environment")
 
     def line_environment_id(self, actor: Actor, environment_id: int | None) -> int | None:
         if environment_id is not None or actor.type is not ActorType.AGENT:

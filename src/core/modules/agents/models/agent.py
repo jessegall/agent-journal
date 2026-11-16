@@ -74,7 +74,7 @@ class Agent(EnvironmentScoped, Model):
 
 
     def actor(self) -> Actor:
-        return Actor.agent(self.actor_id, self.id)
+        return Actor(self.id, ActorType.AGENT)
     @property
     def is_main(self) -> bool:
         return self.role == MAIN_ROLE

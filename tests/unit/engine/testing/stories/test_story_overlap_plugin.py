@@ -40,7 +40,7 @@ def test_first(new_story):
 
 def test_second(new_story):
     story = new_story(fixture=AdaExists)
-    story.expect_success('actor show 1')
+    story.expect_success('actor show 0')
 ''')
     pytest_run = pytester.runpytest_subprocess("-q", "--tb=short")
     assert pytest_run.ret == pytest.ExitCode.OK
@@ -70,7 +70,7 @@ def test_first(new_story):
 
 def test_second(new_story):
     story = new_story()
-    story.expect_success('actor show 1')
+    story.expect_success('actor show 0')
 ''')
     pytest_run = pytester.runpytest_subprocess("-q", "--tb=short")
     assert pytest_run.ret == pytest.ExitCode.OK
@@ -93,7 +93,7 @@ def test_first(new_story):
 def test_stories_of_two_files_with_the_same_opening_fail_a_run_that_asks_for_the_rule(pytester, monkeypatch):
     configure_run(pytester, monkeypatch)
     pytester.makeini("[pytest]\nstory_fixture_rules = fail\n")
-    opening = "    story.expect_success('actor list')\n    story.expect_success('actor show 1')\n    story.expect_success('actor list --json')\n"
+    opening = "    story.expect_success('actor list')\n    story.expect_success('actor show 0')\n    story.expect_success('actor list --json')\n"
     pytester.makepyfile(test_one="from engine.testing.stories.story_fixture import StoryFixture\n\nclass Start(StoryFixture):\n    def steps(self, story):\n        story.expect_success('actor list')\n\n"
                         f"def test_one(new_story):\n    story = new_story(fixture=Start)\n{opening}    story.expect_success('task list')\n",
                         test_two="from test_one import Start\n\n"
@@ -121,7 +121,7 @@ class Empty(Base):
 
 def test_first(new_story):
     story = new_story(fixture=Empty)
-    story.expect_success('actor show 1')
+    story.expect_success('actor show 0')
 ''')
     pytest_run = pytester.runpytest_subprocess("-q", "--tb=short")
     assert pytest_run.ret == pytest.ExitCode.TESTS_FAILED
