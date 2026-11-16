@@ -26,7 +26,7 @@ class PlanReviewsModule(Module):
     move_reason = "version 4 plan reviews were dropped when a journal moved"
     dependencies = ["journal.core.agents", "journal.core.documents", "journal.core.drivers", "journal.core.plans", "journal.core.skills", "journal.core.templates", "journal.core.viewer", "journal.core.actors"]
     skills = PLAN_REVIEWS_SKILLS
-    added_states = (REVIEW_STATE,)
+    added_states = [REVIEW_STATE]
     listeners = [CritiqueReportListener, CheckpointReviewReportListener, CheckpointReviewStartListener]
     handlers = [StartCheckpointReviewHandler]
     models = [CheckpointReviewModelDeclaration]
