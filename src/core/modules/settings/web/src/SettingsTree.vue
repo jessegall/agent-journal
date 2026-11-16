@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
-import {HostedWindow, Skeleton, Switch, WindowRoom, matchesSearch, useWindow} from "@journal/window-kit";
+import {HostedWindow, Skeleton, Switch, WindowRoom, matchesSearch, useWindow, SwitchCase} from "@journal/window-kit";
 import {ChangeFoot} from "@journal/setting-components";
 import CommandSettings from "./CommandSettings.vue";
 import SettingNode from "./SettingNode.vue";
@@ -132,16 +132,16 @@ onUnmounted(() => {
             <template v-else>
                 <section class="settings-section" :data-section-body="open">
                     <h3 class="settings-heading">{{ section.label }}</h3>
-                    <template v-if="section.body === 'commands'"><CommandSettings /></template>
-                    <template v-else-if="section.body === 'environments'"><SettingsEnvironments /></template>
-                    <template v-else>
+                    <SwitchCase :value="section.body"><template #commands><CommandSettings /></template>
+                    <template #environments><SettingsEnvironments /></template>
+                    <template #default>
                         <template v-if="section.window"><HostedWindow :key="open" :name="section.window" :options="{sections: section.tabs}" /></template>
                         <template v-if="open === 'developer' && toolsRow">
                             <label class="settings-developer" data-developer-pages><span>Developer pages</span><Switch :on="toolsRow.value !== false" title="Developer pages" :disabled="readOnly" data-developer-switch @change="switchTools" /></label>
                             <template v-for="row in toolsRows" :key="row.key"><SettingNode :row="row" :rows="listed" :read-only="readOnly" :save="saved" :refusals="refusals" /></template>
                         </template>
                         <template v-for="row in topsOf(open).filter((top) => !(open === 'developer' && top.key === toolsRow?.key))" :key="row.key"><SettingNode :row="row" :rows="listed" :read-only="readOnly" :save="saved" :refusals="refusals" /></template>
-                    </template>
+                    </template></SwitchCase>
                 </section>
             </template>
         </SettingsLayout>

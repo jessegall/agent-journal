@@ -29,7 +29,7 @@ class WorkerRoute(EnvironmentScoped, Positioned):
         return has_tags(task_tags, self.tags)
 
     @property
-    def requires_complexity(self) -> bool:
+    def is_complexity_required(self) -> bool:
         return self.minimum_complexity is not None or self.maximum_complexity is not None
 
     def matches(self, task_tags: Collection[str], complexity: TaskComplexity | None) -> bool:

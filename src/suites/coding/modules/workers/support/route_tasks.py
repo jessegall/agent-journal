@@ -16,7 +16,7 @@ class RouteTasks:
         return next((route for route in self.routes
                      if route.matches_tags(self.task_tags[task.id])
                      and (route.matches(self.task_tags[task.id], task.complexity)
-                          or (route.requires_complexity and task.complexity is None))), None)
+                          or (route.is_complexity_required and task.complexity is None))), None)
 
     def first_match(self, task: Task) -> WorkerRoute | None:
         route = self.candidate(task)
@@ -24,7 +24,7 @@ class RouteTasks:
 
     def missing_score(self, task: Task) -> bool:
         route = self.candidate(task)
-        return task.complexity is None and route is not None and route.requires_complexity
+        return task.complexity is None and route is not None and route.is_complexity_required
 
 
     def without_tag(self, task: Task, word: str) -> WorkerRoute | None:

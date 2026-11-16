@@ -213,20 +213,20 @@ const place = (item) => ({head: item.title, items: menuOf(item)});
                   <p class="none" data-plugin-none>Install a plugin shows every command one would run before anything runs.</p>
                 </template>
             </template>
-            <template #corner="{item}">
-                <Switch :on="item.row.enabled" :title="item.row.enabled ? 'Turn it off' : 'Turn it on'" @change="switchOver(item.row)" />
+            <template #corner="{item: {row}}">
+                <Switch :on="row.enabled" :title="row.enabled ? 'Turn it off' : 'Turn it on'" @change="switchOver(row)" />
             </template>
-            <template #card="{item}">
-                <PluginServices :plugin="item.row.name" :services="servicesOf(item.row)" />
-                <template v-if="latest[item.row.name]">
-                    <span class="plugin-note" data-plugin-latest-line>{{ latest[item.row.name].line }}</span>
-                    <template v-if="latest[item.row.name].is_newer">
-                      <Btn small variant="primary" data-plugin-upgrade @click="showUpgrade(item.row)">See what changes</Btn>
+            <template #card="{item: {row}}">
+                <PluginServices :plugin="row.name" :services="servicesOf(row)" />
+                <template v-if="latest[row.name]">
+                    <span class="plugin-note" data-plugin-latest-line>{{ latest[row.name].line }}</span>
+                    <template v-if="latest[row.name].is_newer">
+                      <Btn small variant="primary" data-plugin-upgrade @click="showUpgrade(row)">See what changes</Btn>
                     </template>
                 </template>
             </template>
-            <template #foot="{item}">
-                <Btn small data-plugin-settings @click="showSettings(item.row)">Settings</Btn>
+            <template #foot="{item: {row}}">
+                <Btn small data-plugin-settings @click="showSettings(row)">Settings</Btn>
             </template>
             <template #card-actions="{item}">
                 <ActionsMenu :items="menuOf(item)" :head="item.title" />

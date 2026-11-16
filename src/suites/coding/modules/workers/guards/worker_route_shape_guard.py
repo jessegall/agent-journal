@@ -20,7 +20,7 @@ class WorkerRouteShapeGuard(Guard[Created[WorkerRoute] | Updated[WorkerRoute]]):
 
     def check(self, event: Created[WorkerRoute] | Updated[WorkerRoute], context: Context) -> None:
         route = event.row
-        if not route.tags and not route.requires_complexity:
+        if not route.tags and not route.is_complexity_required:
             raise Refusal("a route needs tags or complexity", "use the split for tasks without conditions")
         if not route.program and route.tier is None:
             raise Refusal("a route needs a program or tier")

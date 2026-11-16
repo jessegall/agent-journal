@@ -65,7 +65,7 @@ class AssignBoardReader:
         return "its agent is retired" if agent.retired_at is not None else ""
 
     def takes_tasks(self, agent: Agent) -> bool:
-        return agent.role != MAIN_KEY and self.types.behaviours(agent.role).takes_tasks and agent.retired_at is None
+        return agent.role != MAIN_KEY and self.types.takes_tasks(agent.role) and agent.retired_at is None
 
     def agent_target(self, agent: Agent, waiting: str) -> BoardTarget:
         return BoardTarget(f"agent:{agent.id}", RuleTarget.AGENT, AgentLabel.labelled(agent).text, agent_id=agent.id, program=agent.program, program_model=agent.program_model,

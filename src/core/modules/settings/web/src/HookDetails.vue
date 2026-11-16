@@ -14,9 +14,11 @@ const EFFECT_LABELS = {
       ><span>{{ hook.event }}</span
       ><code>{{ hook.matcher || "All" }}</code>
     </div>
-    <div v-if="facts.length" class="hook-facts">
-      <template v-for="fact in facts" :key="fact"><span>{{ fact }}</span></template>
-    </div>
+    <template v-if="facts.length">
+      <div class="hook-facts">
+        <template v-for="fact in facts" :key="fact"><span>{{ fact }}</span></template>
+      </div>
+    </template>
     <details class="hook-command">
       <summary :title="hook.command">
         <code>{{ hook.command }}</code>

@@ -38,18 +38,18 @@ class PlanFocusLines(EventLineSource):
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         if event is None:
             return []
-        starts_plan = NewFocusPlaces.starts_plan(event)
+        is_plan_start = NewFocusPlaces.is_plan_start(event)
         places = self.new_places.places(event, agent_id)
-        if not places and not starts_plan:
+        if not places and not is_plan_start:
             return []
         # a silent judgement records no answer, so the same started tasks come back on every hook until one changes
         task_ids = frozenset(place.task_id for place in places)
-        if not starts_plan and self.judged.is_judged(agent_id, task_ids):
+        if not is_plan_start and self.judged.is_judged(agent_id, task_ids):
             return []
         self.judged.mark(agent_id, task_ids)
         agent = self.queries.query(Agent).find(agent_id)
         explicit_id = self.focus.explicit_plan_id(agent)
-        if not starts_plan and all(place.plan_id == explicit_id for place in places):
+        if not is_plan_start and all(place.plan_id == explicit_id for place in places):
             return []
         # one count settles most calls: with fewer than two plans to choose between there is no focus to name; a focus
         # the agent named may add an approved plan to the started ones

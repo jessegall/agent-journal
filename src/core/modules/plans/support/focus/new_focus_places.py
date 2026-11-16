@@ -22,7 +22,7 @@ class NewFocusPlaces(SingleInstance):
         self.read_places: list[PlanTask] = []
 
     @staticmethod
-    def starts_plan(event: HookEvent) -> bool:
+    def is_plan_start(event: HookEvent) -> bool:
         shell = event.tool.shell if event.tool is not None else None
         return bool(shell.journal_command_numbers("plan start")) if shell is not None else False
 

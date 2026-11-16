@@ -36,6 +36,9 @@ class HelperTypeBook:
     def behaviours(self, key: str) -> HelperBehaviours:
         return self.entries[key].behaviours if key in self.entries else HelperBehaviours.retired()
 
+    def takes_tasks(self, key: str) -> bool:
+        return self.behaviours(key).takes_tasks
+
     # an agent of a type no installed module registers any more works in no folder of its own, as it does nothing
     def has_separate_folder(self, key: str) -> bool:
         return key in self.entries and self.entries[key].separate_folder

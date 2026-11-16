@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, FilterBar, ListReaderLayout, PageHeader, Skeleton, applyFilter, defaultFilter, useWindow} from "@journal/window-kit";
+import {Btn, FilterBar, ListReaderLayout, PageHeader, Skeleton, applyFilter, defaultFilter, useWindow, SwitchCase} from "@journal/window-kit";
 import AbandonRun from "./AbandonRun.vue";
 import AddTrigger from "./AddTrigger.vue";
 import EditSteps from "./EditSteps.vue";
@@ -41,11 +41,11 @@ const place = (item) => ({head: `Sequence ${item.id}`, items: menuOf(item.row, (
             <template v-if="failure || actionFailure">
                 <p class="failure" role="alert" data-sequences-failure>{{ failure || actionFailure }}</p>
             </template>
-            <template v-if="dialog?.kind === 'new'"><NewSequence @close="dialog = null" /></template>
-            <template v-else-if="dialog?.kind === 'copy'"><NewSequence :title="`${dialog.sequence.title} copy`" :steps="[...dialog.sequence.steps]" @close="dialog = null" /></template>
-            <template v-else-if="dialog?.kind === 'steps'"><EditSteps :sequence="dialog.sequence" @close="dialog = null" /></template>
-            <template v-else-if="dialog?.kind === 'trigger'"><AddTrigger :sequence="dialog.sequence" @close="dialog = null" /></template>
-            <template v-else-if="dialog?.kind === 'abandon'"><AbandonRun :run="dialog.run" @close="dialog = null" /></template>
+            <SwitchCase :value="dialog?.kind"><template #new><NewSequence @close="dialog = null" /></template>
+            <template #copy><NewSequence :title="`${dialog.sequence.title} copy`" :steps="[...dialog.sequence.steps]" @close="dialog = null" /></template>
+            <template #steps><EditSteps :sequence="dialog.sequence" @close="dialog = null" /></template>
+            <template #trigger><AddTrigger :sequence="dialog.sequence" @close="dialog = null" /></template>
+            <template #abandon><AbandonRun :run="dialog.run" @close="dialog = null" /></template></SwitchCase>
         </template>
         <template #empty>
             <template v-if="!loaded"><Skeleton shape="rows" /></template>

@@ -54,7 +54,7 @@ usePoll(() => loaded.value && load(), () => !paused.value && view.visible.value,
             </div>
             <template v-if="failure"><p role="alert">{{ failure }}</p></template>
             <TableLayout class="scroll" :columns="COLUMNS" :rows="lines" :empty="failure ? '' : 'No log lines found.'" :pick="(mark) => (picked = mark)" :active="pickedLine ? pickedLine.id : ''" data-log-table />
-            <pre v-if="pickedLine" class="picked" data-log-line>{{ pickedLine.text }}</pre>
+            <template v-if="pickedLine"><pre class="picked" data-log-line>{{ pickedLine.text }}</pre></template>
             <nav aria-label="Log pages"><Btn small data-log-previous :disabled="page <= 1 || paused" @click="page--">Previous</Btn><span>Page {{ page }} of {{ pages }}</span><Btn small data-log-next :disabled="page >= pages || paused" @click="page++">Next</Btn></nav>
         </section>
     </WindowRoom>

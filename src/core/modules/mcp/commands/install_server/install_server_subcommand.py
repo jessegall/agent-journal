@@ -22,4 +22,4 @@ class InstallServerSubcommand(Subcommand[InstallServer, McpServer]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, McpServer):
-            output.line(f"installed {value.name}" + (f": it needs its key, journal mcp key {value.name} <value>" if value.requires_key else ""))
+            output.line(f"installed {value.name}" + (f": it needs its key, journal mcp key {value.name} <value>" if value.is_key_required else ""))

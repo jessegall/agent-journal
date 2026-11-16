@@ -20,6 +20,9 @@ class PoolLimits:
     def capacity(self, pool: ExecutionLength) -> int:
         return self.capacities[pool]
 
+    def longest_wait_seconds(self, pool: ExecutionLength, priority: ExecutionPriority) -> float:
+        return self.priority_limit(pool, priority).longest_wait_seconds
+
     def priority_limit(self, pool: ExecutionLength, priority: ExecutionPriority) -> PriorityLimit:
         return self.priority_limits[pool][priority]
 

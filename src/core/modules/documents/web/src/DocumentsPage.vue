@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {ListReaderLayout, PageHeader, SearchBar, Segmented, Skeleton, TimeAgo, Btn, useWindow} from "@journal/window-kit";
+import {ListReaderLayout, PageHeader, SearchBar, Segmented, Skeleton, TimeAgo, Btn, useWindow, SwitchCase} from "@journal/window-kit";
 import DocumentEdit from "./DocumentEdit.vue";
 import DocumentReader from "./DocumentReader.vue";
 import DocumentSettle from "./DocumentSettle.vue";
@@ -42,8 +42,8 @@ const pick = (key, set) => {
             </SearchBar>
             <template v-if="failure"><p class="failure" role="alert" data-documents-failure>{{ failure }}</p></template>
             <template v-if="rows.length < total && !words"><p class="more"><Btn small bordered data-documents-more @click="more">Show more</Btn></p></template>
-            <template v-if="dialog?.kind === 'edit'"><DocumentEdit :term="dialog.term" :id="dialog.row.id" @close="dialog = null" /></template>
-            <template v-else-if="dialog?.kind === 'settle'"><DocumentSettle :term="dialog.term" :id="dialog.row.id" @close="dialog = null" /></template>
+            <SwitchCase :value="dialog?.kind"><template #edit><DocumentEdit :term="dialog.term" :id="dialog.row.id" @close="dialog = null" /></template>
+            <template #settle><DocumentSettle :term="dialog.term" :id="dialog.row.id" @close="dialog = null" /></template></SwitchCase>
         </template>
         <template #empty>
             <template v-if="!loaded"><Skeleton shape="rows" /></template>

@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref} from "vue";
 import Btn from "../src/kit/Btn.vue";
+import SwitchCase from "../src/kit/SwitchCase.vue";
 import Dialog from "../src/kit/Dialog.vue";
 import FormField from "../src/kit/FormField.vue";
 import TextArea from "../src/kit/TextArea.vue";
@@ -50,20 +51,20 @@ async function send() {
         <form class="create-dialog" data-create-dialog @submit.prevent="send">
             <template v-for="field in shown" :key="field.key">
                 <FormField :label="field.label" :help="field.help" :for="`create-${field.key}`">
-                    <template v-if="field.kind === 'select'">
+                    <SwitchCase :value="field.kind"><template #select>
                         <select :id="`create-${field.key}`" v-model="values[field.key]" :data-field="field.key">
                             <template v-for="[option, label] in field.options" :key="option"><option :value="option">{{ label }}</option></template>
                         </select>
                     </template>
-                    <template v-else-if="field.kind === 'slot'">
+                    <template #slot>
                         <slot :name="field.key" :value="values[field.key]" :values="values" :set="(next) => (values[field.key] = next)" />
                     </template>
-                    <template v-else-if="field.kind === 'area'">
+                    <template #area>
                         <TextArea :id="`create-${field.key}`" :value="values[field.key]" :placeholder="field.placeholder" :data-field="field.key" @input="values[field.key] = $event.target.value" />
                     </template>
-                    <template v-else>
+                    <template #default>
                         <TextInput :id="`create-${field.key}`" :type="field.kind === 'password' ? 'password' : field.kind === 'number' ? 'number' : 'text'" :model-value="String(values[field.key])" :placeholder="field.placeholder" :data-field="field.key" @update:model-value="values[field.key] = $event" />
-                    </template>
+                    </template></SwitchCase>
                     <template v-if="refused[field.key]"><p class="create-refusal" role="alert" :data-refused="field.key">{{ refused[field.key] }}</p></template>
                 </FormField>
             </template>

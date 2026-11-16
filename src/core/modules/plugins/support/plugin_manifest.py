@@ -224,7 +224,7 @@ class PluginManifest:
         return protocol if isinstance(protocol, int) and not isinstance(protocol, bool) else LINE_VERSION
 
     @property
-    def requires_newer_journal(self) -> bool:
+    def is_newer_journal_required(self) -> bool:
         return self.protocol > LINE_VERSION
 
     @staticmethod

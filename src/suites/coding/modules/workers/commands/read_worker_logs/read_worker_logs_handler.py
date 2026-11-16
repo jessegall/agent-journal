@@ -44,7 +44,7 @@ class ReadWorkerLogsHandler(Handler[ReadWorkerLogs, str]):
         return text
 
     def is_merger(self, context: Context) -> bool:
-        return context.actor.is_agent() and self.agents.find(context.actor.id).role == Merger.key
+        return context.actor.is_agent() and self.agents.has_role(context.actor.id, Merger.key)
 
     def reviews_logs(self, context: Context) -> bool:
         if not context.actor.is_agent():

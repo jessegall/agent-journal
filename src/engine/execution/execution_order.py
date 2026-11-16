@@ -45,7 +45,7 @@ class ExecutionOrder:
         return ticket
 
     def longest_wait(self, ticket: ExecutionTicket) -> float:
-        return self.limits.priority_limit(ticket.execution_class.pool, ticket.priority).longest_wait_seconds
+        return self.limits.longest_wait_seconds(ticket.execution_class.pool, ticket.priority)
 
     def capacity_exceeded(self, running: Sequence[ExecutionTicket]) -> bool:
         if not running:

@@ -95,7 +95,7 @@ class WorkerInstructionFiles:
         return True
 
     def refresh(self, worktree: Worktree) -> bool:
-        return self.write(worktree.folder, self.agents.find(worktree.session_agent_id).profile, originals=False)
+        return self.write(worktree.folder, self.agents.profile(worktree.session_agent_id), originals=False)
 
     def file_text(self, path: Path) -> str | None:
         return self.kept_text(path) if FileAccess.is_file(path) else None

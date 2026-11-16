@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, FilterBar, ListReaderLayout, PageHeader, Skeleton, TimeAgo, applyFilter, defaultFilter, optionsOf, useWindow} from "@journal/window-kit";
+import {Btn, FilterBar, ListReaderLayout, PageHeader, Skeleton, TimeAgo, applyFilter, defaultFilter, optionsOf, useWindow, SwitchCase} from "@journal/window-kit";
 import SendTemplate from "./SendTemplate.vue";
 import TemplateForm from "./TemplateForm.vue";
 import TemplateReader from "./TemplateReader.vue";
@@ -38,9 +38,9 @@ const place = (item) => ({
             <template v-if="failure">
                 <p class="failure" role="alert" data-templates-failure>{{ failure }}</p>
             </template>
-            <template v-if="dialog?.kind === 'new'"><TemplateForm @close="dialog = null" /></template>
-            <template v-else-if="dialog?.kind === 'edit'"><TemplateForm :template="dialog.template" @close="dialog = null" /></template>
-            <template v-else-if="dialog?.kind === 'send'"><SendTemplate :template="dialog.template" @close="dialog = null" /></template>
+            <SwitchCase :value="dialog?.kind"><template #new><TemplateForm @close="dialog = null" /></template>
+            <template #edit><TemplateForm :template="dialog.template" @close="dialog = null" /></template>
+            <template #send><SendTemplate :template="dialog.template" @close="dialog = null" /></template></SwitchCase>
         </template>
         <template #empty>
             <template v-if="!loaded"><Skeleton shape="rows" /></template>

@@ -33,5 +33,5 @@ class AssignRuleTargetGuard(Guard[Created[AssignRule] | Updated[AssignRule]]):
         agent = self.rows.find(Agent, rule.target_agent_id)
         if agent is None or agent.environment_id != rule.environment_id:
             raise Refusal(f"agent {rule.target_agent_id} works in another environment", "give the rule to an agent of the rule's own environment")
-        if not self.types.behaviours(agent.role).takes_tasks:
+        if not self.types.takes_tasks(agent.role):
             raise Refusal("helpers take no task", "give the rule to the main agent or to an agent that takes tasks")

@@ -44,8 +44,8 @@ class ClaudeServerFile(ProgramServerFile):
     def entry(server: ToolServer) -> dict[str, object]:
         reference = f"${{{server.key_variable}}}"
         if server.is_started:
-            return ClaudeServerFile.present(command=server.command, args=list(server.args), env={server.key_variable: reference} if server.requires_key else None)
-        return ClaudeServerFile.present(type=server.transport, url=server.url, headers={"Authorization": f"Bearer {reference}"} if server.requires_key else None)
+            return ClaudeServerFile.present(command=server.command, args=list(server.args), env={server.key_variable: reference} if server.is_key_required else None)
+        return ClaudeServerFile.present(type=server.transport, url=server.url, headers={"Authorization": f"Bearer {reference}"} if server.is_key_required else None)
 
     @staticmethod
     def present(**entry_fields: object) -> dict[str, object]:

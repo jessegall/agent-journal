@@ -26,7 +26,7 @@ class McpServer(Model):
     auth: ServerAuth = ServerAuth.NONE
 
     @property
-    def requires_key(self) -> bool:
+    def is_key_required(self) -> bool:
         return self.auth is ServerAuth.KEY
 
     @property

@@ -76,6 +76,12 @@ class AgentRows:
         self.rows.prepare(Agent, agent_ids)
         return [agent for agent in (self.rows.find(Agent, agent_id) for agent_id in dict.fromkeys(agent_ids)) if agent is not None]
 
+    def has_role(self, agent_id: int, role: str) -> bool:
+        return self.find(agent_id).role == role
+
+    def profile(self, agent_id: int) -> str:
+        return self.find(agent_id).profile
+
     def is_main(self, agent_id: int) -> bool:
         return self.find(agent_id).is_main
 

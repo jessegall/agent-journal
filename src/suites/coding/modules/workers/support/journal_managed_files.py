@@ -19,4 +19,4 @@ class JournalManagedFiles(ManagedFiles):
         self.settings, self.types = settings, types
 
     def has(self, agent: Agent, path: str) -> bool:
-        return self.types.find(agent.role).separate_folder and path in (*INSTRUCTION_FILES, *ORIGINAL_FILES) and self.settings.flag(WORKER_INSTRUCTION_FILES_SETTING)
+        return self.types.has_separate_folder(agent.role) and path in (*INSTRUCTION_FILES, *ORIGINAL_FILES) and self.settings.flag(WORKER_INSTRUCTION_FILES_SETTING)

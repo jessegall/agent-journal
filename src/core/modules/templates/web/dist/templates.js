@@ -1,59 +1,59 @@
-if (!document.getElementById("window-styles-536d4af24dee")) { const style = document.createElement("style"); style.id = "window-styles-536d4af24dee"; style.textContent = ".fixed[data-v-8eec169f]{margin:12px 0 0;color:var(--text-3);font-size:12.5px}.command[data-v-8eec169f]{margin:0 0 4px;font-family:var(--mono, monospace);font-size:12.5px}.part[data-v-8eec169f]{margin:0 0 6px;color:var(--text-2);font-size:13px}.age[data-v-4cfc18d6]{color:var(--text-3);font-size:12px;white-space:nowrap}.failure[data-v-4cfc18d6]{margin:0;padding:6px var(--inset);color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
-import { openBlock as r, createBlock as c, unref as a, withCtx as d, createVNode as y, computed as N, createElementBlock as b, createCommentVNode as v, Fragment as q, renderList as F, toDisplayString as O, createElementVNode as G, createTextVNode as x, ref as C } from "vue";
-import { useWindow as E, CreateDialog as M, TextList as V, Reader as Q, ReaderSection as U, Btn as L, optionsOf as X, defaultFilter as Y, applyFilter as Z, ListReaderLayout as _, TimeAgo as ee, Skeleton as te, PageHeader as ae, FilterBar as le } from "@journal/window-kit";
-const A = { plan: "Plan", task: "Task", doc: "Document" }, j = [["plan", "Plans"], ["task", "Tasks"], ["doc", "Documents"], ["plan,task", "Plans and tasks"]], ne = (e) => /\s/.test(e) ? JSON.stringify(e) : e, R = (e) => `journal ${e.map(ne).join(" ")}`, h = (e) => e.map((t) => t.trim()).filter(Boolean), D = (e) => !e.module, P = (e) => [...new Set(e.parts.flatMap((t) => [...t.matchAll(/\{(\w+)\}/g)].map((l) => l[1])))];
-function I(e) {
+if (!document.getElementById("window-styles-49f998eb368d")) { const style = document.createElement("style"); style.id = "window-styles-49f998eb368d"; style.textContent = ".fixed[data-v-8eec169f]{margin:12px 0 0;color:var(--text-3);font-size:12.5px}.command[data-v-8eec169f]{margin:0 0 4px;font-family:var(--mono, monospace);font-size:12.5px}.part[data-v-8eec169f]{margin:0 0 6px;color:var(--text-2);font-size:13px}.age[data-v-06d7e930]{color:var(--text-3);font-size:12px;white-space:nowrap}.failure[data-v-06d7e930]{margin:0;padding:6px var(--inset);color:var(--bad, var(--text-2));font-size:12px}\n"; document.head.appendChild(style); }
+import { openBlock as m, createBlock as g, unref as a, withCtx as i, createVNode as d, computed as C, createElementBlock as b, createCommentVNode as v, Fragment as I, renderList as W, toDisplayString as N, createElementVNode as K, createTextVNode as O, ref as T } from "vue";
+import { useWindow as D, CreateDialog as U, TextList as B, Reader as z, ReaderSection as F, Btn as q, optionsOf as G, defaultFilter as Q, applyFilter as X, ListReaderLayout as Y, TimeAgo as Z, Skeleton as _, PageHeader as ee, FilterBar as te, SwitchCase as ae } from "@journal/window-kit";
+const x = { plan: "Plan", task: "Task", doc: "Document" }, P = [["plan", "Plans"], ["task", "Tasks"], ["doc", "Documents"], ["plan,task", "Plans and tasks"]], le = (e) => /\s/.test(e) ? JSON.stringify(e) : e, E = (e) => `journal ${e.map(le).join(" ")}`, h = (e) => e.map((t) => t.trim()).filter(Boolean), L = (e) => !e.module, A = (e) => [...new Set(e.parts.flatMap((t) => [...t.matchAll(/\{(\w+)\}/g)].map((l) => l[1])))];
+function j(e) {
   const t = e.indexOf(":");
   return t < 0 ? { heading: e, body: "" } : { heading: e.slice(0, t).trim(), body: e.slice(t + 1).trim() };
 }
-function se(e = null) {
+function ne(e = null) {
   const t = (e == null ? void 0 : e.targets.join(",")) || "plan";
   return [
     { key: "title", label: "Title", required: !0, placeholder: "Plan: release", value: (e == null ? void 0 : e.title) ?? "" },
     { key: "brief", label: "Description", required: !0, value: (e == null ? void 0 : e.brief) ?? "" },
-    { key: "applies", label: "Applies to", kind: "select", options: j.some(([l]) => l === t) ? j : [...j, [t, t]], value: t },
+    { key: "applies", label: "Applies to", kind: "select", options: P.some(([l]) => l === t) ? P : [...P, [t, t]], value: t },
     { key: "purpose", label: "Purpose", value: (e == null ? void 0 : e.purpose) ?? "" },
     { key: "parts", label: "Parts", kind: "slot", required: !0, value: e ? [...e.parts] : [""] },
     { key: "commands", label: "Phase end commands", kind: "slot", help: "Run at each phase end of a plan", value: e ? [...e.commands] : [], when: (l) => l.applies.startsWith("plan") }
   ];
 }
-const oe = (e) => h(e.parts).some((t) => t.includes("|")) ? { parts: "A part cannot hold the | sign." } : {}, J = (e) => e.applies.startsWith("plan") && h(e.commands).length > 0, re = (e) => ["template", "make", e.title.trim(), "--applies-to", e.applies, "--brief", e.brief.trim(), "--purpose", e.purpose.trim(), "--parts", h(e.parts).join(" | "), ...J(e) ? ["--commands", h(e.commands).join(" | ")] : []], ie = (e) => R(["template", "make", e.title.trim() || "…", "--applies-to", e.applies, "--brief", "…", "--parts", "…"]), de = (e, t) => ["template", "edit", String(e.id), "--title", t.title.trim(), "--brief", t.brief.trim(), "--targets", ...t.applies.split(","), "--purpose", t.purpose.trim(), "--parts", ...h(t.parts), ...J(t) ? ["--commands", ...h(t.commands)] : []], me = (e) => () => R(["template", "edit", String(e.id), "…"]), pe = (e) => [
-  { key: "kind", label: "On", kind: "select", options: (e.targets.length ? e.targets : Object.keys(A)).map((t) => [t, A[t] ?? t]), required: !0 },
+const se = (e) => h(e.parts).some((t) => t.includes("|")) ? { parts: "A part cannot hold the | sign." } : {}, H = (e) => e.applies.startsWith("plan") && h(e.commands).length > 0, oe = (e) => ["template", "make", e.title.trim(), "--applies-to", e.applies, "--brief", e.brief.trim(), "--purpose", e.purpose.trim(), "--parts", h(e.parts).join(" | "), ...H(e) ? ["--commands", h(e.commands).join(" | ")] : []], re = (e) => E(["template", "make", e.title.trim() || "…", "--applies-to", e.applies, "--brief", "…", "--parts", "…"]), ie = (e, t) => ["template", "edit", String(e.id), "--title", t.title.trim(), "--brief", t.brief.trim(), "--targets", ...t.applies.split(","), "--purpose", t.purpose.trim(), "--parts", ...h(t.parts), ...H(t) ? ["--commands", ...h(t.commands)] : []], me = (e) => () => E(["template", "edit", String(e.id), "…"]), de = (e) => [
+  { key: "kind", label: "On", kind: "select", options: (e.targets.length ? e.targets : Object.keys(x)).map((t) => [t, x[t] ?? t]), required: !0 },
   { key: "row", label: "Number", required: !0, placeholder: "1131" },
-  ...P(e).map((t) => ({ key: `slot-${t}`, label: `{${t}}`, required: !0 }))
-], ue = (e) => /^\d+$/.test(e.row.trim()) ? {} : { row: "Write the number of the row." }, ce = (e, t) => ["template", "send", String(e.id), `--on=${t.kind}:${t.row.trim()}`, ...P(e).map((l) => `--set=${l}=${t[`slot-${l}`]}`)], fe = (e) => (t) => R(["template", "send", String(e.id), `--on=${t.kind}:${t.row.trim() || "…"}`, ...P(e).map((l) => `--set=${l}=…`)]), ke = {
+  ...A(e).map((t) => ({ key: `slot-${t}`, label: `{${t}}`, required: !0 }))
+], pe = (e) => /^\d+$/.test(e.row.trim()) ? {} : { row: "Write the number of the row." }, ue = (e, t) => ["template", "send", String(e.id), `--on=${t.kind}:${t.row.trim()}`, ...A(e).map((l) => `--set=${l}=${t[`slot-${l}`]}`)], ce = (e) => (t) => E(["template", "send", String(e.id), `--on=${t.kind}:${t.row.trim() || "…"}`, ...A(e).map((l) => `--set=${l}=…`)]), fe = {
   __name: "SendTemplate",
   props: { template: { type: Object, required: !0 } },
   emits: ["close"],
   setup(e, { emit: t }) {
-    const l = e, p = t, f = E();
-    return (m, s) => (r(), c(a(M), {
+    const l = e, u = t, f = D();
+    return (p, s) => (m(), g(a(U), {
       title: `Send ${e.template.title}`,
       submit: "Send it",
-      fields: a(pe)(e.template),
-      command: a(fe)(e.template),
-      check: a(ue),
-      run: (o) => a(f).run(a(ce)(l.template, o)),
-      onClose: s[0] || (s[0] = (o) => p("close"))
+      fields: a(de)(e.template),
+      command: a(ce)(e.template),
+      check: a(pe),
+      run: (o) => a(f).run(a(ue)(l.template, o)),
+      onClose: s[0] || (s[0] = (o) => u("close"))
     }, null, 8, ["title", "fields", "command", "check", "run"]));
   }
-}, H = {
+}, V = {
   __name: "TemplateForm",
   props: { template: { type: Object, default: null } },
   emits: ["close"],
   setup(e, { emit: t }) {
-    const l = e, p = t, f = E(), m = (s) => f.run(l.template ? de(l.template, s) : re(s));
-    return (s, o) => (r(), c(a(M), {
+    const l = e, u = t, f = D(), p = (s) => f.run(l.template ? ie(l.template, s) : oe(s));
+    return (s, o) => (m(), g(a(U), {
       title: e.template ? `Edit ${e.template.title}` : "New template",
       submit: e.template ? "Save the template" : "Make the template",
-      fields: a(se)(e.template),
-      command: e.template ? a(me)(e.template) : a(ie),
-      check: a(oe),
-      run: m,
-      onClose: o[0] || (o[0] = (w) => p("close"))
+      fields: a(ne)(e.template),
+      command: e.template ? a(me)(e.template) : a(re),
+      check: a(se),
+      run: p,
+      onClose: o[0] || (o[0] = (w) => u("close"))
     }, {
-      parts: d(({ value: w, set: $ }) => [
-        y(a(V), {
+      parts: i(({ value: w, set: $ }) => [
+        d(a(B), {
           items: w,
           kind: "part",
           noun: "Part",
@@ -62,8 +62,8 @@ const oe = (e) => h(e.parts).some((t) => t.includes("|")) ? { parts: "A part can
           onItems: $
         }, null, 8, ["items", "onItems"])
       ]),
-      commands: d(({ value: w, set: $ }) => [
-        y(a(V), {
+      commands: i(({ value: w, set: $ }) => [
+        d(a(B), {
           items: w,
           kind: "command",
           noun: "Command",
@@ -76,89 +76,89 @@ const oe = (e) => h(e.parts).some((t) => t.includes("|")) ? { parts: "A part can
       _: 1
     }, 8, ["title", "submit", "fields", "command", "check"]));
   }
-}, K = (e, t) => {
+}, M = (e, t) => {
   const l = e.__vccOpts || e;
-  for (const [p, f] of t)
-    l[p] = f;
+  for (const [u, f] of t)
+    l[u] = f;
   return l;
-}, be = {
+}, ke = {
   key: 0,
   class: "fixed",
   role: "note",
   "data-template-fixed": ""
-}, ye = { key: 0 }, we = {
+}, be = { key: 0 }, we = {
   key: 0,
   class: "part"
-}, ge = {
+}, ye = {
   __name: "TemplateReader",
   props: { template: { type: Object, required: !0 } },
   emits: ["send", "edit"],
   setup(e, { emit: t }) {
-    const l = e, p = t, f = N(() => [
-      { name: "applies", label: "Applies to", value: l.template.targets.length ? l.template.targets.map((m) => A[m] ?? m).join(", ") : "Any row" },
+    const l = e, u = t, f = C(() => [
+      { name: "applies", label: "Applies to", value: l.template.targets.length ? l.template.targets.map((p) => x[p] ?? p).join(", ") : "Any row" },
       { name: "purpose", label: "Purpose", value: l.template.purpose || "None" },
-      { name: "slots", label: "Slots", value: P(l.template).map((m) => `{${m}}`).join(", ") || "None" },
+      { name: "slots", label: "Slots", value: A(l.template).map((p) => `{${p}}`).join(", ") || "None" },
       { name: "written", label: "Written by", value: l.template.module ? `The ${l.template.module} module` : "A user" }
     ]);
-    return (m, s) => (r(), c(a(Q), {
+    return (p, s) => (m(), g(a(z), {
       title: e.template.title,
       number: String(e.template.id),
       abstract: e.template.brief,
       facts: f.value,
       "data-template-reader": ""
     }, {
-      primary: d(() => [
-        y(a(L), {
+      primary: i(() => [
+        d(a(q), {
           small: "",
           variant: "primary",
           "data-template-send": "",
-          onClick: s[0] || (s[0] = (o) => p("send"))
+          onClick: s[0] || (s[0] = (o) => u("send"))
         }, {
-          default: d(() => [...s[2] || (s[2] = [
-            x("Send it on a row", -1)
+          default: i(() => [...s[2] || (s[2] = [
+            O("Send it on a row", -1)
           ])]),
           _: 1
         })
       ]),
-      actions: d(() => [
-        a(D)(e.template) ? (r(), c(a(L), {
+      actions: i(() => [
+        a(L)(e.template) ? (m(), g(a(q), {
           key: 0,
           small: "",
           "data-template-edit": "",
-          onClick: s[1] || (s[1] = (o) => p("edit"))
+          onClick: s[1] || (s[1] = (o) => u("edit"))
         }, {
-          default: d(() => [...s[3] || (s[3] = [
-            x("Edit", -1)
+          default: i(() => [...s[3] || (s[3] = [
+            O("Edit", -1)
           ])]),
           _: 1
         })) : v("", !0)
       ]),
-      default: d(() => [
-        a(D)(e.template) ? v("", !0) : (r(), b("p", be, "Once made, a template is not changed: make a new one.")),
-        e.template.commands.length ? (r(), c(a(U), {
+      default: i(() => [
+        a(L)(e.template) ? v("", !0) : (m(), b("p", ke, "Once made, a template is not changed: make a new one.")),
+        e.template.commands.length ? (m(), g(a(F), {
           key: 1,
           title: "Runs at each phase end"
         }, {
-          default: d(() => [
-            (r(!0), b(q, null, F(e.template.commands, (o) => (r(), b("p", {
+          default: i(() => [
+            (m(!0), b(I, null, W(e.template.commands, (o) => (m(), b("p", {
               key: o,
               class: "command",
               "data-template-command": ""
-            }, O(o), 1))), 128))
+            }, N(o), 1))), 128))
           ]),
           _: 1
         })) : v("", !0),
-        y(a(U), { title: "Its parts" }, {
-          default: d(() => [
-            (r(!0), b(q, null, F(e.template.parts, (o) => (r(), b("p", {
+        d(a(F), { title: "Its parts" }, {
+          default: i(() => [
+            (m(!0), b(I, null, W(e.template.parts, (o) => (m(), b("p", {
               key: o,
               class: "part",
               "data-template-part": ""
             }, [
-              G("strong", null, O(a(I)(o).heading), 1),
-              a(I)(o).body ? (r(), b("span", ye, O(` ${a(I)(o).body}`), 1)) : v("", !0)
+              K("strong", null, N(a(j)(o).heading), 1),
+              a(j)(o).body ? (m(), b("span", be, N(` ${a(j)(o).body}`), 1)) : v("", !0)
             ]))), 128)),
-            e.template.parts.length ? v("", !0) : (r(), b("p", we, "None"))
+            e.template.parts.length ? v("", !0) : (m(), b("p", we, "None"))
           ]),
           _: 1
         })
@@ -166,103 +166,113 @@ const oe = (e) => h(e.parts).some((t) => t.includes("|")) ? { parts: "A part can
       _: 1
     }, 8, ["title", "number", "abstract", "facts"]));
   }
-}, ve = /* @__PURE__ */ K(ge, [["__scopeId", "data-v-8eec169f"]]), he = {
+}, ge = /* @__PURE__ */ M(ye, [["__scopeId", "data-v-8eec169f"]]), ve = {
   key: 0,
   class: "failure",
   role: "alert",
   "data-templates-failure": ""
-}, $e = 460, Se = {
+}, he = 460, $e = {
   __name: "TemplateCards",
   setup(e) {
-    const t = E(), { rows: l, failure: p, loaded: f } = t.props.templates, m = N(() => [{ key: "applies", label: "Applies to", options: X(l.value, (n) => n.targets, (n) => A[n] ?? n), get: (n) => n.targets }]), s = C(Y(m.value)), o = C(""), w = N(() => Z(l.value, m.value, s.value, o.value, ["title", "brief", "purpose"])), $ = N(() => w.value.map((n) => ({ id: n.id, title: `${n.id} ${n.title}`, desc: n.brief, row: n }))), W = C(null), k = C(null), S = (n, i = null) => k.value = { kind: n, template: i }, z = (n) => ({
+    const t = D(), { rows: l, failure: u, loaded: f } = t.props.templates, p = C(() => [{ key: "applies", label: "Applies to", options: G(l.value, (n) => n.targets, (n) => x[n] ?? n), get: (n) => n.targets }]), s = T(Q(p.value)), o = T(""), w = C(() => X(l.value, p.value, s.value, o.value, ["title", "brief", "purpose"])), $ = C(() => w.value.map((n) => ({ id: n.id, title: `${n.id} ${n.title}`, desc: n.brief, row: n }))), R = T(null), y = T(null), S = (n, r = null) => y.value = { kind: n, template: r }, J = (n) => ({
       head: `Template ${n.id}`,
       items: [
         { label: "Use", group: "open", run: () => S("send", n.row) },
-        ...D(n.row) ? [{ label: "Edit", group: "own", run: () => S("edit", n.row) }] : []
+        ...L(n.row) ? [{ label: "Edit", group: "own", run: () => S("edit", n.row) }] : []
       ]
     });
-    return (n, i) => (r(), c(a(_), {
-      chosen: W.value,
-      "onUpdate:chosen": i[6] || (i[6] = (u) => W.value = u),
+    return (n, r) => (m(), g(a(Y), {
+      chosen: R.value,
+      "onUpdate:chosen": r[6] || (r[6] = (c) => R.value = c),
       items: $.value,
-      "list-width": $e,
-      place: z,
+      "list-width": he,
+      place: J,
       "empty-title": "No templates yet",
       "pick-line": "Choose a template",
       "data-templates": ""
     }, {
-      top: d(() => {
-        var u, T, B;
+      top: i(() => {
+        var c;
         return [
-          y(a(ae), {
+          d(a(ee), {
             title: "Templates",
             count: a(l).length
           }, {
-            primary: d(() => [
-              y(a(L), {
+            primary: i(() => [
+              d(a(q), {
                 small: "",
                 variant: "primary",
                 "data-template-new": "",
-                onClick: i[0] || (i[0] = (g) => S("new"))
+                onClick: r[0] || (r[0] = (k) => S("new"))
               }, {
-                default: d(() => [...i[7] || (i[7] = [
-                  x("New template", -1)
+                default: i(() => [...r[7] || (r[7] = [
+                  O("New template", -1)
                 ])]),
                 _: 1
               })
             ]),
             _: 1
           }, 8, ["count"]),
-          y(a(le), {
+          d(a(te), {
             modelValue: s.value,
-            "onUpdate:modelValue": i[1] || (i[1] = (g) => s.value = g),
+            "onUpdate:modelValue": r[1] || (r[1] = (k) => s.value = k),
             words: o.value,
-            "onUpdate:words": i[2] || (i[2] = (g) => o.value = g),
-            fields: m.value,
+            "onUpdate:words": r[2] || (r[2] = (k) => o.value = k),
+            fields: p.value,
             rows: a(l),
             shown: w.value.length,
             placeholder: "Search templates"
           }, null, 8, ["modelValue", "words", "fields", "rows", "shown"]),
-          a(p) ? (r(), b("p", he, O(a(p)), 1)) : v("", !0),
-          ((u = k.value) == null ? void 0 : u.kind) === "new" ? (r(), c(H, {
-            key: 1,
-            onClose: i[3] || (i[3] = (g) => k.value = null)
-          })) : ((T = k.value) == null ? void 0 : T.kind) === "edit" ? (r(), c(H, {
-            key: 2,
-            template: k.value.template,
-            onClose: i[4] || (i[4] = (g) => k.value = null)
-          }, null, 8, ["template"])) : ((B = k.value) == null ? void 0 : B.kind) === "send" ? (r(), c(ke, {
-            key: 3,
-            template: k.value.template,
-            onClose: i[5] || (i[5] = (g) => k.value = null)
-          }, null, 8, ["template"])) : v("", !0)
+          a(u) ? (m(), b("p", ve, N(a(u)), 1)) : v("", !0),
+          d(a(ae), {
+            value: (c = y.value) == null ? void 0 : c.kind
+          }, {
+            new: i(() => [
+              d(V, {
+                onClose: r[3] || (r[3] = (k) => y.value = null)
+              })
+            ]),
+            edit: i(() => [
+              d(V, {
+                template: y.value.template,
+                onClose: r[4] || (r[4] = (k) => y.value = null)
+              }, null, 8, ["template"])
+            ]),
+            send: i(() => [
+              d(fe, {
+                template: y.value.template,
+                onClose: r[5] || (r[5] = (k) => y.value = null)
+              }, null, 8, ["template"])
+            ]),
+            _: 1
+          }, 8, ["value"])
         ];
       }),
-      empty: d(() => [
-        a(f) ? (r(), b(q, { key: 1 }, [
-          x("A template is a shape for a task, a plan or a review.")
-        ], 64)) : (r(), c(a(te), {
+      empty: i(() => [
+        a(f) ? (m(), b(I, { key: 1 }, [
+          O("A template is a shape for a task, a plan or a review.")
+        ], 64)) : (m(), g(a(_), {
           key: 0,
           shape: "rows"
         }))
       ]),
-      meta: d(({ item: u }) => [
-        y(a(ee), {
+      meta: i(({ item: c }) => [
+        d(a(Z), {
           class: "age",
-          at: u.row.created_at
+          at: c.row.created_at
         }, null, 8, ["at"])
       ]),
-      reader: d(({ item: u }) => [
-        y(ve, {
-          template: u.row,
-          onSend: (T) => S("send", u.row),
-          onEdit: (T) => S("edit", u.row)
+      reader: i(({ item: c }) => [
+        d(ge, {
+          template: c.row,
+          onSend: (k) => S("send", c.row),
+          onEdit: (k) => S("edit", c.row)
         }, null, 8, ["template", "onSend", "onEdit"])
       ]),
       _: 1
     }, 8, ["chosen", "items"]));
   }
-}, Ne = /* @__PURE__ */ K(Se, [["__scopeId", "data-v-4cfc18d6"]]);
+}, Ce = /* @__PURE__ */ M($e, [["__scopeId", "data-v-06d7e930"]]);
 export {
-  Ne as default
+  Ce as default
 };

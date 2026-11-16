@@ -21,12 +21,12 @@ class UnansweredMessageLines(EventLineSource):
         self.unanswered = unanswered
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        if event is None or UnansweredMessageLines.answers(event):
+        if event is None or UnansweredMessageLines.is_message_command(event):
             return []
         unanswered = self.unanswered.unanswered(agent_id)
         return [UnansweredMessageReminder.declared().agent_message(messages=", ".join(str(message.id) for message in unanswered))] if unanswered else []
 
     @staticmethod
-    def answers(event: HookEvent) -> bool:
+    def is_message_command(event: HookEvent) -> bool:
         tool = event.tool
         return tool is not None and tool.shell is not None and tool.shell.parts_running_journal_command("message", "task make")

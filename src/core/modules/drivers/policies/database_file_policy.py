@@ -26,9 +26,9 @@ class DatabaseFilePolicy(EventPolicy):
         shell = event.tool.shell if event.tool is not None else None
         if shell is None:
             return None
-        writes = any(DATABASE_PATH.search(redirect) for redirect in shell.redirects) or any(self.writes_database(part) for part in shell.parts)
+        writes = any(DATABASE_PATH.search(redirect) for redirect in shell.redirects) or any(self.is_database_file_change(part) for part in shell.parts)
         return DatabaseFileMessage.declared().agent_message() if writes else None
 
     @staticmethod
-    def writes_database(part: Part) -> bool:
+    def is_database_file_change(part: Part) -> bool:
         return DATABASE_PATH.search(part.text) is not None and SQLITE_READONLY_FLAG not in part.arguments and part.classification.category not in READ_CATEGORIES
