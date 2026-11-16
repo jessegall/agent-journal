@@ -7,8 +7,8 @@ from engine.repository.repository import Repository
 
 
 class AgentLineSender(MessageSender):
-    """Sends an agent message by saving an agent line: the one place that writes the row an agent's next hook gives or
-    the server types."""
+    """Sends an agent message by saving an agent line: the one place that writes the row an agent's next hook
+    gives or the server types."""
 
     def __init__(self, repository: Repository) -> None:
         self.repository = repository

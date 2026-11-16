@@ -12,9 +12,10 @@ INSTRUCTIONS_LIMIT = 10_000
 
 
 class CompactionInstructionsLines(EventLineSource):
-    """A compaction is given the agent program's own instructions for its summary, for every compaction: one a person
-    or the journal starts with a plain /compact, and an automatic one. A person's own /compact text needs nothing here,
-    since the program joins it with these instructions (report 1456). It never refuses a compaction."""
+    """A compaction is given the agent program's own instructions for its summary, for every compaction: one a
+    person or the journal starts with a plain /compact, and an automatic one. A person's own /compact text
+    needs nothing here, since the program joins it with these instructions (report 1456). It never refuses a
+    compaction."""
 
     key = "drivers.compaction-instructions"
     events = [HookEventName.COMPACT]

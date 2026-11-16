@@ -34,10 +34,10 @@ class PhaseTestAnswer:
 
 
 class PhaseTestRuns:
-    """Allows the test runs a worker starts itself between two commits, counted, and refuses them after the allowance
-    is spent. After its last commit the worker waits for the merge and its runs are not counted, and while tests of its
-    work have failed its runs are free until its next commit. Read once a hook, so the refusal, the lines and the count
-    agree."""
+    """Allows the test runs a worker starts itself between two commits, counted, and refuses them after the
+    allowance is spent. After its last commit the worker waits for the merge and its runs are not counted, and
+    while tests of its work have failed its runs are free until its next commit. Read once a hook, so the
+    refusal, the lines and the count agree."""
 
     def __init__(self, queries: Queries, commands: BackgroundCommands, worktrees: WorktreeQuery, window: CommitWindow, steps: WorkerSteps, request_values: RequestValues) -> None:
         self.queries, self.commands, self.worktrees, self.window, self.steps, self.request_values = queries, commands, worktrees, window, steps, request_values

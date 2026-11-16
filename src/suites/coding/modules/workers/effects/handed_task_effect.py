@@ -12,9 +12,9 @@ from core.modules.tasks.commands.start_task.start_task import StartTask
 
 
 class HandedTaskEffect(Effect):
-    """The always-effect of a step that sees Working(handed task): the task handed to the main agent is started in
-    the step's own save, at a stop and off a hook, whether auto mode is on or a task was reserved for the agent
-    (doc 1310 section 4.11)."""
+    """The always-effect of a step that sees Working(handed task): the task handed to the main agent is
+    started in the step's own save, at a stop and off a hook, whether auto mode is on or a task was reserved
+    for the agent (doc 1310 section 4.11)."""
 
     events = [HookEventName.STOP]
     includes_steps = True

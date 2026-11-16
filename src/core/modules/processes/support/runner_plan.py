@@ -34,10 +34,11 @@ class RunnerDecision:
 
 
 class RunnerPlan:
-    """A shell line of any agent runs through the journal's runner: the run is made a process, split into its parts,
-    and the agent's command is rewritten to hand the runner its process, its limit and its line. A read-only or
-    separate-folder helper that runs in the sandbox is refused a line that cannot be parsed, a missing runner, or a
-    missing write folder. Read once a hook, so the policy, the line and the start agree."""
+    """A shell line of any agent runs through the journal's runner: the run is made a process, split into its
+    parts, and the agent's command is rewritten to hand the runner its process, its limit and its line. A
+    read-only or separate-folder helper that runs in the sandbox is refused a line that cannot be parsed, a
+    missing runner, or a missing write folder. Read once a hook, so the policy, the line and the start agree.
+    """
 
     def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, types: HelperTypeBook, roles: AgentRoleReader, folders: AgentWriteFolder, shell_sandbox: ShellSandbox,
                  project_reads: ProjectReads, checkouts: AgentCheckouts, choice: AgentSandboxChoice, request_values: RequestValues) -> None:

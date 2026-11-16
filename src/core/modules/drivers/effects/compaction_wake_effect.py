@@ -16,9 +16,9 @@ WAKE_WAIT_SECONDS = 10
 
 class CompactionWakeEffect(EventEffect):
     """At its minute step, wakes an agent that takes tasks which a compaction left at its prompt with no turn
-    running, once the compaction is ten seconds old with no tool call after it, so an agent already working again
-    is not told to read the overview. A compaction wakes its agent once, and a paused agent never; a clear wakes
-    nobody by itself (doc 1310 section 6.4)."""
+    running, once the compaction is ten seconds old with no tool call after it, so an agent already working
+    again is not told to read the overview. A compaction wakes its agent once, and a paused agent never; a
+    clear wakes nobody by itself (doc 1310 section 6.4)."""
 
     key = "drivers.compaction-wake"
     events = [HookEventName.TICK]

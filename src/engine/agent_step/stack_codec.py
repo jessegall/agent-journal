@@ -23,8 +23,9 @@ STATE_FIELD = "state_name"
 
 
 class StackCodec:
-    """Turns an agent's stacked states into the JSON its stack row keeps and back, each state by its class name and every
-    field by its declared type; a stacked state whose state the code no longer knows raises, so the step reseeds it."""
+    """Turns an agent's stacked states into the JSON its stack row keeps and back, each state by its class
+    name and every field by its declared type; a stacked state whose state the code no longer knows raises, so
+    the step reseeds it."""
 
     @staticmethod
     def encoded(stacked_states: Sequence[StackedState]) -> str:

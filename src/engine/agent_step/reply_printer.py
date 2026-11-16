@@ -7,9 +7,9 @@ LINE_LABEL = "journal: "
 
 
 class ReplyPrinter(Printer):
-    """Prints a decision record as the program-neutral reply the Go hook encodes for each program (its answer.go reads
-    the provider's table): a halt, a refusal with its reason, or an allowance with its lines and the rewrite the step
-    kept. It encodes and never changes the decision."""
+    """Prints a decision record as the program-neutral reply the Go hook encodes for each program (its
+    answer.go reads the provider's table): a halt, a refusal with its reason, or an allowance with its lines
+    and the rewrite the step kept. It encodes and never changes the decision."""
 
     def encoded(self, record: DecisionRecord) -> HookReply:
         lines = [line.text for line in record.lines]

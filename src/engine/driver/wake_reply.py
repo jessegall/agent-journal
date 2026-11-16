@@ -8,8 +8,8 @@ GONE_STATUS = 410
 
 @dataclass(frozen=True)
 class WakeReply:
-    """The server's answer to a wake hook: a line for the agent, nothing yet, gone (cancelled, replaced or not allowed),
-    or, between the route's two steps, a waiter that is registered and waits."""
+    """The server's answer to a wake hook: a line for the agent, nothing yet, gone (cancelled, replaced or not
+    allowed), or, between the route's two steps, a waiter that is registered and waits."""
 
     status: int
     agent_id: int = 0

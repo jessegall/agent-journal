@@ -18,10 +18,10 @@ from suites.coding.modules.workers.types.worker import Worker
 
 
 class WorkerReportEffect(Effect):
-    """What a worker says as it is allowed to stop with no task started and none queued is its report to its main
-    agent (doc 1310 section 4.9); with the merger on it is only kept, since the merger reads the hand-in. A worker
-    whose unit of several tasks is all committed stops to wait for its runs or its merge, which is no report. It is
-    not required: a report that cannot be saved becomes a line."""
+    """What a worker says as it is allowed to stop with no task started and none queued is its report to its
+    main agent (doc 1310 section 4.9); with the merger on it is only kept, since the merger reads the hand-in.
+    A worker whose unit of several tasks is all committed stops to wait for its runs or its merge, which is no
+    report. It is not required: a report that cannot be saved becomes a line."""
 
     events = [HookEventName.STOP]
     agent_types = [Worker.key]

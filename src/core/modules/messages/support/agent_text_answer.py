@@ -24,9 +24,9 @@ class AgentTextShown:
 
 
 class AgentTextAnswer:
-    """Each finished text block the main agent writes in a turn becomes a chat message of the agent, unless the filter
-    keeps it out; a text held for following a reply is shown once a tool comes. Read once a hook, so the line and the
-    message agree."""
+    """Each finished text block the main agent writes in a turn becomes a chat message of the agent, unless
+    the filter keeps it out; a text held for following a reply is shown once a tool comes. Read once a hook,
+    so the line and the message agree."""
 
     def __init__(self, texts: AgentTextFilter, displayed_blocks: DisplayedBlocks, repeats: RepeatedMessages, targets: TurnReplyTargets, clock: Clock, request_values: RequestValues) -> None:
         self.texts, self.displayed_blocks, self.repeats, self.targets, self.clock, self.request_values = texts, displayed_blocks, repeats, targets, clock, request_values

@@ -9,9 +9,9 @@ from engine.time.timestamp import Timestamp
 
 @dataclass(frozen=True, kw_only=True)
 class DriverGrant(EnvironmentScoped, Model):
-    """A one-use exception a policy reads, for the grants that have no table of their own today (the alias skip):
-    the policy, the agent, the exact target and action, its state, who asked and answered, and the event id that
-    spent it."""
+    """A one-use exception a policy reads, for the grants that have no table of their own today (the alias
+    skip): the policy, the agent, the exact target and action, its state, who asked and answered, and the
+    event id that spent it."""
 
     model_name = "driver_grant"
     cli_name = "driver-grant"

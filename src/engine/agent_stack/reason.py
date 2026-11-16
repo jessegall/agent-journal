@@ -10,7 +10,8 @@ ALLOWED_KEY = "drivers.allowed"
 @dataclass(frozen=True)
 class Reason:
     """Why a constraint answered an action as it did: its key, the class it asks for, its rank key, its text,
-    the commands that lift it, the subject it is about and whether it is a safety refusal; a stop that hands in names the work it hands in."""
+    the commands that lift it, the subject it is about and whether it is a safety refusal; a stop that hands
+    in names the work it hands in."""
 
     key: str
     decision_class: DecisionClass

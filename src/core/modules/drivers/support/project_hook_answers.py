@@ -21,9 +21,9 @@ MANAGED_HOOKS_KEY = "drivers.managed-hooks"
 
 @dataclass(frozen=True)
 class ProjectHooksAnswer:
-    """What the project's own hooks answered one hook: the refusal they gave, the lines new since each last spoke,
-    the notices that record them, the input one replaced and the hook that replaced it, the lines a hook that takes
-    none dropped, and their terminal text."""
+    """What the project's own hooks answered one hook: the refusal they gave, the lines new since each last
+    spoke, the notices that record them, the input one replaced and the hook that replaced it, the lines a
+    hook that takes none dropped, and their terminal text."""
 
     refusal: AgentMessage | None
     agent_messages: tuple[AgentMessage, ...]
@@ -35,9 +35,9 @@ class ProjectHooksAnswer:
 
 
 class ProjectHookAnswers:
-    """Project hooks contribute refusals, replacement input and lines alongside the journal's. The agent gets a hook's
-    own words, and gets them again only once they change from what that hook last said to it. Read once a hook, so
-    the policy, the lines, the effect and the rewrite share one answer."""
+    """Project hooks contribute refusals, replacement input and lines alongside the journal's. The agent gets
+    a hook's own words, and gets them again only once they change from what that hook last said to it. Read
+    once a hook, so the policy, the lines, the effect and the rewrite share one answer."""
 
     def __init__(self, providers: Providers, queries: Queries, numbers: RowNumbers, request_values: RequestValues) -> None:
         self.providers, self.queries, self.numbers, self.request_values = providers, queries, numbers, request_values

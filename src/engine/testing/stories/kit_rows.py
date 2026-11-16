@@ -19,9 +19,10 @@ M = TypeVar("M", bound=Model)
 
 
 class KitRows:
-    """The rows a test reads for an assertion, through the journal's own queries: every row, the first, the newest,
-    whether one exists and how many, each of a model filtered by its values, the registry, and a line's output with the rows it
-    created or updated written out. A story and an integration journal read them alike."""
+    """The rows a test reads for an assertion, through the journal's own queries: every row, the first, the
+    newest, whether one exists and how many, each of a model filtered by its values, the registry, and a
+    line's output with the rows it created or updated written out. A story and an integration journal read
+    them alike."""
 
     container: Container
 

@@ -39,9 +39,9 @@ READ_ONLY = ToolAllowance((ToolType.READ, ToolType.SEARCH, ToolType.SHELL), tupl
 
 class ReadOnlyAccess:
     """What an agent with read-only access may do: read, search and run the journal lines its type lists, on
-    every program; a line no one can judge, a stop of a run it did not start and an edit of a plan it did not write
-    are refused. A file change inside a folder its profile lets it write is allowed, a tool its profile names,
-    and the one thing an allowed request for leave named, once."""
+    every program; a line no one can judge, a stop of a run it did not start and an edit of a plan it did not
+    write are refused. A file change inside a folder its profile lets it write is allowed, a tool its profile
+    names, and the one thing an allowed request for leave named, once."""
 
     def __init__(self, registry: Registry, providers: Providers, profiles: ProfileFiles, queries: Queries, lookup: SubcommandLookup, plan_authors: PlanAuthors,
                  folders: AgentFolders, run_owners: RunOwners) -> None:

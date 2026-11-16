@@ -41,9 +41,9 @@ PLUGIN_RULE_NAME = "plugins.plugin-events"
 
 
 class PluginHookRun:
-    """Delivers a hook to the enabled plugins according to their declared events and role reach, once a hook: the
-    plugins' programs run here, so the policy that refuses, the lines and the effect of the hook share one run. At
-    the agent's minute step the plugins hear the tick that step replaces."""
+    """Delivers a hook to the enabled plugins according to their declared events and role reach, once a hook:
+    the plugins' programs run here, so the policy that refuses, the lines and the effect of the hook share one
+    run. At the agent's minute step the plugins hear the tick that step replaces."""
 
     def __init__(self, runnable: RunnablePlugins, folders: PluginFolders, runs: PluginRun, setting_values: SettingValues, queries: Queries, clock: Clock,
                  roles: AgentRoleReader, minute_tick: MinuteTick, request_values: RequestValues) -> None:

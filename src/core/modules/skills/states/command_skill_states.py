@@ -21,8 +21,9 @@ SKILL_COMMAND = "journal skill read"
 
 
 class CommandSkillStates(StateSource):
-    """Plans, from the tool call under judgement, the strict block of a journal command whose subject a skill covers and
-    the agent has not loaded: three tool uses, then only that skill's read passes (doc 1310 section 4.6)."""
+    """Plans, from the tool call under judgement, the strict block of a journal command whose subject a skill
+    covers and the agent has not loaded: three tool uses, then only that skill's read passes (doc 1310 section
+    4.6)."""
     state_type = Blocked
     rank = COMMAND_SKILL_RANK
 

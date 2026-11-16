@@ -15,11 +15,11 @@ CONTEXT_FULL_ERROR_VALUES = ("invalid_request",)
 
 
 class FullContextCompactionEffect(EventEffect):
-    """A turn the program ended with an error because the context is full asks for one compaction of that agent,
-    whatever the context limit is set to; while a compaction of it is open, nothing more is asked. Claude Code
-    gives a prompt that is too long the error value invalid_request (report 1458), which also comes for a PDF too
-    large or a bad credential, so another error value rules a full context out and the words of the error
-    decide."""
+    """A turn the program ended with an error because the context is full asks for one compaction of that
+    agent, whatever the context limit is set to; while a compaction of it is open, nothing more is asked.
+    Claude Code gives a prompt that is too long the error value invalid_request (report 1458), which also
+    comes for a PDF too large or a bad credential, so another error value rules a full context out and the
+    words of the error decide."""
 
     key = "workers.context-full-stop"
     events = [HookEventName.STOP_FAILURE]

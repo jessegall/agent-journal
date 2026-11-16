@@ -32,10 +32,10 @@ MAIN_STOP_RANK = ""
 
 class MainStopStates(StateSource):
     """A main agent's work at a stop (doc 1310 sections 4.11 and 10.5), none while it waits: with no task
-    started and one it may act on, Working(handed task), whose always-effect starts it, at a stop and, while keep
-    going is on, off a hook; with unfinished tasks of its own and none started, Working(own open tasks), whose stop is
-    held once for each set of those tasks, unless the stop is the one that compacts its context; a started task holds
-    the stop with its own stacked state."""
+    started and one it may act on, Working(handed task), whose always-effect starts it, at a stop and, while
+    keep going is on, off a hook; with unfinished tasks of its own and none started, Working(own open tasks),
+    whose stop is held once for each set of those tasks, unless the stop is the one that compacts its context;
+    a started task holds the stop with its own stacked state."""
     state_type = Working
     rank = MAIN_STOP_RANK
     agent_types = ["main"]

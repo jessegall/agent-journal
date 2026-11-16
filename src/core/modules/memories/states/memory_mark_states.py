@@ -23,8 +23,9 @@ WEIGH_COMMANDS = ("journal memory weigh", "journal memory skip", "journal memory
 
 
 class MemoryMarkStates(StateSource):
-    """Plans the block of an open memory mark (doc 1310 section 4.6): its tools after the mark's uses, its stop at once,
-    until the agent has weighed its memories; the mark itself is opened by the line that tells the agent of it."""
+    """Plans the block of an open memory mark (doc 1310 section 4.6): its tools after the mark's uses, its
+    stop at once, until the agent has weighed its memories; the mark itself is opened by the line that tells
+    the agent of it."""
     state_type = Blocked
     rank = MARK_RANK
     role_group = RoleGroup.MARK

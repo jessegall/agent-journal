@@ -24,12 +24,12 @@ TERMINAL_SOURCES = (PAUSE_SOURCE, RESUME_SOURCE, IDLE_MESSAGE_SOURCE, "tasks.wai
 
 class WaitingLineTyping:
     """Types a waiting line into its agent's terminal when the line wakes the agent or is of a kind typed, the
-    agent sits between turns (a silent agent in a turn is never typed to), and its program's plan allowance
-    is not used up; a line that is not typed stays waiting for the agent's next hook, or for the end of its
-    usage limit. The same line is typed once between two hooks of the agent: a repeat is entered without
-    being typed again. A line delivered by the wake hook goes to the agent's live wake waiter instead; with no
-    live waiter (one that expired or crashed, a compaction, an interrupt, or hook settings written before the wake
-    hook) it is typed as before, so no wake is lost."""
+    agent sits between turns (a silent agent in a turn is never typed to), and its program's plan allowance is
+    not used up; a line that is not typed stays waiting for the agent's next hook, or for the end of its usage
+    limit. The same line is typed once between two hooks of the agent: a repeat is entered without being typed
+    again. A line delivered by the wake hook goes to the agent's live wake waiter instead; with no live waiter
+    (one that expired or crashed, a compaction, an interrupt, or hook settings written before the wake hook)
+    it is typed as before, so no wake is lost."""
 
     def __init__(self, queries: Queries, typing: LineTyping, bus: Bus, hook_calls: HookCallQuery, agents: AgentRows, wakes: WakeDelivery) -> None:
         self.queries, self.typing, self.bus, self.hook_calls, self.agents, self.wakes = queries, typing, bus, hook_calls, agents, wakes

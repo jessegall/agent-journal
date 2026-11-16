@@ -7,8 +7,9 @@ from core.modules import DEFAULT_MODULES
 
 @dataclass(frozen=True)
 class Version4Look:
-    """What version 4 showed for a kind of mark, read from its mark catalogue: the family, its group and colouring, the
-    mark's own icon, and the words a group of them is labelled with, when version 4 had them."""
+    """What version 4 showed for a kind of mark, read from its mark catalogue: the family, its group and
+    colouring, the mark's own icon, and the words a group of them is labelled with, when version 4 had them.
+    """
 
     type: str
     family: str

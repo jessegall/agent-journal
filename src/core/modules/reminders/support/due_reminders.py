@@ -14,8 +14,8 @@ OPEN_REMINDERS_READ = 200
 DUE_REMINDER_KEY = "reminders.due"
 
 class DueReminders:
-    """The reminders that have come due for a main agent now: the open reminders in one query a request, the tool uses
-    every reminder counts counted together, and closed tasks counted once for all intervals."""
+    """The reminders that have come due for a main agent now: the open reminders in one query a request, the
+    tool uses every reminder counts counted together, and closed tasks counted once for all intervals."""
 
     def __init__(self, queries: Queries, hook_calls: HookCallQuery, tasks: TaskQuery, request_values: RequestValues, database: Database) -> None:
         self.queries, self.hook_calls, self.tasks, self.request_values, self.database = queries, hook_calls, tasks, request_values, database

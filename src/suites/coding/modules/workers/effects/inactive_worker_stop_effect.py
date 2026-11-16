@@ -11,8 +11,9 @@ from suites.coding.modules.workers.support.idle_workers import IdleWorkers
 
 
 class InactiveWorkerStopEffect(EventEffect):
-    """At the main agent's minute step, stops the process of each of its workers that has used no tool for the hours
-    the setting gives and has delivered nothing. The worker stays kept: its task, its worktree and its session stay."""
+    """At the main agent's minute step, stops the process of each of its workers that has used no tool for the
+    hours the setting gives and has delivered nothing. The worker stays kept: its task, its worktree and its
+    session stay."""
 
     key = IDLE_WORKER_STOP_KEY
     events = [HookEventName.TICK]

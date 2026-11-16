@@ -3,9 +3,9 @@ from engine.driver.wake_reply import WakeReply
 
 
 class WakeRoute:
-    """How the journal answers an agent program's wake hook, in two steps: answer registers the waiter on the database
-    and gives a line already waiting, waited then waits for one with no database held. With no drivers module
-    installed, every wake is gone."""
+    """How the journal answers an agent program's wake hook, in two steps: answer registers the waiter on the
+    database and gives a line already waiting, waited then waits for one with no database held. With no
+    drivers module installed, every wake is gone."""
 
     def answer(self, ask: WakeAsk) -> WakeReply:
         return WakeReply.gone()

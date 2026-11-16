@@ -8,8 +8,8 @@ from core.modules.drivers.commands.advance_driver_versions.advance_driver_versio
 
 
 class JournalStartReadVersionsListener(CommitListener[JournalBooting | RegistrySynced]):
-    """A server boot and a module sync, which publish profiles and may change a driver's table, move the driver version
-    of every environment."""
+    """A server boot and a module sync, which publish profiles and may change a driver's table, move the
+    driver version of every environment."""
 
     name = "drivers.journal-start-basis"
 

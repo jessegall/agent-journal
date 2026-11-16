@@ -29,8 +29,8 @@ AGENT_MESSAGE_PATTERNS: tuple[tuple[re.Pattern[str], MessageTemplate], ...] = (
 
 class ChatMannersLines(EventLineSource):
     """The main agent's newest chat message is read for shop talk, the third person, em dashes and paragraphs
-    that run together, and the agent is told of each; each agent message waits ten minutes before it is said again.
-    """
+    that run together, and the agent is told of each; each agent message waits ten minutes before it is said
+    again."""
 
     key = "messages.chat-manners"
     events = [HookEventName.POST_TOOL_USE]

@@ -23,9 +23,9 @@ DELIVERED_PROOFS_REASON = "the main agent checks every proof a worker delivered"
 
 
 class DeliveredWorkStopStates(StateSource):
-    """The main agent's stop is held while a worker's delivered work, or a committed proof with no test, waits for its
-    checks (doc 1310 section 10.5): one hold for each task, naming its proofs, lifted once none of that worktree's
-    proofs waits."""
+    """The main agent's stop is held while a worker's delivered work, or a committed proof with no test, waits
+    for its checks (doc 1310 section 10.5): one hold for each task, naming its proofs, lifted once none of
+    that worktree's proofs waits."""
     state_type = Blocked
     rank = "workers.delivered-proofs"
     agent_types = [AgentRole.MAIN.value]

@@ -12,9 +12,9 @@ ANY_VALUE = "[^\n]+?"
 @dataclass(frozen=True)
 class ExpectedMessage:
     """An agent message a story expects, named by its declaration and the values it knows. A line matches the
-    declaration's own template, a value left out matches any text and capitals do not count; a kept agent message
-    matches by its key and fields. A story so holds none of an agent message's words, and a change of wording breaks
-    no story."""
+    declaration's own template, a value left out matches any text and capitals do not count; a kept agent
+    message matches by its key and fields. A story so holds none of an agent message's words, and a change of
+    wording breaks no story."""
 
     declaration: MessageTemplate
     values: dict[str, object] = field(default_factory=dict[str, object])

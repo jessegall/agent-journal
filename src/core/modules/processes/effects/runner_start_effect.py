@@ -19,9 +19,9 @@ BACKGROUND_FLAG = "run_in_background"
 
 
 class RunnerStartEffect(Effect):
-    """An admitted shell line is made a process, split into its parts, in the step's own write, and is run through
-    the journal's runner with that process, its limit and its line (doc 1310 section 4.1 points 5 and 6). The line
-    is the final one, after the transforms; a run that cannot be made withdraws the admission."""
+    """An admitted shell line is made a process, split into its parts, in the step's own write, and is run
+    through the journal's runner with that process, its limit and its line (doc 1310 section 4.1 points 5 and
+    6). The line is the final one, after the transforms; a run that cannot be made withdraws the admission."""
 
     events = [HookEventName.PRE_TOOL_USE]
     timing = EffectTiming.WHEN_ALLOWED

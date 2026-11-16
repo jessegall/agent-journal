@@ -13,8 +13,8 @@ TOTALS_REASON = "One total for each agent message the code declares, never for s
 
 
 class MessageListSubcommand(ReadSubcommand[tuple[MessageRow, ...]]):
-    """`journal agent-message list`: every agent message the modules declare, its type and words, and how often it was said.
-    """
+    """`journal agent-message list`: every agent message the modules declare, its type and words, and how
+    often it was said."""
 
     cli_name = "agent-message"
     name = "list"

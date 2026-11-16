@@ -14,8 +14,8 @@ LEAD_CHARACTERS = 40
 
 @dataclass(frozen=True)
 class SearchHit:
-    """A search result with its matching term count, rank and text excerpt, and the row's title, its state when it has one and the rest of
-    its searched text, so the result is read without opening the row."""
+    """A search result with its matching term count, rank and text excerpt, and the row's title, its state
+    when it has one and the rest of its searched text, so the result is read without opening the row."""
 
     cli_name: str
     row_id: int

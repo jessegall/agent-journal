@@ -10,8 +10,9 @@ MOVES_KEPT = 100_000
 
 @dataclass(frozen=True, kw_only=True)
 class AgentStackMove(Prunable, Model):
-    """One change of an agent's stack, appended and never changed: the move, the stacked state it moved, how it ended, the
-    text of its reason at that time and the versions before and after; it never needs another row to be read."""
+    """One change of an agent's stack, appended and never changed: the move, the stacked state it moved, how
+    it ended, the text of its reason at that time and the versions before and after; it never needs another
+    row to be read."""
 
     kept_rows = MOVES_KEPT
 

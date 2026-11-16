@@ -4,8 +4,9 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class StepCommit:
-    """What a step's save came to: saved with its hook call, the lines of the effects that failed and the input they ran the action with, or a conflict
-    because the answer basis changed since the step read it, which writes nothing."""
+    """What a step's save came to: saved with its hook call, the lines of the effects that failed and the
+    input they ran the action with, or a conflict because the answer basis changed since the step read it,
+    which writes nothing."""
 
     is_saved: bool
     hook_call_id: int | None = None

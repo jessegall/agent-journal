@@ -13,8 +13,8 @@ from core.modules.approvals.models.enums.approval_state import ApprovalState
 
 class EveryApprovalAcceptListener(CommitListener[Created[ApprovalRequest]]):
     """Accepts a request that is still open once it is saved, when the setting Accept every approval is on for
-    its environment, by any path that asked for it (a rule proposal, a secret, a share, a trigger), not only an
-    agent's refused line, which accepts it at once itself; the accept runs as its own command, never inside
+    its environment, by any path that asked for it (a rule proposal, a secret, a share, a trigger), not only
+    an agent's refused line, which accepts it at once itself; the accept runs as its own command, never inside
     the transaction that asked."""
 
     name = "approvals.every-approval-accept"

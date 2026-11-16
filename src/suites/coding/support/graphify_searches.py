@@ -27,10 +27,10 @@ class GraphifyAnswer:
 
 
 class GraphifySearches:
-    """While the Graphify tool is on, an agent's searches of the project's code that do not use Graphify are counted
-    back to its last use of Graphify: from the agent message count on it is told to use Graphify, again ten searches later,
-    and past the block count every search that is not Graphify is refused until it has used Graphify, which starts the
-    count again. Read once a hook, so the refusal and the line agree."""
+    """While the Graphify tool is on, an agent's searches of the project's code that do not use Graphify are
+    counted back to its last use of Graphify: from the agent message count on it is told to use Graphify,
+    again ten searches later, and past the block count every search that is not Graphify is refused until it
+    has used Graphify, which starts the count again. Read once a hook, so the refusal and the line agree."""
 
     def __init__(self, hook_calls: HookCallQuery, settings: SettingValues, home: JournalHome, request_values: RequestValues) -> None:
         self.hook_calls, self.settings, self.home, self.request_values = hook_calls, settings, home, request_values

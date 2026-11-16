@@ -60,9 +60,9 @@ class FixtureLine:
 
 @dataclass
 class FixtureJournal(KitRows):
-    """An integration journal copied from a story fixture's template, with the agent, user and helper that fixture made, so a
-    mechanical story moved to tests/integration starts from the same state. A person's line runs in the main
-    environment and an agent's in its own, as in a story."""
+    """An integration journal copied from a story fixture's template, with the agent, user and helper that
+    fixture made, so a mechanical story moved to tests/integration starts from the same state. A person's line
+    runs in the main environment and an agent's in its own, as in a story."""
 
     journal: IntegrationJournal
     clock: ManualClock

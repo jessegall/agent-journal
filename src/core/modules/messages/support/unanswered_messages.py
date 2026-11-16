@@ -15,8 +15,9 @@ NEWEST_AGENT_MESSAGES = 50
 
 
 class UnansweredMessages:
-    """The messages an agent read and has not answered: those read since its current session began or since its last
-    message, from a person or from a running agent other than itself; the newest 50 of the agents' are checked."""
+    """The messages an agent read and has not answered: those read since its current session began or since
+    its last message, from a person or from a running agent other than itself; the newest 50 of the agents'
+    are checked."""
 
     def __init__(self, messages: MessageQuery, reads: SessionReadMessages, replies: MessageReplies, request_values: RequestValues, database: Database) -> None:
         self.messages, self.reads, self.replies, self.request_values, self.database = messages, reads, replies, request_values, database

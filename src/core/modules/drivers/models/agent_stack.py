@@ -8,8 +8,8 @@ EMPTY_STACKED_STATES = "[]"
 @dataclass(frozen=True, kw_only=True)
 class AgentStack(Model):
     """One agent's continuation stack as the machine saves it: its driver and table digest, the schema of its
-    stacked states, the stacked states from the bottom as JSON, and its refusal counts. The row's version is the agent's part of
-    the answer basis."""
+    stacked states, the stacked states from the bottom as JSON, and its refusal counts. The row's version is
+    the agent's part of the answer basis."""
 
     model_name = "agent_stack"
     cli_name = "agent-stack"

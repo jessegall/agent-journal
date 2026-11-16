@@ -15,11 +15,11 @@ SCHEMA_PARTS = ("/migrations/", "/models/", "/views/")
 
 
 class AffectedTests:
-    """The pytest arguments a set of changed files reaches, read from the newest full run's test map: the tests
-    that ran a function whose definition changed or went, the tests whose story template ran a changed file, a
-    changed test file itself, every test of a file whose module-level code changed, every test of the module of a
-    new file or a changed data file, and every story for a change to stored rows. A change to the test kit or
-    the engine's core, or a missing map, runs everything."""
+    """The pytest arguments a set of changed files reaches, read from the newest full run's test map: the
+    tests that ran a function whose definition changed or went, the tests whose story template ran a changed
+    file, a changed test file itself, every test of a file whose module-level code changed, every test of the
+    module of a new file or a changed data file, and every story for a change to stored rows. A change to the
+    test kit or the engine's core, or a missing map, runs everything."""
 
     def __init__(self, test_map: TestMap, project: Path = PROJECT_FOLDER) -> None:
         self.test_map, self.project = test_map, project

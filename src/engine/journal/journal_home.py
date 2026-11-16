@@ -18,9 +18,9 @@ ENDED_STATUS_FOLDER = "ended"
 
 @dataclass(frozen=True)
 class JournalHome:
-    """The folder where the journal keeps its files, and the paths inside it; a journal whose parts are stood in for,
-    as a story's is, names the step that binds them in every container built from it, and a journal copied from a
-    story template names that template's database."""
+    """The folder where the journal keeps its files, and the paths inside it; a journal whose parts are stood
+    in for, as a story's is, names the step that binds them in every container built from it, and a journal
+    copied from a story template names that template's database."""
 
     folder: Path
     container_setup: Callable[[Container], None] | None = field(default=None, compare=False, repr=False)

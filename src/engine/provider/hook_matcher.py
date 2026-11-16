@@ -10,8 +10,8 @@ NAME_SEPARATORS = re.compile(r"[,|]")
 @dataclass(frozen=True)
 class HookMatcher:
     """A hook entry's matcher, read the way its program reads it: empty or '*' matches every name; under the
-    names-or-regex style a matcher of name characters only is an exact name or a list split on ',' and '|', and
-    any other matcher is a regex searched anywhere in the name; an invalid regex matches nothing."""
+    names-or-regex style a matcher of name characters only is an exact name or a list split on ',' and '|',
+    and any other matcher is a regex searched anywhere in the name; an invalid regex matches nothing."""
 
     text: str
     style: MatcherStyle

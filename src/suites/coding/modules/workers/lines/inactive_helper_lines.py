@@ -42,9 +42,9 @@ INACTIVE_HELPER_KEY = "workers.inactive-helper"
 
 
 class InactiveHelperLines(EventLineSource):
-    """At its minute step, an agent is told of each inactive helper of its once its grace has passed and again after
-    the configured number of minutes, and in the same way of each ended helper whose waiting work has not started. The
-    merger waits between workers by design, so it is not named for being inactive."""
+    """At its minute step, an agent is told of each inactive helper of its once its grace has passed and again
+    after the configured number of minutes, and in the same way of each ended helper whose waiting work has
+    not started. The merger waits between workers by design, so it is not named for being inactive."""
 
     key = INACTIVE_HELPER_KEY
     events = [HookEventName.TICK]

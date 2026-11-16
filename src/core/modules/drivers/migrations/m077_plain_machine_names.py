@@ -2,8 +2,9 @@ from engine.database.migration import Migration
 
 
 class PlainMachineNamesMigration(Migration):
-    """Gives the agent machine's stored tables and columns the plain names its code uses: a hook's event id, the
-    stack's stacked states, the session and work numbers, the driver and program versions, the used grants and the hidden states."""
+    """Gives the agent machine's stored tables and columns the plain names its code uses: a hook's event id,
+    the stack's stacked states, the session and work numbers, the driver and program versions, the used grants
+    and the hidden states."""
 
     number = 77
     statements = [

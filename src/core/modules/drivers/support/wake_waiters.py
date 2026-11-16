@@ -9,8 +9,9 @@ from core.modules.drivers.support.wake_waiter import WakeWaiter
 
 
 class WakeWaiters:
-    """The wake waiters of the server process, one per agent, and the lines given to them and not yet confirmed. A new
-    waiter of an agent cancels the one before it. A wake ask polls its waiter through the clock, never holding the database."""
+    """The wake waiters of the server process, one per agent, and the lines given to them and not yet
+    confirmed. A new waiter of an agent cancels the one before it. A wake ask polls its waiter through the
+    clock, never holding the database."""
 
     def __init__(self) -> None:
         self.lock = threading.Lock()

@@ -15,9 +15,9 @@ CONFIRM_SECONDS = 20
 
 
 class WakeDelivery:
-    """Gives a waiting line to its agent's wake waiter as typing would type it: only between turns and never while the
-    agent compacts. The line is claimed first, so no hook gives it too, and entered once the waiter confirms it printed
-    it; a line no waiter takes, or one not confirmed within 20 seconds, waits again."""
+    """Gives a waiting line to its agent's wake waiter as typing would type it: only between turns and never
+    while the agent compacts. The line is claimed first, so no hook gives it too, and entered once the waiter
+    confirms it printed it; a line no waiter takes, or one not confirmed within 20 seconds, waits again."""
 
     def __init__(self, bus: Bus, hook_calls: HookCallQuery, home: JournalHome, clock: Clock) -> None:
         self.bus, self.hook_calls, self.waiters, self.clock = bus, hook_calls, WakeWaiters.shared(home), clock

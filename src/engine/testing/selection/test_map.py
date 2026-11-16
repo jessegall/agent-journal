@@ -16,8 +16,8 @@ RECORD_VARIABLE = "JOURNAL_RECORD_TEST_MAP"
 @dataclass
 class TestMap:
     """What each test of the newest full run reached: the project functions it ran, the source files its story
-    template's build ran, and a hash of each such function's definition as it was then. A selector compares the
-    hashes with the code now to find the tests a change reaches."""
+    template's build ran, and a hash of each such function's definition as it was then. A selector compares
+    the hashes with the code now to find the tests a change reaches."""
 
     __test__ = False
 

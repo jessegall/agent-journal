@@ -13,9 +13,9 @@ DESIGNER_PROFILE = "journal-designer"
 
 
 class ReadonlyHelperStartGuard(Guard[Created[Agent]]):
-    """A main agent starts no designer while the designer is off, and no read-only helper while read-only helpers
-    are off, which an agent's start asks of the hook's policy (doc 1310 section 10.9). The merger is governed by its
-    own setting."""
+    """A main agent starts no designer while the designer is off, and no read-only helper while read-only
+    helpers are off, which an agent's start asks of the hook's policy (doc 1310 section 10.9). The merger is
+    governed by its own setting."""
 
     name = "workers.main-starts-no-helper"
 

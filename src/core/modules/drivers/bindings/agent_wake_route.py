@@ -27,9 +27,10 @@ WAKING_LINES_REASON = "a wake ask offers every line that waits to wake its agent
 
 
 class AgentWakeRoute(WakeRoute):
-    """Answers an agent program's wake hook. An agent that is not open, not a main agent or a launched helper, whose
-    program has no wake hook or is locked down, or whose session is not the one asking, is gone. Otherwise its waiter is
-    registered, cancelling an older one, and given at once a line that already waits to wake it; else it waits."""
+    """Answers an agent program's wake hook. An agent that is not open, not a main agent or a launched helper,
+    whose program has no wake hook or is locked down, or whose session is not the one asking, is gone.
+    Otherwise its waiter is registered, cancelling an older one, and given at once a line that already waits
+    to wake it; else it waits."""
 
     def __init__(self, agents: AgentRows, providers: Providers, lockdown: ProgramLockdown, delivery: WakeDelivery, queries: Queries, home: JournalHome,
                  actors: ModuleActors, bus: Bus, clock: Clock) -> None:

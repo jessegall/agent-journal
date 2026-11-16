@@ -25,9 +25,10 @@ class MarkReached:
 
 
 class ReachedMark:
-    """When the agent's context, counted against the context limit when one is on, passes a mark of memories.marks
-    it has not reached since its last compaction and no mark is open, the mark it reached; two marks too few tokens
-    apart count as the higher. Read once a hook, so the line that names the mark and the effect that opens it agree."""
+    """When the agent's context, counted against the context limit when one is on, passes a mark of
+    memories.marks it has not reached since its last compaction and no mark is open, the mark it reached; two
+    marks too few tokens apart count as the higher. Read once a hook, so the line that names the mark and the
+    effect that opens it agree."""
 
     def __init__(self, marks: MarkTracker, settings: SettingValues, memories: ActiveMemoryQuery, share: ContextShare, agents: AgentRows,
                  current_window: CurrentContextWindow, request_values: RequestValues, database: Database) -> None:

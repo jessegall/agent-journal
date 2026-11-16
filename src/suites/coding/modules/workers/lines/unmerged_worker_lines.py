@@ -9,8 +9,9 @@ from suites.coding.modules.workers.support.unmerged_workers import UNMERGED_WORK
 
 
 class UnmergedWorkerLines(EventLineSource):
-    """At its minute step the main agent is told of each worker whose delivered work waits for a merge; from the third
-    reminder on the line requires the merge, which holds the agent until it merges or gives a reason."""
+    """At its minute step the main agent is told of each worker whose delivered work waits for a merge; from
+    the third reminder on the line requires the merge, which holds the agent until it merges or gives a
+    reason."""
 
     key = UNMERGED_WORKER_KEY
     events = [HookEventName.TICK]

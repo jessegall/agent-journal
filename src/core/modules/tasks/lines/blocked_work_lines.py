@@ -15,8 +15,9 @@ from core.modules.tasks.support.suite_task_assigners import SuiteTaskAssigners
 
 
 class BlockedWorkLines(EventLineSource):
-    """A stop of the main agent with nothing in hand and nothing open, while tasks of the environment are blocked,
-    names them on the held carrier (doc 1310 section 10.3), once: not again until the agent has used a tool since."""
+    """A stop of the main agent with nothing in hand and nothing open, while tasks of the environment are
+    blocked, names them on the held carrier (doc 1310 section 10.3), once: not again until the agent has used
+    a tool since."""
 
     key = "tasks.blocked-work-at-stop"
     events = [HookEventName.STOP]

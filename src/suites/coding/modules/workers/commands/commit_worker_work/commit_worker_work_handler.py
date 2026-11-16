@@ -53,13 +53,13 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
     """Commits the started tasks of a worker whose every point is proved: one git commit for them, each moved
     to testing and its proofs submitted. Outside a started plan their tests are queued, and with nothing to
     run it finishes at once; in a started plan they wait for the checkpoint. A started task with no shown
-    proof stays started and is named in the answer: the commit is then interim and the worktree stays cut
-    on that task, and a worker past the context limit is told to stop there so that its stop compacts it. A
-    commit that leaves no started task is final and delivers the worktree. A worker with no
-    started task commits for the task of its worktree, which delivers the worktree. A commit that delivers the
-    worktree gives the worker the next free task it may take, which it starts when this work is merged; it is
-    given while the worktree is still cut, so it is not sent to the worker at once. A commit of a unit of more
-    tasks gives none, as its ask for the merge hands the unit in, so a free task never joins the unit it follows."""
+    proof stays started and is named in the answer: the commit is then interim and the worktree stays cut on
+    that task, and a worker past the context limit is told to stop there so that its stop compacts it. A
+    commit that leaves no started task is final and delivers the worktree. A worker with no started task
+    commits for the task of its worktree, which delivers the worktree. A commit that delivers the worktree
+    gives the worker the next free task it may take, which it starts when this work is merged; it is given
+    while the worktree is still cut, so it is not sent to the worker at once. A commit of a unit of more tasks
+    gives none, as its ask for the merge hands the unit in, so a free task never joins the unit it follows."""
 
     command = CommitWorkerWork
     disabled_scopes = [ActorScope]

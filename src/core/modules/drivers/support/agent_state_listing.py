@@ -8,8 +8,8 @@ from core.modules.drivers.models.agent_stack import AgentStack
 
 @dataclass(frozen=True)
 class OpenState:
-    """One stacked state of an agent's stack, for a screen: its state type, its state's name, the row its need is about,
-    and since when."""
+    """One stacked state of an agent's stack, for a screen: its state type, its state's name, the row its need
+    is about, and since when."""
 
     state: str
     name: str

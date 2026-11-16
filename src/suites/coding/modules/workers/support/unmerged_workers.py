@@ -42,10 +42,11 @@ class UnmergedAnswer:
 
 
 class UnmergedWorkers:
-    """Names to the main agent each worker whose delivered work is not merged or released, with its tasks, again after
-    the interval of the line; from the third reminder on, the line requires the merge, so it holds the agent until it
-    merges or gives a reason, and a reason passes only that hold. With the merger on, a worker is named once the merger
-    has had the wait setting's minutes to take it in, or at once when the merger left it to the main agent."""
+    """Names to the main agent each worker whose delivered work is not merged or released, with its tasks,
+    again after the interval of the line; from the third reminder on, the line requires the merge, so it holds
+    the agent until it merges or gives a reason, and a reason passes only that hold. With the merger on, a
+    worker is named once the merger has had the wait setting's minutes to take it in, or at once when the
+    merger left it to the main agent."""
 
     def __init__(self, delivered: WorkerWorktrees, tasks: TaskQuery, proofs: ProofQuery, records: MessageRecords, settings: SettingValues, queries: Queries, spans: SpanQueries,
                  numbers: RowNumbers, clock: Clock, request_values: RequestValues, open_blocks: OpenBlockRows) -> None:

@@ -47,9 +47,10 @@ class DockedRuns:
 
 
 class RunDocking:
-    """Docks visible runs after the dock seconds of running, time in the queue left out, and asks for a name when a
-    docked run has none. It looks at the two oldest runs not yet docked in a hook, so a hook that finds many runs due
-    costs a few rows and docks them over the next hooks. Read once a hook, so the lines and the docking agree."""
+    """Docks visible runs after the dock seconds of running, time in the queue left out, and asks for a name
+    when a docked run has none. It looks at the two oldest runs not yet docked in a hook, so a hook that finds
+    many runs due costs a few rows and docks them over the next hooks. Read once a hook, so the lines and the
+    docking agree."""
 
     def __init__(self, processes: ProcessQuery, outputs: OutputQuery, folder: OutputFolder, visibility: RunVisibility, queries: Queries, room: DockRoom, settings: ProcessSettings,
                  spans: SpanQueries, clock: Clock, request_values: RequestValues, database: Database) -> None:

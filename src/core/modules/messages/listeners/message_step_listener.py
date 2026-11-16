@@ -9,8 +9,8 @@ from core.modules.messages.support.message_targets import MessageTargets
 
 class MessageStepListener(AgentListener[Created[Message]]):
     """A message to an agent asks for the step of the agent that receives it, in the write that saved it, so a
-    resting agent hears of it even when the server stops right after (doc 1310 section 6.2); a message that names no
-    agent goes to the main agent."""
+    resting agent hears of it even when the server stops right after (doc 1310 section 6.2); a message that
+    names no agent goes to the main agent."""
 
     name = "messages.message-step"
 

@@ -41,11 +41,11 @@ class BlockReviewAnswer:
 
 
 class BlockReviewRound:
-    """Reminds the main agent of its blocked tasks every 15 minutes or 5 closed tasks. The reminder may pass twice;
-    the third time, with none of the tasks named having moved, it blocks the agent until the tasks are acted on or
-    the block is skipped with a reason. A task whose review was skipped with a reason is left out until it moves,
-    and the tasks a module's scope leaves out, such as those outside a focused plan, are never reviewed. Read once
-    a hook, so the lines, the record and the hold agree."""
+    """Reminds the main agent of its blocked tasks every 15 minutes or 5 closed tasks. The reminder may pass
+    twice; the third time, with none of the tasks named having moved, it blocks the agent until the tasks are
+    acted on or the block is skipped with a reason. A task whose review was skipped with a reason is left out
+    until it moves, and the tasks a module's scope leaves out, such as those outside a focused plan, are never
+    reviewed. Read once a hook, so the lines, the record and the hold agree."""
 
     def __init__(self, queries: Queries, spans: SpanQueries, passes: ReminderPasses, scope: BlockReviewScope, clock: Clock, request_values: RequestValues) -> None:
         self.queries, self.spans, self.passes, self.scope, self.clock, self.request_values = queries, spans, passes, scope, clock, request_values

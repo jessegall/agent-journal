@@ -11,9 +11,10 @@ WAKE_WAIT_SECONDS = 25.0
 
 
 class WakeEndpoint:
-    """Answers POST /wake and /wake/received: the route registers the waiter and gives a line already waiting over one
-    short use of the hooks' database, then waits for a line with no database held, so a waiting ask never counts as
-    database work. A database too busy to register the waiter answers nothing yet, and the hook asks again."""
+    """Answers POST /wake and /wake/received: the route registers the waiter and gives a line already waiting
+    over one short use of the hooks' database, then waits for a line with no database held, so a waiting ask
+    never counts as database work. A database too busy to register the waiter answers nothing yet, and the
+    hook asks again."""
 
     def __init__(self, context: ServerContext) -> None:
         self.context = context

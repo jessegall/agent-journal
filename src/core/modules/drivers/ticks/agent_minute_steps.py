@@ -13,9 +13,9 @@ STACKS_REASON = "the minute step reaches every agent with a stack, one row each"
 
 
 class AgentMinuteSteps:
-    """The minute step, and the boot step as its first run (doc 1310 section 6.2): a step request for every agent
-    with a stack that is not retired, running or not, one write per environment, which the round serves. A step that changes nothing writes nothing more than its request's
-    end."""
+    """The minute step, and the boot step as its first run (doc 1310 section 6.2): a step request for every
+    agent with a stack that is not retired, running or not, one write per environment, which the round serves.
+    A step that changes nothing writes nothing more than its request's end."""
 
     def __call__(self, container: Container) -> None:
         queries, bus = container.get(Queries), container.get(Bus)

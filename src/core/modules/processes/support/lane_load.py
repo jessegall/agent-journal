@@ -5,9 +5,9 @@ from dataclasses import dataclass, field
 @dataclass(frozen=True)
 class LaneEntry:
     """One execution of a lane as a person reads it: its line, class, priority and starter, how long it has
-    run or waited, the slots it takes, its kind (a run's command category or plugin, the class of the journal's
-    own work), the run it stands for (0 for the instant lane, which has no runs), why it waits, the priority it
-    was raised from, and the line of the execution it is a waited child of."""
+    run or waited, the slots it takes, its kind (a run's command category or plugin, the class of the
+    journal's own work), the run it stands for (0 for the instant lane, which has no runs), why it waits, the
+    priority it was raised from, and the line of the execution it is a waited child of."""
 
     line: str
     class_name: str
@@ -34,7 +34,8 @@ class LaneEntry:
 @dataclass(frozen=True)
 class LaneLoad:
     """One lane as a person reads it: the slots its runs use against its capacity, whether it runs over or is
-    halted, and why (the halt's type, command, update or restart, and its reason), and what runs and what waits in it."""
+    halted, and why (the halt's type, command, update or restart, and its reason), and what runs and what
+    waits in it."""
 
     lane: str
     used: int

@@ -12,7 +12,8 @@ from core.modules.tasks.models.task import Task
 class Phase(Positioned, Assignable):
     """One step of a plan, at its place in the plan's order, with what is true when it is done. Only a phase
     flagged as a checkpoint takes a test command of its own; a command an older journal stored on another
-    phase is kept. A checkpoint whose tests pass opens the phases after it; nothing waits for a person. One actor holds a phase, and its assignment also assigns the tasks placed in it."""
+    phase is kept. A checkpoint whose tests pass opens the phases after it; nothing waits for a person. One
+    actor holds a phase, and its assignment also assigns the tasks placed in it."""
 
     model_name = "phase"
     cli_name = "phase"

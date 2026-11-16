@@ -8,7 +8,8 @@ from core.modules.memories.models.memory import Memory
 
 class MemoryWeighedMarkListener(MemoryMarkListener[Updated[Memory]]):
     """When a memory's weight is set, its chat shows a mark naming the memory and the new weight; a fade,
-    which lowers weights by itself, has its own mark, and an edit of the text has the edited mark, which also names a weight set with it."""
+    which lowers weights by itself, has its own mark, and an edit of the text has the edited mark, which also
+    names a weight set with it."""
 
     name = "memories.weighed-mark"
 

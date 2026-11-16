@@ -13,8 +13,8 @@ from suites.coding.modules.workers.types.worker import Worker
 
 
 class MissingProcessEffect(EventEffect):
-    """At a minute step of the main agent or a worker, ends each open helper of the environment whose recorded process
-    is gone, though its end hook never came; one never seen stays."""
+    """At a minute step of the main agent or a worker, ends each open helper of the environment whose recorded
+    process is gone, though its end hook never came; one never seen stays."""
 
     key = "drivers.missing-process"
     events = [HookEventName.TICK]

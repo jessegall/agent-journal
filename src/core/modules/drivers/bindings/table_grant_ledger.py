@@ -28,11 +28,11 @@ SPENT_TEXT = "the exception this action needs was spent or withdrawn while it wa
 
 
 class TableGrantLedger(GrantLedger):
-    """The grant ledger over the refusal skip, permission request and driver grant tables (doc 1310 section 4.7):
-    a confirmed refusal skip, approved where it needs approval, passes the next action its policy refuses;
-    an allowed permission passes the action it names; an alias or guard skip is a driver_grant row. A spend
-    uses the skip and permission commands, so the skip's streak and window and the permission's use stay as they are, and a
-    spent journal command leaves a receipt its own entry point takes once."""
+    """The grant ledger over the refusal skip, permission request and driver grant tables (doc 1310 section
+    4.7): a confirmed refusal skip, approved where it needs approval, passes the next action its policy
+    refuses; an allowed permission passes the action it names; an alias or guard skip is a driver_grant row. A
+    spend uses the skip and permission commands, so the skip's streak and window and the permission's use stay
+    as they are, and a spent journal command leaves a receipt its own entry point takes once."""
 
     def __init__(self, queries: Queries, repository: Repository, bus: Bus) -> None:
         self.queries, self.repository, self.bus = queries, repository, bus

@@ -28,8 +28,8 @@ ENDED_JOBS_REASON = "the ended jobs whose frames one step takes off one helper's
 
 
 class JobWorkStates(StateSource):
-    """One Working stacked state for a read-only helper's open job (doc 1310 section 4.4): its allowed stop under it is
-    the hand-in (section 4.9), and a new job pushes a new stacked state."""
+    """One Working stacked state for a read-only helper's open job (doc 1310 section 4.4): its allowed stop
+    under it is the hand-in (section 4.9), and a new job pushes a new stacked state."""
 
     state_type = Working
     rank = JOB_RANK

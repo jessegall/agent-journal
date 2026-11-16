@@ -7,8 +7,9 @@ from core.modules.drivers.models.program_version import ProgramVersion
 
 
 class ReadVersionsRows:
-    """The rows a step's answer basis is read from, the agent's stack and the environment's driver version and the program's version, each read once
-    a request until a write changes it: the view of a step and the basis check of the save share one read."""
+    """The rows a step's answer basis is read from, the agent's stack and the environment's driver version and
+    the program's version, each read once a request until a write changes it: the view of a step and the basis
+    check of the save share one read."""
 
     def __init__(self, queries: Queries, request_values: RequestValues, database: Database) -> None:
         self.queries, self.request_values, self.database = queries, request_values, database

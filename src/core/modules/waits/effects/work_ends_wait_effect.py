@@ -20,7 +20,8 @@ WENT_ON = "the agent went on working"
 
 class WorkEndsWaitEffect(Effect):
     """Every open wait and stuck report of the agent ends when it uses a tool outside the journal: it went on
-    working. The waits are the Waiting stacked states of this step's needs, also one opened since the last step."""
+    working. The waits are the Waiting stacked states of this step's needs, also one opened since the last
+    step."""
 
     events = [HookEventName.PRE_TOOL_USE]
     timing = EffectTiming.UNCONDITIONAL

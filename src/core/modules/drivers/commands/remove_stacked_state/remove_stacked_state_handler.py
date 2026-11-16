@@ -19,11 +19,11 @@ SUPPRESSED_TEXTS = {"Working": "work {stacked_state} hidden until it is restored
 
 
 class RemoveStackedStateHandler(Handler[RemoveStackedState, str]):
-    """Removes a stacked state as a person (doc 1310 section 4.3): a Blocked stacked state closes its block as waived by the
-    person, a Working stacked state is hidden by a suppression until it is restored or assigned again, a Waiting or
-    Compacting stacked state is cancelled for that wait or that context generation, and Paused, Stopped and Ended are
-    refused with the way out. Only a person pops a stacked state, and a pop never passes a
-    policy."""
+    """Removes a stacked state as a person (doc 1310 section 4.3): a Blocked stacked state closes its block as
+    waived by the person, a Working stacked state is hidden by a suppression until it is restored or assigned
+    again, a Waiting or Compacting stacked state is cancelled for that wait or that context generation, and
+    Paused, Stopped and Ended are refused with the way out. Only a person pops a stacked state, and a pop
+    never passes a policy."""
 
     command = RemoveStackedState
 

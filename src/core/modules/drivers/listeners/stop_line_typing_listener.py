@@ -10,9 +10,9 @@ from core.modules.drivers.events.stop_allowed import StopAllowed
 
 
 class StopLineTypingListener(CommitListener[StopAllowed]):
-    """An agent let to stop sends no hook that could carry a line left during its turn, so the oldest one is delivered
-    as a waiting line is: given to the wake waiter this stop's wake hook registered, or typed when none lives; the turn
-    that starts gives the rest."""
+    """An agent let to stop sends no hook that could carry a line left during its turn, so the oldest one is
+    delivered as a waiting line is: given to the wake waiter this stop's wake hook registered, or typed when
+    none lives; the turn that starts gives the rest."""
 
     name = "drivers.stop-line-typing"
     run_order = -1

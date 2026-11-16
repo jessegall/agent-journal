@@ -24,9 +24,9 @@ BLOCK_ENDS = {ConditionOutcome.SATISFIED: StateEnd.SATISFIED, ConditionOutcome.C
 
 class StackBuilder:
     """Builds an agent's stack from what its step read (doc 1310 section 4.3): Stopped at the bottom, one work
-    stacked state per need in push order, one Blocked stacked state per open block by rank and age, then Compacting, Paused
-    and Ended. A stacked state whose need ended leaves wherever it sits; past the depth limit the lowest-ranked
-    Blocked stacked states get no stacked state and their blocks still constrain."""
+    stacked state per need in push order, one Blocked stacked state per open block by rank and age, then
+    Compacting, Paused and Ended. A stacked state whose need ended leaves wherever it sits; past the depth
+    limit the lowest-ranked Blocked stacked states get no stacked state and their blocks still constrain."""
 
     def built(self, view: AgentView) -> BuiltStack:
         old = {stacked_state.state_key: stacked_state for stacked_state in view.stack.stacked_states}

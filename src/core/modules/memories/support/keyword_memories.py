@@ -13,9 +13,9 @@ KEYWORDS_REASON = "every memory whose keyword the hook names may be delivered"
 
 
 class KeywordMemories:
-    """The active memories whose keyword a prompt or a tool use names and that the agent has not been given since
-    its last compaction, heaviest first and at most memories.keyword-limit of them: read once a hook, so the lines
-    that give them and the effect that records them agree."""
+    """The active memories whose keyword a prompt or a tool use names and that the agent has not been given
+    since its last compaction, heaviest first and at most memories.keyword-limit of them: read once a hook, so
+    the lines that give them and the effect that records them agree."""
 
     def __init__(self, queries: Queries, settings: SettingValues, memories: ActiveMemoryQuery, request_values: RequestValues, database: Database) -> None:
         self.queries, self.settings, self.memories, self.request_values, self.database = queries, settings, memories, request_values, database

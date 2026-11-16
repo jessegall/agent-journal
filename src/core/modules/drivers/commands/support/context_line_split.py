@@ -8,9 +8,9 @@ LINE_BREAK = 1
 
 @dataclass(frozen=True)
 class ContextLineSplit:
-    """The lines of one reply cut for a program that swaps a longer text for a file: the whole lines that fit within the
-    limit, counted with the line breaks that join them, go in this reply, and the rest wait for the agent's next hook.
-    A first line longer than the limit on its own is cut at the limit."""
+    """The lines of one reply cut for a program that swaps a longer text for a file: the whole lines that fit
+    within the limit, counted with the line breaks that join them, go in this reply, and the rest wait for the
+    agent's next hook. A first line longer than the limit on its own is cut at the limit."""
 
     kept: tuple[AgentMessage, ...]
     rest: tuple[AgentMessage, ...]

@@ -12,8 +12,8 @@ CORE_SUITE = "core"
 
 class Driver:
     """The driver of one agent type: whose declarations it gathers, the order of their rank keys, how its work
-    answers a stop, who its escalations ask and the instruction lines its agent starts with. It decides nothing by
-    code of its own."""
+    answers a stop, who its escalations ask and the instruction lines its agent starts with. It decides
+    nothing by code of its own."""
 
     name: ClassVar[str]
     agent_type: ClassVar[str]

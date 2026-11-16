@@ -9,8 +9,8 @@ READER_BLOCK_KEY = re.compile(rf"(?:{re.escape(ReaderBlockMessage.declared().key
 
 
 class ReaderBlockKeys:
-    """The key of the block of a reader request: the key of the agent message with the number of the request after it. The
-    one place that writes it and the one place that reads the request back."""
+    """The key of the block of a reader request: the key of the agent message with the number of the request
+    after it. The one place that writes it and the one place that reads the request back."""
 
     @staticmethod
     def keyed(agent_message: AgentMessage, request_id: int) -> AgentMessage:

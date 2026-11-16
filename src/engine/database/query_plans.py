@@ -5,9 +5,9 @@ from engine.database.statement import Statement
 
 
 class QueryPlans:
-    """The query plan of each SQL text, kept for the whole process: the tables and indexes of a checkout come from
-    its code, so one SQL text plans alike in every database of the same code, and the plans are dropped whenever a
-    sync can change the schema."""
+    """The query plan of each SQL text, kept for the whole process: the tables and indexes of a checkout come
+    from its code, so one SQL text plans alike in every database of the same code, and the plans are dropped
+    whenever a sync can change the schema."""
 
     plans: ClassVar[dict[str, tuple[str, ...]]] = {}
 

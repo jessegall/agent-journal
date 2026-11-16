@@ -4,8 +4,8 @@ from typing import Any
 
 @dataclass(frozen=True)
 class StoredStackedState:
-    """One stacked state as the stack row keeps it in JSON: its state's class name, the state's fields, its need key and when
-    it entered the stack."""
+    """One stacked state as the stack row keeps it in JSON: its state's class name, the state's fields, its
+    need key and when it entered the stack."""
 
     state_name: str
     state: Any

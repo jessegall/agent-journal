@@ -23,9 +23,9 @@ class WatchedProgress:
 
 
 class WatchProgress:
-    """After every tool use, an agent watching a run is told once that it runs, then its progress only as it passes
-    each 10 percent; the run's end has its own line, and its output is read on request. Read once a hook, so the lines
-    and the percent they record agree."""
+    """After every tool use, an agent watching a run is told once that it runs, then its progress only as it
+    passes each 10 percent; the run's end has its own line, and its output is read on request. Read once a
+    hook, so the lines and the percent they record agree."""
 
     def __init__(self, watches: WatchQuery, processes: ProcessQuery, request_values: RequestValues) -> None:
         self.watches, self.processes, self.request_values = watches, processes, request_values

@@ -37,9 +37,9 @@ TASK_ENDS = {TaskState.COMPLETED: StateEnd.CLOSED, TaskState.CANCELLED: StateEnd
 
 
 class TaskWorkStates(StateSource):
-    """One Working stacked state for each task a main agent holds started (doc 1310 section 4.4): work remains while it
-    is started, unless the suite lets the agent stop with its tasks in hand; the stop text names every started
-    task. A run going is the processes module's Waiting need on top."""
+    """One Working stacked state for each task a main agent holds started (doc 1310 section 4.4): work remains
+    while it is started, unless the suite lets the agent stop with its tasks in hand; the stop text names
+    every started task. A run going is the processes module's Waiting need on top."""
     state_type = Working
     rank = TASK_RANK
     agent_types = ["main"]

@@ -16,8 +16,9 @@ SKIPPED_TERMS = ("journal", "git", "ls", "cat", "grep", "sed", "for", "set", "cd
 
 
 class AliasSuggestionLines(EventLineSource):
-    """A command an agent keeps running, as a part of its runs opening on the same words as this one, teaches it to
-    add an alias, for the roles the suite policy has use saved commands; only a shell line asks, and it only counts."""
+    """A command an agent keeps running, as a part of its runs opening on the same words as this one, teaches
+    it to add an alias, for the roles the suite policy has use saved commands; only a shell line asks, and it
+    only counts."""
 
     key = "processes.alias-suggestion"
     events = [HookEventName.POST_TOOL_USE]

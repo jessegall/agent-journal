@@ -16,7 +16,8 @@ QUESTIONS_REASON = "the agents list keeps every agent waiting on the answer to i
 
 
 class AgentActivity:
-    """An agent whose process runs, whose work still holds its place, or who waits on an answer to its question, on an ask or on help."""
+    """An agent whose process runs, whose work still holds its place, or who waits on an answer to its
+    question, on an ask or on help."""
 
     def __init__(self, work: AgentWork, queries: Queries, kept: KeptRows) -> None:
         self.work, self.queries, self.kept = work, queries, kept

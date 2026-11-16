@@ -3,7 +3,8 @@ from engine.enums.agent_message_type import AgentMessageType
 
 
 class UnsavedReportMessage(MessageTemplate):
-    """The agent message helpers.unsaved-report: a hand-in whose save failed refuses the stop once (doc 1310 section 4.9)."""
+    """The agent message helpers.unsaved-report: a hand-in whose save failed refuses the stop once (doc 1310
+    section 4.9)."""
 
     key = "helpers.unsaved-report"
     type = AgentMessageType.STEERING

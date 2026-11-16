@@ -24,9 +24,9 @@ PHRASE_TRIGGER_KEY = "triggers.phrase"
 
 
 class PhraseTriggerMatch:
-    """A trigger whose words appear in a place it watches and that passes its conditions gives the agent its text,
-    holds it to a skill or refuses the call; each one that acted counts as fired. Read once a hook, so the policy,
-    the lines, the hold and the effect share one answer."""
+    """A trigger whose words appear in a place it watches and that passes its conditions gives the agent its
+    text, holds it to a skill or refuses the call; each one that acted counts as fired. Read once a hook, so
+    the policy, the lines, the hold and the effect share one answer."""
 
     def __init__(self, triggers: TriggerQuery, conditions: TriggerConditions, catalogue: SkillCatalogue, loaded: LoadedSkills, files: SkillFiles,
                  agents: AgentRows, request_values: RequestValues) -> None:

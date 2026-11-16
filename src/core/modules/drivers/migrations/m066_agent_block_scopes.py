@@ -10,8 +10,9 @@ COLUMNS = ("scope_tools INTEGER", "scope_stop INTEGER", "stop_grace_seconds INTE
 
 
 class AgentBlockScopesMigration(Migration):
-    """Gives every block its scopes and the rest of doc 1310 section 4.5, all defaulted, and fills the scopes of the open
-    rows from blocks_stop: a stop block refuses the stop only, any other refuses tools only. Old code reads its rows unchanged."""
+    """Gives every block its scopes and the rest of doc 1310 section 4.5, all defaulted, and fills the scopes
+    of the open rows from blocks_stop: a stop block refuses the stop only, any other refuses tools only. Old
+    code reads its rows unchanged."""
 
     number = 66
     statements = [*(f"ALTER TABLE agent_blocks ADD COLUMN {column}" for column in COLUMNS),

@@ -19,9 +19,9 @@ MAIN_AGENT_HOOK = "main agent hook"
 
 
 class WriteTurns(WriteTurnQueue):
-    """The server's write turn queue on an integration journal and a manual clock, bound to the journal's database.
-    It notes how many statements each turn it hands out had, the order waiting asks got the turn in, and the slow
-    holders it logs."""
+    """The server's write turn queue on an integration journal and a manual clock, bound to the journal's
+    database. It notes how many statements each turn it hands out had, the order waiting asks got the turn in,
+    and the slow holders it logs."""
 
     def __init__(self, journal: IntegrationJournal) -> None:
         self.slow_turns: list[str] = []

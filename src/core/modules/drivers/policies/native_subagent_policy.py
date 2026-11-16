@@ -14,8 +14,8 @@ COLLABORATION_PREFIX = "collaboration"
 
 class NativeSubagentPolicy(EventPolicy):
     """A program's own subagent tool runs a child no policy sees, so it is refused on every program, with the
-    line that starts a helper instead, and so is any tool such a child calls; with no launcher running the agent
-    keeps the work. A program's agent that only reads a web page is not refused."""
+    line that starts a helper instead, and so is any tool such a child calls; with no launcher running the
+    agent keeps the work. A program's agent that only reads a web page is not refused."""
 
     key = "drivers.native-subagent"
     rank = "access.all"

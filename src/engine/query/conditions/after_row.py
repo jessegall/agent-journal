@@ -5,8 +5,9 @@ from engine.database.statement import Statement
 
 @dataclass(frozen=True)
 class AfterRow:
-    """Matches the rows that come after a given row in an order by one column and then the key, as SQLite sorts
-    them: an empty value first when ascending and last when descending, and rows with the same value by their key."""
+    """Matches the rows that come after a given row in an order by one column and then the key, as SQLite
+    sorts them: an empty value first when ascending and last when descending, and rows with the same value by
+    their key."""
 
     column: str
     descending: bool

@@ -25,8 +25,8 @@ PEER_MESSAGE_KEY = "messages.peer"
 
 class PeerMessageEffect(EventEffect):
     """A message another agent session sent to the main agent shows in the chat once it reaches the agent's
-    transcript, also while the agent waits, read at its minute step from the tick that step replaces; and so does
-    a message the main agent sends to another agent."""
+    transcript, also while the agent waits, read at its minute step from the tick that step replaces; and so
+    does a message the main agent sends to another agent."""
 
     key = PEER_MESSAGE_KEY
     events = list(HookEventName)

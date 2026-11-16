@@ -17,9 +17,9 @@ ALLOWED_COMMANDS = tuple(category.value for category in (CommandCategory.READ, C
 
 
 class CheckoutWriteCodePolicy(EventPolicy):
-    """While the main agent writes no code, it writes no file of the project checkout, by a file tool or a shell line;
-    files outside the checkout, in the .journal folder (agent memory and worker worktrees) and journal commands stay
-    allowed."""
+    """While the main agent writes no code, it writes no file of the project checkout, by a file tool or a
+    shell line; files outside the checkout, in the .journal folder (agent memory and worker worktrees) and
+    journal commands stay allowed."""
 
     key = "coding.main-writes-no-code"
     rank = "access.all"

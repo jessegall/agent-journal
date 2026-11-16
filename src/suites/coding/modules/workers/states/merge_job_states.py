@@ -27,9 +27,9 @@ RUNNING_MERGES_REASON = "the merges the mergers of one step started that have no
 
 
 class MergeJobStates(StateSource):
-    """One Working stacked state for a merger's open job (doc 1310 section 4.4, the merge contract): work remains while a
-    merge it started, accepted by the process queue, has not ended, so its stop is refused; once every merge
-    ended, its stop hands the job in, with no report message, as its profile says."""
+    """One Working stacked state for a merger's open job (doc 1310 section 4.4, the merge contract): work
+    remains while a merge it started, accepted by the process queue, has not ended, so its stop is refused;
+    once every merge ended, its stop hands the job in, with no report message, as its profile says."""
 
     state_type = Working
     rank = MERGE_JOB_RANK

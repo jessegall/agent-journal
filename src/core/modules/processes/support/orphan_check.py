@@ -30,11 +30,11 @@ class OrphanedRuns:
 
 
 class OrphanCheck:
-    """At each minute step, a run the agent started whose shell has given no sign of life for longer than the limit,
-    or whose runner pid is gone for the lost runner seconds, is ended lost and the agent is told; a run whose folder
-    holds an end the server never heard of is ended from the folder. The first step after a long gap, a machine that
-    slept, ends nothing lost, since no heartbeat could have been written either. Read once a step, so the lines and
-    the commands agree."""
+    """At each minute step, a run the agent started whose shell has given no sign of life for longer than the
+    limit, or whose runner pid is gone for the lost runner seconds, is ended lost and the agent is told; a run
+    whose folder holds an end the server never heard of is ended from the folder. The first step after a long
+    gap, a machine that slept, ends nothing lost, since no heartbeat could have been written either. Read once
+    a step, so the lines and the commands agree."""
 
     def __init__(self, processes: ProcessQuery, ends: RunFolderEnds, folder: OutputFolder, settings: ProcessSettings, spans: SpanQueries, clock: Clock, request_values: RequestValues) -> None:
         self.processes, self.ends, self.folder, self.settings, self.spans, self.clock, self.request_values = processes, ends, folder, settings, spans, clock, request_values

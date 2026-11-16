@@ -23,9 +23,9 @@ SEQUENCE_SUBJECT = "sequence_run"
 
 
 class SequenceWorkStates(StateSource):
-    """One Working stacked state for the sequence an agent runs (doc 1310 section 10.4): work remains while the run is
-    current, unless the agent waits on its question, a run it watches or its helper; the stop text names the
-    sequence and its step."""
+    """One Working stacked state for the sequence an agent runs (doc 1310 section 10.4): work remains while
+    the run is current, unless the agent waits on its question, a run it watches or its helper; the stop text
+    names the sequence and its step."""
     state_type = Working
     rank = SEQUENCE_RANK
 

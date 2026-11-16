@@ -20,9 +20,9 @@ SILENT_RUN_RANK = "processes.silent-run"
 
 
 class SilentRunBlockStates(StateSource):
-    """Holds the tool uses of an agent whose run has printed nothing for the hang time, naming the run and what its
-    processor time does, until the agent reads its output, a user releases it or the run ends; the exits are said in the shared wording.
-    Like every hold it lets reads and journal commands through."""
+    """Holds the tool uses of an agent whose run has printed nothing for the hang time, naming the run and
+    what its processor time does, until the agent reads its output, a user releases it or the run ends; the
+    exits are said in the shared wording. Like every hold it lets reads and journal commands through."""
     state_type = Blocked
     rank = SILENT_RUN_RANK
 

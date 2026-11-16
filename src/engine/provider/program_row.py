@@ -6,11 +6,11 @@ from engine.provider.provider import Provider
 
 @dataclass(frozen=True)
 class ProgramRow:
-    """One agent program's row of the program table: its hook names under the journal's event names, the
-    the events whose answer takes lines, its refusal styles, tool
-    categories, decoder, the fields a rewritten tool input must carry, how it is stopped at each event, how it
-    reads a hook's matcher, how long a hook with no timeout runs, the most seconds it gives a SessionEnd hook and how it is woken by its wake
-    hook, empty when it has none."""
+    """One agent program's row of the program table: its hook names under the journal's event names, the the
+    events whose answer takes lines, its refusal styles, tool categories, decoder, the fields a rewritten tool
+    input must carry, how it is stopped at each event, how it reads a hook's matcher, how long a hook with no
+    timeout runs, the most seconds it gives a SessionEnd hook and how it is woken by its wake hook, empty when
+    it has none."""
 
     events: Mapping[str, str]
     line_events: Sequence[str]

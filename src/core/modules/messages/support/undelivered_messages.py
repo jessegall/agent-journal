@@ -22,9 +22,9 @@ class UndeliveredBatch:
 
 
 class UndeliveredMessages:
-    """The user's messages to an agent that a hook which takes lines, or the agent's step, delivers, at most five,
-    unless the journal is typing a waiting message into its terminal: read once a hook, so the lines that name them
-    and the effect that records their delivery agree."""
+    """The user's messages to an agent that a hook which takes lines, or the agent's step, delivers, at most
+    five, unless the journal is typing a waiting message into its terminal: read once a hook, so the lines
+    that name them and the effect that records their delivery agree."""
 
     def __init__(self, queries: Queries, messages: MessageQuery, request_values: RequestValues) -> None:
         self.queries, self.messages, self.request_values = queries, messages, request_values
