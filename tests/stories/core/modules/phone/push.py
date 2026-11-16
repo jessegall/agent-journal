@@ -47,7 +47,7 @@ def subscribed_story(new_story, service: FakePush | None = None):
     return story
 
 
-def ask(story) -> None:
+def helper_question(story) -> None:
     story.run('question ask "Which database?" --context "A story asks this so its card and answer can be checked." --environment main', actor=story.agent)
     story.run_listeners()
 
@@ -93,7 +93,7 @@ def test_a_phone_that_never_subscribed_is_not_pushed(new_story):
     service = FakePush()
     story = paired_story(new_story)
     story.replace(PushService, service)
-    ask(story)
+    helper_question(story)
     tick(story)
     expect_row(service, sent=[])
 
@@ -101,9 +101,9 @@ def test_a_phone_that_never_subscribed_is_not_pushed(new_story):
 def test_a_failed_push_keeps_the_subscription_for_the_next_notice(new_story):
     service = FakePush(status=500)
     story = subscribed_story(new_story, service)
-    ask(story)
+    helper_question(story)
     tick(story)
-    ask(story)
+    helper_question(story)
     tick(story)
     expect_row(service, sent=[ENDPOINT, ENDPOINT])
 

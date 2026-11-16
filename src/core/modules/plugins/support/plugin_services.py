@@ -208,6 +208,6 @@ class PluginServices:
     @staticmethod
     def is_healthy(path: Path, health: PluginHealth) -> bool:
         try:
-            return health.matches(PluginSocket(path).ask(health.request, HEALTH_LIMIT_MS))
+            return health.matches(PluginSocket(path).helper_question(health.request, HEALTH_LIMIT_MS))
         except (PluginFaultError, OSError):
             return False

@@ -386,11 +386,11 @@
         "Effect"
       ],
       "fields": [
-        "key: str"
+        "key: ClassVar[str]"
       ],
       "methods": [
         "commands(self, view: AgentView, record: 'DecisionRecord') -> Sequence[Command[object]]",
-        "commands_of(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]"
+        "effect_commands(self, event: HookEvent | None, agent_id: int) -> Sequence[Command[object]]"
       ]
     },
     "agent_machine.contracts.event_line_source.EventLineSource": {
@@ -504,7 +504,7 @@
         "rewrite: Rewrite",
         "lines: Sequence[Line]",
         "unconditional_effects: Sequence[Effect]",
-        "admission_effects: Sequence[Effect]",
+        "allowed_effects: Sequence[Effect]",
         "after_commit: Sequence[Intent]",
         "terminal: str",
         "moves: Sequence[StackMove]",
@@ -608,8 +608,8 @@
         "agent_message: AgentMessage | None"
       ],
       "methods": [
-        "of_agent_message(cls, agent_message: AgentMessage, channel: LineChannel, category: LineCategory | None) -> 'Line'",
-        "said(self) -> AgentMessage"
+        "agent_message_line(cls, agent_message: AgentMessage, channel: LineChannel, category: LineCategory | None) -> 'Line'",
+        "given_message(self) -> AgentMessage"
       ]
     },
     "agent_machine.record.question.Question": {
@@ -663,20 +663,6 @@
         "actor_id: int | None"
       ],
       "methods": []
-    },
-    "agent_machine.record.stop_check.StopCheck": {
-      "bases": [],
-      "fields": [
-        "rule: str",
-        "outcome: DecisionClass",
-        "reason_text: str",
-        "applied: bool"
-      ],
-      "methods": [
-        "is_refusal(self) -> bool",
-        "refusal_text(self) -> str",
-        "saved_fields(self) -> Mapping[str, object]"
-      ]
     },
     "agent_machine.record.wake_change.WakeChange": {
       "bases": [],
@@ -757,7 +743,7 @@
       ],
       "fields": [],
       "methods": [
-        "last_spoke(self, source_key: str, agent_id: int) -> Timestamp | None"
+        "last_given(self, source_key: str, agent_id: int) -> Timestamp | None"
       ]
     },
     "agent_machine.states.pause_fact.PauseFact": {
@@ -823,7 +809,7 @@
         "wakes_mid_turn: ClassVar[bool]"
       ],
       "methods": [
-        "needs_wake(self, view: AgentView) -> bool",
+        "requires_wake(self, view: AgentView) -> bool",
         "text(self, view: AgentView) -> str",
         "is_inhibited(self, view: AgentView) -> bool"
       ]
@@ -845,9 +831,9 @@
         "step(self, view: AgentView, question: Question) -> StepResult",
         "transformed(self, question: Question, view: AgentView) -> Rewrite",
         "with_supported_rewrite(rewrite: Rewrite, reasons: list[Reason], view: AgentView, question: Question) -> tuple[Rewrite, list[Reason]]",
-        "with_handover(decision: Decision, question: Question, view: AgentView, stack: Stack) -> Decision",
+        "with_delivery(decision: Decision, question: Question, view: AgentView, stack: Stack) -> Decision",
         "escalated(decision: Decision, counts: RefusalCounts, view: AgentView) -> Decision",
-        "record(self, view: AgentView, question: Question, decision: Decision, judgement: Judgement, rewrite: Rewrite, counts: RefusalCounts, stack: Stack, moves: tuple, reasons: list[Reason]) -> DecisionRecord",
+        "record(self, view: AgentView, question: Question, decision: Decision, reason_total: ReasonTotal, rewrite: Rewrite, counts: RefusalCounts, stack: Stack, moves: tuple, reasons: list[Reason]) -> DecisionRecord",
         "terminal(lines: list[Line]) -> str",
         "identity(view: AgentView, question: Question) -> EventIdentity",
         "lines(self, question: Question, view: AgentView) -> list[Line]",
@@ -937,14 +923,14 @@
         "planned(plan: BlockPlan) -> OpenBlock"
       ]
     },
-    "agent_machine.stepping.judgement.Judgement": {
+    "agent_machine.stepping.reason_total.ReasonTotal": {
       "bases": [],
       "fields": [
         "decision: Decision",
         "outranked_reasons: tuple[Reason, ...]"
       ],
       "methods": [
-        "combined(cls, reasons: Sequence[Reason], rank_order: RankOrder) -> 'Judgement'"
+        "combined(cls, reasons: Sequence[Reason], rank_order: RankOrder) -> 'ReasonTotal'"
       ]
     },
     "agent_machine.stepping.refusal_counting.RefusalCounting": {
@@ -962,8 +948,8 @@
       "fields": [],
       "methods": [
         "built(self, view: AgentView) -> BuiltStack",
-        "work_lane(view: AgentView) -> list[StackedState]",
-        "block_lane(view: AgentView, old: dict[StateKey, StackedState]) -> list[StackedState]",
+        "work_level(view: AgentView) -> list[StackedState]",
+        "block_level(view: AgentView, old: dict[StateKey, StackedState]) -> list[StackedState]",
         "block_key(block: OpenBlock) -> StateKey",
         "capped(view: AgentView, work_count: int, blocked_stacked_states: list[StackedState]) -> list[StackedState]",
         "safety(view: AgentView, old: dict[StateKey, StackedState]) -> list[StackedState]",
@@ -1056,7 +1042,7 @@
         "text: str",
         "lifting_lines: tuple[str, ...]",
         "subject: RowReference | None",
-        "handover: WorkReference | None",
+        "job_report: WorkReference | None",
         "is_safety: bool"
       ],
       "methods": [
@@ -1079,8 +1065,8 @@
       "methods": [
         "has(self, state_type: type[State]) -> bool",
         "subjects_without(self, state_keys: set[StateKey]) -> list[RowReference]",
-        "lane(self, lane: StackLevel) -> list[StackedState]",
-        "work_lane_top(self) -> StackedState",
+        "level(self, level: StackLevel) -> list[StackedState]",
+        "work_level_top(self) -> StackedState",
         "stop_answer(self, contract: WorkStop, escalation: Escalation | None) -> StopAnswer"
       ]
     },
@@ -1107,7 +1093,7 @@
         "State"
       ],
       "fields": [
-        "lane: ClassVar[StackLevel]",
+        "level: ClassVar[StackLevel]",
         "rank: ClassVar[int]",
         "block: OpenBlock"
       ],
@@ -1121,7 +1107,7 @@
         "State"
       ],
       "fields": [
-        "lane: ClassVar[StackLevel]",
+        "level: ClassVar[StackLevel]",
         "rank: ClassVar[int]",
         "context_generation: int",
         "cause: str",
@@ -1135,7 +1121,7 @@
         "State"
       ],
       "fields": [
-        "lane: ClassVar[StackLevel]",
+        "level: ClassVar[StackLevel]",
         "rank: ClassVar[int]",
         "cause: str",
         "actor_id: int"
@@ -1156,7 +1142,7 @@
         "State"
       ],
       "fields": [
-        "lane: ClassVar[StackLevel]",
+        "level: ClassVar[StackLevel]",
         "rank: ClassVar[int]",
         "causes: tuple[PauseCause, ...]",
         "refusal_text: str"
@@ -1166,7 +1152,7 @@
     "agent_stack.states.state.State": {
       "bases": [],
       "fields": [
-        "lane: ClassVar[StackLevel]",
+        "level: ClassVar[StackLevel]",
         "rank: ClassVar[int]"
       ],
       "methods": [
@@ -1180,7 +1166,7 @@
         "State"
       ],
       "fields": [
-        "lane: ClassVar[StackLevel]",
+        "level: ClassVar[StackLevel]",
         "rank: ClassVar[int]",
         "stopped_at: datetime",
         "cause: str",
@@ -1193,7 +1179,7 @@
         "State"
       ],
       "fields": [
-        "lane: ClassVar[StackLevel]",
+        "level: ClassVar[StackLevel]",
         "rank: ClassVar[int]",
         "subjects: tuple[RowReference, ...]",
         "wait_mode: WaitMode",
@@ -1207,7 +1193,7 @@
         "State"
       ],
       "fields": [
-        "lane: ClassVar[StackLevel]",
+        "level: ClassVar[StackLevel]",
         "rank: ClassVar[int]",
         "work: WorkReference",
         "work_remains: bool",
@@ -1228,7 +1214,7 @@
         "allowed(cls) -> 'StopAnswer'",
         "refusal(cls, reason: Reason) -> 'StopAnswer'",
         "refusals(cls, reasons: 'list[Reason]') -> 'StopAnswer'",
-        "handover(cls, work: WorkReference) -> 'StopAnswer'",
+        "job_report(cls, work: WorkReference) -> 'StopAnswer'",
         "safety_rest(cls) -> 'StopAnswer'",
         "compaction_handoff(cls) -> 'StopAnswer'",
         "refusal_reasons(self) -> tuple[Reason, ...]"
@@ -1337,6 +1323,13 @@
       "fields": [],
       "methods": []
     },
+    "area.area_use.AreaUse": {
+      "bases": [
+        "Enum"
+      ],
+      "fields": [],
+      "methods": []
+    },
     "area.engine_area.EngineArea": {
       "bases": [],
       "fields": [
@@ -1398,9 +1391,9 @@
       "methods": [
         "shared() -> 'KeptProcessRows'",
         "rows(self, table: ProcessTable, pid: int) -> Mapping[int, ProcessRow]",
-        "is_fresh(self, table: ProcessTable, pid: int) -> bool",
-        "reader_of(table: ProcessTable) -> object",
-        "reaches_the_root(self, pid: int) -> bool"
+        "is_current(self, table: ProcessTable, pid: int) -> bool",
+        "table_reader(table: ProcessTable) -> object",
+        "reaches_root_process(self, pid: int) -> bool"
       ]
     },
     "caller.process_chain.ProcessChain": {
@@ -1459,7 +1452,7 @@
         "kit: str",
         "badge: str",
         "folds: str",
-        "needs_user: bool",
+        "person_required: bool",
         "word: str",
         "draws_head: bool",
         "reads_target: bool"
@@ -2356,7 +2349,7 @@
         "substitute(self, class_type: type, implementation: type) -> None",
         "get(self, class_type: type[T]) -> T",
         "constructed(self, class_type: type[T]) -> T",
-        "build_place(frame: FrameType | None) -> str",
+        "build_place(stack_entry: FrameType | None) -> str",
         "record_build(self, class_type: type) -> None"
       ]
     },
@@ -2565,7 +2558,7 @@
       "fields": [],
       "methods": []
     },
-    "database.errors.wait_in_write_turn_error.WaitInWriteTurnError": {
+    "database.errors.wait_during_write_turn_error.WaitDuringWriteTurnError": {
       "bases": [
         "Exception"
       ],
@@ -2676,6 +2669,13 @@
         "selected(database: Database, sql: str, parameters: Sequence[object]) -> list[tuple[object, ...]]"
       ]
     },
+    "database.missing_scope_reads.MissingScopeReads": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "record(table_name: str) -> None"
+      ]
+    },
     "database.module_migrations.ModuleMigrations": {
       "bases": [],
       "fields": [
@@ -2764,7 +2764,7 @@
       ],
       "methods": [
         "plan(cls, database: Database, statement: Statement) -> tuple[str, ...]",
-        "forget(cls) -> None"
+        "clear(cls) -> None"
       ]
     },
     "database.rebuild_migration.RebuildMigration": {
@@ -2849,21 +2849,21 @@
         "mark_read(self) -> None",
         "reset_stale_reads(self) -> None",
         "reject(self, finding: RepeatedFinding) -> None",
-        "caller_frame(levels: int) -> FrameType | None",
+        "caller_stack_entry(levels: int) -> FrameType | None",
         "is_allowed_read() -> bool",
-        "is_bulk_seed(frame: FrameType | None) -> bool",
+        "is_bulk_seed(stack_entry: FrameType | None) -> bool",
         "check_scan(self, database: Database, statement: Statement) -> None",
         "has_page_bounds(page: re.Match[str], statement: Statement) -> bool",
         "page_bound(value: str | None, parameters: Iterator[object]) -> object",
         "is_logical_scan(table: str, plans: Sequence[str]) -> bool",
         "sql_without_parameters(statement: Statement) -> str",
-        "caller_frames() -> list[traceback.FrameSummary]",
-        "raw_caller_frames() -> list[tuple[CodeType, int]]",
-        "summaries(frames: list[tuple[CodeType, int]]) -> list[traceback.FrameSummary]",
-        "stack_calls(frames: list[traceback.FrameSummary]) -> list[str]",
-        "shown_calls(cls, frames: list[traceback.FrameSummary]) -> str",
+        "caller_stack_entries() -> list[traceback.FrameSummary]",
+        "raw_caller_stack_entries() -> list[tuple[CodeType, int]]",
+        "summaries(stack_entries: list[tuple[CodeType, int]]) -> list[traceback.FrameSummary]",
+        "stack_calls(stack_entries: list[traceback.FrameSummary]) -> list[str]",
+        "shown_calls(cls, stack_entries: list[traceback.FrameSummary]) -> str",
         "build_finding(cls, category: str, subject: str, text: str) -> RepeatedFinding",
-        "project_calls(cls, frames: list[traceback.FrameSummary]) -> list[str]",
+        "project_calls(cls, stack_entries: list[traceback.FrameSummary]) -> list[str]",
         "note_command(self, command: str) -> None",
         "note_file_read(self, path: str) -> None",
         "file_version(path: str) -> int",
@@ -2961,7 +2961,7 @@
       "fields": [],
       "methods": [
         "shared(cls, home: JournalHome) -> 'SharedTables'",
-        "of_template(cls, template_database: Path) -> 'SharedTables'",
+        "template_tables(cls, template_database: Path) -> 'SharedTables'",
         "read(self, database: Database, table: str, signature: Signature, loader: Callable[[], T]) -> T",
         "is_as_copied(self) -> bool"
       ]
@@ -3115,7 +3115,7 @@
         "access: str"
       ],
       "methods": [
-        "of_actor(cls, event: HookEvent, actor: LoadedActor, timestamp: Timestamp) -> 'AgentHook'",
+        "actor_hook(cls, event: HookEvent, actor: LoadedActor, timestamp: Timestamp) -> 'AgentHook'",
         "hook_name(self) -> str",
         "is_main_stop(self) -> bool"
       ]
@@ -3144,6 +3144,23 @@
         "collapsed(agent_messages: 'Iterable[AgentMessage]') -> 'list[AgentMessage]'",
         "merged(group: 'Sequence[AgentMessage]') -> 'AgentMessage'"
       ]
+    },
+    "driver.block_agent.BlockAgent": {
+      "bases": [
+        "Command[object]"
+      ],
+      "fields": [
+        "agent_id: int",
+        "agent_message: AgentMessage",
+        "condition: BlockCondition",
+        "after: Interval | None",
+        "countdown: AgentMessage | None",
+        "blocks_stop: bool",
+        "strict: bool",
+        "is_skippable: bool",
+        "countdown_limit: int"
+      ],
+      "methods": []
     },
     "driver.block_check.BlockCheck": {
       "bases": [],
@@ -3331,6 +3348,8 @@
         "is_check_required(self) -> bool",
         "is_checked_role(role: str) -> bool",
         "has_background_work(self) -> bool",
+        "failure_text(self) -> str",
+        "error_code(self) -> str | None",
         "is_interrupt(self) -> bool",
         "is_continuing(self) -> bool",
         "displayed_part(self) -> str",
@@ -3377,7 +3396,7 @@
       "fields": [],
       "methods": [
         "record(self, agent_id: int, timestamp: Timestamp) -> int",
-        "needs_notice(self, agent_id: int, count: int, timestamp: Timestamp) -> bool",
+        "requires_notice(self, agent_id: int, count: int, timestamp: Timestamp) -> bool",
         "notify(self, agent_id: int, timestamp: Timestamp) -> None"
       ]
     },
@@ -3448,7 +3467,7 @@
         "interval: Interval | None",
         "turn_limited: bool",
         "required_command: str | None",
-        "closed_by: type[BlockCondition] | None",
+        "closing_condition: type[BlockCondition] | None",
         "plural_text: str",
         "wakes_agent: bool",
         "path_fields: Sequence[str]",
@@ -3468,23 +3487,6 @@
         "field_text(self, value: object) -> str",
         "cut(self, line: str) -> str"
       ]
-    },
-    "driver.open_hold.OpenHold": {
-      "bases": [
-        "Command[object]"
-      ],
-      "fields": [
-        "agent_id: int",
-        "agent_message: AgentMessage",
-        "condition: BlockCondition",
-        "after: Interval | None",
-        "countdown: AgentMessage | None",
-        "blocks_stop: bool",
-        "strict: bool",
-        "is_skippable: bool",
-        "countdown_limit: int"
-      ],
-      "methods": []
     },
     "driver.part.Part": {
       "bases": [],
@@ -3549,7 +3551,7 @@
         "milliseconds: int",
         "timed_out: bool",
         "answer: Mapping[str, object]",
-        "on_failure: str"
+        "failure_mode: str"
       ],
       "methods": [
         "parsed(cls, data: object) -> 'ProjectHookRun'",
@@ -3749,7 +3751,7 @@
         "journal_argument_lines(self) -> tuple[tuple[str, ...], ...]",
         "runs_journal_command(self) -> bool",
         "has_part_matching(self, pattern: str) -> bool",
-        "has_only_parts(self, check: Callable[[Part], bool]) -> bool"
+        "has_all_parts(self, check: Callable[[Part], bool]) -> bool"
       ]
     },
     "driver.span.Span": {
@@ -3775,6 +3777,20 @@
       "fields": [],
       "methods": [
         "is_running(self, agent_id: int) -> bool"
+      ]
+    },
+    "driver.stop_check.StopCheck": {
+      "bases": [],
+      "fields": [
+        "rule: str",
+        "outcome: DecisionClass",
+        "reason_text: str",
+        "applied: bool"
+      ],
+      "methods": [
+        "is_refusal(self) -> bool",
+        "refusal_text(self) -> str",
+        "saved_fields(self) -> Mapping[str, object]"
       ]
     },
     "driver.stored_message.StoredMessage": {
@@ -3826,7 +3842,7 @@
         "is_writing_files(self) -> bool"
       ]
     },
-    "driver.wake_ask.WakeAsk": {
+    "driver.wake_request.WakeRequest": {
       "bases": [],
       "fields": [
         "program: str",
@@ -3835,14 +3851,14 @@
         "token: str"
       ],
       "methods": [
-        "parsed(cls, data: object) -> 'WakeAsk'"
+        "parsed(cls, data: object) -> 'WakeRequest'"
       ]
     },
     "driver.wake_route.WakeRoute": {
       "bases": [],
       "fields": [],
       "methods": [
-        "line(self, ask: WakeAsk, hook: str, text: str) -> bool"
+        "line(self, helper_question: WakeRequest, hook: str, text: str) -> bool"
       ]
     },
     "driver.watched_runs.WatchedRuns": {
@@ -3900,13 +3916,6 @@
     "enums.answer_encoding.AnswerEncoding": {
       "bases": [
         "StrEnum"
-      ],
-      "fields": [],
-      "methods": []
-    },
-    "enums.area_use.AreaUse": {
-      "bases": [
-        "Enum"
       ],
       "fields": [],
       "methods": []
@@ -4627,6 +4636,15 @@
       "fields": [],
       "methods": []
     },
+    "errors.missing_scope_read_error.MissingScopeReadError": {
+      "bases": [
+        "AssertionError"
+      ],
+      "fields": [],
+      "methods": [
+        "read(cls, table_name: str) -> 'MissingScopeReadError'"
+      ]
+    },
     "errors.missing_seed_error.MissingSeedError": {
       "bases": [
         "Exception"
@@ -4692,15 +4710,6 @@
       ],
       "fields": [],
       "methods": []
-    },
-    "errors.unscoped_read_error.UnscopedReadError": {
-      "bases": [
-        "AssertionError"
-      ],
-      "fields": [],
-      "methods": [
-        "read(cls, table_name: str) -> 'UnscopedReadError'"
-      ]
     },
     "errors.wrong_instance_error.WrongInstanceError": {
       "bases": [
@@ -4814,7 +4823,7 @@
         "write_journal_booting(self, actor_id: int, timestamp: str) -> int",
         "write_upgrade_moved(self, actor_id: int, module: str, counts: dict[str, dict[str, int]], timestamp: str) -> int",
         "write_upgrade_finished(self, actor_id: int, counts: dict[str, int], report: str, timestamp: str) -> int",
-        "inserted(self, values: dict[str, object]) -> int",
+        "inserted(self, values: EventRowValues) -> int",
         "row_values(row: Model) -> dict[str, object]",
         "data(self, change: Change[Model]) -> dict[str, list[object]]",
         "event(self, event_id: int) -> LoggedEvent",
@@ -4841,6 +4850,24 @@
         "matches(self, event: str) -> bool",
         "matches_one(pattern: str, event: str) -> bool"
       ]
+    },
+    "event.event_row_values.EventRowValues": {
+      "bases": [
+        "TypedDict"
+      ],
+      "fields": [
+        "actor_id: int",
+        "environment_id: int | None",
+        "row_id: int",
+        "name: str",
+        "row_table: str",
+        "command: str",
+        "cause_id: int | None",
+        "skipped_guards: str",
+        "data: str",
+        "created_at: str"
+      ],
+      "methods": []
     },
     "event.event_subscriber.EventSubscriber": {
       "bases": [
@@ -4922,6 +4949,16 @@
       ],
       "methods": []
     },
+    "event.saved_events.SavedEvents": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "shared() -> 'SavedEvents'",
+        "add(self, name: str) -> None",
+        "claimed_names(self) -> frozenset[str]",
+        "drop_ended_threads(self) -> None"
+      ]
+    },
     "event.system_event.SystemEvent": {
       "bases": [],
       "fields": [
@@ -4976,16 +5013,6 @@
       ],
       "methods": []
     },
-    "event.written_events.WrittenEvents": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "shared() -> 'WrittenEvents'",
-        "add(self, name: str) -> None",
-        "taken(self) -> frozenset[str]",
-        "drop_ended_threads(self) -> None"
-      ]
-    },
     "execution.classes.builtin_class.BuiltinClass": {
       "bases": [],
       "fields": [
@@ -4997,14 +5024,21 @@
         "is_first_window: bool | None"
       ],
       "methods": [
-        "holds(self, subject: ExecutionSubject) -> bool"
+        "covers(self, subject: ExecutionSubject) -> bool"
       ]
+    },
+    "execution.classes.errors.execution_class_cost_error.ExecutionClassCostError": {
+      "bases": [
+        "Refusal"
+      ],
+      "fields": [],
+      "methods": []
     },
     "execution.classes.execution_class.ExecutionClass": {
       "bases": [],
       "fields": [
         "name: str",
-        "lane: ExecutionLength",
+        "pool: ExecutionLength",
         "slot_cost: int",
         "priority: ExecutionPriority",
         "class_limit: int",
@@ -5018,9 +5052,9 @@
       "fields": [],
       "methods": [
         "match(self, subject: ExecutionSubject) -> ExecutionClass",
-        "named(self, name: str) -> ExecutionClass | None",
-        "for_line(self, parts: Sequence[ExecutionSubject]) -> ExecutionClass",
-        "validate(execution_class: ExecutionClass, lane_capacity: int) -> None",
+        "declared(self, name: str) -> ExecutionClass | None",
+        "line_class(self, parts: Sequence[ExecutionSubject]) -> ExecutionClass",
+        "validate(execution_class: ExecutionClass, pool_capacity: int) -> None",
         "is_person_match(execution_class: ExecutionClass, subject: ExecutionSubject) -> bool"
       ]
     },
@@ -5048,13 +5082,6 @@
         "thread(target: Callable[..., object], args: tuple[object, ...], name: str | None) -> threading.Thread"
       ]
     },
-    "execution.errors.execution_class_cost_error.ExecutionClassCostError": {
-      "bases": [
-        "Refusal"
-      ],
-      "fields": [],
-      "methods": []
-    },
     "execution.execution_area.ExecutionArea": {
       "bases": [
         "EngineArea"
@@ -5067,16 +5094,16 @@
       "fields": [],
       "methods": [
         "starting(self, waiting: Sequence[ExecutionTicket], running: Sequence[ExecutionTicket], current_time: Timestamp, is_halted: bool) -> tuple[ExecutionTicket, ...]",
-        "raised(self, waiting: Sequence[ExecutionTicket], current_time: Timestamp, is_halted: bool) -> tuple[ExecutionTicket, ...]",
+        "raised(self, waiting: Sequence[ExecutionTicket], current_time: Timestamp) -> tuple[ExecutionTicket, ...]",
         "raised_ticket(self, ticket: ExecutionTicket, current_time: Timestamp) -> ExecutionTicket",
         "longest_wait(self, ticket: ExecutionTicket) -> float",
         "capacity_exceeded(self, running: Sequence[ExecutionTicket]) -> bool",
-        "over_ceiling(self, running: Sequence[ExecutionTicket]) -> bool",
+        "exceeds_ceiling(self, running: Sequence[ExecutionTicket]) -> bool",
         "place(self, ticket: ExecutionTicket, current_time: Timestamp) -> tuple[int, int, Timestamp]",
         "may_start(self, ticket: ExecutionTicket, occupied_slots: OccupiedSlots, running: Sequence[ExecutionTicket], is_halted: bool) -> bool",
         "is_class_full(ticket: ExecutionTicket, running: Sequence[ExecutionTicket]) -> bool",
-        "is_under_starter_cap(self, ticket: ExecutionTicket, running: Sequence[ExecutionTicket]) -> bool",
-        "fits(held: int, cost: int, limit: int) -> bool"
+        "fits_starter_cap(self, ticket: ExecutionTicket, running: Sequence[ExecutionTicket]) -> bool",
+        "fits(used: int, cost: int, limit: int) -> bool"
       ]
     },
     "execution.execution_starter.ExecutionStarter": {
@@ -5099,7 +5126,7 @@
         "category: CommandCategory | None",
         "process_type: ProcessType | None",
         "plugin_name: str",
-        "plugin_kind: str",
+        "plugin_category: str",
         "line: str",
         "is_first_window: bool"
       ],
@@ -5123,40 +5150,14 @@
         "waited_child(self, execution_class: ExecutionClass, line: str, entered_at: Timestamp) -> 'ExecutionTicket'"
       ]
     },
-    "execution.held_write_turn.HeldWriteTurn": {
-      "bases": [
-        "threading.local"
-      ],
-      "fields": [],
-      "methods": [
-        "is_held(self) -> bool",
-        "refuse_wait(self, subject: str) -> None"
-      ]
-    },
-    "execution.instant_lane_reading.InstantLaneReading": {
+    "execution.instant_pool_reading.InstantPoolReading": {
       "bases": [],
       "fields": [],
       "methods": [
-        "shared(home: JournalHome) -> 'InstantLaneReading'",
+        "shared(home: JournalHome) -> 'InstantPoolReading'",
         "install(self, read: InstantEntries, capacity: int) -> None",
         "remove(self) -> None",
         "entries(self) -> Sequence[Mapping[str, object]]"
-      ]
-    },
-    "execution.limits.lane_limits.LaneLimits": {
-      "bases": [],
-      "fields": [
-        "capacities: Mapping[ExecutionLength, int]",
-        "priority_limits: Mapping[ExecutionLength, Mapping[ExecutionPriority, PriorityLimit]]",
-        "starter_caps: Mapping[ExecutionLength, int]",
-        "immediate_ceiling: int"
-      ],
-      "methods": [
-        "capacity(self, lane: ExecutionLength) -> int",
-        "priority_limit(self, lane: ExecutionLength, priority: ExecutionPriority) -> PriorityLimit",
-        "starter_cap(self, lane: ExecutionLength) -> int",
-        "with_capacities(self, capacities: Mapping[ExecutionLength, int]) -> 'LaneLimits'",
-        "scaled(limit: PriorityLimit, capacity: int, new_capacity: int) -> PriorityLimit"
       ]
     },
     "execution.limits.occupied_slots.OccupiedSlots": {
@@ -5169,6 +5170,23 @@
         "counted(cls, running: Sequence[ExecutionTicket]) -> 'OccupiedSlots'",
         "with_ticket(self, ticket: ExecutionTicket) -> 'OccupiedSlots'",
         "first_priority_units(self, priority: ExecutionPriority) -> int"
+      ]
+    },
+    "execution.limits.pool_limits.PoolLimits": {
+      "bases": [],
+      "fields": [
+        "capacities: Mapping[ExecutionLength, int]",
+        "priority_limits: Mapping[ExecutionLength, Mapping[ExecutionPriority, PriorityLimit]]",
+        "starter_caps: Mapping[ExecutionLength, int]",
+        "immediate_ceiling: int"
+      ],
+      "methods": [
+        "capacity(self, pool: ExecutionLength) -> int",
+        "longest_wait_seconds(self, pool: ExecutionLength, priority: ExecutionPriority) -> float",
+        "priority_limit(self, pool: ExecutionLength, priority: ExecutionPriority) -> PriorityLimit",
+        "starter_cap(self, pool: ExecutionLength) -> int",
+        "with_capacities(self, capacities: Mapping[ExecutionLength, int]) -> 'PoolLimits'",
+        "scaled(limit: PriorityLimit, capacity: int, new_capacity: int) -> PriorityLimit"
       ]
     },
     "execution.limits.priority_limit.PriorityLimit": {
@@ -5243,7 +5261,7 @@
         "is_file(cls, path: Path | str) -> bool",
         "is_dir(cls, path: Path | str) -> bool",
         "is_symlink(cls, path: Path | str) -> bool",
-        "samefile(cls, path: Path | str, other: Path | str) -> bool",
+        "samefile(cls, path: Path | str, second_path: Path | str) -> bool",
         "stat(cls, path: Path | str, follow_symlinks: bool) -> os.stat_result",
         "lstat(cls, path: Path | str) -> os.stat_result",
         "readlink(cls, path: Path | str) -> Path",
@@ -5281,7 +5299,7 @@
     "file.file_calls.FileCalls": {
       "bases": [],
       "fields": [
-        "kinds: Counter[str]",
+        "operation_counts: Counter[str]",
         "origins: Counter[str]"
       ],
       "methods": [
@@ -5300,7 +5318,7 @@
       "fields": [],
       "methods": [
         "counting() -> Iterator[FileCalls]",
-        "note(kind: str, amount: int) -> None",
+        "note(operation: str, amount: int) -> None",
         "caller() -> str"
       ]
     },
@@ -5439,7 +5457,7 @@
       "bases": [],
       "fields": [],
       "methods": [
-        "ask(self, change: Change[Model]) -> frozenset[str]",
+        "helper_question(self, change: Change[Model]) -> frozenset[str]",
         "is_checked(self, entry: GuardEntry, change: Change[Model]) -> bool",
         "check(self, entry: GuardEntry, change: Change[Model]) -> None"
       ]
@@ -5495,7 +5513,7 @@
         "dispatches: bool",
         "checked_stops: bool",
         "has_private_outputs: bool",
-        "needs_readers: bool",
+        "requires_readers: bool",
         "queues_runs: bool",
         "watches_runs_automatically: bool",
         "continues_runs: bool",
@@ -5552,6 +5570,7 @@
         "read_access_keys(self) -> tuple[str, ...]",
         "find(self, key: str) -> HelperTypeEntry",
         "behaviours(self, key: str) -> HelperBehaviours",
+        "takes_tasks(self, key: str) -> bool",
         "has_separate_folder(self, key: str) -> bool",
         "queue_limit_keys(self) -> tuple[str, ...]",
         "type_keys(self, key: str) -> tuple[str, ...]",
@@ -5867,7 +5886,7 @@
         "follow(self, row: M, fields: Fields, context: Context) -> M",
         "is_removed(self, row: M) -> bool",
         "is_paused(self, row: M) -> bool",
-        "needs_reading(self, row: M, fields: Fields) -> str",
+        "read_reason(self, row: M, fields: Fields) -> str",
         "warning(self, fields: Fields) -> str",
         "share_refusal(self, row: M) -> str"
       ]
@@ -5916,7 +5935,7 @@
         "has_slow_round(self, entry: ListenerEntry) -> bool",
         "run_rounds(self, entries: list[ListenerEntry], urgent_entries: list[ListenerEntry]) -> None",
         "run_round(self, entries: list[ListenerEntry], urgent_entries: list[ListenerEntry]) -> bool",
-        "hears(self, entry: ListenerEntry, event_name: str) -> bool",
+        "is_subscribed(self, entry: ListenerEntry, event_name: str) -> bool",
         "known_positions(self, entries: list[ListenerEntry]) -> dict[str, int]",
         "run_entry(self, entry: ListenerEntry, urgent_entries: list[ListenerEntry], events: list[LoggedEvent]) -> bool",
         "run_urgent_events(self, urgent_entries: list[ListenerEntry], events: list[LoggedEvent]) -> None",
@@ -5925,7 +5944,7 @@
         "is_prepared(self, entry: ListenerEntry, events: list[LoggedEvent], position: int) -> bool",
         "prepare_rows(self, entry: ListenerEntry, events: list[LoggedEvent]) -> None",
         "handle_event(self, entry: ListenerEntry, event: LoggedEvent) -> bool",
-        "hold_when_over_time_limit(self, entry: ListenerEntry, event: LoggedEvent, elapsed: float) -> None"
+        "pause_slow_listener(self, entry: ListenerEntry, event: LoggedEvent, elapsed: float) -> None"
       ]
     },
     "listener.commit.listener_set.ListenerSet": {
@@ -6273,7 +6292,7 @@
         "initial: ClassVar[Sequence[StrEnum]]",
         "editable: ClassVar[Sequence[StrEnum]]",
         "deletable: ClassVar[Sequence[StrEnum]]",
-        "moves_have_commands: ClassVar[bool]"
+        "moves_use_commands: ClassVar[bool]"
       ],
       "methods": [
         "moves(cls) -> tuple[Move, ...]",
@@ -6287,6 +6306,7 @@
       "fields": [
         "model_name: ClassVar[str]",
         "cli_name: ClassVar[str]",
+        "table: ClassVar[str]",
         "lifecycle: ClassVar[type[Lifecycle] | None]",
         "hidden_fields: ClassVar[frozenset[str]]",
         "filter_fields: ClassVar[Sequence[str]]",
@@ -6311,6 +6331,8 @@
         "creation_timestamp(self) -> Timestamp",
         "update_timestamp(self) -> Timestamp",
         "search_text(self) -> str",
+        "search_field_texts(self) -> tuple[str, ...]",
+        "state_text(self) -> str",
         "matching_terms(self, terms: Sequence[str]) -> list[str]",
         "is_saved(self) -> bool",
         "changed(self) -> Self",
@@ -6458,7 +6480,7 @@
       "fields": [
         "key: str",
         "waiting_work: str",
-        "needs_writing: bool"
+        "requires_writing: bool"
       ],
       "methods": [
         "declared(cls) -> 'AskTopic'"
@@ -6564,6 +6586,17 @@
       "fields": [],
       "methods": [
         "import_failed(cls, source: str, error: Exception) -> 'ModuleError'"
+      ]
+    },
+    "module.errors.suite_refusal.SuiteRefusal": {
+      "bases": [],
+      "fields": [
+        "file: str",
+        "line: int",
+        "reason: str"
+      ],
+      "methods": [
+        "text(self) -> str"
       ]
     },
     "module.folder_listing.FolderListing": {
@@ -7059,6 +7092,7 @@
       "methods": [
         "internal_areas(self) -> frozenset[str]",
         "refusals(self, folder: Path) -> tuple[SuiteRefusal, ...]",
+        "is_internal(name: str, internal: Collection[str]) -> bool",
         "imported_names(node: ast.AST) -> tuple[str, ...]"
       ]
     },
@@ -7074,17 +7108,6 @@
         "problems(self) -> tuple[str, ...]",
         "modules_listed_twice(self) -> list[str]",
         "core_modules_listed(self) -> list[str]"
-      ]
-    },
-    "module.suite_refusal.SuiteRefusal": {
-      "bases": [],
-      "fields": [
-        "file: str",
-        "line: int",
-        "reason: str"
-      ],
-      "methods": [
-        "text(self) -> str"
       ]
     },
     "module.sync_notes.SyncNotes": {
@@ -7274,13 +7297,6 @@
         "succeeded(self) -> bool"
       ]
     },
-    "process.door.execution_admission.ExecutionAdmission": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "admitted(self, run: PlacedRun) -> AbstractContextManager[None]"
-      ]
-    },
     "process.door.execution_gate.ExecutionGate": {
       "bases": [],
       "fields": [],
@@ -7304,13 +7320,10 @@
         "text(self) -> str"
       ]
     },
-    "process.door.lane_door.LaneDoor": {
+    "process.door.execution_start_check.ExecutionStartCheck": {
       "bases": [],
       "fields": [],
       "methods": [
-        "shared(home: JournalHome) -> 'LaneDoor'",
-        "install(self, admit: Callable[[PlacedRun], AbstractContextManager[None]]) -> None",
-        "remove(self) -> None",
         "admitted(self, run: PlacedRun) -> AbstractContextManager[None]"
       ]
     },
@@ -7328,6 +7341,16 @@
       "methods": [
         "refuse_hook_wait(self) -> None",
         "failed(self, exit_code: int, reason: str) -> Execution"
+      ]
+    },
+    "process.door.pool_door.PoolDoor": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "shared(home: JournalHome) -> 'PoolDoor'",
+        "install(self, admit: Callable[[PlacedRun], AbstractContextManager[None]]) -> None",
+        "remove(self) -> None",
+        "admitted(self, run: PlacedRun) -> AbstractContextManager[None]"
       ]
     },
     "process.door.process_executor.ProcessExecutor": {
@@ -7958,7 +7981,7 @@
         "compaction_instructions: ClassVar[str]",
         "has_windowed_compaction: ClassVar[bool]",
         "new_capabilities: ClassVar[Sequence[Capability]]",
-        "needs_launch_variables: ClassVar[bool]",
+        "requires_launch_variables: ClassVar[bool]",
         "session_variable: ClassVar[str]",
         "markers: ClassVar[Sequence[str]]",
         "models: ClassVar[Sequence[ProgramModel]]",
@@ -8092,7 +8115,7 @@
         "transport(self) -> str",
         "url(self) -> str",
         "key_variable(self) -> str",
-        "needs_key(self) -> bool",
+        "is_key_required(self) -> bool",
         "is_started(self) -> bool"
       ]
     },
@@ -8173,21 +8196,6 @@
       "methods": [
         "table(self) -> str",
         "sql(self) -> str"
-      ]
-    },
-    "query.conditions.after_row.AfterRow": {
-      "bases": [],
-      "fields": [
-        "column: str",
-        "descending: bool",
-        "value: object",
-        "key: str",
-        "key_value: object",
-        "key_descending: bool"
-      ],
-      "methods": [
-        "statement(self) -> Statement",
-        "after_empty(self, key_after: str) -> Statement"
       ]
     },
     "query.conditions.among.Among": {
@@ -8290,6 +8298,21 @@
       ],
       "methods": [
         "statement(self) -> Statement"
+      ]
+    },
+    "query.conditions.cursor_condition.CursorCondition": {
+      "bases": [],
+      "fields": [
+        "column: str",
+        "descending: bool",
+        "value: object",
+        "key: str",
+        "key_value: object",
+        "key_descending: bool"
+      ],
+      "methods": [
+        "statement(self) -> Statement",
+        "after_empty(self, key_after: str) -> Statement"
       ]
     },
     "query.conditions.disjunction.Disjunction": {
@@ -8857,7 +8880,7 @@
       "fields": [],
       "methods": [
         "with_removed(self) -> Self",
-        "every_environment(self, reason: str) -> Self",
+        "all_environments(self, reason: str) -> Self",
         "find(self, row_id: int) -> M",
         "kept_first(self) -> M | None",
         "kept_exists(self) -> bool",
@@ -9063,7 +9086,7 @@
         "badge: str",
         "draws_head: bool",
         "folds: str",
-        "needs_user: bool",
+        "person_required: bool",
         "word: str",
         "reads_target: bool"
       ],
@@ -9809,13 +9832,6 @@
         "found_agent(self, event: LoggedEvent) -> int | None"
       ]
     },
-    "scope.unscoped_reads.UnscopedReads": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "record(table_name: str) -> None"
-      ]
-    },
     "seed.demo.Demo": {
       "bases": [],
       "fields": [],
@@ -10304,7 +10320,7 @@
         "facts(self, agents: Sequence[AgentReference]) -> Mapping[int, Sequence[Fact]]"
       ]
     },
-    "testing.agent_machine.fake_need_source.FakeNeedSource": {
+    "testing.agent_machine.fake_state_source.FakeStateSource": {
       "bases": [
         "StateSource"
       ],
@@ -10533,7 +10549,7 @@
       "fields": [],
       "methods": [
         "is_full_suite(self) -> bool",
-        "is_full_run(self, name_filter: str, mark_filter: str, deselected: Iterable[str], only_last_failed: bool) -> bool",
+        "is_full_run(self, name_filter: str, mark_filter: str, deselected: Iterable[str], last_failed_selection: bool) -> bool",
         "reaches_stories(self) -> bool",
         "runner_count(self, single_runner_limit: int, runners: int, highest_count_start: int, most_runners: int) -> int",
         "counted(self) -> int",
@@ -10583,7 +10599,7 @@
         "arguments(self, changed: list[str]) -> list[str]",
         "changed_files(self) -> list[str]",
         "reached(self, name: str) -> set[str]",
-        "tests_running_in(self, prefix: str) -> set[str]",
+        "folder_tests(self, prefix: str) -> set[str]",
         "is_test_file(name: str) -> bool",
         "module_folder(name: str) -> str"
       ]
@@ -10594,7 +10610,7 @@
       "methods": [
         "hashes(source: str) -> dict[str, str]",
         "file_hashes(path: Path) -> dict[str, str]",
-        "walk(nodes: list[ast.stmt], prefix: str, found: dict[str, str]) -> None"
+        "walk(nodes: list[ast.stmt], prefix: str, bodies: dict[str, str]) -> None"
       ]
     },
     "testing.selection.selection_misses.SelectionMisses": {
@@ -10663,7 +10679,7 @@
       "bases": [],
       "fields": [],
       "methods": [
-        "holds(self, story_file: Path) -> bool"
+        "lists(self, story_file: Path) -> bool"
       ]
     },
     "testing.stories.kit_rows.KitRows": {
@@ -10723,7 +10739,7 @@
         "step(self, name: str) -> object",
         "run_tick_handler(self, label: str) -> None",
         "run_ticker_round(self) -> None",
-        "expect_agent_line_in_time(self, agent_id: int, text: str, limit_seconds: float) -> None",
+        "expect_agent_line_shown(self, agent_id: int, text: str, limit_seconds: float) -> None",
         "tick(self, session: str) -> HookReply",
         "busy_database(self) -> Generator[None]",
         "run_tick(self, name: str) -> None",
@@ -10947,6 +10963,7 @@
         "current_variant(self, name: str) -> Path | None",
         "build_variant(self, name: str, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Path",
         "drop_unused_variants(self, variants: list[Path]) -> None",
+        "is_unused(variant: Path) -> bool",
         "usable_folder(self, folder: Path, name: str) -> Path",
         "template_key(modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> list[object]",
         "locked(path: Path) -> Generator[None]",
@@ -10961,7 +10978,7 @@
       "fields": [],
       "methods": [
         "recording(self) -> Generator[None]",
-        "note_call(self, frame: FrameType, event: str, argument: object) -> None",
+        "note_call(self, stack_entry: FrameType, event: str, argument: object) -> None",
         "hashes(self) -> dict[str, str]",
         "write(self, folder: Path, inherited: Path | None) -> None",
         "read(folder: Path) -> dict[str, str]",
@@ -11069,7 +11086,7 @@
       "fields": [],
       "methods": [
         "timestamp(self) -> Timestamp",
-        "epoch_seconds(self) -> float",
+        "unix_seconds(self) -> float",
         "sleep(self, seconds: float) -> None",
         "join(self, thread: threading.Thread, limit_seconds: float | None) -> None",
         "poll(self, has_happened: Callable[[], bool], limit_seconds: float, pause_seconds: float) -> bool"
@@ -11102,6 +11119,16 @@
       ],
       "methods": [
         "poll(self, condition: Callable[[], bool]) -> bool"
+      ]
+    },
+    "time.thread_turn_count.ThreadTurnCount": {
+      "bases": [
+        "threading.local"
+      ],
+      "fields": [],
+      "methods": [
+        "has_turn(self) -> bool",
+        "refuse_wait(self, subject: str) -> None"
       ]
     },
     "time.time_area.TimeArea": {

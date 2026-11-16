@@ -217,5 +217,5 @@ def test_the_session_end_entry_is_five_seconds_for_claude(tmp_path, monkeypatch)
 
 def test_the_prompt_entry_follows_the_measured_limit(tmp_path, monkeypatch):
     # report 1468: an explicit timeout on UserPromptSubmit is honoured, the 30 seconds are only its default
-    monkeypatch.setattr(SampleProgram, "hook_events", {**SampleProgram.hook_events, "Ask": HookEventName.PROMPT})
-    assert ProgramHooks.journal(SampleProgram, tmp_path / "hooks.json").entry_timeout("Ask", []) == 90
+    monkeypatch.setattr(SampleProgram, "hook_events", {**SampleProgram.hook_events, "HelperQuestion": HookEventName.PROMPT})
+    assert ProgramHooks.journal(SampleProgram, tmp_path / "hooks.json").entry_timeout("HelperQuestion", []) == 90

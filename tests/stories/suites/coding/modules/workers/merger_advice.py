@@ -77,11 +77,11 @@ class AdvisedWorker:
     def visit(self) -> None:
         self.story.expect_success("merger next", actor=self.merger)
 
-    def ask(self, number: int) -> LineOutcome:
+    def helper_question(self, number: int) -> LineOutcome:
         return self.story.run(f'worker ask "Question {number}"', actor=self.worker)
 
     def post_questions(self, number: int) -> None:
-        outcome = self.ask(number)
+        outcome = self.helper_question(number)
         assert outcome.code == 0, outcome.output_text
 
     def worked_on(self) -> None:
@@ -292,9 +292,9 @@ def test_the_asks_count_starts_again_after_the_merge(merged_after_five_asks):
 def test_a_sixth_ask_between_two_commits_goes_to_the_main_agent_and_the_first_after_the_next_commit_to_the_merger(planned):
     worker, advised = planned
     advised.with_five_asks()
-    sixth = advised.ask(6)
+    sixth = advised.helper_question(6)
     worker.story.run("task start 2", actor=worker.worker)
     committed = worker.prove_commit()
-    seventh = advised.ask(7)
+    seventh = advised.helper_question(7)
     advised.story.expect_rows(sixth.code == 0, MAIN_AGENT_HAS_IT in sixth.output_text, committed.code == 0, seventh.code == 0, MERGER_HAS_IT in seventh.output_text,
                               detail=f"{sixth.output_text} | {committed.output_text} | {seventh.output_text}")

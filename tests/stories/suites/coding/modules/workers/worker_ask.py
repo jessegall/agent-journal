@@ -44,12 +44,12 @@ class AskingWorker:
     def session(self) -> str:
         return worker_session(self.story, self.worker)
 
-    def ask(self, text: str = QUESTION, topic: AskTopic | None = None) -> LineOutcome:
+    def helper_question(self, text: str = QUESTION, topic: AskTopic | None = None) -> LineOutcome:
         flag = "" if topic is None else f" --about {topic}"
         return self.story.run(f'worker ask "{text}"{flag}', actor=self.worker)
 
     def post_question(self, text: str = QUESTION, topic: AskTopic | None = None) -> LineOutcome:
-        outcome = self.ask(text, topic)
+        outcome = self.helper_question(text, topic)
         assert outcome.code == 0, outcome.output_text
         return outcome
 

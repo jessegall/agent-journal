@@ -13,6 +13,7 @@ from core.modules.asks.guards.ask_stack_approval_guard import AskStackApprovalGu
 from core.modules.asks.guards.question_times_guard import QuestionTimesGuard
 from core.modules.asks.migrations.m003_ask_setting_keys import AskSettingKeysMigration
 from core.modules.asks.migrations.m004_environment_indexes import AsksEnvironmentIndexesMigration
+from core.modules.asks.migrations.m005_plain_field_names import AsksPlainFieldNamesMigration
 from core.modules.asks.support.ask_settings import QUESTION_SETTINGS
 from core.modules.asks.listeners.ask_stack_listener import AskStackListener
 from core.modules.asks.support.helper_ask_facts import HelperAskFacts
@@ -27,7 +28,7 @@ class AsksModule(Module):
     requires_engine = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings", "journal.core.tasks"]
     models = [AskModelDeclaration, AskStepModelDeclaration, AskStackModelDeclaration]
-    migrations = [AsksTablesMigration, AskStacksTableMigration, AskSettingKeysMigration, AsksEnvironmentIndexesMigration]
+    migrations = [AsksTablesMigration, AskStacksTableMigration, AskSettingKeysMigration, AsksEnvironmentIndexesMigration, AsksPlainFieldNamesMigration]
     settings = QUESTION_SETTINGS
     helper_question_topics = [GeneralAskTopic]
     move_reason = "version 4 had no questions a helper asks its parent"

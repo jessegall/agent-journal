@@ -120,7 +120,7 @@ class PluginProgram:
             return None
         try:
             with self.waits.locked(path):
-                return PluginAnswer.parsed(service_socket.ask(line, limit_ms))
+                return PluginAnswer.parsed(service_socket.helper_question(line, limit_ms))
         except (ConnectionError, FileNotFoundError):
             return None
         except json.JSONDecodeError:

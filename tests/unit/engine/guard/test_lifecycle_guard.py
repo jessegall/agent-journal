@@ -91,5 +91,5 @@ def test_the_lifecycle_guard_can_be_neither_skipped_nor_switched_off():
     registry = Registry("abc", {}, {}, {}, [GuardEntry("core.lifecycle", EventPattern("*"), DottedPath.class_path(LifecycleGuard), 1, "")], ())
     guards = Guards(registry, Container(), AllOff())
     with pytest.raises(GuardRefusal) as raised:
-        guards.ask(read_change(CLOSED, None, frozenset({"core.lifecycle"})))
+        guards.helper_question(read_change(CLOSED, None, frozenset({"core.lifecycle"})))
     assert raised.value.text == "refused by core.lifecycle: item 4 is closed, so it cannot be deleted: closed is final"

@@ -37,7 +37,7 @@ class AskStackListener(CommitListener[Changed[AskStack]]):
     def update_request(self, stack: AskStack, logged: LoggedEvent) -> None:
         arguments = ("ask-stack", "approve", str(stack.id))
         actor = self.actors.actor(MODULE_NAME)
-        if stack.needs_approval and stack.ended_at is None:
+        if stack.requires_approval and stack.ended_at is None:
             approval = UserApprovalRefusal(f"Use the question stack {stack.id} for {stack.topic}?", arguments, source_version=stack.version, request_reason=stack.levels_json)
             self.bus.run(RequestUserApproval(approval, arguments, stack.creator_id), actor, cause_id=logged.id, environment_id=stack.environment_id)
             return

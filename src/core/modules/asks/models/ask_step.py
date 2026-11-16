@@ -15,7 +15,7 @@ class AskStep(EnvironmentScoped, Model):
     cli_name = "ask-step"
 
     environment_id: int = 0
-    ask_id: int
+    helper_question_id: int
     profile: str = ""
     helper_id: int | None = None
     job_id: int | None = None
@@ -28,7 +28,7 @@ class AskStep(EnvironmentScoped, Model):
     tried: str = ""
     options_json: str = "[]"
     recommendation: str = ""
-    passed_by_journal: bool = False
+    journal_passed: bool = False
 
     def ended_as(self, state: AskStepState, reason: str) -> "AskStep":
         return replace(self, state=state, reason=reason)

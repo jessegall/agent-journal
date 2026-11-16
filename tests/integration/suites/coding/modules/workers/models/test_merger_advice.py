@@ -68,11 +68,11 @@ class AdvisedWorker:
     def visit(self) -> None:
         self.story.expect_success("merger next", actor=self.merger)
 
-    def ask(self, number: int) -> LineOutcome:
+    def helper_question(self, number: int) -> LineOutcome:
         return self.story.run(f'worker ask "Question {number}"', actor=self.worker)
 
     def post_questions(self, number: int) -> None:
-        outcome = self.ask(number)
+        outcome = self.helper_question(number)
         assert outcome.code == 0, outcome.output_text
 
     def worked_on(self) -> None:

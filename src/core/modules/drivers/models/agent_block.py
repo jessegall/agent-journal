@@ -58,8 +58,6 @@ class AgentBlock(ClosedPrunable, Model):
     ends: tuple[str, ...] = ()
     closer_roles: tuple[str, ...] = ()
     expires_at: Timestamp | None = None
-    judgement: str = ""
-    judgement_reason: str = ""
     escalation_id: int | None = None
     opener: str = ""
     opening_event_id: str = ""

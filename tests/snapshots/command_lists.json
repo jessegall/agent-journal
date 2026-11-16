@@ -269,16 +269,6 @@
   "merger": "allowed",
   "worker": "refused"
  },
- "agent-frame-suppression list": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "agent-frame-suppression show": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
  "agent-launch list": {
   "helper": "allowed",
   "merger": "allowed",
@@ -1174,16 +1164,6 @@
   "merger": "allowed",
   "worker": "refused"
  },
- "driver-epoch list": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "driver-epoch show": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
  "driver-grant list": {
   "helper": "allowed",
   "merger": "allowed",
@@ -1200,6 +1180,16 @@
   "worker": "refused"
  },
  "driver-table show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver-version list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "driver-version show": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"
@@ -1460,6 +1450,16 @@
   "worker": "refused"
  },
  "helper-profile-screen show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "hidden-state list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "hidden-state show": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"
@@ -2769,12 +2769,12 @@
   "merger": "allowed",
   "worker": "refused"
  },
- "program-epoch list": {
+ "program-version list": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"
  },
- "program-epoch show": {
+ "program-version show": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"

@@ -23,7 +23,7 @@ class RefusalSkip(Model):
     confirmed_at: Timestamp | None = None
     cancelled_at: Timestamp | None = None
     tried: str = ""
-    needs_approval: bool = False
+    requires_approval: bool = False
     approved_at: Timestamp | None = None
 
     @property

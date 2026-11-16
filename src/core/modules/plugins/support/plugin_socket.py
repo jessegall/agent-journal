@@ -17,7 +17,7 @@ class PluginSocket:
     def is_open(self) -> bool:
         return self.path.is_socket()
 
-    def ask(self, line: str, limit_ms: int | None) -> str:
+    def helper_question(self, line: str, limit_ms: int | None) -> str:
         deadline = None if limit_ms is None else time.monotonic() + limit_ms / 1000
         connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         try:

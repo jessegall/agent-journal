@@ -9,7 +9,7 @@ from core.modules.asks.models.enums.ask_outcome import AskOutcome
 
 
 @dataclass(frozen=True, kw_only=True)
-class Ask(EnvironmentScoped, Model):
+class HelperQuestion(EnvironmentScoped, Model):
     """A question a helper asked its parent: its topic and text, the stack of levels it goes up, the level it is
     at, and how it ended."""
 
@@ -29,7 +29,7 @@ class Ask(EnvironmentScoped, Model):
     level_index: int = 0
     outcome: AskOutcome | None = None
     closed_at: Timestamp | None = None
-    parent_ask_id: int | None = None
+    parent_question_id: int | None = None
     group_key: str = ""
 
     @property

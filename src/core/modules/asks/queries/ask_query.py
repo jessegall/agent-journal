@@ -5,25 +5,25 @@ from engine.query.conditions.is_null import IsNull
 from engine.query.conditions.less import Less
 from engine.query.query import Query
 from engine.time.timestamp import Timestamp
-from core.modules.asks.models.ask import Ask
+from core.modules.asks.models.helper_question import HelperQuestion
 from core.modules.asks.models.ask_step import AskStep
 from core.modules.asks.models.enums.ask_step_state import AskStepState
 
 OPEN_STEP_STATES = (AskStepState.WAITING, AskStepState.DELIVERED)
 
 
-class AskQuery(Query[Ask]):
+class AskQuery(Query[HelperQuestion]):
     """Reads questions and their steps: an asker's open questions, the steps of one question, and the open steps
     at a level or past their time."""
 
     def __init__(self, database: Database, tables: Tables) -> None:
-        super().__init__(database, tables, Ask)
+        super().__init__(database, tables, HelperQuestion)
 
-    def asker_open_asks(self, asker_id: int) -> list[Ask]:
+    def asker_open_asks(self, asker_id: int) -> list[HelperQuestion]:
         return self.filter(asker_id=asker_id).matching(IsNull("closed_at")).oldest().get()
 
     def steps(self, question_id: int) -> list[AskStep]:
-        return self.step_rows().filter(ask_id=question_id).oldest().get()
+        return self.step_rows().filter(helper_question_id=question_id).oldest().get()
 
     def level_open_steps(self, profile: str) -> list[AskStep]:
         return self.open_steps().filter(profile=profile).oldest().get()

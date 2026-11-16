@@ -50,7 +50,7 @@ class Repository:
         change = Change(stored, model, context)
         if change.is_empty and not (stores_metadata and change.has_metadata_change) and change.old_row is not None:
             return change.old_row
-        skipped = self.guards.ask(change)
+        skipped = self.guards.helper_question(change)
         saved = self.persist(model, change)
         self.event_rows.remember(saved)
         saved_change = replace(change, new_row=replace(saved, move=model.move))
@@ -76,14 +76,14 @@ class Repository:
         if any(type(model) is not type(models[0]) for model in models):
             raise ValueError("delete_many_stored needs rows of the same model")
         changes = [Change(model, None, context) for model in models]
-        skipped = [self.guards.ask(change) for change in changes]
+        skipped = [self.guards.helper_question(change) for change in changes]
         self.listeners.run_deletion_listeners_many(changes)
         for model, change, skipped_guards in zip(models, changes, skipped, strict=True):
             self.remove_stored(model, change, skipped_guards)
 
     def delete_change(self, stored: Model | None, model: Model, context: Context) -> None:
         change: Change[Model] = Change(stored, None, context)
-        skipped = self.guards.ask(change)
+        skipped = self.guards.helper_question(change)
         self.listeners.run_deletion_listeners(change)
         self.remove_stored(model, change, skipped)
 

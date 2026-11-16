@@ -32,7 +32,7 @@ def test_an_answer_sent_a_byte_at_a_time_ends_at_the_window(tmp_path: Path) -> N
     thread.start()
     try:
         with pytest.raises(PluginLateError):
-            PluginSocket(path).ask('{"v": 1}', LIMIT_MS)
+            PluginSocket(path).helper_question('{"v": 1}', LIMIT_MS)
     finally:
         finished.set()
         path.unlink(missing_ok=True)

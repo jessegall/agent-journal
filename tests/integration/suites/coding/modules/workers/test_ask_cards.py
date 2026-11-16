@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from suites.coding.modules.workers.ticks.ask_watch import AskWatch
 from tests.stories.core.support.agent_labels import agent_number
-from tests.integration.suites.coding.modules.workers.test_ask_ledger import ask
+from tests.integration.suites.coding.modules.workers.test_ask_ledger import helper_question
 from tests.stories.suites.coding.modules.workers.ask_pass_on import MERGER_QUESTION_LINE
 from tests.stories.suites.coding.modules.workers.merger_cases import case  # noqa: F401
 
@@ -12,7 +12,7 @@ JOURNAL_CARD = "The journal passes on a stuck worker"
 
 
 def test_152_a_question_the_merger_passes_on_shows_as_the_card_of_the_merger(case):
-    ask(case)
+    helper_question(case)
     case.story.expect_success("merger next", actor=case.merger)
     case.story.expect_success(f"{MERGER_QUESTION_LINE} --worker {agent_number(case.story, case.worker.id)}", actor=case.merger)
     case.story.run_listeners()
@@ -21,7 +21,7 @@ def test_152_a_question_the_merger_passes_on_shows_as_the_card_of_the_merger(cas
 
 
 def test_152_a_question_the_journal_passes_on_itself_shows_as_the_card_of_the_journal(case):
-    ask(case)
+    helper_question(case)
     case.story.advance(timedelta(minutes=31))
     AskWatch()(case.story.container)
     case.story.run_listeners()

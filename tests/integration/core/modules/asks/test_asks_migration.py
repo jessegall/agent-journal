@@ -42,7 +42,7 @@ def test_one_open_stack_per_topic_index(tmp_path):
     database = migrated(tmp_path)
     # the environments and actors tables belong to other modules, which this test does not migrate
     database.update(Statement("PRAGMA foreign_keys = OFF"))
-    insert = "INSERT INTO ask_stacks (environment_id, creator_id, topic, needs_approval, created_at, updated_at) VALUES (1, 1, 'general', {waiting}, '2026-11-14', '2026-11-14')"
+    insert = "INSERT INTO ask_stacks (environment_id, creator_id, topic, requires_approval, created_at, updated_at) VALUES (1, 1, 'general', {waiting}, '2026-11-14', '2026-11-14')"
     database.update(Statement(insert.format(waiting=0)))
     database.update(Statement(insert.format(waiting=1)))
     with pytest.raises(sqlite3.IntegrityError):

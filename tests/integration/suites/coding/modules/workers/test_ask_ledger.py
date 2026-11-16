@@ -43,7 +43,7 @@ def waits_of(story, worker: Actor) -> tuple[Wait, ...]:
     return tuple(story.story_rows(Wait, session_agent_id=worker.id))
 
 
-def ask(case: MergerCase, text: str = QUESTION, topic: AskTopic = AskTopic.TOOL):
+def helper_question(case: MergerCase, text: str = QUESTION, topic: AskTopic = AskTopic.TOOL):
     outcome = case.story.run(f'worker ask "{text}" --about {topic}', actor=case.worker)
     assert outcome.code == 0, outcome.output_text
     return outcome
@@ -77,8 +77,8 @@ def test_with_the_merger_off_the_ask_reaches_the_main_agent_once_and_is_recorded
 
 
 def test_two_asks_while_the_merger_runs_are_read_in_one_visit_of_one_merger_and_both_answered_in_it(case):
-    ask(case)
-    ask(case, SECOND_QUESTION, AskTopic.TESTS)
+    helper_question(case)
+    helper_question(case, SECOND_QUESTION, AskTopic.TESTS)
     case.story.run_listeners()
     case.story.expect_text("merger next", QUESTION, SECOND_QUESTION, actor=case.merger)
     mergers = case.story.run("agent list --json --environment main", actor=case.story.agent).output_text.count(f'"profile": "{MERGER_PROFILE.name}"')
@@ -91,7 +91,7 @@ def test_two_asks_while_the_merger_runs_are_read_in_one_visit_of_one_merger_and_
 
 
 def test_a_merger_that_read_an_ask_and_did_nothing_gets_it_again_and_after_the_second_reading_it_is_forwarded_at_once(case):
-    ask(case)
+    helper_question(case)
     end_unanswered_visit(case)
     first = questions(case.story)[0]
     case.story.expect_rows(first.read_at is None, first.visit_count == 1, first.outcome is None, detail=str(first))
@@ -104,7 +104,7 @@ def test_a_merger_that_read_an_ask_and_did_nothing_gets_it_again_and_after_the_s
 
 
 def test_the_mergers_answer_reaches_the_worker_ends_its_wait_and_a_second_answer_is_refused(case):
-    ask(case)
+    helper_question(case)
     line = questions(case.story)[0]
     case.story.expect_success(f'merger answer {line.id} "{ANSWER}"', f"answer sent to worker {agent_number(case.story, case.worker.id)}", actor=case.merger)
     answered = questions(case.story)[0]
@@ -119,7 +119,7 @@ def test_only_a_line_that_is_a_workers_question_can_be_answered(case):
 
 
 def test_a_worker_that_asks_then_stops_then_works_again_keeps_its_ask_and_still_gets_the_answer(case):
-    ask(case)
+    helper_question(case)
     case.story.expect_hook_allowed(worker_session(case.story, case.worker), HookSamples.stop())
     case.story.run_listeners()
     line = questions(case.story)[0]
@@ -131,7 +131,7 @@ def test_a_worker_that_asks_then_stops_then_works_again_keeps_its_ask_and_still_
 
 
 def test_an_ask_about_a_cancelled_task_closes_as_moot_with_a_line_in_the_tasks_log(case):
-    ask(case)
+    helper_question(case)
     case.story.expect_success('task cancel 1 --reason "not needed"', actor=case.story.agent)
     case.story.run_listeners()
     line = questions(case.story)[0]
@@ -141,8 +141,8 @@ def test_an_ask_about_a_cancelled_task_closes_as_moot_with_a_line_in_the_tasks_l
 
 
 def test_the_asks_of_a_released_worker_close_as_moot(case):
-    ask(case, SECOND_QUESTION, AskTopic.TESTS)
-    ask(case)
+    helper_question(case, SECOND_QUESTION, AskTopic.TESTS)
+    helper_question(case)
     case.story.expect_success(f'worker release {agent_number(case.story, case.worker.id)} "the worker left"', actor=case.story.agent)
     case.story.run_listeners()
     case.story.expect_rows(all(line.outcome is AskOutcome.MOOT for line in questions(case.story)), detail=str(questions(case.story)))
@@ -154,7 +154,7 @@ def test_an_ask_carries_the_phase_its_checkpoint_test_and_the_unfinished_tasks_w
     case.story.expect_success("phase place 1 --phase 1", actor=case.story.agent)
     case.story.expect_success('task make "Check the totals" --brief "after the cart" --phase 1 --environment main', actor=case.story.agent)
     case.story.expect_success("task depend 2 --on 1", actor=case.story.agent)
-    ask(case)
+    helper_question(case)
     text = questions(case.story)[0].text
     case.story.expect_rows("phase: First, its test: pytest tests/cart" in text, "task 1 (started) waits on nothing" in text, "task 2 (blocked) waits on task 1" in text, detail=text)
 
@@ -170,7 +170,7 @@ def test_a_help_request_is_a_question_like_any_other_with_its_wait_and_its_due_t
 
 
 def test_worker_status_names_the_open_ask_with_its_due_time_and_then_how_it_ended(case):
-    ask(case)
+    helper_question(case)
     line = questions(case.story)[0]
     due = line.due_at.value.strftime(CLOCK_FORMAT)
     case.story.expect_text("worker status", f"ask {line.id} open since", f"answer due {due}, with the merger", actor=case.worker)
@@ -195,7 +195,7 @@ def test_a_person_retiring_a_worker_with_tasks_left_leaves_the_merger_one_line_a
     for number in range(2, 6):
         story.expect_success(f'task make "Job {number}" --brief "Do job {number}" --environment main', actor=story.agent)
         story.expect_success(f"worker send --wait {agent_number(story, case.worker.id)} --task {number}", actor=story.agent)
-    ask(case)
+    helper_question(case)
     story.end_session(case.worker)
     story.expect_success(f'agent retire {agent_number(story, case.worker.id)} --reason "no longer needed"', actor=story.user)
     story.run_listeners()
@@ -205,7 +205,7 @@ def test_a_person_retiring_a_worker_with_tasks_left_leaves_the_merger_one_line_a
 
 
 def test_an_overdue_ask_of_a_worker_whose_worktree_is_gone_closes_as_moot_and_wakes_nobody(case):
-    ask(case)
+    helper_question(case)
     case.story.container.get(Database).update(Statement("UPDATE worker_worktrees SET removed_at = created_at, version = version + 1 WHERE session_agent_id = ?", [case.worker.id]))
     case.story.advance(timedelta(minutes=11))
     merger_lines = case.story.run(f"agent-line list --agent {case.merger.id}").output_text

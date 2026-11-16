@@ -46,7 +46,7 @@ def subscribed_story(new_story, service: FakePush | None = None):
     return story
 
 
-def ask(story) -> None:
+def helper_question(story) -> None:
     story.run('question ask "Which database?" --context "A story asks this so its card and answer can be checked." --environment main', actor=story.agent)
     story.run_listeners()
 

@@ -15,4 +15,4 @@ class ApproveAskStackHandler(Handler[ApproveAskStack, AskStack]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: ApproveAskStack, context: Context) -> AskStack:
-        return self.repository.update(self.queries.query(AskStack).find(command.stack_id), context, needs_approval=False)
+        return self.repository.update(self.queries.query(AskStack).find(command.stack_id), context, requires_approval=False)

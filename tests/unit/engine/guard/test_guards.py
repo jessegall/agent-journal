@@ -75,13 +75,13 @@ def guards(switches: GuardSwitches = GuardSwitches()) -> Guards:
 
 def test_guards_are_asked_in_order_and_the_first_refusal_stops_the_rest():
     with pytest.raises(GuardRefusal) as raised:
-        guards().ask(change())
+        guards().helper_question(change())
     assert GUARD_CALLS == ["core.lifecycle", "items.no-second-item"]
     assert raised.value.text == "refused by items.no-second-item: an item titled Dune is open already: close it first (only if this refusal is wrong for the case in hand, never to get on faster: --confirm --skip-reason '<why it is wrong here>')"
 
 
 def test_a_guard_asked_to_be_skipped_is_passed_over_and_recorded():
-    assert guards().ask(change(frozenset({"items.no-second-item"}))) == frozenset({"items.no-second-item"})
+    assert guards().helper_question(change(frozenset({"items.no-second-item"}))) == frozenset({"items.no-second-item"})
     assert GUARD_CALLS == ["core.lifecycle", "items.after"]
 
 
@@ -90,10 +90,10 @@ def test_a_switched_off_guard_is_passed_over():
         def enabled(self, guard_name: str) -> bool:
             return guard_name != "items.no-second-item"
 
-    guards(switches=Off()).ask(change())
+    guards(switches=Off()).helper_question(change())
     assert GUARD_CALLS == ["core.lifecycle", "items.after"]
 
 def test_a_guard_whose_event_does_not_match_is_never_imported():
     sys.modules.pop("tests.unit.engine.samples.unused_guard_sample", None)
-    guards().ask(change(frozenset({"items.no-second-item"})))
+    guards().helper_question(change(frozenset({"items.no-second-item"})))
     assert "tests.unit.engine.samples.unused_guard_sample" not in sys.modules

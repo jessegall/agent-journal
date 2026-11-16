@@ -20,7 +20,7 @@ class Guards:
     def __init__(self, registry: Registry, container: Container, switches: GuardSwitches) -> None:
         self.registry, self.container, self.switches = registry, container, switches
 
-    def ask(self, change: Change[Model]) -> frozenset[str]:
+    def helper_question(self, change: Change[Model]) -> frozenset[str]:
         explanation = change.context.explanation
         if explanation is not None:
             listeners = [entry.name for timing in ListenerTiming for entry in self.registry.event_listeners(change.event, timing)]

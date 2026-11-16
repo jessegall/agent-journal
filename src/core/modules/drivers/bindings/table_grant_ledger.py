@@ -43,7 +43,7 @@ class TableGrantLedger(GrantLedger):
         skips = self.queries.query(RefusalSkip).matching(Among("session_agent_id", agent_ids)).filter(used_at=None, cancelled_at=None).every_row(GRANTS_REASON)
         permissions = self.queries.query(PermissionRequest).matching(Among("asker_id", agent_ids)).filter(state=PermissionState.ALLOWED).every_row(GRANTS_REASON)
         granted = self.queries.query(DriverGrant).matching(Among("session_agent_id", agent_ids)).matching(Among("grant_state", USABLE_STATES)).every_row(GRANTS_REASON)
-        grants = [*(self.skip_grant(skip, environments[skip.session_agent_id]) for skip in skips if skip.confirmed_at is not None and (not skip.needs_approval or skip.approved_at is not None)),
+        grants = [*(self.skip_grant(skip, environments[skip.session_agent_id]) for skip in skips if skip.confirmed_at is not None and (not skip.requires_approval or skip.approved_at is not None)),
                   *(self.permission_grant(permission) for permission in permissions), *(self.driver_grant(row) for row in granted)]
         return {agent_id: [grant for grant in grants if grant.agent_id == agent_id] for agent_id in agent_ids}
 

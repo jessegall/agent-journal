@@ -10,6 +10,5 @@ class BlockHold(TypedDict):
     ends: object
     waived_by: object
     closed_reason: object
-    judgement: object
     escalation_id: object
     stop_deferred: bool

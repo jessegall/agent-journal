@@ -11,4 +11,4 @@ class AskPermission(Command[PermissionRequest]):
 
     action: str
     reason: str
-    needs_person: bool = False
+    requires_person: bool = False

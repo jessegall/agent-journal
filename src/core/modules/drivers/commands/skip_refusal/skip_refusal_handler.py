@@ -67,7 +67,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, RefusalSkip]):
         return skip
 
     def confirmed_skip_used(self, actor: Actor, name: str, context: Context) -> RefusalSkip:
-        skip = self.queries.query(RefusalSkip).filter(session_agent_id=actor.id, name=name, used_at=None, cancelled_at=None, needs_approval=False).matching(HasValue("confirmed_at")).newest().first()
+        skip = self.queries.query(RefusalSkip).filter(session_agent_id=actor.id, name=name, used_at=None, cancelled_at=None, requires_approval=False).matching(HasValue("confirmed_at")).newest().first()
         if skip is None:
             raise Refusal(f"{name} has no confirmed skip of yours: a skip is held until you confirm it with what you tried",
                           f"journal refusal skip {name} --reason '<why it is wrong here>', then confirm it")

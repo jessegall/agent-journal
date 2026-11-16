@@ -21,7 +21,7 @@ class AskStack(EnvironmentScoped, Model):
     creator_id: int
     topic: str
     levels_json: str = "[]"
-    needs_approval: bool = False
+    requires_approval: bool = False
     ended_at: Timestamp | None = None
 
     def __post_init__(self) -> None:

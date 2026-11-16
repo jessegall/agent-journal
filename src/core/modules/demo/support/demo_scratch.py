@@ -67,15 +67,15 @@ class DemoScratch:
         if server.poll() is not None:
             raise Refusal("the demo's server stopped as it started", "start it again")
         try:
-            ports.append(int(str(self.ask("GET", "/health")["viewer_port"])))
+            ports.append(int(str(self.helper_question("GET", "/health")["viewer_port"])))
         except (OSError, KeyError, ValueError):
             return False
         return True
 
     def login_key(self) -> str:
-        return str(self.ask("POST", "/viewer/key", {"variables": {"USER": PERSON}, "folder": str(self.folder)})["key"])
+        return str(self.helper_question("POST", "/viewer/key", {"variables": {"USER": PERSON}, "folder": str(self.folder)})["key"])
 
-    def ask(self, method: str, path: str, body: dict[str, object] | None = None) -> dict[str, object]:
+    def helper_question(self, method: str, path: str, body: dict[str, object] | None = None) -> dict[str, object]:
         connection = UnixConnection(str(self.home.socket("server")), REQUEST_SECONDS, "localhost")
         try:
             connection.request(method, path, json.dumps(body) if body is not None else None, {"Content-Type": "application/json"})
