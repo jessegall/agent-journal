@@ -11,7 +11,8 @@ from core.modules.messages.support.message_targets import MessageTargets
 
 
 class WaitingMessageListener(CommitListener[Created[Message]]):
-    """A message the user writes while the main agent sits idle wakes it, also while the agent is paused."""
+    """A message the user writes to the main agent is typed into its terminal at once while it sits idle, paused
+    or not, and an agent at work gets it from its next hook; a paused helper is typed to the same way."""
 
     name = "messages.idle-message"
     run_order = -2
@@ -23,7 +24,5 @@ class WaitingMessageListener(CommitListener[Created[Message]]):
         if logged.environment_id is None or event.row.type not in PERSON_MESSAGE_TYPES:
             return
         agent = self.targets.recipient(event.row)
-        # the message step and the one wake owner wake an agent, but never a paused one; a person's message is still
-        # typed to a paused one, since a pause stops its work and not the chat
-        if agent is not None and agent.paused_at is not None:
+        if agent is not None and (agent.is_main or agent.paused_at is not None):
             self.bus.run(RecordWaitingMessageLine(agent.id), Actor(logged.actor_id, ActorType.USER))
