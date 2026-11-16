@@ -1,3 +1,4 @@
+from engine.database.actor_table import ActorTable
 import getpass
 
 from engine.actor.actor import CORE_ACTOR_ID
@@ -29,9 +30,9 @@ class ActorsMove(VersionFourMove):
         users = list(source.rows(TABLE))
         for row in users:
             report.count(TABLE, map.transfer(TABLE, row["id"], "actors", lambda: rows.insert("actors", {
-                "creator_id": CORE_ACTOR_ID, "type": ActorType.USER.value, "name": row["name"], "created_at": row["created_at"] or context.timestamp,
+                "id": ActorTable(target).next_other_actor_id(), "creator_id": CORE_ACTOR_ID, "type": ActorType.USER.value, "name": row["name"], "created_at": row["created_at"] or context.timestamp,
                 "updated_at": row["updated_at"] or row["created_at"] or context.timestamp})))
         if not users and source.count(SIGNED_TABLE):
             report.count(TABLE, map.transfer(TABLE, FIRST_USER_ID, "actors", lambda: rows.insert("actors", {
-                "creator_id": CORE_ACTOR_ID, "type": ActorType.USER.value, "name": getpass.getuser(), "created_at": context.timestamp, "updated_at": context.timestamp})))
+                "id": ActorTable(target).next_other_actor_id(), "creator_id": CORE_ACTOR_ID, "type": ActorType.USER.value, "name": getpass.getuser(), "created_at": context.timestamp, "updated_at": context.timestamp})))
         return report
