@@ -125,10 +125,10 @@ def test_raised_ticket_still_counts_as_first_priority():
 
 
 def test_reserved_past_wait_takes_next_room():
-    overdue = replace(ticket(RESERVED, starter=starter(2), entered_second=5), raised_at=seconds_after_start(0))
+    late = replace(ticket(RESERVED, starter=starter(2), entered_second=5), raised_at=seconds_after_start(0))
     new = ticket(RESERVED, starter=starter(3), entered_second=3)
     full = [ticket(AGENT, starter=starter(10 + number)) for number in range(11)]
-    assert ORDER.starting([new, overdue], full, seconds_after_start(4), False) == (overdue,)
+    assert ORDER.starting([new, late], full, seconds_after_start(4), False) == (late,)
 
 
 def test_starter_cap_holds_while_other_starter_starts():
@@ -186,7 +186,7 @@ def test_a_starter_with_nothing_running_starts_a_run_costing_more_than_its_cap()
 
 
 def test_a_run_that_costs_more_than_its_narrowed_lane_starts_alone_and_waits_beside_another():
-    narrowed = ExecutionOrder(DEFAULT_POOL_LIMITS.with_capacities({**DEFAULT_POOL_LIMITS.capacities, ExecutionLength.LONG: 4}))
+    limited = ExecutionOrder(DEFAULT_POOL_LIMITS.with_capacities({**DEFAULT_POOL_LIMITS.capacities, ExecutionLength.LONG: 4}))
     full_run, test_run = ticket(AGENT, ExecutionLength.LONG, slot_cost=8), ticket(AGENT, ExecutionLength.LONG, slot_cost=4)
-    assert list(narrowed.starting([full_run], [], CHECK_TIME, False)) == [full_run]
-    assert list(narrowed.starting([full_run], [test_run], CHECK_TIME, False)) == []
+    assert list(limited.starting([full_run], [], CHECK_TIME, False)) == [full_run]
+    assert list(limited.starting([full_run], [test_run], CHECK_TIME, False)) == []

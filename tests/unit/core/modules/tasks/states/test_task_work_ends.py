@@ -7,8 +7,8 @@ from core.modules.tasks.states.task_work_states import TaskWorkStates
 
 
 def ends(*tasks: SimpleNamespace):
-    named = SimpleNamespace(listed_tasks=lambda task_ids: tuple(tasks))
-    return TaskWorkStates(None, None, None, None, None, None, named).ends([RowReference("task", task.id) for task in tasks])
+    listed = SimpleNamespace(listed_tasks=lambda task_ids: tuple(tasks))
+    return TaskWorkStates(None, None, None, None, None, None, listed).ends([RowReference("task", task.id) for task in tasks])
 
 
 def test_a_completed_task_ends_its_stacked_state_closed_and_a_cancelled_one_cancelled():

@@ -35,8 +35,8 @@ class OrphanCheck:
         return self.request_values.read(f"processes.orphans:{agent_id}:{event_id}", lambda: event_id, lambda: self.found(agent_id))
 
     def found(self, agent_id: int) -> OrphanedRuns:
-        now = self.clock.timestamp()
-        restarted = self.folder.tick_interval_seconds(agent_id, now) > TICK_INTERVAL_SECONDS
+        current_time = self.clock.timestamp()
+        restarted = self.folder.tick_interval_seconds(agent_id, current_time) > TICK_INTERVAL_SECONDS
         agent_messages: list[AgentMessage] = []
         commands: list[Command[object]] = []
         for process in tuple(self.processes.agent_started(agent_id).running().every_row(RUNNING_RUNS_REASON)):

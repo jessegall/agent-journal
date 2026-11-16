@@ -33,8 +33,8 @@ class CacheKeepalive:
         latest = self.hook_calls.latest_turn_call(agent_id)
         if latest is None or latest.hook != HookEventName.STOP or latest.answer != HookAnswer.ALLOWED:
             return False
-        now = self.clock.timestamp()
-        if not self.queries.query(AgentActivity).find(agent_id).is_inactive(now, minutes * MINUTE_SECONDS):
+        current_time = self.clock.timestamp()
+        if not self.queries.query(AgentActivity).find(agent_id).is_inactive(current_time, minutes * MINUTE_SECONDS):
             return False
         last_wake_at = self.history.last_given(CACHE_KEEPALIVE_KEY, agent_id)
-        return last_wake_at is None or last_wake_at.elapsed_seconds(now) >= RETRY_SECONDS.count
+        return last_wake_at is None or last_wake_at.elapsed_seconds(current_time) >= RETRY_SECONDS.count

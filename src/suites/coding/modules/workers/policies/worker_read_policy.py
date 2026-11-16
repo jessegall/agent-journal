@@ -32,8 +32,8 @@ class WorkerReadPolicy(EventPolicy):
             return None
         readable = (worktree.folder, *SHARED_FOLDERS, *self.providers.provider(event.program).readable_folders())
         # the folder beside the worktree holds the other workers' worktrees, never readable, even inside a shared folder
-        others = Path(worktree.folder).parent
+        remaining = Path(worktree.folder).parent
         paths = [Path(normpath(join(worktree.folder, path))) for path in tool.files]
-        if all(any(path.is_relative_to(folder) for folder in readable) and not (path.is_relative_to(others) and not path.is_relative_to(worktree.folder)) for path in paths):
+        if all(any(path.is_relative_to(folder) for folder in readable) and not (path.is_relative_to(remaining) and not path.is_relative_to(worktree.folder)) for path in paths):
             return None
         return WorkerReadRefusalMessage.declared().agent_message()

@@ -88,9 +88,9 @@ def test_a_test_reader_can_use_steps_and_count_for_progress():
 
 
 def test_a_judgement_reports_its_missing_fields_and_misses():
-    judgement = ReaderCheck(("--title",), ("--summary found nothing",))
-    assert not judgement.is_valid
-    assert judgement.text == "--title, --summary found nothing"
+    outcome = ReaderCheck(("--title",), ("--summary found nothing",))
+    assert not outcome.is_valid
+    assert outcome.text == "--title, --summary found nothing"
     assert ReaderCheck().is_valid
     assert ReaderCheck().text == ""
 
@@ -103,8 +103,8 @@ def test_samples_use_the_newest_matching_kept_parts_up_to_the_limit():
     sampled = reader()
     parts.kept_samples.return_value.take.return_value = tuple(rows)
     folder.sample_text.side_effect = lambda process_id, position: f"done {process_id}\n"
-    judgement = ReaderJudge(ReaderRun(), folder, parts).tested(sampled)
-    assert judgement.output_id == SAMPLE_OUTPUTS + 2
-    assert judgement.missed == ()
+    outcome = ReaderJudge(ReaderRun(), folder, parts).tested(sampled)
+    assert outcome.output_id == SAMPLE_OUTPUTS + 2
+    assert outcome.missed == ()
     parts.kept_samples.assert_called_once()
     assert folder.sample_text.call_count == SAMPLE_OUTPUTS

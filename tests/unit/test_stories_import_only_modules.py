@@ -10,7 +10,7 @@ SERVER_STORIES_RULE = "a story imports only modules, suites and the story kit (u
 
 
 def forbidden_imports(path: Path) -> list[str]:
-    found = []
+    match = []
     for node in ast.walk(ast.parse(path.read_text())):
         if isinstance(node, ast.Import):
             names = [alias.name for alias in node.names]
@@ -18,8 +18,8 @@ def forbidden_imports(path: Path) -> list[str]:
             names = [node.module or ""]
         else:
             continue
-        found += [name for name in names if name.split(".")[0] in FORBIDDEN and not name.startswith(STORY_KIT)]
-    return found
+        match += [name for name in names if name.split(".")[0] in FORBIDDEN and not name.startswith(STORY_KIT)]
+    return match
 
 
 def story_files() -> list[Path]:

@@ -12,5 +12,5 @@ def test_a_row_old_code_wrote_reads_its_scope_from_blocks_stop() -> None:
 
 
 def test_a_row_with_both_scopes_refuses_tools_and_the_stop() -> None:
-    both = block(scope_tools=True, scope_stop=True)
-    assert (both.has_tool_scope, both.has_stop_scope) == (True, True)
+    pair = block(scope_tools=True, scope_stop=True)
+    assert (pair.has_tool_scope, pair.has_stop_scope) == (True, True)

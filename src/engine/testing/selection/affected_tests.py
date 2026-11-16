@@ -47,8 +47,8 @@ class AffectedTests:
         recorded = self.test_map.bodies.get(name)
         if recorded is None:
             return template_tests | self.folder_tests(self.module_folder(name))
-        now = FunctionBodies.file_hashes(self.project / name)
-        changed = {f"{name}::{function}" for function, body in recorded.items() if now.get(function) != body}
+        current_time = FunctionBodies.file_hashes(self.project / name)
+        changed = {f"{name}::{function}" for function, body in recorded.items() if current_time.get(function) != body}
         if not changed:
             return template_tests | self.folder_tests(name)
         return template_tests | {test for test, functions in self.test_map.functions.items() if changed.intersection(functions)}

@@ -13,7 +13,7 @@ class UnitRunnerScheduling(WorkStealingScheduling):
             super().schedule()
             return
         collection = next(iter(self.node2collection.values()))
-        if any(other != collection for other in self.node2collection.values()):
+        if any(second != collection for second in self.node2collection.values()):
             super().schedule()
             return
         self.collection = collection

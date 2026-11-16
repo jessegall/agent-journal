@@ -18,13 +18,13 @@ def paused_after(story, sample):
 
 def test_a_replayed_read_passes_a_pause_since_its_stored_answer(played):
     story = played(ReadTaskBuilder)
-    first, again = paused_after(story, READ)
-    assert not first.refusal and not again.refusal
+    first, repeat = paused_after(story, READ)
+    assert not first.refusal and not repeat.refusal
 
 
 def test_a_replayed_edit_is_refused_by_a_pause_since_and_the_call_records_it(played):
     story = played(ReadTaskBuilder)
-    first, again = paused_after(story, EDIT)
+    first, repeat = paused_after(story, EDIT)
     paused_text = PausedRefusalMessage.declared().agent_message().text
     call = story.container.get(Queries).query(HookCall).every_environment("one test's hook").filter(event_id="replayed-edit").first()
-    assert not first.refusal and again.refusal == paused_text and call is not None and call.repeated_answer == paused_text
+    assert not first.refusal and repeat.refusal == paused_text and call is not None and call.repeated_answer == paused_text

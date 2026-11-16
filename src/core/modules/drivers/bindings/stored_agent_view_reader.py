@@ -146,10 +146,10 @@ class StoredAgentViewReader(AgentViewReader):
     # built on; with no suite chosen, the core driver of that type drives
     def driver(self, agent_type: str) -> type[Driver]:
         drivers = [driver for module in self.finder.modules() for driver in module.agent_drivers]
-        chosen = self.choice.driver(agent_type)
-        named = [driver for driver in drivers if chosen is not None and driver.name == chosen.name]
-        if named:
-            return named[0]
+        selected = self.choice.driver(agent_type)
+        listed = [driver for driver in drivers if selected is not None and driver.name == selected.name]
+        if listed:
+            return listed[0]
         for type_key in self.types.type_keys(agent_type):
             core = [driver for driver in drivers if driver.agent_type == type_key and driver.suite == CORE_SUITE]
             if core:

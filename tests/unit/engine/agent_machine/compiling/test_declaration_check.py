@@ -87,9 +87,9 @@ def test_a_cycle_in_gathering_is_named() -> None:
 
 
 def test_a_driver_gathering_another_suite_is_refused() -> None:
-    other = replace(MAIN, name="research.main", suite="research")
+    second = replace(MAIN, name="research.main", suite="research")
     coding = replace(MAIN, name="coding.main", suite="coding", gathers=("research.main",))
-    assert "coding.main: gathers research.main: a driver gathers a core driver or one of its own suite" in fixes(drivers=(MAIN, other, coding))
+    assert "coding.main: gathers research.main: a driver gathers a core driver or one of its own suite" in fixes(drivers=(MAIN, second, coding))
 
 
 def test_an_agent_type_with_no_driver_and_a_driver_with_no_work_stop_are_refused() -> None:

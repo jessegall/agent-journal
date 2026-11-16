@@ -32,10 +32,10 @@ class BlockConditionCheck:
         judged: dict[tuple[str, str, str], ConditionOutcome] = {}
         outcomes: dict[int, ConditionOutcome] = {}
         for row in rows:
-            asked = (row.condition_name, row.condition_text, row.creation_timestamp().text)
-            if asked not in judged:
-                judged[asked] = self.outcome(row, hook)
-            outcomes[row.id] = judged[asked]
+            requested = (row.condition_name, row.condition_text, row.creation_timestamp().text)
+            if requested not in judged:
+                judged[requested] = self.outcome(row, hook)
+            outcomes[row.id] = judged[requested]
         return outcomes
 
     def outcome(self, row: AgentBlock, hook: AgentHook) -> ConditionOutcome:

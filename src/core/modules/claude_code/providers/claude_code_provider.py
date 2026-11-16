@@ -294,8 +294,8 @@ class ClaudeCodeProvider(Provider):
     def local_environment(self, root: Path) -> Mapping[str, object]:
         path = root / LOCAL_SETTINGS
         local = self.person_settings(KeptBytes.read(path)) if FileAccess.is_file(path) else None
-        env = (local or {}).get("env")
-        return env if isinstance(env, dict) else {}
+        environment = (local or {}).get("env")
+        return environment if isinstance(environment, dict) else {}
 
     @staticmethod
     def person_settings(data: bytes) -> Mapping[str, object] | None:

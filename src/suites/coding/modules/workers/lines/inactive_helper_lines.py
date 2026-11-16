@@ -56,14 +56,14 @@ class InactiveHelperLines(EventLineSource):
         self.processes, self.workers, self.requests, self.types, self.stops, self.clock = processes, workers, requests, types, stops, clock
 
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
-        now = self.clock.timestamp()
+        current_time = self.clock.timestamp()
         last_given_at = self.history.last_given(self.key, agent_id)
-        if last_given_at is not None and last_given_at.elapsed_seconds(now) < self.settings.minutes(INACTIVE_HELPER_MINUTES).count:
+        if last_given_at is not None and last_given_at.elapsed_seconds(current_time) < self.settings.minutes(INACTIVE_HELPER_MINUTES).count:
             return []
         grace = self.settings.minutes(INACTIVE_HELPER_GRACE_MINUTES)
         activities = self.activities.read(event, agent_id)
-        requesters = self.requests.active_requester_ids(now)
-        inactive = [helper for helper in self.helpers(agent_id) if helper.id in activities and helper.id not in requesters and activities[helper.id].is_inactive(now, grace.count)]
+        requesters = self.requests.active_requester_ids(current_time)
+        inactive = [helper for helper in self.helpers(agent_id) if helper.id in activities and helper.id not in requesters and activities[helper.id].is_inactive(current_time, grace.count)]
         unstarted = self.unstarted(agent_id, grace)
         if not inactive and not unstarted:
             return []

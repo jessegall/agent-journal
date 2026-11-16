@@ -5,8 +5,8 @@ from core.modules.drivers.listeners.wake_acknowledgement_listener import WakeAck
 
 
 def test_a_tick_the_server_records_acknowledges_no_wake():
-    asked: list[object] = []
-    queries = SimpleNamespace(query=lambda model: asked.append(model))
+    requested: list[object] = []
+    queries = SimpleNamespace(query=lambda model: requested.append(model))
     listener = WakeAcknowledgementListener(queries, SimpleNamespace())
     listener.handle(SimpleNamespace(row=SimpleNamespace(hook=HookEventName.TICK, session_agent_id=4), old_row=None), SimpleNamespace())
-    assert asked == []
+    assert requested == []

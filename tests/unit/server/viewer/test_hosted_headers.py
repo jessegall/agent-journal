@@ -15,15 +15,15 @@ def test_the_hosted_session_cookie_is_host_prefixed_secure_and_http_only():
 
 
 def test_every_answer_carries_the_common_headers_once_even_when_the_answer_set_one(monkeypatch):
-    sent: list[tuple[str, str]] = []
-    monkeypatch.setattr(BaseHTTPRequestHandler, "send_header", lambda handler, name, value: sent.append((name, value)))
+    delivered: list[tuple[str, str]] = []
+    monkeypatch.setattr(BaseHTTPRequestHandler, "send_header", lambda handler, name, value: delivered.append((name, value)))
     monkeypatch.setattr(BaseHTTPRequestHandler, "end_headers", lambda handler: None)
     handler = object.__new__(ViewerRequestHandler)
     handler.sent_header_names = set()
     handler.viewer = lambda: SimpleNamespace(answer_headers=HostedHeaders(PUBLIC_ORIGIN))
     handler.send_header("X-Content-Type-Options", "nosniff")
     handler.end_headers()
-    names = [name for name, _ in sent]
+    names = [name for name, _ in delivered]
     assert sorted(names) == sorted(HostedHeaders(PUBLIC_ORIGIN).common_headers())
     assert names.count("X-Content-Type-Options") == 1
 

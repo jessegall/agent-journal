@@ -29,15 +29,15 @@ def test_helper_start_finds_a_known_job_among_1200_jobs_reading_at_most_51_rows_
     parent_id, helper = parent_and_helper
     seeded(journal, FinishedHelperJobSeed, JOB_COUNT, session_agent_id=parent_id, helper_id=helper.id)
     limit_reads(journal)
-    known = journal.container.get(HelperReuse).reusable_job(parent_id, SEEDED_PROFILE, "Read src/seeded/file_3.py again")
-    assert known is not None and known.instruction == "Read src/seeded/file_3.py"
+    recorded = journal.container.get(HelperReuse).reusable_job(parent_id, SEEDED_PROFILE, "Read src/seeded/file_3.py again")
+    assert recorded is not None and recorded.instruction == "Read src/seeded/file_3.py"
 
 
 def test_helper_start_still_reuses_a_helper_whose_finished_job_mentions_the_same_path(journal, parent_and_helper):
     parent_id, helper = parent_and_helper
     seeded(journal, FinishedHelperJobSeed, 3, session_agent_id=parent_id, helper_id=helper.id)
-    known = journal.container.get(HelperReuse).reusable_job(parent_id, SEEDED_PROFILE, "Look at src/seeded/file_1.py")
-    assert known is not None and known.helper_id == helper.id
+    recorded = journal.container.get(HelperReuse).reusable_job(parent_id, SEEDED_PROFILE, "Look at src/seeded/file_1.py")
+    assert recorded is not None and recorded.helper_id == helper.id
 
 
 def test_helper_send_asks_for_an_open_job_of_one_helper_and_reads_one_row(journal, parent_and_helper):
@@ -57,6 +57,6 @@ def test_job_costs_use_the_newest_fifty_finished_jobs_and_give_the_same_estimate
     # the costs read jobs by profile alone, so the many jobs may sit under another agent of the same profile
     seeded(journal, FinishedHelperJobSeed, JOB_COUNT, session_agent_id=helper.id, helper_id=helper.id)
     limit_reads(journal)
-    many = journal.container.get(JobCosts).profile_costs(SEEDED_PROFILE)
+    multiple = journal.container.get(JobCosts).profile_costs(SEEDED_PROFILE)
     # on a few jobs the newest fifty are every job, so the estimate is the one the whole read gave; on many it uses fifty
-    assert (few.count(True), many.count(True)) == (3, 50)
+    assert (few.count(True), multiple.count(True)) == (3, 50)

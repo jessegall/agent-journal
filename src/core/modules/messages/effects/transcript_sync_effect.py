@@ -52,11 +52,11 @@ class TranscriptSyncEffect(EventEffect):
         provider = self.providers.provider(event.program)
         agent = self.queries.query(Agent).find(agent_id)
         path = self.session_file(event, agent.environment_id, provider)
-        now = self.clock.timestamp()
-        rows = self.transcripts.read_ready(provider, path, self.settings.seconds(TRANSCRIPT_WAIT_SECONDS).deducted(now)) if path is not None else []
+        current_time = self.clock.timestamp()
+        rows = self.transcripts.read_ready(provider, path, self.settings.seconds(TRANSCRIPT_WAIT_SECONDS).deducted(current_time)) if path is not None else []
         if not rows:
             return []
-        earliest_at = max(self.settings.minutes(TRANSCRIPT_OLDEST_MINUTES).deducted(now), agent.creation_timestamp())
+        earliest_at = max(self.settings.minutes(TRANSCRIPT_OLDEST_MINUTES).deducted(current_time), agent.creation_timestamp())
         return [command for row in rows if row.created_at >= earliest_at for command in self.row_commands(event, agent_id, row)]
 
     def session_file(self, event: HookEvent, environment_id: int, provider: Provider) -> Path | None:

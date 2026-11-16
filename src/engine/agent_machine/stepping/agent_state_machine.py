@@ -76,11 +76,11 @@ class AgentStateMachine:
         if rewrite.changed():
             reasons += self.constraints.reasons(rewrite.final_question(question), view, built.stack)
         rewrite, reasons = self.with_supported_rewrite(rewrite, reasons, view, question)
-        judgement = ReasonTotal.combined(reasons, view.rank_order)
-        decision = self.with_delivery(judgement.decision, question, view, built.stack)
+        outcome = ReasonTotal.combined(reasons, view.rank_order)
+        decision = self.with_delivery(outcome.decision, question, view, built.stack)
         counts = self.counting.after(decision, question, view, built, reasons)
         decision = self.escalated(decision, counts, view)
-        record = self.record(view, question, decision, judgement, rewrite, counts, built.stack, built.moves, reasons)
+        record = self.record(view, question, decision, outcome, rewrite, counts, built.stack, built.moves, reasons)
         if decision.admits() and question.is_action():
             record = replace(record, spent_grants=tuple(self.constraints.spent_grants(rewrite.final_question(question), view)))
         return StepResult(view.read_versions, built.stack, record, record.wake)

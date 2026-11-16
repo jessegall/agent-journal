@@ -52,8 +52,8 @@ def move_lines(folder: Path = STORY_MOVES_FOLDER) -> list[LedgerLine]:
         for number, text in enumerate(file.read_text().splitlines(), 1):
             if not text.strip() or text.lstrip().startswith("#"):
                 continue
-            story, arrow, rest = text.partition(MOVE_ARROW)
-            kind, _, target = rest.strip().partition(" ")
+            story, arrow, remainder = text.partition(MOVE_ARROW)
+            kind, _, target = remainder.strip().partition(" ")
             key, _, difference_target = target.strip().partition(" ") if kind == DIFFERENCE_CATEGORY else ("", "", target)
             assert arrow and kind in MOVE_CATEGORIES and difference_target.strip(), (
                 f"{file.name}:{number} is no ledger line: write '<story> -> unit|integration|repeat|folded <test>' or '<story> -> difference <key> <test>'")

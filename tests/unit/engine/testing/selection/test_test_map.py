@@ -44,12 +44,12 @@ def test_records_a_function_that_ran_and_not_one_that_did_not():
 
 
 def test_body_hash_changes_with_the_body_only():
-    before = FunctionBodies.hashes(SOURCE)
+    previous = FunctionBodies.hashes(SOURCE)
     commented = FunctionBodies.hashes(SOURCE.replace("class Cart:", "# a cart\nclass Cart:"))
     sibling_changed = FunctionBodies.hashes(SOURCE.replace("return 2", "return 5"))
-    assert set(before) == {"Cart.total", "Cart.count", "outer", "outer.<locals>.inner"}
-    assert commented == before
-    assert sibling_changed["Cart.total"] == before["Cart.total"] and sibling_changed["Cart.count"] != before["Cart.count"]
+    assert set(previous) == {"Cart.total", "Cart.count", "outer", "outer.<locals>.inner"}
+    assert commented == previous
+    assert sibling_changed["Cart.total"] == previous["Cart.total"] and sibling_changed["Cart.count"] != previous["Cart.count"]
 
 
 def test_map_is_written_only_on_a_full_run(monkeypatch, tmp_path):

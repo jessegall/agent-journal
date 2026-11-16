@@ -515,8 +515,8 @@ class WorktreeGit:
         present = [(meta.split()[2], path) for meta, _tab, path in records if FileAccess.is_file(Path(folder, path))]
         if not present:
             return
-        found = self.checked(folder, GIT_LIMIT_SECONDS, "hash-object", "--", *(path for _blob, path in present)).stdout.split()
-        for (blob, path), copy in zip(present, found):
+        match = self.checked(folder, GIT_LIMIT_SECONDS, "hash-object", "--", *(path for _blob, path in present)).stdout.split()
+        for (blob, path), copy in zip(present, match):
             if blob == copy or path in INSTRUCTION_FILES:
                 FileAccess.unlink(Path(folder, path))
 

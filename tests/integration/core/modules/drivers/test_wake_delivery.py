@@ -48,8 +48,8 @@ def test_a_wake_tried_as_often_as_allowed_expires_and_its_parent_is_told_once(pl
     wake = written_wake(story, helper.id, attempts=3)
     AgentWakeDelivery()(story.container)
     AgentWakeDelivery()(story.container)
-    told = [line for line in wake_lines(story, helper.parent_id) if "took no turn" in line.text]
-    assert wake_row(story, wake.id).state is WakeState.EXPIRED and len(told) == 1
+    given = [line for line in wake_lines(story, helper.parent_id) if "took no turn" in line.text]
+    assert wake_row(story, wake.id).state is WakeState.EXPIRED and len(given) == 1
 
 
 def test_a_retired_agents_wake_is_cancelled(played):

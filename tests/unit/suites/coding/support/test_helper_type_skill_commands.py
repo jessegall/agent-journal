@@ -44,12 +44,12 @@ def journal_commands() -> set[tuple[str, str]]:
     commands: set[tuple[str, str]] = set()
     for path in SOURCE.rglob("*_subcommand.py"):
         text = path.read_text(errors="ignore")
-        subjects, verbs = CLI_NAME.findall(text), COMMAND_WORD_NAME.findall(text)
-        commands.update((subject, verb) for subject in subjects for verb in verbs)
+        subjects, actions = CLI_NAME.findall(text), COMMAND_WORD_NAME.findall(text)
+        commands.update((subject, action) for subject in subjects for action in actions)
     for path in SOURCE.rglob("*.py"):
         text = path.read_text(errors="ignore")
         if "ModelDeclaration(" in text:
-            commands.update((subject, verb) for subject in CLI_NAME.findall(text) for verb in ALL_SUBCOMMANDS)
+            commands.update((subject, action) for subject in CLI_NAME.findall(text) for action in ALL_SUBCOMMANDS)
     return commands
 
 
@@ -59,15 +59,15 @@ def skill_text(name: str) -> str:
 
 def listed_commands(skills: Sequence[str], profile_text: str, declared: set[tuple[str, str]]) -> set[str]:
     text = "\n".join([profile_text, *(skill_text(name) for name in skills)])
-    return {f"{subject} {verb}" for subject, verb in JOURNAL_LINE.findall(text) if (subject, verb) in declared}
+    return {f"{subject} {action}" for subject, action in JOURNAL_LINE.findall(text) if (subject, action) in declared}
 
 
 def refusing_commands(commands: CommandAllowList, labelled: set[str], is_loading: bool) -> list[str]:
     """The named commands the list neither lists by group or by line nor passes by its class of reading lines."""
     refused = []
     for line in sorted(labelled):
-        subject, verb = line.split(" ")
-        if subject in commands.groups or line in commands.lines or (is_loading and verb in READ_COMMANDS):
+        subject, action = line.split(" ")
+        if subject in commands.groups or line in commands.lines or (is_loading and action in READ_COMMANDS):
             continue
         refused.append(line)
     return refused

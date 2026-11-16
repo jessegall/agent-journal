@@ -19,15 +19,15 @@ class Effect:
 
 
 def test_an_effect_whose_command_is_refused_is_logged_and_the_effects_after_it_still_run():
-    ran: list[str] = []
+    finished: list[str] = []
 
     def dispatch(command: str, context: object) -> str:
         if command == "refused":
             raise Refusal("the row is gone")
-        ran.append(command)
+        finished.append(command)
         return command
 
     writer = StoredStepWriter(SimpleNamespace(), SimpleNamespace(), SimpleNamespace(dispatch=dispatch), SimpleNamespace(savepoint=lambda name: nullcontext()),
                               SimpleNamespace(), SimpleNamespace(), SimpleNamespace(), SimpleNamespace(of=lambda effect, view, record: effect.commands(view, record)), SimpleNamespace(), SimpleNamespace(), SimpleNamespace())
     failures, _ = writer.run_effects([Effect("refused"), Effect("kept")], SimpleNamespace(), SimpleNamespace(), False, SimpleNamespace(nested=lambda command: None))
-    assert ran == ["kept"] and len(failures) == 1 and "the row is gone" in failures[0]
+    assert finished == ["kept"] and len(failures) == 1 and "the row is gone" in failures[0]

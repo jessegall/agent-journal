@@ -25,5 +25,5 @@ class ReaderDemands:
     def reason(self, part: PartSpec, reader: Reader | None, scope: ReaderSampleScope) -> str:
         if reader is None:
             return f"no reader reads {part.command or part.text}"
-        judgement = self.judge.judged_command(reader, part.category, scope)
-        return "" if judgement.is_valid else f"reader {reader.name}: {judgement.text}"
+        outcome = self.judge.judged_command(reader, part.category, scope)
+        return "" if outcome.is_valid else f"reader {reader.name}: {outcome.text}"

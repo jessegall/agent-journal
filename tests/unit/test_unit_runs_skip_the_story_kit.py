@@ -18,5 +18,5 @@ def module_level_imports(path: Path) -> list[str]:
 
 
 def test_the_files_every_run_loads_import_no_story_kit_at_module_level():
-    found = [f"{path.relative_to(ROOT)}: {name}" for path in LOADED_BY_EVERY_RUN for name in module_level_imports(path) if name in STORY_KIT or name.startswith(STORY_FOLDER)]
-    assert found == [], "import the story kit inside the hook or fixture that uses it, so a unit run never loads it"
+    match = [f"{path.relative_to(ROOT)}: {name}" for path in LOADED_BY_EVERY_RUN for name in module_level_imports(path) if name in STORY_KIT or name.startswith(STORY_FOLDER)]
+    assert match == [], "import the story kit inside the hook or fixture that uses it, so a unit run never loads it"

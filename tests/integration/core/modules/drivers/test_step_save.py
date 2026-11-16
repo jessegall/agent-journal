@@ -27,28 +27,28 @@ def saved(story, view, result, hook_call_id=None):
 
 def test_a_first_step_seeds_the_stack_row_and_its_move(played):
     story = played(BuilderStarted)
-    view, result = step(story)
-    commit = saved(story, view, result)
+    view, outcome = step(story)
+    commit = saved(story, view, outcome)
     row = story.container.get(Queries).query(AgentStack).filter(session_agent_id=story.agent.id).first()
-    assert (commit.is_saved, row is not None, StackCodec.decoded(row.stacked_states) == list(result.stack.stacked_states)) == (True, True, True)
+    assert (commit.is_saved, row is not None, StackCodec.decoded(row.stacked_states) == list(outcome.stack.stacked_states)) == (True, True, True)
 
 
 def test_a_step_that_changes_nothing_writes_nothing(played):
     story = played(BuilderStarted)
     saved(story, *step(story))
-    view, result = step(story)
+    view, outcome = step(story)
     queries = story.container.get(Queries)
     version = queries.query(AgentStack).filter(session_agent_id=story.agent.id).first().version
     moves = queries.query(AgentStackMove).filter(session_agent_id=story.agent.id).count()
-    saved(story, view, result)
+    saved(story, view, outcome)
     assert queries.query(AgentStack).filter(session_agent_id=story.agent.id).first().version == version
     assert queries.query(AgentStackMove).filter(session_agent_id=story.agent.id).count() == moves
 
 
 def test_a_save_whose_read_versions_changed_is_a_conflict_and_writes_nothing(played):
     story = played(BuilderStarted)
-    view, result = step(story)
-    saved(story, view, result)
+    view, outcome = step(story)
+    saved(story, view, outcome)
     stale = replace(view, read_versions=replace(view.read_versions, stack_version=0))
     commit = saved(story, stale, AgentStateMachine().step(stale, Question.none()))
     assert not commit.is_saved

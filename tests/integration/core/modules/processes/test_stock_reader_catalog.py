@@ -44,8 +44,8 @@ def test_a_stock_reader_is_proper_on_a_recorded_output(played, sample):
     story.expect_rows(bool(story.container.get(ReaderRun).summary(reader, sample.output)))
     reason = story.container.get(ReaderDemands).reason(part, reader, ReaderSampleScope(story.agent.id, part.text))
     story.expect_rows(reason == "", detail=reason)
-    judgement = story.container.get(ReaderJudge).judged(reader, sample.category)
-    story.expect_rows(judgement.is_valid, detail=judgement.text)
+    outcome = story.container.get(ReaderJudge).judged(reader, sample.category)
+    story.expect_rows(outcome.is_valid, detail=outcome.text)
 
 
 def test_the_catalog_upgrade_keeps_a_project_reader_with_the_same_name(played):

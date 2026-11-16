@@ -20,14 +20,14 @@ class Capabilities:
     # the table as the proofs recorded for this program say, each "program:part:event=proved-live" or
     # "=refused-live" with the report that proves it after a space; a proof of another program changes nothing
     def proved(self, program: str, proofs: Sequence[str]) -> "Capabilities":
-        found = {}
+        match = {}
         for entry in proofs:
             target, _, outcome = entry.partition(" ")[0].partition("=")
             name, _, part_event = target.partition(":")
             part, _, event = part_event.partition(":")
             if name == program and outcome in (CapabilityProof.PROVED_RUNNING, CapabilityProof.REFUSED_RUNNING):
-                found[(part, event)] = CapabilityProof(outcome)
-        return Capabilities(*(replace(capability, proof=found.get((capability.part.value, capability.event.value), capability.proof)) for capability in self.capabilities))
+                match[(part, event)] = CapabilityProof(outcome)
+        return Capabilities(*(replace(capability, proof=match.get((capability.part.value, capability.event.value), capability.proof)) for capability in self.capabilities))
 
     def supports(self, part: CapabilityPart, event: HookEventName) -> bool:
         capability = self.capability(part, event)

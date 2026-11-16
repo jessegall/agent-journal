@@ -47,10 +47,10 @@ class StoppedWorkerLines(EventLineSource):
         wait_seconds = self.settings.minutes(MERGER_WAIT_MINUTES).count
         stopped = [worker for worker in self.started_work.stopped_workers() if worker.ended_at is not None and worker.ended_at.elapsed_seconds(self.clock.timestamp()) >= wait_seconds]
         with_tasks = {worker.id for worker in self.started_work.with_tasks(stopped)}
-        named = [agent_message for agent_message in map(self.agent_message, [worker for worker in stopped if worker.id in with_tasks]) if agent_message is not None]
-        listed_keys = {agent_message.key for agent_message in named}
+        listed = [agent_message for agent_message in map(self.agent_message, [worker for worker in stopped if worker.id in with_tasks]) if agent_message is not None]
+        listed_keys = {agent_message.key for agent_message in listed}
         asking = [self.asking_agent_message(worker) for worker in stopped if self.escalations.is_open(worker.id) and not self.stop.was_stopped(worker)]
-        return [*named, *[agent_message for agent_message in asking if agent_message.key not in listed_keys]]
+        return [*listed, *[agent_message for agent_message in asking if agent_message.key not in listed_keys]]
 
     def asking_agent_message(self, worker: Agent) -> AgentMessage:
         tasks = {task.id: task for task in (*self.unfinished.rows(worker.id), *self.unfinished.committed(worker.id))}

@@ -17,8 +17,8 @@ def test_a_hook_sent_twice_is_answered_with_the_same_new_input(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     repeated_listing = LISTING.with_fields(event_id="sent-twice")
     first = story.hook("s-1", repeated_listing)
-    again = story.hook("s-1", repeated_listing)
-    story.expect_rows("ls build" in str(first.updated_input), dict(again.updated_input) == dict(first.updated_input), detail=str((first.updated_input, again.updated_input)))
+    repeat = story.hook("s-1", repeated_listing)
+    story.expect_rows("ls build" in str(first.updated_input), dict(repeat.updated_input) == dict(first.updated_input), detail=str((first.updated_input, repeat.updated_input)))
 
 
 def test_a_refused_shell_line_of_a_program_that_prints_refusals_runs_as_a_line_that_prints_the_reason(new_story):

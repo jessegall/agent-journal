@@ -113,8 +113,8 @@ class RestrictedReadAccess:
     def is_listed(self, event: HookEvent, agent: Agent, tool: Tool) -> bool:
         if tool.name in self.providers.provider(event.program).safe_tools:
             return True
-        named = self.profiles.effective(agent.profile).mcp_tools
-        return tool.name in named and (tool.name.startswith(MCP_PREFIX) or not tool.category.writes_files)
+        listed = self.profiles.effective(agent.profile).mcp_tools
+        return tool.name in listed and (tool.name.startswith(MCP_PREFIX) or not tool.category.writes_files)
 
     def is_writable(self, agent: Agent, tool: Tool) -> bool:
         if not tool.category.writes_files or not tool.files:

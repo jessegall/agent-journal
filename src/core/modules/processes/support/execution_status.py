@@ -32,15 +32,15 @@ class ExecutionStatus:
     def pools(self) -> list[PoolLoad]:
         limits, running = self.classes.pool_limits(), self.slots.running()
         pools = self.tickets.row_pools(running)
-        kinds = {process.id: process.plugin or process.category.value for process in running}
+        categories = {process.id: process.plugin or process.category.value for process in running}
         loads = [self.instant_pool()]
         for pool in (ExecutionLength.SHORT, ExecutionLength.LONG):
             pool_tickets = pools[pool]
             is_halted = self.halt.is_halted and pool is ExecutionLength.LONG
             loads.append(PoolLoad(pool.value, sum(ticket.execution_class.slot_cost for ticket in pool_tickets.running), limits.capacity(pool),
                                   ExecutionOrder(limits).capacity_exceeded(pool_tickets.running),
-                                  tuple(self.entry(ticket, kinds[ticket.run_id]) for ticket in pool_tickets.running),
-                                  tuple(self.entry(ticket, kinds[ticket.run_id], self.reason(ticket, pool)) for ticket in pool_tickets.waiting),
+                                  tuple(self.entry(ticket, categories[ticket.run_id]) for ticket in pool_tickets.running),
+                                  tuple(self.entry(ticket, categories[ticket.run_id], self.reason(ticket, pool)) for ticket in pool_tickets.waiting),
                                   self.halt.halt_type if is_halted else "", self.halt.reason if is_halted else ""))
         return loads
 

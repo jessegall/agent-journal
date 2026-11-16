@@ -44,18 +44,18 @@ class BlockReviewRound:
         return self.request_values.read(f"tasks.block-review:{agent_id}:{event.event_id}", lambda: event.event_id, lambda: self.round(agent_id))
 
     def round(self, agent_id: int) -> BlockReviewAnswer:
-        nothing = BlockReviewAnswer((), None, None)
+        empty = BlockReviewAnswer((), None, None)
         blocked = tuple(self.queries.query(TaskBlockReview).filter(session_agent_id=agent_id, state=TaskState.BLOCKED, automatic=False).every_row(BLOCKED_TASKS_REASON))
         tasks = self.unskipped(agent_id, self.scope.covered(agent_id, blocked)) if blocked else ()
         if not tasks:
-            return nothing
+            return empty
         block = self.queries.query(AgentBlock).filter(session_agent_id=agent_id, agent_message_key=BlockReviewRequiredMessage.declared().key).matching(IsNull("closed_at")).first()
         if block is not None and TaskBlocksReviewed.stored(block.condition_text).pending(tasks):
-            return nothing
+            return empty
         passed = BLOCK_REVIEW_REMINDER.interval.has_passed_many(self.spans, agent_id, [task.reviewed_at for task in tasks], self.clock.timestamp())
         due = [task for task, passed_span in zip(tasks, passed) if passed_span]
         if not due:
-            return nothing
+            return empty
         reminder = self.passes.round(agent_id, BLOCK_REVIEW_REMINDER, [ReminderSubject(str(task.task_id), task.moved_at) for task in due])
         notices = tuple(replace((UserBlockReviewMessage.declared() if task.user_wait else BlockReviewMessage.declared()).agent_message(task=task.task_id),
                                 interval=None, record_keys=(f"{BlockReviewMessage.declared().key}.{task.task_id}",)) for task in due)

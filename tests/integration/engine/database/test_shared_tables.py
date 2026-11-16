@@ -94,12 +94,12 @@ def test_two_homes_from_one_template_share_a_table(tmp_path):
 
 
 def test_a_write_in_one_story_is_not_seen_by_the_next(tmp_path):
-    written, copy = copied_home(tmp_path, "written", tmp_path / "template-w.db")
-    untouched, _ = copied_home(tmp_path, "untouched", tmp_path / "template-w.db")
+    stored, copy = copied_home(tmp_path, "written", tmp_path / "template-w.db")
+    unchanged, _ = copied_home(tmp_path, "untouched", tmp_path / "template-w.db")
     Path(f"{copy}-wal").write_text("a write")
     loader = CountingLoader()
-    SharedTables.shared(written).read(FakeDatabase(), "notes", ((2,),), loader)
-    assert (SharedTables.shared(untouched).read(FakeDatabase(), "notes", ((2,),), loader), loader.loads) == ("load 2", 2)
+    SharedTables.shared(stored).read(FakeDatabase(), "notes", ((2,),), loader)
+    assert (SharedTables.shared(unchanged).read(FakeDatabase(), "notes", ((2,),), loader), loader.loads) == ("load 2", 2)
 
 
 def test_the_real_journal_still_keys_on_its_home(tmp_path):

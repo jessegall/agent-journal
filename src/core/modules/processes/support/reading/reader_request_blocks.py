@@ -58,10 +58,10 @@ class ReaderRequestBlocks:
             return ReaderRequestAnswer()
         if self.roles.role(agent_id) != AgentRole.MAIN:
             return ReaderRequestAnswer(tuple(self.request_text.line(request) for request in self.writers.agent_requests(Actor(agent_id, ActorType.AGENT))))
-        now = self.clock.timestamp()
+        current_time = self.clock.timestamp()
         waiting = tuple(request for request in self.requests.open_rows()
-                        if (self.attempts.requires_help(request) or request.expires_at <= now)
-                        if not self.notices.has_recent_notice(agent_id, request.id, now))
+                        if (self.attempts.requires_help(request) or request.expires_at <= current_time)
+                        if not self.notices.has_recent_notice(agent_id, request.id, current_time))
         block_plans = tuple(self.reader_help_block(request) for request in waiting)
         if event.event is HookEventName.TICK:
             return ReaderRequestAnswer((), block_plans, tuple(SendReaderRequestNotice(agent_id, request.id) for request in waiting))

@@ -72,5 +72,5 @@ def test_a_worker_runs_every_journal_line_its_skills_name_for_it(worker_story):
 def test_a_worker_runs_every_journal_line_the_journal_runs_under_it(worker_story):
     story, worker = worker_story
     for line in Worker.journal_runs:
-        group, verb = line.split(" ")
-        story.expect_text(f"{group} --help", f"  {verb}", actor=worker)
+        group, action = line.split(" ")
+        story.expect_text(f"{group} --help", f"  {action}", actor=worker)

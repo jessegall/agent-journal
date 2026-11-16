@@ -13,9 +13,9 @@ class FunctionBodies:
 
     @staticmethod
     def hashes(source: str) -> dict[str, str]:
-        found: dict[str, str] = {}
-        FunctionBodies.walk(ast.parse(source).body, "", found)
-        return found
+        match: dict[str, str] = {}
+        FunctionBodies.walk(ast.parse(source).body, "", match)
+        return match
 
     @staticmethod
     def file_hashes(path: Path) -> dict[str, str]:

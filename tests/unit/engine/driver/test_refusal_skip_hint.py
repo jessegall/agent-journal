@@ -11,5 +11,5 @@ def test_a_second_refusal_names_the_one_command_that_skips_its_rule():
 
 
 def test_a_refusal_that_has_its_hint_gets_it_once():
-    once = RefusalSkipHint.text("a sample refusal", "processes.reading")
-    assert RefusalSkipHint.text(once, "processes.reading") == once
+    single = RefusalSkipHint.text("a sample refusal", "processes.reading")
+    assert RefusalSkipHint.text(single, "processes.reading") == single

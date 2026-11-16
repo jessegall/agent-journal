@@ -390,11 +390,11 @@ def test_a_plan_whose_tasks_all_ended_while_its_last_run_went_and_failed_gets_on
     close(story, 2)
     story.expect_success("checkpoint-reach failed 1 --failed-task-ids 1", actor=Actor.core())
     story.run_listeners()
-    stuck = [row["state"] for row in rows(story, REACHES)]
+    blocked = [row["state"] for row in rows(story, REACHES)]
     PlanStateRound()(story.container)
     story.run_listeners()
     PlanStateRound()(story.container)
     story.run_listeners()
-    story.expect_rows(stuck == ["failed"], [row["state"] for row in rows(story, REACHES)] == ["failed", "running"], detail=str(rows(story, REACHES)))
+    story.expect_rows(blocked == ["failed"], [row["state"] for row in rows(story, REACHES)] == ["failed", "running"], detail=str(rows(story, REACHES)))
     pass_reach(story, 2)
     story.expect_text("plan show 1 --environment main", "state: completed", actor=story.user)

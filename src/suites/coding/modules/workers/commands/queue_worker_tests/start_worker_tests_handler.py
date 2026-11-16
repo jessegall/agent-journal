@@ -43,8 +43,8 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
     def handle(self, command: StartWorkerTests, context: Context) -> None:
         # a worktree removed without its merge has no folder to test in, so its proofs never hold the others back
         test_rows, first_answers = self.proofs.test_rows(), self.affected.queued()
-        named = self.worktrees.worktrees_among([*(proof.worktree_id for proof in test_rows), *(first_answer.worktree_id for first_answer in first_answers)])
-        worktrees = {worktree.id: worktree for worktree in named if worktree.merged_at is not None or worktree.removed_at is None}
+        listed = self.worktrees.worktrees_among([*(proof.worktree_id for proof in test_rows), *(first_answer.worktree_id for first_answer in first_answers)])
+        worktrees = {worktree.id: worktree for worktree in listed if worktree.merged_at is not None or worktree.removed_at is None}
         proofs = [proof for proof in test_rows if proof.worktree_id in worktrees]
         running = {proof.worktree_id for proof in proofs if proof.state is ProofState.RUNNING}
         queued = [proof for proof in proofs if proof.state is ProofState.QUEUED]

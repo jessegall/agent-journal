@@ -33,7 +33,7 @@ class TableStepRequests(StepRequests):
         kept: dict[int, AgentStepRequest | None] = self.request_values.read("drivers.open-step-requests", lambda: 0, dict)
         unread = [agent_id for agent_id in agent_ids if agent_id not in kept]
         if unread:
-            found = {request.session_agent_id: request for request in self.queries.query(AgentStepRequest).matching(Among("session_agent_id", unread))
+            match = {request.session_agent_id: request for request in self.queries.query(AgentStepRequest).matching(Among("session_agent_id", unread))
                      .filter(served_at=None).every_row(OPEN_REQUESTS_REASON)}
-            kept.update({agent_id: found.get(agent_id) for agent_id in unread})
+            kept.update({agent_id: match.get(agent_id) for agent_id in unread})
         return kept

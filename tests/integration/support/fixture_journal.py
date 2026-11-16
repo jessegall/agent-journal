@@ -110,9 +110,9 @@ class FixtureJournal(KitRows):
     # stand-in put in place with bind outlives the replacement of a class it is built on, as in every later container
     def replace(self, kind: type, instance: object) -> None:
         self.container.replace(kind, instance)
-        for bound_kind, bound in self.replacements.items():
-            if bound_kind is not kind and bound_kind not in self.container.instances:
-                self.container.replace(bound_kind, bound)
+        for bound_category, bound in self.replacements.items():
+            if bound_category is not kind and bound_category not in self.container.instances:
+                self.container.replace(bound_category, bound)
 
     # what an agent does after its session starts: it reads the overview and reads the file of each skill it must load,
     # through its program's Read tool, so the journal's own blocks and refusals lift as they do for a real agent
@@ -159,8 +159,8 @@ class FixtureJournal(KitRows):
 
     def expect_success(self, line: str, *texts: ExpectedText, actor: Actor | None = None) -> FixtureLine:
         answer = self.run(line, actor)
-        written = self.with_touched_rows(answer.output_text)
-        assert answer.code == 0 and all(contains_text(written, text) for text in texts), (line, answer)
+        stored = self.with_touched_rows(answer.output_text)
+        assert answer.code == 0 and all(contains_text(stored, text) for text in texts), (line, answer)
         return answer
 
     def expect_text(self, line: str, *texts: ExpectedText, actor: Actor | None = None) -> None:
@@ -187,8 +187,8 @@ class FixtureJournal(KitRows):
 
     def expect_absent(self, line: str, *absent_lines: str, actor: Actor | None = None) -> None:
         answer = self.run(line, actor)
-        printed = answer.output_text.splitlines()
-        assert answer.code == 0 and not [absent for absent in absent_lines if absent in printed], (line, absent_lines, answer)
+        output = answer.output_text.splitlines()
+        assert answer.code == 0 and not [absent for absent in absent_lines if absent in output], (line, absent_lines, answer)
 
     def expect_hook_allowed(self, session: str, sample: HookSample, *expected_lines: ExpectedText) -> None:
         reply = self.hook(session, sample)

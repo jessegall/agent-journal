@@ -36,8 +36,8 @@ class PlanTaskEndLines(EventLineSource):
     def agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]:
         shell = event.tool.shell if event.tool is not None else None
         numbers = shell.journal_command_numbers("task close", "task cancel", "task block", "task release") if shell is not None else ()
-        named = self.tasks.listed_tasks(numbers)
-        ended = [task for task in named if task.state is not TaskState.STARTED]
+        listed = self.tasks.listed_tasks(numbers)
+        ended = [task for task in listed if task.state is not TaskState.STARTED]
         if not ended:
             return []
         return [*(agent_message for task in ended for agent_message in self.plan_agent_messages(task.id, agent_id))]

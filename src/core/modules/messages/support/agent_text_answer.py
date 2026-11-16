@@ -27,14 +27,14 @@ class AgentTextAnswer:
         return self.request_values.read(f"messages.agent-text:{agent_id}:{event.event_id}", lambda: event.event_id, lambda: self.found(event, agent_id))
 
     def found(self, event: HookEvent, agent_id: int) -> AgentTextShown:
-        nothing = AgentTextShown(None, None)
-        now = self.clock.timestamp()
+        empty = AgentTextShown(None, None)
+        current_time = self.clock.timestamp()
         text = self.displayed_blocks.text(agent_id, event)
-        if not text or self.texts.is_reaction_turn(agent_id, now):
-            return nothing
-        after_reply = self.texts.is_after_reply(agent_id, text, now)
-        if (after_reply and self.texts.repeats_reply(agent_id, text, now)) or self.texts.is_acknowledgement(agent_id, text, now):
-            return nothing
+        if not text or self.texts.is_reaction_turn(agent_id, current_time):
+            return empty
+        after_reply = self.texts.is_after_reply(agent_id, text, current_time)
+        if (after_reply and self.texts.repeats_reply(agent_id, text, current_time)) or self.texts.is_acknowledgement(agent_id, text, current_time):
+            return empty
         if after_reply and self.texts.is_single_line(text):
             return AgentTextShown(ClosingLineHiddenMessage.declared().agent_message(), None)
         repeated = self.repeats.repeated(agent_id, None, text)

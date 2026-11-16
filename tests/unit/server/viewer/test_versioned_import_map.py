@@ -20,6 +20,6 @@ def test_every_mapped_file_gets_the_version_of_its_content():
 
 def test_a_rebuilt_file_is_named_at_a_new_address():
     rebuilt = {**FILES, ("journal.core.viewer", "kit/window-kit.js"): b"kit two"}
-    before = VersionedImportMap("journal.core.viewer", lambda module, path: FILES[(module, path)]).versioned(PAGE)
+    previous = VersionedImportMap("journal.core.viewer", lambda module, path: FILES[(module, path)]).versioned(PAGE)
     after = VersionedImportMap("journal.core.viewer", lambda module, path: rebuilt[(module, path)]).versioned(PAGE)
-    assert before != after and version(b"kit two") in after
+    assert previous != after and version(b"kit two") in after

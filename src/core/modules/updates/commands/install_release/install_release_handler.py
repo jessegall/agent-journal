@@ -33,10 +33,10 @@ class InstallReleaseHandler(Handler[InstallRelease, ReleaseInstall]):
             tag = CodeVersions(self.home).add(self.source.unpacked(release, Path(folder)), self.clock)
         install = self.repository.save(ReleaseInstall(creator_id=context.actor.id, checksum=release.checksum,
                                                       tag=release.tag, code_version=tag), context)
-        handover = CodeDelivery(self.home, ReleaseInstallSteps(self.home, install.id))
-        running_pid = handover.server_pid()
+        delivery = CodeDelivery(self.home, ReleaseInstallSteps(self.home, install.id))
+        running_pid = delivery.server_pid()
         if not running_pid:
-            handover.request_takeover(tag, "")
+            delivery.request_takeover(tag, "")
             return self.bus.dispatch(RecordReleaseInstall(install.id, UpdateStep.FINISHED), context)
-        handover.begin_version(tag, running_pid)
+        delivery.begin_version(tag, running_pid)
         return install

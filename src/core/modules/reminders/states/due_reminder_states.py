@@ -29,7 +29,7 @@ class DueReminderStates(StateSource):
             return {}
         plans = {agent.agent_id: [self.plan(reminder) for reminder in self.reminders.due(agent.agent_id, self.clock.timestamp()) if reminder.block_condition]
                  for agent in agents if agent.agent_type == AgentRole.MAIN.value}
-        return {agent_id: found for agent_id, found in plans.items() if found}
+        return {agent_id: match for agent_id, match in plans.items() if match}
 
     def plan(self, reminder: Reminder) -> BlockPlan:
         return BlockPlan(ReminderBlockMessage.declared().agent_message(reminder=reminder.id), self.conditions.built(reminder.block_condition, reminder.block_subject),

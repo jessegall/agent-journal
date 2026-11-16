@@ -39,11 +39,11 @@ def test_an_ordinary_listener_round_goes_on_once_the_writer_it_waits_for_lets_go
         assert made.code == 0, made.text
     positions = journal.container.get(ListenerCursorTable).positions()
     writing = Event()
-    write = Database.update
+    store = Database.update
 
     def noted_write(database, statement):
         writing.set()
-        return write(database, statement)
+        return store(database, statement)
 
     monkeypatch.setattr(Database, "update", noted_write)
     connection = sqlite3.connect(journal.home.database, timeout=0, autocommit=True)

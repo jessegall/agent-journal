@@ -58,8 +58,8 @@ def upgraded(journal_with) -> UpgradedJournal:
 # the setup of each container built from a played home: every stand-in the test bound, bound again
 def bound_in(replacements: dict[type, object]) -> Callable[[Container], None]:
     def setup(container: Container) -> None:
-        for kind, instance in replacements.items():
-            container.bind(kind, instance)
+        for category, instance in replacements.items():
+            container.bind(category, instance)
     return setup
 
 @pytest.fixture

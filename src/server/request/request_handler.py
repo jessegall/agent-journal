@@ -165,11 +165,11 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def answer_wake_line(self, body: bytes) -> None:
         try:
-            left = WakeEndpoint(self.journal_server().context).line(json.loads(body or b"{}"))
+            remaining = WakeEndpoint(self.journal_server().context).line(json.loads(body or b"{}"))
         except (HookEventError, json.JSONDecodeError) as error:
             self.answer_json(400, {"error": str(error)})
             return
-        self.answer_json(200 if left else 410, {})
+        self.answer_json(200 if remaining else 410, {})
 
     def answer_takeover(self, tag: str) -> None:
         server = self.journal_server()

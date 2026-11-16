@@ -51,11 +51,11 @@ class RunDocking:
         return self.request_values.read(f"processes.dock:{agent_id}:{event_id}", lambda: event_id, lambda: self.found(agent_id))
 
     def found(self, agent_id: int) -> DockedRuns:
-        now = self.clock.timestamp()
+        current_time = self.clock.timestamp()
         dock = Interval(self.settings.seconds(ProcessSetting.DOCK_AFTER_SECONDS))
         runs = self.processes.agent(agent_id)
         docked = self.docked_runs(agent_id)
-        new = tuple(runs.running().new_long_runs(now, dock.seconds).oldest().take(RUNS_CONSIDERED))
+        new = tuple(runs.running().new_long_runs(current_time, dock.seconds).oldest().take(RUNS_CONSIDERED))
         if not docked and not new:
             return DockedRuns((), ())
         parts: dict[int, list[ProcessPart]] = defaultdict(list)

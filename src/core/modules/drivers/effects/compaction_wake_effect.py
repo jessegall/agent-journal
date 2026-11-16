@@ -33,8 +33,8 @@ class CompactionWakeEffect(EventEffect):
         return [WakeCompactedAgent(agent_id)] if self.is_waiting_after_compaction(agent_id) else []
 
     def is_waiting_after_compaction(self, agent_id: int) -> bool:
-        now = self.clock.timestamp()
+        current_time = self.clock.timestamp()
         latest = self.hook_calls.latest_turn_call(agent_id)
-        if latest is None or not latest.is_compaction_start or latest.creation_timestamp().elapsed_seconds(now) < WAKE_WAIT_SECONDS:
+        if latest is None or not latest.is_compaction_start or latest.creation_timestamp().elapsed_seconds(current_time) < WAKE_WAIT_SECONDS:
             return False
-        return self.hook_calls.is_idle(agent_id, now) and not self.compactions.is_awakened(agent_id)
+        return self.hook_calls.is_idle(agent_id, current_time) and not self.compactions.is_awakened(agent_id)

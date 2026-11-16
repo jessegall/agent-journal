@@ -37,7 +37,7 @@ class LongWaitLines(LineSource):
 
     # a check line for each wait of the agent open ten minutes or more
     def agent_messages(self, agent_id: int) -> list[AgentMessage]:
-        now = self.clock.timestamp()
+        current_time = self.clock.timestamp()
         waits = self.queries.query(Wait).filter(session_agent_id=agent_id, state=WaitState.OPEN).every_row(OPEN_WAITS_REASON)
-        return [WaitCheckMessage.declared().agent_message(minutes=wait.opened_at.elapsed_minutes(now), wait=wait.id) for wait in waits
-                if wait.opened_at.elapsed_minutes(now) >= LONG_WAIT_MINUTES]
+        return [WaitCheckMessage.declared().agent_message(minutes=wait.opened_at.elapsed_minutes(current_time), wait=wait.id) for wait in waits
+                if wait.opened_at.elapsed_minutes(current_time) >= LONG_WAIT_MINUTES]

@@ -35,8 +35,8 @@ class SearchHit:
         end = start + EXCERPT_CHARACTERS
         excerpt = (CUT_MARK if start else "") + text[start:end] + (CUT_MARK if end < len(text) else "")
         # the first searched field names the row, the others are what a reader reads under it
-        title, *rest = (str(getattr(row, name) or "") for name in row.search_fields)
-        return cls(row.cli_name, row.id, row.creation_timestamp(), excerpt, row.matching_terms(terms), row.search_rank, title, "\n\n".join(part for part in rest if part), str(getattr(row, "state", "") or ""))
+        title, *remainder = (str(getattr(row, name) or "") for name in row.search_fields)
+        return cls(row.cli_name, row.id, row.creation_timestamp(), excerpt, row.matching_terms(terms), row.search_rank, title, "\n\n".join(part for part in remainder if part), str(getattr(row, "state", "") or ""))
 
     @classmethod
     def restored(cls, stored: dict[str, Any]) -> "SearchHit":

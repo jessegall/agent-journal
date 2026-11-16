@@ -18,12 +18,12 @@ class PluginCardReading:
     only moment it can arrive."""
 
     def __call__(self, container: Container) -> bool:
-        queries, bus, times = container.get(Queries), container.get(Bus), container.get(PluginFolderTimes)
+        queries, bus, counts = container.get(Queries), container.get(Bus), container.get(PluginFolderTimes)
         outputs_added = 0
         for runnable in container.get(RunnablePlugins).running():
             plugin = runnable.plugin
             queue = PluginQueue(container.get(PluginFolders).data(plugin.name))
-            if not times.has_updates(plugin.name, queue.folder):
+            if not counts.has_updates(plugin.name, queue.folder):
                 continue
             remaining_unclaimed = False
             with closing(queue.claim_cards()) as claims:
@@ -35,5 +35,5 @@ class PluginCardReading:
                     bus.run(AddPluginOutput(plugin.id, agent.id, claim.answer.output), Actor.core(), environment_id=agent.environment_id)
                     claim.remove_cards()
                     outputs_added += 1
-            times.mark_checked(plugin.name, remaining_unclaimed)
+            counts.mark_checked(plugin.name, remaining_unclaimed)
         return outputs_added > 0

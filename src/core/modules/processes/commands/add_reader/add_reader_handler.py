@@ -45,10 +45,10 @@ class AddReaderHandler(Handler[AddReader, Reader]):
                 raise Refusal(f"reader {reader.name} needs --commands and --lines or --script", "journal reader add <name> --commands <pattern> --lines <pattern>")
             if request is not None:
                 scope = ReaderSampleScope(request.creator_id, request.command)
-                judgement = self.judge.judged_command(reader, request.category, scope)
-                if not judgement.is_valid:
-                    raise Refusal(f"reader {reader.name} missed {'; '.join((*judgement.missing, *judgement.missed))}", "try the patterns on the named output")
-                return self.save(reader, judgement, context)
+                outcome = self.judge.judged_command(reader, request.category, scope)
+                if not outcome.is_valid:
+                    raise Refusal(f"reader {reader.name} missed {'; '.join((*outcome.missing, *outcome.missed))}", "try the patterns on the named output")
+                return self.save(reader, outcome, context)
             return self.save(reader, self.judge.tested(reader), context)
         except Refusal as refusal:
             if request is None:

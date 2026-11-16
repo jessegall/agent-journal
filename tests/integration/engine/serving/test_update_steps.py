@@ -26,11 +26,11 @@ class FixedVersions:
 
 
 def takeover_with(tmp_path: Path, steps: RecordedSteps, pids: list[str], status: int = 200) -> CodeDelivery:
-    handover = CodeDelivery(JournalHome(tmp_path / ".journal"), steps)
-    handover.versions = FixedVersions()
-    handover.server_pid = lambda: pids.pop(0) if len(pids) > 1 else pids[0]
-    handover.takeover_status = lambda tag: status
-    return handover
+    delivery = CodeDelivery(JournalHome(tmp_path / ".journal"), steps)
+    delivery.versions = FixedVersions()
+    delivery.server_pid = lambda: pids.pop(0) if len(pids) > 1 else pids[0]
+    delivery.takeover_status = lambda tag: status
+    return delivery
 
 
 def test_an_update_of_a_running_server_records_each_step_and_ends_with_the_version(tmp_path):

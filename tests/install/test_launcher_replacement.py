@@ -55,19 +55,19 @@ def test_a_timed_out_replacement_keeps_its_cause(launcher_home, monkeypatch):
 
 
 def test_code_handover_updates_the_launcher_after_switching_the_code(tmp_path, monkeypatch):
-    handover = CodeDelivery(JournalHome(tmp_path / ".journal"))
+    delivery = CodeDelivery(JournalHome(tmp_path / ".journal"))
     changes = []
-    monkeypatch.setattr(handover.versions, "switch", lambda tag: changes.append(tag))
+    monkeypatch.setattr(delivery.versions, "switch", lambda tag: changes.append(tag))
     monkeypatch.setattr(LauncherReplacement, "run", lambda self: changes.append("launcher"))
-    handover.request_takeover("new code", "")
+    delivery.request_takeover("new code", "")
     assert changes == ["new code", "launcher"]
 
 
 def test_a_refused_server_handover_keeps_the_launcher(tmp_path, monkeypatch):
-    handover = CodeDelivery(JournalHome(tmp_path / ".journal"))
+    delivery = CodeDelivery(JournalHome(tmp_path / ".journal"))
     replace = Mock()
-    monkeypatch.setattr(handover, "takeover_status", lambda tag: 503)
+    monkeypatch.setattr(delivery, "takeover_status", lambda tag: 503)
     monkeypatch.setattr(LauncherReplacement, "run", replace)
     with pytest.raises(Refusal, match="was not taken over"):
-        handover.request_takeover("new code", "123")
+        delivery.request_takeover("new code", "123")
     replace.assert_not_called()
