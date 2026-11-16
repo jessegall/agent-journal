@@ -55,6 +55,13 @@ class Model:
     def search_text(self) -> str:
         return " ".join(str(getattr(self, name)) for name in self.search_fields)
 
+    # each searched field as text, an empty one as no text
+    def search_field_texts(self) -> tuple[str, ...]:
+        return tuple("" if value is None else str(value) for value in (getattr(self, name) for name in self.search_fields))
+
+    def state_text(self) -> str:
+        return str(getattr(self, STATE)) if self.lifecycle is not None else ""
+
     def matching_terms(self, terms: Sequence[str]) -> list[str]:
         text = self.search_text().lower()
         return [term for term in terms if SearchTerm.stem(term) in text]

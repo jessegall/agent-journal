@@ -15,7 +15,7 @@ def test_raw_and_prepared_hooks_have_the_same_queue_owner_and_requirements(role,
     assert prepared.owner == raw.owner == "session-42"
     assert prepared.priority == raw.priority
     assert prepared.limit_seconds == raw.limit_seconds
-    assert prepared.requires_check == raw.requires_check == HookEvent.is_checked_role(role)
+    assert prepared.is_check_required == raw.is_check_required == HookEvent.is_checked_role(role)
     assert prepared.priority is priority
     assert prepared.limit_seconds == limit_seconds
 
@@ -24,8 +24,8 @@ def test_raw_and_prepared_hooks_have_the_same_queue_owner_and_requirements(role,
 def test_every_hook_of_a_worker_requires_a_check(event, raw_name):
     prepared = HookSender.parsed({"session": "s-1", "event": event}, role_name=lambda session: "worker")
     raw = HookSender.parsed({"session_id": "s-1", "hook_event_name": raw_name}, role_name=lambda session: "worker")
-    assert prepared.requires_check
-    assert raw.requires_check
+    assert prepared.is_check_required
+    assert raw.is_check_required
     assert prepared.is_stop == raw.is_stop == (event is HookEventName.STOP)
 
 

@@ -46,13 +46,11 @@ class LibraryFolders:
             FileAccess.rmtree(Path(target) / name, ignore_errors=True)
 
     def restore(self, folder: str, target: str, links: Sequence[str], copies: Sequence[str]) -> None:
-        for name in links:
-            if not FileAccess.is_symlink(Path(target) / name) and not FileAccess.exists(Path(target) / name):
-                FileAccess.mkdir((Path(target) / name).parent, parents=True, exist_ok=True)
-                FileAccess.symlink_to(Path(target) / name, Path(folder).resolve() / name, target_is_directory=True)
-        for name in copies:
-            if not FileAccess.exists(Path(target) / name):
-                self.copy(Path(folder) / name, Path(target) / name)
+        for name in [name for name in links if not FileAccess.is_symlink(Path(target) / name) and not FileAccess.exists(Path(target) / name)]:
+            FileAccess.mkdir((Path(target) / name).parent, parents=True, exist_ok=True)
+            FileAccess.symlink_to(Path(target) / name, Path(folder).resolve() / name, target_is_directory=True)
+        for name in [name for name in copies if not FileAccess.exists(Path(target) / name)]:
+            self.copy(Path(folder) / name, Path(target) / name)
 
     def copy(self, source: Path, target: Path) -> None:
         program = MAC_COPY if sys.platform == "darwin" else LINUX_COPY

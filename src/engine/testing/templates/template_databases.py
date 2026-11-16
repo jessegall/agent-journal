@@ -135,11 +135,15 @@ class TemplateDatabases:
         return folder
 
     def drop_unused_variants(self, variants: list[Path]) -> None:
-        for variant in variants:
-            if FolderStat.modified_time(variant) < time.time() - UNUSED_VARIANT_SECONDS or not FileAccess.is_file(variant / STATE_FILE):
-                FileAccess.rmtree(variant, ignore_errors=True)
-                for adapted in FileAccess.glob(self.folder, f"{variant.name}-*"):
-                    FileAccess.rmtree(adapted, ignore_errors=True)
+        for variant in [variant for variant in variants if self.is_unused(variant)]:
+            FileAccess.rmtree(variant, ignore_errors=True)
+            for adapted in FileAccess.glob(self.folder, f"{variant.name}-*"):
+                FileAccess.rmtree(adapted, ignore_errors=True)
+
+    # a variant nobody touched for a while, or one whose build never finished
+    @staticmethod
+    def is_unused(variant: Path) -> bool:
+        return FolderStat.modified_time(variant) < time.time() - UNUSED_VARIANT_SECONDS or not FileAccess.is_file(variant / STATE_FILE)
 
     def usable_folder(self, folder: Path, name: str) -> Path:
         if self.adaptation.builder_name(folder) == self.adaptation.checkout:

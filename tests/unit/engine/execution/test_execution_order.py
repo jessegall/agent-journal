@@ -94,8 +94,8 @@ def starter(number: int) -> ExecutionStarter:
     return ExecutionStarter(StarterType.HELPER, agent_id=number, agent_role="worker")
 
 
-def raised_priority(waiting_ticket, seconds: float, is_halted: bool = False) -> ExecutionPriority:
-    return ORDER.raised([waiting_ticket], seconds_after_start(seconds), is_halted)[0].priority
+def raised_priority(waiting_ticket, seconds: float) -> ExecutionPriority:
+    return ORDER.raised([waiting_ticket], seconds_after_start(seconds))[0].priority
 
 
 def test_wait_past_step_raises_one_step():
@@ -156,10 +156,9 @@ def test_waits_for_reader_is_passed_over_and_still_raised():
     assert raised_priority(waiting_reader, 10) is AGENT
 
 
-def test_halted_lane_starts_none_and_counts_no_wait():
+def test_halted_lane_starts_none():
     waiting = ticket(NORMAL, pool=ExecutionLength.LONG)
     assert ORDER.starting([waiting], [], seconds_after_start(3600), True) == ()
-    assert raised_priority(waiting, 3600, is_halted=True) is NORMAL
 
 
 def test_immediate_ceiling_is_flagged_not_refused():

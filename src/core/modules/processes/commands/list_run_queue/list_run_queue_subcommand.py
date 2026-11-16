@@ -17,7 +17,6 @@ from core.modules.processes.models.process_queue_row import ProcessQueueRow
 from core.modules.processes.models.enums.queue_section import QueueSection
 from core.modules.processes.support.active_queue_runs import ActiveQueueRuns
 from core.modules.processes.support.process_queue_page import ProcessQueuePage
-from core.modules.processes.support.execution_overview import ExecutionOverview
 from engine.enums.execution_length import ExecutionLength
 from engine.enums.execution_source import ExecutionSource
 from engine.enums.starter_type import StarterType
@@ -81,13 +80,7 @@ class ListRunQueueSubcommand(ReadSubcommand[ProcessQueuePage]):
             "running": running, "waiting": waiting, "recent": recent, "recent_total": query.filter(section=QueueSection.RECENT).count()}
         queue_runs = tuple(self.queue_runs.query().every_row(QUEUE_REASON))
         number, size = max(1, arguments.page), min(MAX_PAGE_SIZE, max(1, arguments.limit))
-        return ProcessQueuePage(Page(queue_runs[(number - 1) * size:number * size], number, size, len(queue_runs)), inspector, *self.pools(copy, arguments.class_name, arguments.starter))
-
-    # the lanes read once, as lines and as JSON; a filter keeps the lane headings and the lines of runs and waits whose
-    # class or starter it names
-    def pools(self, copy: ExecutionOverview, class_name: str, starter: str) -> tuple[tuple[str, ...], dict[str, object]]:
-        wanted = [text for text in (f"({class_name}, " if class_name else "", f", {starter}" if starter else "") if text]
-        return tuple(line for line in copy.lines() if not line.startswith("  ") or all(text in line for text in wanted)), copy.json()
+        return ProcessQueuePage(Page(queue_runs[(number - 1) * size:number * size], number, size, len(queue_runs)), inspector, copy.filtered_lines(arguments.class_name, arguments.starter), copy.json())
 
     # the lane a run ran in: its stored class's, or for a class nobody declares any more, the lane its line matches now
     def pool(self, row: ProcessQueueRow) -> ExecutionLength:

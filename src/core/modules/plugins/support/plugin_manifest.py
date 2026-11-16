@@ -196,6 +196,12 @@ class PluginManifest:
     def process_category(self, category: str) -> ManifestRunType | None:
         return next((declared for declared in self.process_categories if declared.run_name == category), None)
 
+    def required_process_category(self, category: str) -> ManifestRunType:
+        declared = self.process_category(category)
+        if declared is None:
+            raise Refusal(f"plugin {self.name} declares no kind of run named {category}", "name a kind its manifest lists under processes")
+        return declared
+
     @staticmethod
     def read_card_tones(cards: object) -> dict[str, str]:
         entries = [entry for entry in cards if is_mapping(entry) and PluginAnswer.entry_type(entry)] if is_list(cards) else []

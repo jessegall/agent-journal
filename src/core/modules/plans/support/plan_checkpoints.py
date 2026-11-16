@@ -82,7 +82,8 @@ class PlanCheckpoints:
                 continue
             if not completed and checkpoint.id not in passed:
                 self.repository.save(CheckpointPass(creator_id=context.actor.id, plan_id=plan_id, phase_id=checkpoint.id, passed_at=context.timestamp), context)
-            if completed and not record_passes and run_tasks.get(checkpoint.id) != completed:
+            starts_reach = bool(completed) and not record_passes and run_tasks.get(checkpoint.id) != completed
+            if starts_reach:
                 self.repository.save(CheckpointReach.started(context.actor.id, plan_id, checkpoint.id, completed), context)
 
     # A plan whose windows are all reached but one holds a failed run from before its tasks last ended is looked at

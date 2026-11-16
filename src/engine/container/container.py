@@ -60,10 +60,10 @@ class Container:
     # every instance built on the old one is forgotten with its build, so the next get builds it on the replacement
     def replace(self, class_type: type[T], instance: T) -> None:
         checked: dict[type, bool] = {class_type: True}
-        for built_type, built in list(self.instances.items()):
-            if built_type not in (class_type, Container) and has_dependency(type(built), checked):
-                del self.instances[built_type]
-                self.build_places.pop(type(built), None)
+        stale = [(built_type, built) for built_type, built in self.instances.items() if built_type not in (class_type, Container) and has_dependency(type(built), checked)]
+        for built_type, built in stale:
+            del self.instances[built_type]
+            self.build_places.pop(type(built), None)
         self.instances[class_type] = instance
 
     def seal(self) -> None:

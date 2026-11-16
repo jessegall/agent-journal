@@ -1,5 +1,6 @@
 import ast
 import re
+from collections.abc import Collection
 from pathlib import Path
 
 from engine.file.file_access import FileAccess
@@ -19,14 +20,14 @@ class SuiteImportCheck:
 
     def refusals(self, folder: Path) -> tuple[SuiteRefusal, ...]:
         internal = self.internal_areas()
-        matched: list[SuiteRefusal] = []
-        for file in sorted(FileAccess.rglob(folder, "*.py")):
-            for node in ast.walk(ast.parse(FileAccess.read(file))):
-                for name in self.imported_names(node):
-                    parts = name.split(".")
-                    if len(parts) > 1 and parts[0] == "engine" and parts[1] in internal:
-                        matched.append(SuiteRefusal(str(file.relative_to(folder)), node.lineno, f"imports {name}, an internal area of the engine: use its contract areas"))
-        return tuple(matched)
+        imports = [(file, node, name) for file in sorted(FileAccess.rglob(folder, "*.py")) for node in ast.walk(ast.parse(FileAccess.read(file))) for name in self.imported_names(node)]
+        return tuple(SuiteRefusal(str(file.relative_to(folder)), node.lineno, f"imports {name}, an internal area of the engine: use its contract areas")
+                     for file, node, name in imports if self.is_internal(name, internal))
+
+    @staticmethod
+    def is_internal(name: str, internal: Collection[str]) -> bool:
+        parts = name.split(".")
+        return len(parts) > 1 and parts[0] == "engine" and parts[1] in internal
 
     @staticmethod
     def imported_names(node: ast.AST) -> tuple[str, ...]:

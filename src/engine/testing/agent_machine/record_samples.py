@@ -9,6 +9,7 @@ from engine.agent_machine.record.rewrite import Rewrite
 from engine.agent_machine.record.wake_change import WakeChange
 
 SAMPLE_IDENTITY = EventIdentity("claude", "s-1", 1, "story-1", 4, 1, "main", "main profile", "samples.main")
+SAMPLE_TABLE_DIGEST = "samples.table"
 
 
 class RecordSamples:
@@ -18,4 +19,4 @@ class RecordSamples:
     @staticmethod
     def record(question: Question, decision: Decision) -> DecisionRecord:
         return DecisionRecord(SAMPLE_IDENTITY, question, decision, decision.reason, (), Rewrite.unchanged(), (), (), (), (), "", (), (), (), (), (),
-                              RefusalCounts(0, 0), WakeChange.unchanged(), ReadVersions(1, 1, 1), (), DecisionInputs("", (), (), ()))
+                              RefusalCounts(0, 0), WakeChange.unchanged(), ReadVersions(1, 1, 1), (), DecisionInputs(SAMPLE_TABLE_DIGEST, (), (), ()))

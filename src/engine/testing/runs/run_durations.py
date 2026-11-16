@@ -50,7 +50,12 @@ class RunDurations:
         return [f"{seconds:8.2f}  {folder}" for folder, seconds in sorted(totals.items(), key=lambda item: item[1], reverse=True)]
 
     def report(self) -> str:
-        return "\n".join([f"the {SLOWEST_TESTS} slowest tests, in seconds:", *self.slowest_lines(), "", "folders by total seconds:", *self.folder_lines()])
+        slowest, folders = "\n".join(self.slowest_lines()), "\n".join(self.folder_lines())
+        return f"""the {SLOWEST_TESTS} slowest tests, in seconds:
+{slowest}
+
+folders by total seconds:
+{folders}"""
 
 
 def main() -> int:

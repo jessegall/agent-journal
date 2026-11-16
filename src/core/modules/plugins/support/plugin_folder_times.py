@@ -21,8 +21,8 @@ class PluginFolderTimes:
             return True
         return False
 
-    def mark_checked(self, plugin: str, remaining_unclaimed: bool) -> None:
-        if remaining_unclaimed:
-            self.unclaimed.add(plugin)
-        else:
-            self.unclaimed.discard(plugin)
+    def mark_unclaimed(self, plugin: str) -> None:
+        self.unclaimed.add(plugin)
+
+    def mark_claimed(self, plugin: str) -> None:
+        self.unclaimed.discard(plugin)

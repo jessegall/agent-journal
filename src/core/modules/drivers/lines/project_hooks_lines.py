@@ -21,4 +21,6 @@ class ProjectHooksLines(EventLineSource):
         if event is None:
             return []
         answer = self.answers.answer(event, agent_id)
-        return [*answer.agent_messages, *([answer.refusal] if answer.refusal is not None else [])]
+        if answer.refusal is None:
+            return list(answer.agent_messages)
+        return [*answer.agent_messages, answer.refusal]

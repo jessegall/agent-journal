@@ -333,8 +333,9 @@ class Query(Generic[M]):
             start = start.ordered(order.column, order.descending)
         start = start.ordered(key_column, key_descending).walk_paged()
         last: M | None = None
+        first_order = orders[0] if orders else None
         while True:
-            select = start if last is None else start.matching(self.after(last, orders[0] if orders else None, key, key_descending))
+            select = start if last is None else start.matching(self.after(last, first_order, key, key_descending))
             rows = self.rows(select.sliced(WALK_ROWS, 0).named(WALK_ROWS))
             yield from rows
             if len(rows) < WALK_ROWS:
@@ -391,7 +392,8 @@ class Query(Generic[M]):
 
     def scoped(self, select: Select) -> Select:
         owner = self.database.row_owner
-        if issubclass(self.model, EnvironmentScoped) and (owner is None or owner.environment_id is None) and not self.database.environment_scope_passed and not self.reads_every_environment:
+        is_unscoped_read = issubclass(self.model, EnvironmentScoped) and (owner is None or owner.environment_id is None) and not self.database.environment_scope_passed and not self.reads_every_environment
+        if is_unscoped_read:
             self.database.report_unscoped_read(self.table.name)
         return self.scope_conditions(select)
 

@@ -35,5 +35,8 @@ class PluginCardReading:
                     bus.run(AddPluginOutput(plugin.id, agent.id, claim.answer.output), Actor.core(), environment_id=agent.environment_id)
                     claim.remove_cards()
                     outputs_added += 1
-            counts.mark_checked(plugin.name, remaining_unclaimed)
+            if remaining_unclaimed:
+                counts.mark_unclaimed(plugin.name)
+            else:
+                counts.mark_claimed(plugin.name)
         return outputs_added > 0

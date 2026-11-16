@@ -56,7 +56,8 @@ class RunSlots:
         for pool in (ExecutionLength.SHORT, ExecutionLength.LONG):
             pool_tickets = pools[pool]
             is_halted = self.halt.is_halted and pool is ExecutionLength.LONG
-            for ticket in order.raised(pool_tickets.waiting, current_time, is_halted):
+            raised = () if is_halted else order.raised(pool_tickets.waiting, current_time)
+            for ticket in raised:
                 processes[ticket.run_id] = self.kept_raise(processes[ticket.run_id], ticket, context)
             if order.exceeds_ceiling(pool_tickets.running):
                 self.system_log.write(LogLevel.WARNING, f"{len(pool_tickets.running)} immediate runs share the {pool} lane, past its ceiling of {limits.immediate_ceiling}")

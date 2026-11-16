@@ -319,8 +319,10 @@ def pytest_terminal_summary(terminalreporter: pytest.TerminalReporter, config: p
     full_run = config.stash.get(FULL_RUN, None)
     if full_run is not None:
         terminalreporter.write_line(full_run.summary_line())
-        for test in config.stash.get(MISSED_TESTS, []):
-            terminalreporter.write_line(f"the selector would have missed {test}")
+        missed_tests = config.stash.get(MISSED_TESTS, None)
+        if missed_tests is not None:
+            for test in missed_tests:
+                terminalreporter.write_line(f"the selector would have missed {test}")
     fixture_summary = config.stash.get(FIXTURE_SUMMARY, None)
     if fixture_summary is not None:
         terminalreporter.write_line(fixture_summary)

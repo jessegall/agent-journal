@@ -8,9 +8,9 @@ from engine.journal.journal_home import JournalHome
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.support.plugin_manifest_files import PluginManifestFiles
 from core.modules.plugins.support.plugin_run_check import PluginRunCheck
+from core.modules.plugins.support.plugin_check_signature import PluginCheckSignature
 
 KEPT_PLUGIN_COUNT = 100
-Signature = tuple[int, str, bool, tuple[tuple[str, int, int], ...]]
 
 
 class KeptPluginChecks:
@@ -20,7 +20,7 @@ class KeptPluginChecks:
     notice that a plugin's files changed is never kept, since it is recorded once."""
 
     def __init__(self) -> None:
-        self.kept: dict[int, tuple[Signature, PluginRunCheck]] = {}
+        self.kept: dict[int, tuple[PluginCheckSignature, PluginRunCheck]] = {}
         self.lock = threading.Lock()
 
     # one record for each journal a process serves, shared by every hook and round
@@ -46,9 +46,9 @@ class KeptPluginChecks:
         return outcome
 
     @staticmethod
-    def signature(plugin: Plugin, code: Path, is_upgrading: bool, outcome: PluginRunCheck) -> Signature:
+    def signature(plugin: Plugin, code: Path, is_upgrading: bool, outcome: PluginRunCheck) -> PluginCheckSignature:
         stats = tuple((name, stat.st_size, stat.st_mtime_ns) for name in KeptPluginChecks.watched_files(code, outcome) if FileAccess.exists(code / name) for stat in [FileAccess.stat(code / name)])
-        return plugin.version, plugin.files_digest, is_upgrading, stats
+        return PluginCheckSignature(plugin.version, plugin.files_digest, is_upgrading, stats)
 
     # a plugin that cannot run yet has no manifest read, so its manifests alone are watched
     @staticmethod

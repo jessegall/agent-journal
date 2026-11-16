@@ -21,7 +21,7 @@ class ExecutionOrder:
                  is_halted: bool) -> tuple[ExecutionTicket, ...]:
         occupied_slots, started = OccupiedSlots.counted(running), list[ExecutionTicket]()
         running_current = list(running)
-        for ticket in sorted(self.raised(waiting, current_time, is_halted), key=lambda ticket: self.place(ticket, current_time)):
+        for ticket in sorted(tuple(waiting) if is_halted else self.raised(waiting, current_time), key=lambda ticket: self.place(ticket, current_time)):
             if not self.may_start(ticket, occupied_slots, running_current, is_halted):
                 continue
             occupied_slots = occupied_slots.with_ticket(ticket)
@@ -30,10 +30,8 @@ class ExecutionOrder:
         return tuple(started)
 
     # a ticket that waited its step's longest wait goes up one step, and waits again from that moment; never into
-    # immediate, and a halted lane counts no wait
-    def raised(self, waiting: Sequence[ExecutionTicket], current_time: Timestamp, is_halted: bool) -> tuple[ExecutionTicket, ...]:
-        if is_halted:
-            return tuple(waiting)
+    # immediate; a halted lane counts no wait, so its caller raises none of its tickets
+    def raised(self, waiting: Sequence[ExecutionTicket], current_time: Timestamp) -> tuple[ExecutionTicket, ...]:
         return tuple(self.raised_ticket(ticket, current_time) for ticket in waiting)
 
     def raised_ticket(self, ticket: ExecutionTicket, current_time: Timestamp) -> ExecutionTicket:

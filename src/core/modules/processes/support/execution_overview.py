@@ -18,6 +18,11 @@ class ExecutionOverview:
         return [*(line for read in self.pools for line in read.lines()), "waits over the last hour:" if waited else "waits over the last hour: no run started",
                 *(f"  {wait.described}" for wait in waited)]
 
+    # the lane headings, and the lines of runs and waits whose class or starter the filter names
+    def filtered_lines(self, class_name: str, starter: str) -> tuple[str, ...]:
+        wanted = [text for text in (f"({class_name}, " if class_name else "", f", {starter}" if starter else "") if text]
+        return tuple(line for line in self.lines() if not line.startswith("  ") or all(text in line for text in wanted))
+
     def json(self) -> dict[str, object]:
         return {"lanes": [read.json() for read in self.pools],
                 "waits": [{"priority": wait.priority.label, "runs": wait.count, "longest_seconds": round(wait.longest_seconds), "average_seconds": round(wait.average_seconds)}
