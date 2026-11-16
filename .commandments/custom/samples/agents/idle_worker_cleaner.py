@@ -24,7 +24,7 @@ class RetireAgentHandler:
 
     def reason_refusal(self, agent: Agent) -> str:
         # @righteous architecture_agents_retire_command_in_a_text
-        return f'journal agent retire {agent.number} --reason "<why>"'
+        return f'journal agent retire {agent.id} --reason "<why>"'
 
 
 class RetireAgentSubcommand:
@@ -38,15 +38,6 @@ class ChangeAgentDriverHandler:
         # @righteous architecture_agents_driver_changed_outside_the_driver_command
         return EndReason.DRIVER_CHANGED
 
-
-class AgentRowNumbers:
-    def row_id(self, number: int, environment_id: int | None) -> int:
-        # @righteous architecture_agents_number_read_without_an_environment
-        if environment_id is None:
-            raise ValueError("an agent is read in an environment")
-        found_id = number + environment_id
-        # @righteous architecture_agents_number_returned_as_its_row_id
-        return found_id
 
 
 class WorkerBranchNames:
@@ -62,11 +53,11 @@ class IdleWorkerCleaner:
 
     def command(self, agent: Agent) -> RetireAgent:
         # @sin architecture_agents_retirement_run_by_code
-        return RetireAgent(agent.number, "idle too long")
+        return RetireAgent(agent.id, "idle too long")
 
     def suggestion(self, agent: Agent) -> str:
         # @sin architecture_agents_retire_command_in_a_text
-        return f"to make room: journal agent retire {agent.number}"
+        return f"to make room: journal agent retire {agent.id}"
 
     def reason(self) -> EndReason:
         # @sin architecture_agents_driver_changed_outside_the_driver_command
@@ -76,11 +67,3 @@ class IdleWorkerCleaner:
         # @sin architecture_workers_later_branch_named_by_hand
         return first_branch + "-cut-" + str(worktree_id)
 
-
-class LenientRowNumbers:
-    def row_id(self, number: int, environment_id: int | None) -> int:
-        # @sin architecture_agents_number_read_without_an_environment
-        if environment_id is None:
-            # @sin architecture_agents_number_returned_as_its_row_id
-            return number
-        return number + environment_id

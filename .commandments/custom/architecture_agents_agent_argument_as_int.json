@@ -30,8 +30,8 @@
     },
     "sin": {
         "name": "agent-argument-as-int",
-        "description": "A command line argument that names an agent is declared as a plain int, so the number a person writes is read as a row id.",
-        "rule": "An argument that names an agent is declared with type=AgentNumber: the console turns the number into the row id of that agent in the environment of the line.",
+        "description": "A command line argument that names an agent is declared as a plain int, so the id a person writes is never checked against the environment of the line.",
+        "rule": "An argument that names an agent is declared with type=AgentId: the console checks that an agent of the line's environment has that id.",
         "skill": "module-registration"
     }
 }
