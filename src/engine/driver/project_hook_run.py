@@ -22,7 +22,7 @@ class ProjectHookRun:
     on_failure: str = ""
 
     @classmethod
-    def parsed(cls, data: object) -> "ForeignRun":
+    def parsed(cls, data: object) -> "ProjectHookRun":
         fields = mapping(data, "a foreign hook run")
         missing = [key for key in REQUIRED_KEYS if key not in fields]
         if missing:
@@ -35,7 +35,7 @@ class ProjectHookRun:
                    {str(key): value for key, value in answer.items()}, text(fields, "on_failure"))
 
     @classmethod
-    def parsed_many(cls, data: object) -> tuple["ForeignRun", ...]:
+    def parsed_many(cls, data: object) -> tuple["ProjectHookRun", ...]:
         if not is_list(data):
             raise HookEventError(f"foreign is a list, not {data!r}")
         return tuple(cls.parsed(run) for run in data)

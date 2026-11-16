@@ -10,7 +10,7 @@ from tests.unit.source_tree import source_tree
 PROJECT = Path(__file__).resolve().parents[2]
 TESTS_FOLDER = PROJECT / "tests"
 SOURCE_FOLDER = PROJECT / "src"
-AGENT_MESSAGE_DECLARATION = "NudgeDeclaration"
+AGENT_MESSAGE_DECLARATION = "MessageTemplate"
 SETTING_VALUE = "SettingValue"
 AGENT_PROFILE = "AgentProfile"
 SHIPPED_PROFILES = SOURCE_FOLDER / "suites" / "coding" / "support" / "shipped_profiles.py"

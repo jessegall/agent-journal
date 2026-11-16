@@ -46,7 +46,7 @@ src/core/modules/documents/commands/record_mentions/record_mentions_handler.py:t
 src/core/modules/documents/listeners/deleted_row_link_listener.py:a deleted row takes every link to or from it with it
 src/core/modules/documents/listeners/deleted_row_link_listener.py:a deleted row takes every link to or from it with it
 src/core/modules/documents/listeners/link_correction_reset_listener.py:a new selection resets every link correction of the message
-src/core/modules/documents/needs/open_document_needs.py:an agent holds at most one open document
+src/core/modules/documents/states/open_document_states.py:an agent holds at most one open document
 src/core/modules/documents/support/link_endpoint_reader.py:every row a page of links points at is read for its title
 src/core/modules/documents/support/row_comments.py:every comment on the page is shown with its selection
 src/core/modules/documents/support/row_link_writer.py:every correction of the sources of the links being saved is compared with them
@@ -68,12 +68,12 @@ src/core/modules/drivers/commands/driver_attention/driver_attention_subcommand.p
 src/core/modules/drivers/commands/driver_attention/driver_attention_subcommand.py:agents the journal cannot move on by itself are few: each waits for its responder
 src/core/modules/drivers/commands/environment_menu/environment_menu_subcommand.py:The menu names every environment of the project, a catalogue a user makes by hand.
 src/core/modules/drivers/commands/escalation_list/escalation_list_subcommand.py:open escalations are few: each waits for one answer
-src/core/modules/drivers/commands/nudge_list/nudge_list_subcommand.py:One total for each nudge the code declares, never for stored journal rows.
+src/core/modules/drivers/commands/agent_message_list/message_list_subcommand.py:One total for each nudge the code declares, never for stored journal rows.
 src/core/modules/drivers/commands/prune_runtime_folders/prune_runtime_folders_handler.py:the agents whose old terminal logs may go
 src/core/modules/drivers/commands/record_driver_tables/record_driver_tables_handler.py:the digests of one sync are a handful, one per driver
 src/core/modules/drivers/commands/record_hook_call/record_hook_call_handler.py:every line waiting for the agent may be handed to it at this hook
 src/core/modules/drivers/commands/report_compaction_faults/report_compaction_faults_handler.py:The compactions still requested, started or unmeasured ten minutes after they were made: one for each agent at most, read together on a tick.
-src/core/modules/drivers/commands/restore_stack_frame/restore_stack_frame_handler.py:the open suppressions of one agent, a handful at most
+src/core/modules/drivers/commands/restore_stacked_state/restore_stacked_state_handler.py:the open suppressions of one agent, a handful at most
 src/core/modules/drivers/listeners/assigned_work_suppression_listener.py:the frames a person removed from one agent, a handful at most
 src/core/modules/drivers/listeners/claimed_line_release_listener.py:at a start every line left typing is released
 src/core/modules/drivers/listeners/retired_responder_listener.py:the agents a retired agent started, a handful
@@ -83,11 +83,11 @@ src/core/modules/drivers/listeners/wake_acknowledgement_listener.py:the active w
 src/core/modules/drivers/queries/hook_call_query.py:every message display call since the agent's last turn is shown
 src/core/modules/drivers/support/agent_activities.py:The open agents of one family, which the agent limits bound; every rule of the hook reads them from this one load.
 src/core/modules/drivers/support/agent_line_histories.py:an agent has one row for each line source that told it a line, a few dozen at most
-src/core/modules/drivers/support/answer_basis_writers.py:the environments of one project, a handful
-src/core/modules/drivers/support/answer_basis_writers.py:the environments of one project, a handful
-src/core/modules/drivers/support/answer_basis_writers.py:the running agents one level of a tree started, a handful each, a few levels deep
-src/core/modules/drivers/support/answer_basis_writers.py:the stacks of the agents one write moves: one agent, or a running tree of a few
-src/core/modules/drivers/support/nudge_records.py:every record of the nudges asked about decides whether each is due again
+src/core/modules/drivers/support/read_versions_writers.py:the environments of one project, a handful
+src/core/modules/drivers/support/read_versions_writers.py:the environments of one project, a handful
+src/core/modules/drivers/support/read_versions_writers.py:the running agents one level of a tree started, a handful each, a few levels deep
+src/core/modules/drivers/support/read_versions_writers.py:the stacks of the agents one write moves: one agent, or a running tree of a few
+src/core/modules/drivers/support/message_records.py:every record of the nudges asked about decides whether each is due again
 src/core/modules/drivers/support/open_block_rows.py:the open blocks of one agent are few: each is closed or skipped before the agent goes on
 src/core/modules/drivers/support/read_only_access.py:a tool use is matched against every permission the agent was given, oldest first
 src/core/modules/drivers/support/waiting_line_typing.py:a release types every line that waited for the agent, oldest first
@@ -106,7 +106,7 @@ src/core/modules/helpers/commands/start_unstarted_jobs/start_unstarted_jobs_hand
 src/core/modules/helpers/listeners/helper_resume_listener.py:the resume reaches every ended child helper of the agent with an open job
 src/core/modules/helpers/listeners/new_main_helpers_listener.py:a new main agent takes over every helper and report line of an ended one
 src/core/modules/helpers/listeners/new_main_helpers_listener.py:a new main agent takes over every helper and report line of an ended one
-src/core/modules/helpers/needs/job_work_needs.py:the ended jobs whose frames one step takes off one helper's stack, one at most
+src/core/modules/helpers/states/job_work_states.py:the ended jobs whose frames one step takes off one helper's stack, one at most
 src/core/modules/helpers/support/agent_job_counts.py:The agents that ran a helper job or were assigned a task in the counted days, each read once to name its type and model.
 src/core/modules/helpers/support/agent_use.py:The helpers of every type that are not retired, which the kept limit of each agent type bounds.
 src/core/modules/helpers/support/kept_helpers.py:every kept helper of a profile is checked for an idle one
@@ -200,7 +200,7 @@ src/core/modules/processes/listeners/booted_runs_listener.py:at a start every ru
 src/core/modules/processes/listeners/ended_agent_runs_listener.py:an ended agent leaves every run it still has running orphaned
 src/core/modules/processes/listeners/process_removal_listener.py:every reader request that sampled a removed process loses its sample
 src/core/modules/processes/listeners/reader_request_complete_listener.py:a completed request gives its reader to every part that waited for it
-src/core/modules/processes/needs/watched_run_needs.py:the open watches of the agents one step reads, a few each
+src/core/modules/processes/states/watched_run_states.py:the open watches of the agents one step reads, a few each
 src/core/modules/processes/queries/output_query.py:the output of every process asked about is read
 src/core/modules/processes/queries/process_part_query.py:a run is judged by all of its parts, and one shell line may have more than fifty
 src/core/modules/processes/queries/reader_request_query.py:the open reader requests are read once and kept until one completes
@@ -283,7 +283,7 @@ src/core/modules/usage/support/agent_stack_summaries.py:one page of agent cards 
 src/core/modules/viewer/commands/prune_window_permissions/prune_window_permissions_handler.py:pruning checks every window permission of the environment for a subject that is gone
 src/core/modules/waits/lines/long_wait_lines.py:the open waits of one agent, a few at most
 src/core/modules/waits/listeners/target_resolution_listener.py:Every save of a row asks whether an open wait waits on it, so the unresolved targets are one kept load that the open waits bound.
-src/core/modules/waits/needs/wait_needs.py:the open waits of the agents one step reads, and their rows, a few each
+src/core/modules/waits/states/wait_states.py:the open waits of the agents one step reads, and their rows, a few each
 src/core/modules/waits/support/open_waits.py:the open waits of the agents one step reads, a few each
 src/engine/listener/rows/event_rows.py:every row the logged events name is read once for the listeners
 src/engine/repository/standard_rows.py:the rows a version comes with are compared by title with every stored one
@@ -339,8 +339,8 @@ src/suites/coding/modules/workers/listeners/worker_move_mark_listener.py:a worke
 src/suites/coding/modules/workers/listeners/worker_process_removal_listener.py:removed processes leave every operation, line and worktree that pointed at them
 src/suites/coding/modules/workers/listeners/worker_process_removal_listener.py:removed processes leave every operation, line and worktree that pointed at them
 src/suites/coding/modules/workers/listeners/worker_process_removal_listener.py:removed processes leave every operation, line and worktree that pointed at them
-src/suites/coding/modules/workers/needs/delivered_work_stop_needs.py:the main agent checks every proof a worker delivered
-src/suites/coding/modules/workers/needs/merge_job_needs.py:the merges the mergers of one step started that have not ended, one or two each
+src/suites/coding/modules/workers/states/delivered_work_stop_states.py:the main agent checks every proof a worker delivered
+src/suites/coding/modules/workers/states/merge_job_states.py:the merges the mergers of one step started that have not ended, one or two each
 src/suites/coding/modules/workers/policies/dispatch/worker_reuse_policy.py:every open worktree is checked for a worker that knows the files of the new tasks
 src/suites/coding/modules/workers/policies/dispatch/worker_reuse_policy.py:the tasks one dispatch line names, a few at most; a number with no task is no task
 src/suites/coding/modules/workers/queries/proof_query.py:every proof of the worktree or tasks asked about counts

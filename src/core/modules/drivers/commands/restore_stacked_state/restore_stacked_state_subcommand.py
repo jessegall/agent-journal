@@ -15,7 +15,7 @@ class RestoreStackedStateSubcommand(Subcommand[RestoreStackedState, str]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent", type=int)
-        parser.add_argument("frame")
+        parser.add_argument("stacked_state")
 
     def command(self, arguments: Namespace, caller: Caller) -> RestoreStackedState:
         return RestoreStackedState(arguments.agent, arguments.stacked_state)

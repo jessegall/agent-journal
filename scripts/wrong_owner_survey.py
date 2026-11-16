@@ -112,7 +112,7 @@ class WrongOwnerSurvey:
 
     @staticmethod
     def is_register(path: Path, tree: ast.Module) -> bool:
-        """A file of one module's declarations, its nudges or its setting keys with the values they use, holding no
+        """A file of one module's declarations, its agent messages or its setting keys with the values they use, holding no
         behaviour but the one class it is named for: one subject however many values it lists."""
         behaviour = [node for node in tree.body if isinstance(node, (ast.ClassDef, ast.FunctionDef))]
         return all(isinstance(node, ast.ClassDef) and snake_case(node.name) == path.stem for node in behaviour)

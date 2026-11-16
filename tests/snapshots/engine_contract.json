@@ -162,21 +162,21 @@
     "agent_machine.agent_view.AgentView": {
       "bases": [],
       "fields": [
-        "basis: AnswerBasis",
+        "read_versions: ReadVersions",
         "agent: AgentReference",
         "program_name: str",
         "session: str",
         "profile: str",
         "driver_name: str",
-        "session_generation: int",
+        "session_number: int",
         "stepped_at: datetime",
         "stack: Stack",
         "facts: tuple[Fact, ...]",
-        "needs: tuple[Need, ...]",
+        "states: tuple[RequiredState, ...]",
         "plans: tuple[BlockPlan, ...]",
         "blocks: tuple[OpenBlock, ...]",
         "grants: tuple[Grant, ...]",
-        "suppressions: tuple[NeedKey, ...]",
+        "suppressions: tuple[StateKey, ...]",
         "escalation: Escalation | None",
         "settings: Mapping[str, object]",
         "is_resting: bool",
@@ -191,7 +191,7 @@
         "newest_hook_at: datetime | None",
         "journal_started_at: datetime | None",
         "last_refused_rules: frozenset[str]",
-        "subject_ends: Mapping[SubjectReference, FrameEnd]"
+        "subject_ends: Mapping[RowReference, StateEnd]"
       ],
       "methods": []
     },
@@ -215,7 +215,7 @@
         "is_safety: bool",
         "slot: TransformSlot | None",
         "events: tuple[HookEventName, ...]",
-        "carrier: LineCarrier",
+        "channel: LineChannel",
         "is_required: bool",
         "has_failure: bool",
         "constructor_types: tuple[str, ...]",
@@ -229,7 +229,7 @@
     "agent_machine.compiling.contributions.Contributions": {
       "bases": [],
       "fields": [
-        "needs: tuple[type[NeedSource], ...]",
+        "states: tuple[type[StateSource], ...]",
         "facts: tuple[type[FactSource], ...]",
         "policies: tuple[type[Policy], ...]",
         "lines: tuple[type[LineSource], ...]",
@@ -373,7 +373,7 @@
         "timing: ClassVar[EffectTiming]",
         "is_required: ClassVar[bool]",
         "completes_work: ClassVar[bool]",
-        "failure: ClassVar[type[NudgeDeclaration] | None]"
+        "failure: ClassVar[type[MessageTemplate] | None]"
       ],
       "methods": [
         "commands(self, view: AgentView, record: DecisionRecord) -> Sequence[Command[object]]",
@@ -400,7 +400,7 @@
       "fields": [],
       "methods": [
         "lines(self, question: Question, view: AgentView) -> Sequence[Line]",
-        "nudges(self, event: HookEvent | None, agent_id: int) -> Sequence[Nudge]"
+        "agent_messages(self, event: HookEvent | None, agent_id: int) -> Sequence[AgentMessage]"
       ]
     },
     "agent_machine.contracts.event_policy.EventPolicy": {
@@ -412,7 +412,7 @@
       ],
       "methods": [
         "refusals(self, question: Question, view: AgentView) -> Sequence[Reason]",
-        "refusal(self, event: HookEvent, agent_id: int) -> Nudge | None"
+        "refusal(self, event: HookEvent, agent_id: int) -> AgentMessage | None"
       ]
     },
     "agent_machine.contracts.line_source.LineSource": {
@@ -426,7 +426,7 @@
         "key: ClassVar[str]",
         "role_group: ClassVar[RoleGroup]",
         "start_line: ClassVar[bool]",
-        "carrier: ClassVar[LineCarrier]",
+        "channel: ClassVar[LineChannel]",
         "category: ClassVar[LineCategory]",
         "interval_key: ClassVar[str]"
       ],
@@ -446,11 +446,11 @@
         "is_safety: ClassVar[bool]",
         "judges_stops: ClassVar[bool]",
         "grant_types: ClassVar[Sequence[GrantType]]",
-        "entrance_commands: ClassVar[Sequence[type[Command[object]]]]"
+        "entry_point_commands: ClassVar[Sequence[type[Command[object]]]]"
       ],
       "methods": [
         "refusals(self, question: Question, view: AgentView) -> Sequence[Reason]",
-        "entrance_refusals(self, command: Command[object], agent: AgentReference) -> Sequence[Reason]"
+        "entry_point_refusals(self, command: Command[object], agent: AgentReference) -> Sequence[Reason]"
       ]
     },
     "agent_machine.contracts.printer.Printer": {
@@ -514,7 +514,7 @@
         "stop_checks: Sequence[StopCheck]",
         "counts: RefusalCounts",
         "wake: WakeChange",
-        "basis: AnswerBasis",
+        "read_versions: ReadVersions",
         "printing: Sequence[EncodedPart]",
         "inputs: DecisionInputs",
         "spent_grants: Sequence[Grant]"
@@ -534,148 +534,10 @@
         "work_stop: ClassVar[WorkStop]",
         "responder: ClassVar[Responder]",
         "opening_lines: ClassVar[Sequence[type[LineSource]]]",
+        "instructions: ClassVar[Sequence[str]]",
         "depth_limit: ClassVar[int]"
       ],
       "methods": []
-    },
-    "agent_machine.needs.agent_reference.AgentReference": {
-      "bases": [],
-      "fields": [
-        "agent_id: int",
-        "parent_id: int | None",
-        "environment_id: int",
-        "agent_type: str"
-      ],
-      "methods": []
-    },
-    "agent_machine.needs.block_plan.BlockPlan": {
-      "bases": [],
-      "fields": [
-        "nudge: Nudge",
-        "condition: BlockCondition",
-        "tool_check_key: str",
-        "rank: str",
-        "stop_check_key: str",
-        "members: tuple[int, ...]",
-        "tool_grace_uses: int",
-        "stop_grace_seconds: int",
-        "scope_tools: bool",
-        "scope_stop: bool",
-        "is_strict: bool",
-        "closer_roles: tuple[CloserRole, ...]",
-        "subject: SubjectReference | None",
-        "context_generation: int | None",
-        "lifting_lines: tuple[str, ...]",
-        "stop_nudge: Nudge | None",
-        "countdown: Nudge | None"
-      ],
-      "methods": []
-    },
-    "agent_machine.needs.ended_fact.EndedFact": {
-      "bases": [
-        "Fact"
-      ],
-      "fields": [
-        "cause: str",
-        "actor_id: int"
-      ],
-      "methods": []
-    },
-    "agent_machine.needs.fact.Fact": {
-      "bases": [],
-      "fields": [
-        "subject: SubjectReference | None"
-      ],
-      "methods": []
-    },
-    "agent_machine.needs.fact_source.FactSource": {
-      "bases": [
-        "ABC"
-      ],
-      "fields": [
-        "fact_types: ClassVar[Sequence[type[Fact]]]",
-        "agent_types: ClassVar[Sequence[str]]"
-      ],
-      "methods": [
-        "facts(self, agents: Sequence[AgentReference]) -> Mapping[int, Sequence[Fact]]"
-      ]
-    },
-    "agent_machine.needs.line_history.LineHistory": {
-      "bases": [
-        "ABC"
-      ],
-      "fields": [],
-      "methods": [
-        "last_spoke(self, source_key: str, agent_id: int) -> Timestamp | None"
-      ]
-    },
-    "agent_machine.needs.need.Need": {
-      "bases": [],
-      "fields": [
-        "state: State",
-        "rank: str",
-        "key: NeedKey"
-      ],
-      "methods": []
-    },
-    "agent_machine.needs.need_source.NeedSource": {
-      "bases": [
-        "ABC"
-      ],
-      "fields": [
-        "state_type: ClassVar[type[State]]",
-        "rank: ClassVar[str]",
-        "agent_types: ClassVar[Sequence[str]]",
-        "role_group: ClassVar[RoleGroup]",
-        "subject_models: ClassVar[Sequence[str]]"
-      ],
-      "methods": [
-        "needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]",
-        "ends(self, subjects: Sequence[SubjectReference]) -> Mapping[SubjectReference, FrameEnd]"
-      ]
-    },
-    "agent_machine.needs.pause_fact.PauseFact": {
-      "bases": [
-        "Fact"
-      ],
-      "fields": [
-        "causes: tuple[PauseCause, ...]",
-        "refusal_text: str"
-      ],
-      "methods": []
-    },
-    "agent_machine.needs.rank_order.RankOrder": {
-      "bases": [],
-      "fields": [
-        "policies: tuple[str, ...]",
-        "blocks: tuple[str, ...]"
-      ],
-      "methods": [
-        "place(self, rank: str) -> int"
-      ]
-    },
-    "agent_machine.needs.step_requests.StepRequests": {
-      "bases": [
-        "ABC"
-      ],
-      "fields": [],
-      "methods": [
-        "requested(self, agent_ids: Sequence[int], cause: str, context: Context) -> None"
-      ]
-    },
-    "agent_machine.needs.wake_cause.WakeCause": {
-      "bases": [
-        "ABC"
-      ],
-      "fields": [
-        "key: ClassVar[str]",
-        "wakes_mid_turn: ClassVar[bool]"
-      ],
-      "methods": [
-        "needs_wake(self, view: AgentView) -> bool",
-        "text(self, view: AgentView) -> str",
-        "is_inhibited(self, view: AgentView) -> bool"
-      ]
     },
     "agent_machine.record.block_closing.BlockClosing": {
       "bases": [],
@@ -691,7 +553,7 @@
       "bases": [],
       "fields": [
         "table_digest: str",
-        "need_keys: tuple[NeedKey, ...]",
+        "state_keys: tuple[StateKey, ...]",
         "block_ids: tuple[int, ...]",
         "grant_ids: tuple[int, ...]"
       ],
@@ -711,8 +573,8 @@
       "fields": [
         "program: str",
         "session: str",
-        "session_generation: int",
-        "firing: str",
+        "session_number: int",
+        "event_id: str",
         "agent_id: int",
         "environment_id: int",
         "agent_type: str",
@@ -721,7 +583,7 @@
         "child_agent: str"
       ],
       "methods": [
-        "identified(cls, event: HookEvent, session_generation: int, agent_id: int, environment_id: int, agent_type: str, profile: str, driver_name: str) -> 'EventIdentity'"
+        "identified(cls, event: HookEvent, session_number: int, agent_id: int, environment_id: int, agent_type: str, profile: str, driver_name: str) -> 'EventIdentity'"
       ]
     },
     "agent_machine.record.intent.Intent": {
@@ -741,13 +603,13 @@
         "text: str",
         "category: LineCategory",
         "interval_key: str",
-        "carrier: LineCarrier",
+        "channel: LineChannel",
         "source_key: str",
-        "nudge: Nudge | None"
+        "agent_message: AgentMessage | None"
       ],
       "methods": [
-        "of_nudge(cls, nudge: Nudge, carrier: LineCarrier, category: LineCategory | None) -> 'Line'",
-        "said(self) -> Nudge"
+        "of_agent_message(cls, agent_message: AgentMessage, channel: LineChannel, category: LineCategory | None) -> 'Line'",
+        "said(self) -> AgentMessage"
       ]
     },
     "agent_machine.record.question.Question": {
@@ -795,9 +657,9 @@
       "bases": [],
       "fields": [
         "move_type: StackMoveType",
-        "frame_key: NeedKey | None",
+        "stacked_state_key: StateKey | None",
         "reason_text: str",
-        "frame_end: FrameEnd | None",
+        "stacked_state_end: StateEnd | None",
         "actor_id: int | None"
       ],
       "methods": []
@@ -810,42 +672,173 @@
         "reason_text: str",
         "applied: bool"
       ],
-      "methods": []
+      "methods": [
+        "is_refusal(self) -> bool",
+        "refusal_text(self) -> str",
+        "saved_fields(self) -> Mapping[str, object]"
+      ]
     },
     "agent_machine.record.wake_change.WakeChange": {
       "bases": [],
       "fields": [
         "wake_move: WakeMove",
-        "work_generation: str",
+        "work_number: str",
         "causes: tuple[str, ...]"
       ],
       "methods": [
         "unchanged(cls) -> 'WakeChange'"
       ]
     },
+    "agent_machine.states.agent_reference.AgentReference": {
+      "bases": [],
+      "fields": [
+        "agent_id: int",
+        "parent_id: int | None",
+        "environment_id: int",
+        "agent_type: str"
+      ],
+      "methods": []
+    },
+    "agent_machine.states.block_plan.BlockPlan": {
+      "bases": [],
+      "fields": [
+        "agent_message: AgentMessage",
+        "condition: BlockCondition",
+        "tool_check_key: str",
+        "rank: str",
+        "stop_check_key: str",
+        "members: tuple[int, ...]",
+        "tool_grace_uses: int",
+        "stop_grace_seconds: int",
+        "scope_tools: bool",
+        "scope_stop: bool",
+        "is_strict: bool",
+        "closer_roles: tuple[CloserRole, ...]",
+        "subject: RowReference | None",
+        "context_generation: int | None",
+        "lifting_lines: tuple[str, ...]",
+        "stop_agent_message: AgentMessage | None",
+        "countdown: AgentMessage | None"
+      ],
+      "methods": []
+    },
+    "agent_machine.states.ended_fact.EndedFact": {
+      "bases": [
+        "Fact"
+      ],
+      "fields": [
+        "cause: str",
+        "actor_id: int"
+      ],
+      "methods": []
+    },
+    "agent_machine.states.fact.Fact": {
+      "bases": [],
+      "fields": [
+        "subject: RowReference | None"
+      ],
+      "methods": []
+    },
+    "agent_machine.states.fact_source.FactSource": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [
+        "fact_types: ClassVar[Sequence[type[Fact]]]",
+        "agent_types: ClassVar[Sequence[str]]"
+      ],
+      "methods": [
+        "facts(self, agents: Sequence[AgentReference]) -> Mapping[int, Sequence[Fact]]"
+      ]
+    },
+    "agent_machine.states.line_history.LineHistory": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [],
+      "methods": [
+        "last_spoke(self, source_key: str, agent_id: int) -> Timestamp | None"
+      ]
+    },
+    "agent_machine.states.pause_fact.PauseFact": {
+      "bases": [
+        "Fact"
+      ],
+      "fields": [
+        "causes: tuple[PauseCause, ...]",
+        "refusal_text: str"
+      ],
+      "methods": []
+    },
+    "agent_machine.states.rank_order.RankOrder": {
+      "bases": [],
+      "fields": [
+        "policies: tuple[str, ...]",
+        "blocks: tuple[str, ...]"
+      ],
+      "methods": [
+        "place(self, rank: str) -> int"
+      ]
+    },
+    "agent_machine.states.required_state.RequiredState": {
+      "bases": [],
+      "fields": [
+        "state: State",
+        "rank: str",
+        "key: StateKey"
+      ],
+      "methods": []
+    },
+    "agent_machine.states.state_source.StateSource": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [
+        "state_type: ClassVar[type[State]]",
+        "rank: ClassVar[str]",
+        "agent_types: ClassVar[Sequence[str]]",
+        "role_group: ClassVar[RoleGroup]",
+        "subject_models: ClassVar[Sequence[str]]"
+      ],
+      "methods": [
+        "states(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]",
+        "ends(self, subjects: Sequence[RowReference]) -> Mapping[RowReference, StateEnd]"
+      ]
+    },
+    "agent_machine.states.step_requests.StepRequests": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [],
+      "methods": [
+        "requested(self, agent_ids: Sequence[int], cause: str, context: Context) -> None"
+      ]
+    },
+    "agent_machine.states.wake_cause.WakeCause": {
+      "bases": [
+        "ABC"
+      ],
+      "fields": [
+        "key: ClassVar[str]",
+        "wakes_mid_turn: ClassVar[bool]"
+      ],
+      "methods": [
+        "needs_wake(self, view: AgentView) -> bool",
+        "text(self, view: AgentView) -> str",
+        "is_inhibited(self, view: AgentView) -> bool"
+      ]
+    },
     "agent_machine.step_result.StepResult": {
       "bases": [],
       "fields": [
-        "basis: AnswerBasis",
+        "read_versions: ReadVersions",
         "stack: Stack",
         "record: DecisionRecord",
         "wake: WakeChange"
       ],
       "methods": []
     },
-    "agent_machine.stepping.admission_receipt.AdmissionReceipt": {
-      "bases": [],
-      "fields": [
-        "agent_id: int",
-        "firing: str",
-        "command_fingerprint: str",
-        "policy_key: str",
-        "grant_id: int",
-        "is_consumed: bool"
-      ],
-      "methods": []
-    },
-    "agent_machine.stepping.agent_machine.AgentMachine": {
+    "agent_machine.stepping.agent_state_machine.AgentStateMachine": {
       "bases": [],
       "fields": [],
       "methods": [
@@ -916,7 +909,7 @@
         "reason: str",
         "tried: str",
         "expires_at: datetime | None",
-        "spending_firing: str"
+        "spending_event_id: str"
       ],
       "methods": [
         "is_usable(self) -> bool",
@@ -930,8 +923,8 @@
       "fields": [],
       "methods": [
         "usable_grants(self, agents: Sequence[AgentReference]) -> Mapping[int, Sequence[Grant]]",
-        "open_receipt(self, agent_id: int, command_fingerprint: str, policy_key: str) -> AdmissionReceipt | None",
-        "spend(self, grant: Grant, firing: str, command_fingerprint: str, context: Context) -> None"
+        "open_receipt(self, agent_id: int, command_fingerprint: str, policy_key: str) -> UsedGrant | None",
+        "spend(self, grant: Grant, event_id: str, command_fingerprint: str, context: Context) -> None"
       ]
     },
     "agent_machine.stepping.judged_blocks.JudgedBlocks": {
@@ -969,23 +962,35 @@
       "fields": [],
       "methods": [
         "built(self, view: AgentView) -> BuiltStack",
-        "work_lane(view: AgentView) -> list[Frame]",
-        "block_lane(view: AgentView, old: dict[NeedKey, Frame]) -> list[Frame]",
-        "block_key(block: OpenBlock) -> NeedKey",
-        "capped(view: AgentView, work_count: int, blocked_frames: list[Frame]) -> list[Frame]",
-        "safety(view: AgentView, old: dict[NeedKey, Frame]) -> list[Frame]",
+        "work_lane(view: AgentView) -> list[StackedState]",
+        "block_lane(view: AgentView, old: dict[StateKey, StackedState]) -> list[StackedState]",
+        "block_key(block: OpenBlock) -> StateKey",
+        "capped(view: AgentView, work_count: int, blocked_stacked_states: list[StackedState]) -> list[StackedState]",
+        "safety(view: AgentView, old: dict[StateKey, StackedState]) -> list[StackedState]",
         "moves(view: AgentView, new: Stack) -> list[StackMove]",
-        "frame_end(view: AgentView, frame: Frame) -> FrameEnd | None"
+        "stacked_state_end(view: AgentView, stacked_state: StackedState) -> StateEnd | None"
       ]
     },
-    "agent_machine.stepping.wake_judgement.WakeJudgement": {
+    "agent_machine.stepping.used_grant.UsedGrant": {
+      "bases": [],
+      "fields": [
+        "agent_id: int",
+        "event_id: str",
+        "command_fingerprint: str",
+        "policy_key: str",
+        "grant_id: int",
+        "is_consumed: bool"
+      ],
+      "methods": []
+    },
+    "agent_machine.stepping.wake_check.WakeCheck": {
       "bases": [],
       "fields": [],
       "methods": [
         "change(self, view: AgentView, stack: Stack) -> WakeChange",
         "attention(self, view: AgentView, stack: Stack) -> list[str]",
         "has_open_job(view: AgentView, stack: Stack) -> bool",
-        "work_generation(stack: Stack) -> str"
+        "work_number(stack: Stack) -> str"
       ]
     },
     "agent_stack.agent_stack_area.AgentStackArea": {
@@ -995,18 +1000,6 @@
       "fields": [],
       "methods": []
     },
-    "agent_stack.answer_basis.AnswerBasis": {
-      "bases": [],
-      "fields": [
-        "stack_version: int",
-        "driver_epoch: int",
-        "program_epoch: int",
-        "attempt: int"
-      ],
-      "methods": [
-        "matches(self, current: 'AnswerBasis') -> bool"
-      ]
-    },
     "agent_stack.escalation.Escalation": {
       "bases": [],
       "fields": [
@@ -1014,36 +1007,18 @@
         "escalation_type: EscalationType",
         "responder: Responder",
         "block_ids: tuple[int, ...]",
-        "work_keys: tuple[NeedKey, ...]",
+        "work_keys: tuple[StateKey, ...]",
         "refusal_count: int"
       ],
       "methods": [
         "defers(self, block_id: int | None) -> bool",
-        "defers_work(self, key: NeedKey) -> bool"
+        "defers_work(self, key: StateKey) -> bool"
       ]
-    },
-    "agent_stack.frame.Frame": {
-      "bases": [],
-      "fields": [
-        "state: State",
-        "need_key: NeedKey",
-        "entered_at: datetime"
-      ],
-      "methods": []
-    },
-    "agent_stack.need_key.NeedKey": {
-      "bases": [],
-      "fields": [
-        "state_name: str",
-        "subject: SubjectReference | None",
-        "generation: str"
-      ],
-      "methods": []
     },
     "agent_stack.open_block.OpenBlock": {
       "bases": [],
       "fields": [
-        "nudge_key: str",
+        "agent_message_key: str",
         "block_id: int | None",
         "reason: Reason",
         "scope_tools: bool",
@@ -1051,13 +1026,25 @@
         "tool_grace_passed: bool",
         "stop_grace_passed: bool",
         "is_strict: bool",
-        "subject: SubjectReference | None",
+        "subject: RowReference | None",
         "stop_reason: Reason | None"
       ],
       "methods": [
         "refuses_tools(self) -> bool",
         "refuses_stop(self, escalation: Escalation | None) -> bool",
         "stop_refusal(self) -> Reason"
+      ]
+    },
+    "agent_stack.read_versions.ReadVersions": {
+      "bases": [],
+      "fields": [
+        "stack_version: int",
+        "driver_version: int",
+        "program_version: int",
+        "attempt: int"
+      ],
+      "methods": [
+        "matches(self, current: 'ReadVersions') -> bool"
       ]
     },
     "agent_stack.reason.Reason": {
@@ -1068,7 +1055,7 @@
         "rank: str",
         "text: str",
         "lifting_lines: tuple[str, ...]",
-        "subject: SubjectReference | None",
+        "subject: RowReference | None",
         "handover: WorkReference | None",
         "is_safety: bool"
       ],
@@ -1076,25 +1063,51 @@
         "allowed(cls) -> 'Reason'"
       ]
     },
+    "agent_stack.row_reference.RowReference": {
+      "bases": [],
+      "fields": [
+        "model: str",
+        "row_id: int"
+      ],
+      "methods": []
+    },
     "agent_stack.stack.Stack": {
       "bases": [],
       "fields": [
-        "frames: Sequence[Frame]"
+        "stacked_states: Sequence[StackedState]"
       ],
       "methods": [
         "has(self, state_type: type[State]) -> bool",
-        "subjects_without(self, need_keys: set[NeedKey]) -> list[SubjectReference]",
-        "lane(self, lane: Lane) -> list[Frame]",
-        "work_lane_top(self) -> Frame",
+        "subjects_without(self, state_keys: set[StateKey]) -> list[RowReference]",
+        "lane(self, lane: StackLevel) -> list[StackedState]",
+        "work_lane_top(self) -> StackedState",
         "stop_answer(self, contract: WorkStop, escalation: Escalation | None) -> StopAnswer"
       ]
+    },
+    "agent_stack.stacked_state.StackedState": {
+      "bases": [],
+      "fields": [
+        "state: State",
+        "state_key: StateKey",
+        "entered_at: datetime"
+      ],
+      "methods": []
+    },
+    "agent_stack.state_key.StateKey": {
+      "bases": [],
+      "fields": [
+        "state_name: str",
+        "subject: RowReference | None",
+        "generation: str"
+      ],
+      "methods": []
     },
     "agent_stack.states.blocked.Blocked": {
       "bases": [
         "State"
       ],
       "fields": [
-        "lane: ClassVar[Lane]",
+        "lane: ClassVar[StackLevel]",
         "rank: ClassVar[int]",
         "block: OpenBlock"
       ],
@@ -1108,7 +1121,7 @@
         "State"
       ],
       "fields": [
-        "lane: ClassVar[Lane]",
+        "lane: ClassVar[StackLevel]",
         "rank: ClassVar[int]",
         "context_generation: int",
         "cause: str",
@@ -1122,7 +1135,7 @@
         "State"
       ],
       "fields": [
-        "lane: ClassVar[Lane]",
+        "lane: ClassVar[StackLevel]",
         "rank: ClassVar[int]",
         "cause: str",
         "actor_id: int"
@@ -1143,7 +1156,7 @@
         "State"
       ],
       "fields": [
-        "lane: ClassVar[Lane]",
+        "lane: ClassVar[StackLevel]",
         "rank: ClassVar[int]",
         "causes: tuple[PauseCause, ...]",
         "refusal_text: str"
@@ -1153,7 +1166,7 @@
     "agent_stack.states.state.State": {
       "bases": [],
       "fields": [
-        "lane: ClassVar[Lane]",
+        "lane: ClassVar[StackLevel]",
         "rank: ClassVar[int]"
       ],
       "methods": [
@@ -1167,7 +1180,7 @@
         "State"
       ],
       "fields": [
-        "lane: ClassVar[Lane]",
+        "lane: ClassVar[StackLevel]",
         "rank: ClassVar[int]",
         "stopped_at: datetime",
         "cause: str",
@@ -1180,9 +1193,9 @@
         "State"
       ],
       "fields": [
-        "lane: ClassVar[Lane]",
+        "lane: ClassVar[StackLevel]",
         "rank: ClassVar[int]",
-        "subjects: tuple[SubjectReference, ...]",
+        "subjects: tuple[RowReference, ...]",
         "wait_mode: WaitMode",
         "agent_chose: bool",
         "text: str"
@@ -1194,7 +1207,7 @@
         "State"
       ],
       "fields": [
-        "lane: ClassVar[Lane]",
+        "lane: ClassVar[StackLevel]",
         "rank: ClassVar[int]",
         "work: WorkReference",
         "work_remains: bool",
@@ -1220,14 +1233,6 @@
         "compaction_handoff(cls) -> 'StopAnswer'",
         "refusal_reasons(self) -> tuple[Reason, ...]"
       ]
-    },
-    "agent_stack.subject_reference.SubjectReference": {
-      "bases": [],
-      "fields": [
-        "model: str",
-        "row_id: int"
-      ],
-      "methods": []
     },
     "agent_stack.work_reference.WorkReference": {
       "bases": [],
@@ -1270,20 +1275,6 @@
       "fields": [],
       "methods": []
     },
-    "agent_step.frame_codec.FrameCodec": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "encoded(frames: Sequence[Frame]) -> str",
-        "decoded(text: str) -> list[Frame]",
-        "encoded_key(key: NeedKey) -> str",
-        "decoded_key(text: str) -> NeedKey",
-        "frame(stored: StoredFrame) -> Frame",
-        "plain(value: object) -> Any",
-        "built(cls: type, values: dict[str, Any]) -> Any",
-        "typed(hint: Any, value: Any) -> Any"
-      ]
-    },
     "agent_step.reply_printer.ReplyPrinter": {
       "bases": [
         "Printer"
@@ -1291,6 +1282,20 @@
       "fields": [],
       "methods": [
         "encoded(self, record: DecisionRecord) -> HookReply"
+      ]
+    },
+    "agent_step.stack_codec.StackCodec": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "encoded(stacked_states: Sequence[StackedState]) -> str",
+        "decoded(text: str) -> list[StackedState]",
+        "encoded_key(key: StateKey) -> str",
+        "decoded_key(text: str) -> StateKey",
+        "stacked_state(stored: StoredStackedState) -> StackedState",
+        "plain(value: object) -> Any",
+        "built(cls: type, values: dict[str, Any]) -> Any",
+        "typed(hint: Any, value: Any) -> Any"
       ]
     },
     "agent_step.step_commit.StepCommit": {
@@ -1315,12 +1320,12 @@
         "save(self, view: AgentView, step: StepResult, hook_call_id: int | None, context: Context) -> StepCommit"
       ]
     },
-    "agent_step.stored_frame.StoredFrame": {
+    "agent_step.stored_stacked_state.StoredStackedState": {
       "bases": [],
       "fields": [
         "state_name: str",
         "state: Any",
-        "need_key: Any",
+        "state_key: Any",
         "entered_at: str"
       ],
       "methods": []
@@ -1476,12 +1481,23 @@
         "listed(self) -> dict[str, str]"
       ]
     },
+    "chat.mark_category.MarkCategory": {
+      "bases": [],
+      "fields": [
+        "name: str",
+        "title: str",
+        "icon: str",
+        "group: MarkGroup",
+        "colouring: MarkColouring"
+      ],
+      "methods": []
+    },
     "chat.mark_declaration.MarkDeclaration": {
       "bases": [],
       "fields": [
         "type: StrEnum",
         "variants: type[StrEnum]",
-        "family: MarkFamily",
+        "family: MarkCategory",
         "label: str",
         "mark_icon: str",
         "click: MarkClick",
@@ -1501,17 +1517,6 @@
         "declared(cls) -> 'MarkDeclaration'",
         "problems(self) -> list[str]"
       ]
-    },
-    "chat.mark_family.MarkFamily": {
-      "bases": [],
-      "fields": [
-        "name: str",
-        "title: str",
-        "icon: str",
-        "group: MarkGroup",
-        "colouring: MarkColouring"
-      ],
-      "methods": []
     },
     "check.check_area.CheckArea": {
       "bases": [
@@ -3115,6 +3120,31 @@
         "is_main_stop(self) -> bool"
       ]
     },
+    "driver.agent_message.AgentMessage": {
+      "bases": [],
+      "fields": [
+        "key: str",
+        "type: AgentMessageType",
+        "text: str",
+        "interval: Interval | None",
+        "turn_limited: bool",
+        "required_command: str",
+        "fields: tuple[tuple[str, object], ...]",
+        "declaration: 'MessageTemplate | None'",
+        "record_keys: tuple[str, ...]"
+      ],
+      "methods": [
+        "labelled(self) -> str",
+        "role_variant(self, role: str) -> 'AgentMessage'",
+        "wakes_agent(self) -> bool",
+        "is_mergeable(self) -> bool",
+        "merge_context(self) -> tuple[tuple[str, str], ...]",
+        "records(self) -> 'tuple[AgentMessage, ...]'",
+        "stored(self) -> StoredMessage",
+        "collapsed(agent_messages: 'Iterable[AgentMessage]') -> 'list[AgentMessage]'",
+        "merged(group: 'Sequence[AgentMessage]') -> 'AgentMessage'"
+      ]
+    },
     "driver.block_check.BlockCheck": {
       "bases": [],
       "fields": [
@@ -3191,15 +3221,15 @@
       "fields": [
         "key: str",
         "action: str",
-        "span: Span | TimesSpan",
+        "span: Span | TimeWindow",
         "is_silent: bool",
         "line_limit: int"
       ],
       "methods": [
-        "declaration(self) -> NudgeDeclaration",
-        "nudge(self, remaining: object) -> Nudge",
+        "declaration(self) -> MessageTemplate",
+        "agent_message(self, remaining: object) -> AgentMessage",
         "remaining_after(self, used_count: int) -> int",
-        "line_at(self, remaining: int) -> Nudge | None"
+        "line_at(self, remaining: int) -> AgentMessage | None"
       ]
     },
     "driver.diff_count.DiffCount": {
@@ -3214,17 +3244,6 @@
         "parsed(cls, data: object) -> 'DiffCount'"
       ]
     },
-    "driver.driver.Driver": {
-      "bases": [],
-      "fields": [
-        "name: ClassVar[str]",
-        "suite_name: ClassVar[str]",
-        "role: ClassVar[str]",
-        "guards: ClassVar[Sequence[type[Guard[Never]]]]",
-        "opening_lines: ClassVar[Sequence[str]]"
-      ],
-      "methods": []
-    },
     "driver.driver_area.DriverArea": {
       "bases": [
         "EngineArea"
@@ -3232,13 +3251,13 @@
       "fields": [],
       "methods": []
     },
-    "driver.enums.foreign_outcome.ForeignOutcome": {
+    "driver.enums.project_hook_outcome.ProjectHookOutcome": {
       "bases": [
         "StrEnum"
       ],
       "fields": [],
       "methods": [
-        "detected(cls, run: ForeignRun, answer: ForeignAnswer) -> 'ForeignOutcome'"
+        "detected(cls, run: ProjectHookRun, answer: ProjectHookAnswer) -> 'ProjectHookOutcome'"
       ]
     },
     "driver.errors.hook_event_error.HookEventError": {
@@ -3264,37 +3283,6 @@
         "detected(cls) -> 'OldHookRunnerError'"
       ]
     },
-    "driver.foreign_answer.ForeignAnswer": {
-      "bases": [],
-      "fields": [
-        "name: str",
-        "refusal: str",
-        "lines: tuple[str, ...]",
-        "updated_input: Mapping[str, object]",
-        "terminal: str"
-      ],
-      "methods": [
-        "read(cls, run: ForeignRun) -> 'ForeignAnswer'",
-        "reason(self) -> str"
-      ]
-    },
-    "driver.foreign_run.ForeignRun": {
-      "bases": [],
-      "fields": [
-        "id: str",
-        "exit_code: int",
-        "stdout: str",
-        "stderr: str",
-        "milliseconds: int",
-        "timed_out: bool",
-        "answer: Mapping[str, object]",
-        "on_failure: str"
-      ],
-      "methods": [
-        "parsed(cls, data: object) -> 'ForeignRun'",
-        "parsed_many(cls, data: object) -> tuple['ForeignRun', ...]"
-      ]
-    },
     "driver.hook_call_like.HookCallLike": {
       "bases": [
         "Protocol"
@@ -3317,7 +3305,7 @@
         "program: str",
         "event: HookEventName",
         "session: str",
-        "firing: str",
+        "event_id: str",
         "hook_timestamp_ms: int",
         "actor: str",
         "environment: str",
@@ -3326,12 +3314,12 @@
         "raw: Mapping[object, object]",
         "accepts_lines: bool",
         "launch: str",
-        "foreign: tuple[ForeignRun, ...]",
+        "foreign: tuple[ProjectHookRun, ...]",
         "child_agent: str",
         "role: str"
       ],
       "methods": [
-        "tick(cls, program: str, session: str, firing: str, hook_timestamp_ms: int, actor: str, environment: str) -> 'HookEvent'",
+        "tick(cls, program: str, session: str, event_id: str, hook_timestamp_ms: int, actor: str, environment: str) -> 'HookEvent'",
         "parsed(cls, data: object) -> 'HookEvent'",
         "transcript(self) -> HookTranscript",
         "is_resume(self) -> bool",
@@ -3397,7 +3385,7 @@
       "bases": [],
       "fields": [
         "program: str",
-        "firing: str",
+        "event_id: str",
         "text: str"
       ],
       "methods": [
@@ -3440,36 +3428,22 @@
         "stops(self, event: HookEventName) -> bool"
       ]
     },
-    "driver.nudge.Nudge": {
-      "bases": [],
-      "fields": [
-        "key: str",
-        "type: NudgeType",
-        "text: str",
-        "interval: Interval | None",
-        "turn_limited: bool",
-        "required_command: str",
-        "fields: tuple[tuple[str, object], ...]",
-        "declaration: 'NudgeDeclaration | None'",
-        "record_keys: tuple[str, ...]"
+    "driver.message_sender.MessageSender": {
+      "bases": [
+        "ABC"
       ],
+      "fields": [],
       "methods": [
-        "labelled(self) -> str",
-        "role_variant(self, role: str) -> 'Nudge'",
-        "wakes_agent(self) -> bool",
-        "is_mergeable(self) -> bool",
-        "merge_context(self) -> tuple[tuple[str, str], ...]",
-        "records(self) -> 'tuple[Nudge, ...]'",
-        "stored(self) -> StoredNudge",
-        "collapsed(nudges: 'Iterable[Nudge]') -> 'list[Nudge]'",
-        "merged(group: 'Sequence[Nudge]') -> 'Nudge'"
+        "send(self, agent_id: int, declaration: MessageTemplate, source: str, context: Context) -> Model",
+        "send_agent_message(self, agent_id: int, agent_message: AgentMessage, source: str, context: Context, wakes_agent: bool) -> Model",
+        "send_text(self, agent_id: int, text: str, source: str, context: Context, wakes_agent: bool, repeats_without_hook: bool, delivery: LineDelivery) -> Model"
       ]
     },
-    "driver.nudge_declaration.NudgeDeclaration": {
+    "driver.message_template.MessageTemplate": {
       "bases": [],
       "fields": [
         "key: str",
-        "type: NudgeType",
+        "type: AgentMessageType",
         "text: str",
         "interval: Interval | None",
         "turn_limited: bool",
@@ -3485,26 +3459,15 @@
         "role_texts: Mapping[str, str]"
       ],
       "methods": [
-        "declared(cls) -> 'NudgeDeclaration'",
+        "declared(cls) -> 'MessageTemplate'",
         "limit(self) -> int",
         "is_mergeable(self) -> bool",
-        "nudge(self) -> Nudge",
-        "restore(cls, text: str) -> Nudge",
-        "merged(self, nudges: Sequence[Nudge]) -> Nudge",
-        "rendered(self, text: str, fields: Mapping[str, object]) -> Nudge",
+        "agent_message(self) -> AgentMessage",
+        "restore(cls, text: str) -> AgentMessage",
+        "merged(self, agent_messages: Sequence[AgentMessage]) -> AgentMessage",
+        "rendered(self, text: str, fields: Mapping[str, object]) -> AgentMessage",
         "field_text(self, value: object) -> str",
         "cut(self, line: str) -> str"
-      ]
-    },
-    "driver.nudger.Nudger": {
-      "bases": [
-        "ABC"
-      ],
-      "fields": [],
-      "methods": [
-        "send(self, agent_id: int, declaration: NudgeDeclaration, source: str, context: Context) -> Model",
-        "send_nudge(self, agent_id: int, nudge: Nudge, source: str, context: Context, wakes_agent: bool) -> Model",
-        "send_text(self, agent_id: int, text: str, source: str, context: Context, wakes_agent: bool, repeats_without_hook: bool, delivery: LineDelivery) -> Model"
       ]
     },
     "driver.open_hold.OpenHold": {
@@ -3513,10 +3476,10 @@
       ],
       "fields": [
         "agent_id: int",
-        "nudge: Nudge",
+        "agent_message: AgentMessage",
         "condition: BlockCondition",
         "after: Interval | None",
-        "countdown: Nudge | None",
+        "countdown: AgentMessage | None",
         "blocks_stop: bool",
         "strict: bool",
         "is_skippable: bool",
@@ -3561,6 +3524,37 @@
       "fields": [],
       "methods": [
         "lockdown(self, program: str) -> Lockdown"
+      ]
+    },
+    "driver.project_hook_answer.ProjectHookAnswer": {
+      "bases": [],
+      "fields": [
+        "name: str",
+        "refusal: str",
+        "lines: tuple[str, ...]",
+        "updated_input: Mapping[str, object]",
+        "terminal: str"
+      ],
+      "methods": [
+        "read(cls, run: ProjectHookRun) -> 'ProjectHookAnswer'",
+        "reason(self) -> str"
+      ]
+    },
+    "driver.project_hook_run.ProjectHookRun": {
+      "bases": [],
+      "fields": [
+        "id: str",
+        "exit_code: int",
+        "stdout: str",
+        "stderr: str",
+        "milliseconds: int",
+        "timed_out: bool",
+        "answer: Mapping[str, object]",
+        "on_failure: str"
+      ],
+      "methods": [
+        "parsed(cls, data: object) -> 'ProjectHookRun'",
+        "parsed_many(cls, data: object) -> tuple['ProjectHookRun', ...]"
       ]
     },
     "driver.project_paths.ProjectPaths": {
@@ -3610,7 +3604,7 @@
       "bases": [],
       "fields": [
         "refusal: str",
-        "nudges: Sequence[Nudge]",
+        "agent_messages: Sequence[AgentMessage]",
         "commands: Sequence[Command[object]]",
         "commands_unrefused: Sequence[Command[object]]",
         "last: bool",
@@ -3625,20 +3619,20 @@
       ],
       "methods": [
         "allowed(cls, reason: str) -> 'RuleAnswer'",
-        "with_nudges(cls) -> 'RuleAnswer'",
-        "refused(cls, nudge: Nudge) -> 'RuleAnswer'",
+        "with_agent_messages(cls) -> 'RuleAnswer'",
+        "refused(cls, agent_message: AgentMessage) -> 'RuleAnswer'",
         "role_variant(self, role: str) -> 'RuleAnswer'",
         "rewritten(cls, tool_input: Mapping[str, object]) -> 'RuleAnswer'",
         "final_allowance(cls) -> 'RuleAnswer'",
-        "blocked(cls, hook: AgentHook, nudge: Nudge, condition: BlockCondition) -> 'RuleAnswer'",
-        "refusals(cls, nudges: Sequence[Nudge]) -> 'RuleAnswer'",
-        "refused_with_block(cls, hook: AgentHook, nudge: Nudge, condition: BlockCondition) -> 'RuleAnswer'",
-        "blocking_after(self, hook: AgentHook, nudge: Nudge, condition: BlockCondition, after: Interval, countdown: Nudge, strict: bool) -> 'RuleAnswer'",
+        "blocked(cls, hook: AgentHook, agent_message: AgentMessage, condition: BlockCondition) -> 'RuleAnswer'",
+        "refusals(cls, agent_messages: Sequence[AgentMessage]) -> 'RuleAnswer'",
+        "refused_with_block(cls, hook: AgentHook, agent_message: AgentMessage, condition: BlockCondition) -> 'RuleAnswer'",
+        "blocking_after(self, hook: AgentHook, agent_message: AgentMessage, condition: BlockCondition, after: Interval, countdown: AgentMessage, strict: bool) -> 'RuleAnswer'",
         "running(self) -> 'RuleAnswer'",
         "running_unrefused(self) -> 'RuleAnswer'",
         "rewriting_after_commands(self, build: Callable[[Sequence[object]], Mapping[str, object]]) -> 'RuleAnswer'",
         "ending_layer(self, command: Command[object]) -> 'RuleAnswer'",
-        "line_nudges(self) -> tuple[Nudge, ...]",
+        "line_agent_messages(self) -> tuple[AgentMessage, ...]",
         "lines(self) -> tuple[str, ...]",
         "rewrites(self) -> bool",
         "is_final_allowance(self) -> bool",
@@ -3649,69 +3643,38 @@
     "driver.rule_answers.RuleAnswers": {
       "bases": [],
       "fields": [
-        "layers: Sequence[str]",
         "rules: Sequence[RuleRecord]",
-        "delays_lines: bool",
         "skipped_lines: frozenset[tuple[str, str]]",
-        "stop_checks: Sequence[StopCheck]",
-        "states: Sequence[StateRecord]"
+        "stop_checks: Sequence[StopCheck]"
       ],
       "methods": [
         "answered(self) -> list[RuleRecord]",
         "refusal(self) -> str",
         "rewriters(self) -> list[RuleRecord]",
-        "double_rewrite(self) -> str",
         "rewriter(self) -> RuleRecord | None",
         "refused_rewriters(self) -> set[str]",
         "updated_input(self) -> Mapping[str, object]",
         "rewriter_name(self) -> str",
         "lines(self) -> list[str]",
         "rule_lines(self) -> list[tuple[str, str]]",
-        "line_nudges(self) -> list[Nudge]",
-        "delivered_nudges(self) -> list[Nudge]",
-        "refusal_nudges(self) -> list[Nudge]",
+        "line_agent_messages(self) -> list[AgentMessage]",
+        "delivered_agent_messages(self) -> list[AgentMessage]",
+        "refusal_agent_messages(self) -> list[AgentMessage]",
         "labelled_lines(self) -> list[str]",
         "commands(self) -> list[tuple[str, Command[object]]]",
         "terminal(self) -> str",
         "metadata(self) -> dict[str, object]"
       ]
     },
-    "driver.rule_outcome.RuleOutcome": {
-      "bases": [],
-      "fields": [
-        "outcome: str",
-        "answer: RuleAnswer | None",
-        "line: str",
-        "milliseconds: int"
-      ],
-      "methods": [
-        "answered(cls, answer: RuleAnswer) -> 'RuleOutcome'",
-        "raised(cls, line: str) -> 'RuleOutcome'"
-      ]
-    },
     "driver.rule_record.RuleRecord": {
       "bases": [],
       "fields": [
         "name: str",
-        "layer: str",
         "outcome: str",
-        "answer: RuleAnswer | None",
-        "history: bool",
-        "applied: bool",
-        "reason: str",
-        "milliseconds: int"
+        "answer: RuleAnswer | None"
       ],
       "methods": [
-        "saved_fields(self) -> Mapping[str, object]",
-        "stop_check(self) -> StopCheck"
-      ]
-    },
-    "driver.rule_timings.RuleTimings": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "note(self, agent_id: int, rule: str, seconds: float) -> None",
-        "slowest(self, agent_id: int) -> str"
+        "saved_fields(self) -> Mapping[str, object]"
       ]
     },
     "driver.run_owners.RunOwners": {
@@ -3808,16 +3771,6 @@
       "fields": [],
       "methods": []
     },
-    "driver.state_record.StateRecord": {
-      "bases": [],
-      "fields": [
-        "name: str",
-        "tier: str",
-        "outcome: str",
-        "milliseconds: int"
-      ],
-      "methods": []
-    },
     "driver.stop_blockers.StopBlockers": {
       "bases": [],
       "fields": [],
@@ -3825,21 +3778,7 @@
         "is_running(self, agent_id: int) -> bool"
       ]
     },
-    "driver.stop_check.StopCheck": {
-      "bases": [],
-      "fields": [
-        "rule: str",
-        "outcome: str",
-        "reason: str",
-        "applied: bool",
-        "layer: str | None"
-      ],
-      "methods": [
-        "is_refusal(self) -> bool",
-        "refusal_text(self) -> str"
-      ]
-    },
-    "driver.stored_nudge.StoredNudge": {
+    "driver.stored_message.StoredMessage": {
       "bases": [],
       "fields": [
         "key: str",
@@ -3852,11 +3791,11 @@
         "fields: Mapping[str, str]"
       ],
       "methods": [
-        "read(cls, text: str) -> 'StoredNudge'",
+        "read(cls, text: str) -> 'StoredMessage'",
         "json(self) -> str"
       ]
     },
-    "driver.times_span.TimesSpan": {
+    "driver.time_window.TimeWindow": {
       "bases": [],
       "fields": [
         "count: int"
@@ -3959,6 +3898,13 @@
       "methods": [
         "can_receive_work(self) -> bool"
       ]
+    },
+    "enums.agent_message_type.AgentMessageType": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
     },
     "enums.agent_role.AgentRole": {
       "bases": [
@@ -4145,7 +4091,7 @@
       "fields": [],
       "methods": []
     },
-    "enums.execution_lane.ExecutionLane": {
+    "enums.execution_length.ExecutionLength": {
       "bases": [
         "StrEnum"
       ],
@@ -4173,13 +4119,6 @@
       "methods": []
     },
     "enums.file_status.FileStatus": {
-      "bases": [
-        "StrEnum"
-      ],
-      "fields": [],
-      "methods": []
-    },
-    "enums.frame_end.FrameEnd": {
       "bases": [
         "StrEnum"
       ],
@@ -4256,13 +4195,6 @@
       "fields": [],
       "methods": []
     },
-    "enums.lane.Lane": {
-      "bases": [
-        "StrEnum"
-      ],
-      "fields": [],
-      "methods": []
-    },
     "enums.layer_tier.LayerTier": {
       "bases": [
         "Enum"
@@ -4272,14 +4204,14 @@
         "height(self) -> int"
       ]
     },
-    "enums.line_carrier.LineCarrier": {
+    "enums.line_category.LineCategory": {
       "bases": [
         "StrEnum"
       ],
       "fields": [],
       "methods": []
     },
-    "enums.line_category.LineCategory": {
+    "enums.line_channel.LineChannel": {
       "bases": [
         "StrEnum"
       ],
@@ -4364,13 +4296,6 @@
       "methods": [
         "automatic(cls, value: str) -> 'ModelTier'"
       ]
-    },
-    "enums.nudge_type.NudgeType": {
-      "bases": [
-        "StrEnum"
-      ],
-      "fields": [],
-      "methods": []
     },
     "enums.occupant.Occupant": {
       "bases": [
@@ -4487,6 +4412,13 @@
       "fields": [],
       "methods": []
     },
+    "enums.stack_level.StackLevel": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
     "enums.stack_move_type.StackMoveType": {
       "bases": [
         "StrEnum"
@@ -4495,6 +4427,13 @@
       "methods": []
     },
     "enums.starter_type.StarterType": {
+      "bases": [
+        "StrEnum"
+      ],
+      "fields": [],
+      "methods": []
+    },
+    "enums.state_end.StateEnd": {
       "bases": [
         "StrEnum"
       ],
@@ -5095,7 +5034,7 @@
       "bases": [],
       "fields": [
         "name: str",
-        "lane: ExecutionLane",
+        "lane: ExecutionLength",
         "slot_cost: int",
         "priority: ExecutionPriority",
         "class_limit: int",
@@ -5237,16 +5176,16 @@
     "execution.limits.lane_limits.LaneLimits": {
       "bases": [],
       "fields": [
-        "capacities: Mapping[ExecutionLane, int]",
-        "priority_limits: Mapping[ExecutionLane, Mapping[ExecutionPriority, PriorityLimit]]",
-        "starter_caps: Mapping[ExecutionLane, int]",
+        "capacities: Mapping[ExecutionLength, int]",
+        "priority_limits: Mapping[ExecutionLength, Mapping[ExecutionPriority, PriorityLimit]]",
+        "starter_caps: Mapping[ExecutionLength, int]",
         "immediate_ceiling: int"
       ],
       "methods": [
-        "capacity(self, lane: ExecutionLane) -> int",
-        "priority_limit(self, lane: ExecutionLane, priority: ExecutionPriority) -> PriorityLimit",
-        "starter_cap(self, lane: ExecutionLane) -> int",
-        "with_capacities(self, capacities: Mapping[ExecutionLane, int]) -> 'LaneLimits'",
+        "capacity(self, lane: ExecutionLength) -> int",
+        "priority_limit(self, lane: ExecutionLength, priority: ExecutionPriority) -> PriorityLimit",
+        "starter_cap(self, lane: ExecutionLength) -> int",
+        "with_capacities(self, capacities: Mapping[ExecutionLength, int]) -> 'LaneLimits'",
         "scaled(limit: PriorityLimit, capacity: int, new_capacity: int) -> PriorityLimit"
       ]
     },
@@ -5759,7 +5698,7 @@
         "project_folder(self) -> Path",
         "database(self) -> Path",
         "database_files(self) -> list[Path]",
-        "panic_file(self) -> Path",
+        "emergency_stop_file(self) -> Path",
         "panic_announced(self) -> Path",
         "panic_count(self) -> Path",
         "bypass_log(self) -> Path",
@@ -5972,13 +5911,6 @@
       ],
       "methods": []
     },
-    "listener.change_filter.ChangeFilter": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "applies(self, entry_name: str, change: Change[Model]) -> bool"
-      ]
-    },
     "listener.commit.commit_listener.CommitListener": {
       "bases": [
         "EventSubscriber[E]"
@@ -6111,7 +6043,6 @@
       "bases": [],
       "fields": [],
       "methods": [
-        "is_listener_due(self, name: str, listener_class: type[EventSubscriber[object]], change: Change[Model]) -> bool",
         "run_deletion_listeners(self, change: Change[Model]) -> None",
         "run_deletion_listeners_many(self, changes: Sequence[Change[Model]]) -> None",
         "run_save_listeners(self, change: Change[Model]) -> None"
@@ -6832,13 +6763,12 @@
         "declared_plugin_events: ClassVar[list[str]]",
         "removal: ClassVar[type[Migration] | None]",
         "bindings: ClassVar[dict[type, type]]",
-        "drivers: ClassVar[list[type[Driver]]]",
         "windows: ClassVar[list[WindowDeclaration | type[Window]]]",
         "window_extensions: ClassVar[list[WindowExtension | type[WindowExtension]]]",
         "marks: ClassVar[list[MarkDeclaration | type[MarkDeclaration]]]",
         "block_conditions: ClassVar[list[type[BlockCondition]]]",
-        "agent_drivers: ClassVar[list[type[AgentDriver]]]",
-        "needs: ClassVar[list[type[NeedSource]]]",
+        "agent_drivers: ClassVar[list[type[Driver]]]",
+        "states: ClassVar[list[type[StateSource]]]",
         "facts: ClassVar[list[type[FactSource]]]",
         "policies: ClassVar[list[type[Policy]]]",
         "lines: ClassVar[list[type[LineSource]]]",
@@ -6848,7 +6778,7 @@
         "subjects: ClassVar[list[type[Model]]]",
         "agent_listeners: ClassVar[list[type[AgentListener[object]]]]",
         "performance_tools: ClassVar[list[type[PerformanceTool]]]",
-        "nudges: ClassVar[list[NudgeDeclaration | type[NudgeDeclaration]]]",
+        "agent_messages: ClassVar[list[MessageTemplate | type[MessageTemplate]]]",
         "tick_handlers: ClassVar[list[TickHandler | type[TickHandler]]]",
         "helper_question_topics: ClassVar[list[AskTopic | type[AskTopic]]]",
         "docks: ClassVar[list[DockDeclaration | type[DockDeclaration]]]",
@@ -6873,6 +6803,7 @@
         "seed_reason: ClassVar[str]"
       ],
       "methods": [
+        "suite_drivers(cls) -> list[type[Driver]]",
         "plugin_event_names(cls) -> list[str]",
         "window_declarations(cls) -> list[WindowDeclaration]",
         "extension_declarations(cls) -> list[WindowExtension]",
@@ -6883,7 +6814,7 @@
         "dock_declarations(cls) -> list[DockDeclaration]",
         "model_declarations(cls) -> list[ModelDeclaration]",
         "mark_declarations(cls) -> list[MarkDeclaration]",
-        "nudge_declarations(cls) -> list[NudgeDeclaration]",
+        "agent_message_declarations(cls) -> list[MessageTemplate]",
         "tick_handler_declarations(cls) -> list[TickHandler]",
         "button_declarations(cls) -> list[ButtonDeclaration]",
         "inspector_declarations(cls) -> list[InspectorDeclaration]",
@@ -6986,7 +6917,7 @@
         "profile_entries(modules: tuple[type[Module], ...]) -> tuple[ProfileEntry, ...]",
         "windows(self, modules: tuple[type[Module], ...]) -> tuple[WindowEntry, ...]",
         "marks(self, modules: tuple[type[Module], ...]) -> tuple[MarkEntry, ...]",
-        "nudges(self, modules: tuple[type[Module], ...]) -> tuple[NudgeEntry, ...]",
+        "agent_messages(self, modules: tuple[type[Module], ...]) -> tuple[MessageEntry, ...]",
         "docks(self, modules: tuple[type[Module], ...]) -> tuple[DockEntry, ...]",
         "skills(self, modules: tuple[type[Module], ...]) -> tuple[SkillEntry, ...]",
         "buttons(self, modules: tuple[type[Module], ...]) -> tuple[ButtonEntry, ...]",
@@ -7125,7 +7056,7 @@
         "modules: ClassVar[Sequence[type[Module]]]",
         "joins: ClassVar[str | None]",
         "requires: ClassVar[Sequence[str]]",
-        "entrances: ClassVar[Sequence[type[Entrance]]]",
+        "entry_points: ClassVar[Sequence[type[EntryPoint]]]",
         "task_assigner: ClassVar[type[TaskAssigner] | None]",
         "helper_types: ClassVar[Sequence[type[HelperType]]]"
       ],
@@ -7133,7 +7064,7 @@
         "offered_windows(cls) -> tuple[str, ...]",
         "default_layouts(cls) -> dict[str, LayoutShape]",
         "offered_presets(cls) -> dict[str, tuple[LayoutPreset, ...]]",
-        "entrance_windows(cls) -> dict[str, tuple[str, ...]]"
+        "entry_point_windows(cls) -> dict[str, tuple[str, ...]]"
       ]
     },
     "module.suite_check.SuiteCheck": {
@@ -7830,9 +7761,9 @@
         "rewritten: int",
         "timed_out: int",
         "failed: int",
-        "last: ForeignRun | None",
+        "last: ProjectHookRun | None",
         "last_at: str | None",
-        "last_outcome: ForeignOutcome | None"
+        "last_outcome: ProjectHookOutcome | None"
       ],
       "methods": []
     },
@@ -9199,8 +9130,7 @@
         "module: str",
         "suite: str",
         "role: str",
-        "opening_lines: Sequence[str]",
-        "guards: Sequence[str]"
+        "instructions: Sequence[str]"
       ],
       "methods": []
     },
@@ -9364,6 +9294,20 @@
         "restored(cls, stored: Mapping[str, Any]) -> 'MarkEntry'"
       ]
     },
+    "registry.message_entry.MessageEntry": {
+      "bases": [],
+      "fields": [
+        "key: str",
+        "module: str",
+        "type: str",
+        "text: str",
+        "repeat_seconds: int",
+        "longest_characters: int"
+      ],
+      "methods": [
+        "restored(cls, stored: Mapping[str, Any]) -> 'MessageEntry'"
+      ]
+    },
     "registry.model_entry.ModelEntry": {
       "bases": [],
       "fields": [
@@ -9390,20 +9334,6 @@
       "methods": [
         "stored(self) -> Mapping[str, Any]",
         "restored(cls, stored: Mapping[str, Any]) -> 'MoveEntry'"
-      ]
-    },
-    "registry.nudge_entry.NudgeEntry": {
-      "bases": [],
-      "fields": [
-        "key: str",
-        "module: str",
-        "type: str",
-        "text: str",
-        "repeat_seconds: int",
-        "longest_characters: int"
-      ],
-      "methods": [
-        "restored(cls, stored: Mapping[str, Any]) -> 'NudgeEntry'"
       ]
     },
     "registry.parsed_registries.ParsedRegistries": {
@@ -9448,7 +9378,7 @@
         "drivers: tuple[DriverEntry, ...]",
         "windows: tuple[WindowEntry, ...]",
         "marks: tuple[MarkEntry, ...]",
-        "nudges: tuple[NudgeEntry, ...]",
+        "agent_messages: tuple[MessageEntry, ...]",
         "docks: tuple[DockEntry, ...]",
         "templates: tuple[TemplateEntry, ...]",
         "buttons: tuple[ButtonEntry, ...]",
@@ -9469,7 +9399,7 @@
         "module_fingerprints: dict[str, str]",
         "module_suites: dict[str, tuple[str, ...]]",
         "events: tuple[str, ...]",
-        "outward_lines: tuple[str, ...]",
+        "external_lines: tuple[str, ...]",
         "background_lines: tuple[str, ...]",
         "event_keys: dict[str, EventKeyEntry]",
         "former_event_keys: dict[str, str]",
@@ -9502,7 +9432,7 @@
         "subject_button_lines(self, subject: str) -> tuple[str, ...]",
         "sharing_windows(self, model: str) -> tuple[WindowEntry, ...]",
         "dock(self, type_name: str) -> DockEntry | None",
-        "is_outward(self, line: str) -> bool",
+        "is_external(self, line: str) -> bool",
         "has_window(self, name: str) -> bool",
         "window(self, name: str) -> WindowEntry",
         "driver(self, name: str) -> DriverEntry | None",
@@ -9628,7 +9558,7 @@
         "presets: Mapping[str, Sequence[LayoutPreset]]",
         "task_assigner: str",
         "shipped: bool",
-        "entrances: Mapping[str, Sequence[str]]"
+        "entry_points: Mapping[str, Sequence[str]]"
       ],
       "methods": []
     },
@@ -9981,7 +9911,7 @@
         "seed(self, demo: 'Demo') -> None"
       ]
     },
-    "serving.code_handover.CodeHandover": {
+    "serving.code_delivery.CodeDelivery": {
       "bases": [],
       "fields": [],
       "methods": [
@@ -10333,7 +10263,7 @@
         "cli_name: str",
         "name: str",
         "help: str",
-        "outward: bool",
+        "external: bool",
         "background: bool"
       ],
       "methods": [
@@ -10379,7 +10309,7 @@
         "name: str",
         "help: str",
         "background: bool",
-        "outward: bool"
+        "external: bool"
       ],
       "methods": [
         "arguments(self, parser: ArgumentParser) -> None",
@@ -10427,11 +10357,11 @@
     },
     "testing.agent_machine.fake_need_source.FakeNeedSource": {
       "bases": [
-        "NeedSource"
+        "StateSource"
       ],
       "fields": [],
       "methods": [
-        "needs(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[Need | BlockPlan]]"
+        "states(self, agents: Sequence[AgentReference], question: Question) -> Mapping[int, Sequence[RequiredState | BlockPlan]]"
       ]
     },
     "testing.agent_machine.policy_row.PolicyRow": {
@@ -10458,13 +10388,6 @@
         "question(sample: HookSample) -> Question"
       ]
     },
-    "testing.agent_machine.record_compare.RecordCompare": {
-      "bases": [],
-      "fields": [],
-      "methods": [
-        "differences(old: DecisionRecord, new: DecisionRecord) -> list[str]"
-      ]
-    },
     "testing.agent_machine.record_samples.RecordSamples": {
       "bases": [],
       "fields": [],
@@ -10477,7 +10400,7 @@
       "fields": [],
       "methods": [
         "built() -> Stack",
-        "frame(state: State, place: int) -> Frame"
+        "stacked_state(state: State, place: int) -> StackedState"
       ]
     },
     "testing.agent_machine.view_samples.ViewSamples": {
@@ -10512,7 +10435,7 @@
         "body: Mapping[str, object]"
       ],
       "methods": [
-        "firing(self) -> object",
+        "event_id(self) -> object",
         "action(self) -> str",
         "with_raw(self, raw: Mapping[str, object]) -> 'HookSample'",
         "with_fields(self) -> 'HookSample'"
@@ -10553,17 +10476,17 @@
         "prepared(self, text: str) -> dict[str, object]"
       ]
     },
-    "testing.expectations.expected_nudge.ExpectedNudge": {
+    "testing.expectations.expected_message.ExpectedMessage": {
       "bases": [],
       "fields": [
-        "declaration: NudgeDeclaration",
+        "declaration: MessageTemplate",
         "values: dict[str, object]"
       ],
       "methods": [
         "pattern(self) -> re.Pattern[str]",
         "matches_text(self, text: str) -> bool",
         "matches_lines(self, lines: Iterable[str]) -> bool",
-        "is_kept_as(self, nudge: Nudge) -> bool"
+        "is_kept_as(self, agent_message: AgentMessage) -> bool"
       ]
     },
     "testing.expectations.line_outcome.LineOutcome": {
@@ -10862,8 +10785,8 @@
         "run_tick(self, name: str) -> None",
         "tick_handler_points(self, tick_handler: Callable[[Container], object]) -> Points | None",
         "expect_hook_allowed(self, session: str, sample: HookSample) -> None",
-        "expect_hook_nudges(self, session: str, sample: HookSample) -> HookReply",
-        "expect_no_hook_nudge(self, session: str, sample: HookSample, nudge: ExpectedNudge) -> HookReply",
+        "expect_hook_agent_messages(self, session: str, sample: HookSample) -> HookReply",
+        "expect_no_hook_agent_message(self, session: str, sample: HookSample, agent_message: ExpectedMessage) -> HookReply",
         "expect_ordered_hook_lines(self, session: str, sample: HookSample) -> None",
         "expect_hook_silent(self, session: str, sample: HookSample) -> None",
         "expect_absent_hook_line(self, session: str, sample: HookSample, line: ExpectedText) -> None",
@@ -11590,7 +11513,7 @@
         "icon_problems(owner: str) -> list[str]"
       ]
     },
-    "viewer.entrance.Entrance": {
+    "viewer.entry_point.EntryPoint": {
       "bases": [],
       "fields": [
         "key: ClassVar[str]",

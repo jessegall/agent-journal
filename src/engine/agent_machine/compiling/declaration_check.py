@@ -49,7 +49,7 @@ class DeclarationCheck:
     def entry_fixes(self, module: ModuleContributions, entry: ContributionDeclaration) -> list[str]:
         fixes = [f"agent type {agent_type} has no driver: name one of {', '.join(self.agent_types)}" for agent_type in entry.agent_types if agent_type not in self.agent_types]
         if entry.contribution_type is ContributionType.NEED and entry.state_name in ENGINE_PLACED_STATES:
-            fixes.append(f"a need may not ask for {entry.state_name}: the engine places it from facts")
+            fixes.append(f"a state source may not ask for {entry.state_name}: the engine places it from facts")
         elif entry.contribution_type is ContributionType.NEED and entry.state_name not in NEED_STATES:
             fixes.append(f"state {entry.state_name or 'none'} is unknown: a need asks for one of {', '.join(NEED_STATES)}")
         if entry.is_safety and not module.is_core:

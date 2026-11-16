@@ -15,7 +15,7 @@ class RemoveStackedStateSubcommand(Subcommand[RemoveStackedState, str]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("agent", type=int)
-        parser.add_argument("frame")
+        parser.add_argument("stacked_state")
         parser.add_argument("--reason", required=True)
 
     def command(self, arguments: Namespace, caller: Caller) -> RemoveStackedState:

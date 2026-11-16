@@ -14,7 +14,7 @@ SAMPLE = "nudges/two_roles.py"
 def test_the_detector_exists_is_enrolled_and_names_the_calls_it_reads():
     declared = json.loads((CUSTOM / f"{RULE}.json").read_text())
     names = declared["find"]["where"][0]["nameIn"]
-    assert declared["engine"] == "python" and names == ["Refusal", "NudgeDeclaration"]
+    assert declared["engine"] == "python" and names == ["Refusal", "MessageTemplate"]
     assert RULE in json.loads((CUSTOM.parent / "config.json").read_text())["detectors"]
     assert (CUSTOM / "skills" / declared["sin"]["skill"]).is_dir()
     assert (CUSTOM / "samples" / SAMPLE).is_file()

@@ -349,6 +349,21 @@
   "merger": "allowed",
   "worker": "refused"
  },
+ "agent-message list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-message-record list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "agent-message-record show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
  "agent-session list": {
   "helper": "allowed",
   "merger": "allowed",
@@ -425,16 +440,6 @@
   "worker": "refused"
  },
  "agent-step-request show": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "agent-subject list": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "agent-subject show": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"
@@ -1139,21 +1144,6 @@
   "merger": "allowed",
   "worker": "refused"
  },
- "driver active": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "driver allow-essential": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
- },
- "driver approve-difference": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
- },
  "driver attention": {
   "helper": "allowed",
   "merger": "allowed",
@@ -1164,22 +1154,7 @@
   "merger": "refused",
   "worker": "refused"
  },
- "driver compare": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "driver differences": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
  "driver pop": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
- },
- "driver repin": {
   "helper": "refused",
   "merger": "refused",
   "worker": "refused"
@@ -1189,52 +1164,12 @@
   "merger": "refused",
   "worker": "refused"
  },
- "driver set-active": {
-  "helper": "refused",
-  "merger": "refused",
-  "worker": "refused"
- },
- "driver show": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
  "driver stack": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"
  },
- "driver state-types": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "driver states": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
  "driver table": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "driver-comparison list": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "driver-comparison show": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "driver-comparison-stack list": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "driver-comparison-stack show": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"
@@ -2100,21 +2035,6 @@
   "worker": "refused"
  },
  "message work-source": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "nudge list": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "nudge-record list": {
-  "helper": "allowed",
-  "merger": "allowed",
-  "worker": "refused"
- },
- "nudge-record show": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"

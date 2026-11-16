@@ -87,13 +87,13 @@ tests/stories/core/modules/drivers/bypass_log.py
 tests/stories/core/modules/drivers/compaction_hostile.py
 tests/stories/core/modules/drivers/compaction_repeat.py
 tests/stories/core/modules/drivers/context_compactions.py
-tests/stories/core/modules/drivers/foreign_runs.py
+tests/stories/core/modules/drivers/project_hook_runs.py
 tests/stories/core/modules/drivers/hook_durations.py
 tests/stories/core/modules/drivers/hooks_through_the_server.py
 tests/stories/core/modules/drivers/journal_started.py
 tests/stories/core/modules/drivers/managed_answers.py
 tests/stories/core/modules/drivers/managed_failures.py
-tests/stories/core/modules/drivers/outward_lines.py
+tests/stories/core/modules/drivers/external_lines.py
 tests/stories/core/modules/drivers/permission_requests.py
 tests/stories/core/modules/drivers/private_corpus.py
 tests/stories/core/modules/drivers/refusal_skips.py
@@ -170,7 +170,7 @@ tests/stories/core/modules/plans/approval_notices.py
 tests/stories/core/modules/plans/marks.py
 tests/stories/core/modules/plans/plan_building_sequence.py
 tests/stories/core/modules/plans/plan_context.py
-tests/stories/core/modules/plans/plan_focus_nudges.py
+tests/stories/core/modules/plans/plan_focus_agent_messages.py
 tests/stories/core/modules/plans/plan_focus_read.py
 tests/stories/core/modules/plans/plan_inspector.py
 tests/stories/core/modules/plans/plan_lines.py
@@ -253,7 +253,7 @@ tests/stories/core/modules/processes/repeated_exits.py
 tests/stories/core/modules/processes/request_reader.py
 tests/stories/core/modules/processes/run_cadence.py
 tests/stories/core/modules/processes/run_cadence_failures.py
-tests/stories/core/modules/processes/run_cadence_nudges.py
+tests/stories/core/modules/processes/run_cadence_agent_messages.py
 tests/stories/core/modules/processes/run_cadence_odd_users.py
 tests/stories/core/modules/processes/run_queue.py
 tests/stories/core/modules/processes/shell_sandbox.py
@@ -598,7 +598,7 @@ tests/stories/suites/coding/project_files_window.py
 tests/stories/suites/coding/researcher_access.py
 tests/stories/suites/coding/shipped_profile_skills.py
 tests/stories/suites/coding/special_helpers.py
-tests/stories/suites/coding/support/entrance_samples.py
+tests/stories/suites/coding/support/entry_point_samples.py
 tests/stories/suites/coding/support/focus_plans.py
 tests/stories/suites/coding/support/hand_outs.py
 tests/stories/suites/coding/support/main_controls_contract.py

@@ -21,10 +21,10 @@ class RestoreStackedStateHandler(Handler[RestoreStackedState, str]):
 
     def handle(self, command: RestoreStackedState, context: Context) -> str:
         if context.actor.is_agent():
-            raise Refusal("only a person restores a frame of an agent's stack")
+            raise Refusal("only a person restores a stacked state of an agent's stack")
         rows = self.queries.query(HiddenState).filter(session_agent_id=command.agent_id, ended_at=None).every_row(OPEN_SUPPRESSIONS_REASON)
         row = next((row for row in rows if StackCodec.decoded_key(row.state_key).generation == command.stacked_state), None)
         if row is None:
-            raise Refusal(f"agent {command.agent_id} has no removed frame {command.stacked_state}")
+            raise Refusal(f"agent {command.agent_id} has no removed stacked state {command.stacked_state}")
         self.repository.save(row.changed(ended_at=context.timestamp), context)
-        return f"frame {command.stacked_state} shows again"
+        return f"stacked state {command.stacked_state} shows again"

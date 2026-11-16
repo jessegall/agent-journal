@@ -25,4 +25,4 @@ def test_every_state_and_its_nested_values_come_back_as_they_were_stored() -> No
 
 def test_a_state_the_code_no_longer_knows_raises_so_the_step_reseeds() -> None:
     with pytest.raises(KeyError):
-        StackCodec.decoded('[{"state_name": "Dreaming", "state": {}, "need_key": {}, "entered_at": "2026-11-15T00:00:00+00:00"}]')
+        StackCodec.decoded('[{"state_name": "Dreaming", "state": {}, "state_key": {}, "entered_at": "2026-11-15T00:00:00+00:00"}]')

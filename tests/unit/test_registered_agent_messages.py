@@ -17,7 +17,7 @@ ALLOWED_PLACEHOLDERS = frozenset({"approval", "recipient", "code", "plugin", "ta
     "path", "instruction", "reader", "rule", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "transcription", "url", "wait", "worker", "workers", "writes", "hint", "items", "hint", "then", "grant", "processor", "plans", "focus", "waits", "notice", "merge_ask", "committed", "failed", "helper_type", "groups",
 })
 # Static driver instructions, runtime rule diagnostics and the words a managed hook, a foreign hook or a plugin step printed have no stored resource.
-FOREIGN_TEMPLATES = frozenset({"OpeningLineNudge", "ManagedHookLineNudge", "AgentNoticeNudge", "ProjectHookWokeNudge", "CompactionInstructionsNudge"})
+FOREIGN_TEMPLATES = frozenset({"OpeningLineMessage", "ManagedHookLineMessage", "AgentNoticeMessage", "ProjectHookWakeMessage", "CompactionInstructionsMessage"})
 
 def source_files() -> list[Path]:
     return [path for folder in ("src/core", "src/suites") for path in (ROOT / folder).rglob("*.py")]
@@ -35,7 +35,7 @@ def declarations() -> list[tuple[str, str, Path]]:
     for path in source_files():
         tree = source_tree(path)
         for node in ast.walk(tree):
-            is_declaration = isinstance(node, ast.ClassDef) and any(getattr(base, "id", "") == "NudgeDeclaration" for base in node.bases)
+            is_declaration = isinstance(node, ast.ClassDef) and any(getattr(base, "id", "") == "MessageTemplate" for base in node.bases)
             values = class_values(node) if is_declaration else {}
             if is_declaration and isinstance(values.get("text"), ast.Constant):
                 rows.append((node.name, values["text"].value, path))
@@ -66,10 +66,10 @@ def test_every_declared_line_is_info_steering_or_a_refusal():
 def test_a_line_carries_a_row_by_its_id_never_by_its_words(name, text, path):
     if name in FOREIGN_TEMPLATES:
         return
-    if name == "TaskMetadataReminderNudge":
+    if name == "TaskMetadataReminderMessage":
         assert set(PLACEHOLDER.findall(text)) == {"task", "missing"}
         return
-    if name == "TaskHelperMetadataReminderNudge":
+    if name == "TaskHelperMetadataReminderMessage":
         assert set(PLACEHOLDER.findall(text)) == {"task", "missing"}
         return
     assert PLACEHOLDER.fullmatch(text) is None, f"{name} is only a placeholder, so its words are made on the fly: {text}"

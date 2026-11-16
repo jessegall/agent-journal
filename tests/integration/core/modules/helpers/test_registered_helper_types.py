@@ -79,6 +79,6 @@ def test_the_suites_list_no_roles_per_behaviour_and_a_worker_still_takes_its_wor
 
 
 def test_the_cores_own_helper_type_is_written_the_same_way_as_the_worker(journal):
-    expect_suite_lines(journal, "coding", "helper: coding.helper", "merger: coding.helper")
+    expect_suite_lines(journal, "coding", "helper: coding.helper", "merger: coding.merger")
     expect_fields(journal, "helper", access="read-only", run_limit_key=HELPER_RUN_LIMIT, kept_limit_key=HELPER_KEPT_LIMIT)
     expect_behaviours(journal, "helper", takes_marks=True, runs_saved_commands=True)

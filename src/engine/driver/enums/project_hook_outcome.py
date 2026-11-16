@@ -14,7 +14,7 @@ class ProjectHookOutcome(StrEnum):
     FAILED = "failed"
 
     @classmethod
-    def detected(cls, run: ProjectHookRun, answer: ProjectHookAnswer) -> "ForeignOutcome":
+    def detected(cls, run: ProjectHookRun, answer: ProjectHookAnswer) -> "ProjectHookOutcome":
         if run.timed_out:
             return cls.TIMEOUT
         if answer.refusal:

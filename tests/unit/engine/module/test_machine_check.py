@@ -59,13 +59,13 @@ def test_a_module_whose_lists_follow_the_contracts_syncs() -> None:
 
 
 def test_a_need_source_that_takes_a_bus_is_refused_with_its_fix() -> None:
-    assert any("BusNeeds: it takes a Bus: read rows through injected queries only" in problem for problem in problems(BusStates))
+    assert any("BusStates: it takes a Bus: read rows through injected queries only" in problem for problem in problems(BusStates))
 
 
 def test_a_need_for_a_state_the_engine_places_is_refused() -> None:
-    assert any("a need may not ask for Paused" in problem for problem in problems(PauseStates))
+    assert any("a state source may not ask for Paused" in problem for problem in problems(PauseStates))
 
 
 def test_the_reader_keys_a_class_by_its_path_and_marks_a_module_outside_core() -> None:
     read = ContributionReader().read(SampleModule)
-    assert (read.is_core, [entry.key for entry in read.contributions]) == (False, [f"{UnreadStates.__module__}.UnreadNeeds"])
+    assert (read.is_core, [entry.key for entry in read.contributions]) == (False, [f"{UnreadStates.__module__}.UnreadStates"])

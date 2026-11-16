@@ -5,7 +5,7 @@ from suites.coding.coding_suite import CodingSuite
 from suites.coding.entry_points.admin_entry_point import AdminEntryPoint
 from suites.coding.windows.coding_windows import CODING_WINDOWS
 
-ENTRY_POINT_SAMPLE_SUITE = "tests.stories.suites.coding.support.entrance_samples:FrontDeskSuite"
+ENTRY_POINT_SAMPLE_SUITE = "tests.stories.suites.coding.support.entry_point_samples:FrontDeskSuite"
 SHAPE_SAMPLE_SUITE = "tests.stories.suites.coding.support.shape_samples:ShopSuite"
 
 

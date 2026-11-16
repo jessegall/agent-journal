@@ -20,7 +20,7 @@ def test_an_unknown_driver_is_refused_with_the_drivers_there_are(played):
 def test_the_main_agent_may_not_pop_a_stacked_state(played):
     story = played(BuilderStarted)
     agent: Actor = story.agent
-    assert "only a person removes a frame" in output(story, f"driver pop {agent.id} task:1 --reason test", agent)
+    assert "only a person removes a stacked state" in output(story, f"driver pop {agent.id} task:1 --reason test", agent)
 
 
 def test_nothing_is_stuck_or_escalated_on_a_fresh_journal(played):

@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from engine.enums.execution_lane import ExecutionLane  # noqa: E402
+from engine.enums.execution_length import ExecutionLength  # noqa: E402
 from engine.enums.execution_priority import ExecutionPriority  # noqa: E402
 from engine.execution.classes.builtin_classes import BUILTIN_CLASSES  # noqa: E402
 from engine.execution.limits.default_lane_limits import DEFAULT_LANE_LIMITS  # noqa: E402
@@ -40,12 +40,12 @@ def class_rows() -> str:
 
 
 def capacity_rows() -> str:
-    return "\n".join(f"| {lane} | {DEFAULT_LANE_LIMITS.capacity(lane)} | {DEFAULT_LANE_LIMITS.starter_cap(lane)} |" for lane in ExecutionLane)
+    return "\n".join(f"| {lane} | {DEFAULT_LANE_LIMITS.capacity(lane)} | {DEFAULT_LANE_LIMITS.starter_cap(lane)} |" for lane in ExecutionLength)
 
 
 def limit_rows() -> str:
     rows = []
-    for lane in ExecutionLane:
+    for lane in ExecutionLength:
         for priority in ExecutionPriority:
             limit = DEFAULT_LANE_LIMITS.priority_limit(lane, priority)
             running = "none" if limit.running_limit == UNLIMITED else str(limit.running_limit)

@@ -153,7 +153,7 @@ def test_skill_triggers_cannot_be_scheduled_or_shown_as_other_actions(skills_pag
     with skills_server(story) as server:
         cookie = server.expect_viewer_login(server.viewer_key("Ada"))
         line(server, cookie, "trigger", "make", "cart", "--do", "skill", "--skill", "project-notes")
-        line(server, cookie, "trigger", "edit", "1", "--action", "nudge", "--text", "A note")
+        line(server, cookie, "trigger", "edit", "1", "--action", "agent-message", "--text", "A note")
         story.expect_rows(line(server, cookie, "trigger", "list", "--skill")["rows"] == [])
 
 

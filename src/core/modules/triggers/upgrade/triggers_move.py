@@ -16,6 +16,7 @@ from core.modules.triggers.models.trigger import TEXT_LIMIT_CHARACTERS
 
 TABLE = "triggers"
 ACTIONS = {member.value for member in TriggerAction}
+VERSION_FOUR_ACTIONS = {"nudge": TriggerAction.AGENT_MESSAGE.value}
 
 
 class TriggersMove(VersionFourMove):
@@ -42,11 +43,17 @@ class TriggersMove(VersionFourMove):
         text = row["text"] or ""
         if not 1 <= len(text) <= TEXT_LIMIT_CHARACTERS:
             return f"its text is {len(text)} characters, and a trigger's is 1 to {TEXT_LIMIT_CHARACTERS}"
-        if (row["action"] or TriggerAction.AGENT_MESSAGE.value) not in ACTIONS:
+        if self.action(row) not in ACTIONS:
             return f"its action {row['action']} is none of {', '.join(sorted(ACTIONS))}"
         if not self.phrases(row) and not row["is_scheduled"]:
             return "it has no phrase and no time"
         return ""
+
+    # version 4 named a trigger that gives the agent a line nudge, and one with no action gave one too
+    @staticmethod
+    def action(row: sqlite3.Row) -> str:
+        action = str(row["action"] or TriggerAction.AGENT_MESSAGE.value)
+        return VERSION_FOUR_ACTIONS.get(action, action)
 
     def phrases(self, row: sqlite3.Row) -> list[str]:
         try:
@@ -59,7 +66,7 @@ class TriggersMove(VersionFourMove):
         created = row["created_at"] or context.timestamp
         updated = row["updated_at"] or created
         scheduled = bool(row["is_scheduled"])
-        return rows.insert(TABLE, {"id": row["id"], "creator_id": creator_id, "phrases": json.dumps(self.phrases(row)), "action": row["action"] or TriggerAction.AGENT_MESSAGE.value,
+        return rows.insert(TABLE, {"id": row["id"], "creator_id": creator_id, "phrases": json.dumps(self.phrases(row)), "action": self.action(row),
                                    "text": row["text"], "next_at": row["next_at"] if scheduled else None, "interval_minutes": row["interval_minutes"] or None,
                                    "cron_line": row["cron_line"] or "", "end_at": row["end_at"], "fire_limit": row["fire_limit"] or None,
                                    "fired_count": row["fired_count"] or 0, "ended_at": updated if scheduled and not row["next_at"] else None,
