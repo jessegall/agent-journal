@@ -1,5 +1,6 @@
 from engine.module.suite import Suite
 from suites.coding.support.next_task import NextTask
+from suites.coding.support.coding_settings_sections import CODING_SETTINGS_SECTIONS
 from suites.coding.coding_module import CodingModule
 from suites.coding.modules.checks.checks_module import ChecksModule
 from suites.coding.modules.workers.workers_module import WorkersModule
@@ -19,3 +20,4 @@ class CodingSuite(Suite):
     modules = [CodingModule, WorkersModule, ChecksModule]
     task_assigner = NextTask
     entry_points = [AdminEntryPoint, WorkersAdminEntryPoint, ChecksAdminEntryPoint]
+    settings_sections = CODING_SETTINGS_SECTIONS

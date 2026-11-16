@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 
 from engine.viewer.layout_preset import LayoutPreset
 from engine.viewer.layout_shape import LayoutShape
+from engine.viewer.settings_section import SettingsSection
 
 
 @dataclass(frozen=True)
@@ -19,3 +20,4 @@ class SuiteEntry:
     task_assigner: str = ""
     shipped: bool = False
     entry_points: Mapping[str, Sequence[str]] = field(default_factory=dict[str, Sequence[str]])
+    settings_sections: Sequence[SettingsSection] = ()

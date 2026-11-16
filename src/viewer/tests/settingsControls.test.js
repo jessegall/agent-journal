@@ -2,6 +2,7 @@ import {afterEach, expect, test} from "vitest";
 import {context, mounted, page, settle} from "./support/settingsContext.js";
 import SettingsTree from "../../core/modules/settings/web/src/SettingsTree.vue";
 import {applySettings} from "./support/pageSteps.js";
+import {CODING_SECTIONS} from "./support/codingSettingsSections.js";
 
 afterEach(() => (document.body.innerHTML = ""));
 
@@ -16,7 +17,7 @@ const open = async (element, section) => {
 
 async function drawnWith(rows, {section = "advanced", extra = {}} = {}) {
     const ran = [];
-    const window = context({"setting tree": page(rows), ...extra});
+    const window = context({"setting tree": page(rows), "suite sections": page(CODING_SECTIONS), ...extra});
     window.run = async (line) => (ran.push(line), {ok: true, value: {}});
     const element = await mounted(SettingsTree, window);
     document.body.append(element);
@@ -93,7 +94,7 @@ test("a list is edited one on each line and saved as a list", async () => {
 
 test("the page reads the environments and the saved commands only when their section opens", async () => {
     const {element, window} = await drawnWith(ROWS, {section: "advanced", extra: {"environment cards": page([]), "alias saved": page([{id: 1, name: "tests", line: "npm test", category: "test run"}])}});
-    expect(window.reads).toEqual(["setting tree"]);
+    expect(window.reads).toEqual(["setting tree", "suite sections"]);
     await open(element, "commands");
     expect(window.reads).toContain("alias saved --limit 1000");
     expect(element.querySelector('[data-saved-command="tests"]')).not.toBeNull();

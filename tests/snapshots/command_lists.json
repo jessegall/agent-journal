@@ -3774,6 +3774,11 @@
   "merger": "allowed",
   "worker": "refused"
  },
+ "suite sections": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
  "suite show": {
   "helper": "allowed",
   "merger": "allowed",

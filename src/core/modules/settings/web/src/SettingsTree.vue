@@ -7,12 +7,14 @@ import SettingNode from "./SettingNode.vue";
 import SettingsEnvironments from "./SettingsEnvironments.vue";
 import LeaveDialog from "./LeaveDialog.vue";
 import SettingsLayout from "./SettingsLayout.vue";
-import {GROUPS, SECTIONS, sectionOf} from "./settingSections.js";
+import {sectionOf, withSuiteSections} from "./settingSections.js";
 
 // the settings of the journal in the design's sections: the declared settings of each module sit in the section the design gives it, the agent settings are drawn by their own window,
 // and a search over every declared row replaces the section while words are typed
 const context = useWindow();
 const {rows, failure, loaded, load} = context.props.settings;
+// the page's sections with those the environment's suite adds
+const layout = computed(() => withSuiteSections(context.props.sections?.data.value?.rows ?? []));
 const query = ref("");
 // the environments are read when their section opens, as the key is tied to a tab
 context.state.tab = "settings";
@@ -24,8 +26,8 @@ const wordsOf = (value) => (typeof value === "boolean" ? (value ? "on" : "off") 
 const listed = computed(() => rows.value.filter((row) => !row.key.endsWith(".*")).map((row) => (row.key in draft.value ? {...row, value: draft.value[row.key].value, shown: wordsOf(draft.value[row.key].value)} : row)));
 const changes = computed(() => Object.entries(draft.value).map(([key, held]) => ({key, title: rows.value.find((row) => row.key === key)?.title ?? key, to: held.secret ? "changed" : wordsOf(held.value)})));
 const readOnly = context.face === "phone";
-const groups = computed(() => GROUPS.map((group) => ({...group, sections: group.sections.map((key) => ({key, ...SECTIONS[key]})).filter((section) => !section.modules || topsOf(section.key).length)})).filter((group) => group.sections.length));
-const topsOf = (key) => listed.value.filter((row) => row.parent === null && sectionOf(row.module) === key);
+const groups = computed(() => layout.value.groups.map((group) => ({...group, sections: group.sections.map((key) => ({key, ...layout.value.sections[key]})).filter((section) => !section.modules || topsOf(section.key).length)})).filter((group) => group.sections.length));
+const topsOf = (key) => listed.value.filter((row) => row.parent === null && sectionOf(row.module, layout.value.sections, layout.value.drawnElsewhere) === key);
 const current = ref("look");
 const open = computed(() => (groups.value.flatMap((group) => group.sections).some((section) => section.key === current.value) ? current.value : groups.value[0].sections[0].key));
 function pick(key) {
@@ -33,7 +35,7 @@ function pick(key) {
     query.value = "";
     context.state.tab = key === "environments" ? "environments" : "settings";
 }
-const section = computed(() => SECTIONS[open.value]);
+const section = computed(() => layout.value.sections[open.value]);
 
 // a search keeps each declared setting whose title, description or key has the words, and the groups above it
 const shown = computed(() => {
@@ -46,7 +48,7 @@ const shown = computed(() => {
     }
     return listed.value.filter((row) => keys.has(row.key));
 });
-const found = computed(() => groups.value.flatMap((group) => group.sections).map((entry) => ({...entry, tops: shown.value.filter((row) => row.parent === null && sectionOf(row.module) === entry.key)})).filter((entry) => entry.tops.length));
+const found = computed(() => groups.value.flatMap((group) => group.sections).map((entry) => ({...entry, tops: shown.value.filter((row) => row.parent === null && sectionOf(row.module, layout.value.sections, layout.value.drawnElsewhere) === entry.key)})).filter((entry) => entry.tops.length));
 
 // a setting joins the draft; a change back to what the server holds leaves it
 function saved(words, change) {

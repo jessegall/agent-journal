@@ -46,6 +46,7 @@ from engine.viewer.layout_preset import LayoutPreset
 from engine.viewer.window_declaration import DEFAULT_FLOAT_SIZE
 from engine.enums.window_icon import WindowIcon
 from engine.viewer.layout_shape import loaded_layout, stored_layout
+from engine.viewer.settings_section import SettingsSection
 
 
 # a registry saved before windows were split into where they are drawn and whose work they show: an environment or agent window was drawn in a pane
@@ -144,7 +145,9 @@ class Registry:
                                     {page: tuple(LayoutPreset(preset["key"], preset["name"], preset["text"], loaded_layout(preset["shape"])) for preset in presets)
                                      for page, presets in suite.get("presets", {}).items()},
                                     suite.get("task_assigner", ""), suite.get("shipped", False),
-                                    entry_points={key: tuple(windows) for key, windows in suite.get("entrances", {}).items()})
+                                    entry_points={key: tuple(windows) for key, windows in suite.get("entrances", {}).items()},
+                                    settings_sections=tuple(SettingsSection(**{**section, "tabs": tuple(section["tabs"]), "draws_modules": tuple(section["draws_modules"])})
+                                                            for section in suite.get("settings_sections", [])))
                          for suite in entries.get("suites", [])),
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["instructions"]))
                           for driver in entries.get("drivers", [])),
@@ -198,6 +201,7 @@ class Registry:
             "bindings": {interface: path.text for interface, path in self.bindings.items()},
             "suites": [{"name": suite.name, "module": suite.module, "requires": list(suite.requires), "windows": list(suite.windows),
                         "task_assigner": suite.task_assigner, "shipped": suite.shipped, "entrances": {key: list(windows) for key, windows in suite.entry_points.items()},
+                        "settings_sections": [asdict(section) for section in suite.settings_sections],
                         "layouts": {page: stored_layout(shape) for page, shape in suite.layouts.items()},
                         "presets": {page: [{"key": preset.key, "name": preset.name, "text": preset.text, "shape": stored_layout(preset.shape)} for preset in presets]
                                     for page, presets in suite.presets.items()}} for suite in self.suites],

@@ -17,7 +17,8 @@ class DriverEntries:
 
     def suites(self, modules: Sequence[type[Module]], shipped_modules: Sequence[type[Module]], suites: SuiteList) -> tuple[SuiteEntry, ...]:
         return tuple(SuiteEntry(suite.name, module.name, tuple(suite.requires), suite.offered_windows(), suite.default_layouts(), suite.offered_presets(),
-                                      self.task_assigner_path(suite), shipped=module in shipped_modules, entry_points=suite.entry_point_windows())
+                                      self.task_assigner_path(suite), shipped=module in shipped_modules, entry_points=suite.entry_point_windows(),
+                                      settings_sections=tuple(suite.settings_sections))
                      for module in modules for suite in suites.module_suites(module))
 
     @staticmethod

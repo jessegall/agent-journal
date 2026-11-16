@@ -6,6 +6,7 @@ from engine.viewer.layout_preset import LayoutPreset
 from engine.viewer.layout_shape import LayoutShape
 from engine.helper_type.helper_type import HelperType
 from engine.module.task_assigner import TaskAssigner
+from engine.viewer.settings_section import SettingsSection
 
 if TYPE_CHECKING:
     from engine.module.module import Module
@@ -26,6 +27,7 @@ class Suite:
     entry_points: ClassVar[Sequence[type[EntryPoint]]] = []
     task_assigner: ClassVar[type[TaskAssigner] | None] = None
     helper_types: ClassVar[Sequence[type[HelperType]]] = []
+    settings_sections: ClassVar[Sequence[SettingsSection]] = []
 
     @classmethod
     def offered_windows(cls) -> tuple[str, ...]:

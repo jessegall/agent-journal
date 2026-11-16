@@ -5,6 +5,7 @@ from engine.enums.window_loading import WindowLoading
 from engine.enums.window_place import WindowPlace
 from engine.viewer.window_read_search import WindowReadSearch
 from core.modules.settings.windows.settings.keys.settings_key import SettingsKey
+from core.modules.settings.windows.settings.keys.sections_key import SectionsKey
 from core.modules.settings.windows.settings.keys.environments_key import EnvironmentsKey
 from core.modules.settings.windows.settings.keys.commands_key import CommandsKey
 
@@ -21,7 +22,7 @@ class SettingsWindow(Window):
     group = "project"
     icon = WindowIcon.MENU
     search = WindowReadSearch("setting tree", "Find a setting", ("title", "description", "key"))
-    reads = ["setting tree", "environment list", "environment cards", "alias saved"]
+    reads = ["setting tree", "suite sections", "environment list", "environment cards", "alias saved"]
     runs = ["setting set", "setting switch", "environment delete"]
     events = ["setting.*", "environment.*", "alias.*"]
-    keys = [SettingsKey, EnvironmentsKey, CommandsKey]
+    keys = [SettingsKey, SectionsKey, EnvironmentsKey, CommandsKey]

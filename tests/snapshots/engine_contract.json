@@ -7078,7 +7078,8 @@
         "requires: ClassVar[Sequence[str]]",
         "entry_points: ClassVar[Sequence[type[EntryPoint]]]",
         "task_assigner: ClassVar[type[TaskAssigner] | None]",
-        "helper_types: ClassVar[Sequence[type[HelperType]]]"
+        "helper_types: ClassVar[Sequence[type[HelperType]]]",
+        "settings_sections: ClassVar[Sequence[SettingsSection]]"
       ],
       "methods": [
         "offered_windows(cls) -> tuple[str, ...]",
@@ -9559,7 +9560,8 @@
         "presets: Mapping[str, Sequence[LayoutPreset]]",
         "task_assigner: str",
         "shipped: bool",
-        "entry_points: Mapping[str, Sequence[str]]"
+        "entry_points: Mapping[str, Sequence[str]]",
+        "settings_sections: Sequence[SettingsSection]"
       ],
       "methods": []
     },
@@ -11667,6 +11669,20 @@
       "methods": [
         "listed(self) -> Mapping[str, str]"
       ]
+    },
+    "viewer.settings_section.SettingsSection": {
+      "bases": [],
+      "fields": [
+        "key: str",
+        "label: str",
+        "icon: str",
+        "window: str",
+        "tabs: tuple[str, ...]",
+        "group: str",
+        "next_section: str",
+        "draws_modules: tuple[str, ...]"
+      ],
+      "methods": []
     },
     "viewer.skeleton_part.SkeletonPart": {
       "bases": [],

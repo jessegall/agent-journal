@@ -1,11 +1,13 @@
 import {afterEach, expect, test} from "vitest";
 import {context, mounted, page, settle} from "./support/settingsContext.js";
 import SettingsTree from "../../core/modules/settings/web/src/SettingsTree.vue";
-import {GROUPS, SECTIONS, sectionOf} from "../../core/modules/settings/web/src/settingSections.js";
+import {sectionOf, withSuiteSections} from "../../core/modules/settings/web/src/settingSections.js";
+import {CODING_SECTIONS} from "./support/codingSettingsSections.js";
 
 afterEach(() => (document.body.innerHTML = ""));
 
 const row = (key, module, fields = {}) => ({key, module, parent: null, title: key.split(".").pop(), description: "", type: "flag", value: true, shown: "on", source: "default", secret: false, scope: "environment", choices: [], toggleable: false, default: true, ...fields});
+const LAYOUT = withSuiteSections(CODING_SECTIONS);
 const ROWS = [
     row("journal.core.viewer.motion", "journal.core.viewer", {title: "Animations"}),
     row("journal.core.reviews.model", "journal.core.reviews", {title: "Review model"}),
@@ -15,7 +17,7 @@ const ROWS = [
 ];
 
 async function drawn() {
-    const window = context({"setting tree": page(ROWS), "environment cards": page([])});
+    const window = context({"setting tree": page(ROWS), "suite sections": page(CODING_SECTIONS), "environment cards": page([])});
     return mounted(SettingsTree, window);
 }
 const labels = (element, selector) => [...element.querySelectorAll(selector)].map((found) => found.textContent.trim());
@@ -37,7 +39,7 @@ test("test_section_icons: each section has one icon, Reviews an eye, Tests the t
     expect(icon("advanced")).toBe("layout");
     expect(icon("developer")).toBe("code");
     expect(element.querySelectorAll("[data-section]").length).toBe(element.querySelectorAll("[data-section-icon]").length);
-    expect(GROUPS.flatMap((group) => group.sections).every((key) => SECTIONS[key].icon)).toBe(true);
+    expect(LAYOUT.groups.flatMap((group) => group.sections).every((key) => LAYOUT.sections[key].icon)).toBe(true);
 });
 
 test("test_search_finds_rows: typing in the search shows the matching rows of every section with the section named, and none says so", async () => {
@@ -59,10 +61,10 @@ test("test_search_finds_rows: typing in the search shows the matching rows of ev
 });
 
 test("test_declared_screen_mapped: a declared module opens in the section the design gives it, the agent settings are drawn by their own window, and a module no section names goes under Advanced", async () => {
-    expect(sectionOf("journal.core.viewer")).toBe("look");
-    expect(sectionOf("journal.core.tunnel")).toBe("tunnel");
-    expect(sectionOf("journal.suites.coding.workers")).toBeNull();
-    expect(sectionOf("journal.core.tasks")).toBe("advanced");
+    expect(sectionOf("journal.core.viewer", LAYOUT.sections, LAYOUT.drawnElsewhere)).toBe("look");
+    expect(sectionOf("journal.core.tunnel", LAYOUT.sections, LAYOUT.drawnElsewhere)).toBe("tunnel");
+    expect(sectionOf("journal.suites.coding.workers", LAYOUT.sections, LAYOUT.drawnElsewhere)).toBeNull();
+    expect(sectionOf("journal.core.tasks", LAYOUT.sections, LAYOUT.drawnElsewhere)).toBe("advanced");
     const element = await drawn();
     element.querySelector('[data-section="tunnel"]').click();
     await settle();
