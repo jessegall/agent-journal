@@ -1,6 +1,6 @@
 import sqlite3
 
-from core.modules.drivers.migrations.m082_grants_in_one_table import GrantsInOneTableMigration
+from core.modules.drivers.migrations.m082_merged_grant_tables import MergedGrantTablesMigration
 from engine.database.database import Database
 
 ROW = "version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL, updated_at TEXT NOT NULL"
@@ -39,7 +39,7 @@ TABLES = f"""
 def migrated() -> sqlite3.Connection:
     connection = sqlite3.connect(":memory:", autocommit=True)
     connection.executescript(TABLES)
-    GrantsInOneTableMigration().run(Database.configured(connection))
+    MergedGrantTablesMigration().run(Database.configured(connection))
     return connection
 
 
@@ -48,7 +48,7 @@ def rows(connection: sqlite3.Connection, query: str) -> list[tuple[object, ...]]
 
 
 def test_every_skip_and_permission_moves_into_the_grants_with_its_state_its_people_and_its_times():
-    grants = rows(migrated(), "SELECT id, grant_type, policy_key, grant_state, asker_id, responder_id, reason, tried, skips_in_a_row, requires_approval, confirmed_at, created_at"
+    grants = rows(migrated(), "SELECT id, grant_type, policy_key, grant_state, asker_id, responder_id, reason, tried, consecutive_skips, requires_approval, confirmed_at, created_at"
                                " FROM driver_grants ORDER BY id")
     assert grants == [(1, "alias-skip", "aliases.unknown", "confirmed", 7, None, "a one-off line", "", 1, 0, None, "t0"),
                       (2, "refusal-skip", "tasks.stop", "spent", 7, None, "the task waits on the user", "asked the user", 2, 0, "t1", "t1"),

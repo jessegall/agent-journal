@@ -501,7 +501,8 @@
       ],
       "methods": [
         "allowed(cls) -> 'Decision'",
-        "admits(self) -> bool"
+        "admits(self) -> bool",
+        "admits_stop(self, question: Question) -> bool"
       ]
     },
     "agent_machine.decision_record.DecisionRecord": {

@@ -23,6 +23,6 @@ class SkipRefusalSubcommand(Subcommand[SkipRefusal, DriverGrant]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, DriverGrant):
-            output.write(f"skip {value.id} of {value.policy_key} held, {value.skips_in_a_row} in a row. Is there no other way? Do what the refusal asks "
+            output.write(f"skip {value.id} of {value.policy_key} held, {value.consecutive_skips} in a row. Is there no other way? Do what the refusal asks "
                          f"and withdraw it (journal refusal withdraw {value.id}), or confirm it is wrong here and name what you tried instead "
-                         f"(journal refusal confirm {value.id} --tried '<what you tried>')", {"id": value.id, "name": value.policy_key, "skips_in_a_row": value.skips_in_a_row})
+                         f"(journal refusal confirm {value.id} --tried '<what you tried>')", {"id": value.id, "name": value.policy_key, "consecutive_skips": value.consecutive_skips})

@@ -10,7 +10,7 @@ from engine.query.queries import Queries
 from engine.log.refusal_log import RefusalLog
 from engine.registry.registry import Registry
 from core.modules.drivers.commands.skip_refusal.skip_refusal import SkipRefusal
-from core.modules.drivers.commands.spend_grant.spend_grant import SpendGrant
+from core.modules.drivers.commands.use_grant.use_grant import UseGrant
 from engine.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.models.driver_grant import DriverGrant
@@ -29,7 +29,7 @@ class TableRefusalSkips(RefusalSkips):
 
     def waiting(self, agent_id: int, rule: str) -> Command[object] | None:
         skip = self.queries.query(DriverGrant).filter(session_agent_id=agent_id, grant_type=GrantType.REFUSAL_SKIP, policy_key=rule, grant_state=GrantState.CONFIRMED, requires_approval=False).newest().first()
-        return SpendGrant(skip.id) if skip is not None else None
+        return UseGrant(skip.id) if skip is not None else None
 
     def last_refused_rules(self, agent_id: int) -> frozenset[str]:
         call = self.queries.query(HookCall).filter(session_agent_id=agent_id, answer=HookAnswer.REFUSED).newest().first()

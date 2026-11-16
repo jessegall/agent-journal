@@ -81,7 +81,7 @@ class AgentStateMachine:
         counts = self.counting.after(decision, question, view, built, reasons)
         decision = self.escalated(decision, counts, view)
         record = self.record(view, question, decision, outcome, rewrite, counts, built.stack, built.moves, reasons)
-        if decision.admits() and question.is_stop():
+        if decision.admits_stop(question):
             record = replace(record, spent_grants=tuple(self.constraints.spent_stop_grants(view, built.stack)))
         elif decision.admits() and question.is_action():
             record = replace(record, spent_grants=tuple(self.constraints.spent_grants(rewrite.final_question(question), view)))

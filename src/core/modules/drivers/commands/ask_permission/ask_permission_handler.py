@@ -39,7 +39,7 @@ class AskPermissionHandler(Handler[AskPermission, DriverGrant]):
         if open_request is not None:
             return open_request
         request = self.repository.save(DriverGrant(session_agent_id=context.actor.id, grant_type=GrantType.PERMISSION, policy_key=command.action,
-                                                target="", action_fingerprint="", asker_id=context.actor.id, reason=command.reason, requires_approval=command.requires_person), context)
+                                                asker_id=context.actor.id, reason=command.reason, requires_approval=command.requires_person), context)
         if command.requires_person:
             question = f"Allow {AgentLabel.labelled(self.queries.query(Agent).find(context.actor.id)).text} to do this once: {command.action}?"
             self.bus.dispatch(RequestUserApproval(UserApprovalRefusal(question, command=AllowPermission(request.id), request_reason=command.reason), (), context.actor.id), context)

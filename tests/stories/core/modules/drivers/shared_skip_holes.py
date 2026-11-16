@@ -79,4 +79,4 @@ def test_a_refusal_by_something_else_between_two_skips_starts_the_count_again(ne
     story.advance(timedelta(seconds=1))
     refusal_line(story, reply("Seventh again"))
     skipped(story)
-    story.expect_text("driver-grant show 2", "skips_in_a_row: 1", actor=story.user)
+    story.expect_text("driver-grant show 2", "consecutive_skips: 1", actor=story.user)

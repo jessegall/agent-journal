@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from engine.agent_machine.record.question import Question
 from engine.agent_stack.reason import Reason
 from engine.enums.decision_class import DecisionClass
 
@@ -17,3 +18,6 @@ class Decision:
 
     def admits(self) -> bool:
         return self.decision_class is DecisionClass.ALLOW
+
+    def admits_stop(self, question: Question) -> bool:
+        return question.is_stop() and self.admits()

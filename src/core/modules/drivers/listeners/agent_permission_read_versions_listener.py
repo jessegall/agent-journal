@@ -14,9 +14,9 @@ PermissionRow = AgentBlock | AgentEscalation | HiddenState | ContextCompaction |
 
 class AgentPermissionReadVersionsListener(SaveListener[Changed[AgentBlock] | Changed[AgentEscalation] | Changed[HiddenState]
                                                 | Changed[ContextCompaction] | Changed[DriverGrant] | Changed[AgentSession]]):
-    """A block opened, skipped or closed, an escalation answered, a suppression, a compaction attempt, a grant (a
-    skip, a permission) asked, answered or spent and a session bound, replaced or ended each change what one agent may do:
-    its answer basis moves in the same write (doc 1310 section 6.5)."""
+    """A block opened, skipped or closed, an escalation answered, a suppression, a compaction attempt, a
+    grant (a skip, a permission) asked, answered or spent and a session bound, replaced or ended each
+    change what one agent may do: its answer basis moves in the same write (doc 1310 section 6.5)."""
 
     name = "drivers.permission-basis"
 

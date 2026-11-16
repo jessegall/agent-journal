@@ -54,16 +54,16 @@ class SkipRefusalHandler(Handler[SkipRefusal, DriverGrant]):
         if command.is_used:
             return self.confirmed_skip_used(actor, command.name, context)
         last = self.queries.query(DriverGrant).filter(session_agent_id=actor.id, grant_type=GrantType.REFUSAL_SKIP).newest().first()
-        if last is not None and last.skips_in_a_row >= MOST_SKIP_COUNT and last.restored_at is None:
+        if last is not None and last.consecutive_skips >= MOST_SKIP_COUNT and last.restored_at is None:
             agent = self.queries.query(Agent).find(actor.id)
             if agent.is_main or agent.parent_id is None:
                 raise self.restoration_approval(agent)
             raise Refusal(f"you skipped {MOST_SKIP_COUNT} refusals in a row and lost the skip", "obey the refusal until the skip is restored")
         skipped_at = last.created_at.text if last is not None and last.created_at is not None else ""
         self.check_refused(actor, command.name, skipped_at)
-        skip = self.repository.save(DriverGrant(session_agent_id=actor.id, grant_type=GrantType.REFUSAL_SKIP, policy_key=command.name, target="", action_fingerprint="",
-                                             asker_id=actor.id, reason=command.reason.strip(), skips_in_a_row=self.skip_count(actor, last, command.name, skipped_at)), context)
-        if skip.skips_in_a_row == MOST_SKIP_COUNT:
+        skip = self.repository.save(DriverGrant(session_agent_id=actor.id, grant_type=GrantType.REFUSAL_SKIP, policy_key=command.name,
+                                             asker_id=actor.id, reason=command.reason.strip(), consecutive_skips=self.skip_count(actor, last, command.name, skipped_at)), context)
+        if skip.consecutive_skips == MOST_SKIP_COUNT:
             self.raised(actor.id, context)
         return skip
 
@@ -88,7 +88,7 @@ class SkipRefusalHandler(Handler[SkipRefusal, DriverGrant]):
     def skip_count(self, actor: Actor, last: DriverGrant | None, name: str, skipped_at: str) -> int:
         if last is None or last.restored_at is not None:
             return 1
-        return 1 if self.different_rule_refused(actor, skipped_at, name) else last.skips_in_a_row + 1
+        return 1 if self.different_rule_refused(actor, skipped_at, name) else last.consecutive_skips + 1
 
     # Whether a rule or guard other than the named one refused the agent after the time; a refused call that names no
     # rule counts as another.

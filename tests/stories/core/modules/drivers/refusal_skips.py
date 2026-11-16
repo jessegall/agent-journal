@@ -97,7 +97,7 @@ def test_a_skip_passes_the_refusal_once_keeps_its_reason_and_a_retry_of_the_same
     story.expect_hook_refusal("s-1", full_line(), REFUSED)
     story.advance(timedelta(seconds=1))
     story.expect_success(SKIP, actor=story.agent)
-    story.expect_success("driver-grant show 2", "skips_in_a_row: 2", actor=story.user)
+    story.expect_success("driver-grant show 2", "consecutive_skips: 2", actor=story.user)
 
 
 def test_a_skip_with_no_refusal_before_it_is_refused(new_story):

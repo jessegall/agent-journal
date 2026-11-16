@@ -5,20 +5,21 @@ SKIP_STATE = ("CASE WHEN skip.cancelled_at IS NOT NULL THEN 'withdrawn' WHEN ski
               " WHEN skip.confirmed_at IS NOT NULL THEN 'confirmed' ELSE 'held' END")
 PERMISSION_STATE = "CASE permission.state WHEN 'allowed' THEN 'approved' WHEN 'used' THEN 'spent' WHEN 'declined' THEN 'declined' ELSE 'held' END"
 GRANT_COLUMNS = ("session_agent_id, environment_id, grant_type, policy_key, target, action_fingerprint, asker_id, reason, grant_state, responder_id, tried,"
-                 " skips_in_a_row, requires_approval, confirmed_at, approved_at, restored_at, moved_from")
+                 " consecutive_skips, requires_approval, confirmed_at, approved_at, restored_at, moved_from")
 MOVED_RECEIPT = ("FROM driver_grant_sources AS source JOIN driver_grants AS moved ON moved.id = source.grant_id WHERE source.legacy_id = used_grant_records.grant_id"
                  " AND moved.session_agent_id = used_grant_records.session_agent_id AND moved.policy_key = used_grant_records.policy_key")
 
 
-class GrantsInOneTableMigration(Migration):
-    """Every grant lives in driver_grants: each refusal or guard skip and each permission request moves into it with
-    its state, its asker, its reason, its approval and its times, driver_grant_sources keeps the id each had in its
-    old table, a receipt, which names its grant by that old id and is told apart by its agent and policy key, points
-    at the moved row, the two old tables go, and every block gets its scopes from its stop-only column before that column goes."""
+class MergedGrantTablesMigration(Migration):
+    """Every grant lives in driver_grants: each refusal or guard skip and each permission request moves into
+    it with its state, its asker, its reason, its approval and its times, driver_grant_sources keeps the
+    id each had in its old table, a receipt, which names its grant by that old id and is told apart by its
+    agent and policy key, points at the moved row, the two old tables go, and every block gets its scopes
+    from its stop-only column before that column goes."""
 
     number = 82
     statements = [
-        "ALTER TABLE driver_grants ADD COLUMN skips_in_a_row INTEGER NOT NULL DEFAULT 1",
+        "ALTER TABLE driver_grants ADD COLUMN consecutive_skips INTEGER NOT NULL DEFAULT 1",
         "ALTER TABLE driver_grants ADD COLUMN requires_approval INTEGER NOT NULL DEFAULT 0 CHECK (requires_approval IN (0, 1))",
         "ALTER TABLE driver_grants ADD COLUMN confirmed_at TEXT",
         "ALTER TABLE driver_grants ADD COLUMN approved_at TEXT",

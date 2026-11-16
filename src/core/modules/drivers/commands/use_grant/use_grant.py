@@ -5,7 +5,7 @@ from core.modules.drivers.models.driver_grant import DriverGrant
 
 
 @dataclass(frozen=True)
-class SpendGrant(Command[DriverGrant]):
+class UseGrant(Command[DriverGrant]):
     """Marks a grant (a skip, a permission) as spent on the action it passed, by the event that spent it."""
 
     grant_id: int

@@ -41,7 +41,7 @@ class RefusalCounting:
 
     @staticmethod
     def is_progress(decision: Decision, question: Question, moves: tuple[StackMove, ...]) -> bool:
-        if (question.is_stop() and decision.admits()) or question.question_type is QuestionType.PROMPT:
+        if decision.admits_stop(question) or question.question_type is QuestionType.PROMPT:
             return True
         return any(move.stacked_state_end in PROGRESS_ENDS or StackMoveType.ENTERED is move.move_type and move.stacked_state_key is not None and move.stacked_state_key.state_name == "Working"
                    for move in moves)

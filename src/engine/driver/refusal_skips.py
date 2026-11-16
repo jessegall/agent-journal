@@ -5,9 +5,9 @@ from engine.command.command import Command
 
 
 class RefusalSkips:
-    """The skips agents earn after a refusal: one that waits for a rule, the rules that refused the agent's last
-    refused hook, and the check of a skipped guard; with no module keeping skips, nothing waits and a skipped guard
-    is simply skipped."""
+    """The skips agents earn after a refusal: one that waits for a rule, the rules that refused the agent's
+    last refused hook, and the check of a skipped guard; with no module keeping skips, nothing waits and a
+    skipped guard is simply skipped."""
 
     def waiting(self, agent_id: int, rule: str) -> Command[object] | None:
         return None

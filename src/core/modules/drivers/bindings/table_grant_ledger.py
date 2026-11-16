@@ -11,7 +11,7 @@ from engine.enums.grant_state import GrantState
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from core.modules.drivers.commands.spend_grant.spend_grant import SpendGrant
+from core.modules.drivers.commands.use_grant.use_grant import UseGrant
 from core.modules.drivers.models.used_grant_record import UsedGrantRecord
 from core.modules.drivers.models.driver_grant import DriverGrant
 
@@ -21,10 +21,11 @@ SPENT_TEXT = "the exception this action needs was spent or withdrawn while it wa
 
 
 class TableGrantLedger(GrantLedger):
-    """The grant ledger over the driver grant table (doc 1310 section 4.7): a confirmed refusal skip, approved
-    where it needs approval, passes the next action its policy refuses; an allowed permission passes the action it
-    names; an alias or guard skip passes its exact target. A spend uses the skip and permission commands, so their
-    answers stay as they are, and a spent journal command leaves a receipt its own entry point takes once."""
+    """The grant ledger over the driver grant table (doc 1310 section 4.7): a confirmed refusal skip,
+    approved where it needs approval, passes the next action its policy refuses; an allowed permission
+    passes the action it names; an alias or guard skip passes its exact target. A spend uses the skip and
+    permission commands, so their answers stay as they are, and a spent journal command leaves a receipt
+    its own entry point takes once."""
 
     def __init__(self, queries: Queries, repository: Repository, bus: Bus) -> None:
         self.queries, self.repository, self.bus = queries, repository, bus
@@ -42,7 +43,7 @@ class TableGrantLedger(GrantLedger):
     def spend(self, grant: Grant, event_id: str, command_fingerprint: str, context: Context) -> None:
         if not self.is_spendable(grant):
             raise RequiredEffectError(SPENT_TEXT)
-        self.bus.dispatch(SpendGrant(grant.grant_id, event_id), context)
+        self.bus.dispatch(UseGrant(grant.grant_id, event_id), context)
         if command_fingerprint:
             self.repository.save(UsedGrantRecord(session_agent_id=grant.agent_id, event_id=event_id, command_fingerprint=command_fingerprint, policy_key=grant.policy_key,
                                             grant_id=grant.grant_id), context)
