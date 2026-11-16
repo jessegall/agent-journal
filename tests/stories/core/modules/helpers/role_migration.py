@@ -22,8 +22,9 @@ class StoredAgent:
     ended_at: str | None
 
 
-def agent_row(story, number: int) -> StoredAgent:
-    row = json.loads(story.run(f"agent show {number} --json --environment main", actor=story.user).output_text)
+def agent_row(story, agent_id: int) -> StoredAgent:
+    rows = json.loads(story.run("agent list --json --limit 50 --environment main", actor=story.user).output_text)["rows"]
+    row = next(row for row in rows if row["id"] == agent_id)
     return StoredAgent(row["role"], row["profile"], row["session"], row["ended_at"])
 
 
@@ -91,7 +92,7 @@ def test_an_interrupted_migration_leaves_both_keys_readable_until_it_runs_again(
     story.rerun_migration(WORKERS_MODULE, ROLE_KEYS_MIGRATION)
     story.use_fixture_environment("main")
     actor_ids = story.seed(AgentActorSeed, 1, name="late verifier")
-    story.seed(OldRoleAgentSeed, 1, id=actor_ids[0], actor_id=actor_ids[0], session="late-verifier", number=904)
+    story.seed(OldRoleAgentSeed, 1, id=actor_ids[0], actor_id=actor_ids[0], session="late-verifier")
     story.expect_rows(agent_row(story, role_numbers(story, "verifier")[0]).role == "verifier",
                       agent_row(story, role_numbers(story, "merger")[0]).role == "merger")
     story.rerun_migration(WORKERS_MODULE, ROLE_KEYS_MIGRATION)

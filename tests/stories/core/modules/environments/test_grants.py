@@ -48,4 +48,4 @@ def test_the_granted_agent_is_readable_while_it_dispatches_in_its_test_environme
 def test_the_granted_agent_may_review_a_workers_logs_in_its_test_environment(new_story):
     story = new_story(fixture=BuilderStarted)
     story.expect_success(f"environment make story-engine /work/story-engine --test --test-agent-id {story.agent.id}", actor=story.user)
-    story.expect_refusal("worker logs 99 --environment story-engine", "no agent 99 in environment story-engine", actor=story.agent)
+    story.expect_refusal("worker logs 99 --environment story-engine", "no agent 99 in this environment", actor=story.agent)

@@ -104,4 +104,4 @@ def test_agent_one_keeps_its_started_task_when_a_codex_session_takes_it_over(new
 def test_an_agent_id_no_agent_of_the_environment_has_is_refused_without_naming_another_environment(new_story):
     story = new_story(fixture=UserBuilder)
     story.expect_refusal("agent show 999 --environment main", "no agent 999 in this environment", actor=story.user)
-    story.expect_refusal("agent show row:1 --environment main", "is no agent id", actor=story.user)
+    story.expect_refusal("agent show row:1 --environment main", "invalid AgentId value", actor=story.user)
