@@ -78,13 +78,13 @@ def test_a_negative_wait_is_refused(worker):
     worker.story.expect_refusal(SECONDS_SET.format(seconds=-1), "at least 0", actor=worker.story.user)
 
 
-@pytest.mark.parametrize(("ends_in_time", "is_asked"), [(False, True), (True, False)])
-def test_a_named_test_past_the_wait_is_asked_to_go_to_the_background_and_one_that_ends_in_time_is_not(worker, ends_in_time, is_asked):
+@pytest.mark.parametrize(("ends_in_time", "background_expected"), [(False, True), (True, False)])
+def test_a_named_test_past_the_wait_is_asked_to_go_to_the_background_and_one_that_ends_in_time_is_not(worker, ends_in_time, background_expected):
     if ends_in_time:
         end_run_during_wait(worker.story, "ok\n")
     worker.story.run(TEST_RUN, actor=worker.worker)
-    asked = worker.story.step("run asked to move", newest_run(worker.story).id)
-    worker.story.expect_rows(asked is is_asked, detail=f"a named test that ends in time ({ends_in_time}) was asked to move: {asked}")
+    move_requested = worker.story.step("run asked to move", newest_run(worker.story).id)
+    worker.story.expect_rows(move_requested is background_expected, detail=f"a named test that ends in time ({ends_in_time}) was asked to move: {move_requested}")
 
 
 def test_a_named_test_launches_and_holds_the_call_with_the_settings_queue_wait(worker, launches):

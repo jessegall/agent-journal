@@ -451,8 +451,8 @@ def test_program_states_copes_with_a_removed_program(split_story, split_viewer, 
     uninstall_sample_module(story)
     for provider in story.container.get(Providers).all():
         monkeypatch.setattr(provider, 'journal_trust', lambda home: HookTrust.READY)
-    worker_past_the_removed_program = dispatch(story)
-    expect_program(story, worker_past_the_removed_program, 'claude')
+    claude_worker = dispatch(story)
+    expect_program(story, claude_worker, 'claude')
 
 
 def test_program_states_copes_with_a_stale_file(split_story, split_viewer):

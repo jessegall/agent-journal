@@ -74,12 +74,12 @@ def test_a_hook_reads_the_open_reminders_once_and_more_reminders_cost_it_no_more
     story = played(BuilderStarted)
     made_reminders(story, 0)
     story.hook("s-1", PROMPT)
-    fewer = selects_during(story, lambda: story.hook("s-1", PROMPT))
+    reads_without_reminders = selects_during(story, lambda: story.hook("s-1", PROMPT))
     made_reminders(story, REMINDERS)
     story.hook("s-1", PROMPT)
-    more = selects_during(story, lambda: story.hook("s-1", PROMPT))
-    expect_visited_limit([read for read in more if "FROM reminders" in read], REMINDER_READS_ALLOWED)
-    expect_value(len(more), len(fewer))
+    reads_with_reminders = selects_during(story, lambda: story.hook("s-1", PROMPT))
+    expect_visited_limit([read for read in reads_with_reminders if "FROM reminders" in read], REMINDER_READS_ALLOWED)
+    expect_value(len(reads_with_reminders), len(reads_without_reminders))
 
 
 def transcript_story(played, tmp_path):

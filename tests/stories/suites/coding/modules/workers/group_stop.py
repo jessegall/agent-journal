@@ -123,20 +123,20 @@ def test_a_worker_with_an_open_ask_still_reaches_its_parent_when_it_ends(phase_w
 
 
 @pytest.fixture
-def merger_off_worker(new_story):
+def merger_disabled_worker(new_story):
     story = new_story(fixture=MergerOffOrchestrator)
     repository_environment(story)
     return story, dispatched_worker(story)
 
 
-def test_a_worker_with_no_task_left_may_stop(merger_off_worker):
-    story, worker = merger_off_worker
+def test_a_worker_with_no_task_left_may_stop(merger_disabled_worker):
+    story, worker = merger_disabled_worker
     story.expect_success(f'worker release {agent_number(story, worker.id)} "done with it"', actor=story.agent)
     story.expect_hook_allowed(worker_session(story, worker), HookSamples.stop())
 
 
-def test_a_worker_with_only_blocked_tasks_may_stop_and_tells_who_blocked_them(merger_off_worker):
-    story, worker = merger_off_worker
+def test_a_worker_with_only_blocked_tasks_may_stop_and_tells_who_blocked_them(merger_disabled_worker):
+    story, worker = merger_disabled_worker
     story.expect_success('task block 1 --reason "waits on a user"', actor=worker)
     reply = story.expect_hook_allowed(worker_session(story, worker), HookSamples.stop())
     story.expect_rows(reply is None or expected_agent_message(WorkerTaskBlockedMessage.declared()).matches_text(' '.join(reply.lines)))
