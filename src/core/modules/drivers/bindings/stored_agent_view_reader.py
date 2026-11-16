@@ -134,7 +134,7 @@ class StoredAgentViewReader(AgentViewReader):
         reason = Reason(row.agent_message_key, DecisionClass.BLOCK, row.agent_message_key, row.refusal_text, row.lifting_lines)
         timestamp = self.clock.timestamp()
         return OpenBlock(row.agent_message_key, row.id, reason, row.scope_tools, row.scope_stop, row.is_active(tool_uses, timestamp),
-                         row.creation_timestamp().elapsed_seconds(timestamp) >= row.stop_grace_seconds, row.strict)
+                         row.creation_timestamp().elapsed_seconds(timestamp) >= row.stop_grace_seconds, row.strict, condition_text=row.condition_text)
 
     def escalation(self, agent_id: int) -> Escalation | None:
         row = self.queries.query(AgentEscalation).filter(session_agent_id=agent_id, state=EscalationState.OPEN).first()

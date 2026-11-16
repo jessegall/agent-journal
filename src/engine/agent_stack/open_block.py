@@ -8,7 +8,8 @@ from engine.agent_stack.row_reference import RowReference
 @dataclass(frozen=True)
 class OpenBlock:
     """A hold as a step judges it: an open agent_block row, or a plan of this step that has no row yet,
-    with its scopes, whether each grace has passed, and the reason it refuses with."""
+    with its scopes, whether each grace has passed, the reason it refuses with and the condition that ends it,
+    which tells apart two holds of one message key that wait on two things."""
 
     agent_message_key: str
     block_id: int | None
@@ -20,6 +21,7 @@ class OpenBlock:
     is_strict: bool
     subject: RowReference | None = None
     stop_reason: Reason | None = None
+    condition_text: str = ""
 
     def refuses_tools(self) -> bool:
         return self.scope_tools and self.tool_grace_passed
