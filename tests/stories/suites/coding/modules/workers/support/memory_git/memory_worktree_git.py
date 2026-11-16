@@ -82,6 +82,9 @@ class MemoryWorktreeGit(WorktreeGit):
             return
         FileAccess.unlink(Path(folder) / path, missing_ok=True)
 
+    def has_branch(self, folder: str, branch: str) -> bool:
+        return self.history.has_branch(branch)
+
     def tip(self, folder: str, branch: str) -> str:
         if not self.history.has_branch(branch):
             raise Refusal(f"branch {branch} does not exist in {folder}", "make it there, or name another with journal environment edit <name> --branch <branch>")

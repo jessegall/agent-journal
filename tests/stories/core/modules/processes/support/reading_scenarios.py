@@ -91,7 +91,3 @@ def received(story: Story, session: str = "s-1") -> str:
     """The lines an agent hears on its next two hooks, as a hook gives only a few lines at a time."""
     return "\n".join([*informed(story, session), *informed(story, session)])
 
-
-def agent_id: int -> int:
-    """The number an agent's card shows, which its buttons send."""
-    return story.story_rows(Agent, id=agent_id)[0].number

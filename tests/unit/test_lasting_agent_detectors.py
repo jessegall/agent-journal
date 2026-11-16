@@ -12,8 +12,6 @@ RULES = (
     "architecture_agents_retirement_run_by_code",
     "architecture_agents_retire_command_in_a_text",
     "architecture_agents_driver_changed_outside_the_driver_command",
-    "architecture_agents_number_read_without_an_environment",
-    "architecture_agents_number_returned_as_its_row_id",
     "architecture_workers_later_branch_named_by_hand",
 )
 CLASS_FILES = {
@@ -23,7 +21,6 @@ CLASS_FILES = {
     "RetiredRowGuard": "src/core/modules/agents/guards/retired_row_guard.py",
     "ChangeAgentDriverHandler": "src/core/modules/helpers/commands/change_agent_driver/change_agent_driver_handler.py",
     "EndReason": "src/core/modules/agents/models/enums/end_reason.py",
-    "AgentRowNumbers": "src/core/modules/agents/bindings/agent_row_numbers.py",
     "WorkerBranchNames": "src/suites/coding/modules/workers/support/worker_branch_names.py",
     "TypeLimits": "src/core/modules/agents/support/type_limits.py",
     "RetireAgent": "src/core/modules/agents/commands/retire_agent/retire_agent.py",
