@@ -1,3 +1,6 @@
+from engine.query.queries import Queries
+from core.modules.environments.models.environment import Environment
+from core.modules.agents.support.project_environment import ProjectEnvironment
 from engine.database.actor_table import ActorTable
 from engine.errors.existing_row_refusal import ExistingRowRefusal
 from dataclasses import replace
@@ -33,9 +36,9 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
     caller_prepares = True
 
     def __init__(self, agents: AgentRows, repository: Repository, chain: ProcessChain, types: HelperTypeBook, sandbox: ShellSandbox, single_main: SingleMainAgent, numbers: AgentNumbers, sessions: AgentSessions, dispatcher: AgentDispatcher,
-                 actors: ActorTable) -> None:
+                 actors: ActorTable, project: ProjectEnvironment, queries: Queries) -> None:
         self.agents, self.repository, self.chain, self.dispatcher = agents, repository, chain, dispatcher
-        self.actors = actors
+        self.actors, self.project, self.queries = actors, project, queries
         self.types = types
         self.sandbox = sandbox
         self.single_main = single_main
@@ -58,7 +61,7 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
         started = self.agents.session(command.session)
         if started is not None and started.ended_at is None:
             raise Refusal(f"session {command.session} has started already", "journal agent list shows the agents")
-        main = self.agents.numbered_main(context.environment_id) if command.is_main_session else None
+        main = self.main_row(context.environment_id) if command.is_main_session else None
         if started is not None and not self.is_older_main_row(started, main):
             self.check_resume(started, command, context.environment_id)
             self.sessions.reopened(started.id, context)
@@ -79,6 +82,11 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
             created = self.numbered(agent, context)
         self.sessions.started(created, context)
         return created
+
+    def main_row(self, environment_id: int) -> Agent | None:
+        environment = self.queries.query(Environment).find(environment_id)
+        project = self.project.chosen() if self.project.is_project_folder(environment) else None
+        return self.agents.numbered_main(environment_id if project is None else project.id)
 
     @staticmethod
     def is_older_main_row(started: Agent, main: Agent | None) -> bool:
