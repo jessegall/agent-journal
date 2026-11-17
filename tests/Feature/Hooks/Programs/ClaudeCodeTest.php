@@ -56,8 +56,8 @@ final class ClaudeCodeTest extends TestCase
         $input = $this->inputOf($this->adapter()->callFor($this->payload('shell command'), $this->hook()));
 
         $this->assertInstanceOf(ShellCommandRequested::class, $input);
-        $this->assertSame('composer test', $input->command->source);
-        $this->assertSame(CommandKind::TestRun, $input->command->parts[0]->kind);
+        $this->assertSame('echo hello', $input->command->source);
+        $this->assertSame(CommandKind::Ordinary, $input->command->parts[0]->kind);
     }
 
     public function test_edits_and_writes_name_their_path_and_operation(): void
@@ -67,7 +67,7 @@ final class ClaudeCodeTest extends TestCase
 
         $this->assertInstanceOf(FileEditRequested::class, $edit);
         $this->assertInstanceOf(FileEditRequested::class, $write);
-        $this->assertSame(['/redacted/app/Domain/Domain.php'], $edit->changes->paths());
+        $this->assertSame(['/redacted/notes.txt'], $edit->changes->paths());
         $this->assertSame(FileOperation::Create, $write->changes->changes[0]->operation);
     }
 
@@ -97,7 +97,7 @@ final class ClaudeCodeTest extends TestCase
     {
         $reply = json_decode($this->render('shell command', Decision::rewrite('journal run tests'))->stdout, true);
 
-        $this->assertSame(['command' => 'journal run tests', 'description' => 'Run the tests', 'timeout' => 120000], $reply['hookSpecificOutput']['updatedInput']);
+        $this->assertSame(['command' => 'journal run tests', 'description' => 'Run echo hello'], $reply['hookSpecificOutput']['updatedInput']);
         $this->assertArrayNotHasKey('permissionDecision', $reply['hookSpecificOutput']);
     }
 

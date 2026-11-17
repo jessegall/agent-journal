@@ -1,19 +1,218 @@
 {
-    "source": "Claude Code hooks reference (code.claude.com/docs/en/hooks), checked 2026-11-17; shapes from the documentation, redacted, not captured from a pinned version",
+    "source": "Captured from Claude Code 2.1.323 on 2026-11-17 under isolated settings (claude -p, --setting-sources local), redacted; notification is still the documented shape, since a headless run raises none",
     "payloads": {
-        "session start": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "SessionStart", "source": "startup"},
-        "session resume after compaction": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "SessionStart", "source": "compact"},
-        "prompt": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "permission_mode": "default", "hook_event_name": "UserPromptSubmit", "prompt": "Build the walk."},
-        "shell command": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "permission_mode": "default", "hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_use_id": "tool-redacted", "tool_input": {"command": "composer test", "description": "Run the tests", "timeout": 120000}},
-        "file edit": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "permission_mode": "default", "hook_event_name": "PreToolUse", "tool_name": "Edit", "tool_use_id": "tool-redacted", "tool_input": {"file_path": "/redacted/app/Domain/Domain.php", "old_string": "a", "new_string": "b"}},
-        "file write": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "permission_mode": "default", "hook_event_name": "PreToolUse", "tool_name": "Write", "tool_use_id": "tool-redacted", "tool_input": {"file_path": "/redacted/notes.md", "content": "redacted"}},
-        "file read": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "permission_mode": "default", "hook_event_name": "PreToolUse", "tool_name": "Read", "tool_use_id": "tool-redacted", "tool_input": {"file_path": "/redacted/notes.md"}},
-        "tool finished": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_use_id": "tool-redacted", "tool_input": {"command": "git status"}, "tool_response": {"stdout": "redacted", "stderr": "", "interrupted": false}},
-        "stop": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "Stop", "stop_hook_active": false},
-        "session end": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "SessionEnd", "reason": "prompt_input_exit"},
-        "pre-compaction": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "PreCompact", "trigger": "auto", "custom_instructions": ""},
-        "subagent stop": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "SubagentStop", "stop_hook_active": false},
-        "notification": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "Notification", "message": "redacted"},
-        "unknown tool": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "PreToolUse", "tool_name": "mcp__redacted__tool", "tool_use_id": "tool-redacted", "tool_input": {}}
+        "session start": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "hook_event_name": "SessionStart",
+            "source": "startup"
+        },
+        "session resume after compaction": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "prompt_id": "prompt-redacted",
+            "hook_event_name": "SessionStart",
+            "source": "compact",
+            "model": "claude-haiku-5-5"
+        },
+        "prompt": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "prompt_id": "prompt-redacted",
+            "permission_mode": "acceptEdits",
+            "hook_event_name": "UserPromptSubmit",
+            "prompt": "Do these steps in order and nothing else: 1) run the shell command 'echo hello' with the Bash tool; 2) read notes.txt with the Read tool; 3) change 'one' to 'two' in notes.txt with the Edit tool; 4) create new.txt containing 'new' with the Write tool. Then reply 'done'."
+        },
+        "shell command": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "prompt_id": "prompt-redacted",
+            "permission_mode": "acceptEdits",
+            "effort": {
+                "level": "medium"
+            },
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Bash",
+            "tool_input": {
+                "command": "echo hello",
+                "description": "Run echo hello"
+            },
+            "tool_use_id": "toolu-redacted"
+        },
+        "file edit": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "prompt_id": "prompt-redacted",
+            "permission_mode": "acceptEdits",
+            "effort": {
+                "level": "medium"
+            },
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Edit",
+            "tool_input": {
+                "file_path": "/redacted/notes.txt",
+                "old_string": "one",
+                "new_string": "two",
+                "replace_all": false
+            },
+            "tool_use_id": "toolu-redacted"
+        },
+        "file write": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "prompt_id": "prompt-redacted",
+            "permission_mode": "acceptEdits",
+            "effort": {
+                "level": "medium"
+            },
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Write",
+            "tool_input": {
+                "file_path": "/redacted/new.txt",
+                "content": "new"
+            },
+            "tool_use_id": "toolu-redacted"
+        },
+        "file read": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "prompt_id": "prompt-redacted",
+            "permission_mode": "acceptEdits",
+            "effort": {
+                "level": "medium"
+            },
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Read",
+            "tool_input": {
+                "file_path": "/redacted/notes.txt"
+            },
+            "tool_use_id": "toolu-redacted"
+        },
+        "tool finished": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "prompt_id": "prompt-redacted",
+            "permission_mode": "acceptEdits",
+            "effort": {
+                "level": "medium"
+            },
+            "hook_event_name": "PostToolUse",
+            "tool_name": "Bash",
+            "tool_input": {
+                "command": "echo hello",
+                "description": "Run echo hello"
+            },
+            "tool_response": {
+                "stdout": "hello",
+                "stderr": "",
+                "interrupted": false,
+                "isImage": false,
+                "noOutputExpected": false
+            },
+            "tool_use_id": "toolu-redacted",
+            "duration_ms": 923
+        },
+        "stop": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "prompt_id": "prompt-redacted",
+            "permission_mode": "acceptEdits",
+            "effort": {
+                "level": "medium"
+            },
+            "hook_event_name": "Stop",
+            "stop_hook_active": false,
+            "last_assistant_message": "done",
+            "background_tasks": [],
+            "session_crons": []
+        },
+        "session end": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "prompt_id": "prompt-redacted",
+            "hook_event_name": "SessionEnd",
+            "reason": "other"
+        },
+        "pre-compaction": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "prompt_id": "prompt-redacted",
+            "hook_event_name": "PreCompact",
+            "trigger": "manual",
+            "custom_instructions": null
+        },
+        "subagent stop": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "prompt_id": "prompt-redacted",
+            "permission_mode": "acceptEdits",
+            "agent_id": "agent-redacted",
+            "agent_type": "general-purpose",
+            "effort": {
+                "level": "medium"
+            },
+            "hook_event_name": "SubagentStop",
+            "stop_hook_active": false,
+            "agent_transcript_path": "/redacted/agent-transcript.jsonl",
+            "last_assistant_message": "two",
+            "background_tasks": [],
+            "session_crons": []
+        },
+        "notification": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "hook_event_name": "Notification",
+            "message": "redacted"
+        },
+        "unknown tool": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "prompt_id": "prompt-redacted",
+            "permission_mode": "acceptEdits",
+            "effort": {
+                "level": "medium"
+            },
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Agent",
+            "tool_input": {
+                "description": "Read notes.txt and report text",
+                "prompt": "Read the file at /redacted/notes.txt using the Read tool. Do not modify any files. Reply with the text content of the file exactly as it appears, and nothing else.",
+                "subagent_type": "general-purpose",
+                "run_in_background": false
+            },
+            "tool_use_id": "toolu-redacted"
+        },
+        "subagent tool call": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "prompt_id": "prompt-redacted",
+            "permission_mode": "acceptEdits",
+            "agent_id": "agent-redacted",
+            "agent_type": "general-purpose",
+            "effort": {
+                "level": "medium"
+            },
+            "hook_event_name": "PreToolUse",
+            "tool_name": "Read",
+            "tool_input": {
+                "file_path": "/redacted/notes.txt"
+            },
+            "tool_use_id": "toolu-redacted"
+        }
     }
 }

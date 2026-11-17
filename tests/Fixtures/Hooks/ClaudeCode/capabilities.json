@@ -14,7 +14,8 @@
         "pre-compaction": "unsupported",
         "subagent stop": "unsupported",
         "notification": "unsupported",
-        "unknown tool": "unsupported"
+        "unknown tool": "unsupported",
+        "subagent tool call": "untouched"
     },
     "unmapped inputs": []
 }
