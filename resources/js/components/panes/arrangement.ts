@@ -58,6 +58,10 @@ export function firstWindowOnly(firstWindow: string): Arrangement {
     return { grid: pane([firstWindow], 'pane-chat'), detached: [] };
 }
 
+export function sameArrangement(one: Arrangement, other: Arrangement): boolean {
+    return JSON.stringify(one) === JSON.stringify(other);
+}
+
 export function shownWindows(arrangement: Arrangement): string[] {
     return [
         ...windowsIn(arrangement.grid),

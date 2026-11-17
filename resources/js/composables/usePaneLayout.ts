@@ -12,6 +12,7 @@ import {
     defaultArrangement,
     firstWindowOnly,
     keptOnScreen,
+    sameArrangement,
     shownWindows,
 } from '@/components/panes/arrangement';
 import type {
@@ -54,10 +55,6 @@ export type PaneLayoutStore = {
 };
 
 const storeKey: InjectionKey<PaneLayoutStore> = Symbol('pane layout');
-
-function sameArrangement(one: Arrangement, other: Arrangement): boolean {
-    return JSON.stringify(one) === JSON.stringify(other);
-}
 
 export function providePaneLayout(
     storageKey: string,

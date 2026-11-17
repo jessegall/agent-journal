@@ -5,6 +5,7 @@ import {
     closeWindow,
     defaultLayout,
     moveWindow,
+    paneBoxes,
     panesIn,
     settledRatio,
     splitPane,
@@ -102,5 +103,29 @@ describe('windows in panes', () => {
         expect(
             panesIn(activate(layout, 'pane-windows', 'chat'))[1].active,
         ).toBe('plans');
+    });
+});
+
+describe('a layout thumbnail', () => {
+    it('gives every pane its share of the grid', () => {
+        const layout = splitPane(
+            defaultLayout('chat', ['plans', 'rules']),
+            'pane-windows',
+            'rules',
+            'below',
+        );
+
+        expect(
+            paneBoxes(layout).map(({ left, top, width, height }) => [
+                left,
+                top,
+                width,
+                height,
+            ]),
+        ).toEqual([
+            [0, 0, 0.5, 1],
+            [0.5, 0, 0.5, 0.5],
+            [0.5, 0.5, 0.5, 0.5],
+        ]);
     });
 });

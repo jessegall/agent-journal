@@ -78,7 +78,7 @@ function rulesUrl(filters: RuleFiltersData): string {
 <template>
     <div class="flex h-full min-h-0 flex-col">
         <AgentBar :agent-name="agentName" />
-        <InformationBar :agent-name="agentName" />
+        <InformationBar :agent-name="agentName" :layouts="page.layouts" />
         <PaneGrid>
             <template #default="{ windowKey }">
                 <SwitchCase :value="windowKey">

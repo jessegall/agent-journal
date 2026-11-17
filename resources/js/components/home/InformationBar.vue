@@ -2,16 +2,15 @@
 import { ref } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
-import MenuList from '@/components/panes/MenuList.vue';
-import { usePaneLayout } from '@/composables/usePaneLayout';
+import LayoutPicker from '@/components/panes/LayoutPicker.vue';
+import type { LayoutData } from '@/types/generated';
 
 /**
  * Version 5's information bar (shell/InformationBar.vue) under decision D3: 30 px of 12 px facts, of which version 6
- * has only the lead, the chosen agent's name; the layouts button sits at the right and offers the Default layout.
+ * has only the lead, the chosen agent's name; the layouts button sits at the right and opens the layout picker.
  */
-defineProps<{ agentName?: string }>();
+defineProps<{ agentName?: string; layouts: LayoutData[] }>();
 
-const store = usePaneLayout();
 const isLayoutMenuOpen = ref(false);
 </script>
 
@@ -36,15 +35,8 @@ const isLayoutMenuOpen = ref(false);
             ><Icon name="layout" :size="13"
         /></Button>
         <template v-if="isLayoutMenuOpen">
-            <MenuList
-                title="Layouts"
-                :entries="[
-                    {
-                        label: 'Default',
-                        checked: store.isDefault.value,
-                        run: store.reset,
-                    },
-                ]"
+            <LayoutPicker
+                :layouts="layouts"
                 class="absolute top-[30px] right-[5px]"
                 @done="isLayoutMenuOpen = false"
             />
