@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Chat\States;
 
-use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Decisions\Denied;
 use App\Core\Hooks\Decisions\StopPrevented;
 use App\Core\Hooks\Enums\CommandEffect;
@@ -26,7 +25,6 @@ use App\Domain\Chat\Enums\MessageWorkState;
 use App\Domain\Chat\States\AnsweringMessageState;
 use App\Domain\Chat\Support\MessageWork;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;
 
@@ -97,14 +95,6 @@ final class AnsweringMessageTest extends TestCase
     {
         $this->assertTrue((new AnsweringMessageState(new MessageWork(95, $state)))->isFinished());
         $this->assertFalse($this->unanswered()->isFinished());
-    }
-
-    #[DataProviderExternal(HookInputs::class, 'dataSets')]
-    public function test_a_settled_message_blocks_no_hook(HookInput $input): void
-    {
-        $answered = new AnsweringMessageState(new MessageWork(95, MessageWorkState::Answered));
-
-        $this->assertNotContains($input->answerBy($answered)->answerKind()->value, ['deny', 'prevent_stop']);
     }
 
     public function test_answering_leaves_the_message_snapshot_as_it_was(): void

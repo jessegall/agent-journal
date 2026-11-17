@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Stack;
 
+use App\Core\Hooks\Contracts\HookInput;
+use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\States\AgentState;
 use App\Core\Hooks\Storage\FrameRecord;
@@ -44,5 +46,13 @@ final readonly class Frame
     public function isFinished(): bool
     {
         return $this->state->isFinished();
+    }
+
+    /**
+     * The state's answer to a hook: its before() when that decides, otherwise the hook's own method.
+     */
+    public function answer(HookInput $input): Decision
+    {
+        return $this->state->before($input) ?? $input->answerBy($this->state);
     }
 }

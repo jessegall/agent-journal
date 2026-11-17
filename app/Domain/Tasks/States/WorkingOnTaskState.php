@@ -23,10 +23,6 @@ final class WorkingOnTaskState extends AgentState
 
     public function onStop(StopRequested $input): Decision
     {
-        if ($this->isFinished()) {
-            return Decision::delegate();
-        }
-
         return Decision::preventStop($this->task->unfinishedReason());
     }
 }

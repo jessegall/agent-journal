@@ -24,19 +24,11 @@ final class FollowingSequenceState extends AgentState
 
     public function onCompaction(ContextCompacted $input): Decision
     {
-        if ($this->isFinished()) {
-            return Decision::delegate();
-        }
-
         return Decision::addContext($this->sequence->currentInstruction());
     }
 
     public function onStop(StopRequested $input): Decision
     {
-        if ($this->isFinished()) {
-            return Decision::delegate();
-        }
-
         return Decision::preventStop($this->sequence->currentInstruction());
     }
 }

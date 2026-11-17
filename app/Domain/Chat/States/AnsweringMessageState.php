@@ -31,7 +31,7 @@ final class AnsweringMessageState extends AgentState
 
     public function onShellCommand(ShellCommandRequested $input): Decision
     {
-        if ($this->isFinished() || ! $input->command->mayChangeFiles()) {
+        if (! $input->command->mayChangeFiles()) {
             return Decision::delegate();
         }
 
@@ -40,19 +40,11 @@ final class AnsweringMessageState extends AgentState
 
     public function onFileEdit(FileEditRequested $input): Decision
     {
-        if ($this->isFinished()) {
-            return Decision::delegate();
-        }
-
         return Decision::deny($this->message->replyInstruction());
     }
 
     public function onStop(StopRequested $input): Decision
     {
-        if ($this->isFinished()) {
-            return Decision::delegate();
-        }
-
         return Decision::preventStop($this->message->replyInstruction());
     }
 }

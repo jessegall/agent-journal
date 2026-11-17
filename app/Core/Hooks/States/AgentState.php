@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Hooks\States;
 
 use App\Core\Hooks\Contracts\HookAnswerer;
+use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Inputs\ContextCompacted;
 use App\Core\Hooks\Inputs\FileEditRequested;
@@ -16,7 +17,8 @@ use App\Core\Hooks\Inputs\StopRequested;
 use App\Core\Hooks\Inputs\ToolFinished;
 
 /**
- * One state on an agent's stack. Every hook method delegates to the state below until a state overrides it.
+ * One state on an agent's stack. Every hook method delegates to the state below until a state overrides it, and
+ * before() may answer any hook first, as a Laravel policy's before does.
  */
 abstract class AgentState implements HookAnswerer
 {
@@ -26,6 +28,15 @@ abstract class AgentState implements HookAnswerer
     public function isFinished(): bool
     {
         return false;
+    }
+
+    /**
+     * Asked before the hook's own method: a decision answers the hook and the method is not asked; null, the default,
+     * goes on to the method.
+     */
+    public function before(HookInput $input): Decision|null
+    {
+        return null;
     }
 
     public function onSessionStart(SessionStarted $input): Decision

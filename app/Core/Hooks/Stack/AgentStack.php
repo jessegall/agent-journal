@@ -42,7 +42,11 @@ final readonly class AgentStack
         $walk = new HookWalk($input->methodName(), $this, $walkFrames[0]);
 
         foreach ($walkFrames as $frame) {
-            $decision = $input->answerBy($frame->state);
+            if ($frame->isFinished()) {
+                continue;
+            }
+
+            $decision = $frame->answer($input);
             $walk->record($frame, $decision);
             $this->checkDecision($frame, $input, $decision, $walk);
             $decision->transition->applyTo(new FrameEditor($walk, $frame));

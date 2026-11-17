@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
+use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Inputs\ContextCompacted;
 use App\Core\Hooks\Inputs\FileEditRequested;
@@ -16,7 +17,8 @@ use App\Core\Hooks\Inputs\ToolFinished;
 use App\Core\Hooks\States\AgentState;
 
 /**
- * A test state that gives the same decision to every hook and counts how often it was asked.
+ * A test state that gives the same decision to every hook and counts how often a hook method was asked; it may also
+ * answer every hook from before().
  */
 final class ScriptedState extends AgentState
 {
@@ -25,7 +27,13 @@ final class ScriptedState extends AgentState
     public function __construct(
         private readonly Decision $decision,
         private readonly bool $finished = false,
+        private readonly Decision|null $beforeDecision = null,
     ) {}
+
+    public function before(HookInput $input): Decision|null
+    {
+        return $this->beforeDecision;
+    }
 
     public static function delegating(): self
     {

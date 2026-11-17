@@ -242,6 +242,25 @@ final class AgentStackTest extends TestCase
         $stack->answer($this->stop());
     }
 
+    public function test_a_state_answers_from_before_without_its_hook_method(): void
+    {
+        $top = new ScriptedState(Decision::delegate(), beforeDecision: Decision::deny('Held by before.'));
+        $stack = $this->stack($this->ready(), $this->frame('top', $top));
+
+        $answer = $stack->answer(HookInputs::all()['shell command']);
+
+        $this->assertSame(['top deny keep'], $this->stepsOf($answer));
+        $this->assertSame(0, $top->askedCount);
+    }
+
+    #[DataProviderExternal(HookInputs::class, 'dataSets')]
+    public function test_a_finished_state_is_never_asked(HookInput $input): void
+    {
+        $stack = $this->exampleStack(TaskWorkState::Finished, MessageWorkState::Answered);
+
+        $this->assertSame(['ready'], array_map(fn (WalkStep $step) => $step->frameId, $stack->answer($input)->steps));
+    }
+
     public function test_cleanup_removes_a_finished_state_from_the_middle(): void
     {
         $stack = $this->exampleStack(TaskWorkState::Finished, MessageWorkState::Unanswered);

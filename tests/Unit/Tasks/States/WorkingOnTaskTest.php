@@ -59,12 +59,9 @@ final class WorkingOnTaskTest extends TestCase
     }
 
     #[DataProvider('settledStates')]
-    public function test_a_settled_run_is_finished_and_lets_the_stop_through(TaskWorkState $state): void
+    public function test_a_settled_run_is_finished(TaskWorkState $state): void
     {
-        $working = new WorkingOnTaskState(new TaskWork(42, 1, $state));
-
-        $this->assertTrue($working->isFinished());
-        $this->assertTrue($working->onStop($this->stop())->isDelegating());
+        $this->assertTrue((new WorkingOnTaskState(new TaskWork(42, 1, $state)))->isFinished());
     }
 
     #[DataProvider('otherHooks')]

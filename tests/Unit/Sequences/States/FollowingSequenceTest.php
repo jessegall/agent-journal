@@ -67,13 +67,9 @@ final class FollowingSequenceTest extends TestCase
     }
 
     #[DataProvider('settledStates')]
-    public function test_a_settled_run_is_finished_and_holds_nothing(SequenceRunState $state): void
+    public function test_a_settled_run_is_finished(SequenceRunState $state): void
     {
-        $following = new FollowingSequenceState(new SequenceWork(8, 3, 'Run the phase tests.', $state));
-
-        $this->assertTrue($following->isFinished());
-        $this->assertTrue($following->onStop($this->stop())->isDelegating());
-        $this->assertSame([], $following->onCompaction($this->compaction())->context);
+        $this->assertTrue((new FollowingSequenceState(new SequenceWork(8, 3, 'Run the phase tests.', $state)))->isFinished());
     }
 
     public function test_a_running_sequence_is_not_finished(): void
