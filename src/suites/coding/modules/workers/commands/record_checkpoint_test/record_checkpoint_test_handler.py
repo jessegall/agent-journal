@@ -4,21 +4,19 @@ from dataclasses import replace
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.enums.command_category import CommandCategory
 from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from engine.scope.actor_scope import ActorScope
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
-from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from suites.coding.modules.workers.commands.record_checkpoint_test.record_checkpoint_test import RecordCheckpointTest
 from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from suites.coding.modules.workers.models.checkpoint_test import CheckpointTest
 from suites.coding.modules.workers.support.checkpoint_results import CheckpointResults
-from suites.coding.modules.workers.support.worker_settings import TEST_LIMIT_SECONDS
 from suites.coding.modules.workers.support.checkpoint_listing import CheckpointListing
 from suites.coding.modules.workers.support.checkpoint_test_parts import CheckpointTestParts
+from suites.coding.modules.workers.support.worker_test_start import WorkerTestStart
 
 
 class RecordCheckpointTestHandler(Handler[RecordCheckpointTest, None]):
@@ -50,7 +48,7 @@ class RecordCheckpointTestHandler(Handler[RecordCheckpointTest, None]):
         return test.changed(state=AffectedTestState.TESTING, picker_command="", test_command=commands[0], process_id=self.started(test.changed(test_command=commands[0]), folder, context))
 
     def started(self, test: CheckpointTest, folder: str, context: Context) -> int:
-        start = StartProcess.single_part(test.owner_agent_id, test.test_command, folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
+        start = WorkerTestStart.started(test.owner_agent_id, test.test_command, folder)
         return self.bus.dispatch(replace(start, owner_agent_id=test.owner_agent_id), context).id
 
     def picked(self, test: CheckpointTest, context: Context) -> CheckpointTest:
@@ -58,6 +56,6 @@ class RecordCheckpointTestHandler(Handler[RecordCheckpointTest, None]):
         if not test_names:
             return test.changed(state=AffectedTestState.PASSED)
         folder = self.rows.required(Process, test.process_id).folder
-        start = StartProcess.single_part(test.owner_agent_id, f"{test.test_command} {shlex.join(test_names)}", folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
+        start = WorkerTestStart.started(test.owner_agent_id, f"{test.test_command} {shlex.join(test_names)}", folder)
         process = self.bus.dispatch(replace(start, owner_agent_id=test.owner_agent_id), context)
         return test.changed(state=AffectedTestState.TESTING, process_id=process.id)

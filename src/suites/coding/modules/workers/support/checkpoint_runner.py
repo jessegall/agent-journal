@@ -4,7 +4,6 @@ from dataclasses import replace
 
 from engine.command.bus import Bus
 from engine.command.context import Context
-from engine.enums.command_category import CommandCategory
 from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from engine.setting.setting_values import SettingValues
@@ -12,7 +11,6 @@ from core.modules.environments.models.environment import Environment
 from core.modules.environments.support.environment_rows import EnvironmentRows
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
 from core.modules.plans.models.phase import Phase
-from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.plans.support.checkpoint_runs import CheckpointRuns
 from suites.coding.modules.workers.support.checkpoint_folders import FOLDER_NAME, CheckpointFolders
 from suites.coding.modules.workers.support.checkpoint_results import CheckpointResults
@@ -22,9 +20,10 @@ from suites.coding.modules.workers.models.checkpoint_test import CheckpointTest
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.phase_test_deferrals import PhaseTestDeferrals
-from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND, PROJECT_TEST_COMMAND, TEST_LIMIT_SECONDS
+from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND, PROJECT_TEST_COMMAND
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.checkpoint_listing import CheckpointListing
+from suites.coding.modules.workers.support.worker_test_start import WorkerTestStart
 
 COMMITTED_PROOFS_REASON = "a checkpoint runs the tests of every committed proof of its tasks"
 
@@ -90,6 +89,6 @@ class CheckpointRunner(CheckpointRuns):
         return CheckpointTest(reach_id=reach.id, owner_agent_id=owner_id, picker_command=listing, test_command=phase_command, state=state, process_id=0)
 
     def start_test(self, test: CheckpointTest, folder: str, context: Context) -> None:
-        start = StartProcess.single_part(test.owner_agent_id, test.picker_command or test.test_command, folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
+        start = WorkerTestStart.started(test.owner_agent_id, test.picker_command or test.test_command, folder)
         process = self.bus.dispatch(replace(start, owner_agent_id=test.owner_agent_id), context)
         self.repository.save(replace(test, process_id=process.id), context)

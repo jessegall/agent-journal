@@ -4,11 +4,9 @@ from dataclasses import replace
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.enums.command_category import CommandCategory
 from engine.query.conditions.among import Among
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.tasks.models.enums.task_state import TaskState
@@ -19,6 +17,7 @@ from suites.coding.modules.workers.models.affected_test import AffectedTest
 from suites.coding.modules.workers.models.enums.affected_test_state import AffectedTestState
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.support.worker_test_start import WorkerTestStart
 
 REOPENED_REASON = "a failed affected test reopens every testing task the worktree proved"
 
@@ -42,7 +41,7 @@ class RecordAffectedTestHandler(Handler[RecordAffectedTest, None]):
             arguments = [line.strip() for line in self.output.all_output(command.process_id).splitlines() if line.strip()]
             if arguments:
                 line = f"{first_answer.test_command} {shlex.join(arguments)}"
-                start = StartProcess.single_part(worktree.session_agent_id, line, self.queries.query(Process).find(command.process_id).folder, CommandCategory.TEST_RUN, 3600)
+                start = WorkerTestStart.started(worktree.session_agent_id, line, self.queries.query(Process).find(command.process_id).folder, 3600)
                 process = self.bus.dispatch(replace(start, owner_agent_id=worktree.session_agent_id, task_id=first_answer.task_id), context)
                 self.repository.save_change(first_answer, first_answer.changed(state=AffectedTestState.TESTING, process_id=process.id), context)
                 return

@@ -4,10 +4,8 @@ from dataclasses import replace
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.enums.command_category import CommandCategory
 from engine.errors.refusal import Refusal
 from engine.scope.actor_scope import ActorScope
-from core.modules.processes.commands.start_process.start_process import StartProcess
 from suites.coding.modules.workers.commands.run_worker_test.run_worker_test import RunWorkerTest
 from suites.coding.modules.workers.support.worker_test_run import WorkerTestRun
 from suites.coding.models.enums.ask_topic import AskTopic
@@ -15,7 +13,7 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_test_arguments import WorkerTestArguments
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 from suites.coding.modules.workers.support.worktree_libraries import WorktreeLibraries
-from suites.coding.modules.workers.support.worker_settings import TEST_LIMIT_SECONDS
+from suites.coding.modules.workers.support.worker_test_start import WorkerTestStart
 
 
 class RunWorkerTestHandler(Handler[RunWorkerTest, WorkerTestRun]):
@@ -37,5 +35,5 @@ class RunWorkerTestHandler(Handler[RunWorkerTest, WorkerTestRun]):
         test_arguments = tuple(command.test_arguments)
         line = self.names.line(worktree.session_agent_id, command.name, test_arguments)
         WorkerTestArguments.check(test_arguments, shlex.split(line))
-        start = StartProcess.single_part(worktree.session_agent_id, line, worktree.folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
+        start = WorkerTestStart.started(worktree.session_agent_id, line, worktree.folder)
         return WorkerTestRun(self.bus.dispatch(replace(start, owner_agent_id=worktree.session_agent_id, task_id=worktree.task_id), context), command.piped)

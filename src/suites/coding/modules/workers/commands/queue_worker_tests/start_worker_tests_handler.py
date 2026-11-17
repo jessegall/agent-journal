@@ -3,10 +3,8 @@ from dataclasses import replace
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
-from engine.enums.command_category import CommandCategory
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
-from core.modules.processes.commands.start_process.start_process import StartProcess
 from suites.coding.modules.workers.commands.queue_worker_tests.start_worker_tests import StartWorkerTests
 from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
@@ -21,7 +19,7 @@ from core.modules.plans.support.task_plans import TaskPlans
 from suites.coding.modules.workers.support.affected_test_rows import AffectedTestRows
 from suites.coding.modules.workers.support.checkpoint_runner import CheckpointRunner
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-from suites.coding.modules.workers.support.worker_settings import TEST_LIMIT_SECONDS
+from suites.coding.modules.workers.support.worker_test_start import WorkerTestStart
 
 
 class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
@@ -75,11 +73,11 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
         return self.git.test_folder(worktree) if worktree.id in running else self.git.test_checkout(worktree)
 
     def start(self, proof: Proof, worktree: Worktree, folder: str, context: Context) -> None:
-        start = StartProcess.single_part(worktree.session_agent_id, proof.test_command, folder, CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
+        start = WorkerTestStart.started(worktree.session_agent_id, proof.test_command, folder)
         process = self.bus.dispatch(replace(start, owner_agent_id=worktree.session_agent_id, task_id=proof.task_id), context)
         self.repository.save_change(proof, proof.moved(ProofLifecycle.run, process_id=process.id), context)
 
     def start_picker(self, first_answer: AffectedTest, worktree: Worktree, context: Context) -> None:
-        start = StartProcess.single_part(worktree.session_agent_id, first_answer.picker_command, self.git.merged_checkout(worktree), CommandCategory.TEST_RUN, TEST_LIMIT_SECONDS)
+        start = WorkerTestStart.started(worktree.session_agent_id, first_answer.picker_command, self.git.merged_checkout(worktree))
         process = self.bus.dispatch(replace(start, owner_agent_id=worktree.session_agent_id, task_id=first_answer.task_id), context)
         self.repository.update(first_answer, context, state=AffectedTestState.PICKING, process_id=process.id)
