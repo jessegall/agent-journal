@@ -6,10 +6,8 @@ namespace App\Domain\Web\Pages;
 
 use App\Domain\Web\Data\HomeFiltersData;
 use App\Domain\Web\Data\LayoutData;
-use App\Domain\Web\Data\PlanListData;
 use App\Domain\Web\Data\RuleListData;
 use App\Domain\Web\Views\LayoutsView;
-use App\Domain\Web\Views\PlansView;
 use App\Domain\Web\Views\RulesView;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
@@ -28,11 +26,6 @@ final class HomePage extends Data
     public const string COMPONENT = 'Home';
 
     #[Computed]
-    public PlanListData $plans {
-        get => $this->plansView->plans($this->filters->plans);
-    }
-
-    #[Computed]
     public RuleListData $rules {
         get => $this->rulesView->rules($this->filters->rules);
     }
@@ -47,7 +40,6 @@ final class HomePage extends Data
 
     public function __construct(
         #[Hidden] public readonly HomeFiltersData $filters,
-        #[Hidden, FromContainer(PlansView::class)] public readonly PlansView $plansView,
         #[Hidden, FromContainer(RulesView::class)] public readonly RulesView $rulesView,
         #[Hidden, FromContainer(LayoutsView::class)] public readonly LayoutsView $layoutsView,
     ) {}

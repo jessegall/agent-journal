@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
-import Button from '@/components/kit/Button.vue';
-import FormErrors from '@/components/kit/FormErrors.vue';
-import { formSendingHooks } from '@/composables/usePageChanges';
-import { start as startRoute } from '@/routes/plans';
-import type { StartPlanData } from '@/types/generated';
+import Button from '@kit/Button';
+import FormErrors from '@kit/FormErrors';
+import { formSendingHooks } from '@kit/usePageChanges';
+import { start as startRoute } from '@generated/routes/plans';
+import type { StartPlanData } from '@generated/types/plans';
 
 /**
  * Starts the selected plan. The server decides whether it may start; this form only asks and shows what came back.

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import Icon from '@/components/kit/Icon.vue';
-import type { PlanCardData } from '@/types/generated';
+import Icon from '@kit/Icon';
+import type { PlanCardData } from '@generated/types/plans';
 import { kindIcon, progressText, stateLook } from './planLooks';
 
 /**

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Http\Requests;
+namespace App\Domain\Plans\Http\Requests;
 
-use App\Domain\Web\Data\PlanFiltersData;
-use App\Domain\Web\Http\Requests\Concerns\ReadsPlanFilters;
+use App\Domain\Plans\Data\PlanFiltersData;
+use App\Domain\Plans\Http\Requests\Concerns\ReadsPlanFilters;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

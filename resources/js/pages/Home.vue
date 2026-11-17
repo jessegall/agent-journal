@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, usePage } from '@inertiajs/vue3';
 import type { ChatData } from '@generated/types/chat';
+import type { PlanListData } from '@generated/types/plans';
 import { computed } from 'vue';
 import HomePanes from '@/components/home/HomePanes.vue';
 import { useLiveReload } from '@/composables/usePageChanges';
@@ -21,11 +22,16 @@ const chat = computed(() => {
     return result?.state === 'ready' ? result.data : undefined;
 });
 const session = computed(() => chat.value?.conversation?.sessionId);
+const plans = computed(() => {
+    const result = pageProps.window_plans_list as WindowResult<PlanListData> | undefined;
+
+    return result?.state === 'ready' ? result.data : undefined;
+});
 </script>
 
 <template>
     <Head title="Home" />
     <div class="@container h-full">
-        <HomePanes :page="props.page" :chat="chat" :session="session" />
+        <HomePanes :page="props.page" :chat="chat" :plans="plans" :session="session" />
     </div>
 </template>

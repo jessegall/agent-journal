@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Reader from '@/components/kit/Reader.vue';
-import type { PlanReaderData } from '@/types/generated';
+import Reader from '@kit/Reader';
+import type { PlanReaderData } from '@generated/types/plans';
 import { progressText, stateLook } from './planLooks';
 import StartPlanForm from './StartPlanForm.vue';
 

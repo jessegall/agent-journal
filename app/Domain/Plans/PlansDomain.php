@@ -6,6 +6,12 @@ namespace App\Domain\Plans;
 
 use App\Domain\Contracts\Domain;
 use App\Domain\Contracts\ProvidesAssignables;
+use App\Domain\Contracts\ProvidesNavigation;
+use App\Domain\Contracts\ProvidesPages;
+use App\Domain\Declarations\ActionRoute;
+use App\Domain\Declarations\NavigationItem;
+use App\Domain\Declarations\Page;
+use App\Domain\Enums\Icon;
 use App\Domain\Plans\Api\AssignedPlanFilters;
 use App\Domain\Plans\Api\AssignedPlanList;
 use App\Domain\Plans\Api\Events\PlanProgressChanged;
@@ -22,13 +28,15 @@ use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
 use App\Domain\Plans\Exceptions\PlanMissing;
 use App\Domain\Plans\Exceptions\StartDenied;
+use App\Domain\Plans\Http\Controllers\StartPlanController;
 use App\Domain\Plans\Models\Phase;
 use App\Domain\Plans\Models\Plan;
+use App\Domain\Plans\Readers\PlansWindowReader;
 use App\Domain\Plans\Support\PhaseAssignmentProvider;
 use App\Domain\Plans\Support\PlanAssignmentProvider;
 use App\Domain\Tasks\TasksDomain;
 
-final class PlansDomain implements Domain, ProvidesAssignables
+final class PlansDomain implements Domain, ProvidesAssignables, ProvidesNavigation, ProvidesPages
 {
     public function description(): string
     {
@@ -74,5 +82,20 @@ final class PlansDomain implements Domain, ProvidesAssignables
             Plan::LINK_TYPE => PlanAssignmentProvider::class,
             Phase::LINK_TYPE => PhaseAssignmentProvider::class,
         ];
+    }
+
+    public function pages(): array
+    {
+        return [
+            Page::make('list', 'Plans', Icon::Plan, PlansWindowReader::class, 'PlansWindow.vue')
+                ->at('')
+                ->onHome(20)
+                ->actions(ActionRoute::post('{plan}/start', StartPlanController::class, 'start')),
+        ];
+    }
+
+    public function navigation(): array
+    {
+        return [NavigationItem::page('list', 'Plans', Icon::Plan, position: 20)];
     }
 }

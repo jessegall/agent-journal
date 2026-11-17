@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Data;
+namespace App\Domain\Plans\Data;
 
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -22,7 +22,7 @@ final class PlanListData extends Data
     public function __construct(
         #[DataCollectionOf(PlanCardData::class)] public readonly array $rows,
         public readonly PlanFiltersData $filters,
-        public readonly PaginationData $pagination,
+        public readonly PlanPaginationData $pagination,
         public readonly bool $selectionMissing,
         public readonly PlanReaderData|Optional $selected = new Optional,
     ) {}

@@ -6,8 +6,6 @@ namespace App\Domain\Web\Providers;
 
 use App\Core\Links\Support\LinkTypes;
 use App\Domain\Access\Contracts\ViewerReader;
-use App\Domain\Plans\Exceptions\PlanMissing;
-use App\Domain\Plans\Exceptions\StartDenied;
 use App\Domain\Rules\Exceptions\RuleMissing;
 use App\Domain\Rules\Exceptions\RuleNotProposed;
 use App\Domain\UiDeclarations;
@@ -68,9 +66,7 @@ final class WebServiceProvider extends ServiceProvider
         $broadcast->channel(UserChannel::PATTERN, UserChannel::class);
 
         if ($exceptions instanceof Handler) {
-            $exceptions->map(PlanMissing::class, fn (PlanMissing $missing) => new NotFoundHttpException(previous: $missing));
             $exceptions->map(RuleMissing::class, fn (RuleMissing $missing) => new NotFoundHttpException(previous: $missing));
-            $exceptions->renderable(fn (StartDenied $denied) => $this->backWithError('start', $denied->getMessage()));
             $exceptions->renderable(fn (RuleNotProposed $settled) => $this->backWithError('review', $settled->getMessage()));
         }
     }

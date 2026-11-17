@@ -9,14 +9,13 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * Home's query: the plans and rules windows' filters and the agent session the chat window talks to, as a decimal
+ * Home's query: the rules window's filters and the agent session the chat window talks to, as a decimal
  * string.
  */
 #[TypeScript]
 final class HomeFiltersData extends Data
 {
     public function __construct(
-        public readonly PlanFiltersData $plans = new PlanFiltersData,
         public readonly RuleFiltersData $rules = new RuleFiltersData,
         public readonly string|Optional $session = new Optional,
     ) {}

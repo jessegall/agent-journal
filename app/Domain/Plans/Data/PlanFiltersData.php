@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Data;
+namespace App\Domain\Plans\Data;
 
 use App\Domain\Plans\Api\PlanFilters;
 use Spatie\LaravelData\Attributes\Validation\Regex;

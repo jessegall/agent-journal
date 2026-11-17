@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Data;
+namespace App\Domain\Plans\Data;
 
 use App\Core\Assignments\Support\AssignmentData;
 use App\Domain\Plans\Api\PlanCard;

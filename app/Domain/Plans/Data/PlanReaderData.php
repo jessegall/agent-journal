@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Data;
+namespace App\Domain\Plans\Data;
 
 use App\Domain\Plans\Api\PlanSelection;
 use Spatie\LaravelData\Data;
@@ -35,7 +35,7 @@ final class PlanReaderData extends Data
         return self::from([
             'card' => PlanCardData::fromPlanCard($card),
             'insideResults' => $selection->isInsideFilter,
-            'start' => StartPlanData::optionalOrMissing($card->canStart ? ['planId' => (string) $card->id] : null),
+            'start' => $card->canStart ? StartPlanData::from(['planId' => (string) $card->id]) : Optional::create(),
         ]);
     }
 }

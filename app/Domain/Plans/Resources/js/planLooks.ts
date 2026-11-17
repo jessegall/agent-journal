@@ -1,5 +1,5 @@
-import type { IconName } from '@/components/kit/Icon.vue';
-import type { PlanCardData, PlanKind, PlanState } from '@/types/generated';
+import type { IconName } from '@kit/Icon';
+import type { PlanCardData, PlanKind, PlanState } from '@generated/types/plans';
 
 /**
  * How a plan's kind and state look; keyed by the server's enum values, never by a translated label.

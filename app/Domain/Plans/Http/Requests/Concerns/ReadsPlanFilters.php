@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Http\Requests\Concerns;
+namespace App\Domain\Plans\Http\Requests\Concerns;
 
-use App\Domain\Web\Data\PlanFiltersData;
+use App\Domain\Plans\Data\PlanFiltersData;
 
 /**
  * The plans slice's query, shared by every page that shows it: search words up to 200 characters, a page from 1, and

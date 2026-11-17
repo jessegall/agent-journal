@@ -48,12 +48,14 @@ final class HomePageTest extends TestCase
 
     public function test_home_shows_the_running_sessions_and_the_same_plans_slice_as_the_plans_page(): void
     {
-        $this->actingAs($this->owner)->get('/?q=release')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        $this->actingAs($this->owner)->get('/?window[plans.list][q]=release&q=elsewhere')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Home')
             ->missing('window_chat_conversation')
-            ->where('page.plans.filters.q', 'release')
-            ->where('page.plans.pagination.total', 1)
+            ->missing('page.plans')
             ->missing('page.chat')
+            ->reloadOnly('window_plans_list', fn (AssertableInertia $reload) => $reload
+                ->where('window_plans_list.data.filters.q', 'release')
+                ->where('window_plans_list.data.pagination.total', 1))
             ->missing('page.filters')
             ->missing('page.plansView')
             ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
@@ -68,8 +70,7 @@ final class HomePageTest extends TestCase
         Rule::query()->create(['text' => 'Every phase ends with its tests.']);
         Rule::query()->create(['text' => 'Write all code in plain English.']);
 
-        $this->actingAs($this->owner)->get('/?q=release&rules_q=phase')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.plans.filters.q', 'release')
+        $this->actingAs($this->owner)->get('/?window[plans.list][q]=release&rules_q=phase')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.rules.filters.q', 'phase')
             ->where('page.rules.pagination.total', 1)
             ->where('page.rules.rows.0.text', 'Every phase ends with its tests.')

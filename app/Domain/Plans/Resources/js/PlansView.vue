@@ -1,25 +1,21 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
-import Button from '@/components/kit/Button.vue';
-import ListReaderLayout from '@/components/kit/ListReaderLayout.vue';
-import PageHeader from '@/components/kit/PageHeader.vue';
-import type { PlanFiltersData, PlanListData } from '@/types/generated';
+import Button from '@kit/Button';
+import ListReaderLayout from '@kit/ListReaderLayout';
+import PageHeader from '@kit/PageHeader';
+import type { PlanFiltersData, PlanListData } from '@generated/types/plans';
 import PlanCard from './PlanCard.vue';
 import PlanReader from './PlanReader.vue';
-import { plansPageUrl } from './planUrls';
 
 /**
  * The plans slice: a search, the card grid, paging and the reader. It takes the slice alone, so Home can reuse it; the
  * page that shows it says where a link to other filters goes, the plans page by default.
  */
-const props = withDefaults(
-    defineProps<{
-        plans: PlanListData;
-        urlForFilters?: (filters: PlanFiltersData) => string;
-    }>(),
-    { urlForFilters: plansPageUrl },
-);
+const props = defineProps<{
+    plans: PlanListData;
+    urlForFilters: (filters: PlanFiltersData) => string;
+}>();
 
 const search = ref(props.plans.filters.q);
 watch(

@@ -46,39 +46,38 @@ final class PlansPageTest extends TestCase
     public function test_the_page_carries_the_cards_as_strings_and_numbers_without_its_seed_or_view(): void
     {
         $this->actingAs($this->owner)->get('/plans')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('Plans')
-            ->where('page.plans.pagination.total', 2)
-            ->where('page.plans.rows.1.id', (string) $this->release->id)
-            ->where('page.plans.rows.1.totalTasks', 1)
-            ->where('page.plans.rows.1.phase', 1)
-            ->missing('page.plans.rows.1.holder')
-            ->where('page.plans.filters.q', '')
-            ->missing('page.filters')
-            ->missing('page.view')
-            ->where('page.plans.selectionMissing', false)
-            ->missing('page.plans.selected'));
+            ->component('plans/PlansWindow')
+            ->where('page.state', 'ready')
+            ->where('page.data.pagination.total', 2)
+            ->where('page.data.rows.1.id', (string) $this->release->id)
+            ->where('page.data.rows.1.totalTasks', 1)
+            ->where('page.data.rows.1.phase', 1)
+            ->missing('page.data.rows.1.holder')
+            ->where('page.data.filters.q', '')
+            ->where('page.data.selectionMissing', false)
+            ->missing('page.data.selected'));
     }
 
     public function test_the_search_and_selection_survive_in_the_query_and_the_start_is_offered_by_the_domain_rule(): void
     {
         $this->actingAs($this->owner)->get("/plans?q=release&plan={$this->release->id}")->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.plans.filters.q', 'release')
-            ->where('page.plans.filters.plan', (string) $this->release->id)
-            ->count('page.plans.rows', 1)
-            ->where('page.plans.selected.card.title', 'Build the release page')
-            ->where('page.plans.selected.insideResults', true)
-            ->where('page.plans.selected.start.planId', (string) $this->release->id));
+            ->where('page.data.filters.q', 'release')
+            ->where('page.data.filters.plan', (string) $this->release->id)
+            ->count('page.data.rows', 1)
+            ->where('page.data.selected.card.title', 'Build the release page')
+            ->where('page.data.selected.insideResults', true)
+            ->where('page.data.selected.start.planId', (string) $this->release->id));
 
         $this->actingAs($this->owner)->get("/plans?q=release&plan={$this->paused->id}")->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.plans.selected.insideResults', false)
-            ->missing('page.plans.selected.start'));
+            ->where('page.data.selected.insideResults', false)
+            ->missing('page.data.selected.start'));
     }
 
     public function test_a_selection_that_cannot_be_read_shows_no_title(): void
     {
         $this->actingAs($this->owner)->get('/plans?plan=999999')->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.plans.selectionMissing', true)
-            ->missing('page.plans.selected'));
+            ->where('page.data.selectionMissing', true)
+            ->missing('page.data.selected'));
     }
 
     public function test_invalid_filters_are_refused(): void
@@ -93,7 +92,7 @@ final class PlansPageTest extends TestCase
         $this->actingAs($this->owner)->get('/plans', [
             'X-Inertia' => 'true',
             'X-Inertia-Version' => (string) $this->app->make(HandleInertiaRequests::class)->version(Request::create('/plans')),
-            'X-Inertia-Partial-Component' => 'Plans',
+            'X-Inertia-Partial-Component' => 'plans/PlansWindow',
             'X-Inertia-Partial-Data' => 'name',
         ])->assertOk()->assertJsonMissingPath('props.page');
     }

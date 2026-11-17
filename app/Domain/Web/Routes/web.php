@@ -5,10 +5,8 @@ declare(strict_types=1);
 use App\Domain\Web\Http\Controllers\HomeController;
 use App\Domain\Web\Http\Controllers\LayoutsController;
 use App\Domain\Web\Http\Controllers\LoginController;
-use App\Domain\Web\Http\Controllers\PlansController;
 use App\Domain\Web\Http\Controllers\ReviewRuleController;
 use App\Domain\Web\Http\Controllers\RulesController;
-use App\Domain\Web\Http\Controllers\StartPlanController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web', 'guest'])->group(function (): void {
@@ -20,8 +18,6 @@ Route::middleware(['web', 'auth', 'journal.user'])->group(function (): void {
     Route::post('/layouts', [LayoutsController::class, 'store'])->name('layouts.store');
     Route::put('/layouts/{layout}', [LayoutsController::class, 'update'])->name('layouts.update');
     Route::delete('/layouts/{layout}', [LayoutsController::class, 'destroy'])->name('layouts.destroy');
-    Route::get('/plans', [PlansController::class, 'index'])->name('plans.index');
-    Route::post('/plans/{plan}/start', StartPlanController::class)->name('plans.start');
     Route::get('/rules', [RulesController::class, 'index'])->name('rules.index');
     Route::patch('/rules/{rule}/approve', [ReviewRuleController::class, 'approve'])->name('rules.approve');
     Route::patch('/rules/{rule}/deny', [ReviewRuleController::class, 'deny'])->name('rules.deny');

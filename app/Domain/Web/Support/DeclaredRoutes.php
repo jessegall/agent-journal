@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Support;
 
-use App\Domain\Declarations\RegisteredAction;
 use App\Domain\Declarations\RegisteredPage;
 use App\Domain\UiDeclarations;
 use App\Domain\Web\Exceptions\UiPrefixUnavailable;
@@ -50,14 +49,14 @@ final readonly class DeclaredRoutes
                 continue;
             }
 
-            $taken = array_values(array_intersect([explode('/', $route->uri())[0], explode('.', (string) $route->getName())[0]], $prefixes));
+            $taken = array_values(array_intersect([explode('/', $route->uri())[0], explode('.', (string) $route->getName())[0]], array_keys($prefixes)));
 
-            if ($taken !== []) {
+            if ($taken !== [] && ! $this->ownedBy($route, $prefixes[$taken[0]])) {
                 throw UiPrefixUnavailable::usedByRoute($taken[0], $route->uri());
             }
         }
 
-        foreach ($prefixes as $prefix) {
+        foreach (array_keys($prefixes) as $prefix) {
             if (file_exists("{$publicFolder}/{$prefix}")) {
                 throw UiPrefixUnavailable::usedByPublicFile($prefix);
             }
@@ -86,15 +85,32 @@ final readonly class DeclaredRoutes
     }
 
     /**
-     * @return list<string>
+     * Each domain prefix with the namespace of the domain that owns it.
+     *
+     * @return array<string, string>
      */
     private function prefixes(): array
     {
-        $prefixes = [
-            ...array_map(fn (RegisteredPage $page) => $page->owner->key, array_filter($this->declarations->pages(), fn (RegisteredPage $page) => $page->key !== self::HOME)),
-            ...array_map(fn (RegisteredAction $action) => $action->owner->key, $this->declarations->actions()),
-        ];
+        $prefixes = [];
 
-        return array_values(array_unique($prefixes));
+        foreach ($this->declarations->pages() as $page) {
+            if ($page->key !== self::HOME) {
+                $prefixes[$page->owner->key] = $page->owner->namespace;
+            }
+        }
+
+        foreach ($this->declarations->actions() as $action) {
+            $prefixes[$action->owner->key] = $action->owner->namespace;
+        }
+
+        return $prefixes;
+    }
+
+    /**
+     * A route the domain itself registered elsewhere, such as its agent routes, shares its prefix by right.
+     */
+    private function ownedBy(Route $route, string $namespace): bool
+    {
+        return str_starts_with((string) $route->getControllerClass(), $namespace.'\\');
     }
 }

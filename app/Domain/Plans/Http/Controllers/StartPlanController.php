@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Http\Controllers;
+namespace App\Domain\Plans\Http\Controllers;
 
 use App\Domain\Plans\Contracts\PlanStarter;
-use App\Domain\Web\Http\RouteId;
+use App\Domain\Plans\Http\Requests\StartPlanRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -22,9 +22,9 @@ final readonly class StartPlanController
         private Redirector $redirect,
     ) {}
 
-    public function __invoke(string $plan): RedirectResponse
+    public function __invoke(StartPlanRequest $request): RedirectResponse
     {
-        $this->plans->start(RouteId::of($plan));
+        $this->plans->start($request->planId());
 
         return $this->redirect->back(303);
     }
