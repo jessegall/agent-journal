@@ -67,6 +67,24 @@ final readonly class DomainEntry
         return $this->domain::class;
     }
 
+    /**
+     * Whether a fully written name lies in this domain, compared without regard to case and on whole segments.
+     */
+    public function ownsName(string $name): bool
+    {
+        return stripos(ltrim($name, '\\'), $this->namespace.'\\') === 0;
+    }
+
+    public function holdsFile(string $path): bool
+    {
+        return str_starts_with($path, $this->folder.DIRECTORY_SEPARATOR);
+    }
+
+    public function requiresDomain(self $other): bool
+    {
+        return in_array($other->className(), $this->requires, true);
+    }
+
     public function listenerFolder(): string
     {
         return $this->folder.'/Listeners';
