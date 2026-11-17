@@ -25,7 +25,12 @@ From the root of your project, with Python 3.14 or newer and Go on the PATH (`br
 
 It downloads the version-5 branch, builds the journal's programs with Go and installs the journal, and puts
 `~/.local/bin`, where the `journal` command goes, on your shell's PATH when it is not there yet: open a new terminal and
-`journal` works in the project. From a checkout of this branch, `sh install.sh` does the same. This makes `.journal/version-5.db` and copies the code into `.journal/src`. The journal starts Claude Code and Codex on
+`journal` works in the project. From a checkout of this branch, `sh install.sh` does the same. A project that still
+holds version 4 is upgraded to version 5 by the same line.
+
+To update version 5 to the newest code of the version-5 branch, programs included, run from the project's root:
+
+    curl -fsSL https://raw.githubusercontent.com/jessegall/agent-journal/version-5/install.sh | sh -s update This makes `.journal/version-5.db` and copies the code into `.journal/src`. The journal starts Claude Code and Codex on
 settings of its own, `.journal/programs/claude/settings.json` and the Codex folder `.journal/programs/codex`, which hold
 its hooks and are written again at every start; your own `~/.claude` and `~/.codex` settings are backed up in
 `.journal/backups/program-settings` and left as they are. It starts nothing. Run the same line again and it
