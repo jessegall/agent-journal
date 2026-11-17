@@ -29,6 +29,11 @@ const shapes = {
     start: '<path d="M5.5 3.8v8.4L12 8z" stroke-linejoin="round"/>',
     power: '<path d="M8 2v6"/><path d="M4.5 4.2a5 5 0 1 0 7 0"/>',
     dots: '<path d="M4 8h.01M8 8h.01M12 8h.01"/>',
+    list: '<path d="M3 3.5h10M3 8h10M3 12.5h6"/>',
+    scheme: '<circle cx="8" cy="8" r="5.75"/><path d="M8 2.25a5.75 5.75 0 0 1 0 11.5z" fill="currentColor" stroke="none"/>',
+    wide: '<path d="M6.2 2.6H2.6v3.6M9.8 2.6h3.6v3.6M6.2 13.4H2.6V9.8M9.8 13.4h3.6V9.8"/>',
+    chevron: '<path d="M6 3.5 10.5 8 6 12.5"/>',
+    chat: '<path d="M2.5 3h11v7.5H8L5 13v-2.5H2.5z"/>',
     agents: '<circle cx="6" cy="5.5" r="2"/><path d="M2.5 13a3.5 3.5 0 0 1 7 0"/><path d="M10.5 3.8a2 2 0 0 1 0 3.4"/><path d="M11.5 9.8a3.5 3.5 0 0 1 2 3.2"/>',
 } as const;
 

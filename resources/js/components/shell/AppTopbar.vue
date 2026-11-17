@@ -1,56 +1,113 @@
 <script setup lang="ts">
 import { Form, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
 import type { Appearance } from '@/composables/useAppearance';
 import { useAppearance } from '@/composables/useAppearance';
+import { useSidebar } from '@/composables/useSidebar';
 import { logout } from '@/routes';
 
 /**
- * The top bar (doc 4, 4.2): the page name, then the appearance switch and the signed-in user with sign out.
+ * Version 5's breadcrumb with its top buttons (shell/Breadcrumb.vue, windows/StageTopButtons.vue; doc 12 section 1.1):
+ * 40 px, the project swatch and name, then the page; on the right the sidebar button, the colour scheme menu, full
+ * screen, and version 6's signed-in viewer with sign out.
  */
 defineProps<{ title: string }>();
 
 const page = usePage();
+const appName = computed(() => page.props.name);
 const viewerName = computed(() => page.props.viewer?.name);
 const { appearance, update } = useAppearance();
-const choices: Appearance[] = ['light', 'dark', 'system'];
+const { toggle: toggleSidebar } = useSidebar();
+const isSchemeMenuOpen = ref(false);
+
+const schemes: { value: Appearance; label: string }[] = [
+    { value: 'system', label: 'Follow the system' },
+    { value: 'light', label: 'Light' },
+    { value: 'dark', label: 'Dark' },
+];
+
+function chooseScheme(value: Appearance): void {
+    update(value);
+    isSchemeMenuOpen.value = false;
+}
+
+function toggleFullScreen(): void {
+    if (document.fullscreenElement) {
+        void document.exitFullscreen();
+
+        return;
+    }
+
+    void document.documentElement.requestFullscreen();
+}
 </script>
 
 <template>
-    <header
-        class="flex h-12 shrink-0 items-center gap-2 border-b border-border pr-[11px] pl-4"
+    <nav
+        class="relative flex min-h-10 shrink-0 items-center gap-2 border-b border-border px-4 text-body text-text-2"
+        aria-label="Breadcrumb"
     >
-        <span class="text-field font-medium text-text">{{ title }}</span>
-        <div
-            class="ml-auto inline-flex gap-0.5 rounded-button border border-border-2 p-0.5"
-            role="radiogroup"
-            aria-label="Appearance"
-        >
-            <template v-for="choice in choices" :key="choice">
-                <button
-                    type="button"
-                    role="radio"
-                    :aria-checked="appearance === choice"
-                    class="rounded-seg px-2.5 py-[3px] text-small text-text-3 capitalize hover:text-text focus-visible:outline-2 focus-visible:outline-brand"
-                    :class="{
-                        'bg-brand-dim font-medium text-brand-text':
-                            appearance === choice,
-                    }"
-                    @click="update(choice)"
+        <span class="size-2 rounded-[2px] bg-brand" aria-hidden="true"></span>
+        <span>{{ appName }}</span>
+        <span class="text-text-4" aria-hidden="true">/</span>
+        <span class="font-medium text-text" aria-current="page">{{
+            title
+        }}</span>
+        <span class="flex-1"></span>
+        <Button
+            variant="icon"
+            aria-label="Show or hide the sidebar"
+            @click="toggleSidebar"
+            ><Icon name="list" :size="13"
+        /></Button>
+        <div class="relative">
+            <Button
+                variant="icon"
+                aria-label="Colour scheme"
+                :aria-expanded="isSchemeMenuOpen"
+                @click="isSchemeMenuOpen = !isSchemeMenuOpen"
+                ><Icon name="scheme" :size="13"
+            /></Button>
+            <div
+                v-if="isSchemeMenuOpen"
+                class="absolute top-8 right-0 z-90 flex w-[200px] flex-col gap-0.5 rounded-menu border border-border-2 bg-raised p-1.5 shadow-[0_14px_36px_rgba(0,0,0,.45)]"
+                role="menu"
+            >
+                <span
+                    class="block px-2 pt-2.5 pb-1 text-group font-semibold tracking-[.06em] text-text-4 uppercase"
+                    >Color scheme</span
                 >
-                    {{ choice }}
+                <button
+                    v-for="scheme in schemes"
+                    :key="scheme.value"
+                    type="button"
+                    role="menuitemradio"
+                    :aria-checked="appearance === scheme.value"
+                    class="flex items-center gap-2 rounded-control px-2 py-1.5 text-left text-small text-text-2 hover:bg-hover hover:text-text"
+                    :class="{
+                        'bg-brand/16 text-text': appearance === scheme.value,
+                    }"
+                    @click="chooseScheme(scheme.value)"
+                >
+                    {{ scheme.label }}
                 </button>
-            </template>
+            </div>
         </div>
+        <Button
+            variant="icon"
+            aria-label="Full screen"
+            @click="toggleFullScreen"
+            ><Icon name="wide" :size="13"
+        /></Button>
         <template v-if="viewerName">
             <span class="text-small text-text-3">{{ viewerName }}</span>
             <Form v-bind="logout.form()">
                 <Button type="submit" variant="icon" aria-label="Sign out"
-                    ><Icon name="power" :size="14"
+                    ><Icon name="power" :size="13"
                 /></Button>
             </Form>
         </template>
-    </header>
+    </nav>
 </template>
