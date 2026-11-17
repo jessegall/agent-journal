@@ -223,6 +223,7 @@ class	AppServiceProvider
 class	AssigneeKindRepeated
 class	AssigneeList
 class	AssigneeName
+class	AssigneeRecords
 class	AssigneeRegistration
 class	AssigneeUnavailable
 class	Assignment
@@ -235,6 +236,7 @@ class	AssignmentGroupTooLarge
 class	AssignmentOutcome
 class	AssignmentProviderInvalid
 class	AssignmentRecord
+class	AssignmentRecords
 class	AssignmentReference
 class	AssignmentRegistry
 class	AssignmentResult
@@ -644,6 +646,7 @@ class	WorkingOnTaskStateReference
 class	WriteAssignments
 constant	AnsweringMessageStateReference::TYPE_KEY
 constant	AssignmentGroup::LARGEST
+constant	AssignmentRecords::LARGEST_BATCH
 constant	BindingRules::BINDING_METHODS
 constant	BindingRules::PER_REQUEST_VALUES
 constant	BindingRules::SCOPED_METHODS
@@ -753,6 +756,7 @@ interface	Assignable
 interface	AssignableProvider
 interface	Assignee
 interface	AssigneeProvider
+interface	AssigneeReader
 interface	AssignmentProviders
 interface	AssignmentReader
 interface	AssignmentRegistration
@@ -942,6 +946,11 @@ method	AssigneeName::__construct()
 method	AssigneeProvider::eligible()
 method	AssigneeProvider::names()
 method	AssigneeProvider::requireEligible()
+method	AssigneeReader::eligible()
+method	AssigneeReader::names()
+method	AssigneeRecords::__construct()
+method	AssigneeRecords::eligible()
+method	AssigneeRecords::names()
 method	AssigneeRegistration::__construct()
 method	AssigneeUnavailable::forActor()
 method	Assignment::__construct()
@@ -968,6 +977,11 @@ method	AssignmentRecord::forRecord()
 method	AssignmentRecord::heldForRetirement()
 method	AssignmentRecord::holding()
 method	AssignmentRecord::toAssignment()
+method	AssignmentRecords::__construct()
+method	AssignmentRecords::assignmentsFor()
+method	AssignmentRecords::byType()
+method	AssignmentRecords::recordIdsFor()
+method	AssignmentRecords::visibleAmong()
 method	AssignmentReference::__construct()
 method	AssignmentReference::isSameAs()
 method	AssignmentRegistration::registerAssignees()
@@ -1369,6 +1383,7 @@ method	InvalidAssignmentIdentity::forReference()
 method	InvalidAssignmentIdentity::forType()
 method	InvalidAssignmentPage::forCursor()
 method	InvalidAssignmentPage::forLimit()
+method	InvalidAssignmentPage::forRecordCount()
 method	InvalidBottomState::missing()
 method	InvalidBottomState::ofAnotherRole()
 method	InvalidBottomState::repeated()
@@ -2194,6 +2209,7 @@ property	AssigneeList::$assignees
 property	AssigneeList::$nextAfterId
 property	AssigneeName::$actor
 property	AssigneeName::$name
+property	AssigneeRecords::$providers
 property	AssigneeRegistration::$kind
 property	AssigneeRegistration::$providerClass
 property	Assignment::$record
@@ -2208,6 +2224,9 @@ property	AssignmentOutcome::$current
 property	AssignmentOutcome::$kind
 property	AssignmentOutcome::$record
 property	AssignmentRecord::$table
+property	AssignmentRecords::$actors
+property	AssignmentRecords::$log
+property	AssignmentRecords::$providers
 property	AssignmentReference::$holder
 property	AssignmentReference::$id
 property	AssignmentRegistry::$assigneeProviders

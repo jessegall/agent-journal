@@ -15,6 +15,7 @@ use App\Core\Agents\Support\AgentLabel;
 use App\Core\Agents\Support\SessionOption;
 use App\Core\Assignments\Contracts\AssignableProvider;
 use App\Core\Assignments\Contracts\AssigneeProvider;
+use App\Core\Assignments\Contracts\AssigneeReader;
 use App\Core\Assignments\Contracts\AssignmentReader;
 use App\Core\Assignments\Contracts\AssignmentRegistration;
 use App\Core\Assignments\Contracts\AssignmentTransaction;
@@ -230,6 +231,7 @@ final class CoreApi
             AssignmentGroupTooLarge::class,
             AssigneeUnavailable::class,
             RecordUnavailable::class,
+            AssigneeReader::class,
             AssignmentsChanged::class,
             AssignmentDenied::class,
             AssignmentWriter::class,

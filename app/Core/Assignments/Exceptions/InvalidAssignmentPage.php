@@ -17,4 +17,9 @@ final class InvalidAssignmentPage extends InvalidArgumentException
     {
         return new self("A page starts after a positive id; {$afterId} is not one.");
     }
+
+    public static function forRecordCount(int $count): self
+    {
+        return new self("One read covers at most 100 records; this one asks for {$count}.");
+    }
 }
