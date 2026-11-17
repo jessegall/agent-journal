@@ -2730,3 +2730,25 @@ def test_a_helper_command_class_serves_its_noun_for_that_role_alone(app: App):
     console.add_helper(AgentRole.WORKER, worker_task)
     assert type(console.table(AgentRole.WORKER)[TaskCommand.noun]) is worker_task, "the worker's own class serves the noun for the worker"
     assert type(console.table(AgentRole.MAIN)[TaskCommand.noun]) is TaskCommand, "and the main agent keeps the first"
+
+
+def test_a_wake_line_given_up_on_leaves_the_idle_agent_resting_so_the_next_line_is_typed(app: App, monkeypatch):
+    """The wake marked the agent working; with no turn started, the next message would otherwise wait for a turn end that never comes."""
+    from types import SimpleNamespace
+    from journal.supervisor_link import SupervisorLink
+    from journal.support.typed_lines import TypedLines
+    from journal.features.delivery.listeners.line_retyping import LineRetyping, TRY_COUNT, WAIT_LIMIT_SECONDS
+    transmitted = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append(fields))
+    link, typed = app.container.get(SupervisorLink), app.container.get(TypedLines)
+    link.type(1, "the first message")
+    batch_waited(app)
+    lost = typed.overdue(1, float("inf"))[0]
+    for _ in range(TRY_COUNT - 1):
+        lost = typed.retry(lost, lost.time)
+    finished_turn = SimpleNamespace(is_finished=lambda agent: True)
+    retyping = LineRetyping(typed, finished_turn, link, SimpleNamespace(show=lambda *arguments, **options: None))
+    retyping.handle(SimpleNamespace(silence_seconds=WAIT_LIMIT_SECONDS, agent=None, environment_id=1, session="s-1", time=lost.time + WAIT_LIMIT_SECONDS * 2 ** TRY_COUNT))
+    link.type(1, "the second message")
+    batch_waited(app)
+    assert transmitted[-1].get("line") == "[journal] the second message", transmitted

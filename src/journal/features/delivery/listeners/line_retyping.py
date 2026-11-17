@@ -29,7 +29,9 @@ class LineRetyping(AgentListener[Ticked]):
             self.supervisor.erase(event.environment_id)
             if dropped.tries >= TRY_COUNT:
                 self.typed.abandon(dropped)
-                self.supervisor.release(event.environment_id)
+                # the agent sits between turns, so the wake that marked it working never started one: it rests again,
+                # or every later line would wait for a turn end that does not come
+                self.supervisor.resting(event.environment_id)
                 self.cards.show(event.environment_id, event.session, f"A message did not reach the agent after {TRY_COUNT} tries over five minutes", dropped.line, shows=CardType.FAULTS, outcome=CardOutcome.WARNED)
             else:
                 repeat = self.typed.retry(dropped, event.time)
