@@ -16,14 +16,15 @@ from core.modules.tasks.support.dependency_waits import DependencyWaits
 from core.modules.tasks.support.task_assignees import TaskAssignees
 
 ENDED_STATES = (PlanState.COMPLETED, PlanState.CANCELLED)
+PLAN_PHASES_REASON = "a plan given to an agent takes its phases from their former holders"
 
 
 class AssignPlanHandler(Handler[AssignPlan, Cascade]):
     """Gives a plan, or one of its phases, to the agent named, and through the cascade its phases and the tasks
     that have no assignee yet; with override also the tasks given to someone else. A phase is given on its
     own, never the plan. With no agent named the plan goes to the first running main agent and its tasks stay
-    as they are. The agent named takes the plan or phase in place of whoever held it, so its new tasks follow
-    the new holder. A user or a main agent may assign a plan, a helper may not."""
+    as they are. The agent named takes the plan, and its phases, or the phase, in place of whoever held them, so
+    their new tasks follow the new holder. A user or a main agent may assign a plan, a helper may not."""
 
     command = AssignPlan
 
@@ -41,12 +42,17 @@ class AssignPlanHandler(Handler[AssignPlan, Cascade]):
         self.assignees.check_running(assignee)
         phases = self.outlines.outline(plan.id).chosen(command.phase_id)
         assigned = plan if command.phase_id is None else self.queries.query(Phase).find(command.phase_id)
-        for holder in self.assignments.actors(assigned):
-            if holder != assignee.id:
-                self.assignments.unassign(assigned, context, holder)
+        held = (assigned,) if command.phase_id is not None or command.agent_id is None else (plan, *self.queries.query(Phase).filter(plan_id=plan.id).every_row(PLAN_PHASES_REASON))
+        for row in held:
+            self.replace_holders(row, assignee.id, context)
         outcome = self.assignments.assign(assigned, assignee.id, context, cascade=command.agent_id is not None, override=command.override)
         self.waits.update_tasks([task.id for phase in phases for task in phase.tasks], context)
         return outcome
+
+    def replace_holders(self, row: Plan | Phase, assignee_id: int, context: Context) -> None:
+        for holder in self.assignments.actors(row):
+            if holder != assignee_id:
+                self.assignments.unassign(row, context, holder)
 
     def assignee(self, command: AssignPlan) -> Agent:
         if command.agent_id is not None:

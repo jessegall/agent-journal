@@ -43,8 +43,10 @@ def test_a_plan_is_assigned_to_a_worker_before_it_starts(new_story):
     expect_value(assignee(story)["id"], first.id)
 
 
-def test_assigning_a_plan_again_replaces_the_agent_that_held_it(new_story):
+
+def test_assigning_a_plan_again_replaces_the_agent_that_held_it_and_its_phases(new_story):
     story, first, second = story_with_two_workers(new_story)
     story.expect_success(f"plan assign 1 --to {first.id}", actor=story.agent)
-    story.expect_success(f"plan assign 1 --to {second.id} --override", actor=story.agent)
-    expect_value(assignee(story)["id"], second.id)
+    story.expect_success(f"plan assign 1 --to {second.id}", actor=story.agent)
+    phase_holders = story.run("assignment list --subject-model phase --columns actor_id", actor=story.agent).output_text.split()
+    story.expect_rows(assignee(story)["id"] == second.id, str(first.id) not in phase_holders, detail=f"{assignee(story)} {phase_holders}")
