@@ -34,6 +34,8 @@ final class HooksServiceProvider extends ServiceProvider
 
     public function boot(Dispatcher $events): void
     {
+        $this->loadRoutesFrom(__DIR__.'/Routes/hooks.php');
+
         $scope = new AgentSessionScope(static fn () => Container::getInstance()->make(AgentContext::class));
 
         foreach ([AgentStackRow::class, HookCall::class] as $model) {
