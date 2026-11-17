@@ -9,6 +9,7 @@ from suites.coding.modules.workers.models.worktree_reach import WorktreeReach
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.support.checkout_libraries import CheckoutLibraries
 
 FOLDER_NAME = "plan-{plan}"
 
@@ -20,15 +21,18 @@ class CheckpointFolders:
     environment's branch, owned by the worker merged last in the window, or by the main agent when no worker's
     work is in it, over the files the last merge changed."""
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, git: WorktreeGit, environments: EnvironmentRows, agents: AgentRows, kept: KeptRows) -> None:
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, git: WorktreeGit, environments: EnvironmentRows, agents: AgentRows, kept: KeptRows,
+                 libraries: CheckoutLibraries) -> None:
         self.queries, self.worktrees, self.proofs, self.git, self.kept = queries, worktrees, proofs, git, kept
-        self.environments, self.agents = environments, agents
+        self.environments, self.agents, self.libraries = environments, agents, libraries
 
     def checkout(self, reach: CheckpointReach) -> str:
         link = self.link(reach)
         if link is not None:
-            return self.git.commit_checkout(self.queries.query(Worktree).find(link.worktree_id), link.commit_id)
-        return self.git.base_checkout(self.environments.find(reach.environment_id), FOLDER_NAME.format(plan=reach.plan_id))
+            worktree = self.queries.query(Worktree).find(link.worktree_id)
+            return self.libraries.worker_checkout(worktree, self.git.commit_checkout(worktree, link.commit_id))
+        environment = self.environments.find(reach.environment_id)
+        return self.libraries.base_checkout(environment, self.git.base_checkout(environment, FOLDER_NAME.format(plan=reach.plan_id)))
 
     def owner_id(self, reach: CheckpointReach) -> int | None:
         link = self.link(reach)

@@ -35,7 +35,7 @@ def test_the_overview_shows_each_default_command_under_its_heading(played):
     expect_value_with(text, "## message conversations")
     expect_value_with(text, "## usage own-messages")
     expect_value_with(text, "## plugin changes --since HEAD")
-    expect_value_with(text, "## process list --state running")
+    expect_value_with(text, "## process list --open")
     expect_value_with(text, "## process list --limit 5")
     expect_value_without(text, "has no")
     expect_value_without(text, "journal failed")

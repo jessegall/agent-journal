@@ -180,9 +180,6 @@ class WorktreeGit:
             self.checked(folder, CHECKOUT_LIMIT_SECONDS, "reset", "--hard", commit)
             self.checked(folder, GIT_LIMIT_SECONDS, "clean", "-fd", *(flag for name in libraries for flag in ("-e", name)))
         self.restore_skipped_files(folder)
-        for name in libraries:
-            if not FileAccess.exists(Path(folder, name)):
-                FileAccess.symlink_to(Path(folder, name), Path(source, name).resolve(), target_is_directory=True)
         return folder
 
     def restore_skipped_files(self, folder: str) -> None:

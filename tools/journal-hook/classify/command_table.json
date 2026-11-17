@@ -883,6 +883,29 @@
     "label": "running composer"
    },
    "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "run-script": {
+     "kind": "process",
+     "effects": [],
+     "uncertain": true,
+     "subcommands": {
+      "test": {
+       "kind": "test run",
+       "effects": [
+        "reads_files",
+        "runs_long"
+       ],
+       "label": "testing"
+      }
+     }
+    },
     "install": {
      "kind": "package",
      "effects": [

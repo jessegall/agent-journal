@@ -297,18 +297,14 @@ func (wrapper *Wrapper) Wrapped(tokens []string) []string {
 		return nil
 	}
 	tokens = wrapper.pastOptions(tokens[1:])
-	var matched []string
-	for _, subcommand := range wrapper.Subcommands {
-		split := strings.Fields(subcommand)
-		if hasWords(tokens, split) {
-			matched = split
-			break
+	if len(wrapper.Subcommands) > 0 {
+		rest, found := wrapper.pastSubcommand(tokens)
+		if !found {
+			return nil
 		}
+		tokens = rest
 	}
-	if len(wrapper.Subcommands) > 0 && matched == nil {
-		return nil
-	}
-	tokens = wrapper.pastOptions(tokens[len(matched):])
+	tokens = wrapper.pastOptions(tokens)
 	if wrapper.OptionsEnd != "" {
 		for index, token := range tokens {
 			if token != wrapper.OptionsEnd {
@@ -328,6 +324,26 @@ func (wrapper *Wrapper) Wrapped(tokens []string) []string {
 		return []string{}
 	}
 	return tokens[wrapper.LeadingValues:]
+}
+
+// pastSubcommand is what follows the first subcommand of the wrapper the words name, each word of it found past
+// the options before it, as docker compose -p shop exec names compose exec.
+func (wrapper *Wrapper) pastSubcommand(tokens []string) ([]string, bool) {
+	for _, subcommand := range wrapper.Subcommands {
+		rest, found := tokens, true
+		for _, word := range strings.Fields(subcommand) {
+			rest = wrapper.pastOptions(rest)
+			if len(rest) == 0 || rest[0] != word {
+				found = false
+				break
+			}
+			rest = rest[1:]
+		}
+		if found {
+			return rest, true
+		}
+	}
+	return nil, false
 }
 
 func (wrapper *Wrapper) isWrapperFlag(token string) bool {

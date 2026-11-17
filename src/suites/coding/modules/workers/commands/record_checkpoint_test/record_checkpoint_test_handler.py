@@ -48,7 +48,7 @@ class RecordCheckpointTestHandler(Handler[RecordCheckpointTest, None]):
         return test.changed(state=AffectedTestState.TESTING, picker_command="", test_command=commands[0], process_id=self.started(test.changed(test_command=commands[0]), folder, context))
 
     def started(self, test: CheckpointTest, folder: str, context: Context) -> int:
-        start = WorkerTestStart.started(test.owner_agent_id, test.test_command, folder)
+        start = WorkerTestStart.started_as_full_run(test.owner_agent_id, test.test_command, folder)
         return self.bus.dispatch(replace(start, owner_agent_id=test.owner_agent_id), context).id
 
     def picked(self, test: CheckpointTest, context: Context) -> CheckpointTest:
@@ -56,6 +56,6 @@ class RecordCheckpointTestHandler(Handler[RecordCheckpointTest, None]):
         if not test_names:
             return test.changed(state=AffectedTestState.PASSED)
         folder = self.rows.required(Process, test.process_id).folder
-        start = WorkerTestStart.started(test.owner_agent_id, f"{test.test_command} {shlex.join(test_names)}", folder)
+        start = WorkerTestStart.started_as_full_run(test.owner_agent_id, f"{test.test_command} {shlex.join(test_names)}", folder)
         process = self.bus.dispatch(replace(start, owner_agent_id=test.owner_agent_id), context)
         return test.changed(state=AffectedTestState.TESTING, process_id=process.id)

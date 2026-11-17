@@ -16,7 +16,8 @@ var selectingFlags = []string{"-k", "-t", "-run", "--filter", "--testNamePattern
 var testValueFlags = []string{"-n", "-p", "-c", "-o", "-m", "--prefix", "--root", "--tb", "--maxfail", "--workers", "--timeout", "-timeout", "-C"}
 
 // The words of a test command that name its program and no tests.
-var testProgramWords = []string{"python", "python3", "pytest", "unittest", "npm", "npx", "pnpm", "yarn", "vitest", "jest", "go", "test", "run", "tests", "tests/", "test/", "spec", "./..."}
+var testProgramWords = []string{"python", "python3", "pytest", "unittest", "npm", "npx", "pnpm", "yarn", "vitest", "jest", "go", "test", "run", "tests", "tests/", "test/", "spec", "./...",
+	"composer", "php", "artisan", "phpunit", "pest", "paratest", "bundle", "exec", "rspec", "rake", "cargo", "mvn", "gradle", "dotnet", "mix"}
 
 var number = regexp.MustCompile(`^[0-9]+$`)
 

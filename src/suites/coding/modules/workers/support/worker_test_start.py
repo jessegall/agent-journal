@@ -1,6 +1,8 @@
+from dataclasses import replace
 from pathlib import PurePosixPath
 
 from engine.enums.command_category import CommandCategory
+from engine.enums.process_type import ProcessType
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from suites.coding.modules.workers.support.worker_settings import TEST_LIMIT_SECONDS
 from suites.coding.support.worktree_checkouts import WORKTREES_FOLDER
@@ -16,6 +18,13 @@ class WorkerTestStart:
     @staticmethod
     def started(owner_agent_id: int, command: str, folder: str, limit_seconds: int = TEST_LIMIT_SECONDS) -> StartProcess:
         return StartProcess.single_part(owner_agent_id, WorkerTestStart.filled(command, folder), folder, CommandCategory.TEST_RUN, limit_seconds)
+
+    @staticmethod
+    def started_as_full_run(owner_agent_id: int, command: str, folder: str) -> StartProcess:
+        """A checkpoint's test run: it tests the whole phase on the project's shared test resources, such as its test
+        databases, so it waits in the lane of full test runs, one at a time with an agent's own full run; it is no
+        full run of the project, so it closes no task in testing."""
+        return replace(WorkerTestStart.started(owner_agent_id, command, folder), run_name=ProcessType.FULL_TEST_RUN.value)
 
     @staticmethod
     def filled(command: str, folder: str) -> str:

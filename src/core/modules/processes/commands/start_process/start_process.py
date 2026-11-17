@@ -40,11 +40,11 @@ class StartProcess(Command[Process]):
     def is_journal_merge(self) -> bool:
         return self.run_name == ProcessType.MERGE.value
 
-    # a run of the whole suite waits as one, whoever starts it: a hook marks its own, and a test line the journal starts,
-    # such as a checkpoint's, reaches the whole suite when it names no target but the tests folder
+    # a run of the whole suite waits as one, whoever starts it: a hook marks its own, a checkpoint's run is named a full
+    # test run, and another test line the journal starts reaches the whole suite when it names no target but the tests folder
     @property
     def reaches_full_suite(self) -> bool:
-        return self.is_full_test_run or (self.category is CommandCategory.TEST_RUN and PytestLine(self.line).is_full_run())
+        return self.is_full_test_run or self.run_name == ProcessType.FULL_TEST_RUN.value or (self.category is CommandCategory.TEST_RUN and PytestLine(self.line).is_full_run())
 
     # a Graphify update the journal starts: it waits in the long lane on the Graphify class
     @property

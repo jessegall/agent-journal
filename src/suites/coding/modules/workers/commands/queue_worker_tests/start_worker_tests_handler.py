@@ -20,6 +20,7 @@ from suites.coding.modules.workers.support.affected_test_rows import AffectedTes
 from suites.coding.modules.workers.support.checkpoint_runner import CheckpointRunner
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.support.worker_test_start import WorkerTestStart
+from suites.coding.modules.workers.support.checkout_libraries import CheckoutLibraries
 
 
 class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
@@ -33,8 +34,8 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
     runs_once = True
     command = StartWorkerTests
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, worktrees: WorktreeQuery, proofs: ProofQuery, affected: AffectedTestRows, git: WorktreeGit, runner: CheckpointRunner, environments: EnvironmentRows, plans: TaskPlans) -> None:
-        self.runner, self.environments, self.plans = runner, environments, plans
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, worktrees: WorktreeQuery, proofs: ProofQuery, affected: AffectedTestRows, git: WorktreeGit, runner: CheckpointRunner, environments: EnvironmentRows, plans: TaskPlans, libraries: CheckoutLibraries) -> None:
+        self.runner, self.environments, self.plans, self.libraries = runner, environments, plans, libraries
         self.queries, self.repository, self.bus = queries, repository, bus
         self.worktrees, self.proofs, self.affected, self.git = worktrees, proofs, affected, git
 
@@ -78,6 +79,6 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
         self.repository.save_change(proof, proof.moved(ProofLifecycle.run, process_id=process.id), context)
 
     def start_picker(self, first_answer: AffectedTest, worktree: Worktree, context: Context) -> None:
-        start = WorkerTestStart.started(worktree.session_agent_id, first_answer.picker_command, self.git.merged_checkout(worktree))
+        start = WorkerTestStart.started(worktree.session_agent_id, first_answer.picker_command, self.libraries.worker_checkout(worktree, self.git.merged_checkout(worktree)))
         process = self.bus.dispatch(replace(start, owner_agent_id=worktree.session_agent_id, task_id=first_answer.task_id), context)
         self.repository.update(first_answer, context, state=AffectedTestState.PICKING, process_id=process.id)

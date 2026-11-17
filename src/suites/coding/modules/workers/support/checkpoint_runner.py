@@ -89,6 +89,6 @@ class CheckpointRunner(CheckpointRuns):
         return CheckpointTest(reach_id=reach.id, owner_agent_id=owner_id, picker_command=listing, test_command=phase_command, state=state, process_id=0)
 
     def start_test(self, test: CheckpointTest, folder: str, context: Context) -> None:
-        start = WorkerTestStart.started(test.owner_agent_id, test.picker_command or test.test_command, folder)
+        start = WorkerTestStart.started_as_full_run(test.owner_agent_id, test.picker_command or test.test_command, folder)
         process = self.bus.dispatch(replace(start, owner_agent_id=test.owner_agent_id), context)
         self.repository.save(replace(test, process_id=process.id), context)
