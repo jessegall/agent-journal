@@ -13,10 +13,10 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Makes the signed-in person the actor of this request, after the journal access policy lets them in. It runs after
- * the session authentication and before route binding, so nothing is read for a person who may not use the journal.
+ * Makes the signed-in user the actor of this request, after the journal access policy lets them in. It runs after
+ * the session authentication and before route binding, so nothing is read for a user who may not use the journal.
  */
-final readonly class AuthenticatePerson
+final readonly class AuthenticateUser
 {
     public function __construct(
         private JournalAccessPolicy $access,
@@ -28,13 +28,13 @@ final readonly class AuthenticatePerson
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $person = $request->user();
+        $user = $request->user();
 
-        if (! $person instanceof Actor || ! $this->access->allows($person)) {
-            throw JournalAccessDenied::forPerson();
+        if (! $user instanceof Actor || ! $this->access->allows($user)) {
+            throw JournalAccessDenied::forUser();
         }
 
-        $this->actors->establish($person);
+        $this->actors->establish($user);
 
         try {
             return $next($request);

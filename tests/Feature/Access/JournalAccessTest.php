@@ -24,7 +24,7 @@ final class JournalAccessTest extends TestCase
     {
         parent::setUp();
 
-        Route::middleware(['web', 'auth', 'journal.person'])->get('/access-test/actor', fn (ActorContext $actor) => "{$actor->kind->value} {$actor->id}");
+        Route::middleware(['web', 'auth', 'journal.user'])->get('/access-test/actor', fn (ActorContext $actor) => "{$actor->kind->value} {$actor->id}");
     }
 
     public function test_the_moved_user_and_its_factory_find_each_other_both_ways(): void
@@ -33,15 +33,15 @@ final class JournalAccessTest extends TestCase
         $this->assertInstanceOf(User::class, UserFactory::new()->make());
     }
 
-    public function test_the_configured_owner_becomes_the_person_actor(): void
+    public function test_the_configured_owner_becomes_the_user_actor(): void
     {
         $owner = User::factory()->create();
         $this->configureOwner($owner->id);
 
-        $this->actingAs($owner)->get('/access-test/actor')->assertOk()->assertSeeText("person {$owner->id}");
+        $this->actingAs($owner)->get('/access-test/actor')->assertOk()->assertSeeText("user {$owner->id}");
     }
 
-    public function test_another_person_is_refused(): void
+    public function test_another_user_is_refused(): void
     {
         $owner = User::factory()->create();
         $this->configureOwner($owner->id);
@@ -56,7 +56,7 @@ final class JournalAccessTest extends TestCase
         $this->actingAs(User::factory()->create())->get('/access-test/actor')->assertForbidden();
     }
 
-    public function test_people_and_agents_act_through_the_actor_interface_and_only_the_owner_person_is_let_in(): void
+    public function test_users_and_agents_act_through_the_actor_interface_and_only_the_owner_user_is_let_in(): void
     {
         $owner = User::factory()->create();
         $agent = Agent::query()->create(['name' => 'Planner', 'role' => 'hooks.main_ready']);
@@ -64,7 +64,7 @@ final class JournalAccessTest extends TestCase
         $policy = $this->app->make(JournalAccessPolicy::class);
 
         $this->assertInstanceOf(JournalAccess::class, $policy);
-        $this->assertSame([ActorKind::Person, $owner->id], [$owner->actorKind(), $owner->actorId()]);
+        $this->assertSame([ActorKind::User, $owner->id], [$owner->actorKind(), $owner->actorId()]);
         $this->assertSame(ActorKind::Agent, $agent->actorKind());
         $this->assertTrue($policy->allows($owner));
         $this->assertFalse($policy->allows($agent));

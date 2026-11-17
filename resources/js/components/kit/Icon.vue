@@ -19,7 +19,7 @@ const shapes = {
     arrow: '<path d="M3.5 8h9M9 4.5L12.5 8 9 11.5"/>',
     caret: '<path d="M5 6.5l3 3 3-3"/>',
     warn: '<path d="M8 2.6 14 13H2zM8 6.6v3.2M8 11.6v.1"/>',
-    people: '<circle cx="6" cy="5.5" r="2.2"/><path d="M2.2 13c.4-2.2 1.9-3.5 3.8-3.5s3.4 1.3 3.8 3.5"/><circle cx="11.2" cy="6" r="1.8"/><path d="M11 9.6c1.6 0 2.8 1.1 3.1 3"/>',
+    users: '<circle cx="6" cy="5.5" r="2.2"/><path d="M2.2 13c.4-2.2 1.9-3.5 3.8-3.5s3.4 1.3 3.8 3.5"/><circle cx="11.2" cy="6" r="1.8"/><path d="M11 9.6c1.6 0 2.8 1.1 3.1 3"/>',
     dot: '<circle cx="8" cy="8" r="2.5"/>',
     info: '<circle cx="8" cy="8" r="5.75"/><path d="M8 7.3v3.4"/><path d="M8 5.1v.1"/>',
     tick: '<path d="M3.8 8.3l2.6 2.6 5.8-6.1"/>',

@@ -11,7 +11,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\ConnectionInterface;
 
 /**
- * Starts a plan for the actor of this request, a person or an agent alike: once, under the plan's row lock, by the
+ * Starts a plan for the actor of this request, a user or an agent alike: once, under the plan's row lock, by the
  * same rule the plans read offers. Starting an already started plan changes nothing and raises nothing.
  */
 final readonly class StartPlan

@@ -6,10 +6,10 @@ namespace App\Core\Actors\Exceptions;
 
 use RuntimeException;
 
-final class PersonActorRequired extends RuntimeException
+final class UserActorRequired extends RuntimeException
 {
     public static function forActor(string $kind): self
     {
-        return new self("Only a person may do this; the actor of this request is an {$kind}.");
+        return new self("Only a user may do this; the actor of this request is an {$kind}.");
     }
 }

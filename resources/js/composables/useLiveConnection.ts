@@ -1,7 +1,7 @@
 import { usePage } from '@inertiajs/vue3';
 import { onBeforeUnmount, onMounted, watch } from 'vue';
-import type { PersonConnection } from '@/echo';
-import { connectPerson } from '@/echo';
+import type { UserConnection } from '@/echo';
+import { connectUser } from '@/echo';
 import { forgetPageChanges, pageChanged } from './usePageChanges';
 
 /**
@@ -10,10 +10,10 @@ import { forgetPageChanges, pageChanged } from './usePageChanges';
  */
 export function useLiveConnection(): void {
     const page = usePage();
-    let connection: PersonConnection | undefined;
+    let connection: UserConnection | undefined;
 
     function follow(viewerId: string | undefined): void {
-        if (connection?.personId === viewerId) {
+        if (connection?.userId === viewerId) {
             return;
         }
 
@@ -22,7 +22,7 @@ export function useLiveConnection(): void {
         forgetPageChanges();
 
         if (viewerId !== undefined) {
-            connection = connectPerson(viewerId, pageChanged, pageChanged);
+            connection = connectUser(viewerId, pageChanged, pageChanged);
         }
     }
 

@@ -3,23 +3,23 @@ import Pusher from 'pusher-js';
 import type { AuthorizerCallback } from 'pusher-js';
 
 /**
- * The one websocket connection of the browser tab, to Reverb, for one signed-in person at a time. It is opened by the
+ * The one websocket connection of the browser tab, to Reverb, for one signed-in user at a time. It is opened by the
  * app shell and never on the server render.
  */
-export type PersonConnection = {
-    personId: string;
+export type UserConnection = {
+    userId: string;
     leave: () => void;
 };
 
 /**
- * Opens the connection for a person and listens on their private channel; onChange hears each page change and
+ * Opens the connection for a user and listens on their private channel; onChange hears each page change and
  * onReconnect hears that the connection came back after it was lost, when changes may have been missed.
  */
-export function connectPerson(
-    personId: string,
+export function connectUser(
+    userId: string,
     onChange: () => void,
     onReconnect: () => void,
-): PersonConnection {
+): UserConnection {
     const echo = new Echo({
         broadcaster: 'reverb',
         Pusher,
@@ -38,7 +38,7 @@ export function connectPerson(
             },
         }),
     });
-    const channelName = `journal.person.${personId}`;
+    const channelName = `journal.user.${userId}`;
     let wasLost = false;
 
     echo.private(channelName).listen('.page.changed', onChange);
@@ -60,7 +60,7 @@ export function connectPerson(
     );
 
     return {
-        personId,
+        userId,
         leave: () => {
             echo.leave(channelName);
             echo.disconnect();

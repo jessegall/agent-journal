@@ -44,7 +44,7 @@ final class SendMessageTest extends TestCase
         $agent = Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']);
         $session = $this->app->make(LaunchSessions::class)->launch($agent, 'claude-code')->session;
         $this->target = new StackTarget($session->agent_id, $session->id);
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forPerson(7));
+        $this->app->make(EstablishActor::class)->establish(ActorContext::forUser(7));
     }
 
     public function test_a_sent_message_keeps_its_text_waits_for_the_agent_and_sits_on_its_stack(): void
@@ -77,7 +77,7 @@ final class SendMessageTest extends TestCase
         $this->app->make(SendMessage::class)->send("  \n\t ", $this->target);
     }
 
-    public function test_the_person_reads_the_conversation_with_that_session_only(): void
+    public function test_the_user_reads_the_conversation_with_that_session_only(): void
     {
         $this->app->make(SendMessage::class)->send('First', $this->target);
         $this->app->make(SendMessage::class)->send('Second', $this->target);

@@ -20,7 +20,7 @@ use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
- * A person who can sign in. Only the configured owner gets into the journal (JournalAccess).
+ * A user who can sign in. Only the configured owner gets into the journal (JournalAccess).
  *
  * @property int $id
  * @property string $name
@@ -46,7 +46,7 @@ class User extends Authenticatable implements Actor, MustVerifyEmail, PasskeyUse
 
     public function actorKind(): ActorKind
     {
-        return ActorKind::Person;
+        return ActorKind::User;
     }
 
     public function actorId(): int

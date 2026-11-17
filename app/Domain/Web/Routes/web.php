@@ -15,7 +15,7 @@ Route::middleware(['web', 'guest'])->group(function (): void {
     Route::get('/login', LoginController::class)->name('login');
 });
 
-Route::middleware(['web', 'auth', 'journal.person'])->group(function (): void {
+Route::middleware(['web', 'auth', 'journal.user'])->group(function (): void {
     Route::get('/', HomeController::class)->name('home');
     Route::post('/messages', SendMessageController::class)->name('messages.send');
     Route::get('/plans', [PlansController::class, 'index'])->name('plans.index');

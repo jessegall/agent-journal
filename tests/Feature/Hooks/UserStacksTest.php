@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Core\Actors\ActorContext;
-use App\Core\Actors\Exceptions\PersonActorRequired;
+use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Agents\LaunchedAgent;
 use App\Core\Agents\LaunchSessions;
 use App\Core\Agents\Models\Agent;
@@ -16,19 +16,19 @@ use App\Core\Hooks\Events\StateTypesRequested;
 use App\Core\Hooks\Exceptions\StackTargetRefused;
 use App\Core\Hooks\Exceptions\StackTransactionRequired;
 use App\Core\Hooks\Models\AgentStackRow;
-use App\Core\Hooks\PersonStacks;
 use App\Core\Hooks\StackTarget;
 use App\Core\Hooks\StackTransaction;
 use App\Core\Hooks\Storage\FrameRecord;
+use App\Core\Hooks\UserStacks;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Fixtures\Modules\Notes\Listeners\RegisterNoteStates;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
 /**
- * A person pushes a state onto a running agent's stack without an agent context; the agent stays the target.
+ * A user pushes a state onto a running agent's stack without an agent context; the agent stays the target.
  */
-final class PersonStacksTest extends TestCase
+final class UserStacksTest extends TestCase
 {
     use CommitsHookRows;
 
@@ -44,27 +44,27 @@ final class PersonStacksTest extends TestCase
         $this->target = $this->targetOf($this->launch());
     }
 
-    public function test_a_person_pushes_a_state_onto_a_running_agents_stack(): void
+    public function test_a_user_pushes_a_state_onto_a_running_agents_stack(): void
     {
-        $this->actAs(ActorContext::forPerson(7));
+        $this->actAs(ActorContext::forUser(7));
 
         $this->pushInTransaction($this->target);
 
         $this->assertSame(['hooks.main_ready', 'notes.writing'], $this->storedTypeKeys());
     }
 
-    public function test_an_agent_cannot_use_the_person_path(): void
+    public function test_an_agent_cannot_use_the_user_path(): void
     {
         $this->actAs(ActorContext::forAgent($this->target->agentId));
 
-        $this->expectException(PersonActorRequired::class);
+        $this->expectException(UserActorRequired::class);
 
         $this->pushInTransaction($this->target);
     }
 
     public function test_a_guessed_session_is_refused(): void
     {
-        $this->actAs(ActorContext::forPerson(7));
+        $this->actAs(ActorContext::forUser(7));
 
         $this->expectException(StackTargetRefused::class);
 
@@ -74,7 +74,7 @@ final class PersonStacksTest extends TestCase
     public function test_a_session_of_another_agent_is_refused(): void
     {
         $other = $this->targetOf($this->launch());
-        $this->actAs(ActorContext::forPerson(7));
+        $this->actAs(ActorContext::forUser(7));
 
         $this->expectException(StackTargetRefused::class);
 
@@ -83,17 +83,17 @@ final class PersonStacksTest extends TestCase
 
     public function test_the_push_runs_only_inside_a_stack_transaction(): void
     {
-        $this->actAs(ActorContext::forPerson(7));
+        $this->actAs(ActorContext::forUser(7));
 
         $this->expectException(StackTransactionRequired::class);
 
-        $this->app->make(PersonStacks::class)->push($this->target, new StateReference('notes.writing', NoSubject::None));
+        $this->app->make(UserStacks::class)->push($this->target, new StateReference('notes.writing', NoSubject::None));
     }
 
     private function pushInTransaction(StackTarget $target): void
     {
         $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(PersonStacks::class)->push($target, new StateReference('notes.writing', NoSubject::None)),
+            fn () => $this->app->make(UserStacks::class)->push($target, new StateReference('notes.writing', NoSubject::None)),
         );
     }
 

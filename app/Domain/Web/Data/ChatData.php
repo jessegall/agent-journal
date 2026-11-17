@@ -10,7 +10,7 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * Home's chat pane: the sessions the person can talk to and the open conversation, when one is chosen.
+ * Home's chat pane: the sessions the user can talk to and the open conversation, when one is chosen.
  */
 #[TypeScript]
 final class ChatData extends Data

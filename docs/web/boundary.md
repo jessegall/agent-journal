@@ -9,23 +9,23 @@ Every request has one actor, kept in `App\Core\Actors\ActorContext` for that req
 | Actor | Filled by | Reads |
 |---|---|---|
 | Agent | `AuthenticateAgent`, after the launch credential and the signed call check out | its own rows, through the agent scope |
-| Person | the Access domain's middleware, after its policy lets the person in (task 117) | every agent's rows the person may inspect, through `visibleToPerson` |
+| User | the Access domain's middleware, after its policy lets the user in (task 117) | every agent's rows the user may inspect, through `visibleToUser` |
 
-A person who selects an agent stays the actor; the agent is the target. Nothing forges an agent context for a person.
+A user who selects an agent stays the actor; the agent is the target. Nothing forges an agent context for a user.
 
-- **Person reads.** `visibleToPerson` on `OwnedByOneAgent` is the only way a person lifts the agent scope, and it refuses any actor but a person. Task, Plan and Rule have no agent scope: every agent and the owner read them (rule 4, message 519).
-- **Route binding.** An agent-scoped model binds through the actor's scope: a person's route through `visibleToPerson`, an agent's through its own scope; with no actor, binding fails closed. `AuthenticateAgent` runs before `SubstituteBindings`; the person middleware will be placed there too (task 117).
-- **Stack changes for a person.** `App\Core\Hooks\PersonStacks::push` puts a state on a running agent's stack for a person, in the caller's stack transaction: it locks the stack through the explicit authorized query, restores it with the target agent's own role and keeps every frame. A guessed, ended or mismatched session is refused with `StackTargetRefused`; an agent actor is refused. Agents keep `AgentStacks::push`, which only reaches their own stack.
+- **User reads.** `visibleToUser` on `OwnedByOneAgent` is the only way a user lifts the agent scope, and it refuses any actor but a user. Task, Plan and Rule have no agent scope: every agent and the owner read them (rule 4, message 519).
+- **Route binding.** An agent-scoped model binds through the actor's scope: a user's route through `visibleToUser`, an agent's through its own scope; with no actor, binding fails closed. `AuthenticateAgent` runs before `SubstituteBindings`; the user middleware will be placed there too (task 117).
+- **Stack changes for a user.** `App\Core\Hooks\UserStacks::push` puts a state on a running agent's stack for a user, in the caller's stack transaction: it locks the stack through the explicit authorized query, restores it with the target agent's own role and keeps every frame. A guessed, ended or mismatched session is refused with `StackTargetRefused`; an agent actor is refused. Agents keep `AgentStacks::push`, which only reaches their own stack.
 
-## Access: people and the owner (task 117)
+## Access: users and the owner (task 117)
 
-`app/Domain/Access` owns the User model (with its factory beside it), the users, password reset, sessions, passkeys and two-factor migrations, the Fortify actions and wiring (`AccessServiceProvider`), and `JournalAccess`, the one policy for who may use the journal: only the person whose id is `JOURNAL_OWNER_ID` (config/access.php). Unset means nobody; the first account or a registration grants nothing. The `journal.person` middleware (`AuthenticatePerson`) runs after session authentication and before route binding: it makes the owner the person actor and refuses everyone else with 403. Locally, `php artisan db:seed` creates owner@journal.local (password `password`); set `JOURNAL_OWNER_ID` to its id.
+`app/Domain/Access` owns the User model (with its factory beside it), the users, password reset, sessions, passkeys and two-factor migrations, the Fortify actions and wiring (`AccessServiceProvider`), and `JournalAccess`, the one policy for who may use the journal: only the user whose id is `JOURNAL_OWNER_ID` (config/access.php). Unset means nobody; the first account or a registration grants nothing. The `journal.user` middleware (`AuthenticateUser`) runs after session authentication and before route binding: it makes the owner the user actor and refuses everyone else with 403. Locally, `php artisan db:seed` creates owner@journal.local (password `password`); set `JOURNAL_OWNER_ID` to its id.
 
 ## Web and signing in (task 99)
 
-`app/Domain/Web` owns the browser routes (`Routes/web.php`, loaded only by `WebServiceProvider`) and the one Inertia middleware (`Http/Middleware/HandleInertiaRequests`), which shares `SharedData`: the application name and, once signed in, `ViewerData` with the person's display name and nothing else.
+`app/Domain/Web` owns the browser routes (`Routes/web.php`, loaded only by `WebServiceProvider`) and the one Inertia middleware (`Http/Middleware/HandleInertiaRequests`), which shares `SharedData`: the application name and, once signed in, `ViewerData` with the user's display name and nothing else.
 
-One route owner for signing in: Fortify keeps `views => false`, Web owns the guest `GET /login` (named `login`, rendering `LoginPage` with `LoginInput`), and the form posts to Fortify's own `POST /login`; `POST /logout` is Fortify's too. Fortify's optional features are all off: no registration, password reset, email verification, two-factor or passkeys, so no account screen exists without a page. Two-factor can come back later with its challenge page. After signing in Fortify sends the person to `/plans` (task 111 moves this to Home).
+One route owner for signing in: Fortify keeps `views => false`, Web owns the guest `GET /login` (named `login`, rendering `LoginPage` with `LoginInput`), and the form posts to Fortify's own `POST /login`; `POST /logout` is Fortify's too. Fortify's optional features are all off: no registration, password reset, email verification, two-factor or passkeys, so no account screen exists without a page. Two-factor can come back later with its challenge page. After signing in Fortify sends the user to `/plans` (task 111 moves this to Home).
 
 ## Generated browser types (task 100)
 
@@ -50,11 +50,11 @@ One route owner for signing in: Fortify keeps `views => false`, Web owns the gue
 
 ## The plans page (task 104)
 
-`GET /plans` (`plans.index`, behind `auth` and `journal.person`) renders `Plans` with one page object, `PlansPage`: a hidden `PlanFiltersData` seed and a hidden `PlansView` from the container, and one computed `plans` slot. The controller passes it as a closure, so a partial reload of other props never builds it. `PlansRequest` validates `q` (up to 200), `page` (from 1) and `plan` (a positive decimal string) and turns an empty search into the empty string in its `filters()` getter, not in a global middleware exemption. `PlansView` turns the Plans domain's `PlanList` into `PlanListData`: card ids as strings, absent phase, agent, selection and start left out of the JSON, the page the domain settled on as the accepted filter, and `selectionMissing` with no title when the selected plan cannot be read. The start is offered by `PlanCard::$canStart`, the domain's own rule. Web requires Plans (question 13).
+`GET /plans` (`plans.index`, behind `auth` and `journal.user`) renders `Plans` with one page object, `PlansPage`: a hidden `PlanFiltersData` seed and a hidden `PlansView` from the container, and one computed `plans` slot. The controller passes it as a closure, so a partial reload of other props never builds it. `PlansRequest` validates `q` (up to 200), `page` (from 1) and `plan` (a positive decimal string) and turns an empty search into the empty string in its `filters()` getter, not in a global middleware exemption. `PlansView` turns the Plans domain's `PlanList` into `PlanListData`: card ids as strings, absent phase, agent, selection and start left out of the JSON, the page the domain settled on as the accepted filter, and `selectionMissing` with no title when the selected plan cannot be read. The start is offered by `PlanCard::$canStart`, the domain's own rule. Web requires Plans (question 13).
 
 ## The start POST (task 106)
 
-`POST /plans/{plan}/start` (`plans.start`) binds the plan after the person middleware, takes `StartPlanInput` from the request (so Laravel Data validates its nested `filters` with `PlanFiltersData`'s attributes; a bad filter stops the start), calls `StartPlan::start` once and answers 303 to `plans.index` with the validated filters only; any other return address in the request is ignored. `StartDenied` alone is rendered as a `start` form error (303 back), by a renderer `WebServiceProvider` registers; a 403, a 404 or an unexpected failure keeps its own response and its log.
+`POST /plans/{plan}/start` (`plans.start`) binds the plan after the user middleware, takes `StartPlanInput` from the request (so Laravel Data validates its nested `filters` with `PlanFiltersData`'s attributes; a bad filter stops the start), calls `StartPlan::start` once and answers 303 to `plans.index` with the validated filters only; any other return address in the request is ignored. `StartDenied` alone is rendered as a `start` form error (303 back), by a renderer `WebServiceProvider` registers; a 403, a 404 or an unexpected failure keeps its own response and its log.
 
 ## Building with generated contracts (task 108)
 
@@ -66,11 +66,11 @@ Generated files are build output and ignored by git: `resources/js/types/generat
 
 ## Sending a message (task 110)
 
-`App\Domain\Chat\Actions\SendMessage::send($body, StackTarget)` is the person's way to message a running agent's session: in one stack transaction it creates the message (body kept byte for byte; a blank body is refused with `MessageBodyEmpty`), asks that session to answer it and pushes the answering state through `PersonStacks`, so a guessed, ended or foreign target is refused and leaves no message. The agent path keeps `RequireMessageAnswer`. `MessageSent`, `MessageAnswered` and `MessageDismissed` (raised by `CloseMessage`) fire after the commit. `MessageRecords::conversationWith(StackTarget)` reads the conversation with a session for the person; its id is `"<agent>-<session>"`. States read their subject with the `forActor` scope: a person reads through `visibleToPerson`, an agent keeps its own scope.
+`App\Domain\Chat\Actions\SendMessage::send($body, StackTarget)` is the user's way to message a running agent's session: in one stack transaction it creates the message (body kept byte for byte; a blank body is refused with `MessageBodyEmpty`), asks that session to answer it and pushes the answering state through `UserStacks`, so a guessed, ended or foreign target is refused and leaves no message. The agent path keeps `RequireMessageAnswer`. `MessageSent`, `MessageAnswered` and `MessageDismissed` (raised by `CloseMessage`) fire after the commit. `MessageRecords::conversationWith(StackTarget)` reads the conversation with a session for the user; its id is `"<agent>-<session>"`. States read their subject with the `forActor` scope: a user reads through `visibleToUser`, an agent keeps its own scope.
 
 ## Rule approval (task 112)
 
-Rules use doc 4's states: Proposed, Active, Denied, Removed. Existing rules stayed Active (the state column is a string, so no migration was needed). A rule comes to exist proposed, with fixed text, through `App\Domain\Rules\Actions\ProposeRule` (used by tests and the seeder; the agent path will call it). `ReviewRule::approve` and `deny` take the rule, need a person actor, lock the row and act once on a Proposed rule; any other state is refused with `RuleNotProposed`, whose message is safe to show. `RemoveRule` ends a rule. `RuleApproved`, `RuleDenied` and `RuleRemoved` fire after the commit. `ActiveRules` still gives agents only Active rules; `RuleRecords::all()` lists every rule for a page.
+Rules use doc 4's states: Proposed, Active, Denied, Removed. Existing rules stayed Active (the state column is a string, so no migration was needed). A rule comes to exist proposed, with fixed text, through `App\Domain\Rules\Actions\ProposeRule` (used by tests and the seeder; the agent path will call it). `ReviewRule::approve` and `deny` take the rule, need a user actor, lock the row and act once on a Proposed rule; any other state is refused with `RuleNotProposed`, whose message is safe to show. `RemoveRule` ends a rule. `RuleApproved`, `RuleDenied` and `RuleRemoved` fire after the commit. `ActiveRules` still gives agents only Active rules; `RuleRecords::all()` lists every rule for a page.
 
 ## Home (task 111)
 
@@ -103,18 +103,18 @@ The Redis queue now pushes a job only after the transaction it was queued in com
 
 Each producer raises its own fact after commit and knows nothing of the browser: Plans' `PlanStarted` and the new `PlanProgressChanged`, which Plans raises (`RaisePlanProgressChanged`) when it hears `TaskStarted`, `TaskFinished`, `TaskBlocked` or `TaskCancelled` for a task in one of its phases; Chat's `MessageSent`, `MessageAnswered` and `MessageDismissed`; Rules' `RuleApproved`, `RuleDenied` and `RuleRemoved`. Tasks gains `TaskFinished`, `TaskBlocked` and `TaskCancelled`, raised by the new `ChangeTaskState` action; the model methods alone still raise nothing. Web needs no Tasks edge.
 
-Web's `BroadcastPageChange` listener turns each of those facts into one `PageChanged`, a queued broadcast with no payload (`page.changed`), sent after commit on the private channel `journal.person.{id}` of each person Access allows (`JournalAccessPolicy::allowedPersonIds()`, today the owner); with no owner nobody is told. A rolled-back change sends nothing. `WebServiceProvider` registers `POST /broadcasting/auth` behind `web`, `auth` and `journal.person`, and the `PersonChannel` class: a person joins only the channel with their own id, and only while Access lets them in, so a guessed id or another account is refused. The installer's `routes/channels.php` is gone; channels live with Web.
+Web's `BroadcastPageChange` listener turns each of those facts into one `PageChanged`, a queued broadcast with no payload (`page.changed`), sent after commit on the private channel `journal.user.{id}` of each user Access allows (`JournalAccessPolicy::allowedUserIds()`, today the owner); with no owner nobody is told. A rolled-back change sends nothing. `WebServiceProvider` registers `POST /broadcasting/auth` behind `web`, `auth` and `journal.user`, and the `UserChannel` class: a user joins only the channel with their own id, and only while Access lets them in, so a guessed id or another account is refused. The installer's `routes/channels.php` is gone; channels live with Web.
 
 ## Live refresh in the browser (task 116)
 
-The app shell (`AppSidebarLayout`) owns the tab's one connection through `useLiveConnection`: it opens `resources/js/echo.ts` in the browser only, for the signed-in viewer, on `private-journal.person.{id}`, and opens it again only when the viewer changes; signing out or leaving the shell leaves the channel and disconnects (checked: Reverb lists no channel afterwards). The channel sign-in goes through its own small `fetch` with the session's current XSRF cookie, so a sign-in after a reconnect is fresh; `@laravel/echo-vue` is not used.
+The app shell (`AppSidebarLayout`) owns the tab's one connection through `useLiveConnection`: it opens `resources/js/echo.ts` in the browser only, for the signed-in viewer, on `private-journal.user.{id}`, and opens it again only when the viewer changes; signing out or leaving the shell leaves the channel and disconnects (checked: Reverb lists no channel afterwards). The channel sign-in goes through its own small `fetch` with the session's current XSRF cookie, so a sign-in after a reconnect is fresh; `@laravel/echo-vue` is not used.
 
 `composables/usePageChanges.ts` holds the refresh: each mounted page (`Home`, `Plans`, `Rules`) registers `useLiveReload()`, which reloads only its `page` prop and is removed when the page unmounts, so navigation never refreshes an old page. A burst of changes within 250 ms becomes one reload (checked: three removals in a row gave one request). The start, review and message forms add `formSendingHooks()` to their submit: a change that arrives while one is sent is read after it finishes, so the form's own answer and its errors are never replaced. When a lost connection comes back the page reloads by GET once; nothing is ever sent again. Home's reload keeps the composer drafts (they live per conversation in session storage), and a rule's text never changes, so the Rules reader needs no revision marker.
 
 ## Interfaces at the seams (task 122, rule 15)
 
-- **Actor.** `App\Core\Contracts\Actor` (its kind and id) is what the core talks to. The Access `User` is a person actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.
-- **Access policy.** `AuthenticatePerson` asks `JournalAccessPolicy::allows(Actor)`, bound to `JournalAccess` with `#[Bind]`. Only a person actor whose id is the owner's is let in.
+- **Actor.** `App\Core\Contracts\Actor` (its kind and id) is what the core talks to. The Access `User` is a user actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.
+- **Access policy.** `AuthenticateUser` asks `JournalAccessPolicy::allows(Actor)`, bound to `JournalAccess` with `#[Bind]`. Only a user actor whose id is the owner's is let in.
 - **Task progress.** Plans reads progress through `App\Domain\Tasks\TaskProgressCounter`, an interface Tasks owns and binds to `TaskCounts` with `#[Bind]`; Plans names no Tasks service class.
 
 A wider design for a public interface layer per domain is being written separately (message 685).
@@ -125,7 +125,7 @@ Approved by the user in question 13 (rule 9):
 
 | Domain | Owns | Requires |
 |---|---|---|
-| Access | User, login through Fortify, the configured owner, the person policy and middleware | nothing |
+| Access | User, login through Fortify, the configured owner, the user policy and middleware | nothing |
 | Web | pages, controllers, requests, page and input Data, routes, live updates | Access, Plans, Chat, Rules |
 
 No domain requires Web. Plans keeps its approved edge to Tasks. The core (`app/Core`) needs no edge and names no domain.

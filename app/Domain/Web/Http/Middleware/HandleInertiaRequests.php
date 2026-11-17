@@ -46,9 +46,9 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $person = $request->user();
-        $shared = $person instanceof User
-            ? SharedData::from(['name' => $this->appName, 'viewer' => ViewerData::from($person)])
+        $user = $request->user();
+        $shared = $user instanceof User
+            ? SharedData::from(['name' => $this->appName, 'viewer' => ViewerData::from($user)])
             : SharedData::from(['name' => $this->appName]);
 
         return [

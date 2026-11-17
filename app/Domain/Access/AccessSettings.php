@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Access;
 
 /**
- * The access settings of config/access.php, read once: the id of the one person who owns this journal, or none.
+ * The access settings of config/access.php, read once: the id of the one user who owns this journal, or none.
  */
 final readonly class AccessSettings
 {

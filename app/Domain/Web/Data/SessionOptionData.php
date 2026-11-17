@@ -8,7 +8,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * A running agent session the person can talk to.
+ * A running agent session the user can talk to.
  */
 #[TypeScript]
 final class SessionOptionData extends Data

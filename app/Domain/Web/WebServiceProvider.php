@@ -7,7 +7,7 @@ namespace App\Domain\Web;
 use App\Core\Hooks\Exceptions\StackTargetRefused;
 use App\Domain\Plans\Exceptions\StartDenied;
 use App\Domain\Rules\Exceptions\RuleNotProposed;
-use App\Domain\Web\Events\PersonChannel;
+use App\Domain\Web\Events\UserChannel;
 use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
@@ -24,9 +24,9 @@ final class WebServiceProvider extends ServiceProvider
     public function boot(ExceptionHandler $exceptions, BroadcastManager $broadcast): void
     {
         $this->loadRoutesFrom(__DIR__.'/Routes/web.php');
-        // The channel sign-in runs behind the same session, sign-in and person checks as every page.
-        $broadcast->routes(['middleware' => ['web', 'auth', 'journal.person']]);
-        $broadcast->channel(PersonChannel::PATTERN, PersonChannel::class);
+        // The channel sign-in runs behind the same session, sign-in and user checks as every page.
+        $broadcast->routes(['middleware' => ['web', 'auth', 'journal.user']]);
+        $broadcast->channel(UserChannel::PATTERN, UserChannel::class);
 
         if ($exceptions instanceof Handler) {
             $exceptions->renderable(fn (StartDenied $denied) => $this->backWithError('start', $denied->getMessage()));

@@ -34,7 +34,7 @@ final class StartPlanTest extends TestCase
 
         Event::fake([PlanStarted::class]);
         $this->plan = Plan::query()->create(['title' => 'Build the plans page', 'kind' => PlanKind::Build]);
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forPerson(7));
+        $this->app->make(EstablishActor::class)->establish(ActorContext::forUser(7));
     }
 
     public function test_a_planned_plan_starts_once_and_says_who_started_it(): void
@@ -43,7 +43,7 @@ final class StartPlanTest extends TestCase
 
         $this->assertSame(PlanState::Started, $this->plan->fresh()?->state);
         Event::assertDispatchedTimes(PlanStarted::class, 1);
-        Event::assertDispatched(PlanStarted::class, fn (PlanStarted $event) => $event->planId === $this->plan->id && $event->startedBy->kind === ActorKind::Person);
+        Event::assertDispatched(PlanStarted::class, fn (PlanStarted $event) => $event->planId === $this->plan->id && $event->startedBy->kind === ActorKind::User);
     }
 
     public function test_starting_a_started_plan_again_changes_nothing_and_raises_nothing(): void

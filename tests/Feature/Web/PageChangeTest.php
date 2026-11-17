@@ -19,7 +19,7 @@ use App\Domain\Tasks\ChangeTaskState;
 use App\Domain\Tasks\Events\TaskFinished;
 use App\Domain\Tasks\Models\Task;
 use App\Domain\Web\Events\PageChanged;
-use App\Domain\Web\Events\PersonChannel;
+use App\Domain\Web\Events\UserChannel;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\Event;
 use RuntimeException;
@@ -27,7 +27,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A committed change that a page shows becomes one page change for the people Access allows; nothing else does.
+ * A committed change that a page shows becomes one page change for the users Access allows; nothing else does.
  */
 final class PageChangeTest extends TestCase
 {
@@ -41,7 +41,7 @@ final class PageChangeTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forPerson($this->owner->id));
+        $this->app->make(EstablishActor::class)->establish(ActorContext::forUser($this->owner->id));
         Event::fake([PageChanged::class]);
     }
 
@@ -52,8 +52,8 @@ final class PageChangeTest extends TestCase
         $this->app->make(ReviewRule::class)->approve($rule);
 
         Event::assertDispatchedTimes(PageChanged::class, 1);
-        Event::assertDispatched(PageChanged::class, fn (PageChanged $change) => $change->personIds === [$this->owner->id]
-            && $change->broadcastOn()[0]->name === 'private-'.PersonChannel::nameFor($this->owner->id)
+        Event::assertDispatched(PageChanged::class, fn (PageChanged $change) => $change->userIds === [$this->owner->id]
+            && $change->broadcastOn()[0]->name === 'private-'.UserChannel::nameFor($this->owner->id)
             && $change->broadcastWith() === []);
     }
 

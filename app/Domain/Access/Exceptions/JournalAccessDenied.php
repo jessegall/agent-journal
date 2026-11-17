@@ -8,7 +8,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 final class JournalAccessDenied extends AccessDeniedHttpException
 {
-    public static function forPerson(): self
+    public static function forUser(): self
     {
         return new self('This account may not use the journal.');
     }

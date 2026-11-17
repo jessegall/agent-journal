@@ -10,7 +10,7 @@ final class AccessDomain implements Domain
 {
     public function description(): string
     {
-        return 'The people who sign in, how they sign in, and which of them may use the journal.';
+        return 'The users who sign in, how they sign in, and which of them may use the journal.';
     }
 
     /**

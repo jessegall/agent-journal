@@ -12,7 +12,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\ConnectionInterface;
 
 /**
- * The owner approves or denies a proposed rule, once, under the rule's row lock; only a person may.
+ * The owner approves or denies a proposed rule, once, under the rule's row lock; only a user may.
  */
 final readonly class ReviewRule
 {
@@ -24,7 +24,7 @@ final readonly class ReviewRule
 
     public function approve(Rule $rule): void
     {
-        $this->actor->requirePerson();
+        $this->actor->requireUser();
 
         $this->database->transaction(function () use ($rule): void {
             Rule::lockedFor($rule)->approve();
@@ -34,7 +34,7 @@ final readonly class ReviewRule
 
     public function deny(Rule $rule): void
     {
-        $this->actor->requirePerson();
+        $this->actor->requireUser();
 
         $this->database->transaction(function () use ($rule): void {
             Rule::lockedFor($rule)->deny();

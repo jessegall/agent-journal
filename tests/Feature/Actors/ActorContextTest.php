@@ -7,7 +7,7 @@ namespace Tests\Feature\Actors;
 use App\Core\Actors\ActorContext;
 use App\Core\Actors\ActorKind;
 use App\Core\Actors\Exceptions\ActorContextMissing;
-use App\Core\Actors\Exceptions\PersonActorRequired;
+use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Agents\AgentContext;
 use App\Core\Agents\SignedCall;
 use App\Core\Contracts\CurrentActor;
@@ -31,8 +31,8 @@ final class ActorContextTest extends TestCase
 
     public function test_the_next_request_on_a_worker_does_not_see_the_previous_actor(): void
     {
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forPerson(7));
-        $this->assertSame([ActorKind::Person, 7], [$this->app->make(ActorContext::class)->kind, $this->app->make(ActorContext::class)->id]);
+        $this->app->make(EstablishActor::class)->establish(ActorContext::forUser(7));
+        $this->assertSame([ActorKind::User, 7], [$this->app->make(ActorContext::class)->kind, $this->app->make(ActorContext::class)->id]);
 
         $this->app->forgetScopedInstances();
 
@@ -54,7 +54,7 @@ final class ActorContextTest extends TestCase
         $actors->actor();
     }
 
-    public function test_a_signed_in_persons_request_leaves_no_actor_behind_for_the_next(): void
+    public function test_a_signed_in_users_request_leaves_no_actor_behind_for_the_next(): void
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
@@ -71,10 +71,10 @@ final class ActorContextTest extends TestCase
         $this->assertSame([ActorKind::Agent, 3], [$actor->kind, $actor->id]);
     }
 
-    public function test_an_agent_is_not_a_person(): void
+    public function test_an_agent_is_not_a_user(): void
     {
-        $this->expectException(PersonActorRequired::class);
+        $this->expectException(UserActorRequired::class);
 
-        ActorContext::forAgent(3)->requirePerson();
+        ActorContext::forAgent(3)->requireUser();
     }
 }

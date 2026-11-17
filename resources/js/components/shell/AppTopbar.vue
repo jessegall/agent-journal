@@ -8,7 +8,7 @@ import { useAppearance } from '@/composables/useAppearance';
 import { logout } from '@/routes';
 
 /**
- * The top bar (doc 4, 4.2): the page name, then the appearance switch and the signed-in person with sign out.
+ * The top bar (doc 4, 4.2): the page name, then the appearance switch and the signed-in user with sign out.
  */
 defineProps<{ title: string }>();
 

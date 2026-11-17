@@ -7,7 +7,7 @@ namespace App\Core;
 use App\Core\Actors\ActorContext;
 use App\Core\Actors\ActorKind;
 use App\Core\Actors\Exceptions\ActorContextMissing;
-use App\Core\Actors\Exceptions\PersonActorRequired;
+use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Contracts\Actor;
 
 /**
@@ -26,7 +26,7 @@ final class CoreApi
             ActorKind::class,
             ActorContext::class,
             ActorContextMissing::class,
-            PersonActorRequired::class,
+            UserActorRequired::class,
         ];
     }
 }

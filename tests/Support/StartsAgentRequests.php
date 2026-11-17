@@ -11,7 +11,7 @@ use App\Core\Contracts\EstablishActor;
 use Carbon\CarbonImmutable;
 
 /**
- * Starts a request as one agent and session, or as a person, the way the authenticating middleware binds them.
+ * Starts a request as one agent and session, or as a user, the way the authenticating middleware binds them.
  */
 trait StartsAgentRequests
 {
@@ -26,8 +26,8 @@ trait StartsAgentRequests
         $this->app->make(EstablishActor::class)->establish(ActorContext::forAgent($agentId));
     }
 
-    protected function startPersonRequestAs(int $personId): void
+    protected function startUserRequestAs(int $userId): void
     {
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forPerson($personId));
+        $this->app->make(EstablishActor::class)->establish(ActorContext::forUser($userId));
     }
 }

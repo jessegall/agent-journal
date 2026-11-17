@@ -27,11 +27,11 @@ final readonly class MessageRecords
     }
 
     /**
-     * The conversation with one agent's session, as the person acting in this request may read it.
+     * The conversation with one agent's session, as the user acting in this request may read it.
      */
     public function conversationWith(StackTarget $target): Conversation
     {
-        $messages = Message::query()->visibleToPerson()
+        $messages = Message::query()->visibleToUser()
             ->where('agent_id', $target->agentId)
             ->where('session_id', $target->sessionId)
             ->orderBy('id')

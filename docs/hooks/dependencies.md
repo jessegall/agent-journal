@@ -9,7 +9,7 @@ Question 10 had approved edges from the domains to Hooks, Agents and Links. With
 | Domain | Requires | Why | Status |
 |---|---|---|---|
 | Plans | Tasks | a plan's phases hold tasks | approved (plan 1) |
-| Web | Access | the signed-in viewer shared with every page and the person middleware | approved (question 13) |
+| Web | Access | the signed-in viewer shared with every page and the user middleware | approved (question 13) |
 | Web | Plans | the plans page reads plans and starts them | approved (question 13) |
 | Web | Chat | Home's chat pane reads conversations and sends messages | approved (question 13) |
 | Web | Rules | the rules page reads rules and approves or denies proposed ones | approved (question 13) |

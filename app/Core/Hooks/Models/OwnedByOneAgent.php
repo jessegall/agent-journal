@@ -13,8 +13,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * For a model whose rows belong to one agent: every query sees only the calling agent's rows, and the journal's own
- * work on another agent's rows reads them through the explicit ownedBy query. A person reads them through the
- * explicit visibleToPerson query, which route binding uses when the actor of the request is a person.
+ * work on another agent's rows reads them through the explicit ownedBy query. A user reads them through the
+ * explicit visibleToUser query, which route binding uses when the actor of the request is a user.
  */
 trait OwnedByOneAgent
 {
@@ -35,21 +35,21 @@ trait OwnedByOneAgent
     }
 
     /**
-     * The read for the person acting in this request: every agent's rows the person may inspect. The person actor
-     * exists only after the access policy let the person in; any other actor is refused.
+     * The read for the user acting in this request: every agent's rows the user may inspect. The user actor
+     * exists only after the access policy let the user in; any other actor is refused.
      *
      * @param  Builder<static>  $query
      */
     #[Scope]
-    protected function visibleToPerson(Builder $query): void
+    protected function visibleToUser(Builder $query): void
     {
-        Container::getInstance()->make(CurrentActor::class)->actor()->requirePerson();
+        Container::getInstance()->make(CurrentActor::class)->actor()->requireUser();
 
         $query->withoutGlobalScope(AgentScope::class);
     }
 
     /**
-     * The read for whoever acts in this request: a person reads through visibleToPerson, anyone else keeps the agent
+     * The read for whoever acts in this request: a user reads through visibleToUser, anyone else keeps the agent
      * scope, which still needs the agent context and fails without it.
      *
      * @param  Builder<static>  $query
@@ -59,13 +59,13 @@ trait OwnedByOneAgent
     {
         $actors = Container::getInstance()->make(CurrentActor::class);
 
-        if ($actors->hasActor() && $actors->actor()->isPerson()) {
-            $query->visibleToPerson();
+        if ($actors->hasActor() && $actors->actor()->isUser()) {
+            $query->visibleToUser();
         }
     }
 
     /**
-     * Route binding reads through the actor's own scope: a person's route binds through visibleToPerson, an agent's
+     * Route binding reads through the actor's own scope: a user's route binds through visibleToUser, an agent's
      * through its own agent scope, and a request with no actor fails before any row is read.
      *
      * @param  mixed  $value

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Core\Actors;
 
-use App\Core\Actors\Exceptions\PersonActorRequired;
+use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Contracts\Actor;
 
 /**
- * Who acts in this request, filled by the middleware that authenticated them and kept for this request only. A person
+ * Who acts in this request, filled by the middleware that authenticated them and kept for this request only. A user
  * stays the actor when they select an agent; the agent is then a target, never the caller.
  */
 final readonly class ActorContext implements Actor
@@ -32,11 +32,11 @@ final readonly class ActorContext implements Actor
     }
 
     /**
-     * Only the domain that owns people and their access fills this, after its policy let the person in.
+     * Only the domain that owns users and their access fills this, after its policy let the user in.
      */
-    public static function forPerson(int $personId): self
+    public static function forUser(int $userId): self
     {
-        return new self(ActorKind::Person, $personId);
+        return new self(ActorKind::User, $userId);
     }
 
     public function actorKind(): ActorKind
@@ -49,15 +49,15 @@ final readonly class ActorContext implements Actor
         return $this->id;
     }
 
-    public function isPerson(): bool
+    public function isUser(): bool
     {
-        return $this->kind === ActorKind::Person;
+        return $this->kind === ActorKind::User;
     }
 
-    public function requirePerson(): void
+    public function requireUser(): void
     {
-        if (! $this->isPerson()) {
-            throw PersonActorRequired::forActor($this->kind->value);
+        if (! $this->isUser()) {
+            throw UserActorRequired::forActor($this->kind->value);
         }
     }
 }

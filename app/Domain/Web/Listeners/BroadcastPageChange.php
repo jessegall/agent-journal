@@ -17,7 +17,7 @@ use App\Domain\Web\Events\PageChanged;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
- * Turns each committed fact that changes what a page shows into one page change for the people Access allows. The
+ * Turns each committed fact that changes what a page shows into one page change for the users Access allows. The
  * producers raise their facts after commit and know nothing of the browser.
  */
 final readonly class BroadcastPageChange
@@ -29,12 +29,12 @@ final readonly class BroadcastPageChange
 
     public function handle(PlanStarted|PlanProgressChanged|MessageSent|MessageAnswered|MessageDismissed|RuleApproved|RuleDenied|RuleRemoved $event): void
     {
-        $personIds = $this->access->allowedPersonIds();
+        $userIds = $this->access->allowedUserIds();
 
-        if ($personIds === []) {
+        if ($userIds === []) {
             return;
         }
 
-        $this->events->dispatch(new PageChanged($personIds));
+        $this->events->dispatch(new PageChanged($userIds));
     }
 }

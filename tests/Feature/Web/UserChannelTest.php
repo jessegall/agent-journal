@@ -6,14 +6,14 @@ namespace Tests\Feature\Web;
 
 use App\Domain\Access\AccessSettings;
 use App\Domain\Access\Models\User;
-use App\Domain\Web\Events\PersonChannel;
+use App\Domain\Web\Events\UserChannel;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
  * Only the signed-in owner joins their own private channel; a guessed id or another account gets nothing.
  */
-final class PersonChannelTest extends TestCase
+final class UserChannelTest extends TestCase
 {
     use RefreshHookDatabase;
 
@@ -29,7 +29,7 @@ final class PersonChannelTest extends TestCase
 
     public function test_the_owner_joins_their_own_channel_only(): void
     {
-        $channel = $this->app->make(PersonChannel::class);
+        $channel = $this->app->make(UserChannel::class);
 
         $this->assertTrue($channel->join($this->owner, (string) $this->owner->id));
         $this->assertFalse($channel->join($this->owner, (string) ($this->owner->id + 1)));
@@ -39,12 +39,12 @@ final class PersonChannelTest extends TestCase
     {
         $stranger = User::factory()->create();
 
-        $this->assertFalse($this->app->make(PersonChannel::class)->join($stranger, (string) $stranger->id));
+        $this->assertFalse($this->app->make(UserChannel::class)->join($stranger, (string) $stranger->id));
     }
 
-    public function test_the_channel_sign_in_needs_a_signed_in_person(): void
+    public function test_the_channel_sign_in_needs_a_signed_in_user(): void
     {
-        $this->post('/broadcasting/auth', ['channel_name' => 'private-'.PersonChannel::nameFor($this->owner->id), 'socket_id' => '1.1'])
+        $this->post('/broadcasting/auth', ['channel_name' => 'private-'.UserChannel::nameFor($this->owner->id), 'socket_id' => '1.1'])
             ->assertRedirect('/login');
     }
 }

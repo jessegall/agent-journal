@@ -9,7 +9,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
- * Tells each allowed person's browser that what the pages show changed, so it reloads what it shows. It carries no
+ * Tells each allowed user's browser that what the pages show changed, so it reloads what it shows. It carries no
  * data: the browser reads the change through its own authorized request.
  */
 final readonly class PageChanged implements ShouldBroadcast, ShouldDispatchAfterCommit
@@ -17,16 +17,16 @@ final readonly class PageChanged implements ShouldBroadcast, ShouldDispatchAfter
     public const string NAME = 'page.changed';
 
     /**
-     * @param  list<int>  $personIds
+     * @param  list<int>  $userIds
      */
-    public function __construct(public array $personIds) {}
+    public function __construct(public array $userIds) {}
 
     /**
      * @return list<PrivateChannel>
      */
     public function broadcastOn(): array
     {
-        return array_map(fn (int $personId) => new PrivateChannel(PersonChannel::nameFor($personId)), $this->personIds);
+        return array_map(fn (int $userId) => new PrivateChannel(UserChannel::nameFor($userId)), $this->userIds);
     }
 
     public function broadcastAs(): string

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Core\Actors\Exceptions\ActorContextMissing;
-use App\Core\Actors\Exceptions\PersonActorRequired;
+use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Agents\Exceptions\AgentContextMissing;
 use App\Core\Hooks\StackTarget;
 use App\Domain\Chat\Exceptions\MessageMissing;
@@ -116,29 +116,29 @@ final class AgentVisibilityTest extends TestCase
         $this->assertSame(['Kept by agent 2'], Memory::query()->pluck('text')->all());
     }
 
-    public function test_a_person_reads_every_agents_messages_runs_and_memories_through_the_person_read(): void
+    public function test_a_user_reads_every_agents_messages_runs_and_memories_through_the_user_read(): void
     {
-        $this->startPersonRequestAs(7);
+        $this->startUserRequestAs(7);
 
-        $this->assertSame(['For agent 1', 'For agent 1', 'For agent 2', 'Not addressed yet'], Message::query()->visibleToPerson()->orderBy('id')->pluck('body')->all());
-        $this->assertSame(3, SequenceRun::query()->visibleToPerson()->count());
-        $this->assertSame(['Kept by agent 1', 'Kept by agent 2'], Memory::query()->visibleToPerson()->orderBy('id')->pluck('text')->all());
+        $this->assertSame(['For agent 1', 'For agent 1', 'For agent 2', 'Not addressed yet'], Message::query()->visibleToUser()->orderBy('id')->pluck('body')->all());
+        $this->assertSame(3, SequenceRun::query()->visibleToUser()->count());
+        $this->assertSame(['Kept by agent 1', 'Kept by agent 2'], Memory::query()->visibleToUser()->orderBy('id')->pluck('text')->all());
     }
 
-    public function test_an_agent_cannot_use_the_person_read(): void
+    public function test_an_agent_cannot_use_the_user_read(): void
     {
         $this->startRequestAs(1, 10);
 
-        $this->expectException(PersonActorRequired::class);
+        $this->expectException(UserActorRequired::class);
 
-        Message::query()->visibleToPerson()->get();
+        Message::query()->visibleToUser()->get();
     }
 
-    public function test_a_person_route_binds_any_agents_message_and_an_agent_only_its_own(): void
+    public function test_a_user_route_binds_any_agents_message_and_an_agent_only_its_own(): void
     {
         $messageOfAgentOne = $this->idOf(Message::query()->ownedBy(1));
 
-        $this->startPersonRequestAs(7);
+        $this->startUserRequestAs(7);
         $this->assertSame('For agent 1', (new Message)->resolveRouteBinding($messageOfAgentOne)?->body);
 
         $this->app->forgetScopedInstances();

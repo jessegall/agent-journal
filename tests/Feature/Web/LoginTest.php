@@ -21,7 +21,7 @@ final class LoginTest extends TestCase
     {
         parent::setUp();
 
-        Route::middleware(['web', 'auth', 'journal.person'])->get('/login-test/journal', fn () => 'inside');
+        Route::middleware(['web', 'auth', 'journal.user'])->get('/login-test/journal', fn () => 'inside');
         $this->owner = User::factory()->create(['email' => 'owner@journal.local', 'password' => 'secret-password']);
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
     }

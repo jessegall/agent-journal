@@ -83,7 +83,7 @@ final class AgentStackRow extends Model
     }
 
     /**
-     * The active stack of a target the caller was authorized for (its launch, or a person acting on it), read through
+     * The active stack of a target the caller was authorized for (its launch, or a user acting on it), read through
      * the explicit authorized query and locked.
      */
     public static function lockAuthorizedFor(StackTarget $target): self

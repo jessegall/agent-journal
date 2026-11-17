@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Core\Agents\Http\Middleware\AuthenticateAgent;
-use App\Domain\Access\Http\Middleware\AuthenticatePerson;
+use App\Domain\Access\Http\Middleware\AuthenticateUser;
 use App\Domain\Web\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,8 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: AuthenticateAgent::class);
-        $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: AuthenticatePerson::class);
-        $middleware->alias(['journal.person' => AuthenticatePerson::class]);
+        $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: AuthenticateUser::class);
+        $middleware->alias(['journal.user' => AuthenticateUser::class]);
         // A message body is kept exactly as typed, its leading and trailing spaces and newlines included.
         $middleware->trimStrings(except: ['body']);
         $middleware->web(append: [

@@ -11,7 +11,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The selected rule as the reader shows it. Its text never changes after it is proposed, so the text the person reads
+ * The selected rule as the reader shows it. Its text never changes after it is proposed, so the text the user reads
  * is the text an approval approves; canReview says whether it still waits for approval.
  *
  * @method static static from(Rule $rule)

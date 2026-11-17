@@ -12,7 +12,7 @@ import type { MessageInput } from '@/types/generated';
 
 /**
  * Writes a message to one agent session (doc 4, 6.5). The text is the draft of this conversation, so switching
- * conversations or reloading keeps it; a send keeps the target it was sent to, even when the person switches while it
+ * conversations or reloading keeps it; a send keeps the target it was sent to, even when the user switches while it
  * is on its way, and clears only that draft, only if it was not typed on since.
  */
 const props = defineProps<{ draftKey: string; session: string }>();

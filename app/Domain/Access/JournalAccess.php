@@ -18,13 +18,13 @@ final readonly class JournalAccess implements JournalAccessPolicy
 
     public function allows(Actor $actor): bool
     {
-        return $actor->actorKind() === ActorKind::Person && $actor->actorId() === $this->settings->ownerId;
+        return $actor->actorKind() === ActorKind::User && $actor->actorId() === $this->settings->ownerId;
     }
 
     /**
      * @return list<int>
      */
-    public function allowedPersonIds(): array
+    public function allowedUserIds(): array
     {
         return $this->settings->ownerId === null ? [] : [$this->settings->ownerId];
     }
