@@ -5,11 +5,21 @@ services:
       dockerfile: docker/simple/Dockerfile
     env_file: .env
     ports:
-      - "80:80"
-      - "443:443"
+      - "80:8080"
+      - "443:8443"
     volumes:
       - journal-data:/data
     restart: unless-stopped
+    # root in the container keeps only what the start needs: handing folders and processes to the journal and caddy users
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 4096
 
 volumes:
   journal-data:

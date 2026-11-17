@@ -14,8 +14,9 @@ docker compose up -d --build
 docker compose logs -f
 ```
 
-Open `https://<your domain>` (or `http://<server>` without a domain) and log in with `JOURNAL_USER` and
-`JOURNAL_PASSWORD`.
+Open `https://<your domain>` and log in with `JOURNAL_USER` and `JOURNAL_PASSWORD` (12 characters or more). The
+journal does not start without a domain, since the password would then cross the network readable; for a test on a
+private network only, `JOURNAL_PLAIN_HTTP=1` serves plain http on port 80.
 
 ## Claude Code's login
 

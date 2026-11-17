@@ -3,5 +3,6 @@
 !install.sh
 !update_steps.json
 !docker/simple
+docker/simple/.env
 **/__pycache__
 **/node_modules

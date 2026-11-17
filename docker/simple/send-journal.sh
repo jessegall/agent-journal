@@ -15,7 +15,7 @@ trap 'rm -rf "$PACK"' EXIT
     .journal/journal.db "$PACK/journal.db"
 [ ! -f .journal/project-id ] || cp .journal/project-id "$PACK/"
 [ ! -d .journal/readers ] || cp -R .journal/readers "$PACK/"
-UNPACK="rm -rf /data/import && mkdir -p /data/import && tar -xzf - -C /data/import"
+UNPACK="rm -rf /data/import && mkdir -p /data/import && tar --no-same-owner --no-same-permissions -xzf - -C /data/import"
 if [ "$TARGET" = "--container" ]; then
     CONTAINER="${2:?$USAGE}"
     COPYFILE_DISABLE=1 tar -C "$PACK" --no-xattrs -czf - . | docker exec -i "$CONTAINER" sh -c "$UNPACK"

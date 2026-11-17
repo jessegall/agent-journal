@@ -1,7 +1,18 @@
-{$JOURNAL_ADDRESS::80} {
+{
+	# no admin endpoint: nothing in the container can change the login or Caddy's settings while it runs
+	admin off
+	# ports a user without privileges may take; compose publishes them as 80 and 443
+	http_port 8080
+	https_port 8443
+}
+
+{$JOURNAL_ADDRESS} {
 	encode gzip
 	basic_auth {
 		{$JOURNAL_USER} {$JOURNAL_PASSWORD_HASH}
 	}
-	reverse_proxy 127.0.0.1:8421
+	reverse_proxy 127.0.0.1:8421 {
+		# the login stays with Caddy: the journal behind it never sees it
+		header_up -Authorization
+	}
 }
