@@ -24,4 +24,12 @@ enum PlanState: string
     {
         return $this === self::Planned;
     }
+
+    /**
+     * Whether the plan's work is over: done or cancelled.
+     */
+    public function hasEnded(): bool
+    {
+        return $this === self::Done || $this === self::Cancelled;
+    }
 }

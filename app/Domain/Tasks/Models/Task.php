@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks\Models;
 
+use App\Core\Assignments\Support\RecordIdentity;
+use App\Core\Contracts\Assignable;
 use App\Core\Hooks\Support\StackTarget;
 use App\Core\Links\Support\Linkable;
 use App\Domain\Tasks\Enums\TaskState;
@@ -27,9 +29,14 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['title'])]
-final class Task extends Model
+final class Task extends Model implements Assignable
 {
     use Linkable;
+
+    /**
+     * The stable name links and assignments use for a task.
+     */
+    public const string LINK_TYPE = 'tasks.task';
 
     /**
      * @var array<string, mixed>
@@ -92,5 +99,10 @@ final class Task extends Model
             'agent_id' => 'integer',
             'session_id' => 'integer',
         ];
+    }
+
+    public function assignmentIdentity(): RecordIdentity
+    {
+        return new RecordIdentity(self::LINK_TYPE, $this->id);
     }
 }

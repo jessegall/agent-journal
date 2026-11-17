@@ -27,6 +27,7 @@ use App\Core\Assignments\Exceptions\AssignmentTypeRepeated;
 use App\Core\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Core\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Core\Assignments\Exceptions\InvalidAssignmentPage;
+use App\Core\Assignments\Exceptions\RecordUnavailable;
 use App\Core\Assignments\Support\AssigneeList;
 use App\Core\Assignments\Support\AssigneeName;
 use App\Core\Assignments\Support\AssigneeRegistration;
@@ -221,6 +222,7 @@ final class CoreApi
             InvalidAssignmentPage::class,
             AssignmentGroupTooLarge::class,
             AssigneeUnavailable::class,
+            RecordUnavailable::class,
             AssignmentTypeUnavailable::class,
             AssignmentProviderInvalid::class,
             AssigneeKindRepeated::class,

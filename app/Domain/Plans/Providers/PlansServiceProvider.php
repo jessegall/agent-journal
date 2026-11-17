@@ -17,8 +17,8 @@ final class PlansServiceProvider extends ServiceProvider
     public function boot(LinkTypes $links): void
     {
         $links->register([
-            'plans.plan' => Plan::class,
-            'plans.phase' => Phase::class,
+            Plan::LINK_TYPE => Plan::class,
+            Phase::LINK_TYPE => Phase::class,
         ]);
     }
 }

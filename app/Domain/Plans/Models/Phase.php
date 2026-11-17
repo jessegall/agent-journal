@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Models;
 
+use App\Core\Assignments\Support\RecordIdentity;
+use App\Core\Contracts\Assignable;
 use App\Core\Links\Support\Linkable;
 use App\Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -24,9 +26,14 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['title', 'position'])]
-final class Phase extends Model
+final class Phase extends Model implements Assignable
 {
     use Linkable;
+
+    /**
+     * The stable name links and assignments use for a phase.
+     */
+    public const string LINK_TYPE = 'plans.phase';
 
     /**
      * Puts a task, named by id, at the end of this phase. The caller has checked with Tasks that the task exists.
@@ -93,5 +100,10 @@ final class Phase extends Model
     protected function casts(): array
     {
         return ['plan_id' => 'integer', 'position' => 'integer'];
+    }
+
+    public function assignmentIdentity(): RecordIdentity
+    {
+        return new RecordIdentity(self::LINK_TYPE, $this->id);
     }
 }

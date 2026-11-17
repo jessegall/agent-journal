@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Models;
 
+use App\Core\Assignments\Support\RecordIdentity;
+use App\Core\Contracts\Assignable;
 use App\Core\Links\Support\Linkable;
 use App\Domain\Plans\Api\PlanCard;
 use App\Domain\Plans\Api\PlanProgress;
@@ -31,9 +33,14 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['title', 'kind'])]
-final class Plan extends Model
+final class Plan extends Model implements Assignable
 {
     use Linkable;
+
+    /**
+     * The stable name links and assignments use for a plan.
+     */
+    public const string LINK_TYPE = 'plans.plan';
 
     /**
      * @var array<string, mixed>
@@ -147,5 +154,10 @@ final class Plan extends Model
             'focused' => 'boolean',
             'agent_id' => 'integer',
         ];
+    }
+
+    public function assignmentIdentity(): RecordIdentity
+    {
+        return new RecordIdentity(self::LINK_TYPE, $this->id);
     }
 }

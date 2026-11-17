@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Plans;
 
 use App\Domain\Contracts\Domain;
+use App\Domain\Contracts\ProvidesAssignables;
 use App\Domain\Plans\Api\Events\PlanProgressChanged;
 use App\Domain\Plans\Api\Events\PlanStarted;
 use App\Domain\Plans\Api\PlanCard;
@@ -18,9 +19,13 @@ use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
 use App\Domain\Plans\Exceptions\PlanMissing;
 use App\Domain\Plans\Exceptions\StartDenied;
+use App\Domain\Plans\Models\Phase;
+use App\Domain\Plans\Models\Plan;
+use App\Domain\Plans\Support\PhaseAssignments;
+use App\Domain\Plans\Support\PlanAssignments;
 use App\Domain\Tasks\TasksDomain;
 
-final class PlansDomain implements Domain
+final class PlansDomain implements Domain, ProvidesAssignables
 {
     public function description(): string
     {
@@ -54,6 +59,14 @@ final class PlansDomain implements Domain
             PlanProgress::class,
             PlanKind::class,
             PlanState::class,
+        ];
+    }
+
+    public function assignables(): array
+    {
+        return [
+            Plan::LINK_TYPE => PlanAssignments::class,
+            Phase::LINK_TYPE => PhaseAssignments::class,
         ];
     }
 }

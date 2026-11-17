@@ -27,4 +27,12 @@ enum TaskState: string
             self::Cancelled => TaskWorkState::Cancelled,
         };
     }
+
+    /**
+     * Whether the task's work is over: finished or cancelled.
+     */
+    public function hasEnded(): bool
+    {
+        return $this === self::Finished || $this === self::Cancelled;
+    }
 }
