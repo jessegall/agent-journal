@@ -1,0 +1,15 @@
+services:
+  journal:
+    build:
+      context: ../..
+      dockerfile: docker/simple/Dockerfile
+    env_file: .env
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - journal-data:/data
+    restart: unless-stopped
+
+volumes:
+  journal-data:

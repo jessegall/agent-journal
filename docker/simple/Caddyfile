@@ -1,0 +1,7 @@
+{$JOURNAL_ADDRESS::80} {
+	encode gzip
+	basic_auth {
+		{$JOURNAL_USER} {$JOURNAL_PASSWORD_HASH}
+	}
+	reverse_proxy 127.0.0.1:8421
+}
