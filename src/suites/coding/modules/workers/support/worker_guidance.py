@@ -13,12 +13,15 @@ from suites.coding.modules.workers.support.checkpoint_wait_text import Checkpoin
 from suites.coding.modules.workers.support.worker_step_facts import WorkerStepFacts
 from suites.coding.modules.workers.support.worker_step_text import step_line
 from suites.coding.modules.workers.support.worker_steps import WorkerSteps
+from core.modules.plans.models.enums.checkpoint_state import CheckpointState
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 
 WORK_LABEL = "your work"
 CONFLICT_FILES_FIELD = "lines"
 UNIT_WAIT_TEXT = ("Every task of your unit is committed. The tests of checkpoint phase {phase} run on your commit {commit}. "
                   "You are woken when they end, to ask for the merge. This stop is not a report.")
+UNIT_FAILED_TEXT = ("The tests of checkpoint phase {phase} failed on your commit {commit}: read their output, fix what they found and "
+                    "commit with journal worker commit, which runs them again, even when there is nothing to change.")
 
 
 class WorkerGuidance:
@@ -71,6 +74,8 @@ class WorkerGuidance:
         if blocking is None or not self.units.unit(worktree.session_agent_id).is_committed:
             return None
         link, reach = blocking
+        if reach.state is CheckpointState.FAILED:
+            return UNIT_FAILED_TEXT.format(phase=reach.phase_id, commit=link.commit_id)
         return UNIT_WAIT_TEXT.format(phase=reach.phase_id, commit=link.commit_id)
 
     def unit_open_count(self, worktree: Worktree) -> int | None:

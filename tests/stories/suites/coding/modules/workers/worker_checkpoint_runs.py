@@ -75,11 +75,18 @@ def test_28_29_30_34_a_run_holds_its_window_the_worker_goes_on_and_a_failure_in_
     worker.story.expect_rows("Point: fix" in worker.status(), detail=worker.status())
 
 
-@pytest.mark.real_git
-def test_33_35_a_second_run_follows_the_failed_one_and_runs_only_what_failed(running_worker_run):
+@pytest.fixture
+def failed_worker_run(running_worker_run) -> StoryWorker:
+    """The worker run of checkpoint phase 1 failed on the checkpoint's own test."""
     worker = running_worker_run
     worker.end_test(own_test_run(worker), 1)
     worker.end_all_tests()
+    return worker
+
+
+@pytest.mark.real_git
+def test_33_35_a_second_run_follows_the_failed_one_and_runs_only_what_failed(failed_worker_run):
+    worker = failed_worker_run
     started_count = len(worker.started)
     fixed_task(worker, 3)
     worker.story.run(COMMIT, actor=worker.worker)
@@ -182,3 +189,14 @@ def test_a_commit_that_ends_another_phase_runs_again_the_checkpoint_whose_run_fa
     worker.story.run_listeners()
     build_runs = [row["state"] for row in worker_reaches(worker) if row["phase_id"] == 1]
     worker.story.expect_rows(build_runs == ["failed", "running"], detail=str(worker_reaches(worker)))
+
+
+def test_a_commit_that_changed_nothing_runs_the_failed_checkpoint_again_on_the_same_commit(failed_worker_run):
+    worker = failed_worker_run
+    worker.story.expect_no_text("worker status", "You are woken when they end", actor=worker.worker)
+    started_count = len(worker.started)
+    prove_task(worker, 3, 1, TEST_LINE)
+    worker.story.run(COMMIT, actor=worker.worker)
+    worker.story.run_listeners()
+    reaches = worker_reaches(worker)
+    worker.story.expect_rows([row["state"] for row in reaches] == ["failed", "running"], len(worker.started_processes()) > started_count, detail=str(reaches))

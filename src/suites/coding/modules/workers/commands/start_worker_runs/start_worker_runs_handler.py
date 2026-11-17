@@ -4,6 +4,7 @@ from engine.listener.rows.event_rows import EventRows
 from engine.repository.repository import Repository
 from engine.query.queries import Queries
 from core.modules.plans.models.checkpoint_reach import CheckpointReach
+from core.modules.plans.models.enums.checkpoint_state import CheckpointState
 from core.modules.plans.support.plan_checkpoints import PlanCheckpoints
 from suites.coding.modules.workers.commands.start_worker_runs.start_worker_runs import StartWorkerRuns
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -11,10 +12,14 @@ from suites.coding.modules.workers.models.worktree_reach import WorktreeReach
 from suites.coding.modules.workers.support.worker_run_windows import WorkerRunWindows
 
 
+RUN_LINKS_REASON = "a commit starts the runs of the checkpoints not yet run on it"
+
+
 class StartWorkerRunsHandler(Handler[StartWorkerRuns, tuple[CheckpointReach, ...]]):
     """Starts a worker run for each checkpoint whose open tasks are all the worker's and now all committed, on
     the commit just made, in the background. A checkpoint whose run still goes is left until that run ends,
-    and a checkpoint already run on this commit is not run again."""
+    and a checkpoint already run on this commit is not run again, except a failed run when the worker commits
+    again: its next commit, even one that changed nothing, tests it once more."""
 
     command = StartWorkerRuns
 
@@ -24,7 +29,7 @@ class StartWorkerRunsHandler(Handler[StartWorkerRuns, tuple[CheckpointReach, ...
 
     def handle(self, command: StartWorkerRuns, context: Context) -> tuple[CheckpointReach, ...]:
         worktree = self.rows.required(Worktree, command.worktree_id)
-        run_phase_ids = set(self.queries.query(WorktreeReach).filter(worktree_id=worktree.id, commit_id=command.commit_id).pluck("phase_id", int))
+        run_phase_ids = self.run_phase_ids(command, worktree)
         reaches = list[CheckpointReach]()
         for window in self.windows.completed_windows(worktree):
             if window.checkpoint_id in run_phase_ids:
@@ -35,3 +40,7 @@ class StartWorkerRunsHandler(Handler[StartWorkerRuns, tuple[CheckpointReach, ...
             self.repository.save(WorktreeReach(reach_id=reach.id, worktree_id=worktree.id, phase_id=window.checkpoint_id, commit_id=command.commit_id), context)
             reaches.append(reach)
         return tuple(reaches)
+
+    def run_phase_ids(self, command: StartWorkerRuns, worktree: Worktree) -> set[int]:
+        links = self.queries.query(WorktreeReach).filter(worktree_id=worktree.id, commit_id=command.commit_id).every_row(RUN_LINKS_REASON)
+        return {link.phase_id for link in links if not (command.reruns_failed and self.rows.required(CheckpointReach, link.reach_id).state is CheckpointState.FAILED)}

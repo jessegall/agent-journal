@@ -118,7 +118,7 @@ class CommitWorkerWorkHandler(Handler[CommitWorkerWork, CommitOutcome]):
         submission = self.proof_queue.submit_ready(worktree, tasks, context)
         if submission is Submission.UNTESTED:
             self.results.finish(worktree, context)
-        reaches = self.bus.dispatch(StartWorkerRuns(worktree.id, worktree.commit_short_id), context) if submission is Submission.COMMITTED else ()
+        reaches = self.bus.dispatch(StartWorkerRuns(worktree.id, worktree.commit_short_id, reruns_failed=True), context) if submission is Submission.COMMITTED else ()
         run_notes = tuple(WORKER_RUN_TEXT.format(phase=reach.phase_id) for reach in reaches)
         step_text = self.next_step_text(tasks, open_tasks, submission)
         if unit.has_several_tasks:
