@@ -1,35 +1,29 @@
-from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
-import os
 from pathlib import Path
 
-from engine.errors.refusal import Refusal
+from engine.file.copies.conflict_markers import ConflictMarkers
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 
 IGNORED_FOLDERS = frozenset({".git", ".journal", ".venv", "node_modules", "__pycache__"})
-MARKER_PREFIXES = (b"<" * 7, b">" * 7, b"|" * 7)
 
 
 class ConflictFiles:
-    """Finds unresolved merge markers, including longer markers from rename conflicts."""
+    """Finds unresolved merge markers in every file of one of the journal's own code trees; a project or a worktree
+    is checked through ConflictMarkers on the files that changed."""
 
     def __init__(self, folder: Path) -> None:
         self.folder = folder
+        self.markers = ConflictMarkers(folder)
 
     def paths(self) -> tuple[str, ...]:
-        return tuple(sorted(str(path.relative_to(self.folder)) for path in self.files() if self.has_marker(path)))
+        return self.markers.paths(str(path.relative_to(self.folder)) for path in self.files())
 
     def files(self):
         for folder, directories, names in FileAccess.walk_folders(self.folder, CODE_TREE_DEPTH):
             directories[:] = [name for name in directories if name not in IGNORED_FOLDERS]
-            for name in names:
-                path = Path(folder, name)
-                if not FileAccess.is_symlink(path) and FileAccess.is_file(path):
-                    yield path
+            yield from (Path(folder, name) for name in names)
 
     def has_marker(self, path: Path) -> bool:
-        with FileAccess.reader(path, "rb") as file:
-            return any(line.startswith(MARKER_PREFIXES) for line in file)
+        return self.markers.has_marker(path)
 
     def check(self) -> None:
-        paths = self.paths()
-        if paths:
-            raise Refusal(f"conflict markers remain in {', '.join(paths)}", "resolve the markers, then try again")
+        self.markers.check(str(path.relative_to(self.folder)) for path in self.files())

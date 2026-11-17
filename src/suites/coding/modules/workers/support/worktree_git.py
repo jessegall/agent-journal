@@ -9,7 +9,7 @@ from functools import lru_cache
 from engine.file.versions.file_version import FileVersion
 from pathlib import Path, PurePosixPath
 
-from engine.file.copies.conflict_files import ConflictFiles
+from engine.file.copies.conflict_markers import ConflictMarkers
 from engine.enums.process_type import ProcessType
 from engine.errors.run_time_limit_error import RunTimeLimitError
 from engine.process.door.execution_request import ExecutionRequest
@@ -36,6 +36,7 @@ from suites.coding.support.worktree_checkouts import WORKTREES_FOLDER
 # another git of the worktree, such as the merge of the same worktree, holds its index for a while
 INDEX_LOCK_WAIT = PolledWait(limit_seconds=30, pause_seconds=0.5)
 INDEX_LOCK_TEXT = "index.lock"
+GIT_STATE_FILES = ("index", "HEAD")
 CHECKOUT_LIMIT_SECONDS = 300
 BUILD_LIMIT_SECONDS = 300
 WORKTREE_EXCLUDE_FILE = "journal-exclude"
@@ -78,6 +79,7 @@ class WorktreeGit:
 
     def __init__(self, runs: WorkerFolderRuns, executor: ProcessExecutor, builds: MergeBuilds) -> None:
         self.runs, self.executor, self.builds = runs, executor, builds
+        self.changes_since_cut: dict[str, tuple[tuple[object, ...], tuple[str, ...]]] = {}
 
     def has_branch(self, folder: str, branch: str) -> bool:
         return self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", f"refs/heads/{branch}").returncode == 0
@@ -283,7 +285,20 @@ class WorktreeGit:
         return self.git(folder, GIT_LIMIT_SECONDS, "rev-parse", "--verify", "--quiet", "MERGE_HEAD").returncode == 0
 
     def conflict_files(self, worktree: Worktree) -> tuple[str, ...]:
-        return ConflictFiles(Path(worktree.folder)).paths()
+        return ConflictMarkers(Path(worktree.folder)).paths(self.tracked_changes_since_cut(worktree))
+
+    # a merge writes its markers only into tracked files, so the tracked files changed since the cut are all a marker
+    # check reads; the list is read again once git moved the worktree's index or head, which every merge, rebase,
+    # stash and commit does
+    def tracked_changes_since_cut(self, worktree: Worktree) -> tuple[str, ...]:
+        git_folder = self.git_folder(worktree.folder)
+        state = (worktree.base_commit, *(FileAccess.stat(git_folder / name).st_mtime_ns for name in GIT_STATE_FILES if FileAccess.exists(git_folder / name)))
+        known = self.changes_since_cut.get(worktree.folder)
+        if known is not None and known[0] == state:
+            return known[1]
+        changed = tuple(self.checked(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "-z", worktree.base_commit).stdout.split(NAME_SEPARATOR)[:-1])
+        self.changes_since_cut[worktree.folder] = (state, changed)
+        return changed
 
     def head(self, folder: str) -> str:
         return self.git(folder, GIT_LIMIT_SECONDS, "symbolic-ref", "--short", "HEAD").stdout.strip()

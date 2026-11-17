@@ -5349,6 +5349,15 @@
         "check(self) -> None"
       ]
     },
+    "file.copies.conflict_markers.ConflictMarkers": {
+      "bases": [],
+      "fields": [],
+      "methods": [
+        "paths(self, names: Iterable[str]) -> tuple[str, ...]",
+        "has_marker(self, path: Path) -> bool",
+        "check(self, names: Iterable[str]) -> None"
+      ]
+    },
     "file.copies.file_clone.FileClone": {
       "bases": [],
       "fields": [],
@@ -12069,5 +12078,5 @@
       ]
     }
   },
-  "engine_version": "7.0.0"
+  "engine_version": "7.1.0"
 }

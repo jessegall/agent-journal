@@ -4,7 +4,7 @@ from core.modules.tasks.commands.make_task_log.make_task_log import MakeTaskLog
 from suites.coding.modules.workers.support.worker_log_lines import WorkerLogLines
 from suites.coding.modules.workers.support.worker_review import WorkerReview
 from engine.command.context import Context
-from engine.file.copies.conflict_files import ConflictFiles
+from engine.file.copies.conflict_markers import ConflictMarkers
 from pathlib import Path
 from engine.command.handler import Handler
 from engine.listener.rows.event_rows import EventRows
@@ -142,7 +142,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
                 self.bus.run(MakeTaskLog(task.id, line, important=important), context.actor, environment_id=worktree.environment_id)
 
     def check(self, worktree: Worktree, environment: Environment) -> None:
-        ConflictFiles(Path(environment.folder)).check()
+        ConflictMarkers(Path(environment.folder)).check(self.git.uncommitted_files(environment.folder))
         self.checks.check_proofs(worktree)
         self.checks.check_logs(worktree)
         self.checks.check_base_branch(worktree)
