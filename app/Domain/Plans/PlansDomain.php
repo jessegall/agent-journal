@@ -13,6 +13,9 @@ use App\Domain\Plans\Api\PlanProgress;
 use App\Domain\Plans\Api\PlanSelection;
 use App\Domain\Plans\Api\PlanState;
 use App\Domain\Plans\Contracts\PlanReader;
+use App\Domain\Plans\Contracts\PlanStarter;
+use App\Domain\Plans\Exceptions\PlanMissing;
+use App\Domain\Plans\Exceptions\StartDenied;
 use App\Domain\Tasks\TasksDomain;
 
 final class PlansDomain implements Domain
@@ -37,6 +40,9 @@ final class PlansDomain implements Domain
     {
         return [
             PlanReader::class,
+            PlanStarter::class,
+            PlanMissing::class,
+            StartDenied::class,
             PlanFilters::class,
             PlanList::class,
             PlanSelection::class,

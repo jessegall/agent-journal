@@ -8,10 +8,10 @@ use App\Core\Actors\ActorContext;
 use App\Core\Actors\ActorKind;
 use App\Core\Actors\Exceptions\ActorContextMissing;
 use App\Core\Contracts\EstablishActor;
-use App\Domain\Plans\Actions\StartPlan;
 use App\Domain\Plans\Api\PlanFilters;
 use App\Domain\Plans\Api\PlanKind;
 use App\Domain\Plans\Api\PlanState;
+use App\Domain\Plans\Contracts\PlanStarter;
 use App\Domain\Plans\Events\PlanStarted;
 use App\Domain\Plans\Exceptions\StartDenied;
 use App\Domain\Plans\Models\Plan;
@@ -39,7 +39,7 @@ final class StartPlanTest extends TestCase
 
     public function test_a_planned_plan_starts_once_and_says_who_started_it(): void
     {
-        $this->startPlan()->start($this->plan);
+        $this->startPlan()->start($this->plan->id);
 
         $this->assertSame(PlanState::Started, $this->plan->fresh()?->state);
         Event::assertDispatchedTimes(PlanStarted::class, 1);
@@ -48,8 +48,8 @@ final class StartPlanTest extends TestCase
 
     public function test_starting_a_started_plan_again_changes_nothing_and_raises_nothing(): void
     {
-        $this->startPlan()->start($this->plan);
-        $this->startPlan()->start($this->plan);
+        $this->startPlan()->start($this->plan->id);
+        $this->startPlan()->start($this->plan->id);
 
         Event::assertDispatchedTimes(PlanStarted::class, 1);
     }
@@ -59,7 +59,7 @@ final class StartPlanTest extends TestCase
         Plan::query()->whereKey($this->plan->id)->update(['state' => PlanState::Paused->value]);
 
         try {
-            $this->startPlan()->start($this->plan);
+            $this->startPlan()->start($this->plan->id);
             $this->fail('A paused plan started.');
         } catch (StartDenied) {
             $this->assertSame(PlanState::Paused, $this->plan->fresh()?->state);
@@ -71,7 +71,7 @@ final class StartPlanTest extends TestCase
     {
         try {
             $this->app->make(ConnectionInterface::class)->transaction(function (): void {
-                $this->startPlan()->start($this->plan);
+                $this->startPlan()->start($this->plan->id);
 
                 throw TestFailure::failedAfterTheStart();
             });
@@ -99,13 +99,16 @@ final class StartPlanTest extends TestCase
     {
         $this->app->forgetScopedInstances();
 
-        $this->expectException(ActorContextMissing::class);
-
-        $this->startPlan();
+        try {
+            $this->startPlan()->start($this->plan->id);
+            $this->fail('A start without an actor went through.');
+        } catch (ActorContextMissing) {
+            $this->assertSame(PlanState::Planned, $this->plan->fresh()?->state);
+        }
     }
 
-    private function startPlan(): StartPlan
+    private function startPlan(): PlanStarter
     {
-        return $this->app->make(StartPlan::class);
+        return $this->app->make(PlanStarter::class);
     }
 }

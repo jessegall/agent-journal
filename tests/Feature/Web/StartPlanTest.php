@@ -71,6 +71,15 @@ final class StartPlanTest extends TestCase
         $this->assertSame(PlanState::Planned, $this->plan->fresh()?->state);
     }
 
+    public function test_an_id_that_is_no_positive_whole_number_in_range_is_not_found(): void
+    {
+        foreach (['abc', '0', '-3', '9223372036854775808', '99999999999999999999'] as $id) {
+            $this->actingAs($this->owner)->post("/plans/{$id}/start")->assertNotFound();
+        }
+
+        $this->assertSame(PlanState::Planned, $this->plan->fresh()?->state);
+    }
+
     public function test_a_guest_and_a_guessed_plan_get_no_start(): void
     {
         $this->post("/plans/{$this->plan->id}/start")->assertRedirect('/login');
