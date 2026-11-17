@@ -6,6 +6,7 @@ namespace App\Domain\Web;
 
 use App\Domain\Access\AccessDomain;
 use App\Domain\Domain;
+use App\Domain\Plans\PlansDomain;
 
 final class WebDomain implements Domain
 {
@@ -15,12 +16,12 @@ final class WebDomain implements Domain
     }
 
     /**
-     * Approved in question 13; Plans, Chat and Rules join as the pages that use them are built.
+     * Approved in question 13; Chat and Rules join as the pages that use them are built.
      *
      * @return list<class-string<Domain>>
      */
     public function requires(): array
     {
-        return [AccessDomain::class];
+        return [AccessDomain::class, PlansDomain::class];
     }
 }

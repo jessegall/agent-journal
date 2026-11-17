@@ -48,6 +48,10 @@ One route owner for signing in: Fortify keeps `views => false`, Web owns the gue
 
 `App\Domain\Plans\Actions\StartPlan::start(Plan)` serves the browser and the agent path alike, for the actor of the request; a selected agent is never the caller. Under the plan's row lock: a Planned plan starts; a Started plan is a no-op with no second event; Reviewing, Paused, Cancelled and Done refuse with `StartDenied`, whose message is safe to show. `PlanState::canStart()` is the one rule: the plans read offers the start through `PlanCard::$canStart` by it, and the action enforces it. `PlanStarted` (the plan and who started it) implements `ShouldDispatchAfterCommit`, so a rolled-back start raises nothing. Starting a plan starts no task.
 
+## The plans page (task 104)
+
+`GET /plans` (`plans.index`, behind `auth` and `journal.person`) renders `Plans` with one page object, `PlansPage`: a hidden `PlanFiltersData` seed and a hidden `PlansView` from the container, and one computed `plans` slot. The controller passes it as a closure, so a partial reload of other props never builds it. `PlansRequest` validates `q` (up to 200), `page` (from 1) and `plan` (a positive decimal string) and turns an empty search into the empty string in its `filters()` getter, not in a global middleware exemption. `PlansView` turns the Plans domain's `PlanList` into `PlanListData`: card ids as strings, absent phase, agent, selection and start left out of the JSON, the page the domain settled on as the accepted filter, and `selectionMissing` with no title when the selected plan cannot be read. The start is offered by `PlanCard::$canStart`, the domain's own rule. Web requires Plans (question 13).
+
 ## Interfaces at the seams (task 122, rule 15)
 
 - **Actor.** `App\Core\Actors\Actor` (its kind and id) is what the core talks to. The Access `User` is a person actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.
