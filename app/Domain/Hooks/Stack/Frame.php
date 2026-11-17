@@ -6,6 +6,7 @@ namespace App\Domain\Hooks\Stack;
 
 use App\Domain\Hooks\Decisions\StateReference;
 use App\Domain\Hooks\States\AgentState;
+use App\Domain\Hooks\Storage\FrameRecord;
 
 /**
  * One state on a stack, with the frame id it is stored under and the reference it was built from.
@@ -17,7 +18,13 @@ final readonly class Frame
         public StateReference $reference,
         public AgentState $state,
         private bool $bottom = false,
+        public int $schemaVersion = 1,
     ) {}
+
+    public static function restored(FrameRecord $record, AgentState $state): self
+    {
+        return new self($record->id, $record->reference, $state, $record->isBottom, $record->schemaVersion);
+    }
 
     public function isBottom(): bool
     {

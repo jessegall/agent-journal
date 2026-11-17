@@ -105,7 +105,7 @@ final readonly class AgentStack
     public function records(): FrameRecords
     {
         return new FrameRecords(array_map(
-            fn (Frame $frame) => new FrameRecord($frame->id, $frame->reference, $frame->isBottom()),
+            fn (Frame $frame) => new FrameRecord($frame->id, $frame->reference, $frame->isBottom(), $frame->schemaVersion),
             $this->frames,
         ));
     }

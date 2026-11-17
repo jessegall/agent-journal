@@ -6,6 +6,7 @@ namespace Tests\Feature\Domains;
 
 use App\Domain\DomainEntry;
 use App\Domain\DomainRegistry;
+use App\Domain\Hooks\HooksDomain;
 use App\Domain\Tasks\TasksDomain;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use ReflectionProperty;
@@ -23,7 +24,7 @@ final class DomainListTest extends TestCase
         );
         $this->assertStringEndsWith('/app/Domain/Plans', $registry->get('Plans')->folder);
         $this->assertSame([TasksDomain::class], $registry->get('Plans')->requires);
-        $this->assertSame([], $registry->get('Tasks')->requires);
+        $this->assertSame([HooksDomain::class], $registry->get('Tasks')->requires);
     }
 
     public function test_listeners_are_discovered_only_in_the_domain_listener_folders(): void

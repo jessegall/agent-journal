@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Hooks\States;
 
+use App\Domain\Hooks\Decisions\StateReference;
+
 /**
  * The built-in bottom states, one for each checked role, under the type keys they are stored by.
  */
-enum ReadyStateType: string
+enum ReadyStateType: string implements StateType
 {
     case MainAgent = 'hooks.main_ready';
     case ReadOnlyHelper = 'hooks.read_only_helper_ready';
@@ -15,6 +17,16 @@ enum ReadyStateType: string
     public static function forKey(string $typeKey): self
     {
         return self::tryFrom($typeKey) ?? throw UnknownReadyState::forKey($typeKey);
+    }
+
+    public function stateFor(StateReference $reference): AgentState
+    {
+        return $this->newState();
+    }
+
+    public function schemaVersion(): int
+    {
+        return 1;
     }
 
     public function newState(): Ready
