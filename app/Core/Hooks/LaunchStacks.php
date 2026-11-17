@@ -33,13 +33,13 @@ final readonly class LaunchStacks
             new FrameRecord((string) Str::ulid(), new StateReference($role->value, NoSubject::None), true, $role->schemaVersion()),
         ]));
 
-        AgentStackRow::lockForLaunch($target)->frames->checkBottomFor($role);
+        AgentStackRow::lockAuthorizedFor($target)->frames->checkBottomFor($role);
     }
 
     public function close(StackTarget $target): void
     {
         $this->transaction->requireOpen($target);
 
-        AgentStackRow::lockForLaunch($target)->closeAt(CarbonImmutable::now());
+        AgentStackRow::lockAuthorizedFor($target)->closeAt(CarbonImmutable::now());
     }
 }

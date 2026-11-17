@@ -83,9 +83,10 @@ final class AgentStackRow extends Model
     }
 
     /**
-     * The active stack of the target for its launch, read through the explicit authorized query and locked.
+     * The active stack of a target the caller was authorized for (its launch, or a person acting on it), read through
+     * the explicit authorized query and locked.
      */
-    public static function lockForLaunch(StackTarget $target): self
+    public static function lockAuthorizedFor(StackTarget $target): self
     {
         $row = self::query()->authorizedFor($target)->lockForUpdate()->first() ?? throw StackMissing::forTarget($target->description());
 

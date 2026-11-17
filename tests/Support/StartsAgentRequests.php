@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Core\Actors\ActorContext;
 use App\Core\Agents\AgentContext;
 use App\Core\Agents\SignedCall;
 use Carbon\CarbonImmutable;
 
 /**
- * Starts a request as one agent and session, the way the endpoint's middleware binds the agent context.
+ * Starts a request as one agent and session, or as a person, the way the authenticating middleware binds them.
  */
 trait StartsAgentRequests
 {
@@ -21,5 +22,11 @@ trait StartsAgentRequests
             'hooks.main_ready',
             new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
         ));
+        $this->app->instance(ActorContext::class, ActorContext::forAgent($agentId));
+    }
+
+    protected function startPersonRequestAs(int $personId): void
+    {
+        $this->app->instance(ActorContext::class, ActorContext::forPerson($personId));
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Http\Middleware;
 
+use App\Core\Actors\ActorContext;
 use App\Core\Agents\AgentContext;
 use App\Core\Agents\AgentContextFactory;
 use App\Core\Agents\Exceptions\CallSignatureInvalid;
@@ -15,7 +16,8 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Authenticates an agent request by its launch credential and signed call, and makes its context the one for this request.
+ * Authenticates an agent request by its launch credential and signed call, and makes its agent context and its actor
+ * the ones for this request.
  */
 final readonly class AuthenticateAgent
 {
@@ -36,6 +38,7 @@ final readonly class AuthenticateAgent
         }
 
         $this->container->instance(AgentContext::class, $context);
+        $this->container->instance(ActorContext::class, ActorContext::forAgent($context->agentId));
 
         return $next($request);
     }

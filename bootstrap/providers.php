@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Core\Actors\ActorsServiceProvider;
 use App\Core\Agents\AgentsServiceProvider;
 use App\Core\CoreServiceProvider;
 use App\Core\Hooks\HooksServiceProvider;
@@ -14,6 +15,7 @@ return [
     AppServiceProvider::class,
     DomainServiceProvider::class,
     CoreServiceProvider::class,
+    ActorsServiceProvider::class,
     AgentsServiceProvider::class,
     HooksServiceProvider::class,
     ProcessesServiceProvider::class,
