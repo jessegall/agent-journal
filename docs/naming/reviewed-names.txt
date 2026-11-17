@@ -610,6 +610,7 @@ constant	EventCallScan::HELPERS
 constant	EventCallScan::RECEIVER_METHODS
 constant	FollowingSequenceStateReference::TYPE_KEY
 constant	HomePage::COMPONENT
+constant	HomeRequest::RULES_KEY_PREFIX
 constant	LoginPage::COMPONENT
 constant	ModelConventions::OPENING_CALLS
 constant	OutageReply::OUTAGE_REASON
@@ -1517,6 +1518,8 @@ method	ReadOnlyHelperReadyState::onFileEdit()
 method	ReadOnlyHelperReadyState::onShellCommand()
 method	ReadsPlanFilters::planFilterRules()
 method	ReadsPlanFilters::planFilters()
+method	ReadsRuleFilters::ruleFilterRules()
+method	ReadsRuleFilters::ruleFilters()
 method	ReadyState::onCompaction()
 method	ReadyState::onFileEdit()
 method	ReadyState::onPrompt()
@@ -2060,12 +2063,15 @@ property	HandleInertiaRequests::$rootView
 property	HandleInertiaRequests::$viewers
 property	HomeController::$inertia
 property	HomeFiltersData::$plans
+property	HomeFiltersData::$rules
 property	HomeFiltersData::$session
 property	HomePage::$chat
 property	HomePage::$chatView
 property	HomePage::$filters
 property	HomePage::$plans
 property	HomePage::$plansView
+property	HomePage::$rules
+property	HomePage::$rulesView
 property	HookAnswer::$context
 property	HookAnswer::$decision
 property	HookAnswer::$stack
@@ -2504,3 +2510,4 @@ trait	OptionalOrMissing
 trait	OwnedByOneAgent
 trait	PasswordValidationRules
 trait	ReadsPlanFilters
+trait	ReadsRuleFilters
