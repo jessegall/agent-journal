@@ -4,32 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Domain\Hooks\Inputs\CompactionDetails;
-use App\Domain\Hooks\Inputs\ContextCompacted;
-use App\Domain\Hooks\Inputs\FileChange;
-use App\Domain\Hooks\Inputs\FileChanges;
-use App\Domain\Hooks\Inputs\FileEditRequested;
-use App\Domain\Hooks\Inputs\FileOperation;
 use App\Domain\Hooks\Inputs\HookIdentity;
 use App\Domain\Hooks\Inputs\HookInput;
-use App\Domain\Hooks\Inputs\PromptDetails;
-use App\Domain\Hooks\Inputs\PromptSubmitted;
-use App\Domain\Hooks\Inputs\SessionEndDetails;
-use App\Domain\Hooks\Inputs\SessionEnded;
-use App\Domain\Hooks\Inputs\SessionEndReason;
-use App\Domain\Hooks\Inputs\SessionStartDetails;
-use App\Domain\Hooks\Inputs\SessionStarted;
-use App\Domain\Hooks\Inputs\SessionStartSource;
-use App\Domain\Hooks\Inputs\ShellCommand;
-use App\Domain\Hooks\Inputs\ShellCommandRequested;
 use App\Domain\Hooks\Inputs\StopDetails;
 use App\Domain\Hooks\Inputs\StopRequested;
-use App\Domain\Hooks\Inputs\ToolFinished;
-use App\Domain\Hooks\Inputs\ToolOutcome;
-use App\Domain\Hooks\Inputs\ToolResult;
 use App\Domain\Hooks\States\AgentState;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Tests\Fixtures\Hooks\HookInputs;
 
 final class HookInputTest extends TestCase
 {
@@ -38,16 +20,11 @@ final class HookInputTest extends TestCase
      */
     public static function inputs(): iterable
     {
-        $hook = new HookIdentity(1, 2, 'hook-1', 'digest');
+        $methods = ['session start' => 'onSessionStart', 'prompt' => 'onPrompt', 'shell command' => 'onShellCommand', 'file edit' => 'onFileEdit', 'stop' => 'onStop', 'compaction' => 'onCompaction', 'tool finished' => 'onToolFinished', 'session end' => 'onSessionEnd'];
 
-        yield 'session start' => [new SessionStarted($hook, new SessionStartDetails('vendor-1', SessionStartSource::Startup)), 'onSessionStart'];
-        yield 'prompt' => [new PromptSubmitted($hook, new PromptDetails('prompt-1', 'Build the plan.')), 'onPrompt'];
-        yield 'shell command' => [new ShellCommandRequested($hook, new ShellCommand('composer test', ['composer test'])), 'onShellCommand'];
-        yield 'file edit' => [new FileEditRequested($hook, new FileChanges([new FileChange('app/Domain/Domain.php', FileOperation::Edit)])), 'onFileEdit'];
-        yield 'stop' => [new StopRequested($hook, new StopDetails('turn-1', false)), 'onStop'];
-        yield 'compaction' => [new ContextCompacted($hook, new CompactionDetails(2)), 'onCompaction'];
-        yield 'tool finished' => [new ToolFinished($hook, new ToolResult('Bash', ToolOutcome::Succeeded)), 'onToolFinished'];
-        yield 'session end' => [new SessionEnded($hook, new SessionEndDetails(SessionEndReason::Exit)), 'onSessionEnd'];
+        foreach (HookInputs::all() as $name => $input) {
+            yield $name => [$input, $methods[$name]];
+        }
     }
 
     #[DataProvider('inputs')]

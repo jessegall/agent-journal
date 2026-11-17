@@ -20,6 +20,14 @@ use App\Domain\Hooks\Inputs\ToolFinished;
  */
 abstract class AgentState implements HookAnswerer
 {
+    /**
+     * Whether the work this state stands for is done, so the state may leave the stack.
+     */
+    public function isFinished(): bool
+    {
+        return false;
+    }
+
     public function onSessionStart(SessionStarted $input): Decision
     {
         return Decision::delegate();
