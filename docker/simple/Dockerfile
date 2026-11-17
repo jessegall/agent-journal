@@ -5,7 +5,7 @@ FROM caddy:2.10 AS caddy
 FROM python:3.14.7-slim
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends bash ca-certificates curl git nodejs npm procps \
+    && apt-get install -y --no-install-recommends bash ca-certificates curl gh git nodejs npm procps \
     && npm install -g @anthropic-ai/claude-code \
     && npm cache clean --force \
     && rm -rf /var/lib/apt/lists/*

@@ -23,6 +23,24 @@ Run `claude setup-token` on your own machine. It opens the browser once and prin
 subscription for about a year. Put it in `.env` as `CLAUDE_CODE_OAUTH_TOKEN`. An `ANTHROPIC_API_KEY` works as
 well, paid per use.
 
+## GitHub
+
+Make a fine-grained token for the project's repository (contents and pull requests: read and write) and put it in
+`.env` as `GITHUB_TOKEN`. git uses it to clone, pull and push, and `gh` to open pull requests, as on your own
+machine. `GIT_REPOSITORY` is cloned into the volume on the first start.
+
+## Bring your journal along
+
+To keep working with the journal you have on your own machine, run this once in the project there:
+
+```sh
+sh /path/to/agent-journal/docker/simple/send-journal.sh you@your-server agent-journal/docker/simple
+```
+
+It copies the journal's record (its database, readers and project id; not its code, worktrees or runtime files)
+over ssh into the container and restarts it; the journal takes the record in as it starts, upgrades it to its own
+version, and keeps the record it replaced as `.journal/journal.db.before-import`.
+
 ## Day to day
 
 - Change the password: edit `.env`, then `docker compose up -d`.
