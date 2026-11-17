@@ -127,7 +127,7 @@ final class SequenceStateContributionTest extends TestCase
     {
         $this->callAs($callId);
         $capabilities = new ProgramCapabilities('Test program', 'compaction context', ['onCompaction'], RewriteSupport::WithoutApproval);
-        $compaction = new ContextCompacted(new HookIdentity(1, 10, $callId, self::inputDigest()), new CompactionDetails(2));
+        $compaction = new ContextCompacted(new HookIdentity(1, 10, $callId, self::inputDigest()), new CompactionDetails('compaction-1'));
 
         $reply = $this->machine()->answer($compaction, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => new ProgramReply(json_encode($answer->context) ?: '[]', '', 0));
 

@@ -6,12 +6,11 @@ namespace Tests\Feature\Hooks\Programs;
 
 use App\Domain\Hooks\Decisions\Decision;
 use App\Domain\Hooks\Inputs\CommandKind;
+use App\Domain\Hooks\Inputs\ContextCompacted;
 use App\Domain\Hooks\Inputs\FileEditRequested;
 use App\Domain\Hooks\Inputs\FileOperation;
 use App\Domain\Hooks\Inputs\HookIdentity;
 use App\Domain\Hooks\Inputs\HookInput;
-use App\Domain\Hooks\Inputs\SessionStarted;
-use App\Domain\Hooks\Inputs\SessionStartSource;
 use App\Domain\Hooks\Inputs\ShellCommandRequested;
 use App\Domain\Hooks\Programs\ClaudeCodeAdapter;
 use App\Domain\Hooks\Programs\HookPayload;
@@ -78,12 +77,12 @@ final class ClaudeCodeTest extends TestCase
         $this->assertSame(FileOperation::Create, $write->changes->changes[0]->operation);
     }
 
-    public function test_a_start_after_compaction_keeps_its_source(): void
+    public function test_a_start_after_compaction_is_the_compaction_under_the_callback_id(): void
     {
         $input = $this->inputOf($this->adapter()->callFor($this->payload('session resume after compaction'), $this->hook()));
 
-        $this->assertInstanceOf(SessionStarted::class, $input);
-        $this->assertSame(SessionStartSource::Compact, $input->start->source);
+        $this->assertInstanceOf(ContextCompacted::class, $input);
+        $this->assertSame('call-1', $input->compactionId());
     }
 
     public function test_a_journal_allow_keeps_the_native_permission_prompt(): void
@@ -127,11 +126,14 @@ final class ClaudeCodeTest extends TestCase
         $this->assertSame('{}', $this->render('stop', Decision::allow())->stdout);
     }
 
-    public function test_the_compaction_input_is_left_to_its_own_task(): void
+    public function test_every_core_input_is_mapped_except_the_ones_the_record_lists(): void
     {
-        foreach (self::fixture('capabilities.json')['unmapped inputs'] as $method) {
-            $this->assertFalse($this->adapter()->capabilities()->supports($method));
-        }
+        $unmapped = array_values(array_filter(
+            ['onSessionStart', 'onPrompt', 'onShellCommand', 'onFileEdit', 'onStop', 'onCompaction', 'onToolFinished', 'onSessionEnd'],
+            fn (string $method) => ! $this->adapter()->capabilities()->supports($method),
+        ));
+
+        $this->assertSame(self::fixture('capabilities.json')['unmapped inputs'], $unmapped);
     }
 
     /**

@@ -7,6 +7,6 @@ namespace App\Domain\Hooks\Inputs;
 final readonly class CompactionDetails
 {
     public function __construct(
-        public int $contextNumber,
+        public string $compactionId,
     ) {}
 }

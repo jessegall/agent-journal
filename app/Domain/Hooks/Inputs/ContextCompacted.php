@@ -14,6 +14,11 @@ final readonly class ContextCompacted implements HookInput
         public CompactionDetails $compaction,
     ) {}
 
+    public function compactionId(): string
+    {
+        return $this->compaction->compactionId;
+    }
+
     public function identity(): HookIdentity
     {
         return $this->hook;

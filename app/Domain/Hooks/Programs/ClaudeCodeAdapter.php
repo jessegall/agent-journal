@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Hooks\Programs;
 
+use App\Domain\Hooks\Inputs\CompactionDetails;
+use App\Domain\Hooks\Inputs\ContextCompacted;
 use App\Domain\Hooks\Inputs\FileChange;
 use App\Domain\Hooks\Inputs\FileChanges;
 use App\Domain\Hooks\Inputs\FileEditRequested;
@@ -15,6 +17,7 @@ use App\Domain\Hooks\Inputs\SessionEnded;
 use App\Domain\Hooks\Inputs\SessionEndReason;
 use App\Domain\Hooks\Inputs\SessionStartDetails;
 use App\Domain\Hooks\Inputs\SessionStarted;
+use App\Domain\Hooks\Inputs\SessionStartSource;
 use App\Domain\Hooks\Inputs\ShellCommandParser;
 use App\Domain\Hooks\Inputs\ShellCommandRequested;
 use App\Domain\Hooks\Inputs\ShellDialect;
@@ -39,7 +42,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         return new ProgramCapabilities(
             self::PROGRAM,
             'Claude Code hooks reference, checked against the documentation on 2026-11-17',
-            ['onSessionStart', 'onPrompt', 'onShellCommand', 'onFileEdit', 'onStop', 'onToolFinished', 'onSessionEnd'],
+            ['onSessionStart', 'onPrompt', 'onCompaction', 'onShellCommand', 'onFileEdit', 'onStop', 'onToolFinished', 'onSessionEnd'],
             RewriteSupport::WithoutApproval,
         );
     }
@@ -47,10 +50,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
     public function callFor(HookPayload $payload, HookIdentity $hook): NativeCall
     {
         return match ($payload->hookEventName) {
-            'SessionStart' => new JournalCall(
-                new SessionStarted($hook, new SessionStartDetails($payload->sessionId, $payload->startSource())),
-                fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer),
-            ),
+            'SessionStart' => $this->startCall($payload, $hook),
             'UserPromptSubmit' => new JournalCall(
                 new PromptSubmitted($hook, new PromptDetails($hook->hookId, $payload->promptText())),
                 fn (HookAnswer $answer) => ProgramReplies::prompt($answer),
@@ -80,6 +80,19 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
     public function renderStop(HookAnswer $answer): ProgramReply
     {
         return ProgramReplies::stop($answer);
+    }
+
+    /**
+     * A start after a compaction is the compaction itself, identified by this callback's id, which its retries share.
+     */
+    private function startCall(HookPayload $payload, HookIdentity $hook): NativeCall
+    {
+        $source = $payload->startSource();
+        $input = $source === SessionStartSource::Compact
+            ? new ContextCompacted($hook, new CompactionDetails($hook->hookId))
+            : new SessionStarted($hook, new SessionStartDetails($payload->sessionId, $source));
+
+        return new JournalCall($input, fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer));
     }
 
     private function toolCall(HookPayload $payload, HookIdentity $hook): NativeCall

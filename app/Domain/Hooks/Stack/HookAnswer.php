@@ -31,6 +31,16 @@ final readonly class HookAnswer
         return new self($decision, $this->context, $this->steps, $stack);
     }
 
+    /**
+     * The same answer with reminders read before the walk put first in its context.
+     *
+     * @param  list<string>  $reminders
+     */
+    public function withRemindersFirst(array $reminders): self
+    {
+        return new self($this->decision, [...$reminders, ...$this->context], $this->steps, $this->stack);
+    }
+
     public function isRewrite(): bool
     {
         return $this->decision->answerKind() === AnswerKind::Rewrite;

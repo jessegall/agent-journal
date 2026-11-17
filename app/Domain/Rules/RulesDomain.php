@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Rules;
 
 use App\Domain\Domain;
+use App\Domain\Hooks\HooksDomain;
+use App\Domain\Links\LinksDomain;
 
 final class RulesDomain implements Domain
 {
@@ -18,6 +20,6 @@ final class RulesDomain implements Domain
      */
     public function requires(): array
     {
-        return [];
+        return [HooksDomain::class, LinksDomain::class];
     }
 }

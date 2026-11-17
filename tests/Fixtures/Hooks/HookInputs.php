@@ -51,7 +51,7 @@ final class HookInputs
             'shell command' => new ShellCommandRequested($hook, new ShellCommand('composer test', ShellDialect::Bash, ParseOutcome::Complete, [new CommandPart('composer', ['test'], CommandEffect::ChangesFiles, CommandKind::TestRun)])),
             'file edit' => new FileEditRequested($hook, new FileChanges([new FileChange('app/Domain/Domain.php', FileOperation::Edit)])),
             'stop' => new StopRequested($hook, new StopDetails('turn-1', false)),
-            'compaction' => new ContextCompacted($hook, new CompactionDetails(2)),
+            'compaction' => new ContextCompacted($hook, new CompactionDetails('compaction-1')),
             'tool finished' => new ToolFinished($hook, new ToolResult('Bash', ToolOutcome::Succeeded)),
             'session end' => new SessionEnded($hook, new SessionEndDetails(SessionEndReason::Exit)),
         ];

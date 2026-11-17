@@ -104,7 +104,7 @@ final class FollowingSequenceTest extends TestCase
 
     private function compaction(): ContextCompacted
     {
-        return new ContextCompacted($this->hook(), new CompactionDetails(2));
+        return new ContextCompacted($this->hook(), new CompactionDetails('compaction-1'));
     }
 
     private function hook(): HookIdentity
