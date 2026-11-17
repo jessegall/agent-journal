@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Data;
 
-use App\Domain\Chat\Conversation;
+use App\Domain\Chat\Api\Conversation;
 use App\Domain\Web\Data\Concerns\OptionalOrMissing;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;

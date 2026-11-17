@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Data;
 
-use App\Domain\Chat\MessageState;
-use App\Domain\Chat\Models\Message;
+use App\Domain\Chat\Api\MessageState;
+use App\Domain\Chat\Api\MessageView;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One message in a conversation, its body exactly as sent.
  *
- * @method static static from(Message $message)
+ * @method static static from(MessageView $message)
  */
 #[TypeScript]
 final class MessageData extends Data
@@ -23,7 +23,7 @@ final class MessageData extends Data
         public readonly MessageState $state,
     ) {}
 
-    public static function fromMessage(Message $message): self
+    public static function fromMessageView(MessageView $message): self
     {
         return new self(id: (string) $message->id, body: $message->body, state: $message->state);
     }

@@ -5,13 +5,18 @@ declare(strict_types=1);
 namespace App\Domain\Chat;
 
 use App\Core\Hooks\StackTarget;
+use App\Domain\Chat\Api\Conversation;
+use App\Domain\Chat\Api\MessageView;
+use App\Domain\Chat\Contracts\ConversationReader;
 use App\Domain\Chat\Exceptions\MessageMissing;
 use App\Domain\Chat\Models\Message;
+use Illuminate\Container\Attributes\Scoped;
 
 /**
  * The named reads of messages the Chat domain answers for: the calling agent's own, and one the journal addressed.
  */
-final readonly class MessageRecords
+#[Scoped]
+final readonly class MessageRecords implements ConversationReader
 {
     public function get(int $messageId): Message
     {
@@ -38,6 +43,9 @@ final readonly class MessageRecords
             ->get()
             ->all();
 
-        return new Conversation($target, array_values($messages));
+        return new Conversation($target, array_values(array_map(
+            fn (Message $message) => new MessageView($message->id, $message->body, $message->state),
+            $messages,
+        )));
     }
 }

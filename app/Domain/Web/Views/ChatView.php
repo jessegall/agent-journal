@@ -6,7 +6,7 @@ namespace App\Domain\Web\Views;
 
 use App\Core\Agents\Contracts\SessionReader;
 use App\Core\Agents\SessionOption;
-use App\Domain\Chat\MessageRecords;
+use App\Domain\Chat\Contracts\ConversationReader;
 use App\Domain\Web\Data\ChatData;
 use App\Domain\Web\Data\ConversationData;
 use App\Domain\Web\Data\HomeFiltersData;
@@ -19,7 +19,7 @@ final readonly class ChatView
 {
     public function __construct(
         private SessionReader $sessions,
-        private MessageRecords $messages,
+        private ConversationReader $messages,
     ) {}
 
     public function chat(HomeFiltersData $filters): ChatData

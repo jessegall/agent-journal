@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Web\Http\Controllers;
 
 use App\Core\Agents\Contracts\SessionReader;
-use App\Domain\Chat\Actions\SendMessage;
+use App\Domain\Chat\Contracts\MessageSender;
 use App\Domain\Web\Data\MessageInput;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
@@ -19,7 +19,7 @@ final readonly class SendMessageController
 {
     public function __construct(
         private SessionReader $sessions,
-        private SendMessage $sendMessage,
+        private MessageSender $sendMessage,
         private Redirector $redirect,
     ) {}
 

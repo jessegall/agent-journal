@@ -7,7 +7,7 @@ namespace Tests\Feature\Chat;
 use App\Core\Hooks\Exceptions\StackAlreadyClosed;
 use App\Core\Hooks\Models\AgentStackRow;
 use App\Core\Hooks\Storage\FrameRecord;
-use App\Domain\Chat\MessageState;
+use App\Domain\Chat\Api\MessageState;
 use App\Domain\Chat\Models\Message;
 use App\Domain\Chat\RequireMessageAnswer;
 use App\Domain\Tasks\Models\Task;

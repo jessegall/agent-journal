@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Chat;
+namespace App\Domain\Chat\Api;
+
+use App\Domain\Chat\MessageWorkState;
 
 /**
  * Where a message stands: sent, waiting for an agent's answer, answered or dismissed.

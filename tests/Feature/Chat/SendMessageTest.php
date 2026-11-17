@@ -14,12 +14,13 @@ use App\Core\Hooks\StackTarget;
 use App\Core\Hooks\Storage\FrameRecord;
 use App\Domain\Chat\Actions\CloseMessage;
 use App\Domain\Chat\Actions\SendMessage;
+use App\Domain\Chat\Api\MessageState;
+use App\Domain\Chat\Api\MessageView;
 use App\Domain\Chat\Events\MessageAnswered;
 use App\Domain\Chat\Events\MessageDismissed;
 use App\Domain\Chat\Events\MessageSent;
 use App\Domain\Chat\Exceptions\MessageBodyEmpty;
 use App\Domain\Chat\MessageRecords;
-use App\Domain\Chat\MessageState;
 use App\Domain\Chat\Models\Message;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
@@ -51,12 +52,12 @@ final class SendMessageTest extends TestCase
     {
         $body = "Please check:\n    - the indented line\n\nthen answer.";
 
-        $message = $this->app->make(SendMessage::class)->send($body, $this->target);
+        $this->app->make(SendMessage::class)->send($body, $this->target);
 
         $stored = Message::query()->ownedBy($this->target->agentId)->sole();
         $this->assertSame([$body, MessageState::WaitingForAnswer, $this->target->sessionId], [$stored->body, $stored->state, $stored->session_id]);
         $this->assertSame(['hooks.main_ready', 'chat.answering'], $this->stackTypeKeys());
-        Event::assertDispatched(MessageSent::class, fn (MessageSent $event) => $event->messageId === $message->id);
+        Event::assertDispatched(MessageSent::class, fn (MessageSent $event) => $event->messageId === $stored->id);
     }
 
     public function test_a_guessed_target_is_refused_and_leaves_no_message(): void
@@ -85,13 +86,14 @@ final class SendMessageTest extends TestCase
         $conversation = $this->app->make(MessageRecords::class)->conversationWith($this->target);
 
         $this->assertSame("{$this->target->agentId}-{$this->target->sessionId}", $conversation->id());
-        $this->assertSame(['First', 'Second'], array_map(fn (Message $message) => $message->body, $conversation->messages));
+        $this->assertSame(['First', 'Second'], array_map(fn (MessageView $message) => $message->body, $conversation->messages));
     }
 
     public function test_answering_and_dismissing_raise_their_facts(): void
     {
-        $answered = $this->app->make(SendMessage::class)->send('Answer me', $this->target);
-        $dismissed = $this->app->make(SendMessage::class)->send('Never mind', $this->target);
+        $this->app->make(SendMessage::class)->send('Answer me', $this->target);
+        $this->app->make(SendMessage::class)->send('Never mind', $this->target);
+        [$answered, $dismissed] = Message::query()->ownedBy($this->target->agentId)->orderBy('id')->get()->all();
         $close = $this->app->make(CloseMessage::class);
 
         $close->answer($answered);

@@ -8,9 +8,11 @@ use App\Core\Hooks\Contracts\StackWork;
 use App\Core\Hooks\Contracts\UserStack;
 use App\Core\Hooks\StackTarget;
 use App\Domain\Chat\AnsweringMessageReference;
+use App\Domain\Chat\Contracts\MessageSender;
 use App\Domain\Chat\Events\MessageSent;
 use App\Domain\Chat\Exceptions\MessageBodyEmpty;
 use App\Domain\Chat\Models\Message;
+use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
@@ -18,7 +20,8 @@ use Illuminate\Contracts\Events\Dispatcher;
  * state on that agent's stack commit together, so a refused target leaves no message behind. The body is kept byte for
  * byte. An agent asking for an answer keeps using RequireMessageAnswer.
  */
-final readonly class SendMessage
+#[Scoped]
+final readonly class SendMessage implements MessageSender
 {
     public function __construct(
         private StackWork $transaction,
@@ -26,20 +29,18 @@ final readonly class SendMessage
         private Dispatcher $events,
     ) {}
 
-    public function send(string $body, StackTarget $target): Message
+    public function send(string $body, StackTarget $target): void
     {
         if (trim($body) === '') {
             throw MessageBodyEmpty::forSend();
         }
 
-        return $this->transaction->run(function () use ($body, $target): Message {
+        $this->transaction->run(function () use ($body, $target): void {
             $message = Message::query()->create(['body' => $body]);
             $message->requireAnswerFrom($target);
             $this->stacks->push($target, AnsweringMessageReference::forMessage($message));
 
             $this->events->dispatch(new MessageSent($message->id, $target));
-
-            return $message;
         });
     }
 }

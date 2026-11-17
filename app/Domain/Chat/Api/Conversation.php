@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Chat;
+namespace App\Domain\Chat\Api;
 
 use App\Core\Hooks\StackTarget;
-use App\Domain\Chat\Models\Message;
 
 /**
  * The messages sent to one agent's session, oldest first. The session is the conversation; its id is a stable string.
@@ -13,7 +12,7 @@ use App\Domain\Chat\Models\Message;
 final readonly class Conversation
 {
     /**
-     * @param  list<Message>  $messages
+     * @param  list<MessageView>  $messages
      */
     public function __construct(
         public StackTarget $target,
