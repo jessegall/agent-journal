@@ -1,0 +1,30 @@
+# Hooks: domain dependencies and missing producers
+
+Plan 2 builds the agent stack state machine of doc 3 in the Hooks domain (`app/Domain/Hooks`). Rule 9 says a domain declares a new required domain only after the user approves it, so the edges below are proposals. Until one is approved, the work that needs it is built as an independent contract and left switched off.
+
+## Proposed dependencies (doc 3, section 14.1)
+
+| Domain | Would require | Why | Status |
+|---|---|---|---|
+| Hooks | Agents | the scoped agent context, the launch and the session identity | proposed |
+| Hooks | Links | its two models use the Linkable trait (rule 3) | proposed |
+| Tasks | Hooks | the WorkingOnTask state and its push from a listener | proposed |
+| Chat | Hooks | the AnsweringMessage state and its push | proposed |
+| Sequences | Hooks | the FollowingSequence state and its push | proposed |
+| Processes | Hooks | the parsed command facts and the saved command refusal | proposed |
+| Memory | Hooks | context after a compaction | proposed |
+| Rules | Hooks | the rules told at start and after a compaction | proposed |
+| Reminders | Hooks | optional, a reminder as context | proposed |
+
+Approved today: Plans requires Tasks (plan 1). Nothing else.
+
+## Producers no plan has built yet
+
+- Tasks: a task model and store with open and closed states, for WorkingOnTask.
+- Chat: a message model and store with read and unread, for AnsweringMessage.
+- Sequences: a sequence run with its current step, for FollowingSequence.
+- Processes: the shell parser, the runner and the command facts (doc 5).
+- Agents: the agent and session records, the launch with isolated settings (rule 2) and the heartbeat.
+- Links: the links table and the Linkable trait (plan 2, task 84).
+
+Each becomes its own owner task in the domain that owns it; plan 2 does not build a second version of any of them.
