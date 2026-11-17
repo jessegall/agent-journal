@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Access\Models;
 
+use App\Core\Actors\Actor;
+use App\Core\Actors\ActorKind;
 use App\Core\Links\Linkable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -35,12 +37,22 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 #[UseFactory(UserFactory::class)]
-class User extends Authenticatable implements MustVerifyEmail, PasskeyUser
+class User extends Authenticatable implements Actor, MustVerifyEmail, PasskeyUser
 {
     /**
      * @use HasFactory<UserFactory>
      */
     use HasFactory, Linkable, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+
+    public function actorKind(): ActorKind
+    {
+        return ActorKind::Person;
+    }
+
+    public function actorId(): int
+    {
+        return $this->id;
+    }
 
     /**
      * Stores a new password; the hashed cast hashes it.

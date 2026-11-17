@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Models;
 
+use App\Core\Actors\Actor;
+use App\Core\Actors\ActorKind;
 use App\Core\Links\Linkable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +21,17 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'role'])]
-final class Agent extends Model
+final class Agent extends Model implements Actor
 {
     use Linkable;
+
+    public function actorKind(): ActorKind
+    {
+        return ActorKind::Agent;
+    }
+
+    public function actorId(): int
+    {
+        return $this->id;
+    }
 }

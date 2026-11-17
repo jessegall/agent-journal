@@ -7,8 +7,8 @@ namespace App\Domain\Plans;
 use App\Domain\Plans\Models\Phase;
 use App\Domain\Plans\Models\PhaseTask;
 use App\Domain\Plans\Models\Plan;
-use App\Domain\Tasks\TaskCounts;
 use App\Domain\Tasks\TaskProgress;
+use App\Domain\Tasks\TaskProgressCounter;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 
@@ -20,7 +20,7 @@ final readonly class PlanRecords
 {
     public const PER_PAGE = 20;
 
-    public function __construct(private TaskCounts $taskCounts) {}
+    public function __construct(private TaskProgressCounter $taskCounts) {}
 
     public function list(PlanFilters $filters): PlanList
     {

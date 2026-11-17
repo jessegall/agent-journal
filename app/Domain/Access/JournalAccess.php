@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace App\Domain\Access;
 
-use App\Domain\Access\Models\User;
+use App\Core\Actors\Actor;
+use App\Core\Actors\ActorKind;
 
 /**
  * Who may use the journal: only the configured owner. With no owner configured, nobody gets in; signing up or being
  * the first account grants nothing.
  */
-final readonly class JournalAccess
+final readonly class JournalAccess implements JournalAccessPolicy
 {
     public function __construct(private AccessSettings $settings) {}
 
-    public function allows(User $person): bool
+    public function allows(Actor $actor): bool
     {
-        return $this->settings->ownerId !== null && $person->id === $this->settings->ownerId;
+        return $actor->actorKind() === ActorKind::Person && $actor->actorId() === $this->settings->ownerId;
     }
 }

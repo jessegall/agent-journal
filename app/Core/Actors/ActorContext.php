@@ -17,6 +17,14 @@ final readonly class ActorContext
         public int $id,
     ) {}
 
+    /**
+     * The actor an authenticating middleware vouched for.
+     */
+    public static function of(Actor $actor): self
+    {
+        return new self($actor->actorKind(), $actor->actorId());
+    }
+
     public static function forAgent(int $agentId): self
     {
         return new self(ActorKind::Agent, $agentId);

@@ -9,7 +9,7 @@ use App\Domain\Tasks\Models\Task;
 /**
  * Counts the progress of the tasks another domain names by id, without that domain reading the tasks table.
  */
-final readonly class TaskCounts
+final readonly class TaskCounts implements TaskProgressCounter
 {
     /**
      * @param  list<int>  $taskIds

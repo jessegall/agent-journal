@@ -8,6 +8,9 @@ use App\Core\Actors\ActorContext;
 use App\Core\Actors\ActorKind;
 use App\Core\Actors\Exceptions\ActorContextMissing;
 use App\Core\Actors\Exceptions\PersonActorRequired;
+use App\Core\Agents\AgentContext;
+use App\Core\Agents\SignedCall;
+use Carbon\CarbonImmutable;
 use Tests\TestCase;
 
 final class ActorContextTest extends TestCase
@@ -28,6 +31,13 @@ final class ActorContextTest extends TestCase
 
         $this->expectException(ActorContextMissing::class);
         $this->app->make(ActorContext::class);
+    }
+
+    public function test_the_context_of_a_signed_agent_call_is_that_agent_as_actor(): void
+    {
+        $actor = ActorContext::of(new AgentContext(3, 30, 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64))));
+
+        $this->assertSame([ActorKind::Agent, 3], [$actor->kind, $actor->id]);
     }
 
     public function test_an_agent_is_not_a_person(): void

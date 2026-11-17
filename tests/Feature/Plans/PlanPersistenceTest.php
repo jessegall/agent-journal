@@ -12,6 +12,7 @@ use App\Domain\Plans\PlanKind;
 use App\Domain\Plans\PlanState;
 use App\Domain\Tasks\Models\Task;
 use App\Domain\Tasks\TaskCounts;
+use App\Domain\Tasks\TaskProgressCounter;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -58,7 +59,8 @@ final class PlanPersistenceTest extends TestCase
         $started = $this->task('Started');
         $started->startFor(new StackTarget(1, 10));
         $open = $this->task('Open');
-        $counts = $this->app->make(TaskCounts::class);
+        $counts = $this->app->make(TaskProgressCounter::class);
+        $this->assertInstanceOf(TaskCounts::class, $counts);
 
         $progress = $counts->progressOf([$done->id, $started->id, $open->id]);
 

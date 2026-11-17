@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Core\Actors;
+
+/**
+ * Someone who can act in a request: a person or an agent. The core talks to this, never to a person's or an agent's
+ * own class.
+ */
+interface Actor
+{
+    public function actorKind(): ActorKind;
+
+    public function actorId(): int;
+}

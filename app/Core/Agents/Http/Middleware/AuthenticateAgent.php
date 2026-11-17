@@ -38,7 +38,7 @@ final readonly class AuthenticateAgent
         }
 
         $this->container->instance(AgentContext::class, $context);
-        $this->container->instance(ActorContext::class, ActorContext::forAgent($context->agentId));
+        $this->container->instance(ActorContext::class, ActorContext::of($context));
 
         return $next($request);
     }

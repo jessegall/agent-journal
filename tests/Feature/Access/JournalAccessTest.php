@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Access;
 
 use App\Core\Actors\ActorContext;
+use App\Core\Actors\ActorKind;
+use App\Core\Agents\Models\Agent;
 use App\Domain\Access\AccessSettings;
+use App\Domain\Access\JournalAccess;
+use App\Domain\Access\JournalAccessPolicy;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Models\UserFactory;
 use Illuminate\Support\Facades\Route;
@@ -50,6 +54,20 @@ final class JournalAccessTest extends TestCase
         $this->configureOwner(null);
 
         $this->actingAs(User::factory()->create())->get('/access-test/actor')->assertForbidden();
+    }
+
+    public function test_people_and_agents_act_through_the_actor_interface_and_only_the_owner_person_is_let_in(): void
+    {
+        $owner = User::factory()->create();
+        $agent = Agent::query()->create(['name' => 'Planner', 'role' => 'hooks.main_ready']);
+        $this->configureOwner($owner->id);
+        $policy = $this->app->make(JournalAccessPolicy::class);
+
+        $this->assertInstanceOf(JournalAccess::class, $policy);
+        $this->assertSame([ActorKind::Person, $owner->id], [$owner->actorKind(), $owner->actorId()]);
+        $this->assertSame(ActorKind::Agent, $agent->actorKind());
+        $this->assertTrue($policy->allows($owner));
+        $this->assertFalse($policy->allows($agent));
     }
 
     private function configureOwner(?int $ownerId): void

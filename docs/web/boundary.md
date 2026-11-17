@@ -44,6 +44,14 @@ One route owner for signing in: Fortify keeps `views => false`, Web owns the gue
 - **Progress** comes from `App\Domain\Tasks\TaskCounts::progressOf($taskIds)`: done, started, blocked and total. Tasks never reads plans, and Plans calls Tasks through its approved edge. Version 6 tasks have no testing state yet, so there is no testing count.
 - Plan has no agent limit; every agent and the owner read every plan. `php artisan db:seed` adds three plans with phases and tasks.
 
+## Interfaces at the seams (task 122, rule 15)
+
+- **Actor.** `App\Core\Actors\Actor` (its kind and id) is what the core talks to. The Access `User` is a person actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.
+- **Access policy.** `AuthenticatePerson` asks `JournalAccessPolicy::allows(Actor)`, bound to `JournalAccess` with `#[Bind]`. Only a person actor whose id is the owner's is let in.
+- **Task progress.** Plans reads progress through `App\Domain\Tasks\TaskProgressCounter`, an interface Tasks owns and binds to `TaskCounts` with `#[Bind]`; Plans names no Tasks service class.
+
+A wider design for a public interface layer per domain is being written separately (message 685).
+
 ## Domain ownership and dependencies
 
 Approved by the user in question 13 (rule 9):

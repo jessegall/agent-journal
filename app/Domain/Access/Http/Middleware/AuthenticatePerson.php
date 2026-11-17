@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Access\Http\Middleware;
 
+use App\Core\Actors\Actor;
 use App\Core\Actors\ActorContext;
 use App\Domain\Access\Exceptions\JournalAccessDenied;
-use App\Domain\Access\JournalAccess;
-use App\Domain\Access\Models\User;
+use App\Domain\Access\JournalAccessPolicy;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 final readonly class AuthenticatePerson
 {
     public function __construct(
-        private JournalAccess $access,
+        private JournalAccessPolicy $access,
         private Container $container,
     ) {}
 
@@ -31,11 +31,11 @@ final readonly class AuthenticatePerson
     {
         $person = $request->user();
 
-        if (! $person instanceof User || ! $this->access->allows($person)) {
+        if (! $person instanceof Actor || ! $this->access->allows($person)) {
             throw JournalAccessDenied::forPerson();
         }
 
-        $this->container->instance(ActorContext::class, ActorContext::forPerson($person->id));
+        $this->container->instance(ActorContext::class, ActorContext::of($person));
 
         return $next($request);
     }
