@@ -27,7 +27,7 @@ use Tests\Fixtures\Modules\Notes\Api\NoteValue;
 use Tests\Fixtures\Modules\Notes\Contracts\NoteReader;
 use Tests\Fixtures\Modules\Notes\NoteRecords;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
-use Tests\Fixtures\Modules\Notes\NotesServiceProvider;
+use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
 use Tests\TestCase;
 
 /**
