@@ -13,7 +13,7 @@ use App\Domain\Chat\Models\Message;
  */
 final class AnsweringMessageReference
 {
-    public const TYPE_KEY = 'chat.answering';
+    public const string TYPE_KEY = 'chat.answering';
 
     public static function forMessage(Message $message): StateReference
     {

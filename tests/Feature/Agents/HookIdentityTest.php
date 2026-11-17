@@ -22,7 +22,7 @@ final class HookIdentityTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    private const BODY = '{"hook":"stop","turn":"turn-1"}';
+    private const string BODY = '{"hook":"stop","turn":"turn-1"}';
 
     protected function setUp(): void
     {

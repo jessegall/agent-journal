@@ -27,9 +27,9 @@ use Tests\TestCase;
 
 final class HookRuntimeReadinessTest extends TestCase
 {
-    private const SHELL_CALL = ['tool_input' => ['command' => 'git status'], 'tool_response' => []];
+    private const array SHELL_CALL = ['tool_input' => ['command' => 'git status'], 'tool_response' => []];
 
-    private const EVENT_FIELDS = [
+    private const array EVENT_FIELDS = [
         'claude-code' => [
             'SessionStart' => ['source' => 'startup'],
             'UserPromptSubmit' => ['prompt' => 'Build the walk.'],

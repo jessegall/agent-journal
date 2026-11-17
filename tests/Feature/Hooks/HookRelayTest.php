@@ -26,11 +26,11 @@ final class HookRelayTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'launch_bypasses', 'agent_stacks', 'hook_calls', 'links'];
+    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'launch_bypasses', 'agent_stacks', 'hook_calls', 'links'];
 
-    private const STOP = '{"session_id":"session-1","hook_event_name":"Stop","stop_hook_active":false}';
+    private const string STOP = '{"session_id":"session-1","hook_event_name":"Stop","stop_hook_active":false}';
 
-    private const SHELL = '{"session_id":"session-1","hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"git status"}}';
+    private const string SHELL = '{"session_id":"session-1","hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"git status"}}';
 
     private TestLaunch $launch;
 

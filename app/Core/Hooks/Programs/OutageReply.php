@@ -13,7 +13,7 @@ use App\Core\Hooks\States\ReadyStateType;
  */
 final class OutageReply
 {
-    public const OUTAGE_REASON = 'The journal is unreachable, so this helper cannot act until it is back.';
+    public const string OUTAGE_REASON = 'The journal is unreachable, so this helper cannot act until it is back.';
 
     public static function for(CallFailure $failure, ReadyStateType $role, string $nativeEvent): ProgramReply
     {

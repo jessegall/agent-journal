@@ -35,7 +35,7 @@ use App\Core\Hooks\Stack\HookAnswer;
  */
 final readonly class ClaudeCodeAdapter implements ProgramAdapter
 {
-    private const PROGRAM = 'Claude Code';
+    private const string PROGRAM = 'Claude Code';
 
     public function __construct(private ShellCommandParser $parser) {}
 

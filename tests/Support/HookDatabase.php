@@ -13,7 +13,7 @@ use Illuminate\Database\DatabaseManager;
  */
 final class HookDatabase
 {
-    public const NAME = 'journal_hooks_test';
+    public const string NAME = 'journal_hooks_test';
 
     public static function select(Application $app): void
     {

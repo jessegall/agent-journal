@@ -13,7 +13,7 @@ use App\Domain\Sequences\Models\SequenceRun;
  */
 final class FollowingSequenceReference
 {
-    public const TYPE_KEY = 'sequences.following';
+    public const string TYPE_KEY = 'sequences.following';
 
     public static function forRun(SequenceRun $run): StateReference
     {

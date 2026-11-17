@@ -22,7 +22,7 @@ final class AgentContextTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    private const BODY = '{"hook":"stop"}';
+    private const string BODY = '{"hook":"stop"}';
 
     protected function setUp(): void
     {

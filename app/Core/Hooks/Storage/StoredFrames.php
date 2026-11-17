@@ -13,7 +13,7 @@ use Spatie\LaravelData\Data;
  */
 final class StoredFrames extends Data
 {
-    public const CURRENT_VERSION = 1;
+    public const int CURRENT_VERSION = 1;
 
     /**
      * @param  list<StoredFrame>  $frames

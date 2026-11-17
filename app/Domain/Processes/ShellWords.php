@@ -12,7 +12,7 @@ use App\Core\Hooks\Inputs\PartJoin;
  */
 final readonly class ShellWords
 {
-    private const OPERATORS = ['||' => PartJoin::Or, '&&' => PartJoin::And, '|' => PartJoin::Pipe, ';' => PartJoin::Sequence];
+    private const array OPERATORS = ['||' => PartJoin::Or, '&&' => PartJoin::And, '|' => PartJoin::Pipe, ';' => PartJoin::Sequence];
 
     /**
      * @param  list<ShellSegment>  $segments

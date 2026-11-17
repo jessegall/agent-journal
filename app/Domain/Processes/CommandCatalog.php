@@ -13,27 +13,27 @@ use App\Core\Hooks\Inputs\CommandKind;
  */
 final readonly class CommandCatalog
 {
-    private const JOURNAL_SUBCOMMANDS = [
+    private const array JOURNAL_SUBCOMMANDS = [
         'alias', 'command-type', 'doc', 'helper', 'link', 'memory', 'message', 'output', 'overview', 'phase', 'plan', 'plugin',
         'process', 'question', 'reader', 'refusal', 'reminder', 'report', 'rule', 'search', 'sequence', 'setting', 'skill',
         'task', 'usage', 'wait', 'worker',
     ];
 
-    private const TEST_RUNS = [
+    private const array TEST_RUNS = [
         'phpunit', 'vendor/bin/phpunit', 'pest', 'vendor/bin/pest', 'php artisan test', 'artisan test',
         'composer test', 'npm test', 'npm run test', 'yarn test', 'pnpm test', 'pytest', 'go test', 'cargo test',
     ];
 
-    private const BUILDS = [
+    private const array BUILDS = [
         'npm run build', 'yarn build', 'pnpm build', 'vite build', 'npx vite build', 'go build', 'cargo build', 'make',
     ];
 
-    private const READING_PROGRAMS = [
+    private const array READING_PROGRAMS = [
         'cat', 'head', 'tail', 'less', 'grep', 'rg', 'ls', 'pwd', 'echo', 'wc', 'diff', 'which', 'stat', 'file', 'tree',
         'git status', 'git log', 'git diff', 'git show', 'git branch', 'git blame',
     ];
 
-    private const WRITING_PROGRAMS = [
+    private const array WRITING_PROGRAMS = [
         'rm', 'mv', 'cp', 'mkdir', 'rmdir', 'touch', 'chmod', 'ln', 'tee', 'truncate', 'sed -i', 'perl -pi',
         'git add', 'git commit', 'git push', 'git checkout', 'git reset', 'git merge', 'git rebase', 'git stash', 'git mv', 'git rm',
     ];

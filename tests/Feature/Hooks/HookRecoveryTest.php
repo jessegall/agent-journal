@@ -29,7 +29,7 @@ final class HookRecoveryTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'tasks', 'links'];
+    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'tasks', 'links'];
 
     protected function setUp(): void
     {

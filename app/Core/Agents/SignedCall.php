@@ -12,11 +12,11 @@ use Carbon\CarbonImmutable;
  */
 final readonly class SignedCall
 {
-    public const ID_HEADER = 'X-Journal-Call-Id';
+    public const string ID_HEADER = 'X-Journal-Call-Id';
 
-    public const ISSUED_AT_HEADER = 'X-Journal-Call-Issued-At';
+    public const string ISSUED_AT_HEADER = 'X-Journal-Call-Issued-At';
 
-    public const SIGNATURE_HEADER = 'X-Journal-Call-Signature';
+    public const string SIGNATURE_HEADER = 'X-Journal-Call-Signature';
 
     public function __construct(
         public string $callId,

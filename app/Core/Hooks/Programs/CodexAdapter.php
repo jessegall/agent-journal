@@ -30,9 +30,9 @@ use App\Core\Hooks\Stack\HookAnswer;
  */
 final readonly class CodexAdapter implements ProgramAdapter
 {
-    private const PROGRAM = 'Codex';
+    private const string PROGRAM = 'Codex';
 
-    private const PATCH_FILE_LINE = '/^\*\*\* (Add|Update|Delete) File: (.+)$/m';
+    private const string PATCH_FILE_LINE = '/^\*\*\* (Add|Update|Delete) File: (.+)$/m';
 
     public function __construct(private ShellCommandParser $parser) {}
 

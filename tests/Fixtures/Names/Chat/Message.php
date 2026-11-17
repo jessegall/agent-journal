@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Names\Chat;
 
 class Message
 {
-    public const LIMIT = 10;
+    public const int LIMIT = 10;
 
     public static int $count = 0;
 

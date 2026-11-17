@@ -13,7 +13,7 @@ use Spatie\LaravelData\Data;
  */
 final class RecordedAnswer extends Data
 {
-    public const CURRENT_VERSION = 1;
+    public const int CURRENT_VERSION = 1;
 
     public function __construct(
         public readonly int $version,

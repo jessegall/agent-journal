@@ -18,9 +18,9 @@ use Illuminate\Database\QueryException;
  */
 final readonly class StackTransaction implements LaunchTransaction
 {
-    private const LOCK_NOT_AVAILABLE = '55P03';
+    private const string LOCK_NOT_AVAILABLE = '55P03';
 
-    private const QUERY_CANCELED = '57014';
+    private const string QUERY_CANCELED = '57014';
 
     public function __construct(
         private ConnectionInterface $database,

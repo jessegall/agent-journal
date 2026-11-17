@@ -18,7 +18,7 @@ use Illuminate\Support\Collection;
  */
 final readonly class PlanRecords
 {
-    public const PER_PAGE = 20;
+    public const int PER_PAGE = 20;
 
     public function __construct(private TaskProgressCounter $taskCounts) {}
 

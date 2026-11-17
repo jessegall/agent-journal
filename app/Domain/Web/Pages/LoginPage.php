@@ -14,7 +14,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class LoginPage extends Data
 {
-    public const COMPONENT = 'Login';
+    public const string COMPONENT = 'Login';
 
     public function __construct(public readonly LoginInput $input) {}
 

@@ -31,7 +31,7 @@ final class PersonStacksTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'links'];
+    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'links'];
 
     private StackTarget $target;
 

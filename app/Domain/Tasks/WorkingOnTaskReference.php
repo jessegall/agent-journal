@@ -13,7 +13,7 @@ use App\Domain\Tasks\Models\Task;
  */
 final class WorkingOnTaskReference
 {
-    public const TYPE_KEY = 'tasks.working';
+    public const string TYPE_KEY = 'tasks.working';
 
     public static function forTask(Task $task): StateReference
     {

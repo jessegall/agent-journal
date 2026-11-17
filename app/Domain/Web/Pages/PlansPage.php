@@ -20,7 +20,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class PlansPage extends Data
 {
-    public const COMPONENT = 'Plans';
+    public const string COMPONENT = 'Plans';
 
     #[Computed]
     public PlanListData $plans {
