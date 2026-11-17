@@ -14,6 +14,14 @@ final readonly class ShellCommandRequested implements HookInput
         public ShellCommand $command,
     ) {}
 
+    /**
+     * The same hook call asking about a replacement command.
+     */
+    public function replacedBy(ShellCommand $command): self
+    {
+        return new self($this->hook, $command);
+    }
+
     public function identity(): HookIdentity
     {
         return $this->hook;

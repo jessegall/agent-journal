@@ -77,6 +77,18 @@ final readonly class Decision
         return $this->answer === SimpleAnswer::Delegate;
     }
 
+    /**
+     * The shell line a rewrite runs instead of the one the agent wrote.
+     */
+    public function replacementLine(): string
+    {
+        if (! $this->answer instanceof Rewritten) {
+            throw NoReplacementLine::forAnswer($this->answerKind());
+        }
+
+        return $this->answer->line;
+    }
+
     public function answerKind(): AnswerKind
     {
         return $this->answer->kind();
