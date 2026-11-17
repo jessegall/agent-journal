@@ -101,6 +101,14 @@ def test_a_later_send_replaces_a_name_and_keeps_the_others(worker_with_commands)
     expect_value(started_lines(worker_with_commands), ["py.test tests/cart.py", "npx vitest run src/cart.test.js"])
 
 
+def test_a_send_with_only_a_test_command_names_it_and_tells_the_worker(worker_with_commands):
+    story, worker = worker_with_commands.story, worker_with_commands.worker
+    story.expect_success(f"worker send --wait {worker.id} --test-command phpunit=vendor/bin/phpunit", actor=story.agent)
+    story.expect_text(f"agent-line list --agent {worker.id}", "New test commands for your work: phpunit")
+    story.expect_success("worker test phpunit tests/Unit/CartTest.php", actor=worker)
+    expect_value(started_lines(worker_with_commands), ["vendor/bin/phpunit tests/Unit/CartTest.php"])
+
+
 @pytest.mark.parametrize("flags,refusal", [
     ("--test-command python=", "an empty command"),
     ("--test-command python", "name=command"),

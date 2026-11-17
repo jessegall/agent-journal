@@ -7,6 +7,7 @@ import json
 from engine.command.bus import Bus
 from engine.performance.timing import Timing
 from engine.command.context import Context
+from suites.coding.modules.workers.support.worker_test_command_entry import WorkerTestCommandEntry
 from engine.command.handler import Handler
 from engine.listener.rows.event_rows import EventRows
 from engine.errors.refusal import Refusal
@@ -75,8 +76,8 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
     def check_job(self, command: SendWorker, worker: Agent) -> None:
         if worker.retired_at is not None:
             raise RetiredWorkerRefusal.create(worker)
-        if not command.job.strip() and not command.task_ids:
-            raise Refusal("a send needs a job or a task", f'journal worker send {worker.id} "<job>", or --task <task>')
+        if not command.job.strip() and not command.task_ids and not command.test_commands:
+            raise Refusal("a send needs a job, a task or a test command", f'journal worker send {worker.id} "<job>", --task <task> or --test-command <name>=<command>')
         running, limit = len(self.places.running()), self.places.run_limit()
         if command.task_ids and running > limit:
             raise Refusal(f"{running} workers run and the running limit is {limit}: no worker takes new tasks until fewer run",
@@ -164,6 +165,11 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
                                      recipient=WorkerRecipient.text(command.worker_id)), context)
         return self.message_sender.send_text(command.worker_id, command.job, WORKER_JOB_SOURCE, context)
 
+    @staticmethod
+    def test_commands_text(commands: tuple[WorkerTestCommandEntry, ...]) -> str:
+        names = ", ".join(entry.name for entry in commands)
+        return f"New test commands for your work: {names}. Run one with journal worker test <name> <test files>; go on with your work."
+
     def inform_joined(self, worker_id: int, context: Context) -> None:
         for task_id in self.task_ids:
             self.message_sender.send(worker_id, WorkerTaskJoinsMessage.declared(), WorkerTaskJoinsMessage.declared().key, context, task=task_id)
@@ -171,6 +177,8 @@ class SendWorkerHandler(Handler[SendWorker, Model]):
     def handle(self, command: SendWorker, context: Context) -> Model:
         if command.test_commands:
             self.bus.run_with_context(NameWorkerTests(command.worker_id, command.test_commands), context)
+        if command.test_commands and not command.job.strip() and not command.task_ids and command.plan_id is None:
+            return self.message_sender.send_text(command.worker_id, self.test_commands_text(command.test_commands), WORKER_JOB_SOURCE, context)
         if command.plan_id is not None and command.phase_id is None:
             self.bus.run_with_context(RecordPlanAgent(command.plan_id, command.worker_id), context)
         worktree = self.worktrees.worker_worktree(command.worker_id)
