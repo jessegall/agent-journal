@@ -1,4 +1,5 @@
 <script setup>
+import MoreButton from "./MoreButton.vue";
 import {computed, ref, TransitionGroup} from "vue";
 import EmptyState from "../src/kit/EmptyState.vue";
 import Skeleton from "../src/kit/Skeleton.vue";
@@ -52,28 +53,13 @@ async function showMore(older) {
             </template>
         </component>
         <template v-if="older && more && !finished && rows.length">
-            <button type="button" class="row-list-more" data-row-list-more @click="showMore(older)">Show more</button>
+            <MoreButton data-row-list-more @click="showMore(older)">Show more</MoreButton>
         </template>
     </template>
 </template>
 
 <style scoped>
-.row-list-more {
-    margin: 6px 0 0;
-    padding: 2px 8px;
-    border: 0;
-    border-radius: 5px;
-    background: none;
-    color: var(--text-3);
-    font: inherit;
-    font-size: 12px;
-    cursor: pointer;
-}
 
-.row-list-more:hover {
-    background: var(--hover);
-    color: var(--text);
-}
 
 .row-list {
     animation: row-list-in 0.25s ease both;

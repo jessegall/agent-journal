@@ -50,7 +50,7 @@ export function useLibrary(view, term, state) {
 
 <script setup>
 import {computed} from "vue";
-import {Btn, Icon, Segmented, Skeleton, SearchBar, TimeAgo, peekRef, useWindow} from "@journal/window-kit";
+import {Btn, Icon, Segmented, Skeleton, SearchBar, TimeAgo, peekRef, useWindow, MoreButton} from "@journal/window-kit";
 import {grouped, searched, sorted} from "./libraryGroups.js";
 
 const LIBRARIES = [
@@ -148,7 +148,7 @@ async function create() {
                     </template>
                 </template>
                 <template v-if="rows.length < total && !words">
-                    <button type="button" class="library-more" @click="more">Show more</button>
+                    <MoreButton @click="more">Show more</MoreButton>
                 </template>
             </div>
         </div>
@@ -255,13 +255,6 @@ async function create() {
     font-size: 12px;
 }
 
-.library-more {
-    margin: 8px 12px;
-    color: var(--muted);
-    background: none;
-    border: 0;
-    cursor: pointer;
-}
 
 .library-note {
     margin: 0;

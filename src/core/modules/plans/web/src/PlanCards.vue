@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, Icon, InnerTabs, Skeleton, StateBadge, TabBody, TaskBar, WindowRoom, afterSkeletonMinimum, peekRef, stateLook, useWindow} from "@journal/window-kit";
+import {Icon, InnerTabs, Skeleton, StateBadge, TabBody, TaskBar, WindowRoom, afterSkeletonMinimum, peekRef, stateLook, useWindow, MoreButton} from "@journal/window-kit";
 import PlanAgents from "./PlanAgents.vue";
 
 // plans as version 4 drew them: a card for each, the task count with a bar, the phase it is in, and tabs for the open, the started and the closed; one read brings a tab's cards and the counts
@@ -88,7 +88,7 @@ if (view.shared) {
                     </template>
                 </div>
                 <template v-if="shown.length && shown.length < total">
-                    <Btn variant="text" data-plans-more @click="more">Show more</Btn>
+                    <MoreButton data-plans-more @click="more">Show more</MoreButton>
                 </template>
                 </TabBody>
             </template>

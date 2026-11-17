@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {ListTools, Skeleton, WindowRoom, useListTools, useWindow} from "@journal/window-kit";
+import {ListTools, Skeleton, WindowRoom, useListTools, useWindow, MoreButton} from "@journal/window-kit";
 
 const STATES = {new: "New", noted: "Noted", filed: "Filed", failed: "Failed"};
 const TYPES = {docs: "Document", doc: "Document", plans: "Plan", plan: "Plan", tasks: "Task", task: "Task", reports: "Report", report: "Report"};
@@ -115,7 +115,7 @@ async function rename(card) {
                 </template>
             </template>
             <template v-if="cards.length < total">
-                <button type="button" class="dumps-more" @click="more">Show more</button>
+                <MoreButton @click="more">Show more</MoreButton>
             </template>
         </div>
     </WindowRoom>
@@ -177,21 +177,12 @@ async function rename(card) {
 }
 
 .dump-rename,
-.dumps-more {
-    color: var(--text-3);
-    background: none;
-    border: 0;
-    cursor: pointer;
-}
 
 .dump-rename {
     margin-left: auto;
     font-size: 12px;
 }
 
-.dumps-more {
-    align-self: flex-start;
-}
 
 .dump-brief,
 .dumps-note {

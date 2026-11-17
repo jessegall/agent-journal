@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, FilterBar, ListReaderLayout, PageHeader, Skeleton, applyFilter, defaultFilter, useWindow} from "@journal/window-kit";
+import {FilterBar, ListReaderLayout, PageHeader, Skeleton, applyFilter, defaultFilter, useWindow, MoreButton} from "@journal/window-kit";
 import MemoryEdit from "./MemoryEdit.vue";
 import MemoryReader from "./MemoryReader.vue";
 import {READER_WEIGHTS, memoryItems} from "./MemoryRow.js";
@@ -32,7 +32,7 @@ const emptyTitle = computed(() => (memories.rows.value.length ? "No memory here 
             <PageHeader title="Memories" :count="memories.total.value" />
             <FilterBar v-model="filter" v-model:words="words" :fields="fields" :rows="memories.rows.value" :shown="shown.length" placeholder="Search memories" />
             <template v-if="memories.hasMore.value">
-                <p class="more" data-memories-more>Showing {{ memories.rows.value.length }} of {{ memories.total.value }} <Btn small bordered @click="memories.more()">Show more</Btn></p>
+                <MoreButton data-memories-more @click="memories.more()">Show more ({{ memories.rows.value.length }} of {{ memories.total.value }} shown)</MoreButton>
             </template>
             <template v-if="memories.failure.value">
                 <p class="failure" role="alert" data-memories-failure>{{ memories.failure.value }}</p>
@@ -54,12 +54,6 @@ const emptyTitle = computed(() => (memories.rows.value.length ? "No memory here 
 </template>
 
 <style scoped>
-.more {
-    margin: 0;
-    padding: 4px 16px;
-    color: var(--text-3);
-    font-size: 12px;
-}
 
 .task {
     color: var(--text-3);

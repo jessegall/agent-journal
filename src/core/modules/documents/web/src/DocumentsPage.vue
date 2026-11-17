@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {ListReaderLayout, PageHeader, SearchBar, Segmented, Skeleton, TimeAgo, Btn, useWindow, SwitchCase} from "@journal/window-kit";
+import {ListReaderLayout, PageHeader, SearchBar, Segmented, Skeleton, TimeAgo, useWindow, SwitchCase, MoreButton} from "@journal/window-kit";
 import DocumentEdit from "./DocumentEdit.vue";
 import DocumentReader from "./DocumentReader.vue";
 import DocumentSettle from "./DocumentSettle.vue";
@@ -41,7 +41,7 @@ const pick = (key, set) => {
                 <Segmented :options="STATES" :value="state" data-documents-state @pick="pick($event, (key) => (state = key))" />
             </SearchBar>
             <template v-if="failure"><p class="failure" role="alert" data-documents-failure>{{ failure }}</p></template>
-            <template v-if="rows.length < total && !words"><p class="more"><Btn small bordered data-documents-more @click="more">Show more</Btn></p></template>
+            <template v-if="rows.length < total && !words"><MoreButton data-documents-more @click="more">Show more</MoreButton></template>
             <SwitchCase :value="dialog?.kind"><template #edit><DocumentEdit :term="dialog.term" :id="dialog.row.id" @close="dialog = null" /></template>
             <template #settle><DocumentSettle :term="dialog.term" :id="dialog.row.id" @close="dialog = null" /></template></SwitchCase>
         </template>
@@ -65,12 +65,6 @@ const pick = (key, set) => {
     white-space: nowrap;
 }
 
-.more,
-.failure {
-    margin: 0;
-    padding: 4px var(--inset);
-    font-size: 12px;
-}
 
 .failure {
     color: var(--bad, var(--text-2));

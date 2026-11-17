@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import {age, agentRoleLabel, agentTitle, Btn, useNow, useWindow} from "@journal/window-kit";
+import {age, agentRoleLabel, agentTitle, Btn, useNow, useWindow, MoreButton} from "@journal/window-kit";
 import {SettingEmptyState} from "@journal/setting-components";
 import AgentRetireForm from "./AgentRetireForm.vue";
 
@@ -85,7 +85,7 @@ onMounted(() => read());
             </div>
         </template>
         <template v-if="more">
-            <Btn small @click="read(page + 1)">Show more</Btn>
+            <MoreButton @click="read(page + 1)">Show more</MoreButton>
         </template>
         <template v-if="failure">
             <p role="alert" class="bad">{{ failure }}</p>

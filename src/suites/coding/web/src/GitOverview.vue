@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, EmptyState, FilterBar, ListReaderLayout, InnerTabs, PageHeader, Skeleton, TabBody, TimeAgo, applyFilter, defaultFilter, optionsOf, useWindow} from "@journal/window-kit";
+import {EmptyState, FilterBar, ListReaderLayout, InnerTabs, PageHeader, Skeleton, TabBody, TimeAgo, applyFilter, defaultFilter, optionsOf, useWindow, MoreButton} from "@journal/window-kit";
 import GitReader from "./GitReader.vue";
 import {TABS, branchItem, commitItem, gitMenu, itemFields, pullItem} from "./gitItems.js";
 
@@ -68,7 +68,7 @@ const place = (item) => ({head: item.title, items: menuOf(item, () => (chosen.va
               <p class="note" role="alert">{{ failure }}</p>
             </template>
             <template v-if="more">
-              <Btn small data-git-more @click="loadMore">Show more</Btn>
+              <MoreButton data-git-more @click="loadMore">Show more</MoreButton>
             </template>
         </template>
         <template #empty>

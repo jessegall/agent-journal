@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Icon, SearchBar, Skeleton, Switch, useWindow} from "@journal/window-kit";
+import {Icon, SearchBar, Skeleton, Switch, useWindow, MoreButton} from "@journal/window-kit";
 import {readPlanPlaces} from "./planPlaces.js";
 import TaskRow from "./TaskRow.vue";
 
@@ -189,7 +189,7 @@ defineExpose({board, groups, query, tag, focusSearch: () => search.value?.focus(
                         <TaskRow :row="row" :selectable="selectable" :selected="row.id === selected" :display="display" @select="emit('select', $event)" />
                     </template>
                     <template v-if="!folded.has(group.state) && group.rows.length < group.total">
-                        <button type="button" class="tasks-more" :data-more="group.state" @click="more(group)">{{ group.rows.length ? "Show more" : `Show ${group.total} ${group.total === 1 ? "task" : "tasks"}` }}</button>
+                        <MoreButton :data-more="group.state" @click="more(group)">{{ group.rows.length ? "Show more" : `Show ${group.total} ${group.total === 1 ? "task" : "tasks"}` }}</MoreButton>
                     </template>
                 </section>
             </template>
@@ -198,22 +198,7 @@ defineExpose({board, groups, query, tag, focusSearch: () => search.value?.focus(
 </template>
 
 <style scoped>
-.tasks-more {
-    margin: 4px 0 0 8px;
-    padding: 2px 8px;
-    border: 0;
-    border-radius: 5px;
-    background: none;
-    color: var(--text-3);
-    font: inherit;
-    font-size: 12px;
-    cursor: pointer;
-}
 
-.tasks-more:hover {
-    background: var(--hover);
-    color: var(--text);
-}
 
 .tasks {
     display: flex;
