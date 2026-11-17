@@ -10,7 +10,7 @@ use Illuminate\Database\DatabaseManager;
 /**
  * Runs a test on the dedicated Postgres database journal_hooks_test: selects it, runs any pending migration, and wraps
  * the test in a transaction that is rolled back, unless the test commits real rows and names no connection to wrap.
- * It keeps nothing between tests, so it never shares Laravel's own "migrated" flag with the SQLite tests.
+ * It keeps nothing between tests.
  */
 trait RefreshHookDatabase
 {
