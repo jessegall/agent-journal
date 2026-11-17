@@ -5,11 +5,17 @@ declare(strict_types=1);
 namespace Tests\Unit\Domains;
 
 use App\Agents\AgentsDomain;
+use App\Chat\ChatDomain;
 use App\Domains\Domain;
 use App\Hooks\HooksDomain;
 use App\Links\LinksDomain;
+use App\Memory\MemoryDomain;
 use App\Plans\PlansDomain;
+use App\Processes\ProcessesDomain;
 use App\Profiles\ProfilesDomain;
+use App\Reminders\RemindersDomain;
+use App\Rules\RulesDomain;
+use App\Sequences\SequencesDomain;
 use App\Tasks\TasksDomain;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -27,6 +33,12 @@ final class DomainClassesTest extends TestCase
         yield 'Profiles' => [ProfilesDomain::class, []];
         yield 'Agents' => [AgentsDomain::class, []];
         yield 'Hooks' => [HooksDomain::class, []];
+        yield 'Chat' => [ChatDomain::class, []];
+        yield 'Memory' => [MemoryDomain::class, []];
+        yield 'Rules' => [RulesDomain::class, []];
+        yield 'Sequences' => [SequencesDomain::class, []];
+        yield 'Reminders' => [RemindersDomain::class, []];
+        yield 'Processes' => [ProcessesDomain::class, []];
     }
 
     /**
