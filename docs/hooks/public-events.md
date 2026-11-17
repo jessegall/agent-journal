@@ -14,6 +14,9 @@ Each fact implements `ShouldDispatchAfterCommit`, so a listener hears it only on
 | `MessageAnswered`, `MessageDismissed` | Chat | a message was answered or dismissed | message id |
 | `RuleApproved`, `RuleDenied`, `RuleRemoved` | Rules | the user reviewed a proposed rule, or a rule was removed | rule id |
 | `TaskFinished`, `TaskBlocked`, `TaskCancelled` | Tasks | a task changed state through `ChangeTaskState` | task id |
+| `AssignmentsChanged` | Core | an assignment command or a retirement changed at least one record; a command that changed nothing raises nothing | operation id, the acting actor, the reason (assigned, reassigned, unassigned, retired), every actual change with its record and before and after assignment, the time |
+
+`AssignmentsChanged` is raised once per command, never per record, and only from the attempt that committed: an attempt the writer ran again after a serialization failure leaves no fact. A cascade over a plan raises one fact for all its changes.
 
 `TaskStarted`, `SequenceStarted` and `MessageNeedsAnswer` stay private: their listeners push stack states inside the same transaction, so they are not facts after a commit. Plans hears `TaskStarted` through its approved requirement of Tasks: `TasksDomain::exports()` lists it, so only a domain that requires Tasks may name it.
 
@@ -28,4 +31,4 @@ Each fact implements `ShouldDispatchAfterCommit`, so a listener hears it only on
 
 - **One connection, one commit.** Domain writes and stack changes share the default connection, so the change and the stack push commit together or not at all. A listener of a fact runs after that commit, outside it.
 - **Errors after the commit.** Listeners run synchronously in the order Laravel registered them. If one throws, the exception reaches the caller and Laravel's exception reporting records it with the event and the listener in its stack trace; the change itself has already committed and is not rolled back. Later listeners of that fact do not run, and a listener returning `false` also stops the ones after it.
-- **No replay, no queue promise.** Nothing stores facts or retries them. A missed or failed reaction is not delivered again, and a repeated start of a running plan raises nothing. Web's `PageChanged` is the one queued broadcast; it is pushed only after the commit (`after_commit` on the Redis queue).
+- **No replay, no queue promise.** Nothing stores facts or retries them. A caller that lost the answer to an assignment command reads the record again (`journal assignment show`) instead of expecting the fact or a history; there is no assignment history, outbox or inheritance. A missed or failed reaction is not delivered again, and a repeated start of a running plan raises nothing. Web's `PageChanged` is the one queued broadcast; it is pushed only after the commit (`after_commit` on the Redis queue).
