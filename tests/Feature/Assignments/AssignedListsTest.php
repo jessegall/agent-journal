@@ -46,7 +46,7 @@ final class AssignedListsTest extends TestCase
         parent::setUp();
 
         $this->main = Agent::query()->create(['name' => 'Main', 'role' => 'hooks.main_ready']);
-        $this->other = Agent::query()->create(['name' => 'Other', 'role' => 'hooks.helper_ready']);
+        $this->other = Agent::query()->create(['name' => 'Other', 'role' => 'hooks.read_only_helper_ready']);
         $this->startRequestAs($this->main->id, 1);
     }
 

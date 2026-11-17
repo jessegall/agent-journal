@@ -205,6 +205,7 @@ class	AgentLabels
 class	AgentLifecycle
 class	AgentMemories
 class	AgentNotAvailable
+class	AgentRetirementDenied
 class	AgentScope
 class	AgentSession
 class	AgentSessionScope
@@ -514,6 +515,7 @@ class	RequiredDomainTwice
 class	ResetUserPassword
 class	RetentionPeriods
 class	RetentionTooShort
+class	RetireAgent
 class	ReviewRule
 class	ReviewRuleController
 class	Rewritten
@@ -761,6 +763,7 @@ enum	ViolationKind
 interface	Actor
 interface	AgentAuthority
 interface	AgentReader
+interface	AgentRetirement
 interface	AgentStack
 interface	Answer
 interface	Assignable
@@ -871,6 +874,9 @@ method	AgentMemories::lowerWeightsOnce()
 method	AgentMemories::remindersFor()
 method	AgentNotAvailable::forAgent()
 method	AgentReader::labelsFor()
+method	AgentRetirement::retire()
+method	AgentRetirementDenied::forCaller()
+method	AgentRetirementDenied::insideTransaction()
 method	AgentScope::__construct()
 method	AgentScope::apply()
 method	AgentSession::agent()
@@ -1827,6 +1833,10 @@ method	ResetUserPassword::reset()
 method	RetentionPeriods::__construct()
 method	RetentionPeriods::checkLongerThan()
 method	RetentionTooShort::forDays()
+method	RetireAgent::__construct()
+method	RetireAgent::endSessionsOf()
+method	RetireAgent::requireAuthority()
+method	RetireAgent::retire()
 method	ReviewRule::__construct()
 method	ReviewRule::approve()
 method	ReviewRule::deny()
@@ -2680,6 +2690,13 @@ property	ResetUserPassword::$validation
 property	RetentionPeriods::$batchSize
 property	RetentionPeriods::$closedStackDays
 property	RetentionPeriods::$hookCallDays
+property	RetireAgent::$actors
+property	RetireAgent::$credentials
+property	RetireAgent::$database
+property	RetireAgent::$facts
+property	RetireAgent::$lifecycle
+property	RetireAgent::$sessions
+property	RetireAgent::$store
 property	ReviewRule::$actors
 property	ReviewRule::$database
 property	ReviewRule::$events

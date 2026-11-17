@@ -84,8 +84,8 @@ final class AssigneesTest extends TestCase
     public function test_eligible_lists_page_by_id_and_names_keep_a_retired_agent_and_show_no_email(): void
     {
         $registry = $this->app->make(AssignmentRegistry::class);
-        $second = Agent::query()->create(['name' => 'Reviewer', 'role' => 'hooks.helper_ready']);
-        $retired = Agent::query()->create(['name' => 'Gone', 'role' => 'hooks.helper_ready']);
+        $second = Agent::query()->create(['name' => 'Reviewer', 'role' => 'hooks.read_only_helper_ready']);
+        $retired = Agent::query()->create(['name' => 'Gone', 'role' => 'hooks.read_only_helper_ready']);
         $retired->retireAt(CarbonImmutable::now());
 
         $firstPage = $registry->assigneeProvider(ActorKind::Agent)->eligible(new Page(null, 1));

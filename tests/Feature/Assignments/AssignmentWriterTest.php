@@ -53,7 +53,7 @@ final class AssignmentWriterTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->main = Agent::query()->create(['name' => 'Main', 'role' => 'hooks.main_ready']);
-        $this->helper = Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.helper_ready']);
+        $this->helper = Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.read_only_helper_ready']);
         $this->task = Task::query()->create(['title' => 'Write the reader'])->assignmentIdentity();
         $this->startUserRequestAs($this->owner->id);
     }

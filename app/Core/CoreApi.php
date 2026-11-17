@@ -11,7 +11,10 @@ use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Actors\Support\ActorContext;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Agents\Contracts\AgentReader;
+use App\Core\Agents\Contracts\AgentRetirement;
 use App\Core\Agents\Contracts\SessionReader;
+use App\Core\Agents\Exceptions\AgentNotAvailable;
+use App\Core\Agents\Exceptions\AgentRetirementDenied;
 use App\Core\Agents\Support\AgentLabel;
 use App\Core\Agents\Support\SessionOption;
 use App\Core\Assignments\Contracts\AssignableProvider;
@@ -236,6 +239,9 @@ final class CoreApi
             AssignmentGroupTooLarge::class,
             AssigneeUnavailable::class,
             RecordUnavailable::class,
+            AgentNotAvailable::class,
+            AgentRetirementDenied::class,
+            AgentRetirement::class,
             AssignableListing::class,
             NumberedPage::class,
             AgentActorRequired::class,
