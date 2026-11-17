@@ -43,7 +43,7 @@ final class HookLaunchTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    private const TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'tasks'];
+    private const TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'tasks', 'links'];
 
     protected function setUp(): void
     {

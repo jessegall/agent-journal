@@ -79,6 +79,7 @@ trait CommittedHookStack
     {
         DB::table('agent_stacks')->truncate();
         DB::table('hook_calls')->truncate();
+        DB::table('links')->truncate();
     }
 
     protected function callAs(string $callId, ?string $inputDigest = null): void

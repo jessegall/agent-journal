@@ -61,7 +61,9 @@ final readonly class AgentStateMachine
                 $reply = $render($answer);
 
                 $row->saveFrames($answer->stack->records());
-                (new HookCall)->recordFor($identity, $reply->recordedAs($answer->decision->answerKind()), RecordedSteps::of($answer->steps));
+                $call = new HookCall;
+                $call->recordFor($identity, $reply->recordedAs($answer->decision->answerKind()), RecordedSteps::of($answer->steps));
+                $row->linkTo($call);
 
                 return $reply;
             });
