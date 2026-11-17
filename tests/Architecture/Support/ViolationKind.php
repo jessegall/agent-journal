@@ -22,6 +22,9 @@ enum ViolationKind: string
     case MigrationNameTwice = 'migration-name-twice';
     case RootMigrationChangesDomainTable = 'root-migration-changes-domain-table';
     case EventOutsideListener = 'event-outside-listener';
+    case StringEventName = 'string-event-name';
+    case ReRaisedEvent = 're-raised-event';
+    case ReRaisedReceivedEvent = 're-raised-received-event';
 
     public function reason(Violation $violation): string
     {
@@ -38,6 +41,9 @@ enum ViolationKind: string
             self::TableCreatedTwice => "creates table {$violation->used}, which {$violation->owner} also creates",
             self::MigrationNameTwice => "has the migration file name {$violation->used}, as does {$violation->owner}",
             self::RootMigrationChangesDomainTable => "changes table {$violation->used} of {$violation->owner} from database/migrations",
+            self::StringEventName => "names the event {$violation->used} by a string; name its event class instead",
+            self::ReRaisedEvent => "raises {$violation->used} again, an event of {$violation->owner}; only its owner raises it",
+            self::ReRaisedReceivedEvent => "passes the event it received, {$violation->used}, on to a raise; only the owner of an event raises it",
             self::EventOutsideListener => "names {$violation->used}, an event of {$violation->owner}; only a listener of {$violation->usingDomain} may name it, as an import, a type or ::class",
         };
     }

@@ -73,6 +73,36 @@ final readonly class BoundaryChecker
     }
 
     /**
+     * Events are named by their class, never by a string, and only their owner raises them.
+     *
+     * @param  list<EventCall>  $calls
+     * @return list<Violation>
+     */
+    public function eventCallViolations(array $calls): array
+    {
+        $violations = [];
+
+        foreach ($calls as $call) {
+            $userName = $this->domainHolding($call->file)->name ?? self::SHARED_PLACE;
+            $owner = $this->domainOwning($call->event);
+
+            if ($call->namesEventByString()) {
+                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $userName, ViolationKind::StringEventName);
+            }
+
+            if ($call->raisesReceivedEvent()) {
+                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $userName, ViolationKind::ReRaisedReceivedEvent);
+            }
+
+            if ($owner !== null && $owner->name !== $userName && $call->raisesClassEventOf($owner)) {
+                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $owner->name, ViolationKind::ReRaisedEvent);
+            }
+        }
+
+        return $violations;
+    }
+
+    /**
      * Another domain's event is named only in a listener, and only to hear it. This limits naming, not data flow.
      *
      * @return list<Violation>
