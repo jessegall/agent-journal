@@ -1,66 +1,89 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import ChatWindow from '@domain/chat/ChatWindow.vue';
-import type { ChatData } from '@generated/types/chat';
+import { usePage } from '@inertiajs/vue3';
+import type { Component } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 import PaneGrid from '@/components/panes/PaneGrid.vue';
-import WindowHost from '@/framework/WindowHost.vue';
-import PlansWindow from '@domain/plans/PlansWindow.vue';
-import type { PlanListData } from '@generated/types/plans';
-import SwitchCase from '@/components/kit/SwitchCase.vue';
-import RulesWindow from '@domain/rules/RulesWindow.vue';
-import type { RuleListData } from '@generated/types/rules';
 import { providePaneLayout } from '@/composables/usePaneLayout';
-import type { HomePage } from '@/types/generated';
+import WindowHost from '@/framework/WindowHost.vue';
+import type { WindowResult } from '@/generated/types/page-props';
+import { components } from '@/generated/ui-manifest';
+import type { HomeData, HomeWindowData } from '@/types/generated';
 import AgentBar from './AgentBar.vue';
 import InformationBar from './InformationBar.vue';
 
 /**
- * Home as version 5 draws it: the agent bar, the information bar, then the pane grid with the Chat, Plans and Rules
- * windows, each the owner's own window: its links change only its own part of Home's query, window[<key>].
+ * Home as version 5 draws it: the agent bar, the information bar, then the pane grid with the windows the installed
+ * domains offer, each loaded by its component name and fed by its own prop. A window's links change only its own part
+ * of Home's query, window[<key>].
  */
-const props = defineProps<{ page: HomePage; chat?: ChatData; plans?: PlanListData; rules?: RuleListData; session?: string }>();
+const props = defineProps<{ home: HomeData }>();
+const pageProps = usePage().props;
 
-providePaneLayout('home-layout', () => [
-    { key: 'chat', title: 'Chat', icon: 'chat' },
-    {
-        key: 'plans',
-        title: 'Plans',
-        icon: 'plan',
-        count: props.plans?.pagination.total,
-    },
-    {
-        key: 'rules',
-        title: 'Rules',
-        icon: 'rules',
-        count: props.rules?.pagination.total,
-    },
-]);
+/**
+ * A window's result once the browser has it, read for the pane's count when its data names a total.
+ */
+function resultOf(window: HomeWindowData): WindowResult<{ pagination?: { total: number } }> | undefined {
+    return pageProps[window.propName] as WindowResult<{ pagination?: { total: number } }> | undefined;
+}
 
-const agentName = computed(
-    () =>
-        props.chat?.sessions.find((each) => each.id === props.session)
-            ?.agentName,
+providePaneLayout('home-layout', () =>
+    props.home.windows.map((window) => {
+        const result = resultOf(window);
+
+        return {
+            key: window.paneKey,
+            title: window.title,
+            icon: window.icon,
+            count: result?.state === 'ready' ? result.data.pagination?.total : undefined,
+        };
+    }),
 );
 
+const windowsByPane = computed(() => new Map(props.home.windows.map((window) => [window.paneKey, window])));
+const loaded = new Map<string, Component>();
+
+function componentOf(window: HomeWindowData): Component {
+    const known = loaded.get(window.component);
+
+    if (known !== undefined) {
+        return known;
+    }
+
+    const component = defineAsyncComponent(async () => (await components[window.component]()).default as Component);
+    loaded.set(window.component, component);
+
+    return component;
+}
+
+/**
+ * The first section in Home's bar that names something, such as the agent the chat talks to.
+ */
+const barLabel = computed(() => {
+    for (const name of props.home.barProps) {
+        const result = pageProps[name] as WindowResult<{ label?: string }> | null | undefined;
+
+        if (result?.state === 'ready' && result.data.label !== undefined) {
+            return result.data.label;
+        }
+    }
+
+    return undefined;
+});
 </script>
 
 <template>
     <div class="flex h-full min-h-0 flex-col">
-        <AgentBar :agent-name="agentName" />
-        <InformationBar :agent-name="agentName" :layouts="page.layouts" />
+        <AgentBar :agent-name="barLabel" />
+        <InformationBar :agent-name="barLabel" :layouts="home.layouts" />
         <PaneGrid>
             <template #default="{ windowKey }">
-                <SwitchCase :value="windowKey">
-                    <template #chat>
-                        <WindowHost :component="ChatWindow" prop-name="window_chat_conversation" page-key="chat.conversation" />
-                    </template>
-                    <template #plans>
-                        <WindowHost :component="PlansWindow" prop-name="window_plans_list" page-key="plans.list" />
-                    </template>
-                    <template #rules>
-                        <WindowHost :component="RulesWindow" prop-name="window_rules_list" page-key="rules.list" />
-                    </template>
-                </SwitchCase>
+                <template v-if="windowsByPane.get(windowKey)">
+                    <WindowHost
+                        :component="componentOf(windowsByPane.get(windowKey)!)"
+                        :prop-name="windowsByPane.get(windowKey)!.propName"
+                        :page-key="windowsByPane.get(windowKey)!.key"
+                    />
+                </template>
             </template>
         </PaneGrid>
     </div>

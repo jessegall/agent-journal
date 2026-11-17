@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Domain\Web;
 
 use App\Domain\Access\AccessDomain;
-use App\Domain\Chat\ChatDomain;
 use App\Domain\Contracts\Domain;
-use App\Domain\Plans\PlansDomain;
-use App\Domain\Rules\RulesDomain;
+use App\Domain\Contracts\ProvidesPages;
+use App\Domain\Declarations\Page;
+use App\Domain\Declarations\Slot;
+use App\Domain\Enums\Icon;
+use App\Domain\Enums\SlotContextKind;
+use App\Domain\Web\Readers\HomeWindowReader;
 
-final class WebDomain implements Domain
+final class WebDomain implements Domain, ProvidesPages
 {
     public function description(): string
     {
@@ -24,7 +27,7 @@ final class WebDomain implements Domain
      */
     public function requires(): array
     {
-        return [AccessDomain::class, ChatDomain::class, PlansDomain::class, RulesDomain::class];
+        return [AccessDomain::class];
     }
 
     /**
@@ -33,5 +36,14 @@ final class WebDomain implements Domain
     public function exports(): array
     {
         return [];
+    }
+
+    public function pages(): array
+    {
+        return [
+            Page::make('home', 'Home', Icon::Home, HomeWindowReader::class, 'Home.vue')
+                ->at('')
+                ->slots(Slot::make('bar', SlotContextKind::Session)),
+        ];
     }
 }

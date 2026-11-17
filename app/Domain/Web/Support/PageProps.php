@@ -42,7 +42,10 @@ final readonly class PageProps
             $props[$section->propName] = $this->inertia->defer(fn () => $this->sectionResult($section, $request), $section->propName);
         }
 
-        return [...$props, 'inspector' => $this->inertia->optional(fn () => $this->inspectorResult($request))];
+        $props['inspector'] = $this->inertia->optional(fn () => $this->inspectorResult($request));
+
+        // Home also offers every window as its own optional prop.
+        return $page->key === DeclaredRoutes::HOME ? [...$props, ...$this->forHome($request)] : $props;
     }
 
     /**

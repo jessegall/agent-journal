@@ -50,15 +50,17 @@ final class HomePageTest extends TestCase
     public function test_home_shows_the_running_sessions_and_the_same_plans_slice_as_the_plans_page(): void
     {
         $this->actingAs($this->owner)->get('/?window[plans.list][q]=release&q=elsewhere')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('Home')
+            ->component('web/Home')
+            ->where('page.data.windows.0.paneKey', 'chat')
+            ->where('page.data.windows.1.paneKey', 'plans')
+            ->where('page.data.windows.2.paneKey', 'rules')
+            ->where('page.data.barProps', ['section_web_bar_chat_agent'])
             ->missing('window_chat_conversation')
-            ->missing('page.plans')
-            ->missing('page.chat')
+            ->missing('page.data.plans')
+            ->missing('page.data.chat')
             ->reloadOnly('window_plans_list', fn (AssertableInertia $reload) => $reload
                 ->where('window_plans_list.data.filters.q', 'release')
                 ->where('window_plans_list.data.pagination.total', 1))
-            ->missing('page.filters')
-            ->missing('page.plansView')
             ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
                 ->where('window_chat_conversation.state', 'ready')
                 ->where('window_chat_conversation.data.sessions.0.id', (string) $this->session->id)
@@ -72,7 +74,7 @@ final class HomePageTest extends TestCase
         Rule::query()->create(['text' => 'Write all code in plain English.']);
 
         $this->actingAs($this->owner)->get('/?window[plans.list][q]=release&window[rules.list][q]=phase')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->missing('page.rules')
+            ->missing('page.data.rules')
             ->reloadOnly(['window_plans_list', 'window_rules_list'], fn (AssertableInertia $reload) => $reload
                 ->where('window_plans_list.data.filters.q', 'release')
                 ->where('window_rules_list.data.filters.q', 'phase')
@@ -119,6 +121,14 @@ final class HomePageTest extends TestCase
         $this->actingAs($this->owner)->get('/chat')->assertInertia(fn (AssertableInertia $page) => $page
             ->loadDeferredProps('section_chat_dock_plans_waiting', fn (AssertableInertia $section) => $section
                 ->where('section_chat_dock_plans_waiting', null)));
+    }
+
+    public function test_homes_bar_names_the_chosen_agent_through_chats_section(): void
+    {
+        $this->actingAs($this->owner)->get("/?session={$this->session->id}")->assertInertia(fn (AssertableInertia $page) => $page
+            ->loadDeferredProps('section_web_bar_chat_agent', fn (AssertableInertia $section) => $section
+                ->where('section_web_bar_chat_agent.state', 'ready')
+                ->where('section_web_bar_chat_agent.data.label', 'Builder')));
     }
 
     public function test_a_blank_message_is_refused_on_its_body(): void

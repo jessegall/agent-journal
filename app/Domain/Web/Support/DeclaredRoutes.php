@@ -19,7 +19,10 @@ use Illuminate\Routing\Router;
  */
 final readonly class DeclaredRoutes
 {
-    private const string HOME = 'web.home';
+    /**
+     * The full key of Web's Home, the root of the site.
+     */
+    public const string HOME = 'web.home';
 
     public function __construct(private UiDeclarations $declarations) {}
 

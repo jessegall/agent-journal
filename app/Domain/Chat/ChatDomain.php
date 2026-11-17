@@ -15,20 +15,23 @@ use App\Domain\Chat\Enums\MessageState;
 use App\Domain\Chat\Exceptions\MessageBodyEmpty;
 use App\Domain\Chat\Http\Controllers\SendMessageController;
 use App\Domain\Chat\Readers\ChatWindowReader;
+use App\Domain\Chat\Readers\ChosenAgentSection;
 use App\Domain\Chat\States\Support\AnsweringMessageStateFactory;
 use App\Domain\Chat\States\Support\AnsweringMessageStateReference;
 use App\Domain\Contracts\Domain;
 use App\Domain\Contracts\ProvidesNavigation;
 use App\Domain\Contracts\ProvidesPages;
+use App\Domain\Contracts\ProvidesSections;
 use App\Domain\Contracts\ProvidesStates;
 use App\Domain\Declarations\ActionRoute;
 use App\Domain\Declarations\NavigationItem;
 use App\Domain\Declarations\Page;
+use App\Domain\Declarations\Section;
 use App\Domain\Declarations\Slot;
 use App\Domain\Enums\Icon;
 use App\Domain\Enums\SlotContextKind;
 
-final class ChatDomain implements Domain, ProvidesNavigation, ProvidesPages, ProvidesStates
+final class ChatDomain implements Domain, ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesStates
 {
     public function description(): string
     {
@@ -80,5 +83,10 @@ final class ChatDomain implements Domain, ProvidesNavigation, ProvidesPages, Pro
     public function navigation(): array
     {
         return [NavigationItem::page('conversation', 'Chat', Icon::Chat, position: 10)];
+    }
+
+    public function sections(): array
+    {
+        return [Section::make('agent', 'Agent', 'web.bar', SlotContextKind::Session, ChosenAgentSection::class, 'ChosenAgent.vue')];
     }
 }

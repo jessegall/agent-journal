@@ -42,10 +42,10 @@ final class LayoutsTest extends TestCase
         $this->actingAs($this->owner)->post('/layouts', ['name' => 'Focus', 'shape' => $this->shape]);
 
         $this->actingAs($this->owner)->get('/')->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.layouts.0.name', 'Focus')
-            ->where('page.layouts.1.name', 'Review')
-            ->where('page.layouts.1.shape.grid.windows', ['chat'])
-            ->missing('page.layoutsView'));
+            ->where('page.data.layouts.0.name', 'Focus')
+            ->where('page.data.layouts.1.name', 'Review')
+            ->where('page.data.layouts.1.shape.grid.windows', ['chat'])
+            ->missing('page.data.layoutsView'));
     }
 
     public function test_a_name_is_used_once_per_user_and_may_not_be_blank(): void
@@ -75,7 +75,7 @@ final class LayoutsTest extends TestCase
     {
         $theirs = Layout::query()->create(['user_id' => User::factory()->create()->id, 'name' => 'Theirs', 'shape' => $this->shape]);
 
-        $this->actingAs($this->owner)->get('/')->assertInertia(fn (AssertableInertia $page) => $page->where('page.layouts', []));
+        $this->actingAs($this->owner)->get('/')->assertInertia(fn (AssertableInertia $page) => $page->where('page.data.layouts', []));
         $this->actingAs($this->owner)->put("/layouts/{$theirs->id}", ['name' => 'Mine', 'shape' => $this->shape])->assertNotFound();
         $this->actingAs($this->owner)->delete("/layouts/{$theirs->id}")->assertNotFound();
         $this->actingAs($this->owner)->post('/layouts', ['name' => 'Theirs', 'shape' => $this->shape])->assertSessionHasNoErrors();
