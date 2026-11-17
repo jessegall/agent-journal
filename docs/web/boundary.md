@@ -64,6 +64,10 @@ Generated files are build output and ignored by git: `resources/js/types/generat
 - **Development**: the Vite container regenerates Wayfinder routes itself. After changing a page's PHP Data, run `npm run types:generate` (or `composer types:generate`); it is the one writer of the PHP types, so nothing races. Vite in the container polls for changes (`usePolling` when `LARAVEL_SAIL` is set), because a macOS-mounted folder sends no file events; without it the dev server and its SSR served stale code.
 - **Stale uses** of a renamed property or route fail `vue-tsc` after regenerating.
 
+## Sending a message (task 110)
+
+`App\Domain\Chat\Actions\SendMessage::send($body, StackTarget)` is the person's way to message a running agent's session: in one stack transaction it creates the message (body kept byte for byte; a blank body is refused with `MessageBodyEmpty`), asks that session to answer it and pushes the answering state through `PersonStacks`, so a guessed, ended or foreign target is refused and leaves no message. The agent path keeps `RequireMessageAnswer`. `MessageSent`, `MessageAnswered` and `MessageDismissed` (raised by `CloseMessage`) fire after the commit. `MessageRecords::conversationWith(StackTarget)` reads the conversation with a session for the person; its id is `"<agent>-<session>"`. States read their subject with the `forActor` scope: a person reads through `visibleToPerson`, an agent keeps its own scope.
+
 ## Interfaces at the seams (task 122, rule 15)
 
 - **Actor.** `App\Core\Actors\Actor` (its kind and id) is what the core talks to. The Access `User` is a person actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.

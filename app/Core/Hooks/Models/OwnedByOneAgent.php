@@ -49,6 +49,22 @@ trait OwnedByOneAgent
     }
 
     /**
+     * The read for whoever acts in this request: a person reads through visibleToPerson, anyone else keeps the agent
+     * scope, which still needs the agent context and fails without it.
+     *
+     * @param  Builder<static>  $query
+     */
+    #[Scope]
+    protected function forActor(Builder $query): void
+    {
+        $container = Container::getInstance();
+
+        if ($container->resolved(ActorContext::class) && $container->make(ActorContext::class)->isPerson()) {
+            $query->visibleToPerson();
+        }
+    }
+
+    /**
      * Route binding reads through the actor's own scope: a person's route binds through visibleToPerson, an agent's
      * through its own agent scope, and a request with no actor fails before any row is read.
      *

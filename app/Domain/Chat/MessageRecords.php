@@ -15,7 +15,7 @@ final readonly class MessageRecords
 {
     public function get(int $messageId): Message
     {
-        return Message::query()->find($messageId) ?? throw MessageMissing::forId($messageId);
+        return Message::query()->forActor()->find($messageId) ?? throw MessageMissing::forId($messageId);
     }
 
     /**
@@ -24,5 +24,20 @@ final readonly class MessageRecords
     public function addressedTo(StackTarget $target, int $messageId): Message
     {
         return Message::query()->ownedBy($target->agentId)->find($messageId) ?? throw MessageMissing::forId($messageId);
+    }
+
+    /**
+     * The conversation with one agent's session, as the person acting in this request may read it.
+     */
+    public function conversationWith(StackTarget $target): Conversation
+    {
+        $messages = Message::query()->visibleToPerson()
+            ->where('agent_id', $target->agentId)
+            ->where('session_id', $target->sessionId)
+            ->orderBy('id')
+            ->get()
+            ->all();
+
+        return new Conversation($target, array_values($messages));
     }
 }

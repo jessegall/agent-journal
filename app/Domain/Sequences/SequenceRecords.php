@@ -15,7 +15,7 @@ final readonly class SequenceRecords
 {
     public function get(int $runId): SequenceRun
     {
-        return SequenceRun::query()->find($runId) ?? throw SequenceRunMissing::forId($runId);
+        return SequenceRun::query()->forActor()->find($runId) ?? throw SequenceRunMissing::forId($runId);
     }
 
     /**
