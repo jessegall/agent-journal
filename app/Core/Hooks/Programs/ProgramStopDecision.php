@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Programs;
 
-enum NativeStopDecision: string
+enum ProgramStopDecision: string
 {
     case Block = 'block';
 }

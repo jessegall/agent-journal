@@ -14,7 +14,7 @@ use App\Core\Agents\Contracts\SessionReader;
 use App\Core\Agents\SessionOption;
 use App\Core\Contracts\Actor;
 use App\Core\Contracts\CurrentActor;
-use App\Core\Contracts\EstablishActor;
+use App\Core\Contracts\CurrentActorSetter;
 use App\Core\Hooks\Contracts\AgentStack;
 use App\Core\Hooks\Contracts\Answer;
 use App\Core\Hooks\Contracts\HookAnswerer;
@@ -22,8 +22,8 @@ use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Contracts\ReminderContribution;
 use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Hooks\Contracts\StackEditor;
+use App\Core\Hooks\Contracts\StackTransactionRunner;
 use App\Core\Hooks\Contracts\StackTransition;
-use App\Core\Hooks\Contracts\StackWork;
 use App\Core\Hooks\Contracts\StateRegistration;
 use App\Core\Hooks\Contracts\StateType;
 use App\Core\Hooks\Contracts\UserStack;
@@ -80,7 +80,7 @@ use App\Core\Links\LinkTypes;
 /**
  * Core's public surface: every type a domain or module may use, written out one by one. Everything else in Core is
  * private, whatever folder it sits in. Core is not a domain and is never required; domains use it without declaring it.
- * EstablishActor, LinkTypes and LinkTypeRenames are listed for the few places that compose the application (the
+ * CurrentActorSetter, LinkTypes and LinkTypeRenames are listed for the few places that compose the application (the
  * sign-in middleware, owner providers and migrations), not for ordinary use.
  */
 final class CoreApi
@@ -93,7 +93,7 @@ final class CoreApi
         return [
             Actor::class,
             CurrentActor::class,
-            EstablishActor::class,
+            CurrentActorSetter::class,
             ActorKind::class,
             ActorContext::class,
             ActorContextMissing::class,
@@ -105,7 +105,7 @@ final class CoreApi
             StackTarget::class,
             AgentStack::class,
             UserStack::class,
-            StackWork::class,
+            StackTransactionRunner::class,
             AgentState::class,
             StateType::class,
             Decision::class,

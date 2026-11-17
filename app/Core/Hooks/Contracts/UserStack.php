@@ -10,7 +10,7 @@ use App\Core\Hooks\UserStacks;
 use Illuminate\Container\Attributes\Bind;
 
 /**
- * Pushes a state onto a running agent's stack for the user acting in this request, inside the caller's StackWork.
+ * Pushes a state onto a running agent's stack for the user acting in this request, inside the caller's StackTransactionRunner.
  * Only a user may; the agent stays the target and its own role restores the stack.
  */
 #[Bind(UserStacks::class)]

@@ -63,7 +63,7 @@ final readonly class AgentStateMachine
                 }
 
                 $stackBefore = $this->restorer->restore($row->frames, $this->access->role());
-                $settled = $capabilities->settle($this->walk($stackBefore, $input), $stackBefore);
+                $settled = $capabilities->finalAnswer($this->walk($stackBefore, $input), $stackBefore);
                 $answer = $settled->withRemindersFirst($reminders);
                 $reply = $render($answer);
 
@@ -90,7 +90,7 @@ final readonly class AgentStateMachine
             return [];
         }
 
-        return $this->compaction->react($this->access->target(), $input->compactionId());
+        return $this->compaction->collectReminders($this->access->target(), $input->compactionId());
     }
 
     private function walk(AgentStack $stack, HookInput $input): HookAnswer

@@ -35,8 +35,8 @@ final class AgentVisibilityTest extends TestCase
         $this->giveWorkTo(new StackTarget(1, 11));
         $this->giveWorkTo(new StackTarget(2, 20));
         Message::query()->create(['body' => 'Not addressed yet']);
-        (new Memory(['text' => 'Kept by agent 1', 'weight' => 3]))->keepFor(1);
-        (new Memory(['text' => 'Kept by agent 2', 'weight' => 3]))->keepFor(2);
+        (new Memory(['text' => 'Kept by agent 1', 'weight' => 3]))->saveFor(1);
+        (new Memory(['text' => 'Kept by agent 2', 'weight' => 3]))->saveFor(2);
         Task::query()->create(['title' => 'Write the walk'])->startFor(new StackTarget(1, 10));
         Rule::query()->create(['text' => 'No phase waits on the user.']);
     }

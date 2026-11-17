@@ -18,7 +18,7 @@ final readonly class AgentMemories
     /**
      * Lowers every memory of the agent by one for this compaction, once: a repeated compaction id changes nothing.
      */
-    public function fadeOnce(int $agentId, int $sessionId, string $compactionId): void
+    public function lowerWeightsOnce(int $agentId, int $sessionId, string $compactionId): void
     {
         $now = CarbonImmutable::now();
         $isNew = $this->database->table('memory_compactions')->insertOrIgnore([

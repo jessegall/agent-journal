@@ -6,7 +6,7 @@ namespace App\Core\Hooks\Exceptions;
 
 use LogicException;
 
-final class ActivityAllowed extends LogicException
+final class NonBottomStateAllowed extends LogicException
 {
     public static function for(string $stateType, string $hookMethod): self
     {

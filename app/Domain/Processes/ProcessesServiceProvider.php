@@ -17,7 +17,7 @@ final class ProcessesServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(ShellCommandParser::class, HookCommandFacts::class);
+        $this->app->singleton(ShellCommandParser::class, ShellParser::class);
     }
 
     public function boot(LinkTypes $links): void

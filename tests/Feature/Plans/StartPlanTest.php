@@ -7,12 +7,12 @@ namespace Tests\Feature\Plans;
 use App\Core\Actors\ActorContext;
 use App\Core\Actors\ActorKind;
 use App\Core\Actors\Exceptions\ActorContextMissing;
-use App\Core\Contracts\EstablishActor;
+use App\Core\Contracts\CurrentActorSetter;
+use App\Domain\Plans\Api\Events\PlanStarted;
 use App\Domain\Plans\Api\PlanFilters;
 use App\Domain\Plans\Api\PlanKind;
 use App\Domain\Plans\Api\PlanState;
 use App\Domain\Plans\Contracts\PlanStarter;
-use App\Domain\Plans\Api\Events\PlanStarted;
 use App\Domain\Plans\Exceptions\StartDenied;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Plans\PlanRecords;
@@ -34,7 +34,7 @@ final class StartPlanTest extends TestCase
 
         Event::fake([PlanStarted::class]);
         $this->plan = Plan::query()->create(['title' => 'Build the plans page', 'kind' => PlanKind::Build]);
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
     }
 
     public function test_a_planned_plan_starts_once_and_says_who_started_it(): void

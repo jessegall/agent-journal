@@ -12,7 +12,7 @@ use App\Core\Agents\LaunchSessions;
 use App\Core\Agents\Models\Agent;
 use App\Core\Agents\Models\AgentSession;
 use App\Core\Agents\SessionOption;
-use App\Core\Contracts\EstablishActor;
+use App\Core\Contracts\CurrentActorSetter;
 use App\Core\Hooks\Exceptions\StackTargetRefused;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
@@ -97,7 +97,7 @@ final class AgentReadersTest extends TestCase
         $this->assertSame(['Builder', 'Reviewer'], [$labels[$this->builder->id]->name, $labels[$this->reviewer->id]->name]);
         $this->assertArrayNotHasKey(999999, $labels);
 
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forAgent($this->reviewer->id));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->reviewer->id));
         $this->assertSame([$this->reviewer->id], array_keys($this->app->make(AgentReader::class)->labelsFor([$this->builder->id, $this->reviewer->id])));
     }
 
@@ -110,7 +110,7 @@ final class AgentReadersTest extends TestCase
 
     private function actAs(ActorContext $actor): void
     {
-        $this->app->make(EstablishActor::class)->establish($actor);
+        $this->app->make(CurrentActorSetter::class)->set($actor);
     }
 
     private function sessions(): SessionReader

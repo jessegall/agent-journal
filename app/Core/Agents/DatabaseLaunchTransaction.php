@@ -11,7 +11,7 @@ use Illuminate\Database\ConnectionInterface;
 /**
  * A plain database transaction, used while no other domain supplies a launch transaction.
  */
-final readonly class PlainLaunchTransaction implements LaunchTransaction
+final readonly class DatabaseLaunchTransaction implements LaunchTransaction
 {
     public function __construct(private ConnectionInterface $database) {}
 

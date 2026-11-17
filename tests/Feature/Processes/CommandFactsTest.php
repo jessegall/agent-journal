@@ -6,11 +6,11 @@ namespace Tests\Feature\Processes;
 
 use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Hooks\Decisions\AnswerKind;
-use App\Core\Hooks\Exceptions\CommandFactsMissing;
+use App\Core\Hooks\Exceptions\ShellParserMissing;
 use App\Core\Hooks\Inputs\CommandEffect;
 use App\Core\Hooks\Inputs\CommandKind;
 use App\Core\Hooks\Inputs\HookIdentity;
-use App\Core\Hooks\Inputs\MissingCommandFacts;
+use App\Core\Hooks\Inputs\MissingShellParser;
 use App\Core\Hooks\Inputs\ParseOutcome;
 use App\Core\Hooks\Inputs\PartJoin;
 use App\Core\Hooks\Inputs\ShellCommand;
@@ -19,8 +19,8 @@ use App\Core\Hooks\Inputs\ShellDialect;
 use App\Core\Hooks\States\MainAgentReady;
 use App\Core\Hooks\States\ReadOnlyHelperReady;
 use App\Core\Hooks\States\Ready;
-use App\Domain\Processes\HookCommandFacts;
 use App\Domain\Processes\Models\SavedCommand;
+use App\Domain\Processes\ShellParser;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -70,7 +70,7 @@ final class CommandFactsTest extends TestCase
 
     public function test_the_app_reads_shell_commands_with_the_processes_parser(): void
     {
-        $this->assertInstanceOf(HookCommandFacts::class, $this->app->make(ShellCommandParser::class));
+        $this->assertInstanceOf(ShellParser::class, $this->app->make(ShellCommandParser::class));
     }
 
     public function test_a_line_is_split_into_its_commands_and_joins(): void
@@ -103,9 +103,9 @@ final class CommandFactsTest extends TestCase
 
     public function test_without_a_parser_every_shell_command_fails_by_name(): void
     {
-        $this->expectException(CommandFactsMissing::class);
+        $this->expectException(ShellParserMissing::class);
 
-        (new MissingCommandFacts)->parse('git status', ShellDialect::Bash);
+        (new MissingShellParser)->parse('git status', ShellDialect::Bash);
     }
 
     private function parse(string $line): ShellCommand

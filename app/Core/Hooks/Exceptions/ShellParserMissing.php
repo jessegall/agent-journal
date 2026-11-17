@@ -9,7 +9,7 @@ use LogicException;
 /**
  * No domain supplies the parser that reads shell commands, so no shell command can be judged.
  */
-final class CommandFactsMissing extends LogicException
+final class ShellParserMissing extends LogicException
 {
     public static function forLine(): self
     {

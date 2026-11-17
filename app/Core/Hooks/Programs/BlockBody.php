@@ -12,7 +12,7 @@ use Spatie\LaravelData\Data;
 final class BlockBody extends Data
 {
     public function __construct(
-        public readonly NativeStopDecision $decision,
+        public readonly ProgramStopDecision $decision,
         public readonly string $reason,
     ) {}
 }

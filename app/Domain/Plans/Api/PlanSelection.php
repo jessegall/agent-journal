@@ -12,7 +12,7 @@ final readonly class PlanSelection
 {
     private function __construct(
         public ?PlanCard $card,
-        public bool $wasAskedFor,
+        public bool $wasRequested,
         public bool $isInsideFilter,
     ) {}
 
@@ -33,6 +33,6 @@ final readonly class PlanSelection
 
     public function isMissing(): bool
     {
-        return $this->wasAskedFor && $this->card === null;
+        return $this->wasRequested && $this->card === null;
     }
 }

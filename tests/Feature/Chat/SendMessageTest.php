@@ -7,18 +7,18 @@ namespace Tests\Feature\Chat;
 use App\Core\Actors\ActorContext;
 use App\Core\Agents\LaunchSessions;
 use App\Core\Agents\Models\Agent;
-use App\Core\Contracts\EstablishActor;
+use App\Core\Contracts\CurrentActorSetter;
 use App\Core\Hooks\Exceptions\StackTargetRefused;
 use App\Core\Hooks\Models\AgentStackRow;
 use App\Core\Hooks\StackTarget;
 use App\Core\Hooks\Storage\FrameRecord;
 use App\Domain\Chat\Actions\CloseMessage;
 use App\Domain\Chat\Actions\SendMessage;
-use App\Domain\Chat\Api\MessageState;
-use App\Domain\Chat\Api\MessageView;
 use App\Domain\Chat\Api\Events\MessageAnswered;
 use App\Domain\Chat\Api\Events\MessageDismissed;
 use App\Domain\Chat\Api\Events\MessageSent;
+use App\Domain\Chat\Api\MessageState;
+use App\Domain\Chat\Api\MessageView;
 use App\Domain\Chat\Exceptions\MessageBodyEmpty;
 use App\Domain\Chat\MessageRecords;
 use App\Domain\Chat\Models\Message;
@@ -45,7 +45,7 @@ final class SendMessageTest extends TestCase
         $agent = Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']);
         $session = $this->app->make(LaunchSessions::class)->launch($agent, 'claude-code')->session;
         $this->target = new StackTarget($session->agent_id, $session->id);
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
     }
 
     public function test_a_sent_message_keeps_its_text_waits_for_the_agent_and_sits_on_its_stack(): void

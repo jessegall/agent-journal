@@ -6,7 +6,7 @@ namespace Tests\Feature\Plans;
 
 use App\Core\Actors\ActorContext;
 use App\Core\Agents\Models\Agent;
-use App\Core\Contracts\EstablishActor;
+use App\Core\Contracts\CurrentActorSetter;
 use App\Domain\Plans\Api\PlanCard;
 use App\Domain\Plans\Api\PlanFilters;
 use App\Domain\Plans\Api\PlanKind;
@@ -28,7 +28,7 @@ final class PlanRecordsTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
 
         $this->build = Plan::query()->create(['title' => 'Build the release page', 'kind' => PlanKind::Build]);
         $read = $this->build->addPhase('Read');

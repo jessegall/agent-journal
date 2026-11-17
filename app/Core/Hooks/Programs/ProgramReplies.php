@@ -20,7 +20,7 @@ final class ProgramReplies
     /**
      * @param  list<string>  $context
      */
-    public static function admitTool(array $context): ProgramReply
+    public static function allowTool(array $context): ProgramReply
     {
         return ProgramReply::json(PreToolBody::from(['hookSpecificOutput' => self::withContext([], $context)]));
     }
@@ -31,7 +31,7 @@ final class ProgramReplies
     public static function denyTool(string $reason, array $context): ProgramReply
     {
         return ProgramReply::json(PreToolBody::from(['hookSpecificOutput' => self::withContext([
-            'permissionDecision' => NativePermission::Deny,
+            'permissionDecision' => ProgramPermission::Deny,
             'permissionDecisionReason' => $reason,
         ], $context)]));
     }
@@ -48,12 +48,12 @@ final class ProgramReplies
     /**
      * The reply to a shell command after the walk and any rewrite check are done.
      */
-    public static function shell(HookAnswer $answer, NativeToolInput $original, RewriteSupport $rewrites): ProgramReply
+    public static function shell(HookAnswer $answer, ProgramToolInput $original, RewriteSupport $rewrites): ProgramReply
     {
         $kind = $answer->decision->answerKind();
 
         return match ($kind) {
-            AnswerKind::Allow => self::admitTool($answer->context),
+            AnswerKind::Allow => self::allowTool($answer->context),
             AnswerKind::Deny => self::denyTool($answer->decision->refusalReason(), $answer->context),
             AnswerKind::Rewrite => $rewrites->reply($answer, $original),
             AnswerKind::Delegate, AnswerKind::PreventStop => throw InvalidShellAnswer::forAnswer($kind->value),
@@ -66,7 +66,7 @@ final class ProgramReplies
 
         return match ($kind) {
             AnswerKind::PreventStop => ProgramReply::json(BlockBody::from([
-                'decision' => NativeStopDecision::Block,
+                'decision' => ProgramStopDecision::Block,
                 'reason' => implode("\n", [$answer->decision->refusalReason(), ...$answer->context]),
             ])),
             AnswerKind::Allow => ProgramReply::emptyObject(),
@@ -83,7 +83,7 @@ final class ProgramReplies
 
         return match ($kind) {
             AnswerKind::Deny => ProgramReply::json(BlockBody::from([
-                'decision' => NativeStopDecision::Block,
+                'decision' => ProgramStopDecision::Block,
                 'reason' => $answer->decision->refusalReason(),
             ])),
             AnswerKind::Allow => self::observation('UserPromptSubmit', $answer),

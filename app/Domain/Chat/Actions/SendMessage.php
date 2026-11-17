@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat\Actions;
 
-use App\Core\Hooks\Contracts\StackWork;
+use App\Core\Hooks\Contracts\StackTransactionRunner;
 use App\Core\Hooks\Contracts\UserStack;
 use App\Core\Hooks\StackTarget;
 use App\Domain\Chat\AnsweringMessageReference;
@@ -24,7 +24,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class SendMessage implements MessageSender
 {
     public function __construct(
-        private StackWork $transaction,
+        private StackTransactionRunner $transaction,
         private UserStack $stacks,
         private Dispatcher $events,
     ) {}

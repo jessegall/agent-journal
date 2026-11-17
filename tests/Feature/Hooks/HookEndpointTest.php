@@ -11,7 +11,7 @@ use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Hooks\Inputs\CommandEffect;
 use App\Core\Hooks\Inputs\CommandKind;
 use App\Core\Hooks\Inputs\CommandPart;
-use App\Core\Hooks\Inputs\MissingCommandFacts;
+use App\Core\Hooks\Inputs\MissingShellParser;
 use App\Core\Hooks\Inputs\ParseOutcome;
 use App\Core\Hooks\Inputs\ShellCommand;
 use App\Core\Hooks\Inputs\ShellDialect;
@@ -92,7 +92,7 @@ final class HookEndpointTest extends TestCase
 
     public function test_without_a_parser_a_shell_call_is_refused_and_nothing_is_recorded(): void
     {
-        $this->app->instance(ShellCommandParser::class, new MissingCommandFacts);
+        $this->app->instance(ShellCommandParser::class, new MissingShellParser);
 
         $this->hook('claude-code', $this->bashBody('git status'))->assertStatus(503);
 

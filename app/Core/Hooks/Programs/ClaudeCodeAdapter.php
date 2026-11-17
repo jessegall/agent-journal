@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Programs;
 
-use App\Core\Hooks\Contracts\NativeCall;
 use App\Core\Hooks\Contracts\ProgramAdapter;
+use App\Core\Hooks\Contracts\ProgramCall;
 use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Hooks\Exceptions\UnreadablePayload;
 use App\Core\Hooks\Exceptions\UnsupportedHook;
@@ -51,24 +51,24 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         );
     }
 
-    public function callFor(HookPayload $payload, HookIdentity $hook): NativeCall
+    public function callFor(HookPayload $payload, HookIdentity $hook): ProgramCall
     {
         return match ($payload->hookEventName) {
             'SessionStart' => $this->startCall($payload, $hook),
-            'UserPromptSubmit' => new JournalCall(
+            'UserPromptSubmit' => new JudgedCall(
                 new PromptSubmitted($hook, new PromptDetails($hook->hookId, $payload->promptText())),
                 fn (HookAnswer $answer) => ProgramReplies::prompt($answer),
             ),
             'PreToolUse' => $this->toolCall($payload, $hook),
-            'PostToolUse' => new JournalCall(
+            'PostToolUse' => new JudgedCall(
                 new ToolFinished($hook, new ToolResult($payload->toolNameText(), $payload->toolOutcome())),
                 fn (HookAnswer $answer) => ProgramReplies::observation('PostToolUse', $answer),
             ),
-            'Stop' => new JournalCall(
+            'Stop' => new JudgedCall(
                 new StopRequested($hook, new StopDetails($hook->hookId, $payload->isStopContinuation())),
                 fn (HookAnswer $answer) => ProgramReplies::stop($answer),
             ),
-            'SessionEnd' => new JournalCall(
+            'SessionEnd' => new JudgedCall(
                 new SessionEnded($hook, new SessionEndDetails($this->endReason($payload))),
                 fn (HookAnswer $answer) => ProgramReplies::observation('SessionEnd', $answer),
             ),
@@ -76,7 +76,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         };
     }
 
-    public function renderShell(HookAnswer $answer, NativeToolInput $original): ProgramReply
+    public function renderShell(HookAnswer $answer, ProgramToolInput $original): ProgramReply
     {
         return ProgramReplies::shell($answer, $original, RewriteSupport::WithoutApproval);
     }
@@ -89,36 +89,36 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
     /**
      * A start after a compaction is the compaction itself, identified by this callback's id, which its retries share.
      */
-    private function startCall(HookPayload $payload, HookIdentity $hook): NativeCall
+    private function startCall(HookPayload $payload, HookIdentity $hook): ProgramCall
     {
         $source = $payload->startSource();
         $input = $source === SessionStartSource::Compact
             ? new ContextCompacted($hook, new CompactionDetails($hook->hookId))
             : new SessionStarted($hook, new SessionStartDetails($payload->sessionId, $source));
 
-        return new JournalCall($input, fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer));
+        return new JudgedCall($input, fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer));
     }
 
-    private function toolCall(HookPayload $payload, HookIdentity $hook): NativeCall
+    private function toolCall(HookPayload $payload, HookIdentity $hook): ProgramCall
     {
         $tool = ClaudeCodeTool::named($payload->toolNameText());
 
         if ($tool === ClaudeCodeTool::Bash) {
-            $original = new NativeToolInput($payload->toolArguments());
+            $original = new ProgramToolInput($payload->toolArguments());
             $command = $this->parser->parse($payload->argument('command'), ShellDialect::Bash);
 
-            return new JournalCall(new ShellCommandRequested($hook, $command), fn (HookAnswer $answer) => $this->renderShell($answer, $original));
+            return new JudgedCall(new ShellCommandRequested($hook, $command), fn (HookAnswer $answer) => $this->renderShell($answer, $original));
         }
 
         if ($tool->changesFiles()) {
-            $original = new NativeToolInput($payload->toolArguments());
+            $original = new ProgramToolInput($payload->toolArguments());
             $path = $payload->argument('file_path', 'notebook_path');
             $edit = new FileEditRequested($hook, new FileChanges([new FileChange($path, $tool->fileOperation())]));
 
-            return new JournalCall($edit, fn (HookAnswer $answer) => $this->renderShell($answer, $original));
+            return new JudgedCall($edit, fn (HookAnswer $answer) => $this->renderShell($answer, $original));
         }
 
-        return new UntouchedCall(ProgramReplies::admitTool([]));
+        return new UnjudgedCall(ProgramReplies::allowTool([]));
     }
 
     private function endReason(HookPayload $payload): SessionEndReason

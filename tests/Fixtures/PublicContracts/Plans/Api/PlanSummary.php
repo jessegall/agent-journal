@@ -10,8 +10,8 @@ final readonly class PlanSummary
 {
     public function __construct(public string $title) {}
 
-    public function firstTask(): ?TaskRecord
+    public function firstTask(): TaskRecord
     {
-        return null;
+        return new TaskRecord(1);
     }
 }

@@ -7,9 +7,9 @@ namespace App\Core\Hooks\Http;
 use App\Core\Agents\LaunchSessions;
 use App\Core\Hooks\AgentStateMachine;
 use App\Core\Hooks\Contracts\HookInput;
-use App\Core\Hooks\Exceptions\CommandFactsMissing;
 use App\Core\Hooks\Exceptions\HookDigestChanged;
 use App\Core\Hooks\Exceptions\HookIdentityExpired;
+use App\Core\Hooks\Exceptions\ShellParserMissing;
 use App\Core\Hooks\Exceptions\StackLockTimedOut;
 use App\Core\Hooks\Exceptions\UnreadablePayload;
 use App\Core\Hooks\Exceptions\UnsupportedHook;
@@ -50,7 +50,7 @@ final readonly class HookController
             return $this->failure($refused->getMessage(), Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (HookIdentityExpired|HookDigestChanged $conflict) {
             return $this->failure($conflict->getMessage(), Response::HTTP_CONFLICT);
-        } catch (CommandFactsMissing|StackLockTimedOut $unavailable) {
+        } catch (ShellParserMissing|StackLockTimedOut $unavailable) {
             return $this->failure($unavailable->getMessage(), Response::HTTP_SERVICE_UNAVAILABLE);
         }
 

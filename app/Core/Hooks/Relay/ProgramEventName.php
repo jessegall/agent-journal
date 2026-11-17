@@ -7,7 +7,7 @@ namespace App\Core\Hooks\Relay;
 /**
  * The native hook event a raw payload names, read without trusting anything else in it.
  */
-final class NativeEventName
+final class ProgramEventName
 {
     public static function of(string $payload): string
     {

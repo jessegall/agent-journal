@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Core\Actors\ActorStore;
-use App\Core\Contracts\EstablishActor;
+use App\Core\Contracts\CurrentActorSetter;
 use App\Core\CoreApi;
 use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Domain\DomainRegistry;
@@ -20,19 +20,19 @@ use Tests\TestCase;
 
 /**
  * The bindings the code states are sound, Core's parser comes from Processes, and only the authentication sites
- * establish who acts in a request. Closures in providers are not judged.
+ * set who acts in a request. Closures in providers are not judged.
  */
 final class BindingRulesTest extends TestCase
 {
     /**
-     * The files that may name the actor store or establish an actor: the store, its two contracts, Core's list,
+     * The files that may name the actor store or set the actor: the store, its two contracts, Core's list,
      * the two middleware that authenticate a request and the provider that reads the actor.
      */
     private const array ACTOR_SITES = [
         'app/Core/Actors/ActorStore.php',
         'app/Core/Actors/ActorsServiceProvider.php',
         'app/Core/Contracts/CurrentActor.php',
-        'app/Core/Contracts/EstablishActor.php',
+        'app/Core/Contracts/CurrentActorSetter.php',
         'app/Core/CoreApi.php',
         'app/Core/Agents/Http/Middleware/AuthenticateAgent.php',
         'app/Domain/Access/Http/Middleware/AuthenticateUser.php',
@@ -74,13 +74,13 @@ final class BindingRulesTest extends TestCase
         $this->assertStringStartsWith('App\Domain\Processes\\', $this->app->make(ShellCommandParser::class)::class);
     }
 
-    public function test_only_the_authentication_sites_name_the_actor_store_or_establish_an_actor(): void
+    public function test_only_the_authentication_sites_name_the_actor_store_or_set_the_actor(): void
     {
         $roots = ProjectRoots::fromComposer(base_path('composer.json'));
         $uses = DomainFiles::usesIn(DomainFiles::in([app_path(), base_path('bootstrap'), base_path('routes')]), $roots);
         $sites = array_map(base_path(...), self::ACTOR_SITES);
 
-        $outside = array_filter($uses, fn (NameUse $use) => in_array(ltrim($use->name, '\\'), [EstablishActor::class, ActorStore::class], true)
+        $outside = array_filter($uses, fn (NameUse $use) => in_array(ltrim($use->name, '\\'), [CurrentActorSetter::class, ActorStore::class], true)
             && ! in_array($use->file, $sites, true));
 
         $this->assertSame([], array_values(array_map(fn (NameUse $use) => "{$use->file}:{$use->line} {$use->name}", $outside)));

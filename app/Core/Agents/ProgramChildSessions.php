@@ -11,7 +11,7 @@ use App\Core\Agents\Models\AgentSession;
  * Gives a child agent its own journal session, credential and stack under its parent session, so a child's stop
  * never answers for its parent. A program's own child tool without an identity of its own stays turned off.
  */
-final readonly class NativeChildSessions
+final readonly class ProgramChildSessions
 {
     public function __construct(private LaunchSessions $launches) {}
 

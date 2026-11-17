@@ -10,7 +10,7 @@ use App\Core\Hooks\Console\PruneHookHistoryCommand;
 use App\Core\Hooks\Console\RelayHookCommand;
 use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Hooks\Contracts\StateFactory;
-use App\Core\Hooks\Inputs\MissingCommandFacts;
+use App\Core\Hooks\Inputs\MissingShellParser;
 use App\Core\Hooks\Models\AgentSessionScope;
 use App\Core\Hooks\Models\AgentStackRow;
 use App\Core\Hooks\Models\HookCall;
@@ -35,7 +35,7 @@ final class HooksServiceProvider extends ServiceProvider
             $this->app->make('config')->integer('hooks.hook_call_days'),
             $this->app->make('config')->integer('hooks.closed_stack_days'),
         ));
-        $this->app->bindIf(ShellCommandParser::class, MissingCommandFacts::class);
+        $this->app->bindIf(ShellCommandParser::class, MissingShellParser::class);
         $this->app->scoped(StateFactory::class, RegisteredStateFactory::class);
         $this->app->singleton(OperationDeadline::class, fn () => new OperationDeadline($this->app->make('config')->integer('hooks.operation_deadline_milliseconds')));
         $this->app->singleton(HookRetryWindow::class, fn () => new HookRetryWindow($this->app->make('config')->integer('hooks.retry_seconds')));

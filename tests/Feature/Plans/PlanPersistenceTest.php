@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Plans;
 
 use App\Core\Actors\ActorContext;
-use App\Core\Contracts\EstablishActor;
+use App\Core\Contracts\CurrentActorSetter;
 use App\Core\Hooks\StackTarget;
 use App\Domain\Plans\Api\PlanKind;
 use App\Domain\Plans\Api\PlanState;
@@ -56,7 +56,7 @@ final class PlanPersistenceTest extends TestCase
 
     public function test_tasks_count_progress_by_id_including_none(): void
     {
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
         $done = $this->task('Done');
         $done->finish();
         $started = $this->task('Started');

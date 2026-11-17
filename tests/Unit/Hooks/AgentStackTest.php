@@ -11,12 +11,12 @@ use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
 use App\Core\Hooks\Decisions\TransitionKind;
-use App\Core\Hooks\Exceptions\ActivityAllowed;
 use App\Core\Hooks\Exceptions\BottomStateCannotFinish;
 use App\Core\Hooks\Exceptions\BottomStateDelegated;
-use App\Core\Hooks\Exceptions\CoveredStatePushed;
 use App\Core\Hooks\Exceptions\InvalidHookAnswer;
 use App\Core\Hooks\Exceptions\MissingBottomState;
+use App\Core\Hooks\Exceptions\NonBottomStateAllowed;
+use App\Core\Hooks\Exceptions\StateBelowTopPushed;
 use App\Core\Hooks\Inputs\StopRequested;
 use App\Core\Hooks\Stack\AgentStack;
 use App\Core\Hooks\Stack\Frame;
@@ -186,7 +186,7 @@ final class AgentStackTest extends TestCase
     {
         $stack = $this->stack($this->ready(), $this->frame('top', new ScriptedState(Decision::allow())));
 
-        $this->expectException(ActivityAllowed::class);
+        $this->expectException(NonBottomStateAllowed::class);
 
         $stack->answer($this->stop());
     }
@@ -237,7 +237,7 @@ final class AgentStackTest extends TestCase
             $this->frame('top', new ScriptedState(Decision::pop())),
         ], $factory);
 
-        $this->expectException(CoveredStatePushed::class);
+        $this->expectException(StateBelowTopPushed::class);
 
         $stack->answer($this->stop());
     }

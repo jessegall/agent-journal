@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Core\Hooks\Contracts\HookInput;
-use App\Core\Hooks\Contracts\NativeCall;
+use App\Core\Hooks\Contracts\ProgramCall;
 use App\Core\Hooks\Inputs\HookIdentity;
 use App\Core\Hooks\Programs\HookPayload;
-use App\Core\Hooks\Programs\JournalCall;
+use App\Core\Hooks\Programs\JudgedCall;
 
 /**
  * What the adapter tests of every program share: its recorded fixture, its mapping as a data provider, and reading a call's input.
@@ -37,9 +37,9 @@ trait ChecksProgramFixtures
         return self::programFixture()->payload($name);
     }
 
-    protected function inputOf(NativeCall $call): HookInput
+    protected function inputOf(ProgramCall $call): HookInput
     {
-        $this->assertInstanceOf(JournalCall::class, $call);
+        $this->assertInstanceOf(JudgedCall::class, $call);
 
         return $call->input;
     }

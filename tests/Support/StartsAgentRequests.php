@@ -7,7 +7,7 @@ namespace Tests\Support;
 use App\Core\Actors\ActorContext;
 use App\Core\Agents\AgentContext;
 use App\Core\Agents\SignedCall;
-use App\Core\Contracts\EstablishActor;
+use App\Core\Contracts\CurrentActorSetter;
 use Carbon\CarbonImmutable;
 
 /**
@@ -23,11 +23,11 @@ trait StartsAgentRequests
             'hooks.main_ready',
             new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
         ));
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forAgent($agentId));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId));
     }
 
     protected function startUserRequestAs(int $userId): void
     {
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forUser($userId));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($userId));
     }
 }

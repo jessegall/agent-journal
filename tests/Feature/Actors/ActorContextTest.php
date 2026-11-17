@@ -11,7 +11,7 @@ use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Agents\AgentContext;
 use App\Core\Agents\SignedCall;
 use App\Core\Contracts\CurrentActor;
-use App\Core\Contracts\EstablishActor;
+use App\Core\Contracts\CurrentActorSetter;
 use App\Domain\Access\AccessSettings;
 use App\Domain\Access\Models\User;
 use Carbon\CarbonImmutable;
@@ -31,7 +31,7 @@ final class ActorContextTest extends TestCase
 
     public function test_the_next_request_on_a_worker_does_not_see_the_previous_actor(): void
     {
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
         $this->assertSame([ActorKind::User, 7], [$this->app->make(ActorContext::class)->kind, $this->app->make(ActorContext::class)->id]);
 
         $this->app->forgetScopedInstances();
@@ -45,10 +45,10 @@ final class ActorContextTest extends TestCase
         $actors = $this->app->make(CurrentActor::class);
         $this->assertFalse($actors->hasActor());
 
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forAgent(3));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(3));
         $this->assertSame([ActorKind::Agent, 3], [$actors->actor()->kind, $actors->actor()->id]);
 
-        $this->app->make(EstablishActor::class)->clear();
+        $this->app->make(CurrentActorSetter::class)->clear();
         $this->assertFalse($actors->hasActor());
         $this->expectException(ActorContextMissing::class);
         $actors->actor();

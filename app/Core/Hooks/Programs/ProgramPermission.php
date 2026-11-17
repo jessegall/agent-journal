@@ -7,7 +7,7 @@ namespace App\Core\Hooks\Programs;
 /**
  * The only native permission decision the journal sends: a denial. It never grants a native approval.
  */
-enum NativePermission: string
+enum ProgramPermission: string
 {
     case Deny = 'deny';
 }

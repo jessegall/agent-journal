@@ -6,8 +6,8 @@ namespace Tests\Unit\Hooks\Programs;
 
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Exceptions\UnsupportedHook;
-use App\Core\Hooks\Programs\NativeToolInput;
 use App\Core\Hooks\Programs\ProgramCapabilities;
+use App\Core\Hooks\Programs\ProgramToolInput;
 use App\Core\Hooks\Programs\RewriteSupport;
 use App\Core\Hooks\Stack\AgentStack;
 use App\Core\Hooks\Stack\HookAnswer;
@@ -45,7 +45,7 @@ final class ProgramCapabilitiesTest extends TestCase
     public function test_the_rewrite_support_decides_between_a_rewrite_and_a_refusal(): void
     {
         $answer = new HookAnswer(Decision::rewrite('journal run tests'), [], [], new AgentStack([], new InMemoryStateFactory));
-        $original = new NativeToolInput(['command' => 'composer test']);
+        $original = new ProgramToolInput(['command' => 'composer test']);
 
         $taken = $this->capabilities(RewriteSupport::WithoutApproval)->rewrites->reply($answer, $original);
         $refused = $this->capabilities(RewriteSupport::NeedsApproval)->rewrites->reply($answer, $original);

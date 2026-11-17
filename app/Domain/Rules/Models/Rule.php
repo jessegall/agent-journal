@@ -53,12 +53,12 @@ final class Rule extends Model
 
     public function approve(): void
     {
-        $this->settleProposal(RuleState::Active);
+        $this->closeProposal(RuleState::Active);
     }
 
     public function deny(): void
     {
-        $this->settleProposal(RuleState::Denied);
+        $this->closeProposal(RuleState::Denied);
     }
 
     public function canBeReviewed(): bool
@@ -72,7 +72,7 @@ final class Rule extends Model
         $this->save();
     }
 
-    private function settleProposal(RuleState $outcome): void
+    private function closeProposal(RuleState $outcome): void
     {
         if ($this->state !== RuleState::Proposed) {
             throw RuleNotProposed::inState($this->state->value);

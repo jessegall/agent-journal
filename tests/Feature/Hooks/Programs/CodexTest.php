@@ -14,7 +14,7 @@ use App\Core\Hooks\Inputs\FileOperation;
 use App\Core\Hooks\Inputs\ShellCommandRequested;
 use App\Core\Hooks\Inputs\StopRequested;
 use App\Core\Hooks\Programs\CodexAdapter;
-use App\Core\Hooks\Programs\JournalCall;
+use App\Core\Hooks\Programs\JudgedCall;
 use App\Core\Hooks\Programs\ProgramReplies;
 use App\Core\Hooks\Programs\ProgramReply;
 use App\Core\Hooks\Stack\AgentStack;
@@ -99,7 +99,7 @@ final class CodexTest extends TestCase
         $stackAfter = new AgentStack([new Frame('guide', new StateReference('guide', NoSubject::None), ScriptedState::delegating())], new InMemoryStateFactory);
         $rewrite = new HookAnswer(Decision::rewrite('journal run tests'), [], [], $stackAfter);
 
-        $settled = $capabilities->rewrites->settle($rewrite, $stackBefore);
+        $settled = $capabilities->rewrites->finalAnswer($rewrite, $stackBefore);
         $reply = json_decode($this->renderAnswer('shell command as text', $settled)->stdout, true);
 
         $this->assertSame([], $settled->stack->frameIds());
@@ -131,7 +131,7 @@ final class CodexTest extends TestCase
     private function renderAnswer(string $name, HookAnswer $answer): ProgramReply
     {
         $call = $this->adapter()->callFor($this->payload($name), $this->hook());
-        $this->assertInstanceOf(JournalCall::class, $call);
+        $this->assertInstanceOf(JudgedCall::class, $call);
 
         return ($call->render)($answer);
     }

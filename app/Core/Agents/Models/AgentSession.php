@@ -65,14 +65,14 @@ final class AgentSession extends Model
     }
 
     /**
-     * Suspects every running session that has shown no life since the cutoff, in one update.
+     * Marks every running session that has shown no life since the cutoff as possibly lost, in one update.
      */
-    public static function suspectSilentSince(CarbonImmutable $cutoff, CarbonImmutable $now): void
+    public static function markPossiblyLostIfSilentSince(CarbonImmutable $cutoff, CarbonImmutable $now): void
     {
         self::query()->where('status', SessionStatus::Active->value)
             ->where(fn (Builder $silent) => $silent->where('last_heartbeat_at', '<=', $cutoff)
                 ->orWhere(fn (Builder $neverBeat) => $neverBeat->whereNull('last_heartbeat_at')->where('created_at', '<=', $cutoff)))
-            ->update(['status' => SessionStatus::SuspectedLost->value, 'suspected_lost_at' => $now]);
+            ->update(['status' => SessionStatus::PossiblyLost->value, 'suspected_lost_at' => $now]);
     }
 
     public function isActive(): bool
@@ -81,24 +81,24 @@ final class AgentSession extends Model
     }
 
     /**
-     * A sign of life from the host: a suspected loss is withdrawn.
+     * A sign of life from the host: a session marked possibly lost is active again.
      */
-    public function beatAt(CarbonImmutable $time): void
+    public function recordHeartbeatAt(CarbonImmutable $time): void
     {
         $this->last_heartbeat_at = $time;
         $this->suspected_lost_at = null;
-        $this->status = $this->status === SessionStatus::SuspectedLost ? SessionStatus::Active : $this->status;
+        $this->status = $this->status === SessionStatus::PossiblyLost ? SessionStatus::Active : $this->status;
         $this->save();
     }
 
-    public function suspectLossAt(CarbonImmutable $time): void
+    public function markPossiblyLostAt(CarbonImmutable $time): void
     {
-        $this->status = SessionStatus::SuspectedLost;
+        $this->status = SessionStatus::PossiblyLost;
         $this->suspected_lost_at = $time;
         $this->save();
     }
 
-    public function confirmLossAt(CarbonImmutable $time, string $evidence): void
+    public function markLostAt(CarbonImmutable $time, string $evidence): void
     {
         $this->status = SessionStatus::Lost;
         $this->ended_at = $time;

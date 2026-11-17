@@ -6,15 +6,15 @@ namespace Tests\Feature\Rules;
 
 use App\Core\Actors\ActorContext;
 use App\Core\Actors\Exceptions\UserActorRequired;
-use App\Core\Contracts\EstablishActor;
+use App\Core\Contracts\CurrentActorSetter;
 use App\Domain\Rules\Actions\ProposeRule;
 use App\Domain\Rules\Actions\RemoveRule;
 use App\Domain\Rules\Actions\ReviewRule;
 use App\Domain\Rules\ActiveRules;
-use App\Domain\Rules\Api\RuleState;
 use App\Domain\Rules\Api\Events\RuleApproved;
 use App\Domain\Rules\Api\Events\RuleDenied;
 use App\Domain\Rules\Api\Events\RuleRemoved;
+use App\Domain\Rules\Api\RuleState;
 use App\Domain\Rules\Exceptions\RuleNotProposed;
 use App\Domain\Rules\Models\Rule;
 use Illuminate\Support\Facades\Event;
@@ -32,7 +32,7 @@ final class ReviewRuleTest extends TestCase
         parent::setUp();
 
         Event::fake([RuleApproved::class, RuleDenied::class, RuleRemoved::class]);
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
         $this->proposed = $this->app->make(ProposeRule::class)->propose('No phase waits on the user.');
     }
 
@@ -62,7 +62,7 @@ final class ReviewRuleTest extends TestCase
 
     public function test_only_a_user_reviews_a_rule(): void
     {
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forAgent(3));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(3));
 
         $this->expectException(UserActorRequired::class);
 

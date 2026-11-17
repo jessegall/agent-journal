@@ -12,14 +12,14 @@ use App\Core\Agents\LaunchedAgent;
 use App\Core\Agents\LaunchSessions;
 use App\Core\Agents\Models\Agent;
 use App\Core\Agents\Models\AgentSession;
-use App\Core\Agents\NativeChildSessions;
+use App\Core\Agents\ProgramChildSessions;
 use App\Core\Agents\SignedCall;
 use App\Core\Hooks\AgentStateMachine;
 use App\Core\Hooks\Contracts\ShellCommandParser;
-use App\Core\Hooks\Exceptions\CommandFactsMissing;
+use App\Core\Hooks\Exceptions\ShellParserMissing;
 use App\Core\Hooks\Exceptions\UnknownReadyState;
 use App\Core\Hooks\Inputs\HookIdentity;
-use App\Core\Hooks\Inputs\MissingCommandFacts;
+use App\Core\Hooks\Inputs\MissingShellParser;
 use App\Core\Hooks\Inputs\StopDetails;
 use App\Core\Hooks\Inputs\StopRequested;
 use App\Core\Hooks\Models\AgentStackRow;
@@ -86,12 +86,12 @@ final class HookLaunchTest extends TestCase
 
     public function test_a_launch_without_a_command_parser_is_refused_and_keeps_nothing(): void
     {
-        $this->app->instance(ShellCommandParser::class, new MissingCommandFacts);
+        $this->app->instance(ShellCommandParser::class, new MissingShellParser);
 
         try {
             $this->launch('hooks.main_ready');
             $this->fail('A launch without a command parser went through.');
-        } catch (CommandFactsMissing) {
+        } catch (ShellParserMissing) {
             $this->assertSame(0, AgentSession::query()->count());
         }
     }
@@ -125,7 +125,7 @@ final class HookLaunchTest extends TestCase
         $this->as($parent, fn () => $this->app->make(StartTask::class)->start($task, $this->targetOf($parent)));
         $childAgent = Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.read_only_helper_ready']);
 
-        $child = $this->app->make(NativeChildSessions::class)->open($parent->session, $childAgent, 'claude-code');
+        $child = $this->app->make(ProgramChildSessions::class)->open($parent->session, $childAgent, 'claude-code');
 
         $this->assertSame($parent->session->id, $child->session->fresh()?->parent_session_id);
         $this->assertSame('{}', $this->stopAs($child, 'call-1'));

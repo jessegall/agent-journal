@@ -12,7 +12,7 @@ use App\Core\Hooks\Inputs\FileEditRequested;
 use App\Core\Hooks\Inputs\FileOperation;
 use App\Core\Hooks\Inputs\ShellCommandRequested;
 use App\Core\Hooks\Programs\ClaudeCodeAdapter;
-use App\Core\Hooks\Programs\JournalCall;
+use App\Core\Hooks\Programs\JudgedCall;
 use App\Core\Hooks\Programs\ProgramReply;
 use App\Core\Hooks\Stack\AgentStack;
 use App\Core\Hooks\Stack\HookAnswer;
@@ -136,7 +136,7 @@ final class ClaudeCodeTest extends TestCase
     private function render(string $name, Decision $decision, array $context = []): ProgramReply
     {
         $call = $this->adapter()->callFor($this->payload($name), $this->hook());
-        $this->assertInstanceOf(JournalCall::class, $call);
+        $this->assertInstanceOf(JudgedCall::class, $call);
 
         return ($call->render)(new HookAnswer($decision, $context, [], new AgentStack([], new InMemoryStateFactory)));
     }

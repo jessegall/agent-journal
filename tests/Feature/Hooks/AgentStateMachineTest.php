@@ -16,9 +16,9 @@ use App\Core\Hooks\Inputs\HookIdentity;
 use App\Core\Hooks\Models\AgentStackRow;
 use App\Core\Hooks\Models\HookCall;
 use App\Core\Hooks\OperationDeadline;
-use App\Core\Hooks\Programs\NativeToolInput;
 use App\Core\Hooks\Programs\ProgramReplies;
 use App\Core\Hooks\Programs\ProgramReply;
+use App\Core\Hooks\Programs\ProgramToolInput;
 use App\Core\Hooks\Programs\RewriteSupport;
 use App\Core\Hooks\Stack\HookAnswer;
 use App\Core\Hooks\Storage\WalkStep;
@@ -149,6 +149,6 @@ final class AgentStateMachineTest extends TestCase
      */
     private function shellReply(RewriteSupport $rewrites): Closure
     {
-        return fn (HookAnswer $answer) => ProgramReplies::shell($answer, new NativeToolInput(['command' => 'composer test', 'description' => 'Run the tests']), $rewrites);
+        return fn (HookAnswer $answer) => ProgramReplies::shell($answer, new ProgramToolInput(['command' => 'composer test', 'description' => 'Run the tests']), $rewrites);
     }
 }

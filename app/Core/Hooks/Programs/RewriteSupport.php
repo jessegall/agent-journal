@@ -19,7 +19,7 @@ enum RewriteSupport: string
     /**
      * A rewrite this program cannot take becomes a refusal on the stack from before the walk, so the rewrite's own pushes are dropped.
      */
-    public function settle(HookAnswer $answer, AgentStack $stackBefore): HookAnswer
+    public function finalAnswer(HookAnswer $answer, AgentStack $stackBefore): HookAnswer
     {
         if ($this === self::WithoutApproval || ! $answer->isRewrite()) {
             return $answer;
@@ -28,7 +28,7 @@ enum RewriteSupport: string
         return $answer->replacedBy(Decision::deny(ProgramReplies::REWRITE_REFUSAL), $stackBefore);
     }
 
-    public function reply(HookAnswer $answer, NativeToolInput $original): ProgramReply
+    public function reply(HookAnswer $answer, ProgramToolInput $original): ProgramReply
     {
         return match ($this) {
             self::WithoutApproval => ProgramReplies::rewriteTool($original->withCommand($answer->decision->replacementLine()), $answer->context),

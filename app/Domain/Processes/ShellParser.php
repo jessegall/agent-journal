@@ -16,7 +16,7 @@ use App\Core\Hooks\Inputs\ShellDialect;
  * Reads a shell line into its commands and the facts the role bottoms judge: what each command is and whether it
  * may change files. It reads only the line itself, so no flag a program sends can make a command look saved or safe.
  */
-final readonly class HookCommandFacts implements ShellCommandParser
+final readonly class ShellParser implements ShellCommandParser
 {
     public function __construct(private CommandCatalog $catalog) {}
 

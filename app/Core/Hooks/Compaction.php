@@ -18,7 +18,7 @@ final readonly class Compaction
     /**
      * @return list<string>
      */
-    public function react(StackTarget $target, string $compactionId): array
+    public function collectReminders(StackTarget $target, string $compactionId): array
     {
         $reminders = new CompactionReminders;
         $this->events->dispatch(new ContextWasCompacted($target->agentId, $target->sessionId, $compactionId, $reminders));

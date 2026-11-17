@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Access\Http\Middleware;
 
 use App\Core\Contracts\Actor;
-use App\Core\Contracts\EstablishActor;
+use App\Core\Contracts\CurrentActorSetter;
 use App\Domain\Access\Contracts\JournalAccessPolicy;
 use App\Domain\Access\Exceptions\JournalAccessDenied;
 use Closure;
@@ -20,7 +20,7 @@ final readonly class AuthenticateUser
 {
     public function __construct(
         private JournalAccessPolicy $access,
-        private EstablishActor $actors,
+        private CurrentActorSetter $actors,
     ) {}
 
     /**
@@ -34,7 +34,7 @@ final readonly class AuthenticateUser
             throw JournalAccessDenied::forUser();
         }
 
-        $this->actors->establish($user);
+        $this->actors->set($user);
 
         try {
             return $next($request);

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Models;
 
-use App\Core\Agents\BypassFact;
 use App\Core\Agents\BypassReport;
+use App\Core\Agents\LoggedBypass;
 use App\Core\Links\Linkable;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -35,7 +35,7 @@ final class LaunchBypass extends Model
     {
         $now = CarbonImmutable::now();
 
-        self::query()->insert(array_map(fn (BypassFact $fact) => [
+        self::query()->insert(array_map(fn (LoggedBypass $fact) => [
             'agent_session_id' => $sessionId,
             'native_event' => $fact->nativeEvent,
             'failure' => $fact->failure,

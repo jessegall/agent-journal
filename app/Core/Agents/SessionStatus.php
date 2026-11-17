@@ -7,17 +7,17 @@ namespace App\Core\Agents;
 enum SessionStatus: string
 {
     case Active = 'active';
-    case SuspectedLost = 'suspected_lost';
+    case PossiblyLost = 'suspected_lost';
     case Lost = 'lost';
     case Ended = 'ended';
 
     /**
-     * Whether the session may still act: active, or only suspected lost.
+     * Whether the session may still act: active, or only possibly lost.
      */
     public function isRunning(): bool
     {
         return match ($this) {
-            self::Active, self::SuspectedLost => true,
+            self::Active, self::PossiblyLost => true,
             self::Lost, self::Ended => false,
         };
     }

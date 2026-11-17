@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Relay;
 
-use App\Core\Agents\BypassFact;
 use App\Core\Agents\BypassReport;
+use App\Core\Agents\LoggedBypass;
 
 /**
  * The host's own file of bypasses not yet uploaded, one JSON line each.
@@ -14,7 +14,7 @@ final readonly class BypassLog
 {
     public function __construct(private string $path) {}
 
-    public function append(BypassFact $fact): void
+    public function append(LoggedBypass $fact): void
     {
         file_put_contents($this->path, $fact->toJson().PHP_EOL, FILE_APPEND | LOCK_EX);
     }

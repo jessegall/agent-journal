@@ -9,7 +9,7 @@ use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Agents\LaunchedAgent;
 use App\Core\Agents\LaunchSessions;
 use App\Core\Agents\Models\Agent;
-use App\Core\Contracts\EstablishActor;
+use App\Core\Contracts\CurrentActorSetter;
 use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Events\StateTypesRequested;
@@ -99,7 +99,7 @@ final class UserStacksTest extends TestCase
 
     private function actAs(ActorContext $actor): void
     {
-        $this->app->make(EstablishActor::class)->establish($actor);
+        $this->app->make(CurrentActorSetter::class)->set($actor);
     }
 
     private function launch(): LaunchedAgent

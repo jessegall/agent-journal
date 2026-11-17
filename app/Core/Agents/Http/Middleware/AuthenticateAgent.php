@@ -8,7 +8,7 @@ use App\Core\Agents\AgentContext;
 use App\Core\Agents\AgentContextFactory;
 use App\Core\Agents\Exceptions\CallSignatureInvalid;
 use App\Core\Agents\Exceptions\CredentialRejected;
-use App\Core\Contracts\EstablishActor;
+use App\Core\Contracts\CurrentActorSetter;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\JsonResponse;
@@ -24,7 +24,7 @@ final readonly class AuthenticateAgent
     public function __construct(
         private AgentContextFactory $contexts,
         private Container $container,
-        private EstablishActor $actors,
+        private CurrentActorSetter $actors,
     ) {}
 
     /**
@@ -39,7 +39,7 @@ final readonly class AuthenticateAgent
         }
 
         $this->container->instance(AgentContext::class, $context);
-        $this->actors->establish($context);
+        $this->actors->set($context);
 
         try {
             return $next($request);

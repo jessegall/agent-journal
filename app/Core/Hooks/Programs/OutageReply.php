@@ -26,14 +26,14 @@ final class OutageReply
 
     private static function neutral(string $nativeEvent): ProgramReply
     {
-        return $nativeEvent === 'PreToolUse' ? ProgramReplies::admitTool([]) : ProgramReply::emptyObject();
+        return $nativeEvent === 'PreToolUse' ? ProgramReplies::allowTool([]) : ProgramReply::emptyObject();
     }
 
     private static function refusal(string $nativeEvent, string $reason): ProgramReply
     {
         return match ($nativeEvent) {
             'PreToolUse' => ProgramReplies::denyTool($reason, []),
-            'UserPromptSubmit' => ProgramReply::json(BlockBody::from(['decision' => NativeStopDecision::Block, 'reason' => $reason])),
+            'UserPromptSubmit' => ProgramReply::json(BlockBody::from(['decision' => ProgramStopDecision::Block, 'reason' => $reason])),
             default => ProgramReply::emptyObject(),
         };
     }

@@ -6,9 +6,9 @@ namespace App\Core\Hooks\Contracts;
 
 use App\Core\Hooks\Inputs\HookIdentity;
 use App\Core\Hooks\Programs\HookPayload;
-use App\Core\Hooks\Programs\NativeToolInput;
 use App\Core\Hooks\Programs\ProgramCapabilities;
 use App\Core\Hooks\Programs\ProgramReply;
+use App\Core\Hooks\Programs\ProgramToolInput;
 use App\Core\Hooks\Stack\HookAnswer;
 
 /**
@@ -21,9 +21,9 @@ interface ProgramAdapter
     /**
      * Reads one native hook payload into a call the journal answers or lets through, refusing what it does not map.
      */
-    public function callFor(HookPayload $payload, HookIdentity $hook): NativeCall;
+    public function callFor(HookPayload $payload, HookIdentity $hook): ProgramCall;
 
-    public function renderShell(HookAnswer $answer, NativeToolInput $original): ProgramReply;
+    public function renderShell(HookAnswer $answer, ProgramToolInput $original): ProgramReply;
 
     public function renderStop(HookAnswer $answer): ProgramReply;
 }

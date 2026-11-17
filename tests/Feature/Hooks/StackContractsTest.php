@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Core\Hooks\AgentStacks;
 use App\Core\Hooks\Contracts\AgentStack;
-use App\Core\Hooks\Contracts\StackWork;
+use App\Core\Hooks\Contracts\StackTransactionRunner;
 use App\Core\Hooks\Contracts\UserStack;
 use App\Core\Hooks\StackTransaction;
 use App\Core\Hooks\UserStacks;
@@ -26,6 +26,6 @@ final class StackContractsTest extends TestCase
 
         $this->assertInstanceOf(AgentStacks::class, $this->app->make(AgentStack::class));
         $this->assertInstanceOf(UserStacks::class, $this->app->make(UserStack::class));
-        $this->assertInstanceOf(StackTransaction::class, $this->app->make(StackWork::class));
+        $this->assertInstanceOf(StackTransaction::class, $this->app->make(StackTransactionRunner::class));
     }
 }

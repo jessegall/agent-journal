@@ -6,7 +6,7 @@ namespace App\Core\Hooks\Exceptions;
 
 use LogicException;
 
-final class CoveredStatePushed extends LogicException
+final class StateBelowTopPushed extends LogicException
 {
     public static function for(string $stateType): self
     {

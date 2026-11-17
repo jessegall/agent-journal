@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Programs;
 
-use App\Core\Hooks\Contracts\NativeCall;
 use App\Core\Hooks\Contracts\ProgramAdapter;
+use App\Core\Hooks\Contracts\ProgramCall;
 use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Hooks\Exceptions\UnreadablePayload;
 use App\Core\Hooks\Exceptions\UnsupportedHook;
@@ -48,23 +48,23 @@ final readonly class CodexAdapter implements ProgramAdapter
         );
     }
 
-    public function callFor(HookPayload $payload, HookIdentity $hook): NativeCall
+    public function callFor(HookPayload $payload, HookIdentity $hook): ProgramCall
     {
         return match ($payload->hookEventName) {
-            'SessionStart' => new JournalCall(
+            'SessionStart' => new JudgedCall(
                 new SessionStarted($hook, new SessionStartDetails($payload->sessionId, $payload->startSource())),
                 fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer),
             ),
-            'UserPromptSubmit' => new JournalCall(
+            'UserPromptSubmit' => new JudgedCall(
                 new PromptSubmitted($hook, new PromptDetails($hook->hookId, $payload->promptText())),
                 fn (HookAnswer $answer) => ProgramReplies::prompt($answer),
             ),
             'PreToolUse' => $this->toolCall($payload, $hook),
-            'PostToolUse' => new JournalCall(
+            'PostToolUse' => new JudgedCall(
                 new ToolFinished($hook, new ToolResult($payload->toolNameText(), $payload->toolOutcome())),
                 fn (HookAnswer $answer) => ProgramReplies::observation('PostToolUse', $answer),
             ),
-            'Stop' => new JournalCall(
+            'Stop' => new JudgedCall(
                 new StopRequested($hook, new StopDetails($hook->hookId, $payload->isStopContinuation())),
                 fn (HookAnswer $answer) => ProgramReplies::stop($answer),
             ),
@@ -72,7 +72,7 @@ final readonly class CodexAdapter implements ProgramAdapter
         };
     }
 
-    public function renderShell(HookAnswer $answer, NativeToolInput $original): ProgramReply
+    public function renderShell(HookAnswer $answer, ProgramToolInput $original): ProgramReply
     {
         return ProgramReplies::shell($answer, $original, RewriteSupport::NeedsApproval);
     }
@@ -82,20 +82,20 @@ final readonly class CodexAdapter implements ProgramAdapter
         return ProgramReplies::stop($answer);
     }
 
-    private function toolCall(HookPayload $payload, HookIdentity $hook): NativeCall
+    private function toolCall(HookPayload $payload, HookIdentity $hook): ProgramCall
     {
         $tool = CodexTool::named($payload->toolNameText());
-        $original = new NativeToolInput($payload->toolArguments());
+        $original = new ProgramToolInput($payload->toolArguments());
 
         if ($tool->isShell()) {
             $command = $this->parser->parse($this->shellLine($payload), ShellDialect::Bash);
 
-            return new JournalCall(new ShellCommandRequested($hook, $command), fn (HookAnswer $answer) => $this->renderShell($answer, $original));
+            return new JudgedCall(new ShellCommandRequested($hook, $command), fn (HookAnswer $answer) => $this->renderShell($answer, $original));
         }
 
         $edit = new FileEditRequested($hook, $this->patchChanges($payload->argument('input', 'patch')));
 
-        return new JournalCall($edit, fn (HookAnswer $answer) => $this->renderShell($answer, $original));
+        return new JudgedCall($edit, fn (HookAnswer $answer) => $this->renderShell($answer, $original));
     }
 
     /**

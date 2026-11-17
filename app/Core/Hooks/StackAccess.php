@@ -48,7 +48,7 @@ final readonly class StackAccess
     {
         $call = $this->context->call;
 
-        if (! $this->retryWindow->admits($call->issuedAt, CarbonImmutable::now())) {
+        if (! $this->retryWindow->includes($call->issuedAt, CarbonImmutable::now())) {
             throw HookIdentityExpired::forCall($call->callId, $this->retryWindow->seconds);
         }
 

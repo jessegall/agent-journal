@@ -12,9 +12,9 @@ use Illuminate\Container\Attributes\Bind;
  * authenticating middleware use this, after their own credential or access checks passed.
  */
 #[Bind(ActorStore::class)]
-interface EstablishActor
+interface CurrentActorSetter
 {
-    public function establish(Actor $actor): void;
+    public function set(Actor $actor): void;
 
     public function clear(): void;
 }

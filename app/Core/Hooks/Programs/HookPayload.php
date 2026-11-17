@@ -42,22 +42,22 @@ final class HookPayload extends Data
 
     public function promptText(): string
     {
-        return $this->present($this->prompt, 'prompt');
+        return $this->required($this->prompt, 'prompt');
     }
 
     public function toolNameText(): string
     {
-        return $this->present($this->toolName, 'tool_name');
+        return $this->required($this->toolName, 'tool_name');
     }
 
     public function reasonText(): string
     {
-        return $this->present($this->reason, 'reason');
+        return $this->required($this->reason, 'reason');
     }
 
     public function startSource(): SessionStartSource
     {
-        $source = $this->present($this->source, 'source');
+        $source = $this->required($this->source, 'source');
 
         return SessionStartSource::tryFrom($source) ?? throw UnreadablePayload::forValue('source', $source);
     }
@@ -98,7 +98,7 @@ final class HookPayload extends Data
         return ($response['is_error'] ?? false) === true ? ToolOutcome::Failed : ToolOutcome::Succeeded;
     }
 
-    private function present(string|Optional $value, string $field): string
+    private function required(string|Optional $value, string $field): string
     {
         return $value instanceof Optional ? throw UnreadablePayload::missing($field) : $value;
     }

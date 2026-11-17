@@ -13,7 +13,7 @@ use Illuminate\Container\Attributes\Bind;
  * stack push commit together or not at all. Inside a transaction that already has its limits it joins it.
  */
 #[Bind(StackTransaction::class)]
-interface StackWork
+interface StackTransactionRunner
 {
     /**
      * @template TResult

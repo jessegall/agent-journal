@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Core\Agents\AgentContext;
-use App\Core\Agents\ConfirmLaunchLoss;
 use App\Core\Agents\CredentialLookup;
 use App\Core\Agents\Exceptions\CredentialRejected;
 use App\Core\Agents\LaunchedAgent;
 use App\Core\Agents\LaunchSessions;
+use App\Core\Agents\LostLaunches;
 use App\Core\Agents\Models\Agent;
 use App\Core\Agents\SessionStatus;
 use App\Core\Agents\SignedCall;
@@ -50,9 +50,9 @@ final class HookRecoveryTest extends TestCase
         $launched = $this->launch();
 
         $this->wait(121);
-        $this->losses()->reconcile();
+        $this->losses()->markSilentLaunches();
 
-        $this->assertSame(SessionStatus::SuspectedLost, $launched->session->fresh()?->status);
+        $this->assertSame(SessionStatus::PossiblyLost, $launched->session->fresh()?->status);
         $this->assertSame(StackStatus::Active, $this->stackOf($launched)->status);
         $this->assertSame($launched->session->id, $this->app->make(CredentialLookup::class)->sessionFor($launched->token)->id);
     }
@@ -61,13 +61,13 @@ final class HookRecoveryTest extends TestCase
     {
         $launched = $this->launch();
         $this->wait(121);
-        $this->losses()->reconcile();
+        $this->losses()->markSilentLaunches();
 
         $this->losses()->recordHeartbeat($launched->session);
         $this->wait(900);
-        $this->losses()->reconcile();
+        $this->losses()->markSilentLaunches();
 
-        $this->assertSame(SessionStatus::SuspectedLost, $launched->session->fresh()?->status);
+        $this->assertSame(SessionStatus::PossiblyLost, $launched->session->fresh()?->status);
         $this->assertNull($launched->session->fresh()?->loss_evidence);
     }
 
@@ -77,9 +77,9 @@ final class HookRecoveryTest extends TestCase
         $task = $this->startTask($launched);
 
         $this->wait(121);
-        $this->losses()->reconcile();
+        $this->losses()->markSilentLaunches();
         $this->wait(901);
-        $this->losses()->reconcile();
+        $this->losses()->markSilentLaunches();
 
         $this->assertSame(SessionStatus::Lost, $launched->session->fresh()?->status);
         $this->assertStringStartsWith('silent since', (string) $launched->session->fresh()?->loss_evidence);
@@ -93,7 +93,7 @@ final class HookRecoveryTest extends TestCase
     {
         $launched = $this->launch();
 
-        $this->losses()->confirmHostExit($launched->session, 'exit code 137');
+        $this->losses()->markExited($launched->session, 'exit code 137');
 
         $this->assertSame(SessionStatus::Lost, $launched->session->fresh()?->status);
         $this->assertSame('host reported exit: exit code 137', $launched->session->fresh()?->loss_evidence);
@@ -106,7 +106,7 @@ final class HookRecoveryTest extends TestCase
     {
         $lost = $this->launch();
         $this->startTask($lost);
-        $this->losses()->confirmHostExit($lost->session, 'killed');
+        $this->losses()->markExited($lost->session, 'killed');
 
         $replacement = $this->app->make(LaunchSessions::class)->launch($lost->session->agent, 'claude-code');
 
@@ -134,9 +134,9 @@ final class HookRecoveryTest extends TestCase
         return AgentStackRow::query()->authorizedFor(new StackTarget($launched->session->agent_id, $launched->session->id))->sole();
     }
 
-    private function losses(): ConfirmLaunchLoss
+    private function losses(): LostLaunches
     {
-        return $this->app->make(ConfirmLaunchLoss::class);
+        return $this->app->make(LostLaunches::class);
     }
 
     private function wait(int $seconds): void

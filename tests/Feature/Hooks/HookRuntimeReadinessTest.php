@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Core\Contracts\LaunchTransaction;
-use App\Core\Hooks\Contracts\NativeCall;
+use App\Core\Hooks\Contracts\ProgramCall;
 use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Hooks\HookRetryWindow;
 use App\Core\Hooks\Inputs\HookIdentity;
@@ -18,7 +18,7 @@ use App\Core\Hooks\StackTransaction;
 use App\Core\Hooks\States\AgentState;
 use App\Domain\DomainEntry;
 use App\Domain\DomainRegistry;
-use App\Domain\Processes\HookCommandFacts;
+use App\Domain\Processes\ShellParser;
 use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
@@ -86,14 +86,14 @@ final class HookRuntimeReadinessTest extends TestCase
 
         $call = $this->app->make(ProgramAdapters::class)->for($program)->callFor($payload, new HookIdentity(1, 10, 'call-1', hash('sha256', $event)));
 
-        $this->assertInstanceOf(NativeCall::class, $call);
+        $this->assertInstanceOf(ProgramCall::class, $call);
     }
 
     public function test_the_runtime_binds_the_real_parser_launch_transaction_and_state_types(): void
     {
         $registry = $this->app->make(StateTypes::class)->registry();
 
-        $this->assertInstanceOf(HookCommandFacts::class, $this->app->make(ShellCommandParser::class));
+        $this->assertInstanceOf(ShellParser::class, $this->app->make(ShellCommandParser::class));
         $this->assertInstanceOf(StackTransaction::class, $this->app->make(LaunchTransaction::class));
 
         foreach (['hooks.main_ready', 'hooks.read_only_helper_ready', 'tasks.working', 'chat.answering', 'sequences.following'] as $typeKey) {

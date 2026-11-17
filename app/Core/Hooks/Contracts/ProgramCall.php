@@ -11,7 +11,7 @@ use Closure;
 /**
  * One native hook call after the adapter read it: either a call the journal answers, or one it lets through untouched.
  */
-interface NativeCall
+interface ProgramCall
 {
     /**
      * @param  Closure(HookInput, Closure(HookAnswer): ProgramReply): ProgramReply  $answerByJournal

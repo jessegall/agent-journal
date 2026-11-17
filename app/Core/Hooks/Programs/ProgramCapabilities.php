@@ -27,9 +27,9 @@ final readonly class ProgramCapabilities
     /**
      * The final answer as this program can take it: a rewrite it cannot take becomes a refusal on the stack from before the walk.
      */
-    public function settle(HookAnswer $answer, AgentStack $stackBefore): HookAnswer
+    public function finalAnswer(HookAnswer $answer, AgentStack $stackBefore): HookAnswer
     {
-        return $this->rewrites->settle($answer, $stackBefore);
+        return $this->rewrites->finalAnswer($answer, $stackBefore);
     }
 
     public function supports(string $hookMethod): bool

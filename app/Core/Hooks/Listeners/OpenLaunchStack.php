@@ -6,8 +6,8 @@ namespace App\Core\Hooks\Listeners;
 
 use App\Core\Agents\Events\LaunchStarted;
 use App\Core\Hooks\Contracts\ShellCommandParser;
-use App\Core\Hooks\Exceptions\CommandFactsMissing;
-use App\Core\Hooks\Inputs\MissingCommandFacts;
+use App\Core\Hooks\Exceptions\ShellParserMissing;
+use App\Core\Hooks\Inputs\MissingShellParser;
 use App\Core\Hooks\LaunchStacks;
 use App\Core\Hooks\StackTarget;
 use App\Core\Hooks\States\ReadyStateType;
@@ -25,8 +25,8 @@ final readonly class OpenLaunchStack
 
     public function handle(LaunchStarted $event): void
     {
-        if ($this->parser instanceof MissingCommandFacts) {
-            throw CommandFactsMissing::forLine();
+        if ($this->parser instanceof MissingShellParser) {
+            throw ShellParserMissing::forLine();
         }
 
         $this->stacks->open(new StackTarget($event->agentId, $event->sessionId), ReadyStateType::forKey($event->role));

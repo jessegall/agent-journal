@@ -10,13 +10,13 @@ use App\Domain\Memory\AgentMemories;
 /**
  * Fades the agent's memories once for this compaction, then reminds it of the ones that remain.
  */
-final readonly class RememberCompaction
+final readonly class LowerMemoryWeights
 {
     public function __construct(private AgentMemories $memories) {}
 
     public function handle(ContextWasCompacted $event): void
     {
-        $this->memories->fadeOnce($event->agentId, $event->sessionId, $event->compactionId);
+        $this->memories->lowerWeightsOnce($event->agentId, $event->sessionId, $event->compactionId);
 
         foreach ($this->memories->remindersFor($event->agentId) as $reminder) {
             $event->reminders->add($reminder);

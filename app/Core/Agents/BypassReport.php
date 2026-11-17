@@ -13,10 +13,10 @@ use Spatie\LaravelData\Data;
 final class BypassReport extends Data
 {
     /**
-     * @param  list<BypassFact>  $bypasses
+     * @param  list<LoggedBypass>  $bypasses
      */
     public function __construct(
-        #[DataCollectionOf(BypassFact::class)]
+        #[DataCollectionOf(LoggedBypass::class)]
         public readonly array $bypasses,
     ) {}
 

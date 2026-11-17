@@ -6,7 +6,7 @@ namespace Tests\Feature\Tasks;
 
 use App\Core\Actors\ActorContext;
 use App\Core\Actors\Exceptions\ActorContextMissing;
-use App\Core\Contracts\EstablishActor;
+use App\Core\Contracts\CurrentActorSetter;
 use App\Domain\Tasks\Contracts\TaskProgressCounter;
 use App\Domain\Tasks\Contracts\TaskReader;
 use App\Domain\Tasks\Exceptions\TaskMissing;
@@ -23,7 +23,7 @@ final class TaskReadsTest extends TestCase
 
     public function test_every_named_task_must_exist_or_the_whole_check_fails(): void
     {
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forAgent(3));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(3));
         $first = Task::query()->create(['title' => 'Write the walk']);
         $second = Task::query()->create(['title' => 'Test the walk']);
 
@@ -35,7 +35,7 @@ final class TaskReadsTest extends TestCase
 
     public function test_progress_counts_finished_tasks_and_leaves_out_missing_ids(): void
     {
-        $this->app->make(EstablishActor::class)->establish(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
         $done = Task::query()->create(['title' => 'Write the walk']);
         $done->finish();
         $open = Task::query()->create(['title' => 'Test the walk']);

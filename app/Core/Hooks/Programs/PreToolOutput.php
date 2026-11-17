@@ -17,7 +17,7 @@ final class PreToolOutput extends Data
      */
     public function __construct(
         public readonly string $hookEventName = 'PreToolUse',
-        public readonly NativePermission|Optional $permissionDecision = new Optional,
+        public readonly ProgramPermission|Optional $permissionDecision = new Optional,
         public readonly string|Optional $permissionDecisionReason = new Optional,
         public readonly string|Optional $additionalContext = new Optional,
         public readonly array|Optional $updatedInput = new Optional,

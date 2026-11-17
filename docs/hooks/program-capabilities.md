@@ -66,7 +66,7 @@ The host shim, not the journal, answers a hook when the journal is unreachable, 
 
 A refusal, a changed retry or an unreadable payload is the journal answering, so it never falls back to the neutral reply. After recovery the host uploads the bypass facts; it does not replay missed pre-tool calls as fresh permission. The host relay is `bin/journal-hook <program>`, which runs `php artisan hooks:relay <program>` (`HookRelay`): it signs each call, posts it, answers alone with `OutageReply` when the journal is unreachable, logs a main agent's bypass to the file `JOURNAL_BYPASS_LOG`, and uploads the logged bypasses to `POST /hooks/bypasses` before its next call, where Agents keeps them in `launch_bypasses`. The launch must set `JOURNAL_URL`, `JOURNAL_LAUNCH_TOKEN`, `JOURNAL_ROLE` and `JOURNAL_BYPASS_LOG` in the program's environment.
 
-A program that exits or is killed without an end hook is handled by `ConfirmLaunchLoss`: silence first makes the loss suspected (`agents.suspect_loss_after_seconds`), a long silence (`agents.confirm_loss_after_seconds`) or the host's report of the exit confirms it, and the stack is closed and kept with its obligations.
+A program that exits or is killed without an end hook is handled by `LostLaunches`: silence first marks the launch possibly lost (`agents.possibly_lost_after_seconds`), and a long silence (`agents.lost_after_seconds`) or the host's report of the exit marks it lost, and the stack is closed and kept with its obligations.
 
 ## Claude Code
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Relay;
 
-use App\Core\Agents\BypassFact;
+use App\Core\Agents\LoggedBypass;
 use App\Core\Agents\SignedCall;
 use App\Core\Hooks\Programs\CallFailure;
 use App\Core\Hooks\Programs\HookProgram;
@@ -34,22 +34,22 @@ final readonly class HookRelay
             $this->uploadBypasses($settings, $log);
             $response = $this->post($settings, "/hooks/{$program->value}", $payload);
         } catch (ConnectionException) {
-            return $this->answerAlone(CallFailure::Unreachable, $payload, $settings, $log);
+            return $this->answerWithoutJournal(CallFailure::Unreachable, $payload, $settings, $log);
         }
 
         if (! $response->successful()) {
-            return $this->answerAlone(CallFailure::fromStatus($response->status()), $payload, $settings, $log);
+            return $this->answerWithoutJournal(CallFailure::fromStatus($response->status()), $payload, $settings, $log);
         }
 
         return new ProgramReply((string) $response->json('stdout'), (string) $response->json('stderr'), (int) $response->json('exitCode'));
     }
 
-    private function answerAlone(CallFailure $failure, string $payload, RelaySettings $settings, BypassLog $log): ProgramReply
+    private function answerWithoutJournal(CallFailure $failure, string $payload, RelaySettings $settings, BypassLog $log): ProgramReply
     {
-        $event = NativeEventName::of($payload);
+        $event = ProgramEventName::of($payload);
 
         if ($failure->isOutage() && $settings->role === ReadyStateType::MainAgent) {
-            $log->append(BypassFact::from(['nativeEvent' => $event, 'failure' => $failure->value, 'occurredAt' => CarbonImmutable::now()]));
+            $log->append(LoggedBypass::from(['nativeEvent' => $event, 'failure' => $failure->value, 'occurredAt' => CarbonImmutable::now()]));
         }
 
         return OutageReply::for($failure, $settings->role, $event);

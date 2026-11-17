@@ -27,7 +27,7 @@ final class Memory extends Model
     use Linkable;
     use OwnedByOneAgent;
 
-    public function keepFor(int $agentId): void
+    public function saveFor(int $agentId): void
     {
         $this->agent_id = $agentId;
         $this->save();
