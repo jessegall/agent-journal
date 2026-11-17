@@ -7,6 +7,7 @@ namespace App\Domain\Access\Providers;
 use App\Domain\Access\Actions\CreateNewUser;
 use App\Domain\Access\Actions\ResetUserPassword;
 use App\Domain\Access\Support\AccessSettings;
+use App\Domain\Access\Support\UserAssignees;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -26,6 +27,7 @@ class AccessServiceProvider extends ServiceProvider
 
             return new AccessSettings(is_numeric($ownerId) ? (int) $ownerId : null);
         });
+        $this->app->scoped(UserAssignees::class);
     }
 
     /**

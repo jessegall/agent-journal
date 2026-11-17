@@ -20,6 +20,7 @@ use App\Core\Assignments\Contracts\AssignmentRegistration;
 use App\Core\Assignments\Enums\AssignmentOutcomeKind;
 use App\Core\Assignments\Enums\AssignmentReason;
 use App\Core\Assignments\Exceptions\AssigneeKindRepeated;
+use App\Core\Assignments\Exceptions\AssigneeUnavailable;
 use App\Core\Assignments\Exceptions\AssignmentGroupTooLarge;
 use App\Core\Assignments\Exceptions\AssignmentProviderInvalid;
 use App\Core\Assignments\Exceptions\AssignmentTypeRepeated;
@@ -219,6 +220,7 @@ final class CoreApi
             InvalidAssignmentIdentity::class,
             InvalidAssignmentPage::class,
             AssignmentGroupTooLarge::class,
+            AssigneeUnavailable::class,
             AssignmentTypeUnavailable::class,
             AssignmentProviderInvalid::class,
             AssigneeKindRepeated::class,

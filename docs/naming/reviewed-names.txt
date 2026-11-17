@@ -195,13 +195,16 @@ class	ActorStore
 class	ActorsServiceProvider
 class	AddPhaseTasks
 class	Agent
+class	AgentAssignees
 class	AgentContext
 class	AgentContextFactory
 class	AgentContextMissing
 class	AgentLabel
 class	AgentLabelData
 class	AgentLabels
+class	AgentLifecycle
 class	AgentMemories
+class	AgentNotAvailable
 class	AgentScope
 class	AgentSession
 class	AgentSessionScope
@@ -221,6 +224,7 @@ class	AssigneeKindRepeated
 class	AssigneeList
 class	AssigneeName
 class	AssigneeRegistration
+class	AssigneeUnavailable
 class	Assignment
 class	AssignmentChange
 class	AssignmentGroup
@@ -606,6 +610,7 @@ class	UnreadablePayload
 class	UnsupportedHook
 class	User
 class	UserActorRequired
+class	UserAssignees
 class	UserChannel
 class	UserFactory
 class	UserStacks
@@ -760,6 +765,7 @@ interface	TaskProgressCounter
 interface	TaskReader
 interface	UserStack
 interface	ViewerReader
+method	AccessDomain::assignees()
 method	AccessDomain::description()
 method	AccessDomain::exports()
 method	AccessDomain::requires()
@@ -792,6 +798,14 @@ method	AddPhaseTasks::__construct()
 method	AddPhaseTasks::add()
 method	Agent::actorId()
 method	Agent::actorKind()
+method	Agent::casts()
+method	Agent::isMainAgent()
+method	Agent::isRetired()
+method	Agent::retireAt()
+method	AgentAssignees::__construct()
+method	AgentAssignees::eligible()
+method	AgentAssignees::names()
+method	AgentAssignees::requireEligible()
 method	AgentContext::__construct()
 method	AgentContext::actorId()
 method	AgentContext::actorKind()
@@ -804,9 +818,12 @@ method	AgentLabel::__construct()
 method	AgentLabelData::__construct()
 method	AgentLabels::__construct()
 method	AgentLabels::labelsFor()
+method	AgentLifecycle::lockExclusive()
+method	AgentLifecycle::lockShared()
 method	AgentMemories::__construct()
 method	AgentMemories::lowerWeightsOnce()
 method	AgentMemories::remindersFor()
+method	AgentNotAvailable::forAgent()
 method	AgentReader::labelsFor()
 method	AgentScope::__construct()
 method	AgentScope::apply()
@@ -865,6 +882,7 @@ method	AgentStateMachine::answer()
 method	AgentStateMachine::remindersFor()
 method	AgentStateMachine::replay()
 method	AgentStateMachine::walk()
+method	AgentsServiceProvider::boot()
 method	AgentsServiceProvider::register()
 method	AmbiguousDomainRoot::between()
 method	Answer::kind()
@@ -896,6 +914,7 @@ method	AssigneeProvider::eligible()
 method	AssigneeProvider::names()
 method	AssigneeProvider::requireEligible()
 method	AssigneeRegistration::__construct()
+method	AssigneeUnavailable::forActor()
 method	Assignment::__construct()
 method	Assignment::holder()
 method	AssignmentChange::__construct()
@@ -1998,6 +2017,11 @@ method	User::actorKind()
 method	User::casts()
 method	User::changePassword()
 method	UserActorRequired::forActor()
+method	UserAssignees::__construct()
+method	UserAssignees::eligible()
+method	UserAssignees::names()
+method	UserAssignees::nextAfterId()
+method	UserAssignees::requireEligible()
 method	UserChannel::__construct()
 method	UserChannel::join()
 method	UserChannel::nameFor()
@@ -2043,6 +2067,8 @@ property	ActorIdentity::$kind
 property	ActorStore::$actor
 property	AddPhaseTasks::$database
 property	AddPhaseTasks::$tasks
+property	AgentAssignees::$actors
+property	AgentAssignees::$lifecycle
 property	AgentContext::$agentId
 property	AgentContext::$call
 property	AgentContext::$role
@@ -2633,6 +2659,8 @@ property	ToolFinished::$result
 property	ToolResult::$outcome
 property	ToolResult::$toolName
 property	UnjudgedCall::$reply
+property	UserAssignees::$access
+property	UserAssignees::$actors
 property	UserChannel::$access
 property	UserFactory::$model
 property	UserStacks::$actors
