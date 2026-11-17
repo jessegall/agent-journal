@@ -226,14 +226,19 @@ class	AssigneeRegistration
 class	AssigneeUnavailable
 class	Assignment
 class	AssignmentChange
+class	AssignmentConflict
 class	AssignmentGroup
 class	AssignmentGroupTooLarge
 class	AssignmentOutcome
 class	AssignmentProviderInvalid
+class	AssignmentRecord
 class	AssignmentReference
 class	AssignmentRegistry
 class	AssignmentResult
+class	AssignmentRetryExhausted
 class	AssignmentSet
+class	AssignmentStore
+class	AssignmentTransactionRequired
 class	AssignmentTypeRepeated
 class	AssignmentTypeUnavailable
 class	AssignmentsServiceProvider
@@ -281,6 +286,7 @@ class	CoreServiceProvider
 class	CreateNewUser
 class	CredentialLookup
 class	CredentialRejected
+class	DatabaseAssignmentTransaction
 class	DatabaseLaunchTransaction
 class	Decision
 class	DeclarationRules
@@ -543,6 +549,7 @@ class	ShellParserMissing
 class	ShellSegment
 class	ShellWords
 class	SignedCall
+class	SignedInScope
 class	StackAccess
 class	StackAlreadyClosed
 class	StackInspection
@@ -648,6 +655,8 @@ constant	CommandCatalog::READING_PROGRAMS
 constant	CommandCatalog::TEST_RUNS
 constant	CommandCatalog::WRITING_PROGRAMS
 constant	CoreServiceProvider::AREAS
+constant	DatabaseAssignmentTransaction::ATTEMPTS
+constant	DatabaseAssignmentTransaction::RETRYABLE_STATES
 constant	EventCallScan::EVENT_FACADES
 constant	EventCallScan::FACADE_METHODS
 constant	EventCallScan::HELPERS
@@ -740,6 +749,7 @@ interface	Assignee
 interface	AssigneeProvider
 interface	AssignmentReader
 interface	AssignmentRegistration
+interface	AssignmentTransaction
 interface	ConversationReader
 interface	CurrentActor
 interface	CurrentActorSetter
@@ -926,6 +936,8 @@ method	AssigneeUnavailable::forActor()
 method	Assignment::__construct()
 method	Assignment::holder()
 method	AssignmentChange::__construct()
+method	AssignmentConflict::heldByAnother()
+method	AssignmentConflict::staleReference()
 method	AssignmentGroup::__construct()
 method	AssignmentGroupTooLarge::for()
 method	AssignmentOutcome::__construct()
@@ -934,6 +946,12 @@ method	AssignmentProviderInvalid::forModel()
 method	AssignmentProviderInvalid::forRecords()
 method	AssignmentReader::assignmentsFor()
 method	AssignmentReader::recordIdsFor()
+method	AssignmentRecord::booted()
+method	AssignmentRecord::casts()
+method	AssignmentRecord::forRecord()
+method	AssignmentRecord::heldForRetirement()
+method	AssignmentRecord::holding()
+method	AssignmentRecord::toAssignment()
 method	AssignmentReference::__construct()
 method	AssignmentReference::isSameAs()
 method	AssignmentRegistration::registerAssignees()
@@ -947,8 +965,19 @@ method	AssignmentRegistry::registerRecord()
 method	AssignmentResult::__construct()
 method	AssignmentResult::count()
 method	AssignmentResult::hasChanges()
+method	AssignmentRetryExhausted::after()
 method	AssignmentSet::__construct()
 method	AssignmentSet::forRecord()
+method	AssignmentStore::__construct()
+method	AssignmentStore::assignIfUnheld()
+method	AssignmentStore::lockCurrent()
+method	AssignmentStore::releaseAll()
+method	AssignmentStore::remove()
+method	AssignmentStore::replace()
+method	AssignmentStore::requireTransaction()
+method	AssignmentTransaction::run()
+method	AssignmentTransactionRequired::forIsolation()
+method	AssignmentTransactionRequired::forStore()
 method	AssignmentTypeRepeated::for()
 method	AssignmentTypeUnavailable::forKind()
 method	AssignmentTypeUnavailable::forType()
@@ -1093,6 +1122,8 @@ method	CurrentActor::actor()
 method	CurrentActor::hasActor()
 method	CurrentActorSetter::clear()
 method	CurrentActorSetter::set()
+method	DatabaseAssignmentTransaction::__construct()
+method	DatabaseAssignmentTransaction::run()
 method	DatabaseLaunchTransaction::__construct()
 method	DatabaseLaunchTransaction::run()
 method	Decision::__construct()
@@ -1858,6 +1889,8 @@ method	ShellWords::segments()
 method	SignedCall::__construct()
 method	SignedCall::digestOf()
 method	SignedCall::signatureFor()
+method	SignedInScope::__construct()
+method	SignedInScope::apply()
 method	SimpleAnswer::kind()
 method	SimpleTransition::applyTo()
 method	SimpleTransition::kind()
@@ -2143,6 +2176,7 @@ property	AssignmentGroup::$root
 property	AssignmentOutcome::$current
 property	AssignmentOutcome::$kind
 property	AssignmentOutcome::$record
+property	AssignmentRecord::$table
 property	AssignmentReference::$holder
 property	AssignmentReference::$id
 property	AssignmentRegistry::$assigneeProviders
@@ -2151,6 +2185,7 @@ property	AssignmentRegistry::$recordProviders
 property	AssignmentResult::$changes
 property	AssignmentResult::$outcomes
 property	AssignmentSet::$assignments
+property	AssignmentStore::$database
 property	AuthenticateAgent::$actors
 property	AuthenticateAgent::$container
 property	AuthenticateAgent::$contexts
@@ -2210,6 +2245,7 @@ property	ConversationData::$id
 property	ConversationData::$messages
 property	ConversationData::$sessionId
 property	CreateNewUser::$validation
+property	DatabaseAssignmentTransaction::$database
 property	DatabaseLaunchTransaction::$database
 property	Decision::$answer
 property	Decision::$context
@@ -2616,6 +2652,7 @@ property	ShellWords::$segments
 property	SignedCall::$bodyDigest
 property	SignedCall::$callId
 property	SignedCall::$issuedAt
+property	SignedInScope::$actors
 property	StackAccess::$context
 property	StackAccess::$retryWindow
 property	StackInspection::$agentId

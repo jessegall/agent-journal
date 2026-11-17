@@ -17,12 +17,16 @@ use App\Core\Assignments\Contracts\AssignableProvider;
 use App\Core\Assignments\Contracts\AssigneeProvider;
 use App\Core\Assignments\Contracts\AssignmentReader;
 use App\Core\Assignments\Contracts\AssignmentRegistration;
+use App\Core\Assignments\Contracts\AssignmentTransaction;
 use App\Core\Assignments\Enums\AssignmentOutcomeKind;
 use App\Core\Assignments\Enums\AssignmentReason;
 use App\Core\Assignments\Exceptions\AssigneeKindRepeated;
 use App\Core\Assignments\Exceptions\AssigneeUnavailable;
+use App\Core\Assignments\Exceptions\AssignmentConflict;
 use App\Core\Assignments\Exceptions\AssignmentGroupTooLarge;
 use App\Core\Assignments\Exceptions\AssignmentProviderInvalid;
+use App\Core\Assignments\Exceptions\AssignmentRetryExhausted;
+use App\Core\Assignments\Exceptions\AssignmentTransactionRequired;
 use App\Core\Assignments\Exceptions\AssignmentTypeRepeated;
 use App\Core\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Core\Assignments\Exceptions\InvalidAssignmentIdentity;
@@ -223,6 +227,10 @@ final class CoreApi
             AssignmentGroupTooLarge::class,
             AssigneeUnavailable::class,
             RecordUnavailable::class,
+            AssignmentConflict::class,
+            AssignmentRetryExhausted::class,
+            AssignmentTransactionRequired::class,
+            AssignmentTransaction::class,
             AssignmentTypeUnavailable::class,
             AssignmentProviderInvalid::class,
             AssigneeKindRepeated::class,
