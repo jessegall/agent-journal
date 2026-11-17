@@ -41,3 +41,10 @@ def test_a_plan_is_assigned_to_a_worker_before_it_starts(new_story):
     expect_task_holder(story, first)
     story.expect_text("plan show 1", "state: approved", actor=story.agent)
     expect_value(assignee(story)["id"], first.id)
+
+
+def test_assigning_a_plan_again_replaces_the_agent_that_held_it(new_story):
+    story, first, second = story_with_two_workers(new_story)
+    story.expect_success(f"plan assign 1 --to {first.id}", actor=story.agent)
+    story.expect_success(f"plan assign 1 --to {second.id} --override", actor=story.agent)
+    expect_value(assignee(story)["id"], second.id)

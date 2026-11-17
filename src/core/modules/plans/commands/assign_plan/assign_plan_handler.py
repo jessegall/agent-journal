@@ -22,7 +22,8 @@ class AssignPlanHandler(Handler[AssignPlan, Cascade]):
     """Gives a plan, or one of its phases, to the agent named, and through the cascade its phases and the tasks
     that have no assignee yet; with override also the tasks given to someone else. A phase is given on its
     own, never the plan. With no agent named the plan goes to the first running main agent and its tasks stay
-    as they are. A user or a main agent may assign a plan, a helper may not."""
+    as they are. The agent named takes the plan or phase in place of whoever held it, so its new tasks follow
+    the new holder. A user or a main agent may assign a plan, a helper may not."""
 
     command = AssignPlan
 
@@ -40,6 +41,9 @@ class AssignPlanHandler(Handler[AssignPlan, Cascade]):
         self.assignees.check_running(assignee)
         phases = self.outlines.outline(plan.id).chosen(command.phase_id)
         assigned = plan if command.phase_id is None else self.queries.query(Phase).find(command.phase_id)
+        for holder in self.assignments.actors(assigned):
+            if holder != assignee.id:
+                self.assignments.unassign(assigned, context, holder)
         outcome = self.assignments.assign(assigned, assignee.id, context, cascade=command.agent_id is not None, override=command.override)
         self.waits.update_tasks([task.id for phase in phases for task in phase.tasks], context)
         return outcome
