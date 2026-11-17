@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>05 · States · journal 6 in the version 5 look</title>
+<style>
+.t-dark{--side:#0d0e10;--bg:#131416;--bg-2:#101216;--raised:#18191c;--hover:#1d1e22;--sel:#212329;--chip:#24262b;--border:#25272b;--border-inner:#1d1f23;--border-2:#2f3136;--border-3:#3a3d44;--text:#e6e7ea;--text-2:#a9acb3;--text-3:#83868e;--text-4:#6b6e76;--accent:#5e64c9;--accent-text:#a3a8f0;--accent-dim:#2a2d5a;--progress:#5b8def;--warn:#d8a94a;--danger:#df8b7e;--tip-shadow:0 8px 22px rgba(0,0,0,.5);color-scheme:dark}
+.t-light{--side:#f5f5f7;--bg:#ffffff;--bg-2:#fafafb;--raised:#f6f6f8;--hover:#efeff2;--sel:#e8e9ee;--chip:#ececf0;--border:#e5e6ea;--border-inner:#eff0f3;--border-2:#d9dbe0;--border-3:#c9ccd3;--text:#1a1b1f;--text-2:#474a52;--text-3:#6b6e77;--text-4:#8b8e97;--accent:#5e64c9;--accent-text:#4a50b5;--accent-dim:#e5e6fa;--progress:#2f6cc9;--warn:#a4731a;--danger:#bf4f3d;--tip-shadow:0 6px 20px rgba(20,22,30,.13);color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;padding:32px;background:#232428;color:#d6d8dc;font:13px/1.45 "Geist",-apple-system,"Segoe UI",system-ui,sans-serif}
+h1.doc{font-size:18px;margin:0 0 6px}.lead{max-width:1280px;color:#a9acb3;margin:0 0 24px}
+.board{margin:0 0 44px}.cap{font-weight:600;font-size:13px;margin:0 0 4px;color:#e6e7ea}.note{font-size:12px;color:#9a9da5;max-width:1280px;margin:0 0 10px}
+.app{position:relative;display:flex;width:1280px;height:800px;overflow:hidden;background:var(--bg);color:var(--text);font:13px/1.45 "Geist",-apple-system,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;outline:1px solid #000}
+.ico{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;color:var(--text-3);flex:none}
+.s14{width:14px;height:14px}.s13{width:13px;height:13px}.s10{width:10px;height:10px}
+.sidebar{display:flex;flex:none;flex-direction:column;width:220px;border-right:1px solid var(--border);background:var(--side)}
+.sidebar-head{display:flex;align-items:center;gap:10px;padding:14px 18px}
+.logo{display:grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--accent);color:#fff;font-size:11px;font-weight:600}
+.s-name{display:block;font-size:14px;font-weight:600}.s-env{display:block;font-size:11px;color:var(--text-3)}
+.side-scroll{flex:1;display:flex;flex-direction:column;gap:2px;padding:6px 10px}
+.fold{margin-top:14px;padding:4px 8px;color:var(--text-3);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.item{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:7px}.item.active{background:var(--raised)}.item .t{flex:1}.item .n{color:var(--text-3);font-size:12px}
+.sk-item{display:flex;align-items:center;gap:10px;padding:8px}
+.side-foot{display:flex;justify-content:space-between;padding:10px 18px;border-top:1px solid var(--border);color:var(--text-3);font-size:12px}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
+.crumbs{display:flex;align-items:center;gap:8px;min-height:40px;padding:0 16px;border-bottom:1px solid var(--border);color:var(--text-2);font-size:13px;flex:none}
+.swatch{width:8px;height:8px;border-radius:2px;background:var(--accent)}.sep{color:var(--text-4)}.cur{color:var(--text);font-weight:500}.space{flex:1}
+.band{display:flex;gap:8px;align-items:center;padding:5px 16px;border-bottom:1px solid var(--border);background:var(--accent-dim);font-size:13px;flex:none}.band .tx{flex:1}
+.band.warn{background:color-mix(in srgb,var(--warn) 14%,var(--bg))}.band .ico{color:var(--warn);width:14px;height:14px}
+.agent{display:flex;gap:10px;align-items:center;min-height:54px;padding:0 16px;border-bottom:1px solid var(--border);flex:none}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}.dot.off{background:var(--text-4)}
+.info{display:flex;gap:16px;align-items:center;min-height:30px;padding:0 5px 0 16px;border-bottom:1px solid var(--border);color:var(--text-3);font-size:12px;flex:none}
+.cells{flex:1;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;min-height:0}
+.pane{position:relative;display:flex;flex-direction:column;min-width:0;overflow:hidden;background:var(--bg);border-left:1px solid var(--border);border-top:1px solid var(--border)}
+.cells .pane:nth-child(3n+1){border-left:0}.cells .pane:nth-child(-n+3){border-top:0}
+.tabs{flex:none;display:flex;align-items:stretch;gap:8px;height:34px;padding:0 5px 0 14px;border-bottom:1px solid var(--border);background:var(--side)}
+.tabrow{flex:1;display:flex;gap:12px;overflow:hidden}
+.tab{position:relative;display:inline-flex;align-items:center;gap:6px;font-size:11.5px;letter-spacing:.03em;color:var(--text-3);white-space:nowrap}.tab .ico{width:13px;height:13px;color:inherit}
+.tab.on{color:var(--text);box-shadow:inset 0 -1px 0 var(--accent)}.tab .n{font-size:11px;color:var(--text-3)}.tab.on .n,.n.hot{color:var(--accent-text)!important}
+.tab.gone{color:var(--text-4)}.tab.gone .lbl{text-decoration:line-through}
+.pbody{position:relative;flex:1;min-height:0;overflow:hidden}
+.label{position:absolute;right:8px;bottom:8px;z-index:5;padding:3px 6px;border-radius:4px;background:#d63384;color:#fff;font:600 10.5px/1.2 -apple-system,system-ui,sans-serif}.label.new{background:#0f8a7e}
+.fbar{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border)}
+.search{display:flex;align-items:center;gap:8px;flex:0 1 220px;height:30px;padding:0 9px;border:1px solid var(--border-2);border-radius:6px;color:var(--text-3)}.search .ico{width:14px;height:14px}
+.stale{display:flex;gap:8px;align-items:center;padding:6px 16px;border-bottom:1px solid var(--border);font-size:12px;color:var(--danger)}.stale .q{color:var(--text-3)}
+.row{display:flex;flex-direction:column;gap:5px;padding:10px 16px;border-bottom:1px solid var(--border-inner)}
+.row.new{background:color-mix(in srgb,var(--accent) 9%,var(--bg))}.row.dim{opacity:.6}
+.l1{display:flex;gap:8px;align-items:baseline}.rt{flex:1;min-width:0;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rm{font-size:12px;color:var(--text-3);white-space:nowrap}
+.l2{font-size:12px;color:var(--text-3)}
+.lgroup{padding:10px 16px 4px;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-4)}
+.sk{display:block;height:9px;border-radius:4px;background:var(--chip)}.sk.t{height:12px}
+.skcard{display:flex;flex-direction:column;gap:9px;padding:12px 14px;border-bottom:1px solid var(--border)}
+.empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:24px;text-align:center}
+.empty b{font-size:14px;font-weight:500;color:var(--text-2)}.empty p{max-width:300px;margin:0;color:var(--text-4);font-size:12.5px;line-height:1.5}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:28px;padding:0 11px;border:1px solid transparent;border-radius:7px;color:var(--text-2);font-size:12.5px;white-space:nowrap}.btn.sm{height:24px;padding:0 9px;font-size:12px}.btn.bd{border-color:var(--border-2)}.btn.pri{border-color:var(--accent);background:var(--accent-dim);color:var(--accent-text)}.btn .ico{width:13px;height:13px;color:inherit}
+.badge{display:inline-block;padding:1px 7px;border:1px solid var(--border-2);border-radius:4px;font-size:11.5px;color:var(--warn)}
+.quiet{font-size:11.5px;color:var(--text-3)}
+.chat{display:flex;flex-direction:column;height:100%}
+.msgs{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;padding:12px 16px}
+.bub{max-width:78%;padding:8px 12px;border-radius:10px}.bub.me{align-self:flex-end;background:color-mix(in srgb,var(--accent) 17%,var(--bg))}.bub.them{align-self:flex-start;background:var(--raised)}
+.composer{display:flex;flex-direction:column;min-height:96px;margin:8px 16px 12px;padding:10px 12px 8px;border:1px solid var(--border-2);border-radius:12px;background:var(--raised)}
+.composer.err{border-color:color-mix(in srgb,var(--danger) 55%,var(--border-2))}
+.composer .tx{flex:1}.composer .row2{display:flex;align-items:center;justify-content:space-between}
+.ferr{margin:-4px 18px 10px;font-size:12px;color:var(--danger)}
+.cover{position:absolute;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--bg) 55%,transparent);backdrop-filter:blur(6px);box-shadow:inset 0 0 120px color-mix(in srgb,var(--accent) 22%,transparent)}
+.cover-panel{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:300px;height:150px;padding:22px 28px;border:1px solid var(--border-2);border-radius:12px;background:var(--raised);box-shadow:var(--tip-shadow);text-align:center}
+.cover-panel .ttl{margin:0;font-size:14px;font-weight:600}.cover-panel .stp{margin:0;color:var(--text-2);font-size:13px}
+.spin{width:22px;height:22px;border-radius:50%;border:2px solid color-mix(in srgb,var(--accent-text) 25%,transparent);border-top-color:var(--accent-text);margin-bottom:6px}
+.grid2{flex:1;display:flex;min-height:0}
+.anno{position:absolute;z-index:900;padding:3px 6px;border-radius:4px;background:#d63384;color:#fff;font:600 10.5px/1.2 -apple-system,system-ui,sans-serif;white-space:nowrap}.anno.new{background:#0f8a7e}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+<symbol id="i-home" viewBox="0 0 16 16"><path d="M2.5 7.2 8 2.8l5.5 4.4V13a.6.6 0 0 1-.6.6H9.6V10H6.4v3.6H3.1a.6.6 0 0 1-.6-.6Z"/></symbol>
+<symbol id="i-chat" viewBox="0 0 16 16"><path d="M3 3.5h10a.8.8 0 0 1 .8.8v6a.8.8 0 0 1-.8.8H7l-3 2.4v-2.4H3a.8.8 0 0 1-.8-.8v-6a.8.8 0 0 1 .8-.8Z"/></symbol>
+<symbol id="i-plan" viewBox="0 0 16 16"><path d="M4 14V2.5M4 3h7.5l-1.6 2.6L11.5 8H4"/></symbol>
+<symbol id="i-rules" viewBox="0 0 16 16"><path d="M3 4h10M3 8h10M3 12h6"/></symbol>
+<symbol id="i-note" viewBox="0 0 16 16"><path d="M4 2.5h5.5L12.5 5.5V13a.6.6 0 0 1-.6.6H4a.6.6 0 0 1-.6-.6V3.1a.6.6 0 0 1 .6-.6Z"/><path d="M9.3 2.6v3h3M5.6 8.5h4.8M5.6 11h3.2"/></symbol>
+<symbol id="i-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.2"/><path d="m10.2 10.2 3.3 3.3"/></symbol>
+<symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 2.5 14 13H2Z"/><path d="M8 6.5v3M8 11.3v.1"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 16 16"><path d="M13 8a5 5 0 1 1-1.5-3.6M13 2.8v2.6h-2.6"/></symbol>
+<symbol id="i-x" viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></symbol>
+</svg>
+
+<h1 class="doc">05 · Every state</h1>
+<p class="lead">Each window owns its states, in the version 5 forms: the shared skeleton shaped like what is coming (review.md row 32), EmptyState (14&nbsp;px title, 12.5&nbsp;px text, centred), WindowPlaceholder with Retry or Remove tab, the struck-through tab of a window that is gone, UpdateBand for a shell notice, and ServerCover while the server restarts. A window's state never touches its neighbours.</p>
+
+<div class="board">
+<p class="cap">Window states side by side</p>
+<p class="note">1 First load: the deferred prop is out, the window draws its declared skeleton. 2 Empty. 3 Live update: a change arrived over the connection, the visible window's prop reloaded, the new row is tinted for 2&nbsp;s and the tab count turns accent; scroll, selection and drafts stay. 4 First load failed. 5 A refresh failed: the rows already shown stay, marked with when they were read. 6 The module was removed in a deploy: the tab is struck through and the window offers Remove tab.</p>
+<div class="app t-dark">
+  <div class="main">
+    <nav class="crumbs"><span class="swatch"></span><span>agent-journal</span><span class="sep">/</span><span>version-6</span><span class="sep">/</span><span class="cur">Home</span></nav>
+    <div class="cells">
+      <section class="pane"><div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-plan"/></svg>Plans</span></div></div>
+        <div class="pbody"><div class="fbar"><span class="search"><svg class="ico"><use href="#i-search"/></svg>Search</span></div>
+          <div class="skcard"><span class="sk" style="width:64px;height:8px"></span><span class="sk t" style="width:70%"></span><span class="sk" style="width:100%;height:4px"></span><span class="sk" style="width:45%"></span></div>
+          <div class="skcard"><span class="sk" style="width:64px;height:8px"></span><span class="sk t" style="width:58%"></span><span class="sk" style="width:100%;height:4px"></span><span class="sk" style="width:38%"></span></div>
+          <div class="skcard"><span class="sk" style="width:64px;height:8px"></span><span class="sk t" style="width:66%"></span><span class="sk" style="width:100%;height:4px"></span><span class="sk" style="width:50%"></span></div>
+        </div><span class="label">1 · loading (skeleton)</span></section>
+      <section class="pane"><div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-rules"/></svg>Rules</span></div></div>
+        <div class="pbody"><div class="empty"><b>No rules wait for you</b><p>A rule an agent proposes shows here until you approve or deny it.</p></div></div><span class="label">2 · empty</span></section>
+      <section class="pane"><div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-note"/></svg>Notes<span class="n hot">4</span></span></div></div>
+        <div class="pbody"><div class="lgroup">Today</div>
+          <div class="row new"><div class="l1"><span class="rt">45 Removal is a deploy too</span><span class="rm">now</span></div><div class="l2">Decision · plan 14</div></div>
+          <div class="row"><div class="l1"><span class="rt">44 Sections stay props of the host page</span><span class="rm">13:52</span></div></div>
+          <div class="row"><div class="l1"><span class="rt">43 Install is a line in bootstrap/domains.php</span><span class="rm">13:30</span></div></div>
+        </div><span class="label">3 · live update</span></section>
+      <section class="pane"><div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-note"/></svg>Notes</span></div></div>
+        <div class="pbody"><div class="empty"><b>Notes</b><p>This window failed: the server answered 500. The error is in the log.</p><span class="btn bd" style="margin-top:6px">Retry</span></div></div><span class="label">4 · error, first load</span></section>
+      <section class="pane"><div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-plan"/></svg>Plans<span class="n">5</span></span></div></div>
+        <div class="pbody"><div class="stale"><svg class="ico s13" style="color:var(--danger)"><use href="#i-alert"/></svg>Could not refresh<span class="q">· shown as read at 13:52</span><span style="flex:1"></span><span class="btn sm">Retry</span></div>
+          <div class="row dim"><div class="l1"><span class="rt">12 Version 5 look for version 6</span><span class="quiet">Started</span></div><div class="l2">3 of 8 tasks done</div></div>
+          <div class="row dim"><div class="l1"><span class="rt">14 Domains declare their own UI</span><span class="badge">Waiting</span></div></div>
+          <div class="row dim"><div class="l1"><span class="rt">9 Live updates through one connection</span><span class="quiet">Started</span></div></div>
+        </div><span class="label new">5 · NEW: refresh failed, rows kept</span></section>
+      <section class="pane"><div class="tabs"><div class="tabrow"><span class="tab gone on"><svg class="ico"><use href="#i-note"/></svg><span class="lbl">Notes</span></span><span class="tab"><svg class="ico"><use href="#i-plan"/></svg>Plans</span></div></div>
+        <div class="pbody"><div class="empty"><b>Notes</b><p>This window is no longer installed here.</p><span class="btn bd" style="margin-top:6px">Remove tab</span></div></div><span class="label">6 · module removed</span></section>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="board">
+<p class="cap">Shell states: connection lost, an action refused, a page that is not available</p>
+<p class="note">The live connection dropped: an UpdateBand-style strip under the breadcrumb says so in words; everything shown stays readable and every window keeps working by plain requests; when the connection returns, every visible window reloads once and the strip goes. The chat refused a message: the draft stays in the composer with the reason under it. The right pane is a fresh link to a page that a deploy removed (or that is hidden from this person): the same neutral page, with no hint of what was there.</p>
+<div class="app t-dark">
+  <aside class="sidebar">
+    <div class="sidebar-head"><span class="logo">A</span><span><span class="s-name">agent-journal</span><span class="s-env">version-6 · environment 6</span></span></div>
+    <div class="side-scroll">
+      <div class="item active"><svg class="ico s14"><use href="#i-home"/></svg><span class="t">Home</span></div>
+      <div class="fold">Work</div>
+      <div class="item"><svg class="ico s14"><use href="#i-chat"/></svg><span class="t">Chat</span><span class="n">2</span></div>
+      <div class="item"><svg class="ico s14"><use href="#i-plan"/></svg><span class="t">Plans</span><span class="n">5</span></div>
+      <div class="fold">Agents</div>
+      <div class="item"><svg class="ico s14"><use href="#i-rules"/></svg><span class="t">Rules</span><span class="n">1</span></div>
+    </div>
+    <div class="side-foot"><span>Agent journal</span><span>6.0.0</span></div>
+  </aside>
+  <div class="main">
+    <nav class="crumbs"><span class="swatch"></span><span>agent-journal</span><span class="sep">/</span><span>version-6</span><span class="sep">/</span><span class="cur">Home</span></nav>
+    <div class="band warn" role="status"><svg class="ico"><use href="#i-alert"/></svg><span class="tx">Live updates stopped. Reconnecting… What you see was read at 13:52.</span><span class="btn sm bd"><svg class="ico"><use href="#i-refresh"/></svg>Reload now</span></div>
+    <div class="agent"><span class="dot off"></span><strong>Working</strong><span>Task 173: Give the version 6 app the version 5 look and feel</span></div>
+    <div class="info"><span>Claude Code</span><span>Opus 5.5</span></div>
+    <div class="grid2">
+      <section class="pane" style="flex:1;border:0"><div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-chat"/></svg>Chat</span></div></div>
+        <div class="pbody"><div class="chat"><div class="msgs"><div class="bub me">Start plan 14.</div><div class="bub them">Plan 14 waits for your approval first.</div></div>
+          <div class="composer err"><span class="tx">Close plan 9 and move its tasks to plan 12</span><div class="row2"><svg class="ico s14"><use href="#i-note"/></svg><span class="btn sm pri">Send</span></div></div>
+          <div class="ferr">Not sent: this session has ended. Your text is kept.</div></div></div></section>
+      <section class="pane" style="flex:1"><div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-note"/></svg>Page</span></div></div>
+        <div class="pbody"><div class="empty"><b>This page is not available</b><p>It may have been removed, or the link is wrong.</p><span class="btn bd" style="margin-top:6px"><svg class="ico"><use href="#i-home"/></svg>Go to Home</span></div></div></section>
+    </div>
+  </div>
+  <span class="anno new" style="left:900px;top:44px">NEW: connection band (UpdateBand look, --warn tint)</span>
+  <span class="anno" style="left:300px;top:690px">rejected action: draft kept, reason below</span>
+  <span class="anno" style="left:940px;top:520px">404 and 403 look the same</span>
+</div>
+</div>
+
+<div class="board">
+<p class="cap">Deploy: installing or removing a module restarts the server</p>
+<p class="note">Install and removal are a line in bootstrap/domains.php and a deploy. While the server restarts, version 5's ServerCover blurs the shell; when the new build answers, Inertia's asset version sends the tab through one full reload, and the sidebar and windows of the new set of domains appear. A tab that stays open on an old build gets Reload after a while.</p>
+<div class="app t-dark">
+  <aside class="sidebar">
+    <div class="sidebar-head"><span class="logo">A</span><span><span class="s-name">agent-journal</span><span class="s-env">version-6 · environment 6</span></span></div>
+    <div class="side-scroll">
+      <div class="item active"><svg class="ico s14"><use href="#i-home"/></svg><span class="t">Home</span></div>
+      <div class="fold">Work</div>
+      <div class="item"><svg class="ico s14"><use href="#i-chat"/></svg><span class="t">Chat</span></div>
+      <div class="item"><svg class="ico s14"><use href="#i-plan"/></svg><span class="t">Plans</span></div>
+      <div class="item"><svg class="ico s14"><use href="#i-note"/></svg><span class="t">Notes</span></div>
+    </div>
+    <div class="side-foot"><span>Agent journal</span><span>6.0.0</span></div>
+  </aside>
+  <div class="main">
+    <nav class="crumbs"><span class="swatch"></span><span>agent-journal</span><span class="sep">/</span><span>version-6</span><span class="sep">/</span><span class="cur">Home</span></nav>
+    <div class="agent"><span class="dot"></span><strong>Working</strong></div>
+    <div class="info"><span>Claude Code</span></div>
+    <div class="grid2"><section class="pane" style="flex:1;border:0"><div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-chat"/></svg>Chat</span></div></div></section><section class="pane" style="flex:1"><div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-plan"/></svg>Plans</span></div></div></section></div>
+  </div>
+  <div class="cover"><div class="cover-panel"><span class="spin"></span><p class="ttl">The journal is restarting</p><p class="stp">A new build is starting up</p></div></div>
+</div>
+</div>
+<script>
+document.querySelectorAll('.board').forEach(function(b){var d=b.querySelector('.app.t-dark');if(!d)return;var cap=b.querySelector('.cap');var l=d.cloneNode(true);l.classList.remove('t-dark');l.classList.add('t-light');var c=document.createElement('p');c.className='cap';c.style.marginTop='18px';c.textContent=cap.textContent+' · light';cap.textContent=cap.textContent+' · dark';b.appendChild(c);b.appendChild(l);});
+</script>
+</body>
+</html>
