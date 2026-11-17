@@ -68,6 +68,10 @@ Generated files are build output and ignored by git: `resources/js/types/generat
 
 `App\Domain\Chat\Actions\SendMessage::send($body, StackTarget)` is the person's way to message a running agent's session: in one stack transaction it creates the message (body kept byte for byte; a blank body is refused with `MessageBodyEmpty`), asks that session to answer it and pushes the answering state through `PersonStacks`, so a guessed, ended or foreign target is refused and leaves no message. The agent path keeps `RequireMessageAnswer`. `MessageSent`, `MessageAnswered` and `MessageDismissed` (raised by `CloseMessage`) fire after the commit. `MessageRecords::conversationWith(StackTarget)` reads the conversation with a session for the person; its id is `"<agent>-<session>"`. States read their subject with the `forActor` scope: a person reads through `visibleToPerson`, an agent keeps its own scope.
 
+## Rule approval (task 112)
+
+Rules use doc 4's states: Proposed, Active, Denied, Removed. Existing rules stayed Active (the state column is a string, so no migration was needed). A rule comes to exist proposed, with fixed text, through `App\Domain\Rules\Actions\ProposeRule` (used by tests and the seeder; the agent path will call it). `ReviewRule::approve` and `deny` take the rule, need a person actor, lock the row and act once on a Proposed rule; any other state is refused with `RuleNotProposed`, whose message is safe to show. `RemoveRule` ends a rule. `RuleApproved`, `RuleDenied` and `RuleRemoved` fire after the commit. `ActiveRules` still gives agents only Active rules; `RuleRecords::all()` lists every rule for a page.
+
 ## Interfaces at the seams (task 122, rule 15)
 
 - **Actor.** `App\Core\Actors\Actor` (its kind and id) is what the core talks to. The Access `User` is a person actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.
