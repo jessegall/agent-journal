@@ -1,4 +1,3 @@
-import sqlite3
 
 import pytest
 
@@ -53,18 +52,3 @@ def test_python_older_than_3_14_is_refused_with_the_way_to_get_it(tmp_path):
     assert run.returncode == 1
     assert "Python 3.14 or newer" in run.stderr and "https://www.python.org/downloads" in run.stderr
     assert not scratch.journal.exists() and not (scratch.project / ".claude").exists()
-
-
-def test_a_project_with_a_version_4_journal_is_not_touched_and_is_told_to_upgrade(tmp_path):
-    scratch = Scratch(tmp_path)
-    scratch.journal.mkdir()
-    old = scratch.journal / "journal.db"
-    connection = sqlite3.connect(old)
-    connection.execute("CREATE TABLE tasks (id INTEGER PRIMARY KEY, title TEXT)")
-    connection.commit()
-    connection.close()
-    starting_files = scratch.file_contents()
-    run = scratch.install()
-    assert run.returncode == 1
-    assert "this project holds a version 4 journal: run journal upgrade" in run.stderr
-    assert scratch.file_contents() == starting_files

@@ -40,12 +40,13 @@ def test_install_in_an_empty_project_starts_nothing_and_leaves_version_4_names_o
     assert (scratch.journal / "version-5.db").is_file() and not (scratch.journal / "version-4").exists()
 
 
-def test_install_over_a_version_4_project_changes_nothing_and_answers_with_the_upgrade(tmp_path):
+def test_install_over_a_version_4_project_upgrades_it_and_keeps_the_backup_equal(tmp_path):
     scratch = version_four_project(tmp_path)
-    starting_files = scratch.file_contents()
+    original = content(scratch.journal / "journal.db")
     run = scratch.install()
-    assert run.returncode == 1 and "this project holds a version 4 journal: run journal upgrade" in run.stderr
-    assert scratch.file_contents() == starting_files
+    assert run.returncode == 0, run.stdout + run.stderr
+    assert "it is upgraded to version 5" in run.stdout and (scratch.journal / "version-5.db").is_file()
+    assert content(next((scratch.journal / "version-4").rglob("journal.db"))) == original
 
 
 def test_the_upgrade_of_a_copy_of_a_version_4_journal_moves_its_rows_and_keeps_the_backup_equal(tmp_path):
