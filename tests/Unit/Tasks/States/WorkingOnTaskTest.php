@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Tasks\States;
 
 use App\Core\Hooks\Contracts\HookInput;
-use App\Core\Hooks\Decisions\SimpleChange;
+use App\Core\Hooks\Decisions\SimpleTransition;
 use App\Core\Hooks\Decisions\StopPrevented;
 use App\Core\Hooks\Inputs\HookIdentity;
 use App\Core\Hooks\Inputs\StopDetails;
@@ -49,7 +49,7 @@ final class WorkingOnTaskTest extends TestCase
 
         $this->assertInstanceOf(StopPrevented::class, $decision->answer);
         $this->assertStringContainsString('Task 42 still needs work', $decision->refusalReason());
-        $this->assertSame(SimpleChange::Keep, $decision->change);
+        $this->assertSame(SimpleTransition::Keep, $decision->transition);
         $this->assertSame(TaskWorkState::Active, $task->state);
     }
 

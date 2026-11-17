@@ -21,18 +21,18 @@ use App\Core\Hooks\Contracts\HookAnswerer;
 use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Contracts\ReminderContribution;
 use App\Core\Hooks\Contracts\ShellCommandParser;
-use App\Core\Hooks\Contracts\StackChange;
 use App\Core\Hooks\Contracts\StackEditor;
+use App\Core\Hooks\Contracts\StackTransition;
 use App\Core\Hooks\Contracts\StackWork;
 use App\Core\Hooks\Contracts\StateRegistration;
 use App\Core\Hooks\Contracts\StateType;
 use App\Core\Hooks\Contracts\UserStack;
 use App\Core\Hooks\Decisions\AnswerKind;
-use App\Core\Hooks\Decisions\ChangeKind;
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
+use App\Core\Hooks\Decisions\TransitionKind;
 use App\Core\Hooks\Events\ContextWasCompacted;
 use App\Core\Hooks\Events\StateTypesRequested;
 use App\Core\Hooks\Exceptions\StackLockTimedOut;
@@ -111,8 +111,8 @@ final class CoreApi
             Decision::class,
             Answer::class,
             AnswerKind::class,
-            StackChange::class,
-            ChangeKind::class,
+            StackTransition::class,
+            TransitionKind::class,
             StackEditor::class,
             StateReference::class,
             NoSubject::class,

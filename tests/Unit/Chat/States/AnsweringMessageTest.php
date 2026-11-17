@@ -6,7 +6,7 @@ namespace Tests\Unit\Chat\States;
 
 use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Decisions\Denied;
-use App\Core\Hooks\Decisions\SimpleChange;
+use App\Core\Hooks\Decisions\SimpleTransition;
 use App\Core\Hooks\Decisions\StopPrevented;
 use App\Core\Hooks\Inputs\CommandEffect;
 use App\Core\Hooks\Inputs\CommandKind;
@@ -66,7 +66,7 @@ final class AnsweringMessageTest extends TestCase
 
         $this->assertInstanceOf(StopPrevented::class, $decision->answer);
         $this->assertStringContainsString('journal message reply 95', $decision->refusalReason());
-        $this->assertSame(SimpleChange::Keep, $decision->change);
+        $this->assertSame(SimpleTransition::Keep, $decision->transition);
     }
 
     #[DataProvider('commandsThatMayChangeFiles')]

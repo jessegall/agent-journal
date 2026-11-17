@@ -6,11 +6,11 @@ namespace Tests\Unit\Hooks;
 
 use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Decisions\AnswerKind;
-use App\Core\Hooks\Decisions\ChangeKind;
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
+use App\Core\Hooks\Decisions\TransitionKind;
 use App\Core\Hooks\Exceptions\ActivityAllowed;
 use App\Core\Hooks\Exceptions\BottomStateCannotFinish;
 use App\Core\Hooks\Exceptions\BottomStateDelegated;
@@ -261,12 +261,12 @@ final class AgentStackTest extends TestCase
 
     public function test_a_step_keeps_its_typed_labels_through_an_array(): void
     {
-        $step = new WalkStep('top', 'guide', 'onStop', AnswerKind::PreventStop, ChangeKind::Push);
+        $step = new WalkStep('top', 'guide', 'onStop', AnswerKind::PreventStop, TransitionKind::Push);
 
         $copy = WalkStep::from($step->toArray());
 
         $this->assertSame(AnswerKind::PreventStop, $copy->answer);
-        $this->assertSame(ChangeKind::Push, $copy->change);
+        $this->assertSame(TransitionKind::Push, $copy->transition);
         $this->assertSame($step->toArray(), $copy->toArray());
     }
 
@@ -317,7 +317,7 @@ final class AgentStackTest extends TestCase
     private function stepsOf(HookAnswer $answer): array
     {
         return array_map(
-            fn (WalkStep $step) => "{$step->frameId} {$step->answer->value} {$step->change->value}",
+            fn (WalkStep $step) => "{$step->frameId} {$step->answer->value} {$step->transition->value}",
             $answer->steps,
         );
     }

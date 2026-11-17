@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Sequences\States;
 
 use App\Core\Hooks\Contracts\HookInput;
-use App\Core\Hooks\Decisions\SimpleChange;
+use App\Core\Hooks\Decisions\SimpleTransition;
 use App\Core\Hooks\Decisions\StopPrevented;
 use App\Core\Hooks\Inputs\CompactionDetails;
 use App\Core\Hooks\Inputs\ContextCompacted;
@@ -48,7 +48,7 @@ final class FollowingSequenceTest extends TestCase
 
         $this->assertInstanceOf(StopPrevented::class, $decision->answer);
         $this->assertSame('Sequence run 8 is on step 3: Run the phase tests.', $decision->refusalReason());
-        $this->assertSame(SimpleChange::Keep, $decision->change);
+        $this->assertSame(SimpleTransition::Keep, $decision->transition);
     }
 
     public function test_a_compaction_repeats_the_current_instruction_without_advancing(): void
@@ -62,7 +62,7 @@ final class FollowingSequenceTest extends TestCase
         $this->assertTrue($first->isDelegating());
         $this->assertSame(['Sequence run 8 is on step 3: Run the phase tests.'], $first->context);
         $this->assertSame($first->context, $second->context);
-        $this->assertSame(SimpleChange::Keep, $first->change);
+        $this->assertSame(SimpleTransition::Keep, $first->transition);
         $this->assertSame(3, $sequence->stepNumber);
     }
 

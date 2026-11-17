@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Decisions;
 
-use App\Core\Hooks\Contracts\StackChange;
 use App\Core\Hooks\Contracts\StackEditor;
+use App\Core\Hooks\Contracts\StackTransition;
 
-enum SimpleChange: string implements StackChange
+enum SimpleTransition: string implements StackTransition
 {
     case Keep = 'keep';
     case PopSelf = 'pop_self';
 
-    public function kind(): ChangeKind
+    public function kind(): TransitionKind
     {
         return match ($this) {
-            self::Keep => ChangeKind::Keep,
-            self::PopSelf => ChangeKind::PopSelf,
+            self::Keep => TransitionKind::Keep,
+            self::PopSelf => TransitionKind::PopSelf,
         };
     }
 

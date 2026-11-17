@@ -45,7 +45,7 @@ final class HookWalk
             $frame->typeKey(),
             $this->hookMethod,
             $decision->answerKind(),
-            $decision->change->kind(),
+            $decision->transition->kind(),
         );
     }
 

@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Decisions;
 
-use App\Core\Hooks\Contracts\StackChange;
 use App\Core\Hooks\Contracts\StackEditor;
+use App\Core\Hooks\Contracts\StackTransition;
 
-final readonly class PushState implements StackChange
+final readonly class PushState implements StackTransition
 {
     public function __construct(public StateReference $state) {}
 
-    public function kind(): ChangeKind
+    public function kind(): TransitionKind
     {
-        return ChangeKind::Push;
+        return TransitionKind::Push;
     }
 
     public function applyTo(StackEditor $editor): void

@@ -8,11 +8,11 @@ use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Decisions\Denied;
 use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\PushState;
-use App\Core\Hooks\Decisions\SimpleChange;
+use App\Core\Hooks\Decisions\SimpleTransition;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\StopPrevented;
 use App\Core\Hooks\Decisions\SubjectReference;
-use App\Core\Hooks\Exceptions\ConflictingStackChange;
+use App\Core\Hooks\Exceptions\ConflictingStackTransition;
 use App\Core\Hooks\Exceptions\EmptyReason;
 use PHPUnit\Framework\TestCase;
 
@@ -52,13 +52,13 @@ final class DecisionTest extends TestCase
         $this->assertTrue(Decision::addContext('Remember rule 7.')->isDelegating());
         $this->assertTrue(Decision::push($reference)->isDelegating());
         $this->assertTrue(Decision::pop()->isDelegating());
-        $this->assertSame(SimpleChange::PopSelf, Decision::pop()->change);
+        $this->assertSame(SimpleTransition::PopSelf, Decision::pop()->transition);
     }
 
     public function test_a_push_carries_its_state(): void
     {
         $reference = new StateReference('chat.answering', NoSubject::None);
-        $change = Decision::push($reference)->change;
+        $change = Decision::push($reference)->transition;
 
         $this->assertInstanceOf(PushState::class, $change);
         $this->assertSame($reference, $change->state);
@@ -71,12 +71,12 @@ final class DecisionTest extends TestCase
 
         $this->assertSame(['One.'], $first->context);
         $this->assertSame(['One.', 'Two.'], $second->context);
-        $this->assertSame(SimpleChange::Keep, $second->change);
+        $this->assertSame(SimpleTransition::Keep, $second->transition);
     }
 
     public function test_a_decision_makes_only_one_stack_change(): void
     {
-        $this->expectException(ConflictingStackChange::class);
+        $this->expectException(ConflictingStackTransition::class);
 
         Decision::pop()->withPush(new StateReference('tasks.working', NoSubject::None));
     }

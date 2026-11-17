@@ -45,7 +45,7 @@ final readonly class AgentStack
             $decision = $input->answerBy($frame->state);
             $walk->record($frame, $decision);
             $this->checkDecision($frame, $input, $decision, $walk);
-            $decision->change->applyTo(new FrameEditor($walk, $frame));
+            $decision->transition->applyTo(new FrameEditor($walk, $frame));
 
             if (! $decision->isDelegating()) {
                 return $walk->finish($decision);

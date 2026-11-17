@@ -6,13 +6,13 @@ namespace App\Core\Hooks\Decisions;
 
 use App\Core\Hooks\Contracts\Answer;
 use App\Core\Hooks\Contracts\Refusal;
-use App\Core\Hooks\Contracts\StackChange;
-use App\Core\Hooks\Exceptions\ConflictingStackChange;
+use App\Core\Hooks\Contracts\StackTransition;
+use App\Core\Hooks\Exceptions\ConflictingStackTransition;
 use App\Core\Hooks\Exceptions\NoRefusalReason;
 use App\Core\Hooks\Exceptions\NoReplacementLine;
 
 /**
- * A state's answer to one hook: the answer, one change to the stack, and any context for the agent.
+ * A state's answer to one hook: the answer, one transition of the stack, and any context for the agent.
  */
 final readonly class Decision
 {
@@ -21,7 +21,7 @@ final readonly class Decision
      */
     private function __construct(
         public Answer $answer,
-        public StackChange $change,
+        public StackTransition $transition,
         public array $context = [],
     ) {}
 
@@ -30,7 +30,7 @@ final readonly class Decision
      */
     private static function answering(Answer $answer): self
     {
-        return new self($answer, SimpleChange::Keep);
+        return new self($answer, SimpleTransition::Keep);
     }
 
     public static function delegate(): self
@@ -70,18 +70,18 @@ final readonly class Decision
 
     public static function pop(): self
     {
-        return new self(SimpleAnswer::Delegate, SimpleChange::PopSelf);
+        return new self(SimpleAnswer::Delegate, SimpleTransition::PopSelf);
     }
 
     public function withContext(string $text): self
     {
-        return new self($this->answer, $this->change, [...$this->context, $text]);
+        return new self($this->answer, $this->transition, [...$this->context, $text]);
     }
 
     public function withPush(StateReference $state): self
     {
-        if ($this->change !== SimpleChange::Keep) {
-            throw ConflictingStackChange::forChange($this->change->kind()->value);
+        if ($this->transition !== SimpleTransition::Keep) {
+            throw ConflictingStackTransition::forTransition($this->transition->kind()->value);
         }
 
         return new self($this->answer, new PushState($state), $this->context);

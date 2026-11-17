@@ -139,7 +139,7 @@ final class HookRewriteTest extends TestCase
     private function stepsOf(HookAnswer $answer): array
     {
         return array_map(
-            fn (WalkStep $step) => "{$step->frameId} {$step->answer->value} {$step->change->value}",
+            fn (WalkStep $step) => "{$step->frameId} {$step->answer->value} {$step->transition->value}",
             $answer->steps,
         );
     }
