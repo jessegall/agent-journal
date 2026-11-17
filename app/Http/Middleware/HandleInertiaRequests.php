@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use Illuminate\Container\Attributes\Config;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -17,6 +18,8 @@ class HandleInertiaRequests extends Middleware
      * @var string
      */
     protected $rootView = 'app';
+
+    public function __construct(#[Config('app.name')] private readonly string $appName) {}
 
     /**
      * Determines the current asset version.
@@ -39,7 +42,7 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
+            'name' => $this->appName,
         ];
     }
 }

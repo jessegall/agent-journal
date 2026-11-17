@@ -30,7 +30,6 @@ final class DomainDeclarationTest extends TestCase
         'Actions/Fortify/CreateNewUser.php',
         'Actions/Fortify/ResetUserPassword.php',
         'Concerns/PasswordValidationRules.php',
-        'Concerns/ProfileValidationRules.php',
         'Http/Controllers/Controller.php',
         'Http/Middleware/HandleInertiaRequests.php',
         'Models/User.php',

@@ -55,7 +55,7 @@ final class BoundaryCheckerTest extends TestCase
     public function test_the_report_names_each_file_and_line_and_ends_with_the_question(): void
     {
         $file = $this->fixtureFolder().'/Plans/UsesForbidden.php';
-        $report = BoundaryReport::of($this->checker()->violations(DomainFiles::usesIn([$file], $this->roots())), dirname(__DIR__, 2));
+        $report = BoundaryReport::of($this->checker()->violations(DomainFiles::usesIn([$file], $this->roots())), dirname($this->fixtureFolder(), 3));
 
         $this->assertStringStartsWith('Domain boundary violations (7):', $report);
         $this->assertStringContainsString(
