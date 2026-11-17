@@ -56,6 +56,14 @@ One route owner for signing in: Fortify keeps `views => false`, Web owns the gue
 
 `POST /plans/{plan}/start` (`plans.start`) binds the plan after the person middleware, takes `StartPlanInput` from the request (so Laravel Data validates its nested `filters` with `PlanFiltersData`'s attributes; a bad filter stops the start), calls `StartPlan::start` once and answers 303 to `plans.index` with the validated filters only; any other return address in the request is ignored. `StartDenied` alone is rendered as a `start` form error (303 back), by a renderer `WebServiceProvider` registers; a 403, a 404 or an unexpected failure keeps its own response and its log.
 
+## Building with generated contracts (task 108)
+
+Generated files are build output and ignored by git: `resources/js/types/generated/index.ts` (PHP Data, from `php artisan typescript:transform`) and `resources/js/routes`, `actions`, `wayfinder` (Wayfinder). Lint and format skip them; TypeScript compiles them.
+
+- **Build** (Docker image, `composer setup`, CI): `npm run build` runs `npm run types:generate` first, then `vp build`, in whose start the Wayfinder plugin generates the routes with form variants. The image has PHP and Node together, so the image build needs no database, user or websocket. A checkout with no generated files builds and type-checks (`npm run types:check`) from scratch.
+- **Development**: the Vite container regenerates Wayfinder routes itself. After changing a page's PHP Data, run `npm run types:generate` (or `composer types:generate`); it is the one writer of the PHP types, so nothing races. Vite in the container polls for changes (`usePolling` when `LARAVEL_SAIL` is set), because a macOS-mounted folder sends no file events; without it the dev server and its SSR served stale code.
+- **Stale uses** of a renamed property or route fail `vue-tsc` after regenerating.
+
 ## Interfaces at the seams (task 122, rule 15)
 
 - **Actor.** `App\Core\Actors\Actor` (its kind and id) is what the core talks to. The Access `User` is a person actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.

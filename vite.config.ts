@@ -38,6 +38,9 @@ export default defineConfig({
         // The app container reaches the Vite container by this name for server-side rendering.
         allowedHosts: ['vite'],
         watch: {
+            // In the Docker container on macOS the mounted folder sends no file events, so poll there.
+            usePolling: process.env.LARAVEL_SAIL === '1',
+            interval: 300,
             ignored: [
                 '**/.agents/**',
                 '**/.claude/**',
@@ -78,6 +81,9 @@ export default defineConfig({
             'resources/js/components/ui/*',
             'resources/views/mail/*',
             'resources/js/types/generated/**',
+            'resources/js/routes/**',
+            'resources/js/actions/**',
+            'resources/js/wayfinder/**',
             'docs/**',
             'tests/Fixtures/**',
             '.commandments/**',

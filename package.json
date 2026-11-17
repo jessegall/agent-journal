@@ -3,12 +3,13 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vp build",
-        "build:ssr": "vp build && vp build --ssr",
+        "build": "npm run types:generate && vp build",
+        "build:ssr": "npm run types:generate && vp build && vp build --ssr",
         "dev": "vp dev",
         "check": "vp check",
         "check:fix": "vp check --fix",
-        "types:check": "vue-tsc --noEmit"
+        "types:check": "vue-tsc --noEmit",
+        "types:generate": "php artisan typescript:transform"
     },
     "dependencies": {
         "@inertiajs/vite": "^3.0.0",
