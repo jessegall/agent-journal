@@ -9,6 +9,7 @@ use App\Core\Hooks\Contracts\StateRegistration;
 use App\Domain\Contracts\ProvidesAssignables;
 use App\Domain\Contracts\ProvidesAssignees;
 use App\Domain\Contracts\ProvidesStates;
+use App\Domain\Declarations\DomainUi;
 use App\Domain\Exceptions\AmbiguousDomainRoot;
 use App\Domain\Exceptions\DomainCycle;
 use App\Domain\Exceptions\DomainListedTwice;
@@ -98,6 +99,15 @@ final readonly class DomainRegistry
                 $registration->register($typeKey, $container->make($factory));
             }
         }
+    }
+
+    /**
+     * The pages, navigation and sections every domain declares through ProvidesPages, ProvidesNavigation and
+     * ProvidesSections, checked together; a domain that declares none of them adds nothing.
+     */
+    public function uiDeclarations(): UiDeclarations
+    {
+        return UiDeclarations::check(array_map(DomainUi::of(...), $this->all()));
     }
 
     /**
