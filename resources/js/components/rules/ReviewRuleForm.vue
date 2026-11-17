@@ -2,6 +2,7 @@
 import { useForm } from '@inertiajs/vue3';
 import Button from '@/components/kit/Button.vue';
 import FormErrors from '@/components/kit/FormErrors.vue';
+import { formSendingHooks } from '@/composables/usePageChanges';
 import { approve, deny } from '@/routes/rules';
 import type { RuleFiltersData, RuleReviewInput } from '@/types/generated';
 
@@ -17,7 +18,7 @@ const form = useForm<RuleReviewInput>({ filters: props.filters });
 function review(action: typeof approve): void {
     form.transform(() => ({ filters: props.filters })).submit(
         action({ rule: Number(props.ruleId) }),
-        { preserveScroll: true },
+        { preserveScroll: true, ...formSendingHooks() },
     );
 }
 </script>

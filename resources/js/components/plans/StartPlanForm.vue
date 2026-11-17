@@ -2,6 +2,7 @@
 import { useForm } from '@inertiajs/vue3';
 import Button from '@/components/kit/Button.vue';
 import FormErrors from '@/components/kit/FormErrors.vue';
+import { formSendingHooks } from '@/composables/usePageChanges';
 import { start as startRoute } from '@/routes/plans';
 import type {
     PlanFiltersData,
@@ -22,6 +23,7 @@ function submit(): void {
         startRoute({ plan: Number(props.start.planId) }),
         {
             preserveScroll: true,
+            ...formSendingHooks(),
         },
     );
 }
