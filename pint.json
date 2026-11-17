@@ -3,10 +3,6 @@
     "rules": {
         "declare_strict_types": true
     },
-    "exclude": [
-        ".journal"
-    ],
-    "notPath": [
-        "tests/Fixtures"
-    ]
+    "exclude": [".journal"],
+    "notPath": ["tests/Fixtures"]
 }

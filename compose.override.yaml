@@ -1,34 +1,42 @@
 # Local development: docker compose up merges this file into compose.yaml.
 # Production runs compose.yaml alone: docker compose -f compose.yaml up
 services:
-  app:
-    command: ["php", "artisan", "octane:frankenphp", "--host=0.0.0.0", "--port=8000", "--watch"]
-    environment:
-      # Server-side rendering in development goes to the Vite container, not to localhost inside this one.
-      INERTIA_SSR_HOT_URL: http://vite:${VITE_PORT:-54701}
-    volumes:
-      - .:/app
-      - /app/node_modules
+    app:
+        command:
+            [
+                'php',
+                'artisan',
+                'octane:frankenphp',
+                '--host=0.0.0.0',
+                '--port=8000',
+                '--watch',
+            ]
+        environment:
+            # Server-side rendering in development goes to the Vite container, not to localhost inside this one.
+            INERTIA_SSR_HOT_URL: http://vite:${VITE_PORT:-54701}
+        volumes:
+            - .:/app
+            - /app/node_modules
 
-  vite:
-    build:
-      context: .
-      dockerfile: .docker/app/Dockerfile
-    command: ["npm", "run", "dev"]
-    environment:
-      # Makes the Laravel Vite plugin listen on 0.0.0.0:VITE_PORT and point the browser at localhost.
-      LARAVEL_SAIL: 1
-      VITE_PORT: ${VITE_PORT:-54701}
-    ports:
-      - "127.0.0.1:${VITE_PORT:-54701}:${VITE_PORT:-54701}"
-    volumes:
-      - .:/app
-      - /app/node_modules
+    vite:
+        build:
+            context: .
+            dockerfile: .docker/app/Dockerfile
+        command: ['npm', 'run', 'dev']
+        environment:
+            # Makes the Laravel Vite plugin listen on 0.0.0.0:VITE_PORT and point the browser at localhost.
+            LARAVEL_SAIL: 1
+            VITE_PORT: ${VITE_PORT:-54701}
+        ports:
+            - '127.0.0.1:${VITE_PORT:-54701}:${VITE_PORT:-54701}'
+        volumes:
+            - .:/app
+            - /app/node_modules
 
-  postgres:
-    ports:
-      - "127.0.0.1:${FORWARD_DB_PORT:-54702}:5432"
+    postgres:
+        ports:
+            - '127.0.0.1:${FORWARD_DB_PORT:-54702}:5432'
 
-  redis:
-    ports:
-      - "127.0.0.1:${FORWARD_REDIS_PORT:-54703}:6379"
+    redis:
+        ports:
+            - '127.0.0.1:${FORWARD_REDIS_PORT:-54703}:6379'
