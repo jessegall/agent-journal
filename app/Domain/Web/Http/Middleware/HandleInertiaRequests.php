@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Http\Middleware;
 
-use App\Domain\Access\Models\User;
+use App\Domain\Access\Contracts\ViewerReader;
 use App\Domain\Web\Data\SharedData;
 use App\Domain\Web\Data\ViewerData;
 use Illuminate\Container\Attributes\Config;
@@ -25,7 +25,10 @@ class HandleInertiaRequests extends Middleware
      */
     protected $rootView = 'app';
 
-    public function __construct(#[Config('app.name')] private readonly string $appName) {}
+    public function __construct(
+        #[Config('app.name')] private readonly string $appName,
+        private readonly ViewerReader $viewers,
+    ) {}
 
     /**
      * Determines the current asset version.
@@ -46,10 +49,10 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $user = $request->user();
-        $shared = $user instanceof User
-            ? SharedData::from(['name' => $this->appName, 'viewer' => ViewerData::from($user)])
-            : SharedData::from(['name' => $this->appName]);
+        $viewer = $this->viewers->viewer();
+        $shared = $viewer === null
+            ? SharedData::from(['name' => $this->appName])
+            : SharedData::from(['name' => $this->appName, 'viewer' => ViewerData::from($viewer)]);
 
         return [
             ...parent::share($request),

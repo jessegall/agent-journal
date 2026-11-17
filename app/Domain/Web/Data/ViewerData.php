@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Data;
 
-use App\Domain\Access\Models\User;
+use App\Domain\Access\Api\Viewer;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -12,7 +12,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * The signed-in user as every page may show them: their id (it keys what the browser keeps per user, such as message
  * drafts) and display name, never a credential.
  *
- * @method static static from(User $user)
+ * @method static static from(Viewer $viewer)
  */
 #[TypeScript]
 final class ViewerData extends Data
@@ -22,8 +22,8 @@ final class ViewerData extends Data
         public readonly string $name,
     ) {}
 
-    public static function fromUser(User $user): self
+    public static function fromViewer(Viewer $viewer): self
     {
-        return new self(id: (string) $user->id, name: $user->name);
+        return new self(id: (string) $viewer->id, name: $viewer->name);
     }
 }

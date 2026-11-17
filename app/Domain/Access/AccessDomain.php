@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Access;
 
+use App\Domain\Access\Api\Viewer;
+use App\Domain\Access\Contracts\ViewerReader;
 use App\Domain\Contracts\Domain;
 
 final class AccessDomain implements Domain
@@ -26,6 +28,9 @@ final class AccessDomain implements Domain
      */
     public function exports(): array
     {
-        return [];
+        return [
+            ViewerReader::class,
+            Viewer::class,
+        ];
     }
 }
