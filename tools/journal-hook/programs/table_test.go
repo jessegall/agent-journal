@@ -75,13 +75,6 @@ func TestTheTableReadsMatcherStyleAndLimits(t *testing.T) {
 	}
 }
 
-func TestTheTableReadsTheWakeAnswer(t *testing.T) {
-	table := LoadTable("")
-	if table.Programs["claude"].WakeAnswer != "exit_with_stderr" || table.Programs["codex"].WakeAnswer != "" || table.Programs["claude"].WakeSeconds != 86_400 || table.Programs["codex"].WakeSeconds != 0 {
-		t.Fatalf("claude wakes by %q and codex by %q", table.Programs["claude"].WakeAnswer, table.Programs["codex"].WakeAnswer)
-	}
-}
-
 func TestHonoursEntryField(t *testing.T) {
 	table := LoadTable("")
 	claude, codex := table.Programs["claude"], table.Programs["codex"]

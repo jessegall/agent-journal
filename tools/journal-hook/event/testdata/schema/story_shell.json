@@ -50,14 +50,14 @@
       ],
       "redirects": [],
       "is_journal_only": false,
-      "parse_error": "",
-      "saved_commands_known": false
+      "parse_error": ""
     }
   },
   "prompt": null,
   "raw": {},
   "accepts_lines": true,
   "launch": "",
+  "role": "",
   "foreign": [],
   "child_agent": ""
 }

@@ -10,6 +10,7 @@
   "child_agent": "",
   "accepts_lines": false,
   "launch": "",
+  "role": "",
   "tool": null,
   "prompt": null,
   "raw": {

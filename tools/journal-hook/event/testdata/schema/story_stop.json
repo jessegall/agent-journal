@@ -12,6 +12,7 @@
   "raw": {},
   "accepts_lines": true,
   "launch": "",
+  "role": "",
   "foreign": [],
   "child_agent": ""
 }
