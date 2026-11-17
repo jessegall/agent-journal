@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8">
 <title>02 · A domain's own page in a window · journal 6 in the version 5 look</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
 <style>
-.t-dark{--side:#0d0e10;--bg:#131416;--bg-2:#101216;--raised:#18191c;--hover:#1d1e22;--sel:#212329;--chip:#24262b;--border:#25272b;--border-inner:#1d1f23;--border-2:#2f3136;--border-3:#3a3d44;--text:#e6e7ea;--text-2:#a9acb3;--text-3:#83868e;--text-4:#6b6e76;--accent:#5e64c9;--accent-text:#a3a8f0;--accent-dim:#2a2d5a;--progress:#5b8def;--open:#8b8e96;--blocking:#d9a441;--warn:#d8a94a;--paused:#5fa8a0;--seq:#a78bfa;--good:#63b37c;--danger:#df8b7e;--tip-shadow:0 8px 22px rgba(0,0,0,.5);--float-bar:#111215;--float-shadow:0 18px 48px rgba(0,0,0,.5);--veil:rgba(13,14,16,.62);color-scheme:dark}
-.t-light{--side:#f5f5f7;--bg:#ffffff;--bg-2:#fafafb;--raised:#f6f6f8;--hover:#efeff2;--sel:#e8e9ee;--chip:#ececf0;--border:#e5e6ea;--border-inner:#eff0f3;--border-2:#d9dbe0;--border-3:#c9ccd3;--text:#1a1b1f;--text-2:#474a52;--text-3:#6b6e77;--text-4:#8b8e97;--accent:#5e64c9;--accent-text:#4a50b5;--accent-dim:#e5e6fa;--progress:#2f6cc9;--open:#8b8e96;--blocking:#a4731a;--warn:#a4731a;--paused:#397f78;--seq:#7c5cc4;--good:#2e8a4e;--danger:#bf4f3d;--tip-shadow:0 6px 20px rgba(20,22,30,.13);--float-bar:#f0f0f3;--float-shadow:0 18px 48px rgba(20,22,30,.18);--veil:rgba(245,245,247,.7);color-scheme:light}
+.t-dark{--side:#0d0e10;--bg:#131416;--bg-2:#101216;--raised:#18191c;--hover:#1d1e22;--sel:#212329;--chip:#24262b;--line:#22252b;--border:#25272b;--border-inner:#1d1f23;--border-2:#2f3136;--border-3:#3a3d44;--text:#e6e7ea;--text-2:#a9acb3;--text-3:#83868e;--text-4:#6b6e76;--accent:#5e64c9;--accent-text:#a3a8f0;--accent-dim:#2a2d5a;--progress:#5b8def;--tone-warn:#d8a94a;--danger:#df8b7e;color-scheme:dark}
+.t-light{--side:#f5f5f7;--bg:#ffffff;--bg-2:#fafafb;--raised:#f6f6f8;--hover:#efeff2;--sel:#e8e9ee;--chip:#ececf0;--line:#e8e9ec;--border:#e5e6ea;--border-inner:#eff0f3;--border-2:#d9dbe0;--border-3:#c9ccd3;--text:#1a1b1f;--text-2:#474a52;--text-3:#6b6e77;--text-4:#8b8e97;--accent:#5e64c9;--accent-text:#4a50b5;--accent-dim:#e5e6fa;--progress:#5b8def;--tone-warn:#a4731a;--danger:#bf4f3d;color-scheme:light}
 *{box-sizing:border-box}
 body{margin:0;padding:32px;background:#232428;color:#d6d8dc;font:13px/1.45 "Geist",-apple-system,"Segoe UI",system-ui,sans-serif}
-h1.doc{font-size:18px;margin:0 0 6px}.lead{max-width:1280px;color:#a9acb3;margin:0 0 24px}
+h1.doc{font-size:18px;margin:0 0 6px}.doc-lead{max-width:1280px;color:#a9acb3;margin:0 0 24px}
 .board{margin:0 0 44px}.cap{font-weight:600;font-size:13px;margin:0 0 4px;color:#e6e7ea}.note{font-size:12px;color:#9a9da5;max-width:1280px;margin:0 0 10px}
 .app{position:relative;display:flex;width:1280px;height:800px;overflow:hidden;background:var(--bg);color:var(--text);font:13px/1.45 "Geist",-apple-system,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-ligatures:none;outline:1px solid #000}
 .mono{font-family:"Geist Mono",ui-monospace,"SF Mono",Menlo,monospace}
@@ -17,14 +18,14 @@ h1.doc{font-size:18px;margin:0 0 6px}.lead{max-width:1280px;color:#a9acb3;margin
 .sidebar{display:flex;flex:none;flex-direction:column;width:220px;border-right:1px solid var(--border);background:var(--side)}
 .sidebar-head{display:flex;align-items:center;gap:10px;padding:14px 18px}
 .logo{display:grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--accent);color:#fff;font-size:11px;font-weight:600;flex:none}
-.s-name{display:block;font-size:14px;font-weight:600}.s-env{display:block;font-size:11px;color:var(--text-3)}
-.side-scroll{flex:1;display:flex;flex-direction:column;gap:2px;min-height:0;padding:6px 10px;overflow:hidden}
+.s-name{display:block;font-size:14px;font-weight:600}
+.side-scroll{flex:1;display:flex;flex-direction:column;gap:2px;min-height:0;padding:6px 10px;overflow-y:auto;scrollbar-width:none}
 .fold{display:flex;align-items:center;margin-top:14px;padding:4px 8px;color:var(--text-3);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
-.item{position:relative;display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:7px;color:var(--text)}
-.item.active{background:var(--raised)}
+.item{position:relative;display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:7px;color:var(--text);flex:none}
+.item.active,.item.hover{background:var(--raised)}
 .item .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .item .n{color:var(--text-3);font-size:12px}
-.disc{display:grid;place-items:center;width:18px;height:18px;margin:-2px -4px -2px 0;border-radius:5px;color:var(--text-3)}.disc .ico{color:inherit}
+.disc{display:grid;place-items:center;width:18px;height:18px;margin:-2px -4px -2px 0;border-radius:5px;color:var(--text-3)}.disc .ico{color:inherit}.disc.open .ico{transform:rotate(90deg)}
 .kids{position:relative;display:flex;flex-direction:column;gap:2px;margin-left:15px;padding-left:9px}
 .kids::before{content:"";position:absolute;left:0;top:2px;bottom:2px;width:1px;background:var(--border-2)}
 .kids .item{padding:5px 8px;font-size:12.5px;color:var(--text-2)}.kids .item.active{color:var(--text)}
@@ -33,17 +34,15 @@ h1.doc{font-size:18px;margin:0 0 6px}.lead{max-width:1280px;color:#a9acb3;margin
 .crumbs{display:flex;align-items:center;gap:8px;min-height:40px;padding:0 16px;border-bottom:1px solid var(--border);color:var(--text-2);font-size:13px;flex:none}
 .swatch{width:8px;height:8px;border-radius:2px;background:var(--accent)}.sep{color:var(--text-4)}.cur{color:var(--text);font-weight:500}.space{flex:1}
 .ibtn{position:relative;display:grid;place-items:center;width:24px;height:24px;border-radius:7px;color:var(--text-2);flex:none}.ibtn .ico{color:inherit;width:13px;height:13px}
-.top-search{display:flex;align-items:center;gap:8px;width:200px;height:28px;padding:0 8px;border:1px solid var(--border);border-radius:7px;background:var(--raised);color:var(--text-3);font-size:12px}.top-search span{flex:1}
-kbd{padding:0 4px;border:1px solid var(--border);border-radius:4px;font:inherit;font-size:11px}
-.seg{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--border-2);border-radius:7px}.seg span{padding:3px 10px;border-radius:5px;font-size:12px;color:var(--text-3)}.seg span.on{background:var(--sel);color:var(--text)}.seg em{font-style:normal;margin-left:5px;color:var(--text-4)}.seg.tiny span{padding:1px 7px;font-size:11.5px}
-.pagewin{flex:1;min-height:0;display:flex;flex-direction:column}
-.wintools{display:flex;align-items:center;gap:2px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:28px;padding:0 11px;border:1px solid transparent;border-radius:7px;background:none;color:var(--text-2);font:inherit;font-size:12.5px;white-space:nowrap}
-.btn.sm{height:24px;padding:0 9px;font-size:12px}.btn.bd{border-color:var(--border-2)}.btn.pri{border-color:var(--accent);background:var(--accent-dim);color:var(--accent-text)}.btn .ico{width:13px;height:13px;color:inherit}
-.badge{display:inline-block;padding:1px 7px;border:1px solid var(--border-2);border-radius:4px;font-size:11.5px;color:var(--warn)}
+.viewer{font-size:12px;color:var(--text-3)}
+.pagewin{flex:1;min-height:0;display:flex;flex-direction:column;position:relative}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:28px;padding:0 11px;border:1px solid transparent;border-radius:7px;color:var(--text-2);font-size:12.5px;white-space:nowrap}
+.btn.sm{height:24px;padding:0 9px;font-size:12px}.btn.bd{border-color:var(--border-2)}.btn.pri{border-color:var(--accent);background:var(--accent-dim);color:var(--accent-text)}.btn .ico{width:12px;height:12px;color:inherit}
+.badge{display:inline-block;padding:1px 7px;border:1px solid var(--tone-warn);border-radius:4px;font-size:11.5px;color:var(--tone-warn)}
 .quiet{font-size:11.5px;color:var(--text-3)}
 .chip{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 8px;border:1px solid var(--border-2);border-radius:6px;font-size:12px;color:var(--text-2);white-space:nowrap}.chip.on{border-color:var(--accent);background:var(--accent-dim);color:var(--accent-text)}.chip .ico{width:10px;height:10px;color:inherit}
 .agentchip{display:inline-flex;align-items:center;height:18px;padding:0 6px;border-radius:4px;background:var(--chip);font-size:11px;font-weight:500;color:var(--text-2)}
+.seg{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--border-2);border-radius:7px}.seg span{padding:3px 10px;border-radius:5px;font-size:12px;color:var(--text-3)}.seg span.on{background:var(--sel);color:var(--text)}.seg em{font-style:normal;margin-left:5px;color:var(--text-4)}
 .fbar{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border);flex:none}
 .search{display:flex;align-items:center;gap:8px;flex:0 1 220px;height:30px;padding:0 9px;border:1px solid var(--border-2);border-radius:6px;color:var(--text-3);font-size:13px}.search .ico{width:14px;height:14px}
 .lgroup{padding:10px 16px 4px;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-4)}
@@ -57,75 +56,95 @@ kbd{padding:0 4px;border:1px solid var(--border);border-radius:4px;font:inherit;
 .rmeta{display:flex;gap:8px;align-items:center;min-height:18px;font-size:12px;color:var(--text-3)}
 .rtl{display:flex;gap:12px;align-items:flex-start;margin-top:4px}.rtitle{flex:1;font-size:17px;font-weight:600;letter-spacing:-.01em;line-height:1.3;margin-top:6px}.rabs{font-size:12.5px;color:var(--text-3);margin-top:4px}
 .itabs{display:flex;gap:2px;align-items:stretch;height:32px;padding:0 8px;background:var(--bg-2);border-bottom:1px solid var(--border);flex:none}
-.itab{display:flex;align-items:center;gap:6px;padding:0 9px;font-size:12px;color:var(--text-3)}.itab.on{color:var(--text);font-weight:500;box-shadow:inset 0 -2px 0 var(--accent)}
+.itab{display:flex;align-items:center;gap:7px;padding:0 9px;font-size:12px;letter-spacing:.01em;color:var(--text-3)}.itab.on{color:var(--text);font-weight:500;box-shadow:inset 0 -2px 0 var(--accent)}
 .pill{min-width:18px;height:16px;padding:0 5px;border-radius:9px;background:var(--chip);color:var(--text-3);font-size:10.5px;line-height:16px;text-align:center}.itab.on .pill{background:var(--accent-dim);color:var(--accent-text)}
 .rbody{padding:0 16px 24px;overflow:hidden}
 .facts{display:grid;grid-template-columns:max-content 1fr;gap:6px 16px;margin:20px 0 0;align-items:baseline}.facts dt{font-size:12px;color:var(--text-3)}.facts dd{margin:0}.facts a{color:var(--accent-text);text-decoration:none}
 .prose{font-size:14px;line-height:1.7;margin-top:16px}.prose p{margin:0 0 12px}
 .phdr{display:flex;align-items:center;gap:12px;padding:14px 16px 12px;flex:none}.phdr h1{margin:0;font-size:16px;font-weight:600}.phdr .cnt{font-size:12.5px;color:var(--text-3)}
+/* plan cards */
+.pcards{display:grid;grid-template-columns:1fr 1fr}
+.pcard{display:flex;flex-direction:column;gap:8px;padding:12px 14px 0;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg)}
+.pcard.focus{box-shadow:inset 0 0 0 1px var(--accent)}.pcard.sel{background:var(--raised)}
+.phead{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-3)}.phead .ico{width:13px;height:13px}.phead .st{margin-left:auto}
+.ptitle{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar4{height:4px;border-radius:2px;background:var(--border-2)}.bar4>span{display:block;height:100%;border-radius:2px;background:var(--progress)}
-.phase{display:flex;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border-inner)}.phase .pm{color:var(--accent-text);width:14px}.phase .pt{flex:1;font-weight:500}.phase .pp{font-size:12px;color:var(--text-3)}
-.h4{margin:20px 0 6px;font-size:12px;font-weight:500;color:var(--text-3)}
+.pfoot{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;font-size:12px;color:var(--text-3)}
+/* inspector: resource/InspectorPanel.vue, InspectorHead.vue, kit/InspectorActions.vue; plan details: PlanDetails.vue, PlanPhases.vue */
+.inspector{position:absolute;top:0;right:0;bottom:0;z-index:30;width:640px;display:flex;flex-direction:column;border-left:1px solid var(--border-2);background:var(--bg);box-shadow:-20px 0 50px rgba(0,0,0,.4)}
+.ihead{padding:10px 12px 12px 16px;border-bottom:1px solid var(--border)}
+.iline{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:28px}
+.ilabel{flex:1;font-size:12px;color:var(--text-3)}
+.ititle{margin-top:4px;font-size:17px;font-weight:600}.idesc{font-size:12.5px;color:var(--text-3)}
+.iacts{display:flex;justify-content:flex-end;gap:8px;padding:8px 16px;border-bottom:1px solid var(--border);background:var(--raised)}
+.itabsband{padding:8px 16px;border-bottom:1px solid var(--border)}
+.ibody{flex:1;padding:18px 20px 28px;overflow:hidden}
+.h4{margin:0 0 6px;font-size:12px;font-weight:500;color:var(--text-3)}
+.phase{display:flex;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border-inner)}.phase .pm{color:var(--accent-text);width:14px;font-size:12px}.phase .pt{flex:1;font-weight:500}.phase .pt.done{color:var(--text-3)}.phase .pp{font-size:12px;color:var(--text-3)}
+/* section frame in a slot (new) */
 .sect{margin-top:22px;border:1px solid var(--border);border-radius:10px;overflow:hidden}
 .sect-head{display:flex;align-items:center;gap:8px;height:34px;padding:0 6px 0 12px;border-bottom:1px solid var(--border);background:var(--bg-2);font-size:12px;color:var(--text-2)}.sect-head .ico{width:13px;height:13px}
 .sect .row{padding:8px 12px}
-.anno{position:absolute;z-index:900;padding:3px 6px;border-radius:4px;background:#d63384;color:#fff;font:600 10.5px/1.2 -apple-system,system-ui,sans-serif;white-space:nowrap;pointer-events:none}.anno.new{background:#0f8a7e}
+/* context menu: kit/MenuPanel.vue, MenuItem.vue */
+.menupanel{position:absolute;z-index:90;display:flex;flex-direction:column;gap:2px;width:220px;padding:6px;border:1px solid var(--border-2);border-radius:9px;background:var(--raised);box-shadow:0 14px 36px rgba(0,0,0,.45)}
+.mi{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;font-size:12px;color:var(--text-2)}.mi.hover{background:var(--hover);color:var(--text)}
+.mgap{height:1px;margin:3px 0;background:var(--border)}
+.anno{position:absolute;z-index:900;padding:3px 6px;border-radius:4px;background:#d63384;color:#fff;font:600 10.5px/1.2 -apple-system,system-ui,sans-serif;white-space:nowrap;pointer-events:none}.anno.new{background:#0f8a7e}.anno.v6{background:#7a5af5}
 </style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute">
-<symbol id="i-home" viewBox="0 0 16 16"><path d="M2.5 7.2 8 2.8l5.5 4.4V13a.6.6 0 0 1-.6.6H9.6V10H6.4v3.6H3.1a.6.6 0 0 1-.6-.6Z"/></symbol>
-<symbol id="i-chat" viewBox="0 0 16 16"><path d="M3 3.5h10a.8.8 0 0 1 .8.8v6a.8.8 0 0 1-.8.8H7l-3 2.4v-2.4H3a.8.8 0 0 1-.8-.8v-6a.8.8 0 0 1 .8-.8Z"/></symbol>
-<symbol id="i-plan" viewBox="0 0 16 16"><path d="M4 14V2.5M4 3h7.5l-1.6 2.6L11.5 8H4"/></symbol>
-<symbol id="i-rules" viewBox="0 0 16 16"><path d="M3 4h10M3 8h10M3 12h6"/></symbol>
+<symbol id="i-home" viewBox="0 0 16 16"><path d="M2.5 7.5L8 2.75l5.5 4.75v6.25h-3.75v-4h-3.5v4H2.5V7.5Z"/></symbol>
+<symbol id="i-chat" viewBox="0 0 16 16"><path d="M2.5 3h11v7.5H8L5 13v-2.5H2.5z"/></symbol>
+<symbol id="i-plan" viewBox="0 0 16 16"><path d="M4 14V2.5M4 3h7.5l-1.5 2.75 1.5 2.75H4"/></symbol>
+<symbol id="i-rules" viewBox="0 0 16 16"><path d="M3 3.5h10M3 8h10M3 12.5h6"/></symbol>
 <symbol id="i-note" viewBox="0 0 16 16"><path d="M4 2.5h5.5L12.5 5.5V13a.6.6 0 0 1-.6.6H4a.6.6 0 0 1-.6-.6V3.1a.6.6 0 0 1 .6-.6Z"/><path d="M9.3 2.6v3h3M5.6 8.5h4.8M5.6 11h3.2"/></symbol>
-<symbol id="i-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.2"/><path d="m10.2 10.2 3.3 3.3"/></symbol>
-<symbol id="i-bell" viewBox="0 0 16 16"><path d="M4 11V7.4a4 4 0 0 1 8 0V11l1 1.3H3ZM6.6 13.8a1.5 1.5 0 0 0 2.8 0"/></symbol>
-<symbol id="i-phone" viewBox="0 0 16 16"><rect x="4.5" y="2" width="7" height="12" rx="1.4"/><path d="M7.2 12h1.6"/></symbol>
-<symbol id="i-wide" viewBox="0 0 16 16"><path d="M2.5 6V2.5H6M10 2.5h3.5V6M13.5 10v3.5H10M6 13.5H2.5V10"/></symbol>
-<symbol id="i-activity" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.2"/><path d="M10 3v10"/></symbol>
-<symbol id="i-side" viewBox="0 0 16 16"><path d="M3 4h10M3 8h10M3 12h10"/></symbol>
-<symbol id="i-plus" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></symbol>
-<symbol id="i-dots" viewBox="0 0 16 16"><circle cx="3.5" cy="8" r=".6"/><circle cx="8" cy="8" r=".6"/><circle cx="12.5" cy="8" r=".6"/></symbol>
-<symbol id="i-right" viewBox="0 0 16 16"><path d="m6 3.5 4.5 4.5L6 12.5"/></symbol>
+<symbol id="i-search" viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.25"/><path d="M10.25 10.25L13.5 13.5"/></symbol>
+<symbol id="i-list" viewBox="0 0 16 16"><path d="M3 3.5h10M3 8h10M3 12.5h6"/></symbol>
+<symbol id="i-scheme" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.75"/><path d="M8 2.25a5.75 5.75 0 0 1 0 11.5z" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-wide" viewBox="0 0 16 16"><path d="M6.2 2.6H2.6v3.6M9.8 2.6h3.6v3.6M6.2 13.4H2.6V9.8M9.8 13.4h3.6V9.8"/></symbol>
+<symbol id="i-power" viewBox="0 0 16 16"><path d="M8 2.5v5M4.8 4.6a4.8 4.8 0 1 0 6.4 0"/></symbol>
+<symbol id="i-plus" viewBox="0 0 16 16"><path d="M8 3.5v9M3.5 8h9"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 16 16"><path d="M6 3.5 10.5 8 6 12.5"/></symbol>
 <symbol id="i-down" viewBox="0 0 16 16"><path d="M3.5 6 8 10.5 12.5 6"/></symbol>
-<symbol id="i-detach" viewBox="0 0 16 16"><rect x="2.5" y="5" width="8.5" height="8.5" rx="1.2"/><path d="M7 2.5h6.5V9"/></symbol>
+<symbol id="i-up" viewBox="0 0 16 16"><path d="M3.5 10 8 5.5 12.5 10"/></symbol>
+<symbol id="i-x" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></symbol>
 <symbol id="i-check" viewBox="0 0 16 16"><path d="m3.5 8.5 3 3 6-7"/></symbol>
 </svg>
 
 <h1 class="doc">02 · A domain's own page in a window</h1>
-<p class="lead">In version 5 every sidebar page is a window shown on a page of its own: the breadcrumb, then the window with a gutter, no agent bars (tests/look/windows/phone-v5.png, review.md row 28). Version 6 keeps that: a page a domain declares through ProvidesPages is the same window it shows in a pane tab or detached. Its route belongs to the declaring domain; Web registers it behind the page's visibility check.</p>
+<p class="doc-lead">In version 5 every sidebar page is a window shown on a page of its own: the breadcrumb, then the window, with no agent bars (tests/look/windows/phone-v5.png; windows/PageWindow.vue draws no extra gutter). Version 6 keeps that. A page a domain declares through ProvidesPages is the same window, with the same component, as in a pane tab or detached. The shell adds nothing to the window's own head. Opening the page on Home is offered from the sidebar row's right-click menu, as in version 5 (SidebarPages.vue pagePlace: Open, Open in a new tab, Copy link, Place on Home).</p>
 
 <div class="board">
-<p class="cap">Notes · Collections · Decisions — a page of the outside Notes module (vendor/acme/notes)</p>
-<p class="note">Opened from a nested sidebar entry three levels deep. The breadcrumb lists the navigation ancestors after the environment (new: version 5 had only project, environment and page). The window head offers Open on Home and Detach, which version 5 offered from the window's context menu. Layout: kit/ListReaderLayout with the 460&nbsp;px list, PageHeader, FilterBar and Reader.</p>
+<p class="cap">Notes · Collections · Decisions: a page of the outside Notes module, with the sidebar row's menu open</p>
+<p class="note">Decisions and Research are records the Notes module lists per request through its children reader. Both point at the one page notes.collection with a different route value. The breadcrumb lists the navigation ancestors after the project; version 5 had project, environment and page, and version 6 has no environment. The page head and New note are the Notes component's own (kit/PageHeader). Layout: kit/ListReaderLayout with the 460&nbsp;px list, FilterBar and Reader.</p>
 <div class="app t-dark">
   <aside class="sidebar">
-    <div class="sidebar-head"><span class="logo">A</span><span><span class="s-name">agent-journal</span><span class="s-env">version-6 · environment 6</span></span></div>
+    <div class="sidebar-head"><span class="logo">A</span><span class="s-name">agent-journal</span></div>
     <div class="side-scroll">
       <div class="item"><svg class="ico s14"><use href="#i-home"/></svg><span class="t">Home</span></div>
       <div class="fold">Work</div>
-      <div class="item"><svg class="ico s14"><use href="#i-chat"/></svg><span class="t">Chat</span><span class="n">2</span></div>
-      <div class="item"><svg class="ico s14"><use href="#i-plan"/></svg><span class="t">Plans</span><span class="n">5</span><span class="disc"><svg class="ico s10"><use href="#i-right"/></svg></span></div>
-      <div class="item"><svg class="ico s14"><use href="#i-note"/></svg><span class="t">Notes</span><span class="n">3</span><span class="disc"><svg class="ico s10"><use href="#i-down"/></svg></span></div>
+      <div class="item"><svg class="ico s13"><use href="#i-chat"/></svg><span class="t">Chat</span></div>
+      <div class="item"><svg class="ico s13"><use href="#i-plan"/></svg><span class="t">Plans</span><span class="n">5</span><span class="disc"><svg class="ico s10"><use href="#i-arrow"/></svg></span></div>
+      <div class="item"><svg class="ico s13"><use href="#i-note"/></svg><span class="t">Notes</span><span class="n">3</span><span class="disc open"><svg class="ico s10"><use href="#i-arrow"/></svg></span></div>
       <div class="kids">
         <div class="item"><span class="t">Recent</span></div>
-        <div class="item"><span class="t">Collections</span><span class="disc"><svg class="ico s10"><use href="#i-down"/></svg></span></div>
+        <div class="item"><span class="t">Collections</span><span class="disc open"><svg class="ico s10"><use href="#i-arrow"/></svg></span></div>
         <div class="kids">
           <div class="item active" aria-current="page"><span class="t">Decisions</span><span class="n">12</span></div>
-          <div class="item"><span class="t">Research</span></div>
+          <div class="item hover"><span class="t">Research</span><span class="n">4</span></div>
         </div>
       </div>
       <div class="fold">Agents</div>
-      <div class="item"><svg class="ico s14"><use href="#i-rules"/></svg><span class="t">Rules</span><span class="n">1</span></div>
+      <div class="item"><svg class="ico s13"><use href="#i-rules"/></svg><span class="t">Rules</span><span class="n">1</span></div>
     </div>
     <div class="side-foot"><span>Agent journal</span><span>6.0.0</span></div>
   </aside>
   <div class="main">
-    <nav class="crumbs"><span class="swatch"></span><span>agent-journal</span><span class="sep">/</span><span>version-6</span><span class="sep">/</span><span>Notes</span><span class="sep">/</span><span>Collections</span><span class="sep">/</span><span class="cur">Decisions</span><span class="space"></span>
-      <span class="ibtn"><svg class="ico"><use href="#i-side"/></svg></span><span class="top-search"><svg class="ico s13"><use href="#i-search"/></svg><span>Search</span><kbd>⌘K</kbd></span><span class="ibtn"><svg class="ico"><use href="#i-bell"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-phone"/></svg></span><span class="seg tiny"><span>Light</span><span class="on">Dark</span><span>System</span></span><span class="ibtn"><svg class="ico"><use href="#i-wide"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-activity"/></svg></span></nav>
+    <nav class="crumbs"><span class="swatch"></span><span>agent-journal</span><span class="sep">/</span><span>Notes</span><span class="sep">/</span><span>Collections</span><span class="sep">/</span><span class="cur">Decisions</span><span class="space"></span>
+      <span class="ibtn"><svg class="ico"><use href="#i-list"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-scheme"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-wide"/></svg></span><span class="viewer">Jesse</span><span class="ibtn"><svg class="ico"><use href="#i-power"/></svg></span></nav>
     <div class="pagewin">
-      <div class="phdr"><h1>Decisions</h1><span class="cnt">12</span><span class="space"></span><span class="btn sm"><svg class="ico"><use href="#i-home"/></svg>Open on Home</span><span class="btn sm"><svg class="ico"><use href="#i-detach"/></svg>Detach</span><span class="btn sm pri"><svg class="ico"><use href="#i-plus"/></svg>New note</span></div>
+      <div class="phdr"><h1>Decisions</h1><span class="cnt">12</span><span class="space"></span><span class="btn sm pri"><svg class="ico"><use href="#i-plus"/></svg>New note</span></div>
       <div class="fbar"><span class="search"><svg class="ico"><use href="#i-search"/></svg>Search titles and text</span><span class="chip on">Plan: 14<svg class="ico"><use href="#i-down"/></svg></span><span class="chip">Author<svg class="ico"><use href="#i-down"/></svg></span><span class="space"></span><span class="quiet">4 of 12</span><span class="chip" style="border-color:transparent">Clear</span></div>
       <div class="lr">
         <div class="list">
@@ -137,73 +156,78 @@ kbd{padding:0 4px;border:1px solid var(--border);border-radius:4px;font:inherit;
           <div class="row"><div class="l1"><span class="rt">38 A navigation item points at its own pages</span><span class="rm">11:20</span></div><div class="l2">Never at a page another domain declared</div></div>
         </div>
         <div class="reader">
-          <div class="rhead"><div class="rmeta"><span class="mono">44</span><span class="agentchip">main</span></div><div class="rtl"><div class="rtitle">Sections stay props of the host page</div><span class="btn sm bd">Actions<svg class="ico s10"><use href="#i-down"/></svg></span></div><div class="rabs">One data path: Inertia props, deferred while they load</div></div>
+          <div class="rhead"><div class="rmeta"><span class="mono">44</span><span class="agentchip">main</span></div><div class="rtl"><div class="rtitle">Sections stay props of the host page</div><span class="btn sm bd">Actions<svg class="ico" style="width:11px;height:11px"><use href="#i-down"/></svg></span></div><div class="rabs">One data path: Inertia props, deferred while they load</div></div>
           <div class="itabs"><span class="itab on">Text</span><span class="itab">Links<span class="pill">3</span></span></div>
           <div class="rbody">
             <dl class="facts"><dt>Collection</dt><dd>Decisions</dd><dt>Plan</dt><dd><a>Plan 14</a></dd><dt>Changed</dt><dd>13:52</dd></dl>
-            <div class="prose"><p>A section is a prop of the page that hosts its slot. The host's controller asks the foundation for the slot's sections and adds each one's Data as a deferred prop, so it loads after the page and shows a skeleton meanwhile.</p><p>A live change reloads only the props of what is on screen.</p></div>
+            <div class="prose"><p>A section is a prop of the page that hosts its slot. The page's controller asks the foundation for the slot's sections and adds the Data of each as a deferred prop, so the section loads after the page and shows its skeleton until then.</p></div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <span class="anno" style="left:230px;top:180px">Notes · ProvidesNavigation (children nested as values)</span>
-  <span class="anno new" style="left:600px;top:8px">NEW: ancestors in the breadcrumb</span>
-  <span class="anno" style="left:700px;top:52px">Notes · ProvidesPages · page notes.collection · route /notes/collections/{collection}</span>
-  <span class="anno new" style="left:880px;top:84px">NEW as buttons: Open on Home, Detach</span>
+  <div class="menupanel" style="left:170px;top:258px">
+    <div class="mi hover">Open</div><div class="mi">Open in a new tab</div><div class="mgap"></div><div class="mi">Copy link</div><div class="mgap"></div><div class="mi">Place on Home</div>
+  </div>
+  <span class="anno" style="left:236px;top:160px">Notes · NavigationItem with a children reader (records)</span>
+  <span class="anno" style="left:400px;top:262px">version 5 row menu (SidebarPages pagePlace); groups split by a rule (ContextMenu not read)</span>
+  <span class="anno new" style="left:520px;top:8px">NEW: navigation ancestors in the breadcrumb</span>
+  <span class="anno" style="left:700px;top:52px">Notes · page notes.collection · GET /notes/collections/{collection}</span>
 </div>
 </div>
 
 <div class="board">
-<p class="cap">Plans · plan reader with a section from Notes in the record slot plans.reader</p>
-<p class="note">Version 5's outside fixture put a section into a record's inspector (acme_plan_notes, slots=("inspector.plan",)). In version 6 the Plans page declares the slot plans.reader with the context "one plan"; Notes declares a section for it. The section arrives as a deferred prop of the Plans page; Notes checks the plan through Plans' export before it reads. The section frame (34&nbsp;px head on --bg-2) is the host's; the rows are Notes'.</p>
+<p class="cap">Plans · a plan opened in the inspector, with a section from Notes in the slot plans.inspector</p>
+<p class="note">On Home and on its page, the Plans window is the same component: version 5's plan cards. A card opens the record in version 5's inspector, which is 640&nbsp;px at the right edge (resource/InspectorPanel.vue). This settles the difference between cards on Home and rows on the page. Version 5's outside fixture put a section into the plan inspector (acme_plan_notes, slots=("inspector.plan",)). Version 6 does the same: the Plans record page declares the slot plans.inspector, which takes one plan, and Notes declares a section for it. The section frame (34&nbsp;px head on --bg-2) is new and belongs to the host. The rows belong to Notes.</p>
 <div class="app t-dark">
   <aside class="sidebar">
-    <div class="sidebar-head"><span class="logo">A</span><span><span class="s-name">agent-journal</span><span class="s-env">version-6 · environment 6</span></span></div>
+    <div class="sidebar-head"><span class="logo">A</span><span class="s-name">agent-journal</span></div>
     <div class="side-scroll">
       <div class="item"><svg class="ico s14"><use href="#i-home"/></svg><span class="t">Home</span></div>
       <div class="fold">Work</div>
-      <div class="item"><svg class="ico s14"><use href="#i-chat"/></svg><span class="t">Chat</span><span class="n">2</span></div>
-      <div class="item active"><svg class="ico s14"><use href="#i-plan"/></svg><span class="t">Plans</span><span class="n">5</span><span class="disc"><svg class="ico s10"><use href="#i-down"/></svg></span></div>
+      <div class="item"><svg class="ico s13"><use href="#i-chat"/></svg><span class="t">Chat</span></div>
+      <div class="item"><svg class="ico s13"><use href="#i-plan"/></svg><span class="t">Plans</span><span class="n">5</span><span class="disc open"><svg class="ico s10"><use href="#i-arrow"/></svg></span></div>
       <div class="kids"><div class="item active"><span class="t">Open</span><span class="n">5</span></div><div class="item"><span class="t">Waiting for you</span><span class="n">1</span></div><div class="item"><span class="t">Closed</span></div></div>
-      <div class="item"><svg class="ico s14"><use href="#i-note"/></svg><span class="t">Notes</span><span class="n">3</span><span class="disc"><svg class="ico s10"><use href="#i-right"/></svg></span></div>
+      <div class="item"><svg class="ico s13"><use href="#i-note"/></svg><span class="t">Notes</span><span class="n">3</span><span class="disc"><svg class="ico s10"><use href="#i-arrow"/></svg></span></div>
       <div class="fold">Agents</div>
-      <div class="item"><svg class="ico s14"><use href="#i-rules"/></svg><span class="t">Rules</span><span class="n">1</span></div>
+      <div class="item"><svg class="ico s13"><use href="#i-rules"/></svg><span class="t">Rules</span><span class="n">1</span></div>
     </div>
     <div class="side-foot"><span>Agent journal</span><span>6.0.0</span></div>
   </aside>
   <div class="main">
-    <nav class="crumbs"><span class="swatch"></span><span>agent-journal</span><span class="sep">/</span><span>version-6</span><span class="sep">/</span><span>Plans</span><span class="sep">/</span><span class="cur">Open</span><span class="space"></span><span class="ibtn"><svg class="ico"><use href="#i-side"/></svg></span><span class="top-search"><svg class="ico s13"><use href="#i-search"/></svg><span>Search</span><kbd>⌘K</kbd></span><span class="ibtn"><svg class="ico"><use href="#i-bell"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-phone"/></svg></span><span class="seg tiny"><span>Light</span><span class="on">Dark</span><span>System</span></span><span class="ibtn"><svg class="ico"><use href="#i-wide"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-activity"/></svg></span></nav>
+    <nav class="crumbs"><span class="swatch"></span><span>agent-journal</span><span class="sep">/</span><span>Plans</span><span class="sep">/</span><span class="cur">Open</span><span class="space"></span><span class="ibtn"><svg class="ico"><use href="#i-list"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-scheme"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-wide"/></svg></span><span class="viewer">Jesse</span><span class="ibtn"><svg class="ico"><use href="#i-power"/></svg></span></nav>
     <div class="pagewin">
-      <div class="phdr"><h1>Plans</h1><span class="cnt">5</span><span class="space"></span><span class="btn sm"><svg class="ico"><use href="#i-home"/></svg>Open on Home</span><span class="btn sm"><svg class="ico"><use href="#i-detach"/></svg>Detach</span></div>
       <div class="fbar"><span class="search"><svg class="ico"><use href="#i-search"/></svg>Search</span><span class="space"></span><span class="seg"><span class="on">Open<em>5</em></span><span>Closed<em>12</em></span></span></div>
-      <div class="lr">
-        <div class="list">
-          <div class="row sel"><div class="l1"><span class="rt">12 Version 5 look for version 6</span><span class="rm quiet">Started</span></div><div class="l2">3 of 8 tasks done · phase 2</div></div>
-          <div class="row"><div class="l1"><span class="rt">14 Domains declare their own UI</span><span class="badge">Waiting</span></div><div class="l2">0 of 11 tasks done</div></div>
-          <div class="row"><div class="l1"><span class="rt">9 Live updates through one connection</span><span class="rm quiet">Started</span></div><div class="l2">5 of 7 tasks done · phase 3</div></div>
-          <div class="row"><div class="l1"><span class="rt">7 Outside modules under vendor</span><span class="badge">Blocked</span></div><div class="l2">1 of 5 tasks done · phase 1</div></div>
+      <div class="pcards">
+        <div class="pcard focus sel"><div class="phead"><svg class="ico"><use href="#i-plan"/></svg>Plan 12 · Focus<span class="st quiet">Started</span></div><div class="ptitle">Version 5 look for version 6</div><div class="bar4"><span style="width:38%"></span></div><div class="pfoot"><span>3 of 8 tasks done · phase 2</span><span class="agentchip">main</span></div></div>
+        <div class="pcard"><div class="phead"><svg class="ico"><use href="#i-plan"/></svg>Plan 14<span class="st"><span class="badge">Waiting</span></span></div><div class="ptitle">Domains declare their own UI</div><div class="bar4"><span style="width:0"></span></div><div class="pfoot"><span>0 of 11 tasks done</span><span></span></div></div>
+        <div class="pcard"><div class="phead"><svg class="ico"><use href="#i-plan"/></svg>Plan 9<span class="st quiet">Started</span></div><div class="ptitle">Live updates through one connection</div><div class="bar4"><span style="width:72%"></span></div><div class="pfoot"><span>5 of 7 tasks done · phase 3</span><span class="agentchip">worker 4</span></div></div>
+        <div class="pcard"><div class="phead"><svg class="ico"><use href="#i-plan"/></svg>Plan 7<span class="st"><span class="badge">Blocked</span></span></div><div class="ptitle">Outside modules under vendor</div><div class="bar4"><span style="width:20%"></span></div><div class="pfoot"><span>1 of 5 tasks done · phase 1</span><span></span></div></div>
+      </div>
+      <div class="inspector">
+        <div class="ihead">
+          <div class="iline"><span class="ibtn"><svg class="ico"><use href="#i-up"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-down"/></svg></span><span class="ilabel">Plan 12 · Started</span><span class="ibtn"><svg class="ico"><use href="#i-x"/></svg></span></div>
+          <div class="ititle">Version 5 look for version 6</div><div class="idesc">The shell, panes and windows of version 5, drawn from their components</div>
         </div>
-        <div class="reader">
-          <div class="rhead"><div class="rmeta"><span class="mono">Plan 12</span><span class="agentchip">main</span></div><div class="rtl"><div class="rtitle">Version 5 look for version 6</div><span class="btn sm bd">Actions<svg class="ico s10"><use href="#i-down"/></svg></span></div></div>
-          <div class="itabs"><span class="itab on">Details</span><span class="itab">Timeline</span></div>
-          <div class="rbody">
-            <div class="h4">Progress</div><div style="display:flex;gap:10px;align-items:center"><div class="bar4" style="flex:1"><span style="width:38%"></span></div><span class="quiet" style="font-size:12px">3 of 8</span></div>
-            <div class="phase"><span class="pm"><svg class="ico s14" style="color:var(--accent-text)"><use href="#i-check"/></svg></span><span class="pt" style="color:var(--text-3)">1 Tokens and the shell</span><span class="pp">3 of 3</span></div>
-            <div class="phase"><span class="pm">2</span><span class="pt">Panes, splitters and detached windows</span><span class="pp">0 of 3</span></div>
-            <div class="sect">
-              <div class="sect-head"><svg class="ico"><use href="#i-note"/></svg><span>Notes on this plan</span><span class="quiet">2</span><span class="space"></span><span class="btn sm">View all</span></div>
-              <div class="row"><div class="l1"><span class="rt">41 Draft from the call</span><span class="rm">13:40</span></div></div>
-              <div class="row" style="border-bottom:0"><div class="l1"><span class="rt">36 Splitter snap is 14 px from the middle</span><span class="rm">Yesterday</span></div></div>
-            </div>
+        <div class="iacts"><span class="btn sm">Actions<svg class="ico" style="width:11px;height:11px"><use href="#i-down"/></svg></span></div>
+        <div class="itabsband"><span class="seg"><span class="on">Details</span><span>Timeline</span></span></div>
+        <div class="ibody">
+          <div class="h4">Progress</div><div style="display:flex;gap:10px;align-items:center"><div class="bar4" style="flex:1"><span style="width:38%"></span></div><span class="quiet" style="font-size:12px">3 of 8</span></div>
+          <div class="phase"><span class="pm"><svg class="ico s13" style="color:var(--accent-text)"><use href="#i-check"/></svg></span><span class="pt done">1 Tokens and the shell</span><span class="pp">3 of 3</span></div>
+          <div class="phase"><span class="pm">2</span><span class="pt">Panes, splitters and detached windows</span><span class="pp">0 of 3</span></div>
+          <div class="sect">
+            <div class="sect-head"><svg class="ico"><use href="#i-note"/></svg><span>Notes on this plan</span><span class="quiet">2</span><span class="space"></span><span class="btn sm">View all</span></div>
+            <div class="row"><div class="l1"><span class="rt">41 Draft from the call</span><span class="rm">13:40</span></div></div>
+            <div class="row" style="border-bottom:0"><div class="l1"><span class="rt">36 Splitter snap is 14 px from the middle</span><span class="rm">Yesterday</span></div></div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <span class="anno" style="left:236px;top:150px">PlansDomain · children declared by Plans</span>
-  <span class="anno" style="left:820px;top:560px">slot plans.reader (context: one plan) · section notes.on-plan</span>
-  <span class="anno new" style="left:900px;top:590px">NEW: host section frame</span>
+  <span class="anno" style="left:236px;top:150px">PlansDomain · three items, one page, query state=open|waiting|closed</span>
+  <span class="anno" style="left:660px;top:120px">InspectorPanel 640 · record page plans.plan</span>
+  <span class="anno" style="left:700px;top:560px">slot plans.inspector (takes: plan) · section notes.on-plan</span>
+  <span class="anno new" style="left:760px;top:590px">NEW: the host's section frame</span>
 </div>
 </div>
 <script>

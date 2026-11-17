@@ -3,58 +3,79 @@
 <head>
 <meta charset="utf-8">
 <title>04 · Dragging, docking, resizing and saved layouts · journal 6 in the version 5 look</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap">
 <style>
-.t-dark{--side:#0d0e10;--bg:#131416;--bg-2:#101216;--raised:#18191c;--hover:#1d1e22;--sel:#212329;--chip:#24262b;--border:#25272b;--border-inner:#1d1f23;--border-2:#2f3136;--border-3:#3a3d44;--text:#e6e7ea;--text-2:#a9acb3;--text-3:#83868e;--text-4:#6b6e76;--accent:#5e64c9;--accent-text:#a3a8f0;--accent-dim:#2a2d5a;--progress:#5b8def;--warn:#d8a94a;--danger:#df8b7e;--float-bar:#111215;--float-shadow:0 18px 48px rgba(0,0,0,.5);--veil:rgba(13,14,16,.62);color-scheme:dark}
-.t-light{--side:#f5f5f7;--bg:#ffffff;--bg-2:#fafafb;--raised:#f6f6f8;--hover:#efeff2;--sel:#e8e9ee;--chip:#ececf0;--border:#e5e6ea;--border-inner:#eff0f3;--border-2:#d9dbe0;--border-3:#c9ccd3;--text:#1a1b1f;--text-2:#474a52;--text-3:#6b6e77;--text-4:#8b8e97;--accent:#5e64c9;--accent-text:#4a50b5;--accent-dim:#e5e6fa;--progress:#2f6cc9;--warn:#a4731a;--danger:#bf4f3d;--float-bar:#f0f0f3;--float-shadow:0 18px 48px rgba(20,22,30,.18);--veil:rgba(245,245,247,.7);color-scheme:light}
+.t-dark{--side:#0d0e10;--bg:#131416;--bg-2:#101216;--raised:#18191c;--hover:#1d1e22;--sel:#212329;--chip:#24262b;--line:#22252b;--border:#25272b;--border-inner:#1d1f23;--border-2:#2f3136;--border-3:#3a3d44;--text:#e6e7ea;--text-2:#a9acb3;--text-3:#83868e;--text-4:#6b6e76;--accent:#5e64c9;--accent-text:#a3a8f0;--accent-dim:#2a2d5a;--tone-good:#63b37c;--float-bar:#111215;color-scheme:dark}
+.t-light{--side:#f5f5f7;--bg:#ffffff;--bg-2:#fafafb;--raised:#f6f6f8;--hover:#efeff2;--sel:#e8e9ee;--chip:#ececf0;--line:#e8e9ec;--border:#e5e6ea;--border-inner:#eff0f3;--border-2:#d9dbe0;--border-3:#c9ccd3;--text:#1a1b1f;--text-2:#474a52;--text-3:#6b6e77;--text-4:#8b8e97;--accent:#5e64c9;--accent-text:#4a50b5;--accent-dim:#e5e6fa;--tone-good:#2e8a4e;--float-bar:#f0f0f3;color-scheme:light}
 *{box-sizing:border-box}
 body{margin:0;padding:32px;background:#232428;color:#d6d8dc;font:13px/1.45 "Geist",-apple-system,"Segoe UI",system-ui,sans-serif}
-h1.doc{font-size:18px;margin:0 0 6px}.lead{max-width:1280px;color:#a9acb3;margin:0 0 24px}
+h1.doc{font-size:18px;margin:0 0 6px}.doc-lead{max-width:1280px;color:#a9acb3;margin:0 0 24px}
 .board{margin:0 0 44px}.cap{font-weight:600;font-size:13px;margin:0 0 4px;color:#e6e7ea}.note{font-size:12px;color:#9a9da5;max-width:1280px;margin:0 0 10px}
 .app{position:relative;display:flex;width:1280px;height:800px;overflow:hidden;background:var(--bg);color:var(--text);font:13px/1.45 "Geist",-apple-system,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;outline:1px solid #000}
+.app.narrow{width:760px}
 .ico{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;color:var(--text-3);flex:none}
-.s14{width:14px;height:14px}.s13{width:13px;height:13px}.s10{width:10px;height:10px}
+.s14{width:14px;height:14px}.s13{width:13px;height:13px}.s12{width:12px;height:12px}.s10{width:10px;height:10px}
 .main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
 .crumbs{display:flex;align-items:center;gap:8px;min-height:40px;padding:0 16px;border-bottom:1px solid var(--border);color:var(--text-2);font-size:13px;flex:none}
 .swatch{width:8px;height:8px;border-radius:2px;background:var(--accent)}.sep{color:var(--text-4)}.cur{color:var(--text);font-weight:500}.space{flex:1}
 .ibtn{position:relative;display:grid;place-items:center;width:24px;height:24px;border-radius:7px;color:var(--text-2);flex:none}.ibtn .ico{color:inherit;width:13px;height:13px}.ibtn.on{background:color-mix(in srgb,var(--border-3) 70%,transparent);color:var(--text)}
+.viewer{font-size:12px;color:var(--text-3)}
 .agent{display:flex;gap:10px;align-items:center;min-height:54px;padding:0 16px;border-bottom:1px solid var(--border);flex:none}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
 .info{display:flex;gap:16px;align-items:center;min-height:30px;padding:0 5px 0 16px;border-bottom:1px solid var(--border);color:var(--text-3);font-size:12px;flex:none}
+.fact{display:inline-flex;gap:5px;align-items:center}.fact.lead{color:var(--text)}.fact .ico,.info .ibtn .ico{width:12px;height:12px;color:inherit}
 .grid{position:relative;flex:1;min-height:0;overflow:hidden}
+.grid.stacked{display:flex;flex-direction:column;overflow-y:auto}
 .pane{position:absolute;display:flex;flex-direction:column;min-width:0;overflow:hidden;background:var(--bg)}
+.stacked .pane{position:relative;flex:none;width:100%;height:100%;border-bottom:1px solid var(--border)}
 .pane.after{border-left:1px solid var(--border)}.pane.below{border-top:1px solid var(--border)}
 .tabs{flex:none;display:flex;align-items:stretch;gap:8px;height:34px;padding:0 5px 0 14px;border-bottom:1px solid var(--border);background:var(--side)}
 .tabrow{flex:1;min-width:0;display:flex;gap:12px;overflow:hidden}
 .tab{position:relative;flex:none;display:inline-flex;align-items:center;gap:6px;font-size:11.5px;letter-spacing:.03em;color:var(--text-3);white-space:nowrap}
 .tab .ico{width:13px;height:13px;color:inherit}.tab.on{color:var(--text);box-shadow:inset 0 -1px 0 var(--accent)}
 .tab .n{font-size:11px;color:var(--text-3)}.tab.on .n{color:var(--accent-text)}
-.tab .x{display:grid;place-items:center;width:16px;height:16px;border-radius:4px;color:var(--text-4);opacity:0}.tab.on .x{opacity:1}.tab .x .ico{width:10px;height:10px;color:inherit}
+.tab .x{display:grid;place-items:center;width:16px;height:16px;border-radius:4px;color:var(--text-4);opacity:0}.tab.on .x,.tab.menu .x{opacity:1}.tab .x .ico{width:10px;height:10px;color:inherit}
 .tab.lifting{opacity:.4}
 .tab.ins::before{content:"";position:absolute;top:7px;bottom:7px;left:-7px;width:2px;border-radius:1px;background:var(--accent)}
+.compact .tab:not(.on) .lbl,.compact .tab:not(.on) .x{display:none}
 .tools{display:flex;align-items:center;gap:2px}
 .pbody{position:relative;flex:1;min-height:0;overflow:hidden;padding:12px 16px;color:var(--text-3)}
 .lines span{display:block;height:9px;margin:0 0 12px;border-radius:4px;background:var(--chip)}
+.pane-empty{padding:16px;color:var(--text-3)}
 .split{position:absolute;z-index:3}.split::after{content:"";position:absolute;background:transparent}
 .split.x{width:7px}.split.x::after{inset:0 3px}.split.y{height:7px}.split.y::after{inset:3px 0}
 .split.hover::after{background:var(--border-3)}.split.snap::after{background:var(--accent)}
-.float{position:absolute;z-index:20;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--border-3);border-radius:10px;background:var(--bg);box-shadow:var(--float-shadow)}
+.float{position:absolute;z-index:20;display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--border-3);border-radius:10px;background:var(--bg);box-shadow:0 18px 48px rgba(0,0,0,.5)}
 .float.min{height:auto!important}
 .float-bar{flex:none;display:flex;align-items:center;gap:8px;height:34px;padding:0 5px 0 12px;border-bottom:1px solid var(--border);background:var(--float-bar);font-size:12px}
 .float.min .float-bar{border-bottom:0}
-.fbtn{display:grid;place-items:center;width:26px;height:26px;border-radius:6px;color:var(--text-3)}.fbtn .ico{color:inherit;width:14px;height:14px}
+.fbtn{display:grid;place-items:center;width:26px;height:26px;border-radius:6px;color:var(--text-3)}.fbtn .ico{color:inherit}
 .float-body{flex:1;padding:12px 16px}
 .grip{position:absolute;right:0;bottom:0;z-index:3;width:14px;height:14px;background:linear-gradient(135deg,transparent 55%,var(--border-3) 55%,var(--border-3) 61%,transparent 61%,transparent 72%,var(--border-3) 72%,var(--border-3) 78%,transparent 78%)}
-.grip.hot{background:linear-gradient(135deg,transparent 55%,var(--accent) 55%,var(--accent) 61%,transparent 61%,transparent 72%,var(--accent) 72%,var(--accent) 78%,transparent 78%)}
-.outline{position:absolute;z-index:19;border:1px dashed var(--accent);border-radius:10px}
-.size{position:absolute;z-index:30;padding:2px 6px;border-radius:4px;background:var(--sel);border:1px solid var(--border-3);font-size:11px;color:var(--text-2);font-variant-numeric:tabular-nums}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:28px;padding:0 11px;border:1px solid transparent;border-radius:7px;color:var(--text-2);font-size:12.5px;white-space:nowrap}.btn.sm{height:24px;padding:0 9px;font-size:12px}.btn.bd{border-color:var(--border-2)}.btn.pri{border-color:var(--accent);background:var(--accent-dim);color:var(--accent-text)}.btn .ico{width:13px;height:13px;color:inherit}.btn.off{opacity:.45}
-.menu{position:absolute;z-index:30;display:flex;flex-direction:column;gap:1px;width:240px;padding:4px;border:1px solid var(--border-2);border-radius:8px;background:var(--raised);box-shadow:0 8px 24px rgb(0 0 0 / 28%)}
-.mi{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;font-size:12.5px}.mi.hover{background:var(--hover)}.mi.off{opacity:.45}.mi .k{margin-left:auto;font-size:11.5px;color:var(--text-4)}
-.mlabel{padding:10px 8px 2px;color:var(--text-4);font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
-.mfoot{margin-top:6px;padding-top:4px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:1px}
-.seg{display:inline-flex;gap:2px;padding:2px;border:1px solid var(--border-2);border-radius:7px;margin:0 8px 4px}.seg span{padding:2px 9px;border-radius:5px;font-size:12px;color:var(--text-3)}.seg span.on{background:var(--sel);color:var(--text)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:28px;padding:0 11px;border:1px solid transparent;border-radius:7px;color:var(--text-2);font-size:12.5px;white-space:nowrap}.btn.sm{height:24px;padding:0 9px;font-size:12px}.btn.bd{border-color:var(--border-2)}.btn.pri{border-color:var(--accent);background:var(--accent-dim);color:var(--accent-text)}.btn .ico{width:12px;height:12px;color:inherit}.btn.off{opacity:.45}
+/* pane menu: windows/PaneMenu.vue, kit/MenuItem.vue, MenuLabel.vue, panes/PaneMenuInner.vue */
+.pmenu{position:absolute;z-index:30;display:flex;flex-direction:column;gap:1px;width:240px;padding:4px;border:1px solid var(--border-2);border-radius:8px;background:var(--raised);box-shadow:0 8px 24px rgb(0 0 0 / 28%)}
+.mi{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;font-size:12px;color:var(--text-2)}.mi.hover{background:var(--hover);color:var(--text)}.mi.off{opacity:.45}.mi .chk{width:1em;text-align:center}.mi .k{margin-left:auto;font-size:11px;color:var(--text-4)}
+.mlabel{display:block;padding:10px 8px 4px;color:var(--text-4);font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.choice{display:flex;align-items:center;padding:0 4px 6px}.choice .mlabel{flex:1;padding:10px 4px 2px}.choice-open{display:flex;gap:6px;align-items:center;padding:4px;font-size:12px;color:var(--text-2)}.choice-open .ico{width:12px;height:12px}
+.mfoot{display:flex;flex-direction:column;margin-top:6px;padding-top:4px;border-top:1px solid var(--border)}
+/* menu panel: kit/MenuPanel.vue (presets, tab context menu) */
+.menupanel{position:absolute;z-index:90;display:flex;flex-direction:column;gap:2px;padding:6px;border:1px solid var(--border-2);border-radius:9px;background:var(--raised);box-shadow:0 14px 36px rgba(0,0,0,.45)}
+.mgap{height:1px;margin:3px 0;background:var(--border)}
+/* presets: agents/LayoutPicker.vue, kit/PresetList.vue, LayoutThumb.vue */
+.prow{position:relative;display:flex}
+.preset{flex:1;display:flex;align-items:center;gap:11px;padding:6px 8px;border-radius:6px}.preset.on{background:var(--sel)}.preset.on .thumb{border-color:var(--text-4)}
+.thumb{position:relative;flex:none;width:46px;height:32px;overflow:hidden;border:1px solid var(--border-3);border-radius:4px;background:var(--bg)}
+.cellb{position:absolute}.cellb i{position:absolute;inset:1.5px;border-radius:2px;background:var(--border-2)}.cellb.chat i{background:color-mix(in srgb,var(--accent) 55%,transparent)}
+.pname{display:block;color:var(--text);font-size:12.5px}.ptext{display:block;color:var(--text-3);font-size:11.5px;line-height:1.35}
+.ptools{position:absolute;top:50%;right:6px;display:flex;gap:2px;transform:translateY(-50%)}
+.ptool{display:grid;place-items:center;width:22px;height:22px;border-radius:5px;background:var(--raised);color:var(--text-3)}.ptool .ico{width:12px;height:12px;color:inherit}
+.psave{display:flex;align-items:center;gap:8px;padding:4px 8px;color:var(--text-3);font-size:12px}.psave .ico{width:12px;height:12px}
+.notice{margin:0;padding:6px 10px;color:var(--text-2);font-size:12px}
+.inline{flex:1;height:26px;padding:0 8px;border:1px solid var(--accent);border-radius:6px;background:var(--bg);font-size:12.5px;color:var(--text);display:flex;align-items:center}
+/* add bar, split offer, drop compass, drag ghost */
 .addbar{position:absolute;top:34px;left:5px;right:5px;z-index:6;display:flex;flex-wrap:wrap;gap:4px;padding:6px;border:1px solid var(--border-2);border-radius:8px;background:var(--raised);box-shadow:0 8px 24px rgba(0,0,0,.4)}
-.offer{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:16px;background:var(--veil)}
+.offer{position:absolute;inset:0;z-index:5;display:grid;place-items:center;padding:16px;background:rgba(13,14,16,.62)}
 .offer-card{width:min(410px,100%);padding:16px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised);box-shadow:0 12px 32px rgba(0,0,0,.45)}
 .offer-card .ot{margin:0;font-size:13.5px;font-weight:500;color:var(--text)}.offer-card .ox{margin:4px 0 14px;font-size:12px;color:var(--text-3)}.offer-row{display:flex;flex-wrap:wrap;gap:6px}
 .compass{position:absolute;inset:0;z-index:4}
@@ -65,147 +86,176 @@ h1.doc{font-size:18px;margin:0 0 6px}.lead{max-width:1280px;color:#a9acb3;margin
 .cell.top{grid-area:1/2}.cell.top i{inset:3px 3px auto;height:8px}.cell.left{grid-area:2/1}.cell.left i{inset:3px auto 3px 3px;width:8px}.cell.center{grid-area:2/2}.cell.center i{inset:3px}.cell.right{grid-area:2/3}.cell.right i{inset:3px 3px 3px auto;width:8px}.cell.bottom{grid-area:3/2}.cell.bottom i{inset:auto 3px 3px;height:8px}
 .ghost{position:absolute;z-index:400;display:flex;align-items:center;gap:6px;height:26px;padding:0 10px;border:1px solid var(--border-3);border-radius:6px;background:var(--sel);color:var(--text);font-size:12px;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.35)}.ghost .ico{width:13px;height:13px}.ghost .h{color:var(--text-3)}
 .cursor{position:absolute;z-index:401}
-.presets{position:absolute;z-index:30;width:250px;padding:4px;border:1px solid var(--border-2);border-radius:8px;background:var(--raised);box-shadow:0 8px 24px rgb(0 0 0 / 28%)}
-.preset{display:flex;gap:10px;align-items:center;padding:6px 8px;border-radius:6px}.preset.on{background:var(--hover)}
-.thumb{position:relative;width:44px;height:30px;border:1px solid var(--border-3);border-radius:4px;overflow:hidden;flex:none;background:var(--bg)}.thumb i{position:absolute;background:color-mix(in srgb,var(--accent) 55%,var(--bg));border-radius:2px}
-.preset b{display:block;font-weight:500;font-size:12.5px}.preset small{display:block;font-size:11.5px;color:var(--text-3)}
 .anno{position:absolute;z-index:900;padding:3px 6px;border-radius:4px;background:#d63384;color:#fff;font:600 10.5px/1.2 -apple-system,system-ui,sans-serif;white-space:nowrap;pointer-events:none}.anno.new{background:#0f8a7e}
 </style>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute">
-<symbol id="i-chat" viewBox="0 0 16 16"><path d="M3 3.5h10a.8.8 0 0 1 .8.8v6a.8.8 0 0 1-.8.8H7l-3 2.4v-2.4H3a.8.8 0 0 1-.8-.8v-6a.8.8 0 0 1 .8-.8Z"/></symbol>
-<symbol id="i-plan" viewBox="0 0 16 16"><path d="M4 14V2.5M4 3h7.5l-1.6 2.6L11.5 8H4"/></symbol>
-<symbol id="i-rules" viewBox="0 0 16 16"><path d="M3 4h10M3 8h10M3 12h6"/></symbol>
+<symbol id="i-chat" viewBox="0 0 16 16"><path d="M2.5 3h11v7.5H8L5 13v-2.5H2.5z"/></symbol>
+<symbol id="i-plan" viewBox="0 0 16 16"><path d="M4 14V2.5M4 3h7.5l-1.5 2.75 1.5 2.75H4"/></symbol>
+<symbol id="i-rules" viewBox="0 0 16 16"><path d="M3 3.5h10M3 8h10M3 12.5h6"/></symbol>
 <symbol id="i-note" viewBox="0 0 16 16"><path d="M4 2.5h5.5L12.5 5.5V13a.6.6 0 0 1-.6.6H4a.6.6 0 0 1-.6-.6V3.1a.6.6 0 0 1 .6-.6Z"/><path d="M9.3 2.6v3h3M5.6 8.5h4.8M5.6 11h3.2"/></symbol>
 <symbol id="i-folder" viewBox="0 0 16 16"><path d="M2.5 4.2a.7.7 0 0 1 .7-.7h3l1.4 1.6h5.2a.7.7 0 0 1 .7.7v6.5a.7.7 0 0 1-.7.7H3.2a.7.7 0 0 1-.7-.7Z"/></symbol>
-<symbol id="i-side" viewBox="0 0 16 16"><path d="M3 4h10M3 8h10M3 12h10"/></symbol>
-<symbol id="i-layout" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.2"/><path d="M7 3v10M7 8h6.5"/></symbol>
-<symbol id="i-plus" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></symbol>
-<symbol id="i-dotsv" viewBox="0 0 16 16"><circle cx="8" cy="3.5" r=".6"/><circle cx="8" cy="8" r=".6"/><circle cx="8" cy="12.5" r=".6"/></symbol>
-<symbol id="i-dots" viewBox="0 0 16 16"><circle cx="3.5" cy="8" r=".6"/><circle cx="8" cy="8" r=".6"/><circle cx="12.5" cy="8" r=".6"/></symbol>
-<symbol id="i-x" viewBox="0 0 16 16"><path d="m4 4 8 8M12 4l-8 8"/></symbol>
-<symbol id="i-min" viewBox="0 0 16 16"><path d="M3.5 8h9"/></symbol>
-<symbol id="i-window" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.2"/><path d="M2.5 6h11"/></symbol>
-<symbol id="i-dock" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.2"/><path d="M5.5 10.5h5"/></symbol>
-<symbol id="i-columns" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.2"/><path d="M8 3v10"/></symbol>
-<symbol id="i-rows" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.2"/><path d="M2.5 8h11"/></symbol>
+<symbol id="i-list" viewBox="0 0 16 16"><path d="M3 3.5h10M3 8h10M3 12.5h6"/></symbol>
+<symbol id="i-scheme" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.75"/><path d="M8 2.25a5.75 5.75 0 0 1 0 11.5z" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-wide" viewBox="0 0 16 16"><path d="M6.2 2.6H2.6v3.6M9.8 2.6h3.6v3.6M6.2 13.4H2.6V9.8M9.8 13.4h3.6V9.8"/></symbol>
+<symbol id="i-power" viewBox="0 0 16 16"><path d="M8 2.5v5M4.8 4.6a4.8 4.8 0 1 0 6.4 0"/></symbol>
+<symbol id="i-layout" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9 3v10M9 8h4.5"/></symbol>
+<symbol id="i-agents" viewBox="0 0 16 16"><circle cx="6" cy="5.5" r="2"/><path d="M2.5 13a3.5 3.5 0 0 1 7 0"/><path d="M10.5 3.8a2 2 0 0 1 0 3.4"/><path d="M11.5 9.8a3.5 3.5 0 0 1 2 3.2"/></symbol>
+<symbol id="i-plus" viewBox="0 0 16 16"><path d="M8 3.5v9M3.5 8h9"/></symbol>
+<symbol id="i-dotsv" viewBox="0 0 16 16"><circle cx="8" cy="3.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="12.5" r="1.3" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-dots" viewBox="0 0 16 16"><path d="M4 8h.01M8 8h.01M12 8h.01" stroke-width="2.2"/></symbol>
+<symbol id="i-x" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8"/></symbol>
+<symbol id="i-min" viewBox="0 0 16 16"><path d="M4 8h8"/></symbol>
+<symbol id="i-window" viewBox="0 0 16 16"><rect x="3.5" y="3.5" width="9" height="9" rx="1.5"/></symbol>
+<symbol id="i-dock" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M8 5.5V10M5.8 7.8 8 10l2.2-2.2"/></symbol>
+<symbol id="i-columns" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M8 3v10"/></symbol>
+<symbol id="i-rows" viewBox="0 0 16 16"><rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M2.5 8h11"/></symbol>
 <symbol id="i-tab" viewBox="0 0 16 16"><path d="M2.5 13V5h4l1-2h6v10Z"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 16 16"><path d="M6 3.5 10.5 8 6 12.5"/></symbol>
 <symbol id="i-cursor" viewBox="0 0 16 16"><path d="M3 2v11l3-3 2 4.5 1.6-.7-2-4.3H12Z" fill="#fff" stroke="#000" stroke-width="1"/></symbol>
-<symbol id="i-check" viewBox="0 0 16 16"><path d="m3.5 8.5 3 3 6-7"/></symbol>
+<symbol id="i-save" viewBox="0 0 16 16"><path d="M3 3h8l2 2v8H3Z"/><path d="M5.5 3v3h4V3M5.5 13V9.5h5V13"/></symbol>
+<symbol id="i-share" viewBox="0 0 16 16"><path d="M8 10V2.5M5 5.5l3-3 3 3M3 9v4.5h10V9"/></symbol>
+<symbol id="i-pen" viewBox="0 0 16 16"><path d="m3 13 .6-2.6 7-7a1.3 1.3 0 0 1 1.9 1.9l-7 7Z"/></symbol>
+<symbol id="i-trash" viewBox="0 0 16 16"><path d="M3 4.5h10M6 4.5V3h4v1.5M4.5 4.5l.7 9h5.6l.7-9"/></symbol>
 <symbol id="i-upload" viewBox="0 0 16 16"><path d="M8 11V3M5 6l3-3 3 3M3 13h10"/></symbol>
 </svg>
 
 <h1 class="doc">04 · Windows: dragging, docking, resizing and saved layouts</h1>
-<p class="lead">Every behaviour here is version 5's (panes/PaneGrid.vue, ResizeHandle.vue, DragGhost.vue, DropCompass.vue, SplitOffer.vue, kit/FloatWindow.vue, windows/PaneMenu.vue, PaneAddBar.vue, agents/LayoutPicker.vue). The sidebar is hidden with the top bar's sidebar button to give the grid the full width. A window is whatever a domain declared through ProvidesPages; the layout code never knows which domain it is.</p>
+<p class="doc-lead">Every behaviour drawn here comes from version 5:
+panes/PaneGrid.vue, ResizeHandle.vue, DragGhost.vue, DropCompass.vue, SplitOffer.vue;
+kit/FloatWindow.vue, EditorTabs.vue, PresetList.vue, LayoutThumb.vue, MenuPanel.vue, MenuItem.vue;
+windows/PaneMenu.vue, PaneAddBar.vue; agents/LayoutPicker.vue.
+The sidebar is hidden with the sidebar button, so the grid has the full width.
+A window is whatever a domain declared through ProvidesPages; the layout code never knows which domain it belongs to.
+Pink labels are design notes and are not drawn in the app.</p>
 
 <div class="board">
 <p class="cap">Mid-drag: the Notes tab carried from the right pane onto the left pane</p>
-<p class="note">The lifted tab fades to 40&nbsp;%. The ghost (26&nbsp;px, --sel, shadow) follows the pointer 14/12&nbsp;px off. Over a pane body the drop compass shows five targets; the zone under the pointer is shaded (here: right half, so dropping splits the Chat pane side by side). Over another tab strip a 2&nbsp;px accent line shows where the tab lands (bottom pane). Dropping outside every pane detaches the window into a floating one.</p>
+<p class="note">The lifted tab fades to 40&nbsp;%. The ghost (26&nbsp;px, --sel, with a shadow) follows the pointer 14/12&nbsp;px away from it. Over a pane body the drop compass shows five targets, and the zone under the pointer is shaded. Here it is the right half, so dropping splits the Chat pane side by side. Over another tab strip a 2&nbsp;px accent line shows where the tab lands. Dropping outside every pane detaches the window as a floating one.</p>
 <div class="app t-dark">
   <div class="main">
-    <nav class="crumbs"><span class="swatch"></span><span>agent-journal</span><span class="sep">/</span><span>version-6</span><span class="sep">/</span><span class="cur">Home</span><span class="space"></span><span class="ibtn on"><svg class="ico"><use href="#i-side"/></svg></span></nav>
-    <div class="agent"><span class="dot"></span><strong>Working</strong><span>Task 173: Give the version 6 app the version 5 look and feel</span></div>
-    <div class="info"><span>Claude Code</span><span>Opus 5.5</span><span class="space"></span><span class="ibtn"><svg class="ico"><use href="#i-layout"/></svg></span></div>
+    <nav class="crumbs"><span class="swatch"></span><span>agent-journal</span><span class="sep">/</span><span class="cur">Home</span><span class="space"></span><span class="ibtn on"><svg class="ico"><use href="#i-list"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-scheme"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-wide"/></svg></span><span class="viewer">Jesse</span><span class="ibtn"><svg class="ico"><use href="#i-power"/></svg></span></nav>
+    <div class="agent"><span class="dot"></span><strong>Working</strong></div>
+    <div class="info"><span class="fact lead"><svg class="ico"><use href="#i-agents"/></svg>main</span><span class="space"></span><span class="ibtn"><svg class="ico"><use href="#i-layout"/></svg></span></div>
     <div class="grid">
       <section class="pane" style="left:0;top:0;width:50%;height:100%">
-        <div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-chat"/></svg>Chat<span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span></div><div class="tools"><span class="ibtn"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div>
+        <div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-chat"/></svg><span class="lbl">Chat</span><span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span></div><div class="tools"><span class="ibtn"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div>
         <div class="pbody lines"><span style="width:60%"></span><span style="width:40%;margin-left:auto"></span><span style="width:70%"></span><span style="width:52%;margin-left:auto"></span><span style="width:36%"></span></div>
         <div class="compass"><div class="shade" style="top:38px;left:calc(50% + 2px);width:calc(50% - 6px);height:calc(100% - 42px)"></div><div class="cells"><div class="cell top"><i></i></div><div class="cell left"><i></i></div><div class="cell center"><i></i></div><div class="cell right on"><i></i></div><div class="cell bottom"><i></i></div></div></div>
       </section>
       <section class="pane after" style="left:50%;top:0;width:50%;height:60%">
-        <div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-plan"/></svg>Plans<span class="n">5</span><span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span><span class="tab lifting"><svg class="ico"><use href="#i-note"/></svg>Notes<span class="n">3</span><span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span></div><div class="tools"><span class="ibtn"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div>
+        <div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-plan"/></svg><span class="lbl">Plans</span><span class="n">5</span><span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span><span class="tab lifting"><svg class="ico"><use href="#i-note"/></svg><span class="lbl">Notes</span><span class="n">3</span><span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span></div><div class="tools"><span class="ibtn"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div>
         <div class="pbody lines"><span style="width:80%"></span><span style="width:65%"></span><span style="width:72%"></span></div>
       </section>
       <section class="pane after below" style="left:50%;top:60%;width:50%;height:40%">
-        <div class="tabs"><div class="tabrow"><span class="tab on ins"><svg class="ico"><use href="#i-rules"/></svg>Rules<span class="n">1</span><span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span></div><div class="tools"><span class="ibtn"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div>
+        <div class="tabs"><div class="tabrow"><span class="tab on ins"><svg class="ico"><use href="#i-rules"/></svg><span class="lbl">Rules</span><span class="n">1</span><span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span></div><div class="tools"><span class="ibtn"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div>
         <div class="pbody lines"><span style="width:70%"></span><span style="width:55%"></span></div>
       </section>
       <div class="ghost" style="left:494px;top:282px"><svg class="ico"><use href="#i-note"/></svg><span>Notes</span><span class="h">Split right</span></div>
       <svg class="cursor" width="16" height="16" style="left:480px;top:270px"><use href="#i-cursor"/></svg>
     </div>
   </div>
-  <span class="anno" style="left:500px;top:310px">DragGhost + hint of the zone</span>
-  <span class="anno" style="left:250px;top:470px">DropCompass: top, left, centre (as tab), right, bottom</span>
+  <span class="anno" style="left:500px;top:420px">DragGhost with the zone's hint</span>
+  <span class="anno" style="left:120px;top:560px">DropCompass: top, left, centre (as a tab), right, bottom</span>
   <span class="anno" style="left:900px;top:116px">lifted tab at 40 %</span>
   <span class="anno" style="left:640px;top:600px">insert line: drop as a tab here</span>
 </div>
 </div>
 
 <div class="board">
-<p class="cap">Resizing: splitters, snap to the middle, a detached window's grip and the minimised bar</p>
-<p class="note">A splitter is a 7&nbsp;px hit area with a 1&nbsp;px line, invisible until hovered (--border-3); dragging moves both panes live with no easing; within 14&nbsp;px of the middle it snaps to 50&nbsp;% and the line turns accent; a pane never gets below 140&nbsp;px; double-click resets to the middle; arrow keys move it 5&nbsp;%. A detached window moves by its 34&nbsp;px bar and resizes by the 14&nbsp;px grip in its corner; minimise leaves only the bar; Dock puts it back into the layout.</p>
+<p class="cap">Resizing: splitters, the snap to the middle, a detached window's live resize and its minimised bar</p>
+<p class="note">A splitter is a 7&nbsp;px hit area with a 1&nbsp;px line, invisible until it is hovered (--border-3). While it is dragged, both panes follow live with no easing. Within 14&nbsp;px of the middle it snaps to 50&nbsp;% and the line turns accent. A pane never gets narrower than 140&nbsp;px. A double-click resets the splitter to the middle, and the arrow keys move it 5&nbsp;%. A detached window moves by its 34&nbsp;px bar and resizes live by the 14&nbsp;px grip in its corner. Minimise leaves only the bar, and Dock puts the window back into the layout. A window left outside the screen after the browser shrinks is pulled back until at least 48&nbsp;px of its bar shows (new; version 5 not checked).</p>
 <div class="app t-dark">
   <div class="main">
-    <nav class="crumbs"><span class="swatch"></span><span>agent-journal</span><span class="sep">/</span><span>version-6</span><span class="sep">/</span><span class="cur">Home</span><span class="space"></span><span class="ibtn on"><svg class="ico"><use href="#i-side"/></svg></span></nav>
-    <div class="agent"><span class="dot"></span><strong>Working</strong><span>Task 173: Give the version 6 app the version 5 look and feel</span></div>
-    <div class="info"><span>Claude Code</span><span>Opus 5.5</span><span class="space"></span><span class="ibtn"><svg class="ico"><use href="#i-layout"/></svg></span></div>
+    <nav class="crumbs"><span class="swatch"></span><span>agent-journal</span><span class="sep">/</span><span class="cur">Home</span><span class="space"></span><span class="ibtn on"><svg class="ico"><use href="#i-list"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-scheme"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-wide"/></svg></span><span class="viewer">Jesse</span><span class="ibtn"><svg class="ico"><use href="#i-power"/></svg></span></nav>
+    <div class="agent"><span class="dot"></span><strong>Working</strong></div>
+    <div class="info"><span class="fact lead"><svg class="ico"><use href="#i-agents"/></svg>main</span><span class="space"></span><span class="ibtn"><svg class="ico"><use href="#i-layout"/></svg></span></div>
     <div class="grid" style="cursor:col-resize">
-      <section class="pane" style="left:0;top:0;width:50%;height:100%"><div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-chat"/></svg>Chat<span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span></div><div class="tools"><span class="ibtn"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div><div class="pbody lines"><span style="width:60%"></span><span style="width:40%;margin-left:auto"></span><span style="width:70%"></span></div></section>
-      <section class="pane after" style="left:50%;top:0;width:50%;height:44%"><div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-plan"/></svg>Plans<span class="n">5</span><span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span></div><div class="tools"><span class="ibtn"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div><div class="pbody lines"><span style="width:80%"></span><span style="width:65%"></span></div></section>
-      <section class="pane after below" style="left:50%;top:44%;width:50%;height:56%"><div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-rules"/></svg>Rules<span class="n">1</span><span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span></div><div class="tools"><span class="ibtn"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div><div class="pbody lines"><span style="width:70%"></span></div></section>
+      <section class="pane" style="left:0;top:0;width:50%;height:100%"><div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-chat"/></svg><span class="lbl">Chat</span><span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span></div><div class="tools"><span class="ibtn"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div><div class="pbody lines"><span style="width:60%"></span><span style="width:40%;margin-left:auto"></span><span style="width:70%"></span></div></section>
+      <section class="pane after" style="left:50%;top:0;width:50%;height:44%"><div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-plan"/></svg><span class="lbl">Plans</span><span class="n">5</span><span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span></div><div class="tools"><span class="ibtn"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div><div class="pbody lines"><span style="width:80%"></span><span style="width:65%"></span></div></section>
+      <section class="pane after below" style="left:50%;top:44%;width:50%;height:56%"><div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-rules"/></svg><span class="lbl">Rules</span><span class="n">1</span><span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span></div><div class="tools"><span class="ibtn"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div><div class="pbody lines"><span style="width:70%"></span></div></section>
       <span class="split x snap" style="left:calc(50% - 3px);top:0;height:100%"></span>
       <span class="split y hover" style="left:50%;top:calc(44% - 3px);width:50%"></span>
-      <span class="size" style="left:calc(50% + 8px);top:8px">50 % · snapped</span>
-      <div class="outline" style="left:150px;top:220px;width:470px;height:330px"></div>
-      <div class="float" style="left:150px;top:220px;width:420px;height:290px">
-        <div class="float-bar"><svg class="ico s14"><use href="#i-folder"/></svg><span>Notes · Decisions</span><span class="space"></span><span class="fbtn"><svg class="ico"><use href="#i-min"/></svg></span><span class="fbtn"><svg class="ico"><use href="#i-dots"/></svg></span><span class="fbtn"><svg class="ico"><use href="#i-dock"/></svg></span></div>
+      <div class="float" style="left:150px;top:200px;width:470px;height:330px">
+        <div class="float-bar"><svg class="ico s13"><use href="#i-folder"/></svg><span>Notes · Decisions</span><span class="space"></span><span class="fbtn"><svg class="ico"><use href="#i-min"/></svg></span><span class="fbtn"><svg class="ico"><use href="#i-dots"/></svg></span><span class="fbtn"><svg class="ico"><use href="#i-dock"/></svg></span></div>
         <div class="float-body lines"><span style="width:80%"></span><span style="width:60%"></span><span style="width:70%"></span></div>
-        <span class="grip hot"></span>
+        <span class="grip"></span>
       </div>
-      <span class="size" style="left:540px;top:556px">470 × 330</span>
-      <div class="float min" style="left:820px;top:560px;width:340px"><div class="float-bar"><svg class="ico s14"><use href="#i-rules"/></svg><span>Rules</span><span class="space"></span><span class="fbtn"><svg class="ico"><use href="#i-window"/></svg></span><span class="fbtn"><svg class="ico"><use href="#i-dots"/></svg></span><span class="fbtn"><svg class="ico"><use href="#i-dock"/></svg></span></div></div>
+      <svg class="cursor" width="16" height="16" style="left:612px;top:522px"><use href="#i-cursor"/></svg>
+      <div class="float min" style="left:820px;top:560px;width:340px"><div class="float-bar"><svg class="ico s13"><use href="#i-rules"/></svg><span>Rules</span><span class="space"></span><span class="fbtn"><svg class="ico"><use href="#i-window"/></svg></span><span class="fbtn"><svg class="ico"><use href="#i-dots"/></svg></span><span class="fbtn"><svg class="ico"><use href="#i-dock"/></svg></span></div></div>
     </div>
   </div>
-  <span class="anno" style="left:660px;top:250px">splitter snapped (accent)</span>
+  <span class="anno" style="left:660px;top:250px">splitter snapped to 50 % (accent line)</span>
   <span class="anno" style="left:900px;top:418px">splitter hovered (--border-3)</span>
-  <span class="anno" style="left:420px;top:560px">grip dragged: dashed outline is the new size</span>
+  <span class="anno" style="left:380px;top:640px">grip dragged: the window takes the new size live</span>
   <span class="anno" style="left:820px;top:604px">minimised: only the bar</span>
 </div>
 </div>
 
 <div class="board">
-<p class="cap">Pane menu, add-a-window bar, presets and the split offer</p>
-<p class="note">The "+" of a pane opens the add bar with every window not yet open (version 5 PaneAddBar), each one drag-able or click-able. The "⋮" opens the pane menu: split, detach, the options the window declared, move to another pane, close. The layout button of the information bar opens the presets (thumbnails) with Save layout and Import. Splitting a pane with one window first asks how (SplitOffer).</p>
+<p class="cap">The pane menu, the add bar, presets with a refused name, and the split offer</p>
+<p class="note">The pane's "+" opens the add bar. It lists every window the person may see that is not open yet; each can be clicked or dragged. A window the person may not see is absent. A window that cannot open here, for example one that needs a session, is drawn at 45&nbsp;% with its reason. The pane's "⋮" opens the pane menu: Split right, Split below, Detach, Limit width, the window's declared options, "Move to …", Close and Reset layout. A choice option opens an inner list, and a toggle shows a ✓. The layout button opens the presets. A saved row shows its tools on hover: Save the current layout to this preset, Download, Rename and Delete. "Save layout" names the layout inline, and a name already taken is refused with the picker's notice. Splitting a pane that holds one window asks how first.</p>
 <div class="app t-dark">
   <div class="main">
-    <nav class="crumbs"><span class="swatch"></span><span>agent-journal</span><span class="sep">/</span><span>version-6</span><span class="sep">/</span><span class="cur">Home</span><span class="space"></span><span class="ibtn on"><svg class="ico"><use href="#i-side"/></svg></span></nav>
-    <div class="agent"><span class="dot"></span><strong>Working</strong><span>Task 173: Give the version 6 app the version 5 look and feel</span></div>
-    <div class="info"><span>Claude Code</span><span>Opus 5.5</span><span class="space"></span><span class="ibtn on"><svg class="ico"><use href="#i-layout"/></svg></span></div>
+    <nav class="crumbs"><span class="swatch"></span><span>agent-journal</span><span class="sep">/</span><span class="cur">Home</span><span class="space"></span><span class="ibtn on"><svg class="ico"><use href="#i-list"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-scheme"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-wide"/></svg></span><span class="viewer">Jesse</span><span class="ibtn"><svg class="ico"><use href="#i-power"/></svg></span></nav>
+    <div class="agent"><span class="dot"></span><strong>Working</strong></div>
+    <div class="info"><span class="fact lead"><svg class="ico"><use href="#i-agents"/></svg>main</span><span class="space"></span><span class="ibtn on"><svg class="ico"><use href="#i-layout"/></svg></span></div>
     <div class="grid">
       <section class="pane" style="left:0;top:0;width:40%;height:100%">
-        <div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-chat"/></svg>Chat<span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span></div><div class="tools"><span class="ibtn"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div>
+        <div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-chat"/></svg><span class="lbl">Chat</span><span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span></div><div class="tools"><span class="ibtn"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div>
         <div class="pbody lines"><span style="width:60%"></span><span style="width:40%;margin-left:auto"></span></div>
         <div class="offer"><div class="offer-card"><p class="ot">Split this pane in two?</p><p class="ox">Chat is the only window here. Put Notes beside it, under it, or add it as a tab.</p><div class="offer-row"><span class="btn pri"><svg class="ico"><use href="#i-columns"/></svg>Side by side</span><span class="btn"><svg class="ico"><use href="#i-rows"/></svg>Stacked</span><span class="btn"><svg class="ico"><use href="#i-tab"/></svg>Add as tab</span><span class="btn" style="color:var(--text-3)">Cancel</span></div></div></div>
       </section>
       <section class="pane after" style="left:40%;top:0;width:60%;height:100%">
-        <div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-plan"/></svg>Plans<span class="n">5</span><span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span><span class="tab"><svg class="ico"><use href="#i-rules"/></svg>Rules<span class="n">1</span></span></div><div class="tools"><span class="ibtn on"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn on"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div>
-        <div class="addbar" style="right:250px"><span class="btn sm"><svg class="ico"><use href="#i-note"/></svg>Notes</span><span class="btn sm"><svg class="ico"><use href="#i-folder"/></svg>Notes · Decisions</span><span class="btn sm off" title="Reminders: no session"><svg class="ico"><use href="#i-window"/></svg>Reminders</span></div>
+        <div class="tabs"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-plan"/></svg><span class="lbl">Plans</span><span class="n">5</span><span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span><span class="tab"><svg class="ico"><use href="#i-rules"/></svg><span class="lbl">Rules</span><span class="n">1</span></span></div><div class="tools"><span class="ibtn on"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn on"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div>
+        <div class="addbar" style="right:252px"><span class="btn sm"><svg class="ico"><use href="#i-note"/></svg>Notes</span><span class="btn sm"><svg class="ico"><use href="#i-folder"/></svg>Notes · Decisions</span><span class="btn sm off"><svg class="ico"><use href="#i-window"/></svg>Session log</span></div>
         <div class="pbody lines" style="padding-top:60px"><span style="width:80%"></span><span style="width:65%"></span></div>
-        <div class="menu" style="top:34px;right:5px">
-          <div class="mi hover">Split right</div><div class="mi">Split below</div><div class="mi">Detach</div>
-          <div class="mlabel">Plans</div>
-          <div class="seg"><span class="on">Cards</span><span>Rows</span></div>
-          <div class="mi"><svg class="ico s13" style="color:var(--accent-text)"><use href="#i-check"/></svg>Show closed plans</div>
-          <div class="mlabel">Move to</div>
-          <div class="mi">Left pane · Chat</div>
-          <div class="mfoot"><div class="mi">Close pane</div><div class="mi">Reset to the default layout</div></div>
+        <div class="pmenu" style="top:34px;right:5px">
+          <div class="mi hover">Split right</div><div class="mi">Split below</div><div class="mi">Detach</div><div class="mi">Limit width</div>
+          <div class="choice"><span class="mlabel">View</span><span class="choice-open">Cards<svg class="ico"><use href="#i-arrow"/></svg></span></div>
+          <div class="mi"><span class="chk">✓</span>Show closed plans</div>
+          <span class="mlabel">Move</span>
+          <div class="mi">Move to Chat</div>
+          <div class="mfoot"><div class="mi">Close</div><div class="mi">Reset layout</div></div>
         </div>
       </section>
-      <div class="presets" style="right:6px;top:2px;display:none"></div>
     </div>
   </div>
-  <div class="presets" style="right:6px;top:126px">
-    <div class="preset on"><span class="thumb"><i style="left:2px;top:2px;width:20px;bottom:2px"></i><i style="left:24px;top:2px;right:2px;bottom:2px;opacity:.6"></i></span><span><b>Default</b><small>Chat and windows</small></span></div>
-    <div class="preset"><span class="thumb"><i style="left:2px;top:2px;right:2px;bottom:2px"></i></span><span><b>Chat only</b><small>Only the chat</small></span></div>
-    <div class="preset"><span class="thumb"><i style="left:2px;top:2px;width:16px;bottom:2px"></i><i style="left:20px;top:2px;right:2px;height:12px;opacity:.6"></i><i style="left:20px;top:16px;right:2px;bottom:2px;opacity:.4"></i></span><span><b>Review</b><small>Chat, plans and rules</small></span></div>
-    <div class="preset"><span class="thumb"><i style="left:2px;top:2px;width:26px;bottom:2px"></i><i style="left:30px;top:2px;right:2px;bottom:2px;opacity:.6"></i></span><span><b>My notes</b><small>Saved 13:58</small></span></div>
-    <div class="mfoot"><div class="mi"><svg class="ico s13"><use href="#i-plus"/></svg>Save layout</div><div class="mi"><svg class="ico s13"><use href="#i-upload"/></svg>Import a layout</div></div>
+  <div class="menupanel" style="right:6px;top:126px;width:270px">
+    <p class="notice">A layout named Review already exists.</p>
+    <div class="prow"><div class="preset on"><span class="thumb"><span class="cellb chat" style="left:0;top:0;width:50%;height:100%"><i></i></span><span class="cellb" style="left:50%;top:0;width:50%;height:100%"><i></i></span></span><span><span class="pname">Default</span><span class="ptext">Chat and windows</span></span></div></div>
+    <div class="prow"><div class="preset"><span class="thumb"><span class="cellb chat" style="left:0;top:0;width:100%;height:100%"><i></i></span></span><span><span class="pname">Chat only</span><span class="ptext">Only the chat</span></span></div></div>
+    <div class="prow"><div class="preset" style="background:var(--hover)"><span class="thumb"><span class="cellb chat" style="left:0;top:0;width:40%;height:100%"><i></i></span><span class="cellb" style="left:40%;top:0;width:60%;height:50%"><i></i></span><span class="cellb" style="left:40%;top:50%;width:60%;height:50%"><i></i></span></span><span><span class="pname">Review</span><span class="ptext">Saved 13:58</span></span></div><span class="ptools"><span class="ptool"><svg class="ico"><use href="#i-save"/></svg></span><span class="ptool"><svg class="ico"><use href="#i-share"/></svg></span><span class="ptool"><svg class="ico"><use href="#i-pen"/></svg></span><span class="ptool"><svg class="ico"><use href="#i-trash"/></svg></span></span></div>
+    <div class="prow"><div class="preset"><span class="thumb"><span class="cellb chat" style="left:0;top:0;width:50%;height:100%"><i></i></span><span class="cellb" style="left:50%;top:0;width:50%;height:100%"><i></i></span></span><span class="inline">Review</span></div></div>
+    <div class="mgap"></div>
+    <div class="psave"><svg class="ico"><use href="#i-upload"/></svg>Import a layout file</div>
   </div>
-  <span class="anno" style="left:540px;top:150px">PaneAddBar: windows not open yet; unavailable at 45 %</span>
-  <span class="anno" style="left:640px;top:250px">PaneMenu: options are what the window declared</span>
-  <span class="anno" style="left:960px;top:440px">LayoutPicker presets + saved layouts</span>
+  <span class="anno" style="left:540px;top:150px">PaneAddBar; "Session log" cannot open here (needs a session)</span>
+  <span class="anno" style="left:640px;top:330px">PaneMenu, exactly as version 5 orders it</span>
+  <span class="anno" style="left:930px;top:470px">LayoutPicker + PresetList: notice, hover tools, inline name</span>
   <span class="anno" style="left:60px;top:560px">SplitOffer</span>
+</div>
+</div>
+
+<div class="board">
+<p class="cap">Narrow width: stacked panes, compact tabs, the empty pane and the tab menu</p>
+<p class="note">Below the grid's narrow width the panes stack, Chat first, each one screen high, snapping as the list scrolls (PaneGrid stacked). In a tight strip the tabs go compact: inactive tabs show only their icon (EditorTabs compact). A right-click on a tab opens version 5's tab menu: Close (Del), Close others, Close to the right, Close all, then Split right, Split below and Detach. A middle click closes a tab. A pane whose last window was closed says "Nothing is open in this pane."</p>
+<div class="app narrow t-dark">
+  <div class="main">
+    <nav class="crumbs"><span class="swatch"></span><span>agent-journal</span><span class="sep">/</span><span class="cur">Home</span><span class="space"></span><span class="ibtn"><svg class="ico"><use href="#i-list"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-scheme"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-power"/></svg></span></nav>
+    <div class="agent"><span class="dot"></span><strong>Working</strong></div>
+    <div class="info"><span class="fact lead"><svg class="ico"><use href="#i-agents"/></svg>main</span><span class="space"></span><span class="ibtn"><svg class="ico"><use href="#i-layout"/></svg></span></div>
+    <div class="grid stacked">
+      <section class="pane" style="height:330px"><div class="tabs compact"><div class="tabrow"><span class="tab on"><svg class="ico"><use href="#i-chat"/></svg><span class="lbl">Chat</span><span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span><span class="tab menu"><svg class="ico"><use href="#i-plan"/></svg><span class="lbl">Plans</span><span class="x"><svg class="ico"><use href="#i-x"/></svg></span></span><span class="tab"><svg class="ico"><use href="#i-rules"/></svg><span class="lbl">Rules</span></span><span class="tab"><svg class="ico"><use href="#i-note"/></svg><span class="lbl">Notes</span></span></div><div class="tools"><span class="ibtn"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div><div class="pbody lines"><span style="width:60%"></span><span style="width:40%;margin-left:auto"></span><span style="width:70%"></span></div></section>
+      <section class="pane" style="height:330px"><div class="tabs"><div class="tabrow"></div><div class="tools"><span class="ibtn"><svg class="ico"><use href="#i-plus"/></svg></span><span class="ibtn"><svg class="ico"><use href="#i-dotsv"/></svg></span></div></div><p class="pane-empty">Nothing is open in this pane.</p></section>
+    </div>
+  </div>
+  <div class="menupanel" style="left:60px;top:166px;width:220px">
+    <div class="mi hover">Close<span class="k">Del</span></div><div class="mi">Close others</div><div class="mi">Close to the right</div><div class="mi">Close all</div><div class="mgap"></div><div class="mi">Split right</div><div class="mi">Split below</div><div class="mi">Detach</div>
+  </div>
+  <span class="anno" style="left:300px;top:150px">EditorTabs compact + tab menu</span>
+  <span class="anno" style="left:300px;top:520px">version 5 empty pane</span>
 </div>
 </div>
 <script>
