@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\States;
 
+use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Decisions\Decision;
-use App\Core\Hooks\Inputs\HookInput;
 use App\Core\Hooks\Inputs\StopRequested;
 use App\Core\Hooks\States\AgentState;
 use App\Core\Hooks\States\Ready;

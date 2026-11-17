@@ -6,12 +6,12 @@ namespace Tests\Feature\Actors;
 
 use App\Core\Actors\ActorContext;
 use App\Core\Actors\ActorKind;
-use App\Core\Actors\CurrentActor;
-use App\Core\Actors\EstablishActor;
 use App\Core\Actors\Exceptions\ActorContextMissing;
 use App\Core\Actors\Exceptions\PersonActorRequired;
 use App\Core\Agents\AgentContext;
 use App\Core\Agents\SignedCall;
+use App\Core\Contracts\CurrentActor;
+use App\Core\Contracts\EstablishActor;
 use App\Domain\Access\AccessSettings;
 use App\Domain\Access\Models\User;
 use Carbon\CarbonImmutable;

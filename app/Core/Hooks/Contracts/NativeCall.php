@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Programs;
+namespace App\Core\Hooks\Contracts;
 
-use App\Core\Hooks\Inputs\HookInput;
+use App\Core\Hooks\Programs\ProgramReply;
 use App\Core\Hooks\Stack\HookAnswer;
 use Closure;
 

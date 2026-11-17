@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Programs;
 
+use App\Core\Hooks\Contracts\ProgramAdapter;
+
 /**
  * The adapter of each supported program.
  */

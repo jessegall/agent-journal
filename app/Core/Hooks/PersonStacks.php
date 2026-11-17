@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks;
 
-use App\Core\Actors\CurrentActor;
 use App\Core\Agents\Models\AgentSession;
+use App\Core\Contracts\CurrentActor;
 use App\Core\Hooks\Contracts\PersonStack;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Exceptions\StackTargetRefused;

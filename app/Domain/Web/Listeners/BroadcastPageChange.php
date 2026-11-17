@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Listeners;
 
-use App\Domain\Access\JournalAccessPolicy;
+use App\Domain\Access\Contracts\JournalAccessPolicy;
 use App\Domain\Chat\Events\MessageAnswered;
 use App\Domain\Chat\Events\MessageDismissed;
 use App\Domain\Chat\Events\MessageSent;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks;
 
+use App\Domain\Tasks\Contracts\TaskProgressCounter;
 use App\Domain\Tasks\Models\Task;
 
 /**

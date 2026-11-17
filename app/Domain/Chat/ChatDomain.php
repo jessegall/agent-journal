@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat;
 
-use App\Domain\Domain;
+use App\Domain\Contracts\Domain;
 
 final class ChatDomain implements Domain
 {

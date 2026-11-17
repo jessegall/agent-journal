@@ -6,7 +6,7 @@ namespace App\Domain\Web;
 
 use App\Domain\Access\AccessDomain;
 use App\Domain\Chat\ChatDomain;
-use App\Domain\Domain;
+use App\Domain\Contracts\Domain;
 use App\Domain\Plans\PlansDomain;
 use App\Domain\Rules\RulesDomain;
 

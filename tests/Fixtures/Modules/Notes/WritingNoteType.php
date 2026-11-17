@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Modules\Notes;
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\States\AgentState;
-use App\Core\Hooks\States\StateType;
+use App\Core\Hooks\Contracts\StateType;
 use Tests\Fixtures\Hooks\ScriptedState;
 
 /**

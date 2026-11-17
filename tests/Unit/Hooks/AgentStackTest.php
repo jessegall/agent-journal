@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Decisions\AnswerKind;
 use App\Core\Hooks\Decisions\ChangeKind;
 use App\Core\Hooks\Decisions\Decision;
@@ -16,7 +17,6 @@ use App\Core\Hooks\Exceptions\BottomStateDelegated;
 use App\Core\Hooks\Exceptions\CoveredStatePushed;
 use App\Core\Hooks\Exceptions\InvalidHookAnswer;
 use App\Core\Hooks\Exceptions\MissingBottomState;
-use App\Core\Hooks\Inputs\HookInput;
 use App\Core\Hooks\Inputs\StopRequested;
 use App\Core\Hooks\Stack\AgentStack;
 use App\Core\Hooks\Stack\Frame;

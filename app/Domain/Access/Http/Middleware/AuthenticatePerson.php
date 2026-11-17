@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Access\Http\Middleware;
 
-use App\Core\Actors\Actor;
-use App\Core\Actors\EstablishActor;
+use App\Core\Contracts\Actor;
+use App\Core\Contracts\EstablishActor;
+use App\Domain\Access\Contracts\JournalAccessPolicy;
 use App\Domain\Access\Exceptions\JournalAccessDenied;
-use App\Domain\Access\JournalAccessPolicy;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;

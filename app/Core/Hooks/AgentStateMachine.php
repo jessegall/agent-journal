@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks;
 
+use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Exceptions\HookDeadlineExpired;
 use App\Core\Hooks\Exceptions\HookDigestChanged;
 use App\Core\Hooks\Exceptions\ReplayFound;
 use App\Core\Hooks\Inputs\ContextCompacted;
 use App\Core\Hooks\Inputs\HookIdentity;
-use App\Core\Hooks\Inputs\HookInput;
 use App\Core\Hooks\Inputs\ShellCommandRequested;
 use App\Core\Hooks\Models\AgentStackRow;
 use App\Core\Hooks\Models\HookCall;

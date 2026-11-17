@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Stack;
 
-use App\Core\Hooks\Decisions\StackEditor;
+use App\Core\Hooks\Contracts\StackEditor;
 use App\Core\Hooks\Decisions\StateReference;
 
 /**

@@ -8,7 +8,7 @@ use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\States\AgentState;
 use App\Core\Hooks\Exceptions\StateSubjectMissing;
-use App\Core\Hooks\States\StateType;
+use App\Core\Hooks\Contracts\StateType;
 use App\Domain\Tasks\States\WorkingOnTask;
 use App\Domain\Tasks\TaskWork;
 use App\Domain\Tasks\TaskWorkState;

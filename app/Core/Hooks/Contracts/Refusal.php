@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Decisions;
+namespace App\Core\Hooks\Contracts;
+
+use App\Core\Hooks\Decisions\Reason;
 
 /**
  * An answer that refuses with a reason the agent reads: a denial or a held stop.

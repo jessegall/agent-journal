@@ -2,9 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Inputs;
+namespace App\Core\Hooks\Contracts;
 
 use App\Core\Hooks\Decisions\Decision;
+use App\Core\Hooks\Inputs\ContextCompacted;
+use App\Core\Hooks\Inputs\FileEditRequested;
+use App\Core\Hooks\Inputs\PromptSubmitted;
+use App\Core\Hooks\Inputs\SessionEnded;
+use App\Core\Hooks\Inputs\SessionStarted;
+use App\Core\Hooks\Inputs\ShellCommandRequested;
+use App\Core\Hooks\Inputs\StopRequested;
+use App\Core\Hooks\Inputs\ToolFinished;
 
 /**
  * Whatever answers hooks, one method per hook; the agent states implement it.

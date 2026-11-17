@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Core\Agents\LaunchTransaction;
+use App\Core\Contracts\LaunchTransaction;
+use App\Core\Hooks\Contracts\NativeCall;
+use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Hooks\HookRetryWindow;
 use App\Core\Hooks\Inputs\HookIdentity;
-use App\Core\Hooks\Inputs\ShellCommandParser;
 use App\Core\Hooks\Programs\HookPayload;
 use App\Core\Hooks\Programs\HookProgram;
-use App\Core\Hooks\Programs\NativeCall;
 use App\Core\Hooks\Programs\ProgramAdapters;
 use App\Core\Hooks\RetentionPeriods;
 use App\Core\Hooks\Stack\StateTypes;

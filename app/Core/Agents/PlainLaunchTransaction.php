@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Agents;
 
+use App\Core\Contracts\LaunchTransaction;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
 

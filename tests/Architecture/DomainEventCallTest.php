@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Domain\Domain;
+use App\Domain\Contracts\Domain;
 use App\Domain\DomainRegistry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Architecture\Support\BoundaryChecker;

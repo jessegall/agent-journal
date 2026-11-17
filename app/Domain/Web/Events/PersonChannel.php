@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Events;
 
-use App\Domain\Access\JournalAccessPolicy;
+use App\Domain\Access\Contracts\JournalAccessPolicy;
 use App\Domain\Access\Models\User;
 
 /**

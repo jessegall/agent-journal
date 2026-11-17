@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Decisions;
 
+use App\Core\Hooks\Contracts\Answer;
+use App\Core\Hooks\Contracts\Refusal;
+use App\Core\Hooks\Contracts\StackChange;
 use App\Core\Hooks\Exceptions\ConflictingStackChange;
 use App\Core\Hooks\Exceptions\NoRefusalReason;
 use App\Core\Hooks\Exceptions\NoReplacementLine;

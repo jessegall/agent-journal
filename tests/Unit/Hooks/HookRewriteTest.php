@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use App\Core\Hooks\Contracts\StateType;
 use App\Core\Hooks\Decisions\AnswerKind;
 use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
@@ -17,7 +18,6 @@ use App\Core\Hooks\Stack\HookAnswer;
 use App\Core\Hooks\Stack\HookRewrite;
 use App\Core\Hooks\States\AgentState;
 use App\Core\Hooks\States\ReadyStateType;
-use App\Core\Hooks\States\StateType;
 use App\Core\Hooks\Storage\WalkStep;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;

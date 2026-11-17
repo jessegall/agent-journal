@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Models\Shop;
 
-use App\Domain\Domain;
+use App\Domain\Contracts\Domain;
 
 final class ShopDomain implements Domain
 {

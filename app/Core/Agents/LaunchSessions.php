@@ -10,6 +10,7 @@ use App\Core\Agents\Events\LaunchStarted;
 use App\Core\Agents\Exceptions\LaunchRefused;
 use App\Core\Agents\Models\Agent;
 use App\Core\Agents\Models\AgentSession;
+use App\Core\Contracts\LaunchTransaction;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**

@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Hooks;
 
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\States\AgentState;
-use App\Core\Hooks\States\StateType;
+use App\Core\Hooks\Contracts\StateType;
 use Closure;
 
 /**

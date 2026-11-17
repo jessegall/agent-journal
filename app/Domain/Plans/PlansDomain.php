@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans;
 
-use App\Domain\Domain;
+use App\Domain\Contracts\Domain;
 use App\Domain\Tasks\TasksDomain;
 
 final class PlansDomain implements Domain

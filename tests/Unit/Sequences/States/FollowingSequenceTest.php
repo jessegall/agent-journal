@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Sequences\States;
 
+use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Decisions\SimpleChange;
 use App\Core\Hooks\Decisions\StopPrevented;
 use App\Core\Hooks\Inputs\CompactionDetails;
 use App\Core\Hooks\Inputs\ContextCompacted;
 use App\Core\Hooks\Inputs\HookIdentity;
-use App\Core\Hooks\Inputs\HookInput;
 use App\Core\Hooks\Inputs\StopDetails;
 use App\Core\Hooks\Inputs\StopRequested;
 use App\Domain\Sequences\SequenceRunState;

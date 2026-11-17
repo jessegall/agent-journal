@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Programs;
 
+use App\Core\Hooks\Contracts\NativeCall;
+use App\Core\Hooks\Contracts\ProgramAdapter;
+use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Hooks\Exceptions\UnreadablePayload;
 use App\Core\Hooks\Exceptions\UnsupportedHook;
 use App\Core\Hooks\Inputs\CompactionDetails;
@@ -20,7 +23,6 @@ use App\Core\Hooks\Inputs\SessionEndReason;
 use App\Core\Hooks\Inputs\SessionStartDetails;
 use App\Core\Hooks\Inputs\SessionStarted;
 use App\Core\Hooks\Inputs\SessionStartSource;
-use App\Core\Hooks\Inputs\ShellCommandParser;
 use App\Core\Hooks\Inputs\ShellCommandRequested;
 use App\Core\Hooks\Inputs\ShellDialect;
 use App\Core\Hooks\Inputs\StopDetails;

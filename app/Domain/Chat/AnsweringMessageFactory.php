@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat;
 
+use App\Core\Hooks\Contracts\StateType;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
 use App\Core\Hooks\Exceptions\StateSubjectMissing;
 use App\Core\Hooks\States\AgentState;
-use App\Core\Hooks\States\StateType;
 use App\Domain\Chat\Exceptions\MessageMissing;
 use App\Domain\Chat\States\AnsweringMessage;
 

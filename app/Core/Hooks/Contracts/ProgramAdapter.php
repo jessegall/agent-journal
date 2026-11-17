@@ -2,9 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Programs;
+namespace App\Core\Hooks\Contracts;
 
 use App\Core\Hooks\Inputs\HookIdentity;
+use App\Core\Hooks\Programs\HookPayload;
+use App\Core\Hooks\Programs\NativeToolInput;
+use App\Core\Hooks\Programs\ProgramCapabilities;
+use App\Core\Hooks\Programs\ProgramReply;
 use App\Core\Hooks\Stack\HookAnswer;
 
 /**

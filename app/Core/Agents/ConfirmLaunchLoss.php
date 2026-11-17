@@ -6,6 +6,7 @@ namespace App\Core\Agents;
 
 use App\Core\Agents\Events\LaunchLost;
 use App\Core\Agents\Models\AgentSession;
+use App\Core\Contracts\LaunchTransaction;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Events\Dispatcher;
 

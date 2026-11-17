@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Access\Models;
 
-use App\Core\Actors\Actor;
 use App\Core\Actors\ActorKind;
+use App\Core\Contracts\Actor;
 use App\Core\Links\Linkable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

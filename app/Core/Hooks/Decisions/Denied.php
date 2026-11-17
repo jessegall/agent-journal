@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Decisions;
 
+use App\Core\Hooks\Contracts\Refusal;
+
 final readonly class Denied implements Refusal
 {
     public function __construct(private Reason $reason) {}

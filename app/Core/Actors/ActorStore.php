@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Core\Actors;
 
 use App\Core\Actors\Exceptions\ActorContextMissing;
+use App\Core\Contracts\Actor;
+use App\Core\Contracts\CurrentActor;
+use App\Core\Contracts\EstablishActor;
 use Illuminate\Container\Attributes\Scoped;
 
 /**

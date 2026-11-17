@@ -7,8 +7,8 @@ namespace App\Domain\Plans;
 use App\Domain\Plans\Models\Phase;
 use App\Domain\Plans\Models\PhaseTask;
 use App\Domain\Plans\Models\Plan;
+use App\Domain\Tasks\Contracts\TaskProgressCounter;
 use App\Domain\Tasks\TaskProgress;
-use App\Domain\Tasks\TaskProgressCounter;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 

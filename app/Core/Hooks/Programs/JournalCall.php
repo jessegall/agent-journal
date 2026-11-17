@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Programs;
 
-use App\Core\Hooks\Inputs\HookInput;
+use App\Core\Hooks\Contracts\HookInput;
+use App\Core\Hooks\Contracts\NativeCall;
 use App\Core\Hooks\Stack\HookAnswer;
 use Closure;
 

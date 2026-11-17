@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Decisions;
+namespace App\Core\Hooks\Contracts;
+
+use App\Core\Hooks\Decisions\StateReference;
 
 /**
  * The stack as one answering state may change it: remove itself, or put a new state over itself.

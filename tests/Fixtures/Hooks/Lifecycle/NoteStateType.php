@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Hooks\Lifecycle;
 
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\States\AgentState;
-use App\Core\Hooks\States\StateType;
+use App\Core\Hooks\Contracts\StateType;
 use Tests\Fixtures\Hooks\ScriptedState;
 
 /**

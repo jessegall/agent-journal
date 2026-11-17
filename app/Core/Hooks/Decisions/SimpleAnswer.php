@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Decisions;
 
+use App\Core\Hooks\Contracts\Answer;
+
 enum SimpleAnswer: string implements Answer
 {
     case Delegate = 'delegate';

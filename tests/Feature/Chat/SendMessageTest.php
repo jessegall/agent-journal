@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Chat;
 
 use App\Core\Actors\ActorContext;
-use App\Core\Actors\EstablishActor;
 use App\Core\Agents\LaunchSessions;
 use App\Core\Agents\Models\Agent;
+use App\Core\Contracts\EstablishActor;
 use App\Core\Hooks\Exceptions\StackTargetRefused;
 use App\Core\Hooks\Models\AgentStackRow;
 use App\Core\Hooks\StackTarget;

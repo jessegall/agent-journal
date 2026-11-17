@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Core\Actors\ActorContext;
-use App\Core\Actors\EstablishActor;
 use App\Core\Actors\Exceptions\PersonActorRequired;
 use App\Core\Agents\LaunchedAgent;
 use App\Core\Agents\LaunchSessions;
 use App\Core\Agents\Models\Agent;
+use App\Core\Contracts\EstablishActor;
 use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Events\StateTypesRequested;

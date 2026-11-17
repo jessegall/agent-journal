@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Domain\Domain;
+use App\Domain\Contracts\Domain;
 use App\Domain\DomainRegistry;
-use ReflectionClass;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DeclarationRules;
 use Tests\Architecture\Support\DomainFiles;
@@ -34,7 +33,7 @@ final class DomainDeclarationTest extends TestCase
      * The fixed files of the domain foundation at the root of App\Domain, relative to its folder; each domain is a folder beside them.
      */
     private const array SHARED_PLACE_FILES = [
-        'Domain.php',
+        'Contracts/Domain.php',
         'DomainEntry.php',
         'DomainRegistry.php',
         'DomainServiceProvider.php',
@@ -144,6 +143,6 @@ final class DomainDeclarationTest extends TestCase
 
     private function appFolder(): string
     {
-        return dirname((string) (new ReflectionClass(Domain::class))->getFileName(), 2);
+        return app_path();
     }
 }

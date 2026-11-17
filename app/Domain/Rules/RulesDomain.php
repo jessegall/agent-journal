@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Rules;
 
-use App\Domain\Domain;
+use App\Domain\Contracts\Domain;
 
 final class RulesDomain implements Domain
 {

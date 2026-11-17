@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
+use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Hooks\Decisions\AnswerKind;
 use App\Core\Hooks\Exceptions\CommandFactsMissing;
 use App\Core\Hooks\Inputs\CommandEffect;
@@ -13,7 +14,6 @@ use App\Core\Hooks\Inputs\MissingCommandFacts;
 use App\Core\Hooks\Inputs\ParseOutcome;
 use App\Core\Hooks\Inputs\PartJoin;
 use App\Core\Hooks\Inputs\ShellCommand;
-use App\Core\Hooks\Inputs\ShellCommandParser;
 use App\Core\Hooks\Inputs\ShellCommandRequested;
 use App\Core\Hooks\Inputs\ShellDialect;
 use App\Core\Hooks\States\MainAgentReady;

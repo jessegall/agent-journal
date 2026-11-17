@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\States;
 
+use App\Core\Hooks\Contracts\StateType;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Exceptions\UnknownReadyState;
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Core\CoreServiceProvider;
-use App\Domain\Domain;
+use App\Domain\Contracts\Domain;
 use App\Domain\DomainRegistry;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;

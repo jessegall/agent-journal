@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\States;
 
+use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Decisions\AnswerKind;
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Decisions\Denied;
@@ -16,7 +17,6 @@ use App\Core\Hooks\Inputs\FileChanges;
 use App\Core\Hooks\Inputs\FileEditRequested;
 use App\Core\Hooks\Inputs\FileOperation;
 use App\Core\Hooks\Inputs\HookIdentity;
-use App\Core\Hooks\Inputs\HookInput;
 use App\Core\Hooks\Inputs\ParseOutcome;
 use App\Core\Hooks\Inputs\PartJoin;
 use App\Core\Hooks\Inputs\ShellCommand;

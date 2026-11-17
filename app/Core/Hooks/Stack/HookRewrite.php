@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Stack;
 
+use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Hooks\Exceptions\RepeatedCommandRewrite;
-use App\Core\Hooks\Inputs\ShellCommandParser;
 use App\Core\Hooks\Inputs\ShellCommandRequested;
 
 /**

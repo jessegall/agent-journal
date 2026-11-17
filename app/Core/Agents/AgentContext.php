@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Agents;
 
-use App\Core\Actors\Actor;
 use App\Core\Actors\ActorKind;
+use App\Core\Contracts\Actor;
 
 /**
  * Who is calling in this request: the agent, its journal session and role, and the signed call. It lives for one request only.

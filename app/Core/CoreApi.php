@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Core;
 
-use App\Core\Actors\Actor;
 use App\Core\Actors\ActorContext;
 use App\Core\Actors\ActorKind;
 use App\Core\Actors\Exceptions\ActorContextMissing;
 use App\Core\Actors\Exceptions\PersonActorRequired;
+use App\Core\Contracts\Actor;
 
 /**
  * Core's public surface: the types every domain and module may use, written out one by one. Everything else in Core is

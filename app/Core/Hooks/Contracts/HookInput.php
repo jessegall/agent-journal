@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Inputs;
+namespace App\Core\Hooks\Contracts;
 
 use App\Core\Hooks\Decisions\AnswerKind;
 use App\Core\Hooks\Decisions\Decision;
+use App\Core\Hooks\Inputs\HookIdentity;
 
 /**
  * One hook call of an agent program, in the journal's own words; it asks a state for the matching answer.

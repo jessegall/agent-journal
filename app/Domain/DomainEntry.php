@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain;
 
+use App\Domain\Contracts\Domain;
 use App\Domain\Exceptions\DomainRequiresItself;
 use App\Domain\Exceptions\NotADomain;
 use App\Domain\Exceptions\RequiredDomainTwice;

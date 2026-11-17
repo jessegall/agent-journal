@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks;
 
-use App\Core\Agents\LaunchTransaction;
+use App\Core\Contracts\LaunchTransaction;
 use App\Core\Hooks\Contracts\StackWork;
 use App\Core\Hooks\Exceptions\StackLockTimedOut;
 use App\Core\Hooks\Exceptions\StackTransactionRequired;

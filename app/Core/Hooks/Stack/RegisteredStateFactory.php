@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Stack;
 
+use App\Core\Hooks\Contracts\StateFactory;
 use App\Core\Hooks\Decisions\StateReference;
 use Illuminate\Support\Str;
 

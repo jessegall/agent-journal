@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Actors;
 
 use App\Core\Actors\Exceptions\PersonActorRequired;
+use App\Core\Contracts\Actor;
 
 /**
  * Who acts in this request, filled by the middleware that authenticated them and kept for this request only. A person

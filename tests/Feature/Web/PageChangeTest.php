@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Core\Actors\ActorContext;
-use App\Core\Actors\EstablishActor;
+use App\Core\Contracts\EstablishActor;
 use App\Domain\Access\AccessSettings;
 use App\Domain\Access\Models\User;
 use App\Domain\Plans\Events\PlanProgressChanged;

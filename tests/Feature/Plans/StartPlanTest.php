@@ -6,8 +6,8 @@ namespace Tests\Feature\Plans;
 
 use App\Core\Actors\ActorContext;
 use App\Core\Actors\ActorKind;
-use App\Core\Actors\EstablishActor;
 use App\Core\Actors\Exceptions\ActorContextMissing;
+use App\Core\Contracts\EstablishActor;
 use App\Domain\Plans\Actions\StartPlan;
 use App\Domain\Plans\Events\PlanStarted;
 use App\Domain\Plans\Exceptions\StartDenied;

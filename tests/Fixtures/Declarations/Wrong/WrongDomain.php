@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Declarations\Wrong;
 
-use App\Domain\Domain;
+use App\Domain\Contracts\Domain;
 
 final class WrongDomain implements Domain
 {

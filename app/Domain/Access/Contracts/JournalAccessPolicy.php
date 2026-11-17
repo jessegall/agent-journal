@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Access;
+namespace App\Domain\Access\Contracts;
 
-use App\Core\Actors\Actor;
+use App\Core\Contracts\Actor;
+use App\Domain\Access\JournalAccess;
 use Illuminate\Container\Attributes\Bind;
 
 /**

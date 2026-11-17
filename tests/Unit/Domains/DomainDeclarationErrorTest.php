@@ -50,7 +50,7 @@ final class DomainDeclarationErrorTest extends TestCase
     public function test_a_class_that_is_not_a_domain_is_named(): void
     {
         $this->assertSame(
-            'App\Domain\Tasks\TaskList does not implement App\Domain\Domain.',
+            'App\Domain\Tasks\TaskList does not implement App\Domain\Contracts\Domain.',
             NotADomain::for('App\Domain\Tasks\TaskList')->getMessage(),
         );
     }

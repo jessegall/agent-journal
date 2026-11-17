@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Core\Hooks\Contracts\HookInput;
+use App\Core\Hooks\Contracts\NativeCall;
 use App\Core\Hooks\Inputs\HookIdentity;
-use App\Core\Hooks\Inputs\HookInput;
 use App\Core\Hooks\Programs\HookPayload;
 use App\Core\Hooks\Programs\JournalCall;
-use App\Core\Hooks\Programs\NativeCall;
 
 /**
  * What the adapter tests of every program share: its recorded fixture, its mapping as a data provider, and reading a call's input.

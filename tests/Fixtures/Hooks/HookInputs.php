@@ -14,7 +14,7 @@ use App\Core\Hooks\Inputs\FileChanges;
 use App\Core\Hooks\Inputs\FileEditRequested;
 use App\Core\Hooks\Inputs\FileOperation;
 use App\Core\Hooks\Inputs\HookIdentity;
-use App\Core\Hooks\Inputs\HookInput;
+use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Inputs\ParseOutcome;
 use App\Core\Hooks\Inputs\PromptDetails;
 use App\Core\Hooks\Inputs\PromptSubmitted;

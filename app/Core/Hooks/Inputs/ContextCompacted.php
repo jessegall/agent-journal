@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Inputs;
 
+use App\Core\Hooks\Contracts\HookAnswerer;
+use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Decisions\AnswerKind;
 use App\Core\Hooks\Decisions\Decision;
 

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Http\Middleware;
 
-use App\Core\Actors\EstablishActor;
 use App\Core\Agents\AgentContext;
 use App\Core\Agents\AgentContextFactory;
 use App\Core\Agents\Exceptions\CallSignatureInvalid;
 use App\Core\Agents\Exceptions\CredentialRejected;
+use App\Core\Contracts\EstablishActor;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\JsonResponse;
