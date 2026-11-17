@@ -42,6 +42,18 @@ final class Link extends Model
     }
 
     /**
+     * Removes every link to or from the given models, which are about to be deleted.
+     *
+     * @param  list<Model>  $models
+     */
+    public static function forgetModels(array $models): void
+    {
+        foreach ($models as $model) {
+            self::query()->where(fn (Builder $either) => $either->withSource($model)->orWhere(fn (Builder $target) => $target->withTarget($model)))->delete();
+        }
+    }
+
+    /**
      * @return MorphTo<Model, $this>
      */
     public function source(): MorphTo

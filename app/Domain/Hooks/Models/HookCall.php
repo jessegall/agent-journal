@@ -11,10 +11,12 @@ use App\Domain\Hooks\Storage\RecordedSteps;
 use App\Domain\Hooks\Storage\RecordedStepsCast;
 use App\Domain\Hooks\Storage\StackTarget;
 use App\Domain\Links\Linkable;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Carbon;
 
 /**
@@ -74,6 +76,23 @@ final class HookCall extends Model
     protected function forHookId(Builder $query, string $hookId): void
     {
         $query->where('event_id', $hookId);
+    }
+
+    /**
+     * The administrator's read of hook calls past their retention, across every agent; calls of a held stack are left out.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function prunableBefore(Builder $query, CarbonImmutable $cutoff): void
+    {
+        $query->withoutGlobalScope(AgentSessionScope::class)
+            ->where('created_at', '<', $cutoff)
+            ->whereNotExists(fn (QueryBuilder $held) => $held->selectRaw('1')
+                ->from('agent_stacks')
+                ->whereColumn('agent_stacks.agent_id', 'hook_calls.agent_id')
+                ->whereColumn('agent_stacks.session_id', 'hook_calls.session_id')
+                ->whereNotNull('agent_stacks.held_at'));
     }
 
     /**

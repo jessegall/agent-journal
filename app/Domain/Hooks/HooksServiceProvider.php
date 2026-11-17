@@ -6,6 +6,7 @@ namespace App\Domain\Hooks;
 
 use App\Domain\Agents\AgentContext;
 use App\Domain\Agents\LaunchTransaction;
+use App\Domain\Hooks\Console\PruneHookHistoryCommand;
 use App\Domain\Hooks\Inputs\MissingCommandFacts;
 use App\Domain\Hooks\Inputs\ShellCommandParser;
 use App\Domain\Hooks\Models\AgentSessionScope;
@@ -14,6 +15,7 @@ use App\Domain\Hooks\Models\HookCall;
 use App\Domain\Hooks\Stack\RegisteredStateFactory;
 use App\Domain\Hooks\Stack\StateFactory;
 use App\Domain\Hooks\Stack\StateTypes;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
@@ -28,6 +30,10 @@ final class HooksServiceProvider extends ServiceProvider
     {
         $this->app->singleton(StateTypes::class);
         $this->app->bind(LaunchTransaction::class, StackTransaction::class);
+        $this->app->singleton(RetentionPeriods::class, fn () => new RetentionPeriods(
+            $this->app->make('config')->integer('hooks.hook_call_days'),
+            $this->app->make('config')->integer('hooks.closed_stack_days'),
+        ));
         $this->app->bindIf(ShellCommandParser::class, MissingCommandFacts::class);
         $this->app->scoped(StateFactory::class, RegisteredStateFactory::class);
         $this->app->singleton(OperationDeadline::class, fn () => new OperationDeadline($this->app->make('config')->integer('hooks.operation_deadline_milliseconds')));
@@ -37,6 +43,8 @@ final class HooksServiceProvider extends ServiceProvider
     public function boot(Dispatcher $events): void
     {
         $this->loadRoutesFrom(__DIR__.'/Routes/hooks.php');
+        $this->commands([PruneHookHistoryCommand::class]);
+        $this->callAfterResolving(Schedule::class, fn (Schedule $schedule) => $schedule->command('hooks:prune')->daily());
 
         $scope = new AgentSessionScope(static fn () => Container::getInstance()->make(AgentContext::class));
 

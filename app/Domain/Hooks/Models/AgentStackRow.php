@@ -27,6 +27,7 @@ use Illuminate\Support\Carbon;
  * @property FrameRecords $frames
  * @property StackStatus $status
  * @property CarbonImmutable|null $closed_at
+ * @property CarbonImmutable|null $held_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -98,6 +99,15 @@ final class AgentStackRow extends Model
         return $this->status === StackStatus::Active;
     }
 
+    /**
+     * Keeps this stack and its hook calls past their retention, for an investigation.
+     */
+    public function holdForInvestigation(CarbonImmutable $time): void
+    {
+        $this->held_at = $time;
+        $this->save();
+    }
+
     public function saveFrames(FrameRecords $frames): void
     {
         $this->frames = $frames;
@@ -124,6 +134,7 @@ final class AgentStackRow extends Model
             'frames' => FrameRecordsCast::class,
             'status' => StackStatus::class,
             'closed_at' => 'immutable_datetime',
+            'held_at' => 'immutable_datetime',
         ];
     }
 
@@ -134,6 +145,20 @@ final class AgentStackRow extends Model
     protected function forTarget(Builder $query, StackTarget $target): void
     {
         $query->where('agent_id', $target->agentId)->where('session_id', $target->sessionId);
+    }
+
+    /**
+     * The administrator's read of closed stacks past their retention, across every agent; held stacks are left out.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function prunableBefore(Builder $query, CarbonImmutable $cutoff): void
+    {
+        $query->withoutGlobalScope(AgentSessionScope::class)
+            ->where('status', StackStatus::Closed->value)
+            ->where('closed_at', '<', $cutoff)
+            ->whereNull('held_at');
     }
 
     /**
