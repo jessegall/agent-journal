@@ -63,19 +63,29 @@ final class RulesPageTest extends TestCase
             ->missing('page.rules.selected'));
     }
 
-    public function test_approving_returns_to_the_same_filters(): void
+    public function test_approving_returns_to_the_page_it_came_from(): void
     {
-        $this->actingAs($this->owner)
-            ->patch("/rules/{$this->proposed->id}/approve", ['filters' => ['q' => 'phase', 'page' => 1, 'rule' => (string) $this->proposed->id]])
+        $this->actingAs($this->owner)->from("/rules?q=phase&rule={$this->proposed->id}")
+            ->patch("/rules/{$this->proposed->id}/approve")
             ->assertStatus(303)
             ->assertRedirect("/rules?q=phase&rule={$this->proposed->id}");
 
         $this->assertSame(RuleState::Active, $this->proposed->fresh()?->state);
     }
 
+    public function test_approving_from_home_returns_to_home_with_every_windows_query(): void
+    {
+        $this->actingAs($this->owner)->from("/?q=release&rules_q=phase&rule={$this->proposed->id}")
+            ->patch("/rules/{$this->proposed->id}/approve")
+            ->assertStatus(303)
+            ->assertRedirect("/?q=release&rules_q=phase&rule={$this->proposed->id}");
+
+        $this->assertSame(RuleState::Active, $this->proposed->fresh()?->state);
+    }
+
     public function test_denying_settles_the_rule(): void
     {
-        $this->actingAs($this->owner)->patch("/rules/{$this->proposed->id}/deny")->assertRedirect('/rules');
+        $this->actingAs($this->owner)->from('/rules')->patch("/rules/{$this->proposed->id}/deny")->assertRedirect('/rules');
 
         $this->assertSame(RuleState::Denied, $this->proposed->fresh()?->state);
     }
@@ -93,15 +103,6 @@ final class RulesPageTest extends TestCase
         foreach (['999999', 'abc', '0', '9223372036854775808'] as $id) {
             $this->actingAs($this->owner)->patch("/rules/{$id}/approve")->assertNotFound();
         }
-
-        $this->assertSame(RuleState::Proposed, $this->proposed->fresh()?->state);
-    }
-
-    public function test_invalid_filters_stop_the_review(): void
-    {
-        $this->actingAs($this->owner)->from('/rules')
-            ->patch("/rules/{$this->proposed->id}/approve", ['filters' => ['q' => str_repeat('a', 201), 'page' => 0]])
-            ->assertSessionHasErrors(['filters.q', 'filters.page']);
 
         $this->assertSame(RuleState::Proposed, $this->proposed->fresh()?->state);
     }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import Reader from '@/components/kit/Reader.vue';
-import type { RuleFiltersData, RuleReaderData } from '@/types/generated';
+import type { RuleReaderData } from '@/types/generated';
 import ReviewRuleForm from './ReviewRuleForm.vue';
 import { ruleStateLook } from './ruleLooks';
 
@@ -11,7 +11,6 @@ import { ruleStateLook } from './ruleLooks';
 const props = defineProps<{
     reader?: RuleReaderData;
     selectionMissing: boolean;
-    filters: RuleFiltersData;
 }>();
 
 const title = computed(() =>
@@ -29,11 +28,7 @@ const title = computed(() =>
             </template>
             <template #actions>
                 <template v-if="reader.canReview">
-                    <ReviewRuleForm
-                        :key="reader.id"
-                        :rule-id="reader.id"
-                        :filters="filters"
-                    />
+                    <ReviewRuleForm :key="reader.id" :rule-id="reader.id" />
                 </template>
             </template>
             <p class="mt-4 text-body whitespace-pre-wrap text-text">

@@ -112,7 +112,6 @@ function submitSearch(): void {
             <PlanReader
                 :reader="plans.selected"
                 :selection-missing="plans.selectionMissing"
-                :filters="filters"
             />
         </template>
     </ListReaderLayout>

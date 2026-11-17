@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Reader from '@/components/kit/Reader.vue';
-import type { PlanFiltersData, PlanReaderData } from '@/types/generated';
+import type { PlanReaderData } from '@/types/generated';
 import { progressText, stateLook } from './planLooks';
 import StartPlanForm from './StartPlanForm.vue';
 
@@ -10,7 +10,6 @@ import StartPlanForm from './StartPlanForm.vue';
 defineProps<{
     reader?: PlanReaderData;
     selectionMissing: boolean;
-    filters: PlanFiltersData;
 }>();
 </script>
 
@@ -31,7 +30,6 @@ defineProps<{
                     <StartPlanForm
                         :key="reader.start.planId"
                         :start="reader.start"
-                        :filters="filters"
                     />
                 </template>
             </template>

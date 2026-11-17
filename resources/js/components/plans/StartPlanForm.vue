@@ -4,28 +4,21 @@ import Button from '@/components/kit/Button.vue';
 import FormErrors from '@/components/kit/FormErrors.vue';
 import { formSendingHooks } from '@/composables/usePageChanges';
 import { start as startRoute } from '@/routes/plans';
-import type {
-    PlanFiltersData,
-    StartPlanData,
-    StartPlanInput,
-} from '@/types/generated';
+import type { StartPlanData } from '@/types/generated';
 
 /**
  * Starts the selected plan. The server decides whether it may start; this form only asks and shows what came back.
  * Its parent keys it by plan, so switching selection never shows another plan's error.
  */
-const props = defineProps<{ start: StartPlanData; filters: PlanFiltersData }>();
+const props = defineProps<{ start: StartPlanData }>();
 
-const form = useForm<StartPlanInput>({ filters: props.filters });
+const form = useForm({});
 
 function submit(): void {
-    form.transform(() => ({ filters: props.filters })).submit(
-        startRoute({ plan: Number(props.start.planId) }),
-        {
-            preserveScroll: true,
-            ...formSendingHooks(),
-        },
-    );
+    form.submit(startRoute({ plan: Number(props.start.planId) }), {
+        preserveScroll: true,
+        ...formSendingHooks(),
+    });
 }
 </script>
 

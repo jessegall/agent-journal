@@ -29,22 +29,22 @@ final class StartPlanTest extends TestCase
         $this->plan = Plan::query()->create(['title' => 'Build the release page', 'kind' => PlanKind::Build]);
     }
 
-    public function test_a_start_returns_to_the_plans_page_with_the_validated_filters(): void
+    public function test_a_start_returns_to_the_page_it_came_from(): void
     {
-        $this->actingAs($this->owner)
-            ->post("/plans/{$this->plan->id}/start", ['filters' => ['q' => 'release', 'page' => 2, 'plan' => (string) $this->plan->id], 'redirect' => 'https://example.com'])
+        $this->actingAs($this->owner)->from("/plans?q=release&page=2&plan={$this->plan->id}")
+            ->post("/plans/{$this->plan->id}/start", ['redirect' => 'https://example.com'])
             ->assertStatus(303)
             ->assertRedirect("/plans?q=release&page=2&plan={$this->plan->id}");
 
         $this->assertSame(PlanState::Started, $this->plan->fresh()?->state);
     }
 
-    public function test_an_empty_search_starts_like_no_search(): void
+    public function test_a_start_from_home_returns_to_home_with_every_windows_query(): void
     {
-        $this->actingAs($this->owner)
-            ->post("/plans/{$this->plan->id}/start", ['filters' => ['q' => '', 'page' => 1, 'plan' => (string) $this->plan->id]])
+        $this->actingAs($this->owner)->from("/?q=release&plan={$this->plan->id}&rules_q=phase")
+            ->post("/plans/{$this->plan->id}/start")
             ->assertStatus(303)
-            ->assertRedirect("/plans?plan={$this->plan->id}");
+            ->assertRedirect("/?q=release&plan={$this->plan->id}&rules_q=phase");
 
         $this->assertSame(PlanState::Started, $this->plan->fresh()?->state);
     }
@@ -60,15 +60,6 @@ final class StartPlanTest extends TestCase
             ->assertSessionHasErrors(['start' => 'This plan is paused and cannot start; only a planned plan starts.']);
 
         $this->assertSame(PlanState::Paused, $this->plan->fresh()?->state);
-    }
-
-    public function test_invalid_filters_stop_the_start(): void
-    {
-        $this->actingAs($this->owner)->from('/plans')
-            ->post("/plans/{$this->plan->id}/start", ['filters' => ['q' => str_repeat('a', 201), 'page' => 0]])
-            ->assertSessionHasErrors(['filters.q', 'filters.page']);
-
-        $this->assertSame(PlanState::Planned, $this->plan->fresh()?->state);
     }
 
     public function test_an_id_that_is_no_positive_whole_number_in_range_is_not_found(): void

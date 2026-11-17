@@ -130,7 +130,6 @@ function submitSearch(): void {
             <RuleReader
                 :reader="rules.selected"
                 :selection-missing="rules.selectionMissing"
-                :filters="filters"
             />
         </template>
     </ListReaderLayout>
