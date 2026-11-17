@@ -6,6 +6,7 @@ import FormErrors from '@/components/kit/FormErrors.vue';
 import Icon from '@/components/kit/Icon.vue';
 import { useComposerHeight } from '@/composables/useComposerHeight';
 import { useMessageDrafts } from '@/composables/useMessageDrafts';
+import { formSendingHooks } from '@/composables/usePageChanges';
 import { send as sendRoute } from '@/routes/messages';
 import type { MessageInput } from '@/types/generated';
 
@@ -50,6 +51,7 @@ function submit(): void {
         sendRoute(),
         {
             preserveScroll: true,
+            ...formSendingHooks(),
             onSuccess: () => {
                 drafts.clearSent(sent.key, sent.body);
 

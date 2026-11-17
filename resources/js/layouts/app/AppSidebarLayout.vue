@@ -3,11 +3,15 @@ import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import AppSidebar from '@/components/shell/AppSidebar.vue';
 import AppTopbar from '@/components/shell/AppTopbar.vue';
+import { useLiveConnection } from '@/composables/useLiveConnection';
 
 /**
- * The persistent shell every signed-in page sits in: it stays mounted across visits, only the page inside changes.
+ * The persistent shell every signed-in page sits in: it stays mounted across visits, only the page inside changes, and
+ * it holds the tab's one live connection.
  */
 const page = usePage();
+
+useLiveConnection();
 const title = computed(() => page.component);
 </script>
 

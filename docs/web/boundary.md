@@ -105,6 +105,12 @@ Each producer raises its own fact after commit and knows nothing of the browser:
 
 Web's `BroadcastPageChange` listener turns each of those facts into one `PageChanged`, a queued broadcast with no payload (`page.changed`), sent after commit on the private channel `journal.person.{id}` of each person Access allows (`JournalAccessPolicy::allowedPersonIds()`, today the owner); with no owner nobody is told. A rolled-back change sends nothing. `WebServiceProvider` registers `POST /broadcasting/auth` behind `web`, `auth` and `journal.person`, and the `PersonChannel` class: a person joins only the channel with their own id, and only while Access lets them in, so a guessed id or another account is refused. The installer's `routes/channels.php` is gone; channels live with Web.
 
+## Live refresh in the browser (task 116)
+
+The app shell (`AppSidebarLayout`) owns the tab's one connection through `useLiveConnection`: it opens `resources/js/echo.ts` in the browser only, for the signed-in viewer, on `private-journal.person.{id}`, and opens it again only when the viewer changes; signing out or leaving the shell leaves the channel and disconnects (checked: Reverb lists no channel afterwards). The channel sign-in goes through its own small `fetch` with the session's current XSRF cookie, so a sign-in after a reconnect is fresh; `@laravel/echo-vue` is not used.
+
+`composables/usePageChanges.ts` holds the refresh: each mounted page (`Home`, `Plans`, `Rules`) registers `useLiveReload()`, which reloads only its `page` prop and is removed when the page unmounts, so navigation never refreshes an old page. A burst of changes within 250 ms becomes one reload (checked: three removals in a row gave one request). The start, review and message forms add `formSendingHooks()` to their submit: a change that arrives while one is sent is read after it finishes, so the form's own answer and its errors are never replaced. When a lost connection comes back the page reloads by GET once; nothing is ever sent again. Home's reload keeps the composer drafts (they live per conversation in session storage), and a rule's text never changes, so the Rules reader needs no revision marker.
+
 ## Interfaces at the seams (task 122, rule 15)
 
 - **Actor.** `App\Core\Actors\Actor` (its kind and id) is what the core talks to. The Access `User` is a person actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.
