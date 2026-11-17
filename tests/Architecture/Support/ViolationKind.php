@@ -49,7 +49,7 @@ enum ViolationKind: string
             self::PrivateTypeInSignature => "shows {$violation->used} at {$violation->detail}, but it is private to {$violation->owner}; export it or keep it out of the public signature",
             self::DisallowedCategory => "exports {$violation->used}, which is {$violation->detail}; an owner publishes only interfaces, enums, immutable values and its own exceptions",
             self::CompositionMisuse => "names {$violation->used} of {$violation->owner}, but a composition file names only what it composes: a descriptor, a provider, a middleware, the user model or a seeder",
-            self::BindingMisuse => "binds {$violation->used} outside its owner {$violation->owner}",
+            self::BindingMisuse => "binds {$violation->used}, but {$violation->detail}",
             self::PrivateEventHeard => "hears {$violation->used}, an event {$violation->owner} does not publish",
             self::OutsideEveryDomain => "uses {$violation->used}, which is project code outside every domain",
             self::TableOfNoDomain => "uses table {$violation->used}, which no domain owns",
