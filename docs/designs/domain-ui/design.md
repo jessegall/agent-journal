@@ -120,6 +120,8 @@ Before private record binding or controller reads, middleware resolves the defin
 
 This is one optional check, not a permission framework. The actor remains the signed-in user even when a target agent/session is selected. Denial removes protected data; directly forbidden/missing URLs reveal no private labels.
 
+Resolve readers, visibility checks and the Core actor/session context inside each request's scoped container. Under Octane, only immutable declaration values and class names may survive between requests: never retain a resolved reader, user, session, query builder, props, permission result or request closure in the catalog or a singleton. Evaluate navigation, sections and all open windows anew for the current actor. Foreign-domain reads use only approved dependencies and exports; Web must not import optional owners' concrete readers, facts or Data. Request-scoped adapters carry their foundation interfaces instead. The private live channel is authenticated for the current viewer and is replaced at sign-out or viewer change.
+
 ## Sections stay in host Inertia props
 
 Keep one server-built page object. Its computed page.sections holds keyed SectionResult values. Web asks each visible SectionReader for typed Data through the foundation interface; a generated owner adapter supplies that Data as props to its Vue component. Web never inspects foreign fields.
