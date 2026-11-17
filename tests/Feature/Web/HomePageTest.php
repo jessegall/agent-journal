@@ -11,6 +11,7 @@ use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
 use App\Domain\Chat\Models\Message;
 use App\Domain\Plans\Enums\PlanKind;
+use App\Domain\Plans\Enums\PlanState;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Rules\Models\Rule;
 use Inertia\Testing\AssertableInertia;
@@ -102,6 +103,20 @@ final class HomePageTest extends TestCase
             ->where('page.state', 'ready')
             ->where('page.data.sessions.0.agentName', 'Builder')
             ->where('page.data.conversation.sessionId', (string) $this->session->id));
+    }
+
+    public function test_chats_dock_shows_the_plans_waiting_for_review_beside_the_chosen_session(): void
+    {
+        $waiting = Plan::query()->create(['title' => 'Review the dock', 'kind' => PlanKind::Build]);
+        Plan::query()->whereKey($waiting->id)->update(['state' => PlanState::Reviewing->value]);
+
+        $this->actingAs($this->owner)->get("/chat?session={$this->session->id}")->assertInertia(fn (AssertableInertia $page) => $page
+            ->loadDeferredProps('section_chat_dock_plans_waiting', fn (AssertableInertia $section) => $section
+                ->where('section_chat_dock_plans_waiting.state', 'ready')
+                ->where('section_chat_dock_plans_waiting.data.rows.0.title', 'Review the dock')));
+        $this->actingAs($this->owner)->get('/chat')->assertInertia(fn (AssertableInertia $page) => $page
+            ->loadDeferredProps('section_chat_dock_plans_waiting', fn (AssertableInertia $section) => $section
+                ->where('section_chat_dock_plans_waiting', null)));
     }
 
     public function test_a_blank_message_is_refused_on_its_body(): void

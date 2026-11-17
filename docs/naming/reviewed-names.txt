@@ -109,6 +109,9 @@ case	PlanState::Paused
 case	PlanState::Planned
 case	PlanState::Reviewing
 case	PlanState::Started
+case	PlanStateGroup::Closed
+case	PlanStateGroup::Open
+case	PlanStateGroup::Waiting
 case	ProgramPermission::Deny
 case	ProgramStopDecision::Block
 case	ReadyStateType::MainAgent
@@ -498,6 +501,7 @@ class	NonBottomStateAllowed
 class	NotADomain
 class	NumberedPage
 class	OpenLaunchStack
+class	OpenPlansCount
 class	OperationDeadline
 class	OutageReply
 class	OwnerSeeder
@@ -527,9 +531,11 @@ class	PlanProgress
 class	PlanProgressChanged
 class	PlanReaderData
 class	PlanRecords
+class	PlanRequest
 class	PlanSelection
 class	PlanStarted
 class	PlanTasksSeeder
+class	PlanWindowReader
 class	PlanWorkResultData
 class	PlansDomain
 class	PlansRequest
@@ -773,6 +779,8 @@ class	ViewerScope
 class	Violation
 class	VisibilityChecks
 class	VisibleTasks
+class	WaitingPlansCount
+class	WaitingPlansSection
 class	WalkStep
 class	WebDomain
 class	WebServiceProvider
@@ -875,6 +883,7 @@ enum	ParseOutcome
 enum	PartJoin
 enum	PlanKind
 enum	PlanState
+enum	PlanStateGroup
 enum	ProgramPermission
 enum	ProgramStopDecision
 enum	ReadyStateType
@@ -1884,6 +1893,8 @@ method	NotADomain::for()
 method	NumberedPage::__construct()
 method	OpenLaunchStack::__construct()
 method	OpenLaunchStack::handle()
+method	OpenPlansCount::__construct()
+method	OpenPlansCount::count()
 method	OperationDeadline::__construct()
 method	OperationDeadline::hasRunOut()
 method	OperationDeadline::lockMilliseconds()
@@ -2003,8 +2014,11 @@ method	PlanRecords::__construct()
 method	PlanRecords::assignedToCaller()
 method	PlanRecords::cardsOf()
 method	PlanRecords::list()
+method	PlanRecords::listed()
 method	PlanRecords::planProgressOf()
 method	PlanRecords::selection()
+method	PlanRequest::planId()
+method	PlanRequest::rules()
 method	PlanSelection::__construct()
 method	PlanSelection::found()
 method	PlanSelection::isMissing()
@@ -2014,8 +2028,11 @@ method	PlanStarted::__construct()
 method	PlanStarter::start()
 method	PlanState::canStart()
 method	PlanState::hasEnded()
+method	PlanStateGroup::states()
 method	PlanTasksSeeder::exampleTaskIds()
 method	PlanTasksSeeder::tasks()
+method	PlanWindowReader::__construct()
+method	PlanWindowReader::read()
 method	PlanWorkResultData::__construct()
 method	PlanWorkResultData::of()
 method	PlansDomain::assignables()
@@ -2024,6 +2041,7 @@ method	PlansDomain::exports()
 method	PlansDomain::navigation()
 method	PlansDomain::pages()
 method	PlansDomain::requires()
+method	PlansDomain::sections()
 method	PlansRequest::filters()
 method	PlansRequest::rules()
 method	PlansSeeder::run()
@@ -2697,6 +2715,10 @@ method	VisibilityChecks::allow()
 method	VisibleTasks::__construct()
 method	VisibleTasks::requireAllVisible()
 method	VisibleTasks::requireVisible()
+method	WaitingPlansCount::__construct()
+method	WaitingPlansCount::count()
+method	WaitingPlansSection::__construct()
+method	WaitingPlansSection::read()
 method	WalkStep::__construct()
 method	WebDomain::description()
 method	WebDomain::exports()
@@ -3147,6 +3169,7 @@ property	NumberedPage::$number
 property	NumberedPage::$size
 property	OpenLaunchStack::$parser
 property	OpenLaunchStack::$stacks
+property	OpenPlansCount::$records
 property	OperationDeadline::$milliseconds
 property	Page::$actions
 property	Page::$afterId
@@ -3208,9 +3231,11 @@ property	PlanCardData::$totalTasks
 property	PlanFilters::$page
 property	PlanFilters::$search
 property	PlanFilters::$selectedPlanId
+property	PlanFilters::$states
 property	PlanFiltersData::$page
 property	PlanFiltersData::$plan
 property	PlanFiltersData::$q
+property	PlanFiltersData::$state
 property	PlanList::$cards
 property	PlanList::$filters
 property	PlanList::$lastPage
@@ -3243,6 +3268,8 @@ property	PlanSelection::$isInsideFilter
 property	PlanSelection::$wasRequested
 property	PlanStarted::$planId
 property	PlanStarted::$startedBy
+property	PlanWindowReader::$records
+property	PlanWindowReader::$request
 property	PlanWorkResultData::$cascade
 property	PlanWorkResultData::$changed
 property	PlanWorkResultData::$root
@@ -3616,6 +3643,9 @@ property	Violation::$usingDomain
 property	VisibilityChecks::$actors
 property	VisibilityChecks::$container
 property	VisibleTasks::$actors
+property	WaitingPlansCount::$records
+property	WaitingPlansSection::$records
+property	WaitingPlansSection::$sessions
 property	WalkStep::$answer
 property	WalkStep::$frameId
 property	WalkStep::$hookMethod

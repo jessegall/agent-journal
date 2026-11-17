@@ -1,0 +1,41 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Plans\Readers;
+
+use App\Core\Agents\Contracts\SessionReader;
+use App\Domain\Contracts\SectionReader;
+use App\Domain\Declarations\SlotContext;
+use App\Domain\Plans\Api\PlanFilters;
+use App\Domain\Plans\Contracts\PlanReader;
+use App\Domain\Plans\Data\PlanCardData;
+use App\Domain\Plans\Data\PlanListData;
+use App\Domain\Plans\Data\PlanPaginationData;
+use App\Domain\Plans\Enums\PlanStateGroup;
+
+/**
+ * The plans waiting for review, in Chat's dock beside the chosen agent session; the session is checked again here,
+ * so a session the user may not talk to shows nothing.
+ */
+final readonly class WaitingPlansSection implements SectionReader
+{
+    public function __construct(
+        private SessionReader $sessions,
+        private PlanReader $records,
+    ) {}
+
+    public function read(SlotContext $context): PlanListData
+    {
+        $this->sessions->requireActive((int) $context->id);
+        $filters = new PlanFilters(states: PlanStateGroup::Waiting->states());
+        $list = $this->records->list($filters);
+
+        return PlanListData::from([
+            'rows' => PlanCardData::collect($list->cards),
+            'filters' => ['q' => '', 'page' => $list->page, 'state' => PlanStateGroup::Waiting],
+            'pagination' => PlanPaginationData::fromPlanList($list),
+            'selectionMissing' => false,
+        ]);
+    }
+}

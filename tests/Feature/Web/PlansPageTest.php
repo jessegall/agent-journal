@@ -96,4 +96,34 @@ final class PlansPageTest extends TestCase
             'X-Inertia-Partial-Data' => 'name',
         ])->assertOk()->assertJsonMissingPath('props.page');
     }
+
+    public function test_the_state_children_list_open_waiting_and_closed_plans_and_count_them(): void
+    {
+        Plan::query()->whereKey($this->paused->id)->update(['state' => PlanState::Reviewing->value]);
+
+        $this->actingAs($this->owner)->get('/plans?state=waiting')->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('page.data.filters.state', 'waiting')
+            ->where('page.data.pagination.total', 1)
+            ->where('page.data.rows.0.title', 'Compare chat layouts')
+            ->where('navigation.current', ['plans.list', 'plans.waiting'])
+            ->loadDeferredProps('navigation-counts', fn (AssertableInertia $counts) => $counts
+                ->where('navigationCounts.counts', fn ($counts) => $counts['plans.open'] === 1 && $counts['plans.waiting'] === 1)));
+    }
+
+    public function test_a_plan_has_its_own_record_page_and_opens_in_the_inspector(): void
+    {
+        $this->actingAs($this->owner)->get("/plans/{$this->release->id}")->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('plans/PlanWindow')
+            ->where('page.state', 'ready')
+            ->where('page.data.card.title', 'Build the release page'));
+
+        $this->actingAs($this->owner)->get("/plans?inspect=plans.plan&plan={$this->release->id}")->assertInertia(fn (AssertableInertia $page) => $page
+            ->reloadOnly('inspector', fn (AssertableInertia $reload) => $reload->where('inspector.data.card.title', 'Build the release page')));
+    }
+
+    public function test_a_plan_that_cannot_be_read_is_not_found(): void
+    {
+        $this->actingAs($this->owner)->get('/plans/999999')->assertNotFound();
+        $this->actingAs($this->owner)->get('/plans/0')->assertNotFound();
+    }
 }

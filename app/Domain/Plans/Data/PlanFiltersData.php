@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Plans\Data;
 
 use App\Domain\Plans\Api\PlanFilters;
+use App\Domain\Plans\Enums\PlanStateGroup;
 use Spatie\LaravelData\Attributes\Validation\Regex;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -21,6 +22,7 @@ final class PlanFiltersData extends Data
         public readonly string $q = '',
         public readonly int $page = 1,
         #[Regex('/^[1-9][0-9]{0,18}$/')] public readonly string|Optional $plan = new Optional,
+        public readonly PlanStateGroup|Optional $state = new Optional,
     ) {}
 
     /**
@@ -57,6 +59,11 @@ final class PlanFiltersData extends Data
 
     public function toDomain(): PlanFilters
     {
-        return new PlanFilters($this->q, $this->page, $this->plan instanceof Optional ? null : (int) $this->plan);
+        return new PlanFilters(
+            $this->q,
+            $this->page,
+            $this->plan instanceof Optional ? null : (int) $this->plan,
+            $this->state instanceof Optional ? [] : $this->state->states(),
+        );
     }
 }

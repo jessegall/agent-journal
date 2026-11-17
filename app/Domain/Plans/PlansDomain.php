@@ -8,10 +8,14 @@ use App\Domain\Contracts\Domain;
 use App\Domain\Contracts\ProvidesAssignables;
 use App\Domain\Contracts\ProvidesNavigation;
 use App\Domain\Contracts\ProvidesPages;
+use App\Domain\Contracts\ProvidesSections;
 use App\Domain\Declarations\ActionRoute;
 use App\Domain\Declarations\NavigationItem;
 use App\Domain\Declarations\Page;
+use App\Domain\Declarations\Section;
+use App\Domain\Declarations\Slot;
 use App\Domain\Enums\Icon;
+use App\Domain\Enums\SlotContextKind;
 use App\Domain\Plans\Api\AssignedPlanFilters;
 use App\Domain\Plans\Api\AssignedPlanList;
 use App\Domain\Plans\Api\Events\PlanProgressChanged;
@@ -31,12 +35,16 @@ use App\Domain\Plans\Exceptions\StartDenied;
 use App\Domain\Plans\Http\Controllers\StartPlanController;
 use App\Domain\Plans\Models\Phase;
 use App\Domain\Plans\Models\Plan;
+use App\Domain\Plans\Readers\OpenPlansCount;
 use App\Domain\Plans\Readers\PlansWindowReader;
+use App\Domain\Plans\Readers\PlanWindowReader;
+use App\Domain\Plans\Readers\WaitingPlansCount;
+use App\Domain\Plans\Readers\WaitingPlansSection;
 use App\Domain\Plans\Support\PhaseAssignmentProvider;
 use App\Domain\Plans\Support\PlanAssignmentProvider;
 use App\Domain\Tasks\TasksDomain;
 
-final class PlansDomain implements Domain, ProvidesAssignables, ProvidesNavigation, ProvidesPages
+final class PlansDomain implements Domain, ProvidesAssignables, ProvidesNavigation, ProvidesPages, ProvidesSections
 {
     public function description(): string
     {
@@ -91,11 +99,28 @@ final class PlansDomain implements Domain, ProvidesAssignables, ProvidesNavigati
                 ->at('')
                 ->onHome(20)
                 ->actions(ActionRoute::post('{plan}/start', StartPlanController::class, 'start')),
+            Page::make('plan', 'Plan', Icon::Plan, PlanWindowReader::class, 'PlanWindow.vue')
+                ->at('{plan}')
+                ->inInspector()
+                ->slots(Slot::record('inspector', 'plan')),
+        ];
+    }
+
+    public function sections(): array
+    {
+        return [
+            Section::make('waiting', 'Waiting for review', 'chat.dock', SlotContextKind::Session, WaitingPlansSection::class, 'WaitingPlansSection.vue'),
         ];
     }
 
     public function navigation(): array
     {
-        return [NavigationItem::page('list', 'Plans', Icon::Plan, position: 20)];
+        return [
+            NavigationItem::page('list', 'Plans', Icon::Plan, position: 20)->children([
+                NavigationItem::page('open', 'Open', page: 'list', query: ['state' => 'open'])->count(OpenPlansCount::class),
+                NavigationItem::page('waiting', 'Waiting', page: 'list', query: ['state' => 'waiting'])->count(WaitingPlansCount::class),
+                NavigationItem::page('closed', 'Closed', page: 'list', query: ['state' => 'closed']),
+            ]),
+        ];
     }
 }

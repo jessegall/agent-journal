@@ -23,6 +23,7 @@ use App\Domain\Plans\Models\Plan;
 use App\Domain\Tasks\Api\TaskProgress;
 use App\Domain\Tasks\Contracts\TaskProgressCounter;
 use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 
@@ -46,12 +47,22 @@ final readonly class PlanRecords implements PlanReader
     public function list(PlanFilters $filters): PlanList
     {
         $this->actors->actor();
-        $total = Plan::query()->matching($filters->search)->count();
+        $total = $this->listed($filters)->count();
         $lastPage = max(1, (int) ceil($total / self::PER_PAGE));
         $page = min(max(1, $filters->page), $lastPage);
-        $plans = Plan::query()->matching($filters->search)->listOrder()->forPage($page, self::PER_PAGE)->get();
+        $plans = $this->listed($filters)->listOrder()->forPage($page, self::PER_PAGE)->get();
 
         return new PlanList($this->cardsOf($plans), $filters, $page, $lastPage, $total, $this->selection($filters));
+    }
+
+    /**
+     * The plans a list counts and shows: by its search, and by its states when it names any.
+     *
+     * @return Builder<Plan>
+     */
+    private function listed(PlanFilters $filters): Builder
+    {
+        return Plan::query()->matching($filters->search)->when($filters->states !== [], fn (Builder $query) => $query->inStates($filters->states));
     }
 
     public function assignedToCaller(AssignedPlanFilters $filters): AssignedPlanList
