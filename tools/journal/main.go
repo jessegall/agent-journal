@@ -252,7 +252,7 @@ func ServerUpdate(home string, stdout, stderr io.Writer) int {
 			return ErrorCode
 		}
 	}
-	command := exec.Command(PythonPath(), filepath.Join(source, "install", "working_tree_install.py"), project, source)
+	command := exec.Command(PythonPath(home), filepath.Join(source, "install", "working_tree_install.py"), project, source)
 	command.Env = append(os.Environ(), "PYTHONPATH="+source)
 	return CommandCode(command, stdout, stderr)
 }
@@ -260,7 +260,7 @@ func ServerUpdate(home string, stdout, stderr io.Writer) int {
 // DirectRun runs the command line in a Python process of its own, as the journal ran before the server.
 func DirectRun(home string, argv []string, stdout, stderr io.Writer) int {
 	source := SourceFolder(home)
-	command := exec.Command(PythonPath(), append([]string{filepath.Join(source, "engine", "cli", "journal.py")}, argv...)...)
+	command := exec.Command(PythonPath(home), append([]string{filepath.Join(source, "engine", "cli", "journal.py")}, argv...)...)
 	command.Env = append(os.Environ(), "JOURNAL_HOME="+home)
 	return CommandCode(command, stdout, stderr)
 }

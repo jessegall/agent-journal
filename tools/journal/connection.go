@@ -92,7 +92,7 @@ func StartServer(home string) (*os.Process, error) {
 	}
 	defer log.Close()
 	source := SourceFolder(home)
-	command := exec.Command(PythonPath(), filepath.Join(source, "server", "server.py"), "--home", home)
+	command := exec.Command(PythonPath(home), filepath.Join(source, "server", "server.py"), "--home", home)
 	command.Dir = filepath.Dir(home)
 	command.Env = []string{"PATH=" + os.Getenv("PATH"), "HOME=" + os.Getenv("HOME"), "LANG=" + os.Getenv("LANG"), "PYTHONPATH=" + source}
 	command.Stdin, command.Stdout, command.Stderr = nil, log, log
@@ -124,10 +124,17 @@ func SourceFolder(home string) string {
 	return filepath.Join(filepath.Dir(home), "src")
 }
 
-// PythonPath is the Python the server and a direct run use: JOURNAL_PYTHON when set, else python3.
-func PythonPath() string {
+// PythonFile names the Python the install found, in the journal's folder.
+const PythonFile = "python"
+
+// PythonPath is the Python the server and a direct run use: JOURNAL_PYTHON when set, else the one the install wrote
+// to the journal's python file, else python3.
+func PythonPath(home string) string {
 	if python := os.Getenv("JOURNAL_PYTHON"); python != "" {
 		return python
+	}
+	if text, err := os.ReadFile(filepath.Join(home, PythonFile)); err == nil && strings.TrimSpace(string(text)) != "" {
+		return strings.TrimSpace(string(text))
 	}
 	return "python3"
 }

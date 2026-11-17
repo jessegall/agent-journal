@@ -2,6 +2,7 @@
 # agent-journal, version 5: install the journal into the project in the current directory.
 #
 #   sh /path/to/agent-journal/install.sh
+#   curl -fsSL https://raw.githubusercontent.com/jessegall/agent-journal/version-5/install.sh | sh
 #
 # Python 3.14 or newer is found first; the code, from the src beside this script or else the release's
 # agent-journal.tar.gz, is copied into .journal/src, its own database .journal/version-5.db
@@ -85,6 +86,26 @@ link_command() {
   mkdir -p "$shim_folder"
   cp "$SOURCE/install/hook/shim.sh" "$shim_folder/journal"
   chmod +x "$shim_folder/journal"
+  put_on_path "$shim_folder"
+  record_python
+}
+
+# the journal command runs the Python the install found, not whatever python3 the PATH holds
+record_python() {
+  command -v "$python" > "$ROOT/.journal/python"
+}
+
+# a folder not on the PATH goes on it in the profile of the person's shell, once, so journal answers in a new terminal
+put_on_path() {
+  case ":$PATH:" in *":$1:"*) return ;; esac
+  case "${SHELL:-}" in
+    */zsh) profile="$HOME/.zshrc" ;;
+    */bash) [ "$(uname -s)" = Darwin ] && profile="$HOME/.bash_profile" || profile="$HOME/.bashrc" ;;
+    *) profile="$HOME/.profile" ;;
+  esac
+  line="export PATH=\"$1:\$PATH\""
+  grep -qsF "$line" "$profile" || printf '\n%s\n' "$line" >> "$profile"
+  echo "$1 is on the PATH in $profile: open a new terminal for the journal command, or run $line"
 }
 
 find_python() {
@@ -96,6 +117,20 @@ find_python() {
   done
   return 1
 }
+
+# piped from curl, with no src beside it and no JOURNAL_RELEASE_URL, the script fetches the version-5 branch
+# (JOURNAL_SOURCE_URL names another .tar.gz, a file:// one among them) and runs the install.sh inside it, which builds
+# the programs with Go
+if [ ! -f "$HERE/src/engine/cli/journal.py" ] && [ -z "${JOURNAL_RELEASE_URL:-}" ]; then
+  command -v go >/dev/null 2>&1 || fail "journal builds its programs with Go, and go is not on the PATH: get it from https://go.dev/dl/ (or brew install go)"
+  find_python >/dev/null || fail "journal needs Python 3.14 or newer, and none is on the PATH: get it from https://www.python.org/downloads/ (or brew install python@3.14)"
+  branch=$(mktemp -d)
+  trap 'rm -rf "$branch"' EXIT
+  archive_url="${JOURNAL_SOURCE_URL:-https://codeload.github.com/jessegall/agent-journal/tar.gz/refs/heads/version-5}"
+  curl -fsSL "$archive_url" | tar -xzf - -C "$branch" --strip-components 1 || fail "the journal could not be downloaded from $archive_url"
+  sh "$branch/install.sh" "$@"
+  exit 0
+fi
 
 # the code is the src beside this script, or else the release's agent-journal.tar.gz, checked against checksums.txt
 SOURCE="$HERE/src"
@@ -132,6 +167,7 @@ if [ "${1:-}" = "update" ]; then
   if builds_programs; then
     build_programs
   fi
+  record_python
   exec env PYTHONPATH="$SOURCE" "$python" -m install.working_tree_install "$ROOT" "$SOURCE"
 fi
 if [ "${1:-}" = "upgrade" ]; then

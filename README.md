@@ -19,11 +19,13 @@ agent what to do next at the moments it would get wrong, so the next session pic
 
 ## Install
 
-From the root of your project, with Python 3.14 or newer and the release's `install.sh`:
+From the root of your project, with Python 3.14 or newer and Go on the PATH (`brew install python@3.14 go`):
 
-    sh install.sh
+    curl -fsSL https://raw.githubusercontent.com/jessegall/agent-journal/version-5/install.sh | sh
 
-This makes `.journal/version-5.db` and copies the code into `.journal/src`. The journal starts Claude Code and Codex on
+It downloads the version-5 branch, builds the journal's programs with Go and installs the journal, and puts
+`~/.local/bin`, where the `journal` command goes, on your shell's PATH when it is not there yet: open a new terminal and
+`journal` works in the project. From a checkout of this branch, `sh install.sh` does the same. This makes `.journal/version-5.db` and copies the code into `.journal/src`. The journal starts Claude Code and Codex on
 settings of its own, `.journal/programs/claude/settings.json` and the Codex folder `.journal/programs/codex`, which hold
 its hooks and are written again at every start; your own `~/.claude` and `~/.codex` settings are backed up in
 `.journal/backups/program-settings` and left as they are. It starts nothing. Run the same line again and it
