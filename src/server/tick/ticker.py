@@ -104,6 +104,10 @@ class Ticker:
             self.busy.discard(handler.label)
             self.labels_changed.notify_all()
 
+    @property
+    def is_running(self) -> bool:
+        return any(worker.thread.is_alive() for worker in self.workers)
+
     def join(self, limit_seconds: float) -> None:
         with self.labels_changed:
             self.labels_changed.wait_for(lambda: not self.busy, max(0.0, limit_seconds))

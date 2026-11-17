@@ -50,6 +50,14 @@ class ListenerThread:
         self.stop_event.set()
         self.wake_event.set()
 
+    @property
+    def name(self) -> str:
+        return self.thread.name
+
+    @property
+    def is_running(self) -> bool:
+        return self.thread.is_alive()
+
     def join(self, limit_seconds: float) -> None:
         if self.thread.is_alive():
             Clock().join(self.thread, max(0.0, limit_seconds))

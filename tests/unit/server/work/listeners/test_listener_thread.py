@@ -73,3 +73,22 @@ def test_listener_thread_calls_stop_callback_when_it_stops():
     thread.wake()
     thread.stop()
     assert ended.wait(TIMEOUT_SECONDS)
+
+
+def test_a_thread_whose_round_still_runs_after_its_stop_counts_as_running_until_the_round_ends():
+    in_round, release = threading.Event(), threading.Event()
+
+    def round_runner() -> None:
+        in_round.set()
+        release.wait(TIMEOUT_SECONDS)
+
+    thread = ListenerThread(round_runner, lambda error: None, period_seconds=TIMEOUT_SECONDS)
+    thread.start()
+    thread.wake()
+    assert in_round.wait(TIMEOUT_SECONDS)
+    thread.signal_stop()
+    thread.join(0)
+    assert thread.is_running
+    release.set()
+    thread.join(TIMEOUT_SECONDS)
+    assert not thread.is_running

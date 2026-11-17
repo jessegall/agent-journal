@@ -62,6 +62,11 @@ class TrackedRequests(ThreadingMixIn, TCPServer):
         with self.thread_lock:
             self.idle_connections.pop(threading.current_thread(), None)
 
+    @property
+    def has_running_requests(self) -> bool:
+        with self.thread_lock:
+            return any(thread.is_alive() and thread is not threading.current_thread() for thread in self.request_threads)
+
     # Waits for the requests that run, up to the limit; a connection kept open with no request on it is closed
     # from this side at once, as it would otherwise hold the stop until its client let go.
     def drain(self, limit_seconds: float) -> None:

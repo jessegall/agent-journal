@@ -268,9 +268,15 @@ def main(argv: list[str]) -> int:
         for thread in threads:
             thread.join(deadline - time.monotonic())
         ticker.stop(deadline - time.monotonic())
-        server.context.request_trace.close()
-        hook_database.close()
-        SessionStarters.shared(home).close()
+        still_running = [label for label, running in (("a request", server.has_running_requests), ("the ticker", ticker.is_running),
+                                                       *((thread.name, thread.is_running) for thread in threads)) if running]
+        if still_running:
+            # closing a connection a thread still queries crashes the process inside sqlite; the process ends with them
+            files.log_line(f"left the database connections open, since {', '.join(still_running)} still runs")
+        else:
+            server.context.request_trace.close()
+            hook_database.close()
+            SessionStarters.shared(home).close()
         PoolDoor.shared(home).remove()
         InstantPoolReading.shared(home).remove()
         if not server.is_handing_over:
