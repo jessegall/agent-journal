@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Rules;
+namespace App\Domain\Rules\Api;
 
 /**
  * Which rules to list: a text search, the page, and the rule selected for reading, if any. Web turns its validated

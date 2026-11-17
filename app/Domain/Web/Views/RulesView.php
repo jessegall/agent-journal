@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Views;
 
-use App\Domain\Rules\RuleRecords;
+use App\Domain\Rules\Contracts\RuleReader;
 use App\Domain\Web\Data\PaginationData;
 use App\Domain\Web\Data\RuleFiltersData;
 use App\Domain\Web\Data\RuleListData;
@@ -16,7 +16,7 @@ use App\Domain\Web\Data\RuleRowData;
  */
 final readonly class RulesView
 {
-    public function __construct(private RuleRecords $records) {}
+    public function __construct(private RuleReader $records) {}
 
     public function rules(RuleFiltersData $filters): RuleListData
     {

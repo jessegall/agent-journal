@@ -11,12 +11,12 @@ use App\Domain\Rules\Actions\ProposeRule;
 use App\Domain\Rules\Actions\RemoveRule;
 use App\Domain\Rules\Actions\ReviewRule;
 use App\Domain\Rules\ActiveRules;
+use App\Domain\Rules\Api\RuleState;
 use App\Domain\Rules\Events\RuleApproved;
 use App\Domain\Rules\Events\RuleDenied;
 use App\Domain\Rules\Events\RuleRemoved;
 use App\Domain\Rules\Exceptions\RuleNotProposed;
 use App\Domain\Rules\Models\Rule;
-use App\Domain\Rules\RuleState;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -40,7 +40,7 @@ final class ReviewRuleTest extends TestCase
     {
         $this->assertSame([], $this->app->make(ActiveRules::class)->reminders());
 
-        $this->app->make(ReviewRule::class)->approve($this->proposed);
+        $this->app->make(ReviewRule::class)->approve($this->proposed->id);
 
         $this->assertSame(["Rule {$this->proposed->id}: No phase waits on the user."], $this->app->make(ActiveRules::class)->reminders());
         Event::assertDispatched(RuleApproved::class, fn (RuleApproved $event) => $event->ruleId === $this->proposed->id);
@@ -48,10 +48,10 @@ final class ReviewRuleTest extends TestCase
 
     public function test_a_second_review_is_refused_and_changes_nothing(): void
     {
-        $this->app->make(ReviewRule::class)->deny($this->proposed);
+        $this->app->make(ReviewRule::class)->deny($this->proposed->id);
 
         try {
-            $this->app->make(ReviewRule::class)->approve($this->proposed);
+            $this->app->make(ReviewRule::class)->approve($this->proposed->id);
             $this->fail('A denied rule was approved.');
         } catch (RuleNotProposed) {
             $this->assertSame(RuleState::Denied, $this->proposed->fresh()?->state);
@@ -66,12 +66,12 @@ final class ReviewRuleTest extends TestCase
 
         $this->expectException(UserActorRequired::class);
 
-        $this->app->make(ReviewRule::class)->approve($this->proposed);
+        $this->app->make(ReviewRule::class)->approve($this->proposed->id);
     }
 
     public function test_removing_a_rule_raises_its_fact(): void
     {
-        $this->app->make(ReviewRule::class)->approve($this->proposed);
+        $this->app->make(ReviewRule::class)->approve($this->proposed->id);
 
         $this->app->make(RemoveRule::class)->remove($this->proposed->fresh() ?? $this->proposed);
 

@@ -7,8 +7,8 @@ namespace Tests\Feature\Web;
 use App\Domain\Access\AccessSettings;
 use App\Domain\Access\Models\User;
 use App\Domain\Rules\Actions\ProposeRule;
+use App\Domain\Rules\Api\RuleState;
 use App\Domain\Rules\Models\Rule;
-use App\Domain\Rules\RuleState;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -86,6 +86,15 @@ final class RulesPageTest extends TestCase
             ->patch("/rules/{$this->active->id}/approve")
             ->assertRedirect('/rules')
             ->assertSessionHasErrors(['review' => 'This rule is active already, so it cannot be approved or denied.']);
+    }
+
+    public function test_a_missing_rule_and_a_malformed_id_are_not_found(): void
+    {
+        foreach (['999999', 'abc', '0', '9223372036854775808'] as $id) {
+            $this->actingAs($this->owner)->patch("/rules/{$id}/approve")->assertNotFound();
+        }
+
+        $this->assertSame(RuleState::Proposed, $this->proposed->fresh()?->state);
     }
 
     public function test_invalid_filters_stop_the_review(): void

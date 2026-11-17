@@ -4,14 +4,24 @@ declare(strict_types=1);
 
 namespace App\Domain\Rules;
 
+use App\Core\Contracts\CurrentActor;
+use App\Domain\Rules\Api\RuleFilters;
+use App\Domain\Rules\Api\RuleList;
+use App\Domain\Rules\Api\RuleView;
+use App\Domain\Rules\Contracts\RuleReader;
 use App\Domain\Rules\Models\Rule;
+use Illuminate\Container\Attributes\Scoped;
 
 /**
- * The named reads of rules for a page, newest first. Every agent and the owner read every rule.
+ * The named reads of rules, newest first, for whoever acts in this request; every agent and the user read every rule.
+ * all() is for Rules itself and hands out models; list() hands out RuleView values.
  */
-final readonly class RuleRecords
+#[Scoped]
+final readonly class RuleRecords implements RuleReader
 {
     public const int PER_PAGE = 30;
+
+    public function __construct(private CurrentActor $actors) {}
 
     /**
      * @return list<Rule>
@@ -23,6 +33,7 @@ final readonly class RuleRecords
 
     public function list(RuleFilters $filters): RuleList
     {
+        $this->actors->actor();
         $total = Rule::query()->matching($filters->search)->count();
         $lastPage = max(1, (int) ceil($total / self::PER_PAGE));
         $page = min(max(1, $filters->page), $lastPage);
@@ -30,12 +41,17 @@ final readonly class RuleRecords
         $selected = $filters->selectedRuleId === null ? null : Rule::query()->find($filters->selectedRuleId);
 
         return new RuleList(
-            array_values($rules->all()),
+            array_values($rules->map(self::viewOf(...))->all()),
             $page,
             $lastPage,
             $total,
-            $selected,
+            $selected === null ? null : self::viewOf($selected),
             $filters->selectedRuleId !== null && $selected === null,
         );
+    }
+
+    private static function viewOf(Rule $rule): RuleView
+    {
+        return new RuleView($rule->id, $rule->text, $rule->state, $rule->canBeReviewed());
     }
 }

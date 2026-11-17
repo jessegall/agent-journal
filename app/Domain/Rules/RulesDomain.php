@@ -5,6 +5,14 @@ declare(strict_types=1);
 namespace App\Domain\Rules;
 
 use App\Domain\Contracts\Domain;
+use App\Domain\Rules\Api\RuleFilters;
+use App\Domain\Rules\Api\RuleList;
+use App\Domain\Rules\Api\RuleState;
+use App\Domain\Rules\Api\RuleView;
+use App\Domain\Rules\Contracts\RuleReader;
+use App\Domain\Rules\Contracts\RuleReviewer;
+use App\Domain\Rules\Exceptions\RuleMissing;
+use App\Domain\Rules\Exceptions\RuleNotProposed;
 
 final class RulesDomain implements Domain
 {
@@ -26,6 +34,15 @@ final class RulesDomain implements Domain
      */
     public function exports(): array
     {
-        return [];
+        return [
+            RuleReader::class,
+            RuleReviewer::class,
+            RuleFilters::class,
+            RuleList::class,
+            RuleView::class,
+            RuleState::class,
+            RuleMissing::class,
+            RuleNotProposed::class,
+        ];
     }
 }

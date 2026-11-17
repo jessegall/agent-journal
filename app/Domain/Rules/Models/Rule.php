@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Rules\Models;
 
 use App\Core\Links\Linkable;
+use App\Domain\Rules\Api\RuleState;
+use App\Domain\Rules\Exceptions\RuleMissing;
 use App\Domain\Rules\Exceptions\RuleNotProposed;
-use App\Domain\Rules\RuleState;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -43,11 +44,11 @@ final class Rule extends Model
     }
 
     /**
-     * The rule read again under its row lock, for a change that must happen once.
+     * The rule read under its row lock, for a change that must happen once.
      */
-    public static function lockedFor(self $rule): self
+    public static function lockedById(int $ruleId): self
     {
-        return self::query()->whereKey($rule->id)->lockForUpdate()->sole();
+        return self::query()->whereKey($ruleId)->lockForUpdate()->first() ?? throw RuleMissing::withId($ruleId);
     }
 
     public function approve(): void

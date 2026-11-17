@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Data;
 
-use App\Domain\Rules\RuleFilters;
+use App\Domain\Rules\Api\RuleFilters;
 use Spatie\LaravelData\Attributes\Validation\Regex;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;

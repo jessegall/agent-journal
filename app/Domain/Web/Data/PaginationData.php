@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Web\Data;
 
 use App\Domain\Plans\Api\PlanList;
-use App\Domain\Rules\RuleList;
+use App\Domain\Rules\Api\RuleList;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

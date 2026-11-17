@@ -49,7 +49,7 @@ final class PageChangeTest extends TestCase
     {
         $rule = $this->app->make(ProposeRule::class)->propose('Every phase ends with its tests.');
 
-        $this->app->make(ReviewRule::class)->approve($rule);
+        $this->app->make(ReviewRule::class)->approve($rule->id);
 
         Event::assertDispatchedTimes(PageChanged::class, 1);
         Event::assertDispatched(PageChanged::class, fn (PageChanged $change) => $change->userIds === [$this->owner->id]

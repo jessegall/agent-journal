@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Rules;
-
-use App\Domain\Rules\Models\Rule;
+namespace App\Domain\Rules\Api;
 
 /**
  * One page of rules, newest first, with the page the domain settled on, and the selected rule: absent when none was
@@ -13,14 +11,14 @@ use App\Domain\Rules\Models\Rule;
 final readonly class RuleList
 {
     /**
-     * @param  list<Rule>  $rules
+     * @param  list<RuleView>  $rules
      */
     public function __construct(
         public array $rules,
         public int $page,
         public int $lastPage,
         public int $total,
-        public ?Rule $selected,
+        public ?RuleView $selected,
         public bool $selectionMissing,
     ) {}
 }

@@ -4,33 +4,34 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Http\Controllers;
 
-use App\Domain\Rules\Actions\ReviewRule;
-use App\Domain\Rules\Models\Rule;
+use App\Domain\Rules\Contracts\RuleReviewer;
 use App\Domain\Web\Data\RuleReviewInput;
+use App\Domain\Web\Http\RouteId;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
 /**
  * Approves or denies a proposed rule through Rules, then returns to the rules page with the validated filters (303).
- * Rules decides; a rule that is no longer proposed is shown by the RuleNotProposed renderer in WebServiceProvider.
+ * An id that is no positive whole number is not found before any work; a missing rule is not found and a rule no
+ * longer proposed comes back as a review error, by the renderers in WebServiceProvider.
  */
 final readonly class ReviewRuleController
 {
     public function __construct(
-        private ReviewRule $reviewRule,
+        private RuleReviewer $rules,
         private Redirector $redirect,
     ) {}
 
-    public function approve(Rule $rule, RuleReviewInput $input): RedirectResponse
+    public function approve(string $rule, RuleReviewInput $input): RedirectResponse
     {
-        $this->reviewRule->approve($rule);
+        $this->rules->approve(RouteId::of($rule));
 
         return $this->backToRules($input);
     }
 
-    public function deny(Rule $rule, RuleReviewInput $input): RedirectResponse
+    public function deny(string $rule, RuleReviewInput $input): RedirectResponse
     {
-        $this->reviewRule->deny($rule);
+        $this->rules->deny(RouteId::of($rule));
 
         return $this->backToRules($input);
     }
