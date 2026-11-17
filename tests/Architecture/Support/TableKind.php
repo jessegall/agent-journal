@@ -17,5 +17,4 @@ enum TableKind: string
     case Change = 'change';
     case NotWritten = 'not-written';
     case PivotNotWritten = 'pivot-not-written';
-
 }
