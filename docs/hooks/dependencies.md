@@ -17,6 +17,7 @@ Plan 2 built the agent stack state machine of doc 3 in the Hooks domain (`app/Do
 | Sequences | Hooks | the FollowingSequence state and its push | declared under rule 11, awaiting question 10 |
 | Sequences | Links | the SequenceRun model is Linkable | declared under rule 11, awaiting question 10 |
 | Processes | Hooks | the shell parser it supplies for the hook inputs | declared under rule 11, awaiting question 10 |
+| Processes | Links | the SavedCommand model is Linkable | declared under rule 11, awaiting question 10 |
 | Memory | Hooks | its reaction and reminders after a compaction | declared under rule 11, awaiting question 10 |
 | Memory | Links | the Memory model is Linkable | declared under rule 11, awaiting question 10 |
 | Rules | Hooks | its reminders after a compaction | declared under rule 11, awaiting question 10 |
@@ -35,7 +36,7 @@ No owner store existed for the subjects the states are about, so plan 2 built th
 | Tasks | `tasks`, `Task`: title, state, run number, the agent and session working on it | task 62 |
 | Chat | `messages`, `Message`: body, state, the agent and session that owe an answer | task 63 |
 | Sequences | `sequence_runs`, `SequenceRun`: steps, current step, state, the agent and session | task 64 |
-| Processes | `HookCommandFacts`: the shell parser and the command catalog | task 65 |
+| Processes | `HookCommandFacts`: the shell parser and the command catalog; `saved_commands`, `SavedCommand` | tasks 65, 91 |
 | Agents | `agents`, `agent_sessions`, `launch_credentials` and the launch, loss and child operations | tasks 57, 70, 72 |
 | Memory | `memories`, `memory_compactions`: weights faded once per compaction | task 71 |
 | Rules | `rules`, `Rule`: text and state | task 71 |
@@ -47,6 +48,5 @@ No owner store existed for the subjects the states are about, so plan 2 built th
 |---|---|---|
 | Starting a program with the relay environment (JOURNAL_URL, JOURNAL_LAUNCH_TOKEN, JOURNAL_ROLE, JOURNAL_BYPASS_LOG) | the host that launches programs; `bin/journal-hook` and `hooks:relay` exist (task 88) | task 89 |
 | Captured fixtures from pinned program versions, the Codex settings shape and child identity | Hooks; `tests/Fixtures/Hooks/ClaudeCode`, `tests/Fixtures/Hooks/Codex`, `docs/hooks/program-capabilities.md` | task 89 |
-| Saved command records, so a journal command counts as saved only when it is one | Processes; `app/Domain/Processes/CommandCatalog.php` | task 91 |
 | Agent scoping (rule 4) on the new task, message, sequence, memory and rule stores | Tasks, Chat, Sequences, Memory, Rules models | task 92 |
 | A full hook call and a lock wait measured on the live Octane app | Hooks; `docs/hooks/program-capabilities.md` | task 93 |

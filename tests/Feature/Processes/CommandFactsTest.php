@@ -20,17 +20,32 @@ use App\Domain\Hooks\States\MainAgentReady;
 use App\Domain\Hooks\States\ReadOnlyHelperReady;
 use App\Domain\Hooks\States\Ready;
 use App\Domain\Processes\HookCommandFacts;
+use App\Domain\Processes\Models\SavedCommand;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 final class CommandFactsTest extends TestCase
 {
+    use RefreshHookDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        SavedCommand::query()->create(['name' => 'tests', 'line' => 'php artisan test']);
+    }
+
     /**
      * @return iterable<string, array{string, AnswerKind, AnswerKind}>
      */
     public static function linesAndRoleAnswers(): iterable
     {
         yield 'a saved command' => ['journal run tests', AnswerKind::Allow, AnswerKind::Allow];
+        yield 'a saved command by its name' => ['journal tests --tail 5', AnswerKind::Allow, AnswerKind::Allow];
+        yield 'a journal subcommand' => ['journal task list', AnswerKind::Allow, AnswerKind::Allow];
+        yield 'an unknown journal name' => ['journal not-saved', AnswerKind::Deny, AnswerKind::Deny];
+        yield 'an unknown saved command' => ['journal run not-saved', AnswerKind::Deny, AnswerKind::Deny];
         yield 'a plain read' => ['git status', AnswerKind::Allow, AnswerKind::Allow];
         yield 'a quoted search' => ['grep -rn "needs work" app', AnswerKind::Allow, AnswerKind::Allow];
         yield 'an unsaved test run' => ['composer test', AnswerKind::Deny, AnswerKind::Deny];

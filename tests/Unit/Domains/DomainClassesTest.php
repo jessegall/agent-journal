@@ -40,7 +40,7 @@ final class DomainClassesTest extends TestCase
         yield 'Rules' => [RulesDomain::class, [HooksDomain::class, LinksDomain::class]];
         yield 'Sequences' => [SequencesDomain::class, [HooksDomain::class, LinksDomain::class]];
         yield 'Reminders' => [RemindersDomain::class, []];
-        yield 'Processes' => [ProcessesDomain::class, [HooksDomain::class]];
+        yield 'Processes' => [ProcessesDomain::class, [HooksDomain::class, LinksDomain::class]];
     }
 
     /**

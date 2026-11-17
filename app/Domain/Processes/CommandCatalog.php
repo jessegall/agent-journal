@@ -13,6 +13,12 @@ use App\Domain\Hooks\Inputs\CommandKind;
  */
 final readonly class CommandCatalog
 {
+    private const JOURNAL_SUBCOMMANDS = [
+        'alias', 'command-type', 'doc', 'helper', 'link', 'memory', 'message', 'output', 'overview', 'phase', 'plan', 'plugin',
+        'process', 'question', 'reader', 'refusal', 'reminder', 'report', 'rule', 'search', 'sequence', 'setting', 'skill',
+        'task', 'usage', 'wait', 'worker',
+    ];
+
     private const TEST_RUNS = [
         'phpunit', 'vendor/bin/phpunit', 'pest', 'vendor/bin/pest', 'php artisan test', 'artisan test',
         'composer test', 'npm test', 'npm run test', 'yarn test', 'pnpm test', 'pytest', 'go test', 'cargo test',
@@ -32,13 +38,15 @@ final readonly class CommandCatalog
         'git add', 'git commit', 'git push', 'git checkout', 'git reset', 'git merge', 'git rebase', 'git stash', 'git mv', 'git rm',
     ];
 
+    public function __construct(private SavedCommands $savedCommands) {}
+
     /**
      * @param  list<string>  $words  the program and its arguments
      */
     public function kindOf(array $words): CommandKind
     {
         if ($words[0] === 'journal') {
-            return CommandKind::SavedCommand;
+            return $this->journalKindOf(array_slice($words, 1));
         }
 
         if (self::startsWithAny($words, self::TEST_RUNS)) {
@@ -70,6 +78,28 @@ final readonly class CommandCatalog
         }
 
         return CommandEffect::Unknown;
+    }
+
+    /**
+     * A journal line is saved only when it names a saved command, as journal <name> or journal run <name>; the
+     * journal's own subcommands are ordinary, and any other name is unknown.
+     *
+     * @param  list<string>  $arguments  the words after journal
+     */
+    private function journalKindOf(array $arguments): CommandKind
+    {
+        $first = $arguments[0] ?? '';
+        $name = $first === 'run' ? ($arguments[1] ?? '') : $first;
+
+        if ($this->savedCommands->isSaved($name)) {
+            return CommandKind::SavedCommand;
+        }
+
+        if (in_array($first, self::JOURNAL_SUBCOMMANDS, true)) {
+            return CommandKind::Ordinary;
+        }
+
+        return CommandKind::Unknown;
     }
 
     /**
