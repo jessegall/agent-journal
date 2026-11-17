@@ -11,6 +11,36 @@ services:
             redis:
                 condition: service_healthy
 
+    # The websocket server; the app and the queue worker publish to it at reverb:8080 (REVERB_HOST, REVERB_PORT).
+    reverb:
+        build:
+            context: .
+            dockerfile: .docker/app/Dockerfile
+        command: ['php', 'artisan', 'reverb:start', '--host=0.0.0.0', '--port=8080']
+        healthcheck:
+            test: ['CMD', 'php', '-r', 'exit(@fsockopen("127.0.0.1", 8080) ? 0 : 1);']
+            interval: 5s
+            timeout: 5s
+            retries: 10
+        depends_on:
+            redis:
+                condition: service_healthy
+
+    # Runs queued jobs, broadcasts among them, with the same code, environment and queue connection as the app.
+    queue:
+        build:
+            context: .
+            dockerfile: .docker/app/Dockerfile
+        command: ['php', 'artisan', 'queue:work', '--tries=3', '--backoff=5']
+        # A worker listens on no port; the image's web server check does not apply.
+        healthcheck:
+            disable: true
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+
     postgres:
         image: postgres:18-alpine
         environment:
