@@ -23,4 +23,12 @@ final class LoginInput extends Data
     {
         return new self(email: '', password: '', remember: false);
     }
+
+    /**
+     * The form already filled with the local development account, so Enter signs in.
+     */
+    public static function filledWith(string $email, string $password): self
+    {
+        return new self(email: $email, password: $password, remember: false);
+    }
 }

@@ -18,8 +18,8 @@ final class LoginPage extends Data
 
     public function __construct(public readonly LoginInput $input) {}
 
-    public static function blank(): self
+    public static function startingWith(LoginInput $input): self
     {
-        return self::from(['input' => LoginInput::blank()]);
+        return self::from(['input' => $input]);
     }
 }

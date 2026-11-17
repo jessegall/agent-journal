@@ -37,6 +37,21 @@ final class LoginTest extends TestCase
             ->missing('currentUser'));
     }
 
+    public function test_local_development_fills_the_form_with_the_local_account_and_no_other_environment_does(): void
+    {
+        config(['web.local_sign_in' => ['email' => 'owner@journal.local', 'password' => 'password']]);
+
+        $this->app->detectEnvironment(fn () => 'local');
+        $this->get('/login')->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('page.input.email', 'owner@journal.local')
+            ->where('page.input.password', 'password'));
+
+        $this->app->detectEnvironment(fn () => 'production');
+        $this->get('/login')->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('page.input.email', '')
+            ->where('page.input.password', ''));
+    }
+
     public function test_the_owner_signs_in_lands_on_plans_and_signs_out(): void
     {
         $this->post('/login', ['email' => 'owner@journal.local', 'password' => 'secret-password'])->assertRedirect('/');

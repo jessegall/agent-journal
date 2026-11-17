@@ -40,6 +40,7 @@ const input = computed(() => props.page.input);
                 <input
                     name="password"
                     type="password"
+                    :value="input.password"
                     autocomplete="current-password"
                     required
                     class="rounded border border-neutral-300 px-3 py-2"
