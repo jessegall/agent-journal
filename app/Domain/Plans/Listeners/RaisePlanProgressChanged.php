@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Listeners;
 
-use App\Domain\Plans\Events\PlanProgressChanged;
+use App\Domain\Plans\Api\Events\PlanProgressChanged;
 use App\Domain\Plans\Models\Phase;
-use App\Domain\Tasks\Events\TaskBlocked;
-use App\Domain\Tasks\Events\TaskCancelled;
-use App\Domain\Tasks\Events\TaskFinished;
+use App\Domain\Tasks\Api\Events\TaskBlocked;
+use App\Domain\Tasks\Api\Events\TaskCancelled;
+use App\Domain\Tasks\Api\Events\TaskFinished;
 use App\Domain\Tasks\Events\TaskStarted;
 use Illuminate\Contracts\Events\Dispatcher;
 

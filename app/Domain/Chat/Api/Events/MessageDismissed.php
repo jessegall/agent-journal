@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Chat\Events;
+namespace App\Domain\Chat\Api\Events;
 
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 

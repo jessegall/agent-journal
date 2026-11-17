@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Tasks;
 
 use App\Domain\Contracts\Domain;
+use App\Domain\Tasks\Api\Events\TaskBlocked;
+use App\Domain\Tasks\Api\Events\TaskCancelled;
+use App\Domain\Tasks\Api\Events\TaskFinished;
 use App\Domain\Tasks\Api\TaskProgress;
 use App\Domain\Tasks\Contracts\TaskProgressCounter;
 use App\Domain\Tasks\Contracts\TaskReader;
@@ -31,6 +34,9 @@ final class TasksDomain implements Domain
     public function exports(): array
     {
         return [
+            TaskFinished::class,
+            TaskBlocked::class,
+            TaskCancelled::class,
             TaskProgressCounter::class,
             TaskProgress::class,
             TaskReader::class,

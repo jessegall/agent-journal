@@ -1,0 +1,31 @@
+# Public events
+
+A public event is a fact a domain publishes for anyone to hear: it lives in the owner's `Api/Events` folder and is on the owner's export list. Every other event stays private to its owner. Core's two extension requests are the other kind of public event: they ask listeners to contribute, at once, inside the work that raised them.
+
+## Facts, raised after the outermost commit
+
+Each fact implements `ShouldDispatchAfterCommit`, so a listener hears it only once the transaction that made the change has committed, the outermost one when transactions nest. A rolled-back change raises nothing. Each carries plain values: ids, and Core values such as `StackTarget` or `ActorContext`.
+
+| Fact | Owner | Raised when | Payload |
+|---|---|---|---|
+| `PlanStarted` | Plans | a plan starts; starting it again raises nothing | plan id, the actor who started it |
+| `PlanProgressChanged` | Plans | a task in one of the plan's phases started, finished, was blocked or cancelled | plan id |
+| `MessageSent` | Chat | the user sent a message to a running agent session | message id, stack target |
+| `MessageAnswered`, `MessageDismissed` | Chat | a message was answered or dismissed | message id |
+| `RuleApproved`, `RuleDenied`, `RuleRemoved` | Rules | the user reviewed a proposed rule, or a rule was removed | rule id |
+| `TaskFinished`, `TaskBlocked`, `TaskCancelled` | Tasks | a task changed state through `ChangeTaskState` | task id |
+
+`TaskStarted`, `SequenceStarted` and `MessageNeedsAnswer` stay private: their listeners push stack states inside the same transaction, so they are not facts after a commit. Plans hears `TaskStarted` through its approved requirement of Tasks.
+
+## Requests, answered inside the work
+
+| Request | Raised | What a listener does |
+|---|---|---|
+| `StateTypesRequested` | once per worker, while the state types are built | registers its state types through `StateRegistration` |
+| `ContextWasCompacted` | inside the hook call that handles a compaction, before the stack lock, in the same transaction | adds reminders through `ReminderContribution` and makes its own change idempotent by the compaction id |
+
+## What a listener can count on, and what it cannot
+
+- **One connection, one commit.** Domain writes and stack changes share the default connection, so the change and the stack push commit together or not at all. A listener of a fact runs after that commit, outside it.
+- **Errors after the commit.** Listeners run synchronously in the order Laravel registered them. If one throws, the exception reaches the caller and Laravel's exception reporting records it with the event and the listener in its stack trace; the change itself has already committed and is not rolled back. Later listeners of that fact do not run, and a listener returning `false` also stops the ones after it.
+- **No replay, no queue promise.** Nothing stores facts or retries them. A missed or failed reaction is not delivered again, and a repeated start of a running plan raises nothing. Web's `PageChanged` is the one queued broadcast; it is pushed only after the commit (`after_commit` on the Redis queue).

@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Domain\Web\Listeners;
 
 use App\Domain\Access\Contracts\JournalAccessPolicy;
-use App\Domain\Chat\Events\MessageAnswered;
-use App\Domain\Chat\Events\MessageDismissed;
-use App\Domain\Chat\Events\MessageSent;
-use App\Domain\Plans\Events\PlanProgressChanged;
-use App\Domain\Plans\Events\PlanStarted;
-use App\Domain\Rules\Events\RuleApproved;
-use App\Domain\Rules\Events\RuleDenied;
-use App\Domain\Rules\Events\RuleRemoved;
+use App\Domain\Chat\Api\Events\MessageAnswered;
+use App\Domain\Chat\Api\Events\MessageDismissed;
+use App\Domain\Chat\Api\Events\MessageSent;
+use App\Domain\Plans\Api\Events\PlanProgressChanged;
+use App\Domain\Plans\Api\Events\PlanStarted;
+use App\Domain\Rules\Api\Events\RuleApproved;
+use App\Domain\Rules\Api\Events\RuleDenied;
+use App\Domain\Rules\Api\Events\RuleRemoved;
 use App\Domain\Web\Events\PageChanged;
 use Illuminate\Contracts\Events\Dispatcher;
 

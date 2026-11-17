@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Plans\Actions;
 
 use App\Core\Contracts\CurrentActor;
+use App\Domain\Plans\Api\Events\PlanStarted;
 use App\Domain\Plans\Contracts\PlanStarter;
-use App\Domain\Plans\Events\PlanStarted;
 use App\Domain\Plans\Exceptions\PlanMissing;
 use App\Domain\Plans\Models\Plan;
 use Illuminate\Container\Attributes\Scoped;

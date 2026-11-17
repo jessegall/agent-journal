@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Rules\Actions;
 
-use App\Domain\Rules\Events\RuleRemoved;
+use App\Domain\Rules\Api\Events\RuleRemoved;
 use App\Domain\Rules\Models\Rule;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\ConnectionInterface;

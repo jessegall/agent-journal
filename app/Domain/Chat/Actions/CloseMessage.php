@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat\Actions;
 
-use App\Domain\Chat\Events\MessageAnswered;
-use App\Domain\Chat\Events\MessageDismissed;
+use App\Domain\Chat\Api\Events\MessageAnswered;
+use App\Domain\Chat\Api\Events\MessageDismissed;
 use App\Domain\Chat\Models\Message;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\ConnectionInterface;

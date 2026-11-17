@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Rules\Actions;
 
 use App\Core\Contracts\CurrentActor;
+use App\Domain\Rules\Api\Events\RuleApproved;
+use App\Domain\Rules\Api\Events\RuleDenied;
 use App\Domain\Rules\Contracts\RuleReviewer;
-use App\Domain\Rules\Events\RuleApproved;
-use App\Domain\Rules\Events\RuleDenied;
 use App\Domain\Rules\Models\Rule;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Contracts\Events\Dispatcher;

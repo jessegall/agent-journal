@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Plans;
 
 use App\Domain\Contracts\Domain;
+use App\Domain\Plans\Api\Events\PlanProgressChanged;
+use App\Domain\Plans\Api\Events\PlanStarted;
 use App\Domain\Plans\Api\PlanCard;
 use App\Domain\Plans\Api\PlanFilters;
 use App\Domain\Plans\Api\PlanKind;
@@ -39,6 +41,8 @@ final class PlansDomain implements Domain
     public function exports(): array
     {
         return [
+            PlanStarted::class,
+            PlanProgressChanged::class,
             PlanReader::class,
             PlanStarter::class,
             PlanMissing::class,

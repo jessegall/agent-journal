@@ -12,7 +12,7 @@ use App\Domain\Plans\Api\PlanFilters;
 use App\Domain\Plans\Api\PlanKind;
 use App\Domain\Plans\Api\PlanState;
 use App\Domain\Plans\Contracts\PlanStarter;
-use App\Domain\Plans\Events\PlanStarted;
+use App\Domain\Plans\Api\Events\PlanStarted;
 use App\Domain\Plans\Exceptions\StartDenied;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Plans\PlanRecords;

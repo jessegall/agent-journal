@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Rules;
 
 use App\Domain\Contracts\Domain;
+use App\Domain\Rules\Api\Events\RuleApproved;
+use App\Domain\Rules\Api\Events\RuleDenied;
+use App\Domain\Rules\Api\Events\RuleRemoved;
 use App\Domain\Rules\Api\RuleFilters;
 use App\Domain\Rules\Api\RuleList;
 use App\Domain\Rules\Api\RuleState;
@@ -35,6 +38,9 @@ final class RulesDomain implements Domain
     public function exports(): array
     {
         return [
+            RuleApproved::class,
+            RuleDenied::class,
+            RuleRemoved::class,
             RuleReader::class,
             RuleReviewer::class,
             RuleFilters::class,

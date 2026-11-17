@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Chat;
 
 use App\Domain\Chat\Api\Conversation;
+use App\Domain\Chat\Api\Events\MessageAnswered;
+use App\Domain\Chat\Api\Events\MessageDismissed;
+use App\Domain\Chat\Api\Events\MessageSent;
 use App\Domain\Chat\Api\MessageState;
 use App\Domain\Chat\Api\MessageView;
 use App\Domain\Chat\Contracts\ConversationReader;
@@ -33,6 +36,9 @@ final class ChatDomain implements Domain
     public function exports(): array
     {
         return [
+            MessageSent::class,
+            MessageAnswered::class,
+            MessageDismissed::class,
             ConversationReader::class,
             MessageSender::class,
             Conversation::class,

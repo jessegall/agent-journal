@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Plans\Events;
+namespace App\Domain\Plans\Api\Events;
 
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 

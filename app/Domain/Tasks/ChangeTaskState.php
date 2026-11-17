@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks;
 
-use App\Domain\Tasks\Events\TaskBlocked;
-use App\Domain\Tasks\Events\TaskCancelled;
-use App\Domain\Tasks\Events\TaskFinished;
+use App\Domain\Tasks\Api\Events\TaskBlocked;
+use App\Domain\Tasks\Api\Events\TaskCancelled;
+use App\Domain\Tasks\Api\Events\TaskFinished;
 use App\Domain\Tasks\Models\Task;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\ConnectionInterface;
