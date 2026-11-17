@@ -22,7 +22,6 @@ trait CommitsHookRows
 
     protected function setUpCommitsHookRows(): void
     {
-        $this->setUpRefreshHookDatabase();
         $this->emptyTables(...self::TABLES);
     }
 

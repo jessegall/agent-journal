@@ -5,42 +5,31 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
-use Illuminate\Foundation\Testing\DatabaseTransactionsManager;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 /**
- * Runs a test on the dedicated Postgres database journal_hooks_test: selects it, runs any pending migration, and wraps
- * the test in a transaction that is rolled back, unless the test commits real rows and names no connection to wrap.
- * As in Laravel's own test transactions, work done after a commit runs when the test's inner transaction commits.
- * It keeps nothing between tests.
+ * Runs a test on the dedicated Postgres hook database through Laravel's DatabaseTransactions: checks the selected
+ * database with HookDatabase, migrates it in a serial run, and wraps the test in a transaction that is rolled back,
+ * unless the test commits real rows and names no connection to wrap. In a parallel run Laravel creates, switches to and
+ * migrates the worker's own database before this check runs. Work done after a commit runs when the test's inner
+ * transaction commits.
  */
 trait RefreshHookDatabase
 {
-    private bool $hookDatabaseIsReady = false;
+    use DatabaseTransactions {
+        beginDatabaseTransaction as beginLaravelDatabaseTransaction;
+    }
 
-    protected function setUpRefreshHookDatabase(): void
+    public function beginDatabaseTransaction(): void
     {
-        if ($this->hookDatabaseIsReady) {
-            return;
-        }
-
         HookDatabase::select($this->app);
-        $this->app->make(Kernel::class)->call('migrate', ['--force' => true]);
-        $this->hookDatabaseIsReady = true;
 
-        $connections = array_map(
-            fn (?string $name) => $this->app->make(DatabaseManager::class)->connection($name),
-            $this->connectionsToTransact(),
-        );
-        $transactions = new DatabaseTransactionsManager(array_map(fn (Connection $connection) => $connection->getName(), $connections));
-        $this->app->instance('db.transactions', $transactions);
-
-        foreach ($connections as $connection) {
-            $connection->setTransactionManager($transactions);
-            $connection->beginTransaction();
-            $this->beforeApplicationDestroyed(fn () => $connection->rollBack());
+        if (! HookDatabase::isParallelWorker($this->app)) {
+            $this->app->make(Kernel::class)->call('migrate', ['--force' => true]);
         }
+
+        $this->beginLaravelDatabaseTransaction();
     }
 
     /**
