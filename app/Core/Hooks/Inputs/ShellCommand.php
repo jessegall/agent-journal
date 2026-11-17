@@ -49,12 +49,12 @@ final readonly class ShellCommand
     }
 
     /**
-     * Whether a part of the line is a test run or a build, or a command the parser could not name, run outside a saved command.
+     * Whether a part of the line is a test run or a build, or a command the parser could not name, run outside a command alias.
      */
-    public function needsSavedCommand(): bool
+    public function needsAlias(): bool
     {
         foreach ($this->parts as $part) {
-            if ($part->kind->needsSavedCommand()) {
+            if ($part->kind->needsAlias()) {
                 return true;
             }
         }

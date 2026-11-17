@@ -10,7 +10,7 @@ final class ProcessesDomain implements Domain
 {
     public function description(): string
     {
-        return 'Shell commands run through the journal, their output, saved commands and readers.';
+        return 'Shell commands run through the journal, their output, command aliases and readers.';
     }
 
     /**

@@ -6,7 +6,7 @@ namespace App\Domain\Processes\Providers;
 
 use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Links\Support\LinkTypes;
-use App\Domain\Processes\Models\SavedCommand;
+use App\Domain\Processes\Models\CommandAlias;
 use App\Domain\Processes\Support\ShellParser;
 use Illuminate\Support\ServiceProvider;
 
@@ -23,6 +23,6 @@ final class ProcessesServiceProvider extends ServiceProvider
 
     public function boot(LinkTypes $links): void
     {
-        $links->register(['processes.saved-command' => SavedCommand::class]);
+        $links->register(['processes.command-alias' => CommandAlias::class]);
     }
 }

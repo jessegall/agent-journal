@@ -38,7 +38,7 @@ final readonly class CommandCatalog
         'git add', 'git commit', 'git push', 'git checkout', 'git reset', 'git merge', 'git rebase', 'git stash', 'git mv', 'git rm',
     ];
 
-    public function __construct(private SavedCommands $savedCommands) {}
+    public function __construct(private CommandAliases $aliases) {}
 
     /**
      * @param  list<string>  $words  the program and its arguments
@@ -81,7 +81,7 @@ final readonly class CommandCatalog
     }
 
     /**
-     * A journal line is saved only when it names a saved command, as journal <name> or journal run <name>; the
+     * A journal line is an alias run only when it names a command alias, as journal <name> or journal run <name>; the
      * journal's own subcommands are ordinary, and any other name is unknown.
      *
      * @param  list<string>  $arguments  the words after journal
@@ -91,8 +91,8 @@ final readonly class CommandCatalog
         $first = $arguments[0] ?? '';
         $name = $first === 'run' ? ($arguments[1] ?? '') : $first;
 
-        if ($this->savedCommands->isSaved($name)) {
-            return CommandKind::SavedCommand;
+        if ($this->aliases->exists($name)) {
+            return CommandKind::Alias;
         }
 
         if (in_array($first, self::JOURNAL_SUBCOMMANDS, true)) {

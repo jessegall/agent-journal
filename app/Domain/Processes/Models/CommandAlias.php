@@ -10,7 +10,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A test, build or other long command saved under a name, so an agent runs it as journal <name> or journal run <name>.
+ * A test, build or other long command line kept under a name, its alias, so an agent runs it as journal <name> or
+ * journal run <name>.
  *
  * @property int $id
  * @property string $name
@@ -19,7 +20,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'line'])]
-final class SavedCommand extends Model
+final class CommandAlias extends Model
 {
     use Linkable;
 }

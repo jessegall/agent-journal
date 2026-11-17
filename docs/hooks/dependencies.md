@@ -25,7 +25,7 @@ No owner store existed for the subjects the states are about, so plan 2 built th
 | Tasks | `tasks`, `Task`: title, state, run number, the agent and session working on it | task 62 |
 | Chat | `messages`, `Message`: body, state, the agent and session that owe an answer | task 63 |
 | Sequences | `sequence_runs`, `SequenceRun`: steps, current step, state, the agent and session | task 64 |
-| Processes | `ShellParser`: the shell parser and the command catalog; `saved_commands`, `SavedCommand` | tasks 65, 91 |
+| Processes | `ShellParser`: the shell parser and the command catalog; `command_aliases`, `CommandAlias` | tasks 65, 91, 175 |
 | Core (Agents) | `agents`, `agent_sessions`, `launch_credentials` and the launch, loss and child operations | tasks 57, 70, 72 |
 | Memory | `memories`, `memory_compactions`: weights faded once per compaction | task 71 |
 | Rules | `rules`, `Rule`: text and state | task 71 |

@@ -26,9 +26,9 @@ case	CodexTool::Bash
 case	CommandEffect::ChangesFiles
 case	CommandEffect::ReadsOnly
 case	CommandEffect::Unknown
+case	CommandKind::Alias
 case	CommandKind::Build
 case	CommandKind::Ordinary
-case	CommandKind::SavedCommand
 case	CommandKind::TestRun
 case	CommandKind::Unknown
 case	CompositionSite::Application
@@ -232,6 +232,8 @@ class	ClaudeCodeAdapter
 class	CloseLaunchStack
 class	CloseMessage
 class	CodexAdapter
+class	CommandAlias
+class	CommandAliases
 class	CommandCatalog
 class	CommandPart
 class	Compaction
@@ -477,8 +479,6 @@ class	RulesPage
 class	RulesRequest
 class	RulesServiceProvider
 class	RulesView
-class	SavedCommand
-class	SavedCommands
 class	SendMessage
 class	SendMessageController
 class	SequenceRecords
@@ -925,13 +925,14 @@ method	CodexAdapter::renderStop()
 method	CodexAdapter::toolCall()
 method	CodexTool::isShell()
 method	CodexTool::named()
+method	CommandAliases::exists()
 method	CommandCatalog::__construct()
 method	CommandCatalog::effectOf()
 method	CommandCatalog::journalKindOf()
 method	CommandCatalog::kindOf()
 method	CommandCatalog::startsWithAny()
 method	CommandEffect::mayChangeFiles()
-method	CommandKind::needsSavedCommand()
+method	CommandKind::needsAlias()
 method	CommandPart::__construct()
 method	Compaction::__construct()
 method	Compaction::collectReminders()
@@ -1624,7 +1625,6 @@ method	RulesRequest::rules()
 method	RulesServiceProvider::boot()
 method	RulesView::__construct()
 method	RulesView::rules()
-method	SavedCommands::isSaved()
 method	SendMessage::__construct()
 method	SendMessage::send()
 method	SendMessageController::__construct()
@@ -1673,7 +1673,7 @@ method	SharedData::__construct()
 method	ShellCommand::__construct()
 method	ShellCommand::isFullyRead()
 method	ShellCommand::mayChangeFiles()
-method	ShellCommand::needsSavedCommand()
+method	ShellCommand::needsAlias()
 method	ShellCommandParser::parse()
 method	ShellCommandRequested::__construct()
 method	ShellCommandRequested::accepts()
@@ -1982,7 +1982,7 @@ property	CloseLaunchStack::$stacks
 property	CloseMessage::$database
 property	CloseMessage::$events
 property	CodexAdapter::$parser
-property	CommandCatalog::$savedCommands
+property	CommandCatalog::$aliases
 property	CommandPart::$arguments
 property	CommandPart::$effect
 property	CommandPart::$join

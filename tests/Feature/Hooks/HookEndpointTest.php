@@ -79,7 +79,7 @@ final class HookEndpointTest extends TestCase
         {
             public function parse(string $line, ShellDialect $dialect): ShellCommand
             {
-                return new ShellCommand($line, $dialect, ParseOutcome::Complete, [new CommandPart('composer', ['test'], CommandEffect::ReadsOnly, CommandKind::SavedCommand)]);
+                return new ShellCommand($line, $dialect, ParseOutcome::Complete, [new CommandPart('composer', ['test'], CommandEffect::ReadsOnly, CommandKind::Alias)]);
             }
         });
         $flagged = json_decode($this->bashBody('composer test'), true);

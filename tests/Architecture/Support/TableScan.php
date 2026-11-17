@@ -32,7 +32,6 @@ final class TableScan
         'table' => TableKind::Change,
         'drop' => TableKind::Change,
         'dropIfExists' => TableKind::Change,
-        'rename' => TableKind::Change,
     ];
 
     /**
@@ -73,6 +72,10 @@ final class TableScan
 
         if ($facade === self::DB && $method === 'table') {
             return self::tableArgument($file, $call, 0, TableKind::Read);
+        }
+
+        if ($facade === self::SCHEMA && $method === 'rename') {
+            return [...self::tableArgument($file, $call, 0, TableKind::Change), ...self::tableArgument($file, $call, 1, TableKind::Create)];
         }
 
         if ($facade === self::SCHEMA && isset(self::SCHEMA_KINDS[$method])) {

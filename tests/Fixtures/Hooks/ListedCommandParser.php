@@ -21,8 +21,8 @@ final class ListedCommandParser implements ShellCommandParser
     {
         $part = match ($line) {
             'composer test' => new CommandPart('composer', ['test'], CommandEffect::ChangesFiles, CommandKind::TestRun),
-            'journal run tests' => new CommandPart('journal', ['run', 'tests'], CommandEffect::ReadsOnly, CommandKind::SavedCommand),
-            'journal run tests --write' => new CommandPart('journal', ['run', 'tests', '--write'], CommandEffect::ChangesFiles, CommandKind::SavedCommand),
+            'journal run tests' => new CommandPart('journal', ['run', 'tests'], CommandEffect::ReadsOnly, CommandKind::Alias),
+            'journal run tests --write' => new CommandPart('journal', ['run', 'tests', '--write'], CommandEffect::ChangesFiles, CommandKind::Alias),
             'git status' => new CommandPart('git', ['status'], CommandEffect::ReadsOnly, CommandKind::Ordinary),
             default => null,
         };

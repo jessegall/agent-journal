@@ -18,7 +18,7 @@ use App\Core\Hooks\Stack\HookAnswer;
  */
 final class ProgramReplies
 {
-    public const string REWRITE_REFUSAL = 'This program cannot take a rewritten command without a native approval. Run the saved command through journal run instead.';
+    public const string REWRITE_REFUSAL = 'This program cannot take a rewritten command without a native approval. Run the command through its alias with journal run instead.';
 
     /**
      * @param  list<string>  $context

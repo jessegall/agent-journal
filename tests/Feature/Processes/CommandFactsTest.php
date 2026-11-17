@@ -19,7 +19,7 @@ use App\Core\Hooks\Inputs\ShellCommandRequested;
 use App\Core\Hooks\States\MainAgentReadyState;
 use App\Core\Hooks\States\ReadOnlyHelperReadyState;
 use App\Core\Hooks\States\ReadyState;
-use App\Domain\Processes\Models\SavedCommand;
+use App\Domain\Processes\Models\CommandAlias;
 use App\Domain\Processes\Support\ShellParser;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\RefreshHookDatabase;
@@ -33,7 +33,7 @@ final class CommandFactsTest extends TestCase
     {
         parent::setUp();
 
-        SavedCommand::query()->create(['name' => 'tests', 'line' => 'php artisan test']);
+        CommandAlias::query()->create(['name' => 'tests', 'line' => 'php artisan test']);
     }
 
     /**
@@ -41,11 +41,11 @@ final class CommandFactsTest extends TestCase
      */
     public static function linesAndRoleAnswers(): iterable
     {
-        yield 'a saved command' => ['journal run tests', AnswerKind::Allow, AnswerKind::Allow];
-        yield 'a saved command by its name' => ['journal tests --tail 5', AnswerKind::Allow, AnswerKind::Allow];
+        yield 'a command alias' => ['journal run tests', AnswerKind::Allow, AnswerKind::Allow];
+        yield 'a command alias by its name' => ['journal tests --tail 5', AnswerKind::Allow, AnswerKind::Allow];
         yield 'a journal subcommand' => ['journal task list', AnswerKind::Allow, AnswerKind::Allow];
         yield 'an unknown journal name' => ['journal not-saved', AnswerKind::Deny, AnswerKind::Deny];
-        yield 'an unknown saved command' => ['journal run not-saved', AnswerKind::Deny, AnswerKind::Deny];
+        yield 'an unknown command alias' => ['journal run not-saved', AnswerKind::Deny, AnswerKind::Deny];
         yield 'a plain read' => ['git status', AnswerKind::Allow, AnswerKind::Allow];
         yield 'a quoted search' => ['grep -rn "needs work" app', AnswerKind::Allow, AnswerKind::Allow];
         yield 'an unsaved test run' => ['composer test', AnswerKind::Deny, AnswerKind::Deny];
@@ -97,7 +97,7 @@ final class CommandFactsTest extends TestCase
     public function test_a_comment_or_a_flag_does_not_make_a_test_run_saved(): void
     {
         foreach (['composer test --saved', 'SAVED=1 composer test', 'composer test # journal'] as $line) {
-            $this->assertTrue($this->parse($line)->needsSavedCommand(), $line);
+            $this->assertTrue($this->parse($line)->needsAlias(), $line);
         }
     }
 

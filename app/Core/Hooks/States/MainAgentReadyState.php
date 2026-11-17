@@ -8,7 +8,7 @@ use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Inputs\ShellCommandRequested;
 
 /**
- * The bottom state of a main agent: a test run or a build must run as a saved command, and a line the parser could not read fully is never taken as safe.
+ * The bottom state of a main agent: a test run or a build must run through a command alias, and a line the parser could not read fully is never taken as safe.
  */
 class MainAgentReadyState extends ReadyState
 {
@@ -18,7 +18,7 @@ class MainAgentReadyState extends ReadyState
             return Decision::deny('This line could not be read fully: write it without dynamic parts, or save it as a named command and run it through journal run.');
         }
 
-        if ($input->command->needsSavedCommand()) {
+        if ($input->command->needsAlias()) {
             return Decision::deny('Save this test or build as a named command, then run it through journal run.');
         }
 

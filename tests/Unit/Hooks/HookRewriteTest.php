@@ -35,7 +35,7 @@ final class HookRewriteTest extends TestCase
         $this->assertSame(['rewriter delegate keep', 'ready deny keep'], $this->stepsOf($answer));
     }
 
-    public function test_the_main_agent_admits_a_rewrite_to_a_saved_command(): void
+    public function test_the_main_agent_admits_a_rewrite_to_a_command_alias(): void
     {
         $rewriter = new RewritingState(['composer test' => 'journal run tests']);
 

@@ -44,7 +44,7 @@ final class RoleReadyTest extends TestCase
     /**
      * @return iterable<string, array{ReadyState, ShellCommand}>
      */
-    public static function unsavedCommands(): iterable
+    public static function commandsWithoutAlias(): iterable
     {
         foreach (self::roles() as $role => [$ready]) {
             yield "{$role}, a test run" => [$ready, self::line([self::part(CommandKind::TestRun)])];
@@ -64,12 +64,12 @@ final class RoleReadyTest extends TestCase
      */
     public static function helperWrites(): iterable
     {
-        yield 'a saved command that writes' => [self::line([self::part(CommandKind::SavedCommand, CommandEffect::ChangesFiles)])];
+        yield 'a command alias that writes' => [self::line([self::part(CommandKind::Alias, CommandEffect::ChangesFiles)])];
         yield 'an ordinary write' => [self::line([self::part(CommandKind::Ordinary, CommandEffect::ChangesFiles)])];
         yield 'an unknown effect' => [self::line([self::part(CommandKind::Ordinary, CommandEffect::Unknown)])];
     }
 
-    #[DataProvider('unsavedCommands')]
+    #[DataProvider('commandsWithoutAlias')]
     public function test_each_role_refuses_a_command_that_must_be_saved_or_cannot_be_read(ReadyState $ready, ShellCommand $command): void
     {
         $decision = $ready->onShellCommand($this->request($command));
@@ -79,9 +79,9 @@ final class RoleReadyTest extends TestCase
     }
 
     #[DataProvider('roles')]
-    public function test_each_role_allows_a_saved_command_and_an_ordinary_read(ReadyState $ready): void
+    public function test_each_role_allows_a_command_alias_and_an_ordinary_read(ReadyState $ready): void
     {
-        $saved = self::line([self::part(CommandKind::SavedCommand)]);
+        $saved = self::line([self::part(CommandKind::Alias)]);
         $read = self::line([self::part(CommandKind::Ordinary)]);
 
         $this->assertSame(AnswerKind::Allow, $ready->onShellCommand($this->request($saved))->answerKind());
