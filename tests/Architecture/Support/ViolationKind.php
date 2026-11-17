@@ -30,6 +30,9 @@ enum ViolationKind: string
     case StarterKitUsesDomain = 'starter-kit-uses-domain';
     case NamespaceOutsideDomain = 'namespace-outside-domain';
     case SharedPlaceFile = 'shared-place-file';
+    case FillableNotListed = 'fillable-not-listed';
+    case OpenModel = 'open-model';
+    case OpeningModelCall = 'opening-model-call';
 
     public function reason(Violation $violation): string
     {
@@ -54,6 +57,9 @@ enum ViolationKind: string
             self::StarterKitUsesDomain => "is starter-kit code that uses {$violation->used} of {$violation->owner}; starter-kit code may use no domain",
             self::NamespaceOutsideDomain => "declares namespace {$violation->used}, outside {$violation->owner}",
             self::SharedPlaceFile => 'is not one of the fixed files of App\\Domains; the shared place holds only Domain, DomainEntry, DomainRegistry, DomainServiceProvider and the named start-up exceptions',
+            self::FillableNotListed => "declares model {$violation->used}; list every fillable attribute with #[Fillable([...])], and nothing else",
+            self::OpenModel => "declares model {$violation->used}, which is open to mass assignment; close its guard",
+            self::OpeningModelCall => "calls {$violation->used}, which opens a model to mass assignment",
             self::EventOutsideListener => "names {$violation->used}, an event of {$violation->owner}; only a listener of {$violation->usingDomain} may name it, as an import, a type or ::class",
         };
     }
