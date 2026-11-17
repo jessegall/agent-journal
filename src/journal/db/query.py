@@ -129,8 +129,11 @@ class Query:
     def filter_ref(self, column: str, query: "Query") -> "Query":
         return self._with(Condition(f"{self.table}.{self._column(column).name} = ? || {query.table}.id", (f"{query.ref_name}:",)))
 
+    # the id is read out of the name first, so the row is found by its primary key, not by reading the whole table; the
+    # whole name is compared after, so only an exact "<name>:<id>" matches
     def filter_name_column(self, query: "Query", column: str) -> "Query":
-        return self._with(Condition(f"{query.table}.{query._column(column).name} = ? || {self.table}.id", (f"{self.ref_name}:",)))
+        name_column, prefix = f"{query.table}.{query._column(column).name}", f"{self.ref_name}:"
+        return self._with(Condition(f"{self.table}.id = CAST(substr({name_column}, {len(prefix) + 1}) AS INTEGER) AND {name_column} = ? || {self.table}.id", (prefix,)))
 
     def inlined(self) -> "Query":
         return replace(self, conditions=tuple(condition.inlined() for condition in self.conditions))
