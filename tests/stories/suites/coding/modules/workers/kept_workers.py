@@ -33,7 +33,6 @@ from tests.stories.suites.coding.modules.workers.support.worktree_samples import
 from tests.stories.core.support.plan_steps import state_tasks_wait_on_nothing
 from tests.stories.core.support.agent_labels import agent_label
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
-from suites.coding.modules.workers.support.worker_settings import WORKER_KEPT_LIMIT
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 
 REASON = '--reason "Its work is finished"'
@@ -85,13 +84,12 @@ def test_a_retire_runs_git_outside_the_transaction(new_story):
     story.expect_rows(bool(internal), not any(internal))
 
 
-def test_at_the_kept_maximum_a_dispatch_is_refused_naming_the_kept_workers(new_story):
+def test_a_kept_worker_never_holds_a_second_dispatch_back_since_workers_are_kept_with_no_cap(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    story.expect_success(f"setting set {WORKER_KEPT_LIMIT} 1 --environment main", actor=story.user)
-    worker = dispatched_worker(story)
+    dispatched_worker(story)
     task_id = story.new_row_id('task make "A second task"', actor=story.agent)
-    story.expect_refusal(f"worker dispatch --test-command python=pytest --model sonnet {task_id}", f"the limit of 1 workers is reached: agent:{worker.id}", actor=story.agent)
+    dispatched_worker(story, f"worker dispatch --test-command python=pytest --model sonnet {task_id}")
 
 
 def test_a_worker_resume_at_the_run_limit_is_held_and_starts_when_a_place_frees(new_story):
@@ -250,7 +248,7 @@ def test_a_nearly_full_worker_is_not_offered(new_story, monkeypatch):
 def test_an_approved_plan_does_not_hold_a_stop_when_no_new_worker_can_start(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository_environment(story)
-    story.expect_success(f"setting set {WORKER_KEPT_LIMIT} 1 --environment main", actor=story.user)
+    story.expect_success(f"setting set {WORKER_RUN_LIMIT} 1 --environment main", actor=story.user)
     dispatched_worker(story)
     plan_id = story.new_row_id('plan make "A plan" --brief "A goal"', actor=story.agent)
     phase_id = story.new_row_id(f'phase make --plan {plan_id} "One" --goal "It is done"', actor=story.agent)

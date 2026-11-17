@@ -1,5 +1,5 @@
 import {expect, test} from "vitest";
-import {AGENTS, PROFILE_LIMITS, READ_ONLY_IDLE, READ_ONLY_RUN, WORKER_KEPT, WORKER_RUN, mountAgentSettings as mount} from "./support/agentSettingsWindow.js";
+import {AGENTS, PROFILE_LIMITS, READ_ONLY_IDLE, READ_ONLY_RUN, WORKER_RUN, mountAgentSettings as mount} from "./support/agentSettingsWindow.js";
 import {settle as settled} from "./support/windowContext.js";
 
 const open = async (key, options) => {
@@ -20,7 +20,6 @@ test("opening the workers shows their settings on the left and their agents on t
     expect(element.querySelector("[data-agent-type-screen] [data-back]").textContent).toBe("Helpers");
     expect(element.querySelector("[data-agent-type-screen] b").textContent).toBe("Worker");
     expect(setting(element, WORKER_RUN).querySelector("input").value).toBe("1");
-    expect(setting(element, WORKER_KEPT).querySelector("input").value).toBe("3");
     expect([...element.querySelectorAll("[data-count-agent]")].map((agent) => agent.dataset.countAgent)).toEqual(["43", "42"]);
 });
 

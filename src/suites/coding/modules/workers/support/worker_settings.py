@@ -6,7 +6,7 @@ from engine.setting.setting_value import SettingValue
 from core.modules.helpers.support.command_pair_rule import CommandPairRule
 from engine.setting.list_rule import ListRule
 from engine.setting.number_rule import NumberRule
-from suites.coding.support.coding_settings import WORKER_KEPT_LIMIT, WORKER_RUN_LIMIT, WORKER_TEST_LIMIT
+from suites.coding.support.coding_settings import WORKER_RUN_LIMIT, WORKER_TEST_LIMIT
 
 from core.modules.asks.support.ask_settings import QUESTION_ANSWER_MINUTES, QUESTION_FORWARD_MINUTES, QUESTION_VISITS_LIMIT
 
@@ -107,7 +107,6 @@ WORKER_SETTING_VALUES = [
     SettingValue("worker-sandbox", "Worker sandbox", "Workers run their commands in a sandbox that lets them write only in the working folder of the worker.", SettingType.FLAG, default=True, person_set=True, is_driving=True),
     SettingValue("protected-folders", "Protected folders", "Paths or globs workers may not change.", SettingType.LIST, default=(), person_set=True, requires_main_agent=True, is_driving=True),
     SettingValue("worker-run-limit", "Workers running", "Workers that run at once in an environment. At 0 none run.", SettingType.NUMBER, default=DEFAULT_WORKER_COUNT, person_set=True, screen="helper-type.workers", section="How many"),
-    SettingValue("worker-kept-limit", "Workers kept", "Workers kept, running or idle, until retired. At 0 there is no limit.", SettingType.NUMBER, default=8, person_set=True, screen="helper-type.workers", section="How many"),
     SettingValue("worker-instruction-files", "Instruction files for a worker's profile", "A worker's worktree gets CLAUDE.md and AGENTS.md written for its profile, not the project's copies.", SettingType.FLAG, default=True, scope=SettingScope.PROJECT),
     SettingValue("worker-idle-hours", "Worker idle hours", "Hours without tool use before an unfinished worker's process stops. Its task and working folder stay.", SettingType.NUMBER, default=6, person_set=True, screen="helper-type.workers", section="How a worker works"),
     SettingValue("worker-batch-size", "Tasks handed to a worker at once", "Recommended tasks per worker assignment. The main agent is prompted to add more when fewer are assigned.", SettingType.NUMBER, default=3, person_set=True, screen="helper-type.workers", section="How a worker works"),
@@ -131,7 +130,6 @@ WORKER_SETTING_VALUES = [
                  SettingType.LIST, default=(), person_set=True),
 ]
 WORKER_SETTING_RULES = {WORKER_RUN_LIMIT: NumberRule(0),
-                        WORKER_KEPT_LIMIT: NumberRule(0),
                         WORKER_BATCH_SIZE: NumberRule(1),
                         SILENT_AGENT_MINUTES: NumberRule(1),
                         WORKER_IDLE_HOURS: NumberRule(0, integer=False, exclusive=True),

@@ -1,5 +1,5 @@
 from suites.coding.support.shipped_profiles import MERGER_PROFILE, WORKER_MEDIOR_PROFILE
-from suites.coding.support.coding_settings import WORKER_KEPT_LIMIT, WORKER_RUN_LIMIT
+from suites.coding.support.coding_settings import WORKER_RUN_LIMIT
 from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT, HELPER_PROFILE_LIMITS
 import json
 
@@ -49,7 +49,7 @@ def test_the_helper_and_the_worker_are_registered_as_before_the_classes(journal)
     expect_fields(journal, "worker", module="journal.suites.coding.workers", label="Worker", access="writing", separate_folder=True,
                   default_profile=WORKER_MEDIOR_PROFILE.name, start_line="journal worker dispatch",
                   roster={"text": "suites.coding.modules.workers.bindings.worker_roster:WorkerRoster"},
-                  run_limit_key=WORKER_RUN_LIMIT, kept_limit_key=WORKER_KEPT_LIMIT,
+                  run_limit_key=WORKER_RUN_LIMIT, kept_limit_key="",
                   profile_limits_key="", job_command=["worker", "send"], job_task_flag="--task", line="Writes the code of a task in a separate worktree.")
     expect_fields(journal, "merger", module="journal.suites.coding.workers")
 
@@ -67,7 +67,7 @@ def expect_suite_lines(journal, suite: str, *texts: str) -> None:
 def test_opening_the_worker_class_shows_its_key_access_driver_roster_and_limits(journal):
     expect_suite_lines(journal, "coding", "worker: coding.worker")
     expect_fields(journal, "worker", access="writing", roster={"text": "suites.coding.modules.workers.bindings.worker_roster:WorkerRoster"},
-                  run_limit_key=WORKER_RUN_LIMIT, kept_limit_key=WORKER_KEPT_LIMIT)
+                  run_limit_key=WORKER_RUN_LIMIT, kept_limit_key="")
     expect_behaviours(journal, "worker", takes_tasks=True, takes_prompts=True, takes_marks=True, runs_plugins=True, dispatches=True)
 
 

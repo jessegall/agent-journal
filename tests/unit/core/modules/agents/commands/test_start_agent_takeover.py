@@ -18,6 +18,8 @@ class FakeMainRow:
     pid: int | None = 4242
     process_started_at: str | None = None
     ended_at: str | None = None
+    launch_agent_id: int | None = 3
+    launch_name: str | None = "launch-earlier"
 
 
 class FakeWrites:
@@ -65,5 +67,5 @@ def test_a_main_start_over_an_ended_session_ends_nothing_and_reopens_the_row():
     handler, writes = handler_with_writes()
     agent = handler.on_main_row(FakeMainRow(ended_at=STARTED_AT), codex_start(), CONTEXT)
     assert writes.ended == []
-    assert (agent.id, agent.session, agent.ended_at) == (7, "s-2", None)
+    assert (agent.id, agent.session, agent.ended_at, agent.launch_agent_id, agent.launch_name) == (7, "s-2", None, None, None)
     assert writes.history == [agent]

@@ -4,7 +4,7 @@ from engine.helper_type.helper_behaviours import HelperBehaviours
 from suites.coding.modules.workers.bindings.worker_roster import WorkerRoster
 from suites.coding.modules.workers.types.support.worker_operation_line import WORKER_OPERATION_RUN
 from suites.coding.modules.workers.types.worker_commands import WorkerCommands
-from suites.coding.support.coding_settings import WORKER_KEPT_LIMIT, WORKER_RUN_LIMIT, WORKER_TEST_LIMIT
+from suites.coding.support.coding_settings import WORKER_RUN_LIMIT, WORKER_TEST_LIMIT
 
 
 class Worker(Helper):
@@ -18,7 +18,6 @@ class Worker(Helper):
     start_line = "journal worker dispatch"
     roster = WorkerRoster
     run_limit_key = WORKER_RUN_LIMIT
-    kept_limit_key = WORKER_KEPT_LIMIT
     profile_limits_key = ""
     queue_limit_key = WORKER_TEST_LIMIT
     job_command = ("worker", "send")

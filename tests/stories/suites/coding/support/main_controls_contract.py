@@ -85,7 +85,7 @@ CONTROLS = [
     Control("C18", [option(options.MODEL_DEFAULTS, None, "worker model_defaults=claude:a,claude:b", "worker model_defaults=claude")]),
     Control("C20", [nonnegative_integer("workers", workers.WORKER_RUN_LIMIT, 2), nonnegative_integer("helpers", helpers.HELPER_RUN_LIMIT, 4),
                     SettingPart("helpers", helpers.HELPER_PROFILE_LIMITS, (), ([f"{MERGER_PROFILE.name}:4:8"], [f"{MERGER_PROFILE.name}:x"], ["a:1", "a:1"]))]),
-    Control("C21", [nonnegative_integer("workers", workers.WORKER_KEPT_LIMIT, 8), nonnegative_integer("helpers", helpers.HELPER_IDLE_HOURS, 24)]),
+    Control("C21", [nonnegative_integer("helpers", helpers.HELPER_IDLE_HOURS, 24)]),
     Control("C22", [nonnegative_integer("helpers", helpers.HELPER_MAX_MINUTES, 60),
                     option(options.MAX_MINUTES, None, "helper max_minutes=1.5", "helper max_minutes=-1", "helper max_minutes=soon")]),
     Control("C23", [SettingPart("helpers", helpers.HELPER_MAX_COST, 0, (-0.5, "1", float("nan"), float("inf"))),

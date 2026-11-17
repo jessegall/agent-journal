@@ -127,7 +127,7 @@
     "start_line": "journal worker dispatch",
     "roster": "suites.coding.modules.workers.bindings.worker_roster:WorkerRoster",
     "run_limit": "journal.suites.coding.workers.worker-run-limit",
-    "kept_limit": "journal.suites.coding.workers.worker-kept-limit",
+    "kept_limit": "",
     "profile_limits": "",
     "job_command": [
       "worker",

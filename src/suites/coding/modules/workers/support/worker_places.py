@@ -14,8 +14,7 @@ from engine.listener.rows.event_rows import EventRows
 from engine.scope.actor_scope import ActorScope
 from engine.scope.scopes import Scopes
 from core.modules.agents.models.agent import Agent
-from core.modules.usage.support.agent_type_limits import UNLIMITED_AGENT_COUNT, AgentTypeLimits
-from core.modules.agents.support.type_limits import TypeLimits
+from core.modules.usage.support.agent_type_limits import AgentTypeLimits
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
@@ -24,7 +23,6 @@ from core.modules.agents.support.agent_rows import AgentRows
 KEPT_WORKERS_REASON = "the places count every kept worker and every line that resumes one"
 
 JOB_DELIVERY_SECONDS = 120
-KEPT_NAMES_SHOWN = 5
 
 
 class WorkerPlaces:
@@ -49,15 +47,8 @@ class WorkerPlaces:
         workers = workers.matching(Disjunction([IsNull("parent_id"), workers.compared("parent_id", "!=", parent_id)]))
         return tuple(workers.every_row(KEPT_WORKERS_REASON))
 
-    def kept_limit(self) -> int:
-        return self.limits.required(Worker.key).kept
-
     def can_start_new(self) -> bool:
-        workers = self.kept_workers()
-        running = self.running()
-        running_ids = {worker.id for worker in running}
-        all_kept_run = self.kept_limit() != UNLIMITED_AGENT_COUNT and len(workers) >= self.kept_limit() and all(worker.id in running_ids for worker in workers)
-        return not all_kept_run and len(running) < self.run_limit()
+        return len(self.running()) < self.run_limit()
 
     def free_count(self) -> int:
         return max(0, self.run_limit() - len(self.running()))
@@ -65,10 +56,6 @@ class WorkerPlaces:
     def check_new_place(self) -> None:
         if len(self.running()) + self.resuming_count() >= self.run_limit():
             raise Refusal(f"{self.run_limit()} workers are running", "wait for a merge, release or retirement")
-        workers = self.kept_workers()
-        if self.kept_limit() != UNLIMITED_AGENT_COUNT and len(workers) >= self.kept_limit():
-            names = ", ".join(f"agent:{worker.id}" for worker in workers[:KEPT_NAMES_SHOWN])
-            raise Refusal(f"the limit of {self.kept_limit()} workers is reached: {names}", TypeLimits.kept_limit_suggestion(workers))
 
     def run_limit(self) -> int:
         return self.limits.required(Worker.key).run

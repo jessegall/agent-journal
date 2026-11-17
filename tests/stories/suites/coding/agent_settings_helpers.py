@@ -5,7 +5,6 @@ from tests.stories.suites.coding.support.main_controls_fixture import MainContro
 from tests.stories.suites.coding.support.settings_modal import Modal
 from core.modules.helpers.support.helper_settings import HELPER_PROFILE_LIMITS
 from core.modules.helpers.support.helper_settings import HELPER_RUN_LIMIT
-from suites.coding.modules.workers.support.worker_settings import WORKER_KEPT_LIMIT
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_LIMIT
 from suites.coding.support.shipped_profiles import DESIGNER_PROFILE
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
@@ -15,7 +14,6 @@ from tests.stories.support.story_checks import expect_value, expect_value_4, exp
 CONTEXT = "journal.core.helpers.context-limit"
 CONTEXT_ON, CONTEXT_TOKENS, CONTEXT_CATEGORIES, CONTEXT_PROFILES = (f"{CONTEXT}-{name}" for name in ("on", "tokens", "kinds", "profiles"))
 WORKER_RUN = f"{WORKER_RUN_LIMIT}"
-WORKER_KEPT = f"{WORKER_KEPT_LIMIT}"
 READONLY_RUN = f"{HELPER_RUN_LIMIT}"
 PROFILE_LIMITS = f"{HELPER_PROFILE_LIMITS}"
 HELPER_TYPES = "helper-type"
@@ -75,7 +73,7 @@ def test_a_type_whose_running_count_reaches_its_limit_is_full(helpers):
 def test_the_workers_screen_has_its_settings_and_its_agents_with_the_running_one_first(helpers):
     _, tab = helpers
     nodes = tab.modal.nodes("helper-type.workers")
-    expect_value_4(WORKER_RUN in nodes and WORKER_KEPT in nodes)
+    expect_value_4(WORKER_RUN in nodes and "journal.suites.coding.workers.worker-kept-limit" not in nodes)
     states = [card["state"] for card in tab.agents("worker")["rows"]]
     expect_value_4(states == sorted(states, key=lambda state: state != "running") and states)
 

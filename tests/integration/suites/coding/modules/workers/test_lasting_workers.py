@@ -27,11 +27,9 @@ from tests.stories.suites.coding.modules.workers.support.program_split import ou
 from tests.stories.suites.coding.modules.workers.usage_lockdown_held_starts import launches
 from tests.stories.support.program_states import real_program_states
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
-from suites.coding.modules.workers.support.worker_settings import WORKER_KEPT_LIMIT
 
 __all__ = ["ended_worker", "launches", "missing_program", "running_worker", "stopped_worker"]
 
-KEPT_LIMIT = f"setting set {WORKER_KEPT_LIMIT} 1 --environment main"
 MEMORY_TEXT = "The cart rounds each line before it adds them"
 JOB = "Fix the rounding of the tax"
 UNCOMMITTED_TEXT = "tax = 0.21\n"
@@ -80,17 +78,14 @@ def report_full_window(story) -> None:
     FileAccess.write(story.home.status_folder / f"{MAIN_SESSION}.json", json.dumps(report))
 
 
-def test_a_dispatch_at_the_kept_limit_is_refused_naming_the_idle_worker_to_send_to_and_the_person_who_retires(merged_worker):
+def test_a_dispatch_beside_a_kept_merged_worker_starts_a_second_worker_since_workers_are_kept_with_no_cap(merged_worker):
     story = merged_worker
-    number = story.worker.id
-    story.expect_success(KEPT_LIMIT)
     task_id = story.new_row_id('task make "Add the tax" --brief "Add the tax to the cart total"', actor=story.agent)
     launcher = FakeLauncher.accepting(story.home.socket("launcher"))
     outcome = story.run(DISPATCH.removesuffix(" 1") + f" {task_id}", actor=story.agent)
     launcher.server.close()
     story.home.socket("launcher").unlink()
-    story.expect_rows(outcome.code == 1, "send the job to idle worker" in outcome.output_text, f"worker {number}" in outcome.output_text,
-                      "ask the user to retire" in outcome.output_text, "journal agent retire" not in outcome.output_text, len(worker_rows(story)) == 1, detail=outcome.output_text)
+    story.expect_rows(outcome.code == 0, "limit" not in outcome.output_text, len(worker_rows(story)) == 2, detail=outcome.output_text)
 
 
 def test_a_person_who_retires_a_worker_with_unmerged_work_is_refused(played):

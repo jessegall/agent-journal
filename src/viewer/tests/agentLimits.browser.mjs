@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import {chromium} from "playwright-core";
 
 const RUN = "journal.suites.coding.workers.worker-run-limit";
-const KEPT = "journal.suites.coding.workers.worker-kept-limit";
 const [address, capture] = process.argv.slice(2);
 const browser = await chromium.launch({executablePath: process.env.CHROMIUM_PATH, headless: true});
 try {
@@ -22,14 +21,12 @@ try {
     assert.equal(await limits.locator('[data-agent-limits-edit]').count(), 0);
     await limits.locator('[data-type-row="worker"]').click();
     await limits.locator(`[data-setting="${RUN}"] input`).fill("2");
-    await limits.locator(`[data-setting="${KEPT}"] input`).fill("7");
     const note = page.locator('[data-settings-note]');
-    await page.waitForFunction(() => /^2 changes/.test(document.querySelector('[data-settings-note]')?.textContent ?? ""), null, {timeout: 10000});
+    await page.waitForFunction(() => /^1 change/.test(document.querySelector('[data-settings-note]')?.textContent ?? ""), null, {timeout: 10000});
     await page.locator('[data-settings-apply]').click();
     await page.waitForFunction(() => /^No changes/.test(document.querySelector('[data-settings-note]')?.textContent ?? ""), null, {timeout: 10000});
     assert.match(await note.textContent(), /^No changes/);
     assert.equal(await limits.locator(`[data-setting="${RUN}"] input`).inputValue(), "2");
-    assert.equal(await limits.locator(`[data-setting="${KEPT}"] input`).inputValue(), "7");
 } finally {
     await browser.close();
 }
