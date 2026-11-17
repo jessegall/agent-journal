@@ -80,6 +80,12 @@ Rules use doc 4's states: Proposed, Active, Denied, Removed. Existing rules stay
 
 In the browser the plans slice is the shared `PlansView` component, given a `urlForFilters` function so its links stay on Home and keep the chosen session (`planUrls.ts` holds the shared query shape). The composer keeps a draft per viewer and conversation (`ViewerData` now carries the viewer id) in the tab's session storage, read after mounting so the server render matches; switching conversations keeps each draft apart, a reload keeps it, and a send captures its target and body when it starts and on success clears that draft only if it still holds the sent text. Enter sends, Shift+Enter adds a line. The dock has a slot above the composer and no cards yet; attaching and dumping files are shown as not available.
 
+## The rules page (task 113)
+
+`GET /rules` (`rules.index`) renders `Rules` with `RulesPage`: a hidden `RuleFiltersData` seed (`q`, `page`, the selected `rule`) and one computed `rules` slot from `RulesView`, which reads `RuleRecords::list(RuleFilters)` from Rules (a text search, 30 a page, newest first, and the selected rule or the fact that it does not exist). The list and the reader share the page; the selection lives in the query. `PATCH /rules/{rule}/approve` and `/deny` (`rules.approve`, `rules.deny`) take `RuleReviewInput` (the filters to return to, validated like the plans start), call Rules' `ReviewRule` and answer 303 to `rules.index` with those filters. `RuleNotProposed` is rendered as a `review` form error (303 back), so a rule settled in another tab shows why it was refused. Web requires Rules (question 13).
+
+Decision: doc 6 asks that an approval address the reviewed revision. A rule's text never changes after it is proposed (task 112), so there is no newer text to hold apart, and the approval carries no revision: the text on screen is the text approved, and a rule already settled is refused by the domain. If rule text ever becomes editable, the revision belongs on the rule action's contract then.
+
 ## Interfaces at the seams (task 122, rule 15)
 
 - **Actor.** `App\Core\Actors\Actor` (its kind and id) is what the core talks to. The Access `User` is a person actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.

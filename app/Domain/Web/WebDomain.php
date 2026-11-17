@@ -8,6 +8,7 @@ use App\Domain\Access\AccessDomain;
 use App\Domain\Chat\ChatDomain;
 use App\Domain\Domain;
 use App\Domain\Plans\PlansDomain;
+use App\Domain\Rules\RulesDomain;
 
 final class WebDomain implements Domain
 {
@@ -17,12 +18,12 @@ final class WebDomain implements Domain
     }
 
     /**
-     * Approved in question 13; Rules joins when its page is built.
+     * Approved in question 13.
      *
      * @return list<class-string<Domain>>
      */
     public function requires(): array
     {
-        return [AccessDomain::class, ChatDomain::class, PlansDomain::class];
+        return [AccessDomain::class, ChatDomain::class, PlansDomain::class, RulesDomain::class];
     }
 }

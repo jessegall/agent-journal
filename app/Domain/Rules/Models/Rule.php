@@ -60,6 +60,11 @@ final class Rule extends Model
         $this->settleProposal(RuleState::Denied);
     }
 
+    public function canBeReviewed(): bool
+    {
+        return $this->state === RuleState::Proposed;
+    }
+
     public function remove(): void
     {
         $this->state = RuleState::Removed;
@@ -82,6 +87,19 @@ final class Rule extends Model
     protected function casts(): array
     {
         return ['state' => RuleState::class];
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function matching(Builder $query, string $search): void
+    {
+        if (trim($search) === '') {
+            return;
+        }
+
+        $query->whereLike('text', '%'.addcslashes(trim($search), '%_\\').'%', caseSensitive: false);
     }
 
     /**

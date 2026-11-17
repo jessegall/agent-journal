@@ -12,6 +12,7 @@ const page = usePage();
 const rows: { label: string; icon: IconName; href: string }[] = [
     { label: 'Home', icon: 'home', href: '/' },
     { label: 'Plans', icon: 'plan', href: '/plans' },
+    { label: 'Rules', icon: 'rules', href: '/rules' },
 ];
 
 const appName = computed(() => page.props.name);

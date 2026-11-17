@@ -1,0 +1,62 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Web\Data;
+
+use App\Domain\Rules\RuleFilters;
+use Spatie\LaravelData\Attributes\Validation\Regex;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
+
+/**
+ * The accepted filters of the rules page as the browser keeps them in the query string: search words, page and the
+ * selected rule's id as a decimal string.
+ */
+#[TypeScript]
+final class RuleFiltersData extends Data
+{
+    public function __construct(
+        public readonly string $q = '',
+        public readonly int $page = 1,
+        #[Regex('/^[1-9][0-9]{0,18}$/')] public readonly string|Optional $rule = new Optional,
+    ) {}
+
+    /**
+     * The search and page may be left out, and an empty search arrives as null after Laravel's empty-string conversion;
+     * both then take their defaults.
+     *
+     * @return array<string, list<string>>
+     */
+    public static function rules(): array
+    {
+        return [
+            'q' => ['nullable', 'string', 'max:200'],
+            'page' => ['sometimes', 'integer', 'min:1'],
+        ];
+    }
+
+    /**
+     * The same filters on the page the domain settled on, which may differ from the one asked for.
+     */
+    public function onPage(int $page): self
+    {
+        return self::from([...$this->toArray(), 'page' => $page]);
+    }
+
+    /**
+     * The filters as the rules page's query string: no empty search, no first page.
+     *
+     * @return array<string, mixed>
+     */
+    public function toQuery(): array
+    {
+        return array_filter($this->toArray(), fn (mixed $value) => $value !== '' && $value !== 1);
+    }
+
+    public function toDomain(): RuleFilters
+    {
+        return new RuleFilters($this->q, $this->page, $this->rule instanceof Optional ? null : (int) $this->rule);
+    }
+}

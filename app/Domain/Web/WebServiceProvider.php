@@ -6,6 +6,7 @@ namespace App\Domain\Web;
 
 use App\Core\Hooks\Exceptions\StackTargetRefused;
 use App\Domain\Plans\Exceptions\StartDenied;
+use App\Domain\Rules\Exceptions\RuleNotProposed;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Http\RedirectResponse;
@@ -24,6 +25,7 @@ final class WebServiceProvider extends ServiceProvider
 
         if ($exceptions instanceof Handler) {
             $exceptions->renderable(fn (StartDenied $denied) => $this->backWithError('start', $denied->getMessage()));
+            $exceptions->renderable(fn (RuleNotProposed $settled) => $this->backWithError('review', $settled->getMessage()));
             $exceptions->renderable(fn (StackTargetRefused $refused) => $this->backWithError('session', 'This agent session cannot take a message now.'));
         }
     }

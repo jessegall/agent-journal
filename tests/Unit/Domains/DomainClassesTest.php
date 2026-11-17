@@ -38,7 +38,7 @@ final class DomainClassesTest extends TestCase
         yield 'Reminders' => [RemindersDomain::class, []];
         yield 'Processes' => [ProcessesDomain::class, []];
         yield 'Access' => [AccessDomain::class, []];
-        yield 'Web' => [WebDomain::class, [AccessDomain::class, ChatDomain::class, PlansDomain::class]];
+        yield 'Web' => [WebDomain::class, [AccessDomain::class, ChatDomain::class, PlansDomain::class, RulesDomain::class]];
     }
 
     /**

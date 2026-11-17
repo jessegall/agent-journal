@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Domain\Web\Data;
 
 use App\Domain\Plans\PlanList;
+use App\Domain\Rules\RuleList;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * Which page of how many, and how many rows in all.
  *
- * @method static static from(PlanList $list)
+ * @method static static from(PlanList|RuleList $list)
  */
 #[TypeScript]
 final class PaginationData extends Data
@@ -23,6 +24,11 @@ final class PaginationData extends Data
     ) {}
 
     public static function fromPlanList(PlanList $list): self
+    {
+        return new self(page: $list->page, lastPage: $list->lastPage, total: $list->total);
+    }
+
+    public static function fromRuleList(RuleList $list): self
     {
         return new self(page: $list->page, lastPage: $list->lastPage, total: $list->total);
     }

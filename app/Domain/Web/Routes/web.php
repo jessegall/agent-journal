@@ -5,6 +5,8 @@ declare(strict_types=1);
 use App\Domain\Web\Http\Controllers\HomeController;
 use App\Domain\Web\Http\Controllers\LoginController;
 use App\Domain\Web\Http\Controllers\PlansController;
+use App\Domain\Web\Http\Controllers\ReviewRuleController;
+use App\Domain\Web\Http\Controllers\RulesController;
 use App\Domain\Web\Http\Controllers\SendMessageController;
 use App\Domain\Web\Http\Controllers\StartPlanController;
 use Illuminate\Support\Facades\Route;
@@ -18,4 +20,7 @@ Route::middleware(['web', 'auth', 'journal.person'])->group(function (): void {
     Route::post('/messages', SendMessageController::class)->name('messages.send');
     Route::get('/plans', [PlansController::class, 'index'])->name('plans.index');
     Route::post('/plans/{plan}/start', StartPlanController::class)->name('plans.start');
+    Route::get('/rules', [RulesController::class, 'index'])->name('rules.index');
+    Route::patch('/rules/{rule}/approve', [ReviewRuleController::class, 'approve'])->name('rules.approve');
+    Route::patch('/rules/{rule}/deny', [ReviewRuleController::class, 'deny'])->name('rules.deny');
 });
