@@ -18,8 +18,7 @@ use Tests\TestCase;
 
 /**
  * Domain classes, the files outside every domain, namespaces inside domain folders and the shared places: the domain foundation and app/Core.
- *
- * What this test does not see: edits inside the listed starter-kit files beyond the domain names they use.
+ * It does not see edits inside the listed starter-kit files beyond the domain names they use.
  */
 final class DomainDeclarationTest extends TestCase
 {

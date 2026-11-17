@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Domain\DomainRegistry;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;
@@ -18,15 +19,20 @@ use Tests\Fixtures\Boundary\Tasks\TasksDomain;
 
 final class BoundaryCheckerTest extends TestCase
 {
-    public function test_allowed_uses_pass(): void
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function filesWithOnlyAllowedUses(): iterable
     {
-        $this->assertSame([], $this->violationLines('Plans/UsesAllowed.php'));
+        yield 'allowed uses of every kind' => ['Plans/UsesAllowed.php'];
+        yield 'the Plans domain class' => ['Plans/PlansDomain.php'];
+        yield 'the Tasks domain class' => ['Tasks/TasksDomain.php'];
     }
 
-    public function test_the_domain_classes_use_only_what_they_declare(): void
+    #[DataProvider('filesWithOnlyAllowedUses')]
+    public function test_allowed_uses_pass(string $fixture): void
     {
-        $this->assertSame([], $this->violationLines('Plans/PlansDomain.php'));
-        $this->assertSame([], $this->violationLines('Tasks/TasksDomain.php'));
+        $this->assertSame([], $this->violationLines($fixture));
     }
 
     public function test_every_forbidden_use_is_listed_with_its_reason(): void

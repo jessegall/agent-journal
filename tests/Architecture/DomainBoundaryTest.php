@@ -16,8 +16,7 @@ use Tests\TestCase;
 /**
  * Every domain uses only its own code, App\Domain, App\Core, code outside the project, and the domains it declares.
  * The core uses no domain.
- *
- * What this test does not see: class names built at run time, class names read from config, relation chains
+ * It does not see class names built at run time, class names read from config, relation chains
  * on untyped models, morph alias lookups, raw SQL text, where on tasks.id and select on tasks.*, Blade views,
  * the folders routes, config, bootstrap and database outside the root migrations rule, edits inside the listed
  * starter-kit files beyond their domain names, a received event re-raised through a copied variable or another

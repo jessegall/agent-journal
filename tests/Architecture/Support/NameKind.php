@@ -24,7 +24,7 @@ enum NameKind: string
     /**
      * A listener may name another domain's event only to hear it: as an import, a type or ::class.
      */
-    public function namesEventToHearIt(): bool
+    public function canNameAnEventToHearIt(): bool
     {
         return match ($this) {
             self::Import, self::Type, self::ClassName => true,

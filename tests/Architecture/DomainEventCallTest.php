@@ -6,6 +6,7 @@ namespace Tests\Architecture;
 
 use App\Domain\Domain;
 use App\Domain\DomainRegistry;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
@@ -19,27 +20,34 @@ use Tests\TestCase;
 
 /**
  * Events are named by their class and raised only by their owner, by every form the scan can see.
- *
- * What this test does not see: a received event re-raised through a copied variable or from another method,
+ * It does not see a received event re-raised through a copied variable or from another method,
  * and a string passed to ->dispatch() on an injected dispatcher, which cannot be told from a job.
  */
 final class DomainEventCallTest extends TestCase
 {
-    public function test_string_event_names_fail_where_only_an_event_can_stand(): void
+    /**
+     * @return iterable<string, array{string, list<string>}>
+     */
+    public static function eventCallFixtures(): iterable
     {
-        $this->assertSame([
+        yield 'string names where only an event can stand' => ['Plans/Actions/StringEvents.php', [
             '16 names the event task.closed by a string; name its event class instead',
             '17 names the event task.closed by a string; name its event class instead',
             '18 names the event [\'task.closed\'] by a string; name its event class instead',
             '19 names the event task.closed by a string; name its event class instead',
             '20 names the event task.closed by a string; name its event class instead',
-        ], $this->violationLines('Plans/Actions/StringEvents.php'));
+        ]];
+        yield 'an action raising its own events by class' => ['Plans/Actions/ClassEvents.php', []];
+        yield 'a listener hearing an event by class' => ['Plans/Listeners/QuietListener.php', []];
     }
 
-    public function test_events_named_by_their_class_pass(): void
+    /**
+     * @param  list<string>  $expected
+     */
+    #[DataProvider('eventCallFixtures')]
+    public function test_each_event_call_is_judged_by_how_it_names_its_event(string $fixture, array $expected): void
     {
-        $this->assertSame([], $this->violationLines('Plans/Actions/ClassEvents.php'));
-        $this->assertSame([], $this->violationLines('Plans/Listeners/QuietListener.php'));
+        $this->assertSame($expected, $this->violationLines($fixture));
     }
 
     public function test_a_listener_passing_on_its_event_fails(): void

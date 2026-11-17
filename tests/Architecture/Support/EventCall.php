@@ -27,7 +27,7 @@ final readonly class EventCall
     /**
      * A string named as the event where only an event can stand: listen, the event() helper or the Event facade.
      */
-    public function namesEventByString(): bool
+    public function isEventNamedByString(): bool
     {
         return $this->takesOnlyEvents && $this->argument->isWrittenName();
     }

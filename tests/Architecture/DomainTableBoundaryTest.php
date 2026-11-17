@@ -16,8 +16,7 @@ use Tests\TestCase;
 
 /**
  * Every domain uses only its own tables and those of the domains it declares, and changes only its own.
- *
- * What this test does not see: raw SQL text, a column named with its table such as where('tasks.id') or
+ * It does not see raw SQL text, a column named with its table such as where('tasks.id') or
  * select('tasks.*'), and a query built in another file and passed in.
  */
 final class DomainTableBoundaryTest extends TestCase

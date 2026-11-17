@@ -39,23 +39,29 @@ final class EventCallScan
         $finder = new NodeFinder;
 
         foreach ($finder->findInstanceOf($file->statements, Expr\FuncCall::class) as $call) {
-            if ($call->name instanceof Name && in_array($call->name->toLowerString(), self::HELPERS, true)) {
-                $calls[] = self::eventCall($file, $call, $call->name->toString().'()', raises: true, takesOnlyEvents: true);
+            if (! $call->name instanceof Name || ! in_array($call->name->toLowerString(), self::HELPERS, true)) {
+                continue;
             }
+
+            $calls[] = self::eventCall($file, $call, $call->name->toString().'()', raises: true, takesOnlyEvents: true);
         }
 
         foreach ($finder->findInstanceOf($file->statements, Expr\StaticCall::class) as $call) {
-            if (self::isEventFacadeCall($call) && $call->name instanceof Identifier) {
-                $method = $call->name->toString();
-                $calls[] = self::eventCall($file, $call, "Event::{$method}()", self::FACADE_METHODS[$method], takesOnlyEvents: true);
+            if (! self::isEventFacadeCall($call) || ! $call->name instanceof Identifier) {
+                continue;
             }
+
+            $method = $call->name->toString();
+            $calls[] = self::eventCall($file, $call, "Event::{$method}()", self::FACADE_METHODS[$method], takesOnlyEvents: true);
         }
 
         foreach ($finder->findInstanceOf($file->statements, Expr\MethodCall::class) as $call) {
-            if ($call->name instanceof Identifier && isset(self::RECEIVER_METHODS[$call->name->toString()])) {
-                $method = $call->name->toString();
-                $calls[] = self::eventCall($file, $call, "->{$method}()", self::RECEIVER_METHODS[$method], takesOnlyEvents: $method === 'listen');
+            if (! $call->name instanceof Identifier || ! isset(self::RECEIVER_METHODS[$call->name->toString()])) {
+                continue;
             }
+
+            $method = $call->name->toString();
+            $calls[] = self::eventCall($file, $call, "->{$method}()", self::RECEIVER_METHODS[$method], takesOnlyEvents: $method === 'listen');
         }
 
         return $calls;

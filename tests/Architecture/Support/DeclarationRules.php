@@ -64,7 +64,7 @@ final readonly class DeclarationRules
         $violations = [];
 
         foreach ($files as $path) {
-            if ($this->domainHolding($path) !== null || $this->liesIn($path, $sharedFolders) || in_array($path, $starterKitFiles, true)) {
+            if ($this->isInADomain($path) || $this->liesIn($path, $sharedFolders) || in_array($path, $starterKitFiles, true)) {
                 continue;
             }
 
@@ -136,7 +136,7 @@ final readonly class DeclarationRules
         $violations = [];
 
         foreach (DomainFiles::allIn($sharedFolder) as $path) {
-            if ($this->domainHolding($path) !== null) {
+            if ($this->isInADomain($path)) {
                 continue;
             }
 
@@ -148,8 +148,8 @@ final readonly class DeclarationRules
         return $violations;
     }
 
-    private function domainHolding(string $path): ?DomainEntry
+    private function isInADomain(string $path): bool
     {
-        return array_find($this->entries, fn (DomainEntry $entry) => $entry->holdsFile($path));
+        return array_any($this->entries, fn (DomainEntry $entry) => $entry->holdsFile($path));
     }
 }

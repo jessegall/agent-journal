@@ -47,16 +47,13 @@ final readonly class BoundaryChecker
     private function violationsOf(NameUse $use): array
     {
         $user = $this->domainHolding($use->file);
-        $owner = $this->domainOwning($use->name);
         $userName = $user->name ?? self::SHARED_PLACE;
 
-        if ($owner === null && ($this->isShared($use->name) || ! $this->roots->startsWithProjectNamespace($use->name))) {
-            return [];
+        if (! $this->isDomainName($use->name)) {
+            return $this->isFreeToUse($use->name) ? [] : [new Violation($use->file, $use->line, $use->name, $userName, 'no domain', ViolationKind::OutsideEveryDomain)];
         }
 
-        if ($owner === null) {
-            return [new Violation($use->file, $use->line, $use->name, $userName, 'no domain', ViolationKind::OutsideEveryDomain)];
-        }
+        $owner = $this->domainOwning($use->name);
 
         if ($owner === $user) {
             return [];
@@ -83,9 +80,7 @@ final readonly class BoundaryChecker
 
         foreach ($calls as $call) {
             $userName = $this->domainHolding($call->file)->name ?? self::SHARED_PLACE;
-            $owner = $this->domainOwning($call->event);
-
-            if ($call->namesEventByString()) {
+            if ($call->isEventNamedByString()) {
                 $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $userName, ViolationKind::StringEventName);
             }
 
@@ -93,8 +88,8 @@ final readonly class BoundaryChecker
                 $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $userName, ViolationKind::ReRaisedReceivedEvent);
             }
 
-            if ($owner !== null && $owner->name !== $userName && $call->raisesClassEventOf($owner)) {
-                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $owner->name, ViolationKind::ReRaisedEvent);
+            if ($this->raisesAnotherDomainsEvent($call, $userName)) {
+                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $this->domainOwning($call->event)->name, ViolationKind::ReRaisedEvent);
             }
         }
 
@@ -112,7 +107,7 @@ final readonly class BoundaryChecker
             return [];
         }
 
-        if ($user !== null && $user->holdsListenerFile($use->file) && $use->kind->namesEventToHearIt()) {
+        if ($user !== null && $user->holdsListenerFile($use->file) && $use->kind->canNameAnEventToHearIt()) {
             return [];
         }
 
@@ -127,9 +122,39 @@ final readonly class BoundaryChecker
         return array_find($this->entries, fn (DomainEntry $entry) => $entry->holdsFile($path));
     }
 
-    private function domainOwning(string $name): ?DomainEntry
+    private function isDomainName(string $name): bool
     {
-        return array_find($this->entries, fn (DomainEntry $entry) => $entry->ownsName($name));
+        return array_any($this->entries, fn (DomainEntry $entry) => $entry->ownsName($name));
+    }
+
+    /**
+     * The domain a name lies in; ask isDomainName first, since a name of the shared places or a library lies in none.
+     */
+    private function domainOwning(string $name): DomainEntry
+    {
+        return array_find($this->entries, fn (DomainEntry $entry) => $entry->ownsName($name)) ?? throw NameOutsideEveryDomain::for($name);
+    }
+
+    /**
+     * A name outside every domain that any file may use: the core, the domain foundation or code outside the project.
+     */
+    private function isFreeToUse(string $name): bool
+    {
+        return $this->isShared($name) || ! $this->roots->startsWithProjectNamespace($name);
+    }
+
+    /**
+     * Only a domain raises its own events; another domain or the shared places may only hear them.
+     */
+    private function raisesAnotherDomainsEvent(EventCall $call, string $userName): bool
+    {
+        if (! $this->isDomainName($call->event)) {
+            return false;
+        }
+
+        $owner = $this->domainOwning($call->event);
+
+        return $owner->name !== $userName && $call->raisesClassEventOf($owner);
     }
 
     private function isShared(string $name): bool

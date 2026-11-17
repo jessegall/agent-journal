@@ -75,10 +75,9 @@ final class ModelConventions
     private static function violationsOf(string $path, int $line, string $class): array
     {
         $model = new $class;
-        $columns = self::fillableAttributeColumns($class);
         $violations = [];
 
-        if ($columns === null || $columns === [] || $columns !== $model->getFillable() || self::declaresFillableProperty($class)) {
+        if (! self::listsFillableOnlyInTheAttribute($class, $model)) {
             $violations[] = new Violation($path, $line, $class, 'none', 'none', ViolationKind::FillableNotListed);
         }
 
@@ -113,22 +112,38 @@ final class ModelConventions
     }
 
     /**
-     * The columns of the #[Fillable] attribute on the model or the nearest parent that carries one.
+     * Rule 6: the model's fillable columns come from a non-empty #[Fillable] attribute alone, as Laravel reads them.
      *
      * @param  class-string<Model>  $class
-     * @return list<string>|null
      */
-    private static function fillableAttributeColumns(string $class): ?array
+    private static function listsFillableOnlyInTheAttribute(string $class, Model $model): bool
     {
-        for ($reflection = new ReflectionClass($class); $reflection !== false; $reflection = $reflection->getParentClass()) {
+        $columns = self::fillableAttributeColumns($class);
+
+        return $columns !== [] && $columns === $model->getFillable() && ! self::declaresFillableProperty($class);
+    }
+
+    /**
+     * The columns of the #[Fillable] attribute on the model or the nearest parent that carries one; none without one.
+     *
+     * @param  class-string<Model>  $class
+     * @return list<string>
+     */
+    private static function fillableAttributeColumns(string $class): array
+    {
+        $reflection = new ReflectionClass($class);
+
+        while ($reflection !== false) {
             $attribute = $reflection->getAttributes(Fillable::class)[0] ?? null;
 
             if ($attribute !== null) {
                 return array_values($attribute->newInstance()->columns);
             }
+
+            $reflection = $reflection->getParentClass();
         }
 
-        return null;
+        return [];
     }
 
     /**
