@@ -13,14 +13,23 @@ export const ruleStateLook: Record<RuleState, { label: string; tone: string }> =
     };
 
 /**
- * Where a link to other rule filters goes: no empty search and no first page in the query.
+ * The rule filters as a query string: no empty search and no first page. A page that also shows another list puts a
+ * prefix before the search and page keys.
+ */
+export function ruleQuery(
+    filters: RuleFiltersData,
+    keyPrefix = '',
+): Record<string, string | number | undefined> {
+    return {
+        [`${keyPrefix}q`]: filters.q || undefined,
+        [`${keyPrefix}page`]: filters.page > 1 ? filters.page : undefined,
+        rule: filters.rule,
+    };
+}
+
+/**
+ * Where a link to other rule filters goes on the rules page.
  */
 export function rulesPageUrl(filters: RuleFiltersData): string {
-    return index.url({
-        query: {
-            q: filters.q || undefined,
-            page: filters.page > 1 ? filters.page : undefined,
-            rule: filters.rule,
-        },
-    });
+    return index.url({ query: ruleQuery(filters) });
 }

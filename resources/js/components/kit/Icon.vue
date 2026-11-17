@@ -35,6 +35,10 @@ const shapes = {
     chevron: '<path d="M6 3.5 10.5 8 6 12.5"/>',
     chat: '<path d="M2.5 3h11v7.5H8L5 13v-2.5H2.5z"/>',
     agents: '<circle cx="6" cy="5.5" r="2"/><path d="M2.5 13a3.5 3.5 0 0 1 7 0"/><path d="M10.5 3.8a2 2 0 0 1 0 3.4"/><path d="M11.5 9.8a3.5 3.5 0 0 1 2 3.2"/>',
+    layout: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><path d="M9 3v10M9 8h4.5"/>',
+    window: '<rect x="3.5" y="3.5" width="9" height="9" rx="1.5"/>',
+    'dots-vertical':
+        '<circle cx="8" cy="3.5" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/><circle cx="8" cy="12.5" r="1.3" fill="currentColor" stroke="none"/>',
 } as const;
 
 export type IconName = keyof typeof shapes;

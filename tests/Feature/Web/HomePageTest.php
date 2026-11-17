@@ -12,6 +12,7 @@ use App\Domain\Access\Support\AccessSettings;
 use App\Domain\Chat\Models\Message;
 use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Models\Plan;
+use App\Domain\Rules\Models\Rule;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
@@ -23,7 +24,7 @@ final class HomePageTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['users', 'agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'messages', 'links', 'plans'];
+    private const array TABLES = ['users', 'agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'messages', 'links', 'plans', 'rules'];
 
     private User $owner;
 
@@ -57,6 +58,19 @@ final class HomePageTest extends TestCase
             ->missing('page.filters')
             ->missing('page.chatView')
             ->missing('page.plansView'));
+    }
+
+    public function test_the_rules_window_reads_its_own_search_and_page_beside_the_plans_window(): void
+    {
+        Rule::query()->create(['text' => 'Every phase ends with its tests.']);
+        Rule::query()->create(['text' => 'Write all code in plain English.']);
+
+        $this->actingAs($this->owner)->get('/?q=release&rules_q=phase')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('page.plans.filters.q', 'release')
+            ->where('page.rules.filters.q', 'phase')
+            ->where('page.rules.pagination.total', 1)
+            ->where('page.rules.rows.0.text', 'Every phase ends with its tests.')
+            ->missing('page.rulesView'));
     }
 
     public function test_a_sent_message_keeps_its_indentation_and_returns_to_the_conversation(): void

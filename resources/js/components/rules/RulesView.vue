@@ -9,9 +9,17 @@ import RuleReader from './RuleReader.vue';
 import { ruleStateLook, rulesPageUrl } from './ruleLooks';
 
 /**
- * The rules list beside the reader of the selected rule; the search, page and selection live in the query.
+ * The rules list beside the reader of the selected rule; the search, page and selection live in the query. It takes
+ * the list alone, so Home can show it as a window; the page that shows it says where a link to other filters goes,
+ * the rules page by default.
  */
-const props = defineProps<{ rules: RuleListData }>();
+const props = withDefaults(
+    defineProps<{
+        rules: RuleListData;
+        urlForFilters?: (filters: RuleFiltersData) => string;
+    }>(),
+    { urlForFilters: rulesPageUrl },
+);
 
 const search = ref(props.rules.filters.q);
 watch(
@@ -26,7 +34,7 @@ const pageText = computed(
 );
 
 function urlFor(changes: Partial<RuleFiltersData>): string {
-    return rulesPageUrl({ ...filters.value, ...changes });
+    return props.urlForFilters({ ...filters.value, ...changes });
 }
 
 function submitSearch(): void {
