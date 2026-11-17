@@ -28,3 +28,9 @@ Approved today: Plans requires Tasks (plan 1). Nothing else.
 - Links: the links table and the Linkable trait (plan 2, task 84).
 
 Each becomes its own owner task in the domain that owns it; plan 2 does not build a second version of any of them.
+
+## The question asked
+
+Question 10 asks you once to approve the concrete edges above (Hooks to Agents and Links; Tasks, Chat, Sequences, Processes, Memory and Rules to Hooks; model-owning domains to Links), leaving out Reminders to Hooks, Agents to Profiles and any edge from Hooks back to a contributor. Recommended: approve them all. Until the answer comes, the plan works on and keeps the parts that need an edge switched off; the question is not an approval.
+
+Answer: not yet given.
