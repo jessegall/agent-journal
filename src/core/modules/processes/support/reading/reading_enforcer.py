@@ -19,6 +19,8 @@ from core.modules.processes.agent_messages.silent_start_refusal_message import S
 from core.modules.processes.agent_messages.silent_start_taught_message import SilentStartTaughtMessage
 from core.modules.processes.support.reader_rows import ReaderRows
 from core.modules.processes.support.reader_selection import ReaderSelection
+from core.modules.processes.support.reader_judge import ReaderJudge
+from engine.enums.command_category import CommandCategory
 from core.modules.processes.support.unreadable.unreadable_mark_registry import UnreadableMarkRegistry
 from core.modules.processes.support.run_shape import RunShape
 from core.modules.processes.support.run_shapes import INSPECTED_CHARACTERS, RunShapes
@@ -105,7 +107,15 @@ class ReadingEnforcer:
     def prevented(self, name: str) -> ReadingAnswer:
         last = self.decisions.command_key_decisions(name).filter(phase=ReadingPhase.END).descending("decided_at", "id").first()
         output = last.process_id if last is not None else 0
-        return ReadingAnswer(ReadRefusalMessage.declared().agent_message(output=output, name=name))
+        return ReadingAnswer(ReadRefusalMessage.declared().agent_message(output=output, name=name, lacks=self.lacks(name, last.reason.value if last is not None else "")))
+
+    # what the reader of a command lacks, so a refusal names the field to add and never only that something is wrong
+    def lacks(self, name: str, reason: str) -> str:
+        reader = next((reader for reader in self.readers.all() if ReaderSelection.matches(reader.commands, name)), None)
+        if reader is None:
+            return ""
+        missing = ReaderJudge.fields_missing(reader, CommandCategory.TEST_RUN if reader.count_pattern or reader.progress_pattern else CommandCategory.UNKNOWN)
+        return f" (reader {reader.id} lacks: {', '.join(missing)})" if missing else f" (reader {reader.id}: {reason})"
 
     def reader_changed_after(self, run: SilentRun) -> bool:
         selected = ReaderSelection.choose(self.readers.all(), [run.part], self.readers.layers())

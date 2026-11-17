@@ -9,5 +9,5 @@ class ReadRefusalMessage(MessageTemplate):
 
     key = "processes.reading_prevented"
     type = AgentMessageType.REFUSAL
-    text = "output {output} has no proper reader: " + ExitTexts.template(PressureLevel.PREVENT.exits)
+    text = "output {output} has no proper reader{lacks}: " + ExitTexts.template(PressureLevel.PREVENT.exits)
     full_text = True
