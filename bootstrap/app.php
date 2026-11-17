@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Core\Agents\Http\Middleware\AuthenticateAgent;
+use App\Domain\Access\Http\Middleware\AuthenticatePerson;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,6 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: AuthenticateAgent::class);
+        $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: AuthenticatePerson::class);
+        $middleware->alias(['journal.person' => AuthenticatePerson::class]);
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
+use App\Domain\Access\AccessDomain;
 use App\Domain\Chat\ChatDomain;
 use App\Domain\Domain;
 use App\Domain\Memory\MemoryDomain;
@@ -35,6 +36,7 @@ final class DomainClassesTest extends TestCase
         yield 'Sequences' => [SequencesDomain::class, []];
         yield 'Reminders' => [RemindersDomain::class, []];
         yield 'Processes' => [ProcessesDomain::class, []];
+        yield 'Access' => [AccessDomain::class, []];
     }
 
     /**

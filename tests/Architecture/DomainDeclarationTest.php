@@ -26,14 +26,9 @@ final class DomainDeclarationTest extends TestCase
      * The starter-kit files that exist today, relative to app; new behaviour lives in a domain.
      */
     private const array STARTER_KIT_FILES = [
-        'Actions/Fortify/CreateNewUser.php',
-        'Actions/Fortify/ResetUserPassword.php',
-        'Concerns/PasswordValidationRules.php',
         'Http/Controllers/Controller.php',
         'Http/Middleware/HandleInertiaRequests.php',
-        'Models/User.php',
         'Providers/AppServiceProvider.php',
-        'Providers/FortifyServiceProvider.php',
     ];
 
     /**

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Providers;
+namespace App\Domain\Access;
 
-use App\Actions\Fortify\CreateNewUser;
-use App\Actions\Fortify\ResetUserPassword;
+use App\Domain\Access\Actions\CreateNewUser;
+use App\Domain\Access\Actions\ResetUserPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -13,14 +13,18 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Fortify;
 
-class FortifyServiceProvider extends ServiceProvider
+class AccessServiceProvider extends ServiceProvider
 {
     /**
      * Register any application services.
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(AccessSettings::class, function (): AccessSettings {
+            $ownerId = $this->app->make('config')->get('access.owner_id');
+
+            return new AccessSettings(is_numeric($ownerId) ? (int) $ownerId : null);
+        });
     }
 
     /**

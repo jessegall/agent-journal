@@ -17,6 +17,10 @@ A person who selects an agent stays the actor; the agent is the target. Nothing 
 - **Route binding.** An agent-scoped model binds through the actor's scope: a person's route through `visibleToPerson`, an agent's through its own scope; with no actor, binding fails closed. `AuthenticateAgent` runs before `SubstituteBindings`; the person middleware will be placed there too (task 117).
 - **Stack changes for a person.** `App\Core\Hooks\PersonStacks::push` puts a state on a running agent's stack for a person, in the caller's stack transaction: it locks the stack through the explicit authorized query, restores it with the target agent's own role and keeps every frame. A guessed, ended or mismatched session is refused with `StackTargetRefused`; an agent actor is refused. Agents keep `AgentStacks::push`, which only reaches their own stack.
 
+## Access: people and the owner (task 117)
+
+`app/Domain/Access` owns the User model (with its factory beside it), the users, password reset, sessions, passkeys and two-factor migrations, the Fortify actions and wiring (`AccessServiceProvider`), and `JournalAccess`, the one policy for who may use the journal: only the person whose id is `JOURNAL_OWNER_ID` (config/access.php). Unset means nobody; the first account or a registration grants nothing. The `journal.person` middleware (`AuthenticatePerson`) runs after session authentication and before route binding: it makes the owner the person actor and refuses everyone else with 403. Locally, `php artisan db:seed` creates owner@journal.local (password `password`); set `JOURNAL_OWNER_ID` to its id.
+
 ## Domain ownership and dependencies
 
 Approved by the user in question 13 (rule 9):

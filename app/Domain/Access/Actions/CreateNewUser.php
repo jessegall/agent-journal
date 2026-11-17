@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Fortify;
+namespace App\Domain\Access\Actions;
 
-use App\Concerns\PasswordValidationRules;
-use App\Models\User;
+use App\Domain\Access\Concerns\PasswordValidationRules;
+use App\Domain\Access\Models\User;
 use Illuminate\Contracts\Validation\Factory as ValidationFactory;
 use Illuminate\Validation\Rule;
 use Laravel\Fortify\Contracts\CreatesNewUsers;

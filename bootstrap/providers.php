@@ -6,10 +6,10 @@ use App\Core\Actors\ActorsServiceProvider;
 use App\Core\Agents\AgentsServiceProvider;
 use App\Core\CoreServiceProvider;
 use App\Core\Hooks\HooksServiceProvider;
+use App\Domain\Access\AccessServiceProvider;
 use App\Domain\DomainServiceProvider;
 use App\Domain\Processes\ProcessesServiceProvider;
 use App\Providers\AppServiceProvider;
-use App\Providers\FortifyServiceProvider;
 
 return [
     AppServiceProvider::class,
@@ -19,5 +19,5 @@ return [
     AgentsServiceProvider::class,
     HooksServiceProvider::class,
     ProcessesServiceProvider::class,
-    FortifyServiceProvider::class,
+    AccessServiceProvider::class,
 ];

@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
-use App\Models\User;
+use App\Domain\Access\Models\User;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommittedHookStack;
 use Tests\TestCase;

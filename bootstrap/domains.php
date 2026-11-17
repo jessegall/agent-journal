@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+use App\Domain\Access\AccessDomain;
 use App\Domain\Chat\ChatDomain;
 use App\Domain\Memory\MemoryDomain;
 use App\Domain\Plans\PlansDomain;
@@ -21,4 +22,5 @@ return [
     RemindersDomain::class,
     ProfilesDomain::class,
     ProcessesDomain::class,
+    AccessDomain::class,
 ];
