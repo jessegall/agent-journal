@@ -16,4 +16,12 @@ enum PlanState: string
     case Paused = 'paused';
     case Cancelled = 'cancelled';
     case Done = 'done';
+
+    /**
+     * Whether a plan in this state may start: only a planned one. The plans read offers the start by the same rule.
+     */
+    public function canStart(): bool
+    {
+        return $this === self::Planned;
+    }
 }

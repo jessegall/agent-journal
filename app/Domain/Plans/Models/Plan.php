@@ -6,6 +6,7 @@ namespace App\Domain\Plans\Models;
 
 use App\Core\Agents\Models\Agent;
 use App\Core\Links\Linkable;
+use App\Domain\Plans\Exceptions\StartDenied;
 use App\Domain\Plans\PlanCard;
 use App\Domain\Plans\PlanKind;
 use App\Domain\Plans\PlanState;
@@ -41,6 +42,25 @@ final class Plan extends Model
      * @var array<string, mixed>
      */
     protected $attributes = ['state' => 'planned', 'focused' => false];
+
+    /**
+     * Starts the plan; true when it changed, false when it was already started. Any other state refuses.
+     */
+    public function startOnce(): bool
+    {
+        if ($this->state === PlanState::Started) {
+            return false;
+        }
+
+        if (! $this->state->canStart()) {
+            throw StartDenied::inState($this->state->value);
+        }
+
+        $this->state = PlanState::Started;
+        $this->save();
+
+        return true;
+    }
 
     /**
      * Adds a phase after the last one.
@@ -80,7 +100,7 @@ final class Plan extends Model
         $unfinished = array_keys(array_filter($progressOfPhase, fn (TaskProgress $phase) => ! $phase->isComplete()));
         $currentPhase = $unfinished[0] ?? array_key_last($progressOfPhase);
 
-        return new PlanCard($this->id, $this->title, $this->kind, $this->state, $this->focused, $progress, $currentPhase, $this->agent?->name);
+        return new PlanCard($this->id, $this->title, $this->kind, $this->state, $this->state->canStart(), $this->focused, $progress, $currentPhase, $this->agent?->name);
     }
 
     /**

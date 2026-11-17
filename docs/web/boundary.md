@@ -44,6 +44,10 @@ One route owner for signing in: Fortify keeps `views => false`, Web owns the gue
 - **Progress** comes from `App\Domain\Tasks\TaskCounts::progressOf($taskIds)`: done, started, blocked and total. Tasks never reads plans, and Plans calls Tasks through its approved edge. Version 6 tasks have no testing state yet, so there is no testing count.
 - Plan has no agent limit; every agent and the owner read every plan. `php artisan db:seed` adds three plans with phases and tasks.
 
+## Starting a plan (task 102)
+
+`App\Domain\Plans\Actions\StartPlan::start(Plan)` serves the browser and the agent path alike, for the actor of the request; a selected agent is never the caller. Under the plan's row lock: a Planned plan starts; a Started plan is a no-op with no second event; Reviewing, Paused, Cancelled and Done refuse with `StartDenied`, whose message is safe to show. `PlanState::canStart()` is the one rule: the plans read offers the start through `PlanCard::$canStart` by it, and the action enforces it. `PlanStarted` (the plan and who started it) implements `ShouldDispatchAfterCommit`, so a rolled-back start raises nothing. Starting a plan starts no task.
+
 ## Interfaces at the seams (task 122, rule 15)
 
 - **Actor.** `App\Core\Actors\Actor` (its kind and id) is what the core talks to. The Access `User` is a person actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.

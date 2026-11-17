@@ -16,6 +16,11 @@ final class TestFailure extends RuntimeException
         return new self('A replay must send the recorded reply and render nothing.');
     }
 
+    public static function failedAfterTheStart(): self
+    {
+        return new self('Something after the start failed, so the start rolls back.');
+    }
+
     public static function adapterFailed(): self
     {
         return new self('The program adapter failed before the commit.');

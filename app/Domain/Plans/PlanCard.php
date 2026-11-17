@@ -7,7 +7,8 @@ namespace App\Domain\Plans;
 use App\Domain\Tasks\TaskProgress;
 
 /**
- * What a plan card shows: the plan, how far its tasks have got, the phase it is in and the agent it is assigned to.
+ * What a plan card shows: the plan, whether it may start now, how far its tasks have got, the phase it is in and the
+ * agent it is assigned to.
  */
 final readonly class PlanCard
 {
@@ -16,6 +17,7 @@ final readonly class PlanCard
         public string $title,
         public PlanKind $kind,
         public PlanState $state,
+        public bool $canStart,
         public bool $focused,
         public TaskProgress $progress,
         public ?int $currentPhase,

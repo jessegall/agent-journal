@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Foundation\Testing\DatabaseTransactionsManager;
 
 /**
  * Runs a test on the dedicated Postgres database journal_hooks_test: selects it, runs any pending migration, and wraps
  * the test in a transaction that is rolled back, unless the test commits real rows and names no connection to wrap.
+ * As in Laravel's own test transactions, work done after a commit runs when the test's inner transaction commits.
  * It keeps nothing between tests.
  */
 trait RefreshHookDatabase
@@ -26,8 +29,15 @@ trait RefreshHookDatabase
         $this->app->make(Kernel::class)->call('migrate', ['--force' => true]);
         $this->hookDatabaseIsReady = true;
 
-        foreach ($this->connectionsToTransact() as $name) {
-            $connection = $this->app->make(DatabaseManager::class)->connection($name);
+        $connections = array_map(
+            fn (?string $name) => $this->app->make(DatabaseManager::class)->connection($name),
+            $this->connectionsToTransact(),
+        );
+        $transactions = new DatabaseTransactionsManager(array_map(fn (Connection $connection) => $connection->getName(), $connections));
+        $this->app->instance('db.transactions', $transactions);
+
+        foreach ($connections as $connection) {
+            $connection->setTransactionManager($transactions);
             $connection->beginTransaction();
             $this->beforeApplicationDestroyed(fn () => $connection->rollBack());
         }
