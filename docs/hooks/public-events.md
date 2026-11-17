@@ -15,7 +15,7 @@ Each fact implements `ShouldDispatchAfterCommit`, so a listener hears it only on
 | `RuleApproved`, `RuleDenied`, `RuleRemoved` | Rules | the user reviewed a proposed rule, or a rule was removed | rule id |
 | `TaskFinished`, `TaskBlocked`, `TaskCancelled` | Tasks | a task changed state through `ChangeTaskState` | task id |
 
-`TaskStarted`, `SequenceStarted` and `MessageNeedsAnswer` stay private: their listeners push stack states inside the same transaction, so they are not facts after a commit. Plans hears `TaskStarted` through its approved requirement of Tasks.
+`TaskStarted`, `SequenceStarted` and `MessageNeedsAnswer` stay private: their listeners push stack states inside the same transaction, so they are not facts after a commit. Plans hears `TaskStarted` through its approved requirement of Tasks: `TasksDomain::exports()` lists it, so only a domain that requires Tasks may name it.
 
 ## Requests, answered inside the work
 

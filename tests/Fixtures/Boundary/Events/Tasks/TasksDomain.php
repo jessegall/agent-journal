@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Boundary\Events\Tasks;
 
 use App\Domain\Contracts\Domain;
+use Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClosed;
 
 final class TasksDomain implements Domain
 {
@@ -23,6 +24,6 @@ final class TasksDomain implements Domain
      */
     public function exports(): array
     {
-        return [];
+        return [TaskClosed::class];
     }
 }

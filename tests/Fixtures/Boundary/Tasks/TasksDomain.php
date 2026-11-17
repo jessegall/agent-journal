@@ -24,6 +24,6 @@ final class TasksDomain implements Domain
      */
     public function exports(): array
     {
-        return [];
+        return [Task::class];
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Core\CoreApi;
 use App\Domain\DomainRegistry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -13,6 +14,7 @@ use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\NameKind;
 use Tests\Architecture\Support\NameUse;
 use Tests\Architecture\Support\ProjectRoots;
+use Tests\Architecture\Support\ViolationKind;
 use Tests\Fixtures\Boundary\Chat\ChatDomain;
 use Tests\Fixtures\Boundary\Plans\PlansDomain;
 use Tests\Fixtures\Boundary\Tasks\TasksDomain;
@@ -67,11 +69,45 @@ final class BoundaryCheckerTest extends TestCase
     public function test_a_domain_uses_the_core_and_its_events_without_declaring_it(): void
     {
         $uses = [
-            new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Core\Hooks\AgentStacks', NameKind::Type),
+            new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Core\Contracts\Actor', NameKind::Type),
             new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 4, 'App\Core\Hooks\Events\StateTypesRequested', NameKind::Type),
         ];
 
         $this->assertSame([], $this->checker()->violations($uses));
+    }
+
+    public function test_a_private_type_of_a_required_domain_is_refused(): void
+    {
+        $use = new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'Tests\Fixtures\Boundary\Tasks\TaskRecords', NameKind::Type);
+
+        $this->assertSame(
+            ["3 uses Tests\Fixtures\Boundary\Tasks\TaskRecords, which Tasks does not export; add it to Tasks's exports() if it is meant to be public, or use what Tasks exports"],
+            array_map(fn ($violation) => "{$violation->line} {$violation->reason()}", $this->checker()->violations([$use])),
+        );
+    }
+
+    public function test_a_core_type_off_the_core_list_is_refused_to_a_domain(): void
+    {
+        $use = new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Core\Hooks\AgentStacks', NameKind::Type);
+
+        $violations = $this->checker()->violations([$use]);
+
+        $this->assertSame([ViolationKind::PrivateCoreType], array_map(fn ($violation) => $violation->kind, $violations));
+    }
+
+    public function test_a_composition_file_names_only_what_it_composes(): void
+    {
+        $base = dirname(__DIR__, 2);
+        $uses = [
+            new NameUse("{$base}/bootstrap/domains.php", 4, ChatDomain::class, NameKind::Import),
+            new NameUse("{$base}/bootstrap/app.php", 5, 'Tests\Fixtures\Boundary\Chat\Message', NameKind::Import),
+            new NameUse("{$base}/config/auth.php", 6, 'App\Core\Hooks\AgentStacks', NameKind::Import),
+        ];
+
+        $this->assertSame(
+            [[5, ViolationKind::CompositionMisuse, 'Chat'], [6, ViolationKind::CompositionMisuse, 'Core']],
+            array_map(fn ($violation) => [$violation->line, $violation->kind, $violation->owner], $this->checker()->compositionViolations($uses, $base)),
+        );
     }
 
     public function test_the_report_names_each_file_and_line_and_ends_with_the_question(): void
@@ -105,7 +141,7 @@ final class BoundaryCheckerTest extends TestCase
 
     private function checker(): BoundaryChecker
     {
-        return new BoundaryChecker($this->registry()->all(), $this->roots());
+        return new BoundaryChecker($this->registry()->all(), $this->roots(), CoreApi::exports());
     }
 
     private function registry(): DomainRegistry

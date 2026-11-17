@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Core\CoreServiceProvider;
+use App\Core\CoreApi;
 use App\Domain\Contracts\Domain;
 use App\Domain\DomainRegistry;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;
+use Tests\Architecture\Support\CompositionSite;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ProjectRoots;
 use Tests\TestCase;
@@ -18,7 +19,7 @@ use Tests\TestCase;
  * The core uses no domain.
  * It does not see class names built at run time, class names read from config, relation chains
  * on untyped models, morph alias lookups, raw SQL text, where on tasks.id and select on tasks.*, Blade views,
- * the folders routes, config, bootstrap and database outside the root migrations rule, edits inside the listed
+ * the folders routes, config, bootstrap and database beyond the composition files and the root migrations rule, edits inside the listed
  * starter-kit files beyond their domain names, a received event re-raised through a copied variable or another
  * method, a query built in another file and passed in, and a string passed to ->dispatch() on an injected dispatcher.
  */
@@ -28,13 +29,21 @@ final class DomainBoundaryTest extends TestCase
     {
         $registry = $this->app->make(DomainRegistry::class);
         $roots = ProjectRoots::fromComposer(base_path('composer.json'));
-        $folders = [
-            dirname((string) (new \ReflectionClass(Domain::class))->getFileName()),
-            dirname((string) (new \ReflectionClass(CoreServiceProvider::class))->getFileName()),
-        ];
+        $folders = [app_path('Domain'), app_path('Core')];
 
-        $violations = (new BoundaryChecker($registry->all(), $roots))
+        $violations = (new BoundaryChecker($registry->all(), $roots, CoreApi::exports()))
             ->violations(DomainFiles::usesIn(DomainFiles::in($folders), $roots));
+
+        $this->assertSame([], $violations, BoundaryReport::of($violations, base_path()));
+    }
+
+    public function test_the_composition_files_name_only_what_they_compose(): void
+    {
+        $registry = $this->app->make(DomainRegistry::class);
+        $roots = ProjectRoots::fromComposer(base_path('composer.json'));
+
+        $violations = (new BoundaryChecker($registry->all(), $roots, CoreApi::exports()))
+            ->compositionViolations(DomainFiles::usesIn(CompositionSite::files(base_path()), $roots), base_path());
 
         $this->assertSame([], $violations, BoundaryReport::of($violations, base_path()));
     }

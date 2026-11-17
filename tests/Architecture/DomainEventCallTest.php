@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Core\CoreApi;
 use App\Domain\Contracts\Domain;
 use App\Domain\DomainRegistry;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -97,6 +98,6 @@ final class DomainEventCallTest extends TestCase
 
     private function checker(DomainRegistry $registry): BoundaryChecker
     {
-        return new BoundaryChecker($registry->all(), ProjectRoots::fromComposer(base_path('composer.json')));
+        return new BoundaryChecker($registry->all(), ProjectRoots::fromComposer(base_path('composer.json')), CoreApi::exports());
     }
 }

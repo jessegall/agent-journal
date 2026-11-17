@@ -10,6 +10,13 @@ namespace Tests\Architecture\Support;
 enum ViolationKind: string
 {
     case UndeclaredDomain = 'undeclared-domain';
+    case PrivateType = 'private-type';
+    case PrivateCoreType = 'private-core-type';
+    case PrivateTypeInSignature = 'private-type-in-signature';
+    case DisallowedCategory = 'disallowed-category';
+    case CompositionMisuse = 'composition-misuse';
+    case BindingMisuse = 'binding-misuse';
+    case PrivateEventHeard = 'private-event-heard';
     case OutsideEveryDomain = 'outside-every-domain';
     case TableOfNoDomain = 'table-of-no-domain';
     case UndeclaredTable = 'undeclared-table';
@@ -38,6 +45,13 @@ enum ViolationKind: string
     {
         return match ($this) {
             self::UndeclaredDomain => "uses {$violation->used}, but {$violation->usingDomain} does not require {$violation->owner}",
+            self::PrivateType => "uses {$violation->used}, which {$violation->owner} does not export; add it to {$violation->owner}'s exports() if it is meant to be public, or use what {$violation->owner} exports",
+            self::PrivateCoreType => "uses {$violation->used}, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists",
+            self::PrivateTypeInSignature => "shows {$violation->used} in a public signature, but it is private to {$violation->owner}",
+            self::DisallowedCategory => "exports {$violation->used}, which is not a kind of type an owner may publish",
+            self::CompositionMisuse => "names {$violation->used} of {$violation->owner}, but a composition file names only what it composes: a descriptor, a provider, a middleware, the user model or a seeder",
+            self::BindingMisuse => "binds {$violation->used} outside its owner {$violation->owner}",
+            self::PrivateEventHeard => "hears {$violation->used}, an event {$violation->owner} does not publish",
             self::OutsideEveryDomain => "uses {$violation->used}, which is project code outside every domain",
             self::TableOfNoDomain => "uses table {$violation->used}, which no domain owns",
             self::UndeclaredTable => "uses table {$violation->used} of {$violation->owner}, but {$violation->usingDomain} does not require {$violation->owner}",

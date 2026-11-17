@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Events;
 
+use App\Core\Contracts\Actor;
 use App\Domain\Access\Contracts\JournalAccessPolicy;
-use App\Domain\Access\Models\User;
 
 /**
  * The private channel of one user: only that signed-in user joins it, and only while Access lets them use the
@@ -22,8 +22,8 @@ final readonly class UserChannel
         return "journal.user.{$userId}";
     }
 
-    public function join(User $user, string $userId): bool
+    public function join(Actor $user, string $userId): bool
     {
-        return (string) $user->id === $userId && $this->access->allows($user);
+        return (string) $user->actorId() === $userId && $this->access->allows($user);
     }
 }

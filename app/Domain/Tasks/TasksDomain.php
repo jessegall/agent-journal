@@ -11,6 +11,7 @@ use App\Domain\Tasks\Api\Events\TaskFinished;
 use App\Domain\Tasks\Api\TaskProgress;
 use App\Domain\Tasks\Contracts\TaskProgressCounter;
 use App\Domain\Tasks\Contracts\TaskReader;
+use App\Domain\Tasks\Events\TaskStarted;
 use App\Domain\Tasks\Exceptions\TaskMissing;
 
 final class TasksDomain implements Domain
@@ -34,6 +35,7 @@ final class TasksDomain implements Domain
     public function exports(): array
     {
         return [
+            TaskStarted::class,
             TaskFinished::class,
             TaskBlocked::class,
             TaskCancelled::class,

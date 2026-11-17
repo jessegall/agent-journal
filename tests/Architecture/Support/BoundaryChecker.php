@@ -7,7 +7,9 @@ namespace Tests\Architecture\Support;
 use App\Domain\DomainEntry;
 
 /**
- * Judges name uses against the domain each file belongs to and the domains it declares it requires.
+ * Judges name uses against the domain each file belongs to, the domains it declares it requires and what each owner
+ * exports: another domain's class must be on that domain's export list, and a Core class a domain uses must be on
+ * CoreApi's list.
  */
 final readonly class BoundaryChecker
 {
@@ -20,10 +22,12 @@ final readonly class BoundaryChecker
 
     /**
      * @param  list<DomainEntry>  $entries
+     * @param  list<string>  $coreExports  CoreApi's list of the Core types a domain may use
      */
     public function __construct(
         private array $entries,
         private ProjectRoots $roots,
+        private array $coreExports,
     ) {}
 
     /**
@@ -50,6 +54,10 @@ final readonly class BoundaryChecker
         $userName = $user->name ?? self::SHARED_PLACE;
 
         if (! $this->isDomainName($use->name)) {
+            if ($user !== null && $this->isPrivateCoreName($use->name)) {
+                return [new Violation($use->file, $use->line, $use->name, $userName, 'Core', ViolationKind::PrivateCoreType)];
+            }
+
             return $this->isFreeToUse($use->name) ? [] : [new Violation($use->file, $use->line, $use->name, $userName, 'no domain', ViolationKind::OutsideEveryDomain)];
         }
 
@@ -62,10 +70,42 @@ final readonly class BoundaryChecker
         $violations = $this->eventViolations($use, $user, $owner);
 
         if ($user !== null && $user->requiresDomain($owner)) {
-            return $violations;
+            $isPublic = $owner->exportsName($use->name) || self::isRequirementInDescriptor($use, $user, $owner);
+
+            return $isPublic ? $violations : [...$violations, new Violation($use->file, $use->line, $use->name, $userName, $owner->name, ViolationKind::PrivateType)];
         }
 
         return [...$violations, new Violation($use->file, $use->line, $use->name, $userName, $owner->name, ViolationKind::UndeclaredDomain)];
+    }
+
+    /**
+     * A composition file names a domain or Core class only for what it composes: bootstrap/domains.php the
+     * descriptors, bootstrap/providers.php the providers, bootstrap/app.php the middleware, config/auth.php the user
+     * model and DatabaseSeeder the owners' seeders. Any other file outside the domains names none.
+     *
+     * @param  list<NameUse>  $uses
+     * @return list<Violation>
+     */
+    public function compositionViolations(array $uses, string $basePath): array
+    {
+        $violations = [];
+
+        foreach ($uses as $use) {
+            $name = ltrim($use->name, '\\');
+
+            if (! $this->isShared($name) && ! $this->isDomainName($name)) {
+                continue;
+            }
+
+            if (CompositionSite::holding($use->file, $basePath)?->mayName($name)) {
+                continue;
+            }
+
+            $owner = $this->isDomainName($name) ? $this->domainOwning($name)->name : 'Core';
+            $violations[] = new Violation($use->file, $use->line, $name, self::SHARED_PLACE, $owner, ViolationKind::CompositionMisuse);
+        }
+
+        return $violations;
     }
 
     /**
@@ -155,6 +195,24 @@ final readonly class BoundaryChecker
         $owner = $this->domainOwning($call->event);
 
         return $owner->name !== $userName && $call->raisesClassEventOf($owner);
+    }
+
+    /**
+     * A domain's own Domain class names the Domain classes it requires; that is the one place a descriptor may be named.
+     */
+    private static function isRequirementInDescriptor(NameUse $use, DomainEntry $user, DomainEntry $owner): bool
+    {
+        return basename($use->file) === "{$user->name}Domain.php" && strcasecmp(ltrim($use->name, '\\'), $owner->className()) === 0;
+    }
+
+    /**
+     * A Core class that is not on CoreApi's list; Core is private by default, whatever folder a class sits in.
+     */
+    private function isPrivateCoreName(string $name): bool
+    {
+        $name = ltrim($name, '\\');
+
+        return stripos($name, 'App\\Core\\') === 0 && ! in_array(strtolower($name), array_map(strtolower(...), $this->coreExports), true);
     }
 
     private function isShared(string $name): bool

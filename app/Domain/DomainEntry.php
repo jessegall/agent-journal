@@ -91,6 +91,14 @@ final readonly class DomainEntry
     }
 
     /**
+     * Whether a fully written name is on this domain's export list, compared without regard to case.
+     */
+    public function exportsName(string $name): bool
+    {
+        return in_array(strtolower(ltrim($name, '\\')), array_map(strtolower(...), $this->exports), true);
+    }
+
+    /**
      * Whether this domain's namespace or folder lies inside the other's, or the other way round.
      */
     public function overlaps(self $other): bool

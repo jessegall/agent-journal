@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Core\CoreApi;
 use App\Domain\DomainRegistry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -25,10 +26,14 @@ final class DomainEventRulesTest extends TestCase
     public static function eventFixtures(): iterable
     {
         $onlyAListener = ', an event of Tasks; only a listener of Plans may name it, as an import, a type or ::class';
+        $notExported = ", which Tasks does not export; add it to Tasks's exports() if it is meant to be public, or use what Tasks exports";
 
         yield 'a listener importing a declared domain event' => ['Plans/Listeners/StartNextTask.php', []];
         yield 'a listener with an alias import' => ['Plans/Listeners/AliasListener.php', []];
-        yield 'a listener with a group import' => ['Plans/Listeners/GroupListener.php', []];
+        yield 'a listener with a group import, naming a descriptor outside its own descriptor' => ['Plans/Listeners/GroupListener.php', [
+            '7 uses Tests\Fixtures\Boundary\Events\Tasks\TasksDomain'.$notExported,
+            '13 uses Tests\Fixtures\Boundary\Events\Tasks\TasksDomain'.$notExported,
+        ]];
         yield 'the owner raising its own event' => ['Tasks/Actions/CloseTask.php', []];
         yield 'a listener building another domain event' => ['Plans/Listeners/RaisesTaskClosed.php', [
             '13 names '.self::TASK_CLOSED.$onlyAListener,
@@ -63,7 +68,7 @@ final class DomainEventRulesTest extends TestCase
 
         return array_map(
             fn (Violation $violation) => "{$violation->line} {$violation->reason()}",
-            (new BoundaryChecker($registry->all(), $roots))->violations(DomainFiles::usesIn([$file], $roots)),
+            (new BoundaryChecker($registry->all(), $roots, CoreApi::exports()))->violations(DomainFiles::usesIn([$file], $roots)),
         );
     }
 }
