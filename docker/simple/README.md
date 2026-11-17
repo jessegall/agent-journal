@@ -37,6 +37,9 @@ To keep working with the journal you have on your own machine, run this once in 
 sh /path/to/agent-journal/docker/simple/send-journal.sh you@your-server agent-journal/docker/simple
 ```
 
+To try it on your own machine first, start the image locally and send to the container by name instead:
+`sh send-journal.sh --container <container name>`.
+
 It copies the journal's record (its database, readers and project id; not its code, worktrees or runtime files)
 over ssh into the container and restarts it; the journal takes the record in as it starts, upgrades it to its own
 version, and keeps the record it replaced as `.journal/journal.db.before-import`.
