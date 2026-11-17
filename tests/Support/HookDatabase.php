@@ -9,13 +9,21 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Testing\ParallelTesting;
 
 /**
- * Checks that a test runs on the dedicated Postgres test database journal_hooks_test that phpunit.xml selects, or on
- * the worker's own copy of it in a parallel run, never the application database; scripts/prepare-hook-test-database.sh
- * creates it.
+ * Checks that a test runs on a dedicated Postgres test database, or on the worker's own copy of it in a parallel run,
+ * never the application database. There are two: journal_hooks_test, which phpunit.xml selects, and
+ * journal_hooks_test_checkpoint, which the journal's own runs select with DB_DATABASE so they never recreate the
+ * worker databases of a run going on at the same time. scripts/prepare-hook-test-database.sh creates both.
  */
 final class HookDatabase
 {
     public const string NAME = 'journal_hooks_test';
+
+    public const string CHECKPOINT_NAME = 'journal_hooks_test_checkpoint';
+
+    /**
+     * @var list<string>
+     */
+    private const array BASE_NAMES = [self::NAME, self::CHECKPOINT_NAME];
 
     private const string BASE_CHECK_CONNECTION = 'hook_database_base_check';
 
@@ -32,7 +40,7 @@ final class HookDatabase
             return;
         }
 
-        if (self::isParallelWorker($app) && $selected === self::NAME) {
+        if (self::isParallelWorker($app) && in_array($selected, self::BASE_NAMES, true)) {
             throw HookDatabaseRefused::baseDatabaseInWorker($selected, $expected);
         }
 
@@ -40,7 +48,8 @@ final class HookDatabase
     }
 
     /**
-     * Refuses a parallel run whose base database is not journal_hooks_test or does not exist, before Laravel copies it.
+     * Refuses a parallel run whose base database is not one of the two test databases or does not exist, before Laravel
+     * copies it.
      */
     public static function checkBase(Application $app): void
     {
@@ -51,7 +60,7 @@ final class HookDatabase
         $database = $app->make(DatabaseManager::class);
         $selected = $database->connection()->getDatabaseName();
 
-        if ($selected !== self::NAME) {
+        if (! in_array($selected, self::BASE_NAMES, true)) {
             throw HookDatabaseRefused::otherDatabase($selected, self::NAME);
         }
 
@@ -59,11 +68,11 @@ final class HookDatabase
             self::BASE_CHECK_CONNECTION,
             [...$database->connection()->getConfig(), 'database' => 'postgres'],
         );
-        $exists = $server->table('pg_database')->where('datname', self::NAME)->exists();
+        $exists = $server->table('pg_database')->where('datname', $selected)->exists();
         $database->purge(self::BASE_CHECK_CONNECTION);
 
         if (! $exists) {
-            throw HookDatabaseRefused::baseDatabaseMissing(self::NAME);
+            throw HookDatabaseRefused::baseDatabaseMissing($selected);
         }
     }
 
@@ -80,12 +89,23 @@ final class HookDatabase
      */
     public static function expectedName(Application $app): string
     {
+        $base = self::baseNameOf($app->make(DatabaseManager::class)->connection()->getDatabaseName());
         $token = $app->make(ParallelTesting::class)->token();
 
         if ($token === false) {
-            return self::NAME;
+            return $base;
         }
 
-        return self::NAME.'_test_'.$token;
+        return $base.'_test_'.$token;
+    }
+
+    /**
+     * The test database the selected one is, or was copied from for a worker; journal_hooks_test when it is neither.
+     */
+    private static function baseNameOf(string $selected): string
+    {
+        $base = (string) preg_replace('/_test_[0-9]+$/', '', $selected);
+
+        return in_array($base, self::BASE_NAMES, true) ? $base : self::NAME;
     }
 }

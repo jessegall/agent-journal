@@ -40,6 +40,17 @@ final class HookDatabaseTest extends TestCase
         $this->assertTrue(HookDatabase::isParallelWorker($this->app));
     }
 
+    public function test_the_journal_runs_pass_on_the_checkpoint_database_and_its_worker_copies(): void
+    {
+        $this->runAs('journal_hooks_test_checkpoint', false);
+        HookDatabase::select($this->app);
+
+        $this->runAs('journal_hooks_test_checkpoint_test_2', '2');
+        HookDatabase::select($this->app);
+
+        $this->assertSame('journal_hooks_test_checkpoint_test_2', HookDatabase::expectedName($this->app));
+    }
+
     /**
      * @return array<string, array{string, string|false, string}>
      */
@@ -50,6 +61,9 @@ final class HookDatabaseTest extends TestCase
             'the shared database in a worker' => ['journal_hooks_test', '3', 'journal_hooks_test_test_3'],
             'a worker database in a serial run' => ['journal_hooks_test_test_1', false, 'journal_hooks_test'],
             'the application database' => ['journal', false, 'journal_hooks_test'],
+            'another worker of the checkpoint database' => ['journal_hooks_test_checkpoint_test_2', '3', 'journal_hooks_test_checkpoint_test_3'],
+            'the checkpoint database in a worker' => ['journal_hooks_test_checkpoint', '3', 'journal_hooks_test_checkpoint_test_3'],
+            'a name only close to a test database' => ['journal_hooks_test_extra', false, 'journal_hooks_test'],
         ];
     }
 
