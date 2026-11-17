@@ -5,11 +5,16 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Core\Actors\Support\ActorIdentity;
+use App\Core\Agents\Actions\AgentSessions;
+use App\Core\Agents\Actions\LaunchCredentials;
 use App\Core\Agents\Actions\LaunchSessions;
 use App\Core\Agents\Contracts\AgentRetirement;
 use App\Core\Agents\Exceptions\AgentRetirementDenied;
+use App\Core\Agents\Exceptions\CredentialRejected;
+use App\Core\Agents\Exceptions\LaunchRefused;
 use App\Core\Agents\Models\Agent;
 use App\Core\Agents\Models\AgentSession;
+use App\Core\Agents\Support\CredentialLookup;
 use App\Core\Assignments\Contracts\AssignmentWriter;
 use App\Core\Assignments\Models\AssignmentRecord;
 use App\Domain\Access\Models\User;
@@ -103,6 +108,61 @@ final class AgentRetirementTest extends TestCase
 
         $this->assertCount(1, $result->changes);
         $this->assertSame(0, AssignmentRecord::query()->count());
+    }
+
+    public function test_a_retired_agent_cannot_be_launched_and_its_credential_is_refused(): void
+    {
+        $launched = $this->app->make(LaunchSessions::class)->launch($this->helper, 'claude-code');
+        Agent::query()->whereKey($this->helper->id)->update(['retired_at' => now()]);
+
+        $this->assertThrows(fn () => $this->app->make(LaunchSessions::class)->launch($this->helper->refresh(), 'claude-code'), LaunchRefused::class);
+        $this->assertThrows(fn () => $this->app->make(CredentialLookup::class)->sessionFor($launched->token), CredentialRejected::class);
+    }
+
+    public function test_ending_a_session_keeps_the_agents_work(): void
+    {
+        $launched = $this->app->make(LaunchSessions::class)->launch($this->helper, 'claude-code');
+        $this->app->make(AssignmentWriter::class)->assign(Task::query()->create(['title' => 'Kept'])->assignmentIdentity(), ActorIdentity::of($this->helper));
+
+        $this->app->make(LaunchSessions::class)->end($launched->session);
+
+        $this->assertSame(1, AssignmentRecord::query()->count());
+    }
+
+    public function test_a_launch_committed_while_retirement_waits_is_ended_by_it(): void
+    {
+        DB::disconnect();
+        $child = pcntl_fork();
+
+        if ($child === 0) {
+            $this->launchWhileHoldingTheSharedLock();
+        }
+
+        usleep(300_000);
+        DB::reconnect();
+        $this->app->make(AgentRetirement::class)->retire($this->helper->id);
+        pcntl_waitpid($child, $status);
+
+        $session = AgentSession::query()->with('credential')->where('agent_id', $this->helper->id)->sole();
+        $this->assertFalse($session->isActive());
+        $this->assertNotNull($session->credential?->revoked_at);
+    }
+
+    /**
+     * The forked process: it writes what a launch writes, a session under the shared lifecycle lock and its
+     * credential, then holds on a moment so the retirement is already waiting for the lock, commits and leaves.
+     */
+    private function launchWhileHoldingTheSharedLock(): never
+    {
+        DB::reconnect();
+        DB::transaction(function (): void {
+            $session = $this->app->make(AgentSessions::class)->start($this->helper);
+            $this->app->make(LaunchCredentials::class)->issue($session);
+            usleep(800_000);
+        });
+        DB::disconnect();
+
+        exit(0);
     }
 
     /**

@@ -6,6 +6,7 @@ namespace Tests\Fixtures\Agents;
 
 use App\Core\Agents\Actions\AgentSessions;
 use App\Core\Agents\Actions\LaunchCredentials;
+use App\Core\Agents\Lifecycle\AgentLifecycle;
 use App\Core\Agents\Models\Agent;
 use App\Core\Agents\Models\AgentSession;
 use App\Core\Agents\Support\SignedCall;
@@ -24,7 +25,7 @@ final readonly class TestLaunch
     public static function start(string $role = 'hooks.main_ready'): self
     {
         $agent = Agent::query()->create(['name' => 'Test agent', 'role' => $role]);
-        $session = (new AgentSessions)->start($agent);
+        $session = (new AgentSessions(new AgentLifecycle))->start($agent);
 
         return new self($agent, $session, (new LaunchCredentials)->issue($session));
     }
@@ -32,7 +33,7 @@ final readonly class TestLaunch
     /**
      * @return array<string, string>
      */
-    public function serverHeaders(string $body, string $callId = 'call-1', ?int $issuedAt = null, ?string $signingToken = null): array
+    public function serverHeaders(string $body, string $callId = 'call-1', int|null $issuedAt = null, string|null $signingToken = null): array
     {
         $issuedAt ??= time();
         $signature = SignedCall::signatureFor($signingToken ?? $this->token, $callId, $issuedAt, SignedCall::digestOf($body));

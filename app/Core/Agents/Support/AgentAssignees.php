@@ -7,6 +7,7 @@ namespace App\Core\Agents\Support;
 use App\Core\Actors\Enums\ActorKind;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Agents\Exceptions\AgentNotAvailable;
+use App\Core\Agents\Lifecycle\AgentLifecycle;
 use App\Core\Agents\Models\Agent;
 use App\Core\Assignments\Contracts\AssigneeProvider;
 use App\Core\Assignments\Exceptions\AssigneeUnavailable;

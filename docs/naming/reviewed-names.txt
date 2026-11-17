@@ -894,6 +894,7 @@ method	AgentSession::startFor()
 method	AgentSession::useProgram()
 method	AgentSessionScope::__construct()
 method	AgentSessionScope::apply()
+method	AgentSessions::__construct()
 method	AgentSessions::end()
 method	AgentSessions::start()
 method	AgentStack::__construct()
@@ -1187,6 +1188,7 @@ method	CoreServiceProvider::register()
 method	CreateNewUser::__construct()
 method	CreateNewUser::create()
 method	CredentialLookup::sessionFor()
+method	CredentialRejected::agentRetired()
 method	CredentialRejected::missing()
 method	CredentialRejected::revoked()
 method	CredentialRejected::sessionEnded()
@@ -1463,6 +1465,7 @@ method	LaunchCredentials::issue()
 method	LaunchCredentials::revoke()
 method	LaunchEnded::__construct()
 method	LaunchLost::__construct()
+method	LaunchRefused::forRetiredAgent()
 method	LaunchRefused::withoutHooks()
 method	LaunchSessions::__construct()
 method	LaunchSessions::end()
@@ -2241,6 +2244,7 @@ property	AgentLabels::$actors
 property	AgentMemories::$database
 property	AgentScope::$currentContext
 property	AgentSessionScope::$currentContext
+property	AgentSessions::$lifecycle
 property	AgentStack::$factory
 property	AgentStack::$frames
 property	AgentStackRow::$table

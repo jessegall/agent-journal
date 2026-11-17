@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Agents\Support;
+namespace App\Core\Agents\Lifecycle;
 
 use App\Core\Agents\Exceptions\AgentNotAvailable;
 use App\Core\Agents\Models\Agent;

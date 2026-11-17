@@ -30,6 +30,10 @@ final readonly class CredentialLookup
             throw CredentialRejected::sessionEnded();
         }
 
+        if ($credential->session->agent->isRetired()) {
+            throw CredentialRejected::agentRetired();
+        }
+
         return $credential->session;
     }
 }

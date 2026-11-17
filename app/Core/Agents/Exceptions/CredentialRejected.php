@@ -7,7 +7,7 @@ namespace App\Core\Agents\Exceptions;
 use RuntimeException;
 
 /**
- * A request whose launch credential is missing, unknown, revoked or belongs to an ended session.
+ * A request whose launch credential is missing, unknown, revoked, or belongs to an ended session or a retired agent.
  */
 final class CredentialRejected extends RuntimeException
 {
@@ -29,5 +29,10 @@ final class CredentialRejected extends RuntimeException
     public static function sessionEnded(): self
     {
         return new self('The session of this launch credential has ended.');
+    }
+
+    public static function agentRetired(): self
+    {
+        return new self('The agent of this launch credential is retired.');
     }
 }

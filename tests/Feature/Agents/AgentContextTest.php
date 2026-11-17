@@ -8,6 +8,7 @@ use App\Core\Agents\Actions\AgentSessions;
 use App\Core\Agents\Actions\LaunchCredentials;
 use App\Core\Agents\Exceptions\AgentContextMissing;
 use App\Core\Agents\Http\Middleware\AuthenticateAgent;
+use App\Core\Agents\Lifecycle\AgentLifecycle;
 use App\Core\Agents\Models\LaunchCredential;
 use App\Core\Agents\Support\AgentContext;
 use App\Core\Hooks\Stack\StateTypes;
@@ -96,7 +97,7 @@ final class AgentContextTest extends TestCase
     public function test_the_credential_of_an_ended_session_is_refused(): void
     {
         $launch = TestLaunch::start();
-        (new AgentSessions)->end($launch->session);
+        (new AgentSessions(new AgentLifecycle))->end($launch->session);
 
         $this->callAs($launch)->assertUnauthorized()->assertJson(['message' => 'The session of this launch credential has ended.']);
     }
@@ -105,7 +106,7 @@ final class AgentContextTest extends TestCase
     {
         $launch = TestLaunch::start();
 
-        $child = (new AgentSessions)->start($launch->agent, $launch->session);
+        $child = (new AgentSessions(new AgentLifecycle))->start($launch->agent, $launch->session);
 
         $this->assertSame($launch->session->id, $child->parent_session_id);
     }
