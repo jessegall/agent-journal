@@ -29,7 +29,7 @@ final class DomainClassesTest extends TestCase
      */
     public static function domains(): iterable
     {
-        yield 'Tasks' => [TasksDomain::class, [HooksDomain::class]];
+        yield 'Tasks' => [TasksDomain::class, [HooksDomain::class, LinksDomain::class]];
         yield 'Plans' => [PlansDomain::class, [TasksDomain::class]];
         yield 'Links' => [LinksDomain::class, []];
         yield 'Profiles' => [ProfilesDomain::class, []];

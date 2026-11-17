@@ -55,15 +55,15 @@ trait CommittedHookStack
         return [];
     }
 
-    protected function launchCommittedStack(): void
+    protected function launchCommittedStack(bool $withTestStateTypes = true): void
     {
         $this->emptyHookTables();
         $this->target = new StackTarget(1, 10);
         $this->tasks = new InMemoryTaskType([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
         $this->app->instance(ShellCommandParser::class, new ListedCommandParser);
         $tasks = $this->tasks;
-        Event::listen(StateTypesRequested::class, function (StateTypesRequested $event) use ($tasks): void {
-            $event->registry->register('tasks.working', $tasks);
+        $withTestStateTypes && Event::listen(StateTypesRequested::class, function (StateTypesRequested $event) use ($tasks): void {
+            $event->registry->register('test.tasks', $tasks);
             $event->registry->register('guide', new ClosureStateType(fn () => ScriptedState::delegating()));
             $event->registry->register('test.rewriting', new ClosureStateType(fn () => new RewritingState(
                 ['composer test' => 'journal run tests'],
@@ -92,7 +92,7 @@ trait CommittedHookStack
 
     protected function task(int $number): StateReference
     {
-        return new StateReference('tasks.working', new SubjectReference($number, 1));
+        return new StateReference('test.tasks', new SubjectReference($number, 1));
     }
 
     protected function machine(): AgentStateMachine

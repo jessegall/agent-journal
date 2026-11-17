@@ -56,7 +56,7 @@ final class AgentStateMachineTest extends TestCase
         $this->assertSame('block', json_decode($reply->stdout, true)['decision']);
         $this->assertSame($reply->stdout, $recorded->answer->stdout);
         $this->assertSame(AnswerKind::PreventStop, $recorded->answer->kind);
-        $this->assertSame(['tasks.working prevent_stop'], array_map(fn (WalkStep $step) => "{$step->stateType} {$step->answer->value}", $recorded->steps->steps));
+        $this->assertSame(['test.tasks prevent_stop'], array_map(fn (WalkStep $step) => "{$step->stateType} {$step->answer->value}", $recorded->steps->steps));
         $this->assertSame(3, AgentStackRow::query()->sole()->version);
     }
 
@@ -127,7 +127,7 @@ final class AgentStateMachineTest extends TestCase
             $this->fail('The adapter failure was swallowed.');
         } catch (RuntimeException) {
             $this->assertSame(0, HookCall::query()->count());
-            $this->assertSame(['hooks.main_ready', 'tasks.working'], $this->storedTypeKeys());
+            $this->assertSame(['hooks.main_ready', 'test.tasks'], $this->storedTypeKeys());
         }
     }
 

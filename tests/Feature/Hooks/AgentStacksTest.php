@@ -55,7 +55,7 @@ final class AgentStacksTest extends TestCase
         $this->target = new StackTarget(1, 10);
         $this->app->instance(AgentContext::class, new AgentContext(1, 10, 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64))));
         $tasks = new InMemoryTaskType([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
-        Event::listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('tasks.working', $tasks));
+        Event::listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('test.tasks', $tasks));
     }
 
     protected function tearDown(): void
@@ -129,7 +129,7 @@ final class AgentStacksTest extends TestCase
             $this->stacks()->push($this->target, $this->task(42));
         });
 
-        $this->assertSame(['hooks.main_ready', 'tasks.working'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
+        $this->assertSame(['hooks.main_ready', 'test.tasks'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
         $this->assertSame(['task 42 started'], DB::table('domain_writes')->pluck('name')->all());
     }
 
@@ -260,7 +260,7 @@ final class AgentStacksTest extends TestCase
 
     private function task(int $number): StateReference
     {
-        return new StateReference('tasks.working', new SubjectReference($number, 1));
+        return new StateReference('test.tasks', new SubjectReference($number, 1));
     }
 
     /**

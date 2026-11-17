@@ -30,7 +30,7 @@ usleep((int) $environment('LOCK_HOLD_MILLISECONDS') * 1000);
 $frames = json_decode((string) $row['frames'], true, flags: JSON_THROW_ON_ERROR);
 $frames['frames'][] = [
     'id' => 'pushed-by-other-process',
-    'typeKey' => 'tasks.working',
+    'typeKey' => 'test.tasks',
     'schemaVersion' => 1,
     'isBottom' => false,
     'subject' => ['id' => (int) $environment('LOCK_TASK_NUMBER'), 'runNumber' => 1],
