@@ -1,0 +1,13 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Hooks\Programs;
+
+/**
+ * The only native permission decision the journal sends: a denial. It never grants a native approval.
+ */
+enum NativePermission: string
+{
+    case Deny = 'deny';
+}

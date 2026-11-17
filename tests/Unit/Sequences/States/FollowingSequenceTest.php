@@ -47,7 +47,7 @@ final class FollowingSequenceTest extends TestCase
         $decision = $this->following()->onStop($this->stop());
 
         $this->assertInstanceOf(StopPrevented::class, $decision->answer);
-        $this->assertSame('Sequence run 8 is on step 3: Run the phase tests.', $decision->answer->reason->text);
+        $this->assertSame('Sequence run 8 is on step 3: Run the phase tests.', $decision->refusalReason());
         $this->assertSame(SimpleChange::Keep, $decision->change);
     }
 

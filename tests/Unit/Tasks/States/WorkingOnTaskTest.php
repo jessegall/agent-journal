@@ -48,7 +48,7 @@ final class WorkingOnTaskTest extends TestCase
         $decision = (new WorkingOnTask($task))->onStop($this->stop());
 
         $this->assertInstanceOf(StopPrevented::class, $decision->answer);
-        $this->assertStringContainsString('Task 42 still needs work', $decision->answer->reason->text);
+        $this->assertStringContainsString('Task 42 still needs work', $decision->refusalReason());
         $this->assertSame(SimpleChange::Keep, $decision->change);
         $this->assertSame(TaskWorkState::Active, $task->state);
     }

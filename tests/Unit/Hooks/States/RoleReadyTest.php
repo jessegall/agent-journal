@@ -75,7 +75,7 @@ final class RoleReadyTest extends TestCase
         $decision = $ready->onShellCommand($this->request($command));
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertStringContainsString('journal run', $decision->answer->reason->text);
+        $this->assertStringContainsString('journal run', $decision->refusalReason());
     }
 
     #[DataProvider('roles')]
@@ -102,7 +102,7 @@ final class RoleReadyTest extends TestCase
         $decision = (new ReadOnlyHelperReady)->onShellCommand($this->request($command));
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertStringContainsString('changes no files', $decision->answer->reason->text);
+        $this->assertStringContainsString('changes no files', $decision->refusalReason());
     }
 
     public function test_a_read_only_helper_refuses_an_edit_and_names_every_path(): void
@@ -110,7 +110,7 @@ final class RoleReadyTest extends TestCase
         $decision = (new ReadOnlyHelperReady)->onFileEdit($this->edit(['app/Domain/Domain.php', 'docs/hooks/dependencies.md']));
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertStringContainsString('app/Domain/Domain.php, docs/hooks/dependencies.md', $decision->answer->reason->text);
+        $this->assertStringContainsString('app/Domain/Domain.php, docs/hooks/dependencies.md', $decision->refusalReason());
     }
 
     #[DataProvider('roles')]

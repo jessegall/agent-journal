@@ -74,7 +74,7 @@ final class AnsweringMessageTest extends TestCase
         $decision = $this->unanswered()->onStop(new StopRequested($this->hook(), new StopDetails('turn-1', false)));
 
         $this->assertInstanceOf(StopPrevented::class, $decision->answer);
-        $this->assertStringContainsString('journal message reply 95', $decision->answer->reason->text);
+        $this->assertStringContainsString('journal message reply 95', $decision->refusalReason());
         $this->assertSame(SimpleChange::Keep, $decision->change);
     }
 
@@ -84,7 +84,7 @@ final class AnsweringMessageTest extends TestCase
         $decision = $this->unanswered()->onShellCommand(new ShellCommandRequested($this->hook(), $command));
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertStringContainsString('Message 95 waits for your answer', $decision->answer->reason->text);
+        $this->assertStringContainsString('Message 95 waits for your answer', $decision->refusalReason());
     }
 
     public function test_a_read_only_command_is_delegated(): void

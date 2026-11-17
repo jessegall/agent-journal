@@ -33,9 +33,9 @@ final class DecisionTest extends TestCase
         $held = Decision::preventStop('Task 3 is still open.')->answer;
 
         $this->assertInstanceOf(Denied::class, $denied);
-        $this->assertSame('Save the test run first.', $denied->reason->text);
+        $this->assertSame('Save the test run first.', $denied->reason()->text);
         $this->assertInstanceOf(StopPrevented::class, $held);
-        $this->assertSame('Task 3 is still open.', $held->reason->text);
+        $this->assertSame('Task 3 is still open.', $held->reason()->text);
     }
 
     public function test_a_reason_is_never_empty(): void

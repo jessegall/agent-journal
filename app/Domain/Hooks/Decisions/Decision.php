@@ -89,6 +89,18 @@ final readonly class Decision
         return $this->answer->line;
     }
 
+    /**
+     * The reason a denial or a held stop gives the agent.
+     */
+    public function refusalReason(): string
+    {
+        if (! $this->answer instanceof Refusal) {
+            throw NoRefusalReason::forAnswer($this->answerKind());
+        }
+
+        return $this->answer->reason()->text;
+    }
+
     public function answerKind(): AnswerKind
     {
         return $this->answer->kind();

@@ -54,7 +54,7 @@ final class HookRewriteTest extends TestCase
         $answer = $this->rewrite()->answer($this->stack(ReadyStateType::ReadOnlyHelper, $rewriter), $this->command('composer test'));
 
         $this->assertSame(AnswerKind::Deny, $answer->decision->answerKind());
-        $this->assertStringContainsString('changes no files', $answer->decision->answer->reason->text);
+        $this->assertStringContainsString('changes no files', $answer->decision->refusalReason());
         $this->assertSame(['rewriter rewrite keep', 'rewriter delegate keep', 'ready deny keep'], $this->stepsOf($answer));
     }
 

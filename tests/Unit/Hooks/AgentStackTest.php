@@ -94,7 +94,7 @@ final class AgentStackTest extends TestCase
 
         $this->assertSame(['ready', 'task-42', 'pushed-1'], $stack->frameIds());
         $this->assertSame(['pushed-1 prevent_stop keep'], $this->stepsOf($answer));
-        $this->assertStringContainsString('step 3', $answer->decision->answer->reason->text);
+        $this->assertStringContainsString('step 3', $answer->decision->refusalReason());
     }
 
     #[DataProvider('everyHook')]
