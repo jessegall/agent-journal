@@ -1,0 +1,23 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Core\Assignments\Support;
+
+use App\Core\Assignments\Enums\AssignmentOutcomeKind;
+use PhpOption\Option;
+
+/**
+ * What a command did to one record it was asked about, with the record's assignment afterwards.
+ */
+final readonly class AssignmentOutcome
+{
+    /**
+     * @param  Option<Assignment>  $current
+     */
+    public function __construct(
+        public RecordIdentity $record,
+        public Option $current,
+        public AssignmentOutcomeKind $kind,
+    ) {}
+}

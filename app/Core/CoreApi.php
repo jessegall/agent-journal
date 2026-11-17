@@ -8,11 +8,36 @@ use App\Core\Actors\Enums\ActorKind;
 use App\Core\Actors\Exceptions\ActorContextMissing;
 use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Actors\Support\ActorContext;
+use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Agents\Contracts\AgentReader;
 use App\Core\Agents\Contracts\SessionReader;
 use App\Core\Agents\Support\AgentLabel;
 use App\Core\Agents\Support\SessionOption;
+use App\Core\Assignments\Contracts\AssignableProvider;
+use App\Core\Assignments\Contracts\AssigneeProvider;
+use App\Core\Assignments\Contracts\AssignmentReader;
+use App\Core\Assignments\Contracts\AssignmentRegistration;
+use App\Core\Assignments\Enums\AssignmentOutcomeKind;
+use App\Core\Assignments\Enums\AssignmentReason;
+use App\Core\Assignments\Exceptions\AssignmentGroupTooLarge;
+use App\Core\Assignments\Exceptions\InvalidAssignmentIdentity;
+use App\Core\Assignments\Exceptions\InvalidAssignmentPage;
+use App\Core\Assignments\Support\AssigneeList;
+use App\Core\Assignments\Support\AssigneeName;
+use App\Core\Assignments\Support\AssigneeRegistration;
+use App\Core\Assignments\Support\Assignment;
+use App\Core\Assignments\Support\AssignmentChange;
+use App\Core\Assignments\Support\AssignmentGroup;
+use App\Core\Assignments\Support\AssignmentOutcome;
+use App\Core\Assignments\Support\AssignmentReference;
+use App\Core\Assignments\Support\AssignmentResult;
+use App\Core\Assignments\Support\AssignmentSet;
+use App\Core\Assignments\Support\Page;
+use App\Core\Assignments\Support\RecordIdentity;
+use App\Core\Assignments\Support\RecordIds;
 use App\Core\Contracts\Actor;
+use App\Core\Contracts\Assignable;
+use App\Core\Contracts\Assignee;
 use App\Core\Contracts\CurrentActor;
 use App\Core\Contracts\CurrentActorSetter;
 use App\Core\Hooks\Contracts\AgentStack;
@@ -163,6 +188,31 @@ final class CoreApi
             StackTargetRefused::class,
             StackLockTimedOut::class,
             StackTransactionRequired::class,
+            Assignee::class,
+            Assignable::class,
+            ActorIdentity::class,
+            AssignableProvider::class,
+            AssigneeProvider::class,
+            AssignmentReader::class,
+            AssignmentRegistration::class,
+            RecordIdentity::class,
+            AssigneeRegistration::class,
+            Assignment::class,
+            AssignmentReference::class,
+            AssignmentSet::class,
+            AssignmentGroup::class,
+            AssignmentResult::class,
+            AssignmentOutcome::class,
+            AssignmentChange::class,
+            Page::class,
+            RecordIds::class,
+            AssigneeList::class,
+            AssigneeName::class,
+            AssignmentReason::class,
+            AssignmentOutcomeKind::class,
+            InvalidAssignmentIdentity::class,
+            InvalidAssignmentPage::class,
+            AssignmentGroupTooLarge::class,
         ];
     }
 }

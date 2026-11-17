@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Core\Assignments\Support;
+
+use App\Core\Assignments\Exceptions\InvalidAssignmentIdentity;
+
+/**
+ * A record by its link alias, such as tasks.task, and its positive id. Whether the alias is registered is checked when
+ * the record is resolved, not here.
+ */
+final readonly class RecordIdentity
+{
+    private const string ALIAS_PATTERN = '/^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/';
+
+    /**
+     * @throws InvalidAssignmentIdentity
+     */
+    public function __construct(
+        public string $type,
+        public int $id,
+    ) {
+        if (preg_match(self::ALIAS_PATTERN, $type) !== 1) {
+            throw InvalidAssignmentIdentity::forType($type);
+        }
+
+        if ($id < 1) {
+            throw InvalidAssignmentIdentity::forId($type, $id);
+        }
+    }
+
+    public function isSameAs(self $other): bool
+    {
+        return $this->type === $other->type && $this->id === $other->id;
+    }
+}
