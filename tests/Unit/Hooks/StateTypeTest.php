@@ -21,8 +21,8 @@ use App\Domain\Tasks\States\WorkingOnTask;
 use App\Domain\Tasks\TaskWorkState;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 use Tests\Fixtures\Hooks\InMemoryTaskType;
+use Tests\Fixtures\Hooks\TestFailure;
 
 final class StateTypeTest extends TestCase
 {
@@ -101,7 +101,7 @@ final class StateTypeTest extends TestCase
             $attempts++;
 
             if ($attempts === 1) {
-                throw new RuntimeException('The first listener run fails.');
+                throw TestFailure::listenerFailed();
             }
 
             $event->registry->register('tasks.working', new InMemoryTaskType);
@@ -111,7 +111,7 @@ final class StateTypeTest extends TestCase
         try {
             $types->registry();
             $this->fail('The failing build was not reported.');
-        } catch (RuntimeException) {
+        } catch (TestFailure) {
             $this->assertSame(1, $attempts);
         }
 

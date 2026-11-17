@@ -33,7 +33,7 @@ final class ProgramRepliesTest extends TestCase
         $this->assertSame(['hookSpecificOutput' => [
             'hookEventName' => 'PreToolUse',
             'additionalContext' => "Remember rule 7.\nTask 42 is open.",
-        ]], $this->decoded($reply));
+        ]], json_decode($reply->stdout, true));
     }
 
     public function test_a_denial_carries_its_reason(): void
@@ -44,7 +44,7 @@ final class ProgramRepliesTest extends TestCase
             'hookEventName' => 'PreToolUse',
             'permissionDecision' => 'deny',
             'permissionDecisionReason' => 'Save this test as a named command.',
-        ]], $this->decoded($reply));
+        ]], json_decode($reply->stdout, true));
     }
 
     public function test_a_rewrite_keeps_every_other_tool_argument_when_the_program_takes_it(): void
@@ -56,23 +56,23 @@ final class ProgramRepliesTest extends TestCase
         $this->assertSame(['hookSpecificOutput' => [
             'hookEventName' => 'PreToolUse',
             'updatedInput' => ['command' => 'journal run tests', 'description' => 'Run the tests', 'timeout' => 120],
-        ]], $this->decoded($reply));
+        ]], json_decode($reply->stdout, true));
     }
 
     public function test_a_rewrite_the_program_cannot_take_without_approval_is_refused_with_the_journal_command(): void
     {
         $reply = ProgramReplies::shell($this->answer(Decision::rewrite('journal run tests')), new NativeToolInput(['command' => 'composer test']), RewriteSupport::NeedsApproval);
 
-        $this->assertSame('deny', $this->decoded($reply)['hookSpecificOutput']['permissionDecision']);
-        $this->assertStringContainsString('journal run', $this->decoded($reply)['hookSpecificOutput']['permissionDecisionReason']);
-        $this->assertArrayNotHasKey('updatedInput', $this->decoded($reply)['hookSpecificOutput']);
+        $this->assertSame('deny', json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecision']);
+        $this->assertStringContainsString('journal run', json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecisionReason']);
+        $this->assertArrayNotHasKey('updatedInput', json_decode($reply->stdout, true)['hookSpecificOutput']);
     }
 
     public function test_a_held_stop_blocks_with_one_reason_followed_by_the_context(): void
     {
         $reply = ProgramReplies::stop($this->answer(Decision::preventStop('Task 42 still needs work.'), ['Run the phase tests.']));
 
-        $this->assertSame(['decision' => 'block', 'reason' => "Task 42 still needs work.\nRun the phase tests."], $this->decoded($reply));
+        $this->assertSame(['decision' => 'block', 'reason' => "Task 42 still needs work.\nRun the phase tests."], json_decode($reply->stdout, true));
     }
 
     public function test_an_allowed_stop_is_an_empty_object(): void
@@ -123,13 +123,5 @@ final class ProgramRepliesTest extends TestCase
     private function answer(Decision $decision, array $context = []): HookAnswer
     {
         return new HookAnswer($decision, $context, [], new AgentStack([], new InMemoryStateFactory));
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function decoded(ProgramReply $reply): array
-    {
-        return json_decode($reply->stdout, true, flags: JSON_THROW_ON_ERROR);
     }
 }

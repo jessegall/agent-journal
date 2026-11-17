@@ -33,7 +33,7 @@ use App\Domain\Sequences\States\FollowingSequence;
 use App\Domain\Tasks\States\WorkingOnTask;
 use App\Domain\Tasks\TaskWork;
 use App\Domain\Tasks\TaskWorkState;
-use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ScriptedState;
@@ -41,16 +41,6 @@ use Tests\TestCase;
 
 final class AgentStackTest extends TestCase
 {
-    /**
-     * @return iterable<string, array{HookInput}>
-     */
-    public static function everyHook(): iterable
-    {
-        foreach (HookInputs::all() as $name => $input) {
-            yield $name => [$input];
-        }
-    }
-
     public function test_the_task_and_message_example_answers_one_obligation_at_a_time(): void
     {
         $stop = $this->stop();
@@ -97,7 +87,7 @@ final class AgentStackTest extends TestCase
         $this->assertStringContainsString('step 3', $answer->decision->refusalReason());
     }
 
-    #[DataProvider('everyHook')]
+    #[DataProviderExternal(HookInputs::class, 'dataSets')]
     public function test_every_hook_walks_down_from_the_top_until_the_first_answer(HookInput $input): void
     {
         $top = ScriptedState::delegating();

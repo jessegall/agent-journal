@@ -14,17 +14,17 @@ use App\Domain\Hooks\Relay\RelaySettings;
 use App\Domain\Hooks\StackTransaction;
 use App\Domain\Hooks\States\ReadyStateType;
 use App\Domain\Hooks\Storage\StackTarget;
-use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Tests\Fixtures\Agents\TestLaunch;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Fixtures\Hooks\JournalUnreachable;
+use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
 final class HookRelayTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
 
     private const TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'launch_bypasses', 'agent_stacks', 'hook_calls', 'links'];
 
@@ -36,13 +36,12 @@ final class HookRelayTest extends TestCase
 
     private string $bypassLog;
 
+    private bool $journalIsDown = false;
+
     protected function setUp(): void
     {
         parent::setUp();
 
-        foreach (self::TABLES as $table) {
-            DB::table($table)->truncate();
-        }
         $this->launch = TestLaunch::start('hooks.main_ready');
         $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(LaunchStacks::class)->open(
             new StackTarget($this->launch->agent->id, $this->launch->session->id),
@@ -55,9 +54,6 @@ final class HookRelayTest extends TestCase
     {
         if (is_file($this->bypassLog)) {
             unlink($this->bypassLog);
-        }
-        foreach (self::TABLES as $table) {
-            DB::table($table)->truncate();
         }
 
         parent::tearDown();
@@ -75,7 +71,7 @@ final class HookRelayTest extends TestCase
 
     public function test_during_an_outage_the_main_agent_goes_on_and_the_bypass_is_logged(): void
     {
-        Http::fake(fn () => throw new ConnectionException('The journal is down.'));
+        Http::fake(fn () => throw JournalUnreachable::now());
 
         $reply = $this->relay(self::SHELL);
 
@@ -93,7 +89,7 @@ final class HookRelayTest extends TestCase
 
     public function test_a_helper_is_refused_during_an_outage_and_logs_nothing(): void
     {
-        Http::fake(fn () => throw new ConnectionException('The journal is down.'));
+        Http::fake(fn () => throw JournalUnreachable::now());
 
         $reply = $this->relay(self::SHELL, ReadyStateType::ReadOnlyHelper);
 
@@ -113,14 +109,10 @@ final class HookRelayTest extends TestCase
 
     public function test_the_bypasses_are_uploaded_once_the_journal_answers_again(): void
     {
-        $journalIsDown = true;
-        $this->forwardToTheEndpoint(function () use (&$journalIsDown): void {
-            if ($journalIsDown) {
-                throw new ConnectionException('The journal is down.');
-            }
-        });
+        $this->journalIsDown = true;
+        $this->forwardToTheEndpoint();
         $this->relay(self::SHELL);
-        $journalIsDown = false;
+        $this->journalIsDown = false;
 
         $this->relay(self::STOP);
 
@@ -128,14 +120,6 @@ final class HookRelayTest extends TestCase
         $this->assertSame($this->launch->session->id, LaunchBypass::query()->value('agent_session_id'));
         $this->assertFileDoesNotExist($this->bypassLog);
         $this->assertSame(1, DB::table('hook_calls')->count());
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    protected function connectionsToTransact(): array
-    {
-        return [];
     }
 
     private function relay(string $payload, ReadyStateType $role = ReadyStateType::MainAgent, ?string $token = null): ProgramReply
@@ -148,11 +132,11 @@ final class HookRelayTest extends TestCase
     /**
      * Sends each of the relay's requests through the application's own HTTP kernel, so the relay talks to the real endpoint.
      */
-    private function forwardToTheEndpoint(?\Closure $beforeEachRequest = null): void
+    private function forwardToTheEndpoint(): void
     {
-        Http::fake(function (Request $request) use ($beforeEachRequest) {
-            if ($beforeEachRequest !== null) {
-                $beforeEachRequest();
+        Http::fake(function (Request $request) {
+            if ($this->journalIsDown) {
+                throw JournalUnreachable::now();
             }
             $server = [];
             foreach ($request->headers() as $name => $values) {

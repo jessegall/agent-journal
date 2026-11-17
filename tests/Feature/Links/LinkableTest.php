@@ -69,7 +69,7 @@ final class LinkableTest extends TestCase
 
         $this->expectException(QueryException::class);
 
-        Link::query()->create($this->row($note, $label));
+        $this->insertRawLink($note, $label);
     }
 
     public function test_unlinking_removes_the_link_from_both_sides(): void
@@ -90,7 +90,7 @@ final class LinkableTest extends TestCase
         $hidden = Note::query()->create(['owner' => 'someone else']);
         $label = Label::query()->create(['name' => 'urgent']);
         $label->linkTo($visible);
-        Link::query()->create($this->row($hidden, $label));
+        $this->insertRawLink($hidden, $label);
 
         $this->assertSame([$visible->id], $label->links()->among(Note::query())->pluck('id')->all());
         $this->assertCount(2, $label->links()->among(Note::query()->withoutGlobalScopes())->get());
@@ -121,15 +121,15 @@ final class LinkableTest extends TestCase
     }
 
     /**
-     * @return array<string, int|string>
+     * Writes a link row directly, past Link::connect, as a racing or foreign writer would.
      */
-    private function row(Model $source, Model $target): array
+    private function insertRawLink(Model $source, Model $target): void
     {
-        return [
+        Link::query()->create([
             'source_type' => $source->getMorphClass(),
             'source_id' => (int) $source->getKey(),
             'target_type' => $target->getMorphClass(),
             'target_id' => (int) $target->getKey(),
-        ];
+        ]);
     }
 }

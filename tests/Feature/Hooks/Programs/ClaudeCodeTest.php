@@ -9,31 +9,25 @@ use App\Domain\Hooks\Inputs\CommandKind;
 use App\Domain\Hooks\Inputs\ContextCompacted;
 use App\Domain\Hooks\Inputs\FileEditRequested;
 use App\Domain\Hooks\Inputs\FileOperation;
-use App\Domain\Hooks\Inputs\HookIdentity;
-use App\Domain\Hooks\Inputs\HookInput;
 use App\Domain\Hooks\Inputs\ShellCommandRequested;
 use App\Domain\Hooks\Programs\ClaudeCodeAdapter;
-use App\Domain\Hooks\Programs\HookPayload;
 use App\Domain\Hooks\Programs\JournalCall;
-use App\Domain\Hooks\Programs\NativeCall;
 use App\Domain\Hooks\Programs\ProgramReply;
 use App\Domain\Hooks\Programs\UnsupportedHook;
 use App\Domain\Hooks\Stack\AgentStack;
 use App\Domain\Hooks\Stack\HookAnswer;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
+use Tests\Support\ChecksProgramFixtures;
 use Tests\TestCase;
 
 final class ClaudeCodeTest extends TestCase
 {
-    /**
-     * @return iterable<string, array{string, string}>
-     */
-    public static function mapping(): iterable
+    use ChecksProgramFixtures;
+
+    protected static function fixtureFolder(): string
     {
-        foreach (self::fixture('capabilities.json')['mapping'] as $name => $expected) {
-            yield $name => [$name, $expected];
-        }
+        return 'ClaudeCode';
     }
 
     #[DataProvider('mapping')]
@@ -133,7 +127,7 @@ final class ClaudeCodeTest extends TestCase
             fn (string $method) => ! $this->adapter()->capabilities()->supports($method),
         ));
 
-        $this->assertSame(self::fixture('capabilities.json')['unmapped inputs'], $unmapped);
+        $this->assertSame(self::programFixture()->unmappedInputs(), $unmapped);
     }
 
     /**
@@ -147,33 +141,8 @@ final class ClaudeCodeTest extends TestCase
         return ($call->render)(new HookAnswer($decision, $context, [], new AgentStack([], new InMemoryStateFactory)));
     }
 
-    private function inputOf(NativeCall $call): HookInput
-    {
-        $this->assertInstanceOf(JournalCall::class, $call);
-
-        return $call->input;
-    }
-
     private function adapter(): ClaudeCodeAdapter
     {
         return $this->app->make(ClaudeCodeAdapter::class);
-    }
-
-    private function payload(string $name): HookPayload
-    {
-        return HookPayload::from(self::fixture('hooks.json')['payloads'][$name]);
-    }
-
-    private function hook(): HookIdentity
-    {
-        return new HookIdentity(1, 10, 'call-1', hash('sha256', 'the input'));
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private static function fixture(string $file): array
-    {
-        return json_decode((string) file_get_contents(dirname(__DIR__, 3).'/Fixtures/Hooks/ClaudeCode/'.$file), true, flags: JSON_THROW_ON_ERROR);
     }
 }

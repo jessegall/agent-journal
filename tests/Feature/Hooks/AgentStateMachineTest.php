@@ -24,27 +24,13 @@ use App\Domain\Hooks\Stack\HookAnswer;
 use App\Domain\Hooks\Stack\WalkStep;
 use App\Domain\Tasks\TaskWorkState;
 use Closure;
-use RuntimeException;
+use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommittedHookStack;
 use Tests\TestCase;
 
 final class AgentStateMachineTest extends TestCase
 {
     use CommittedHookStack;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->launchCommittedStack();
-    }
-
-    protected function tearDown(): void
-    {
-        $this->emptyHookTables();
-
-        parent::tearDown();
-    }
 
     public function test_a_stop_is_answered_recorded_and_the_stack_saved_in_one_commit(): void
     {
@@ -100,7 +86,7 @@ final class AgentStateMachineTest extends TestCase
         $versionAfterFirst = AgentStackRow::query()->sole()->version;
         $this->tasks->tasks[42] = TaskWorkState::Finished;
 
-        $retry = $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), fn () => throw new RuntimeException('A replay renders nothing.'));
+        $retry = $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), fn () => throw TestFailure::renderedOnReplay());
 
         $this->assertEquals($first, $retry);
         $this->assertSame(1, HookCall::query()->count());
@@ -123,9 +109,9 @@ final class AgentStateMachineTest extends TestCase
         $this->tasks->tasks[42] = TaskWorkState::Finished;
 
         try {
-            $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), fn () => throw new RuntimeException('The adapter failed.'));
+            $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), fn () => throw TestFailure::adapterFailed());
             $this->fail('The adapter failure was swallowed.');
-        } catch (RuntimeException) {
+        } catch (TestFailure) {
             $this->assertSame(0, HookCall::query()->count());
             $this->assertSame(['hooks.main_ready', 'test.tasks'], $this->storedTypeKeys());
         }

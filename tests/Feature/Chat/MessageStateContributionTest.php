@@ -9,38 +9,16 @@ use App\Domain\Chat\Models\Message;
 use App\Domain\Chat\RequireMessageAnswer;
 use App\Domain\Hooks\Models\AgentStackRow;
 use App\Domain\Hooks\Models\StackAlreadyClosed;
-use App\Domain\Hooks\OperationDeadline;
-use App\Domain\Hooks\Programs\ProgramReplies;
-use App\Domain\Hooks\Stack\HookAnswer;
 use App\Domain\Hooks\Storage\FrameRecord;
 use App\Domain\Tasks\Models\Task;
 use App\Domain\Tasks\StartTask;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\DB;
 use Tests\Support\CommittedHookStack;
 use Tests\TestCase;
 
 final class MessageStateContributionTest extends TestCase
 {
     use CommittedHookStack;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        DB::table('messages')->truncate();
-        DB::table('tasks')->truncate();
-        $this->launchCommittedStack(withTestStateTypes: false);
-    }
-
-    protected function tearDown(): void
-    {
-        DB::table('messages')->truncate();
-        DB::table('tasks')->truncate();
-        $this->emptyHookTables();
-
-        parent::tearDown();
-    }
 
     public function test_asking_for_an_answer_commits_the_request_and_its_state_together(): void
     {
@@ -90,12 +68,5 @@ final class MessageStateContributionTest extends TestCase
 
         $this->assertSame('{}', $this->answerStop('call-1'));
         $this->assertSame(['hooks.main_ready'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, AgentStackRow::query()->sole()->frames->all()));
-    }
-
-    private function answerStop(string $callId): string
-    {
-        $this->callAs($callId);
-
-        return $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), fn (HookAnswer $answer) => ProgramReplies::stop($answer))->stdout;
     }
 }

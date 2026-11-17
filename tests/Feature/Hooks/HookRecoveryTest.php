@@ -22,12 +22,12 @@ use App\Domain\Tasks\StartTask;
 use App\Domain\Tasks\TaskState;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
 final class HookRecoveryTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
 
     private const TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'tasks', 'links'];
 
@@ -35,14 +35,12 @@ final class HookRecoveryTest extends TestCase
     {
         parent::setUp();
 
-        $this->emptyTables();
         CarbonImmutable::setTestNow('2026-11-17 08:00:00');
     }
 
     protected function tearDown(): void
     {
         CarbonImmutable::setTestNow();
-        $this->emptyTables();
 
         parent::tearDown();
     }
@@ -116,14 +114,6 @@ final class HookRecoveryTest extends TestCase
         $this->assertSame(['hooks.main_ready'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($replacement)->frames->all()));
     }
 
-    /**
-     * @return array<int, string>
-     */
-    protected function connectionsToTransact(): array
-    {
-        return [];
-    }
-
     private function launch(): LaunchedAgent
     {
         return $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Test agent', 'role' => 'hooks.main_ready']), 'claude-code');
@@ -152,12 +142,5 @@ final class HookRecoveryTest extends TestCase
     private function wait(int $seconds): void
     {
         CarbonImmutable::setTestNow(CarbonImmutable::now()->addSeconds($seconds));
-    }
-
-    private function emptyTables(): void
-    {
-        foreach (self::TABLES as $table) {
-            DB::table($table)->truncate();
-        }
     }
 }

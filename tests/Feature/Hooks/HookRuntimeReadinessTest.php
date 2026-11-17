@@ -12,6 +12,7 @@ use App\Domain\Hooks\Inputs\HookIdentity;
 use App\Domain\Hooks\Inputs\ShellCommandParser;
 use App\Domain\Hooks\Programs\HookPayload;
 use App\Domain\Hooks\Programs\HookProgram;
+use App\Domain\Hooks\Programs\NativeCall;
 use App\Domain\Hooks\Programs\ProgramAdapters;
 use App\Domain\Hooks\RetentionPeriods;
 use App\Domain\Hooks\Stack\StateTypes;
@@ -26,6 +27,38 @@ use Tests\TestCase;
 
 final class HookRuntimeReadinessTest extends TestCase
 {
+    private const SHELL_CALL = ['tool_input' => ['command' => 'git status'], 'tool_response' => []];
+
+    private const EVENT_FIELDS = [
+        'claude-code' => [
+            'SessionStart' => ['source' => 'startup'],
+            'UserPromptSubmit' => ['prompt' => 'Build the walk.'],
+            'PreToolUse' => ['tool_name' => 'Bash', ...self::SHELL_CALL],
+            'PostToolUse' => ['tool_name' => 'Bash', ...self::SHELL_CALL],
+            'Stop' => ['stop_hook_active' => false],
+            'SessionEnd' => ['reason' => 'other'],
+        ],
+        'codex' => [
+            'SessionStart' => ['source' => 'startup'],
+            'UserPromptSubmit' => ['prompt' => 'Build the walk.'],
+            'PreToolUse' => ['tool_name' => 'shell', ...self::SHELL_CALL],
+            'PostToolUse' => ['tool_name' => 'shell', ...self::SHELL_CALL],
+            'Stop' => ['stop_hook_active' => false],
+        ],
+    ];
+
+    /**
+     * @return iterable<string, array{HookProgram, string}>
+     */
+    public static function programEvents(): iterable
+    {
+        foreach (HookProgram::cases() as $program) {
+            foreach ($program->nativeEvents() as $event) {
+                yield "{$program->value} {$event}" => [$program, $event];
+            }
+        }
+    }
+
     /**
      * @return iterable<string, array{HookProgram}>
      */
@@ -46,16 +79,14 @@ final class HookRuntimeReadinessTest extends TestCase
         $this->assertSame([], array_values(array_diff($capabilities->hookMethods, $this->hookMethods())));
     }
 
-    #[DataProvider('programs')]
-    public function test_every_event_the_isolated_settings_register_is_mapped_by_the_adapter(HookProgram $program): void
+    #[DataProvider('programEvents')]
+    public function test_every_event_the_isolated_settings_register_is_mapped_by_the_adapter(HookProgram $program, string $event): void
     {
-        $adapter = $this->app->make(ProgramAdapters::class)->for($program);
+        $payload = HookPayload::from(['session_id' => 'session-1', 'hook_event_name' => $event, ...self::EVENT_FIELDS[$program->value][$event]]);
 
-        foreach ($program->nativeEvents() as $event) {
-            $call = $adapter->callFor(HookPayload::from($this->minimalPayload($program, $event)), new HookIdentity(1, 10, 'call-1', hash('sha256', $event)));
+        $call = $this->app->make(ProgramAdapters::class)->for($program)->callFor($payload, new HookIdentity(1, 10, 'call-1', hash('sha256', $event)));
 
-            $this->assertNotNull($call, $event);
-        }
+        $this->assertInstanceOf(NativeCall::class, $call);
     }
 
     public function test_the_runtime_binds_the_real_parser_launch_transaction_and_state_types(): void
@@ -111,23 +142,5 @@ final class HookRuntimeReadinessTest extends TestCase
             fn (ReflectionMethod $method) => $method->getName(),
             array_filter((new ReflectionClass(AgentState::class))->getMethods(), fn (ReflectionMethod $method) => str_starts_with($method->getName(), 'on')),
         ));
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function minimalPayload(HookProgram $program, string $event): array
-    {
-        $shellTool = $program === HookProgram::ClaudeCode ? ['tool_name' => 'Bash'] : ['tool_name' => 'shell'];
-
-        return ['session_id' => 'session-1', 'hook_event_name' => $event, ...match ($event) {
-            'SessionStart' => ['source' => 'startup'],
-            'UserPromptSubmit' => ['prompt' => 'Build the walk.'],
-            'PreToolUse' => [...$shellTool, 'tool_input' => ['command' => 'git status']],
-            'PostToolUse' => [...$shellTool, 'tool_input' => ['command' => 'git status'], 'tool_response' => []],
-            'Stop' => ['stop_hook_active' => false],
-            'SessionEnd' => ['reason' => 'other'],
-            default => [],
-        }];
     }
 }

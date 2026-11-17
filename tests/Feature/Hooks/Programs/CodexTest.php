@@ -10,14 +10,10 @@ use App\Domain\Hooks\Decisions\StateReference;
 use App\Domain\Hooks\Inputs\CommandKind;
 use App\Domain\Hooks\Inputs\FileEditRequested;
 use App\Domain\Hooks\Inputs\FileOperation;
-use App\Domain\Hooks\Inputs\HookIdentity;
-use App\Domain\Hooks\Inputs\HookInput;
 use App\Domain\Hooks\Inputs\ShellCommandRequested;
 use App\Domain\Hooks\Inputs\StopRequested;
 use App\Domain\Hooks\Programs\CodexAdapter;
-use App\Domain\Hooks\Programs\HookPayload;
 use App\Domain\Hooks\Programs\JournalCall;
-use App\Domain\Hooks\Programs\NativeCall;
 use App\Domain\Hooks\Programs\ProgramReplies;
 use App\Domain\Hooks\Programs\ProgramReply;
 use App\Domain\Hooks\Programs\UnsupportedHook;
@@ -27,18 +23,16 @@ use App\Domain\Hooks\Stack\HookAnswer;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ScriptedState;
+use Tests\Support\ChecksProgramFixtures;
 use Tests\TestCase;
 
 final class CodexTest extends TestCase
 {
-    /**
-     * @return iterable<string, array{string, string}>
-     */
-    public static function mapping(): iterable
+    use ChecksProgramFixtures;
+
+    protected static function fixtureFolder(): string
     {
-        foreach (self::fixture('capabilities.json')['mapping'] as $name => $expected) {
-            yield $name => [$name, $expected];
-        }
+        return 'Codex';
     }
 
     #[DataProvider('mapping')]
@@ -124,7 +118,7 @@ final class CodexTest extends TestCase
 
     public function test_the_inputs_codex_has_no_callback_for_are_left_unmapped(): void
     {
-        foreach (self::fixture('capabilities.json')['unmapped inputs'] as $method) {
+        foreach (self::programFixture()->unmappedInputs() as $method) {
             $this->assertFalse($this->adapter()->capabilities()->supports($method));
         }
     }
@@ -142,33 +136,8 @@ final class CodexTest extends TestCase
         return ($call->render)($answer);
     }
 
-    private function inputOf(NativeCall $call): HookInput
-    {
-        $this->assertInstanceOf(JournalCall::class, $call);
-
-        return $call->input;
-    }
-
     private function adapter(): CodexAdapter
     {
         return $this->app->make(CodexAdapter::class);
-    }
-
-    private function payload(string $name): HookPayload
-    {
-        return HookPayload::from(self::fixture('hooks.json')['payloads'][$name]);
-    }
-
-    private function hook(): HookIdentity
-    {
-        return new HookIdentity(1, 10, 'call-1', hash('sha256', 'the input'));
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private static function fixture(string $file): array
-    {
-        return json_decode((string) file_get_contents(dirname(__DIR__, 3).'/Fixtures/Hooks/Codex/'.$file), true, flags: JSON_THROW_ON_ERROR);
     }
 }

@@ -11,27 +11,13 @@ use App\Domain\Hooks\Stack\HookAnswer;
 use App\Domain\Hooks\Stack\WalkStep;
 use App\Domain\Hooks\StackLockTimedOut;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
+use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommittedHookStack;
 use Tests\TestCase;
 
 final class HookTransactionTest extends TestCase
 {
     use CommittedHookStack;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->launchCommittedStack();
-    }
-
-    protected function tearDown(): void
-    {
-        $this->emptyHookTables();
-
-        parent::tearDown();
-    }
 
     public function test_a_hook_waiting_on_a_held_stack_lock_times_out_and_keeps_nothing(): void
     {
@@ -101,7 +87,7 @@ final class HookTransactionTest extends TestCase
         $handle = proc_open([PHP_BINARY, base_path('tests/bin/hold-stack-lock.php')], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, base_path(), $environment);
 
         if ($handle === false) {
-            throw new RuntimeException('The lock holder process did not start.');
+            throw TestFailure::lockHolderDidNotStart();
         }
 
         return ['handle' => $handle, 'stdout' => $pipes[1]];
@@ -115,7 +101,7 @@ final class HookTransactionTest extends TestCase
         $line = fgets($stream);
 
         if ($line !== "{$expected}\n") {
-            throw new RuntimeException('The lock holder said '.var_export($line, true)." instead of {$expected}.");
+            throw TestFailure::lockHolderSaid(var_export($line, true));
         }
     }
 }

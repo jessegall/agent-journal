@@ -28,8 +28,6 @@ final class HookCompactionTest extends TestCase
 {
     use CommittedHookStack;
 
-    private const OWNER_TABLES = ['tasks', 'sequence_runs', 'memories', 'memory_compactions', 'rules'];
-
     private Task $task;
 
     private SequenceRun $run;
@@ -37,9 +35,6 @@ final class HookCompactionTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->emptyOwnerTables();
-        $this->launchCommittedStack(withTestStateTypes: false);
 
         $this->task = Task::query()->create(['title' => 'Write the walk']);
         $this->app->make(StartTask::class)->start($this->task, $this->target);
@@ -52,17 +47,9 @@ final class HookCompactionTest extends TestCase
         Rule::query()->create(['text' => 'An old rule.'])->remove();
     }
 
-    protected function tearDown(): void
-    {
-        $this->emptyOwnerTables();
-        $this->emptyHookTables();
-
-        parent::tearDown();
-    }
-
     public function test_the_reminders_come_from_the_current_records_and_the_current_step(): void
     {
-        $context = $this->compact('call-1');
+        $context = json_decode($this->compact('call-1'), true, flags: JSON_THROW_ON_ERROR);
 
         $this->assertContains('Rule '.Rule::query()->where('text', 'No phase waits on the user.')->value('id').': No phase waits on the user.', $context);
         $this->assertContains('Memory: Use plain words.', $context);
@@ -112,9 +99,9 @@ final class HookCompactionTest extends TestCase
     }
 
     /**
-     * @return list<string>
+     * The reply to a compaction, which carries the answer's context as JSON.
      */
-    private function compact(string $callId): array
+    private function compact(string $callId): string
     {
         $this->callAs($callId, hash('sha256', $callId));
         $compaction = new ContextCompacted(new HookIdentity(1, 10, $callId, hash('sha256', $callId)), new CompactionDetails($callId));
@@ -122,18 +109,11 @@ final class HookCompactionTest extends TestCase
 
         $reply = $this->machine()->answer($compaction, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => new ProgramReply((string) json_encode($answer->context), '', 0));
 
-        return json_decode($reply->stdout, true, flags: JSON_THROW_ON_ERROR);
+        return $reply->stdout;
     }
 
     private function remember(string $text, int $weight): void
     {
         (new Memory(['text' => $text, 'weight' => $weight]))->keepFor(1);
-    }
-
-    private function emptyOwnerTables(): void
-    {
-        foreach (self::OWNER_TABLES as $table) {
-            DB::table($table)->truncate();
-        }
     }
 }

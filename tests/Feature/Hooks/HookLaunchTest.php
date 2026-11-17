@@ -36,28 +36,14 @@ use App\Domain\Tasks\StartTask;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Support\Facades\DB;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
 final class HookLaunchTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
 
     private const TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'tasks', 'links'];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->emptyTables();
-    }
-
-    protected function tearDown(): void
-    {
-        $this->emptyTables();
-
-        parent::tearDown();
-    }
 
     public function test_the_isolated_settings_hold_only_the_journal_hooks_and_turn_off_the_child_tool(): void
     {
@@ -157,14 +143,6 @@ final class HookLaunchTest extends TestCase
         $this->app->make(CredentialLookup::class)->sessionFor($launched->token);
     }
 
-    /**
-     * @return array<int, string>
-     */
-    protected function connectionsToTransact(): array
-    {
-        return [];
-    }
-
     private function launch(string $role, string $program = 'claude-code'): LaunchedAgent
     {
         $agent = Agent::query()->create(['name' => 'Test agent', 'role' => $role]);
@@ -219,12 +197,5 @@ final class HookLaunchTest extends TestCase
     private function targetOf(LaunchedAgent $launched): StackTarget
     {
         return new StackTarget($launched->session->agent_id, $launched->session->id);
-    }
-
-    private function emptyTables(): void
-    {
-        foreach (self::TABLES as $table) {
-            DB::table($table)->truncate();
-        }
     }
 }

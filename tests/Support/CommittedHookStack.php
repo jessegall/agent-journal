@@ -20,16 +20,18 @@ use App\Domain\Hooks\Inputs\StopDetails;
 use App\Domain\Hooks\Inputs\StopRequested;
 use App\Domain\Hooks\LaunchStacks;
 use App\Domain\Hooks\Models\AgentStackRow;
+use App\Domain\Hooks\OperationDeadline;
 use App\Domain\Hooks\Programs\ProgramCapabilities;
+use App\Domain\Hooks\Programs\ProgramReplies;
 use App\Domain\Hooks\Programs\RewriteSupport;
+use App\Domain\Hooks\Stack\HookAnswer;
 use App\Domain\Hooks\StackTransaction;
 use App\Domain\Hooks\States\ReadyStateType;
 use App\Domain\Hooks\Storage\FrameRecord;
 use App\Domain\Hooks\Storage\StackTarget;
 use App\Domain\Tasks\TaskWorkState;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Event;
+use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Fixtures\Hooks\ClosureStateType;
 use Tests\Fixtures\Hooks\InMemoryTaskType;
 use Tests\Fixtures\Hooks\ListedCommandParser;
@@ -37,8 +39,8 @@ use Tests\Fixtures\Hooks\RewritingState;
 use Tests\Fixtures\Hooks\ScriptedState;
 
 /**
- * Hook tests that commit real rows on the hook database: no wrapping transaction, a launched stack for agent 1,
- * session 10, the test state types, and tables emptied before and after each test.
+ * Hook tests that commit real rows on the hook database: no wrapping transaction, every committed table emptied before
+ * and after each test, the test state types, and a launched stack for agent 1, session 10.
  */
 trait CommittedHookStack
 {
@@ -56,14 +58,15 @@ trait CommittedHookStack
         return [];
     }
 
-    protected function launchCommittedStack(bool $withTestStateTypes = true): void
+    protected function setUpCommittedHookStack(): void
     {
-        $this->emptyHookTables();
+        $this->setUpRefreshHookDatabase();
+        $this->emptyTables(...self::committedTables());
         $this->target = new StackTarget(1, 10);
         $this->tasks = new InMemoryTaskType([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
         $this->app->instance(ShellCommandParser::class, new ListedCommandParser);
         $tasks = $this->tasks;
-        $withTestStateTypes && Event::listen(StateTypesRequested::class, function (StateTypesRequested $event) use ($tasks): void {
+        $this->app->make(Dispatcher::class)->listen(StateTypesRequested::class, function (StateTypesRequested $event) use ($tasks): void {
             $event->registry->register('test.tasks', $tasks);
             $event->registry->register('guide', new ClosureStateType(fn () => ScriptedState::delegating()));
             $event->registry->register('test.rewriting', new ClosureStateType(fn () => new RewritingState(
@@ -75,11 +78,19 @@ trait CommittedHookStack
         $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target, ReadyStateType::MainAgent));
     }
 
-    protected function emptyHookTables(): void
+    protected function tearDownCommittedHookStack(): void
     {
-        DB::table('agent_stacks')->truncate();
-        DB::table('hook_calls')->truncate();
-        DB::table('links')->truncate();
+        $this->emptyTables(...self::committedTables());
+    }
+
+    /**
+     * The answer the machine gives a stop from the launched agent under this call id.
+     */
+    protected function answerStop(string $callId): string
+    {
+        $this->callAs($callId);
+
+        return $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), fn (HookAnswer $answer) => ProgramReplies::stop($answer))->stdout;
     }
 
     protected function callAs(string $callId, ?string $inputDigest = null): void
@@ -131,6 +142,14 @@ trait CommittedHookStack
     protected static function inputDigest(string $input = 'the input'): string
     {
         return hash('sha256', $input);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function committedTables(): array
+    {
+        return ['agent_stacks', 'hook_calls', 'links', 'tasks', 'messages', 'sequence_runs', 'memories', 'memory_compactions', 'rules', 'users', 'agents', 'agent_sessions', 'launch_credentials', 'launch_bypasses', 'saved_commands'];
     }
 
     private function hookIdentity(): HookIdentity

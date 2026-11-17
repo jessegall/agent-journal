@@ -9,7 +9,7 @@ use App\Domain\Hooks\Inputs\HookInput;
 use App\Domain\Hooks\Inputs\StopRequested;
 use App\Domain\Hooks\States\AgentState;
 use App\Domain\Hooks\States\Ready;
-use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionMethod;
@@ -17,16 +17,6 @@ use Tests\Fixtures\Hooks\HookInputs;
 
 final class ReadyTest extends TestCase
 {
-    /**
-     * @return iterable<string, array{HookInput}>
-     */
-    public static function inputs(): iterable
-    {
-        foreach (HookInputs::all() as $name => $input) {
-            yield $name => [$input];
-        }
-    }
-
     public function test_ready_answers_every_hook_method_of_the_base_state_itself(): void
     {
         $this->assertSame([], $this->hooksNotAnsweredBy(Ready::class));
@@ -46,13 +36,13 @@ final class ReadyTest extends TestCase
         $this->assertContains('onSessionStart', $this->hooksNotAnsweredBy($partial::class));
     }
 
-    #[DataProvider('inputs')]
+    #[DataProviderExternal(HookInputs::class, 'dataSets')]
     public function test_ready_allows_each_hook(HookInput $input): void
     {
         $this->assertSame('allow', $input->answerBy(new Ready)->answerKind()->value);
     }
 
-    #[DataProvider('inputs')]
+    #[DataProviderExternal(HookInputs::class, 'dataSets')]
     public function test_the_base_state_delegates_each_hook(HookInput $input): void
     {
         $this->assertSame('delegate', $input->answerBy(new class extends AgentState {})->answerKind()->value);

@@ -24,15 +24,14 @@ use App\Domain\Tasks\Models\Task;
 use App\Domain\Tasks\StartTask;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestLaunch;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
 final class HookEndpointTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
 
     private const TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'tasks', 'links'];
 
@@ -42,18 +41,10 @@ final class HookEndpointTest extends TestCase
     {
         parent::setUp();
 
-        $this->emptyTables();
         $this->launch = TestLaunch::start('hooks.main_ready');
         $this->asLaunchedAgent(fn () => $this->app->make(StackTransaction::class)->run(
             fn () => $this->app->make(LaunchStacks::class)->open($this->target(), ReadyStateType::MainAgent),
         ));
-    }
-
-    protected function tearDown(): void
-    {
-        $this->emptyTables();
-
-        parent::tearDown();
     }
 
     public function test_an_allowed_stop_answers_the_host_with_an_empty_object(): void
@@ -165,14 +156,6 @@ final class HookEndpointTest extends TestCase
     }
 
     /**
-     * @return array<int, string>
-     */
-    protected function connectionsToTransact(): array
-    {
-        return [];
-    }
-
-    /**
      * @return TestResponse<Response>
      */
     private function hook(string $program, string $body, string $callId = 'call-1'): TestResponse
@@ -207,12 +190,5 @@ final class HookEndpointTest extends TestCase
     private function bashBody(string $command): string
     {
         return (string) json_encode(['session_id' => 'session-redacted', 'hook_event_name' => 'PreToolUse', 'tool_name' => 'Bash', 'tool_input' => ['command' => $command]]);
-    }
-
-    private function emptyTables(): void
-    {
-        foreach (self::TABLES as $table) {
-            DB::table($table)->truncate();
-        }
     }
 }

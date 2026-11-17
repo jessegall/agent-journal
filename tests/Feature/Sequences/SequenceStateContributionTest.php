@@ -11,7 +11,6 @@ use App\Domain\Hooks\Models\AgentStackRow;
 use App\Domain\Hooks\Models\StackAlreadyClosed;
 use App\Domain\Hooks\OperationDeadline;
 use App\Domain\Hooks\Programs\ProgramCapabilities;
-use App\Domain\Hooks\Programs\ProgramReplies;
 use App\Domain\Hooks\Programs\ProgramReply;
 use App\Domain\Hooks\Programs\RewriteSupport;
 use App\Domain\Hooks\Stack\HookAnswer;
@@ -19,29 +18,12 @@ use App\Domain\Sequences\Models\SequenceRun;
 use App\Domain\Sequences\SequenceRunState;
 use App\Domain\Sequences\StartSequence;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\DB;
 use Tests\Support\CommittedHookStack;
 use Tests\TestCase;
 
 final class SequenceStateContributionTest extends TestCase
 {
     use CommittedHookStack;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        DB::table('sequence_runs')->truncate();
-        $this->launchCommittedStack(withTestStateTypes: false);
-    }
-
-    protected function tearDown(): void
-    {
-        DB::table('sequence_runs')->truncate();
-        $this->emptyHookTables();
-
-        parent::tearDown();
-    }
 
     public function test_starting_a_run_commits_the_start_and_its_state_together(): void
     {
@@ -84,7 +66,7 @@ final class SequenceStateContributionTest extends TestCase
         $run = $this->newRun();
         $this->app->make(StartSequence::class)->start($run, $this->target);
 
-        $context = $this->answerCompaction('call-1');
+        $context = json_decode($this->answerCompaction('call-1'), true, flags: JSON_THROW_ON_ERROR);
 
         $this->assertSame(["Sequence run {$run->id} is on step 1: Read the brief."], $context);
         $this->assertSame(1, $run->fresh()?->current_step);
@@ -113,17 +95,10 @@ final class SequenceStateContributionTest extends TestCase
         return SequenceRun::query()->create(['name' => 'Close a task', 'steps' => ['Read the brief.', 'Run the phase tests.']]);
     }
 
-    private function answerStop(string $callId): string
-    {
-        $this->callAs($callId);
-
-        return $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), fn (HookAnswer $answer) => ProgramReplies::stop($answer))->stdout;
-    }
-
     /**
-     * @return list<string>
+     * The reply to a compaction, which carries the answer's context as JSON.
      */
-    private function answerCompaction(string $callId): array
+    private function answerCompaction(string $callId): string
     {
         $this->callAs($callId);
         $capabilities = new ProgramCapabilities('Test program', 'compaction context', ['onCompaction'], RewriteSupport::WithoutApproval);
@@ -131,6 +106,6 @@ final class SequenceStateContributionTest extends TestCase
 
         $reply = $this->machine()->answer($compaction, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => new ProgramReply(json_encode($answer->context) ?: '[]', '', 0));
 
-        return json_decode($reply->stdout, true);
+        return $reply->stdout;
     }
 }

@@ -6,11 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Domain\Hooks\Decisions\NoSubject;
 use App\Domain\Hooks\Decisions\StateReference;
-use App\Domain\Hooks\OperationDeadline;
-use App\Domain\Hooks\Programs\ProgramReplies;
-use App\Domain\Hooks\Stack\HookAnswer;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommittedHookStack;
 use Tests\TestCase;
@@ -23,22 +19,8 @@ final class StackInspectionTest extends TestCase
     {
         parent::setUp();
 
-        DB::table('links')->truncate();
-        $this->launchCommittedStack();
         $this->pushState($this->task(42));
         $this->pushState(new StateReference('guide', NoSubject::None));
-    }
-
-    protected function tearDown(): void
-    {
-        DB::table('links')->truncate();
-        DB::table('users')->truncate();
-        foreach (['agents', 'agent_sessions', 'launch_credentials'] as $table) {
-            DB::table($table)->truncate();
-        }
-        $this->emptyHookTables();
-
-        parent::tearDown();
     }
 
     public function test_a_user_sees_the_frames_bottom_first_and_the_last_walk_as_it_ran(): void
@@ -91,12 +73,5 @@ final class StackInspectionTest extends TestCase
         $agent = TestLaunch::start();
 
         $this->call('GET', '/hooks/stacks/1/10', server: $agent->serverHeaders(''))->assertUnauthorized();
-    }
-
-    private function answerStop(string $callId): string
-    {
-        $this->callAs($callId);
-
-        return $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), fn (HookAnswer $answer) => ProgramReplies::stop($answer))->stdout;
     }
 }

@@ -39,6 +39,18 @@ use App\Domain\Hooks\Inputs\ToolResult;
 final class HookInputs
 {
     /**
+     * Every hook input as a PHPUnit data set named for its hook.
+     *
+     * @return iterable<string, array{HookInput}>
+     */
+    public static function dataSets(): iterable
+    {
+        foreach (self::all() as $name => $input) {
+            yield $name => [$input];
+        }
+    }
+
+    /**
      * @return array<string, HookInput>
      */
     public static function all(): array

@@ -6,7 +6,6 @@ namespace Tests\Support;
 
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
-use LogicException;
 
 /**
  * Points a test at the dedicated Postgres database journal_hooks_test instead of phpunit.xml's SQLite default.
@@ -21,7 +20,7 @@ final class HookDatabase
     public static function select(Application $app): void
     {
         if (! $app->environment('testing')) {
-            throw new LogicException('The hook test database is only selected while testing.');
+            throw HookDatabaseRefused::outsideTesting();
         }
 
         $config = $app->make('config');
@@ -36,7 +35,7 @@ final class HookDatabase
         $selected = $database->connection()->getDatabaseName();
 
         if ($selected !== self::NAME) {
-            throw new LogicException("The hook tests selected the database {$selected}, not ".self::NAME.'.');
+            throw HookDatabaseRefused::otherDatabase($selected);
         }
     }
 }

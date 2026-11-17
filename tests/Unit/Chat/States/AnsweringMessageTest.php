@@ -26,6 +26,7 @@ use App\Domain\Hooks\Inputs\ShellDialect;
 use App\Domain\Hooks\Inputs\StopDetails;
 use App\Domain\Hooks\Inputs\StopRequested;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;
 
@@ -49,16 +50,6 @@ final class AnsweringMessageTest extends TestCase
     {
         yield 'answered' => [MessageWorkState::Answered];
         yield 'dismissed' => [MessageWorkState::Dismissed];
-    }
-
-    /**
-     * @return iterable<string, array{HookInput}>
-     */
-    public static function everyHook(): iterable
-    {
-        foreach (HookInputs::all() as $name => $input) {
-            yield $name => [$input];
-        }
     }
 
     public function test_the_session_start_adds_the_reply_instruction_and_delegates(): void
@@ -108,7 +99,7 @@ final class AnsweringMessageTest extends TestCase
         $this->assertFalse($this->unanswered()->isFinished());
     }
 
-    #[DataProvider('everyHook')]
+    #[DataProviderExternal(HookInputs::class, 'dataSets')]
     public function test_a_settled_message_blocks_no_hook(HookInput $input): void
     {
         $answered = new AnsweringMessage(new MessageWork(95, MessageWorkState::Answered));
