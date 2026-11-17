@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\ThreeCycle\Chat;
 
-use App\Domains\Domain;
+use App\Domain\Domain;
 use Tests\Fixtures\Domains\ThreeCycle\Hooks\HooksDomain;
 
 final class ChatDomain implements Domain

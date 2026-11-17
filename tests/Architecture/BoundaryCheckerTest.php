@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Domains\DomainRegistry;
+use App\Domain\DomainRegistry;
 use PHPUnit\Framework\TestCase;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;
@@ -44,12 +44,12 @@ final class BoundaryCheckerTest extends TestCase
 
     public function test_the_shared_place_may_use_no_domain(): void
     {
-        $use = new NameUse(dirname(__DIR__, 2).'/app/Domains/DomainRegistry.php', 3, 'Tests\Fixtures\Boundary\Chat\Message', NameKind::Type);
+        $use = new NameUse(dirname(__DIR__, 2).'/app/Domain/DomainRegistry.php', 3, 'Tests\Fixtures\Boundary\Chat\Message', NameKind::Type);
 
         $violations = $this->checker()->violations([$use]);
 
         $this->assertCount(1, $violations);
-        $this->assertSame('uses Tests\Fixtures\Boundary\Chat\Message, but Domains does not require Chat', $violations[0]->reason());
+        $this->assertSame('uses Tests\Fixtures\Boundary\Chat\Message, but the domain foundation does not require Chat', $violations[0]->reason());
     }
 
     public function test_the_report_names_each_file_and_line_and_ends_with_the_question(): void

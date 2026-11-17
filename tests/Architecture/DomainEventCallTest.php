@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Domains\DomainEntry;
-use App\Domains\DomainRegistry;
+use App\Domain\Domain;
+use App\Domain\DomainRegistry;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
@@ -61,7 +61,7 @@ final class DomainEventCallTest extends TestCase
     public function test_no_domain_of_the_real_app_names_or_raises_an_event_it_may_not(): void
     {
         $registry = $this->app->make(DomainRegistry::class);
-        $folders = [app_path('Domains'), ...array_map(fn (DomainEntry $entry) => $entry->folder, $registry->all())];
+        $folders = [dirname((string) (new \ReflectionClass(Domain::class))->getFileName())];
         $calls = [];
 
         foreach (DomainFiles::in($folders) as $file) {

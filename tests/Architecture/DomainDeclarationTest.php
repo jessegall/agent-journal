@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Domains\Domain;
-use App\Domains\DomainRegistry;
+use App\Domain\Domain;
+use App\Domain\DomainRegistry;
 use ReflectionClass;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DeclarationRules;
@@ -38,7 +38,7 @@ final class DomainDeclarationTest extends TestCase
     ];
 
     /**
-     * The fixed files of the shared place App\Domains, relative to its folder.
+     * The fixed files of the domain foundation at the root of App\Domain, relative to its folder; each domain is a folder beside them.
      */
     private const array SHARED_PLACE_FILES = [
         'Domain.php',
@@ -58,13 +58,13 @@ final class DomainDeclarationTest extends TestCase
     public function test_the_real_app_declares_everything_where_it_belongs(): void
     {
         $appFolder = $this->appFolder();
-        $sharedFolder = $appFolder.'/Domains';
+        $sharedFolder = $appFolder.'/Domain';
         $starterKitFiles = array_map(fn (string $file) => "{$appFolder}/{$file}", self::STARTER_KIT_FILES);
         $rules = $this->rules($this->app->make(DomainRegistry::class));
-        $files = DomainFiles::in([$appFolder, dirname($appFolder).'/domain']);
+        $files = DomainFiles::in([$appFolder]);
 
         $violations = [
-            ...$rules->misnamedDomainClasses($files, 'Domain'),
+            ...$rules->misnamedDomainClasses($files, 'App\Domain'),
             ...$rules->filesOutsideDomains($files, $sharedFolder, $starterKitFiles),
             ...$rules->starterKitDomainUses($starterKitFiles),
             ...$rules->namespacesOutsideDomains(),
@@ -79,8 +79,8 @@ final class DomainDeclarationTest extends TestCase
         $files = DomainFiles::in([$this->fixture('Good'), $this->fixture('Deep'), $this->fixture('Based')]);
 
         $this->assertSame([
-            'declares Tests\Fixtures\Declarations\Based\ConcreteBased, but a Domain class must be Domain\<Name>\<Name>Domain',
-            'declares Tests\Fixtures\Declarations\Deep\Inner\InnerDomain, but a Domain class must be Domain\<Name>\<Name>Domain',
+            'declares Tests\Fixtures\Declarations\Based\ConcreteBased, but a Domain class must be App\Domain\<Name>\<Name>Domain',
+            'declares Tests\Fixtures\Declarations\Deep\Inner\InnerDomain, but a Domain class must be App\Domain\<Name>\<Name>Domain',
         ], $this->reasons($this->rules($this->registry())->misnamedDomainClasses($files, 'Tests\Fixtures\Declarations')));
     }
 

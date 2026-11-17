@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Declarations\Deep\Inner;
 
-use App\Domains\Domain;
+use App\Domain\Domain;
 
 final class InnerDomain implements Domain
 {

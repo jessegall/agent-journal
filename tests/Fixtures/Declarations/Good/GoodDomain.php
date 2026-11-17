@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Declarations\Good;
 
-use App\Domains\Domain;
+use App\Domain\Domain;
 
 final class GoodDomain implements Domain
 {

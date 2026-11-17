@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Domains\DomainEntry;
-use App\Domains\DomainRegistry;
+use App\Domain\Domain;
+use App\Domain\DomainRegistry;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
@@ -13,7 +13,7 @@ use Tests\Architecture\Support\ProjectRoots;
 use Tests\TestCase;
 
 /**
- * Every domain uses only its own code, App\Domains, code outside the project, and the domains it declares.
+ * Every domain uses only its own code, App\Domain, code outside the project, and the domains it declares.
  *
  * What this test does not see: class names built at run time, class names read from config, relation chains
  * on untyped models, morph alias lookups, raw SQL text, where on tasks.id and select on tasks.*, Blade views,
@@ -27,7 +27,7 @@ final class DomainBoundaryTest extends TestCase
     {
         $registry = $this->app->make(DomainRegistry::class);
         $roots = ProjectRoots::fromComposer(base_path('composer.json'));
-        $folders = [app_path('Domains'), ...array_map(fn (DomainEntry $entry) => $entry->folder, $registry->all())];
+        $folders = [dirname((string) (new \ReflectionClass(Domain::class))->getFileName())];
 
         $violations = (new BoundaryChecker($registry->all(), $roots))
             ->violations(DomainFiles::usesIn(DomainFiles::in($folders), $roots));

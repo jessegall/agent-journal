@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Domains\DomainEntry;
+use App\Domain\DomainEntry;
 
 /**
  * Judges name uses against the domain each file belongs to and the domains it declares it requires.
  */
 final readonly class BoundaryChecker
 {
-    private const string SHARED_NAMESPACE = 'App\\Domains\\';
+    private const string SHARED_NAMESPACE = 'App\\Domain\\';
 
-    private const string SHARED_PLACE = 'Domains';
+    private const string SHARED_PLACE = 'the domain foundation';
 
     /**
      * @param  list<DomainEntry>  $entries
@@ -43,15 +43,11 @@ final readonly class BoundaryChecker
      */
     private function violationsOf(NameUse $use): array
     {
-        if ($this->isShared($use->name)) {
-            return [];
-        }
-
         $user = $this->domainHolding($use->file);
         $owner = $this->domainOwning($use->name);
         $userName = $user->name ?? self::SHARED_PLACE;
 
-        if ($owner === null && ! $this->roots->startsWithProjectNamespace($use->name)) {
+        if ($owner === null && ($this->isShared($use->name) || ! $this->roots->startsWithProjectNamespace($use->name))) {
             return [];
         }
 

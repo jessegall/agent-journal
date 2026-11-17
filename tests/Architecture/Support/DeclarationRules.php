@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Domains\Domain;
-use App\Domains\DomainEntry;
+use App\Domain\Domain;
+use App\Domain\DomainEntry;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\NodeFinder;
@@ -117,7 +117,7 @@ final readonly class DeclarationRules
     }
 
     /**
-     * The shared place holds exactly its fixed files, given relative to its folder.
+     * The domain foundation holds exactly its fixed files beside the domain folders, given relative to its folder.
      *
      * @param  list<string>  $fixedFiles
      * @return list<Violation>
@@ -127,8 +127,12 @@ final readonly class DeclarationRules
         $violations = [];
 
         foreach (DomainFiles::allIn($sharedFolder) as $path) {
+            if ($this->domainHolding($path) !== null) {
+                continue;
+            }
+
             if (! in_array(substr($path, strlen($sharedFolder) + 1), $fixedFiles, true)) {
-                $violations[] = new Violation($path, 1, $path, 'Domains', 'Domains', ViolationKind::SharedPlaceFile);
+                $violations[] = new Violation($path, 1, $path, 'App\Domain', 'App\Domain', ViolationKind::SharedPlaceFile);
             }
         }
 

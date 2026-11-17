@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Shelves;
 
-use App\Domains\Domain;
+use App\Domain\Domain;
 
 final class ShelvesDomain implements Domain
 {

@@ -18,7 +18,6 @@
     <source>
         <include>
             <directory>app</directory>
-            <directory>domain</directory>
         </include>
     </source>
     <php>

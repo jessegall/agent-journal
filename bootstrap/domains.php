@@ -1,18 +1,18 @@
 <?php
 
 declare(strict_types=1);
-use Domain\Agents\AgentsDomain;
-use Domain\Chat\ChatDomain;
-use Domain\Hooks\HooksDomain;
-use Domain\Links\LinksDomain;
-use Domain\Memory\MemoryDomain;
-use Domain\Plans\PlansDomain;
-use Domain\Processes\ProcessesDomain;
-use Domain\Profiles\ProfilesDomain;
-use Domain\Reminders\RemindersDomain;
-use Domain\Rules\RulesDomain;
-use Domain\Sequences\SequencesDomain;
-use Domain\Tasks\TasksDomain;
+use App\Domain\Agents\AgentsDomain;
+use App\Domain\Chat\ChatDomain;
+use App\Domain\Hooks\HooksDomain;
+use App\Domain\Links\LinksDomain;
+use App\Domain\Memory\MemoryDomain;
+use App\Domain\Plans\PlansDomain;
+use App\Domain\Processes\ProcessesDomain;
+use App\Domain\Profiles\ProfilesDomain;
+use App\Domain\Reminders\RemindersDomain;
+use App\Domain\Rules\RulesDomain;
+use App\Domain\Sequences\SequencesDomain;
+use App\Domain\Tasks\TasksDomain;
 
 return [
     TasksDomain::class,

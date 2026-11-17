@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\Events\Plans;
 
-use App\Domains\Domain;
+use App\Domain\Domain;
 use Tests\Fixtures\Boundary\Events\Tasks\TasksDomain;
 
 final class PlansDomain implements Domain

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Reports;
 
-use App\Domains\Domain;
+use App\Domain\Domain;
 use Tests\Fixtures\Domains\Plans\PlansDomain;
 use Tests\Fixtures\Domains\Tasks\TasksDomain;
 

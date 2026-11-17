@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Domains\DomainEntry;
+use App\Domain\DomainEntry;
 
 /**
  * Judges table use: each table belongs to the domain whose migrations create it, and others reach it only as declared.
