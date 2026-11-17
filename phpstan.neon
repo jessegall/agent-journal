@@ -9,5 +9,8 @@ parameters:
         - config/
         - database/
         - routes/
+        - bootstrap/domains.php
+        - tests/Architecture/
+        - tests/Fixtures/
 
     level: 7

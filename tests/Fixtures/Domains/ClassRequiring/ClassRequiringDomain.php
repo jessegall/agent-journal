@@ -14,11 +14,9 @@ final class ClassRequiringDomain implements Domain
         return 'A fixture domain that requires a class that is not a domain.';
     }
 
-    /**
-     * @phpstan-ignore return.type
-     */
     public function requires(): array
     {
+        // @phpstan-ignore return.type (this fixture breaks the contract on purpose)
         return [TaskList::class];
     }
 }
