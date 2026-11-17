@@ -25,6 +25,11 @@ enum ViolationKind: string
     case StringEventName = 'string-event-name';
     case ReRaisedEvent = 're-raised-event';
     case ReRaisedReceivedEvent = 're-raised-received-event';
+    case MisnamedDomainClass = 'misnamed-domain-class';
+    case FileOutsideDomains = 'file-outside-domains';
+    case StarterKitUsesDomain = 'starter-kit-uses-domain';
+    case NamespaceOutsideDomain = 'namespace-outside-domain';
+    case SharedPlaceFile = 'shared-place-file';
 
     public function reason(Violation $violation): string
     {
@@ -44,6 +49,11 @@ enum ViolationKind: string
             self::StringEventName => "names the event {$violation->used} by a string; name its event class instead",
             self::ReRaisedEvent => "raises {$violation->used} again, an event of {$violation->owner}; only its owner raises it",
             self::ReRaisedReceivedEvent => "passes the event it received, {$violation->used}, on to a raise; only the owner of an event raises it",
+            self::MisnamedDomainClass => "declares {$violation->used}, but a Domain class must be App\\<Name>\\<Name>Domain",
+            self::FileOutsideDomains => 'lies outside every domain; new behaviour lives in a domain, and the starter-kit list is for existing starter-kit code until it moves',
+            self::StarterKitUsesDomain => "is starter-kit code that uses {$violation->used} of {$violation->owner}; starter-kit code may use no domain",
+            self::NamespaceOutsideDomain => "declares namespace {$violation->used}, outside {$violation->owner}",
+            self::SharedPlaceFile => 'is not one of the fixed files of App\\Domains; the shared place holds only Domain, DomainEntry, DomainRegistry, DomainServiceProvider and the named start-up exceptions',
             self::EventOutsideListener => "names {$violation->used}, an event of {$violation->owner}; only a listener of {$violation->usingDomain} may name it, as an import, a type or ::class",
         };
     }

@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Fixtures\Declarations\Deep\Inner;
+
+use App\Domains\Domain;
+
+final class InnerDomain implements Domain
+{
+    public function description(): string
+    {
+        return 'A fixture domain one level too deep.';
+    }
+
+    public function requires(): array
+    {
+        return [];
+    }
+}

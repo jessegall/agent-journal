@@ -35,6 +35,26 @@ final class DomainFiles
     }
 
     /**
+     * Every file of a folder, whatever its extension.
+     *
+     * @return list<string>
+     */
+    public static function allIn(string $folder): array
+    {
+        $files = [];
+
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, RecursiveDirectoryIterator::SKIP_DOTS)) as $entry) {
+            if ($entry instanceof SplFileInfo && $entry->isFile()) {
+                $files[] = $entry->getPathname();
+            }
+        }
+
+        sort($files);
+
+        return $files;
+    }
+
+    /**
      * @param  list<string>  $files
      * @return list<NameUse>
      */

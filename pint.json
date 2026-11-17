@@ -3,6 +3,9 @@
     "rules": {
         "declare_strict_types": true
     },
+    "exclude": [
+        ".journal"
+    ],
     "notPath": [
         "tests/Fixtures"
     ]
