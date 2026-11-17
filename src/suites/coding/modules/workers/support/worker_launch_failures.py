@@ -1,3 +1,5 @@
+import re
+
 from engine.database.row_history import RowHistory
 from engine.event.event_log import EventLog
 from engine.model.tables import Tables
@@ -9,11 +11,13 @@ from core.modules.helpers.support.exit_reasons import ExitReasons
 LAUNCH_FAILURE_SECONDS = 10
 MISSING_ERROR_TEXT = "its program gave no error text"
 STARTED_FIELD = "process_started_at"
+WORDS = re.compile(r"[A-Za-z]{2}")
 
 
 class WorkerLaunchFailures:
     """Tells a program that ended within seconds of its start from a worker that stopped, and reads the error
-    its program wrote. The start of the run is the newest process start the row was given, since the row loses
+    its program wrote: the last line of its terminal that holds words, so a stray number or the remnant of a
+    screen code is never given as the error. The start of the run is the newest process start the row was given, since the row loses
     it when a tick ends a worker whose process is gone."""
 
     def __init__(self, reasons: ExitReasons, providers: Providers, log: EventLog, tables: Tables) -> None:
@@ -33,5 +37,5 @@ class WorkerLaunchFailures:
     def error_text(self, worker: Agent) -> str:
         terminal = self.reasons.terminal_tail(worker)
         outcome = self.providers.provider(worker.program).helper_outcome(terminal, "")
-        last_line = next((line.strip() for line in reversed(terminal.splitlines()) if line.strip()), "")
+        last_line = next((line.strip() for line in reversed(terminal.splitlines()) if WORDS.search(line)), "")
         return outcome.error or last_line or MISSING_ERROR_TEXT
