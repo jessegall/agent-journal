@@ -6,6 +6,8 @@ namespace App\Domain\Web\Http\Controllers;
 
 use App\Domain\UiDeclarations;
 use App\Domain\Web\Http\DeclaredRouteKey;
+use App\Domain\Web\Http\Requests\DeclaredPageRequest;
+use App\Domain\Web\Support\PageProps;
 use Illuminate\Routing\Route;
 use Inertia\Response;
 use Inertia\ResponseFactory;
@@ -20,10 +22,10 @@ final readonly class PageController
         private ResponseFactory $inertia,
     ) {}
 
-    public function __invoke(Route $route): Response
+    public function __invoke(Route $route, DeclaredPageRequest $request, PageProps $props): Response
     {
         $page = $this->declarations->page(DeclaredRouteKey::of($route));
 
-        return $this->inertia->render($page->key);
+        return $this->inertia->render($page->key, $props->forPage($page, $request));
     }
 }

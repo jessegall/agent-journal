@@ -199,6 +199,9 @@ case	ViolationKind::TableCreatedTwice
 case	ViolationKind::TableNotWritten
 case	ViolationKind::TableOfNoDomain
 case	ViolationKind::UndeclaredDomain
+case	WindowState::Denied
+case	WindowState::Failed
+case	WindowState::Ready
 class	AccessDomain
 class	AccessServiceProvider
 class	AccessSettings
@@ -347,9 +350,11 @@ class	DatabaseAssignmentTransaction
 class	DatabaseLaunchTransaction
 class	Decision
 class	DeclarationRules
+class	DeclaredPageRequest
 class	DeclaredRouteKey
 class	DeclaredRoutes
 class	Denied
+class	DeniedWindow
 class	DocblockScan
 class	DocblockTagInvalid
 class	DocblockTypeCollector
@@ -368,6 +373,7 @@ class	EventCall
 class	EventCallScan
 class	ExceptionPlacement
 class	Exports
+class	FailedWindow
 class	FileChange
 class	FileChanges
 class	FileEditRequested
@@ -491,6 +497,7 @@ class	OwnerSeeder
 class	Page
 class	PageChanged
 class	PageController
+class	PageProps
 class	PaginationData
 class	ParseFailed
 class	ParsedFile
@@ -551,8 +558,11 @@ class	PushTaskState
 class	RaisePlanProgressChanged
 class	ReadOnlyHelperReadyState
 class	ReaderDataClass
+class	ReaderDataMismatch
 class	ReaderDefinition
+class	ReaderRequests
 class	ReadyState
+class	ReadyWindow
 class	Reason
 class	ReassignPlanWorkCommand
 class	ReassignPlanWorkController
@@ -646,6 +656,7 @@ class	SignedCall
 class	SignedInScope
 class	Slot
 class	SlotContext
+class	SlotContexts
 class	StackAccess
 class	StackAlreadyClosed
 class	StackInspection
@@ -752,6 +763,7 @@ class	VisibleTasks
 class	WalkStep
 class	WebDomain
 class	WebServiceProvider
+class	WindowResults
 class	WorkingOnTaskState
 class	WorkingOnTaskStateFactory
 class	WorkingOnTaskStateReference
@@ -783,6 +795,7 @@ constant	EventCallScan::EVENT_FACADES
 constant	EventCallScan::FACADE_METHODS
 constant	EventCallScan::HELPERS
 constant	EventCallScan::RECEIVER_METHODS
+constant	FailedWindow::MESSAGE
 constant	FollowingSequenceStateReference::TYPE_KEY
 constant	HomePage::COMPONENT
 constant	HomeRequest::RULES_KEY_PREFIX
@@ -868,6 +881,7 @@ enum	TaskWorkState
 enum	ToolOutcome
 enum	TransitionKind
 enum	ViolationKind
+enum	WindowState
 interface	Actor
 interface	AgentAuthority
 interface	AgentReader
@@ -1414,6 +1428,12 @@ method	DeclarationRules::liesIn()
 method	DeclarationRules::misnamedDomainClasses()
 method	DeclarationRules::namespacesOutsideDomains()
 method	DeclarationRules::starterKitDomainUses()
+method	DeclaredPageRequest::chosenSession()
+method	DeclaredPageRequest::inspectedPage()
+method	DeclaredPageRequest::parameter()
+method	DeclaredPageRequest::plainQuery()
+method	DeclaredPageRequest::rules()
+method	DeclaredPageRequest::windowQuery()
 method	DeclaredRouteKey::of()
 method	DeclaredRoutes::__construct()
 method	DeclaredRoutes::nameOf()
@@ -1425,6 +1445,8 @@ method	DeclaredRoutes::uriOf()
 method	Denied::__construct()
 method	Denied::kind()
 method	Denied::reason()
+method	DeniedWindow::__construct()
+method	DeniedWindow::make()
 method	DocblockScan::__construct()
 method	DocblockScan::enterNode()
 method	DocblockScan::of()
@@ -1497,6 +1519,8 @@ method	EventCallScan::of()
 method	ExceptionPlacement::exceptionsDeclaredIn()
 method	ExceptionPlacement::misplacedIn()
 method	Exports::check()
+method	FailedWindow::__construct()
+method	FailedWindow::make()
 method	FileChange::__construct()
 method	FileChanges::__construct()
 method	FileChanges::paths()
@@ -1851,6 +1875,13 @@ method	PageController::__construct()
 method	PageController::__invoke()
 method	PageOption::key()
 method	PageOption::label()
+method	PageProps::__construct()
+method	PageProps::forHome()
+method	PageProps::forPage()
+method	PageProps::inspectorResult()
+method	PageProps::pageResult()
+method	PageProps::sectionResult()
+method	PageProps::sectionsOf()
 method	PageReader::read()
 method	PaginationData::__construct()
 method	PaginationData::fromPlanList()
@@ -2048,9 +2079,15 @@ method	RaisePlanProgressChanged::handle()
 method	ReadOnlyHelperReadyState::onFileEdit()
 method	ReadOnlyHelperReadyState::onShellCommand()
 method	ReaderDataClass::of()
+method	ReaderDataMismatch::for()
 method	ReaderDefinition::__construct()
 method	ReaderDefinition::of()
 method	ReaderDefinition::requestOf()
+method	ReaderRequests::__construct()
+method	ReaderRequests::build()
+method	ReaderRequests::pageReader()
+method	ReaderRequests::parameterFor()
+method	ReaderRequests::sectionReader()
 method	ReadsAssignmentArguments::recordFields()
 method	ReadsAssignmentInput::expected()
 method	ReadsAssignmentInput::expectedRules()
@@ -2080,6 +2117,8 @@ method	ReadyStateType::forKey()
 method	ReadyStateType::newState()
 method	ReadyStateType::schemaVersion()
 method	ReadyStateType::stateFor()
+method	ReadyWindow::__construct()
+method	ReadyWindow::of()
 method	Reason::__construct()
 method	ReassignPlanWorkCommand::handle()
 method	ReassignPlanWorkController::__invoke()
@@ -2318,6 +2357,8 @@ method	SlotContext::__construct()
 method	SlotContext::nothing()
 method	SlotContext::record()
 method	SlotContext::session()
+method	SlotContexts::for()
+method	SlotContexts::idIn()
 method	StackAccess::__construct()
 method	StackAccess::checkTarget()
 method	StackAccess::hookIdentity()
@@ -2508,6 +2549,7 @@ method	UiDeclarations::check()
 method	UiDeclarations::childrenOf()
 method	UiDeclarations::navigation()
 method	UiDeclarations::page()
+method	UiDeclarations::pageOrNone()
 method	UiDeclarations::pages()
 method	UiDeclarations::refuseRepeatedKeys()
 method	UiDeclarations::refuseRepeatedPropNames()
@@ -2587,6 +2629,8 @@ method	WebDomain::exports()
 method	WebDomain::requires()
 method	WebServiceProvider::backWithError()
 method	WebServiceProvider::boot()
+method	WindowResults::__construct()
+method	WindowResults::result()
 method	WorkingOnTaskState::__construct()
 method	WorkingOnTaskState::isFinished()
 method	WorkingOnTaskState::onStop()
@@ -2815,6 +2859,7 @@ property	DeclarationRules::$entries
 property	DeclarationRules::$roots
 property	DeclaredRoutes::$declarations
 property	Denied::$reason
+property	DeniedWindow::$state
 property	DocblockScan::$file
 property	DocblockScan::$lexer
 property	DocblockScan::$parser
@@ -2845,6 +2890,8 @@ property	EventCall::$file
 property	EventCall::$line
 property	EventCall::$raises
 property	EventCall::$takesOnlyEvents
+property	FailedWindow::$message
+property	FailedWindow::$state
 property	FileChange::$operation
 property	FileChange::$path
 property	FileChanges::$changes
@@ -3029,6 +3076,11 @@ property	Page::$visibility
 property	PageChanged::$userIds
 property	PageController::$declarations
 property	PageController::$inertia
+property	PageProps::$contexts
+property	PageProps::$declarations
+property	PageProps::$inertia
+property	PageProps::$readers
+property	PageProps::$results
 property	PaginationData::$lastPage
 property	PaginationData::$page
 property	PaginationData::$total
@@ -3152,6 +3204,10 @@ property	RaisePlanProgressChanged::$events
 property	ReaderDefinition::$dataClass
 property	ReaderDefinition::$reader
 property	ReaderDefinition::$request
+property	ReaderRequests::$container
+property	ReaderRequests::$redirector
+property	ReadyWindow::$data
+property	ReadyWindow::$state
 property	Reason::$text
 property	ReassignPlanWorkCommand::$description
 property	ReassignPlanWorkCommand::$signature
@@ -3462,6 +3518,9 @@ property	WalkStep::$frameId
 property	WalkStep::$hookMethod
 property	WalkStep::$stateType
 property	WalkStep::$transition
+property	WindowResults::$actors
+property	WindowResults::$container
+property	WindowResults::$log
 property	WorkingOnTaskState::$task
 property	WorkingOnTaskStateFactory::$tasks
 property	WriteAssignments::$actors

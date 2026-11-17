@@ -17,6 +17,7 @@ use App\Domain\Exceptions\UiKeyRepeated;
 use App\Domain\Exceptions\UiPathRepeated;
 use App\Domain\Exceptions\UiRouteConflict;
 use App\Domain\Exceptions\UiSlotMissing;
+use PhpOption\Option;
 
 /**
  * The pages, sections, actions and navigation of every installed domain, checked together once at start-up and never
@@ -124,6 +125,16 @@ final readonly class UiDeclarations
     public function page(string $key): RegisteredPage
     {
         return $this->pages[$key] ?? throw UiDeclarationMissing::for($key);
+    }
+
+    /**
+     * The page with the given full key, when one is declared; for a key that comes from a request.
+     *
+     * @return Option<RegisteredPage>
+     */
+    public function pageOrNone(string $key): Option
+    {
+        return Option::fromArraysValue($this->pages, $key);
     }
 
     /**
