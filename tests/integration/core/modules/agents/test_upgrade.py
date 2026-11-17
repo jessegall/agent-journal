@@ -1,7 +1,9 @@
 import json
+import sqlite3
 
 from tests.stories.engine.upgrade.support.fixture_upgrade import expect_upgrade_text, expect_upgrade_without_text
 from engine.testing.expectations.expect_row import expect_row
+from tests.integration.support.upgraded_journal import UpgradedJournal
 
 
 def test_the_work_of_an_agent_names_its_new_actor(upgraded):
@@ -23,3 +25,18 @@ def test_each_environment_keeps_one_main_agent_with_its_older_main_sessions_as_p
     main_agents = json.loads(story.run("agent list --role main --json").output_text)["rows"]
     environments = [row["environment_id"] for row in main_agents]
     story.expect_rows(len(environments) == len(set(environments)), detail=str(main_agents))
+
+
+def second_row_of_session_one(folder):
+    connection = sqlite3.connect(folder / "journal.db")
+    columns = [row[1] for row in connection.execute("PRAGMA table_info(agents)")]
+    copied = [column for column in columns if column not in ("id", "role")]
+    connection.execute(f"INSERT INTO agents (role, {', '.join(copied)}) SELECT 'reviewer', {', '.join(copied)} FROM agents WHERE session = 's-1'")
+    connection.commit()
+    connection.close()
+
+
+def test_a_session_version_4_holds_in_two_agent_rows_moves_as_one_agent(journal_with):
+    story = UpgradedJournal.upgraded(journal_with(), second_row_of_session_one)
+    sessions = [row["session"] for row in json.loads(story.run("agent list --json").output_text)["rows"]]
+    story.expect_rows(sessions.count("s-1") == 1, detail=str(sessions))
