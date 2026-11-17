@@ -20,15 +20,15 @@ services:
       LARAVEL_SAIL: 1
       VITE_PORT: ${VITE_PORT:-54701}
     ports:
-      - "${VITE_PORT:-54701}:${VITE_PORT:-54701}"
+      - "127.0.0.1:${VITE_PORT:-54701}:${VITE_PORT:-54701}"
     volumes:
       - .:/app
       - /app/node_modules
 
   postgres:
     ports:
-      - "${FORWARD_DB_PORT:-54702}:5432"
+      - "127.0.0.1:${FORWARD_DB_PORT:-54702}:5432"
 
   redis:
     ports:
-      - "${FORWARD_REDIS_PORT:-54703}:6379"
+      - "127.0.0.1:${FORWARD_REDIS_PORT:-54703}:6379"
