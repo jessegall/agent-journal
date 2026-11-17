@@ -23,7 +23,7 @@ use PHPUnit\Framework\TestCase;
 final class DomainClassesTest extends TestCase
 {
     /**
-     * The edges to Hooks are declared under rule 11 while question 10 waits; see docs/hooks/dependencies.md.
+     * The edges to Hooks and from Hooks to Links are declared under rule 11 while question 10 waits; see docs/hooks/dependencies.md.
      *
      * @return iterable<string, array{class-string<Domain>, list<class-string<Domain>>}>
      */
@@ -34,7 +34,7 @@ final class DomainClassesTest extends TestCase
         yield 'Links' => [LinksDomain::class, []];
         yield 'Profiles' => [ProfilesDomain::class, []];
         yield 'Agents' => [AgentsDomain::class, []];
-        yield 'Hooks' => [HooksDomain::class, []];
+        yield 'Hooks' => [HooksDomain::class, [LinksDomain::class]];
         yield 'Chat' => [ChatDomain::class, [HooksDomain::class]];
         yield 'Memory' => [MemoryDomain::class, []];
         yield 'Rules' => [RulesDomain::class, []];
