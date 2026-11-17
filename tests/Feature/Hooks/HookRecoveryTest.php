@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Core\AgentRequests\Support\SignedCall;
+use App\Core\Agents\Actions\LaunchHeartbeats;
 use App\Core\Agents\Actions\LaunchSessions;
-use App\Core\Agents\Actions\LostLaunches;
 use App\Core\Agents\Enums\SessionStatus;
 use App\Core\Agents\Exceptions\CredentialRejected;
 use App\Core\Agents\Models\Agent;
@@ -45,58 +45,58 @@ final class HookRecoveryTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_silence_first_makes_the_loss_suspected_and_keeps_the_launch_working(): void
+    public function test_silence_first_makes_the_session_silent_and_keeps_the_launch_working(): void
     {
         $launched = $this->launch();
 
         $this->wait(121);
-        $this->losses()->markSilentLaunches();
+        $this->heartbeats()->markSilentLaunches();
 
-        $this->assertSame(SessionStatus::PossiblyLost, $launched->session->fresh()?->status);
+        $this->assertSame(SessionStatus::Silent, $launched->session->fresh()?->status);
         $this->assertSame(StackStatus::Active, $this->stackOf($launched)->status);
         $this->assertSame($launched->session->id, $this->app->make(CredentialLookup::class)->sessionFor($launched->token)->id);
     }
 
-    public function test_a_heartbeat_withdraws_the_suspicion(): void
+    public function test_a_heartbeat_makes_a_silent_session_active_again(): void
     {
         $launched = $this->launch();
         $this->wait(121);
-        $this->losses()->markSilentLaunches();
+        $this->heartbeats()->markSilentLaunches();
 
-        $this->losses()->recordHeartbeat($launched->session);
+        $this->heartbeats()->recordHeartbeat($launched->session);
         $this->wait(900);
-        $this->losses()->markSilentLaunches();
+        $this->heartbeats()->markSilentLaunches();
 
-        $this->assertSame(SessionStatus::PossiblyLost, $launched->session->fresh()?->status);
-        $this->assertNull($launched->session->fresh()?->loss_evidence);
+        $this->assertSame(SessionStatus::Silent, $launched->session->fresh()?->status);
+        $this->assertNull($launched->session->fresh()?->end_evidence);
     }
 
-    public function test_a_long_silence_confirms_the_loss_without_an_end_hook_and_keeps_the_obligations(): void
+    public function test_a_long_silence_times_the_session_out_without_an_end_hook_and_keeps_the_obligations(): void
     {
         $launched = $this->launch();
         $task = $this->startTask($launched);
 
         $this->wait(121);
-        $this->losses()->markSilentLaunches();
+        $this->heartbeats()->markSilentLaunches();
         $this->wait(901);
-        $this->losses()->markSilentLaunches();
+        $this->heartbeats()->markSilentLaunches();
 
-        $this->assertSame(SessionStatus::Lost, $launched->session->fresh()?->status);
-        $this->assertStringStartsWith('silent since', (string) $launched->session->fresh()?->loss_evidence);
+        $this->assertSame(SessionStatus::TimedOut, $launched->session->fresh()?->status);
+        $this->assertStringStartsWith('silent since', (string) $launched->session->fresh()?->end_evidence);
         $this->assertSame(StackStatus::Closed, $this->stackOf($launched)->status);
         $this->assertSame(['hooks.main_ready', 'tasks.working'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($launched)->frames->all()));
         $this->assertSame(TaskState::Started, $task->fresh()?->state);
         $this->assertSame(0, DB::table('hook_calls')->count());
     }
 
-    public function test_the_host_reporting_an_exit_confirms_the_loss_at_once(): void
+    public function test_the_host_reporting_an_exit_ends_the_session_at_once(): void
     {
         $launched = $this->launch();
 
-        $this->losses()->markExited($launched->session, 'exit code 137');
+        $this->heartbeats()->markExited($launched->session, 'exit code 137');
 
-        $this->assertSame(SessionStatus::Lost, $launched->session->fresh()?->status);
-        $this->assertSame('host reported exit: exit code 137', $launched->session->fresh()?->loss_evidence);
+        $this->assertSame(SessionStatus::Ended, $launched->session->fresh()?->status);
+        $this->assertSame('host reported exit: exit code 137', $launched->session->fresh()?->end_evidence);
         $this->assertSame(StackStatus::Closed, $this->stackOf($launched)->status);
         $this->expectException(CredentialRejected::class);
         $this->app->make(CredentialLookup::class)->sessionFor($launched->token);
@@ -104,13 +104,13 @@ final class HookRecoveryTest extends TestCase
 
     public function test_a_replacement_launch_starts_from_its_own_bottom_and_copies_nothing(): void
     {
-        $lost = $this->launch();
-        $this->startTask($lost);
-        $this->losses()->markExited($lost->session, 'killed');
+        $exited = $this->launch();
+        $this->startTask($exited);
+        $this->heartbeats()->markExited($exited->session, 'killed');
 
-        $replacement = $this->app->make(LaunchSessions::class)->launch($lost->session->agent, 'claude-code');
+        $replacement = $this->app->make(LaunchSessions::class)->launch($exited->session->agent, 'claude-code');
 
-        $this->assertNotSame($lost->session->id, $replacement->session->id);
+        $this->assertNotSame($exited->session->id, $replacement->session->id);
         $this->assertSame(['hooks.main_ready'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($replacement)->frames->all()));
     }
 
@@ -134,9 +134,9 @@ final class HookRecoveryTest extends TestCase
         return AgentStackRow::query()->authorizedFor(new StackTarget($launched->session->agent_id, $launched->session->id))->sole();
     }
 
-    private function losses(): LostLaunches
+    private function heartbeats(): LaunchHeartbeats
     {
-        return $this->app->make(LostLaunches::class);
+        return $this->app->make(LaunchHeartbeats::class);
     }
 
     private function wait(int $seconds): void

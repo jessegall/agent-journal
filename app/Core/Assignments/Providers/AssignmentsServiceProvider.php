@@ -19,7 +19,7 @@ use App\Core\Assignments\Readers\AssigneeRecords;
 use App\Core\Assignments\Readers\AssignmentRecords;
 use App\Core\Assignments\Registry\AssignmentRegistry;
 use App\Core\Assignments\Storage\DatabaseAssignmentTransaction;
-use App\Core\Links\Support\LinkTypes;
+use App\Core\Links\Support\LinkTypeRegistry;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -43,6 +43,6 @@ final class AssignmentsServiceProvider extends ServiceProvider
     {
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/assignments.php');
         $this->commands([ShowAssignmentCommand::class, AssignRecordCommand::class, ReassignRecordCommand::class, UnassignRecordCommand::class]);
-        $this->app->booted(fn () => $this->app->make(AssignmentRegistry::class)->checkRecordModels($this->app->make(LinkTypes::class)));
+        $this->app->booted(fn () => $this->app->make(AssignmentRegistry::class)->checkRecordModels($this->app->make(LinkTypeRegistry::class)));
     }
 }

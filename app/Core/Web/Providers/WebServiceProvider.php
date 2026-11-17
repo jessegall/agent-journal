@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Web\Providers;
 
-use App\Core\Links\Support\LinkTypes;
+use App\Core\Links\Support\LinkTypeRegistry;
 use App\Core\Ui\Support\UiDeclarations;
 use App\Core\Web\Console\GenerateUiManifest;
 use App\Core\Web\Contracts\CurrentUserReader;
@@ -43,7 +43,7 @@ final class WebServiceProvider extends ServiceProvider
     /**
      * Asking for the declared routes here makes a declaration the application cannot start with fail the boot.
      */
-    public function boot(BroadcastManager $broadcast, LinkTypes $links, Dispatcher $events, Router $router, DeclaredRoutes $declaredRoutes): void
+    public function boot(BroadcastManager $broadcast, LinkTypeRegistry $links, Dispatcher $events, Router $router, DeclaredRoutes $declaredRoutes): void
     {
         $links->register(['web.layout' => Layout::class]);
         $scope = new CurrentUserScope(static fn () => Container::getInstance()->make(CurrentUserReader::class));

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Assignments\Models\Support;
 
+use App\Core\Queries\Support\TextSearch;
 use BackedEnum;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -40,11 +41,7 @@ trait AssignableListing
     #[Scope]
     protected function matching(Builder $query, string $search): void
     {
-        if (trim($search) === '') {
-            return;
-        }
-
-        $query->whereLike('title', '%'.addcslashes(trim($search), '%_\\').'%', caseSensitive: false);
+        TextSearch::narrow($query, 'title', $search);
     }
 
     /**

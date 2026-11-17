@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Assignments\Support;
 
+use App\Core\Actors\Support\Concerns\ComparesTypeAndId;
 use App\Core\Assignments\Exceptions\InvalidAssignmentIdentity;
 
 /**
@@ -12,6 +13,8 @@ use App\Core\Assignments\Exceptions\InvalidAssignmentIdentity;
  */
 final readonly class RecordIdentity
 {
+    use ComparesTypeAndId;
+
     private const string ALIAS_PATTERN = '/^[a-z][a-z0-9_-]*\.[a-z][a-z0-9_-]*$/';
 
     /**
@@ -36,10 +39,5 @@ final readonly class RecordIdentity
         if (preg_match(self::ALIAS_PATTERN, $type) !== 1) {
             throw InvalidAssignmentIdentity::forType($type);
         }
-    }
-
-    public function isSameAs(self $other): bool
-    {
-        return $this->type === $other->type && $this->id === $other->id;
     }
 }

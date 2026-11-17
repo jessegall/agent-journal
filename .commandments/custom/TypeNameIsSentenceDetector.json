@@ -1,0 +1,19 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "php",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "nameMatches": "[a-z](What|When|Where|Which|Who|Whose|That|If|Than|Because|Until|While|Whether)[A-Z]|^(What|When|Where|Which|Who|Whose|That|If|Than|Because|Until|While|Whether)[A-Z]"
+            }
+        ],
+        "reject": []
+    },
+    "sin": {
+        "description": "A class, interface, enum or trait name is a sentence or clause instead of a short name.",
+        "name": "type-name-is-sentence",
+        "rule": "Name a type with a noun or noun phrase, or a capability interface with a verb and its object; never a clause such as ChangesWhatUsersSee (rule 23).",
+        "skill": "type-name-is-sentence"
+    }
+}

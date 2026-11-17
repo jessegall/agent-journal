@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sequences\Providers;
 
-use App\Core\Links\Support\LinkTypes;
+use App\Core\Links\Support\LinkTypeRegistry;
 use App\Domain\Sequences\Models\SequenceRun;
 use Illuminate\Support\ServiceProvider;
 
@@ -13,7 +13,7 @@ use Illuminate\Support\ServiceProvider;
  */
 final class SequencesServiceProvider extends ServiceProvider
 {
-    public function boot(LinkTypes $links): void
+    public function boot(LinkTypeRegistry $links): void
     {
         $links->register([
             'sequences.sequence-run' => SequenceRun::class,

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Chat\Providers;
 
 use App\Core\Agents\Exceptions\StackTargetRefused;
-use App\Core\Links\Support\LinkTypes;
+use App\Core\Links\Support\LinkTypeRegistry;
 use App\Domain\Chat\Models\Message;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
@@ -17,7 +17,7 @@ use Illuminate\Support\ServiceProvider;
  */
 final class ChatServiceProvider extends ServiceProvider
 {
-    public function boot(LinkTypes $links, ExceptionHandler $exceptions): void
+    public function boot(LinkTypeRegistry $links, ExceptionHandler $exceptions): void
     {
         $links->register([
             'chat.message' => Message::class,

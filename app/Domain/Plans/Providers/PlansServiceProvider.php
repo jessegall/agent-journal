@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Providers;
 
-use App\Core\Links\Support\LinkTypes;
+use App\Core\Links\Support\LinkTypeRegistry;
 use App\Domain\Plans\Actions\ChangePlanAssignments;
 use App\Domain\Plans\Console\AssignedPlansCommand;
 use App\Domain\Plans\Console\AssignPlanWorkCommand;
@@ -34,7 +34,7 @@ final class PlansServiceProvider extends ServiceProvider
         $this->app->scoped(PlanAssignments::class, ChangePlanAssignments::class);
     }
 
-    public function boot(LinkTypes $links, ExceptionHandler $exceptions): void
+    public function boot(LinkTypeRegistry $links, ExceptionHandler $exceptions): void
     {
         // A missing plan is not found; a refused start is a form error on the start button.
         if ($exceptions instanceof Handler) {

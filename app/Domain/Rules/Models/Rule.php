@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Rules\Models;
 
 use App\Core\Links\Support\Linkable;
+use App\Core\Queries\Support\TextSearch;
 use App\Domain\Rules\Enums\RuleState;
 use App\Domain\Rules\Exceptions\RuleMissing;
 use App\Domain\Rules\Exceptions\RuleNotProposed;
@@ -96,11 +97,7 @@ final class Rule extends Model
     #[Scope]
     protected function matching(Builder $query, string $search): void
     {
-        if (trim($search) === '') {
-            return;
-        }
-
-        $query->whereLike('text', '%'.addcslashes(trim($search), '%_\\').'%', caseSensitive: false);
+        TextSearch::narrow($query, 'text', $search);
     }
 
     /**

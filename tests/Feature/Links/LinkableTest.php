@@ -6,7 +6,7 @@ namespace Tests\Feature\Links;
 
 use App\Core\Links\Exceptions\LinkTypeRepeated;
 use App\Core\Links\Models\Link;
-use App\Core\Links\Support\LinkTypes;
+use App\Core\Links\Support\LinkTypeRegistry;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Schema\Blueprint;
@@ -24,7 +24,7 @@ final class LinkableTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(LinkTypes::class)->register(['fixtures.note' => Note::class, 'fixtures.label' => Label::class]);
+        $this->app->make(LinkTypeRegistry::class)->register(['fixtures.note' => Note::class, 'fixtures.label' => Label::class]);
         Schema::create('notes', function (Blueprint $table) {
             $table->id();
             $table->string('owner');
@@ -140,6 +140,6 @@ final class LinkableTest extends TestCase
     {
         $this->expectExceptionObject(LinkTypeRepeated::for('fixtures.note', Label::class));
 
-        $this->app->make(LinkTypes::class)->register(['fixtures.note' => Label::class]);
+        $this->app->make(LinkTypeRegistry::class)->register(['fixtures.note' => Label::class]);
     }
 }

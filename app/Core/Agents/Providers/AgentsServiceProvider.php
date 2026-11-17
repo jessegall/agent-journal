@@ -39,8 +39,8 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(AgentClientSettings::class, fn () => AgentClientSettings::fromEnvironment(array_filter(getenv(), is_string(...))));
         $this->app->bind(AgentRequestSender::class, SendAgentRequests::class);
         $this->app->singleton(LaunchTimeouts::class, fn () => new LaunchTimeouts(
-            $this->app->make('config')->integer('agents.possibly_lost_after_seconds'),
-            $this->app->make('config')->integer('agents.lost_after_seconds'),
+            $this->app->make('config')->integer('agents.silent_after_seconds'),
+            $this->app->make('config')->integer('agents.timed_out_after_seconds'),
         ));
     }
 

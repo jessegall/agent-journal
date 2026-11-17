@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Memory\Providers;
 
-use App\Core\Links\Support\LinkTypes;
+use App\Core\Links\Support\LinkTypeRegistry;
 use App\Domain\Memory\Models\Memory;
 use Illuminate\Support\ServiceProvider;
 
@@ -13,7 +13,7 @@ use Illuminate\Support\ServiceProvider;
  */
 final class MemoryServiceProvider extends ServiceProvider
 {
-    public function boot(LinkTypes $links): void
+    public function boot(LinkTypeRegistry $links): void
     {
         $links->register([
             'memory.memory' => Memory::class,

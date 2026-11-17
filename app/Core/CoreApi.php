@@ -130,9 +130,10 @@ use App\Core\Hooks\States\AgentState;
 use App\Core\Links\Exceptions\UnknownLinkType;
 use App\Core\Links\Support\Linkable;
 use App\Core\Links\Support\LinkAccess;
+use App\Core\Links\Support\LinkTypeRegistry;
 use App\Core\Links\Support\LinkTypeRenames;
-use App\Core\Links\Support\LinkTypes;
-use App\Core\Ui\Contracts\ChangesWhatUsersSee;
+use App\Core\Queries\Support\TextSearch;
+use App\Core\Ui\Contracts\UpdatesUserInterface;
 use App\Core\Ui\Contracts\CountReader;
 use App\Core\Ui\Contracts\NavigationChildren;
 use App\Core\Ui\Contracts\PageOption;
@@ -158,11 +159,12 @@ use App\Core\Ui\Enums\PageSkeleton;
 use App\Core\Ui\Enums\SlotContextType;
 use App\Core\Web\Contracts\CurrentUserReader;
 use App\Core\Web\Contracts\JournalAccessPolicy;
+use App\Core\Web\Http\Requests\Concerns\ReadsRouteId;
 
 /**
  * Core's public surface: every type a domain or module may use, written out one by one. Everything else in Core is
  * private, whatever folder it sits in. Core is not a domain and is never required; domains use it without declaring it.
- * CurrentActorSetter, LinkTypes and LinkTypeRenames are listed for the few places that compose the application (the
+ * CurrentActorSetter, LinkTypeRegistry and LinkTypeRenames are listed for the few places that compose the application (the
  * sign-in middleware, owner providers and migrations), not for ordinary use.
  */
 final class CoreApi
@@ -239,7 +241,7 @@ final class CoreApi
             OwnedByOneAgent::class,
             Linkable::class,
             LinkAccess::class,
-            LinkTypes::class,
+            LinkTypeRegistry::class,
             LinkTypeRenames::class,
             UnknownLinkType::class,
             StateSubjectMissing::class,
@@ -301,9 +303,11 @@ final class CoreApi
             AssigneeTypeRepeated::class,
             AssignmentTypeRepeated::class,
             CurrentUserReader::class,
+            TextSearch::class,
+            ReadsRouteId::class,
             JournalAccessPolicy::class,
             CurrentUser::class,
-            ChangesWhatUsersSee::class,
+            UpdatesUserInterface::class,
             CountReader::class,
             NavigationChildren::class,
             PageOption::class,

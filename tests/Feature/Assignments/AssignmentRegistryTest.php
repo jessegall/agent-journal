@@ -15,7 +15,7 @@ use App\Core\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Core\Assignments\Registry\AssignmentRegistry;
 use App\Core\Assignments\Support\AssigneeRegistration;
 use App\Core\Links\Exceptions\UnknownLinkType;
-use App\Core\Links\Support\LinkTypes;
+use App\Core\Links\Support\LinkTypeRegistry;
 use App\Domain\Access\Models\User;
 use App\Domain\Plans\Models\Plan;
 use Tests\TestCase;
@@ -79,19 +79,19 @@ final class AssignmentRegistryTest extends TestCase
     {
         $this->registry->registerRecord('tests.late-record', $this->createStub(AssignableProvider::class)::class);
 
-        $this->assertThrows(fn () => $this->registry->checkRecordModels($this->app->make(LinkTypes::class)), UnknownLinkType::class);
+        $this->assertThrows(fn () => $this->registry->checkRecordModels($this->app->make(LinkTypeRegistry::class)), UnknownLinkType::class);
 
-        $this->app->make(LinkTypes::class)->register(['tests.late-record' => User::class]);
+        $this->app->make(LinkTypeRegistry::class)->register(['tests.late-record' => User::class]);
 
         $this->expectException(AssignmentProviderInvalid::class);
         $this->expectExceptionMessage('does not implement Assignable');
 
-        $this->registry->checkRecordModels($this->app->make(LinkTypes::class));
+        $this->registry->checkRecordModels($this->app->make(LinkTypeRegistry::class));
     }
 
     public function test_the_application_boots_with_the_registry_bound_and_its_types_checked(): void
     {
         $this->assertInstanceOf(AssignmentRegistry::class, $this->app->make(AssignmentRegistry::class));
-        $this->assertSame(Plan::class, $this->app->make(LinkTypes::class)->modelFor('plans.plan'));
+        $this->assertSame(Plan::class, $this->app->make(LinkTypeRegistry::class)->modelFor('plans.plan'));
     }
 }

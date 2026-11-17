@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
  * registers its own models; a name or a model registered twice for different partners is refused, the same pair again
  * is accepted. Links are written only with registered names.
  */
-final class LinkTypes
+final class LinkTypeRegistry
 {
     /**
      * @param  array<string, class-string<Model>>  $modelOfName

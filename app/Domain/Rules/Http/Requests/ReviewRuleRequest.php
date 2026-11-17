@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Rules\Http\Requests;
 
+use App\Core\Web\Http\Requests\Concerns\ReadsRouteId;
 use Illuminate\Foundation\Http\FormRequest;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Which proposed rule to review, named by the route; an id that is no positive whole number in range is not found
@@ -13,6 +13,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class ReviewRuleRequest extends FormRequest
 {
+    use ReadsRouteId;
+
     /**
      * @return array<string, list<string>>
      */
@@ -23,12 +25,6 @@ final class ReviewRuleRequest extends FormRequest
 
     public function ruleId(): int
     {
-        $value = (string) $this->route('rule');
-
-        if (preg_match('/^[1-9][0-9]{0,18}$/', $value) !== 1 || (strlen($value) === 19 && strcmp($value, (string) PHP_INT_MAX) > 0)) {
-            throw new NotFoundHttpException;
-        }
-
-        return (int) $value;
+        return $this->routeId('rule');
     }
 }

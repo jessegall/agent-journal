@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Rules\Providers;
 
-use App\Core\Links\Support\LinkTypes;
+use App\Core\Links\Support\LinkTypeRegistry;
 use App\Domain\Rules\Exceptions\RuleMissing;
 use App\Domain\Rules\Exceptions\RuleNotProposed;
 use App\Domain\Rules\Models\Rule;
@@ -19,7 +19,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class RulesServiceProvider extends ServiceProvider
 {
-    public function boot(LinkTypes $links, ExceptionHandler $exceptions): void
+    public function boot(LinkTypeRegistry $links, ExceptionHandler $exceptions): void
     {
         // A missing rule is not found; a rule no longer proposed is a review error on the review buttons.
         if ($exceptions instanceof Handler) {

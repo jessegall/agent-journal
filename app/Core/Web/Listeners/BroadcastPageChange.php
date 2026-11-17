@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Web\Listeners;
 
-use App\Core\Ui\Contracts\ChangesWhatUsersSee;
+use App\Core\Ui\Contracts\UpdatesUserInterface;
 use App\Core\Web\Contracts\JournalAccessPolicy;
 use App\Core\Web\Events\PageChanged;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -20,7 +20,7 @@ final readonly class BroadcastPageChange
         private Dispatcher $events,
     ) {}
 
-    public function handle(ChangesWhatUsersSee $fact): void
+    public function handle(UpdatesUserInterface $fact): void
     {
         $userIds = $this->access->allowedUserIds();
 

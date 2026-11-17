@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Processes\Providers;
 
 use App\Core\Hooks\Contracts\ShellCommandParser;
-use App\Core\Links\Support\LinkTypes;
+use App\Core\Links\Support\LinkTypeRegistry;
 use App\Domain\Processes\Models\CommandAlias;
 use App\Domain\Processes\Support\ShellParser;
 use Illuminate\Support\ServiceProvider;
@@ -21,7 +21,7 @@ final class ProcessesServiceProvider extends ServiceProvider
         $this->app->singleton(ShellCommandParser::class, ShellParser::class);
     }
 
-    public function boot(LinkTypes $links): void
+    public function boot(LinkTypeRegistry $links): void
     {
         $links->register(['processes.command-alias' => CommandAlias::class]);
     }

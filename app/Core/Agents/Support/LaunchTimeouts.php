@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Core\Agents\Support;
 
 /**
- * How long a launch may stay silent before it is possibly lost, and how long it may stay possibly lost before it is lost.
+ * How long a launch may send no heartbeat before it is silent, and how long it may stay silent before it times out.
  */
 final readonly class LaunchTimeouts
 {
     public function __construct(
-        public int $possiblyLostAfterSeconds = 120,
-        public int $lostAfterSeconds = 900,
+        public int $silentAfterSeconds = 120,
+        public int $timedOutAfterSeconds = 900,
     ) {}
 }

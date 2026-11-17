@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Rules\Api\Events;
 
-use App\Core\Ui\Contracts\ChangesWhatUsersSee;
+use App\Core\Ui\Contracts\UpdatesUserInterface;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**
  * The owner approved a proposed rule; it holds from now on. Raised once the change has committed.
  */
-final readonly class RuleApproved implements ChangesWhatUsersSee, ShouldDispatchAfterCommit
+final readonly class RuleApproved implements UpdatesUserInterface, ShouldDispatchAfterCommit
 {
     public function __construct(public int $ruleId) {}
 }

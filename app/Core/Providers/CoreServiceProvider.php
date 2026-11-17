@@ -12,7 +12,7 @@ use App\Core\CoreApi;
 use App\Core\Hooks\Models\AgentStackRow;
 use App\Core\Hooks\Models\HookCall;
 use App\Core\Links\Models\Link;
-use App\Core\Links\Support\LinkTypes;
+use App\Core\Links\Support\LinkTypeRegistry;
 use App\Domain\Exports;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use Illuminate\Support\ServiceProvider;
@@ -36,7 +36,7 @@ final class CoreServiceProvider extends ServiceProvider
         )));
     }
 
-    public function boot(LinkTypes $links): void
+    public function boot(LinkTypeRegistry $links): void
     {
         $links->register([
             'core.agent' => Agent::class,

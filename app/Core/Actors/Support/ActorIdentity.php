@@ -7,12 +7,15 @@ namespace App\Core\Actors\Support;
 use App\Core\Actors\Contracts\Actor;
 use App\Core\Actors\Enums\ActorType;
 use App\Core\Actors\Exceptions\InvalidActorText;
+use App\Core\Actors\Support\Concerns\ComparesTypeAndId;
 
 /**
  * Who an actor is, by type and id, apart from any request or session: user 3 and agent 3 are different actors.
  */
 final readonly class ActorIdentity
 {
+    use ComparesTypeAndId;
+
     public function __construct(
         public ActorType $type,
         public int $id,
@@ -45,10 +48,5 @@ final readonly class ActorIdentity
     public function asFields(string $prefix): array
     {
         return ["{$prefix}Type" => $this->type->value, "{$prefix}Id" => $this->id];
-    }
-
-    public function isSameAs(self $other): bool
-    {
-        return $this->type === $other->type && $this->id === $other->id;
     }
 }

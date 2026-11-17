@@ -25,8 +25,8 @@ use Illuminate\Support\Carbon;
  * @property SessionStatus $status
  * @property CarbonImmutable|null $ended_at
  * @property CarbonImmutable|null $last_heartbeat_at
- * @property CarbonImmutable|null $suspected_lost_at
- * @property string|null $loss_evidence
+ * @property CarbonImmutable|null $silent_since
+ * @property string|null $end_evidence
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Agent $agent
@@ -48,7 +48,7 @@ final class AgentSession extends Model
             'status' => SessionStatus::class,
             'ended_at' => 'immutable_datetime',
             'last_heartbeat_at' => 'immutable_datetime',
-            'suspected_lost_at' => 'immutable_datetime',
+            'silent_since' => 'immutable_datetime',
         ];
     }
 
@@ -80,14 +80,23 @@ final class AgentSession extends Model
     }
 
     /**
-     * Marks every running session that has shown no life since the cutoff as possibly lost, in one update.
+     * The program ended without an end hook, and the evidence says how the journal knows.
      */
-    public static function markPossiblyLostIfSilentSince(CarbonImmutable $cutoff, CarbonImmutable $now): void
+    public function endWithEvidenceAt(CarbonImmutable $time, string $evidence): void
+    {
+        $this->end_evidence = $evidence;
+        $this->endAt($time);
+    }
+
+    /**
+     * Marks every running session that has shown no life since the cutoff as silent, in one update.
+     */
+    public static function markSilentIfNoHeartbeatSince(CarbonImmutable $cutoff, CarbonImmutable $now): void
     {
         self::query()->where('status', SessionStatus::Active->value)
             ->where(fn (Builder $silent) => $silent->where('last_heartbeat_at', '<=', $cutoff)
                 ->orWhere(fn (Builder $neverBeat) => $neverBeat->whereNull('last_heartbeat_at')->where('created_at', '<=', $cutoff)))
-            ->update(['status' => SessionStatus::PossiblyLost->value, 'suspected_lost_at' => $now]);
+            ->update(['status' => SessionStatus::Silent->value, 'silent_since' => $now]);
     }
 
     public function isActive(): bool
@@ -96,28 +105,28 @@ final class AgentSession extends Model
     }
 
     /**
-     * A sign of life from the host: a session marked possibly lost is active again.
+     * A sign of life from the host: a silent session is active again.
      */
     public function recordHeartbeatAt(CarbonImmutable $time): void
     {
         $this->last_heartbeat_at = $time;
-        $this->suspected_lost_at = null;
-        $this->status = $this->status === SessionStatus::PossiblyLost ? SessionStatus::Active : $this->status;
+        $this->silent_since = null;
+        $this->status = $this->status === SessionStatus::Silent ? SessionStatus::Active : $this->status;
         $this->save();
     }
 
-    public function markPossiblyLostAt(CarbonImmutable $time): void
+    public function markSilentAt(CarbonImmutable $time): void
     {
-        $this->status = SessionStatus::PossiblyLost;
-        $this->suspected_lost_at = $time;
+        $this->status = SessionStatus::Silent;
+        $this->silent_since = $time;
         $this->save();
     }
 
-    public function markLostAt(CarbonImmutable $time, string $evidence): void
+    public function markTimedOutAt(CarbonImmutable $time, string $evidence): void
     {
-        $this->status = SessionStatus::Lost;
+        $this->status = SessionStatus::TimedOut;
         $this->ended_at = $time;
-        $this->loss_evidence = $evidence;
+        $this->end_evidence = $evidence;
         $this->save();
     }
 

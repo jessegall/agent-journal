@@ -16,7 +16,7 @@ use App\Core\Assignments\Exceptions\AssignmentTypeRepeated;
 use App\Core\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Core\Assignments\Support\AssigneeRegistration;
 use App\Core\Assignments\Support\RecordIdentity;
-use App\Core\Links\Support\LinkTypes;
+use App\Core\Links\Support\LinkTypeRegistry;
 use Illuminate\Contracts\Container\Container;
 
 /**
@@ -102,7 +102,7 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      *
      * @throws AssignmentProviderInvalid
      */
-    public function checkRecordModels(LinkTypes $links): void
+    public function checkRecordModels(LinkTypeRegistry $links): void
     {
         foreach (array_keys($this->recordProviders) as $type) {
             $model = $links->modelFor($type);
