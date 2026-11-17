@@ -27,11 +27,9 @@ from tests.integration.suites.coding.modules.workers.test_test_queue import affe
 from tests.stories.core.support.agent_labels import agent_label
 from suites.coding.modules.workers.support.worker_settings import WORKER_PHASE_TEST_RUNS
 from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_FAILURE_LIMIT
-from suites.coding.upgrade.coding_settings_move import LISTED_KEY
 from suites.coding.modules.workers.support.worker_settings import MERGER_COMMANDS
 from tests.integration.support.fixture_journal import FixtureJournal
 RUNS = f"{WORKER_PHASE_TEST_RUNS}"
-COMMAND_TYPES = f"{LISTED_KEY}"
 
 
 def configure(worker, key, value):
@@ -55,9 +53,8 @@ def test_s34_a_settings_edit_between_commands_keeps_the_commands_already_used(pl
     expect_reply_allowed(worker.run_test())
 
 
-def test_s36_adding_version_control_to_the_worker_command_types_does_not_allow_a_worker_git(played):
+def test_s36_a_worker_that_runs_every_command_type_still_runs_no_git(played):
     worker = plan_worker(played)
-    configure(worker, COMMAND_TYPES, json.dumps(["read", "search", "edit", "test run", "build", "version control"]))
     expect_reply_refusal(worker.run_line("git status", ShellPart("git", CommandCategory.VERSION_CONTROL, ["status"])), "a worker runs no git")
 
 

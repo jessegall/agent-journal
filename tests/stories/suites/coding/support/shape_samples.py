@@ -31,7 +31,7 @@ class ShopModule(Module):
     """A made-up module written in the coding module's shape: a name, its dependencies and one list per folder."""
 
     name = "sample-shop"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.tasks", "journal.core.viewer", "journal.core.messages", "journal.core.agents"]
     windows = SHOP_WINDOWS
 

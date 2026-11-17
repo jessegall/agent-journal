@@ -7,7 +7,7 @@ DEPENDENCIES = ["journal.core.tasks", "journal.core.plans", "journal.core.viewer
 
 class PlainCardButtonModule(Module):
     name = "styled"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = DEPENDENCIES
     buttons = [ButtonDeclaration("styled.start", ("dock.plans.waiting", "row.plan"), "Start the task", "task start {row_id}", icon="start")]
 

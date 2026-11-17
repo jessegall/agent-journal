@@ -21,7 +21,7 @@ class PlanReviewsModule(Module):
     outside it, with the same means any module has."""
 
     name = "journal.core.plan_reviews"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     seed_reason = "its only state and rounds come from what a plan does"
     move_reason = "version 4 plan reviews were dropped when a journal moved"
     dependencies = PLAN_REVIEWS_DEPENDENCIES

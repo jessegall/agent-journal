@@ -11,7 +11,7 @@ class TunlerModule(Module):
     tunler login."""
 
     name = "journal.tunnels.tunler"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.tunnel", "journal.core.settings", "journal.core.agents"]
     settings = [TunlerSettingValues]
     tunnels = [TunlerTunnel]

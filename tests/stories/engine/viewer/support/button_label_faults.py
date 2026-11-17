@@ -25,7 +25,7 @@ def labelled(label: str) -> ButtonDeclaration:
 
 class LabelModule(Module):
     name = "labelled"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = DEPENDENCIES
     buttons = [labelled("Complete the plan")]
 
@@ -40,7 +40,7 @@ class OpenModule(LabelModule):
 
 class MarkButtonModule(Module):
     name = "marked"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = DEPENDENCIES
     marks = [MarkDeclaration(type=TaggedType.NOTE, variants=TaggedVariant, family=MarkCategory("marked", "Marked", "check", MarkGroup.WORK), label="Notes", mark_icon="check",
                              buttons=[MarkButton("check", "Dismiss the note", "task start {row_id}")])]

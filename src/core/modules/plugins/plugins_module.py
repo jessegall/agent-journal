@@ -32,7 +32,7 @@ class PluginsModule(Module):
     policies = [PluginProgramPolicy, PluginPolicy]
     agent_messages = PLUGIN_AGENT_MESSAGES
     seed_reason = "a plugin is a program the user installs, which a demo has none of"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = PLUGINS_DEPENDENCIES
     skills = PLUGINS_SKILLS
     models = PLUGINS_MODELS

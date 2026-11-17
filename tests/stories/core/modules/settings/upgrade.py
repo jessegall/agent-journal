@@ -39,10 +39,9 @@ def test_a_declared_key_moves_once_per_scope_with_its_value_and_a_second_one_for
     listing.expect_no_text("moveprefs.limit  8")
 
 
-def test_a_version_4_text_of_kinds_becomes_the_list_version_5_declares(new_story):
+def test_version_4_command_kinds_are_not_carried_since_a_worker_runs_every_command(new_story):
     story = upgraded_story(new_story)
-    story.expect_text("setting list", "journal.suites.coding.worker-command-types  ")
-    story.expect_text("setting show journal.suites.coding.worker-command-types", "read")
+    expect_upgrade_text(story, "a worker runs every shell command in version 5")
 
 
 def test_a_version_4_key_with_no_counterpart_is_listed_by_its_key_as_not_carried(new_story):

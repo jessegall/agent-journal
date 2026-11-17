@@ -28,6 +28,6 @@ class StrictPolicyModule(Module):
     that its binding is the one in force."""
 
     name = "acme.strict-policy"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.agents", "journal.suites.coding.workers"]
     bindings = {DispatchPolicy: StrictPolicy}

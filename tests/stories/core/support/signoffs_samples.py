@@ -98,7 +98,7 @@ class ForgetTaskSignoffs(DeletionListener[Deleted[Task]]):
 
 class SignoffsModule(Module):
     name = "signoffs"
-    requires_engine = ">=6.0,<7"
+    requires_engine = ">=7.0,<8"
     dependencies = ["journal.core.tasks"]
     models = [ModelDeclaration(Signoff, commands=[SignoffFailed])]
     migrations = [SignoffsTable]

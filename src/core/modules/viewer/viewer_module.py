@@ -21,7 +21,7 @@ class ViewerModule(Module):
 
     name = "journal.core.viewer"
     seed_reason = "a user's layouts and presets are made by using the viewer"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     settings = VIEWER_SETTINGS
     dependencies = VIEWER_DEPENDENCIES
     models = [ViewerLayoutModelDeclaration, PersonPresetModelDeclaration, WindowPermissionModelDeclaration]

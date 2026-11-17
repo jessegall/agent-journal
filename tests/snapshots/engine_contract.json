@@ -2995,7 +2995,11 @@
         "set_value(self, table: str, row_id: int, column: str, value: object) -> None",
         "set_state(self, table: str, row_id: int, state: str) -> None",
         "name_row_id(self, table: str, name: str) -> int | None",
-        "matching_row_id(self, table: str, values: Mapping[str, object]) -> int | None"
+        "matching_row_id(self, table: str, values: Mapping[str, object]) -> int | None",
+        "fitted(self, table: str, values: Mapping[str, object]) -> dict[str, object]",
+        "fitted_text(text: str, limit: tuple[int, int | None]) -> str",
+        "limits(self, table: str) -> dict[str, tuple[int, int | None]]",
+        "limit(match: re.Match[str]) -> tuple[int, int | None]"
       ]
     },
     "database.row_removal.RowRemoval": {
@@ -4821,6 +4825,13 @@
       "fields": [],
       "methods": []
     },
+    "errors.unbounded_search_error.UnboundedSearchError": {
+      "bases": [
+        "Exception"
+      ],
+      "fields": [],
+      "methods": []
+    },
     "errors.wrong_instance_error.WrongInstanceError": {
       "bases": [
         "Exception"
@@ -5379,9 +5390,9 @@
         "readlink(cls, path: Path | str) -> Path",
         "iterdir(cls, folder: Path | str) -> Iterator[Path]",
         "glob(cls, folder: Path | str, pattern: str) -> Iterator[Path]",
-        "rglob(cls, folder: Path | str, pattern: str) -> Iterator[Path]",
-        "walk(cls, folder: Path | str) -> Iterator[Path]",
-        "walk_folders(cls, folder: Path | str) -> Iterator[tuple[Path, list[str], list[str]]]",
+        "rglob(cls, folder: Path | str, pattern: str, depth: int) -> Iterator[Path]",
+        "walk(cls, folder: Path | str, depth: int) -> Iterator[Path]",
+        "walk_folders(cls, folder: Path | str, depth: int) -> Iterator[tuple[Path, list[str], list[str]]]",
         "reader(cls, file: Path | str, mode: str, encoding: str | None, errors: str | None) -> Generator[IO[Any]]",
         "temporary_folder(cls, prefix: str | None, folder: Path | str | None) -> Generator[Path]",
         "make_temporary_file(cls, prefix: str | None, suffix: str | None) -> Path",
@@ -5662,8 +5673,6 @@
         "job_command: ClassVar[tuple[str, ...]]",
         "job_task_flag: ClassVar[str]",
         "line: ClassVar[str]",
-        "command_types_setting: ClassVar[str]",
-        "refusal_hint: ClassVar[str]",
         "behaviours: ClassVar[HelperBehaviours]",
         "commands: ClassVar[CommandAllowList]",
         "journal_runs: ClassVar[tuple[str, ...]]"
@@ -5719,9 +5728,7 @@
         "job_command: tuple[str, ...]",
         "job_task_flag: str",
         "line: str",
-        "commands: CommandAllowList",
-        "command_types_setting: str",
-        "refusal_hint: str"
+        "commands: CommandAllowList"
       ],
       "methods": [
         "with_helper_lines(self, helper_key: str, lines: tuple[str, ...]) -> 'HelperTypeEntry'",
@@ -12062,5 +12069,5 @@
       ]
     }
   },
-  "engine_version": "6.0.0"
+  "engine_version": "7.0.0"
 }

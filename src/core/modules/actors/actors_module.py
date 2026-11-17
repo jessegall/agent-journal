@@ -9,7 +9,7 @@ class ActorsModule(Module):
     delete."""
 
     name = "journal.core.actors"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     models = [ActorRecordModelDeclaration]
     seeders = [ActorsSeeder]
     moves = [ActorsMove]

@@ -8,7 +8,7 @@ class WarmModule(Module):
     """A module that seeds demo rows and carries its version 4 table."""
 
     name = "journal.core.warm"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     seeders = [WarmSeeder]
     moves = [WarmMove]
 
@@ -20,6 +20,6 @@ class ExplainedModule(Module):
     """A module that says why it seeds and moves nothing."""
 
     name = "journal.core.quiet"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     seed_reason = "it adds no rows of its own to show"
     move_reason = "version 4 had no table for it"

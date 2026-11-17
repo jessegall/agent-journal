@@ -88,7 +88,8 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
 
     def on_main_row(self, main: Agent, command: StartAgent, context: Context) -> Agent:
         stopped = main if main.ended_at is not None else self.single_main.ended_session(main, context)
-        session_row = replace(stopped, session=command.session, program=command.program, program_model=command.program_model)
+        # the launch runs under the main row's own number, so the terminal key of an earlier launch goes
+        session_row = replace(stopped, session=command.session, program=command.program, program_model=command.program_model, launch_agent_id=None, launch_name=None)
         agent = self.dispatcher.record_process(session_row, self.process(command), context)
         self.sessions.started(agent, context)
         return agent

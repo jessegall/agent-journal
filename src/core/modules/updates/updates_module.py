@@ -21,7 +21,7 @@ class UpdatesModule(Module):
     name = "journal.core.updates"
     seed_reason = "a demo installs no release"
     moves = [UpdatesMove]
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.actors", "journal.core.chat", "journal.core.settings"]
     settings = UPDATE_SETTINGS
     models = [ReleaseInstallModelDeclaration, ReleaseModelDeclaration]

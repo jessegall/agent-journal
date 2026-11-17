@@ -125,7 +125,7 @@ class ReadUnlockedPinsSubcommand(Subcommand[ReadUnlockedPins, int]):
 
 class LockCommandsModule(Module):
     name = "sample.lock-commands"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.pins"]
     handlers = [WritePinsHandler, WriteNestedPinsHandler, ReadUnlockedPinsHandler]
     subcommands = [WritePinsSubcommand, WriteUnlockedPinsSubcommand, WriteNestedPinsSubcommand, WriteUnlockedNestedPinsSubcommand, ReadUnlockedPinsSubcommand]

@@ -34,6 +34,6 @@ class OwnAssignerModule(Module):
     name = "assignersample"
     seed_reason = "a sample"
     move_reason = "a sample"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.tasks"]
     listeners = [OldestTaskFirstListener]

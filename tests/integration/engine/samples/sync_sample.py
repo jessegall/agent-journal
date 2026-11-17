@@ -14,7 +14,7 @@ class ItemsTable(Migration):
 
 class ItemsModule(Module):
     name = "items"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     models = [ModelDeclaration(Item)]
     migrations = [ItemsTable]
     guards = [PausedItemGuard]
@@ -22,7 +22,7 @@ class ItemsModule(Module):
 
 class ItemCountModule(Module):
     name = "item-count"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["items"]
     listeners = [PausedItemCounter]
 

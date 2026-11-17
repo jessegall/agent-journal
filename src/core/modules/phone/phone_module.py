@@ -24,7 +24,7 @@ class PhoneModule(Module):
     unpaired."""
 
     name = "journal.core.phone"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = PHONE_DEPENDENCIES
     models = [PhoneModelDeclaration, PhoneCodeModelDeclaration]
     guards = [PhoneRowGuard, PhoneCodeRowGuard]

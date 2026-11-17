@@ -13,7 +13,7 @@ class ReviewEntryPoint(EntryPoint):
 
 class FrontDeskModule(Module):
     name = "sample.front-desk"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.suites.coding"]
 
 

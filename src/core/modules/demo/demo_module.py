@@ -10,7 +10,7 @@ class DemoModule(Module):
     name = "journal.core.demo"
     seed_reason = "it is the module that runs the seeders"
     move_reason = "version 4 had no demo rows"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.actors"]
     subcommands = [DemoSeedSubcommand, DemoStartSubcommand]
     tick_handlers = DEMO_TICK_HANDLERS

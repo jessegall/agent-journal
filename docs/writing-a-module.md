@@ -46,7 +46,7 @@ class ReviewAuditButton(ButtonDeclaration):
 
 class AcmeReviewModule(Module):
     name = "acme.review"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.plans", "journal.core.templates", "journal.core.viewer", "journal.suites.coding"]
     handlers = [AuditPlanHandler]
     subcommands = [AuditPlanSubcommand]
@@ -93,7 +93,7 @@ from engine.module.module import Module
 
 class ClerksModule(Module):
     name = "acme.clerks"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.agents"]
     helper_types = [HelperType("clerk", "Clerk")]
 ```
@@ -118,7 +118,7 @@ from engine.profile.agent_profile import AgentProfile
 
 class NotesProfilesModule(Module):
     name = "acme.notes-profiles"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.agents"]
     profiles = [AgentProfile("notes-reader", "Reads and explains notes", "Read the notes and report the findings.",
                              agent_type="helper")]
@@ -192,7 +192,7 @@ class FindingsWindow(Window):
 # acme_findings_module.py: the module lists the class
 class AcmeFindingsModule(Module):
     name = "acme.findings"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["acme.suite", "journal.core.plans", "journal.core.viewer"]
     button_slots = ["findings.row"]
     windows = [FindingsWindow]
@@ -246,7 +246,7 @@ class ThingInspector(InspectorDeclaration):
 
 class AcmeThingModule(Module):
     name = "acme.things"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     models = [ThingModelDeclaration]
     inspectors = [ThingInspector]
 ```
@@ -314,7 +314,7 @@ class NotesWindow(Window):
 
 class AcmePlanNotesModule(Module):
     name = "acme.plan_notes"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.plans", "journal.core.viewer", "journal.suites.coding"]
     handlers = [NotePlanHandler]
     subcommands = [NotePlanSubcommand]

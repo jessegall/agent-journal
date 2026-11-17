@@ -20,7 +20,7 @@ def mark(value: str, family: MarkCategory = FAMILY) -> MarkDeclaration:
 
 
 def module(name: str, *marks: MarkDeclaration) -> type[Module]:
-    return type("Sample", (Module,), {"name": name, "requires_engine": ">=6,<7", "marks": marks})
+    return type("Sample", (Module,), {"name": name, "requires_engine": ">=7,<8", "marks": marks})
 
 
 def problems(*modules: type[Module]) -> tuple[str, ...]:

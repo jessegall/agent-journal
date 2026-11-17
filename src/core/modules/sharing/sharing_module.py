@@ -21,7 +21,7 @@ class SharingModule(Module):
     revoked; an agent may ask for one, and visitors may comment if the link lets them."""
 
     name = "journal.core.sharing"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = SHARING_DEPENDENCIES
     models = [ShareLinkModelDeclaration, ShareCommentModelDeclaration]
     guards = [ShareLinkRowGuard]

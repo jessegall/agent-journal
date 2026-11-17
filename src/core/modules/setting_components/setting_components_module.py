@@ -6,6 +6,6 @@ class SettingComponentsModule(Module):
     setting component enum, which a window imports as @journal/setting-components."""
 
     name = "journal.core.setting_components"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     move_reason = "it owns no table: its components are viewer files"
     seed_reason = "it owns no table: its components are viewer files"

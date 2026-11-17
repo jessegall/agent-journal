@@ -32,7 +32,7 @@ class ChecksModule(Module):
     lines = [BrokenTaskWaitLines, FailedCheckLines]
     window_extensions = [ShellChecksExtension]
     agent_messages = CHECK_AGENT_MESSAGES
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     block_conditions = [CheckPassed]
     dependencies = CHECKS_DEPENDENCIES
     skills = CHECKS_SKILLS

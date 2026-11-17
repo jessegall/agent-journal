@@ -10,7 +10,6 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.coding_fixtures import OpenTaskBuilder
 from suites.coding.agent_messages.worker_task_unstarted_message import WorkerTaskUnstartedMessage
 from engine.testing.expectations.expected_message import expected_agent_message
-from suites.coding.upgrade.coding_settings_move import LISTED_KEY
 
 WORKER_SESSION = "s-2"
 CART_SEARCH = HookSamples.shell("grep -n total src/cart.py", ShellPart("grep", "search", ["-n", "total", "src/cart.py"]))
@@ -37,11 +36,10 @@ def test_a_worker_whose_task_has_not_started_runs_journal_commands_only(new_stor
     story.expect_hook_allowed(WORKER_SESSION, TASK_READ)
 
 
-def test_a_worker_runs_no_command_of_a_type_its_setting_leaves_out(new_story):
+def test_a_worker_runs_a_command_of_every_type(new_story):
     story = new_story(fixture=WorkingAgent)
-    story.expect_success(f"""setting make {LISTED_KEY} '["read", "search"]' --environment main""", f"key: {LISTED_KEY}")
     story.expect_hook_allowed(WORKER_SESSION, CART_SEARCH)
-    story.expect_hook_refusal(WORKER_SESSION, CART_REMOVAL, "a worker here runs no edit command")
+    story.expect_hook_allowed(WORKER_SESSION, HookSamples.shell("curl -s https://example.com", ShellPart("curl", "network", ["-s", "https://example.com"])))
 
 
 def test_a_worker_that_stops_with_its_task_started_is_told_to_deliver_it(new_story):
@@ -64,9 +62,9 @@ class WorkingAgent(StoryFixture):
         worker_with_started_task(story)
 
 
-def test_a_worker_runs_a_check_such_as_the_judge_by_default_but_no_unknown_command(new_story):
+def test_a_worker_runs_a_check_such_as_the_judge_and_classifies_an_unknown_command_first(new_story):
     story = new_story(fixture=WorkingAgent)
     judge = HookSamples.shell("journal sins --changes", ShellPart("scripts/judge", "check", ["--changes"]))
-    unknown = HookSamples.shell("scripts/dev serve", ShellPart("scripts/dev", "unknown", ["serve"]))
+    unknown = HookSamples.shell("scripts/dev serve", ShellPart("scripts/dev", "unknown", ["serve"]), has_saved_commands=True)
     story.expect_hook_allowed(WORKER_SESSION, judge)
-    story.expect_hook_refusal(WORKER_SESSION, unknown, "a worker here runs no unknown command")
+    story.expect_hook_refusal(WORKER_SESSION, unknown, "has an unknown command type")

@@ -52,14 +52,14 @@ class MakeLegacySettingRequestSubcommand(Subcommand[MakeLegacySettingRequest, Se
 
 class LegacySettingRequestsModule(Module):
     name = "tests.legacy-setting-requests"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     handlers = [MakeLegacySettingRequestHandler]
     subcommands = [MakeLegacySettingRequestSubcommand]
 
 
 class ApprovalUpgradeModule(Module):
     name = "tests.approval-upgrade"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
 
 
 class LegacySettingQuestion(StoryFixture):

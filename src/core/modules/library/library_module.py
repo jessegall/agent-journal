@@ -20,7 +20,7 @@ class LibraryModule(Module):
     """Connects this journal to a team's shared server, and keeps the items a user got in step with it."""
 
     name = "journal.core.library"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     seed_reason = "it keeps only what a connected server gave it"
     move_reason = "version 4's team rows are not carried over"
     dependencies = LIBRARY_DEPENDENCIES

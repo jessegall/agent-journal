@@ -12,7 +12,7 @@ def button(icon: str, **fields: object) -> ButtonDeclaration:
 
 class NewIconModule(Module):
     name = "iconic"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = DEPENDENCIES
     buttons = [button(icon) for icon in (WindowIcon.PAUSE, WindowIcon.RESUME, WindowIcon.START, WindowIcon.RESTORE, WindowIcon.LOCK)]
 

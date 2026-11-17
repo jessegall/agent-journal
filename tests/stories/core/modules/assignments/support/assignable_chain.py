@@ -90,7 +90,7 @@ class ChainModule(Module):
     """A sample module with a chain of three assignable models joined as a plan, its phases and their tasks are."""
 
     name = "acme.chain"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.assignments"]
     models = [ModelDeclaration(Yard), ModelDeclaration(Bay), ModelDeclaration(Parcel), ModelDeclaration(BayParcel)]
     migrations = [ChainTables]

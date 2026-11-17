@@ -16,7 +16,7 @@ class SuggestionsModule(Module):
 
     name = "journal.core.suggestions"
     seed_reason = "a suggestion is an agent's own offer, which a demo has none of"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [SuggestionModelDeclaration]
     moves = [SuggestionsMove]

@@ -46,7 +46,7 @@ class DriversModule(Module):
     agent_messages = DRIVER_AGENT_MESSAGES
     profiles = [REVIEWER_PROFILE]
     move_reason = "version 4 kept hook records in its own bookkeeping tables, which stay in the backup"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     former_event_keys = DRIVERS_FORMER_EVENT_KEYS
     settings = DRIVERS_SETTINGS
     agent_drivers = [MainAgentDriver, HelperAgentDriver]

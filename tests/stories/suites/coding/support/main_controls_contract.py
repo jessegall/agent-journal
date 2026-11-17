@@ -2,7 +2,6 @@ from suites.coding.settings.coding_setting_values import CodingSettingValues
 import json
 from dataclasses import dataclass
 
-from engine.enums.command_category import CommandCategory
 from engine.enums.setting_type import SettingType
 from engine.setting.setting_value import SettingValue
 from core.modules.helpers.support import agent_field_options as options
@@ -14,9 +13,6 @@ from suites.coding.support import coding_settings as coding
 from suites.coding.support.shipped_profiles import MERGER_PROFILE
 
 AGENT_TYPES = ("worker", "helper")
-ALL_COMMAND_TYPES = tuple(category.value for category in CommandCategory)
-DEFAULT_COMMAND_TYPES = (CommandCategory.READ.value, CommandCategory.SEARCH.value, CommandCategory.EDIT.value, CommandCategory.CHECK.value, CommandCategory.TEST_RUN.value,
-                         CommandCategory.BUILD.value)
 SETTING_LISTS = {"coding": CodingSettingValues.nodes(), "workers": workers.WORKER_SETTINGS, "helpers": helpers.HELPER_SETTINGS}
 MODULE_KEYS = {"coding": coding.MODULE_KEY, "workers": workers.MODULE_KEY, "helpers": helpers.MODULE_KEY}
 RULES = {**CodingSettingValues.rules, **workers.WORKER_SETTING_RULES, **helpers.HELPER_SETTING_RULES}
@@ -104,7 +100,6 @@ CONTROLS = [
     Control("C31", [SettingPart("helpers", helpers.PROGRAM_WINDOW_PERCENT, 95, (-1, 101, 95.5, "95"))]),
     Control("C34", [nonnegative_integer("workers", workers.WORKER_PHASE_TEST_RUNS, 3)]),
     Control("C35", [nonnegative_integer("workers", workers.WORKER_TEST_LIMIT, 25)]),
-    Control("C36", [SettingPart("coding", coding.COMMAND_TYPES, DEFAULT_COMMAND_TYPES, (["deploy"], ["read", "read"], ["read", " "], "read"))]),
     Control("C37", [SettingPart("workers", workers.AFFECTED_TESTS_COMMAND, "")]),
     Control("C38", [SettingPart("workers", workers.PROJECT_TEST_COMMAND, "")]),
     Control("C39", [commands(workers.MERGER_COMMANDS)]),

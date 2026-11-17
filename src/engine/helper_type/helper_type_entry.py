@@ -32,8 +32,6 @@ class HelperTypeEntry:
     job_task_flag: str = ""
     line: str = ""
     commands: CommandAllowList = CommandAllowList()
-    command_types_setting: str = ""
-    refusal_hint: str = ""
 
     # a read-only type that is the helper, or extends it, also runs the journal lines other modules add for helpers
     def with_helper_lines(self, helper_key: str, lines: tuple[str, ...]) -> "HelperTypeEntry":
@@ -46,8 +44,7 @@ class HelperTypeEntry:
         roster = DottedPath.class_path(declaration.roster) if declaration.roster is not None else None
         return cls(module, declaration.key, declaration.label, declaration.access, declaration.separate_folder, declaration.behaviours, declaration.bases(), declaration.default_profile,
                    declaration.start_line, roster, declaration.run_limit_key, declaration.kept_limit_key, declaration.profile_limits_key, declaration.queue_limit_key,
-                   declaration.job_command, declaration.job_task_flag, declaration.line, declaration.commands,
-                   declaration.command_types_setting, declaration.refusal_hint)
+                   declaration.job_command, declaration.job_task_flag, declaration.line, declaration.commands)
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "HelperTypeEntry":
@@ -55,7 +52,7 @@ class HelperTypeEntry:
         return cls(stored["module"], stored["key"], stored["label"], Access(stored["access"]), stored["separate_folder"], HelperBehaviours(**stored["behaviours"]), tuple(stored.get("bases", ())), stored["default_profile"],
                    stored["start_line"], roster, stored.get("run_limit_key", ""), stored.get("kept_limit_key", ""), stored.get("profile_limits_key", ""), stored.get("queue_limit_key", ""),
                    tuple(stored.get("job_command", ())), stored.get("job_task_flag", ""), stored.get("line", ""),
-                   CommandAllowList.restored(stored["commands"]), stored["command_types_setting"], stored.get("refusal_hint", ""))
+                   CommandAllowList.restored(stored["commands"]))
 
     def matches(self, helper_type: type[HelperType]) -> bool:
         return helper_type.key in self.type_keys()

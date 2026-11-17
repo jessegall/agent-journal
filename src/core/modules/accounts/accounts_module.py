@@ -9,7 +9,7 @@ class AccountsModule(Module):
     """The people who can log in to a hosted journal: their logins, sessions and second factors."""
 
     name = "journal.core.accounts"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.actors"]
     models = ACCOUNTS_MODELS
     guards = [AccountRowsGuard]

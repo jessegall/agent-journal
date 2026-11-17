@@ -40,7 +40,7 @@ class MemoriesModule(Module):
 
     name = "journal.core.memories"
     agent_messages = MEMORY_AGENT_MESSAGES
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     block_conditions = [MemoriesWeighed]
     settings = MEMORY_SETTINGS
     dependencies = MEMORIES_DEPENDENCIES

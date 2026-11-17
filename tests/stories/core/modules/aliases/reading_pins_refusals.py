@@ -8,11 +8,10 @@ PYTHON_SCRIPT = HookSamples.shell("python3 tools/deploy.py staging", ShellPart("
 UNKNOWN_RUN = HookSamples.shell("scripts/dev go test ./cli/judge/", ShellPart("scripts/dev", CommandCategory.UNKNOWN, ["go", "test", "./cli/judge/"]), has_saved_commands=True)
 
 
-def test_a_workers_command_of_unknown_type_is_refused_by_its_driver_and_not_asked_to_be_classified(new_story):
+def test_a_worker_is_asked_to_classify_a_command_of_unknown_type_and_runs_a_python_script(new_story):
     story = new_story(fixture=ForcedReaders)
-    story.expect_hook_refusal("s-reader", UNKNOWN_RUN, "a worker here runs no unknown command")
-    story.expect_hook_refusal("s-reader", PYTHON_SCRIPT, "a worker here runs no process command")
-    story.expect_success("refusal list", actor=story.agent)
+    story.expect_hook_refusal("s-reader", UNKNOWN_RUN, "has an unknown command type")
+    story.expect_hook_allowed("s-reader", PYTHON_SCRIPT)
 
 
 def test_a_python_script_is_a_process_and_runs_without_being_classified(new_story):

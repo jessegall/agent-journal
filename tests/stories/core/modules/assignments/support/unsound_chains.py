@@ -43,7 +43,7 @@ class DockModule(Module):
     """A sample module whose model several actors hold assigns a child that one actor holds."""
 
     name = "acme.dock"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.assignments"]
     models = [ModelDeclaration(Dock), ModelDeclaration(Bolt)]
 
@@ -74,7 +74,7 @@ class GearModule(Module):
     """A sample module whose two models assign each other."""
 
     name = "acme.gear"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.assignments"]
     models = [ModelDeclaration(Gear), ModelDeclaration(Cog)]
 
@@ -93,6 +93,6 @@ class ParcelGuardModule(Module):
     """A sample module that guards the assignment of one parcel."""
 
     name = "acme.parcel-guard"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.assignments", "acme.chain"]
     guards = [SealedParcelGuard]

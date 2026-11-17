@@ -4,8 +4,7 @@ from engine.helper_type.helper_behaviours import HelperBehaviours
 from suites.coding.modules.workers.bindings.worker_roster import WorkerRoster
 from suites.coding.modules.workers.types.support.worker_operation_line import WORKER_OPERATION_RUN
 from suites.coding.modules.workers.types.worker_commands import WorkerCommands
-from suites.coding.models.enums.ask_topic import AskTopic
-from suites.coding.support.coding_settings import COMMAND_TYPES, WORKER_KEPT_LIMIT, WORKER_RUN_LIMIT, WORKER_TEST_LIMIT
+from suites.coding.support.coding_settings import WORKER_KEPT_LIMIT, WORKER_RUN_LIMIT, WORKER_TEST_LIMIT
 
 
 class Worker(Helper):
@@ -31,5 +30,3 @@ class Worker(Helper):
                                   retains_pause=True, has_restricted_aliases=True, runs_saved_commands=False)
     commands = WorkerCommands()
     journal_runs = (WORKER_OPERATION_RUN,)
-    command_types_setting = COMMAND_TYPES
-    refusal_hint = AskTopic.TOOL.question_line()

@@ -14,7 +14,7 @@ class SampleProgramModule(Module):
     """Adds the sample program."""
 
     name = "sample.program"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     providers = [SampleProgram]
 
 
@@ -22,5 +22,5 @@ class SecondProgramModule(Module):
     """Adds a second program named sample."""
 
     name = "second.program"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     providers = [SecondProgram]

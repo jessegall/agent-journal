@@ -35,7 +35,7 @@ class TriggersModule(Module):
     settings = TRIGGER_SETTINGS
     marks = [TriggerWaitingMark]
     guards = [AgentTriggerGuard]
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = TRIGGERS_DEPENDENCIES
     models = [TriggerModelDeclaration, TriggerActionRunModelDeclaration]
     migrations = TRIGGERS_MIGRATIONS

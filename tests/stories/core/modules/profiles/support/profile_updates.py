@@ -17,7 +17,7 @@ class UpdatedClerk(Helper):
 
 class ProfileVersionOne(Module):
     name = "sample.profile-updates"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.agents", "journal.core.profiles"]
     profiles = [BASE_PROFILE]
     windows = [WindowDeclaration("profile-updates.editor", "Profiles", "profile list", WindowLoading.DOCUMENT, skeleton=[SkeletonPart.line()],

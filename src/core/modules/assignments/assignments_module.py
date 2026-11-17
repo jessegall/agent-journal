@@ -16,7 +16,7 @@ class AssignmentsModule(Module):
     """Adds assignments: any row of a model that declares itself assignable can be given to actors."""
 
     name = "journal.core.assignments"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     move_reason = "version 4 has no assignments table: it kept who works on a task in a column of the task"
     seed_reason = "an assignment shows on the row it is about, which the module of that row seeds"
     dependencies = ["journal.core.actors", "journal.core.agents"]

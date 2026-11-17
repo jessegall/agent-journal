@@ -1,4 +1,3 @@
-from suites.coding.support.coding_settings import COMMAND_TYPES
 from core.modules.drivers.support.driver_settings import AUTOMATIC_APPROVAL
 import re
 from pathlib import Path
@@ -45,12 +44,10 @@ def test_a_compound_line_is_refused_whole_naming_its_refused_part(worker_story):
     story.expect_hook_refusal(WORKER_SESSION, line.with_fields(event="pre_tool_use"), "A worker may not run setting set")
 
 
-def test_a_person_changes_the_workers_shell_types_and_the_type_journal_changes_nothing(worker_story):
+def test_a_worker_runs_every_shell_command_type_and_only_its_listed_journal_lines(worker_story):
     story, worker = worker_story
-    story.expect_success(f"""setting make {COMMAND_TYPES} '["read", "search", "journal"]' --environment main""")
-    story.expect_hook_refusal(WORKER_SESSION, REMOVAL, "a worker here runs no edit command")
+    story.expect_hook_allowed(WORKER_SESSION, REMOVAL)
     story.expect_hook_allowed(WORKER_SESSION, journal_hook_line("task", "show", "1"))
-    story.expect_text("setting tree --json --environment main", "journal here changes nothing")
 
 
 def test_after_a_sync_the_first_line_is_judged_by_the_new_list(new_story):

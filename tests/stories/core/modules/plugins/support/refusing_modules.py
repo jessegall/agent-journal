@@ -87,11 +87,11 @@ class NoteTitleGuard(Guard[Created[EventNote]]):
 
 class RefusingModule(Module):
     name = "acme.refusing"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     handlers = [DeleteProcessRowHandler, OrphanProcessRowHandler, SlotsCreateNoteHandler]
 
 
 class NoteTitleGuardModule(Module):
     name = "acme.refused-notes"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     guards = [NoteTitleGuard]

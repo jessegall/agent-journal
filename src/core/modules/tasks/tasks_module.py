@@ -35,7 +35,7 @@ class TasksModule(Module):
     name = "journal.core.tasks"
     agent_messages = TASK_AGENT_MESSAGES
     settings = TASK_SETTINGS
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     block_conditions = TASKS_BLOCK_CONDITIONS
     dependencies = TASKS_DEPENDENCIES
     bindings = {AgentTaskReads: RowAgentTaskReads}

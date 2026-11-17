@@ -29,7 +29,7 @@ class HelpersModule(Module):
     effects = [KeptReportRetryEffect, UnstartedHelperEffect, JobReportEffect]
     seed_reason = "demo programs have no outages"
     move_reason = "version 4 had no helpers"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     migrations = HELPERS_MIGRATIONS
     models = HELPERS_MODELS
     dependencies = HELPERS_DEPENDENCIES

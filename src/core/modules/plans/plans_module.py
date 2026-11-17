@@ -50,7 +50,7 @@ class PlansModule(Module):
 
     name = "journal.core.plans"
     settings = PLAN_SETTINGS
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     block_conditions = [PlanApproved, PlanFinished, PlanContextReadCondition]
     bindings = {PlanAuthors: PlanRowAuthors, BlockReviewScope: FocusedBlockReviewScope}
     dependencies = PLANS_DEPENDENCIES

@@ -102,7 +102,7 @@ class BrokenTagsMove(TagsMove):
 
 class NotesModule(Module):
     name = "movenotes"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.actors"]
     models = [ModelDeclaration(Note)]
     migrations = [NotesMigration]
@@ -111,7 +111,7 @@ class NotesModule(Module):
 
 class TagsModule(Module):
     name = "movetags"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.actors", "movenotes"]
     models = [ModelDeclaration(Tag)]
     migrations = [TagsMigration]
@@ -120,7 +120,7 @@ class TagsModule(Module):
 
 class RetryableTagsModule(Module):
     name = "movetags"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.actors", "movenotes"]
     models = [ModelDeclaration(Tag)]
     migrations = [TagsMigration]
@@ -129,7 +129,7 @@ class RetryableTagsModule(Module):
 
 class BrokenTagsModule(Module):
     name = "movetags"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.actors", "movenotes"]
     models = [ModelDeclaration(Tag)]
     migrations = [TagsMigration]
@@ -150,14 +150,14 @@ class StrangerMove(NotesMove):
 
 class GhostReaderModule(Module):
     name = "moveghost"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.actors"]
     moves = [GhostMove]
 
 
 class StrangerReaderModule(Module):
     name = "movestranger"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.actors"]
     moves = [StrangerMove]
 
@@ -185,6 +185,6 @@ def version_four_database(folder: Path, name: str = "version-4.db", with_rows: b
 
 class PrefsModule(Module):
     name = "moveprefs"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.settings"]
     settings = [SettingValue("limit", "Limit", "How many", SettingType.NUMBER, 5)]

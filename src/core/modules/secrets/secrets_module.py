@@ -24,7 +24,7 @@ class SecretsModule(Module):
     name = "journal.core.secrets"
     policies = [SecretsFolderPolicy]
     agent_messages = SECRET_AGENT_MESSAGES
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = SECRETS_DEPENDENCIES
     skills = SECRETS_SKILLS
     seeders = [SecretsSeeder]

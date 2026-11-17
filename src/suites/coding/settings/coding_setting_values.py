@@ -1,10 +1,8 @@
-from engine.enums.command_category import CommandCategory
 from engine.enums.setting_scope import SettingScope
 from engine.enums.setting_type import SettingType
-from engine.setting.list_rule import ListRule
 from engine.setting.setting_list import SettingList
 from engine.setting.setting_value import SettingValue
-from suites.coding.support.coding_settings import COMMAND_TYPES, MODULE_KEY
+from suites.coding.support.coding_settings import MODULE_KEY
 
 
 class CodingSettingValues(SettingList):
@@ -25,8 +23,4 @@ class CodingSettingValues(SettingList):
                      SettingType.FLAG, default=False, person_set=True, screen="work", section="Other helpers", is_driving=True),
         SettingValue("plain-code-words", "Plain code words", "Every agent loads the skill on naming code in plain words at its start and after a compaction.",
                      SettingType.FLAG, default=True, scope=SettingScope.PROJECT, person_set=True, screen="work", section="Other helpers"),
-        SettingValue("worker-command-types", "Worker command types", "Shell command types a worker may run; its command list judges journal lines, so journal here changes nothing.", SettingType.LIST,
-                     default=(CommandCategory.READ.value, CommandCategory.SEARCH.value, CommandCategory.EDIT.value, CommandCategory.CHECK.value, CommandCategory.TEST_RUN.value,
-                              CommandCategory.BUILD.value), person_set=True, is_driving=True),
     ]
-    rules = {COMMAND_TYPES: ListRule(choices=tuple(category.value for category in CommandCategory))}

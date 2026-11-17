@@ -21,7 +21,7 @@ class PinsModule(Module):
     name = "journal.core.pins"
     effects = [AgentTextPinEffect, AutomaticLinkPinEffect]
     lines = [AgentTextPinLines, LinkPinLines]
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.drivers"]
     agent_messages = PIN_AGENT_MESSAGES
     seeders = [PinsSeeder]

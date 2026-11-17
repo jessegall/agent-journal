@@ -16,13 +16,13 @@ class AuditSuite(Suite):
 
 class AcmeModule(Module):
     name = "acme.suite"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.suites.coding"]
 
 
 class AuditModule(Module):
     name = "audit.suite"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.suites.coding"]
 
 

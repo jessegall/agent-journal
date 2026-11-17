@@ -79,7 +79,7 @@ class SuiteClerk(HelperType):
 
 class Clerk(Module):
     name = "sample.clerk"
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = ["journal.core.agents"]
     helper_types = [ClerkHelper]
 

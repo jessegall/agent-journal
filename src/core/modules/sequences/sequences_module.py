@@ -41,7 +41,7 @@ class SequencesModule(Module):
     states = [UnstartedStepStates, SequenceWorkStates]
     policies = [StepCommandPolicy, StepGuardPolicy]
     agent_messages = SEQUENCE_AGENT_MESSAGES
-    requires_engine = ">=6,<7"
+    requires_engine = ">=7,<8"
     dependencies = SEQUENCES_DEPENDENCIES
     block_conditions = [SequenceStepStarted]
     bindings = {StopBlockers: SequenceStopBlockers}
