@@ -1,0 +1,22 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Core\Actors;
+
+use App\Core\Actors\Exceptions\ActorContextMissing;
+use Illuminate\Container\Attributes\Bind;
+
+/**
+ * Who acts in this request, for reading only: established by an authenticating middleware, never by the reader.
+ */
+#[Bind(ActorStore::class)]
+interface CurrentActor
+{
+    /**
+     * @throws ActorContextMissing when no middleware established an actor for this request
+     */
+    public function actor(): ActorContext;
+
+    public function hasActor(): bool;
+}

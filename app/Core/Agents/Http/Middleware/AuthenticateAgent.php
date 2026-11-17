@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Http\Middleware;
 
-use App\Core\Actors\ActorContext;
+use App\Core\Actors\EstablishActor;
 use App\Core\Agents\AgentContext;
 use App\Core\Agents\AgentContextFactory;
 use App\Core\Agents\Exceptions\CallSignatureInvalid;
@@ -24,6 +24,7 @@ final readonly class AuthenticateAgent
     public function __construct(
         private AgentContextFactory $contexts,
         private Container $container,
+        private EstablishActor $actors,
     ) {}
 
     /**
@@ -38,8 +39,12 @@ final readonly class AuthenticateAgent
         }
 
         $this->container->instance(AgentContext::class, $context);
-        $this->container->instance(ActorContext::class, ActorContext::of($context));
+        $this->actors->establish($context);
 
-        return $next($request);
+        try {
+            return $next($request);
+        } finally {
+            $this->actors->clear();
+        }
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Models;
 
-use App\Core\Actors\ActorContext;
+use App\Core\Actors\CurrentActor;
 use App\Core\Agents\AgentContext;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -43,7 +43,7 @@ trait OwnedByOneAgent
     #[Scope]
     protected function visibleToPerson(Builder $query): void
     {
-        Container::getInstance()->make(ActorContext::class)->requirePerson();
+        Container::getInstance()->make(CurrentActor::class)->actor()->requirePerson();
 
         $query->withoutGlobalScope(AgentScope::class);
     }
@@ -57,9 +57,9 @@ trait OwnedByOneAgent
     #[Scope]
     protected function forActor(Builder $query): void
     {
-        $container = Container::getInstance();
+        $actors = Container::getInstance()->make(CurrentActor::class);
 
-        if ($container->resolved(ActorContext::class) && $container->make(ActorContext::class)->isPerson()) {
+        if ($actors->hasActor() && $actors->actor()->isPerson()) {
             $query->visibleToPerson();
         }
     }
@@ -73,12 +73,8 @@ trait OwnedByOneAgent
      */
     public function resolveRouteBinding($value, $field = null): ?Model
     {
-        $query = $this->newQuery();
+        Container::getInstance()->make(CurrentActor::class)->actor();
 
-        if (Container::getInstance()->make(ActorContext::class)->isPerson()) {
-            $query->visibleToPerson();
-        }
-
-        return $this->resolveRouteBindingQuery($query, $value, $field)->first();
+        return $this->resolveRouteBindingQuery($this->newQuery()->forActor(), $value, $field)->first();
     }
 }

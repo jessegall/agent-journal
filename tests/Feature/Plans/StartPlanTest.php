@@ -6,6 +6,7 @@ namespace Tests\Feature\Plans;
 
 use App\Core\Actors\ActorContext;
 use App\Core\Actors\ActorKind;
+use App\Core\Actors\EstablishActor;
 use App\Core\Actors\Exceptions\ActorContextMissing;
 use App\Domain\Plans\Actions\StartPlan;
 use App\Domain\Plans\Events\PlanStarted;
@@ -33,7 +34,7 @@ final class StartPlanTest extends TestCase
 
         Event::fake([PlanStarted::class]);
         $this->plan = Plan::query()->create(['title' => 'Build the plans page', 'kind' => PlanKind::Build]);
-        $this->app->instance(ActorContext::class, ActorContext::forPerson(7));
+        $this->app->make(EstablishActor::class)->establish(ActorContext::forPerson(7));
     }
 
     public function test_a_planned_plan_starts_once_and_says_who_started_it(): void

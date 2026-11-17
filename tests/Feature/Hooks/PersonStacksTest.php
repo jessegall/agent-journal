@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Core\Actors\ActorContext;
+use App\Core\Actors\EstablishActor;
 use App\Core\Actors\Exceptions\PersonActorRequired;
 use App\Core\Agents\LaunchedAgent;
 use App\Core\Agents\LaunchSessions;
@@ -98,7 +99,7 @@ final class PersonStacksTest extends TestCase
 
     private function actAs(ActorContext $actor): void
     {
-        $this->app->instance(ActorContext::class, $actor);
+        $this->app->make(EstablishActor::class)->establish($actor);
     }
 
     private function launch(): LaunchedAgent

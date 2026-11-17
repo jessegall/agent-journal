@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Chat;
 
 use App\Core\Actors\ActorContext;
+use App\Core\Actors\EstablishActor;
 use App\Core\Agents\LaunchSessions;
 use App\Core\Agents\Models\Agent;
 use App\Core\Hooks\Exceptions\StackTargetRefused;
@@ -43,7 +44,7 @@ final class SendMessageTest extends TestCase
         $agent = Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']);
         $session = $this->app->make(LaunchSessions::class)->launch($agent, 'claude-code')->session;
         $this->target = new StackTarget($session->agent_id, $session->id);
-        $this->app->instance(ActorContext::class, ActorContext::forPerson(7));
+        $this->app->make(EstablishActor::class)->establish(ActorContext::forPerson(7));
     }
 
     public function test_a_sent_message_keeps_its_text_waits_for_the_agent_and_sits_on_its_stack(): void

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Core\Actors\ActorContext;
+use App\Core\Actors\EstablishActor;
 use App\Domain\Access\AccessSettings;
 use App\Domain\Access\Models\User;
 use App\Domain\Plans\Events\PlanProgressChanged;
@@ -40,7 +41,7 @@ final class PageChangeTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->app->instance(ActorContext::class, ActorContext::forPerson($this->owner->id));
+        $this->app->make(EstablishActor::class)->establish(ActorContext::forPerson($this->owner->id));
         Event::fake([PageChanged::class]);
     }
 

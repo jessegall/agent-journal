@@ -10,7 +10,7 @@ use App\Core\Actors\Exceptions\PersonActorRequired;
  * Who acts in this request, filled by the middleware that authenticated them and kept for this request only. A person
  * stays the actor when they select an agent; the agent is then a target, never the caller.
  */
-final readonly class ActorContext
+final readonly class ActorContext implements Actor
 {
     private function __construct(
         public ActorKind $kind,
@@ -36,6 +36,16 @@ final readonly class ActorContext
     public static function forPerson(int $personId): self
     {
         return new self(ActorKind::Person, $personId);
+    }
+
+    public function actorKind(): ActorKind
+    {
+        return $this->kind;
+    }
+
+    public function actorId(): int
+    {
+        return $this->id;
     }
 
     public function isPerson(): bool
