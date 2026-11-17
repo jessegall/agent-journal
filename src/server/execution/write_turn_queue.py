@@ -1,5 +1,7 @@
 import itertools
+import sys
 import threading
+import traceback
 from collections.abc import Callable
 
 from engine.database.write_turns import WriteTurns
@@ -15,7 +17,9 @@ HOLDER_CHECK_SECONDS = 1.0
 class WriteTurnQueue(WriteTurns):
     """The server's one write turn, handed to one thread at a time: the highest priority first, then the one
     that asked first. An ask that waits its step is raised one step, never to immediate. A holder whose thread
-    died gives the turn back; a wait past the limit names the holder; a slow holder is written to the log."""
+    died gives the turn back; a wait past the limit names the holder and writes to the log, once for each holder,
+    the thread that holds it and where that thread stands, so a turn that is never given back shows its cause;
+    a slow holder is written to the log."""
 
     def __init__(self, clock: Clock, wait_limit_seconds: float, slow_turn_log: Callable[[str], None]) -> None:
         super().__init__()
@@ -25,6 +29,7 @@ class WriteTurnQueue(WriteTurns):
         self.waiting: list[WaitingAsk] = []
         self.holder: WaitingAsk | None = None
         self.turn_started_at = 0.0
+        self.shown_holder_number = -1
 
     def acquire(self) -> None:
         execution = CurrentExecution.read()
@@ -50,10 +55,20 @@ class WriteTurnQueue(WriteTurns):
                 return
             waited = current_time - new_question.requested_at
             if waited >= self.wait_limit_seconds and not new_question.priority.is_unlimited:
+                self.show_stuck_holder(current_time)
                 raise WriteTurnBusyError.waited(waited, [self.holder_text()])
             # an unlimited ask looks again each second for a holder whose thread died, never a negative time that spins
             limit_delay = HOLDER_CHECK_SECONDS if new_question.priority.is_unlimited else self.wait_limit_seconds - waited
             self.changed.wait(min(limit_delay, min(waiting.raise_delay(current_time) for waiting in self.waiting)))
+
+    def show_stuck_holder(self, current_time: float) -> None:
+        holder = self.holder
+        if holder is None or holder.number == self.shown_holder_number:
+            return
+        self.shown_holder_number = holder.number
+        frame = sys._current_frames().get(holder.thread.ident or 0)
+        where = "".join(traceback.format_stack(frame)) if frame is not None else "its thread shows no frame"
+        self.slow_turn_log(f"the database write turn is held {current_time - self.turn_started_at:.1f} seconds by {holder.described()} on thread {holder.thread.name}, which stands at:\n{where}")
 
     # the ask that holds the turn, or, between two holders, the earlier ask the turn goes to next
     def holder_text(self) -> str:

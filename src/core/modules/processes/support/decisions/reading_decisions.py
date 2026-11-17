@@ -14,7 +14,8 @@ from core.modules.processes.support.decisions.reading_decision import ReadingDec
 class ReadingDecisions:
     """Keeps the engine's decision about one part of a run at one moment, in place of the earlier decision of the
     same part and moment; nothing else writes the decisions. The first end decision of a part that lacked a
-    good reader adds one to its command's run count."""
+    good reader adds one to its command's run count, and one that a good reader read clears that count, so a
+    command is never refused for runs from before its reader."""
 
     def __init__(self, decisions: ReadingDecisionQuery, repository: Repository, kept: KeptRows, run_counts: CommandRunCounts) -> None:
         self.decisions, self.repository, self.kept_rows, self.run_counts = decisions, repository, kept, run_counts
@@ -33,4 +34,6 @@ class ReadingDecisions:
         command_key = SilentStartRuns.name(part.text, part.program, part.category)
         if point is ReadingPhase.END and decision.state.is_readerless:
             self.run_counts.add_run(command_key, context)
+        elif point is ReadingPhase.END:
+            self.run_counts.reset(lambda counted_key: counted_key == command_key, context)
         return self.repository.save(ReadingDecisionRow(process_id=process.id, part_position=part.position, command_key=command_key, phase=point, **values), context)

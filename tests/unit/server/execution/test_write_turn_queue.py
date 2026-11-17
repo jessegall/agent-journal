@@ -123,6 +123,8 @@ def test_wait_past_limit_names_the_holder(turn_threads):
         turn_threads.queue.wake_waiters()
         busy_writer.join()
     assert "hook at agent priority: task close 4" in str(failures[0])
+    shown = [line for line in turn_threads.logged if "which stands at" in line]
+    assert len(shown) == 1 and "test_wait_past_limit_names_the_holder" in shown[0], turn_threads.logged
 
 
 def test_slow_holder_is_logged_with_class_priority_line(turn_threads):
