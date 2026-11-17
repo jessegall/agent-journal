@@ -23,7 +23,7 @@ use PHPUnit\Framework\TestCase;
 final class DomainClassesTest extends TestCase
 {
     /**
-     * The edges to Hooks, from Hooks to Agents and Links, and from Agents to Links are declared under rule 11 while question 10 waits; see docs/hooks/dependencies.md.
+     * The edges to Hooks, from Hooks to Agents and Links, and from Agents to Links were approved by the user in question 10; see docs/hooks/dependencies.md.
      *
      * @return iterable<string, array{class-string<Domain>, list<class-string<Domain>>}>
      */

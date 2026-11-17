@@ -17,7 +17,18 @@ Measured on 2026-11-17 against the running FrankenPHP Octane app in Docker, from
 | The health check `/up` | 1.7 ms | 6.7 ms |
 | A hook call with an unknown token, refused at the credential lookup | 2.7 ms | 10.5 ms |
 
-Not measured on the live app: an authenticated hook call end to end and a stack lock wait (task 93). In the test suite an uncontended hook call commits in a few tens of milliseconds including setup, and a held lock under a 300 ms deadline times out in about 250 ms (`HookTransactionTest`). The configured limits are a 300 second retry window, a 5 second operation deadline with four fifths of it for the lock wait, 7 days for hook calls and 30 days for closed stacks.
+Task 93 measured the authenticated path the same way, with a throwaway main agent launched through `LaunchSessions` in the dev database and deleted afterwards. Each call was signed with the launch token as the relay signs it and walked the agent's real stack:
+
+| What | Calls | Median | Worst |
+|---|---|---|---|
+| A signed shell command (`PreToolUse`, `git status`) | 50 | 7.0 ms | 17.7 ms |
+| A signed prompt (`UserPromptSubmit`) | 50 | 6.6 ms | 11.2 ms |
+| A shell command waiting on a stack lock held for 500 ms: time from the release to the answer | 10 | 24.0 ms | 31.7 ms |
+| A shell command while the lock is held for 6 s: refused with 503 | 3 | 4010 ms | 4018 ms |
+
+The lock was held by a separate `psql` session (`SELECT ... FOR UPDATE` on the agent's `agent_stacks` row). The time after the release includes the `COMMIT` travelling through `docker compose exec`, so the call itself answers sooner than that. The refusal arrives at the lock wait limit, four fifths of the 5 second deadline, as configured.
+
+In the test suite an uncontended hook call commits in a few tens of milliseconds including setup, and a held lock under a 300 ms deadline times out in about 250 ms (`HookTransactionTest`). The configured limits are a 300 second retry window, a 5 second operation deadline with four fifths of it for the lock wait, 7 days for hook calls and 30 days for closed stacks.
 
 ## The reply contract (plan 2, task 66)
 
