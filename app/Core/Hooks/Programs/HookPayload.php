@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Programs;
 
 use App\Core\Hooks\Exceptions\UnreadablePayload;
+use App\Core\Hooks\Inputs\SessionEndReason;
 use App\Core\Hooks\Inputs\SessionStartSource;
 use App\Core\Hooks\Inputs\ToolOutcome;
 use Spatie\LaravelData\Attributes\MapInputName;
@@ -30,7 +31,7 @@ final class HookPayload extends Data
         public readonly string|Optional $prompt = new Optional,
         public readonly string|Optional $toolName = new Optional,
         public readonly array|Optional $toolInput = new Optional,
-        public readonly array|Optional $toolResponse = new Optional,
+        public readonly array|string|Optional $toolResponse = new Optional,
         public readonly bool|Optional $stopHookActive = new Optional,
         public readonly string|Optional $reason = new Optional,
     ) {}
@@ -53,6 +54,20 @@ final class HookPayload extends Data
     public function reasonText(): string
     {
         return $this->required($this->reason, 'reason');
+    }
+
+    /**
+     * Why the session ended, read from the reason both programs send on SessionEnd.
+     */
+    public function endReason(): SessionEndReason
+    {
+        return match ($this->reasonText()) {
+            'clear' => SessionEndReason::Clear,
+            'logout' => SessionEndReason::Logout,
+            'prompt_input_exit' => SessionEndReason::Exit,
+            'other' => SessionEndReason::Other,
+            default => throw UnreadablePayload::forValue('reason', $this->reasonText()),
+        };
     }
 
     public function startSource(): SessionStartSource
@@ -91,8 +106,18 @@ final class HookPayload extends Data
         throw UnreadablePayload::missing(implode(' or ', $names));
     }
 
+    /**
+     * Whether the tool failed: Claude Code answers with an object that may say is_error, Codex with the tool's text,
+     * which starts with its exit code when the tool reports one.
+     */
     public function toolOutcome(): ToolOutcome
     {
+        if (is_string($this->toolResponse)) {
+            $exitCode = preg_match('/^Exit code: (\d+)/', $this->toolResponse, $match) === 1 ? (int) $match[1] : 0;
+
+            return $exitCode === 0 ? ToolOutcome::Succeeded : ToolOutcome::Failed;
+        }
+
         $response = $this->toolResponse instanceof Optional ? [] : $this->toolResponse;
 
         return ($response['is_error'] ?? false) === true ? ToolOutcome::Failed : ToolOutcome::Succeeded;

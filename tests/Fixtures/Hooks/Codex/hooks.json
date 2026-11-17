@@ -1,16 +1,125 @@
 {
-    "source": "Codex hooks reference (learn.chatgpt.com/docs/hooks), checked 2026-11-17; shapes from the documentation, redacted, not captured from a pinned version",
+    "source": "Captured from codex-cli 0.165.0 on 2026-11-17 under an isolated CODEX_HOME with trusted hooks (codex exec), redacted; stop continuing is the captured stop with stop_hook_active set to true, and pre-compaction and unknown tool are still documented shapes, since codex exec raised neither",
     "payloads": {
-        "session start": {"session_id": "session-redacted", "transcript_path": "/redacted/rollout.jsonl", "cwd": "/redacted", "hook_event_name": "SessionStart", "source": "startup"},
-        "prompt": {"session_id": "session-redacted", "transcript_path": "/redacted/rollout.jsonl", "cwd": "/redacted", "hook_event_name": "UserPromptSubmit", "prompt": "Build the walk."},
-        "shell command as text": {"session_id": "session-redacted", "cwd": "/redacted", "hook_event_name": "PreToolUse", "tool_name": "shell", "tool_input": {"command": "composer test", "workdir": "/redacted", "timeout_ms": 120000}},
-        "shell command as a list": {"session_id": "session-redacted", "cwd": "/redacted", "hook_event_name": "PreToolUse", "tool_name": "shell", "tool_input": {"command": ["bash", "-lc", "git status && composer test"], "workdir": "/redacted"}},
-        "patch over two files": {"session_id": "session-redacted", "cwd": "/redacted", "hook_event_name": "PreToolUse", "tool_name": "apply_patch", "tool_input": {"input": "*** Begin Patch\n*** Update File: app/Domain/Domain.php\n@@\n-a\n+b\n*** Add File: docs/notes.md\n+redacted\n*** End Patch\n"}},
-        "tool finished": {"session_id": "session-redacted", "cwd": "/redacted", "hook_event_name": "PostToolUse", "tool_name": "shell", "tool_input": {"command": "git status"}, "tool_response": {"output": "redacted"}},
-        "stop": {"session_id": "session-redacted", "transcript_path": "/redacted/rollout.jsonl", "cwd": "/redacted", "hook_event_name": "Stop", "stop_hook_active": false},
-        "stop continuing": {"session_id": "session-redacted", "transcript_path": "/redacted/rollout.jsonl", "cwd": "/redacted", "hook_event_name": "Stop", "stop_hook_active": true},
-        "session end": {"session_id": "session-redacted", "cwd": "/redacted", "hook_event_name": "SessionEnd", "reason": "other"},
-        "pre-compaction": {"session_id": "session-redacted", "cwd": "/redacted", "hook_event_name": "PreCompact", "trigger": "auto"},
-        "unknown tool": {"session_id": "session-redacted", "cwd": "/redacted", "hook_event_name": "PreToolUse", "tool_name": "web_search", "tool_input": {"query": "redacted"}}
+        "session start": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "hook_event_name": "SessionStart",
+            "model": "gpt-6-luna",
+            "permission_mode": "bypassPermissions",
+            "source": "startup"
+        },
+        "prompt": {
+            "session_id": "session-redacted",
+            "turn_id": "turn-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "hook_event_name": "UserPromptSubmit",
+            "model": "gpt-6-luna",
+            "permission_mode": "bypassPermissions",
+            "prompt": "Do these steps in order and nothing else: 1) run the shell command 'echo hello'; 2) change 'one' to 'two' in notes.txt with apply_patch; 3) add a file new.txt containing 'new' with apply_patch. Then reply 'done'."
+        },
+        "shell command": {
+            "session_id": "session-redacted",
+            "turn_id": "turn-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "hook_event_name": "PreToolUse",
+            "model": "gpt-6-luna",
+            "permission_mode": "bypassPermissions",
+            "tool_name": "Bash",
+            "tool_input": {
+                "command": "echo hello"
+            },
+            "tool_use_id": "exec-redacted"
+        },
+        "patch updating a file": {
+            "session_id": "session-redacted",
+            "turn_id": "turn-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "hook_event_name": "PreToolUse",
+            "model": "gpt-6-luna",
+            "permission_mode": "bypassPermissions",
+            "tool_name": "apply_patch",
+            "tool_input": {
+                "command": "*** Begin Patch\n*** Update File: notes.txt\n@@\n-one\n+two\n*** End Patch"
+            },
+            "tool_use_id": "exec-redacted"
+        },
+        "patch adding a file": {
+            "session_id": "session-redacted",
+            "turn_id": "turn-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "hook_event_name": "PreToolUse",
+            "model": "gpt-6-luna",
+            "permission_mode": "bypassPermissions",
+            "tool_name": "apply_patch",
+            "tool_input": {
+                "command": "*** Begin Patch\n*** Add File: new.txt\n+new\n*** End Patch"
+            },
+            "tool_use_id": "exec-redacted"
+        },
+        "tool finished": {
+            "session_id": "session-redacted",
+            "turn_id": "turn-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "hook_event_name": "PostToolUse",
+            "model": "gpt-6-luna",
+            "permission_mode": "bypassPermissions",
+            "tool_name": "Bash",
+            "tool_input": {
+                "command": "echo hello"
+            },
+            "tool_response": "hello\n",
+            "tool_use_id": "exec-redacted"
+        },
+        "stop": {
+            "session_id": "session-redacted",
+            "turn_id": "turn-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "hook_event_name": "Stop",
+            "model": "gpt-6-luna",
+            "permission_mode": "bypassPermissions",
+            "stop_hook_active": false,
+            "last_assistant_message": "done"
+        },
+        "stop continuing": {
+            "session_id": "session-redacted",
+            "turn_id": "turn-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "hook_event_name": "Stop",
+            "model": "gpt-6-luna",
+            "permission_mode": "bypassPermissions",
+            "stop_hook_active": true,
+            "last_assistant_message": "done"
+        },
+        "session end": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "hook_event_name": "SessionEnd",
+            "reason": "other"
+        },
+        "pre-compaction": {
+            "session_id": "session-redacted",
+            "cwd": "/redacted",
+            "hook_event_name": "PreCompact",
+            "trigger": "auto"
+        },
+        "unknown tool": {
+            "session_id": "session-redacted",
+            "cwd": "/redacted",
+            "hook_event_name": "PreToolUse",
+            "tool_name": "web_search",
+            "tool_input": {
+                "query": "redacted"
+            }
+        }
     }
 }

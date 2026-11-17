@@ -7,12 +7,11 @@ namespace App\Core\Hooks\Programs;
 use App\Core\Hooks\Exceptions\UnsupportedHook;
 
 /**
- * The Codex tools the adapter knows: running a shell command, and applying a patch to files.
+ * The Codex tools the adapter knows, by the names Codex 0.165.0 sends: running a shell command, and applying a patch.
  */
 enum CodexTool: string
 {
-    case Shell = 'shell';
-    case ExecCommand = 'exec_command';
+    case Bash = 'Bash';
     case ApplyPatch = 'apply_patch';
 
     public static function named(string $toolName): self
@@ -23,7 +22,7 @@ enum CodexTool: string
     public function isShell(): bool
     {
         return match ($this) {
-            self::Shell, self::ExecCommand => true,
+            self::Bash => true,
             self::ApplyPatch => false,
         };
     }

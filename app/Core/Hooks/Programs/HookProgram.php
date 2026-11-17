@@ -21,7 +21,7 @@ enum HookProgram: string
     {
         return match ($this) {
             self::ClaudeCode => ['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop', 'SessionEnd'],
-            self::Codex => ['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop'],
+            self::Codex => ['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop', 'SessionEnd'],
         };
     }
 
@@ -33,7 +33,7 @@ enum HookProgram: string
     public function childToolsWithoutIdentity(): array
     {
         return match ($this) {
-            self::ClaudeCode => ['Task'],
+            self::ClaudeCode => ['Agent', 'Task'],
             self::Codex => [],
         };
     }

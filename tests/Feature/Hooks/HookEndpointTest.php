@@ -117,7 +117,7 @@ final class HookEndpointTest extends TestCase
 
     public function test_codex_answers_through_its_own_adapter(): void
     {
-        $body = (string) json_encode(['session_id' => 'session-redacted', 'hook_event_name' => 'PreToolUse', 'tool_name' => 'shell', 'tool_input' => ['command' => ['bash', '-lc', 'composer test']]]);
+        $body = (string) json_encode(['session_id' => 'session-redacted', 'hook_event_name' => 'PreToolUse', 'tool_name' => 'Bash', 'tool_input' => ['command' => 'composer test']]);
 
         $stdout = json_decode((string) $this->hook('codex', $body)->assertOk()->json('stdout'), true);
 

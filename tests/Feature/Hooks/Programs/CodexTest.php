@@ -48,22 +48,25 @@ final class CodexTest extends TestCase
         $this->assertTrue($this->adapter()->capabilities()->supports($expected));
     }
 
-    public function test_a_shell_command_given_as_an_argument_list_is_read_as_its_line(): void
+    public function test_the_bash_tool_is_read_as_a_shell_command(): void
     {
-        $input = $this->inputOf($this->adapter()->callFor($this->payload('shell command as a list'), $this->hook()));
+        $input = $this->inputOf($this->adapter()->callFor($this->payload('shell command'), $this->hook()));
 
         $this->assertInstanceOf(ShellCommandRequested::class, $input);
-        $this->assertSame('git status && composer test', $input->command->source);
-        $this->assertSame([CommandKind::Ordinary, CommandKind::TestRun], array_map(fn ($part) => $part->kind, $input->command->parts));
+        $this->assertSame('echo hello', $input->command->source);
+        $this->assertSame([CommandKind::Ordinary], array_map(fn ($part) => $part->kind, $input->command->parts));
     }
 
-    public function test_a_patch_names_every_file_it_changes(): void
+    public function test_a_patch_names_the_file_it_updates_or_adds(): void
     {
-        $input = $this->inputOf($this->adapter()->callFor($this->payload('patch over two files'), $this->hook()));
+        $update = $this->inputOf($this->adapter()->callFor($this->payload('patch updating a file'), $this->hook()));
+        $add = $this->inputOf($this->adapter()->callFor($this->payload('patch adding a file'), $this->hook()));
 
-        $this->assertInstanceOf(FileEditRequested::class, $input);
-        $this->assertSame(['app/Domain/Domain.php', 'docs/notes.md'], $input->changes->paths());
-        $this->assertSame([FileOperation::Edit, FileOperation::Create], array_map(fn ($change) => $change->operation, $input->changes->changes));
+        $this->assertInstanceOf(FileEditRequested::class, $update);
+        $this->assertInstanceOf(FileEditRequested::class, $add);
+        $this->assertSame(['notes.txt'], $update->changes->paths());
+        $this->assertSame([FileOperation::Edit], array_map(fn ($change) => $change->operation, $update->changes->changes));
+        $this->assertSame([FileOperation::Create], array_map(fn ($change) => $change->operation, $add->changes->changes));
     }
 
     public function test_a_stop_that_already_continued_says_so(): void
@@ -76,12 +79,12 @@ final class CodexTest extends TestCase
 
     public function test_a_journal_allow_is_neutral_and_names_no_permission(): void
     {
-        $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $this->render('shell command as text', Decision::allow())->stdout);
+        $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $this->render('shell command', Decision::allow())->stdout);
     }
 
     public function test_a_denial_carries_its_reason(): void
     {
-        $reply = json_decode($this->render('shell command as text', Decision::deny('Save it first.'))->stdout, true);
+        $reply = json_decode($this->render('shell command', Decision::deny('Save it first.'))->stdout, true);
 
         $this->assertSame('deny', $reply['hookSpecificOutput']['permissionDecision']);
         $this->assertSame('Save it first.', $reply['hookSpecificOutput']['permissionDecisionReason']);
@@ -100,7 +103,7 @@ final class CodexTest extends TestCase
         $rewrite = new HookAnswer(Decision::rewrite('journal run tests'), [], [], $stackAfter);
 
         $settled = $capabilities->rewrites->finalAnswer($rewrite, $stackBefore);
-        $reply = json_decode($this->renderAnswer('shell command as text', $settled)->stdout, true);
+        $reply = json_decode($this->renderAnswer('shell command', $settled)->stdout, true);
 
         $this->assertSame([], $settled->stack->frameIds());
         $this->assertSame('deny', $reply['hookSpecificOutput']['permissionDecision']);
@@ -110,7 +113,7 @@ final class CodexTest extends TestCase
 
     public function test_a_rewrite_reaching_the_renderer_is_refused_too(): void
     {
-        $reply = json_decode($this->render('shell command as text', Decision::rewrite('journal run tests'))->stdout, true);
+        $reply = json_decode($this->render('shell command', Decision::rewrite('journal run tests'))->stdout, true);
 
         $this->assertSame('deny', $reply['hookSpecificOutput']['permissionDecision']);
         $this->assertArrayNotHasKey('updatedInput', $reply['hookSpecificOutput']);

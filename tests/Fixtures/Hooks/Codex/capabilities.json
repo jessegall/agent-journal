@@ -3,15 +3,17 @@
     "mapping": {
         "session start": "onSessionStart",
         "prompt": "onPrompt",
-        "shell command as text": "onShellCommand",
-        "shell command as a list": "onShellCommand",
-        "patch over two files": "onFileEdit",
+        "shell command": "onShellCommand",
+        "patch updating a file": "onFileEdit",
+        "patch adding a file": "onFileEdit",
         "tool finished": "onToolFinished",
         "stop": "onStop",
         "stop continuing": "onStop",
-        "session end": "unsupported",
+        "session end": "onSessionEnd",
         "pre-compaction": "unsupported",
         "unknown tool": "unsupported"
     },
-    "unmapped inputs": ["onCompaction", "onSessionEnd"]
+    "unmapped inputs": [
+        "onCompaction"
+    ]
 }

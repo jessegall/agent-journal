@@ -52,7 +52,7 @@ final class HookLaunchTest extends TestCase
         $this->assertSame(['hooks', 'permissions'], array_keys($settings));
         $this->assertSame(['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop', 'SessionEnd'], array_keys($settings['hooks']));
         $this->assertSame([['hooks' => [['type' => 'command', 'command' => 'journal-hook claude-code']]]], $settings['hooks']['Stop']);
-        $this->assertSame(['deny' => ['Task']], $settings['permissions']);
+        $this->assertSame(['deny' => ['Agent', 'Task']], $settings['permissions']);
     }
 
     public function test_each_launch_gets_its_own_session_credential_and_stack(): void

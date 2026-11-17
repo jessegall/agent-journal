@@ -16,6 +16,8 @@ use App\Core\Hooks\Inputs\FileOperation;
 use App\Core\Hooks\Inputs\HookIdentity;
 use App\Core\Hooks\Inputs\PromptDetails;
 use App\Core\Hooks\Inputs\PromptSubmitted;
+use App\Core\Hooks\Inputs\SessionEndDetails;
+use App\Core\Hooks\Inputs\SessionEnded;
 use App\Core\Hooks\Inputs\SessionStartDetails;
 use App\Core\Hooks\Inputs\SessionStarted;
 use App\Core\Hooks\Inputs\ShellCommandRequested;
@@ -42,8 +44,8 @@ final readonly class CodexAdapter implements ProgramAdapter
     {
         return new ProgramCapabilities(
             self::PROGRAM,
-            'Codex hooks reference, checked against the documentation on 2026-11-17',
-            ['onSessionStart', 'onPrompt', 'onShellCommand', 'onFileEdit', 'onStop', 'onToolFinished'],
+            'Codex 0.165.0, hook payloads captured on 2026-11-17',
+            ['onSessionStart', 'onPrompt', 'onShellCommand', 'onFileEdit', 'onStop', 'onToolFinished', 'onSessionEnd'],
             RewriteSupport::NeedsApproval,
         );
     }
@@ -68,6 +70,10 @@ final readonly class CodexAdapter implements ProgramAdapter
                 new StopRequested($hook, new StopDetails($hook->hookId, $payload->isStopContinuation())),
                 fn (HookAnswer $answer) => ProgramReplies::stop($answer),
             ),
+            'SessionEnd' => new JudgedCall(
+                new SessionEnded($hook, new SessionEndDetails($payload->endReason())),
+                fn (HookAnswer $answer) => ProgramReplies::observation('SessionEnd', $answer),
+            ),
             default => throw UnsupportedHook::for(self::PROGRAM, $payload->hookEventName),
         };
     }
@@ -88,38 +94,14 @@ final readonly class CodexAdapter implements ProgramAdapter
         $original = new ProgramToolInput($payload->toolArguments());
 
         if ($tool->isShell()) {
-            $command = $this->parser->parse($this->shellLine($payload), ShellDialect::Bash);
+            $command = $this->parser->parse($payload->argument('command'), ShellDialect::Bash);
 
             return new JudgedCall(new ShellCommandRequested($hook, $command), fn (HookAnswer $answer) => $this->renderShell($answer, $original));
         }
 
-        $edit = new FileEditRequested($hook, $this->patchChanges($payload->argument('input', 'patch')));
+        $edit = new FileEditRequested($hook, $this->patchChanges($payload->argument('command')));
 
         return new JudgedCall($edit, fn (HookAnswer $answer) => $this->renderShell($answer, $original));
-    }
-
-    /**
-     * The shell line of a call: given as text, or as an argument list such as bash -lc with the line last.
-     */
-    private function shellLine(HookPayload $payload): string
-    {
-        $command = $payload->toolArguments()['command'] ?? null;
-
-        if (is_string($command)) {
-            return $command;
-        }
-
-        if (! is_array($command) || $command === []) {
-            throw UnreadablePayload::missing('command');
-        }
-
-        $words = array_values(array_map(strval(...), $command));
-
-        if (count($words) === 3 && ShellDialect::tryFrom($words[0]) !== null && in_array($words[1], ['-c', '-lc'], true)) {
-            return $words[2];
-        }
-
-        return implode(' ', array_map(escapeshellarg(...), $words));
     }
 
     /**

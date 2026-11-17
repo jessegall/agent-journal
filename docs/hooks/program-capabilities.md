@@ -6,7 +6,7 @@ This is the one place where the journal records what it knows about each agent p
 
 The core is built and tested on PostgreSQL: typed hook inputs, the top-first walk with recorded steps, the role bottom states, the state types and restoration, the rewrite recheck, the two Hooks tables with versioned casts, the per-request agent scope, the bounded stack transaction with replay, the domain states pushed by their own listeners, the authoritative shell parser, the Claude Code and Codex adapters, the authenticated endpoint `POST /hooks/{program}`, launches with isolated settings and separate child stacks, compaction once with reminders, loss confirmation, the outage replies, the read-only inspector `GET /hooks/stacks/{agentId}/{sessionId}` and retention.
 
-No production program runs under it yet. No pinned Claude Code or Codex version has been verified, the host relay exists but has not run under a real program, and the fixtures are written from documented shapes. Until task 89 is done, the program support below is a written contract, not a verified capability. The owner work still missing is listed in `docs/hooks/dependencies.md`.
+No production program runs under it yet: the host relay exists but has not run under a real program. Task 89 pinned Claude Code 2.1.323 and codex-cli 0.165.0 and captured their hook payloads on 2026-11-17, each run headless under isolated settings with a capture hook that answered every callback with `{}`; the fixtures are those payloads, redacted. What the capture could not show (the replies a program accepts, timeouts, the stop cap) is marked below as not verified. The owner work still missing is listed in `docs/hooks/dependencies.md`.
 
 ## Measured limits
 
@@ -70,7 +70,7 @@ A program that exits or is killed without an end hook is handled by `LostLaunche
 
 ## Claude Code
 
-`ClaudeCodeAdapter` (plan 2, task 67) maps the callbacks below. `tests/Fixtures/Hooks/ClaudeCode/hooks.json` holds one redacted payload per callback, written from the documented shapes, and `capabilities.json` the mapping `ClaudeCodeTest` checks.
+`ClaudeCodeAdapter` (plan 2, task 67) maps the callbacks below. `tests/Fixtures/Hooks/ClaudeCode/hooks.json` holds one captured, redacted payload per callback, and `capabilities.json` the mapping `ClaudeCodeTest` checks.
 
 | Callback | Journal input |
 |---|---|
@@ -82,44 +82,46 @@ A program that exits or is killed without an end hook is handled by `LostLaunche
 | PostToolUse | onToolFinished |
 | Stop | onStop |
 | SessionEnd | onSessionEnd |
-| PreCompact, SubagentStop, Notification, any other callback or tool | refused by name (`UnsupportedHook`) |
+| PreCompact, SubagentStop, Notification, any other callback or tool, `Agent` among them | refused by name (`UnsupportedHook`) |
 | onCompaction | not mapped yet: the compaction signal and its correlation are plan 2, task 71 |
 
 | Evidence | State |
 |---|---|
-| Program and pinned version | not verified |
-| Native callbacks and schema | the callbacks above, from the documentation |
-| Agent, launch, vendor session and child identity | the vendor session id is kept on session start; child identity is plan 2, task 70 |
-| Tool coverage | the tools above; any other tool, including MCP tools, is refused |
-| Legal answers | neutral, deny, prompt block, stop block, context and `updatedInput` without a permission grant |
+| Program and pinned version | Claude Code 2.1.323, captured 2026-11-17 with `claude -p --settings <file> --setting-sources local` |
+| Native callbacks and schema | captured: SessionStart (`source` startup, resume or compact; resume adds `seconds_since_last_response` and `context_tokens`, compact adds `model`), UserPromptSubmit (`prompt`, `prompt_id`, `permission_mode`), PreToolUse and PostToolUse (`tool_name`, `tool_input`, `tool_use_id`; PostToolUse adds `tool_response` as an object and `duration_ms`), Stop (`stop_hook_active`, `last_assistant_message`), SessionEnd (`reason` other), PreCompact (`trigger`, `custom_instructions`), SubagentStop. Notification: a headless run raises none, so its fixture keeps the documented shape |
+| Agent, launch, vendor session and child identity | the vendor session id is kept on session start. A child starts through the `Agent` tool; its tool calls and its SubagentStop carry `agent_id` and `agent_type` on the parent's `session_id`. The isolated settings deny `Agent` and `Task` until the journal gives a child its own identity (plan 2, task 70) |
+| Tool coverage | captured: Bash, Read, Edit, Write and Agent; any other tool, MCP tools included, is refused |
+| Legal answers | neutral, deny, prompt block, stop block, context and `updatedInput` without a permission grant, from the documentation: the capture answered every hook with `{}` |
 | Native permissions | a neutral reply keeps the user's approval prompt, from the documentation |
-| Model-visible channel | `additionalContext` on SessionStart, UserPromptSubmit, PreToolUse and PostToolUse; the reason on a block |
-| Exit, timeout and stop cap | not verified |
-| Captured fixtures | documented shapes only; none captured from a pinned version yet |
+| Model-visible channel | `additionalContext` on SessionStart, UserPromptSubmit, PreToolUse and PostToolUse; the reason on a block, from the documentation |
+| Exit, timeout and stop cap | not verified: the capture never blocked a stop or ran past a timeout |
+| Captured fixtures | `tests/Fixtures/Hooks/ClaudeCode/hooks.json`, captured 2026-11-17, redacted |
 
 ## Codex
 
-`CodexAdapter` (plan 2, task 68) maps the callbacks below. `tests/Fixtures/Hooks/Codex/hooks.json` holds one redacted payload per callback, written from the documented shapes, and `capabilities.json` the mapping `CodexTest` checks.
+`CodexAdapter` (plan 2, task 68) maps the callbacks below. `tests/Fixtures/Hooks/Codex/hooks.json` holds one captured, redacted payload per callback, and `capabilities.json` the mapping `CodexTest` checks.
 
 | Callback | Journal input |
 |---|---|
 | SessionStart | onSessionStart, with its source |
 | UserPromptSubmit | onPrompt; a denial blocks the prompt with its reason |
-| PreToolUse, shell or exec_command | onShellCommand; a command given as `bash -lc <line>` is read as its line |
-| PreToolUse, apply_patch | onFileEdit, naming every file the patch adds, updates or deletes |
+| PreToolUse, Bash | onShellCommand, read from `tool_input.command` |
+| PreToolUse, apply_patch | onFileEdit, naming every file the patch in `tool_input.command` adds, updates or deletes |
 | PostToolUse | onToolFinished |
 | Stop | onStop, noting when the stop already continued once |
-| SessionEnd, PreCompact, any other callback or tool | refused by name (`UnsupportedHook`) |
-| onCompaction, onSessionEnd | not mapped: no verified Codex callback yet |
+| SessionEnd | onSessionEnd |
+| PreCompact, any other callback or tool | refused by name (`UnsupportedHook`) |
+| onCompaction | not mapped: `codex exec` raised no PreCompact, so none is verified |
 
 | Evidence | State |
 |---|---|
-| Program and pinned version | not verified |
-| Native callbacks and schema | the callbacks above, from the documentation |
-| Agent, launch, vendor session and child identity | the vendor session id is kept on session start; child identity is plan 2, task 70 |
-| Tool coverage | shell, exec_command and apply_patch; any other tool is refused |
+| Program and pinned version | codex-cli 0.165.0, captured 2026-11-17 with `codex exec` under an isolated `CODEX_HOME` |
+| Native callbacks and schema | captured: SessionStart (`source` startup, `model`, `permission_mode`), UserPromptSubmit (`turn_id`, `prompt`), PreToolUse and PostToolUse (`tool_name`, `tool_input`, `tool_use_id`; PostToolUse adds `tool_response` as the tool's text, which starts with `Exit code: N` for apply_patch), Stop (`stop_hook_active`, `last_assistant_message`), SessionEnd (`reason` other). PreCompact: `codex exec` raises none, so its fixture keeps the documented shape |
+| Settings file shape | `hooks.json` in `CODEX_HOME`, shaped as Claude Code's: each event holds `[{"matcher": "*", "hooks": [{"type": "command", "command": "..."}]}]`, with no matcher on UserPromptSubmit and Stop. Codex runs a hook only when `config.toml` holds `[hooks.state."<hooks.json path>:<event_key>:<group>:<index>"]` with `enabled = true` and `trusted_hash`, the sha256 of the hook's normalized definition, and the work folder has `trust_level = "trusted"`; an untrusted hook is skipped without a word |
+| Agent, launch, vendor session and child identity | the vendor session id is kept on session start; child identity not verified: the capture started no child |
+| Tool coverage | captured: Bash and apply_patch; any other tool is refused |
 | Legal answers | neutral, deny and stop block from the documentation; `updatedInput` only with `permissionDecision: allow`, so the journal refuses rewrites |
 | Native permissions | a neutral reply omits `permissionDecision`, from the documentation |
 | Model-visible channel | not verified |
-| Exit, timeout and stop cap | not verified |
-| Captured fixtures | none yet |
+| Exit, timeout and stop cap | not verified: the capture never blocked a stop or ran past a timeout; SessionEnd hooks run for 1 second unless they say more, 3 at most |
+| Captured fixtures | `tests/Fixtures/Hooks/Codex/hooks.json`, captured 2026-11-17, redacted |

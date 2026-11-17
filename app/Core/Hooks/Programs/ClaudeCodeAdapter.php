@@ -7,7 +7,6 @@ namespace App\Core\Hooks\Programs;
 use App\Core\Hooks\Contracts\ProgramAdapter;
 use App\Core\Hooks\Contracts\ProgramCall;
 use App\Core\Hooks\Contracts\ShellCommandParser;
-use App\Core\Hooks\Exceptions\UnreadablePayload;
 use App\Core\Hooks\Exceptions\UnsupportedHook;
 use App\Core\Hooks\Inputs\CompactionDetails;
 use App\Core\Hooks\Inputs\ContextCompacted;
@@ -19,7 +18,6 @@ use App\Core\Hooks\Inputs\PromptDetails;
 use App\Core\Hooks\Inputs\PromptSubmitted;
 use App\Core\Hooks\Inputs\SessionEndDetails;
 use App\Core\Hooks\Inputs\SessionEnded;
-use App\Core\Hooks\Inputs\SessionEndReason;
 use App\Core\Hooks\Inputs\SessionStartDetails;
 use App\Core\Hooks\Inputs\SessionStarted;
 use App\Core\Hooks\Inputs\SessionStartSource;
@@ -45,7 +43,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
     {
         return new ProgramCapabilities(
             self::PROGRAM,
-            'Claude Code hooks reference, checked against the documentation on 2026-11-17',
+            'Claude Code 2.1.323, hook payloads captured on 2026-11-17',
             ['onSessionStart', 'onPrompt', 'onCompaction', 'onShellCommand', 'onFileEdit', 'onStop', 'onToolFinished', 'onSessionEnd'],
             RewriteSupport::WithoutApproval,
         );
@@ -69,7 +67,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
                 fn (HookAnswer $answer) => ProgramReplies::stop($answer),
             ),
             'SessionEnd' => new JudgedCall(
-                new SessionEnded($hook, new SessionEndDetails($this->endReason($payload))),
+                new SessionEnded($hook, new SessionEndDetails($payload->endReason())),
                 fn (HookAnswer $answer) => ProgramReplies::observation('SessionEnd', $answer),
             ),
             default => throw UnsupportedHook::for(self::PROGRAM, $payload->hookEventName),
@@ -119,16 +117,5 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         }
 
         return new UnjudgedCall(ProgramReplies::allowTool([]));
-    }
-
-    private function endReason(HookPayload $payload): SessionEndReason
-    {
-        return match ($payload->reasonText()) {
-            'clear' => SessionEndReason::Clear,
-            'logout' => SessionEndReason::Logout,
-            'prompt_input_exit' => SessionEndReason::Exit,
-            'other' => SessionEndReason::Other,
-            default => throw UnreadablePayload::forValue('reason', $payload->reasonText()),
-        };
     }
 }
