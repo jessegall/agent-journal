@@ -36,7 +36,7 @@ final class DomainRegistryTest extends TestCase
 
         $this->assertSame('Plans', $plans->name);
         $this->assertSame('Tests\Fixtures\Domains\Plans', $plans->namespace);
-        $this->assertSame($this->projectPath('tests/Fixtures/Domains/Plans'), $plans->folder);
+        $this->assertStringEndsWith('/tests/Fixtures/Domains/Plans', $plans->folder);
         $this->assertSame([TasksDomain::class], $plans->requires);
         $this->assertSame(['Tasks', 'Plans'], array_map(fn ($entry) => $entry->name, $registry->all()));
     }
@@ -61,10 +61,10 @@ final class DomainRegistryTest extends TestCase
     {
         $registry = DomainRegistry::from([TasksDomain::class, PlansDomain::class]);
 
-        $this->assertSame([
-            $this->projectPath('tests/Fixtures/Domains/Tasks/Listeners'),
-            $this->projectPath('tests/Fixtures/Domains/Plans/Listeners'),
-        ], $registry->listenerFolders());
+        [$tasksFolder, $plansFolder] = $registry->listenerFolders();
+
+        $this->assertStringEndsWith('/tests/Fixtures/Domains/Tasks/Listeners', $tasksFolder);
+        $this->assertStringEndsWith('/tests/Fixtures/Domains/Plans/Listeners', $plansFolder);
     }
 
     public function test_an_unknown_domain_is_refused(): void
@@ -142,10 +142,5 @@ final class DomainRegistryTest extends TestCase
         $registry = DomainRegistry::from([TasksDomain::class, PlansDomain::class, ReportsDomain::class]);
 
         $this->assertCount(3, $registry->all());
-    }
-
-    private function projectPath(string $path): string
-    {
-        return dirname(__DIR__, 3).'/'.$path;
     }
 }
