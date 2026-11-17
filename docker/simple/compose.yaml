@@ -1,14 +1,40 @@
 services:
+  # Rootless Docker for the journal's agents, so a project's own docker compose runs here as on a laptop. The daemon
+  # runs as an ordinary user (the image still asks for privileged mode to set up its user namespace); its images and
+  # containers live in the docker-data volume, and it sees the journal's volume at the same /data path, so the paths a
+  # project mounts mean the same to both. It answers on port 2376 over TLS, to the client certificate only the journal
+  # container is given; that port is not published.
+  docker:
+    image: docker:27-dind-rootless@sha256:e2ac8e8f66ae21a060b0a8e3005c70f6ed9441aabf409434463d1f6eecd38026
+    privileged: true
+    environment:
+      DOCKER_TLS_CERTDIR: /certs
+    ports:
+      - "80:8080"
+      - "443:8443"
+    volumes:
+      - docker-certs:/certs
+      - docker-data:/home/rootless/.local/share/docker
+      - journal-data:/data
+    restart: unless-stopped
+
   journal:
     build:
       context: ../..
       dockerfile: docker/simple/Dockerfile
     env_file: .env
-    ports:
-      - "80:8080"
-      - "443:8443"
+    environment:
+      DOCKER_HOST: tcp://localhost:2376
+      DOCKER_TLS_VERIFY: "1"
+      DOCKER_CERT_PATH: /certs/client
+    # the journal shares the Docker daemon's network, so a container an agent starts answers on localhost, as on a
+    # laptop; the login's ports are published on that shared network
+    network_mode: service:docker
+    depends_on:
+      - docker
     volumes:
       - journal-data:/data
+      - docker-certs:/certs:ro
     restart: unless-stopped
     # root in the container keeps only what the start needs: handing folders and processes to the journal and caddy users
     cap_drop:
@@ -23,3 +49,5 @@ services:
 
 volumes:
   journal-data:
+  docker-data:
+  docker-certs:

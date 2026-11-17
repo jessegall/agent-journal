@@ -28,7 +28,8 @@ chown caddy:caddy /data/caddy
 JOURNAL_ENV=(env -i PATH=/usr/local/bin:/usr/bin:/bin HOME=/data/home USER=journal SHELL=/bin/bash TERM=xterm-256color LANG=C.UTF-8 PYTHONDONTWRITEBYTECODE=1
     GIT_NAME="${GIT_NAME:-Journal on a server}" GIT_EMAIL="${GIT_EMAIL:-journal@localhost}" GIT_REPOSITORY="${GIT_REPOSITORY:-}"
     GITHUB_TOKEN="${GITHUB_TOKEN:-}" GH_TOKEN="${GITHUB_TOKEN:-}"
-    CLAUDE_CODE_OAUTH_TOKEN="${CLAUDE_CODE_OAUTH_TOKEN:-}" ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}")
+    CLAUDE_CODE_OAUTH_TOKEN="${CLAUDE_CODE_OAUTH_TOKEN:-}" ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}"
+    DOCKER_HOST="${DOCKER_HOST:-}" DOCKER_TLS_VERIFY="${DOCKER_TLS_VERIFY:-}" DOCKER_CERT_PATH="${DOCKER_CERT_PATH:-}")
 AS_JOURNAL=(setpriv --reuid journal --regid journal --init-groups --no-new-privs "${JOURNAL_ENV[@]}")
 
 # A record sent by send-journal.sh is handed to the journal user, which takes it in itself.

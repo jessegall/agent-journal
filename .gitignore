@@ -77,3 +77,6 @@ src/web/node_modules/
 # written by journal install with this machine's paths
 .claude/settings.json
 /.claude/settings.local.json
+
+# the hosted setup's own settings, with its passwords and tokens
+docker/simple/.env
