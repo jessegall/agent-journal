@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Tasks;
+namespace App\Domain\Sequences;
 
 use App\Core\Hooks\Contracts\StateType;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
 use App\Core\Hooks\Exceptions\StateSubjectMissing;
 use App\Core\Hooks\States\AgentState;
-use App\Domain\Tasks\Exceptions\TaskMissing;
-use App\Domain\Tasks\States\WorkingOnTask;
+use App\Domain\Sequences\Exceptions\SequenceRunMissing;
+use App\Domain\Sequences\States\FollowingSequenceState;
 
 /**
- * Builds the working-on-task state from the task as it is now; it keeps no task between calls.
+ * Builds the following-sequence state from the run as it is now, on its current step; it keeps no run between calls.
  */
-final readonly class WorkingOnTaskFactory implements StateType
+final readonly class FollowingSequenceStateFactory implements StateType
 {
-    public function __construct(private TaskRecords $tasks) {}
+    public function __construct(private SequenceRecords $runs) {}
 
     public function stateFor(StateReference $reference): AgentState
     {
@@ -28,12 +28,12 @@ final readonly class WorkingOnTaskFactory implements StateType
         }
 
         try {
-            $task = $this->tasks->get($subject->id);
-        } catch (TaskMissing $missing) {
+            $run = $this->runs->get($subject->id);
+        } catch (SequenceRunMissing $missing) {
             throw StateSubjectMissing::for($reference->typeKey, $missing);
         }
 
-        return new WorkingOnTask($task->workFor($subject->runNumber));
+        return new FollowingSequenceState($run->work());
     }
 
     public function schemaVersion(): int

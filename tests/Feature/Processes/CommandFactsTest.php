@@ -16,9 +16,9 @@ use App\Core\Hooks\Inputs\PartJoin;
 use App\Core\Hooks\Inputs\ShellCommand;
 use App\Core\Hooks\Inputs\ShellCommandRequested;
 use App\Core\Hooks\Inputs\ShellDialect;
-use App\Core\Hooks\States\MainAgentReady;
-use App\Core\Hooks\States\ReadOnlyHelperReady;
-use App\Core\Hooks\States\Ready;
+use App\Core\Hooks\States\MainAgentReadyState;
+use App\Core\Hooks\States\ReadOnlyHelperReadyState;
+use App\Core\Hooks\States\ReadyState;
 use App\Domain\Processes\Models\SavedCommand;
 use App\Domain\Processes\ShellParser;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -64,8 +64,8 @@ final class CommandFactsTest extends TestCase
     #[DataProvider('linesAndRoleAnswers')]
     public function test_the_parsed_facts_decide_each_role_answer(string $line, AnswerKind $mainAgent, AnswerKind $readOnlyHelper): void
     {
-        $this->assertSame($mainAgent, $this->answer(new MainAgentReady, $line));
-        $this->assertSame($readOnlyHelper, $this->answer(new ReadOnlyHelperReady, $line));
+        $this->assertSame($mainAgent, $this->answer(new MainAgentReadyState, $line));
+        $this->assertSame($readOnlyHelper, $this->answer(new ReadOnlyHelperReadyState, $line));
     }
 
     public function test_the_app_reads_shell_commands_with_the_processes_parser(): void
@@ -113,7 +113,7 @@ final class CommandFactsTest extends TestCase
         return $this->app->make(ShellCommandParser::class)->parse($line, ShellDialect::Bash);
     }
 
-    private function answer(Ready $ready, string $line): AnswerKind
+    private function answer(ReadyState $ready, string $line): AnswerKind
     {
         return (new ShellCommandRequested(new HookIdentity(1, 10, 'call-1', 'digest'), $this->parse($line)))->answerBy($ready)->answerKind();
     }

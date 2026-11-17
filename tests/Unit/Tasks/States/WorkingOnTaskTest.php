@@ -10,7 +10,7 @@ use App\Core\Hooks\Decisions\StopPrevented;
 use App\Core\Hooks\Inputs\HookIdentity;
 use App\Core\Hooks\Inputs\StopDetails;
 use App\Core\Hooks\Inputs\StopRequested;
-use App\Domain\Tasks\States\WorkingOnTask;
+use App\Domain\Tasks\States\WorkingOnTaskState;
 use App\Domain\Tasks\TaskWork;
 use App\Domain\Tasks\TaskWorkState;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -45,7 +45,7 @@ final class WorkingOnTaskTest extends TestCase
     {
         $task = new TaskWork(42, 1, TaskWorkState::Active);
 
-        $decision = (new WorkingOnTask($task))->onStop($this->stop());
+        $decision = (new WorkingOnTaskState($task))->onStop($this->stop());
 
         $this->assertInstanceOf(StopPrevented::class, $decision->answer);
         $this->assertStringContainsString('Task 42 still needs work', $decision->refusalReason());
@@ -55,13 +55,13 @@ final class WorkingOnTaskTest extends TestCase
 
     public function test_active_work_is_not_finished(): void
     {
-        $this->assertFalse((new WorkingOnTask(new TaskWork(42, 1, TaskWorkState::Active)))->isFinished());
+        $this->assertFalse((new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active)))->isFinished());
     }
 
     #[DataProvider('settledStates')]
     public function test_a_settled_run_is_finished_and_lets_the_stop_through(TaskWorkState $state): void
     {
-        $working = new WorkingOnTask(new TaskWork(42, 1, $state));
+        $working = new WorkingOnTaskState(new TaskWork(42, 1, $state));
 
         $this->assertTrue($working->isFinished());
         $this->assertTrue($working->onStop($this->stop())->isDelegating());
@@ -70,7 +70,7 @@ final class WorkingOnTaskTest extends TestCase
     #[DataProvider('otherHooks')]
     public function test_every_other_hook_is_delegated(HookInput $input): void
     {
-        $working = new WorkingOnTask(new TaskWork(42, 1, TaskWorkState::Active));
+        $working = new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active));
 
         $this->assertTrue($input->answerBy($working)->isDelegating());
     }

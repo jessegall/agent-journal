@@ -22,9 +22,9 @@ use App\Core\Hooks\Inputs\PartJoin;
 use App\Core\Hooks\Inputs\ShellCommand;
 use App\Core\Hooks\Inputs\ShellCommandRequested;
 use App\Core\Hooks\Inputs\ShellDialect;
-use App\Core\Hooks\States\MainAgentReady;
-use App\Core\Hooks\States\ReadOnlyHelperReady;
-use App\Core\Hooks\States\Ready;
+use App\Core\Hooks\States\MainAgentReadyState;
+use App\Core\Hooks\States\ReadOnlyHelperReadyState;
+use App\Core\Hooks\States\ReadyState;
 use App\Core\Hooks\States\ReadyStateType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -33,16 +33,16 @@ use Tests\Fixtures\Hooks\HookInputs;
 final class RoleReadyTest extends TestCase
 {
     /**
-     * @return iterable<string, array{Ready}>
+     * @return iterable<string, array{ReadyState}>
      */
     public static function roles(): iterable
     {
-        yield 'main agent' => [new MainAgentReady];
-        yield 'read-only helper' => [new ReadOnlyHelperReady];
+        yield 'main agent' => [new MainAgentReadyState];
+        yield 'read-only helper' => [new ReadOnlyHelperReadyState];
     }
 
     /**
-     * @return iterable<string, array{Ready, ShellCommand}>
+     * @return iterable<string, array{ReadyState, ShellCommand}>
      */
     public static function unsavedCommands(): iterable
     {
@@ -70,7 +70,7 @@ final class RoleReadyTest extends TestCase
     }
 
     #[DataProvider('unsavedCommands')]
-    public function test_each_role_refuses_a_command_that_must_be_saved_or_cannot_be_read(Ready $ready, ShellCommand $command): void
+    public function test_each_role_refuses_a_command_that_must_be_saved_or_cannot_be_read(ReadyState $ready, ShellCommand $command): void
     {
         $decision = $ready->onShellCommand($this->request($command));
 
@@ -79,7 +79,7 @@ final class RoleReadyTest extends TestCase
     }
 
     #[DataProvider('roles')]
-    public function test_each_role_allows_a_saved_command_and_an_ordinary_read(Ready $ready): void
+    public function test_each_role_allows_a_saved_command_and_an_ordinary_read(ReadyState $ready): void
     {
         $saved = self::line([self::part(CommandKind::SavedCommand)]);
         $read = self::line([self::part(CommandKind::Ordinary)]);
@@ -92,14 +92,14 @@ final class RoleReadyTest extends TestCase
     {
         $write = self::line([self::part(CommandKind::Ordinary, CommandEffect::ChangesFiles)]);
 
-        $this->assertSame(AnswerKind::Allow, (new MainAgentReady)->onShellCommand($this->request($write))->answerKind());
-        $this->assertSame(AnswerKind::Allow, (new MainAgentReady)->onFileEdit($this->edit(['app/Domain/Domain.php']))->answerKind());
+        $this->assertSame(AnswerKind::Allow, (new MainAgentReadyState)->onShellCommand($this->request($write))->answerKind());
+        $this->assertSame(AnswerKind::Allow, (new MainAgentReadyState)->onFileEdit($this->edit(['app/Domain/Domain.php']))->answerKind());
     }
 
     #[DataProvider('helperWrites')]
     public function test_a_read_only_helper_refuses_any_command_that_may_change_files(ShellCommand $command): void
     {
-        $decision = (new ReadOnlyHelperReady)->onShellCommand($this->request($command));
+        $decision = (new ReadOnlyHelperReadyState)->onShellCommand($this->request($command));
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
         $this->assertStringContainsString('changes no files', $decision->refusalReason());
@@ -107,14 +107,14 @@ final class RoleReadyTest extends TestCase
 
     public function test_a_read_only_helper_refuses_an_edit_and_names_every_path(): void
     {
-        $decision = (new ReadOnlyHelperReady)->onFileEdit($this->edit(['app/Domain/Domain.php', 'docs/hooks/dependencies.md']));
+        $decision = (new ReadOnlyHelperReadyState)->onFileEdit($this->edit(['app/Domain/Domain.php', 'docs/hooks/dependencies.md']));
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
         $this->assertStringContainsString('app/Domain/Domain.php, docs/hooks/dependencies.md', $decision->refusalReason());
     }
 
     #[DataProvider('roles')]
-    public function test_each_role_still_answers_every_hook_without_delegating(Ready $ready): void
+    public function test_each_role_still_answers_every_hook_without_delegating(ReadyState $ready): void
     {
         foreach (HookInputs::all() as $input) {
             $this->assertFalse($this->answerOf($input, $ready)->isDelegating());
@@ -123,9 +123,9 @@ final class RoleReadyTest extends TestCase
 
     public function test_each_type_key_builds_its_own_bottom_state(): void
     {
-        $this->assertInstanceOf(MainAgentReady::class, ReadyStateType::forKey('hooks.main_ready')->newState());
-        $this->assertSame(ReadOnlyHelperReady::class, ReadyStateType::forKey('hooks.read_only_helper_ready')->newState()::class);
-        $this->assertSame(MainAgentReady::class, ReadyStateType::MainAgent->newState()::class);
+        $this->assertInstanceOf(MainAgentReadyState::class, ReadyStateType::forKey('hooks.main_ready')->newState());
+        $this->assertSame(ReadOnlyHelperReadyState::class, ReadyStateType::forKey('hooks.read_only_helper_ready')->newState()::class);
+        $this->assertSame(MainAgentReadyState::class, ReadyStateType::MainAgent->newState()::class);
     }
 
     public function test_an_unknown_role_cannot_be_launched(): void
@@ -167,7 +167,7 @@ final class RoleReadyTest extends TestCase
         )));
     }
 
-    private function answerOf(HookInput $input, Ready $ready): Decision
+    private function answerOf(HookInput $input, ReadyState $ready): Decision
     {
         return $input->answerBy($ready);
     }

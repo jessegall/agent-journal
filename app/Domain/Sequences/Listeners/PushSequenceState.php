@@ -6,7 +6,7 @@ namespace App\Domain\Sequences\Listeners;
 
 use App\Core\Hooks\Contracts\AgentStack;
 use App\Domain\Sequences\Events\SequenceStarted;
-use App\Domain\Sequences\FollowingSequenceReference;
+use App\Domain\Sequences\FollowingSequenceStateReference;
 use App\Domain\Sequences\SequenceRecords;
 
 /**
@@ -21,6 +21,6 @@ final readonly class PushSequenceState
 
     public function handle(SequenceStarted $event): void
     {
-        $this->stacks->push($event->target, FollowingSequenceReference::forRun($this->runs->followedBy($event->target, $event->runId)));
+        $this->stacks->push($event->target, FollowingSequenceStateReference::forRun($this->runs->followedBy($event->target, $event->runId)));
     }
 }

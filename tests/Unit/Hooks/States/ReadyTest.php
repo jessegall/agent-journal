@@ -8,7 +8,7 @@ use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Inputs\StopRequested;
 use App\Core\Hooks\States\AgentState;
-use App\Core\Hooks\States\Ready;
+use App\Core\Hooks\States\ReadyState;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -19,7 +19,7 @@ final class ReadyTest extends TestCase
 {
     public function test_ready_answers_every_hook_method_of_the_base_state_itself(): void
     {
-        $this->assertSame([], $this->hooksNotAnsweredBy(Ready::class));
+        $this->assertSame([], $this->hooksNotAnsweredBy(ReadyState::class));
     }
 
     public function test_a_state_that_skips_a_hook_is_caught_by_the_same_check(): void
@@ -39,7 +39,7 @@ final class ReadyTest extends TestCase
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
     public function test_ready_allows_each_hook(HookInput $input): void
     {
-        $this->assertSame('allow', $input->answerBy(new Ready)->answerKind()->value);
+        $this->assertSame('allow', $input->answerBy(new ReadyState)->answerKind()->value);
     }
 
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
@@ -50,7 +50,7 @@ final class ReadyTest extends TestCase
 
     public function test_a_state_is_not_finished_unless_it_says_so(): void
     {
-        $this->assertFalse((new Ready)->isFinished());
+        $this->assertFalse((new ReadyState)->isFinished());
     }
 
     /**

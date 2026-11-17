@@ -10,7 +10,7 @@ use App\Core\Hooks\Inputs\ShellCommandRequested;
 /**
  * The bottom state of a main agent: a test run or a build must run as a saved command, and a line the parser could not read fully is never taken as safe.
  */
-class MainAgentReady extends Ready
+class MainAgentReadyState extends ReadyState
 {
     public function onShellCommand(ShellCommandRequested $input): Decision
     {

@@ -7,7 +7,7 @@ namespace App\Domain\Chat\Actions;
 use App\Core\Hooks\Contracts\StackTransactionRunner;
 use App\Core\Hooks\Contracts\UserStack;
 use App\Core\Hooks\StackTarget;
-use App\Domain\Chat\AnsweringMessageReference;
+use App\Domain\Chat\AnsweringMessageStateReference;
 use App\Domain\Chat\Api\Events\MessageSent;
 use App\Domain\Chat\Contracts\MessageSender;
 use App\Domain\Chat\Exceptions\MessageBodyEmpty;
@@ -38,7 +38,7 @@ final readonly class SendMessage implements MessageSender
         $this->transaction->run(function () use ($body, $target): void {
             $message = Message::query()->create(['body' => $body]);
             $message->requireAnswerFrom($target);
-            $this->stacks->push($target, AnsweringMessageReference::forMessage($message));
+            $this->stacks->push($target, AnsweringMessageStateReference::forMessage($message));
 
             $this->events->dispatch(new MessageSent($message->id, $target));
         });

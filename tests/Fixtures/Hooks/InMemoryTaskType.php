@@ -9,7 +9,7 @@ use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\States\AgentState;
 use App\Core\Hooks\Exceptions\StateSubjectMissing;
 use App\Core\Hooks\Contracts\StateType;
-use App\Domain\Tasks\States\WorkingOnTask;
+use App\Domain\Tasks\States\WorkingOnTaskState;
 use App\Domain\Tasks\TaskWork;
 use App\Domain\Tasks\TaskWorkState;
 
@@ -34,7 +34,7 @@ final class InMemoryTaskType implements StateType
 
         $subject = $reference->subject;
 
-        return new WorkingOnTask(new TaskWork($subject->id, $subject->runNumber, $this->tasks[$subject->id]));
+        return new WorkingOnTaskState(new TaskWork($subject->id, $subject->runNumber, $this->tasks[$subject->id]));
     }
 
     public function schemaVersion(): int

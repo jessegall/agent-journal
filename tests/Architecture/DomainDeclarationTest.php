@@ -34,6 +34,7 @@ final class DomainDeclarationTest extends TestCase
      */
     private const array SHARED_PLACE_FILES = [
         'Contracts/Domain.php',
+        'Contracts/RegistersStates.php',
         'DomainEntry.php',
         'DomainRegistry.php',
         'DomainServiceProvider.php',

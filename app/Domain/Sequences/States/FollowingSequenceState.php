@@ -13,7 +13,7 @@ use App\Domain\Sequences\SequenceWork;
 /**
  * The agent is following a sequence: it may not stop while a step runs, and hears the current step after a compaction.
  */
-final class FollowingSequence extends AgentState
+final class FollowingSequenceState extends AgentState
 {
     public function __construct(private readonly SequenceWork $sequence) {}
 

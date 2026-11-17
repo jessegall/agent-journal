@@ -11,7 +11,7 @@ use App\Core\Hooks\Inputs\ShellCommandRequested;
 /**
  * The bottom state of a read-only helper: every main agent rule holds, and nothing it runs or edits may change a file.
  */
-class ReadOnlyHelperReady extends MainAgentReady
+class ReadOnlyHelperReadyState extends MainAgentReadyState
 {
     public function onShellCommand(ShellCommandRequested $input): Decision
     {

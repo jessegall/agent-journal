@@ -11,7 +11,7 @@ use App\Domain\Chat\Models\Message;
 /**
  * The stack reference of answering one message; a message is answered once, so it has one run.
  */
-final class AnsweringMessageReference
+final class AnsweringMessageStateReference
 {
     public const string TYPE_KEY = 'chat.answering';
 

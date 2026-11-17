@@ -11,7 +11,7 @@ use App\Domain\Tasks\Models\Task;
 /**
  * The stack reference of working on the current run of a task.
  */
-final class WorkingOnTaskReference
+final class WorkingOnTaskStateReference
 {
     public const string TYPE_KEY = 'tasks.working';
 

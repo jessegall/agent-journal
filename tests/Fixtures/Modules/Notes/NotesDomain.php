@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Modules\Notes;
 
 use App\Domain\Contracts\Domain;
+use App\Domain\Contracts\RegistersStates;
 use Tests\Fixtures\Modules\Notes\Api\NoteValue;
 use Tests\Fixtures\Modules\Notes\Contracts\NoteReader;
 
 /**
  * A module installed outside app/Domain, registered beside the domains only in the architecture fixtures.
  */
-final class NotesDomain implements Domain
+final class NotesDomain implements Domain, RegistersStates
 {
     public function description(): string
     {
@@ -29,5 +30,10 @@ final class NotesDomain implements Domain
     public function exports(): array
     {
         return [NoteReader::class, NoteValue::class];
+    }
+
+    public function states(): array
+    {
+        return ['notes.writing' => WritingNoteStateFactory::class];
     }
 }

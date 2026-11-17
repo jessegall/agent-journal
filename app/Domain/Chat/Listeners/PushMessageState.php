@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Chat\Listeners;
 
 use App\Core\Hooks\Contracts\AgentStack;
-use App\Domain\Chat\AnsweringMessageReference;
+use App\Domain\Chat\AnsweringMessageStateReference;
 use App\Domain\Chat\Events\MessageNeedsAnswer;
 use App\Domain\Chat\MessageRecords;
 
@@ -21,6 +21,6 @@ final readonly class PushMessageState
 
     public function handle(MessageNeedsAnswer $event): void
     {
-        $this->stacks->push($event->target, AnsweringMessageReference::forMessage($this->messages->addressedTo($event->target, $event->messageId)));
+        $this->stacks->push($event->target, AnsweringMessageStateReference::forMessage($this->messages->addressedTo($event->target, $event->messageId)));
     }
 }

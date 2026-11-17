@@ -11,7 +11,7 @@ use App\Domain\Sequences\Models\SequenceRun;
 /**
  * The stack reference of following one sequence run; each run is its own subject.
  */
-final class FollowingSequenceReference
+final class FollowingSequenceStateReference
 {
     public const string TYPE_KEY = 'sequences.following';
 

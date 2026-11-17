@@ -15,7 +15,7 @@ use App\Domain\Chat\MessageWork;
 /**
  * A message waits on the agent: it hears about it at start, may not stop, and may not change files until it answers.
  */
-final class AnsweringMessage extends AgentState
+final class AnsweringMessageState extends AgentState
 {
     public function __construct(private readonly MessageWork $message) {}
 

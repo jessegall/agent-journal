@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain;
 
+use App\Core\Hooks\Contracts\StateRegistration;
+use App\Domain\Contracts\RegistersStates;
 use App\Domain\Exceptions\AmbiguousDomainRoot;
 use App\Domain\Exceptions\DomainCycle;
 use App\Domain\Exceptions\DomainListedTwice;
 use App\Domain\Exceptions\DomainNotFound;
 use App\Domain\Exceptions\RequiredDomainMissing;
+use Illuminate\Contracts\Container\Container;
 
 /**
  * Every registered domain by name, checked once when the list is read and never changed after.
@@ -76,6 +79,22 @@ final readonly class DomainRegistry
     public function get(string $name): DomainEntry
     {
         return $this->entries[$name] ?? throw DomainNotFound::for($name);
+    }
+
+    /**
+     * Registers the states every domain declares through RegistersStates, each factory built by the container.
+     */
+    public function registerStatesIn(StateRegistration $registration, Container $container): void
+    {
+        foreach ($this->all() as $entry) {
+            if (! $entry->domain instanceof RegistersStates) {
+                continue;
+            }
+
+            foreach ($entry->domain->states() as $typeKey => $factory) {
+                $registration->register($typeKey, $container->make($factory));
+            }
+        }
     }
 
     /**

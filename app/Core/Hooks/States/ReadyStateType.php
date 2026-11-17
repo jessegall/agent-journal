@@ -31,11 +31,11 @@ enum ReadyStateType: string implements StateType
         return 1;
     }
 
-    public function newState(): Ready
+    public function newState(): ReadyState
     {
         return match ($this) {
-            self::MainAgent => new MainAgentReady,
-            self::ReadOnlyHelper => new ReadOnlyHelperReady,
+            self::MainAgent => new MainAgentReadyState,
+            self::ReadOnlyHelper => new ReadOnlyHelperReadyState,
         };
     }
 }

@@ -14,8 +14,9 @@ use App\Domain\Chat\Contracts\ConversationReader;
 use App\Domain\Chat\Contracts\MessageSender;
 use App\Domain\Chat\Exceptions\MessageBodyEmpty;
 use App\Domain\Contracts\Domain;
+use App\Domain\Contracts\RegistersStates;
 
-final class ChatDomain implements Domain
+final class ChatDomain implements Domain, RegistersStates
 {
     public function description(): string
     {
@@ -46,5 +47,10 @@ final class ChatDomain implements Domain
             MessageState::class,
             MessageBodyEmpty::class,
         ];
+    }
+
+    public function states(): array
+    {
+        return [AnsweringMessageStateReference::TYPE_KEY => AnsweringMessageStateFactory::class];
     }
 }

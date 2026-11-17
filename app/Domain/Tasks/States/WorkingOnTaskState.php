@@ -12,7 +12,7 @@ use App\Domain\Tasks\TaskWork;
 /**
  * The agent is working on a task: it may not stop while the task still needs work.
  */
-final class WorkingOnTask extends AgentState
+final class WorkingOnTaskState extends AgentState
 {
     public function __construct(private readonly TaskWork $task) {}
 

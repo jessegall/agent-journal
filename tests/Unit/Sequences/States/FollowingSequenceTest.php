@@ -14,7 +14,7 @@ use App\Core\Hooks\Inputs\StopDetails;
 use App\Core\Hooks\Inputs\StopRequested;
 use App\Domain\Sequences\SequenceRunState;
 use App\Domain\Sequences\SequenceWork;
-use App\Domain\Sequences\States\FollowingSequence;
+use App\Domain\Sequences\States\FollowingSequenceState;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;
@@ -54,7 +54,7 @@ final class FollowingSequenceTest extends TestCase
     public function test_a_compaction_repeats_the_current_instruction_without_advancing(): void
     {
         $sequence = $this->running();
-        $state = new FollowingSequence($sequence);
+        $state = new FollowingSequenceState($sequence);
 
         $first = $state->onCompaction($this->compaction());
         $second = $state->onCompaction($this->compaction());
@@ -69,7 +69,7 @@ final class FollowingSequenceTest extends TestCase
     #[DataProvider('settledStates')]
     public function test_a_settled_run_is_finished_and_holds_nothing(SequenceRunState $state): void
     {
-        $following = new FollowingSequence(new SequenceWork(8, 3, 'Run the phase tests.', $state));
+        $following = new FollowingSequenceState(new SequenceWork(8, 3, 'Run the phase tests.', $state));
 
         $this->assertTrue($following->isFinished());
         $this->assertTrue($following->onStop($this->stop())->isDelegating());
@@ -92,9 +92,9 @@ final class FollowingSequenceTest extends TestCase
         return new SequenceWork(8, 3, 'Run the phase tests.', SequenceRunState::Running);
     }
 
-    private function following(): FollowingSequence
+    private function following(): FollowingSequenceState
     {
-        return new FollowingSequence($this->running());
+        return new FollowingSequenceState($this->running());
     }
 
     private function stop(): StopRequested

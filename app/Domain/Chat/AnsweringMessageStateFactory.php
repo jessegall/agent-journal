@@ -10,12 +10,12 @@ use App\Core\Hooks\Decisions\SubjectReference;
 use App\Core\Hooks\Exceptions\StateSubjectMissing;
 use App\Core\Hooks\States\AgentState;
 use App\Domain\Chat\Exceptions\MessageMissing;
-use App\Domain\Chat\States\AnsweringMessage;
+use App\Domain\Chat\States\AnsweringMessageState;
 
 /**
  * Builds the answering-message state from the message as it is now; it keeps no message between calls.
  */
-final readonly class AnsweringMessageFactory implements StateType
+final readonly class AnsweringMessageStateFactory implements StateType
 {
     public function __construct(private MessageRecords $messages) {}
 
@@ -33,7 +33,7 @@ final readonly class AnsweringMessageFactory implements StateType
             throw StateSubjectMissing::for($reference->typeKey, $missing);
         }
 
-        return new AnsweringMessage($message->work());
+        return new AnsweringMessageState($message->work());
     }
 
     public function schemaVersion(): int

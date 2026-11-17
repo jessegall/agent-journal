@@ -20,8 +20,9 @@ use App\Core\Hooks\StackTarget;
 use App\Core\Hooks\StackTransaction;
 use App\Core\Hooks\Storage\FrameRecord;
 use App\Core\Hooks\UserStacks;
+use App\Domain\DomainRegistry;
 use Illuminate\Contracts\Events\Dispatcher;
-use Tests\Fixtures\Modules\Notes\Listeners\RegisterNoteStates;
+use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -40,7 +41,8 @@ final class UserStacksTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(Dispatcher::class)->listen(StateTypesRequested::class, RegisterNoteStates::class);
+        $notes = DomainRegistry::from([NotesDomain::class]);
+        $this->app->make(Dispatcher::class)->listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $notes->registerStatesIn($event->registry, $this->app));
         $this->target = $this->targetOf($this->launch());
     }
 

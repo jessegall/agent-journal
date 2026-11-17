@@ -11,7 +11,7 @@ use App\Core\Hooks\Contracts\StateType;
 /**
  * The state of a module installed outside app/Domain: while the agent writes a note, it may not stop.
  */
-final class WritingNoteType implements StateType
+final class WritingNoteStateFactory implements StateType
 {
     public function stateFor(StateReference $reference): AgentState
     {

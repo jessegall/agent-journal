@@ -17,7 +17,7 @@ use App\Core\Hooks\Inputs\ToolFinished;
 /**
  * The permanent bottom of every stack: it answers every hook, so a walk never runs out of states.
  */
-class Ready extends AgentState
+class ReadyState extends AgentState
 {
     public function onSessionStart(SessionStarted $input): Decision
     {

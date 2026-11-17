@@ -13,11 +13,11 @@ use App\Core\Hooks\Exceptions\StateTypesFrozen;
 use App\Core\Hooks\Exceptions\StateTypeUnknown;
 use App\Core\Hooks\Stack\RegisteredStateFactory;
 use App\Core\Hooks\Stack\StateTypes;
-use App\Core\Hooks\States\MainAgentReady;
-use App\Core\Hooks\States\ReadOnlyHelperReady;
+use App\Core\Hooks\States\MainAgentReadyState;
+use App\Core\Hooks\States\ReadOnlyHelperReadyState;
 use App\Core\Hooks\States\ReadyStateType;
 use App\Core\Hooks\States\StateTypeRegistry;
-use App\Domain\Tasks\States\WorkingOnTask;
+use App\Domain\Tasks\States\WorkingOnTaskState;
 use App\Domain\Tasks\TaskWorkState;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
@@ -89,8 +89,8 @@ final class StateTypeTest extends TestCase
         $registry = (new StateTypes(new Dispatcher))->registry();
         $noSubject = fn (string $key) => new StateReference($key, NoSubject::None);
 
-        $this->assertSame(MainAgentReady::class, $registry->get('hooks.main_ready')->stateFor($noSubject('hooks.main_ready'))::class);
-        $this->assertSame(ReadOnlyHelperReady::class, $registry->get('hooks.read_only_helper_ready')->stateFor($noSubject('hooks.read_only_helper_ready'))::class);
+        $this->assertSame(MainAgentReadyState::class, $registry->get('hooks.main_ready')->stateFor($noSubject('hooks.main_ready'))::class);
+        $this->assertSame(ReadOnlyHelperReadyState::class, $registry->get('hooks.read_only_helper_ready')->stateFor($noSubject('hooks.read_only_helper_ready'))::class);
     }
 
     public function test_a_failed_build_is_not_kept_and_the_next_use_builds_again(): void
@@ -130,7 +130,7 @@ final class StateTypeTest extends TestCase
         $first = $factory->frameFor($reference);
         $second = $factory->frameFor($reference);
 
-        $this->assertInstanceOf(WorkingOnTask::class, $first->state);
+        $this->assertInstanceOf(WorkingOnTaskState::class, $first->state);
         $this->assertFalse($first->isFinished());
         $this->assertNotSame($first->id, $second->id);
         $this->assertSame(1, $first->schemaVersion);

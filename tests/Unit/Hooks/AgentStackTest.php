@@ -22,15 +22,15 @@ use App\Core\Hooks\Stack\AgentStack;
 use App\Core\Hooks\Stack\Frame;
 use App\Core\Hooks\Stack\HookAnswer;
 use App\Core\Hooks\States\AgentState;
-use App\Core\Hooks\States\Ready;
+use App\Core\Hooks\States\ReadyState;
 use App\Core\Hooks\Storage\WalkStep;
 use App\Domain\Chat\MessageWork;
 use App\Domain\Chat\MessageWorkState;
-use App\Domain\Chat\States\AnsweringMessage;
+use App\Domain\Chat\States\AnsweringMessageState;
 use App\Domain\Sequences\SequenceRunState;
 use App\Domain\Sequences\SequenceWork;
-use App\Domain\Sequences\States\FollowingSequence;
-use App\Domain\Tasks\States\WorkingOnTask;
+use App\Domain\Sequences\States\FollowingSequenceState;
+use App\Domain\Tasks\States\WorkingOnTaskState;
 use App\Domain\Tasks\TaskWork;
 use App\Domain\Tasks\TaskWorkState;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
@@ -72,11 +72,11 @@ final class AgentStackTest extends TestCase
     public function test_a_pushed_sequence_answers_the_next_stop_before_the_task(): void
     {
         $factory = new InMemoryStateFactory([
-            'sequences.following' => fn () => new FollowingSequence(new SequenceWork(8, 3, 'Run the phase tests.', SequenceRunState::Running)),
+            'sequences.following' => fn () => new FollowingSequenceState(new SequenceWork(8, 3, 'Run the phase tests.', SequenceRunState::Running)),
         ]);
         $stack = new AgentStack([
             $this->ready(),
-            new Frame('task-42', $this->reference('tasks.working', 42), new WorkingOnTask(new TaskWork(42, 1, TaskWorkState::Active))),
+            new Frame('task-42', $this->reference('tasks.working', 42), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active))),
         ], $factory);
 
         $stack = $stack->withStateOnTop($this->reference('sequences.following', 8));
@@ -155,7 +155,7 @@ final class AgentStackTest extends TestCase
 
     public function test_a_bottom_state_that_delegates_fails_with_the_steps_it_took(): void
     {
-        $delegatingBottom = new class extends Ready
+        $delegatingBottom = new class extends ReadyState
         {
             public function onStop(StopRequested $input): Decision
             {
@@ -274,8 +274,8 @@ final class AgentStackTest extends TestCase
     {
         return $this->stack(
             $this->ready(),
-            new Frame('task-42', $this->reference('tasks.working', 42), new WorkingOnTask(new TaskWork(42, 1, $taskState))),
-            new Frame('message-95', $this->reference('chat.answering', 95), new AnsweringMessage(new MessageWork(95, $messageState))),
+            new Frame('task-42', $this->reference('tasks.working', 42), new WorkingOnTaskState(new TaskWork(42, 1, $taskState))),
+            new Frame('message-95', $this->reference('chat.answering', 95), new AnsweringMessageState(new MessageWork(95, $messageState))),
         );
     }
 
@@ -286,7 +286,7 @@ final class AgentStackTest extends TestCase
 
     private function ready(): Frame
     {
-        return new Frame('ready', $this->reference('ready'), new Ready, bottom: true);
+        return new Frame('ready', $this->reference('ready'), new ReadyState, bottom: true);
     }
 
     private function frame(string $id, AgentState $state): Frame

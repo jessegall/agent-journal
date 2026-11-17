@@ -24,7 +24,7 @@ use App\Core\Hooks\Inputs\StopDetails;
 use App\Core\Hooks\Inputs\StopRequested;
 use App\Domain\Chat\MessageWork;
 use App\Domain\Chat\MessageWorkState;
-use App\Domain\Chat\States\AnsweringMessage;
+use App\Domain\Chat\States\AnsweringMessageState;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\TestCase;
@@ -95,14 +95,14 @@ final class AnsweringMessageTest extends TestCase
     #[DataProvider('settledStates')]
     public function test_a_settled_message_is_finished(MessageWorkState $state): void
     {
-        $this->assertTrue((new AnsweringMessage(new MessageWork(95, $state)))->isFinished());
+        $this->assertTrue((new AnsweringMessageState(new MessageWork(95, $state)))->isFinished());
         $this->assertFalse($this->unanswered()->isFinished());
     }
 
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
     public function test_a_settled_message_blocks_no_hook(HookInput $input): void
     {
-        $answered = new AnsweringMessage(new MessageWork(95, MessageWorkState::Answered));
+        $answered = new AnsweringMessageState(new MessageWork(95, MessageWorkState::Answered));
 
         $this->assertNotContains($input->answerBy($answered)->answerKind()->value, ['deny', 'prevent_stop']);
     }
@@ -110,7 +110,7 @@ final class AnsweringMessageTest extends TestCase
     public function test_answering_leaves_the_message_snapshot_as_it_was(): void
     {
         $message = $this->message();
-        $state = new AnsweringMessage($message);
+        $state = new AnsweringMessageState($message);
 
         foreach (HookInputs::all() as $input) {
             $input->answerBy($state);
@@ -129,9 +129,9 @@ final class AnsweringMessageTest extends TestCase
         return new MessageWork(95, MessageWorkState::Unanswered);
     }
 
-    private function unanswered(): AnsweringMessage
+    private function unanswered(): AnsweringMessageState
     {
-        return new AnsweringMessage($this->message());
+        return new AnsweringMessageState($this->message());
     }
 
     private function hook(): HookIdentity
