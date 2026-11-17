@@ -23,3 +23,8 @@ def test_the_reviewer_profile_narrows_the_helper_and_records_its_review():
 def test_the_reviewer_profile_files_a_report_and_no_document():
     reviewer = ReviewerCommands()
     assert reviewer.allows(JournalLine("report make", frozenset([JournalLineClass.CHANGES]))) and not reviewer.allows(JournalLine("doc make", frozenset([JournalLineClass.CHANGES])))
+
+
+def test_the_reviewer_profile_weighs_and_skips_its_memory_marks():
+    reviewer = ReviewerCommands()
+    assert reviewer.allows(JournalLine("memory skip", frozenset([JournalLineClass.CHANGES]))) and reviewer.allows(JournalLine("memory weigh", frozenset([JournalLineClass.CHANGES])))
