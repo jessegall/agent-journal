@@ -294,7 +294,7 @@ final class AgentStackTest extends TestCase
         return new Frame($id, $this->reference($id), $state);
     }
 
-    private function reference(string $typeKey, ?int $subjectId = null): StateReference
+    private function reference(string $typeKey, int|null $subjectId = null): StateReference
     {
         if ($subjectId === null) {
             return new StateReference($typeKey, NoSubject::None);

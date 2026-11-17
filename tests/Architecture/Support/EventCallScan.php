@@ -91,7 +91,7 @@ final class EventCallScan
         );
     }
 
-    private static function argumentKind(?Expr $event, Node $call): EventArgument
+    private static function argumentKind(Expr|null $event, Node $call): EventArgument
     {
         return match (true) {
             $event instanceof String_ => EventArgument::String,
@@ -116,7 +116,7 @@ final class EventCallScan
     /**
      * The name of the typed event parameter of the handle method the call stands in, if it stands in one.
      */
-    private static function listenerParameter(Node $node): ?string
+    private static function listenerParameter(Node $node): string|null
     {
         $method = $node->getAttribute('parent');
 
@@ -137,7 +137,7 @@ final class EventCallScan
         return is_string($parameter->var->name) ? $parameter->var->name : null;
     }
 
-    private static function eventText(?Expr $event): string
+    private static function eventText(Expr|null $event): string
     {
         return match (true) {
             $event === null => '',

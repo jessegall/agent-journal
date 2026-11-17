@@ -14,5 +14,5 @@ use Illuminate\Container\Attributes\Bind;
 #[Bind(ViewerRecords::class)]
 interface ViewerReader
 {
-    public function viewer(): ?Viewer;
+    public function viewer(): Viewer|null;
 }

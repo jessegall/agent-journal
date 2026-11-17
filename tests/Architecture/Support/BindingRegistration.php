@@ -13,7 +13,7 @@ final readonly class BindingRegistration
         public string $file,
         public int $line,
         public string $abstract,
-        public ?string $concrete,
+        public string|null $concrete,
         public bool $isScoped,
         public bool $isSingleton,
     ) {}

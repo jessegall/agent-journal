@@ -13,7 +13,7 @@ use Carbon\CarbonImmutable;
  */
 final readonly class AgentSessions
 {
-    public function start(Agent $agent, ?AgentSession $parent = null): AgentSession
+    public function start(Agent $agent, AgentSession|null $parent = null): AgentSession
     {
         $session = new AgentSession;
         $session->startFor($agent, $parent);

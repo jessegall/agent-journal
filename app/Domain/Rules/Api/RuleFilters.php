@@ -13,6 +13,6 @@ final readonly class RuleFilters
     public function __construct(
         public string $search = '',
         public int $page = 1,
-        public ?int $selectedRuleId = null,
+        public int|null $selectedRuleId = null,
     ) {}
 }

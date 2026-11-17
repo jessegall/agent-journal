@@ -175,7 +175,7 @@ final class TableScan
         return [new TableUse($file->path, $call->getStartLine(), self::withoutAlias($table->value), $kind)];
     }
 
-    private static function argument(MethodCall|StaticCall $call, int $position): ?Expr
+    private static function argument(MethodCall|StaticCall $call, int $position): Expr|null
     {
         $argument = $call->args[$position] ?? null;
 

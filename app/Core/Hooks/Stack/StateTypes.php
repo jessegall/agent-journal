@@ -14,7 +14,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final class StateTypes
 {
-    private ?StateTypeRegistry $registry = null;
+    private StateTypeRegistry|null $registry = null;
 
     public function __construct(private readonly Dispatcher $events) {}
 

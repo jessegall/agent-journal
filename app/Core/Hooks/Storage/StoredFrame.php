@@ -18,7 +18,7 @@ final class StoredFrame extends Data
         public readonly string $typeKey,
         public readonly int $schemaVersion,
         public readonly bool $isBottom,
-        public readonly ?StoredSubject $subject,
+        public readonly StoredSubject|null $subject,
     ) {}
 
     public static function fromFrameRecord(FrameRecord $record): self

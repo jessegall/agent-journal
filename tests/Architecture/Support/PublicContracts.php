@@ -87,7 +87,7 @@ final readonly class PublicContracts
      *
      * @param  ReflectionClass<object>  $class
      */
-    private static function disallowedCategoryOf(ReflectionClass $class, PublicOwner $owner): ?string
+    private static function disallowedCategoryOf(ReflectionClass $class, PublicOwner $owner): string|null
     {
         if ($class->isInterface() || $class->isEnum()) {
             return null;
@@ -268,7 +268,7 @@ final readonly class PublicContracts
      * export itself, another export of its owner or a Core public type. A docblock template name exists nowhere and
      * is not a class.
      */
-    private function privateOwnerOf(string $name, PublicOwner $owner, string $export): ?string
+    private function privateOwnerOf(string $name, PublicOwner $owner, string $export): string|null
     {
         $name = ltrim($name, '\\');
 

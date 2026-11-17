@@ -11,7 +11,7 @@ namespace App\Domain\Plans\Api;
 final readonly class PlanSelection
 {
     private function __construct(
-        public ?PlanCard $card,
+        public PlanCard|null $card,
         public bool $wasRequested,
         public bool $isInsideFilter,
     ) {}

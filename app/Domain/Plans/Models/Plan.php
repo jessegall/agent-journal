@@ -93,7 +93,7 @@ final class Plan extends Model
      *
      * @param  array<int, PlanProgress>  $progressOfPhase
      */
-    public function card(array $progressOfPhase, ?string $agentName): PlanCard
+    public function card(array $progressOfPhase, string|null $agentName): PlanCard
     {
         $progress = array_reduce($progressOfPhase, fn (PlanProgress $sum, PlanProgress $phase) => $sum->plus($phase), PlanProgress::none());
         $unfinished = array_keys(array_filter($progressOfPhase, fn (PlanProgress $phase) => ! $phase->isComplete()));

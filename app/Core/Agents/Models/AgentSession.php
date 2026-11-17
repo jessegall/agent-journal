@@ -37,7 +37,7 @@ final class AgentSession extends Model
 {
     use Linkable;
 
-    public function startFor(Agent $agent, ?self $parent): void
+    public function startFor(Agent $agent, self|null $parent): void
     {
         $this->agent_id = $agent->id;
         $this->parent_session_id = $parent?->id;

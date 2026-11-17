@@ -16,7 +16,7 @@ final class InspectedFrame extends Data
     public function __construct(
         public readonly string $id,
         public readonly string $typeKey,
-        public readonly ?InspectedSubject $subject,
+        public readonly InspectedSubject|null $subject,
         public readonly bool $isBottom,
     ) {}
 

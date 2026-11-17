@@ -18,7 +18,7 @@ final readonly class ViewerRecords implements ViewerReader
 {
     public function __construct(private Guard $auth) {}
 
-    public function viewer(): ?Viewer
+    public function viewer(): Viewer|null
     {
         $user = $this->auth->user();
 

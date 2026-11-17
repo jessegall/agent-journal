@@ -12,7 +12,7 @@ use Throwable;
  */
 final class StateSubjectMissing extends RuntimeException
 {
-    public static function for(string $stateType, ?Throwable $cause = null): self
+    public static function for(string $stateType, Throwable|null $cause = null): self
     {
         return new self("The subject of the state {$stateType} cannot be read for this request.", previous: $cause);
     }

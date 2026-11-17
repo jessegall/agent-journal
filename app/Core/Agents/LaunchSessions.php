@@ -26,7 +26,7 @@ final readonly class LaunchSessions
         private Dispatcher $events,
     ) {}
 
-    public function launch(Agent $agent, string $program, ?AgentSession $parent = null): LaunchedAgent
+    public function launch(Agent $agent, string $program, AgentSession|null $parent = null): LaunchedAgent
     {
         $settings = new IsolatedHookSettings;
         $this->events->dispatch(new LaunchSettingsRequested($program, $settings));

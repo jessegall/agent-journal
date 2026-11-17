@@ -71,7 +71,7 @@ final readonly class TableChecker
         return [...$this->tablesCreatedTwice(), ...$this->migrationNamesTwice(), ...$this->rootMigrationChanges()];
     }
 
-    private function violationOf(TableUse $use): ?Violation
+    private function violationOf(TableUse $use): Violation|null
     {
         $user = $this->ownerHolding($use->file);
         $owner = $this->owners[$use->table] ?? null;

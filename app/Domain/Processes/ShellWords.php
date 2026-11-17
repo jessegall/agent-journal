@@ -153,7 +153,7 @@ final readonly class ShellWords
         return [$redirect, $index + strlen($redirect)];
     }
 
-    private static function operatorAt(string $line, int $index): ?string
+    private static function operatorAt(string $line, int $index): string|null
     {
         foreach (array_keys(self::OPERATORS) as $operator) {
             if (substr($line, $index, strlen($operator)) === $operator) {

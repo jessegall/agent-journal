@@ -17,7 +17,7 @@ use Illuminate\Container\Attributes\Scoped;
 #[Scoped]
 final class ActorStore implements CurrentActor, CurrentActorSetter
 {
-    private ?ActorContext $actor = null;
+    private ActorContext|null $actor = null;
 
     public function actor(): ActorContext
     {

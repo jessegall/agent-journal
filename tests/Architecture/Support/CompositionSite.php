@@ -20,7 +20,7 @@ enum CompositionSite: string
     case Authentication = 'config/auth.php';
     case Seeders = 'database/seeders/DatabaseSeeder.php';
 
-    public static function holding(string $file, string $basePath): ?self
+    public static function holding(string $file, string $basePath): self|null
     {
         return self::tryFrom(ltrim(substr($file, strlen($basePath)), '/'));
     }

@@ -18,7 +18,7 @@ final readonly class PlanCard
         public bool $canStart,
         public bool $focused,
         public PlanProgress $progress,
-        public ?int $currentPhase,
-        public ?string $agentName,
+        public int|null $currentPhase,
+        public string|null $agentName,
     ) {}
 }

@@ -150,7 +150,7 @@ final readonly class BoundaryChecker
      *
      * @return list<Violation>
      */
-    private function eventViolations(NameUse $use, ?DomainEntry $user, DomainEntry $owner): array
+    private function eventViolations(NameUse $use, DomainEntry|null $user, DomainEntry $owner): array
     {
         if (! $owner->ownsEvent($use->name)) {
             return [];
@@ -166,7 +166,7 @@ final readonly class BoundaryChecker
     /**
      * The domain a file belongs to; a file of the shared place belongs to none and may use no domain.
      */
-    private function domainHolding(string $path): ?DomainEntry
+    private function domainHolding(string $path): DomainEntry|null
     {
         return array_find($this->entries, fn (DomainEntry $entry) => $entry->holdsFile($path));
     }

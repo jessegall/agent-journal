@@ -18,7 +18,7 @@ enum CallFailure: string
     /**
      * The failure an endpoint status means; no status, a timeout or a server error is an outage.
      */
-    public static function fromStatus(?int $status): self
+    public static function fromStatus(int|null $status): self
     {
         return match ($status) {
             401, 403 => self::Unauthorized,

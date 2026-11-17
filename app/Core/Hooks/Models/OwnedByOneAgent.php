@@ -71,7 +71,7 @@ trait OwnedByOneAgent
      * @param  mixed  $value
      * @param  string|null  $field
      */
-    public function resolveRouteBinding($value, $field = null): ?Model
+    public function resolveRouteBinding($value, $field = null): Model|null
     {
         Container::getInstance()->make(CurrentActor::class)->actor();
 

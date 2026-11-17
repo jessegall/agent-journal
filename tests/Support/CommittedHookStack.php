@@ -92,7 +92,7 @@ trait CommittedHookStack
         return $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), fn (HookAnswer $answer) => ProgramReplies::stop($answer))->stdout;
     }
 
-    protected function callAs(string $callId, ?string $inputDigest = null): void
+    protected function callAs(string $callId, string|null $inputDigest = null): void
     {
         $this->app->instance(AgentContext::class, new AgentContext(1, 10, 'hooks.main_ready', new SignedCall($callId, CarbonImmutable::now(), $inputDigest ?? self::inputDigest())));
     }

@@ -88,7 +88,7 @@ final class StateTypeLifecycleTest extends TestCase
         $this->assertSame(['ready', 'note-1'], $stack->frameIds());
     }
 
-    private function useEventCachePath(?string $path): void
+    private function useEventCachePath(string|null $path): void
     {
         if ($path === null) {
             unset($_SERVER['APP_EVENTS_CACHE'], $_ENV['APP_EVENTS_CACHE']);

@@ -878,7 +878,7 @@ function shortNameOf(string $class): string
     return basename(str_replace('\\', '/', $class));
 }
 
-function declaredIn(string $class, array $files, string $scope = ''): ?string
+function declaredIn(string $class, array $files, string $scope = ''): string|null
 {
     $wanted = basename(str_replace('\\', '/', $class));
     $under = str_contains($class, '\\') ? PACKAGE.trim(substr($class, 0, strrpos($class, '\\')), '\\') : '';

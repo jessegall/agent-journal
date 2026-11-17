@@ -119,7 +119,7 @@ final readonly class BindingRules
      * @param  list<string>  $scoped
      * @param  list<string>  $visited
      */
-    private function firstScopedDependency(string $class, array $scoped, array $visited): ?string
+    private function firstScopedDependency(string $class, array $scoped, array $visited): string|null
     {
         if (! class_exists($class) || in_array($class, $visited, true)) {
             return null;
@@ -220,7 +220,7 @@ final readonly class BindingRules
         return $registrations;
     }
 
-    private static function classStringOf(?Node $argument): ?string
+    private static function classStringOf(Node|null $argument): string|null
     {
         if (! $argument instanceof ClassConstFetch || ! $argument->class instanceof Name || ! $argument->name instanceof Node\Identifier || $argument->name->toString() !== 'class') {
             return null;
@@ -229,7 +229,7 @@ final readonly class BindingRules
         return $argument->class->toString();
     }
 
-    private static function bindTargetOf(string $name): ?string
+    private static function bindTargetOf(string $name): string|null
     {
         if (! self::exists($name)) {
             return null;
@@ -240,7 +240,7 @@ final readonly class BindingRules
         return $attribute?->newInstance()->concrete;
     }
 
-    private static function isScopedClass(?string $name): bool
+    private static function isScopedClass(string|null $name): bool
     {
         return $name !== null && class_exists($name) && (new ReflectionClass($name))->getAttributes(Scoped::class) !== [];
     }

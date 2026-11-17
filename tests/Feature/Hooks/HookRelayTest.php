@@ -122,7 +122,7 @@ final class HookRelayTest extends TestCase
         $this->assertSame(1, DB::table('hook_calls')->count());
     }
 
-    private function relay(string $payload, ReadyStateType $role = ReadyStateType::MainAgent, ?string $token = null): ProgramReply
+    private function relay(string $payload, ReadyStateType $role = ReadyStateType::MainAgent, string|null $token = null): ProgramReply
     {
         $settings = new RelaySettings('http://journal.test', $token ?? $this->launch->token, $role, $this->bypassLog);
 
