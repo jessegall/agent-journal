@@ -1,16 +1,16 @@
 # Journal 6 domain UI design
 
-To the main agent, from helper 61. This is a proposed design, not an implementation plan. The interactive screen is [index.html](index.html), beside this document. It needs no server or external assets. The example Notes content is illustrative.
+To the main agent, from helper 61. Proposed design, not an implementation plan. [Open the standalone visual](index.html). Reports 61 and 63 were read in full; every finding is settled below. Example data is illustrative. Ownership recommendations are not approvals to change the app.
 
 ## What the user sees
 
 Version 6 uses version 5's look and feel (message 1350), including its existing visual density, rather than a new dashboard style. The shell has the same 232 px sidebar, 48 px breadcrumb/search bar, 26 px purple A mark, two-line project/environment identity, 30 px navigation rows and muted uppercase group labels. Home stays first; Work contains Plans and the installed Notes module, and Agents contains Rules. Only available version 6 pages are listed: the larger version 5 navigation inventory is not a promise to add unimplemented features. Notes has Recent and Collections children; Collections has Decisions and Research children. A navigation item can contain children recursively, without a fixed depth limit. Selecting a page opens it inside this shared shell; the shell title comes from its human-readable page title, not its component name. One live connection still belongs to the shell.
 
-Draw a separate disclosure button beside a parent page link: selecting Notes opens its page; selecting its chevron expands or collapses children without navigation. A group with no page has a single labeled disclosure button. The visual includes expanded and collapsed sidebar presets and working disclosures at two levels. Lists nest semantically, with `aria-expanded` and `aria-controls` on disclosures, and `aria-current=page` only on the selected link. Expand the active page's ancestors on navigation, but allow the user to collapse them afterward; a collapsed ancestor shows a small “Current page inside” marker. Preserve expansion by stable key within the current viewer's tab and clear it at sign-out or removal. Sort siblings by position then key at every depth. A hidden parent prunes its whole subtree; an authorized page-less group with no visible children disappears. A visible parent page remains even when all children are hidden. Reject cycles and repeated keys, but never impose a maximum tree depth. After a few levels, cap visual indentation and use a branch line plus breadcrumb to retain readable width; do not truncate the actual hierarchy. On small screens, use a vertical navigation drawer, not a horizontal row of nested items.
+Draw a separate disclosure button beside a parent page link: selecting Notes opens its page; selecting its chevron expands or collapses children without navigation. A group with no page has a single labeled disclosure button. The visual includes expanded and collapsed sidebar presets and working disclosures at two levels. Lists nest semantically, with `aria-expanded` and `aria-controls` on disclosures, and `aria-current=page` only on the selected link. Expand the active page's ancestors on navigation, but allow the user to collapse them afterward; a collapsed ancestor shows a small “Current page inside” marker. Preserve expansion by stable key within the current viewer's tab and clear it at sign-out or removal. Sort siblings by position then key at every depth. A hidden parent prunes its whole subtree; an authorized page-less group with no visible children disappears. A visible parent page remains even when all children are hidden. Reject repeated keys, but never impose a maximum tree depth. Children are nested immutable values, not key references, so no cycle graph is introduced. After a few levels, cap visual indentation and use a branch line plus breadcrumb to retain readable width; do not truncate the actual hierarchy. On small screens, use a vertical navigation drawer, not a horizontal row of nested items.
 
-Home follows the version 5 home renders: a 54 px Working/task band, a 30 px line of muted agent facts, then two equal, edge-to-edge panes separated by one 1 px rule. Each pane begins with the same 34 px compact tab strip. Conversation stays left, with a centered day label, alternating message bubbles, small inline journal marks and the composer anchored at the bottom. There is no oversized Home heading, marketing subtitle, padded canvas or card enclosing each pane. The right pane holds Plans and Notes tabs; Plans shows version 5's compact two-column plan cards with muted type/id facts, a small outlined status badge, a 4 px blue progress track and a narrow focus edge. Recent notes is an owner-contributed section below those cards, using a 34 px flat header and compact ruled rows. Selecting the Notes tab leaves the section in the same pane with its own toolbar. No new floating widget treatment is introduced.
+Home follows the version 5 home renders: a 54 px Working/task band, a 30 px line of muted agent facts, then two equal, edge-to-edge panes separated by one 1 px rule. Each pane begins with the same 34 px compact tab strip. Conversation stays left, with a centered day label, alternating message bubbles, small inline journal marks and the composer anchored at the bottom. There is no oversized Home heading, marketing subtitle, padded canvas or card enclosing each pane. The right pane holds Plans and Notes tabs; Plans shows version 5's compact two-column plan cards with muted type/id facts, a small outlined status badge, a 4 px blue progress track and a narrow focus edge. Plans retains its complete full-height search, grid, paging and selected-record reader. Notes occupies a sibling tab rather than reducing the Plans slice to a summary. A Plan record preview also shows a related-notes section below the plan reader text. No new floating widget treatment is introduced.
 
-Shared pages still expose named placement slots, not arbitrary DOM targets. Home exposes `home.conversation` and `home.overview`. Conversation owns the first slot, and ordered overview sections fill the second; a pane tab chooses a view within that slot. A section contributes its body and local actions; Web supplies the version 5 tab/header band, loading rows, error boundary and View all link. The complete Notes page uses version 5's document list/reader layout: a compact 16 px title and New action, a filter strip, a 360 px list with a selected-row accent edge, and a reader with metadata, a 17 px title, underline tabs and a 16 px text inset. It owns its list, reader and New note action. A contribution can supply only a page, only sections, or both. A section-only contribution does not produce a dead sidebar entry.
+Shared pages still expose named placement slots, not arbitrary DOM targets. Home exposes `home.conversation` and `home.overview`. Conversation owns the first slot; ordered overview sections receive sibling tabs in the second slot, not permanently stacked panels. A section contributes its body and local actions; Web supplies the version 5 tab/header band, loading rows, error boundary and View all link. The complete Notes page uses version 5's document list/reader layout: a compact 16 px title and New action, a filter strip, a 360 px list with a selected-row accent edge, and a reader with metadata, a 17 px title, underline tabs and a 16 px text inset. It owns its list, reader and New note action. A contribution can supply only a page, only sections, or both. A section-only contribution does not produce a dead sidebar entry.
 
 The visual is an interactive screen study: choose Home, Notes, nested navigation expanded/collapsed, empty, first load, live update, connection lost, failure, module available, module removed, or unavailable saved link. A separate Appearance selector shows the same screen in Dark or Light. These review controls and the architectural caption sit outside the depicted application. Navigation links, sidebar disclosures, pane tabs, note selection, page finding and local draft fields are represented by local interactions. Save and send explicitly do not persist. Plans and Rules are context views, not redesigned feature flows. No prototype control invokes the app.
 
@@ -22,138 +22,199 @@ Dark uses the exact reference tokens: sidebar `#0d0e10`, canvas `#131416`, raise
 
 Loading occupies the section's ordinary rows with static neutral skeleton lines. Empty content is one quiet inline statement with a small action, rather than an oversized illustrated empty card. Errors use a short red sentence and Retry in that same area. Disconnect and availability messages use a narrow tinted strip under the facts band. A refresh leaves existing rows visible, then adds small Updated just now text. Removal uses the usual shell with a restrained 16 px unavailable heading and Home action. The states below retain their behavior; all inherit these version 5 surface rules in both appearances.
 
+
+Keep today's viewer, Light/Dark/System appearance control and Sign out in the top bar; remove the sidebar-footer viewer. Version 5 breadcrumb/search and Working/facts bands are proposed changes relative to today's v6 AppTopbar, required by the requested v5 appearance. Live status and manual Refresh are explicitly new recovery affordances. They are not claimed to exist in the current shell.
+
+The revised selector also covers Chat, a page-only contribution, a Plan record section, six-level nesting, both mobile drawer states, and every state below. Review controls are outside the depicted product. A mobile drawer is modal: opening moves focus into it, Escape closes it, closing restores the Pages trigger, and background content is inert while open. Notes and conversation drafts are retained independently in the local demonstration.
+
 ## State decisions
 
-| State | What appears | Behavior and recovery |
+| State / preview | What appears | Behavior |
 | --- | --- | --- |
-| Available | Sidebar link and the permitted sections | Stable keys preserve the user's current selection and local state. |
-| Initial load | Section heading, reserved body space and loading skeleton | The shell and other sections remain usable; no false zero count. |
-| Empty | No notes yet, a short explanation and Open Notes | Authorized empty content stays visible. Permission-hidden content occupies no space. |
-| Ready | Domain content and local actions | View all reaches the domain page with its approved selection context. |
-| Refreshing | Existing rows remain; subtle updating text | Replace only when the new read succeeds. Never clear a draft, selection or scroll position. |
-| Refreshed | New row and Updated just now | One polite announcement, then return to ordinary status. No automatic navigation. |
-| Read failed | Existing data marked stale, or a contained error on first load | Retry reads that section. Other sections keep working. Log the failure with its contribution key; never show a stack trace. |
-| Connection lost | Shell says Reconnecting; visible last-loaded data stays | Reconnection performs a complete authorized refresh. Manual refresh remains available; do not silently retry mutations. |
-| Validation or rejected action | Field errors and the unchanged draft | The domain decides validity and permission again on submission. A lost mutation response requires a read of current state, not an automatic second mutation. |
-| Newly installed | Notes appears after the release is ready; quiet availability notice | Refresh shared navigation and sections. If an old client needs new assets, offer Reload after preserving drafts. Do not force reload during a form submission. |
-| Removed on Home | Notes navigation and section disappear | Remove only that section, retain other filters and drafts. No empty hole. |
-| Removed while on Notes | This page is no longer available; Go to Home | Remove its navigation and readable data immediately on confirmed unavailability; no automatic redirect hiding the reason. A local unsent draft may remain until sign-out, but cannot be submitted. |
-| Fresh missing or forbidden link | The same neutral page-unavailable screen | Do not reveal the former page's records or distinguish hidden data from missing data. An expired login instead returns the established sign-in flow. |
-| Version mismatch or asset failure | Shell and readable existing content stay; reload action | Do not expose an unbuilt contribution. A failed lazy chunk load can retry once through an explicit reload; persistent failure is reported. |
+| Available / Home | Complete Plans pane; Notes sibling tab | Stable keys, no dead navigation. |
+| Initial load / Loading | Section header and neutral row skeletons | Can represent chunk loading with props already received; no extra section fetch. |
+| Empty | Quiet No notes yet line and Open Notes | Authorized empty content remains; hidden sections occupy no space. |
+| Ready / Notes | Domain list and reader | Shared shell; domain content. |
+| Refreshing | Existing rows and Updating | Keep filters, selected tab, scroll and both drafts. |
+| Refreshed / Live update | New row and Updated just now | No focus move or navigation. |
+| First-load read failure | Contained error and Retry | Retry reloads the host page prop. |
+| Stale failure | Last readable rows, stale label and Retry | Only retain data when visibility was reconfirmed for the same viewer/context. |
+| Connection lost | Last page, narrow status strip and Refresh | Reconnection reloads host props; never retry mutations silently. |
+| Rejected action | Notes draft and field error | Domain validates permissions and current record state again. |
+| Installed after deployment | Complete new shell with Notes | Fresh release, no runtime installation notice. |
+| Removed on Home | Home without Notes navigation/tab | Plans retains its pane; no empty gap. |
+| Removed page / Saved missing link | Ordinary safe 404 shell with Home action | No former-route database or module-removal routing system. |
+| Permission removed | Protected section and stale rows disappear | A denial is never disguised as transient failure. |
+| Version mismatch / Asset failure | Reload notice with preserved unsent draft | Normal Inertia asset-version reload; explicit recovery for failed chunks. |
+| Login expired | Sign-in prompt without protected content | Existing auth flow. |
+| Mobile closed / Mobile open | Pages trigger or modal navigation drawer | Focus containment, Escape and trigger restoration. |
 
-Initial loads and refreshes are separate states. Every contribution has its own failure boundary, including a failed Vue render or lazy component import. An authorization failure removes stale protected content rather than leaving it under an ordinary retry error. Loading never means absence, and absence never masquerades as failure.
+All state previews retain v5 surfaces in both appearances. Browser interaction checks remain outstanding; local source demonstrations are not proof of application behavior.
 
-## Ownership and the registration contract
+## Ownership and optional Domain interfaces
 
-The Domain class is the single declaration point. Add three small independent interfaces beside `ProvidesStates` in `App\Domain\Contracts`: `ProvidesNavigation::navigation()` returns a list of NavigationItem values, `ProvidesPages::pages()` returns a list of PageDefinition values, and `ProvidesSections::sections()` returns a list of SectionDefinition values. A Domain implements only the interfaces it needs. A section-only module implements Domain and ProvidesSections; it need not implement empty navigation or page methods. A full NotesDomain implements Domain, ProvidesNavigation, ProvidesPages and ProvidesSections. ProvidesStates remains independently optional. These definitions live in the domain foundation's `app/Domain/Ui` area, not in Core or Web.
+The Domain class declares its UI through ProvidesNavigation::navigation(), ProvidesPages::pages() and ProvidesSections::sections(), all in App\Domain\Contracts beside ProvidesStates. Implement only what is needed. These methods are argument-free, return immutable definitions, and never read an actor/database or resolve a service.
 
-Choose no Core UI registry. The existing domain foundation already knows every installed Domain, including external roots, and reads optional ProvidesStates interfaces in `DomainRegistry::registerStatesIn`. Extend that same discovery pattern to UI: inspect each registered Domain for each optional interface and compose its immutable definitions into one foundation-owned UiCatalog. This is a derived catalog of Domain declarations, not a second install list or a provider-based registration path. Domain methods are pure: no actor, database query, service resolution or request-specific navigation. The catalog validates and freezes structural definitions once per worker; its request projection filters navigation and sections through freshly resolved scoped adapters. Web consumes this catalog through the foundation's public composition contract without importing Notes or reflecting into Notes classes itself.
+No Core UI registry and no provider push API. DomainRegistry reads the optional interfaces on exactly the registered entries, following its current ProvidesStates pattern. A derived foundation catalog retains structural definitions and reader class references, never resolved readers, actor context or permission results. Web consumes the foundation contracts without naming unknown owners.
 
-Reserve `App\Domain\Contracts` and the listed immutable `App\Domain\Ui` definitions as explicit foundation APIs available to all registered owners and Web, just as Domain and ProvidesStates are. The architecture checker must recognize these narrow foundation seams and continue rejecting arbitrary foreign domain references. Request adapter interfaces (UiContribution and UiRoutes) belong in `App\Domain\Contracts`; UI failures belong in `app/Domain/Ui/Exceptions`. Only immutable definition values and adapter class references are retained in the catalog. The existing per-request actor contracts remain in Core. A small Core UiChanges notification service may still be used for the live-update bridge below; it is not a catalog, discovery mechanism or registration API.
+Concrete placement avoids loose PHP at app/Domain/Ui:
 
-The names below describe the intended programming contract; they are proposed names, not current APIs.
-
-| Declaration | Required information | Choice and reason |
-| --- | --- | --- |
-| Owner | Registered domain identity, stable UI namespace, UI contract major version | Use a vendor-qualified UI namespace, such as `example.notes`; current domain names remain unchanged. Collision rejection prevents one module replacing another. |
-| Page | Stable key, human title, component key, named GET route, route parameters, active navigation key | Example page `example.notes.index`, component `example.notes/pages/Index`, route `example.notes.index`. Explicit titles decouple page labels from build paths. |
-| Navigation | Stable key, label, optional icon, optional page key, integer position, visibility adapter and recursive list of child NavigationItem values | A page target, nonempty children, or both are required. ProvidesNavigation returns roots; each child has the same shape at any depth. Home is pinned first; siblings sort by position then stable key. The server filters the whole tree by actor permission. |
-| Section | Stable key, heading, shared-page slot key, integer position, component key, named read route, typed body, optional destination page | Example `example.notes.recent`, slot `home.overview`, position 200. Plans occupies position 100. A generic shell never interprets Notes fields. |
-| Placement | Host page definition lists slot keys and allowed cardinality | WebDomain declares Home through ProvidesPages with its two slots as foundation values. Unknown or overfilled single slots fail catalog validation. Multiple overview sections stack. |
-| Request adapter | Foundation interface implementation resolved for this request; visibility and permission methods | Permission is recomputed for every page read, section read and action. No visibility result is frozen in the catalog. |
-| Route registration | PageDefinition and SectionDefinition name their owner-local route adapters implementing foundation `UiRoutes` | The foundation deduplicates referenced adapters; Web invokes them inside its authenticated browser group. Each adapter names only its own controllers. Providers bind services but do not separately register UI. |
-| Refresh | Owner-local fact listeners and the page/section keys each invalidates | Typed listeners name facts where the boundary already permits it. This is an explicit map, not wildcard event strings or a central list of foreign PHP classes. |
-| Build sources | Owner-relative Vue source root, component entries and TypeScript Data roots | Resolve relative paths against the registered root. Only declared sources enter the build; arbitrary filesystem or remote component paths are refused. |
-
-Keep structure in typed immutable foundation values and request behavior in foundation interfaces. Public signatures use foundation values, permitted Core actor values and framework Data types, never a union mentioning every owner's PHP Data. A typed owner response stays opaque to Web; generated owner-specific browser types restore exact types at the Vue boundary. A read result distinguishes ready data, denied, and unavailable. Framework exceptions still keep their appropriate status and logs; rendering boundaries may contain an unexpected section failure without swallowing its diagnostics.
-
-All composition inputs come from the three declaration methods. PageDefinition contains its component, route adapter, response type, supported UI version and any host slots. SectionDefinition contains its component, read route adapter, response type, target slot and refresh listener references. NavigationItem refers to a declared page by stable key and may have arbitrarily nested children; navigation does not create a page implicitly. Components and Data roots are owner-relative definition fields, deduplicated by the foundation during manifest generation. The Domain class names local listener classes, not foreign fact classes: each listener declares its typed event and calls UiChanges for the definition's affected keys. This preserves the rule that foreign facts are named only at approved listener sites. The resulting navigation, pages and sections together describe the owner's complete UI without requiring a fourth registration method or a provider push API.
-
-Every owner's UI reader uses its exported query interface and immutable values. Its UI command handler uses exported action interfaces. It never reaches its domain models or tables directly, even though the UI lives in that owner's folder. This stricter local rule keeps the presentation replaceable and makes cross-owner access unambiguous. Owner-private computed page Data can hold hidden composition services; published API Data still cannot hide private services or models (doc 10 section 10).
-
-New features require their own domain exports only when a needed query or command is missing. No new domain-to-domain requirement is introduced by contributing UI. A contribution that wants another domain's data must use an already approved requirement and its exports, or seek approval for that dependency under rule 9; registration does not authorize it. In particular, no proposal adds Web → Notes or Notes → Web.
-
-## File placement and browser composition
-
-Choose co-location as the default. A built-in domain keeps PHP under `app/Domain/<Name>/Ui/` (Pages, Data, Http, and route registration) and Vue under `app/Domain/<Name>/Ui/resources/js/` (pages, sections and local components). Its normal Contracts and Api folders remain the domain's public business surface. A package keeps precisely the same relative Ui tree under its registered source root outside app. Modules do not copy files into app or the central pages folder.
-
-For existing Web pages, keep `resources/js/pages` working during migration. Existing Web-owned adapters for its approved Chat, Plans and Rules requirements remain valid; the design does not force a wholesale move of those pages. New owner contributions use the same catalog path as existing contributions. A future move of Plans presentation into Plans must update its one registration, routes and generated imports, not duplicate the page. Do not create two live route owners.
-
-Separate the shared browser kit from Web-specific page code: host-neutral controls, tokens and the section bridge are a public browser package exposed as `@journal/ui`. It may be implemented in a shared resources directory, but its contract belongs to the domain foundation's UI surface and it names no concrete domain. A contribution may import its own browser files, this kit, framework packages, its generated types and its generated route functions. It may not import another contribution's private Vue component or Web's private page code. Web may only reference generated neutral component keys for owners it does not require. The build-produced composition file is an explicit composition boundary, not permission for handwritten cross-owner imports.
-
-On Home, Web sends authorized section definitions and stable read URLs. Each generic section host lazy-loads its declared component and performs the contribution's read through that component's typed adapter; the owner endpoint returns typed Data. Web does not merge all owners' fields into HomePage. This independent read is a deliberate choice: one slow or failed section cannot make Home fail, and a retry can target that section. Shared page sections are browser-loaded with skeletons; full domain pages keep Inertia's page response and server rendering where already supported. A section read is not a mutation.
-
-The server resolves navigation hrefs using its named routes; the generic sidebar needs no imports of module route helpers. Owner Vue uses generated Wayfinder route functions for its own local links and forms. Page selection uses an explicit navigation key rather than prefix matching overlapping paths. Namespace each section's query state so one module's filters cannot overwrite another's, while preserving Home's existing conversation and plans query behavior. The shared bridge merges unrelated query keys and validates a module's query input server-side.
-
-## Vite, Wayfinder and generated types
-
-Generate a UI build manifest from the foundation's composed ProvidesPages and ProvidesSections declarations for exactly the domains and modules registered for that release. ProvidesNavigation supplies the structural tree; runtime visibility is never baked into assets. The manifest records owner roots, literal component import paths, component keys, contract version and a content hash. PHP generation runs before TypeScript and Vite and requires no current actor or database read. No separate provider, build-only module list or Core UI registry is allowed to become a second source of truth.
-
-Vite consumes an emitted import map with literal lazy imports for pages and sections. This supports roots outside app without a broad filesystem glob or HTTP-loaded executable plugin. The Inertia page resolver combines existing pages with these keyed module pages; server and client consume the same generated map. Unknown keys are build failures, not a runtime import constructed from request input. Expose only explicitly registered source roots to the dev server and watcher; the current vendor ignore must be narrowed for an actively developed installed module. Build the module CSS into the release and include those source roots in utility-class scanning. Use shared tokens and scoped styles so module CSS cannot repaint the shell. SSR components must not read browser-only APIs until mount.
-
-Every contribution's routes must be registered before Wayfinder generates. The current Vite Wayfinder integration remains the only route generator, with form variants. Generated route namespaces include the stable owner prefix, so two modules' index routes do not collide. Web's core routes such as login and home are reserved. Only browser GET routes appear as navigation targets; mutation routes have their own methods, CSRF protection and validation. Each owner controls its route implementation inside the mandatory browser middleware group.
-
-Extend TypeScript generation from today's app-only scan to the registered owners' declared Data roots, including external roots. Mark browser Data with TypeScript, keep hidden fields hidden, and retain decimal-string ids and omitted optional values. Generate owner-qualified output modules under `resources/js/types/generated/<owner>/`, plus a shared index for current Web compatibility. Two unrelated `IndexPage` names must not collide in a flat writer. Vue imports these generated shapes; it does not hand-write mirrors of PHP fields. Generate the component-to-props mapping alongside the import map so the owner adapter is type-checked against its component and response.
-
-Use the same manifest hash in the server catalog, built asset manifest and Inertia asset version. A release is not ready if component entries, routes, type output, CSS sources or contract versions disagree. The exact Inertia resolver hook and transformer writer integration must be confirmed by the implementing worker against installed package APIs; this design states the contract and makes no claim that the current config already supports external UI.
-
-## Live updates and actor scope
-
-Keep AppSidebarLayout as the sole owner of the authenticated connection and keep `PageChanged` on `journal.user.{id}` as the transport. Domains must not raise Web's event. Each owner listens to its own after-commit facts and calls Core's public `UiChanges` interface with its own contribution keys. Web supplies the implementation of that Core interface and converts invalidations into its own PageChanged broadcasts using Access's existing authorized audience. This interface call is a supplied service, not a domain emitting a Core extension event. It requires no new cross-domain dependency and no Web listener naming Notes facts.
-
-The owner-local listener is the declaration of which facts matter: for illustration, a Notes-owned published NoteSaved fact would invalidate `example.notes.index` and `example.notes.recent`. That event does not exist in the current Notes fixture. A listener hearing another domain's fact still needs its direct approved dependency and the owner's export, as doc 10 requires. Foreign class names do not appear in neutral manifest values to evade the rule.
-
-Extend the notification with safe contribution keys and the catalog revision, not records, titles, actor credentials or model objects. Only currently visible matching contributions reload. Coalesce a burst using the current 250 ms behavior; wait until form submission has completed so a reload cannot replace its errors. Keep an in-flight read counter per contribution and discard responses older than the latest read or from a previous viewer or route. A refresh updates server data without remounting keyed components. On reconnect, visibility return and explicit Refresh, re-read all visible contributions and the shell catalog to recover missed facts. The catalog revision is checked on ordinary navigation too.
-
-Broadcasts are hints, not durable delivery. The current facts have no replay or outbox; a process can die between commit and publication, and a failed subscriber can prevent later listeners. Do not promise exactly-once updates or immediate recovery from every loss. A failed broadcast must be logged and reads must reconcile state. A retry of a mutation is not a replay mechanism.
-
-Every page, section read and mutation runs `web`, authentication and `journal.user` before binding or resolving the scoped adapter. The actor remains the signed-in user even when an agent/session filter is selected. Verify that target through the domain export; request input is not authority. The same policy decides sidebar visibility, section visibility, endpoint access and actions, with every endpoint enforcing it again. Current owner-only access stays unchanged. A future wider audience must filter notification recipients as well as reads; metadata keys must not expose a hidden module to unauthorized viewers.
-
-Only immutable structural definitions are worker-lived. CurrentActor, permission results, UI readers, Data objects, filters and per-request caches are scoped and discarded between Octane requests. Never capture them in singleton constructors, boot closures, static maps or retained component definitions. Queue jobs resolve their own required state and do not reuse a web request's actor. Sign-out or viewer change leaves the old channel, cancels pending reads and timers, clears sensitive drafts and data, and loads a fresh catalog. Browser state is tab-local; server rendering never shares a module-level current viewer or live connection.
-
-## Installing and removing an external module
-
-Choose deployment-time integration, not runtime script installation. A trusted package supplies its Domain class implementing whichever of ProvidesNavigation, ProvidesPages and ProvidesSections it needs, plus exports, PHP adapters, Vue source, supported UI contract major and explicit asset dependencies. Its provider only binds the required services; it does not push UI into a second registry. The registered root is derived from its real descriptor as today. It is checked as an owner in both directions; putting code in vendor grants no exemption. The foundation reads these interfaces exactly as it does for built-in domains and refuses duplicate entries.
-
-Installation registers that descriptor beside domains, resolves declared package dependencies, generates the route/type/component manifest, builds assets and ships one matching release. Restart Octane and queue workers into that release. Only after readiness succeeds does the module enter the served catalog. If registration or build fails, retain the previous working release; never publish a half-present sidebar. Source inspection must reject duplicate keys, missing or reserved routes, unknown slots, wrong response/component types, unsupported UI contract versions and unapproved cross-owner access. A worker must extend architecture checks to these new seams and frontend imports; no checks were run for this design.
-
-Removal first disables the module in the served release's authorized catalog and routes, then ships the rebuilt release and restarts workers. Existing requests may complete under their old release; the client ignores removed contribution keys and old read responses after catalog reconciliation. Keep the previous static assets for active old tabs during the release transition, but deny removed routes on the current server. A matching queued invalidation for a removed key is ignored. Send a catalog-change hint when possible and reconcile on reconnect/navigation/focus; disconnected tabs cannot be updated instantly. Do not delete module records as part of UI removal. Data retention or uninstall migrations are a separate owner operation.
-
-Shared deployment metadata records which former registered routes now need the neutral unavailable response. A fresh arbitrary nonexistent URL remains an ordinary 404 with the same safe shell treatment. This avoids catching all route failures as module removal. An old client crossing asset versions is offered a reload with unsent work preserved; it is never made to execute a remote plugin from an unverified URL.
-
-## Evidence in the existing code
-
-| Finding | Evidence |
+| Kind | Proposed location |
 | --- | --- |
-| One persistent shell owns the live connection | `resources/js/layouts/app/AppSidebarLayout.vue:8-24`; `resources/js/composables/useLiveConnection.ts:11-33` |
-| Sidebar is a fixed 232 px list of three pages | `resources/js/components/shell/AppSidebar.vue:8-16`, `:29-64` |
-| Home has two hardcoded panes and preserves shared query state | `resources/js/components/home/HomePanes.vue:2-6`, `:14-36`; `resources/js/pages/Home.vue:8-18` |
-| Current page reload is whole page prop, coalesced and delayed during forms | `resources/js/composables/usePageChanges.ts:11-36`, `:51-59`, `:70-80` |
-| Web owns browser routes and its four declared dependencies | `app/Domain/Web/Routes/web.php:14-25`; `app/Domain/Web/WebDomain.php:25-35` |
-| Current notification carries no data and Web names the known facts | `app/Domain/Web/Events/PageChanged.php:15-42`; `app/Domain/Web/Listeners/BroadcastPageChange.php:10-38` |
-| Types currently scan app only with a flat writer | `app/Domain/Web/Types/TypeScriptServiceProvider.php:21-29` |
-| Vite has automatic Inertia integration and Wayfinder; vendor changes are ignored | `vite.config.ts:11-35`, `:37-50`; `resources/js/app.ts:9-16` |
-| External root discovery already follows the descriptor's file | `app/Domain/DomainEntry.php:35-58`; `app/Domain/DomainRegistry.php:103-105` |
-| Optional interfaces already belong on Domain classes | `app/Domain/Contracts/ProvidesStates.php:9-22`; `app/Domain/Tasks/TasksDomain.php:20`, `:52-54` |
-| The foundation discovers and reads optional state declarations | `app/Domain/DomainRegistry.php:84-97`; this is the chosen pattern for the three UI interfaces |
-| External Notes is a boundary fixture, not a UI module | `tests/Fixtures/Modules/Notes/NotesDomain.php:12-31`; `tests/Fixtures/Modules/Notes/NotesServiceProvider.php:10-18` |
-| Actor lifetime, authorized target and generated shapes are established requirements | `docs/web/boundary.md:5-17`, `:30-36`, `:59-65`, `:75-81` |
-| Existing boundary checks include outside modules, public signatures and scoped dependencies | `docs/hooks/dependencies.md:54-67`; journal doc 10 sections 9, 10 and 14 |
-| Facts are after commit with explicit failure and replay limits | `docs/hooks/public-events.md:3-7`, `:18-31` |
-| Version 5 declared entry, placement, events, skeleton and slots | `/Users/jessegall/projects/agent-journal/src/engine/viewer/window_declaration.py:28-65`, `:67-88` |
-| Version 5's external section fixture filled a named inspector slot | `/Users/jessegall/projects/agent-journal/tests/stories/fixtures/acme_plan_notes/module.py:14-23` |
-| Version 5 prototype loads the shared shell and successive visual refinements | `/Users/jessegall/projects/agent-journal/docs/designs/viewer-v5/prototype/Viewer v5.html:7-32`, `:43-75` |
-| Version 5 sidebar identity, groups and breadcrumb/search shell | `prototype/app.jsx:25-59` under that version 5 design folder; `prototype/styles.css:120-146` |
-| Exact dark palette, Geist type and spacing scale | `prototype/styles.css:1-19`; `prototype/palette.css:1-6` |
-| Exact light palette from the version 5 app | `/Users/jessegall/projects/agent-journal/src/viewer/src/light.css:1-51` |
-| Version 5 Home's status bands, split panes, tabs and chat geometry | `prototype/home-now.css:7-36`, `:75-110`; companion `prototype/home-now.jsx`; `prototype/round-fourteen.css` preserves the one-line facts treatment |
-| Version 5 page title and shared list/reader presentation | `prototype/layouts.jsx:46-49`; visually inspected `pages/r14-documents.png` |
-| Rendered Home reference actually inspected | `pages/home.png`, `pages/r14-home.png`, `pages/r14-home-plans.png`, `pages/r14-home-tasks.png` under the version 5 design folder |
+| Optional interfaces, PageReader, SectionReader, VisibilityCheck and ChangesPages marker | app/Domain/Contracts, matching App\Domain\Contracts namespace |
+| Immutable NavigationItem, PageDefinition, SectionDefinition, SlotDefinition, RouteDefinition, SectionResult and SlotContext | app/Domain/Ui/Data, matching App\Domain\Ui\Data namespace |
+| Derived UiCatalog and validation/composition support | app/Domain/Ui/Support, matching namespace |
+| Startup declaration failures | Existing app/Domain/Exceptions, under DomainDeclarationError |
+| Ordinary listeners | Registered owner's root Listeners folder, never Ui/Listeners |
 
-Version 5 is the visual reference as well as the reference for declarative ownership. This standalone design reproduces its measured appearance and embeds its existing Geist font asset. Its preview HTML and local interactions are newly authored; no version 5 application code was copied into the version 6 app.
+FolderLayoutTest checks loose files at immediate folder roots: there are no app/Domain/Ui/*.php files and no requested blanket exemption. BoundaryChecker already recognizes foundation names, so no namespace allowlist widening is needed. Public signature/event checks must explicitly permit these listed foundation contracts where necessary, particularly ChangesPages on exported facts; they still reject private type leaks. No Core notification interface or Core export is added.
 
-## Delivery and limits
+## Today's owners and the Chat example
 
-Only `docs/designs/domain-ui/index.html` and this design document were written. No app code, tests, build, package installation or deployment was changed or run. A worker is required to implement the three optional Domain interfaces, foundation catalog composition, recursive navigation, scoped owner adapters, route wrapping, browser import map, build/type discovery, live invalidation and architecture enforcement described here. There is no task list or implementation plan in this design. This revision follows message 1323: the Domain class declares its UI, and the foundation discovers it alongside ProvidesStates; no Core UI registry or provider-based UI registration remains.
+Declaring navigation does not silently transfer the approved ownership in docs/web/boundary.md.
 
-The local preview was redrawn for message 1350 using the version 5 shell, pane geometry, typography, spacing, light/dark tokens, rows, cards, badges and states. It retains expanded/collapsed nested navigation and all the Provides interface decisions. Version 5 reference PNGs were visually inspected, and the saved preview source was read; this helper has no browser tool, so the new HTML has not been rendered and pixel-level parity or runtime behavior has not been verified. No tests were run. The main agent republishes the page and can inspect its rendered preview. No hosted URL or pin is claimed by this helper.
+| Domain | What it declares | Status |
+| --- | --- | --- |
+| WebDomain | ProvidesPages for Home, Plans, Rules, Login; ProvidesNavigation for Home, Plans, Rules; Home and plan-reader slot definitions | Preserve current owners and URLs. Login has no navigation association. Remove sidebar's hardcoded list in favor of the catalog. |
+| ChatDomain | User's example: ProvidesPages for a new Chat page; ProvidesNavigation for Chat with Conversations and Saved conversations children; optionally ProvidesSections | New owner-controlled UI under the recommended boundary extension below. Existing Home chat initially remains Web-owned. |
+| PlansDomain | No duplicate page/navigation while Web owns Plans | Retains its business readers/actions. |
+| RulesDomain | No duplicate page/navigation while Web owns Rules | Retains its business readers/actions. |
+| External NotesDomain | Its own nested navigation, Notes page, Home notes section and plan-related notes section | Same interfaces under an outside-app registered root. |
+| Page-only Notes example | ProvidesPages only, for a note reader with no navigation association | No empty navigation method or invented key. |
+| Section-only example | ProvidesSections only | No fake page or sidebar entry. |
+
+A navigation item points only at a same-owner declared page. Chat cannot claim Web's Home entry as a shortcut. Content links to an already approved URL are not navigation ownership. PageDefinition.navigationKey is genuinely optional; supplied keys must identify a same-owner entry. A page-only reader keeps its title/breadcrumb with no selected sidebar row. A detail page may explicitly associate with its owner's parent entry.
+
+## Definitions and conventions
+
+| Definition | Shape |
+| --- | --- |
+| NavigationItem | Local key, label, optional shared icon/page key, order, optional VisibilityCheck and recursive child values. Page or children required. Parent denial prunes subtree; authorized empty page-less group disappears. Siblings sort by order then key. |
+| PageDefinition | Local key, title, component, PageReader class, optional navigation key/check, declarative routes and host slots. No listener references. |
+| SectionDefinition | Local key, title, component, host slot key, order, SectionReader class, optional destination/check and declared actions. No separate data endpoint. |
+| SlotDefinition | Host-owned key, label, placement (pane tab or inline record section), cardinality and exact typed context. |
+| RouteDefinition | Method, relative path/name, local controller/action class, owning page/section key and optional stronger check. No executable registrar. |
+| SectionResult | Ready with typed owner Data, or failed with safe error metadata. Omission means not visible. Log unexpected exceptions. |
+
+Derive prefix from the registered domain name, lowercased: chat, notes, web. Reject normalized collisions; the registry already rejects duplicate owners. No vendor-qualified UI namespace, owner contract version or independently declared source roots. Convention: each reflected owner root contains Ui/resources/js and Ui/Data. Web keeps its existing resources/js/pages compatibility path. Installed outside-app modules use the same relative paths.
+
+Keep reader implementations/controllers in kind folders under the owner's Ui. They may use their own Contracts and own code freely. Export an interface only when a different domain needs it; do not widen exports solely for a local presentation consumer. Foreign data still needs an approved direct dependency and exports, never private models/tables. Web reaches unknown owners solely through foundation readers.
+
+## Web registers guarded routes
+
+Web itself registers every RouteDefinition inside web, auth, journal.user and definition-aware visibility middleware. Owner code supplies values, never arbitrary Route::group code. For non-Web owners Web applies /ui/<owner>/ paths and <owner>. names, validates relative paths, rejects traversal/reserved names/collisions, and accepts no owner prefix override. Web's existing /, /plans, /rules and authentication routes are explicit compatibility exceptions, owned and registered once.
+
+Before private record binding or controller reads, middleware resolves the definition and its optional VisibilityCheck. Default is visible for the already authenticated permitted journal owner. Every declared mutation inherits its page/section check and may strengthen it; it cannot omit or weaken the guard. Domain actions still enforce record-level permission and invariants. A navigation-only check may hide a link further but grants no access; page checks gate every link to that page. Host composition runs a section check before its reader on all reloads; section actions use the same definition guard.
+
+This is one optional check, not a permission framework. The actor remains the signed-in user even when a target agent/session is selected. Denial removes protected data; directly forbidden/missing URLs reveal no private labels.
+
+## Sections stay in host Inertia props
+
+Keep one server-built page object. Its computed page.sections holds keyed SectionResult values. Web asks each visible SectionReader for typed Data through the foundation interface; a generated owner adapter supplies that Data as props to its Vue component. Web never inspects foreign fields.
+
+There is no custom section fetch, separate section read endpoint, browser request counter or new query protocol. Retain router.reload({ only: ['page'] }), the 250 ms gather and form-submit delay. Retry reloads the host page prop. Initial design uses synchronous assembly; do not promise unverified deferred-prop exception behavior or section-only reloads. Loading can be navigation/component-chunk loading. Deferred props are an optimization only after actual performance evidence and framework verification.
+
+Contain and log unexpected section-read failures with a failed result; do not blanket-catch authorization or a missing host record. A failed result may retain prior ready data only when the same response has confirmed visibility for the same viewer/context. Omission, denial, viewer change or target change clears it. Whole-page network failure keeps the existing page with a stale strip; 401/403 clears protected content. Vue rendering/chunk failures get a local boundary too, never an empty-data substitute.
+
+Keep keyed components mounted and preserve tab, filters, scroll, selection and drafts. Drafts are scoped by viewer/target; clear at sign-out. Ordinary asset-version reload can preserve unsent drafts in tab session storage and restore only after authentication, consistent with the current conversation composer.
+
+## Slot context and a record page
+
+Home's conversation and overview slots explicitly provide a validated selected-session value or NoSession. Resolve input ids through Core's exported SessionReader under the current actor before a section runs. A missing/ended/forbidden session is not permission to query all agents. Context compatibility is checked at declaration time; a section needing a selection shows Choose a session for NoSession.
+
+The plan reader exposes web.plan.details, drawn below its main reader text. Its context is a plan reference authorized by Web through Plans' exported reader: public id and approved display values, never an Eloquent model. Notes may read its own authorized notes linked to that opaque reference without inspecting Plans. If it wants additional plan data it needs an approved Notes → Plans dependency and exports; the slot does not grant one. Section actions re-resolve/authorize the host target through the host's foundation context-resolver contract, never trust browser ids, and then run their own record checks. This is an explicit host contract, not an indirect foreign table query.
+
+## Live updates without a Core UI service
+
+Remove Core UiChanges, invalidation keys and catalog revision. Preserve the empty PageChanged broadcast on journal.user.{id}. Choose a small foundation marker, App\Domain\Contracts\ChangesPages, for owner-published after-commit facts that can affect browser data. It has no methods, record keys or additional payload. Web's ordinary Listeners/BroadcastPageChange listens to this shared marker instead of naming all optional owners' facts, then produces its existing broadcast for Access's permitted audience.
+
+For a page-only module, exported NoteSaved implements ChangesPages and ShouldDispatchAfterCommit; no dummy section or extra page registration is required. Chat's committed message facts can do likewise. Owners never raise Web/Core events. Ordinary business listeners remain discovered exactly once from the root Listeners folder; no definitions list listener classes and no listener lives under Ui. Existing foreign-event listeners retain dependency/export requirements.
+
+This is a deliberate small foundation event-signature extension. PublicContract and event checks must explicitly recognize the listed marker and Web's interface listener. It needs no cross-owner container binding exception. Core gains no browser service. Empty notifications reload visible host props; keyed invalidation is deferred until cost justifies it. No outbox, durable delivery, replay or exactly-once promise. Reconnect, ordinary navigation and manual Refresh reconcile state.
+
+## Build integration
+
+One source of truth: registered Domain entries and their optional definitions. A generated literal import map is build output, not an availability service. Keep ordinary Inertia asset versioning; remove the second manifest-hash protocol.
+
+| Integration | Required integration |
+| --- | --- |
+| Vite | Literal imports for declared owner page/section paths; shared client/SSR resolver; validate existence and duplicate keys. Development access/watch only registered roots; narrow vendor ignore for developed modules. |
+| TypeScript | Generated includes for every registered Ui/resources/js/**/*.ts and **/*.vue plus existing resources includes; new files must be checked by vue-tsc. |
+| Inertia PHP | config/inertia.php paths/resolver recognizes the same namespaced component keys and roots. Keep testing.ensure_pages_exist enabled. Exact installed resolver API remains a worker verification item. |
+| Styles | Include registered paths in resources/css/app.css source scanning, scoped module styles and shared v5 tokens. No shell-wide owner styles. |
+| PHP types | Existing app-wide scan already covers built-in domain Data. Add registered external Data roots only. Owner-qualified output avoids short-name collisions; preserve hidden fields, optional omission and decimal-string ids. |
+| Imports | @journal/ui for shared kit; @journal/types/notes maps to resources/js/types/generated/notes; @journal/routes/notes maps to host resources/js/routes/notes. Configure both Vite and tsconfig aliases. Relative owner imports are allowed; @/ never grants Web-private access. |
+| Wayfinder | Generate after Web registers all declarations and guards. Owner route names yield owner modules; preserve existing form variants. Generic navigation uses server-resolved hrefs. |
+
+Generate routes/types and assets for one deployed code version. Worker verification must cover external-root inclusion, resolver/existence checks, type failures, SSR and boundary rules. No framework behavior is claimed verified by this design.
+
+## Install and removal are deploys
+
+A domain is a line in bootstrap/domains.php plus normal package/provider setup. Install/removal are matching code/assets deployments and worker restarts, not running UI operations. Switch traffic to a complete release atomically, drain old Octane/queue workers, retain old static assets for in-flight requests/old tabs. Already-running requests may finish under the previous release. Removal is confirmed only once new code serves traffic and old workers have drained.
+
+Fresh visits see new declarations. Existing tabs cross versions through normal Inertia asset-version reload. Removed URLs are ordinary 404s; Home omits removed declarations. No in-place disable, runtime catalog edit, former-route database, catalog-change hint, contract-major protocol or “module available” notice. Failure retains the previous working release. UI removal does not delete module records.
+
+## Questions for the user
+
+The main agent should present these choices. Review continues with the recommendations; they are not permission to change approved ownership.
+
+1. **Extend browser ownership?** Recommend: Web owns shell, shared pages, mandatory browser route registration and live transport; each domain/module owns the pages/sections/readers/controllers it declares. Alternative: keep all presentation in Web, which cannot support independent unknown modules without another approved adapter arrangement. This changes docs/web/boundary.md:129 and the “only place” ownership wording in app/Domain/Web/WebServiceProvider.php. State this boundary change explicitly before implementation.
+2. **Move today's existing presentation now?** Recommend keep current Home, Plans, Rules and Home chat in Web and register their existing owners first. Chat demonstrates a new owner page under the approved extension. Alternative: transfer current Plans/Rules/Chat presentation immediately, with controllers/routes, URL compatibility and one owner each. The proposed registry does not require that broader move.
+3. **Make Plans on Home a summary?** Recommend no: retain the full Plans tab, with contributed sections as sibling tabs. Alternative: approve a summary plus stacked sections and accept the change in full-height reader behavior. Revised visual uses the recommendation.
+
+No additional user-dependent choices are concealed as implementation details. API checks are evidence still needed, not a mandate to invent another data path.
+
+## Round 1 finding dispositions
+
+| Finding | Resolution |
+| --- | --- |
+| 61.1 Optional navigation | Changed: optional same-owner association; page-only preview has title/breadcrumb and no selected sidebar row. |
+| 61.2 Page-only refresh | Changed: no definition listener lists. ChangesPages and ordinary Web listener cover pages and sections equally. |
+| 61.3 Foundation folders | Changed: Data/Support subfolders; existing Domain/Exceptions. Core notification service removed. |
+| 61.4 Removal ordering | Changed: atomic release and draining; no in-place availability mutation. |
+| 61.5 Recovery previews | Added all listed recovery states, drawer and separate draft preservation. Requested browser inspection remains outstanding: no browser tool available and this helper runs no tests. Main agent must inspect before calling visual review complete. |
+| 63 G1 Chat/current owners | Added explicit declaration table and Chat preview; same-owner navigation. |
+| 63 G2 Owner metadata | Derive prefix/source roots from DomainEntry conventions; remove independent metadata/version. |
+| 63 G3 Record slot | Added plan-record section and authorized context. |
+| 63 K1 Layout test | Kind subfolders, existing exception hierarchy; no broad folder exemption or unnecessary namespace allowlist change. |
+| 63 K2 Web ownership | Explicit proposed boundary and both affected files; Questions 1–2 keep recommendation pending approval. |
+| 63 K3 Listeners | Root Listeners discovery only; no duplicate declaration references. |
+| 63 K4 Core UiChanges | Removed; shared foundation event marker avoids Core browser service and cross-owner bindings. Targeted public-signature/event support specified. |
+| 63 K5 Frontend setup | Added tsconfig, Inertia page existence, style scanning and exact generated alias paths. Built-in Data already covered by app scan. |
+| 63 K6 Cycles | Removed graph-cycle mechanism; nested values and duplicate-key rejection only. |
+| 63 A1 Visibility | Web attaches mandatory definition middleware before private binding/reads; section guard inside host composition. |
+| 63 A2 Context | Typed no-session/session/authorized record values, resolved under current actor and rechecked on actions. |
+| 63 A3 Route adapter | Removed executable registrar; Web controls path/name prefixes and guards. |
+| 63 S1 Missing states | Each state now represented, including stale failure, updating, denied action, Home removal and asset mismatch. |
+| 63 S2 Deep tree | Six levels, long labels, capped indentation, branch lines, constrained scroll area and full breadcrumb. |
+| 63 S3 Drawer | Modal open/closed previews, focus trap/restoration, Escape and inert background. |
+| 63 S4 Home summary | Full Plans tab retained; summary design is a non-recommended user option. |
+| 63 S5 Shell fidelity | Restore top-bar viewer, appearance and Sign out. Keep v5 bands/breadcrumbs because message 1350 asks for v5 appearance; mark these and Live/Refresh as proposed additions rather than current v6 behavior. |
+| 63 O1 Runtime modules | Deploy only; existing asset version and 404. Remove notices/catalog revisions/former routes/contract major. |
+| 63 O2 Second data path | Host page Data props, existing reload, no custom section fetch or unverified deferred behavior. |
+| 63 O3 Keyed invalidation | Removed; empty PageChanged and visible host-prop reload. |
+| 63 O4 Permission machinery | Optional VisibilityCheck, visible default behind current owner policy; PageReader/SectionReader replace vague UiContribution. |
+| 63 O5 Export restriction | Own Contracts and own code allowed; export only for foreign consumers. |
+| 63 O6 Vendor prefix | Registered domain-derived prefix with collision validation. |
+
+## Evidence and limits
+
+- app/Domain/Contracts/ProvidesStates.php:9–22 and DomainRegistry.php:84–97: optional interfaces and foundation discovery.
+- tests/Architecture/FolderLayoutTest.php:26–40; Support/FolderKind.php:16–47: kind placement. Support/BoundaryChecker.php:17–19 already recognizes foundation.
+- app/Domain/DomainEntry.php:35–58,126–133: reflected roots and conventions. bootstrap/domains.php:16–28: explicit installation list.
+- docs/web/boundary.md:122–131 and app/Domain/Web/WebServiceProvider.php: approved ownership, not silently superseded.
+- resources/js/components/shell/AppSidebar.vue:11–16; AppTopbar.vue:23–53: current navigation and viewer/appearance/sign-out.
+- resources/js/components/home/HomePanes.vue:28–36, components/plans/PlansView.vue and composables/usePageChanges.ts:51–59: full Plans pane and current page-prop reload.
+- app/Domain/Web/Types/TypeScriptServiceProvider.php:21–29; tsconfig.json:36–38,121–125; config/inertia.php:39–43,59–68: integration gaps.
+- docs/hooks/public-events.md:3–7,27–31 and doc 10: boundaries and after-commit limits.
+- Version 5 reference folder /Users/jessegall/projects/agent-journal/docs/designs/viewer-v5: read prototype/Viewer v5.html, styles.css, palette.css, home-now.css/.jsx, app.jsx, layouts.jsx and round-fourteen.css; inspected pages/home.png, r14-home.png, r14-home-plans.png, r14-home-tasks.png and r14-documents.png.
+- Light palette: /Users/jessegall/projects/agent-journal/src/viewer/src/light.css:1–51. External record-section example: that checkout's tests/stories/fixtures/acme_plan_notes/module.py:14–23.
+
+Only docs/designs/domain-ui files are edited. No app changes, tests, builds or deployment. Reference images were viewed; revised HTML has not been browser-rendered. Layout/runtime inspection remains outstanding for the main agent before visual acceptance. The main agent republishes; this helper claims no hosted URL or pin.
+
+## Changelog
+
+- Settled every finding from reports 61 and 63 and separated user ownership decisions.
+- Retained v5 appearance, recursive navigation and the three optional Provides interfaces.
+- Replaced loose foundation files, executable route registration, separate section fetches and runtime module machinery with kind folders, guarded route values, host props and deploys.
+- Added Web/Chat ownership examples, page-only navigation, plan context, every recovery preview, deeper nesting and mobile drawer.
