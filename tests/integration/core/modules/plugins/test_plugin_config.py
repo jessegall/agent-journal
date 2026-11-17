@@ -49,3 +49,11 @@ def test_a_config_file_that_does_not_exist_yet_is_served_as_nothing_and_taken_in
     (story.home.folder.parent / CONFIG["file"]).write_text(json.dumps(DOCUMENT))
     PluginConfigReading()(story.container)
     story.expect_rows(plugin_row(story).config_version == 1)
+
+
+def test_a_missing_schema_file_is_one_fault_and_never_an_error_of_the_tick(played):
+    story = configured_story(played)
+    (story.home.folder.parent / CONFIG["schema"]).unlink()
+    PluginConfigReading()(story.container)
+    PluginConfigReading()(story.container)
+    story.expect_rows("config schema .events/config.schema.json is not in the project" in plugin_row(story).last_fault, detail=plugin_row(story).last_fault)

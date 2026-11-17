@@ -35,6 +35,8 @@ class RefreshPluginConfigHandler(Handler[RefreshPluginConfig, Plugin]):
         plugin = self.queries.query(Plugin).find(command.plugin_id)
         config = self.config(plugin)
         file = self.home.project_folder / config.file
+        if not FileAccess.is_file(self.home.project_folder / config.schema):
+            return self.missing_schema(plugin, config, context)
         schema = self.schema(config)
         given_text = self.given_text(command, file)
         if given_text is not None:
@@ -76,6 +78,12 @@ class RefreshPluginConfigHandler(Handler[RefreshPluginConfig, Plugin]):
         if manifest is None or manifest.config is None:
             raise Refusal(f"the plugin {plugin.name} declares no config", "a plugin declares its config file and schema under config in its manifest")
         return manifest.config
+
+    def missing_schema(self, plugin: Plugin, config: ManifestConfig, context: Context) -> Plugin:
+        fault = f"its config schema {config.schema} is not in the project, so its config {config.file} is not read: the plugin writes the schema when it sets the project up"
+        if plugin.last_fault == fault:
+            return plugin
+        return self.bus.dispatch(RecordPluginFault(plugin.id, fault, False), context)
 
     def schema(self, config: ManifestConfig) -> JsonSchema:
         schema = json.loads(FileAccess.read(self.home.project_folder / config.schema))
