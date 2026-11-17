@@ -63,11 +63,31 @@ final readonly class BoundaryChecker
             return [];
         }
 
+        $violations = $this->eventViolations($use, $user, $owner);
+
         if ($user !== null && $user->requiresDomain($owner)) {
+            return $violations;
+        }
+
+        return [...$violations, new Violation($use->file, $use->line, $use->name, $userName, $owner->name, ViolationKind::UndeclaredDomain)];
+    }
+
+    /**
+     * Another domain's event is named only in a listener, and only to hear it. This limits naming, not data flow.
+     *
+     * @return list<Violation>
+     */
+    private function eventViolations(NameUse $use, ?DomainEntry $user, DomainEntry $owner): array
+    {
+        if (! $owner->ownsEvent($use->name)) {
             return [];
         }
 
-        return [new Violation($use->file, $use->line, $use->name, $userName, $owner->name, ViolationKind::UndeclaredDomain)];
+        if ($user !== null && $user->holdsListenerFile($use->file) && $use->kind->namesEventToHearIt()) {
+            return [];
+        }
+
+        return [new Violation($use->file, $use->line, $use->name, $user->name ?? self::SHARED_PLACE, $owner->name, ViolationKind::EventOutsideListener)];
     }
 
     /**

@@ -22,6 +22,17 @@ enum NameKind: string
     case Other = 'other';
 
     /**
+     * A listener may name another domain's event only to hear it: as an import, a type or ::class.
+     */
+    public function namesEventToHearIt(): bool
+    {
+        return match ($this) {
+            self::Import, self::Type, self::ClassName => true,
+            self::Construction, self::StaticAccess, self::Function, self::Constant, self::String, self::Other => false,
+        };
+    }
+
+    /**
      * The kind an import line gives its names: use function and use const import a function or a constant.
      */
     public static function forImportType(int $type): self

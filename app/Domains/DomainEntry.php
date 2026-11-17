@@ -75,6 +75,16 @@ final readonly class DomainEntry
         return stripos(ltrim($name, '\\'), $this->namespace.'\\') === 0;
     }
 
+    public function ownsEvent(string $name): bool
+    {
+        return stripos(ltrim($name, '\\'), $this->namespace.'\\Events\\') === 0;
+    }
+
+    public function holdsListenerFile(string $path): bool
+    {
+        return str_starts_with($path, $this->listenerFolder().DIRECTORY_SEPARATOR);
+    }
+
     public function holdsFile(string $path): bool
     {
         return str_starts_with($path, $this->folder.DIRECTORY_SEPARATOR);
