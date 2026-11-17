@@ -1,6 +1,8 @@
 from engine.enums.agent_role import AgentRole
 from engine.event.logged_event import LoggedEvent
 from engine.command.bus import Bus
+from engine.instruction.instruction_imports import InstructionImports
+from engine.journal.journal_home import JournalHome
 from engine.listener.commit.commit_listener import CommitListener
 from engine.module.module_actors import ModuleActors
 from core.modules.agents.commands.warn_instruction_imports.warn_instruction_imports import WarnInstructionImports
@@ -16,10 +18,10 @@ class InstructionImportsListener(CommitListener[SessionStarted]):
 
     name = "agents.instruction-imports"
 
-    def __init__(self, agents: AgentRows, bus: Bus, actors: ModuleActors) -> None:
-        self.agents, self.bus, self.actors = agents, bus, actors
+    def __init__(self, agents: AgentRows, bus: Bus, actors: ModuleActors, home: JournalHome) -> None:
+        self.agents, self.bus, self.actors, self.imports = agents, bus, actors, InstructionImports(home.project_folder)
 
     def handle(self, event: SessionStarted, logged: LoggedEvent) -> None:
         call = event.row
         if self.agents.find(call.session_agent_id).role == AgentRole.MAIN:
-            self.bus.run(WarnInstructionImports(call.session_agent_id), self.actors.actor(MODULE_NAME), cause_id=logged.id)
+            self.bus.run(WarnInstructionImports(call.session_agent_id, tuple(self.imports.faults())), self.actors.actor(MODULE_NAME), cause_id=logged.id)

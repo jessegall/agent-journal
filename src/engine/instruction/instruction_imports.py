@@ -8,14 +8,14 @@ from engine.instruction.instruction_import import InstructionImport
 
 INSTRUCTION_FILES = ("CLAUDE.md", "AGENTS.md")
 JOURNAL_FILE = "JOURNAL.md"
-SKIPPED_FOLDERS = frozenset((".git", ".journal", "node_modules", ".venv", "dist", "vendor"))
+ROOT_FILES = (*INSTRUCTION_FILES, str(Path(".claude") / "CLAUDE.md"))
 IMPORT_LINE = re.compile(r"^@(\S+\.md)\s*$", re.MULTILINE)
 
 
 class InstructionImports:
-    """The CLAUDE.md and AGENTS.md files of a project and the files they import with an @ line, which an agent
-    program reads into every context: an import named twice, or two files that import each other, puts the
-    same text into the context more than once."""
+    """The CLAUDE.md and AGENTS.md files in a project's root folder, with .claude/CLAUDE.md, and the files they
+    import with an @ line, which an agent program reads into every context: an import named twice, or two files
+    that import each other, puts the same text into the context more than once."""
 
     def __init__(self, root: Path) -> None:
         self.root = root
@@ -26,9 +26,7 @@ class InstructionImports:
         return [entry for entry in repeated if entry.count > 1 or entry.is_circular]
 
     def files(self) -> Iterator[Path]:
-        for folder, folders, names in FileAccess.walk_folders(self.root):
-            folders[:] = [name for name in folders if name not in SKIPPED_FOLDERS]
-            yield from (folder / name for name in names if name in INSTRUCTION_FILES)
+        return (self.root / name for name in ROOT_FILES if FileAccess.is_file(self.root / name))
 
     def imports(self, file: Path) -> Iterator[InstructionImport]:
         for name, count in Counter(self.import_names(file)).items():

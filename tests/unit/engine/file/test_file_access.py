@@ -99,3 +99,15 @@ def test_temporary_writer_creates_private_file_and_cleans_it(tmp_path):
         assert stat.S_IMODE(path.stat().st_mode) == 0o600
         assert files.read(path) == "temporary"
     assert not path.exists()
+
+
+def test_a_walk_past_its_folder_limit_is_refused_while_the_thread_holds_the_write_turn(tmp_path, monkeypatch):
+    from engine.database.errors.wait_during_write_turn_error import WaitDuringWriteTurnError
+    from engine.time.thread_turn_count import THREAD_TURN_COUNT
+    for name in ("a", "b", "c"):
+        (tmp_path / name).mkdir()
+    monkeypatch.setattr(file_module, "WALK_LIMIT_UNDER_WRITE_TURN_FOLDERS", 2)
+    assert len(list(FileAccess.walk_folders(tmp_path))) == 4
+    monkeypatch.setattr(THREAD_TURN_COUNT, "count", 1)
+    with pytest.raises(WaitDuringWriteTurnError):
+        list(FileAccess.walk_folders(tmp_path))

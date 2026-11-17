@@ -16,11 +16,13 @@ from engine.file.file_tally import FileTally
 from engine.file.versions.file_contents import FileContents
 from engine.file.versions.file_version import FileVersion
 from engine.file.versions.file_changes import FileChanges
+from engine.time.thread_turn_count import THREAD_TURN_COUNT
 
 FILE_READ_EVENT = "journal.file.read"
 FILE_CHANGE_EVENT = "journal.file.write"
 CACHE_SIZE_FILES = 256
 RESOLVED_PATH_COUNT = 8192
+WALK_LIMIT_UNDER_WRITE_TURN_FOLDERS = 20000
 
 
 
@@ -266,6 +268,8 @@ class FileAccess:
             if (status.st_dev, status.st_ino) in entered:
                 continue
             entered.add((status.st_dev, status.st_ino))
+            if len(entered) > WALK_LIMIT_UNDER_WRITE_TURN_FOLDERS:
+                THREAD_TURN_COUNT.refuse_wait(f"a walk past {WALK_LIMIT_UNDER_WRITE_TURN_FOLDERS} folders under {folder}")
             # the listing carries each entry's type, so telling folders from files reads nothing more from disk
             FileTally.note("listed entry", len(children))
             folder_names = [child.name for child in children if child.is_dir(follow_symlinks=False)]
