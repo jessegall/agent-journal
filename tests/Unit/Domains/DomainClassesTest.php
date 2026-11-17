@@ -29,7 +29,7 @@ final class DomainClassesTest extends TestCase
      */
     public static function domains(): iterable
     {
-        yield 'Tasks' => [TasksDomain::class, [], ['TaskStarted', 'TaskFinished', 'TaskBlocked', 'TaskCancelled', 'TaskProgressCounter', 'TaskProgress', 'TaskReader', 'TaskMissing']];
+        yield 'Tasks' => [TasksDomain::class, [], ['TaskStarted', 'TaskFinished', 'TaskBlocked', 'TaskCancelled', 'TaskProgressCounter', 'TaskProgress', 'TaskReader', 'TaskMissing', 'TaskAssignmentReader', 'TaskAssignmentCompletion']];
         yield 'Plans' => [PlansDomain::class, [TasksDomain::class], ['PlanStarted', 'PlanProgressChanged', 'PlanReader', 'PlanStarter', 'PlanMissing', 'StartDenied', 'PlanFilters', 'PlanList', 'PlanSelection', 'PlanCard', 'PlanProgress', 'PlanKind', 'PlanState']];
         yield 'Profiles' => [ProfilesDomain::class, [], []];
         yield 'Chat' => [ChatDomain::class, [], ['MessageSent', 'MessageAnswered', 'MessageDismissed', 'ConversationReader', 'MessageSender', 'Conversation', 'MessageView', 'MessageState', 'MessageBodyEmpty']];
