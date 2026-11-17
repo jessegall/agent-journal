@@ -86,7 +86,9 @@ final class UiManifestTest extends TestCase
         $this->assertStringContainsString("import type { RecentNotesData } from './shared';", $props);
         $this->assertStringContainsString("export type LibraryIndexPageProps = {\n    page: WindowResult<RecentNotesData>;", $props);
         $this->assertStringContainsString('window_shelf_index?: WindowResult<RecentNotesData>;', $props);
-        $this->assertStringContainsString("export const accepts_shelf_index: Accepts<ShelfIndexPageProps, typeof import('", $checks);
+        $this->assertStringContainsString("export const accepts_shelf_index: Accepts<{ data: RecentNotesData }, typeof import('", $checks);
+        $this->assertStringContainsString("import type { RecentNotesData } from './types/page-props';", $checks);
+        $this->assertStringContainsString("'library/Index',", File::get("{$this->root}/resources/js/generated/ui-manifest.ts"));
         $this->assertStringContainsString("Shelf/Resources/js/Index.vue').default> = true;", $checks);
     }
 

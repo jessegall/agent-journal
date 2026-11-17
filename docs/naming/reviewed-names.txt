@@ -732,6 +732,7 @@ class	ToolFinished
 class	ToolResult
 class	TypeOwners
 class	TypeScriptServiceProvider
+class	UiComponentFinder
 class	UiComponentMissing
 class	UiDeclarationMissing
 class	UiDeclarations
@@ -1912,6 +1913,7 @@ method	PageOption::key()
 method	PageOption::label()
 method	PagePropTypes::__construct()
 method	PagePropTypes::dataName()
+method	PagePropTypes::dataTypeOf()
 method	PagePropTypes::imports()
 method	PagePropTypes::pageProps()
 method	PagePropTypes::resultOf()
@@ -2589,6 +2591,8 @@ method	TypeOwners::ownerOf()
 method	TypeScriptServiceProvider::configure()
 method	TypeScriptServiceProvider::register()
 method	TypeScriptServiceProvider::sourceFolders()
+method	UiComponentFinder::__construct()
+method	UiComponentFinder::find()
 method	UiComponentMissing::at()
 method	UiComponentMissing::outsideOwner()
 method	UiDeclarationMissing::for()
@@ -2693,6 +2697,7 @@ method	WebDomain::exports()
 method	WebDomain::requires()
 method	WebServiceProvider::backWithError()
 method	WebServiceProvider::boot()
+method	WebServiceProvider::register()
 method	WindowResults::__construct()
 method	WindowResults::result()
 method	WorkingOnTaskState::__construct()
@@ -3571,6 +3576,8 @@ property	ToolFinished::$result
 property	ToolResult::$outcome
 property	ToolResult::$toolName
 property	TypeOwners::$owners
+property	UiComponentFinder::$declarations
+property	UiComponentFinder::$legacyPages
 property	UiDeclarations::$actions
 property	UiDeclarations::$navigation
 property	UiDeclarations::$owners

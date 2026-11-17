@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Support;
 
+use App\Domain\Declarations\RegisteredPage;
 use App\Domain\UiDeclarations;
 use App\Domain\Web\Exceptions\UiManifestInvalid;
 use App\Domain\Web\Types\PagePropTypes;
@@ -41,6 +42,7 @@ final readonly class UiManifest
             'resources/js/generated/ui-manifest.ts' => $this->render('ui-manifest.ts', [
                 'hash' => $hash,
                 'components' => array_map(fn (string $path) => '../../../'.$path, $components),
+                'declaredPages' => array_values(array_map(fn (RegisteredPage $page) => $page->componentName(), $this->declarations->pages())),
             ]),
             'tsconfig.domains.json' => $this->typeScriptConfig($hash, $folders),
             'vite.domains.ts' => $this->render('vite.domains.ts', [
@@ -58,7 +60,7 @@ final readonly class UiManifest
                 'pages' => $this->propTypes->pageProps(),
                 'windows' => $this->propTypes->windowProps(),
             ]),
-            'resources/js/generated/ui-prop-checks.ts' => $this->render('ui-prop-checks.ts', ['hash' => $hash, 'checks' => $this->propChecks($root)]),
+            'resources/js/generated/ui-prop-checks.ts' => $this->render('ui-prop-checks.ts', ['hash' => $hash, 'checks' => $this->propChecks($root), 'dataTypes' => array_values(array_unique(array_map($this->propTypes->dataTypeOf(...), array_values($this->declarations->pages()))))]),
             'bootstrap/cache/ui-components.php' => "<?php\n\nreturn ".var_export($components, true).";\n",
         ];
 
@@ -110,7 +112,7 @@ final readonly class UiManifest
         $checks = [];
 
         foreach ($this->declarations->pages() as $page) {
-            $checks['accepts_'.str_replace(['.', '-'], '_', $page->key)] = ['type' => $this->propTypes->typeName($page), 'path' => '../../../'.$this->fromRoot($root, $page->componentFile)];
+            $checks['accepts_'.str_replace(['.', '-'], '_', $page->key)] = ['type' => '{ data: '.$this->propTypes->dataTypeOf($page).' }', 'path' => '../../../'.$this->fromRoot($root, $page->componentFile)];
         }
 
         ksort($checks);
@@ -144,7 +146,7 @@ final readonly class UiManifest
      */
     private function aliases(array $folders): array
     {
-        $aliases = ['@kit' => 'resources/js', '@generated/types' => 'resources/js/generated/types', '@generated/routes' => 'resources/js/routes'];
+        $aliases = ['@kit' => 'resources/js/kit', '@generated/types' => 'resources/js/generated/types', '@generated/routes' => 'resources/js/routes'];
 
         foreach ($folders as $key => $path) {
             $aliases["@domain/{$key}"] = $path;
@@ -158,7 +160,7 @@ final readonly class UiManifest
      */
     private function typeScriptConfig(string $hash, array $folders): string
     {
-        $paths = ['@/*' => ['./resources/js/*'], '@kit/*' => ['./resources/js/*'], '@generated/types/*' => ['./resources/js/generated/types/*'], '@generated/routes/*' => ['./resources/js/routes/*']];
+        $paths = ['@/*' => ['./resources/js/*'], '@kit/*' => ['./resources/js/kit/*'], '@generated/types/*' => ['./resources/js/generated/types/*'], '@generated/routes/*' => ['./resources/js/routes/*']];
         $include = self::SHARED_INCLUDES;
 
         foreach ($folders as $key => $path) {

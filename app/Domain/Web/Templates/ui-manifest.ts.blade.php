@@ -8,4 +8,13 @@ export const components: Record<string, () => Promise<{ default: unknown }>> = {
 @endforeach
 };
 
+/**
+ * The declared pages: each is shown inside the page host, which hands it its reader's Data.
+ */
+export const declaredPages = new Set<string>([
+@foreach ($declaredPages as $name)
+    '{!! $name !!}',
+@endforeach
+]);
+
 export const manifestHash = '{{ $hash }}';

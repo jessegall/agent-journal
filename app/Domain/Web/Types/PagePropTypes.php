@@ -80,6 +80,14 @@ final readonly class PagePropTypes
         return array_map(fn (array $names) => array_values(array_unique($names)), $imports);
     }
 
+    /**
+     * The TypeScript name of the Data a page's component receives as its one data prop.
+     */
+    public function dataTypeOf(RegisteredPage $page): string
+    {
+        return $this->dataName($page->reader->dataClass);
+    }
+
     public function typeName(RegisteredPage $page): string
     {
         return Str::studly(str_replace('.', '-', $page->key)).'PageProps';

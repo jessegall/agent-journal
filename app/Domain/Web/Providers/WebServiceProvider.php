@@ -11,12 +11,14 @@ use App\Domain\Plans\Exceptions\PlanMissing;
 use App\Domain\Plans\Exceptions\StartDenied;
 use App\Domain\Rules\Exceptions\RuleMissing;
 use App\Domain\Rules\Exceptions\RuleNotProposed;
+use App\Domain\UiDeclarations;
 use App\Domain\Web\Console\GenerateUiManifest;
 use App\Domain\Web\Events\UserChannel;
 use App\Domain\Web\Http\Middleware\CheckPageVisibility;
 use App\Domain\Web\Models\Layout;
 use App\Domain\Web\Models\Support\ViewerScope;
 use App\Domain\Web\Support\DeclaredRoutes;
+use App\Domain\Web\Support\UiComponentFinder;
 use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
@@ -26,6 +28,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\View\FileViewFinder;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -36,6 +39,15 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class WebServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        // Inertia's page check reads the declared components, and today's pages through its usual finder.
+        $this->app->bind('inertia.view-finder', fn ($app) => new UiComponentFinder(
+            $app->make(UiDeclarations::class),
+            new FileViewFinder($app['files'], $app['config']->get('inertia.pages.paths'), $app['config']->get('inertia.pages.extensions')),
+        ));
+    }
+
     public function boot(ExceptionHandler $exceptions, BroadcastManager $broadcast, LinkTypes $links, Dispatcher $events, Router $router, DeclaredRoutes $declaredRoutes): void
     {
         $links->register(['web.layout' => Layout::class]);

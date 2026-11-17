@@ -6,7 +6,7 @@
                 "./resources/js/*"
             ],
             "@kit/*": [
-                "./resources/js/*"
+                "./resources/js/kit/*"
             ],
             "@generated/types/*": [
                 "./resources/js/generated/types/*"

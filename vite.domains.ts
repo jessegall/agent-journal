@@ -5,7 +5,7 @@
  * types and routes.
  */
 export const domainAliases: Record<string, string> = {
-    '@kit': 'resources/js',
+    '@kit': 'resources/js/kit',
     '@generated/types': 'resources/js/generated/types',
     '@generated/routes': 'resources/js/routes',
 };
