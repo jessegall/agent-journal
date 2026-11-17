@@ -225,6 +225,9 @@ class	AnsweringMessageState
 class	AnsweringMessageStateFactory
 class	AnsweringMessageStateReference
 class	AppServiceProvider
+class	AssignPlanWorkCommand
+class	AssignPlanWorkController
+class	AssignPlanWorkRequest
 class	AssignRecordCommand
 class	AssignRecordController
 class	AssignRecordRequest
@@ -381,6 +384,7 @@ class	InspectedCall
 class	InspectedFrame
 class	InspectedSubject
 class	InterfacePlacement
+class	InvalidActorText
 class	InvalidAssignmentIdentity
 class	InvalidAssignmentPage
 class	InvalidBottomState
@@ -482,6 +486,7 @@ class	PlanRecords
 class	PlanSelection
 class	PlanStarted
 class	PlanTasksSeeder
+class	PlanWorkResultData
 class	PlansController
 class	PlansDomain
 class	PlansPage
@@ -519,6 +524,9 @@ class	RaisePlanProgressChanged
 class	ReadOnlyHelperReadyState
 class	ReadyState
 class	Reason
+class	ReassignPlanWorkCommand
+class	ReassignPlanWorkController
+class	ReassignPlanWorkRequest
 class	ReassignRecordCommand
 class	ReassignRecordController
 class	ReassignRecordRequest
@@ -666,6 +674,9 @@ class	TestDatabaseTraits
 class	ToolFinished
 class	ToolResult
 class	TypeScriptServiceProvider
+class	UnassignPlanWorkCommand
+class	UnassignPlanWorkController
+class	UnassignPlanWorkRequest
 class	UnassignRecordCommand
 class	UnassignRecordController
 class	UnassignRecordRequest
@@ -873,6 +884,8 @@ method	ActorContext::requireAgent()
 method	ActorContext::requireUser()
 method	ActorContextMissing::forRequest()
 method	ActorIdentity::__construct()
+method	ActorIdentity::asFields()
+method	ActorIdentity::fromText()
 method	ActorIdentity::isSameAs()
 method	ActorIdentity::of()
 method	ActorStore::actor()
@@ -1006,6 +1019,9 @@ method	AnsweringMessageStateReference::forMessage()
 method	AppServiceProvider::boot()
 method	AppServiceProvider::configureDefaults()
 method	AppServiceProvider::register()
+method	AssignPlanWorkCommand::handle()
+method	AssignPlanWorkController::__invoke()
+method	AssignPlanWorkRequest::rules()
 method	AssignRecordCommand::handle()
 method	AssignRecordController::__invoke()
 method	AssignRecordRequest::rules()
@@ -1512,7 +1528,7 @@ method	InspectedFrame::fromFrameRecord()
 method	InspectedSubject::__construct()
 method	InterfacePlacement::interfacesDeclaredIn()
 method	InterfacePlacement::misplacedIn()
-method	InvalidAssignmentIdentity::forActorText()
+method	InvalidActorText::for()
 method	InvalidAssignmentIdentity::forId()
 method	InvalidAssignmentIdentity::forReference()
 method	InvalidAssignmentIdentity::forType()
@@ -1781,6 +1797,8 @@ method	PlanState::canStart()
 method	PlanState::hasEnded()
 method	PlanTasksSeeder::exampleTaskIds()
 method	PlanTasksSeeder::tasks()
+method	PlanWorkResultData::__construct()
+method	PlanWorkResultData::of()
 method	PlansController::__construct()
 method	PlansController::index()
 method	PlansDomain::assignables()
@@ -1888,7 +1906,6 @@ method	RaisePlanProgressChanged::__construct()
 method	RaisePlanProgressChanged::handle()
 method	ReadOnlyHelperReadyState::onFileEdit()
 method	ReadOnlyHelperReadyState::onShellCommand()
-method	ReadsAssignmentArguments::actorFields()
 method	ReadsAssignmentArguments::recordFields()
 method	ReadsAssignmentInput::expected()
 method	ReadsAssignmentInput::expectedRules()
@@ -1898,6 +1915,12 @@ method	ReadsAssignmentInput::record()
 method	ReadsAssignmentInput::recordRules()
 method	ReadsPlanFilters::planFilterRules()
 method	ReadsPlanFilters::planFilters()
+method	ReadsPlanWorkInput::expectedRoot()
+method	ReadsPlanWorkInput::expectedRootRules()
+method	ReadsPlanWorkInput::recipient()
+method	ReadsPlanWorkInput::recipientRules()
+method	ReadsPlanWorkInput::rootRecord()
+method	ReadsPlanWorkInput::rootRules()
 method	ReadsRuleFilters::ruleFilterRules()
 method	ReadsRuleFilters::ruleFilters()
 method	ReadyState::onCompaction()
@@ -1913,6 +1936,9 @@ method	ReadyStateType::newState()
 method	ReadyStateType::schemaVersion()
 method	ReadyStateType::stateFor()
 method	Reason::__construct()
+method	ReassignPlanWorkCommand::handle()
+method	ReassignPlanWorkController::__invoke()
+method	ReassignPlanWorkRequest::rules()
 method	ReassignRecordCommand::handle()
 method	ReassignRecordController::__invoke()
 method	ReassignRecordRequest::rules()
@@ -2032,6 +2058,7 @@ method	SendMessage::__construct()
 method	SendMessage::send()
 method	SendMessageController::__construct()
 method	SendMessageController::__invoke()
+method	SendsPlanWorkCommands::sendCascade()
 method	SendsSignedCalls::sendAndPrint()
 method	SequenceRecords::followedBy()
 method	SequenceRecords::get()
@@ -2289,6 +2316,9 @@ method	ToolFinished::identity()
 method	ToolFinished::methodName()
 method	ToolResult::__construct()
 method	TypeScriptServiceProvider::configure()
+method	UnassignPlanWorkCommand::handle()
+method	UnassignPlanWorkController::__invoke()
+method	UnassignPlanWorkRequest::rules()
 method	UnassignRecordCommand::handle()
 method	UnassignRecordController::__invoke()
 method	UnassignRecordRequest::rules()
@@ -2406,6 +2436,8 @@ property	AgentStateMachine::$rewrite
 property	AgentStateMachine::$transaction
 property	AnsweringMessageState::$message
 property	AnsweringMessageStateFactory::$messages
+property	AssignPlanWorkCommand::$description
+property	AssignPlanWorkCommand::$signature
 property	AssignRecordCommand::$description
 property	AssignRecordCommand::$signature
 property	AssignedPlanCardData::$holder
@@ -2797,6 +2829,11 @@ property	PlanSelection::$isInsideFilter
 property	PlanSelection::$wasRequested
 property	PlanStarted::$planId
 property	PlanStarted::$startedBy
+property	PlanWorkResultData::$cascade
+property	PlanWorkResultData::$changed
+property	PlanWorkResultData::$root
+property	PlanWorkResultData::$skipped
+property	PlanWorkResultData::$unchanged
 property	PlansController::$inertia
 property	PlansPage::$filters
 property	PlansPage::$plans
@@ -2848,6 +2885,8 @@ property	PushTaskState::$stacks
 property	PushTaskState::$tasks
 property	RaisePlanProgressChanged::$events
 property	Reason::$text
+property	ReassignPlanWorkCommand::$description
+property	ReassignPlanWorkCommand::$signature
 property	ReassignRecordCommand::$description
 property	ReassignRecordCommand::$signature
 property	RecordHolderData::$holder
@@ -3072,6 +3111,8 @@ property	ToolFinished::$hook
 property	ToolFinished::$result
 property	ToolResult::$outcome
 property	ToolResult::$toolName
+property	UnassignPlanWorkCommand::$description
+property	UnassignPlanWorkCommand::$signature
 property	UnassignRecordCommand::$description
 property	UnassignRecordCommand::$signature
 property	UnjudgedCall::$reply
@@ -3118,6 +3159,8 @@ trait	PasswordValidationRules
 trait	ReadsAssignmentArguments
 trait	ReadsAssignmentInput
 trait	ReadsPlanFilters
+trait	ReadsPlanWorkInput
 trait	ReadsRuleFilters
 trait	RendersRefusal
+trait	SendsPlanWorkCommands
 trait	SendsSignedCalls

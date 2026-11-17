@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Core\Assignments\Console;
 
+use App\Core\Actors\Exceptions\InvalidActorText;
+use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Agents\Console\Concerns\SendsSignedCalls;
 use App\Core\Agents\Contracts\AgentRequestSender;
 use App\Core\Assignments\Console\Concerns\ReadsAssignmentArguments;
-use App\Core\Assignments\Exceptions\InvalidAssignmentIdentity;
 use Illuminate\Console\Command;
 
 /**
@@ -25,8 +26,8 @@ final class AssignRecordCommand extends Command
     public function handle(AgentRequestSender $journal): int
     {
         try {
-            $body = [...$this->recordFields(), ...$this->actorFields('to', 'recipient')];
-        } catch (InvalidAssignmentIdentity $invalid) {
+            $body = [...$this->recordFields(), ...ActorIdentity::fromText((string) $this->option('to'))->asFields('recipient')];
+        } catch (InvalidActorText $invalid) {
             $this->error($invalid->getMessage());
 
             return self::FAILURE;

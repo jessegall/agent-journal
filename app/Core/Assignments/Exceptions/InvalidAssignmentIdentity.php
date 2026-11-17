@@ -26,11 +26,6 @@ final class InvalidAssignmentIdentity extends InvalidArgumentException
         return new self("An assignment reference is a positive whole number; {$id} is not one.");
     }
 
-    public static function forActorText(string $text): self
-    {
-        return new self("An actor is written as kind:id, such as agent:12 or user:1; \"{$text}\" is not.");
-    }
-
     protected function status(): int
     {
         return 422;

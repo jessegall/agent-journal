@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Core\Assignments\Console;
 
+use App\Core\Actors\Exceptions\InvalidActorText;
 use App\Core\Agents\Console\Concerns\SendsSignedCalls;
 use App\Core\Agents\Contracts\AgentRequestSender;
 use App\Core\Assignments\Console\Concerns\ReadsAssignmentArguments;
-use App\Core\Assignments\Exceptions\InvalidAssignmentIdentity;
 use Illuminate\Console\Command;
 
 /**
@@ -26,7 +26,7 @@ final class ShowAssignmentCommand extends Command
     {
         try {
             $body = $this->recordFields();
-        } catch (InvalidAssignmentIdentity $invalid) {
+        } catch (InvalidActorText $invalid) {
             $this->error($invalid->getMessage());
 
             return self::FAILURE;

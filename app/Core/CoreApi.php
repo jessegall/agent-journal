@@ -7,6 +7,7 @@ namespace App\Core;
 use App\Core\Actors\Enums\ActorKind;
 use App\Core\Actors\Exceptions\ActorContextMissing;
 use App\Core\Actors\Exceptions\AgentActorRequired;
+use App\Core\Actors\Exceptions\InvalidActorText;
 use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Actors\Support\ActorContext;
 use App\Core\Actors\Support\ActorIdentity;
@@ -44,6 +45,7 @@ use App\Core\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Core\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Core\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Core\Assignments\Exceptions\RecordUnavailable;
+use App\Core\Assignments\Http\Data\RecordHolderData;
 use App\Core\Assignments\Models\Support\AssignableListing;
 use App\Core\Assignments\Support\AssigneeList;
 use App\Core\Assignments\Support\AssigneeName;
@@ -246,6 +248,8 @@ final class CoreApi
             RecordUnavailable::class,
             AssignmentRootFinished::class,
             AssignmentData::class,
+            RecordHolderData::class,
+            InvalidActorText::class,
             AgentRequestSender::class,
             AgentRequestFailed::class,
             AgentReply::class,

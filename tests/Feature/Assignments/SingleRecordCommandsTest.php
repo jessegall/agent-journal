@@ -6,17 +6,14 @@ namespace Tests\Feature\Assignments;
 
 use App\Core\Agents\Models\Agent;
 use App\Core\Agents\Models\AgentSession;
-use App\Core\Agents\Support\AgentClientSettings;
 use App\Core\Assignments\Models\AssignmentRecord;
-use App\Core\Contracts\CurrentActorSetter;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
 use App\Domain\Tasks\Models\Task;
-use Illuminate\Http\Client\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\SendsSignedCalls;
 use Tests\TestCase;
 
 /**
@@ -27,6 +24,7 @@ use Tests\TestCase;
 final class SingleRecordCommandsTest extends TestCase
 {
     use CommitsHookRows;
+    use SendsSignedCalls;
 
     private const array TABLES = ['users', 'agents', 'agent_sessions', 'launch_credentials', 'tasks', 'assignments'];
 
@@ -100,7 +98,7 @@ final class SingleRecordCommandsTest extends TestCase
 
     public function test_the_commands_send_the_same_calls_and_fail_on_a_refusal(): void
     {
-        $this->useLaunch($this->main);
+        $this->runCommandsAs($this->main->token);
 
         $this->artisan('assignment:assign', ['type' => 'tasks.task', 'id' => $this->task->id, '--to' => "agent:{$this->helper->agent->id}", '--json' => true])
             ->expectsOutputToContain('"changed":1')->assertExitCode(0);
@@ -118,38 +116,5 @@ final class SingleRecordCommandsTest extends TestCase
     private function callAs(TestLaunch $launch, string $command, array $body): TestResponse
     {
         return $this->signed($launch, "/agent/assignments/{$command}", $body);
-    }
-
-    /**
-     * @param  array<string, mixed>  $body
-     */
-    private function signed(TestLaunch $launch, string $path, array $body): TestResponse
-    {
-        $this->app->make(CurrentActorSetter::class)->clear();
-        $this->app->forgetScopedInstances();
-        $content = json_encode((object) $body) ?: '{}';
-
-        return $this->call('POST', $path, server: $launch->serverHeaders($content, 'call-'.bin2hex(random_bytes(4))), content: $content);
-    }
-
-    /**
-     * Gives the commands the launch's settings and sends their signed calls through the application's own HTTP kernel.
-     */
-    private function useLaunch(TestLaunch $launch): void
-    {
-        $this->app->instance(AgentClientSettings::class, new AgentClientSettings('http://journal.test', $launch->token));
-        Http::fake(function (Request $request) {
-            $server = ['CONTENT_TYPE' => 'application/json'];
-
-            foreach ($request->headers() as $name => $values) {
-                $server['HTTP_'.strtoupper(str_replace('-', '_', $name))] = $values[0];
-            }
-
-            $this->app->make(CurrentActorSetter::class)->clear();
-            $this->app->forgetScopedInstances();
-            $response = $this->call('POST', (string) parse_url($request->url(), PHP_URL_PATH), server: $server, content: $request->body());
-
-            return Http::response((string) $response->getContent(), $response->getStatusCode());
-        });
     }
 }

@@ -8,18 +8,17 @@ use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Agents\Exceptions\LaunchSettingMissing;
 use App\Core\Agents\Support\AgentClientSettings;
 use App\Core\Assignments\Contracts\AssignmentWriter;
-use App\Core\Contracts\CurrentActorSetter;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
 use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Tasks\Models\Task;
 use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\Process\Process;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\SendsSignedCalls;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
@@ -31,6 +30,7 @@ use Tests\TestCase;
 final class AssignedListCommandsTest extends TestCase
 {
     use CommitsHookRows;
+    use SendsSignedCalls;
     use StartsAgentRequests;
 
     private const array TABLES = ['users', 'agents', 'agent_sessions', 'launch_credentials', 'tasks', 'plans', 'assignments'];
@@ -54,7 +54,7 @@ final class AssignedListCommandsTest extends TestCase
         $plan = Plan::query()->create(['title' => 'Release', 'kind' => PlanKind::Build]);
         $held = $writer->assign($task->assignmentIdentity(), ActorIdentity::of($this->caller->agent))->outcomes[0]->current->get();
         $writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->caller->agent));
-        $this->useLaunchToken($this->caller->token);
+        $this->runCommandsAs($this->caller->token);
 
         $this->artisan('task:assigned')
             ->expectsTable(['Id', 'Title', 'State', 'Holder', 'Reference'], [
@@ -69,17 +69,17 @@ final class AssignedListCommandsTest extends TestCase
 
     public function test_an_agent_holding_nothing_succeeds_with_an_empty_list(): void
     {
-        $this->useLaunchToken($this->caller->token);
+        $this->runCommandsAs($this->caller->token);
 
         $this->artisan('task:assigned')->expectsOutputToContain('Page 1: 0 of 0')->assertExitCode(0);
     }
 
     public function test_a_refusal_or_an_unreachable_journal_fails_without_showing_the_token(): void
     {
-        $this->useLaunchToken('not-a-launch-token');
+        $this->runCommandsAs('not-a-launch-token');
         $this->artisan('task:assigned')->expectsOutputToContain('The journal refused the call (401)')->doesntExpectOutputToContain('not-a-launch-token')->assertExitCode(1);
 
-        $this->useLaunchToken($this->caller->token);
+        $this->runCommandsAs($this->caller->token);
         $this->artisan('plan:assigned', ['--per-page' => 101])->expectsOutputToContain('(422)')->assertExitCode(1);
 
         Http::fake(fn () => throw new ConnectionException('Connection refused'));
@@ -95,26 +95,5 @@ final class AssignedListCommandsTest extends TestCase
 
         $this->assertNotSame(0, $process->getExitCode());
         $this->assertStringContainsString('JOURNAL_URL', $process->getOutput().$process->getErrorOutput());
-    }
-
-    /**
-     * Gives the commands the launch's settings and sends their signed calls through the application's own HTTP kernel.
-     */
-    private function useLaunchToken(string $token): void
-    {
-        $this->app->instance(AgentClientSettings::class, new AgentClientSettings('http://journal.test', $token));
-        Http::fake(function (Request $request) {
-            $server = ['CONTENT_TYPE' => 'application/json'];
-
-            foreach ($request->headers() as $name => $values) {
-                $server['HTTP_'.strtoupper(str_replace('-', '_', $name))] = $values[0];
-            }
-
-            $this->app->make(CurrentActorSetter::class)->clear();
-            $this->app->forgetScopedInstances();
-            $response = $this->call('POST', (string) parse_url($request->url(), PHP_URL_PATH), server: $server, content: $request->body());
-
-            return Http::response((string) $response->getContent(), $response->getStatusCode());
-        });
     }
 }
