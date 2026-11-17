@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks;
 
+use App\Core\Hooks\Contracts\ReminderContribution;
+
 /**
  * The reminders the owning domains give an agent after its context was compacted, in the order they were added.
  */
-final class CompactionReminders
+final class CompactionReminders implements ReminderContribution
 {
     /**
      * @var list<string>

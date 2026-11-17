@@ -19,10 +19,12 @@ use App\Core\Hooks\Contracts\AgentStack;
 use App\Core\Hooks\Contracts\Answer;
 use App\Core\Hooks\Contracts\HookAnswerer;
 use App\Core\Hooks\Contracts\HookInput;
+use App\Core\Hooks\Contracts\ReminderContribution;
 use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Hooks\Contracts\StackChange;
 use App\Core\Hooks\Contracts\StackEditor;
 use App\Core\Hooks\Contracts\StackWork;
+use App\Core\Hooks\Contracts\StateRegistration;
 use App\Core\Hooks\Contracts\StateType;
 use App\Core\Hooks\Contracts\UserStack;
 use App\Core\Hooks\Decisions\AnswerKind;
@@ -36,6 +38,8 @@ use App\Core\Hooks\Exceptions\StackLockTimedOut;
 use App\Core\Hooks\Exceptions\StackTargetRefused;
 use App\Core\Hooks\Exceptions\StackTransactionRequired;
 use App\Core\Hooks\Exceptions\StateSubjectMissing;
+use App\Core\Hooks\Exceptions\StateTypeRepeated;
+use App\Core\Hooks\Exceptions\StateTypesFrozen;
 use App\Core\Hooks\Inputs\CommandEffect;
 use App\Core\Hooks\Inputs\CommandKind;
 use App\Core\Hooks\Inputs\CommandPart;
@@ -144,6 +148,10 @@ final class CoreApi
             ToolOutcome::class,
             ContextWasCompacted::class,
             StateTypesRequested::class,
+            StateRegistration::class,
+            ReminderContribution::class,
+            StateTypeRepeated::class,
+            StateTypesFrozen::class,
             OwnedByOneAgent::class,
             Linkable::class,
             LinkAccess::class,
