@@ -25,6 +25,7 @@ final class HooksServiceProvider extends ServiceProvider
     {
         $this->app->singleton(StateTypes::class);
         $this->app->scoped(StateFactory::class, RegisteredStateFactory::class);
+        $this->app->singleton(OperationDeadline::class, fn () => new OperationDeadline($this->app->make('config')->integer('hooks.operation_deadline_milliseconds')));
         $this->app->singleton(HookRetryWindow::class, fn () => new HookRetryWindow($this->app->make('config')->integer('hooks.retry_seconds')));
     }
 

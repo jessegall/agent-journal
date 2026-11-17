@@ -6,6 +6,7 @@ namespace App\Domain\Hooks;
 
 use App\Domain\Agents\AgentContext;
 use App\Domain\Hooks\Inputs\HookIdentity;
+use App\Domain\Hooks\States\ReadyStateType;
 use App\Domain\Hooks\Storage\StackTarget;
 use Carbon\CarbonImmutable;
 
@@ -22,6 +23,24 @@ final readonly class StackAccess
     public function target(): StackTarget
     {
         return new StackTarget($this->context->agentId, $this->context->sessionId);
+    }
+
+    /**
+     * The bottom state the calling agent's role has.
+     */
+    public function role(): ReadyStateType
+    {
+        return ReadyStateType::forKey($this->context->role);
+    }
+
+    /**
+     * Refuses a stack other than the calling agent's own.
+     */
+    public function checkTarget(StackTarget $target): void
+    {
+        if ($target != $this->target()) {
+            throw StackTargetRefused::forTarget($target);
+        }
     }
 
     public function hookIdentity(): HookIdentity

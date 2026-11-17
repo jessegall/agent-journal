@@ -9,4 +9,9 @@ return [
     */
     'retry_seconds' => (int) env('HOOK_RETRY_SECONDS', 300),
 
+    /*
+    | How long one stack operation outside a hook, such as a domain pushing a state, may take before it is rolled back, in milliseconds.
+    */
+    'operation_deadline_milliseconds' => (int) env('HOOK_OPERATION_DEADLINE_MILLISECONDS', 5000),
+
 ];

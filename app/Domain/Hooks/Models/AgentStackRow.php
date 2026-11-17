@@ -8,6 +8,7 @@ use App\Domain\Hooks\Storage\FrameRecords;
 use App\Domain\Hooks\Storage\FrameRecordsCast;
 use App\Domain\Hooks\Storage\StackStatus;
 use App\Domain\Hooks\Storage\StackTarget;
+use App\Domain\Hooks\Storage\StoredFrames;
 use App\Domain\Links\Linkable;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -44,6 +45,29 @@ final class AgentStackRow extends Model
         $this->frames = $frames;
         $this->status = StackStatus::Active;
         $this->save();
+    }
+
+    /**
+     * Inserts the stack of the target unless one exists; a racing insert is skipped by the database, never raised.
+     */
+    public static function insertIfMissing(StackTarget $target, FrameRecords $frames): void
+    {
+        $now = CarbonImmutable::now();
+
+        self::query()->withoutGlobalScope(AgentSessionScope::class)->insertOrIgnore([
+            'agent_id' => $target->agentId,
+            'session_id' => $target->sessionId,
+            'version' => 1,
+            'frames' => StoredFrames::fromFrameRecords($frames)->toJson(),
+            'status' => StackStatus::Active->value,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === StackStatus::Active;
     }
 
     public function saveFrames(FrameRecords $frames): void
