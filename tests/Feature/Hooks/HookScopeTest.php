@@ -4,29 +4,28 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Domain\Agents\AgentContext;
-use App\Domain\Agents\AgentContextMissing;
-use App\Domain\Agents\SignedCall;
-use App\Domain\Hooks\Decisions\AnswerKind;
-use App\Domain\Hooks\Decisions\NoSubject;
-use App\Domain\Hooks\Decisions\StateReference;
-use App\Domain\Hooks\Inputs\HookIdentity;
-use App\Domain\Hooks\Models\AgentStackRow;
-use App\Domain\Hooks\Models\HookCall;
-use App\Domain\Hooks\Stack\StateTypes;
-use App\Domain\Hooks\Storage\FrameRecord;
-use App\Domain\Hooks\Storage\FrameRecords;
-use App\Domain\Hooks\Storage\RecordedAnswer;
-use App\Domain\Hooks\Storage\RecordedSteps;
-use App\Domain\Hooks\Storage\StackTarget;
-use Carbon\CarbonImmutable;
+use App\Core\Agents\AgentContextMissing;
+use App\Core\Hooks\Decisions\AnswerKind;
+use App\Core\Hooks\Decisions\NoSubject;
+use App\Core\Hooks\Decisions\StateReference;
+use App\Core\Hooks\Inputs\HookIdentity;
+use App\Core\Hooks\Models\AgentStackRow;
+use App\Core\Hooks\Models\HookCall;
+use App\Core\Hooks\Stack\StateTypes;
+use App\Core\Hooks\Storage\FrameRecord;
+use App\Core\Hooks\Storage\FrameRecords;
+use App\Core\Hooks\Storage\RecordedAnswer;
+use App\Core\Hooks\Storage\RecordedSteps;
+use App\Core\Hooks\Storage\StackTarget;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 final class HookScopeTest extends TestCase
 {
     use RefreshHookDatabase;
+    use StartsAgentRequests;
 
     protected function setUp(): void
     {
@@ -104,16 +103,6 @@ final class HookScopeTest extends TestCase
         $this->assertSame([2, 20], [$stack->agent_id, $stack->session_id]);
         $this->assertSame([2, 20], [$call->agent_id, $call->session_id]);
         $this->assertSame(0, AgentStackRow::query()->forTarget($other)->count());
-    }
-
-    private function startRequestAs(int $agentId, int $sessionId): void
-    {
-        $this->app->instance(AgentContext::class, new AgentContext(
-            $agentId,
-            $sessionId,
-            'hooks.main_ready',
-            new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
-        ));
     }
 
     private function storeFor(StackTarget $target): void

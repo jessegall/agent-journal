@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat;
 
+use App\Core\Hooks\Decisions\StateReference;
+use App\Core\Hooks\Decisions\SubjectReference;
 use App\Domain\Chat\Models\Message;
-use App\Domain\Hooks\Decisions\StateReference;
-use App\Domain\Hooks\Decisions\SubjectReference;
 
 /**
  * The stack reference of answering one message; a message is answered once, so it has one run.

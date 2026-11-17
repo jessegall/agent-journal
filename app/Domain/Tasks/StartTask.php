@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks;
 
-use App\Domain\Hooks\StackTransaction;
-use App\Domain\Hooks\Storage\StackTarget;
+use App\Core\Hooks\StackTransaction;
+use App\Core\Hooks\Storage\StackTarget;
 use App\Domain\Tasks\Events\TaskStarted;
 use App\Domain\Tasks\Models\Task;
 use Illuminate\Contracts\Events\Dispatcher;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Processes;
 
-use App\Domain\Hooks\Inputs\PartJoin;
+use App\Core\Hooks\Inputs\PartJoin;
 
 /**
  * A shell line split into words and the operators between them, honouring quotes and backslashes.

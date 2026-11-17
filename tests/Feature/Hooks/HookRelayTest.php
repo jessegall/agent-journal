@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Domain\Agents\Models\LaunchBypass;
-use App\Domain\Hooks\LaunchStacks;
-use App\Domain\Hooks\Programs\HookProgram;
-use App\Domain\Hooks\Programs\OutageReply;
-use App\Domain\Hooks\Programs\ProgramReply;
-use App\Domain\Hooks\Relay\HookRelay;
-use App\Domain\Hooks\Relay\RelaySettings;
-use App\Domain\Hooks\StackTransaction;
-use App\Domain\Hooks\States\ReadyStateType;
-use App\Domain\Hooks\Storage\StackTarget;
+use App\Core\Agents\Models\LaunchBypass;
+use App\Core\Hooks\LaunchStacks;
+use App\Core\Hooks\Programs\HookProgram;
+use App\Core\Hooks\Programs\OutageReply;
+use App\Core\Hooks\Programs\ProgramReply;
+use App\Core\Hooks\Relay\HookRelay;
+use App\Core\Hooks\Relay\RelaySettings;
+use App\Core\Hooks\StackTransaction;
+use App\Core\Hooks\States\ReadyStateType;
+use App\Core\Hooks\Storage\StackTarget;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;

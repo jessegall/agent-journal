@@ -11,9 +11,12 @@ use App\Domain\DomainEntry;
  */
 final readonly class BoundaryChecker
 {
-    private const string SHARED_NAMESPACE = 'App\\Domain\\';
+    /**
+     * The domain foundation and the core: every domain uses them without declaring it, and they name no domain.
+     */
+    private const array SHARED_NAMESPACES = ['App\\Domain\\', 'App\\Core\\'];
 
-    private const string SHARED_PLACE = 'the domain foundation';
+    private const string SHARED_PLACE = 'the core or the domain foundation';
 
     /**
      * @param  list<DomainEntry>  $entries
@@ -131,6 +134,6 @@ final readonly class BoundaryChecker
 
     private function isShared(string $name): bool
     {
-        return stripos(ltrim($name, '\\'), self::SHARED_NAMESPACE) === 0;
+        return array_any(self::SHARED_NAMESPACES, fn (string $shared) => stripos(ltrim($name, '\\'), $shared) === 0);
     }
 }

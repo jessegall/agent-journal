@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\Programs;
 
-use App\Domain\Hooks\Decisions\Decision;
-use App\Domain\Hooks\Programs\NativeToolInput;
-use App\Domain\Hooks\Programs\ProgramCapabilities;
-use App\Domain\Hooks\Programs\RewriteSupport;
-use App\Domain\Hooks\Programs\UnsupportedHook;
-use App\Domain\Hooks\Stack\AgentStack;
-use App\Domain\Hooks\Stack\HookAnswer;
-use App\Domain\Hooks\States\AgentState;
+use App\Core\Hooks\Decisions\Decision;
+use App\Core\Hooks\Programs\NativeToolInput;
+use App\Core\Hooks\Programs\ProgramCapabilities;
+use App\Core\Hooks\Programs\RewriteSupport;
+use App\Core\Hooks\Programs\UnsupportedHook;
+use App\Core\Hooks\Stack\AgentStack;
+use App\Core\Hooks\Stack\HookAnswer;
+use App\Core\Hooks\States\AgentState;
 use ReflectionClass;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\TestCase;

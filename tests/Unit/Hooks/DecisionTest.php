@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Domain\Hooks\Decisions\ConflictingStackChange;
-use App\Domain\Hooks\Decisions\Decision;
-use App\Domain\Hooks\Decisions\Denied;
-use App\Domain\Hooks\Decisions\EmptyReason;
-use App\Domain\Hooks\Decisions\NoSubject;
-use App\Domain\Hooks\Decisions\PushState;
-use App\Domain\Hooks\Decisions\SimpleChange;
-use App\Domain\Hooks\Decisions\StateReference;
-use App\Domain\Hooks\Decisions\StopPrevented;
-use App\Domain\Hooks\Decisions\SubjectReference;
+use App\Core\Hooks\Decisions\ConflictingStackChange;
+use App\Core\Hooks\Decisions\Decision;
+use App\Core\Hooks\Decisions\Denied;
+use App\Core\Hooks\Decisions\EmptyReason;
+use App\Core\Hooks\Decisions\NoSubject;
+use App\Core\Hooks\Decisions\PushState;
+use App\Core\Hooks\Decisions\SimpleChange;
+use App\Core\Hooks\Decisions\StateReference;
+use App\Core\Hooks\Decisions\StopPrevented;
+use App\Core\Hooks\Decisions\SubjectReference;
 use PHPUnit\Framework\TestCase;
 
 final class DecisionTest extends TestCase

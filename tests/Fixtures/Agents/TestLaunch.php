@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Agents;
 
-use App\Domain\Agents\AgentSessions;
-use App\Domain\Agents\LaunchCredentials;
-use App\Domain\Agents\Models\Agent;
-use App\Domain\Agents\Models\AgentSession;
-use App\Domain\Agents\SignedCall;
+use App\Core\Agents\AgentSessions;
+use App\Core\Agents\LaunchCredentials;
+use App\Core\Agents\Models\Agent;
+use App\Core\Agents\Models\AgentSession;
+use App\Core\Agents\SignedCall;
 
 /**
  * One launched test agent with its session and token, and the server headers of a call it signs.

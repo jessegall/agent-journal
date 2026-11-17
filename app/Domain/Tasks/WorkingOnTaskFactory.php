@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks;
 
-use App\Domain\Hooks\Decisions\StateReference;
-use App\Domain\Hooks\Decisions\SubjectReference;
-use App\Domain\Hooks\States\AgentState;
-use App\Domain\Hooks\States\StateSubjectMissing;
-use App\Domain\Hooks\States\StateType;
+use App\Core\Hooks\Decisions\StateReference;
+use App\Core\Hooks\Decisions\SubjectReference;
+use App\Core\Hooks\States\AgentState;
+use App\Core\Hooks\States\StateSubjectMissing;
+use App\Core\Hooks\States\StateType;
 use App\Domain\Tasks\States\WorkingOnTask;
 
 /**

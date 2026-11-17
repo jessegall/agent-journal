@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat;
 
+use App\Core\Hooks\StackTransaction;
+use App\Core\Hooks\Storage\StackTarget;
 use App\Domain\Chat\Events\MessageNeedsAnswer;
 use App\Domain\Chat\Models\Message;
-use App\Domain\Hooks\StackTransaction;
-use App\Domain\Hooks\Storage\StackTarget;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**

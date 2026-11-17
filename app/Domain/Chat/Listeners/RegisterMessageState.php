@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat\Listeners;
 
+use App\Core\Hooks\Events\StateTypesRequested;
 use App\Domain\Chat\AnsweringMessageFactory;
 use App\Domain\Chat\AnsweringMessageReference;
-use App\Domain\Hooks\Events\StateTypesRequested;
 
 final readonly class RegisterMessageState
 {

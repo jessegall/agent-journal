@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Rules\Listeners;
 
-use App\Domain\Hooks\Events\ContextWasCompacted;
+use App\Core\Hooks\Events\ContextWasCompacted;
 use App\Domain\Rules\ActiveRules;
 
 /**

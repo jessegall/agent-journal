@@ -17,7 +17,7 @@ use Tests\Fixtures\Declarations\Wrong\WrongDomain;
 use Tests\TestCase;
 
 /**
- * Domain classes, the files outside every domain, namespaces inside domain folders and the shared place.
+ * Domain classes, the files outside every domain, namespaces inside domain folders and the shared places: the domain foundation and app/Core.
  *
  * What this test does not see: edits inside the listed starter-kit files beyond the domain names they use.
  */
@@ -65,7 +65,7 @@ final class DomainDeclarationTest extends TestCase
 
         $violations = [
             ...$rules->misnamedDomainClasses($files, 'App\Domain'),
-            ...$rules->filesOutsideDomains($files, $sharedFolder, $starterKitFiles),
+            ...$rules->filesOutsideDomains($files, [$sharedFolder, $appFolder.'/Core'], $starterKitFiles),
             ...$rules->starterKitDomainUses($starterKitFiles),
             ...$rules->namespacesOutsideDomains(),
             ...$rules->extraSharedFiles($sharedFolder, self::SHARED_PLACE_FILES),
@@ -89,7 +89,7 @@ final class DomainDeclarationTest extends TestCase
         $listed = $this->fixture('App/Http/Listed.php');
         $files = DomainFiles::in([$this->fixture('App')]);
 
-        $violations = $this->rules($this->registry())->filesOutsideDomains($files, $this->fixture('Shared'), [$listed]);
+        $violations = $this->rules($this->registry())->filesOutsideDomains($files, [$this->fixture('Shared')], [$listed]);
 
         $this->assertSame([$this->fixture('App/Http/NewController.php')], array_map(fn (Violation $violation) => $violation->file, $violations));
     }

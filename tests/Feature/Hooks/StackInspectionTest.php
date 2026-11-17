@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Domain\Hooks\Decisions\NoSubject;
-use App\Domain\Hooks\Decisions\StateReference;
+use App\Core\Hooks\Decisions\NoSubject;
+use App\Core\Hooks\Decisions\StateReference;
 use App\Models\User;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommittedHookStack;

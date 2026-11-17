@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat\Events;
 
-use App\Domain\Hooks\Storage\StackTarget;
+use App\Core\Hooks\Storage\StackTarget;
 
 /**
  * A message now waits for an agent's answer, raised inside the transaction that asked for it.

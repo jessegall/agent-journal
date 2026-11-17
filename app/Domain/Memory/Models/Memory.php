@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Memory\Models;
 
-use App\Domain\Hooks\Models\OwnedByOneAgent;
-use App\Domain\Links\Linkable;
+use App\Core\Hooks\Models\OwnedByOneAgent;
+use App\Core\Links\Linkable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;

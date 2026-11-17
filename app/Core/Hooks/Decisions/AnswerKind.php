@@ -1,0 +1,55 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Core\Hooks\Decisions;
+
+/**
+ * The kind of answer a state gave, as the walk records it, and which hooks can take it.
+ */
+enum AnswerKind: string
+{
+    case Delegate = 'delegate';
+    case Allow = 'allow';
+    case Deny = 'deny';
+    case PreventStop = 'prevent_stop';
+    case Rewrite = 'rewrite';
+
+    /**
+     * Whether a hook that only reports what happened can take this answer.
+     */
+    public function fitsEveryHook(): bool
+    {
+        return match ($this) {
+            self::Delegate, self::Allow => true,
+            self::Deny, self::PreventStop, self::Rewrite => false,
+        };
+    }
+
+    /**
+     * Whether a hook about to act, a prompt or a file edit, can take this answer.
+     */
+    public function fitsAnAction(): bool
+    {
+        return match ($this) {
+            self::Delegate, self::Allow, self::Deny => true,
+            self::PreventStop, self::Rewrite => false,
+        };
+    }
+
+    public function fitsAShellCommand(): bool
+    {
+        return match ($this) {
+            self::Delegate, self::Allow, self::Deny, self::Rewrite => true,
+            self::PreventStop => false,
+        };
+    }
+
+    public function fitsAStop(): bool
+    {
+        return match ($this) {
+            self::Delegate, self::Allow, self::PreventStop => true,
+            self::Deny, self::Rewrite => false,
+        };
+    }
+}

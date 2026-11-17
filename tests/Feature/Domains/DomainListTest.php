@@ -6,8 +6,6 @@ namespace Tests\Feature\Domains;
 
 use App\Domain\DomainEntry;
 use App\Domain\DomainRegistry;
-use App\Domain\Hooks\HooksDomain;
-use App\Domain\Links\LinksDomain;
 use App\Domain\Tasks\TasksDomain;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use ReflectionProperty;
@@ -20,15 +18,15 @@ final class DomainListTest extends TestCase
         $registry = $this->app->make(DomainRegistry::class);
 
         $this->assertSame(
-            ['Tasks', 'Plans', 'Chat', 'Memory', 'Rules', 'Sequences', 'Reminders', 'Profiles', 'Agents', 'Hooks', 'Processes', 'Links'],
+            ['Tasks', 'Plans', 'Chat', 'Memory', 'Rules', 'Sequences', 'Reminders', 'Profiles', 'Processes'],
             array_map(fn (DomainEntry $entry) => $entry->name, $registry->all()),
         );
         $this->assertStringEndsWith('/app/Domain/Plans', $registry->get('Plans')->folder);
         $this->assertSame([TasksDomain::class], $registry->get('Plans')->requires);
-        $this->assertSame([HooksDomain::class, LinksDomain::class], $registry->get('Tasks')->requires);
+        $this->assertSame([], $registry->get('Tasks')->requires);
     }
 
-    public function test_listeners_are_discovered_only_in_the_domain_listener_folders(): void
+    public function test_listeners_are_discovered_only_in_the_domain_and_core_listener_folders(): void
     {
         $registry = $this->app->make(DomainRegistry::class);
         $paths = collect((new ReflectionProperty(EventServiceProvider::class, 'eventDiscoveryPaths'))->getValue())->all();
@@ -36,6 +34,8 @@ final class DomainListTest extends TestCase
         foreach ($registry->listenerFolders() as $folder) {
             $this->assertContains($folder, $paths);
         }
+
+        $this->assertContains(app_path('Core/Hooks/Listeners'), $paths);
 
         $this->assertNotContains(app_path('Listeners'), $paths);
         $this->assertNotContains(app_path('Http/Listeners'), $paths);

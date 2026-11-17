@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks\States;
 
-use App\Domain\Hooks\Decisions\Decision;
-use App\Domain\Hooks\Inputs\StopRequested;
-use App\Domain\Hooks\States\AgentState;
+use App\Core\Hooks\Decisions\Decision;
+use App\Core\Hooks\Inputs\StopRequested;
+use App\Core\Hooks\States\AgentState;
 use App\Domain\Tasks\TaskWork;
 
 /**

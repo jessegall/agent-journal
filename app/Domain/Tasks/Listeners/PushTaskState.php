@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks\Listeners;
 
-use App\Domain\Hooks\AgentStacks;
+use App\Core\Hooks\AgentStacks;
 use App\Domain\Tasks\Events\TaskStarted;
 use App\Domain\Tasks\TaskRecords;
 use App\Domain\Tasks\WorkingOnTaskReference;

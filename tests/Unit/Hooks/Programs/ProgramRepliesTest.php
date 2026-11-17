@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\Programs;
 
-use App\Domain\Hooks\Decisions\Decision;
-use App\Domain\Hooks\Programs\InvalidShellAnswer;
-use App\Domain\Hooks\Programs\InvalidStopAnswer;
-use App\Domain\Hooks\Programs\NativeToolInput;
-use App\Domain\Hooks\Programs\ProgramReplies;
-use App\Domain\Hooks\Programs\ProgramReply;
-use App\Domain\Hooks\Programs\RewriteSupport;
-use App\Domain\Hooks\Stack\AgentStack;
-use App\Domain\Hooks\Stack\HookAnswer;
+use App\Core\Hooks\Decisions\Decision;
+use App\Core\Hooks\Programs\InvalidShellAnswer;
+use App\Core\Hooks\Programs\InvalidStopAnswer;
+use App\Core\Hooks\Programs\NativeToolInput;
+use App\Core\Hooks\Programs\ProgramReplies;
+use App\Core\Hooks\Programs\ProgramReply;
+use App\Core\Hooks\Programs\RewriteSupport;
+use App\Core\Hooks\Stack\AgentStack;
+use App\Core\Hooks\Stack\HookAnswer;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\TestCase;
 

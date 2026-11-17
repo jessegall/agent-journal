@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\States;
 
-use App\Domain\Hooks\Decisions\Decision;
-use App\Domain\Hooks\Inputs\HookInput;
-use App\Domain\Hooks\Inputs\StopRequested;
-use App\Domain\Hooks\States\AgentState;
-use App\Domain\Hooks\States\Ready;
+use App\Core\Hooks\Decisions\Decision;
+use App\Core\Hooks\Inputs\HookInput;
+use App\Core\Hooks\Inputs\StopRequested;
+use App\Core\Hooks\States\AgentState;
+use App\Core\Hooks\States\Ready;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;

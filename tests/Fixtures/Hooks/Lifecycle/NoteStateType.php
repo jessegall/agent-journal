@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Lifecycle;
 
-use App\Domain\Hooks\Decisions\StateReference;
-use App\Domain\Hooks\States\AgentState;
-use App\Domain\Hooks\States\StateType;
+use App\Core\Hooks\Decisions\StateReference;
+use App\Core\Hooks\States\AgentState;
+use App\Core\Hooks\States\StateType;
 use Tests\Fixtures\Hooks\ScriptedState;
 
 /**

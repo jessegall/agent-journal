@@ -49,7 +49,24 @@ final class BoundaryCheckerTest extends TestCase
         $violations = $this->checker()->violations([$use]);
 
         $this->assertCount(1, $violations);
-        $this->assertSame('uses Tests\Fixtures\Boundary\Chat\Message, but the domain foundation does not require Chat', $violations[0]->reason());
+        $this->assertSame('uses Tests\Fixtures\Boundary\Chat\Message, but the core or the domain foundation does not require Chat', $violations[0]->reason());
+    }
+
+    public function test_the_core_may_use_no_domain(): void
+    {
+        $use = new NameUse(dirname(__DIR__, 2).'/app/Core/Hooks/AgentStacks.php', 3, 'Tests\Fixtures\Boundary\Chat\Message', NameKind::Type);
+
+        $this->assertCount(1, $this->checker()->violations([$use]));
+    }
+
+    public function test_a_domain_uses_the_core_and_its_events_without_declaring_it(): void
+    {
+        $uses = [
+            new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Core\Hooks\AgentStacks', NameKind::Type),
+            new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 4, 'App\Core\Hooks\Events\StateTypesRequested', NameKind::Type),
+        ];
+
+        $this->assertSame([], $this->checker()->violations($uses));
     }
 
     public function test_the_report_names_each_file_and_line_and_ends_with_the_question(): void

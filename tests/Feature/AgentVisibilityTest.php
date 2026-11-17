@@ -4,27 +4,26 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Domain\Agents\AgentContext;
-use App\Domain\Agents\AgentContextMissing;
-use App\Domain\Agents\SignedCall;
+use App\Core\Agents\AgentContextMissing;
+use App\Core\Hooks\Storage\StackTarget;
 use App\Domain\Chat\MessageMissing;
 use App\Domain\Chat\MessageRecords;
 use App\Domain\Chat\Models\Message;
-use App\Domain\Hooks\Storage\StackTarget;
 use App\Domain\Memory\Models\Memory;
 use App\Domain\Rules\Models\Rule;
 use App\Domain\Sequences\Models\SequenceRun;
 use App\Domain\Sequences\SequenceRecords;
 use App\Domain\Tasks\Models\Task;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 final class AgentVisibilityTest extends TestCase
 {
     use RefreshHookDatabase;
+    use StartsAgentRequests;
 
     protected function setUp(): void
     {
@@ -119,16 +118,6 @@ final class AgentVisibilityTest extends TestCase
     {
         Message::query()->create(['body' => "For agent {$target->agentId}"])->requireAnswerFrom($target);
         SequenceRun::query()->create(['name' => "Run of agent {$target->agentId}", 'steps' => ['Read the brief.']])->startFor($target);
-    }
-
-    private function startRequestAs(int $agentId, int $sessionId): void
-    {
-        $this->app->instance(AgentContext::class, new AgentContext(
-            $agentId,
-            $sessionId,
-            'hooks.main_ready',
-            new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
-        ));
     }
 
     /**

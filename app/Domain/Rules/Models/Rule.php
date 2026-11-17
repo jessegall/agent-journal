@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Rules\Models;
 
-use App\Domain\Links\Linkable;
+use App\Core\Links\Linkable;
 use App\Domain\Rules\RuleState;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;

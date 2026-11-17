@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Sequences\Models;
 
-use App\Domain\Hooks\Models\OwnedByOneAgent;
-use App\Domain\Hooks\Storage\StackTarget;
-use App\Domain\Links\Linkable;
+use App\Core\Hooks\Models\OwnedByOneAgent;
+use App\Core\Hooks\Storage\StackTarget;
+use App\Core\Links\Linkable;
 use App\Domain\Sequences\SequenceRunState;
 use App\Domain\Sequences\SequenceWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

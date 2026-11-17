@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Domain\Hooks\Decisions\NoSubject;
-use App\Domain\Hooks\Decisions\StateReference;
-use App\Domain\Hooks\Stack\StackRestorer;
-use App\Domain\Hooks\Stack\StateFactory;
-use App\Domain\Hooks\Stack\StateTypes;
-use App\Domain\Hooks\States\ReadyStateType;
-use App\Domain\Hooks\Storage\FrameRecord;
-use App\Domain\Hooks\Storage\FrameRecords;
+use App\Core\Hooks\Decisions\NoSubject;
+use App\Core\Hooks\Decisions\StateReference;
+use App\Core\Hooks\Stack\StackRestorer;
+use App\Core\Hooks\Stack\StateFactory;
+use App\Core\Hooks\Stack\StateTypes;
+use App\Core\Hooks\States\ReadyStateType;
+use App\Core\Hooks\Storage\FrameRecord;
+use App\Core\Hooks\Storage\FrameRecords;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use ReflectionClass;
 use ReflectionProperty;

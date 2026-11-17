@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Domain\Hooks\Inputs\CompactionDetails;
-use App\Domain\Hooks\Inputs\ContextCompacted;
-use App\Domain\Hooks\Inputs\HookIdentity;
-use App\Domain\Hooks\Models\HookCall;
-use App\Domain\Hooks\OperationDeadline;
-use App\Domain\Hooks\Programs\ProgramCapabilities;
-use App\Domain\Hooks\Programs\ProgramReply;
-use App\Domain\Hooks\Programs\RewriteSupport;
-use App\Domain\Hooks\Stack\HookAnswer;
+use App\Core\Hooks\Inputs\CompactionDetails;
+use App\Core\Hooks\Inputs\ContextCompacted;
+use App\Core\Hooks\Inputs\HookIdentity;
+use App\Core\Hooks\Models\HookCall;
+use App\Core\Hooks\OperationDeadline;
+use App\Core\Hooks\Programs\ProgramCapabilities;
+use App\Core\Hooks\Programs\ProgramReply;
+use App\Core\Hooks\Programs\RewriteSupport;
+use App\Core\Hooks\Stack\HookAnswer;
 use App\Domain\Memory\Models\Memory;
 use App\Domain\Rules\Models\Rule;
 use App\Domain\Sequences\Models\SequenceRun;

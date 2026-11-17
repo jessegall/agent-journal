@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sequences;
 
-use App\Domain\Hooks\Storage\StackTarget;
+use App\Core\Hooks\Storage\StackTarget;
 use App\Domain\Sequences\Models\SequenceRun;
 
 /**

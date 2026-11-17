@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Links;
 
-use App\Domain\Links\Models\Link;
+use App\Core\Links\Models\Link;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Schema\Blueprint;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sequences\Listeners;
 
-use App\Domain\Hooks\Events\StateTypesRequested;
+use App\Core\Hooks\Events\StateTypesRequested;
 use App\Domain\Sequences\FollowingSequenceFactory;
 use App\Domain\Sequences\FollowingSequenceReference;
 

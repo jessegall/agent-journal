@@ -52,18 +52,19 @@ final readonly class DeclarationRules
     }
 
     /**
-     * Files of the application folder that lie in no domain, not in the shared place and not on the starter-kit list.
+     * Files of the application folder that lie in no domain, in none of the shared places and not on the starter-kit list.
      *
      * @param  list<string>  $files
+     * @param  list<string>  $sharedFolders
      * @param  list<string>  $starterKitFiles
      * @return list<Violation>
      */
-    public function filesOutsideDomains(array $files, string $sharedFolder, array $starterKitFiles): array
+    public function filesOutsideDomains(array $files, array $sharedFolders, array $starterKitFiles): array
     {
         $violations = [];
 
         foreach ($files as $path) {
-            if ($this->domainHolding($path) !== null || str_starts_with($path, $sharedFolder.'/') || in_array($path, $starterKitFiles, true)) {
+            if ($this->domainHolding($path) !== null || $this->liesIn($path, $sharedFolders) || in_array($path, $starterKitFiles, true)) {
                 continue;
             }
 
@@ -71,6 +72,14 @@ final readonly class DeclarationRules
         }
 
         return $violations;
+    }
+
+    /**
+     * @param  list<string>  $folders
+     */
+    private function liesIn(string $path, array $folders): bool
+    {
+        return array_any($folders, fn (string $folder) => str_starts_with($path, $folder.'/'));
     }
 
     /**

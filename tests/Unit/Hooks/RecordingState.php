@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Domain\Hooks\Decisions\Decision;
-use App\Domain\Hooks\Inputs\ContextCompacted;
-use App\Domain\Hooks\Inputs\FileEditRequested;
-use App\Domain\Hooks\Inputs\PromptSubmitted;
-use App\Domain\Hooks\Inputs\SessionEnded;
-use App\Domain\Hooks\Inputs\SessionStarted;
-use App\Domain\Hooks\Inputs\ShellCommandRequested;
-use App\Domain\Hooks\Inputs\StopRequested;
-use App\Domain\Hooks\Inputs\ToolFinished;
-use App\Domain\Hooks\States\AgentState;
+use App\Core\Hooks\Decisions\Decision;
+use App\Core\Hooks\Inputs\ContextCompacted;
+use App\Core\Hooks\Inputs\FileEditRequested;
+use App\Core\Hooks\Inputs\PromptSubmitted;
+use App\Core\Hooks\Inputs\SessionEnded;
+use App\Core\Hooks\Inputs\SessionStarted;
+use App\Core\Hooks\Inputs\ShellCommandRequested;
+use App\Core\Hooks\Inputs\StopRequested;
+use App\Core\Hooks\Inputs\ToolFinished;
+use App\Core\Hooks\States\AgentState;
 
 /**
  * A test state that allows every hook and remembers which hook methods it was asked.

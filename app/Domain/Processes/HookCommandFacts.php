@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Processes;
 
-use App\Domain\Hooks\Inputs\CommandEffect;
-use App\Domain\Hooks\Inputs\CommandKind;
-use App\Domain\Hooks\Inputs\CommandPart;
-use App\Domain\Hooks\Inputs\ParseOutcome;
-use App\Domain\Hooks\Inputs\ShellCommand;
-use App\Domain\Hooks\Inputs\ShellCommandParser;
-use App\Domain\Hooks\Inputs\ShellDialect;
+use App\Core\Hooks\Inputs\CommandEffect;
+use App\Core\Hooks\Inputs\CommandKind;
+use App\Core\Hooks\Inputs\CommandPart;
+use App\Core\Hooks\Inputs\ParseOutcome;
+use App\Core\Hooks\Inputs\ShellCommand;
+use App\Core\Hooks\Inputs\ShellCommandParser;
+use App\Core\Hooks\Inputs\ShellDialect;
 
 /**
  * Reads a shell line into its commands and the facts the role bottoms judge: what each command is and whether it

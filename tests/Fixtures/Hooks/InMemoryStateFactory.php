@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Domain\Hooks\Decisions\StateReference;
-use App\Domain\Hooks\Stack\Frame;
-use App\Domain\Hooks\Stack\StateFactory;
-use App\Domain\Hooks\States\AgentState;
+use App\Core\Hooks\Decisions\StateReference;
+use App\Core\Hooks\Stack\Frame;
+use App\Core\Hooks\Stack\StateFactory;
+use App\Core\Hooks\States\AgentState;
 use Closure;
 
 /**

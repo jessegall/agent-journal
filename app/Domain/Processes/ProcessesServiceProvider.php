@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Processes;
 
-use App\Domain\Hooks\Inputs\ShellCommandParser;
+use App\Core\Hooks\Inputs\ShellCommandParser;
 use Illuminate\Support\ServiceProvider;
 
 /**

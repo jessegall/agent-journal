@@ -1,29 +1,16 @@
-# Hooks: domain dependencies and owner work
+# Hooks: the core and the domain dependencies
 
-Plan 2 built the agent stack state machine of doc 3 in the Hooks domain (`app/Domain/Hooks`). Rule 9 says a domain declares a new required domain only after the user approves it. Question 10 asked for that approval, and the user approved every concrete edge it listed. Each edge is one line in a Domain class's `requires()`; `tests/Unit/Domains/DomainClassesTest.php` lists them all.
+Plan 2 built the agent stack state machine of doc 3. Since task 96 it lives in the core, `app/Core`, with the agent and session context (`app/Core/Agents`) and the links every model uses (`app/Core/Links`). The core is a foundation under the domains, not a domain: every domain and every module installed later, ours, a paid one or a third party, uses it without declaring it, registers its own state types, pushes its own states and adds context. The core names no domain or module; `tests/Architecture/DomainBoundaryTest.php` scans `app/Core` and fails on any domain name in it.
+
+Question 10 had approved edges from the domains to Hooks, Agents and Links. With those three in the core the edges are gone, and the only declared edge left is below. Rule 9 still holds: a domain declares a new required domain only after the user approves it. `tests/Unit/Domains/DomainClassesTest.php` lists every domain's requirements.
 
 ## Declared dependencies
 
 | Domain | Requires | Why | Status |
 |---|---|---|---|
 | Plans | Tasks | a plan's phases hold tasks | approved (plan 1) |
-| Hooks | Agents | the scoped agent context, the launch transaction and the launch events | approved (question 10) |
-| Hooks | Links | its two models use the Linkable trait (rule 3) | approved (question 10) |
-| Agents | Links | its four models use the Linkable trait | approved (question 10) |
-| Tasks | Hooks | the WorkingOnTask state and its push from a listener | approved (question 10) |
-| Tasks | Links | the Task model is Linkable | approved (question 10) |
-| Chat | Hooks | the AnsweringMessage state and its push | approved (question 10) |
-| Chat | Links | the Message model is Linkable | approved (question 10) |
-| Sequences | Hooks | the FollowingSequence state and its push | approved (question 10) |
-| Sequences | Links | the SequenceRun model is Linkable | approved (question 10) |
-| Processes | Hooks | the shell parser it supplies for the hook inputs | approved (question 10) |
-| Processes | Links | the SavedCommand model is Linkable | approved (question 10) |
-| Memory | Hooks | its reaction and reminders after a compaction | approved (question 10) |
-| Memory | Links | the Memory model is Linkable | approved (question 10) |
-| Rules | Hooks | its reminders after a compaction | approved (question 10) |
-| Rules | Links | the Rule model is Linkable | approved (question 10) |
 
-Left out on purpose: Reminders requiring Hooks, Agents requiring Profiles, and any edge from Hooks back to a domain that contributes a state. Hooks never names a task, message or sequence; Agents never names Hooks, which fills the Agents-owned `LaunchTransaction` contract instead.
+The core's own needs from a domain go through contracts the core owns: Processes fills the core's `ShellCommandParser` with its shell parser.
 
 ## Owner stores the plan had to create
 
@@ -35,7 +22,7 @@ No owner store existed for the subjects the states are about, so plan 2 built th
 | Chat | `messages`, `Message`: body, state, the agent and session that owe an answer | task 63 |
 | Sequences | `sequence_runs`, `SequenceRun`: steps, current step, state, the agent and session | task 64 |
 | Processes | `HookCommandFacts`: the shell parser and the command catalog; `saved_commands`, `SavedCommand` | tasks 65, 91 |
-| Agents | `agents`, `agent_sessions`, `launch_credentials` and the launch, loss and child operations | tasks 57, 70, 72 |
+| Core (Agents) | `agents`, `agent_sessions`, `launch_credentials` and the launch, loss and child operations | tasks 57, 70, 72 |
 | Memory | `memories`, `memory_compactions`: weights faded once per compaction | task 71 |
 | Rules | `rules`, `Rule`: text and state | task 71 |
 | Links | `links`, `Link`, `Linkable` | task 84 |

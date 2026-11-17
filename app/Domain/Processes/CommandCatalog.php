@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Processes;
 
-use App\Domain\Hooks\Inputs\CommandEffect;
-use App\Domain\Hooks\Inputs\CommandKind;
+use App\Core\Hooks\Inputs\CommandEffect;
+use App\Core\Hooks\Inputs\CommandKind;
 
 /**
  * What Processes knows about programs: which command lines are test runs or builds, which only read files and

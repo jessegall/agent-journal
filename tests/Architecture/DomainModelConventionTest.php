@@ -14,7 +14,7 @@ use Tests\Fixtures\Models\Shop\ShopDomain;
 use Tests\TestCase;
 
 /**
- * Every domain model lists its fillable attributes with #[Fillable([...])] only, and no model is open to mass assignment.
+ * Every domain and core model lists its fillable attributes with #[Fillable([...])] only, and no model is open to mass assignment.
  */
 final class DomainModelConventionTest extends TestCase
 {
@@ -45,9 +45,12 @@ final class DomainModelConventionTest extends TestCase
         );
     }
 
-    public function test_the_models_of_the_real_app_follow_rule_six(): void
+    public function test_the_models_of_the_domains_and_the_core_follow_rule_six(): void
     {
-        $files = DomainFiles::in(array_map(fn (DomainEntry $entry) => $entry->folder, $this->app->make(DomainRegistry::class)->all()));
+        $files = DomainFiles::in([
+            ...array_map(fn (DomainEntry $entry) => $entry->folder, $this->app->make(DomainRegistry::class)->all()),
+            app_path('Core'),
+        ]);
         $violations = [...ModelConventions::modelViolations($files), ...ModelConventions::openingCalls($files)];
 
         $this->assertSame([], $violations, BoundaryReport::of($violations, base_path()));

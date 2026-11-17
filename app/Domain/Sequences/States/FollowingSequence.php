@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Sequences\States;
 
-use App\Domain\Hooks\Decisions\Decision;
-use App\Domain\Hooks\Inputs\ContextCompacted;
-use App\Domain\Hooks\Inputs\StopRequested;
-use App\Domain\Hooks\States\AgentState;
+use App\Core\Hooks\Decisions\Decision;
+use App\Core\Hooks\Inputs\ContextCompacted;
+use App\Core\Hooks\Inputs\StopRequested;
+use App\Core\Hooks\States\AgentState;
 use App\Domain\Sequences\SequenceWork;
 
 /**

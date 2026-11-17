@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Domain\Hooks\Decisions\Decision;
-use App\Domain\Hooks\Decisions\StateReference;
-use App\Domain\Hooks\Inputs\ShellCommandRequested;
-use App\Domain\Hooks\States\AgentState;
+use App\Core\Hooks\Decisions\Decision;
+use App\Core\Hooks\Decisions\StateReference;
+use App\Core\Hooks\Inputs\ShellCommandRequested;
+use App\Core\Hooks\States\AgentState;
 
 /**
  * A test state that rewrites each line it knows to its replacement, may push a child with it, and delegates on anything else.

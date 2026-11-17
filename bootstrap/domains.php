@@ -1,10 +1,7 @@
 <?php
 
 declare(strict_types=1);
-use App\Domain\Agents\AgentsDomain;
 use App\Domain\Chat\ChatDomain;
-use App\Domain\Hooks\HooksDomain;
-use App\Domain\Links\LinksDomain;
 use App\Domain\Memory\MemoryDomain;
 use App\Domain\Plans\PlansDomain;
 use App\Domain\Processes\ProcessesDomain;
@@ -23,8 +20,5 @@ return [
     SequencesDomain::class,
     RemindersDomain::class,
     ProfilesDomain::class,
-    AgentsDomain::class,
-    HooksDomain::class,
     ProcessesDomain::class,
-    LinksDomain::class,
 ];

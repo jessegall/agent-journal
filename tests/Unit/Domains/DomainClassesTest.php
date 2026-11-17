@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Domain\Agents\AgentsDomain;
 use App\Domain\Chat\ChatDomain;
 use App\Domain\Domain;
-use App\Domain\Hooks\HooksDomain;
-use App\Domain\Links\LinksDomain;
 use App\Domain\Memory\MemoryDomain;
 use App\Domain\Plans\PlansDomain;
 use App\Domain\Processes\ProcessesDomain;
@@ -23,24 +20,21 @@ use PHPUnit\Framework\TestCase;
 final class DomainClassesTest extends TestCase
 {
     /**
-     * The edges to Hooks, from Hooks to Agents and Links, and from Agents to Links were approved by the user in question 10; see docs/hooks/dependencies.md.
+     * Hooks, Agents and Links are the core in app/Core, which every domain uses without declaring it.
      *
      * @return iterable<string, array{class-string<Domain>, list<class-string<Domain>>}>
      */
     public static function domains(): iterable
     {
-        yield 'Tasks' => [TasksDomain::class, [HooksDomain::class, LinksDomain::class]];
+        yield 'Tasks' => [TasksDomain::class, []];
         yield 'Plans' => [PlansDomain::class, [TasksDomain::class]];
-        yield 'Links' => [LinksDomain::class, []];
         yield 'Profiles' => [ProfilesDomain::class, []];
-        yield 'Agents' => [AgentsDomain::class, [LinksDomain::class]];
-        yield 'Hooks' => [HooksDomain::class, [AgentsDomain::class, LinksDomain::class]];
-        yield 'Chat' => [ChatDomain::class, [HooksDomain::class, LinksDomain::class]];
-        yield 'Memory' => [MemoryDomain::class, [HooksDomain::class, LinksDomain::class]];
-        yield 'Rules' => [RulesDomain::class, [HooksDomain::class, LinksDomain::class]];
-        yield 'Sequences' => [SequencesDomain::class, [HooksDomain::class, LinksDomain::class]];
+        yield 'Chat' => [ChatDomain::class, []];
+        yield 'Memory' => [MemoryDomain::class, []];
+        yield 'Rules' => [RulesDomain::class, []];
+        yield 'Sequences' => [SequencesDomain::class, []];
         yield 'Reminders' => [RemindersDomain::class, []];
-        yield 'Processes' => [ProcessesDomain::class, [HooksDomain::class, LinksDomain::class]];
+        yield 'Processes' => [ProcessesDomain::class, []];
     }
 
     /**

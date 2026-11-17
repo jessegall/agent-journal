@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat;
 
+use App\Core\Hooks\Storage\StackTarget;
 use App\Domain\Chat\Models\Message;
-use App\Domain\Hooks\Storage\StackTarget;
 
 /**
  * The named reads of messages the Chat domain answers for: the calling agent's own, and one the journal addressed.

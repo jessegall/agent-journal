@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Memory\Listeners;
 
-use App\Domain\Hooks\Events\ContextWasCompacted;
+use App\Core\Hooks\Events\ContextWasCompacted;
 use App\Domain\Memory\AgentMemories;
 
 /**

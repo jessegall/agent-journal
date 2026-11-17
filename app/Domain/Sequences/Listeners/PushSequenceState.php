@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sequences\Listeners;
 
-use App\Domain\Hooks\AgentStacks;
+use App\Core\Hooks\AgentStacks;
 use App\Domain\Sequences\Events\SequenceStarted;
 use App\Domain\Sequences\FollowingSequenceReference;
 use App\Domain\Sequences\SequenceRecords;

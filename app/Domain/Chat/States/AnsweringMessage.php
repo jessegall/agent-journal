@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat\States;
 
+use App\Core\Hooks\Decisions\Decision;
+use App\Core\Hooks\Inputs\FileEditRequested;
+use App\Core\Hooks\Inputs\SessionStarted;
+use App\Core\Hooks\Inputs\ShellCommandRequested;
+use App\Core\Hooks\Inputs\StopRequested;
+use App\Core\Hooks\States\AgentState;
 use App\Domain\Chat\MessageWork;
-use App\Domain\Hooks\Decisions\Decision;
-use App\Domain\Hooks\Inputs\FileEditRequested;
-use App\Domain\Hooks\Inputs\SessionStarted;
-use App\Domain\Hooks\Inputs\ShellCommandRequested;
-use App\Domain\Hooks\Inputs\StopRequested;
-use App\Domain\Hooks\States\AgentState;
 
 /**
  * A message waits on the agent: it hears about it at start, may not stop, and may not change files until it answers.
