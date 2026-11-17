@@ -11,6 +11,7 @@ Question 10 had approved edges from the domains to Hooks, Agents and Links. With
 | Plans | Tasks | a plan's phases hold tasks | approved (plan 1) |
 | Web | Access | the signed-in viewer shared with every page and the person middleware | approved (question 13) |
 | Web | Plans | the plans page reads plans and starts them | approved (question 13) |
+| Web | Chat | Home's chat pane reads conversations and sends messages | approved (question 13) |
 
 The core's own needs from a domain go through contracts the core owns: Processes fills the core's `ShellCommandParser` with its shell parser.
 

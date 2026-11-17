@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Domain\Web\Http\Controllers\HomeController;
 use App\Domain\Web\Http\Controllers\LoginController;
 use App\Domain\Web\Http\Controllers\PlansController;
+use App\Domain\Web\Http\Controllers\SendMessageController;
 use App\Domain\Web\Http\Controllers\StartPlanController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,6 +14,8 @@ Route::middleware(['web', 'guest'])->group(function (): void {
 });
 
 Route::middleware(['web', 'auth', 'journal.person'])->group(function (): void {
+    Route::get('/', HomeController::class)->name('home');
+    Route::post('/messages', SendMessageController::class)->name('messages.send');
     Route::get('/plans', [PlansController::class, 'index'])->name('plans.index');
     Route::post('/plans/{plan}/start', StartPlanController::class)->name('plans.start');
 });

@@ -10,6 +10,7 @@ import type { IconName } from '@/components/kit/Icon.vue';
 const page = usePage();
 
 const rows: { label: string; icon: IconName; href: string }[] = [
+    { label: 'Home', icon: 'home', href: '/' },
     { label: 'Plans', icon: 'plan', href: '/plans' },
 ];
 

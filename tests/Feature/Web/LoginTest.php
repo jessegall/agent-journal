@@ -39,7 +39,7 @@ final class LoginTest extends TestCase
 
     public function test_the_owner_signs_in_lands_on_plans_and_signs_out(): void
     {
-        $this->post('/login', ['email' => 'owner@journal.local', 'password' => 'secret-password'])->assertRedirect('/plans');
+        $this->post('/login', ['email' => 'owner@journal.local', 'password' => 'secret-password'])->assertRedirect('/');
         $this->assertAuthenticatedAs($this->owner);
         $this->get('/login-test/journal')->assertOk();
 

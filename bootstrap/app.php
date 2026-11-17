@@ -22,6 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: AuthenticateAgent::class);
         $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: AuthenticatePerson::class);
         $middleware->alias(['journal.person' => AuthenticatePerson::class]);
+        // A message body is kept exactly as typed, its leading and trailing spaces and newlines included.
+        $middleware->trimStrings(except: ['body']);
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,

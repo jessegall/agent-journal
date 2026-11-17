@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Web\Data;
+
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
+
+/**
+ * Home's chat pane: the sessions the person can talk to and the open conversation, when one is chosen.
+ */
+#[TypeScript]
+final class ChatData extends Data
+{
+    /**
+     * @param  list<SessionOptionData>  $sessions
+     */
+    public function __construct(
+        #[DataCollectionOf(SessionOptionData::class)] public readonly array $sessions,
+        public readonly ConversationData|Optional $conversation = new Optional,
+    ) {}
+}

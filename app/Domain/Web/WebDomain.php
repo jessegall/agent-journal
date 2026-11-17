@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Web;
 
 use App\Domain\Access\AccessDomain;
+use App\Domain\Chat\ChatDomain;
 use App\Domain\Domain;
 use App\Domain\Plans\PlansDomain;
 
@@ -16,12 +17,12 @@ final class WebDomain implements Domain
     }
 
     /**
-     * Approved in question 13; Chat and Rules join as the pages that use them are built.
+     * Approved in question 13; Rules joins when its page is built.
      *
      * @return list<class-string<Domain>>
      */
     public function requires(): array
     {
-        return [AccessDomain::class, PlansDomain::class];
+        return [AccessDomain::class, ChatDomain::class, PlansDomain::class];
     }
 }

@@ -9,17 +9,21 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * The signed-in person as every page may show them: a display name, never a credential.
+ * The signed-in person as every page may show them: their id (it keys what the browser keeps per person, such as message
+ * drafts) and display name, never a credential.
  *
  * @method static static from(User $person)
  */
 #[TypeScript]
 final class ViewerData extends Data
 {
-    public function __construct(public readonly string $name) {}
+    public function __construct(
+        public readonly string $id,
+        public readonly string $name,
+    ) {}
 
     public static function fromUser(User $person): self
     {
-        return new self(name: $person->name);
+        return new self(id: (string) $person->id, name: $person->name);
     }
 }

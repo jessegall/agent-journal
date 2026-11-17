@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Web;
 
+use App\Core\Hooks\Exceptions\StackTargetRefused;
 use App\Domain\Plans\Exceptions\StartDenied;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
@@ -23,6 +24,7 @@ final class WebServiceProvider extends ServiceProvider
 
         if ($exceptions instanceof Handler) {
             $exceptions->renderable(fn (StartDenied $denied) => $this->backWithError('start', $denied->getMessage()));
+            $exceptions->renderable(fn (StackTargetRefused $refused) => $this->backWithError('session', 'This agent session cannot take a message now.'));
         }
     }
 
