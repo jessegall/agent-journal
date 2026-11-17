@@ -90,10 +90,8 @@ final class DomainServiceProviderTest extends TestCase
         $this->assertSame($this->app->make(DomainRegistry::class), $this->app->make(DomainRegistry::class));
     }
 
-    public function test_the_app_runs_with_the_empty_domain_list(): void
+    public function test_the_app_runs_with_the_registered_domains(): void
     {
-        $this->assertSame([], $this->app->make(DomainRegistry::class)->all());
-
         $this->artisan('about')->assertSuccessful();
         $this->artisan('migrate')->assertSuccessful();
         $this->artisan('event:list')->assertSuccessful();
