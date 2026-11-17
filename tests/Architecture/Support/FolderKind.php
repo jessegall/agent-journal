@@ -34,7 +34,7 @@ enum FolderKind: string
      *
      * @param  ReflectionClass<object>  $class
      */
-    public function misfitOf(ReflectionClass $class): string|null
+    public function requirementNotMetBy(ReflectionClass $class): string|null
     {
         $fits = match ($this) {
             self::States => $class->getName() === AgentState::class || $class->isSubclassOf(AgentState::class),

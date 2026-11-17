@@ -6,7 +6,12 @@ declare(strict_types=1);
  * Lists every name the code declares, one per line as "kind<TAB>name<TAB>file:line", so the names can be read and
  * judged together: classes, interfaces, traits and enums, and their methods, properties, constants and enum cases.
  *
- *   php tools/refactoring/list-names.php app tests/Architecture/Support > names.tsv
+ *   php tools/refactoring/list-names.php app tests/Architecture/Support
+ *       prints every name.
+ *   php tools/refactoring/list-names.php --check docs/naming/reviewed-names.txt app tests/Architecture/Support
+ *       prints the names not on the reviewed list and fails while there is one.
+ *   php tools/refactoring/list-names.php --accept docs/naming/reviewed-names.txt app tests/Architecture/Support
+ *       writes every current name to the reviewed list, after they were read and the unclear ones renamed.
  */
 
 use PhpParser\Node;
@@ -26,35 +31,86 @@ use PhpParser\ParserFactory;
 
 require dirname(__DIR__, 2).'/vendor/autoload.php';
 
-$folders = array_slice($argv, 1);
-$parser = (new ParserFactory)->createForNewestSupportedVersion();
-$finder = new NodeFinder;
+$arguments = array_slice($argv, 1);
+$mode = in_array($arguments[0] ?? '', ['--check', '--accept'], true) ? array_shift($arguments) : '--list';
+$reviewedFile = $mode === '--list' ? '' : (string) array_shift($arguments);
+$names = declaredNames($arguments);
 
-foreach ($folders as $folder) {
-    $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::SKIP_DOTS));
+if ($mode === '--list') {
+    foreach ($names as [$kind, $name, $location]) {
+        echo "{$kind}\t{$name}\t{$location}\n";
+    }
 
-    foreach ($files as $file) {
-        if (! $file instanceof SplFileInfo || $file->getExtension() !== 'php') {
-            continue;
-        }
+    exit(0);
+}
 
-        $path = $file->getPathname();
-        $statements = (new NodeTraverser(new NameResolver))->traverse($parser->parse((string) file_get_contents($path)) ?? []);
+$current = array_values(array_unique(array_map(fn (array $entry) => "{$entry[0]}\t{$entry[1]}", $names)));
+sort($current);
 
-        foreach ($finder->findInstanceOf($statements, ClassLike::class) as $type) {
-            if ($type->name === null) {
+if ($mode === '--accept') {
+    file_put_contents($reviewedFile, implode("\n", $current)."\n");
+    echo count($current)." names recorded as reviewed in {$reviewedFile}\n";
+
+    exit(0);
+}
+
+$reviewed = is_file($reviewedFile) ? file($reviewedFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) : [];
+$unreviewed = array_values(array_diff($current, $reviewed ?: []));
+
+if ($unreviewed === []) {
+    echo 'All '.count($current)." declared names were reviewed.\n";
+
+    exit(0);
+}
+
+echo count($unreviewed)." declared names were not reviewed yet; read each, rename what is not plain programming English, then record them with --accept:\n";
+
+foreach ($names as [$kind, $name, $location]) {
+    if (in_array("{$kind}\t{$name}", $unreviewed, true)) {
+        echo "  {$kind} {$name} ({$location})\n";
+    }
+}
+
+exit(1);
+
+/**
+ * @param  list<string>  $folders
+ * @return list<array{string, string, string}>
+ */
+function declaredNames(array $folders): array
+{
+    $parser = (new ParserFactory)->createForNewestSupportedVersion();
+    $names = [];
+
+    foreach ($folders as $folder) {
+        $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, FilesystemIterator::SKIP_DOTS));
+
+        foreach ($files as $file) {
+            if (! $file instanceof SplFileInfo || $file->getExtension() !== 'php') {
                 continue;
             }
 
-            printName(kindOf($type), $type->name->toString(), $path, $type->getStartLine());
+            $path = $file->getPathname();
+            $statements = (new NodeTraverser(new NameResolver))->traverse($parser->parse((string) file_get_contents($path)) ?? []);
 
-            foreach ($type->stmts as $member) {
-                foreach (membersOf($member) as [$kind, $name]) {
-                    printName($kind, $type->name->toString().'::'.$name, $path, $member->getStartLine());
+            foreach ((new NodeFinder)->findInstanceOf($statements, ClassLike::class) as $type) {
+                if ($type->name === null) {
+                    continue;
+                }
+
+                $typeName = $type->name->toString();
+                $names[] = [kindOf($type), $typeName, "{$path}:{$type->getStartLine()}"];
+
+                foreach ($type->stmts as $member) {
+                    foreach (membersOf($member) as [$kind, $name]) {
+                        $names[] = [$kind, "{$typeName}::{$name}", "{$path}:{$member->getStartLine()}"];
+                    }
                 }
             }
         }
     }
+
+    return $names;
 }
 
 function kindOf(ClassLike $type): string
@@ -96,9 +152,4 @@ function promotedProperties(ClassMethod $method): array
     }
 
     return $properties;
-}
-
-function printName(string $kind, string $name, string $path, int $line): void
-{
-    echo "{$kind}\t{$name}\t{$path}:{$line}\n";
 }
