@@ -21,4 +21,12 @@ final class PlansDomain implements Domain
     {
         return [TasksDomain::class];
     }
+
+    /**
+     * @return list<class-string>
+     */
+    public function exports(): array
+    {
+        return [];
+    }
 }

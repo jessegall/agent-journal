@@ -17,4 +17,12 @@ final class SelfRequiringDomain implements Domain
     {
         return [self::class];
     }
+
+    /**
+     * @return list<class-string>
+     */
+    public function exports(): array
+    {
+        return [];
+    }
 }

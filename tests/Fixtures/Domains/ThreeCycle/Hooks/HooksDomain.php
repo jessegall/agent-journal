@@ -18,4 +18,12 @@ final class HooksDomain implements Domain
     {
         return [AgentsDomain::class];
     }
+
+    /**
+     * @return list<class-string>
+     */
+    public function exports(): array
+    {
+        return [];
+    }
 }

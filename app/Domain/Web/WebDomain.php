@@ -26,4 +26,12 @@ final class WebDomain implements Domain
     {
         return [AccessDomain::class, ChatDomain::class, PlansDomain::class, RulesDomain::class];
     }
+
+    /**
+     * @return list<class-string>
+     */
+    public function exports(): array
+    {
+        return [];
+    }
 }

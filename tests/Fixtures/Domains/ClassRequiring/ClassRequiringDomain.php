@@ -19,4 +19,12 @@ final class ClassRequiringDomain implements Domain
         // @phpstan-ignore return.type (this fixture breaks the contract on purpose)
         return [TaskList::class];
     }
+
+    /**
+     * @return list<class-string>
+     */
+    public function exports(): array
+    {
+        return [];
+    }
 }

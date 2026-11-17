@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain;
 
+use App\Domain\Exceptions\AmbiguousDomainRoot;
 use App\Domain\Exceptions\DomainCycle;
 use App\Domain\Exceptions\DomainListedTwice;
 use App\Domain\Exceptions\DomainNotFound;
@@ -31,6 +32,12 @@ final readonly class DomainRegistry
 
             if (array_key_exists($entry->name, $entries)) {
                 throw DomainListedTwice::for($entry->name);
+            }
+
+            foreach ($entries as $earlier) {
+                if ($earlier->overlaps($entry)) {
+                    throw AmbiguousDomainRoot::between($earlier->name, $entry->name);
+                }
             }
 
             $entries[$entry->name] = $entry;

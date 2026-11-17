@@ -19,4 +19,12 @@ final class ReportsDomain implements Domain
     {
         return [TasksDomain::class, PlansDomain::class];
     }
+
+    /**
+     * @return list<class-string>
+     */
+    public function exports(): array
+    {
+        return [];
+    }
 }

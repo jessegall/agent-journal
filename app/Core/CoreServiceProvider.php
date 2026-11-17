@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core;
 
+use App\Domain\Exports;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use Illuminate\Support\ServiceProvider;
 
@@ -17,6 +18,8 @@ final class CoreServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        Exports::check('Core', __NAMESPACE__, CoreApi::exports());
+
         EventServiceProvider::addEventDiscoveryPaths(array_values(array_filter(
             array_map(fn (string $area) => __DIR__."/{$area}/Listeners", self::AREAS),
             is_dir(...),

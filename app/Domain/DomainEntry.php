@@ -17,6 +17,7 @@ final readonly class DomainEntry
 {
     /**
      * @param  list<class-string<Domain>>  $requires
+     * @param  list<string>  $exports
      */
     private function __construct(
         public string $name,
@@ -24,6 +25,7 @@ final readonly class DomainEntry
         public string $folder,
         public Domain $domain,
         public array $requires,
+        public array $exports,
     ) {}
 
     /**
@@ -44,13 +46,15 @@ final readonly class DomainEntry
 
         $domain = $class->newInstance();
         $name = self::nameOf($className);
+        $namespace = $class->getNamespaceName();
 
         return new self(
             name: $name,
-            namespace: $class->getNamespaceName(),
+            namespace: $namespace,
             folder: dirname($file),
             domain: $domain,
             requires: self::checkedRequirements($name, $className, $domain->requires()),
+            exports: Exports::check($name, $namespace, $domain->exports()),
         );
     }
 
@@ -75,9 +79,24 @@ final readonly class DomainEntry
         return stripos(ltrim($name, '\\'), $this->namespace.'\\') === 0;
     }
 
+    /**
+     * Whether a fully written name is one of this domain's events: a private one in Events or a public one in Api\\Events.
+     */
     public function ownsEvent(string $name): bool
     {
-        return stripos(ltrim($name, '\\'), $this->namespace.'\\Events\\') === 0;
+        $name = ltrim($name, '\\');
+
+        return stripos($name, $this->namespace.'\\Events\\') === 0 || stripos($name, $this->namespace.'\\Api\\Events\\') === 0;
+    }
+
+    /**
+     * Whether this domain's namespace or folder lies inside the other's, or the other way round.
+     */
+    public function overlaps(self $other): bool
+    {
+        return $this->ownsName($other->namespace.'\\') || $other->ownsName($this->namespace.'\\')
+            || strcasecmp($this->namespace, $other->namespace) === 0
+            || $this->holdsFile($other->folder) || $other->holdsFile($this->folder) || $this->folder === $other->folder;
     }
 
     public function holdsListenerFile(string $path): bool

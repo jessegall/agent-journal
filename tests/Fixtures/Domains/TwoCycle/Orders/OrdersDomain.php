@@ -18,4 +18,12 @@ final class OrdersDomain implements Domain
     {
         return [PaymentsDomain::class];
     }
+
+    /**
+     * @return list<class-string>
+     */
+    public function exports(): array
+    {
+        return [];
+    }
 }

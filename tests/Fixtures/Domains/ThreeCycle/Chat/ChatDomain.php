@@ -18,4 +18,12 @@ final class ChatDomain implements Domain
     {
         return [HooksDomain::class];
     }
+
+    /**
+     * @return list<class-string>
+     */
+    public function exports(): array
+    {
+        return [];
+    }
 }

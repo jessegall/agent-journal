@@ -17,4 +17,12 @@ final class TasksDomain implements Domain
     {
         return [];
     }
+
+    /**
+     * @return list<class-string>
+     */
+    public function exports(): array
+    {
+        return [];
+    }
 }

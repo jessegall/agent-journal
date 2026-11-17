@@ -18,4 +18,12 @@ final class AgentsDomain implements Domain
     {
         return [ChatDomain::class];
     }
+
+    /**
+     * @return list<class-string>
+     */
+    public function exports(): array
+    {
+        return [];
+    }
 }
