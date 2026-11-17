@@ -24,11 +24,15 @@ LIMIT_SECONDS = 30
 KEPT_SECONDS = 3600
 FAILURE_KEPT_SECONDS = 300
 TAG = re.compile(r"/releases/download/([^/]+)/")
+BRANCH_ARCHIVE = re.compile(r"/tar\.gz/refs/heads/([^/]+)$")
+CODE_FOLDER = "src"
 
 
 class ReleaseSource:
     """The release address install.sh downloads from: its checksums.txt read for the archive's SHA-256, and
-    the archive downloaded, checked against it and unpacked into a folder of its own."""
+    the archive downloaded, checked against it and unpacked into a folder of its own. An address that is a
+    branch's archive, as GitHub serves the version-5 branch, is told apart by the ETag of its head, and its
+    archive holds the code one folder down."""
 
     def __init__(self, settings: SettingValues, home: JournalHome, clock: Clock) -> None:
         self.settings, self.home, self.clock = settings, home, clock
@@ -51,6 +55,9 @@ class ReleaseSource:
         return release
 
     def fetched_newest(self, address: str) -> PublishedRelease:
+        branch = BRANCH_ARCHIVE.search(address)
+        if branch:
+            return PublishedRelease(address, self.head_tag(address), branch[1])
         text, final_address = self.fetched(f"{address}/{CHECKSUMS}")
         checksum = next((line.split()[0] for line in text.decode(errors="replace").splitlines() if line.split()[1:] == [ARCHIVE]), "")
         if not checksum:
@@ -72,18 +79,37 @@ class ReleaseSource:
         FileAccess.write(self.home.newest_release_file, json.dumps({**values, "at": self.clock.timestamp().text}))
 
     def unpacked(self, release: PublishedRelease, folder: Path) -> Path:
-        archive, _ = self.fetched(f"{release.address}/{ARCHIVE}")
-        if hashlib.sha256(archive).hexdigest() != release.checksum:
-            raise Refusal(f"the checksum of {ARCHIVE} does not match the release's, so nothing was installed", "check the release address, then try again")
+        if BRANCH_ARCHIVE.search(release.address):
+            archive, _ = self.fetched(release.address)
+        else:
+            archive, _ = self.fetched(f"{release.address}/{ARCHIVE}")
+            if hashlib.sha256(archive).hexdigest() != release.checksum:
+                raise Refusal(f"the checksum of {ARCHIVE} does not match the release's, so nothing was installed", "check the release address, then try again")
         with FileAccess.temporary_writer(Path(tempfile.gettempdir()), mode="w+b", suffix=".tar.gz") as download:
             download.write(archive)
             download.flush()
             with tarfile.open(download.name, "r:gz") as unpacking:
                 unpacking.extractall(folder, filter="data")
-        return folder / "src"
+        return self.code_folder(folder)
+
+    @staticmethod
+    def code_folder(folder: Path) -> Path:
+        """The src of an unpacked archive: at its top, as a release packs it, or one folder down, as a branch's
+        archive holds it."""
+        if FileAccess.is_dir(folder / CODE_FOLDER):
+            return folder / CODE_FOLDER
+        return next(FileAccess.glob(folder, f"*/{CODE_FOLDER}"))
 
     def address(self) -> str:
         return self.settings.project.text(UpdateSetting.RELEASE_ADDRESS.key).rstrip("/")
+
+    @staticmethod
+    def head_tag(address: str) -> str:
+        try:
+            with urllib.request.urlopen(urllib.request.Request(address, method="HEAD"), timeout=LIMIT_SECONDS) as response:
+                return response.headers.get("ETag", "").strip('"')
+        except (OSError, ValueError) as error:
+            raise Refusal(f"the branch at {address} could not be read: {error}", "check the release address in the settings") from error
 
     @staticmethod
     def fetched(address: str) -> tuple[bytes, str]:

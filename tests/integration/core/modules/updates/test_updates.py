@@ -170,3 +170,10 @@ def expect_last(story, text) -> None:
 def expect_notes_answer(answer, expected) -> None:
     actual = answer['notes'][0]
     assert actual == expected, actual
+
+
+def test_a_branch_archive_holds_its_code_one_folder_down_and_a_release_at_its_top(tmp_path):
+    (tmp_path / "branch" / "agent-journal-version-5" / "src").mkdir(parents=True)
+    (tmp_path / "release" / "src").mkdir(parents=True)
+    assert ReleaseSource.code_folder(tmp_path / "branch") == tmp_path / "branch" / "agent-journal-version-5" / "src"
+    assert ReleaseSource.code_folder(tmp_path / "release") == tmp_path / "release" / "src"
