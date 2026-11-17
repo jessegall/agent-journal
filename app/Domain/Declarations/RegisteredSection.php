@@ -1,0 +1,60 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Declarations;
+
+use App\Domain\Contracts\SectionReader;
+use App\Domain\Contracts\VisibilityCheck;
+use App\Domain\Exceptions\UiSlotMismatch;
+
+/**
+ * A checked section of an installed domain, joined to the page whose slot it fills: its full key, its reader, its
+ * component file and its deferred prop name on that page.
+ */
+final readonly class RegisteredSection
+{
+    private function __construct(
+        public DomainUi $owner,
+        public Section $section,
+        public string $key,
+        public RegisteredPage $host,
+        public Slot $slot,
+        public ReaderDefinition $reader,
+        public string $componentFile,
+        public string $propName,
+    ) {}
+
+    public static function of(DomainUi $owner, Section $section, RegisteredPage $host): self
+    {
+        $key = $owner->fullKey('section', $section->key);
+        $slot = $host->slots[$section->slot];
+
+        if ($slot->takes !== $section->takes) {
+            throw UiSlotMismatch::takes($key, $section->slot, $slot->takes->value, $section->takes->value);
+        }
+
+        if ($section->visibility !== null) {
+            $owner->checkImplements($key, $section->visibility, VisibilityCheck::class);
+        }
+
+        return new self(
+            owner: $owner,
+            section: $section,
+            key: $key,
+            host: $host,
+            slot: $slot,
+            reader: ReaderDefinition::of($owner, $key, $section->reader, SectionReader::class, $section->dataClass),
+            componentFile: $owner->componentFile($key, $section->component),
+            propName: 'section_'.str_replace(['.', '-'], '_', "{$section->slot}.{$key}"),
+        );
+    }
+
+    /**
+     * @return list<ActionRoute>
+     */
+    public function declaredActions(): array
+    {
+        return $this->section->actions;
+    }
+}
