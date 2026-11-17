@@ -8,15 +8,15 @@ use App\Domain\Links\Models\Link;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Links\Label;
 use Tests\Fixtures\Links\Note;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 final class LinkableTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshHookDatabase;
 
     protected function setUp(): void
     {

@@ -21,13 +21,12 @@ use App\Domain\Hooks\Storage\RecordedSteps;
 use App\Domain\Hooks\Storage\StackTarget;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Support\HookDatabase;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 final class HookScopeTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshHookDatabase;
 
     protected function setUp(): void
     {
@@ -105,11 +104,6 @@ final class HookScopeTest extends TestCase
         $this->assertSame([2, 20], [$stack->agent_id, $stack->session_id]);
         $this->assertSame([2, 20], [$call->agent_id, $call->session_id]);
         $this->assertSame(0, AgentStackRow::query()->forTarget($other)->count());
-    }
-
-    protected function beforeRefreshingDatabase(): void
-    {
-        HookDatabase::select($this->app);
     }
 
     private function startRequestAs(int $agentId, int $sessionId): void

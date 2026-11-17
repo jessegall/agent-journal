@@ -11,17 +11,16 @@ use App\Domain\Agents\Http\Middleware\AuthenticateAgent;
 use App\Domain\Agents\LaunchCredentials;
 use App\Domain\Agents\Models\LaunchCredential;
 use App\Domain\Hooks\Stack\StateTypes;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestLaunch;
-use Tests\Support\HookDatabase;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 final class AgentContextTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshHookDatabase;
 
     private const BODY = '{"hook":"stop"}';
 
@@ -129,11 +128,6 @@ final class AgentContextTest extends TestCase
 
         $this->callAs($second)->assertJson(['agent' => $second->agent->id, 'session' => $second->session->id]);
         $this->assertSame($second->session->id, $this->app->make(AgentContext::class)->sessionId);
-    }
-
-    protected function beforeRefreshingDatabase(): void
-    {
-        HookDatabase::select($this->app);
     }
 
     /**

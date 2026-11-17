@@ -24,14 +24,14 @@ use App\Domain\Hooks\Storage\StackTarget;
 use App\Domain\Hooks\Storage\StoredValueInvalid;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\HookDatabase;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 final class HookStorageTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshHookDatabase;
 
     public function test_the_tests_run_on_the_dedicated_postgres_database(): void
     {
@@ -162,11 +162,6 @@ final class HookStorageTest extends TestCase
         parent::setUp();
 
         $this->app->instance(AgentContext::class, new AgentContext(7, 9, 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64))));
-    }
-
-    protected function beforeRefreshingDatabase(): void
-    {
-        HookDatabase::select($this->app);
     }
 
     private function frames(): FrameRecords

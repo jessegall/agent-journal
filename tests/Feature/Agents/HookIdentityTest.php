@@ -10,18 +10,17 @@ use App\Domain\Hooks\HookIdentityExpired;
 use App\Domain\Hooks\HookRetryWindow;
 use App\Domain\Hooks\StackAccess;
 use Carbon\CarbonImmutable;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestLaunch;
-use Tests\Support\HookDatabase;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 final class HookIdentityTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshHookDatabase;
 
     private const BODY = '{"hook":"stop","turn":"turn-1"}';
 
@@ -130,11 +129,6 @@ final class HookIdentityTest extends TestCase
         unset($headers['HTTP_X_JOURNAL_CALL_SIGNATURE']);
 
         $this->send($launch, $headers)->assertUnauthorized()->assertJson(['message' => 'The call carries no X-Journal-Call-Signature header.']);
-    }
-
-    protected function beforeRefreshingDatabase(): void
-    {
-        HookDatabase::select($this->app);
     }
 
     /**
