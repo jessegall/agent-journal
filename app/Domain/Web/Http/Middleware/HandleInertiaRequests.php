@@ -2,12 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Middleware;
+namespace App\Domain\Web\Http\Middleware;
 
+use App\Domain\Access\Models\User;
+use App\Domain\Web\Data\SharedData;
+use App\Domain\Web\Data\ViewerData;
 use Illuminate\Container\Attributes\Config;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
+/**
+ * The one Inertia middleware: the root view, the asset version and the shared Data every page receives.
+ */
 class HandleInertiaRequests extends Middleware
 {
     /**
@@ -40,9 +46,14 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $person = $request->user();
+        $shared = $person instanceof User
+            ? SharedData::from(['name' => $this->appName, 'viewer' => ViewerData::from($person)])
+            : SharedData::from(['name' => $this->appName]);
+
         return [
             ...parent::share($request),
-            'name' => $this->appName,
+            ...$shared->toArray(),
         ];
     }
 }

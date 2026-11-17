@@ -27,7 +27,6 @@ final class DomainDeclarationTest extends TestCase
      */
     private const array STARTER_KIT_FILES = [
         'Http/Controllers/Controller.php',
-        'Http/Middleware/HandleInertiaRequests.php',
         'Providers/AppServiceProvider.php',
     ];
 

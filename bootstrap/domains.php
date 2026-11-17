@@ -11,6 +11,7 @@ use App\Domain\Reminders\RemindersDomain;
 use App\Domain\Rules\RulesDomain;
 use App\Domain\Sequences\SequencesDomain;
 use App\Domain\Tasks\TasksDomain;
+use App\Domain\Web\WebDomain;
 
 return [
     TasksDomain::class,
@@ -23,4 +24,5 @@ return [
     ProfilesDomain::class,
     ProcessesDomain::class,
     AccessDomain::class,
+    WebDomain::class,
 ];

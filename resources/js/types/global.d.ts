@@ -15,6 +15,7 @@ declare module '@inertiajs/core' {
     export interface InertiaConfig {
         sharedPageProps: {
             name: string;
+            viewer?: { name: string };
             [key: string]: unknown;
         };
     }

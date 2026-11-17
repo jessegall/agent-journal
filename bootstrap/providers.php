@@ -9,6 +9,7 @@ use App\Core\Hooks\HooksServiceProvider;
 use App\Domain\Access\AccessServiceProvider;
 use App\Domain\DomainServiceProvider;
 use App\Domain\Processes\ProcessesServiceProvider;
+use App\Domain\Web\WebServiceProvider;
 use App\Providers\AppServiceProvider;
 
 return [
@@ -20,4 +21,5 @@ return [
     HooksServiceProvider::class,
     ProcessesServiceProvider::class,
     AccessServiceProvider::class,
+    WebServiceProvider::class,
 ];

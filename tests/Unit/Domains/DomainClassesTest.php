@@ -15,6 +15,7 @@ use App\Domain\Reminders\RemindersDomain;
 use App\Domain\Rules\RulesDomain;
 use App\Domain\Sequences\SequencesDomain;
 use App\Domain\Tasks\TasksDomain;
+use App\Domain\Web\WebDomain;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -37,6 +38,7 @@ final class DomainClassesTest extends TestCase
         yield 'Reminders' => [RemindersDomain::class, []];
         yield 'Processes' => [ProcessesDomain::class, []];
         yield 'Access' => [AccessDomain::class, []];
+        yield 'Web' => [WebDomain::class, [AccessDomain::class]];
     }
 
     /**
