@@ -6,6 +6,7 @@ namespace App\Domain\Chat\Models;
 
 use App\Domain\Chat\MessageState;
 use App\Domain\Chat\MessageWork;
+use App\Domain\Hooks\Models\OwnedByOneAgent;
 use App\Domain\Hooks\Storage\StackTarget;
 use App\Domain\Links\Linkable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -14,6 +15,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * One message. When it needs an agent's answer, the agent and session that owe it are set by asking for the answer.
+ * Only the agent it is addressed to reads it; a message not yet addressed belongs to no agent.
  *
  * @property int $id
  * @property string $body
@@ -27,6 +29,7 @@ use Illuminate\Support\Carbon;
 final class Message extends Model
 {
     use Linkable;
+    use OwnedByOneAgent;
 
     /**
      * @var array<string, mixed>

@@ -33,8 +33,8 @@ final readonly class AgentMemories
             return;
         }
 
-        Memory::query()->where('agent_id', $agentId)->decrement('weight');
-        Memory::query()->where('agent_id', $agentId)->where('weight', '<=', 0)->delete();
+        Memory::query()->ownedBy($agentId)->decrement('weight');
+        Memory::query()->ownedBy($agentId)->where('weight', '<=', 0)->delete();
     }
 
     /**
@@ -42,7 +42,7 @@ final readonly class AgentMemories
      */
     public function remindersFor(int $agentId): array
     {
-        $texts = Memory::query()->where('agent_id', $agentId)->orderByDesc('weight')->orderBy('id')->pluck('text')->all();
+        $texts = Memory::query()->ownedBy($agentId)->orderByDesc('weight')->orderBy('id')->pluck('text')->all();
 
         return array_values(array_map(fn (string $text) => "Memory: {$text}", $texts));
     }

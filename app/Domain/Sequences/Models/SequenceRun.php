@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sequences\Models;
 
+use App\Domain\Hooks\Models\OwnedByOneAgent;
 use App\Domain\Hooks\Storage\StackTarget;
 use App\Domain\Links\Linkable;
 use App\Domain\Sequences\SequenceRunState;
@@ -14,6 +15,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * One run of a sequence: its steps, the step it is on and whether it still runs. The agent and session following it are set by starting it.
+ * Only the agent following it reads it.
  *
  * @property int $id
  * @property string $name
@@ -29,6 +31,7 @@ use Illuminate\Support\Carbon;
 final class SequenceRun extends Model
 {
     use Linkable;
+    use OwnedByOneAgent;
 
     /**
      * @var array<string, mixed>

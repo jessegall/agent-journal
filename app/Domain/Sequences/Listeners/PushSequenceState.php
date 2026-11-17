@@ -21,6 +21,6 @@ final readonly class PushSequenceState
 
     public function handle(SequenceStarted $event): void
     {
-        $this->stacks->push($event->target, FollowingSequenceReference::forRun($this->runs->get($event->runId)));
+        $this->stacks->push($event->target, FollowingSequenceReference::forRun($this->runs->followedBy($event->target, $event->runId)));
     }
 }

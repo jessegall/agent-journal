@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * A standing instruction every agent gets, until it is removed.
+ * Every agent reads every rule, so it has no agent limit.
  *
  * @property int $id
  * @property string $text

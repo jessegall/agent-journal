@@ -21,6 +21,6 @@ final readonly class PushMessageState
 
     public function handle(MessageNeedsAnswer $event): void
     {
-        $this->stacks->push($event->target, AnsweringMessageReference::forMessage($this->messages->get($event->messageId)));
+        $this->stacks->push($event->target, AnsweringMessageReference::forMessage($this->messages->addressedTo($event->target, $event->messageId)));
     }
 }

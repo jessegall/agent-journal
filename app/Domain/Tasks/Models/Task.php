@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * One task. Each start begins a run; the agent and session working on it are set only by starting it.
+ * Every agent reads every task, so it has no agent limit.
  *
  * @property int $id
  * @property string $title
