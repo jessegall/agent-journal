@@ -27,6 +27,7 @@ from tests.stories.suites.coding.modules.workers.support.program_split import ou
 from tests.stories.suites.coding.modules.workers.usage_lockdown_held_starts import launches
 from tests.stories.support.program_states import real_program_states
 from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
+from suites.coding.modules.workers.ticks.unused_worker_retirements import UnusedWorkerRetirements
 
 __all__ = ["ended_worker", "launches", "missing_program", "running_worker", "stopped_worker"]
 
@@ -167,3 +168,14 @@ def test_a_cold_worker_with_an_open_worktree_starts_its_new_session_in_the_same_
     current = story.first_row(Worktree, session_agent_id=worker.id)
     story.expect_rows(story.row(Agent, worker.id).session != worker.session, request["folder"] == opened.folder, current.id == opened.id, current.folder == opened.folder,
                       current.branch == opened.branch, uncommitted_file.read_text() == UNCOMMITTED_TEXT, len(worktree_rows(story, worker.id)) == 1, detail=str(request))
+
+
+def test_a_merged_worker_stopped_past_the_idle_hours_is_retired_for_going_unused(merged_worker):
+    story = merged_worker
+    story.advance(timedelta(hours=23))
+    UnusedWorkerRetirements()(story.container)
+    story.expect_rows(story.row(Agent, story.worker.id).retired_at is None)
+    story.advance(timedelta(hours=2))
+    UnusedWorkerRetirements()(story.container)
+    retired = story.row(Agent, story.worker.id)
+    story.expect_rows(retired.retired_at is not None, retired.retirement_reason == "it took no job for 24 hours")

@@ -32,8 +32,9 @@ class WorkerStartedWork:
         self.guidance, self.settings, self.tasks = guidance, settings, tasks
         self.queries, self.unfinished, self.stop, self.bus = queries, unfinished, stop, bus
 
+    # the cheap check of assigned work comes first, so a worker with nothing left never has its round worked out
     def workers(self) -> list[Agent]:
-        return [worker for worker in self.stopped_workers() if self.is_abandoned(worker)]
+        return [worker for worker in self.stopped_with_tasks() if self.is_abandoned(worker)]
 
     def stopped_workers(self) -> list[Agent]:
         stopped = self.queries.query(Agent).filter(role=Worker.key).matching(HasValue("ended_at")).matching(IsNull("retired_at")).matching(IsNull("paused_at"))

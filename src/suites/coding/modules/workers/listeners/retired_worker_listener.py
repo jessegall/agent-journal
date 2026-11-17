@@ -15,7 +15,6 @@ from suites.coding.modules.workers.support.worker_questions import WorkerQuestio
 from suites.coding.modules.workers.support.worker_unfinished_tasks import WorkerUnfinishedTasks
 
 SOURCE = "workers.retired-worker"
-RETIRED_PLANS_REASON = "a retired worker leaves every plan given to it"
 
 
 class RetiredWorkerListener(SaveListener[Updated[Agent]]):
@@ -42,6 +41,6 @@ class RetiredWorkerListener(SaveListener[Updated[Agent]]):
                 self.inbox.send_agent_message(self.unfinished.message(RetiredWorkerTasksMessage, worker, tasks), SOURCE, context)
 
     def leave_plans(self, worker: Agent, context: Context) -> None:
-        for held in (*self.queries.query(Plan).every_row(RETIRED_PLANS_REASON), *self.queries.query(Phase).every_row(RETIRED_PLANS_REASON)):
-            if worker.id in self.assignments.actors(held):
+        for model in (Plan, Phase):
+            for held in self.queries.query(model).find_many(self.assignments.held_row_ids(model, worker.id)):
                 self.assignments.unassign(held, context, worker.id)

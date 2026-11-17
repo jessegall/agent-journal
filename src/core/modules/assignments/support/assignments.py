@@ -27,6 +27,7 @@ from core.modules.assignments.support.cascade import Cascade
 from core.modules.assignments.support.cascade_walk import CascadeWalk
 
 ROWS_REASON = "the assignments of every row asked for are read together"
+HELD_ROWS_REASON = "the rows of one model an actor holds, which an agent that is retired leaves"
 CASCADE_REASON = "an assignment cascade reaches every assignment that follows from it"
 
 
@@ -60,6 +61,10 @@ class Assignments:
 
     def kept_assignments(self, model_name: str, row_id: int, loader: Callable[[], tuple[Assignment, ...]]) -> tuple[Assignment, ...]:
         return self.kept.read(self.queries.query(Assignment).filter(subject_model=model_name, subject_id=row_id), loader, name="assignments.row_assignments")
+
+    # the numbers of the rows of one model an actor holds, read by the actor in one query
+    def held_row_ids(self, model: type[Model], actor_id: int) -> tuple[int, ...]:
+        return tuple(assignment.subject_id for assignment in self.queries.query(Assignment).filter(subject_model=model.model_name, actor_id=actor_id).every_row(HELD_ROWS_REASON))
 
     def actors(self, row: Model) -> tuple[int, ...]:
         return tuple(assignment.actor_id for assignment in self.assignments(row))
