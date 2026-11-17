@@ -38,7 +38,7 @@ final readonly class AgentStacks
             new FrameRecord((string) Str::ulid(), new StateReference($role->value, NoSubject::None), true, $role->schemaVersion()),
         ]));
 
-        $this->lockedRow($target)->frames->checkBottomFor($role);
+        AgentStackRow::lockFor($target)->frames->checkBottomFor($role);
     }
 
     /**
@@ -49,21 +49,10 @@ final readonly class AgentStacks
         $this->requireTransaction($target);
         $this->access->checkTarget($target);
 
-        $row = $this->lockedRow($target);
+        $row = AgentStackRow::lockFor($target);
         $stack = $this->restorer->restore($row->frames, $this->access->role())->withStateOnTop($state);
 
         $row->saveFrames($stack->records());
-    }
-
-    private function lockedRow(StackTarget $target): AgentStackRow
-    {
-        $row = AgentStackRow::query()->forTarget($target)->lockForUpdate()->first() ?? throw StackMissing::forTarget($target);
-
-        if (! $row->isActive()) {
-            throw StackAlreadyClosed::forTarget($target);
-        }
-
-        return $row;
     }
 
     private function requireTransaction(StackTarget $target): void

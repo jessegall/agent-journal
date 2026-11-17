@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Hooks\Programs;
 
+use App\Domain\Hooks\Decisions\AnswerKind;
+use App\Domain\Hooks\Storage\RecordedAnswer;
 use Spatie\LaravelData\Data;
 
 /**
@@ -17,6 +19,11 @@ final readonly class ProgramReply
         public int $exitCode,
     ) {}
 
+    public static function fromRecorded(RecordedAnswer $answer): self
+    {
+        return new self($answer->stdout, $answer->stderr, $answer->exitCode);
+    }
+
     public static function emptyObject(): self
     {
         return new self('{}', '', 0);
@@ -25,5 +32,10 @@ final readonly class ProgramReply
     public static function json(Data $body): self
     {
         return new self(json_encode((object) $body->toArray(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), '', 0);
+    }
+
+    public function recordedAs(AnswerKind $kind): RecordedAnswer
+    {
+        return RecordedAnswer::of($kind, $this->stdout, $this->stderr, $this->exitCode);
     }
 }

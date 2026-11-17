@@ -101,7 +101,7 @@ final class HookStorageTest extends TestCase
 
         $stored = HookCall::query()->sole();
 
-        $this->assertSame($response, $stored->answer->response);
+        $this->assertSame($response, $stored->answer->stdout);
         $this->assertSame(AnswerKind::PreventStop, $stored->answer->kind);
         $this->assertSame($steps->toArray(), $stored->steps->toArray());
         $this->assertSame(ChangeKind::Push, $stored->steps->steps[1]->change);

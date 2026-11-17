@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Hooks\Programs;
 
+use App\Domain\Hooks\Decisions\Decision;
+use App\Domain\Hooks\Stack\AgentStack;
 use App\Domain\Hooks\Stack\HookAnswer;
 
 /**
@@ -13,6 +15,18 @@ enum RewriteSupport: string
 {
     case WithoutApproval = 'without_approval';
     case NeedsApproval = 'needs_approval';
+
+    /**
+     * A rewrite this program cannot take becomes a refusal on the stack from before the walk, so the rewrite's own pushes are dropped.
+     */
+    public function settle(HookAnswer $answer, AgentStack $stackBefore): HookAnswer
+    {
+        if ($this === self::WithoutApproval || ! $answer->isRewrite()) {
+            return $answer;
+        }
+
+        return $answer->replacedBy(Decision::deny(ProgramReplies::REWRITE_REFUSAL), $stackBefore);
+    }
 
     public function reply(HookAnswer $answer, NativeToolInput $original): ProgramReply
     {

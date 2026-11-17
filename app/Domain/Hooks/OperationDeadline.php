@@ -11,6 +11,11 @@ final readonly class OperationDeadline
 {
     public function __construct(public int $milliseconds = 5000) {}
 
+    public function hasRunOut(): bool
+    {
+        return $this->milliseconds <= 0;
+    }
+
     public function lockMilliseconds(): int
     {
         return max(1, intdiv($this->milliseconds * 4, 5));

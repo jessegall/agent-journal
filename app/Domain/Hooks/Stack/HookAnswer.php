@@ -23,6 +23,14 @@ final readonly class HookAnswer
         public AgentStack $stack,
     ) {}
 
+    /**
+     * The same walk answered by another decision on another stack, such as a refused rewrite on the stack from before it.
+     */
+    public function replacedBy(Decision $decision, AgentStack $stack): self
+    {
+        return new self($decision, $this->context, $this->steps, $stack);
+    }
+
     public function isRewrite(): bool
     {
         return $this->decision->answerKind() === AnswerKind::Rewrite;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Hooks;
+namespace App\Domain\Hooks\Models;
 
 use App\Domain\Hooks\Storage\StackTarget;
 use RuntimeException;

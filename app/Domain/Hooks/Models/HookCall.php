@@ -47,6 +47,14 @@ final class HookCall extends Model
     }
 
     /**
+     * Whether this recorded call is the same call as the identity: the same id with the same input.
+     */
+    public function isSameCallAs(HookIdentity $hook): bool
+    {
+        return $this->event_id === $hook->hookId && hash_equals($this->input_digest, $hook->inputDigest);
+    }
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -57,6 +65,15 @@ final class HookCall extends Model
             'answer' => RecordedAnswerCast::class,
             'steps' => RecordedStepsCast::class,
         ];
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forHookId(Builder $query, string $hookId): void
+    {
+        $query->where('event_id', $hookId);
     }
 
     /**

@@ -65,6 +65,20 @@ final class AgentStackRow extends Model
         ]);
     }
 
+    /**
+     * The active stack of the target, locked for this transaction.
+     */
+    public static function lockFor(StackTarget $target): self
+    {
+        $row = self::query()->forTarget($target)->lockForUpdate()->first() ?? throw StackMissing::forTarget($target);
+
+        if (! $row->isActive()) {
+            throw StackAlreadyClosed::forTarget($target);
+        }
+
+        return $row;
+    }
+
     public function isActive(): bool
     {
         return $this->status === StackStatus::Active;

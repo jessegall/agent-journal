@@ -8,7 +8,7 @@ use App\Domain\Hooks\Decisions\AnswerKind;
 use Spatie\LaravelData\Data;
 
 /**
- * The final answer of one hook call as it is kept for a retry: its kind and the exact response sent to the program.
+ * The final answer of one hook call as it is kept for a retry: its kind and the exact reply the program received.
  */
 final class RecordedAnswer extends Data
 {
@@ -17,12 +17,14 @@ final class RecordedAnswer extends Data
     public function __construct(
         public readonly int $version,
         public readonly AnswerKind $kind,
-        public readonly string $response,
+        public readonly string $stdout,
+        public readonly string $stderr,
+        public readonly int $exitCode,
     ) {}
 
-    public static function of(AnswerKind $kind, string $response): self
+    public static function of(AnswerKind $kind, string $stdout, string $stderr = '', int $exitCode = 0): self
     {
-        return new self(self::CURRENT_VERSION, $kind, $response);
+        return new self(self::CURRENT_VERSION, $kind, $stdout, $stderr, $exitCode);
     }
 
     public function checkVersion(): self
