@@ -29,6 +29,14 @@ final class Agent extends Model implements Assignee
 {
     use Linkable;
 
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['retired_at' => 'datetime'];
+    }
+
     public function actorKind(): ActorKind
     {
         return ActorKind::Agent;
@@ -53,13 +61,5 @@ final class Agent extends Model implements Assignee
     {
         $this->retired_at = Carbon::instance($retiredAt);
         $this->save();
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return ['retired_at' => 'datetime'];
     }
 }

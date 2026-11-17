@@ -27,6 +27,17 @@ final class LaunchCredential extends Model
 {
     use Linkable;
 
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'agent_session_id' => 'integer',
+            'revoked_at' => 'immutable_datetime',
+        ];
+    }
+
     public function issueFor(AgentSession $session, string $tokenHash): void
     {
         $this->agent_session_id = $session->id;
@@ -51,16 +62,5 @@ final class LaunchCredential extends Model
     public function session(): BelongsTo
     {
         return $this->belongsTo(AgentSession::class, 'agent_session_id');
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'agent_session_id' => 'integer',
-            'revoked_at' => 'immutable_datetime',
-        ];
     }
 }

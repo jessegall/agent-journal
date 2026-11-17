@@ -50,6 +50,18 @@ final class Plan extends Model implements Assignable
     protected $attributes = ['state' => 'planned', 'focused' => false];
 
     /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'kind' => PlanKind::class,
+            'state' => PlanState::class,
+            'focused' => 'boolean',
+        ];
+    }
+
+    /**
      * Starts the plan; true when it changed, false when it was already started. Any other state refuses.
      */
     public function startOnce(): bool
@@ -141,18 +153,6 @@ final class Plan extends Model implements Assignable
     public function phases(): HasMany
     {
         return $this->hasMany(Phase::class)->orderBy('position');
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'kind' => PlanKind::class,
-            'state' => PlanState::class,
-            'focused' => 'boolean',
-        ];
     }
 
     public function assignmentIdentity(): RecordIdentity

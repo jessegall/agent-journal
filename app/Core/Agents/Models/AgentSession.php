@@ -37,6 +37,21 @@ final class AgentSession extends Model
 {
     use Linkable;
 
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'agent_id' => 'integer',
+            'parent_session_id' => 'integer',
+            'status' => SessionStatus::class,
+            'ended_at' => 'immutable_datetime',
+            'last_heartbeat_at' => 'immutable_datetime',
+            'suspected_lost_at' => 'immutable_datetime',
+        ];
+    }
+
     public function startFor(Agent $agent, self|null $parent): void
     {
         $this->agent_id = $agent->id;
@@ -128,20 +143,5 @@ final class AgentSession extends Model
     public function agent(): BelongsTo
     {
         return $this->belongsTo(Agent::class);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'agent_id' => 'integer',
-            'parent_session_id' => 'integer',
-            'status' => SessionStatus::class,
-            'ended_at' => 'immutable_datetime',
-            'last_heartbeat_at' => 'immutable_datetime',
-            'suspected_lost_at' => 'immutable_datetime',
-        ];
     }
 }

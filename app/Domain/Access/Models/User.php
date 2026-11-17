@@ -45,6 +45,20 @@ class User extends Authenticatable implements Assignee, MustVerifyEmail, Passkey
      */
     use HasFactory, Linkable, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+            'two_factor_confirmed_at' => 'datetime',
+        ];
+    }
+
     public function actorKind(): ActorKind
     {
         return ActorKind::User;
@@ -62,19 +76,5 @@ class User extends Authenticatable implements Assignee, MustVerifyEmail, Passkey
     {
         $this->password = $password;
         $this->save();
-    }
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'two_factor_confirmed_at' => 'datetime',
-        ];
     }
 }

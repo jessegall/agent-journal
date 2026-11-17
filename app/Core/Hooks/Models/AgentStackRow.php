@@ -41,6 +41,22 @@ final class AgentStackRow extends Model
 
     protected $table = 'agent_stacks';
 
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'agent_id' => 'integer',
+            'session_id' => 'integer',
+            'version' => 'integer',
+            'frames' => FrameRecordsCast::class,
+            'status' => StackStatus::class,
+            'closed_at' => 'immutable_datetime',
+            'held_at' => 'immutable_datetime',
+        ];
+    }
+
     public function startFor(StackTarget $target, FrameRecords $frames): void
     {
         $this->agent_id = $target->agentId;
@@ -124,22 +140,6 @@ final class AgentStackRow extends Model
         $this->status = StackStatus::Closed;
         $this->closed_at = $time;
         $this->save();
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'agent_id' => 'integer',
-            'session_id' => 'integer',
-            'version' => 'integer',
-            'frames' => FrameRecordsCast::class,
-            'status' => StackStatus::class,
-            'closed_at' => 'immutable_datetime',
-            'held_at' => 'immutable_datetime',
-        ];
     }
 
     /**

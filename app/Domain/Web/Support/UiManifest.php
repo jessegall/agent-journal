@@ -42,7 +42,7 @@ final readonly class UiManifest
             'resources/js/generated/ui-manifest.ts' => $this->render('ui-manifest.ts', [
                 'hash' => $hash,
                 'components' => array_map(fn (string $path) => '../../../'.$path, $components),
-                'declaredPages' => array_values(array_map(fn (RegisteredPage $page) => $page->componentName(), $this->declarations->pages())),
+                'declaredPages' => array_map(fn (RegisteredPage $page) => $page->componentName(), $this->declarations->pages()),
             ]),
             'tsconfig.domains.json' => $this->typeScriptConfig($hash, $folders),
             'vite.domains.ts' => $this->render('vite.domains.ts', [
@@ -60,7 +60,7 @@ final readonly class UiManifest
                 'pages' => $this->propTypes->pageProps(),
                 'windows' => $this->propTypes->windowProps(),
             ]),
-            'resources/js/generated/ui-prop-checks.ts' => $this->render('ui-prop-checks.ts', ['hash' => $hash, 'checks' => $this->propChecks($root), 'dataTypes' => array_values(array_unique(array_map($this->propTypes->dataTypeOf(...), array_values($this->declarations->pages()))))]),
+            'resources/js/generated/ui-prop-checks.ts' => $this->render('ui-prop-checks.ts', ['hash' => $hash, 'checks' => $this->propChecks($root), 'dataTypes' => array_values(array_unique(array_map($this->propTypes->dataTypeOf(...), $this->declarations->pages())))]),
             'bootstrap/cache/ui-components.php' => "<?php\n\nreturn ".var_export($components, true).";\n",
         ];
 

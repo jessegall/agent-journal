@@ -37,6 +37,18 @@ final class Message extends Model
      */
     protected $attributes = ['state' => 'sent'];
 
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'state' => MessageState::class,
+            'agent_id' => 'integer',
+            'session_id' => 'integer',
+        ];
+    }
+
     public function requireAnswerFrom(StackTarget $target): void
     {
         $this->state = MessageState::WaitingForAnswer;
@@ -60,17 +72,5 @@ final class Message extends Model
     public function work(): MessageWork
     {
         return new MessageWork($this->id, MessageWorkState::of($this->state));
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'state' => MessageState::class,
-            'agent_id' => 'integer',
-            'session_id' => 'integer',
-        ];
     }
 }

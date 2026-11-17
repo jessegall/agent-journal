@@ -38,6 +38,19 @@ final class HookCall extends Model
 {
     use Linkable;
 
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'agent_id' => 'integer',
+            'session_id' => 'integer',
+            'answer' => RecordedAnswerCast::class,
+            'steps' => RecordedStepsCast::class,
+        ];
+    }
+
     public function recordFor(HookIdentity $hook, RecordedAnswer $answer, RecordedSteps $steps): void
     {
         $this->agent_id = $hook->agentId;
@@ -55,19 +68,6 @@ final class HookCall extends Model
     public function isSameCallAs(HookIdentity $hook): bool
     {
         return $this->event_id === $hook->hookId && hash_equals($this->input_digest, $hook->inputDigest);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'agent_id' => 'integer',
-            'session_id' => 'integer',
-            'answer' => RecordedAnswerCast::class,
-            'steps' => RecordedStepsCast::class,
-        ];
     }
 
     /**

@@ -38,6 +38,20 @@ final class SequenceRun extends Model
      */
     protected $attributes = ['current_step' => 1, 'state' => 'running'];
 
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'steps' => 'array',
+            'current_step' => 'integer',
+            'state' => SequenceRunState::class,
+            'agent_id' => 'integer',
+            'session_id' => 'integer',
+        ];
+    }
+
     public function startFor(StackTarget $target): void
     {
         $this->current_step = 1;
@@ -72,19 +86,5 @@ final class SequenceRun extends Model
     public function work(): SequenceWork
     {
         return new SequenceWork($this->id, $this->current_step, $this->steps[$this->current_step - 1], $this->state);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'steps' => 'array',
-            'current_step' => 'integer',
-            'state' => SequenceRunState::class,
-            'agent_id' => 'integer',
-            'session_id' => 'integer',
-        ];
     }
 }

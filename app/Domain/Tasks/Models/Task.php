@@ -45,6 +45,19 @@ final class Task extends Model implements Assignable
     protected $attributes = ['state' => 'open', 'run_number' => 0];
 
     /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'state' => TaskState::class,
+            'run_number' => 'integer',
+            'agent_id' => 'integer',
+            'session_id' => 'integer',
+        ];
+    }
+
+    /**
      * Starts a new run for the target; a task that is already started keeps its run.
      */
     public function startFor(StackTarget $target): void
@@ -87,19 +100,6 @@ final class Task extends Model implements Assignable
         }
 
         return new TaskWork($this->id, $runNumber, $this->state->workState());
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'state' => TaskState::class,
-            'run_number' => 'integer',
-            'agent_id' => 'integer',
-            'session_id' => 'integer',
-        ];
     }
 
     public function assignmentIdentity(): RecordIdentity

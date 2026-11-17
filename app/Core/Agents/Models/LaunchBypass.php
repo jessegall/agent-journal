@@ -29,6 +29,14 @@ final class LaunchBypass extends Model
     use Linkable;
 
     /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['agent_session_id' => 'integer', 'occurred_at' => 'immutable_datetime'];
+    }
+
+    /**
      * Keeps every bypass of the report for the session in one insert.
      */
     public static function recordAll(int $sessionId, BypassReport $report): void
@@ -43,13 +51,5 @@ final class LaunchBypass extends Model
             'created_at' => $now,
             'updated_at' => $now,
         ], $report->bypasses));
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return ['agent_session_id' => 'integer', 'occurred_at' => 'immutable_datetime'];
     }
 }

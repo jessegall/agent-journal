@@ -34,6 +34,14 @@ final class Rule extends Model
      */
     protected $attributes = ['state' => 'active'];
 
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['state' => RuleState::class];
+    }
+
     public static function proposed(string $text): self
     {
         $rule = new self(['text' => $text]);
@@ -80,14 +88,6 @@ final class Rule extends Model
 
         $this->state = $outcome;
         $this->save();
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return ['state' => RuleState::class];
     }
 
     /**

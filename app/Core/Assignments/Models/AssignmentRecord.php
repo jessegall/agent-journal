@@ -35,6 +35,14 @@ final class AssignmentRecord extends Model
 {
     protected $table = 'assignments';
 
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['holder_kind' => ActorKind::class];
+    }
+
     public static function holding(RecordIdentity $record, ActorIdentity $holder): self
     {
         return self::query()->create([
@@ -79,13 +87,5 @@ final class AssignmentRecord extends Model
         $query->withoutGlobalScope(SignedInScope::class)
             ->where('holder_kind', $holder->kind)
             ->where('holder_id', $holder->id);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return ['holder_kind' => ActorKind::class];
     }
 }

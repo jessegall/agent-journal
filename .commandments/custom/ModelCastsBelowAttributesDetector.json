@@ -1,0 +1,28 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "php",
+    "find": {
+        "select": "function",
+        "where": [
+            {
+                "name": "casts"
+            },
+            {
+                "of": "enclosingType",
+                "extendsAny": "Illuminate\\Database\\Eloquent\\Model"
+            },
+            {
+                "previous": {
+                    "is": "function"
+                }
+            }
+        ],
+        "reject": []
+    },
+    "sin": {
+        "description": "A model's casts() comes after another method instead of directly below its attributes.",
+        "name": "model-casts-below-attributes",
+        "rule": "Put casts() first among a model's methods, directly below its constants, properties and class attributes.",
+        "skill": "model-casts-below-attributes"
+    }
+}

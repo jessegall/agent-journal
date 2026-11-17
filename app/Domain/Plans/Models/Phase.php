@@ -36,6 +36,14 @@ final class Phase extends Model implements Assignable
     public const string LINK_TYPE = 'plans.phase';
 
     /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['plan_id' => 'integer', 'position' => 'integer'];
+    }
+
+    /**
      * Puts a task, named by id, at the end of this phase. The caller has checked with Tasks that the task exists.
      */
     public function addTask(int $taskId): void
@@ -101,14 +109,6 @@ final class Phase extends Model implements Assignable
     protected function holdingTask(Builder $query, int $taskId): void
     {
         $query->whereIn('id', PhaseTask::query()->select('phase_id')->where('task_id', $taskId));
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return ['plan_id' => 'integer', 'position' => 'integer'];
     }
 
     public function assignmentIdentity(): RecordIdentity

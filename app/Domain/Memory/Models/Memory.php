@@ -27,17 +27,17 @@ final class Memory extends Model
     use Linkable;
     use OwnedByOneAgent;
 
-    public function saveFor(int $agentId): void
-    {
-        $this->agent_id = $agentId;
-        $this->save();
-    }
-
     /**
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return ['agent_id' => 'integer', 'weight' => 'integer'];
+    }
+
+    public function saveFor(int $agentId): void
+    {
+        $this->agent_id = $agentId;
+        $this->save();
     }
 }
