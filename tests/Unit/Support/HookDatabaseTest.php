@@ -58,7 +58,7 @@ final class HookDatabaseTest extends TestCase
     {
         $this->runAs($selected, $token);
 
-        $refusal = $this->refusalOfSelect();
+        $refusal = $this->refusalOf(fn () => HookDatabase::select($this->app));
 
         $this->assertStringContainsString($selected, $refusal->getMessage());
         $this->assertStringContainsString($expected, $refusal->getMessage());
@@ -69,7 +69,7 @@ final class HookDatabaseTest extends TestCase
     {
         $this->runAs('journal_hooks_test', '3');
 
-        $this->assertStringContainsString('php artisan test --parallel', $this->refusalOfSelect()->getMessage());
+        $this->assertStringContainsString('php artisan test --parallel', $this->refusalOf(fn () => HookDatabase::select($this->app))->getMessage());
     }
 
     public function test_any_database_is_refused_outside_the_testing_environment(): void
@@ -77,7 +77,16 @@ final class HookDatabaseTest extends TestCase
         $this->runAs('journal_hooks_test', false);
         $this->app['env'] = 'local';
 
-        $this->assertSame(HookDatabaseRefused::outsideTesting()->getMessage(), $this->refusalOfSelect()->getMessage());
+        $this->assertSame(HookDatabaseRefused::outsideTesting()->getMessage(), $this->refusalOf(fn () => HookDatabase::select($this->app))->getMessage());
+        $this->assertNothingWasTouched();
+    }
+
+    public function test_a_parallel_run_on_another_base_database_is_refused_before_any_worker_database_exists(): void
+    {
+        $this->runAs('journal', false);
+
+        $this->assertSame(HookDatabaseRefused::otherDatabase('journal', 'journal_hooks_test')->getMessage(), $this->refusalOf(fn () => HookDatabase::checkBase($this->app))->getMessage());
+
         $this->assertNothingWasTouched();
     }
 
@@ -90,10 +99,10 @@ final class HookDatabaseTest extends TestCase
         $this->app->make(ParallelTesting::class)->resolveTokenUsing(fn () => $token);
     }
 
-    private function refusalOfSelect(): HookDatabaseRefused
+    private function refusalOf(callable $check): HookDatabaseRefused
     {
         try {
-            HookDatabase::select($this->app);
+            $check();
         } catch (HookDatabaseRefused $refusal) {
             return $refusal;
         }

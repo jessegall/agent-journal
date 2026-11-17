@@ -11,9 +11,9 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 /**
  * Runs a test on the dedicated Postgres hook database through Laravel's DatabaseTransactions: checks the selected
  * database with HookDatabase, migrates it in a serial run, and wraps the test in a transaction that is rolled back,
- * unless the test commits real rows and names no connection to wrap. In a parallel run Laravel creates, switches to and
- * migrates the worker's own database before this check runs. Work done after a commit runs when the test's inner
- * transaction commits.
+ * unless the test commits real rows and names no connection to wrap. In a parallel run Tests\CreatesApplication first
+ * checks the base database, then Laravel creates, switches to and migrates the worker's own database before this
+ * check runs. Work done after a commit runs when the test's inner transaction commits.
  */
 trait RefreshHookDatabase
 {

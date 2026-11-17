@@ -17,6 +17,8 @@ final class HookDatabase
 {
     public const string NAME = 'journal_hooks_test';
 
+    private const string BASE_CHECK_CONNECTION = 'hook_database_base_check';
+
     public static function select(Application $app): void
     {
         if (! $app->environment('testing')) {
@@ -35,6 +37,34 @@ final class HookDatabase
         }
 
         throw HookDatabaseRefused::otherDatabase($selected, $expected);
+    }
+
+    /**
+     * Refuses a parallel run whose base database is not journal_hooks_test or does not exist, before Laravel copies it.
+     */
+    public static function checkBase(Application $app): void
+    {
+        if (! $app->environment('testing')) {
+            throw HookDatabaseRefused::outsideTesting();
+        }
+
+        $database = $app->make(DatabaseManager::class);
+        $selected = $database->connection()->getDatabaseName();
+
+        if ($selected !== self::NAME) {
+            throw HookDatabaseRefused::otherDatabase($selected, self::NAME);
+        }
+
+        $server = $database->connectUsing(
+            self::BASE_CHECK_CONNECTION,
+            [...$database->connection()->getConfig(), 'database' => 'postgres'],
+        );
+        $exists = $server->table('pg_database')->where('datname', self::NAME)->exists();
+        $database->purge(self::BASE_CHECK_CONNECTION);
+
+        if (! $exists) {
+            throw HookDatabaseRefused::baseDatabaseMissing(self::NAME);
+        }
     }
 
     /**
