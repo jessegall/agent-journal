@@ -8,7 +8,7 @@ serves https with its own certificate when you give it a domain.
 On the server, with Docker and the compose plugin:
 
 ```sh
-git clone -b hosted-v4 https://github.com/jessegall/agent-journal && cd agent-journal/docker/simple
+git clone https://github.com/jessegall/agent-journal && cd agent-journal/docker/simple
 cp .env.example .env && chmod 600 .env    # fill in the login, the domain, the repository and Claude's login
 docker compose up -d --build
 docker compose logs -f
