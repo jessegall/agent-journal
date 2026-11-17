@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Core\Links\LinkTypeRenames;
+use App\Core\Links\Support\LinkTypeRenames;
 use Illuminate\Database\Migrations\Migration;
 
 /**

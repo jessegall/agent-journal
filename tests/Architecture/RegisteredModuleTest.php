@@ -76,7 +76,7 @@ final class RegisteredModuleTest extends TestCase
         $names = $this->boundaryChecker()->violations([
             new NameUse($plansFile, 3, NoteValue::class, NameKind::Type),
             new NameUse($notesFile, 4, 'App\Domain\Tasks\Models\Task', NameKind::Type),
-            new NameUse($notesFile, 5, 'App\Core\Hooks\AgentStacks', NameKind::Type),
+            new NameUse($notesFile, 5, 'App\Core\Hooks\Actions\AgentStacks', NameKind::Type),
         ]);
         $tables = $this->tableChecker()->violations([
             new TableUse($plansFile, 6, 'module_notes', TableKind::Read),
@@ -86,7 +86,7 @@ final class RegisteredModuleTest extends TestCase
         $this->assertSame([
             '3 uses Tests\Fixtures\Modules\Notes\Api\NoteValue, but Plans does not require Notes',
             '4 uses App\Domain\Tasks\Models\Task, but Notes does not require Tasks',
-            '5 uses App\Core\Hooks\AgentStacks, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists',
+            '5 uses App\Core\Hooks\Actions\AgentStacks, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists',
             '6 uses table module_notes of Notes; only Notes reads, joins, keys or changes its tables, so use what Notes exports',
             '7 uses table tasks of Tasks; only Tasks reads, joins, keys or changes its tables, so use what Tasks exports',
         ], array_map(fn (Violation $violation) => "{$violation->line} {$violation->reason()}", [...$names, ...$tables]));

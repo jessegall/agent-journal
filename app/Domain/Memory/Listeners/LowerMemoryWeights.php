@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Memory\Listeners;
 
 use App\Core\Hooks\Events\ContextWasCompacted;
-use App\Domain\Memory\AgentMemories;
+use App\Domain\Memory\Support\AgentMemories;
 
 /**
  * Fades the agent's memories once for this compaction, then reminds it of the ones that remain.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Programs;
 
-use App\Core\Hooks\States\ReadyStateType;
+use App\Core\Hooks\States\Support\ReadyStateType;
 
 /**
  * The reply the host gives a program when a hook call to the journal fails. During an outage the main agent goes on

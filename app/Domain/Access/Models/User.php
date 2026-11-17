@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Access\Models;
 
-use App\Core\Actors\ActorKind;
+use App\Core\Actors\Enums\ActorKind;
 use App\Core\Contracts\Actor;
-use App\Core\Links\Linkable;
+use App\Core\Links\Support\Linkable;
+use App\Domain\Access\Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;

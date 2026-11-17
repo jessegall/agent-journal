@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Tasks\Contracts;
 
 use App\Domain\Tasks\Api\TaskProgress;
-use App\Domain\Tasks\TaskCounts;
+use App\Domain\Tasks\Readers\TaskCounts;
 use Illuminate\Container\Attributes\Bind;
 
 /**

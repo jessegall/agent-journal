@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Console;
 
-use App\Core\Hooks\PruneHookHistory;
+use App\Core\Hooks\Actions\PruneHookHistory;
 use Illuminate\Console\Command;
 
 final class PruneHookHistoryCommand extends Command

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plans;
 
-use App\Core\Actors\ActorContext;
+use App\Core\Actors\Support\ActorContext;
 use App\Core\Agents\Models\Agent;
 use App\Core\Contracts\CurrentActorSetter;
 use App\Domain\Plans\Api\PlanCard;
 use App\Domain\Plans\Api\PlanFilters;
 use App\Domain\Plans\Api\PlanKind;
 use App\Domain\Plans\Models\Plan;
-use App\Domain\Plans\PlanRecords;
+use App\Domain\Plans\Readers\PlanRecords;
 use App\Domain\Tasks\Models\Task;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

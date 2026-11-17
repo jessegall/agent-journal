@@ -4,18 +4,22 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks;
 
-use App\Core\Agents\AgentContext;
+use App\Core\Agents\Support\AgentContext;
 use App\Core\Contracts\LaunchTransaction;
 use App\Core\Hooks\Console\PruneHookHistoryCommand;
 use App\Core\Hooks\Console\RelayHookCommand;
 use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Hooks\Contracts\StateFactory;
 use App\Core\Hooks\Inputs\MissingShellParser;
-use App\Core\Hooks\Models\AgentSessionScope;
 use App\Core\Hooks\Models\AgentStackRow;
 use App\Core\Hooks\Models\HookCall;
+use App\Core\Hooks\Models\Support\AgentSessionScope;
 use App\Core\Hooks\Stack\RegisteredStateFactory;
 use App\Core\Hooks\Stack\StateTypes;
+use App\Core\Hooks\Support\HookRetryWindow;
+use App\Core\Hooks\Support\OperationDeadline;
+use App\Core\Hooks\Support\RetentionPeriods;
+use App\Core\Hooks\Support\StackTransaction;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;

@@ -6,7 +6,7 @@ namespace App\Domain\Rules\Contracts;
 
 use App\Domain\Rules\Api\RuleFilters;
 use App\Domain\Rules\Api\RuleList;
-use App\Domain\Rules\RuleRecords;
+use App\Domain\Rules\Readers\RuleRecords;
 use Illuminate\Container\Attributes\Bind;
 
 /**

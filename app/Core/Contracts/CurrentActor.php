@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Core\Contracts;
 
-use App\Core\Actors\ActorContext;
-use App\Core\Actors\ActorStore;
 use App\Core\Actors\Exceptions\ActorContextMissing;
+use App\Core\Actors\Support\ActorContext;
+use App\Core\Actors\Support\ActorStore;
 use Illuminate\Container\Attributes\Bind;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat\Api\Events;
 
-use App\Core\Hooks\StackTarget;
+use App\Core\Hooks\Support\StackTarget;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**

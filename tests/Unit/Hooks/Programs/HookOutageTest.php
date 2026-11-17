@@ -6,7 +6,7 @@ namespace Tests\Unit\Hooks\Programs;
 
 use App\Core\Hooks\Programs\CallFailure;
 use App\Core\Hooks\Programs\OutageReply;
-use App\Core\Hooks\States\ReadyStateType;
+use App\Core\Hooks\States\Support\ReadyStateType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 

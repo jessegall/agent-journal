@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plans;
 
-use App\Core\Actors\ActorContext;
+use App\Core\Actors\Support\ActorContext;
 use App\Core\Contracts\CurrentActorSetter;
 use App\Domain\Plans\Actions\AddPhaseTasks;
 use App\Domain\Plans\Api\PlanKind;

@@ -8,7 +8,7 @@ use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Inputs\ContextCompacted;
 use App\Core\Hooks\Inputs\StopRequested;
 use App\Core\Hooks\States\AgentState;
-use App\Domain\Sequences\SequenceWork;
+use App\Domain\Sequences\Support\SequenceWork;
 
 /**
  * The agent is following a sequence: it may not stop while a step runs, and hears the current step after a compaction.

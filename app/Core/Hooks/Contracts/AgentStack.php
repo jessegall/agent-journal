@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Contracts;
 
-use App\Core\Hooks\AgentStacks;
+use App\Core\Hooks\Actions\AgentStacks;
 use App\Core\Hooks\Decisions\StateReference;
-use App\Core\Hooks\StackTarget;
+use App\Core\Hooks\Support\StackTarget;
 use Illuminate\Container\Attributes\Bind;
 
 /**

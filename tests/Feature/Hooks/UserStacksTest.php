@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Core\Actors\ActorContext;
 use App\Core\Actors\Exceptions\UserActorRequired;
-use App\Core\Agents\LaunchedAgent;
-use App\Core\Agents\LaunchSessions;
+use App\Core\Actors\Support\ActorContext;
+use App\Core\Agents\Actions\LaunchSessions;
 use App\Core\Agents\Models\Agent;
+use App\Core\Agents\Support\LaunchedAgent;
 use App\Core\Contracts\CurrentActorSetter;
+use App\Core\Hooks\Actions\UserStacks;
 use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Events\StateTypesRequested;
 use App\Core\Hooks\Exceptions\StackTargetRefused;
 use App\Core\Hooks\Exceptions\StackTransactionRequired;
 use App\Core\Hooks\Models\AgentStackRow;
-use App\Core\Hooks\StackTarget;
-use App\Core\Hooks\StackTransaction;
 use App\Core\Hooks\Storage\FrameRecord;
-use App\Core\Hooks\UserStacks;
+use App\Core\Hooks\Support\StackTarget;
+use App\Core\Hooks\Support\StackTransaction;
 use App\Domain\DomainRegistry;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Fixtures\Modules\Notes\NotesDomain;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Api\Events;
 
-use App\Core\Actors\ActorContext;
+use App\Core\Actors\Support\ActorContext;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**

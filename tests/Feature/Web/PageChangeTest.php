@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Core\Actors\ActorContext;
+use App\Core\Actors\Support\ActorContext;
 use App\Core\Contracts\CurrentActorSetter;
-use App\Domain\Access\AccessSettings;
 use App\Domain\Access\Models\User;
+use App\Domain\Access\Support\AccessSettings;
 use App\Domain\Plans\Api\Events\PlanProgressChanged;
 use App\Domain\Plans\Api\PlanKind;
 use App\Domain\Plans\Models\Plan;
@@ -15,8 +15,8 @@ use App\Domain\Rules\Actions\ProposeRule;
 use App\Domain\Rules\Actions\RemoveRule;
 use App\Domain\Rules\Actions\ReviewRule;
 use App\Domain\Rules\Models\Rule;
+use App\Domain\Tasks\Actions\ChangeTaskState;
 use App\Domain\Tasks\Api\Events\TaskFinished;
-use App\Domain\Tasks\ChangeTaskState;
 use App\Domain\Tasks\Models\Task;
 use App\Domain\Web\Events\PageChanged;
 use App\Domain\Web\Events\UserChannel;

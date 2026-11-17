@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Core\Actors\ActorContext;
-use App\Core\Actors\ActorKind;
+use App\Core\Actors\Enums\ActorKind;
 use App\Core\Actors\Exceptions\ActorContextMissing;
 use App\Core\Actors\Exceptions\UserActorRequired;
-use App\Core\Agents\AgentContext;
-use App\Core\Agents\SignedCall;
+use App\Core\Actors\Support\ActorContext;
+use App\Core\Agents\Support\AgentContext;
+use App\Core\Agents\Support\SignedCall;
 use App\Core\Contracts\CurrentActor;
 use App\Core\Contracts\CurrentActorSetter;
-use App\Domain\Access\AccessSettings;
 use App\Domain\Access\Models\User;
+use App\Domain\Access\Support\AccessSettings;
 use Carbon\CarbonImmutable;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

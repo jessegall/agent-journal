@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Contracts;
 
-use App\Core\Agents\AgentLabel;
-use App\Core\Agents\AgentLabels;
+use App\Core\Agents\Readers\AgentLabels;
+use App\Core\Agents\Support\AgentLabel;
 use Illuminate\Container\Attributes\Bind;
 
 /**

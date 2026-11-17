@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Domain\Access\AccessSettings;
 use App\Domain\Access\Models\User;
+use App\Domain\Access\Support\AccessSettings;
 use App\Domain\Plans\Api\PlanKind;
 use App\Domain\Plans\Api\PlanState;
 use App\Domain\Plans\Models\Plan;

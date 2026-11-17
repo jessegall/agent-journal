@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Core\Links\Exceptions\UnknownLinkType;
-use App\Core\Links\LinkTypeRenames;
+use App\Core\Links\Support\LinkTypeRenames;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;

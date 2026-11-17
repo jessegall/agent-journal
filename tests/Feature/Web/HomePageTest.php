@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Core\Agents\LaunchSessions;
+use App\Core\Agents\Actions\LaunchSessions;
 use App\Core\Agents\Models\Agent;
 use App\Core\Agents\Models\AgentSession;
-use App\Domain\Access\AccessSettings;
 use App\Domain\Access\Models\User;
+use App\Domain\Access\Support\AccessSettings;
 use App\Domain\Chat\Models\Message;
 use App\Domain\Plans\Api\PlanKind;
 use App\Domain\Plans\Models\Plan;

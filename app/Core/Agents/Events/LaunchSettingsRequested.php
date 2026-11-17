@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Events;
 
-use App\Core\Agents\IsolatedHookSettings;
+use App\Core\Agents\Support\IsolatedHookSettings;
 
 /**
  * A program is about to be launched: listeners add the hooks and tool rules its isolated settings need.

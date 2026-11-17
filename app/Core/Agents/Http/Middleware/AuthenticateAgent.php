@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Http\Middleware;
 
-use App\Core\Agents\AgentContext;
-use App\Core\Agents\AgentContextFactory;
 use App\Core\Agents\Exceptions\CallSignatureInvalid;
 use App\Core\Agents\Exceptions\CredentialRejected;
+use App\Core\Agents\Support\AgentContext;
+use App\Core\Agents\Support\AgentContextFactory;
 use App\Core\Contracts\CurrentActorSetter;
 use Closure;
 use Illuminate\Contracts\Container\Container;

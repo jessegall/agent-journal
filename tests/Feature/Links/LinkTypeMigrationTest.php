@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Links;
 
 use App\Core\Links\Exceptions\UnknownLinkType;
-use App\Core\Links\LinkTypeRenames;
+use App\Core\Links\Support\LinkTypeRenames;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\RefreshHookDatabase;

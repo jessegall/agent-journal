@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Web\Views;
 
 use App\Core\Agents\Contracts\SessionReader;
-use App\Core\Agents\SessionOption;
+use App\Core\Agents\Support\SessionOption;
 use App\Domain\Chat\Contracts\ConversationReader;
 use App\Domain\Web\Data\ChatData;
 use App\Domain\Web\Data\ConversationData;

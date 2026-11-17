@@ -20,7 +20,7 @@ use App\Core\Hooks\States\MainAgentReadyState;
 use App\Core\Hooks\States\ReadOnlyHelperReadyState;
 use App\Core\Hooks\States\ReadyState;
 use App\Domain\Processes\Models\SavedCommand;
-use App\Domain\Processes\ShellParser;
+use App\Domain\Processes\Support\ShellParser;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

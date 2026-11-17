@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Contracts;
 
-use App\Core\Actors\ActorStore;
+use App\Core\Actors\Support\ActorStore;
 use Illuminate\Container\Attributes\Bind;
 
 /**

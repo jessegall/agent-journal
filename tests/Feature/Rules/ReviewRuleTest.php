@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Rules;
 
-use App\Core\Actors\ActorContext;
 use App\Core\Actors\Exceptions\UserActorRequired;
+use App\Core\Actors\Support\ActorContext;
 use App\Core\Contracts\CurrentActorSetter;
 use App\Domain\Rules\Actions\ProposeRule;
 use App\Domain\Rules\Actions\RemoveRule;
 use App\Domain\Rules\Actions\ReviewRule;
-use App\Domain\Rules\ActiveRules;
 use App\Domain\Rules\Api\Events\RuleApproved;
 use App\Domain\Rules\Api\Events\RuleDenied;
 use App\Domain\Rules\Api\Events\RuleRemoved;
 use App\Domain\Rules\Api\RuleState;
 use App\Domain\Rules\Exceptions\RuleNotProposed;
 use App\Domain\Rules\Models\Rule;
+use App\Domain\Rules\Support\ActiveRules;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

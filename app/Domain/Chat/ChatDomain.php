@@ -13,6 +13,8 @@ use App\Domain\Chat\Api\MessageView;
 use App\Domain\Chat\Contracts\ConversationReader;
 use App\Domain\Chat\Contracts\MessageSender;
 use App\Domain\Chat\Exceptions\MessageBodyEmpty;
+use App\Domain\Chat\States\Support\AnsweringMessageStateFactory;
+use App\Domain\Chat\States\Support\AnsweringMessageStateReference;
 use App\Domain\Contracts\Domain;
 use App\Domain\Contracts\RegistersStates;
 

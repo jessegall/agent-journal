@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Contracts;
 
-use App\Core\Agents\SessionOption;
-use App\Core\Agents\SessionRecords;
+use App\Core\Agents\Readers\SessionRecords;
+use App\Core\Agents\Support\SessionOption;
 use App\Core\Hooks\Exceptions\StackTargetRefused;
-use App\Core\Hooks\StackTarget;
+use App\Core\Hooks\Support\StackTarget;
 use Illuminate\Container\Attributes\Bind;
 
 /**

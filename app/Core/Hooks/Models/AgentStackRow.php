@@ -6,12 +6,13 @@ namespace App\Core\Hooks\Models;
 
 use App\Core\Hooks\Exceptions\StackAlreadyClosed;
 use App\Core\Hooks\Exceptions\StackMissing;
-use App\Core\Hooks\StackTarget;
+use App\Core\Hooks\Models\Support\AgentSessionScope;
 use App\Core\Hooks\Storage\FrameRecords;
 use App\Core\Hooks\Storage\FrameRecordsCast;
 use App\Core\Hooks\Storage\StackStatus;
 use App\Core\Hooks\Storage\StoredFrames;
-use App\Core\Links\Linkable;
+use App\Core\Hooks\Support\StackTarget;
+use App\Core\Links\Support\Linkable;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;

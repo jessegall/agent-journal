@@ -6,6 +6,8 @@ namespace App\Domain\Sequences;
 
 use App\Domain\Contracts\Domain;
 use App\Domain\Contracts\RegistersStates;
+use App\Domain\Sequences\States\Support\FollowingSequenceStateFactory;
+use App\Domain\Sequences\States\Support\FollowingSequenceStateReference;
 
 final class SequencesDomain implements Domain, RegistersStates
 {

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Models;
 
-use App\Core\Agents\SessionStatus;
-use App\Core\Links\Linkable;
+use App\Core\Agents\Enums\SessionStatus;
+use App\Core\Links\Support\Linkable;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;

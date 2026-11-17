@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Access\Contracts;
 
 use App\Domain\Access\Api\Viewer;
-use App\Domain\Access\ViewerRecords;
+use App\Domain\Access\Readers\ViewerRecords;
 use Illuminate\Container\Attributes\Bind;
 
 /**

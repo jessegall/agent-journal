@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat\Models;
 
-use App\Core\Hooks\Models\OwnedByOneAgent;
-use App\Core\Hooks\StackTarget;
-use App\Core\Links\Linkable;
+use App\Core\Hooks\Models\Support\OwnedByOneAgent;
+use App\Core\Hooks\Support\StackTarget;
+use App\Core\Links\Support\Linkable;
 use App\Domain\Chat\Api\MessageState;
-use App\Domain\Chat\MessageWork;
-use App\Domain\Chat\MessageWorkState;
+use App\Domain\Chat\Enums\MessageWorkState;
+use App\Domain\Chat\Support\MessageWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;

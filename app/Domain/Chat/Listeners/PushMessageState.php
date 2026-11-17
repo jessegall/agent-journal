@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Chat\Listeners;
 
 use App\Core\Hooks\Contracts\AgentStack;
-use App\Domain\Chat\AnsweringMessageStateReference;
 use App\Domain\Chat\Events\MessageNeedsAnswer;
-use App\Domain\Chat\MessageRecords;
+use App\Domain\Chat\Readers\MessageRecords;
+use App\Domain\Chat\States\Support\AnsweringMessageStateReference;
 
 /**
  * Puts the message that needs an answer on the agent's stack in the same transaction that asked for the answer.

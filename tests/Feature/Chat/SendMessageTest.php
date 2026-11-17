@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Chat;
 
-use App\Core\Actors\ActorContext;
-use App\Core\Agents\LaunchSessions;
+use App\Core\Actors\Support\ActorContext;
+use App\Core\Agents\Actions\LaunchSessions;
 use App\Core\Agents\Models\Agent;
 use App\Core\Contracts\CurrentActorSetter;
 use App\Core\Hooks\Exceptions\StackTargetRefused;
 use App\Core\Hooks\Models\AgentStackRow;
-use App\Core\Hooks\StackTarget;
 use App\Core\Hooks\Storage\FrameRecord;
+use App\Core\Hooks\Support\StackTarget;
 use App\Domain\Chat\Actions\CloseMessage;
 use App\Domain\Chat\Actions\SendMessage;
 use App\Domain\Chat\Api\Events\MessageAnswered;
@@ -20,8 +20,8 @@ use App\Domain\Chat\Api\Events\MessageSent;
 use App\Domain\Chat\Api\MessageState;
 use App\Domain\Chat\Api\MessageView;
 use App\Domain\Chat\Exceptions\MessageBodyEmpty;
-use App\Domain\Chat\MessageRecords;
 use App\Domain\Chat\Models\Message;
+use App\Domain\Chat\Readers\MessageRecords;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Chat\Contracts;
 
 use App\Core\Hooks\Exceptions\StackTargetRefused;
-use App\Core\Hooks\StackTarget;
+use App\Core\Hooks\Support\StackTarget;
 use App\Domain\Chat\Actions\SendMessage;
 use App\Domain\Chat\Exceptions\MessageBodyEmpty;
 use Illuminate\Container\Attributes\Bind;

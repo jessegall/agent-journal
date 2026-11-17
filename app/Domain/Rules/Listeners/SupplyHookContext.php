@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Rules\Listeners;
 
 use App\Core\Hooks\Events\ContextWasCompacted;
-use App\Domain\Rules\ActiveRules;
+use App\Domain\Rules\Support\ActiveRules;
 
 /**
  * Reminds a compacted agent of every rule that is active now.

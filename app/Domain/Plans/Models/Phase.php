@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Models;
 
-use App\Core\Links\Linkable;
+use App\Core\Links\Support\Linkable;
 use App\Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;

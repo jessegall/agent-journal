@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plans;
 
-use App\Core\Actors\ActorContext;
+use App\Core\Actors\Support\ActorContext;
 use App\Core\Contracts\CurrentActorSetter;
-use App\Core\Hooks\StackTarget;
+use App\Core\Hooks\Support\StackTarget;
 use App\Domain\Plans\Api\PlanKind;
 use App\Domain\Plans\Api\PlanState;
 use App\Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Tasks\Contracts\TaskProgressCounter;
 use App\Domain\Tasks\Models\Task;
-use App\Domain\Tasks\TaskCounts;
+use App\Domain\Tasks\Readers\TaskCounts;
 use Database\Seeders\DatabaseSeeder;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;

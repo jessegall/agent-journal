@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Core;
 
-use App\Core\Actors\ActorContext;
-use App\Core\Actors\ActorKind;
+use App\Core\Actors\Enums\ActorKind;
 use App\Core\Actors\Exceptions\ActorContextMissing;
 use App\Core\Actors\Exceptions\UserActorRequired;
-use App\Core\Agents\AgentLabel;
+use App\Core\Actors\Support\ActorContext;
 use App\Core\Agents\Contracts\AgentReader;
 use App\Core\Agents\Contracts\SessionReader;
-use App\Core\Agents\SessionOption;
+use App\Core\Agents\Support\AgentLabel;
+use App\Core\Agents\Support\SessionOption;
 use App\Core\Contracts\Actor;
 use App\Core\Contracts\CurrentActor;
 use App\Core\Contracts\CurrentActorSetter;
@@ -69,13 +69,13 @@ use App\Core\Hooks\Inputs\StopRequested;
 use App\Core\Hooks\Inputs\ToolFinished;
 use App\Core\Hooks\Inputs\ToolOutcome;
 use App\Core\Hooks\Inputs\ToolResult;
-use App\Core\Hooks\Models\OwnedByOneAgent;
-use App\Core\Hooks\StackTarget;
+use App\Core\Hooks\Models\Support\OwnedByOneAgent;
 use App\Core\Hooks\States\AgentState;
-use App\Core\Links\Linkable;
-use App\Core\Links\LinkAccess;
-use App\Core\Links\LinkTypeRenames;
-use App\Core\Links\LinkTypes;
+use App\Core\Hooks\Support\StackTarget;
+use App\Core\Links\Support\Linkable;
+use App\Core\Links\Support\LinkAccess;
+use App\Core\Links\Support\LinkTypeRenames;
+use App\Core\Links\Support\LinkTypes;
 
 /**
  * Core's public surface: every type a domain or module may use, written out one by one. Everything else in Core is

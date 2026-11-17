@@ -25,7 +25,7 @@ use App\Core\Hooks\Inputs\ShellDialect;
 use App\Core\Hooks\States\MainAgentReadyState;
 use App\Core\Hooks\States\ReadOnlyHelperReadyState;
 use App\Core\Hooks\States\ReadyState;
-use App\Core\Hooks\States\ReadyStateType;
+use App\Core\Hooks\States\Support\ReadyStateType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;

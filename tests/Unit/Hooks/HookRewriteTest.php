@@ -17,7 +17,7 @@ use App\Core\Hooks\Stack\Frame;
 use App\Core\Hooks\Stack\HookAnswer;
 use App\Core\Hooks\Stack\HookRewrite;
 use App\Core\Hooks\States\AgentState;
-use App\Core\Hooks\States\ReadyStateType;
+use App\Core\Hooks\States\Support\ReadyStateType;
 use App\Core\Hooks\Storage\WalkStep;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;

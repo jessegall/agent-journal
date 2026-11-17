@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Relay;
 
-use App\Core\Agents\BypassReport;
-use App\Core\Agents\LoggedBypass;
+use App\Core\Agents\Support\BypassReport;
+use App\Core\Agents\Support\LoggedBypass;
 
 /**
  * The host's own file of bypasses not yet uploaded, one JSON line each.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Rules;
 
-use App\Core\Links\LinkTypes;
+use App\Core\Links\Support\LinkTypes;
 use App\Domain\Rules\Models\Rule;
 use Illuminate\Support\ServiceProvider;
 

@@ -6,6 +6,7 @@ namespace App\Domain\Access;
 
 use App\Domain\Access\Actions\CreateNewUser;
 use App\Domain\Access\Actions\ResetUserPassword;
+use App\Domain\Access\Support\AccessSettings;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;

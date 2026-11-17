@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks;
 
-use App\Core\Links\LinkTypes;
+use App\Core\Links\Support\LinkTypes;
 use App\Domain\Tasks\Models\Task;
 use Illuminate\Support\ServiceProvider;
 

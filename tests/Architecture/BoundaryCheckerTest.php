@@ -88,7 +88,7 @@ final class BoundaryCheckerTest extends TestCase
 
     public function test_a_core_type_off_the_core_list_is_refused_to_a_domain(): void
     {
-        $use = new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Core\Hooks\AgentStacks', NameKind::Type);
+        $use = new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Core\Hooks\Actions\AgentStacks', NameKind::Type);
 
         $violations = $this->checker()->violations([$use]);
 
@@ -101,7 +101,7 @@ final class BoundaryCheckerTest extends TestCase
         $uses = [
             new NameUse("{$base}/bootstrap/domains.php", 4, ChatDomain::class, NameKind::Import),
             new NameUse("{$base}/bootstrap/app.php", 5, 'Tests\Fixtures\Boundary\Chat\Message', NameKind::Import),
-            new NameUse("{$base}/config/auth.php", 6, 'App\Core\Hooks\AgentStacks', NameKind::Import),
+            new NameUse("{$base}/config/auth.php", 6, 'App\Core\Hooks\Actions\AgentStacks', NameKind::Import),
         ];
 
         $this->assertSame(

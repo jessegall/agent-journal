@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Core\Actors\ActorContext;
-use App\Core\Agents\AgentContext;
-use App\Core\Agents\SignedCall;
+use App\Core\Actors\Support\ActorContext;
+use App\Core\Agents\Support\AgentContext;
+use App\Core\Agents\Support\SignedCall;
 use App\Core\Contracts\CurrentActorSetter;
 use Carbon\CarbonImmutable;
 

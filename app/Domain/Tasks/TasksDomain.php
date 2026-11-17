@@ -14,6 +14,8 @@ use App\Domain\Tasks\Contracts\TaskProgressCounter;
 use App\Domain\Tasks\Contracts\TaskReader;
 use App\Domain\Tasks\Events\TaskStarted;
 use App\Domain\Tasks\Exceptions\TaskMissing;
+use App\Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
+use App\Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 
 final class TasksDomain implements Domain, RegistersStates
 {

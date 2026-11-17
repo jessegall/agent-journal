@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Access\Contracts;
 
 use App\Core\Contracts\Actor;
-use App\Domain\Access\JournalAccess;
+use App\Domain\Access\Support\JournalAccess;
 use Illuminate\Container\Attributes\Bind;
 
 /**

@@ -6,8 +6,8 @@ namespace App\Domain\Tasks\Listeners;
 
 use App\Core\Hooks\Contracts\AgentStack;
 use App\Domain\Tasks\Events\TaskStarted;
-use App\Domain\Tasks\TaskRecords;
-use App\Domain\Tasks\WorkingOnTaskStateReference;
+use App\Domain\Tasks\Readers\Support\TaskRecords;
+use App\Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 
 /**
  * Puts the started run on the agent's stack in the same transaction as the start, so both commit or neither does.

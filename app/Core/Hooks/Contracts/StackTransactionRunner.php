@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Contracts;
 
-use App\Core\Hooks\StackTransaction;
+use App\Core\Hooks\Support\StackTransaction;
 use Closure;
 use Illuminate\Container\Attributes\Bind;
 

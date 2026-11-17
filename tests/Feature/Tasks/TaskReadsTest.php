@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Tasks;
 
-use App\Core\Actors\ActorContext;
 use App\Core\Actors\Exceptions\ActorContextMissing;
+use App\Core\Actors\Support\ActorContext;
 use App\Core\Contracts\CurrentActorSetter;
 use App\Domain\Tasks\Contracts\TaskProgressCounter;
 use App\Domain\Tasks\Contracts\TaskReader;

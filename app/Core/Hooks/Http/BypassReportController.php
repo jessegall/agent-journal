@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Http;
 
-use App\Core\Agents\AgentContext;
-use App\Core\Agents\BypassReport;
-use App\Core\Agents\LaunchBypasses;
+use App\Core\Agents\Actions\LaunchBypasses;
+use App\Core\Agents\Support\AgentContext;
+use App\Core\Agents\Support\BypassReport;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 

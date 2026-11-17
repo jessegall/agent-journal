@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Models;
 
-use App\Core\Links\Linkable;
+use App\Core\Links\Support\Linkable;
 use App\Domain\Plans\Api\PlanCard;
 use App\Domain\Plans\Api\PlanKind;
 use App\Domain\Plans\Api\PlanProgress;

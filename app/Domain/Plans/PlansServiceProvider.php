@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans;
 
-use App\Core\Links\LinkTypes;
+use App\Core\Links\Support\LinkTypes;
 use App\Domain\Plans\Models\Phase;
 use App\Domain\Plans\Models\Plan;
 use Illuminate\Support\ServiceProvider;

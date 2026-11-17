@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Core\Actors\ActorStore;
+use App\Core\Actors\Support\ActorStore;
 use App\Core\Contracts\CurrentActorSetter;
 use App\Core\CoreApi;
 use App\Core\Hooks\Contracts\ShellCommandParser;
@@ -29,7 +29,7 @@ final class BindingRulesTest extends TestCase
      * the two middleware that authenticate a request and the provider that reads the actor.
      */
     private const array ACTOR_SITES = [
-        'app/Core/Actors/ActorStore.php',
+        'app/Core/Actors/Support/ActorStore.php',
         'app/Core/Actors/ActorsServiceProvider.php',
         'app/Core/Contracts/CurrentActor.php',
         'app/Core/Contracts/CurrentActorSetter.php',

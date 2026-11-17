@@ -7,7 +7,7 @@ namespace App\Domain\Tasks\States;
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Inputs\StopRequested;
 use App\Core\Hooks\States\AgentState;
-use App\Domain\Tasks\TaskWork;
+use App\Domain\Tasks\Support\TaskWork;
 
 /**
  * The agent is working on a task: it may not stop while the task still needs work.

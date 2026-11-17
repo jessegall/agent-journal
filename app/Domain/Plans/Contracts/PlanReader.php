@@ -6,7 +6,7 @@ namespace App\Domain\Plans\Contracts;
 
 use App\Domain\Plans\Api\PlanFilters;
 use App\Domain\Plans\Api\PlanList;
-use App\Domain\Plans\PlanRecords;
+use App\Domain\Plans\Readers\PlanRecords;
 use Illuminate\Container\Attributes\Bind;
 
 /**

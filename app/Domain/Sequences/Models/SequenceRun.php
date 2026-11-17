@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Sequences\Models;
 
-use App\Core\Hooks\Models\OwnedByOneAgent;
-use App\Core\Hooks\StackTarget;
-use App\Core\Links\Linkable;
-use App\Domain\Sequences\SequenceRunState;
-use App\Domain\Sequences\SequenceWork;
+use App\Core\Hooks\Models\Support\OwnedByOneAgent;
+use App\Core\Hooks\Support\StackTarget;
+use App\Core\Links\Support\Linkable;
+use App\Domain\Sequences\Enums\SequenceRunState;
+use App\Domain\Sequences\Support\SequenceWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;

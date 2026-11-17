@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Domain\Access\AccessSettings;
 use App\Domain\Access\Models\User;
+use App\Domain\Access\Support\AccessSettings;
 use App\Domain\Rules\Actions\ProposeRule;
 use App\Domain\Rules\Api\RuleState;
 use App\Domain\Rules\Models\Rule;

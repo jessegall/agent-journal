@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Relay;
 
 use App\Core\Hooks\Exceptions\RelaySettingMissing;
-use App\Core\Hooks\States\ReadyStateType;
+use App\Core\Hooks\States\Support\ReadyStateType;
 
 /**
  * What the relay of one launch needs, given to the program's environment by the launch: where the journal

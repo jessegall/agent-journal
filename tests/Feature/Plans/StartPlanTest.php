@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plans;
 
-use App\Core\Actors\ActorContext;
-use App\Core\Actors\ActorKind;
+use App\Core\Actors\Enums\ActorKind;
 use App\Core\Actors\Exceptions\ActorContextMissing;
+use App\Core\Actors\Support\ActorContext;
 use App\Core\Contracts\CurrentActorSetter;
 use App\Domain\Plans\Api\Events\PlanStarted;
 use App\Domain\Plans\Api\PlanFilters;
@@ -15,7 +15,7 @@ use App\Domain\Plans\Api\PlanState;
 use App\Domain\Plans\Contracts\PlanStarter;
 use App\Domain\Plans\Exceptions\StartDenied;
 use App\Domain\Plans\Models\Plan;
-use App\Domain\Plans\PlanRecords;
+use App\Domain\Plans\Readers\PlanRecords;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Hooks\TestFailure;

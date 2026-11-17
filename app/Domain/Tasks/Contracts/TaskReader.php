@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Tasks\Contracts;
 
 use App\Domain\Tasks\Exceptions\TaskMissing;
-use App\Domain\Tasks\VisibleTasks;
+use App\Domain\Tasks\Readers\VisibleTasks;
 use Illuminate\Container\Attributes\Bind;
 
 /**

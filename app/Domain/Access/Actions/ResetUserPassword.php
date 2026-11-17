@@ -9,7 +9,7 @@ use App\Domain\Access\Models\User;
 use Illuminate\Contracts\Validation\Factory as ValidationFactory;
 use Laravel\Fortify\Contracts\ResetsUserPasswords;
 
-class ResetUserPassword implements ResetsUserPasswords
+final class ResetUserPassword implements ResetsUserPasswords
 {
     use PasswordValidationRules;
 

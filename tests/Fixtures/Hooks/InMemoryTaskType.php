@@ -10,8 +10,8 @@ use App\Core\Hooks\States\AgentState;
 use App\Core\Hooks\Exceptions\StateSubjectMissing;
 use App\Core\Hooks\Contracts\StateType;
 use App\Domain\Tasks\States\WorkingOnTaskState;
-use App\Domain\Tasks\TaskWork;
-use App\Domain\Tasks\TaskWorkState;
+use App\Domain\Tasks\Support\TaskWork;
+use App\Domain\Tasks\Enums\TaskWorkState;
 
 /**
  * A task state type for tests that reads each task's state from a list the test can change between restores.

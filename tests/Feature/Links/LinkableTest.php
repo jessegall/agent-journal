@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Links;
 
 use App\Core\Links\Exceptions\LinkTypeRepeated;
-use App\Core\Links\LinkTypes;
 use App\Core\Links\Models\Link;
+use App\Core\Links\Support\LinkTypes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Schema\Blueprint;

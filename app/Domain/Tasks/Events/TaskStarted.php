@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks\Events;
 
-use App\Core\Hooks\StackTarget;
+use App\Core\Hooks\Support\StackTarget;
 
 /**
  * A task run started for an agent and session, raised inside the transaction that started it.

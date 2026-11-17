@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Processes;
 
 use App\Core\Hooks\Contracts\ShellCommandParser;
-use App\Core\Links\LinkTypes;
+use App\Core\Links\Support\LinkTypes;
 use App\Domain\Processes\Models\SavedCommand;
+use App\Domain\Processes\Support\ShellParser;
 use Illuminate\Support\ServiceProvider;
 
 /**

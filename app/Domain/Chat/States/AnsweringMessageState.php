@@ -10,7 +10,7 @@ use App\Core\Hooks\Inputs\SessionStarted;
 use App\Core\Hooks\Inputs\ShellCommandRequested;
 use App\Core\Hooks\Inputs\StopRequested;
 use App\Core\Hooks\States\AgentState;
-use App\Domain\Chat\MessageWork;
+use App\Domain\Chat\Support\MessageWork;
 
 /**
  * A message waits on the agent: it hears about it at start, may not stop, and may not change files until it answers.

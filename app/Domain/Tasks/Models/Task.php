@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks\Models;
 
-use App\Core\Hooks\StackTarget;
-use App\Core\Links\Linkable;
-use App\Domain\Tasks\TaskState;
-use App\Domain\Tasks\TaskWork;
-use App\Domain\Tasks\TaskWorkState;
+use App\Core\Hooks\Support\StackTarget;
+use App\Core\Links\Support\Linkable;
+use App\Domain\Tasks\Enums\TaskState;
+use App\Domain\Tasks\Enums\TaskWorkState;
+use App\Domain\Tasks\Support\TaskWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;

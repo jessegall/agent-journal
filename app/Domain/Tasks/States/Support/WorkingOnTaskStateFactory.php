@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Tasks\States\Support;
+
+use App\Core\Hooks\Contracts\StateType;
+use App\Core\Hooks\Decisions\StateReference;
+use App\Core\Hooks\Decisions\SubjectReference;
+use App\Core\Hooks\Exceptions\StateSubjectMissing;
+use App\Core\Hooks\States\AgentState;
+use App\Domain\Tasks\Exceptions\TaskMissing;
+use App\Domain\Tasks\Readers\Support\TaskRecords;
+use App\Domain\Tasks\States\WorkingOnTaskState;
+
+/**
+ * Builds the working-on-task state from the task as it is now; it keeps no task between calls.
+ */
+final readonly class WorkingOnTaskStateFactory implements StateType
+{
+    public function __construct(private TaskRecords $tasks) {}
+
+    public function stateFor(StateReference $reference): AgentState
+    {
+        $subject = $reference->subject;
+
+        if (! $subject instanceof SubjectReference) {
+            throw StateSubjectMissing::for($reference->typeKey);
+        }
+
+        try {
+            $task = $this->tasks->get($subject->id);
+        } catch (TaskMissing $missing) {
+            throw StateSubjectMissing::for($reference->typeKey, $missing);
+        }
+
+        return new WorkingOnTaskState($task->workFor($subject->runNumber));
+    }
+
+    public function schemaVersion(): int
+    {
+        return 1;
+    }
+}

@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Http;
 
-use App\Core\Agents\LaunchSessions;
-use App\Core\Hooks\AgentStateMachine;
+use App\Core\Agents\Actions\LaunchSessions;
 use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Exceptions\HookDigestChanged;
 use App\Core\Hooks\Exceptions\HookIdentityExpired;
@@ -13,10 +12,11 @@ use App\Core\Hooks\Exceptions\ShellParserMissing;
 use App\Core\Hooks\Exceptions\StackLockTimedOut;
 use App\Core\Hooks\Exceptions\UnreadablePayload;
 use App\Core\Hooks\Exceptions\UnsupportedHook;
-use App\Core\Hooks\OperationDeadline;
 use App\Core\Hooks\Programs\HookPayload;
 use App\Core\Hooks\Programs\ProgramAdapters;
-use App\Core\Hooks\StackAccess;
+use App\Core\Hooks\Stack\AgentStateMachine;
+use App\Core\Hooks\Support\OperationDeadline;
+use App\Core\Hooks\Support\StackAccess;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
