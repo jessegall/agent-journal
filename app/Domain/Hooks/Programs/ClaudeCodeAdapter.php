@@ -15,17 +15,14 @@ use App\Domain\Hooks\Inputs\SessionEnded;
 use App\Domain\Hooks\Inputs\SessionEndReason;
 use App\Domain\Hooks\Inputs\SessionStartDetails;
 use App\Domain\Hooks\Inputs\SessionStarted;
-use App\Domain\Hooks\Inputs\SessionStartSource;
 use App\Domain\Hooks\Inputs\ShellCommandParser;
 use App\Domain\Hooks\Inputs\ShellCommandRequested;
 use App\Domain\Hooks\Inputs\ShellDialect;
 use App\Domain\Hooks\Inputs\StopDetails;
 use App\Domain\Hooks\Inputs\StopRequested;
 use App\Domain\Hooks\Inputs\ToolFinished;
-use App\Domain\Hooks\Inputs\ToolOutcome;
 use App\Domain\Hooks\Inputs\ToolResult;
 use App\Domain\Hooks\Stack\HookAnswer;
-use Spatie\LaravelData\Optional;
 
 /**
  * Reads Claude Code's hook payloads into the journal's inputs and renders its answers as Claude Code replies.
@@ -47,24 +44,24 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         );
     }
 
-    public function callFor(ClaudeCodePayload $payload, HookIdentity $hook): NativeCall
+    public function callFor(HookPayload $payload, HookIdentity $hook): NativeCall
     {
         return match ($payload->hookEventName) {
             'SessionStart' => new JournalCall(
-                new SessionStarted($hook, new SessionStartDetails($payload->sessionId, $this->startSource($payload))),
+                new SessionStarted($hook, new SessionStartDetails($payload->sessionId, $payload->startSource())),
                 fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer),
             ),
             'UserPromptSubmit' => new JournalCall(
-                new PromptSubmitted($hook, new PromptDetails($hook->hookId, $this->field($payload->prompt, 'prompt'))),
+                new PromptSubmitted($hook, new PromptDetails($hook->hookId, $payload->promptText())),
                 fn (HookAnswer $answer) => ProgramReplies::prompt($answer),
             ),
             'PreToolUse' => $this->toolCall($payload, $hook),
             'PostToolUse' => new JournalCall(
-                new ToolFinished($hook, new ToolResult($this->field($payload->toolName, 'tool_name'), $this->outcome($payload))),
+                new ToolFinished($hook, new ToolResult($payload->toolNameText(), $payload->toolOutcome())),
                 fn (HookAnswer $answer) => ProgramReplies::observation('PostToolUse', $answer),
             ),
             'Stop' => new JournalCall(
-                new StopRequested($hook, new StopDetails($hook->hookId, $payload->stopHookActive === true)),
+                new StopRequested($hook, new StopDetails($hook->hookId, $payload->isStopContinuation())),
                 fn (HookAnswer $answer) => ProgramReplies::stop($answer),
             ),
             'SessionEnd' => new JournalCall(
@@ -85,20 +82,20 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         return ProgramReplies::stop($answer);
     }
 
-    private function toolCall(ClaudeCodePayload $payload, HookIdentity $hook): NativeCall
+    private function toolCall(HookPayload $payload, HookIdentity $hook): NativeCall
     {
-        $tool = ClaudeCodeTool::named($this->field($payload->toolName, 'tool_name'));
-        $arguments = $payload->toolInput instanceof Optional ? [] : $payload->toolInput;
-        $original = new NativeToolInput($arguments);
+        $tool = ClaudeCodeTool::named($payload->toolNameText());
 
         if ($tool === ClaudeCodeTool::Bash) {
-            $command = $this->parser->parse($this->argument($arguments, 'command'), ShellDialect::Bash);
+            $original = new NativeToolInput($payload->toolArguments());
+            $command = $this->parser->parse($payload->argument('command'), ShellDialect::Bash);
 
             return new JournalCall(new ShellCommandRequested($hook, $command), fn (HookAnswer $answer) => $this->renderShell($answer, $original));
         }
 
         if ($tool->changesFiles()) {
-            $path = $this->argument($arguments, 'file_path', 'notebook_path');
+            $original = new NativeToolInput($payload->toolArguments());
+            $path = $payload->argument('file_path', 'notebook_path');
             $edit = new FileEditRequested($hook, new FileChanges([new FileChange($path, $tool->fileOperation())]));
 
             return new JournalCall($edit, fn (HookAnswer $answer) => $this->renderShell($answer, $original));
@@ -107,47 +104,14 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         return new UntouchedCall(ProgramReplies::admitTool([]));
     }
 
-    private function startSource(ClaudeCodePayload $payload): SessionStartSource
+    private function endReason(HookPayload $payload): SessionEndReason
     {
-        $source = $this->field($payload->source, 'source');
-
-        return SessionStartSource::tryFrom($source) ?? throw UnsupportedHook::forValue(self::PROGRAM, 'source', $source);
-    }
-
-    private function endReason(ClaudeCodePayload $payload): SessionEndReason
-    {
-        return match ($this->field($payload->reason, 'reason')) {
+        return match ($payload->reasonText()) {
             'clear' => SessionEndReason::Clear,
             'logout' => SessionEndReason::Logout,
             'prompt_input_exit' => SessionEndReason::Exit,
             'other' => SessionEndReason::Other,
-            default => throw UnsupportedHook::forValue(self::PROGRAM, 'reason', $this->field($payload->reason, 'reason')),
+            default => throw UnreadablePayload::forValue('reason', $payload->reasonText()),
         };
-    }
-
-    private function outcome(ClaudeCodePayload $payload): ToolOutcome
-    {
-        $response = $payload->toolResponse instanceof Optional ? [] : $payload->toolResponse;
-
-        return ($response['is_error'] ?? false) === true ? ToolOutcome::Failed : ToolOutcome::Succeeded;
-    }
-
-    /**
-     * @param  array<string, mixed>  $arguments
-     */
-    private function argument(array $arguments, string ...$names): string
-    {
-        foreach ($names as $name) {
-            if (is_string($arguments[$name] ?? null)) {
-                return $arguments[$name];
-            }
-        }
-
-        throw UnsupportedHook::forValue(self::PROGRAM, implode(' or ', $names), 'missing');
-    }
-
-    private function field(string|Optional $value, string $name): string
-    {
-        return $value instanceof Optional ? throw UnsupportedHook::forValue(self::PROGRAM, $name, 'missing') : $value;
     }
 }

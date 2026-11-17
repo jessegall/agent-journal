@@ -14,7 +14,7 @@ use App\Domain\Hooks\Inputs\SessionStarted;
 use App\Domain\Hooks\Inputs\SessionStartSource;
 use App\Domain\Hooks\Inputs\ShellCommandRequested;
 use App\Domain\Hooks\Programs\ClaudeCodeAdapter;
-use App\Domain\Hooks\Programs\ClaudeCodePayload;
+use App\Domain\Hooks\Programs\HookPayload;
 use App\Domain\Hooks\Programs\JournalCall;
 use App\Domain\Hooks\Programs\NativeCall;
 use App\Domain\Hooks\Programs\ProgramReply;
@@ -157,9 +157,9 @@ final class ClaudeCodeTest extends TestCase
         return $this->app->make(ClaudeCodeAdapter::class);
     }
 
-    private function payload(string $name): ClaudeCodePayload
+    private function payload(string $name): HookPayload
     {
-        return ClaudeCodePayload::from(self::fixture('hooks.json')['payloads'][$name]);
+        return HookPayload::from(self::fixture('hooks.json')['payloads'][$name]);
     }
 
     private function hook(): HookIdentity

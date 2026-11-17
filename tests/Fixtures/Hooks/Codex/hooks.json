@@ -1,0 +1,16 @@
+{
+    "source": "Codex hooks reference (learn.chatgpt.com/docs/hooks), checked 2026-11-17; shapes from the documentation, redacted, not captured from a pinned version",
+    "payloads": {
+        "session start": {"session_id": "session-redacted", "transcript_path": "/redacted/rollout.jsonl", "cwd": "/redacted", "hook_event_name": "SessionStart", "source": "startup"},
+        "prompt": {"session_id": "session-redacted", "transcript_path": "/redacted/rollout.jsonl", "cwd": "/redacted", "hook_event_name": "UserPromptSubmit", "prompt": "Build the walk."},
+        "shell command as text": {"session_id": "session-redacted", "cwd": "/redacted", "hook_event_name": "PreToolUse", "tool_name": "shell", "tool_input": {"command": "composer test", "workdir": "/redacted", "timeout_ms": 120000}},
+        "shell command as a list": {"session_id": "session-redacted", "cwd": "/redacted", "hook_event_name": "PreToolUse", "tool_name": "shell", "tool_input": {"command": ["bash", "-lc", "git status && composer test"], "workdir": "/redacted"}},
+        "patch over two files": {"session_id": "session-redacted", "cwd": "/redacted", "hook_event_name": "PreToolUse", "tool_name": "apply_patch", "tool_input": {"input": "*** Begin Patch\n*** Update File: app/Domain/Domain.php\n@@\n-a\n+b\n*** Add File: docs/notes.md\n+redacted\n*** End Patch\n"}},
+        "tool finished": {"session_id": "session-redacted", "cwd": "/redacted", "hook_event_name": "PostToolUse", "tool_name": "shell", "tool_input": {"command": "git status"}, "tool_response": {"output": "redacted"}},
+        "stop": {"session_id": "session-redacted", "transcript_path": "/redacted/rollout.jsonl", "cwd": "/redacted", "hook_event_name": "Stop", "stop_hook_active": false},
+        "stop continuing": {"session_id": "session-redacted", "transcript_path": "/redacted/rollout.jsonl", "cwd": "/redacted", "hook_event_name": "Stop", "stop_hook_active": true},
+        "session end": {"session_id": "session-redacted", "cwd": "/redacted", "hook_event_name": "SessionEnd", "reason": "other"},
+        "pre-compaction": {"session_id": "session-redacted", "cwd": "/redacted", "hook_event_name": "PreCompact", "trigger": "auto"},
+        "unknown tool": {"session_id": "session-redacted", "cwd": "/redacted", "hook_event_name": "PreToolUse", "tool_name": "web_search", "tool_input": {"query": "redacted"}}
+    }
+}

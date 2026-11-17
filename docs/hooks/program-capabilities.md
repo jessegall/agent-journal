@@ -56,12 +56,25 @@ A retry is accepted while the issue time is within the retry window (`hooks.retr
 
 ## Codex
 
+`CodexAdapter` (plan 2, task 68) maps the callbacks below. `tests/Fixtures/Hooks/Codex/hooks.json` holds one redacted payload per callback, written from the documented shapes, and `capabilities.json` the mapping `CodexTest` checks.
+
+| Callback | Journal input |
+|---|---|
+| SessionStart | onSessionStart, with its source |
+| UserPromptSubmit | onPrompt; a denial blocks the prompt with its reason |
+| PreToolUse, shell or exec_command | onShellCommand; a command given as `bash -lc <line>` is read as its line |
+| PreToolUse, apply_patch | onFileEdit, naming every file the patch adds, updates or deletes |
+| PostToolUse | onToolFinished |
+| Stop | onStop, noting when the stop already continued once |
+| SessionEnd, PreCompact, any other callback or tool | refused by name (`UnsupportedHook`) |
+| onCompaction, onSessionEnd | not mapped: no verified Codex callback yet |
+
 | Evidence | State |
 |---|---|
 | Program and pinned version | not verified |
-| Native callbacks and schema | documented PreToolUse and Stop shapes only |
-| Agent, launch, vendor session and child identity | not verified |
-| Tool coverage | not verified |
+| Native callbacks and schema | the callbacks above, from the documentation |
+| Agent, launch, vendor session and child identity | the vendor session id is kept on session start; child identity is plan 2, task 70 |
+| Tool coverage | shell, exec_command and apply_patch; any other tool is refused |
 | Legal answers | neutral, deny and stop block from the documentation; `updatedInput` only with `permissionDecision: allow`, so the journal refuses rewrites |
 | Native permissions | a neutral reply omits `permissionDecision`, from the documentation |
 | Model-visible channel | not verified |
