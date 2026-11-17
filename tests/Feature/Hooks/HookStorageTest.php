@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Domain\Agents\AgentContext;
+use App\Domain\Agents\SignedCall;
 use App\Domain\Hooks\Decisions\AnswerKind;
 use App\Domain\Hooks\Decisions\ChangeKind;
 use App\Domain\Hooks\Decisions\NoSubject;
@@ -153,6 +155,13 @@ final class HookStorageTest extends TestCase
         $stack->linkTo($call);
 
         $this->assertTrue($call->isLinkedTo($stack));
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->app->instance(AgentContext::class, new AgentContext(7, 9, 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64))));
     }
 
     protected function beforeRefreshingDatabase(): void

@@ -83,4 +83,15 @@ final class AgentStackRow extends Model
     {
         $query->where('agent_id', $target->agentId)->where('session_id', $target->sessionId);
     }
+
+    /**
+     * The explicit read of another agent or session's stack, for a caller the user authorized; it lifts the current-agent limit.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function authorizedFor(Builder $query, StackTarget $target): void
+    {
+        $query->withoutGlobalScope(AgentSessionScope::class)->forTarget($target);
+    }
 }

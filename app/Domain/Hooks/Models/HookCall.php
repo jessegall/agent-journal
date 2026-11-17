@@ -9,8 +9,11 @@ use App\Domain\Hooks\Storage\RecordedAnswer;
 use App\Domain\Hooks\Storage\RecordedAnswerCast;
 use App\Domain\Hooks\Storage\RecordedSteps;
 use App\Domain\Hooks\Storage\RecordedStepsCast;
+use App\Domain\Hooks\Storage\StackTarget;
 use App\Domain\Links\Linkable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -54,5 +57,18 @@ final class HookCall extends Model
             'answer' => RecordedAnswerCast::class,
             'steps' => RecordedStepsCast::class,
         ];
+    }
+
+    /**
+     * The explicit read of another agent or session's hook calls, for a caller the user authorized; it lifts the current-agent limit.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function authorizedFor(Builder $query, StackTarget $target): void
+    {
+        $query->withoutGlobalScope(AgentSessionScope::class)
+            ->where('agent_id', $target->agentId)
+            ->where('session_id', $target->sessionId);
     }
 }
