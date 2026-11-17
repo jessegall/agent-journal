@@ -29,6 +29,6 @@ final class FollowingSequenceState extends AgentState
 
     public function onStop(StopRequested $input): Decision
     {
-        return Decision::preventStop($this->sequence->currentInstruction());
+        return Decision::deny($this->sequence->currentInstruction());
     }
 }

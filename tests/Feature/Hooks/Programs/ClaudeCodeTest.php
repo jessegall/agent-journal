@@ -116,7 +116,7 @@ final class ClaudeCodeTest extends TestCase
 
     public function test_a_held_stop_blocks_and_an_allowed_stop_is_empty(): void
     {
-        $this->assertSame('{"decision":"block","reason":"Task 42 still needs work."}', $this->render('stop', Decision::preventStop('Task 42 still needs work.'))->stdout);
+        $this->assertSame('{"decision":"block","reason":"Task 42 still needs work."}', $this->render('stop', Decision::deny('Task 42 still needs work.'))->stdout);
         $this->assertSame('{}', $this->render('stop', Decision::allow())->stdout);
     }
 

@@ -35,7 +35,7 @@ final class StackInspectionTest extends TestCase
         $this->assertSame([null, ['id' => 42, 'runNumber' => 1], null], array_column($inspection['frames'], 'subject'));
         $this->assertSame([true, false, false], array_column($inspection['frames'], 'isBottom'));
         $this->assertSame('call-2', $inspection['lastCall']['hookId']);
-        $this->assertSame('prevent_stop', $inspection['lastCall']['answer']);
+        $this->assertSame('deny', $inspection['lastCall']['answer']);
         $this->assertSame($stdout, $inspection['lastCall']['stdout']);
     }
 
@@ -45,7 +45,7 @@ final class StackInspectionTest extends TestCase
 
         $steps = $this->actingAs(User::factory()->create())->getJson('/hooks/stacks/1/10')->json('lastCall.steps');
 
-        $this->assertSame([['guide', 'delegate', 'keep'], ['test.tasks', 'prevent_stop', 'keep']], array_map(
+        $this->assertSame([['guide', 'delegate', 'keep'], ['test.tasks', 'deny', 'keep']], array_map(
             fn (array $step) => [$step['stateType'], $step['answer'], $step['change']],
             $steps,
         ));

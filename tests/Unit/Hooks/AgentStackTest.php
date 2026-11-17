@@ -46,12 +46,12 @@ final class AgentStackTest extends TestCase
         $stop = $this->stop();
         $both = $this->exampleStack(TaskWorkState::Active, MessageWorkState::Unanswered);
 
-        $this->assertSame(['message-95 prevent_stop keep'], $this->stepsOf($both->answer($stop)));
+        $this->assertSame(['message-95 deny keep'], $this->stepsOf($both->answer($stop)));
 
         $answered = $this->exampleStack(TaskWorkState::Active, MessageWorkState::Answered)->withoutFinishedFrames();
 
         $this->assertSame(['ready', 'task-42'], $answered->frameIds());
-        $this->assertSame(['task-42 prevent_stop keep'], $this->stepsOf($answered->answer($stop)));
+        $this->assertSame(['task-42 deny keep'], $this->stepsOf($answered->answer($stop)));
 
         $done = $this->exampleStack(TaskWorkState::Finished, MessageWorkState::Answered)->withoutFinishedFrames();
         $answer = $done->answer($stop);
@@ -83,7 +83,7 @@ final class AgentStackTest extends TestCase
         $answer = $stack->answer($this->stop());
 
         $this->assertSame(['ready', 'task-42', 'pushed-1'], $stack->frameIds());
-        $this->assertSame(['pushed-1 prevent_stop keep'], $this->stepsOf($answer));
+        $this->assertSame(['pushed-1 deny keep'], $this->stepsOf($answer));
         $this->assertStringContainsString('step 3', $answer->decision->refusalReason());
     }
 
@@ -193,7 +193,7 @@ final class AgentStackTest extends TestCase
 
     public function test_a_hook_refuses_an_answer_it_cannot_take(): void
     {
-        $stack = $this->stack($this->ready(), $this->frame('top', new ScriptedState(Decision::preventStop('Not yet.'))));
+        $stack = $this->stack($this->ready(), $this->frame('top', new ScriptedState(Decision::rewrite('ls'))));
 
         $this->expectException(InvalidHookAnswer::class);
 
@@ -280,11 +280,11 @@ final class AgentStackTest extends TestCase
 
     public function test_a_step_keeps_its_typed_labels_through_an_array(): void
     {
-        $step = new WalkStep('top', 'guide', 'onStop', AnswerKind::PreventStop, TransitionKind::Push);
+        $step = new WalkStep('top', 'guide', 'onStop', AnswerKind::Deny, TransitionKind::Push);
 
         $copy = WalkStep::from($step->toArray());
 
-        $this->assertSame(AnswerKind::PreventStop, $copy->answer);
+        $this->assertSame(AnswerKind::Deny, $copy->answer);
         $this->assertSame(TransitionKind::Push, $copy->transition);
         $this->assertSame($step->toArray(), $copy->toArray());
     }

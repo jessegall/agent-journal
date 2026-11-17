@@ -41,8 +41,8 @@ final class AgentStateMachineTest extends TestCase
         $recorded = HookCall::query()->sole();
         $this->assertSame('block', json_decode($reply->stdout, true)['decision']);
         $this->assertSame($reply->stdout, $recorded->answer->stdout);
-        $this->assertSame(AnswerKind::PreventStop, $recorded->answer->kind);
-        $this->assertSame(['test.tasks prevent_stop'], array_map(fn (WalkStep $step) => "{$step->stateType} {$step->answer->value}", $recorded->steps->steps));
+        $this->assertSame(AnswerKind::Deny, $recorded->answer->kind);
+        $this->assertSame(['test.tasks deny'], array_map(fn (WalkStep $step) => "{$step->stateType} {$step->answer->value}", $recorded->steps->steps));
         $this->assertSame(3, AgentStackRow::query()->sole()->version);
     }
 

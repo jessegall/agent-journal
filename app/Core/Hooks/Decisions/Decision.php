@@ -51,11 +51,6 @@ final readonly class Decision
         return self::answering(new Denied(new Reason($reason)));
     }
 
-    public static function preventStop(string $reason): self
-    {
-        return self::answering(new StopPrevented(new Reason($reason)));
-    }
-
     public static function rewrite(string $line): self
     {
         return self::answering(new Rewritten($line));

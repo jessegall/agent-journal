@@ -45,6 +45,6 @@ final class AnsweringMessageState extends AgentState
 
     public function onStop(StopRequested $input): Decision
     {
-        return Decision::preventStop($this->message->replyInstruction());
+        return Decision::deny($this->message->replyInstruction());
     }
 }

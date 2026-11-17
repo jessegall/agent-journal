@@ -59,7 +59,7 @@ final class HookTransactionTest extends TestCase
 
         $this->assertGreaterThan(0.2, $waited);
         $this->assertStringContainsString('Task 43 still needs work', $reply->stdout);
-        $this->assertSame(['pushed-by-other-process prevent_stop'], array_map(
+        $this->assertSame(['pushed-by-other-process deny'], array_map(
             fn (WalkStep $step) => "{$step->frameId} {$step->answer->value}",
             HookCall::query()->sole()->steps->steps,
         ));

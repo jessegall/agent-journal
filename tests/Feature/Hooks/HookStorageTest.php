@@ -94,15 +94,15 @@ final class HookStorageTest extends TestCase
         $response = "{\"decision\":\"block\",\"reason\":\"Task 42 still needs work: finish it.\"}\n\t\u{00e9}\u{1F600}";
         $steps = RecordedSteps::of([
             new WalkStep('frame-2', 'tasks.working', 'onStop', AnswerKind::Delegate, TransitionKind::Keep),
-            new WalkStep('frame-1', 'hooks.main_ready', 'onStop', AnswerKind::PreventStop, TransitionKind::Push),
+            new WalkStep('frame-1', 'hooks.main_ready', 'onStop', AnswerKind::Deny, TransitionKind::Push),
         ]);
         $call = new HookCall;
-        $call->recordFor($this->hook(), RecordedAnswer::of(AnswerKind::PreventStop, $response), $steps);
+        $call->recordFor($this->hook(), RecordedAnswer::of(AnswerKind::Deny, $response), $steps);
 
         $stored = HookCall::query()->sole();
 
         $this->assertSame($response, $stored->answer->stdout);
-        $this->assertSame(AnswerKind::PreventStop, $stored->answer->kind);
+        $this->assertSame(AnswerKind::Deny, $stored->answer->kind);
         $this->assertSame($steps->toArray(), $stored->steps->toArray());
         $this->assertSame(TransitionKind::Push, $stored->steps->steps[1]->transition);
         $this->assertSame(['hook-1', str_repeat('a', 64)], [$stored->event_id, $stored->input_digest]);

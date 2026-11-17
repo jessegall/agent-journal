@@ -70,7 +70,7 @@ final class ProgramRepliesTest extends TestCase
 
     public function test_a_held_stop_blocks_with_one_reason_followed_by_the_context(): void
     {
-        $reply = ProgramReplies::stop($this->answer(Decision::preventStop('Task 42 still needs work.'), ['Run the phase tests.']));
+        $reply = ProgramReplies::stop($this->answer(Decision::deny('Task 42 still needs work.'), ['Run the phase tests.']));
 
         $this->assertSame(['decision' => 'block', 'reason' => "Task 42 still needs work.\nRun the phase tests."], json_decode($reply->stdout, true));
     }
@@ -80,18 +80,18 @@ final class ProgramRepliesTest extends TestCase
         $this->assertSame('{}', ProgramReplies::stop($this->answer(Decision::allow(), ['Optional context.']))->stdout);
     }
 
-    public function test_a_denial_has_no_stop_reply(): void
+    public function test_a_rewrite_has_no_stop_reply(): void
     {
         $this->expectException(InvalidStopAnswer::class);
 
-        ProgramReplies::stop($this->answer(Decision::deny('Not a stop answer.')));
+        ProgramReplies::stop($this->answer(Decision::rewrite('ls')));
     }
 
-    public function test_a_held_stop_has_no_shell_reply(): void
+    public function test_a_delegation_has_no_shell_reply(): void
     {
         $this->expectException(InvalidShellAnswer::class);
 
-        $this->shell(Decision::preventStop('Not a shell answer.'));
+        $this->shell(Decision::delegate());
     }
 
     public function test_no_reply_ever_grants_a_native_approval(): void
@@ -101,7 +101,7 @@ final class ProgramRepliesTest extends TestCase
             $this->shell(Decision::deny('No.')),
             ProgramReplies::shell($this->answer(Decision::rewrite('journal run tests')), new ProgramToolInput(['command' => 'x']), RewriteSupport::WithoutApproval),
             ProgramReplies::stop($this->answer(Decision::allow())),
-            ProgramReplies::stop($this->answer(Decision::preventStop('Wait.'))),
+            ProgramReplies::stop($this->answer(Decision::deny('Wait.'))),
         ];
 
         foreach ($replies as $reply) {

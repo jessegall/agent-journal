@@ -44,7 +44,7 @@ final class StackRestorerTest extends TestCase
         $stack = $this->restorer->restore($this->records($this->bottom(), $this->task('task-42', 42)), ReadyStateType::MainAgent);
 
         $this->assertSame(['ready', 'task-42'], $stack->frameIds());
-        $this->assertSame(AnswerKind::PreventStop, $stack->answer(HookInputs::all()['stop'])->decision->answerKind());
+        $this->assertSame(AnswerKind::Deny, $stack->answer(HookInputs::all()['stop'])->decision->answerKind());
     }
 
     public function test_each_restore_reads_the_subjects_fresh(): void

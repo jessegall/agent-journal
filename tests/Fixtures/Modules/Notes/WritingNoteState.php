@@ -15,6 +15,6 @@ final class WritingNoteState extends AgentState
 {
     public function onStop(StopRequested $input): Decision
     {
-        return Decision::preventStop('Finish the note first.');
+        return Decision::deny('Finish the note first.');
     }
 }

@@ -23,6 +23,6 @@ final class WorkingOnTaskState extends AgentState
 
     public function onStop(StopRequested $input): Decision
     {
-        return Decision::preventStop($this->task->unfinishedReason());
+        return Decision::deny($this->task->unfinishedReason());
     }
 }

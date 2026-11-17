@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Unit\Chat\States;
 
 use App\Core\Hooks\Decisions\Denied;
-use App\Core\Hooks\Decisions\StopPrevented;
 use App\Core\Hooks\Enums\CommandEffect;
 use App\Core\Hooks\Enums\CommandKind;
 use App\Core\Hooks\Enums\FileOperation;
@@ -62,7 +61,7 @@ final class AnsweringMessageTest extends TestCase
     {
         $decision = $this->unanswered()->onStop(new StopRequested($this->hook(), new StopDetails('turn-1', false)));
 
-        $this->assertInstanceOf(StopPrevented::class, $decision->answer);
+        $this->assertInstanceOf(Denied::class, $decision->answer);
         $this->assertStringContainsString('journal message reply 95', $decision->refusalReason());
         $this->assertSame(SimpleTransition::Keep, $decision->transition);
     }

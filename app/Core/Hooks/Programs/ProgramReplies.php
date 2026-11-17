@@ -59,7 +59,7 @@ final class ProgramReplies
             AnswerKind::Allow => self::allowTool($answer->context),
             AnswerKind::Deny => self::denyTool($answer->decision->refusalReason(), $answer->context),
             AnswerKind::Rewrite => $rewrites->reply($answer, $original),
-            AnswerKind::Delegate, AnswerKind::PreventStop => throw InvalidShellAnswer::forAnswer($kind->value),
+            AnswerKind::Delegate => throw InvalidShellAnswer::forAnswer($kind->value),
         };
     }
 
@@ -68,12 +68,12 @@ final class ProgramReplies
         $kind = $answer->decision->answerKind();
 
         return match ($kind) {
-            AnswerKind::PreventStop => ProgramReply::json(BlockBody::from([
+            AnswerKind::Deny => ProgramReply::json(BlockBody::from([
                 'decision' => ProgramStopDecision::Block,
                 'reason' => implode("\n", [$answer->decision->refusalReason(), ...$answer->context]),
             ])),
             AnswerKind::Allow => ProgramReply::emptyObject(),
-            AnswerKind::Delegate, AnswerKind::Deny, AnswerKind::Rewrite => throw InvalidStopAnswer::forAnswer($kind->value),
+            AnswerKind::Delegate, AnswerKind::Rewrite => throw InvalidStopAnswer::forAnswer($kind->value),
         };
     }
 
@@ -90,7 +90,7 @@ final class ProgramReplies
                 'reason' => $answer->decision->refusalReason(),
             ])),
             AnswerKind::Allow => self::observation('UserPromptSubmit', $answer),
-            AnswerKind::Delegate, AnswerKind::PreventStop, AnswerKind::Rewrite => throw InvalidObservationAnswer::forAnswer($kind->value),
+            AnswerKind::Delegate, AnswerKind::Rewrite => throw InvalidObservationAnswer::forAnswer($kind->value),
         };
     }
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Sequences\States;
 
 use App\Core\Hooks\Contracts\HookInput;
-use App\Core\Hooks\Decisions\StopPrevented;
+use App\Core\Hooks\Decisions\Denied;
 use App\Core\Hooks\Enums\SimpleTransition;
 use App\Core\Hooks\Inputs\CompactionDetails;
 use App\Core\Hooks\Inputs\ContextCompacted;
@@ -46,7 +46,7 @@ final class FollowingSequenceTest extends TestCase
     {
         $decision = $this->following()->onStop($this->stop());
 
-        $this->assertInstanceOf(StopPrevented::class, $decision->answer);
+        $this->assertInstanceOf(Denied::class, $decision->answer);
         $this->assertSame('Sequence run 8 is on step 3: Run the phase tests.', $decision->refusalReason());
         $this->assertSame(SimpleTransition::Keep, $decision->transition);
     }

@@ -12,7 +12,6 @@ enum AnswerKind: string
     case Delegate = 'delegate';
     case Allow = 'allow';
     case Deny = 'deny';
-    case PreventStop = 'prevent_stop';
     case Rewrite = 'rewrite';
 
     /**
@@ -22,7 +21,7 @@ enum AnswerKind: string
     {
         return match ($this) {
             self::Delegate, self::Allow => true,
-            self::Deny, self::PreventStop, self::Rewrite => false,
+            self::Deny, self::Rewrite => false,
         };
     }
 
@@ -33,7 +32,7 @@ enum AnswerKind: string
     {
         return match ($this) {
             self::Delegate, self::Allow, self::Deny => true,
-            self::PreventStop, self::Rewrite => false,
+            self::Rewrite => false,
         };
     }
 
@@ -41,15 +40,14 @@ enum AnswerKind: string
     {
         return match ($this) {
             self::Delegate, self::Allow, self::Deny, self::Rewrite => true,
-            self::PreventStop => false,
         };
     }
 
     public function fitsAStop(): bool
     {
         return match ($this) {
-            self::Delegate, self::Allow, self::PreventStop => true,
-            self::Deny, self::Rewrite => false,
+            self::Delegate, self::Allow, self::Deny => true,
+            self::Rewrite => false,
         };
     }
 }

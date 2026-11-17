@@ -8,7 +8,6 @@ use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Decisions\Denied;
 use App\Core\Hooks\Decisions\PushState;
 use App\Core\Hooks\Decisions\StateReference;
-use App\Core\Hooks\Decisions\StopPrevented;
 use App\Core\Hooks\Decisions\SubjectReference;
 use App\Core\Hooks\Enums\NoSubject;
 use App\Core\Hooks\Enums\SimpleTransition;
@@ -23,19 +22,16 @@ final class DecisionTest extends TestCase
         $this->assertSame('delegate', Decision::delegate()->answerKind()->value);
         $this->assertSame('allow', Decision::allow()->answerKind()->value);
         $this->assertSame('deny', Decision::deny('Save the test run first.')->answerKind()->value);
-        $this->assertSame('prevent_stop', Decision::preventStop('Task 3 is still open.')->answerKind()->value);
+        $this->assertSame('deny', Decision::deny('Task 3 is still open.')->answerKind()->value);
         $this->assertSame('rewrite', Decision::rewrite('journal run tests')->answerKind()->value);
     }
 
-    public function test_a_denial_and_a_held_stop_carry_their_reason(): void
+    public function test_a_denial_carries_its_reason(): void
     {
         $denied = Decision::deny('Save the test run first.')->answer;
-        $held = Decision::preventStop('Task 3 is still open.')->answer;
 
         $this->assertInstanceOf(Denied::class, $denied);
         $this->assertSame('Save the test run first.', $denied->reason()->text);
-        $this->assertInstanceOf(StopPrevented::class, $held);
-        $this->assertSame('Task 3 is still open.', $held->reason()->text);
     }
 
     public function test_a_reason_is_never_empty(): void

@@ -92,7 +92,7 @@ final class CodexTest extends TestCase
 
     public function test_one_stop_blocker_gives_one_reason(): void
     {
-        $this->assertSame('{"decision":"block","reason":"Task 42 still needs work."}', $this->render('stop', Decision::preventStop('Task 42 still needs work.'))->stdout);
+        $this->assertSame('{"decision":"block","reason":"Task 42 still needs work."}', $this->render('stop', Decision::deny('Task 42 still needs work.'))->stdout);
     }
 
     public function test_a_rewrite_is_refused_with_the_journal_command_and_its_child_is_dropped(): void

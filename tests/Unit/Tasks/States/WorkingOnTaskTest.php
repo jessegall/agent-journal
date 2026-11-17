@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Tasks\States;
 
 use App\Core\Hooks\Contracts\HookInput;
-use App\Core\Hooks\Decisions\StopPrevented;
+use App\Core\Hooks\Decisions\Denied;
 use App\Core\Hooks\Enums\SimpleTransition;
 use App\Core\Hooks\Inputs\HookIdentity;
 use App\Core\Hooks\Inputs\StopDetails;
@@ -47,7 +47,7 @@ final class WorkingOnTaskTest extends TestCase
 
         $decision = (new WorkingOnTaskState($task))->onStop($this->stop());
 
-        $this->assertInstanceOf(StopPrevented::class, $decision->answer);
+        $this->assertInstanceOf(Denied::class, $decision->answer);
         $this->assertStringContainsString('Task 42 still needs work', $decision->refusalReason());
         $this->assertSame(SimpleTransition::Keep, $decision->transition);
         $this->assertSame(TaskWorkState::Active, $task->state);
