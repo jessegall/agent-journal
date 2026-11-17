@@ -1,0 +1,196 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Architecture\Support;
+
+use App\Domains\DomainEntry;
+
+/**
+ * Judges table use: each table belongs to the domain whose migrations create it, and others reach it only as declared.
+ */
+final readonly class TableChecker
+{
+    private const string LINKS_TABLE = 'links';
+
+    private const string LINKS_DOMAIN = 'Links';
+
+    private const string ROOT_MIGRATIONS = 'database/migrations';
+
+    /**
+     * @param  list<DomainEntry>  $entries
+     * @param  array<string, TableUse>  $creations  the creating migration of each owned table
+     * @param  array<string, DomainEntry>  $owners
+     */
+    private function __construct(
+        private array $entries,
+        private string $rootMigrationFolder,
+        private array $creations,
+        private array $owners,
+    ) {}
+
+    /**
+     * @param  list<DomainEntry>  $entries
+     */
+    public static function for(array $entries, string $rootMigrationFolder): self
+    {
+        $creations = [];
+        $owners = [];
+
+        foreach ($entries as $entry) {
+            foreach (self::creationsIn($entry->migrationFolder()) as $creation) {
+                $creations[$creation->table] ??= $creation;
+                $owners[$creation->table] ??= $entry;
+            }
+        }
+
+        return new self($entries, $rootMigrationFolder, $creations, $owners);
+    }
+
+    /**
+     * @param  list<TableUse>  $uses
+     * @return list<Violation>
+     */
+    public function violations(array $uses): array
+    {
+        $violations = [];
+
+        foreach ($uses as $use) {
+            $violation = $this->violationOf($use);
+
+            if ($violation !== null) {
+                $violations[] = $violation;
+            }
+        }
+
+        return $violations;
+    }
+
+    /**
+     * Tables created twice, migration file names used twice, and root migrations changing domain tables.
+     *
+     * @return list<Violation>
+     */
+    public function migrationViolations(): array
+    {
+        return [...$this->tablesCreatedTwice(), ...$this->migrationNamesTwice(), ...$this->rootMigrationChanges()];
+    }
+
+    private function violationOf(TableUse $use): ?Violation
+    {
+        $user = $this->domainHolding($use->file);
+        $owner = $this->owners[$use->table] ?? null;
+
+        $kind = match (true) {
+            $use->kind === TableKind::Create => null,
+            $use->kind === TableKind::NotWritten => ViolationKind::TableNotWritten,
+            $use->kind === TableKind::PivotNotWritten => ViolationKind::PivotNotWritten,
+            $use->table === self::LINKS_TABLE && $user->name !== self::LINKS_DOMAIN => ViolationKind::LinksTable,
+            $owner === null => ViolationKind::TableOfNoDomain,
+            $owner === $user => null,
+            $use->kind === TableKind::ModelTable => ViolationKind::ModelTableElsewhere,
+            $use->kind === TableKind::Change => ViolationKind::ChangesOtherTable,
+            $user->requiresDomain($owner) && $use->kind->isAllowedOnDeclaredTable() => null,
+            default => ViolationKind::UndeclaredTable,
+        };
+
+        if ($kind === null) {
+            return null;
+        }
+
+        return new Violation($use->file, $use->line, $use->table, $user->name, $owner->name ?? 'no domain', $kind);
+    }
+
+    /**
+     * @return list<Violation>
+     */
+    private function tablesCreatedTwice(): array
+    {
+        $violations = [];
+
+        foreach ($this->entries as $entry) {
+            foreach (self::creationsIn($entry->migrationFolder()) as $creation) {
+                $first = $this->creations[$creation->table];
+
+                if ($first->file !== $creation->file) {
+                    $violations[] = new Violation($creation->file, $creation->line, $creation->table, $entry->name, $first->file, ViolationKind::TableCreatedTwice);
+                }
+            }
+        }
+
+        return $violations;
+    }
+
+    /**
+     * @return list<Violation>
+     */
+    private function migrationNamesTwice(): array
+    {
+        $folders = [$this->rootMigrationFolder, ...array_map(fn (DomainEntry $entry) => $entry->migrationFolder(), $this->entries)];
+        $seen = [];
+        $violations = [];
+
+        foreach (DomainFiles::in($folders) as $file) {
+            $name = basename($file);
+
+            if (isset($seen[$name])) {
+                $violations[] = new Violation($file, 1, $name, $this->domainNameOf($file), $seen[$name], ViolationKind::MigrationNameTwice);
+
+                continue;
+            }
+
+            $seen[$name] = $file;
+        }
+
+        return $violations;
+    }
+
+    /**
+     * @return list<Violation>
+     */
+    private function rootMigrationChanges(): array
+    {
+        $violations = [];
+
+        foreach (DomainFiles::in([$this->rootMigrationFolder]) as $file) {
+            foreach (TableScan::of(ParsedFile::fromPath($file)) as $use) {
+                $owner = $this->owners[$use->table] ?? null;
+
+                if ($owner !== null && $use->kind === TableKind::Change) {
+                    $violations[] = new Violation($file, $use->line, $use->table, self::ROOT_MIGRATIONS, $owner->name, ViolationKind::RootMigrationChangesDomainTable);
+                }
+            }
+        }
+
+        return $violations;
+    }
+
+    /**
+     * @return list<TableUse>
+     */
+    private static function creationsIn(string $folder): array
+    {
+        $creations = [];
+
+        foreach (DomainFiles::in([$folder]) as $file) {
+            foreach (TableScan::of(ParsedFile::fromPath($file)) as $use) {
+                if ($use->kind === TableKind::Create) {
+                    $creations[] = $use;
+                }
+            }
+        }
+
+        return $creations;
+    }
+
+    private function domainHolding(string $path): DomainEntry
+    {
+        return array_find($this->entries, fn (DomainEntry $entry) => $entry->holdsFile($path))
+            ?? throw FileOutsideEveryDomain::for($path);
+    }
+
+    private function domainNameOf(string $path): string
+    {
+        return array_find($this->entries, fn (DomainEntry $entry) => $entry->holdsFile($path))->name ?? self::ROOT_MIGRATIONS;
+    }
+}
