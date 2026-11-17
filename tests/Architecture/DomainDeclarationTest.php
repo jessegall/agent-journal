@@ -61,11 +61,11 @@ final class DomainDeclarationTest extends TestCase
         $sharedFolder = $appFolder.'/Domains';
         $starterKitFiles = array_map(fn (string $file) => "{$appFolder}/{$file}", self::STARTER_KIT_FILES);
         $rules = $this->rules($this->app->make(DomainRegistry::class));
-        $appFiles = DomainFiles::in([$appFolder]);
+        $files = DomainFiles::in([$appFolder, dirname($appFolder).'/domain']);
 
         $violations = [
-            ...$rules->misnamedDomainClasses($appFiles, 'App'),
-            ...$rules->filesOutsideDomains($appFiles, $sharedFolder, $starterKitFiles),
+            ...$rules->misnamedDomainClasses($files, 'Domain'),
+            ...$rules->filesOutsideDomains($files, $sharedFolder, $starterKitFiles),
             ...$rules->starterKitDomainUses($starterKitFiles),
             ...$rules->namespacesOutsideDomains(),
             ...$rules->extraSharedFiles($sharedFolder, self::SHARED_PLACE_FILES),
@@ -79,8 +79,8 @@ final class DomainDeclarationTest extends TestCase
         $files = DomainFiles::in([$this->fixture('Good'), $this->fixture('Deep'), $this->fixture('Based')]);
 
         $this->assertSame([
-            'declares Tests\Fixtures\Declarations\Based\ConcreteBased, but a Domain class must be App\<Name>\<Name>Domain',
-            'declares Tests\Fixtures\Declarations\Deep\Inner\InnerDomain, but a Domain class must be App\<Name>\<Name>Domain',
+            'declares Tests\Fixtures\Declarations\Based\ConcreteBased, but a Domain class must be Domain\<Name>\<Name>Domain',
+            'declares Tests\Fixtures\Declarations\Deep\Inner\InnerDomain, but a Domain class must be Domain\<Name>\<Name>Domain',
         ], $this->reasons($this->rules($this->registry())->misnamedDomainClasses($files, 'Tests\Fixtures\Declarations')));
     }
 

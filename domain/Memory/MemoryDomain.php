@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Reminders;
+namespace Domain\Memory;
 
 use App\Domains\Domain;
 
-final class RemindersDomain implements Domain
+final class MemoryDomain implements Domain
 {
     public function description(): string
     {
-        return 'Something to do at a time or on an interval.';
+        return 'The weighted memories each agent keeps past its context window.';
     }
 
     /**

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks;
+namespace Domain\Chat;
 
 use App\Domains\Domain;
 
-final class HooksDomain implements Domain
+final class ChatDomain implements Domain
 {
     public function description(): string
     {
-        return 'Turns each hook call of an agent program into hook input and returns the answer.';
+        return 'Messages between the user and agents; a question is a kind of message.';
     }
 
     /**

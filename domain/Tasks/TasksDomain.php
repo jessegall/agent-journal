@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Chat;
+namespace Domain\Tasks;
 
 use App\Domains\Domain;
 
-final class ChatDomain implements Domain
+final class TasksDomain implements Domain
 {
     public function description(): string
     {
-        return 'Messages between the user and agents; a question is a kind of message.';
+        return 'A task, its state, its log and what it waits on.';
     }
 
     /**

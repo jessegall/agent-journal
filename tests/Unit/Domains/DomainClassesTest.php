@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Agents\AgentsDomain;
-use App\Chat\ChatDomain;
 use App\Domains\Domain;
-use App\Hooks\HooksDomain;
-use App\Links\LinksDomain;
-use App\Memory\MemoryDomain;
-use App\Plans\PlansDomain;
-use App\Processes\ProcessesDomain;
-use App\Profiles\ProfilesDomain;
-use App\Reminders\RemindersDomain;
-use App\Rules\RulesDomain;
-use App\Sequences\SequencesDomain;
-use App\Tasks\TasksDomain;
+use Domain\Agents\AgentsDomain;
+use Domain\Chat\ChatDomain;
+use Domain\Hooks\HooksDomain;
+use Domain\Links\LinksDomain;
+use Domain\Memory\MemoryDomain;
+use Domain\Plans\PlansDomain;
+use Domain\Processes\ProcessesDomain;
+use Domain\Profiles\ProfilesDomain;
+use Domain\Reminders\RemindersDomain;
+use Domain\Rules\RulesDomain;
+use Domain\Sequences\SequencesDomain;
+use Domain\Tasks\TasksDomain;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

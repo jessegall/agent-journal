@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Agents;
+namespace Domain\Hooks;
 
 use App\Domains\Domain;
 
-final class AgentsDomain implements Domain
+final class HooksDomain implements Domain
 {
     public function description(): string
     {
-        return 'Running agents and their sessions; a helper is a kind of agent.';
+        return 'Turns each hook call of an agent program into hook input and returns the answer.';
     }
 
     /**

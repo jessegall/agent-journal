@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Memory;
+namespace Domain\Links;
 
 use App\Domains\Domain;
 
-final class MemoryDomain implements Domain
+final class LinksDomain implements Domain
 {
     public function description(): string
     {
-        return 'The weighted memories each agent keeps past its context window.';
+        return 'The links between any two models.';
     }
 
     /**

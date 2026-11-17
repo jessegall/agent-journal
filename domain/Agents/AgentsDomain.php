@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Links;
+namespace Domain\Agents;
 
 use App\Domains\Domain;
 
-final class LinksDomain implements Domain
+final class AgentsDomain implements Domain
 {
     public function description(): string
     {
-        return 'The links between any two models.';
+        return 'Running agents and their sessions; a helper is a kind of agent.';
     }
 
     /**

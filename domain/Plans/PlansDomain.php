@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Plans;
+namespace Domain\Plans;
 
 use App\Domains\Domain;
-use App\Tasks\TasksDomain;
+use Domain\Tasks\TasksDomain;
 
 final class PlansDomain implements Domain
 {

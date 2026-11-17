@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Processes;
+namespace Domain\Sequences;
 
 use App\Domains\Domain;
 
-final class ProcessesDomain implements Domain
+final class SequencesDomain implements Domain
 {
     public function description(): string
     {
-        return 'Shell commands run through the journal, their output, saved commands and readers.';
+        return 'Steps an agent follows one at a time.';
     }
 
     /**

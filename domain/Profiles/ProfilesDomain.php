@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Tasks;
+namespace Domain\Profiles;
 
 use App\Domains\Domain;
 
-final class TasksDomain implements Domain
+final class ProfilesDomain implements Domain
 {
     public function description(): string
     {
-        return 'A task, its state, its log and what it waits on.';
+        return 'Agent definitions: the program, the model and the instructions an agent starts with.';
     }
 
     /**

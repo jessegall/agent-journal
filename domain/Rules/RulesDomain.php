@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Rules;
+namespace Domain\Rules;
 
 use App\Domains\Domain;
 
