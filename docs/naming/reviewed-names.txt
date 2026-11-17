@@ -231,6 +231,7 @@ class	AssigneeRecords
 class	AssigneeRegistration
 class	AssigneeUnavailable
 class	Assignment
+class	AssignmentBatch
 class	AssignmentChange
 class	AssignmentConflict
 class	AssignmentData
@@ -248,6 +249,7 @@ class	AssignmentReference
 class	AssignmentRegistry
 class	AssignmentResult
 class	AssignmentRetryExhausted
+class	AssignmentRootFinished
 class	AssignmentSet
 class	AssignmentStore
 class	AssignmentTransactionRequired
@@ -986,6 +988,12 @@ method	AssigneeUnavailable::forActor()
 method	Assignment::__construct()
 method	Assignment::holder()
 method	Assignment::isFor()
+method	AssignmentBatch::__construct()
+method	AssignmentBatch::checkedGroup()
+method	AssignmentBatch::clear()
+method	AssignmentBatch::giveTo()
+method	AssignmentBatch::isFinished()
+method	AssignmentBatch::skip()
 method	AssignmentChange::__construct()
 method	AssignmentConflict::heldByAnother()
 method	AssignmentConflict::staleReference()
@@ -1033,9 +1041,11 @@ method	AssignmentRegistry::recordProvider()
 method	AssignmentRegistry::registerAssignees()
 method	AssignmentRegistry::registerRecord()
 method	AssignmentResult::__construct()
+method	AssignmentResult::combined()
 method	AssignmentResult::count()
 method	AssignmentResult::hasChanges()
 method	AssignmentRetryExhausted::after()
+method	AssignmentRootFinished::for()
 method	AssignmentSet::__construct()
 method	AssignmentSet::forRecord()
 method	AssignmentStore::__construct()
@@ -1052,8 +1062,11 @@ method	AssignmentTypeRepeated::for()
 method	AssignmentTypeUnavailable::forKind()
 method	AssignmentTypeUnavailable::forType()
 method	AssignmentWriter::assign()
+method	AssignmentWriter::assignUnfinished()
 method	AssignmentWriter::reassign()
+method	AssignmentWriter::reassignUnfinished()
 method	AssignmentWriter::unassign()
+method	AssignmentWriter::unassignUnfinished()
 method	AssignmentsChanged::__construct()
 method	AssignmentsServiceProvider::boot()
 method	AssignmentsServiceProvider::register()
@@ -2215,11 +2228,17 @@ method	WorkingOnTaskStateFactory::stateFor()
 method	WorkingOnTaskStateReference::forTask()
 method	WriteAssignments::__construct()
 method	WriteAssignments::assign()
+method	WriteAssignments::assignUnfinished()
 method	WriteAssignments::changed()
 method	WriteAssignments::checkActors()
+method	WriteAssignments::checkedGroup()
+method	WriteAssignments::each()
+method	WriteAssignments::published()
 method	WriteAssignments::reassign()
+method	WriteAssignments::reassignUnfinished()
 method	WriteAssignments::requireExpected()
 method	WriteAssignments::unassign()
+method	WriteAssignments::unassignUnfinished()
 method	WriteAssignments::unchanged()
 method	WriteAssignments::unchangedIfHeldBy()
 property	AccessSettings::$ownerId
@@ -2277,6 +2296,8 @@ property	AssigneeRegistration::$kind
 property	AssigneeRegistration::$providerClass
 property	Assignment::$record
 property	Assignment::$reference
+property	AssignmentBatch::$providers
+property	AssignmentBatch::$store
 property	AssignmentChange::$after
 property	AssignmentChange::$before
 property	AssignmentChange::$record
@@ -2911,6 +2932,7 @@ property	WorkingOnTaskState::$task
 property	WorkingOnTaskStateFactory::$tasks
 property	WriteAssignments::$actors
 property	WriteAssignments::$authority
+property	WriteAssignments::$batch
 property	WriteAssignments::$facts
 property	WriteAssignments::$providers
 property	WriteAssignments::$store

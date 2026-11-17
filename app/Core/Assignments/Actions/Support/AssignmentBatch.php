@@ -1,0 +1,103 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Core\Assignments\Actions\Support;
+
+use App\Core\Actors\Support\ActorIdentity;
+use App\Core\Assignments\Contracts\AssignmentProviders;
+use App\Core\Assignments\Enums\AssignmentOutcomeKind;
+use App\Core\Assignments\Storage\AssignmentStore;
+use App\Core\Assignments\Support\AssignmentChange;
+use App\Core\Assignments\Support\AssignmentGroup;
+use App\Core\Assignments\Support\AssignmentOutcome;
+use App\Core\Assignments\Support\AssignmentResult;
+use App\Core\Assignments\Support\RecordIdentity;
+use Closure;
+use PhpOption\None;
+use PhpOption\Some;
+
+/**
+ * The steps of a batch command over a group its owner collected: check every record with its owner, learn which are
+ * finished with one call per owner, and give, clear or skip each record. The writer decides the root's rule.
+ */
+final readonly class AssignmentBatch
+{
+    public function __construct(
+        private AssignmentProviders $providers,
+        private AssignmentStore $store,
+    ) {}
+
+    /**
+     * Runs the owner's database-only collection, checks every record under a key-share lock and returns the group
+     * with the records whose work is finished.
+     *
+     * @param  Closure(): AssignmentGroup  $records
+     * @return array{AssignmentGroup, list<RecordIdentity>}
+     */
+    public function checkedGroup(Closure $records): array
+    {
+        $group = $records();
+        $byType = [];
+
+        foreach ($group->records as $record) {
+            $byType[$record->type][] = $this->providers->recordProvider($record->type)->requireAssignable($record);
+        }
+
+        $finished = [];
+
+        foreach ($byType as $type => $assignables) {
+            array_push($finished, ...$this->providers->recordProvider($type)->finishedRecords($assignables));
+        }
+
+        return [$group, $finished];
+    }
+
+    /**
+     * @param  list<RecordIdentity>  $finished
+     */
+    public function isFinished(RecordIdentity $record, array $finished): bool
+    {
+        return array_any($finished, fn (RecordIdentity $over) => $over->isSameAs($record));
+    }
+
+    /**
+     * Gives the record to the recipient: fills it when unheld, replaces another holder, leaves the same holder.
+     */
+    public function giveTo(RecordIdentity $record, ActorIdentity $recipient): AssignmentResult
+    {
+        $current = $this->store->lockCurrent($record);
+
+        if ($current->isEmpty()) {
+            $after = Some::create($this->store->assignIfUnheld($record, $recipient));
+
+            return new AssignmentResult([new AssignmentOutcome($record, $after, AssignmentOutcomeKind::Changed)], [new AssignmentChange($record, None::create(), $after)]);
+        }
+
+        if ($current->get()->holder()->isSameAs($recipient)) {
+            return new AssignmentResult([new AssignmentOutcome($record, $current, AssignmentOutcomeKind::Unchanged)], []);
+        }
+
+        $after = Some::create($this->store->replace($current->get(), $recipient));
+
+        return new AssignmentResult([new AssignmentOutcome($record, $after, AssignmentOutcomeKind::Changed)], [new AssignmentChange($record, $current, $after)]);
+    }
+
+    public function clear(RecordIdentity $record): AssignmentResult
+    {
+        $current = $this->store->lockCurrent($record);
+
+        if ($current->isEmpty()) {
+            return new AssignmentResult([new AssignmentOutcome($record, None::create(), AssignmentOutcomeKind::Unchanged)], []);
+        }
+
+        $this->store->remove($current->get());
+
+        return new AssignmentResult([new AssignmentOutcome($record, None::create(), AssignmentOutcomeKind::Changed)], [new AssignmentChange($record, $current, None::create())]);
+    }
+
+    public function skip(RecordIdentity $record): AssignmentResult
+    {
+        return new AssignmentResult([new AssignmentOutcome($record, $this->store->lockCurrent($record), AssignmentOutcomeKind::SkippedFinished)], []);
+    }
+}

@@ -34,6 +34,7 @@ use App\Core\Assignments\Exceptions\AssignmentDenied;
 use App\Core\Assignments\Exceptions\AssignmentGroupTooLarge;
 use App\Core\Assignments\Exceptions\AssignmentProviderInvalid;
 use App\Core\Assignments\Exceptions\AssignmentRetryExhausted;
+use App\Core\Assignments\Exceptions\AssignmentRootFinished;
 use App\Core\Assignments\Exceptions\AssignmentTransactionRequired;
 use App\Core\Assignments\Exceptions\AssignmentTypeRepeated;
 use App\Core\Assignments\Exceptions\AssignmentTypeUnavailable;
@@ -239,6 +240,7 @@ final class CoreApi
             AssignmentGroupTooLarge::class,
             AssigneeUnavailable::class,
             RecordUnavailable::class,
+            AssignmentRootFinished::class,
             AgentNotAvailable::class,
             AgentRetirementDenied::class,
             AgentRetirement::class,

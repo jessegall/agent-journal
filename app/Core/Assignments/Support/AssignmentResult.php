@@ -29,4 +29,15 @@ final readonly class AssignmentResult
     {
         return $this->changes !== [];
     }
+
+    /**
+     * @param  list<self>  $results
+     */
+    public static function combined(array $results): self
+    {
+        return new self(
+            array_merge(...array_map(fn (self $result) => $result->outcomes, $results)),
+            array_merge(...array_map(fn (self $result) => $result->changes, $results)),
+        );
+    }
 }
