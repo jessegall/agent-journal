@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Hooks\Http;
 
+use App\Domain\Agents\LaunchSessions;
 use App\Domain\Hooks\AgentStateMachine;
 use App\Domain\Hooks\HookDigestChanged;
 use App\Domain\Hooks\HookIdentityExpired;
 use App\Domain\Hooks\Inputs\CommandFactsMissing;
 use App\Domain\Hooks\Inputs\HookInput;
 use App\Domain\Hooks\OperationDeadline;
+use App\Domain\Hooks\Programs\HookPayload;
 use App\Domain\Hooks\Programs\ProgramAdapters;
 use App\Domain\Hooks\Programs\UnreadablePayload;
 use App\Domain\Hooks\Programs\UnsupportedHook;
@@ -28,6 +30,7 @@ final readonly class HookController
     public function __construct(
         private ProgramAdapters $adapters,
         private OperationDeadline $deadline,
+        private LaunchSessions $sessions,
     ) {}
 
     /**
@@ -39,7 +42,9 @@ final readonly class HookController
         $adapter = $this->adapters->for($request->program());
 
         try {
-            $call = $adapter->callFor($request->payload(), $access->hookIdentity());
+            $payload = $request->payload();
+            $call = $adapter->callFor($payload, $access->hookIdentity());
+            $this->mapProgramSession($payload, $access);
             $reply = $call->replyWith(fn (HookInput $input, Closure $render) => $machine->answer($input, $adapter->capabilities(), $this->deadline, $render));
         } catch (UnsupportedHook|UnreadablePayload $refused) {
             return $this->failure($refused->getMessage(), Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -50,6 +55,17 @@ final readonly class HookController
         }
 
         return new JsonResponse(HookResponse::fromProgramReply($reply)->toArray());
+    }
+
+    /**
+     * A session start, also after a clear, a resume or a compaction, records the program's own session id on the
+     * same journal session.
+     */
+    private function mapProgramSession(HookPayload $payload, StackAccess $access): void
+    {
+        if ($payload->isSessionStart()) {
+            $this->sessions->mapProgramSessionFor($access->target()->sessionId, $payload->sessionId);
+        }
     }
 
     private function failure(string $message, int $status): JsonResponse

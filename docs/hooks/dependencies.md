@@ -47,7 +47,6 @@ No owner store existed for the subjects the states are about, so plan 2 built th
 |---|---|---|
 | Starting a program with the relay environment (JOURNAL_URL, JOURNAL_LAUNCH_TOKEN, JOURNAL_ROLE, JOURNAL_BYPASS_LOG) | the host that launches programs; `bin/journal-hook` and `hooks:relay` exist (task 88) | task 89 |
 | Captured fixtures from pinned program versions, the Codex settings shape and child identity | Hooks; `tests/Fixtures/Hooks/ClaudeCode`, `tests/Fixtures/Hooks/Codex`, `docs/hooks/program-capabilities.md` | task 89 |
-| Recording the program's session id on every session start | Hooks endpoint with Agents' `LaunchSessions::mapProgramSession` | task 90 |
 | Saved command records, so a journal command counts as saved only when it is one | Processes; `app/Domain/Processes/CommandCatalog.php` | task 91 |
 | Agent scoping (rule 4) on the new task, message, sequence, memory and rule stores | Tasks, Chat, Sequences, Memory, Rules models | task 92 |
 | A full hook call and a lock wait measured on the live Octane app | Hooks; `docs/hooks/program-capabilities.md` | task 93 |

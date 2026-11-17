@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Domain\Agents\AgentContext;
+use App\Domain\Agents\Models\AgentSession;
 use App\Domain\Agents\SignedCall;
 use App\Domain\Hooks\Inputs\CommandEffect;
 use App\Domain\Hooks\Inputs\CommandKind;
@@ -146,6 +147,16 @@ final class HookEndpointTest extends TestCase
         $this->hook('claude-code', '{"session_id":"session-redacted"}', 'call-1')->assertUnprocessable();
         $this->hook('claude-code', '{"session_id":"session-redacted","hook_event_name":"Notification"}', 'call-2')->assertUnprocessable();
         $this->hook('claude-code', '{"session_id":"session-redacted","hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{}}', 'call-3')->assertUnprocessable();
+    }
+
+    public function test_a_clear_keeps_the_journal_session_and_records_the_new_program_session(): void
+    {
+        $this->hook('claude-code', '{"session_id":"program-session-1","hook_event_name":"SessionStart","source":"startup"}', 'call-1')->assertOk();
+        $this->hook('claude-code', '{"session_id":"program-session-2","hook_event_name":"SessionStart","source":"clear"}', 'call-2')->assertOk();
+
+        $this->assertSame(1, AgentSession::query()->count());
+        $this->assertSame('program-session-2', $this->launch->session->fresh()?->program_session_id);
+        $this->assertSame(2, HookCall::query()->authorizedFor($this->target())->count());
     }
 
     public function test_an_unknown_program_has_no_endpoint(): void

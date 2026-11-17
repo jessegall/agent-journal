@@ -34,6 +34,11 @@ final class HookPayload extends Data
         public readonly string|Optional $reason = new Optional,
     ) {}
 
+    public function isSessionStart(): bool
+    {
+        return $this->hookEventName === 'SessionStart';
+    }
+
     public function promptText(): string
     {
         return $this->present($this->prompt, 'prompt');

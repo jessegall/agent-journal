@@ -52,6 +52,11 @@ final readonly class LaunchSessions
         $session->mapProgramSession($programSessionId);
     }
 
+    public function mapProgramSessionFor(int $sessionId, string $programSessionId): void
+    {
+        AgentSession::query()->findOrFail($sessionId)->mapProgramSession($programSessionId);
+    }
+
     public function end(AgentSession $session): void
     {
         $this->transaction->run(function () use ($session): void {
