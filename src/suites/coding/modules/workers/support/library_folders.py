@@ -11,23 +11,43 @@ from engine.errors.refusal import Refusal
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 COPY_LIMIT_SECONDS = 300
+COMPOSER_FOLDER = "vendor"
+COMPOSER_MANIFEST = "composer.json"
 MAC_COPY = ("cp", "-cR")
 LINUX_COPY = ("cp", "-a", "--reflink=auto")
 
 
 class LibraryFolders:
     """Gives a worktree the environment's library folders, each linked or copied, and keeps every one out of
-    git."""
+    git. A copy may also be a single file, such as a gitignored .env. Composer's vendor folder is always copied:
+    its autoloader resolves its real path, so through a link the worktree's PHP would load the main checkout's
+    classes and a composer command in the worktree would rewrite the main checkout's autoload files."""
 
     def __init__(self, git: WorktreeGit, executor: ProcessExecutor) -> None:
         self.git, self.executor = git, executor
 
-    def check(self, folder: str, names: Sequence[str]) -> None:
+    def check(self, folder: str, links: Sequence[str], copies: Sequence[str]) -> None:
         root = Path(folder).resolve()
-        for name in names:
-            library = (root / name).resolve()
-            if not FileAccess.is_dir(library) or library == root or not library.is_relative_to(root):
+        for name in links:
+            if not FileAccess.is_dir(self.inside(root, name)):
                 raise Refusal(f"{name} is no folder in {folder}", "name a library folder inside the environment's folder")
+            if self.is_composer_folder(folder, name):
+                raise Refusal(f"{name} is Composer's vendor folder: through a link the worktree's PHP loads the main checkout's classes", f"copy it with --library-copy {name}")
+        for name in copies:
+            if not FileAccess.exists(self.inside(root, name)):
+                raise Refusal(f"{name} is no folder or file in {folder}", "name a library folder or file inside the environment's folder")
+
+    @staticmethod
+    def inside(root: Path, name: str) -> Path:
+        library = (root / name).resolve()
+        if library == root or not library.is_relative_to(root):
+            raise Refusal(f"{name} is not inside {root}", "name a library folder inside the environment's folder")
+        return library
+
+    @staticmethod
+    def is_composer_folder(folder: str, name: str) -> bool:
+        library = Path(folder) / name
+        return library.name == COMPOSER_FOLDER and FileAccess.is_file(library.parent / COMPOSER_MANIFEST)
 
     def place(self, folder: str, target: str, links: Sequence[str], copies: Sequence[str]) -> None:
         for name in dict.fromkeys(links):
@@ -43,7 +63,10 @@ class LibraryFolders:
             if FileAccess.is_symlink(Path(target) / name):
                 FileAccess.unlink(Path(target) / name, missing_ok=True)
         for name in copies:
-            FileAccess.rmtree(Path(target) / name, ignore_errors=True)
+            if FileAccess.is_dir(Path(target) / name):
+                FileAccess.rmtree(Path(target) / name, ignore_errors=True)
+            else:
+                FileAccess.unlink(Path(target) / name, missing_ok=True)
 
     def restore(self, folder: str, target: str, links: Sequence[str], copies: Sequence[str]) -> None:
         for name in [name for name in links if not FileAccess.is_symlink(Path(target) / name) and not FileAccess.exists(Path(target) / name)]:

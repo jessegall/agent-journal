@@ -53,9 +53,11 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
         self.environment_names.environment_id(command.environment)
         links = (*self.settings.texts(LIBRARY_LINKS), *command.library_links)
         copies = (*self.settings.texts(LIBRARY_COPIES), *command.library_copies)
-        links = (*links, *(name for name in self.git.dependency_folders(command.source) if name not in (*links, *copies) and not FileAccess.exists(Path(command.folder) / name)))
+        found = [name for name in self.git.dependency_folders(command.source) if name not in (*links, *copies) and not FileAccess.exists(Path(command.folder) / name)]
+        links = (*links, *(name for name in found if not self.libraries.is_composer_folder(command.source, name)))
+        copies = (*copies, *(name for name in found if self.libraries.is_composer_folder(command.source, name)))
         self.timing.stamp("prepare_dependency_folders")
-        self.libraries.check(command.source, (*links, *copies))
+        self.libraries.check(command.source, links, copies)
         self.libraries.place(command.source, command.folder, links, copies)
         self.timing.stamp("prepare_libraries")
         self.place_program_hooks(command)

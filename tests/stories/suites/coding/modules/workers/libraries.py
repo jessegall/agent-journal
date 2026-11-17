@@ -42,14 +42,41 @@ def test_a_library_name_that_is_no_folder_inside_the_environments_folder_is_refu
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
     story.expect_refusal(f"{DISPATCH} --library-link node_modules", f"node_modules is no folder in {repository.folder}", actor=story.agent)
-    story.expect_refusal(f"{DISPATCH} --library-copy ..", f".. is no folder in {repository.folder}", actor=story.agent)
+    story.expect_refusal(f"{DISPATCH} --library-copy ..", ".. is not inside", actor=story.agent)
     expect_clean_environment(story, repository)
 
 
 @pytest.mark.real_git
-def test_a_launch_worktree_is_given_the_libraries_and_commands_of_the_environment_named_not_of_another_in_its_folder(new_story):
+def test_composers_vendor_folder_is_refused_as_a_link_and_named_for_a_copy(new_story):
     story = new_story(fixture=OpenTaskOrchestrator)
     repository = repository_environment(story)
+    repository.library("vendor", "autoload.php", "<?php\n")
+    repository.uncommitted("composer.json", "{}\n")
+    story.expect_refusal(f"{DISPATCH} --library-link vendor", "Composer's vendor folder", actor=story.agent)
+
+
+def test_composers_ignored_vendor_folder_is_copied_not_linked(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = repository_environment(story, real_git=True)
+    repository.library("vendor", "autoload.php", "<?php\n")
+    repository.uncommitted("composer.json", "{}\n")
+    repository.uncommitted(".gitignore", "vendor/\n")
+    worker_id = dispatched_worker(story, DISPATCH).id
+    repository.expect_copy(worker_id, "vendor", "autoload.php", "<?php\n")
+
+
+def test_a_file_named_to_copy_is_copied_and_git_never_sees_it(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = repository_environment(story)
+    repository.uncommitted(".env", "DB_HOST=127.0.0.1\n")
+    worker_id = dispatched_worker(story, f"{DISPATCH} --library-copy .env").id
+    story.expect_rows((repository.worktree_folder(worker_id) / ".env").read_text() == "DB_HOST=127.0.0.1\n")
+    repository.expect_excluded(worker_id, ".env")
+
+
+def test_a_launch_worktree_is_given_the_libraries_and_commands_of_the_environment_named_not_of_another_in_its_folder(new_story):
+    story = new_story(fixture=OpenTaskOrchestrator)
+    repository = repository_environment(story, real_git=True)
     repository.library("node_modules", LIBRARY_FILE, LIBRARY_TEXT)
     repository.library("vendor", LIBRARY_FILE, LIBRARY_TEXT)
     folder = repository.folder / ".claude" / "worktrees" / "cart"
