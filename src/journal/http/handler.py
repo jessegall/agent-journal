@@ -19,6 +19,8 @@ from journal.http.support.stream_response import StreamResponse
 # the one question answered while the journal boots: which phase it is in
 UNHELD_PATHS = ("/journal/health",)
 
+CROSS_SITE_FETCHES = ("cross-site", "same-site")
+
 
 class Handler(PooledHandler):
     """Turns one HTTP exchange into a Request for the router and writes its Response back, holding it while the journal boots and counting the requests that fail in a row; the health question is read without who asks it, so a journal that fails to read its callers can still say it is unwell."""
@@ -39,8 +41,18 @@ class Handler(PooledHandler):
         self._answer(self._dispatched(request))
 
     def do_POST(self) -> None:
+        if self._is_cross_site():
+            return self._answer(Response(403, {"error": "a write from another site is refused"}))
         request = self._counted_request()
         self._answer(self._dispatched(request))
+
+    # a page on another site can make the browser post here with the user's login, so a write the browser marks as
+    # coming from elsewhere is refused; the journal's own commands send no Origin and pass
+    def _is_cross_site(self) -> bool:
+        if self.headers.get("Sec-Fetch-Site", "") in CROSS_SITE_FETCHES:
+            return True
+        origin = self.headers.get("Origin", "")
+        return bool(origin) and (origin == "null" or urlsplit(origin).netloc != self.headers.get("Host", ""))
 
     def _unidentified_request(self) -> Request:
         head = RequestReading.head(self.command, self.path, dict(self.headers.items()))
