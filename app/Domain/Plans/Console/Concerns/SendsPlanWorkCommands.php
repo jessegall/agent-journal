@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Console\Concerns;
 
-use App\Core\Agents\Contracts\AgentRequestSender;
-use App\Core\Agents\Exceptions\AgentRequestFailed;
+use App\Core\AgentRequests\Contracts\AgentRequestSender;
+use App\Core\AgentRequests\Exceptions\AgentRequestFailed;
 use App\Domain\Plans\Http\Data\PlanWorkResultData;
 
 /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sequences\Events;
 
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 
 /**
  * A sequence run started for an agent and session, raised inside the transaction that started it.

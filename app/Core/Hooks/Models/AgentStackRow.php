@@ -11,7 +11,7 @@ use App\Core\Hooks\Models\Support\AgentSessionScope;
 use App\Core\Hooks\Storage\FrameRecords;
 use App\Core\Hooks\Storage\FrameRecordsCast;
 use App\Core\Hooks\Storage\StoredFrames;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 use App\Core\Links\Support\Linkable;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

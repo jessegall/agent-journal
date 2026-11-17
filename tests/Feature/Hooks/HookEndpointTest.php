@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Core\Agents\Models\AgentSession;
 use App\Core\Agents\Support\AgentContext;
-use App\Core\Agents\Support\SignedCall;
+use App\Core\AgentRequests\Support\SignedCall;
 use App\Core\Hooks\Actions\LaunchStacks;
 use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Hooks\Enums\CommandEffect;
@@ -18,7 +18,7 @@ use App\Core\Hooks\Inputs\CommandPart;
 use App\Core\Hooks\Inputs\MissingShellParser;
 use App\Core\Hooks\Inputs\ShellCommand;
 use App\Core\Hooks\Models\HookCall;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 use App\Core\Hooks\Support\StackTransaction;
 use App\Domain\Tasks\Actions\StartTask;
 use App\Domain\Tasks\Models\Task;

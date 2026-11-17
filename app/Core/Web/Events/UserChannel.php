@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Web\Events;
 
-use App\Core\Contracts\Actor;
+use App\Core\Actors\Contracts\Actor;
 use App\Core\Web\Contracts\JournalAccessPolicy;
 
 /**

@@ -7,7 +7,7 @@ namespace Tests\Feature;
 use App\Core\Actors\Exceptions\ActorContextMissing;
 use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Agents\Exceptions\AgentContextMissing;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 use App\Domain\Chat\Exceptions\MessageMissing;
 use App\Domain\Chat\Models\Message;
 use App\Domain\Chat\Readers\MessageRecords;

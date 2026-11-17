@@ -14,7 +14,7 @@ use App\Core\Assignments\Support\AssignmentSet;
 use App\Core\Assignments\Support\Page;
 use App\Core\Assignments\Support\RecordIdentity;
 use App\Core\Assignments\Support\RecordIds;
-use App\Core\Contracts\CurrentActor;
+use App\Core\Actors\Contracts\CurrentActor;
 use Illuminate\Database\Eloquent\Builder;
 use Psr\Log\LoggerInterface;
 

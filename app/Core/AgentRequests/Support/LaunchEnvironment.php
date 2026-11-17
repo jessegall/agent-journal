@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Agents\Support;
+namespace App\Core\AgentRequests\Support;
 
-use App\Core\Agents\Exceptions\LaunchSettingMissing;
+use App\Core\AgentRequests\Exceptions\LaunchSettingMissing;
 
 /**
  * The environment the journal's launch gave a program, read one required setting at a time.

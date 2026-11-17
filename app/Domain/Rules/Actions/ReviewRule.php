@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Rules\Actions;
 
-use App\Core\Contracts\CurrentActor;
+use App\Core\Actors\Contracts\CurrentActor;
 use App\Domain\Rules\Api\Events\RuleApproved;
 use App\Domain\Rules\Api\Events\RuleDenied;
 use App\Domain\Rules\Contracts\RuleReviewer;

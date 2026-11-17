@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Support;
 
+use App\Core\Actors\Contracts\CurrentActor;
 use App\Core\Actors\Enums\ActorKind;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Agents\Exceptions\AgentNotAvailable;
 use App\Core\Agents\Lifecycle\AgentLifecycle;
 use App\Core\Agents\Models\Agent;
+use App\Core\Assignments\Contracts\Assignee;
 use App\Core\Assignments\Contracts\AssigneeProvider;
 use App\Core\Assignments\Exceptions\AssigneeUnavailable;
 use App\Core\Assignments\Support\AssigneeList;
 use App\Core\Assignments\Support\AssigneeName;
 use App\Core\Assignments\Support\Page;
-use App\Core\Contracts\Assignee;
-use App\Core\Contracts\CurrentActor;
 
 /**
  * Agents as holders of work: any agent that is not retired may receive work, whether or not it runs now, and every

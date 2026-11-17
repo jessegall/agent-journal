@@ -6,8 +6,8 @@ namespace App\Core\Agents\Contracts;
 
 use App\Core\Agents\Readers\SessionRecords;
 use App\Core\Agents\Support\SessionOption;
-use App\Core\Hooks\Exceptions\StackTargetRefused;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Exceptions\StackTargetRefused;
+use App\Core\Agents\Support\StackTarget;
 use Illuminate\Container\Attributes\Bind;
 
 /**

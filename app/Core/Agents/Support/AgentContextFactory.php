@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Support;
 
+use App\Core\AgentRequests\Support\SignedCall;
 use App\Core\Agents\Exceptions\CallSignatureInvalid;
 use App\Core\Agents\Exceptions\CredentialRejected;
 use Carbon\CarbonImmutable;
@@ -18,15 +19,17 @@ final readonly class AgentContextFactory
 
     public function fromRequest(Request $request): AgentContext
     {
-        $token = $request->bearerToken() ?? throw CredentialRejected::missing();
-        $session = $this->credentials->sessionFor($token);
-        $call = $this->verifiedCall($request, $token);
-
-        return new AgentContext($session->agent_id, $session->id, $session->agent->role, $call);
+        return AgentContext::ofSession($this->credentials->sessionFor(self::tokenOf($request)), $this->verifiedCall($request));
     }
 
-    private function verifiedCall(Request $request, string $token): SignedCall
+    private static function tokenOf(Request $request): string
     {
+        return $request->bearerToken() ?? throw CredentialRejected::missing();
+    }
+
+    private function verifiedCall(Request $request): SignedCall
+    {
+        $token = self::tokenOf($request);
         $callId = $this->header($request, SignedCall::ID_HEADER);
         $issuedAt = (int) $this->header($request, SignedCall::ISSUED_AT_HEADER);
         $signature = $this->header($request, SignedCall::SIGNATURE_HEADER);

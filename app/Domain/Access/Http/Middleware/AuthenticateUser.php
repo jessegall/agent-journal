@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Access\Http\Middleware;
 
-use App\Core\Contracts\Actor;
-use App\Core\Contracts\CurrentActorSetter;
+use App\Core\Actors\Contracts\Actor;
+use App\Core\Actors\Contracts\CurrentActorSetter;
 use App\Core\Web\Contracts\JournalAccessPolicy;
 use App\Domain\Access\Exceptions\JournalAccessDenied;
 use Closure;

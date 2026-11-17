@@ -16,7 +16,7 @@ use App\Core\Hooks\Storage\FrameRecord;
 use App\Core\Hooks\Storage\FrameRecords;
 use App\Core\Hooks\Storage\RecordedAnswer;
 use App\Core\Hooks\Storage\RecordedSteps;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;

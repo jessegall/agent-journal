@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Agents\Actions;
+namespace App\Core\AgentRequests\Actions;
 
-use App\Core\Agents\Contracts\AgentRequestSender;
-use App\Core\Agents\Exceptions\AgentRequestFailed;
-use App\Core\Agents\Support\AgentClientSettings;
-use App\Core\Agents\Support\AgentReply;
-use App\Core\Agents\Support\AgentRequestClient;
+use App\Core\AgentRequests\Contracts\AgentRequestSender;
+use App\Core\AgentRequests\Exceptions\AgentRequestFailed;
+use App\Core\AgentRequests\Support\AgentClientSettings;
+use App\Core\AgentRequests\Support\AgentReply;
+use App\Core\AgentRequests\Support\AgentRequestClient;
 use Illuminate\Http\Client\ConnectionException;
 
 /**

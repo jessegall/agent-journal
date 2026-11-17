@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Agents\Exceptions;
+namespace App\Core\AgentRequests\Exceptions;
 
 use RuntimeException;
 

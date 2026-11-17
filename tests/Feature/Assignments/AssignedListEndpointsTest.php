@@ -6,7 +6,7 @@ namespace Tests\Feature\Assignments;
 
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Assignments\Contracts\AssignmentWriter;
-use App\Core\Contracts\CurrentActorSetter;
+use App\Core\Actors\Contracts\CurrentActorSetter;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
 use App\Domain\Plans\Enums\PlanKind;

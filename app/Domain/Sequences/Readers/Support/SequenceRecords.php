@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sequences\Readers\Support;
 
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 use App\Domain\Sequences\Exceptions\SequenceRunMissing;
 use App\Domain\Sequences\Models\SequenceRun;
 

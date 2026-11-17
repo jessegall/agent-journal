@@ -7,7 +7,7 @@ namespace App\Domain\Plans\Models;
 use App\Core\Assignments\Models\Support\AssignableListing;
 use App\Core\Assignments\Support\AssignmentHolder;
 use App\Core\Assignments\Support\RecordIdentity;
-use App\Core\Contracts\Assignable;
+use App\Core\Assignments\Contracts\Assignable;
 use App\Core\Links\Support\Linkable;
 use App\Domain\Plans\Api\PlanCard;
 use App\Domain\Plans\Api\PlanProgress;

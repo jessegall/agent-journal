@@ -6,6 +6,7 @@ namespace Tests\Feature\Links;
 
 use App\Core\Links\Exceptions\UnknownLinkType;
 use App\Core\Links\Support\LinkTypeRenames;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\RefreshHookDatabase;
@@ -24,8 +25,8 @@ final class LinkTypeMigrationTest extends TestCase
     {
         $id = $this->link('App\\Domain\\Tasks\\Models\\Task', 1, 'App\\Domain\\Plans\\Models\\Plan', 2);
 
-        LinkTypeRenames::rename(self::TASK_AND_PLAN);
-        LinkTypeRenames::rename(self::TASK_AND_PLAN);
+        LinkTypeRenames::rename($this->app->make(ConnectionInterface::class), self::TASK_AND_PLAN);
+        LinkTypeRenames::rename($this->app->make(ConnectionInterface::class), self::TASK_AND_PLAN);
 
         $this->assertSame(['tasks.task', 'plans.plan'], [DB::table('links')->where('id', $id)->value('source_type'), DB::table('links')->where('id', $id)->value('target_type')]);
     }
@@ -36,7 +37,7 @@ final class LinkTypeMigrationTest extends TestCase
         $this->link('App\\Domain\\Tasks\\Models\\Task', 1, 'App\\Domain\\Plans\\Models\\Plan', 2);
         $other = $this->link('App\\Domain\\Tasks\\Models\\Task', 3, 'App\\Domain\\Plans\\Models\\Plan', 2);
 
-        LinkTypeRenames::rename(self::TASK_AND_PLAN);
+        LinkTypeRenames::rename($this->app->make(ConnectionInterface::class), self::TASK_AND_PLAN);
 
         $this->assertSame(2, DB::table('links')->count());
         $this->assertSame('tasks.task', DB::table('links')->where('id', $other)->value('source_type'));

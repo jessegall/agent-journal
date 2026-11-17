@@ -6,7 +6,7 @@ namespace App\Core\Hooks\Inspection;
 
 use App\Core\Hooks\Models\AgentStackRow;
 use App\Core\Hooks\Models\HookCall;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 
 /**
  * The named read a signed-in user makes of any agent's stack: an explicit authorized query, never the calling agent's own scope.

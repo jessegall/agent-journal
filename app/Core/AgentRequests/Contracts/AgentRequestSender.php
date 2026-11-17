@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Agents\Contracts;
+namespace App\Core\AgentRequests\Contracts;
 
-use App\Core\Agents\Exceptions\AgentRequestFailed;
-use App\Core\Agents\Support\AgentReply;
+use App\Core\AgentRequests\Exceptions\AgentRequestFailed;
+use App\Core\AgentRequests\Support\AgentReply;
 
 /**
  * Sends a signed call from a launched program to the journal as the agent of its launch, for an owner's console

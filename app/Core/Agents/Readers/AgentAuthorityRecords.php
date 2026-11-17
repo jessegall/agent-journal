@@ -6,7 +6,7 @@ namespace App\Core\Agents\Readers;
 
 use App\Core\Actors\Enums\ActorKind;
 use App\Core\Actors\Support\ActorIdentity;
-use App\Core\Agents\Contracts\AgentAuthority;
+use App\Core\Assignments\Contracts\AgentAuthority;
 use App\Core\Agents\Exceptions\AgentNotAvailable;
 use App\Core\Agents\Lifecycle\AgentLifecycle;
 use App\Core\Assignments\Exceptions\AssignmentDenied;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Agents\Support;
+namespace App\Core\AgentRequests\Support;
 
 use Carbon\CarbonImmutable;
 

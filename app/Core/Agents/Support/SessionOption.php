@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Support;
 
-use App\Core\Hooks\Support\StackTarget;
-
 /**
  * A running agent session someone may talk to: the session, its agent's display name and the stack it targets.
  */

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Core\Agents\Support\AgentContext;
-use App\Core\Agents\Support\SignedCall;
+use App\Core\AgentRequests\Support\SignedCall;
 use App\Core\Hooks\Actions\PruneHookHistory;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Enums\AnswerKind;
@@ -22,7 +22,7 @@ use App\Core\Hooks\Storage\RecordedSteps;
 use App\Core\Hooks\Support\HookRetryWindow;
 use App\Core\Hooks\Support\RetentionPeriods;
 use App\Core\Hooks\Support\StackAccess;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 use App\Core\Links\Models\Link;
 use Carbon\CarbonImmutable;
 use Tests\Support\RefreshHookDatabase;

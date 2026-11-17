@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Core\Actors\Support\ActorContext;
-use App\Core\Contracts\CurrentActorSetter;
+use App\Core\Actors\Contracts\CurrentActorSetter;
 use App\Core\Web\Events\PageChanged;
 use App\Core\Web\Events\UserChannel;
 use App\Domain\Access\Models\User;

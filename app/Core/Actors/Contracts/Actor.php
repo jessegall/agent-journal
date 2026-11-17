@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Contracts;
+namespace App\Core\Actors\Contracts;
 
 use App\Core\Actors\Enums\ActorKind;
 

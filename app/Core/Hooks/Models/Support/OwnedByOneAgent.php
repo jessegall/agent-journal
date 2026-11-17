@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Models\Support;
 
 use App\Core\Agents\Support\AgentContext;
-use App\Core\Contracts\CurrentActor;
+use App\Core\Actors\Contracts\CurrentActor;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

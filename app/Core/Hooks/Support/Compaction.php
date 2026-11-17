@@ -6,6 +6,7 @@ namespace App\Core\Hooks\Support;
 
 use App\Core\Hooks\Events\ContextWasCompacted;
 use Illuminate\Contracts\Events\Dispatcher;
+use App\Core\Agents\Support\StackTarget;
 
 /**
  * Runs the domains' reactions to one compaction and collects their reminders. It runs in the hook transaction

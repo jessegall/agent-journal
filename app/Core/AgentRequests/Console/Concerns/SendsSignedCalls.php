@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Agents\Console\Concerns;
+namespace App\Core\AgentRequests\Console\Concerns;
 
-use App\Core\Agents\Contracts\AgentRequestSender;
-use App\Core\Agents\Exceptions\AgentRequestFailed;
+use App\Core\AgentRequests\Contracts\AgentRequestSender;
+use App\Core\AgentRequests\Exceptions\AgentRequestFailed;
 
 /**
  * Sends a console command's signed call as the agent of the launch and prints the journal's answer, as one JSON line

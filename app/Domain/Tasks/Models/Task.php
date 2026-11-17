@@ -6,8 +6,8 @@ namespace App\Domain\Tasks\Models;
 
 use App\Core\Assignments\Models\Support\AssignableListing;
 use App\Core\Assignments\Support\RecordIdentity;
-use App\Core\Contracts\Assignable;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Assignments\Contracts\Assignable;
+use App\Core\Agents\Support\StackTarget;
 use App\Core\Links\Support\Linkable;
 use App\Domain\Tasks\Enums\TaskState;
 use App\Domain\Tasks\Enums\TaskWorkState;

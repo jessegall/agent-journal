@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Chat\Models;
 
 use App\Core\Hooks\Models\Support\OwnedByOneAgent;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 use App\Core\Links\Support\Linkable;
 use App\Domain\Chat\Enums\MessageState;
 use App\Domain\Chat\Enums\MessageWorkState;

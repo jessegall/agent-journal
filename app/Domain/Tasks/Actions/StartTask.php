@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Tasks\Actions;
 
 use App\Core\Hooks\Contracts\StackTransactionRunner;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 use App\Domain\Tasks\Events\TaskStarted;
 use App\Domain\Tasks\Models\Task;
 use Illuminate\Contracts\Events\Dispatcher;

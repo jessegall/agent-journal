@@ -69,7 +69,7 @@ final class BoundaryCheckerTest extends TestCase
     public function test_a_domain_uses_the_core_and_its_events_without_declaring_it(): void
     {
         $uses = [
-            new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Core\Contracts\Actor', NameKind::Type),
+            new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Core\Actors\Contracts\Actor', NameKind::Type),
             new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 4, 'App\Core\Hooks\Events\StateTypesRequested', NameKind::Type),
         ];
 

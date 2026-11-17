@@ -10,7 +10,7 @@ use App\Core\Assignments\Models\Support\SignedInScope;
 use App\Core\Assignments\Support\Assignment;
 use App\Core\Assignments\Support\AssignmentReference;
 use App\Core\Assignments\Support\RecordIdentity;
-use App\Core\Contracts\CurrentActor;
+use App\Core\Actors\Contracts\CurrentActor;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;

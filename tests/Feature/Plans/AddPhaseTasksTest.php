@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Plans;
 
 use App\Core\Actors\Support\ActorContext;
-use App\Core\Contracts\CurrentActorSetter;
+use App\Core\Actors\Contracts\CurrentActorSetter;
 use App\Domain\Plans\Actions\AddPhaseTasks;
 use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Exceptions\TaskAlreadyInAPhase;

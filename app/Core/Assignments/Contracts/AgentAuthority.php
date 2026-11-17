@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Agents\Contracts;
+namespace App\Core\Assignments\Contracts;
 
 use App\Core\Assignments\Exceptions\AssignmentDenied;
 
 /**
  * Whether an agent may give out work now, read from its row under its shared lifecycle lock, never from what a
- * request claims. Core-private: the assignment writer asks it.
+ * request claims. Assignments owns it and asks it; Agents fills it.
  */
 interface AgentAuthority
 {

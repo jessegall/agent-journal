@@ -6,7 +6,7 @@ namespace App\Domain\Chat\Actions;
 
 use App\Core\Hooks\Contracts\StackTransactionRunner;
 use App\Core\Hooks\Contracts\UserStack;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 use App\Domain\Chat\Api\Events\MessageSent;
 use App\Domain\Chat\Contracts\MessageSender;
 use App\Domain\Chat\Exceptions\MessageBodyEmpty;

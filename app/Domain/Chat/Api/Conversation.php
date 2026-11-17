@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat\Api;
 
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 
 /**
  * The messages sent to one agent's session, oldest first. The session is the conversation; its id is a stable string.

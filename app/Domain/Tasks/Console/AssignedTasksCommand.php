@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks\Console;
 
-use App\Core\Agents\Contracts\AgentRequestSender;
-use App\Core\Agents\Exceptions\AgentRequestFailed;
+use App\Core\AgentRequests\Contracts\AgentRequestSender;
+use App\Core\AgentRequests\Exceptions\AgentRequestFailed;
 use App\Domain\Tasks\Http\Data\AssignedTaskCardData;
 use App\Domain\Tasks\Http\Data\AssignedTaskListData;
 use Illuminate\Console\Command;

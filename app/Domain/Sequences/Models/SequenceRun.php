@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Sequences\Models;
 
 use App\Core\Hooks\Models\Support\OwnedByOneAgent;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 use App\Core\Links\Support\Linkable;
 use App\Domain\Sequences\Enums\SequenceRunState;
 use App\Domain\Sequences\Support\SequenceWork;

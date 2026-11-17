@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Actions;
 
-use App\Core\Contracts\CurrentActor;
+use App\Core\Actors\Contracts\CurrentActor;
 use App\Domain\Plans\Api\Events\PlanStarted;
 use App\Domain\Plans\Contracts\PlanStarter;
 use App\Domain\Plans\Exceptions\PlanMissing;

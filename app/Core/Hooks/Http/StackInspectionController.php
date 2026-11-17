@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Http;
 
 use App\Core\Hooks\Inspection\StackInspectionQuery;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 use Illuminate\Http\JsonResponse;
 
 /**

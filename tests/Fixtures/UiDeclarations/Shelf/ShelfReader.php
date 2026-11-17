@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Shelf;
 
-use App\Core\Contracts\CurrentActor;
+use App\Core\Actors\Contracts\CurrentActor;
 use App\Core\Ui\Contracts\PageReader;
 use Tests\Fixtures\UiDeclarations\RecentNotesData;
 

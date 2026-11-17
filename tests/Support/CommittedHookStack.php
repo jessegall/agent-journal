@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Core\Agents\Support\AgentContext;
-use App\Core\Agents\Support\SignedCall;
+use App\Core\AgentRequests\Support\SignedCall;
 use App\Core\Hooks\Actions\AgentStacks;
 use App\Core\Hooks\Actions\LaunchStacks;
 use App\Core\Hooks\Contracts\ShellCommandParser;
@@ -27,7 +27,7 @@ use App\Core\Hooks\Stack\AgentStateMachine;
 use App\Core\Hooks\Stack\HookAnswer;
 use App\Core\Hooks\Storage\FrameRecord;
 use App\Core\Hooks\Support\OperationDeadline;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 use App\Core\Hooks\Support\StackTransaction;
 use App\Domain\Tasks\Enums\TaskWorkState;
 use Carbon\CarbonImmutable;

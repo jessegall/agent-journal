@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Plans;
 
 use App\Core\Actors\Support\ActorContext;
-use App\Core\Contracts\CurrentActorSetter;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Actors\Contracts\CurrentActorSetter;
+use App\Core\Agents\Support\StackTarget;
 use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
 use App\Domain\Plans\Exceptions\TaskAlreadyInAPhase;

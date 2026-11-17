@@ -6,7 +6,7 @@ namespace App\Core\Hooks\Contracts;
 
 use App\Core\Hooks\Actions\AgentStacks;
 use App\Core\Hooks\Decisions\StateReference;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 use Illuminate\Container\Attributes\Bind;
 
 /**

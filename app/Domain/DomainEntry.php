@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Domain;
 
+use App\Core\Assignments\Contracts\AssignableProvider;
+use App\Core\Assignments\Support\AssigneeRegistration;
 use App\Core\Ui\Declarations\DomainUi;
 use App\Core\Ui\Declarations\NavigationItem;
 use App\Core\Ui\Declarations\Page;
 use App\Core\Ui\Declarations\Section;
 use App\Domain\Contracts\Domain;
+use App\Domain\Contracts\ProvidesAssignables;
+use App\Domain\Contracts\ProvidesAssignees;
 use App\Domain\Exceptions\DomainRequiresItself;
 use App\Domain\Exceptions\NotADomain;
 use App\Domain\Exceptions\RequiredDomainTwice;
@@ -182,5 +186,25 @@ final readonly class DomainEntry
     public function declaring(array $pages = [], array $navigation = [], array $sections = []): DomainUi
     {
         return DomainUi::declaring($this->name, $this->namespace, $this->folder, $pages, $navigation, $sections);
+    }
+
+    /**
+     * The record kinds this domain lets actors hold, each with its provider; none when it declares no ProvidesAssignables.
+     *
+     * @return array<string, class-string<AssignableProvider>>
+     */
+    public function assignables(): array
+    {
+        return $this->domain instanceof ProvidesAssignables ? $this->domain->assignables() : [];
+    }
+
+    /**
+     * The actor kinds this domain adds as holders of records; none when it declares no ProvidesAssignees.
+     *
+     * @return list<AssigneeRegistration>
+     */
+    public function assignees(): array
+    {
+        return $this->domain instanceof ProvidesAssignees ? $this->domain->assignees() : [];
     }
 }

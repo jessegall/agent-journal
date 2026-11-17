@@ -11,8 +11,8 @@ use App\Core\Assignments\Exceptions\AssigneeUnavailable;
 use App\Core\Assignments\Support\AssigneeList;
 use App\Core\Assignments\Support\AssigneeName;
 use App\Core\Assignments\Support\Page;
-use App\Core\Contracts\Assignee;
-use App\Core\Contracts\CurrentActor;
+use App\Core\Assignments\Contracts\Assignee;
+use App\Core\Actors\Contracts\CurrentActor;
 use App\Core\Web\Contracts\JournalAccessPolicy;
 use App\Domain\Access\Models\User;
 

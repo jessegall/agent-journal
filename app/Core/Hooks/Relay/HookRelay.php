@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Relay;
 
-use App\Core\Agents\Support\AgentRequestClient;
+use App\Core\AgentRequests\Support\AgentRequestClient;
 use App\Core\Agents\Support\LoggedBypass;
 use App\Core\Hooks\Enums\CallFailure;
 use App\Core\Hooks\Enums\HookProgram;

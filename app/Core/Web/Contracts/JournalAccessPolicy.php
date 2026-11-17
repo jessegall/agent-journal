@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Web\Contracts;
 
-use App\Core\Contracts\Actor;
+use App\Core\Actors\Contracts\Actor;
 
 /**
  * Whether an actor may use the journal. Core owns it; Access fills it.

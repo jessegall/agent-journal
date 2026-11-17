@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Core\Agents\Models;
 
 use App\Core\Actors\Enums\ActorKind;
-use App\Core\Contracts\Assignee;
-use App\Core\Hooks\Enums\ReadyStateType;
+use App\Core\Assignments\Contracts\Assignee;
+use App\Core\Agents\Enums\AgentRole;
 use App\Core\Links\Support\Linkable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -49,7 +49,7 @@ final class Agent extends Model implements Assignee
 
     public function isMainAgent(): bool
     {
-        return $this->role === ReadyStateType::MainAgent->value;
+        return $this->role === AgentRole::MainAgent->value;
     }
 
     public function isRetired(): bool

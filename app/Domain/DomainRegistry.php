@@ -8,8 +8,6 @@ use App\Core\Assignments\Contracts\AssignmentRegistration;
 use App\Core\Hooks\Contracts\StateRegistration;
 use App\Core\Ui\Declarations\DomainUi;
 use App\Core\Ui\Support\UiDeclarations;
-use App\Domain\Contracts\ProvidesAssignables;
-use App\Domain\Contracts\ProvidesAssignees;
 use App\Domain\Contracts\ProvidesStates;
 use App\Domain\Exceptions\AmbiguousDomainRoot;
 use App\Domain\Exceptions\DomainCycle;
@@ -118,16 +116,12 @@ final readonly class DomainRegistry
     public function registerAssignmentsIn(AssignmentRegistration $registration): void
     {
         foreach ($this->all() as $entry) {
-            if ($entry->domain instanceof ProvidesAssignables) {
-                foreach ($entry->domain->assignables() as $type => $providerClass) {
-                    $registration->registerRecord($type, $providerClass);
-                }
+            foreach ($entry->assignables() as $type => $providerClass) {
+                $registration->registerRecord($type, $providerClass);
             }
 
-            if ($entry->domain instanceof ProvidesAssignees) {
-                foreach ($entry->domain->assignees() as $assignees) {
-                    $registration->registerAssignees($assignees);
-                }
+            foreach ($entry->assignees() as $assignees) {
+                $registration->registerAssignees($assignees);
             }
         }
     }

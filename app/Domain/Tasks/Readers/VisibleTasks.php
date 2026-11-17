@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks\Readers;
 
-use App\Core\Contracts\CurrentActor;
+use App\Core\Actors\Contracts\CurrentActor;
 use App\Domain\Tasks\Contracts\TaskReader;
 use App\Domain\Tasks\Exceptions\TaskMissing;
 use App\Domain\Tasks\Models\Task;

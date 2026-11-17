@@ -113,7 +113,7 @@ The app shell (`AppSidebarLayout`) owns the tab's one connection through `useLiv
 
 ## Interfaces at the seams (task 122, rule 15)
 
-- **Actor.** `App\Core\Contracts\Actor` (its kind and id) is what the core talks to. The Access `User` is a user actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.
+- **Actor.** `App\Core\Actors\Contracts\Actor` (its kind and id) is what the core talks to. The Access `User` is a user actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.
 - **Access policy.** `AuthenticateUser` asks `JournalAccessPolicy::allows(Actor)`, bound to `JournalAccess` with `#[Bind]`. Only a user actor whose id is the owner's is let in.
 - **Task progress.** Plans reads progress through `App\Domain\Tasks\Contracts\TaskProgressCounter`, an interface Tasks exports and binds to `TaskCounts` with `#[Bind]`; Plans names no Tasks service class.
 

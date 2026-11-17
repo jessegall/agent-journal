@@ -7,9 +7,10 @@ namespace App\Core\Hooks\Support;
 use App\Core\Agents\Support\AgentContext;
 use App\Core\Hooks\Enums\ReadyStateType;
 use App\Core\Hooks\Exceptions\HookIdentityExpired;
-use App\Core\Hooks\Exceptions\StackTargetRefused;
+use App\Core\Agents\Exceptions\StackTargetRefused;
 use App\Core\Hooks\Inputs\HookIdentity;
 use Carbon\CarbonImmutable;
+use App\Core\Agents\Support\StackTarget;
 
 /**
  * The stack and hook identity of the authenticated agent in this request, and nothing wider.

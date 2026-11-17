@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Enums;
 
+use App\Core\Agents\Enums\AgentRole;
 use App\Core\Hooks\Contracts\StateType;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Exceptions\UnknownReadyState;
@@ -17,8 +18,8 @@ use App\Core\Hooks\States\ReadyState;
  */
 enum ReadyStateType: string implements StateType
 {
-    case MainAgent = 'hooks.main_ready';
-    case ReadOnlyHelper = 'hooks.read_only_helper_ready';
+    case MainAgent = AgentRole::MainAgent->value;
+    case ReadOnlyHelper = AgentRole::ReadOnlyHelper->value;
 
     public static function forKey(string $typeKey): self
     {

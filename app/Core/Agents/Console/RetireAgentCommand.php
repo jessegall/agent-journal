@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Console;
 
-use App\Core\Agents\Console\Concerns\SendsSignedCalls;
-use App\Core\Agents\Contracts\AgentRequestSender;
+use App\Core\AgentRequests\Console\Concerns\SendsSignedCalls;
+use App\Core\AgentRequests\Contracts\AgentRequestSender;
 use Illuminate\Console\Command;
 
 /**

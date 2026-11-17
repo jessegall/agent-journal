@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Support;
+namespace App\Core\Agents\Support;
 
 /**
  * The agent and journal session one stack belongs to.

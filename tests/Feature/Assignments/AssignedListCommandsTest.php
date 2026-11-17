@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Core\Actors\Support\ActorIdentity;
-use App\Core\Agents\Exceptions\LaunchSettingMissing;
-use App\Core\Agents\Support\AgentClientSettings;
+use App\Core\AgentRequests\Exceptions\LaunchSettingMissing;
+use App\Core\AgentRequests\Support\AgentClientSettings;
 use App\Core\Assignments\Contracts\AssignmentWriter;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;

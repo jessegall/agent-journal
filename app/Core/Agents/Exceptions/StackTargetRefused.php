@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Exceptions;
+namespace App\Core\Agents\Exceptions;
 
 use RuntimeException;
 

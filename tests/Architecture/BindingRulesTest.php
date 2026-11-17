@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use App\Core\Actors\Contracts\CurrentActorSetter;
 use App\Core\Actors\Support\ActorStore;
 use App\Core\Assignments\Contracts\AssignmentRegistration;
 use App\Core\Assignments\Registry\AssignmentRegistry;
-use App\Core\Contracts\CurrentActorSetter;
 use App\Core\CoreApi;
 use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Domain\DomainRegistry;
@@ -33,8 +33,8 @@ final class BindingRulesTest extends TestCase
     private const array ACTOR_SITES = [
         'app/Core/Actors/Support/ActorStore.php',
         'app/Core/Actors/Providers/ActorsServiceProvider.php',
-        'app/Core/Contracts/CurrentActor.php',
-        'app/Core/Contracts/CurrentActorSetter.php',
+        'app/Core/Actors/Contracts/CurrentActor.php',
+        'app/Core/Actors/Contracts/CurrentActorSetter.php',
         'app/Core/CoreApi.php',
         'app/Core/Agents/Http/Middleware/AuthenticateAgent.php',
         'app/Domain/Access/Http/Middleware/AuthenticateUser.php',
@@ -81,7 +81,7 @@ final class BindingRulesTest extends TestCase
             'PlanReader.php:10 binds Tests\Fixtures\Bindings\Plans\Contracts\PlanReader, but Tests\Fixtures\Bindings\Plans\PlanNotes does not implement it',
             'PlansServiceProvider.php:17 binds Tests\Fixtures\Bindings\Tasks\Contracts\TaskReader, but Tasks owns it; only Core\'s public contracts are filled by another owner',
             'PlansServiceProvider.php:18 binds Tests\Fixtures\Bindings\Plans\Contracts\PlanCounter, but the target Tests\Fixtures\Bindings\Tasks\TaskList belongs to Tasks',
-            'PlanCounts.php:11 binds Tests\Fixtures\Bindings\Plans\PlanCounts, but the singleton Tests\Fixtures\Bindings\Plans\PlanCounts keeps the per-request App\Core\Contracts\CurrentActor beyond its request',
+            'PlanCounts.php:11 binds Tests\Fixtures\Bindings\Plans\PlanCounts, but the singleton Tests\Fixtures\Bindings\Plans\PlanCounts keeps the per-request App\Core\Actors\Contracts\CurrentActor beyond its request',
         ], array_map(fn (Violation $violation) => basename($violation->file).":{$violation->line} {$violation->reason()}", $violations));
     }
 

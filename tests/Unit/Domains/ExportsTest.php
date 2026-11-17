@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Core\Contracts\Actor;
+use App\Core\Actors\Contracts\Actor;
 use App\Core\CoreApi;
 use App\Domain\DomainRegistry;
 use App\Domain\Exceptions\AmbiguousDomainRoot;

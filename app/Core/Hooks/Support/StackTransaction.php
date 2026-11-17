@@ -11,6 +11,7 @@ use App\Core\Hooks\Exceptions\StackTransactionRequired;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
+use App\Core\Agents\Support\StackTarget;
 
 /**
  * Runs one stack operation in one transaction with a lock and statement time limit set first, before any write.

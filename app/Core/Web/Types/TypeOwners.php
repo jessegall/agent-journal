@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Web\Types;
 
-use App\Core\Contracts\Actor;
+use App\Core\Actors\Contracts\Actor;
 use App\Core\Ui\Support\UiDeclarations;
 use App\Domain\DomainRegistry;
 use Illuminate\Support\Str;

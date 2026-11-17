@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Access\Support;
 
 use App\Core\Actors\Enums\ActorKind;
-use App\Core\Contracts\Actor;
+use App\Core\Actors\Contracts\Actor;
 use App\Core\Web\Contracts\JournalAccessPolicy;
 
 /**

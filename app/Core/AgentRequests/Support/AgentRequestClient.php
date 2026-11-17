@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Agents\Support;
+namespace App\Core\AgentRequests\Support;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Str;
+use App\Core\AgentRequests\Support\AgentClientSettings;
+use App\Core\AgentRequests\Support\SignedCall;
 
 /**
  * Posts one call from a launched program to the journal, signed with the launch token: a fresh call id, the time it

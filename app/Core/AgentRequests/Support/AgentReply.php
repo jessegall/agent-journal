@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Agents\Support;
+namespace App\Core\AgentRequests\Support;
 
 /**
  * The journal's answer to a signed call that succeeded: its decoded JSON body.

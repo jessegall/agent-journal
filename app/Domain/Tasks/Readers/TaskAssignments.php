@@ -7,8 +7,8 @@ namespace App\Domain\Tasks\Readers;
 use App\Core\Assignments\Contracts\AssignableProvider;
 use App\Core\Assignments\Exceptions\RecordUnavailable;
 use App\Core\Assignments\Support\RecordIdentity;
-use App\Core\Contracts\Assignable;
-use App\Core\Contracts\CurrentActor;
+use App\Core\Assignments\Contracts\Assignable;
+use App\Core\Actors\Contracts\CurrentActor;
 use App\Domain\Tasks\Models\Task;
 use Illuminate\Container\Attributes\Scoped;
 

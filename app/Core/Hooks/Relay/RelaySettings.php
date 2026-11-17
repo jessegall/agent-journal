@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Relay;
 
-use App\Core\Agents\Support\AgentClientSettings;
-use App\Core\Agents\Support\LaunchEnvironment;
+use App\Core\AgentRequests\Support\AgentClientSettings;
+use App\Core\AgentRequests\Support\LaunchEnvironment;
 use App\Core\Hooks\Enums\ReadyStateType;
 
 /**

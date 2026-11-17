@@ -8,7 +8,7 @@ use App\Core\Actors\Support\ActorContext;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Agents\Models\Agent;
 use App\Core\Assignments\Contracts\AssignmentWriter;
-use App\Core\Contracts\CurrentActorSetter;
+use App\Core\Actors\Contracts\CurrentActorSetter;
 use App\Domain\Plans\Api\PlanCard;
 use App\Domain\Plans\Api\PlanFilters;
 use App\Domain\Plans\Enums\PlanKind;

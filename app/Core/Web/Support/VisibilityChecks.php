@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Web\Support;
 
-use App\Core\Contracts\CurrentActor;
+use App\Core\Actors\Contracts\CurrentActor;
 use App\Core\Ui\Contracts\VisibilityCheck;
 use Illuminate\Contracts\Container\Container;
 

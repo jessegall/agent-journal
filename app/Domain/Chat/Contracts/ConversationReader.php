@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat\Contracts;
 
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 use App\Domain\Chat\Api\Conversation;
 use App\Domain\Chat\Readers\MessageRecords;
 use Illuminate\Container\Attributes\Bind;

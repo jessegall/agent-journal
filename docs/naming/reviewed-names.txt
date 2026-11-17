@@ -3,6 +3,8 @@ case	ActionMethod::Patch
 case	ActionMethod::Post
 case	ActorKind::Agent
 case	ActorKind::User
+case	AgentRole::MainAgent
+case	AgentRole::ReadOnlyHelper
 case	AnswerKind::Allow
 case	AnswerKind::Delegate
 case	AnswerKind::Deny
@@ -249,6 +251,7 @@ class	AnsweringMessageStateFactory
 class	AnsweringMessageStateReference
 class	AppServiceProvider
 class	ApproveRuleController
+class	AreaCycles
 class	AssignPlanWorkCommand
 class	AssignPlanWorkController
 class	AssignPlanWorkRequest
@@ -792,6 +795,7 @@ class	WorkingOnTaskStateFactory
 class	WorkingOnTaskStateReference
 class	WriteAssignments
 constant	AnsweringMessageStateReference::TYPE_KEY
+constant	AreaCycles::FOUNDATION_FOLDERS
 constant	AssignmentGroup::LARGEST
 constant	AssignmentRecords::LARGEST_BATCH
 constant	BindingRules::BINDING_METHODS
@@ -858,6 +862,7 @@ constant	UserChannel::PATTERN
 constant	WorkingOnTaskStateReference::TYPE_KEY
 enum	ActionMethod
 enum	ActorKind
+enum	AgentRole
 enum	AnswerKind
 enum	AssignmentOutcomeKind
 enum	AssignmentReason
@@ -1026,6 +1031,7 @@ method	AgentContext::actorKind()
 method	AgentContextFactory::__construct()
 method	AgentContextFactory::fromRequest()
 method	AgentContextFactory::header()
+method	AgentContextFactory::tokenOf()
 method	AgentContextFactory::verifiedCall()
 method	AgentContextMissing::forRequest()
 method	AgentLabel::__construct()
@@ -1129,6 +1135,14 @@ method	AppServiceProvider::boot()
 method	AppServiceProvider::configureDefaults()
 method	AppServiceProvider::register()
 method	ApproveRuleController::__invoke()
+method	AreaCycles::__construct()
+method	AreaCycles::areaOf()
+method	AreaCycles::areaOfFile()
+method	AreaCycles::areaOfName()
+method	AreaCycles::cycles()
+method	AreaCycles::ofEdges()
+method	AreaCycles::ofProject()
+method	AreaCycles::stronglyConnectedGroups()
 method	AssignPlanWorkCommand::handle()
 method	AssignPlanWorkController::__invoke()
 method	AssignPlanWorkRequest::rules()
@@ -1501,6 +1515,8 @@ method	Domain::exports()
 method	Domain::requires()
 method	DomainCycle::for()
 method	DomainEntry::__construct()
+method	DomainEntry::assignables()
+method	DomainEntry::assignees()
 method	DomainEntry::checkedRequirements()
 method	DomainEntry::className()
 method	DomainEntry::declaring()
@@ -1792,6 +1808,7 @@ method	Link::withSource()
 method	Link::withTarget()
 method	LinkAccess::__construct()
 method	LinkAccess::among()
+method	LinkTypeRenames::__construct()
 method	LinkTypeRenames::rename()
 method	LinkTypeRepeated::for()
 method	LinkTypes::modelFor()
@@ -1803,10 +1820,12 @@ method	Linkable::unlinkFrom()
 method	LoggedBypass::__construct()
 method	LoginController::__construct()
 method	LoginController::__invoke()
+method	LoginController::startingInput()
 method	LoginInput::__construct()
 method	LoginInput::blank()
+method	LoginInput::filledWith()
 method	LoginPage::__construct()
-method	LoginPage::blank()
+method	LoginPage::startingWith()
 method	LostLaunches::__construct()
 method	LostLaunches::markExited()
 method	LostLaunches::markLost()
@@ -2796,6 +2815,7 @@ property	AgentStateMachine::$rewrite
 property	AgentStateMachine::$transaction
 property	AnsweringMessageState::$message
 property	AnsweringMessageStateFactory::$messages
+property	AreaCycles::$edges
 property	AssignPlanWorkCommand::$description
 property	AssignPlanWorkCommand::$signature
 property	AssignRecordCommand::$description
@@ -3114,9 +3134,12 @@ property	LayoutData::$shape
 property	LayoutsController::$redirect
 property	LayoutsController::$users
 property	LinkAccess::$model
+property	LinkTypeRenames::$database
 property	LoggedBypass::$failure
 property	LoggedBypass::$nativeEvent
 property	LoggedBypass::$occurredAt
+property	LoginController::$app
+property	LoginController::$config
 property	LoginController::$inertia
 property	LoginInput::$email
 property	LoginInput::$password

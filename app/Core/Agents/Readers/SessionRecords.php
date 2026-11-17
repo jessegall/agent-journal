@@ -7,9 +7,9 @@ namespace App\Core\Agents\Readers;
 use App\Core\Agents\Contracts\SessionReader;
 use App\Core\Agents\Models\AgentSession;
 use App\Core\Agents\Support\SessionOption;
-use App\Core\Contracts\CurrentActor;
-use App\Core\Hooks\Exceptions\StackTargetRefused;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Actors\Contracts\CurrentActor;
+use App\Core\Agents\Exceptions\StackTargetRefused;
+use App\Core\Agents\Support\StackTarget;
 use Illuminate\Database\Eloquent\Builder;
 
 /**

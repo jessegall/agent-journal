@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Access\Models;
 
 use App\Core\Actors\Enums\ActorKind;
-use App\Core\Contracts\Assignee;
+use App\Core\Assignments\Contracts\Assignee;
 use App\Core\Links\Support\Linkable;
 use App\Domain\Access\Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;

@@ -10,7 +10,7 @@ use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Hooks\Enums\ReadyStateType;
 use App\Core\Hooks\Exceptions\ShellParserMissing;
 use App\Core\Hooks\Inputs\MissingShellParser;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 
 /**
  * Opens the launched agent's stack with the bottom state of its role, in the launch transaction. A launch with an

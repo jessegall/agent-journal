@@ -6,8 +6,8 @@ namespace App\Core\Assignments\Console;
 
 use App\Core\Actors\Exceptions\InvalidActorText;
 use App\Core\Actors\Support\ActorIdentity;
-use App\Core\Agents\Console\Concerns\SendsSignedCalls;
-use App\Core\Agents\Contracts\AgentRequestSender;
+use App\Core\AgentRequests\Console\Concerns\SendsSignedCalls;
+use App\Core\AgentRequests\Contracts\AgentRequestSender;
 use App\Core\Assignments\Console\Concerns\ReadsAssignmentArguments;
 use Illuminate\Console\Command;
 

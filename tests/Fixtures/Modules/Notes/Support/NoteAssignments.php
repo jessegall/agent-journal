@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Modules\Notes\Support;
 use App\Core\Assignments\Contracts\AssignableProvider;
 use App\Core\Assignments\Exceptions\RecordUnavailable;
 use App\Core\Assignments\Support\RecordIdentity;
-use App\Core\Contracts\Assignable;
+use App\Core\Assignments\Contracts\Assignable;
 use Illuminate\Container\Attributes\Scoped;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 

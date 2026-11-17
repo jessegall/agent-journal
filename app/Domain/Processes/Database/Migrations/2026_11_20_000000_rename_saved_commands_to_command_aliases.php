@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Core\Links\Support\LinkTypeRenames;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -16,7 +17,7 @@ return new class extends Migration
     {
         Schema::rename('saved_commands', 'command_aliases');
 
-        LinkTypeRenames::rename([
+        LinkTypeRenames::rename(DB::connection(), [
             'processes.saved-command' => 'processes.command-alias',
         ]);
     }

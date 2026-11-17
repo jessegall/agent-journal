@@ -6,8 +6,8 @@ namespace Tests\Support;
 
 use App\Core\Actors\Support\ActorContext;
 use App\Core\Agents\Support\AgentContext;
-use App\Core\Agents\Support\SignedCall;
-use App\Core\Contracts\CurrentActorSetter;
+use App\Core\AgentRequests\Support\SignedCall;
+use App\Core\Actors\Contracts\CurrentActorSetter;
 use Carbon\CarbonImmutable;
 
 /**

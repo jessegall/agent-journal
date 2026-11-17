@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Contracts;
+namespace App\Core\Assignments\Contracts;
 
 use App\Core\Assignments\Support\RecordIdentity;
 

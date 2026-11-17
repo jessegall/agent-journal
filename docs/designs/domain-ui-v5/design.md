@@ -201,7 +201,7 @@ interface ProvidesNavigation   { /** @return list<NavigationItem> */ public func
 interface ProvidesPages        { /** @return list<Page> */           public function pages(): array; }
 interface ProvidesSections     { /** @return list<Section> */        public function sections(): array; }
 
-interface VisibilityCheck      { public function allows(Actor $actor): bool; }   // App\Core\Contracts\Actor
+interface VisibilityCheck      { public function allows(Actor $actor): bool; }   // App\Core\Actors\Contracts\Actor
 interface PageReader           { public function read(): Data; }                 // built per request: its own request class and the actor come through its constructor
 interface SectionReader        { public function read(SlotContext $context): Data; }
 interface CountReader          { public function count(): int; }

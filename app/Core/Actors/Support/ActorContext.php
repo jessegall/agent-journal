@@ -7,7 +7,7 @@ namespace App\Core\Actors\Support;
 use App\Core\Actors\Enums\ActorKind;
 use App\Core\Actors\Exceptions\AgentActorRequired;
 use App\Core\Actors\Exceptions\UserActorRequired;
-use App\Core\Contracts\Actor;
+use App\Core\Actors\Contracts\Actor;
 
 /**
  * Who acts in this request, filled by the middleware that authenticated them and kept for this request only. A user

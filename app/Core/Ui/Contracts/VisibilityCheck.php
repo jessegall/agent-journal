@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Ui\Contracts;
 
-use App\Core\Contracts\Actor;
+use App\Core\Actors\Contracts\Actor;
 
 /**
  * Whether an actor may see a page, a section or a navigation item; built per request by the container.

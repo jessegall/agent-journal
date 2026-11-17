@@ -7,7 +7,7 @@ namespace Tests\Feature\Plans;
 use App\Core\Actors\Enums\ActorKind;
 use App\Core\Actors\Exceptions\ActorContextMissing;
 use App\Core\Actors\Support\ActorContext;
-use App\Core\Contracts\CurrentActorSetter;
+use App\Core\Actors\Contracts\CurrentActorSetter;
 use App\Domain\Plans\Api\Events\PlanStarted;
 use App\Domain\Plans\Api\PlanFilters;
 use App\Domain\Plans\Contracts\PlanStarter;

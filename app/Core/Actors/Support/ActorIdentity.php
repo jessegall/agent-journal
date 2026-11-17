@@ -6,7 +6,7 @@ namespace App\Core\Actors\Support;
 
 use App\Core\Actors\Enums\ActorKind;
 use App\Core\Actors\Exceptions\InvalidActorText;
-use App\Core\Contracts\Actor;
+use App\Core\Actors\Contracts\Actor;
 
 /**
  * Who an actor is, by kind and id, apart from any request or session: user 3 and agent 3 are different actors.

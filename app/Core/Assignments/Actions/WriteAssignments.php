@@ -6,7 +6,7 @@ namespace App\Core\Assignments\Actions;
 
 use App\Core\Actors\Enums\ActorKind;
 use App\Core\Actors\Support\ActorIdentity;
-use App\Core\Agents\Contracts\AgentAuthority;
+use App\Core\Assignments\Contracts\AgentAuthority;
 use App\Core\Assignments\Actions\Support\AssignmentBatch;
 use App\Core\Assignments\Contracts\AssignmentProviders;
 use App\Core\Assignments\Contracts\AssignmentTransaction;
@@ -24,7 +24,7 @@ use App\Core\Assignments\Support\AssignmentOutcome;
 use App\Core\Assignments\Support\AssignmentReference;
 use App\Core\Assignments\Support\AssignmentResult;
 use App\Core\Assignments\Support\RecordIdentity;
-use App\Core\Contracts\CurrentActor;
+use App\Core\Actors\Contracts\CurrentActor;
 use Closure;
 use PhpOption\None;
 use PhpOption\Option;

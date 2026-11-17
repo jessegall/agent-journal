@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat\Providers;
 
-use App\Core\Hooks\Exceptions\StackTargetRefused;
+use App\Core\Agents\Exceptions\StackTargetRefused;
 use App\Core\Links\Support\LinkTypes;
 use App\Domain\Chat\Models\Message;
 use Illuminate\Contracts\Debug\ExceptionHandler;

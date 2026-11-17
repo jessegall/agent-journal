@@ -12,7 +12,7 @@ use App\Core\Hooks\Programs\OutageReply;
 use App\Core\Hooks\Programs\ProgramReply;
 use App\Core\Hooks\Relay\HookRelay;
 use App\Core\Hooks\Relay\RelaySettings;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 use App\Core\Hooks\Support\StackTransaction;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;

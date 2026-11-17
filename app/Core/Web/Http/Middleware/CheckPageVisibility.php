@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Web\Http\Middleware;
 
-use App\Core\Contracts\CurrentActor;
+use App\Core\Actors\Contracts\CurrentActor;
 use App\Core\Ui\Support\UiDeclarations;
 use App\Core\Web\Http\DeclaredRouteKey;
 use Closure;

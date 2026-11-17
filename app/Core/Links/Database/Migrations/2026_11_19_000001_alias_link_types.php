@@ -16,7 +16,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        LinkTypeRenames::rename([
+        LinkTypeRenames::rename(DB::connection(), [
             'App\\Core\\Agents\\Models\\Agent' => 'core.agent',
             'App\\Core\\Agents\\Models\\AgentSession' => 'core.agent-session',
             'App\\Core\\Agents\\Models\\LaunchBypass' => 'core.launch-bypass',

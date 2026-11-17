@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Core\Agents\Support\AgentContext;
-use App\Core\Agents\Support\SignedCall;
+use App\Core\AgentRequests\Support\SignedCall;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
 use App\Core\Hooks\Enums\AnswerKind;
@@ -21,7 +21,7 @@ use App\Core\Hooks\Storage\FrameRecords;
 use App\Core\Hooks\Storage\RecordedAnswer;
 use App\Core\Hooks\Storage\RecordedSteps;
 use App\Core\Hooks\Storage\WalkStep;
-use App\Core\Hooks\Support\StackTarget;
+use App\Core\Agents\Support\StackTarget;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;

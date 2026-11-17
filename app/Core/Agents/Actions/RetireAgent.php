@@ -15,7 +15,7 @@ use App\Core\Assignments\Enums\AssignmentReason;
 use App\Core\Assignments\Storage\AssignmentStore;
 use App\Core\Assignments\Support\AssignmentFacts;
 use App\Core\Assignments\Support\AssignmentResult;
-use App\Core\Contracts\CurrentActor;
+use App\Core\Actors\Contracts\CurrentActor;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\ConnectionInterface;
 

@@ -76,3 +76,7 @@ Doc 10 revision 2 is the design. The architecture suite (`tests/Architecture`, r
 - **Registered modules** (`RegisteredModuleTest`). `tests/Fixtures/Modules/Notes` is a module outside `app` with its own descriptor, contract, value, private reader, provider, migration and listener. Registered beside the real domains, it is discovered like a domain (listener folder, migrations) and judged by every check above in both directions; its provider is registered by the module itself.
 
 Not checked, and so not promised: names, tables or events built at run time, a query built in one file and run in another, closures bound in providers, and changes to the container at run time. Deferred by doc 10's decisions: a command bus, a separate store per owner, an outbox for facts, a supplier registry and a cross-owner link router.
+
+## Cycles between areas (task 221, question 26)
+
+Each Core area (`App\Core\Agents`, `App\Core\Hooks` and the others), each domain and the domain foundation is one unit, and `tests/Architecture/AreaCycleTest.php` fails on any group of units that reach each other, directly or through others. Kind folders inside one area (Contracts, Support, Enums) are filing, not layers, so the per-folder `php/NamespaceCycleDetector` is switched off in `.commandments/config.json`. The signed client that the CLI uses to send agent requests is its own area, `App\Core\AgentRequests`, below Agents, Hooks and Assignments; Agents owns `AgentRole`; Assignments owns `AgentAuthority`, which Agents fills.
