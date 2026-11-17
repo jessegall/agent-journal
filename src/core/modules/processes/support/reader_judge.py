@@ -49,14 +49,18 @@ class ReaderJudge:
     def judged_samples(self, reader: Reader, category: CommandCategory, parts: Sequence[ProcessPart]) -> ReaderCheck:
         samples = tuple(part for part in parts if part.category is category)
         missing = self.fields_missing(reader, category)
-        if category is CommandCategory.TEST_RUN and any(self.has_argument(reader.title, part.text) for part in samples):
+        if category is CommandCategory.TEST_RUN and any(self.has_argument(reader.title, part.text, part.program) for part in samples):
             missing = (*missing, "--title must name the tests without command arguments, such as Go tests")
         return replace(self.tested_samples(reader, samples), missing=missing)
 
+    # the arguments are the words after the program the part runs, so a wrapper such as docker compose exec before
+    # it is no argument of the tests
     @staticmethod
-    def has_argument(title: str, command: str) -> bool:
+    def has_argument(title: str, command: str, program: str) -> bool:
         title_terms = set(re.findall(r"[\w.-]+", title.lower()))
-        arguments = re.findall(r"[\w./-]+", command.lower())[1:]
+        words = re.findall(r"[\w./-]+", command.lower())
+        start = next((index for index, word in enumerate(words) if word.rsplit("/", 1)[-1] == program.lower()), 0)
+        arguments = words[start + 1:]
         if command.startswith("npx ") and arguments and arguments[0] in title_terms:
             arguments = arguments[1:]
         return any(argument in title_terms for argument in arguments if argument not in {"test", "tests", "run", "go"} and not argument.startswith("-"))

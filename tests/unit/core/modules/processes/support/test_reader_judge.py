@@ -12,8 +12,13 @@ from core.modules.processes.support.reader_check import ReaderCheck
 
 
 def test_npx_title_validation():
-    assert not ReaderJudge.has_argument("Jest tests", "npx jest --runInBand")
-    assert ReaderJudge.has_argument("Cart tests", "npx jest cart")
+    assert not ReaderJudge.has_argument("Jest tests", "npx jest --runInBand", "npx")
+    assert ReaderJudge.has_argument("Cart tests", "npx jest cart", "npx")
+
+
+def test_a_wrapper_before_the_test_program_is_no_argument():
+    assert not ReaderJudge.has_argument("Composer tests", "docker compose exec -T app composer test", "composer")
+    assert ReaderJudge.has_argument("Cart tests", "docker compose exec -T app composer test cart", "composer")
 from core.modules.processes.support.reader_run import ReaderRun
 
 
