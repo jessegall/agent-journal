@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Hooks\Inputs;
 
 /**
- * One simple command of a shell line: the program, its arguments, its effect on files and how it joins the next part.
+ * One simple command of a shell line: the program, its arguments, its effect on files, what kind of command it is and how it joins the next part.
  */
 final readonly class CommandPart
 {
@@ -16,6 +16,7 @@ final readonly class CommandPart
         public string $program,
         public array $arguments,
         public CommandEffect $effect,
+        public CommandKind $kind,
         public PartJoin $join = PartJoin::End,
     ) {}
 }

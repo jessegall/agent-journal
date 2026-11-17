@@ -11,6 +11,7 @@ use App\Domain\Hooks\Decisions\Denied;
 use App\Domain\Hooks\Decisions\SimpleChange;
 use App\Domain\Hooks\Decisions\StopPrevented;
 use App\Domain\Hooks\Inputs\CommandEffect;
+use App\Domain\Hooks\Inputs\CommandKind;
 use App\Domain\Hooks\Inputs\CommandPart;
 use App\Domain\Hooks\Inputs\FileChange;
 use App\Domain\Hooks\Inputs\FileChanges;
@@ -129,7 +130,7 @@ final class AnsweringMessageTest extends TestCase
 
     private static function command(ParseOutcome $outcome, CommandEffect $effect): ShellCommand
     {
-        return new ShellCommand('tool run', ShellDialect::Bash, $outcome, [new CommandPart('tool', ['run'], $effect)]);
+        return new ShellCommand('tool run', ShellDialect::Bash, $outcome, [new CommandPart('tool', ['run'], $effect, CommandKind::Ordinary)]);
     }
 
     private function message(): MessageWork

@@ -13,4 +13,12 @@ final readonly class FileChanges
      * @param  list<FileChange>  $changes
      */
     public function __construct(public array $changes) {}
+
+    /**
+     * @return list<string>
+     */
+    public function paths(): array
+    {
+        return array_map(fn (FileChange $change) => $change->path, $this->changes);
+    }
 }

@@ -36,4 +36,26 @@ final readonly class ShellCommand
 
         return false;
     }
+
+    /**
+     * Whether the parser read the whole line, with nothing left it could not resolve.
+     */
+    public function isFullyRead(): bool
+    {
+        return $this->outcome->isComplete();
+    }
+
+    /**
+     * Whether a part of the line is a test run or a build, or a command the parser could not name, run outside a saved command.
+     */
+    public function needsSavedCommand(): bool
+    {
+        foreach ($this->parts as $part) {
+            if ($part->kind->needsSavedCommand()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
