@@ -2,16 +2,17 @@
 import { Form, Head } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { store } from '@/routes/login';
+import type { LoginPage } from '@/types/generated';
 
-const props = defineProps<{
-    page: { input: { email: string; password: string; remember: boolean } };
-}>();
+const props = defineProps<{ page: LoginPage }>();
 
 const input = computed(() => props.page.input);
 </script>
 
 <template>
-    <main class="flex min-h-screen items-center justify-center bg-neutral-50 p-6">
+    <main
+        class="flex min-h-screen items-center justify-center bg-neutral-50 p-6"
+    >
         <Head title="Sign in" />
         <Form
             v-slot="{ errors, processing }"
@@ -48,7 +49,11 @@ const input = computed(() => props.page.input);
                 </template>
             </label>
             <label class="flex items-center gap-2 text-sm">
-                <input name="remember" type="checkbox" :checked="input.remember" />
+                <input
+                    name="remember"
+                    type="checkbox"
+                    :checked="input.remember"
+                />
                 Keep me signed in
             </label>
             <button

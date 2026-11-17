@@ -11,13 +11,11 @@ declare module 'vite/client' {
     }
 }
 
+import type { SharedData } from './generated';
+
 declare module '@inertiajs/core' {
     export interface InertiaConfig {
-        sharedPageProps: {
-            name: string;
-            viewer?: { name: string };
-            [key: string]: unknown;
-        };
+        sharedPageProps: SharedData;
     }
 }
 

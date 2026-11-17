@@ -9,6 +9,7 @@ use App\Core\Hooks\HooksServiceProvider;
 use App\Domain\Access\AccessServiceProvider;
 use App\Domain\DomainServiceProvider;
 use App\Domain\Processes\ProcessesServiceProvider;
+use App\Domain\Web\Types\TypeScriptServiceProvider;
 use App\Domain\Web\WebServiceProvider;
 use App\Providers\AppServiceProvider;
 
@@ -22,4 +23,5 @@ return [
     ProcessesServiceProvider::class,
     AccessServiceProvider::class,
     WebServiceProvider::class,
+    TypeScriptServiceProvider::class,
 ];

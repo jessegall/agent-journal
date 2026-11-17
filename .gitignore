@@ -47,3 +47,7 @@ yarn-error.log
 **/caddy
 frankenphp
 frankenphp-worker.php
+
+# Generated from PHP Data by php artisan typescript:transform
+/resources/js/types/generated/*
+!/resources/js/types/generated/.gitkeep

@@ -6,10 +6,12 @@ namespace App\Domain\Web\Pages;
 
 use App\Domain\Web\Data\LoginInput;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * The sign-in page: the form's starting values. It sits outside the app shell.
  */
+#[TypeScript]
 final class LoginPage extends Data
 {
     public const COMPONENT = 'Login';

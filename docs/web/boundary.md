@@ -27,6 +27,15 @@ A person who selects an agent stays the actor; the agent is the target. Nothing 
 
 One route owner for signing in: Fortify keeps `views => false`, Web owns the guest `GET /login` (named `login`, rendering `LoginPage` with `LoginInput`), and the form posts to Fortify's own `POST /login`; `POST /logout` is Fortify's too. Fortify's optional features are all off: no registration, password reset, email verification, two-factor or passkeys, so no account screen exists without a page. Two-factor can come back later with its challenge page. After signing in Fortify sends the person to `/plans` (task 111 moves this to Home).
 
+## Generated browser types (task 100)
+
+`spatie/laravel-typescript-transformer` 3 turns the PHP Data the pages send into `resources/js/types/generated/index.ts` (`composer types:generate`, i.e. `php artisan typescript:transform`). The file is ignored by git; `composer setup` and `composer ci:check` generate it before the frontend is built or checked, and it is left out of linting and formatting.
+
+- `App\Domain\Web\Types\TypeScriptServiceProvider` configures it: Laravel's extension, the enum transformer, a flat module writer.
+- `App\Domain\Web\Types\HiddenAwareDataTransformer` is the one integration class. It generates only Data marked `#[TypeScript]`, and a property with Laravel Data's `#[Hidden]` leaves the type as well as the JSON, so a seed or an injected service never reaches the browser's types.
+- `tests/Feature/Web/BrowserContractTest.php` proves it on a fixture page: computed hook, typed list, enum, optional value, hidden seed and hidden service, in both the generated type and the JSON.
+- Pages use property hooks, so composer requires PHP 8.4 or later and CI runs PHP 8.5, as the image does.
+
 ## Domain ownership and dependencies
 
 Approved by the user in question 13 (rule 9):
