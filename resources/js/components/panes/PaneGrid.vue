@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { usePaneLayout } from '@/composables/usePaneLayout';
+import DetachedWindowFrame from './DetachedWindowFrame.vue';
+import DragGhost from './DragGhost.vue';
 import PaneFrame from './PaneFrame.vue';
 import PaneNode from './PaneNode.vue';
 import { panesIn } from './paneLayout';
@@ -8,7 +10,8 @@ import { panesIn } from './paneLayout';
 /**
  * Version 5's pane grid (panes/PaneGrid.vue): the layout's panes side by side and above each other, split by
  * splitters. Narrower than version 5's 700 px the panes stack instead, the one holding the first window first, each
- * one grid high, with scroll snapping.
+ * one grid high, with scroll snapping. Detached windows float over everything, and a dragged window's ghost follows
+ * the pointer.
  */
 const NARROW_WIDTH = 700;
 
@@ -67,6 +70,14 @@ onBeforeUnmount(() => watcher?.disconnect());
                     <slot :window-key="windowKey" />
                 </template>
             </PaneNode>
+        </template>
+        <template v-for="detached in store.detached.value" :key="detached.key">
+            <DetachedWindowFrame :window="detached">
+                <slot :window-key="detached.key" />
+            </DetachedWindowFrame>
+        </template>
+        <template v-if="store.drag.value">
+            <DragGhost :drag="store.drag.value" />
         </template>
     </div>
 </template>

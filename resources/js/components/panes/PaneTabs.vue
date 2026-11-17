@@ -20,12 +20,17 @@ export type PaneTab = {
     isActive: boolean;
 };
 
-const props = defineProps<{ tabs: PaneTab[] }>();
+const props = withDefaults(
+    defineProps<{ tabs: PaneTab[]; insertAt?: number }>(),
+    { insertAt: -1 },
+);
 
 const emit = defineEmits<{
     pick: [key: string];
     close: [key: string];
     split: [key: string, side: SplitSide];
+    detach: [key: string];
+    grab: [event: PointerEvent, key: string];
 }>();
 
 const row = ref<HTMLElement | null>(null);
@@ -74,6 +79,7 @@ function menuOf(tab: PaneTab): MenuEntry[] {
             disabled: isAlone,
             run: () => emit('split', tab.key, 'below'),
         },
+        { label: 'Detach', run: () => emit('detach', tab.key) },
     ];
 }
 
@@ -118,14 +124,22 @@ onBeforeUnmount(() => watcher?.disconnect());
                 <div
                     role="tab"
                     tabindex="0"
+                    :data-tab="tab.key"
                     :aria-selected="tab.isActive"
                     class="group relative inline-flex flex-none cursor-pointer items-center gap-1.5 text-badge tracking-[.03em] whitespace-nowrap transition-colors duration-150 hover:text-text-2 focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-brand"
-                    :class="
+                    :class="[
                         tab.isActive
                             ? 'text-text! shadow-[inset_0_-1px_0_var(--brand)]'
-                            : 'text-text-3'
-                    "
-                    @click="emit('pick', tab.key)"
+                            : 'text-text-3',
+                        {
+                            'before:absolute before:inset-y-[7px] before:-left-[7px] before:w-0.5 before:rounded-[1px] before:bg-brand':
+                                insertAt === tabs.indexOf(tab),
+                            'after:absolute after:inset-y-[7px] after:-right-[7px] after:w-0.5 after:rounded-[1px] after:bg-brand':
+                                insertAt === tabs.length &&
+                                tabs.indexOf(tab) === tabs.length - 1,
+                        },
+                    ]"
+                    @pointerdown="emit('grab', $event, tab.key)"
                     @mousedown.middle.prevent
                     @auxclick="closeByMiddleClick($event, tab.key)"
                     @contextmenu.prevent="openMenu($event, tab)"
@@ -157,6 +171,7 @@ onBeforeUnmount(() => watcher?.disconnect());
                                 ? 'opacity-100'
                                 : 'opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100'
                         "
+                        @pointerdown.stop
                         @click.stop="emit('close', tab.key)"
                     >
                         <Icon name="close" :size="10" />

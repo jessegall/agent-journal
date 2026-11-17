@@ -4,11 +4,11 @@ import type { PaneWindow } from './paneLayout';
 
 /**
  * Version 5's add bar (windows/PaneAddBar.vue): under the tab strip, every window not open yet as a small button;
- * a click adds it to this pane.
+ * a click adds it to this pane, a drag places it.
  */
 defineProps<{ windows: PaneWindow[] }>();
 
-const emit = defineEmits<{ add: [key: string] }>();
+const emit = defineEmits<{ grab: [event: PointerEvent, key: string] }>();
 </script>
 
 <template>
@@ -22,7 +22,7 @@ const emit = defineEmits<{ add: [key: string] }>();
                 role="menuitem"
                 :title="window.title"
                 class="inline-flex h-6 items-center gap-1.5 rounded-control border border-border-2 px-2 text-small text-text-2 hover:bg-hover hover:text-text"
-                @click="emit('add', window.key)"
+                @pointerdown="emit('grab', $event, window.key)"
             >
                 <Icon :name="window.icon" :size="12" />{{ window.title }}
             </button>

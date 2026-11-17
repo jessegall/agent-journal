@@ -3,10 +3,14 @@ import { computed, ref } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
 import { usePaneLayout } from '@/composables/usePaneLayout';
+import { useWindowDrag } from '@/composables/useWindowDrag';
+import { detachWindow, dropWindow } from './arrangement';
+import DropCompass from './DropCompass.vue';
 import MenuList from './MenuList.vue';
 import type { MenuEntry } from './MenuList.vue';
 import PaneAddBar from './PaneAddBar.vue';
 import PaneTabs from './PaneTabs.vue';
+import SplitOffer from './SplitOffer.vue';
 import type { PaneTab } from './PaneTabs.vue';
 import {
     activate,
@@ -17,15 +21,17 @@ import {
     splitPane,
     toggleLimitWidth,
 } from './paneLayout';
-import type { Pane, SplitSide } from './paneLayout';
+import type { DropZone, Pane, SplitSide } from './paneLayout';
 
 /**
  * One pane of the grid, as version 5's pane stage draws it: the tab strip with + (the add bar) and ⋮ (the pane menu),
- * then the open window, or "Nothing is open in this pane." The window itself comes from the grid's window slot.
+ * then the open window, or "Nothing is open in this pane." The window itself comes from the grid's window slot. While
+ * a window is dragged over it, it shows the drop compass or the place among its tabs.
  */
 const props = defineProps<{ pane: Pane }>();
 
 const store = usePaneLayout();
+const { grab } = useWindowDrag();
 const isAdding = ref(false);
 const isMenuOpen = ref(false);
 
@@ -59,6 +65,60 @@ function split(key: string | null, side: SplitSide): void {
 function add(key: string): void {
     store.change(moveWindow(store.layout.value, key, props.pane.id));
     isAdding.value = false;
+}
+
+function detach(key: string | null): void {
+    if (key) {
+        store.apply(
+            detachWindow(
+                store.arrangement.value,
+                key,
+                { left: 80, top: 80 },
+                store.screen(),
+            ),
+        );
+    }
+}
+
+const aimedHere = computed(() => {
+    const target = store.drag.value?.target;
+
+    return target && target !== 'detach' && target.paneId === props.pane.id
+        ? target
+        : null;
+});
+
+const compassZone = computed<DropZone | null>(() =>
+    aimedHere.value && aimedHere.value.zone !== 'tabs'
+        ? aimedHere.value.zone
+        : null,
+);
+
+const insertAt = computed(() =>
+    aimedHere.value?.zone === 'tabs' ? aimedHere.value.place : -1,
+);
+
+const offeredTitle = computed(() => {
+    const offer = store.splitOffer.value;
+
+    return offer?.paneId === props.pane.id
+        ? (store.windows.value.find((each) => each.key === offer.windowKey)
+              ?.title ?? '')
+        : null;
+});
+
+function answerOffer(zone: DropZone | null): void {
+    const offer = store.splitOffer.value;
+    store.splitOffer.value = null;
+
+    if (offer && zone) {
+        store.apply(
+            dropWindow(store.arrangement.value, offer.windowKey, {
+                paneId: offer.paneId,
+                zone,
+            }),
+        );
+    }
 }
 
 const menuEntries = computed<MenuEntry[]>(() => {
@@ -102,6 +162,11 @@ const menuEntries = computed<MenuEntry[]>(() => {
             run: () => split(props.pane.active, 'below'),
         },
         {
+            label: 'Detach',
+            disabled: props.pane.active === null,
+            run: () => detach(props.pane.active),
+        },
+        {
             label: props.pane.limitWidth ? 'Use full width' : 'Limit width',
             run: () =>
                 store.change(
@@ -118,9 +183,21 @@ const menuEntries = computed<MenuEntry[]>(() => {
     <section
         class="@container relative flex h-full min-h-0 min-w-0 flex-col overflow-hidden bg-bg"
         :aria-label="`Pane with ${titleOf(pane)}`"
+        :data-pane-id="pane.id"
     >
         <PaneTabs
             :tabs="tabs"
+            :insert-at="insertAt"
+            :data-tabs-of="pane.id"
+            @grab="
+                (event, key) =>
+                    grab(event, key, pane.id, () =>
+                        store.change(
+                            activate(store.layout.value, pane.id, key),
+                        ),
+                    )
+            "
+            @detach="detach"
             @pick="
                 (key) =>
                     store.change(activate(store.layout.value, pane.id, key))
@@ -146,7 +223,15 @@ const menuEntries = computed<MenuEntry[]>(() => {
             /></Button>
         </PaneTabs>
         <template v-if="isAdding">
-            <PaneAddBar :windows="store.closedWindows.value" @add="add" />
+            <PaneAddBar
+                :windows="store.closedWindows.value"
+                @grab="
+                    (event, key) => {
+                        isAdding = false;
+                        grab(event, key, null, () => add(key));
+                    }
+                "
+            />
         </template>
         <template v-if="isMenuOpen">
             <MenuList
@@ -170,5 +255,11 @@ const menuEntries = computed<MenuEntry[]>(() => {
                 </p>
             </template>
         </div>
+        <template v-if="compassZone">
+            <DropCompass :zone="compassZone" />
+        </template>
+        <template v-if="offeredTitle !== null">
+            <SplitOffer :title="offeredTitle" @pick="answerOffer" />
+        </template>
     </section>
 </template>

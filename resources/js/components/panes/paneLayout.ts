@@ -34,7 +34,18 @@ export type PaneWindow = {
     count?: number;
 };
 
-export type SplitSide = 'right' | 'below';
+export type SplitSide = 'left' | 'right' | 'above' | 'below';
+
+/**
+ * Where a dragged window lands on a pane: as a tab (centre) or in a new half on one side.
+ */
+export type DropZone = 'centre' | SplitSide;
+
+/** The height of a pane's tab strip, where a drop always lands as a tab. */
+export const TAB_STRIP_HEIGHT = 34;
+
+/** A drop this close to a pane's edge, as a share of the pane, splits it on that side. */
+export const EDGE_SHARE = 0.25;
 
 /** A pane is never narrower or lower than this, in pixels. */
 export const SMALLEST_PANE = 140;
@@ -211,7 +222,7 @@ export function moveWindow(
 }
 
 /**
- * Splits a pane in two and puts the window in the new half, to the right of it or below it.
+ * Splits a pane in two and puts the window in the new half, on the given side of it.
  */
 export function splitPane(
     node: LayoutNode,
@@ -226,15 +237,66 @@ export function splitPane(
             return each;
         }
 
+        const newPane = pane([windowKey]);
+        const isNewPaneFirst = side === 'left' || side === 'above';
+
         return {
             kind: 'split',
             id: newId('split'),
-            axis: side === 'right' ? 'row' : 'column',
+            axis: side === 'left' || side === 'right' ? 'row' : 'column',
             ratio: 0.5,
-            first: each,
-            second: pane([windowKey]),
+            first: isNewPaneFirst ? newPane : each,
+            second: isNewPaneFirst ? each : newPane,
         };
     });
+}
+
+/**
+ * Puts a window in a new pane at the right of the whole grid, as version 5 docks a window that has no pane to go to.
+ */
+export function addPaneAtRight(
+    node: LayoutNode,
+    windowKey: string,
+): LayoutNode {
+    return {
+        kind: 'split',
+        id: newId('split'),
+        axis: 'row',
+        ratio: 0.5,
+        first: closeWindow(node, windowKey),
+        second: pane([windowKey]),
+    };
+}
+
+/**
+ * The zone of a pane a pointer aims at, as version 5 reads it: over the tab strip, or on an empty pane, it is the
+ * centre; otherwise the nearest side when within a quarter of the pane from it, else the centre.
+ */
+export function zoneAt(
+    box: { left: number; top: number; width: number; height: number },
+    x: number,
+    y: number,
+    isFilled: boolean,
+): DropZone {
+    if (y - box.top <= TAB_STRIP_HEIGHT || !isFilled) {
+        return 'centre';
+    }
+
+    const across = (x - box.left) / box.width;
+    const down =
+        (y - box.top - TAB_STRIP_HEIGHT) /
+        Math.max(1, box.height - TAB_STRIP_HEIGHT);
+    const distances: [SplitSide, number][] = [
+        ['left', across],
+        ['right', 1 - across],
+        ['above', down],
+        ['below', 1 - down],
+    ];
+    const [side, distance] = distances.sort(
+        (one, other) => one[1] - other[1],
+    )[0];
+
+    return distance < EDGE_SHARE ? side : 'centre';
 }
 
 /**
@@ -267,4 +329,41 @@ function mapNodes(
         first: mapNodes(changed.first, change),
         second: mapNodes(changed.second, change),
     };
+}
+
+/**
+ * Every pane with the share of the grid it covers, left, top, width and height from 0 to 1, as a layout thumbnail
+ * draws them.
+ */
+export function paneBoxes(
+    node: LayoutNode,
+    box = { left: 0, top: 0, width: 1, height: 1 },
+): { pane: Pane; left: number; top: number; width: number; height: number }[] {
+    if (node.kind === 'pane') {
+        return [{ pane: node, ...box }];
+    }
+
+    if (node.axis === 'row') {
+        const firstWidth = box.width * node.ratio;
+
+        return [
+            ...paneBoxes(node.first, { ...box, width: firstWidth }),
+            ...paneBoxes(node.second, {
+                ...box,
+                left: box.left + firstWidth,
+                width: box.width - firstWidth,
+            }),
+        ];
+    }
+
+    const firstHeight = box.height * node.ratio;
+
+    return [
+        ...paneBoxes(node.first, { ...box, height: firstHeight }),
+        ...paneBoxes(node.second, {
+            ...box,
+            top: box.top + firstHeight,
+            height: box.height - firstHeight,
+        }),
+    ];
 }
