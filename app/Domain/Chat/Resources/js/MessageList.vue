@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MessageData } from '@/types/generated';
+import type { MessageData } from '@generated/types/chat';
 
 /**
  * The messages of one conversation, oldest first, each body shown exactly as it was typed.

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { draftKey } from '@/composables/useMessageDrafts';
-import type { ChatData } from '@/types/generated';
+import { draftKey } from './composables/useMessageDrafts';
+import type { ChatData } from '@generated/types/chat';
 import Composer from './Composer.vue';
 import MessageList from './MessageList.vue';
 

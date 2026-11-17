@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Providers;
 
-use App\Core\Hooks\Exceptions\StackTargetRefused;
 use App\Core\Links\Support\LinkTypes;
 use App\Domain\Access\Contracts\ViewerReader;
 use App\Domain\Plans\Exceptions\PlanMissing;
@@ -73,7 +72,6 @@ final class WebServiceProvider extends ServiceProvider
             $exceptions->map(RuleMissing::class, fn (RuleMissing $missing) => new NotFoundHttpException(previous: $missing));
             $exceptions->renderable(fn (StartDenied $denied) => $this->backWithError('start', $denied->getMessage()));
             $exceptions->renderable(fn (RuleNotProposed $settled) => $this->backWithError('review', $settled->getMessage()));
-            $exceptions->renderable(fn (StackTargetRefused $refused) => $this->backWithError('session', 'This agent session cannot take a message now.'));
         }
     }
 

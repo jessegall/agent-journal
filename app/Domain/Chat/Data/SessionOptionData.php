@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Data;
+namespace App\Domain\Chat\Data;
 
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

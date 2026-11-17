@@ -318,7 +318,7 @@ class	ChangeTaskState
 class	ChatData
 class	ChatDomain
 class	ChatServiceProvider
-class	ChatView
+class	ChatWindowReader
 class	CheckPageVisibility
 class	ChoiceOption
 class	ClaudeCodeAdapter
@@ -341,6 +341,7 @@ class	ContextWasCompacted
 class	Controller
 class	Conversation
 class	ConversationData
+class	ConversationRequest
 class	CoreApi
 class	CoreServiceProvider
 class	CreateNewUser
@@ -1331,11 +1332,13 @@ method	ChangeTaskState::finish()
 method	ChatData::__construct()
 method	ChatDomain::description()
 method	ChatDomain::exports()
+method	ChatDomain::navigation()
+method	ChatDomain::pages()
 method	ChatDomain::requires()
 method	ChatDomain::states()
 method	ChatServiceProvider::boot()
-method	ChatView::__construct()
-method	ChatView::chat()
+method	ChatWindowReader::__construct()
+method	ChatWindowReader::read()
 method	CheckPageVisibility::__construct()
 method	CheckPageVisibility::handle()
 method	ChoiceOption::__construct()
@@ -1399,6 +1402,8 @@ method	Conversation::id()
 method	ConversationData::__construct()
 method	ConversationData::fromConversation()
 method	ConversationReader::conversationWith()
+method	ConversationRequest::chosenSession()
+method	ConversationRequest::rules()
 method	CoreApi::exports()
 method	CoreServiceProvider::boot()
 method	CoreServiceProvider::register()
@@ -2881,8 +2886,9 @@ property	ChangeTaskState::$database
 property	ChangeTaskState::$events
 property	ChatData::$conversation
 property	ChatData::$sessions
-property	ChatView::$messages
-property	ChatView::$sessions
+property	ChatWindowReader::$messages
+property	ChatWindowReader::$request
+property	ChatWindowReader::$sessions
 property	CheckPageVisibility::$actors
 property	CheckPageVisibility::$container
 property	CheckPageVisibility::$declarations
@@ -2994,8 +3000,6 @@ property	HomeController::$inertia
 property	HomeFiltersData::$plans
 property	HomeFiltersData::$rules
 property	HomeFiltersData::$session
-property	HomePage::$chat
-property	HomePage::$chatView
 property	HomePage::$filters
 property	HomePage::$layouts
 property	HomePage::$layoutsView

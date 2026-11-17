@@ -50,14 +50,17 @@ final class HomePageTest extends TestCase
     {
         $this->actingAs($this->owner)->get('/?q=release')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
             ->component('Home')
-            ->where('page.chat.sessions.0.id', (string) $this->session->id)
-            ->where('page.chat.sessions.0.agentName', 'Builder')
-            ->missing('page.chat.conversation')
+            ->missing('window_chat_conversation')
             ->where('page.plans.filters.q', 'release')
             ->where('page.plans.pagination.total', 1)
+            ->missing('page.chat')
             ->missing('page.filters')
-            ->missing('page.chatView')
-            ->missing('page.plansView'));
+            ->missing('page.plansView')
+            ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
+                ->where('window_chat_conversation.state', 'ready')
+                ->where('window_chat_conversation.data.sessions.0.id', (string) $this->session->id)
+                ->where('window_chat_conversation.data.sessions.0.agentName', 'Builder')
+                ->missing('window_chat_conversation.data.conversation')));
     }
 
     public function test_the_rules_window_reads_its_own_search_and_page_beside_the_plans_window(): void
@@ -77,20 +80,32 @@ final class HomePageTest extends TestCase
     {
         $body = "  Please check:\n    - the indented line\n\nthen answer.  \n";
 
-        $this->actingAs($this->owner)->post('/messages', ['body' => $body, 'session' => (string) $this->session->id])
+        $home = route('home', ['window' => ['chat.conversation' => ['session' => (string) $this->session->id]], 'session' => (string) $this->session->id], false);
+
+        $this->actingAs($this->owner)->post('/chat/messages', ['body' => $body, 'session' => (string) $this->session->id])
             ->assertStatus(303)
-            ->assertRedirect("/?session={$this->session->id}");
+            ->assertRedirect($home);
 
         $this->assertSame([$body], Message::query()->ownedBy($this->session->agent_id)->pluck('body')->all());
-        $this->actingAs($this->owner)->get("/?session={$this->session->id}")->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.chat.conversation.id', "{$this->session->agent_id}-{$this->session->id}")
-            ->where('page.chat.conversation.sessionId', (string) $this->session->id)
-            ->where('page.chat.conversation.messages.0.body', $body));
+        $this->actingAs($this->owner)->get($home)->assertInertia(fn (AssertableInertia $page) => $page
+            ->reloadOnly('window_chat_conversation', fn (AssertableInertia $reload) => $reload
+                ->where('window_chat_conversation.data.conversation.id', "{$this->session->agent_id}-{$this->session->id}")
+                ->where('window_chat_conversation.data.conversation.sessionId', (string) $this->session->id)
+                ->where('window_chat_conversation.data.conversation.messages.0.body', $body)));
+    }
+
+    public function test_the_chat_window_is_also_chats_own_page(): void
+    {
+        $this->actingAs($this->owner)->get("/chat?session={$this->session->id}")->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('chat/ChatWindow')
+            ->where('page.state', 'ready')
+            ->where('page.data.sessions.0.agentName', 'Builder')
+            ->where('page.data.conversation.sessionId', (string) $this->session->id));
     }
 
     public function test_a_blank_message_is_refused_on_its_body(): void
     {
-        $this->actingAs($this->owner)->from('/')->post('/messages', ['body' => "  \n\t ", 'session' => (string) $this->session->id])
+        $this->actingAs($this->owner)->from('/')->post('/chat/messages', ['body' => "  \n\t ", 'session' => (string) $this->session->id])
             ->assertRedirect('/')
             ->assertSessionHasErrors('body');
 
@@ -99,7 +114,7 @@ final class HomePageTest extends TestCase
 
     public function test_a_guessed_session_is_refused_on_the_session(): void
     {
-        $this->actingAs($this->owner)->from('/')->post('/messages', ['body' => 'Hello', 'session' => (string) ($this->session->id + 100)])
+        $this->actingAs($this->owner)->from('/')->post('/chat/messages', ['body' => 'Hello', 'session' => (string) ($this->session->id + 100)])
             ->assertRedirect('/')
             ->assertSessionHasErrors('session');
     }

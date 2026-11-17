@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Data;
+namespace App\Domain\Chat\Data;
 
 use App\Domain\Chat\Api\MessageView;
 use App\Domain\Chat\Enums\MessageState;

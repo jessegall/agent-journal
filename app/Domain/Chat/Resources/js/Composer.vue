@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { computed, onMounted, ref, watch } from 'vue';
-import Button from '@/components/kit/Button.vue';
-import FormErrors from '@/components/kit/FormErrors.vue';
-import Icon from '@/components/kit/Icon.vue';
-import { useComposerHeight } from '@/composables/useComposerHeight';
-import { useMessageDrafts } from '@/composables/useMessageDrafts';
-import { formSendingHooks } from '@/composables/usePageChanges';
-import { send as sendRoute } from '@/routes/messages';
-import type { MessageInput } from '@/types/generated';
+import Button from '@kit/Button';
+import FormErrors from '@kit/FormErrors';
+import Icon from '@kit/Icon';
+import { useComposerHeight } from './composables/useComposerHeight';
+import { useMessageDrafts } from './composables/useMessageDrafts';
+import { formSendingHooks } from '@kit/usePageChanges';
+import { send as sendRoute } from '@generated/routes/chat';
+import type { MessageInput } from '@generated/types/chat';
 
 /**
  * Writes a message to one agent session (doc 4, 6.5). The text is the draft of this conversation, so switching

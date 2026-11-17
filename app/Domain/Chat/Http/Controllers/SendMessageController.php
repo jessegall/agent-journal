@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Http\Controllers;
+namespace App\Domain\Chat\Http\Controllers;
 
 use App\Core\Agents\Contracts\SessionReader;
 use App\Domain\Chat\Contracts\MessageSender;
-use App\Domain\Web\Data\MessageInput;
+use App\Domain\Chat\Data\MessageInput;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -27,6 +27,7 @@ final readonly class SendMessageController
     {
         $this->sendMessage->send($input->body, $this->sessions->requireActive((int) $input->session));
 
-        return $this->redirect->route('home', ['session' => $input->session], 303);
+        // Back to Home with the session chosen for the chat window and for the sections that read it.
+        return $this->redirect->route('home', ['window' => ['chat.conversation' => ['session' => $input->session]], 'session' => $input->session], 303);
     }
 }

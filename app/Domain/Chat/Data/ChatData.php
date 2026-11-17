@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Data;
+namespace App\Domain\Chat\Data;
 
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -10,7 +10,7 @@ use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * Home's chat pane: the sessions the user can talk to and the open conversation, when one is chosen.
+ * The chat window: the sessions the user can talk to and the open conversation, when one is chosen.
  */
 #[TypeScript]
 final class ChatData extends Data

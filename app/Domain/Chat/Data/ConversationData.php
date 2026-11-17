@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Data;
+namespace App\Domain\Chat\Data;
 
 use App\Domain\Chat\Api\Conversation;
-use App\Domain\Web\Data\Concerns\OptionalOrMissing;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -18,8 +17,6 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class ConversationData extends Data
 {
-    use OptionalOrMissing;
-
     /**
      * @param  list<MessageData>  $messages
      */

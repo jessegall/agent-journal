@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import ChatPane from '@/components/chat/ChatPane.vue';
+import ChatWindow from '@domain/chat/ChatWindow.vue';
+import type { ChatData } from '@generated/types/chat';
 import PaneGrid from '@/components/panes/PaneGrid.vue';
+import WindowHost from '@/framework/WindowHost.vue';
 import PlansView from '@/components/plans/PlansView.vue';
 import { planQuery } from '@/components/plans/planUrls';
 import { ruleQuery } from '@/components/rules/ruleLooks';
@@ -22,7 +24,7 @@ import InformationBar from './InformationBar.vue';
  * windows. Every link keeps every window's state in Home's query; the rules window's search and page carry the prefix
  * rules_ so they do not meet the plans window's.
  */
-const props = defineProps<{ page: HomePage; session?: string }>();
+const props = defineProps<{ page: HomePage; chat?: ChatData; session?: string }>();
 
 const RULES_KEY_PREFIX = 'rules_';
 
@@ -44,7 +46,7 @@ providePaneLayout('home-layout', () => [
 
 const agentName = computed(
     () =>
-        props.page.chat.sessions.find((each) => each.id === props.session)
+        props.chat?.sessions.find((each) => each.id === props.session)
             ?.agentName,
 );
 
@@ -58,12 +60,9 @@ function homeUrl(
             ...planQuery(plans),
             ...ruleQuery(rules, RULES_KEY_PREFIX),
             session,
+            window: session === undefined ? undefined : { 'chat.conversation': { session } },
         },
     });
-}
-
-function sessionUrl(session: string): string {
-    return homeUrl(props.page.plans.filters, props.page.rules.filters, session);
 }
 
 function plansUrl(filters: PlanFiltersData): string {
@@ -83,7 +82,7 @@ function rulesUrl(filters: RuleFiltersData): string {
             <template #default="{ windowKey }">
                 <SwitchCase :value="windowKey">
                     <template #chat>
-                        <ChatPane :chat="page.chat" :session-url="sessionUrl" />
+                        <WindowHost :component="ChatWindow" prop-name="window_chat_conversation" />
                     </template>
                     <template #plans>
                         <PlansView

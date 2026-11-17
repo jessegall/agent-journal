@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Data;
+namespace App\Domain\Chat\Data;
 
 use Spatie\LaravelData\Attributes\Validation\Regex;
 use Spatie\LaravelData\Data;
