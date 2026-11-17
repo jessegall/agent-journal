@@ -30,12 +30,14 @@ final readonly class UiDeclarations
      * @param  array<string, RegisteredSection>  $sections  by full key
      * @param  array<string, RegisteredAction>  $actions  by route name
      * @param  list<RegisteredNavigation>  $navigation  the root items
+     * @param  list<DomainUi>  $owners  every domain, also one that declares nothing
      */
     private function __construct(
         private array $pages,
         private array $sections,
         private array $actions,
         private array $navigation,
+        private array $owners,
     ) {}
 
     /**
@@ -83,7 +85,7 @@ final readonly class UiDeclarations
             $navigation = [...$navigation, ...$roots];
         }
 
-        $declarations = new self($pages, $sections, self::actionsOf($pages, $sections), $navigation);
+        $declarations = new self($pages, $sections, self::actionsOf($pages, $sections), $navigation, $domains);
         $declarations->refuseRepeatedRoutes();
         $declarations->refuseRepeatedPropNames();
 
@@ -125,6 +127,14 @@ final readonly class UiDeclarations
     public function page(string $key): RegisteredPage
     {
         return $this->pages[$key] ?? throw UiDeclarationMissing::for($key);
+    }
+
+    /**
+     * @return list<DomainUi>
+     */
+    public function owners(): array
+    {
+        return $this->owners;
     }
 
     /**

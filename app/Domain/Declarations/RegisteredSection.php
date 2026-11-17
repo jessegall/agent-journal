@@ -69,4 +69,13 @@ final readonly class RegisteredSection
             ? $this->host->visibilityChecks()
             : [...$this->host->visibilityChecks(), $this->section->visibility];
     }
+
+    /**
+     * The name the browser loads its component by: the domain's key and the component's path without .vue, so two
+     * domains' Index.vue never share one.
+     */
+    public function componentName(): string
+    {
+        return $this->owner->key.'/'.preg_replace('/\.vue$/', '', $this->section->component);
+    }
 }

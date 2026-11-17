@@ -11,6 +11,7 @@ use App\Domain\Plans\Exceptions\PlanMissing;
 use App\Domain\Plans\Exceptions\StartDenied;
 use App\Domain\Rules\Exceptions\RuleMissing;
 use App\Domain\Rules\Exceptions\RuleNotProposed;
+use App\Domain\Web\Console\GenerateUiManifest;
 use App\Domain\Web\Events\UserChannel;
 use App\Domain\Web\Http\Middleware\CheckPageVisibility;
 use App\Domain\Web\Models\Layout;
@@ -42,6 +43,7 @@ final class WebServiceProvider extends ServiceProvider
         $events->listen('eloquent.booted: '.Layout::class, fn () => Layout::addGlobalScope($scope));
 
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/web.php');
+        $this->commands([GenerateUiManifest::class]);
         $router->aliasMiddleware('journal.visible', CheckPageVisibility::class);
 
         if (! $this->app->routesAreCached()) {

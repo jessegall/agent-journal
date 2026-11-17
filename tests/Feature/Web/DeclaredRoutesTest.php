@@ -59,7 +59,7 @@ final class DeclaredRoutesTest extends TestCase
     {
         $this->actingAs($this->owner)->get('/library')
             ->assertOk()
-            ->assertInertia(fn (AssertableInertia $page) => $page->component('library.books', false));
+            ->assertInertia(fn (AssertableInertia $page) => $page->component('library/Books', false));
 
         $this->assertSame('/library/books', route('library.add', absolute: false));
     }

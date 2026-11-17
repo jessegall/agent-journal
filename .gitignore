@@ -54,3 +54,5 @@ frankenphp-worker.php
 
 # Browser check screenshots and snapshots
 /.playwright-mcp
+/resources/css/generated
+/resources/js/generated

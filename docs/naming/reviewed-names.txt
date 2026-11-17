@@ -387,6 +387,7 @@ class	FrameEditor
 class	FrameRecord
 class	FrameRecords
 class	FrameRecordsCast
+class	GenerateUiManifest
 class	HandleInertiaRequests
 class	HiddenAwareDataTransformer
 class	HomeController
@@ -729,6 +730,8 @@ class	UiDeclarationMissing
 class	UiDeclarations
 class	UiKeyInvalid
 class	UiKeyRepeated
+class	UiManifest
+class	UiManifestInvalid
 class	UiPathInvalid
 class	UiPathRepeated
 class	UiPrefixUnavailable
@@ -833,6 +836,7 @@ constant	TableScan::SCHEMA
 constant	TableScan::SCHEMA_KINDS
 constant	Task::LINK_TYPE
 constant	TestDatabaseTraits::LARAVEL_DATABASE_TRAITS
+constant	UiManifest::SHARED_INCLUDES
 constant	UserChannel::PATTERN
 constant	WorkingOnTaskStateReference::TYPE_KEY
 enum	ActionMethod
@@ -1562,6 +1566,7 @@ method	FrameRecords::all()
 method	FrameRecords::checkBottomFor()
 method	FrameRecordsCast::get()
 method	FrameRecordsCast::set()
+method	GenerateUiManifest::handle()
 method	HandleInertiaRequests::__construct()
 method	HandleInertiaRequests::share()
 method	HandleInertiaRequests::version()
@@ -2153,10 +2158,12 @@ method	RegisteredNavigation::keys()
 method	RegisteredNavigation::of()
 method	RegisteredPage::__construct()
 method	RegisteredPage::checkedSlots()
+method	RegisteredPage::componentName()
 method	RegisteredPage::declaredActions()
 method	RegisteredPage::of()
 method	RegisteredPage::visibilityChecks()
 method	RegisteredSection::__construct()
+method	RegisteredSection::componentName()
 method	RegisteredSection::declaredActions()
 method	RegisteredSection::of()
 method	RegisteredSection::visibilityChecks()
@@ -2548,6 +2555,7 @@ method	UiDeclarations::actionsOf()
 method	UiDeclarations::check()
 method	UiDeclarations::childrenOf()
 method	UiDeclarations::navigation()
+method	UiDeclarations::owners()
 method	UiDeclarations::page()
 method	UiDeclarations::pageOrNone()
 method	UiDeclarations::pages()
@@ -2559,6 +2567,16 @@ method	UiDeclarations::visibilityChecksOf()
 method	UiKeyInvalid::notLocal()
 method	UiKeyRepeated::inDomain()
 method	UiKeyRepeated::propName()
+method	UiManifest::__construct()
+method	UiManifest::aliases()
+method	UiManifest::components()
+method	UiManifest::domainFolders()
+method	UiManifest::fromRoot()
+method	UiManifest::render()
+method	UiManifest::replaceTogether()
+method	UiManifest::typeScriptConfig()
+method	UiManifest::write()
+method	UiManifestInvalid::emptyOrUnmarked()
 method	UiPathInvalid::notNormalised()
 method	UiPathInvalid::parameterTwice()
 method	UiPathRepeated::for()
@@ -2913,6 +2931,8 @@ property	FrameRecord::$isBottom
 property	FrameRecord::$reference
 property	FrameRecord::$schemaVersion
 property	FrameRecords::$records
+property	GenerateUiManifest::$description
+property	GenerateUiManifest::$signature
 property	HandleInertiaRequests::$appName
 property	HandleInertiaRequests::$rootView
 property	HandleInertiaRequests::$viewers
@@ -3485,8 +3505,11 @@ property	ToolResult::$outcome
 property	ToolResult::$toolName
 property	UiDeclarations::$actions
 property	UiDeclarations::$navigation
+property	UiDeclarations::$owners
 property	UiDeclarations::$pages
 property	UiDeclarations::$sections
+property	UiManifest::$declarations
+property	UiManifest::$views
 property	UnassignPlanWorkCommand::$description
 property	UnassignPlanWorkCommand::$signature
 property	UnassignRecordCommand::$description

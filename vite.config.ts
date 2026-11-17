@@ -4,7 +4,9 @@ import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
+import { fileURLToPath } from 'node:url';
 import { defineConfig, lazyPlugins } from 'vite-plus';
+import { domainAliases, watchedModuleRoots } from './vite.domains';
 
 export default defineConfig({
     plugins: lazyPlugins(() => [
@@ -34,6 +36,10 @@ export default defineConfig({
             formVariants: true,
         }),
     ]),
+    resolve: {
+        // The generated aliases name paths from the project root.
+        alias: Object.fromEntries(Object.entries(domainAliases).map(([alias, path]) => [alias, fileURLToPath(new URL(path, import.meta.url))])),
+    },
     server: {
         // The app container reaches the Vite container by this name for server-side rendering.
         allowedHosts: ['vite'],
@@ -46,7 +52,7 @@ export default defineConfig({
                 '**/.claude/**',
                 '**/.cursor/**',
                 '**/.junie/**',
-                '**/vendor/**',
+                (path: string) => path.includes('/vendor/') && !watchedModuleRoots.some((root) => path.includes(`/${root}/`)),
             ],
         },
     },
@@ -58,6 +64,7 @@ export default defineConfig({
             'bootstrap/ssr/**',
             'tailwind.config.js',
             'resources/js/actions/**',
+            'resources/js/generated/**',
             'resources/js/components/ui/*',
             'resources/js/routes/**',
             'resources/js/wayfinder/**',
@@ -83,6 +90,7 @@ export default defineConfig({
             'resources/js/types/generated/**',
             'resources/js/routes/**',
             'resources/js/actions/**',
+            'resources/js/generated/**',
             'resources/js/wayfinder/**',
             'docs/**',
             'tests/Fixtures/**',

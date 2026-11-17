@@ -26,6 +26,6 @@ final readonly class PageController
     {
         $page = $this->declarations->page(DeclaredRouteKey::of($route));
 
-        return $this->inertia->render($page->key, $props->forPage($page, $request));
+        return $this->inertia->render($page->componentName(), $props->forPage($page, $request));
     }
 }
