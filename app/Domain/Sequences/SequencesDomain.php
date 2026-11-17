@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Domain\Sequences;
 
 use App\Domain\Contracts\Domain;
-use App\Domain\Contracts\RegistersStates;
+use App\Domain\Contracts\ProvidesStates;
 use App\Domain\Sequences\States\Support\FollowingSequenceStateFactory;
 use App\Domain\Sequences\States\Support\FollowingSequenceStateReference;
 
-final class SequencesDomain implements Domain, RegistersStates
+final class SequencesDomain implements Domain, ProvidesStates
 {
     public function description(): string
     {

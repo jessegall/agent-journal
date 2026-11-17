@@ -16,9 +16,9 @@ use App\Domain\Chat\Exceptions\MessageBodyEmpty;
 use App\Domain\Chat\States\Support\AnsweringMessageStateFactory;
 use App\Domain\Chat\States\Support\AnsweringMessageStateReference;
 use App\Domain\Contracts\Domain;
-use App\Domain\Contracts\RegistersStates;
+use App\Domain\Contracts\ProvidesStates;
 
-final class ChatDomain implements Domain, RegistersStates
+final class ChatDomain implements Domain, ProvidesStates
 {
     public function description(): string
     {

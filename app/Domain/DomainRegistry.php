@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain;
 
 use App\Core\Hooks\Contracts\StateRegistration;
-use App\Domain\Contracts\RegistersStates;
+use App\Domain\Contracts\ProvidesStates;
 use App\Domain\Exceptions\AmbiguousDomainRoot;
 use App\Domain\Exceptions\DomainCycle;
 use App\Domain\Exceptions\DomainListedTwice;
@@ -82,12 +82,12 @@ final readonly class DomainRegistry
     }
 
     /**
-     * Registers the states every domain declares through RegistersStates, each factory built by the container.
+     * Registers the states every domain declares through ProvidesStates, each factory built by the container.
      */
     public function registerStatesIn(StateRegistration $registration, Container $container): void
     {
         foreach ($this->all() as $entry) {
-            if (! $entry->domain instanceof RegistersStates) {
+            if (! $entry->domain instanceof ProvidesStates) {
                 continue;
             }
 

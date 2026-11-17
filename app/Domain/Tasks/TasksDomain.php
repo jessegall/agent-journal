@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Tasks;
 
 use App\Domain\Contracts\Domain;
-use App\Domain\Contracts\RegistersStates;
+use App\Domain\Contracts\ProvidesStates;
 use App\Domain\Tasks\Api\Events\TaskBlocked;
 use App\Domain\Tasks\Api\Events\TaskCancelled;
 use App\Domain\Tasks\Api\Events\TaskFinished;
@@ -17,7 +17,7 @@ use App\Domain\Tasks\Exceptions\TaskMissing;
 use App\Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use App\Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 
-final class TasksDomain implements Domain, RegistersStates
+final class TasksDomain implements Domain, ProvidesStates
 {
     public function description(): string
     {

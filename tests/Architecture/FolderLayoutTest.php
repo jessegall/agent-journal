@@ -52,6 +52,7 @@ final class FolderLayoutTest extends TestCase
             }
 
             foreach ((new NodeFinder)->findInstanceOf(ParsedFile::fromPath($file)->statements, ClassLike::class) as $type) {
+                /** @var class-string|null $name */
                 $name = $type->namespacedName?->toString();
                 $misfit = $name === null ? null : $kind->misfitOf(new ReflectionClass($name));
 

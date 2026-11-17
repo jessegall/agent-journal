@@ -11,7 +11,7 @@ use App\Core\Hooks\Contracts\StateType;
  * implements this beside Domain and lists every state it registers; the domain foundation registers them when Core
  * builds the state types.
  */
-interface RegistersStates
+interface ProvidesStates
 {
     /**
      * Every state type key of the domain with the factory that builds its state, such as
