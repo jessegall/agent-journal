@@ -68,7 +68,7 @@ final class PageChangeTest extends TestCase
     {
         $task = Task::query()->create(['title' => 'List the plans']);
         $plan = Plan::query()->create(['title' => 'Build the release page', 'kind' => PlanKind::Build]);
-        $plan->addPhase('Read')->addTasks([$task]);
+        $plan->addPhase('Read')->addTasks([$task->id]);
         $progress = [];
         Event::listen(PlanProgressChanged::class, function (PlanProgressChanged $changed) use (&$progress): void {
             $progress[] = $changed->planId;
@@ -90,7 +90,7 @@ final class PageChangeTest extends TestCase
     public function test_a_rolled_back_change_sends_nothing(): void
     {
         $task = Task::query()->create(['title' => 'List the plans']);
-        Plan::query()->create(['title' => 'Build the release page', 'kind' => PlanKind::Build])->addPhase('Read')->addTasks([$task]);
+        Plan::query()->create(['title' => 'Build the release page', 'kind' => PlanKind::Build])->addPhase('Read')->addTasks([$task->id]);
 
         try {
             $this->app->make(ConnectionInterface::class)->transaction(function () use ($task): void {

@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use App\Domain\Access\Database\Seeders\OwnerSeeder;
 use App\Domain\Plans\Database\Seeders\PlansSeeder;
+use App\Domain\Tasks\Database\Seeders\PlanTasksSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -18,6 +19,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([OwnerSeeder::class, PlansSeeder::class]);
+        $this->call(OwnerSeeder::class);
+        $this->callWith(PlansSeeder::class, ['taskIdsOfPhase' => $this->container->make(PlanTasksSeeder::class)->exampleTaskIds()]);
     }
 }

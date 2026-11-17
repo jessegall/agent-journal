@@ -6,31 +6,26 @@ namespace App\Domain\Plans\Database\Seeders;
 
 use App\Domain\Plans\Api\PlanKind;
 use App\Domain\Plans\Models\Plan;
-use App\Domain\Tasks\Models\Task;
 use Illuminate\Database\Seeder;
 
 /**
- * A few local plans with phases and tasks, so the running app shows real plan cards.
+ * A few local plans with phases, so the running app shows real plan cards. The tasks come from Tasks' seeder, by id
+ * and grouped by example phase; without them the phases stay empty.
  */
 final class PlansSeeder extends Seeder
 {
-    public function run(): void
+    /**
+     * @param  array<string, list<int>>  $taskIdsOfPhase  task ids by example phase: read, start and reproduce
+     */
+    public function run(array $taskIdsOfPhase = []): void
     {
         $build = Plan::query()->create(['title' => 'Build the plans page', 'kind' => PlanKind::Build]);
-        $build->addPhase('Read the plans')->addTasks($this->tasks('Persist plans and phases', 'List the plans'));
-        $build->addPhase('Start a plan')->addTasks($this->tasks('Add the start action', 'Show the start form'));
+        $build->addPhase('Read the plans')->addTasks($taskIdsOfPhase['read'] ?? []);
+        $build->addPhase('Start a plan')->addTasks($taskIdsOfPhase['start'] ?? []);
 
         $fix = Plan::query()->create(['title' => 'Fix the login redirect', 'kind' => PlanKind::Fix]);
-        $fix->addPhase('Reproduce it')->addTasks($this->tasks('Write a failing test'));
+        $fix->addPhase('Reproduce it')->addTasks($taskIdsOfPhase['reproduce'] ?? []);
 
         Plan::query()->create(['title' => 'Compare chat layouts', 'kind' => PlanKind::Research]);
-    }
-
-    /**
-     * @return list<Task>
-     */
-    private function tasks(string ...$titles): array
-    {
-        return array_map(fn (string $title) => Task::query()->create(['title' => $title]), array_values($titles));
     }
 }

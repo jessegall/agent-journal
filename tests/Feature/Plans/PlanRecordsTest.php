@@ -34,8 +34,8 @@ final class PlanRecordsTest extends TestCase
         $read = $this->build->addPhase('Read');
         $done = Task::query()->create(['title' => 'Done']);
         $done->finish();
-        $read->addTasks([$done]);
-        $this->build->addPhase('Start')->addTasks([Task::query()->create(['title' => 'Open'])]);
+        $read->addTasks([$done->id]);
+        $this->build->addPhase('Start')->addTasks([Task::query()->create(['title' => 'Open'])->id]);
         $this->empty = Plan::query()->create(['title' => 'Compare chat layouts', 'kind' => PlanKind::Research]);
     }
 

@@ -6,7 +6,6 @@ namespace App\Domain\Plans\Models;
 
 use App\Core\Links\Linkable;
 use App\Domain\Plans\Exceptions\TaskAlreadyInAPhase;
-use App\Domain\Tasks\Models\Task;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -30,34 +29,34 @@ final class Phase extends Model
     use Linkable;
 
     /**
-     * Puts a task at the end of this phase.
+     * Puts a task, named by id, at the end of this phase. The caller has checked with Tasks that the task exists.
      */
-    public function addTask(Task $task): void
+    public function addTask(int $taskId): void
     {
-        if (PhaseTask::query()->where('task_id', $task->id)->exists()) {
-            throw TaskAlreadyInAPhase::forTask($task->id);
-        }
-
-        PhaseTask::query()->create([
-            'phase_id' => $this->id,
-            'task_id' => $task->id,
-            'position' => PhaseTask::query()->where('phase_id', $this->id)->count() + 1,
-        ]);
+        $this->addTasks([$taskId]);
     }
 
     /**
-     * Puts several new tasks at the end of this phase, in the order given, with one insert.
+     * Puts several tasks, named by id, at the end of this phase in the order given, with one insert. A task already in
+     * a phase, or named twice, is refused before anything is written.
      *
-     * @param  list<Task>  $tasks
+     * @param  list<int>  $taskIds
      */
-    public function addTasks(array $tasks): void
+    public function addTasks(array $taskIds): void
     {
+        $twice = array_keys(array_filter(array_count_values($taskIds), fn (int $count) => $count > 1));
+        $placed = PhaseTask::query()->whereIn('task_id', $taskIds)->value('task_id');
+
+        if ($twice !== [] || $placed !== null) {
+            throw TaskAlreadyInAPhase::forTask((int) ($twice[0] ?? $placed));
+        }
+
         $next = PhaseTask::query()->where('phase_id', $this->id)->count() + 1;
 
         PhaseTask::query()->insert(array_map(
-            fn (Task $task, int $offset) => ['phase_id' => $this->id, 'task_id' => $task->id, 'position' => $next + $offset],
-            $tasks,
-            array_keys($tasks),
+            fn (int $taskId, int $offset) => ['phase_id' => $this->id, 'task_id' => $taskId, 'position' => $next + $offset],
+            $taskIds,
+            array_keys($taskIds),
         ));
     }
 

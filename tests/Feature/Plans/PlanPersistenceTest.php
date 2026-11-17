@@ -9,12 +9,12 @@ use App\Core\Contracts\EstablishActor;
 use App\Core\Hooks\StackTarget;
 use App\Domain\Plans\Api\PlanKind;
 use App\Domain\Plans\Api\PlanState;
-use App\Domain\Plans\Database\Seeders\PlansSeeder;
 use App\Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Tasks\Contracts\TaskProgressCounter;
 use App\Domain\Tasks\Models\Task;
 use App\Domain\Tasks\TaskCounts;
+use Database\Seeders\DatabaseSeeder;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -33,9 +33,9 @@ final class PlanPersistenceTest extends TestCase
         $first = $this->task('First');
         $third = $this->task('Third');
 
-        $read->addTask($second);
-        $start->addTask($third);
-        $read->addTask($first);
+        $read->addTask($second->id);
+        $start->addTask($third->id);
+        $read->addTask($first->id);
 
         $this->assertSame(['Read', 'Start'], $plan->phases()->pluck('title')->all());
         $this->assertSame([$second->id, $first->id], $read->taskIds());
@@ -47,11 +47,11 @@ final class PlanPersistenceTest extends TestCase
     {
         $plan = Plan::query()->create(['title' => 'Fix the login redirect', 'kind' => PlanKind::Fix]);
         $task = $this->task('Write a failing test');
-        $plan->addPhase('Reproduce')->addTask($task);
+        $plan->addPhase('Reproduce')->addTask($task->id);
 
         $this->expectException(TaskAlreadyInAPhase::class);
 
-        $plan->addPhase('Fix')->addTask($task);
+        $plan->addPhase('Fix')->addTask($task->id);
     }
 
     public function test_tasks_count_progress_by_id_including_none(): void
@@ -80,9 +80,9 @@ final class PlanPersistenceTest extends TestCase
         $this->assertSame(['Compare chat layouts'], Plan::query()->pluck('title')->all());
     }
 
-    public function test_the_local_seeder_fills_plans_with_phases_and_tasks(): void
+    public function test_the_local_seeders_fill_plans_with_phases_and_the_tasks_from_tasks(): void
     {
-        $this->seed(PlansSeeder::class);
+        $this->seed(DatabaseSeeder::class);
 
         $this->assertSame(3, Plan::query()->count());
         $this->assertCount(4, Plan::query()->where('title', 'Build the plans page')->sole()->taskIds());

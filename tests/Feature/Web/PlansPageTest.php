@@ -33,7 +33,7 @@ final class PlansPageTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->release = Plan::query()->create(['title' => 'Build the release page', 'kind' => PlanKind::Build]);
-        $this->release->addPhase('Read')->addTasks([Task::query()->create(['title' => 'List the plans'])]);
+        $this->release->addPhase('Read')->addTasks([Task::query()->create(['title' => 'List the plans'])->id]);
         $this->paused = Plan::query()->create(['title' => 'Compare chat layouts', 'kind' => PlanKind::Research]);
         Plan::query()->whereKey($this->paused->id)->update(['state' => PlanState::Paused->value]);
     }
