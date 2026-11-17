@@ -39,6 +39,16 @@ final class StartPlanTest extends TestCase
         $this->assertSame(PlanState::Started, $this->plan->fresh()?->state);
     }
 
+    public function test_an_empty_search_starts_like_no_search(): void
+    {
+        $this->actingAs($this->owner)
+            ->post("/plans/{$this->plan->id}/start", ['filters' => ['q' => '', 'page' => 1, 'plan' => (string) $this->plan->id]])
+            ->assertStatus(303)
+            ->assertRedirect("/plans?plan={$this->plan->id}");
+
+        $this->assertSame(PlanState::Started, $this->plan->fresh()?->state);
+    }
+
     public function test_a_refused_start_shows_its_reason_and_changes_nothing(): void
     {
         Plan::query()->whereKey($this->plan->id)->update(['state' => PlanState::Paused->value]);

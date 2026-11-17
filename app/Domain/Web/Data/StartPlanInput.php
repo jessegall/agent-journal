@@ -14,4 +14,19 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class StartPlanInput extends Data
 {
     public function __construct(public readonly PlanFiltersData $filters = new PlanFiltersData) {}
+
+    /**
+     * An empty search arrives as null after Laravel's empty-string conversion; it means no search words.
+     *
+     * @param  array<array-key, mixed>  $properties
+     * @return array<array-key, mixed>
+     */
+    public static function prepareForPipeline(array $properties): array
+    {
+        if (isset($properties['filters']) && is_array($properties['filters']) && array_key_exists('q', $properties['filters']) && $properties['filters']['q'] === null) {
+            $properties['filters']['q'] = '';
+        }
+
+        return $properties;
+    }
 }

@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import Reader from '@/components/kit/Reader.vue';
-import type { PlanReaderData } from '@/types/generated';
+import type { PlanFiltersData, PlanReaderData } from '@/types/generated';
 import { progressText, stateLook } from './planLooks';
+import StartPlanForm from './StartPlanForm.vue';
 
 /**
  * The selected plan, or why there is none: nothing chosen, or a choice that cannot be read (no title is shown).
  */
-defineProps<{ reader?: PlanReaderData; selectionMissing: boolean }>();
+defineProps<{
+    reader?: PlanReaderData;
+    selectionMissing: boolean;
+    filters: PlanFiltersData;
+}>();
 </script>
 
 <template>
@@ -21,9 +26,15 @@ defineProps<{ reader?: PlanReaderData; selectionMissing: boolean }>();
                     <span>{{ reader.card.agent.name }}</span>
                 </template>
             </template>
-            <template #actions
-                ><slot name="actions" :reader="reader"
-            /></template>
+            <template #actions>
+                <template v-if="reader.start">
+                    <StartPlanForm
+                        :key="reader.start.planId"
+                        :start="reader.start"
+                        :filters="filters"
+                    />
+                </template>
+            </template>
             <template v-if="!reader.insideResults">
                 <p class="mt-4 text-small text-text-3">
                     This plan is not among the current results; it stays open

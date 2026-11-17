@@ -22,6 +22,9 @@ watch(
 
 const filters = computed(() => props.plans.filters);
 const pagination = computed(() => props.plans.pagination);
+const pageText = computed(
+    () => `Page ${pagination.value.page} of ${pagination.value.lastPage}`,
+);
 
 function urlFor(changes: Partial<PlanFiltersData>): string {
     const next = { ...filters.value, ...changes };
@@ -62,10 +65,9 @@ function submitSearch(): void {
                     aria-label="Search plans"
                     class="h-[30px] w-56 rounded-control border border-border-2 bg-bg-2 px-2.5 text-body text-text outline-none focus:border-brand"
                 />
-                <span class="ml-auto text-badge text-text-3 tabular-nums"
-                    >Page {{ pagination.page }} of
-                    {{ pagination.lastPage }}</span
-                >
+                <span class="ml-auto text-badge text-text-3 tabular-nums">{{
+                    pageText
+                }}</span>
             </form>
         </template>
         <template #list>
@@ -86,24 +88,24 @@ function submitSearch(): void {
                         />
                     </template>
                 </div>
-                <nav
-                    class="mt-3 flex items-center justify-between"
-                    aria-label="Pages"
-                >
-                    <Button
-                        size="small"
-                        variant="bordered"
-                        :href="urlFor({ page: pagination.page - 1 })"
-                        :disabled="pagination.page <= 1"
-                        >Previous</Button
-                    >
-                    <Button
-                        size="small"
-                        variant="bordered"
-                        :href="urlFor({ page: pagination.page + 1 })"
-                        :disabled="pagination.page >= pagination.lastPage"
-                        >Next</Button
-                    >
+                <nav class="mt-3 flex items-center" aria-label="Pages">
+                    <template v-if="pagination.page > 1">
+                        <Button
+                            size="small"
+                            variant="bordered"
+                            :href="urlFor({ page: pagination.page - 1 })"
+                            >Previous</Button
+                        >
+                    </template>
+                    <template v-if="pagination.page < pagination.lastPage">
+                        <Button
+                            size="small"
+                            variant="bordered"
+                            class="ml-auto"
+                            :href="urlFor({ page: pagination.page + 1 })"
+                            >Next</Button
+                        >
+                    </template>
                 </nav>
             </div>
         </template>
@@ -111,11 +113,8 @@ function submitSearch(): void {
             <PlanReader
                 :reader="plans.selected"
                 :selection-missing="plans.selectionMissing"
-            >
-                <template #actions="{ reader }"
-                    ><slot name="reader-actions" :reader="reader"
-                /></template>
-            </PlanReader>
+                :filters="filters"
+            />
         </template>
     </ListReaderLayout>
 </template>

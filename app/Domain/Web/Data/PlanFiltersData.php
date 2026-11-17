@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Domain\Web\Data;
 
 use App\Domain\Plans\PlanFilters;
-use Spatie\LaravelData\Attributes\Validation\Max;
-use Spatie\LaravelData\Attributes\Validation\Min;
 use Spatie\LaravelData\Attributes\Validation\Regex;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -20,10 +18,24 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class PlanFiltersData extends Data
 {
     public function __construct(
-        #[Max(200)] public readonly string $q = '',
-        #[Min(1)] public readonly int $page = 1,
+        public readonly string $q = '',
+        public readonly int $page = 1,
         #[Regex('/^[1-9][0-9]{0,18}$/')] public readonly string|Optional $plan = new Optional,
     ) {}
+
+    /**
+     * The search and page may be left out, and an empty search arrives as null after Laravel's empty-string conversion;
+     * both then take their defaults.
+     *
+     * @return array<string, list<string>>
+     */
+    public static function rules(): array
+    {
+        return [
+            'q' => ['nullable', 'string', 'max:200'],
+            'page' => ['sometimes', 'integer', 'min:1'],
+        ];
+    }
 
     /**
      * The same filters on the page the domain settled on, which may differ from the one asked for.
