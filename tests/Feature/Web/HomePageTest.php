@@ -71,11 +71,13 @@ final class HomePageTest extends TestCase
         Rule::query()->create(['text' => 'Every phase ends with its tests.']);
         Rule::query()->create(['text' => 'Write all code in plain English.']);
 
-        $this->actingAs($this->owner)->get('/?window[plans.list][q]=release&rules_q=phase')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.rules.filters.q', 'phase')
-            ->where('page.rules.pagination.total', 1)
-            ->where('page.rules.rows.0.text', 'Every phase ends with its tests.')
-            ->missing('page.rulesView'));
+        $this->actingAs($this->owner)->get('/?window[plans.list][q]=release&window[rules.list][q]=phase')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+            ->missing('page.rules')
+            ->reloadOnly(['window_plans_list', 'window_rules_list'], fn (AssertableInertia $reload) => $reload
+                ->where('window_plans_list.data.filters.q', 'release')
+                ->where('window_rules_list.data.filters.q', 'phase')
+                ->where('window_rules_list.data.pagination.total', 1)
+                ->where('window_rules_list.data.rows.0.text', 'Every phase ends with its tests.')));
     }
 
     public function test_a_sent_message_keeps_its_indentation_and_returns_to_the_conversation(): void

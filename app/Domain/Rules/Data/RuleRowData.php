@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Data;
+namespace App\Domain\Rules\Data;
 
 use App\Domain\Rules\Api\RuleView;
 use App\Domain\Rules\Enums\RuleState;

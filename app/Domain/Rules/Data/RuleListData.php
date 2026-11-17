@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Data;
+namespace App\Domain\Rules\Data;
 
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -22,7 +22,7 @@ final class RuleListData extends Data
     public function __construct(
         #[DataCollectionOf(RuleRowData::class)] public readonly array $rows,
         public readonly RuleFiltersData $filters,
-        public readonly PaginationData $pagination,
+        public readonly RulePaginationData $pagination,
         public readonly bool $selectionMissing,
         public readonly RuleReaderData|Optional $selected = new Optional,
     ) {}

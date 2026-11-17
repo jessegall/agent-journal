@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
-import Button from '@/components/kit/Button.vue';
-import FormErrors from '@/components/kit/FormErrors.vue';
-import { formSendingHooks } from '@/composables/usePageChanges';
-import { approve, deny } from '@/routes/rules';
+import Button from '@kit/Button';
+import FormErrors from '@kit/FormErrors';
+import { formSendingHooks } from '@kit/usePageChanges';
+import { approve, deny } from '@generated/routes/rules';
 
 /**
  * Approves or denies the proposed rule the reader shows. A rule's text never changes after it is proposed, so the

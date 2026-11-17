@@ -1,25 +1,22 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
-import Button from '@/components/kit/Button.vue';
-import ListReaderLayout from '@/components/kit/ListReaderLayout.vue';
-import PageHeader from '@/components/kit/PageHeader.vue';
-import type { RuleFiltersData, RuleListData } from '@/types/generated';
+import Button from '@kit/Button';
+import ListReaderLayout from '@kit/ListReaderLayout';
+import PageHeader from '@kit/PageHeader';
+import type { RuleFiltersData, RuleListData } from '@generated/types/rules';
 import RuleReader from './RuleReader.vue';
-import { ruleStateLook, rulesPageUrl } from './ruleLooks';
+import { ruleStateLook } from './ruleLooks';
 
 /**
  * The rules list beside the reader of the selected rule; the search, page and selection live in the query. It takes
  * the list alone, so Home can show it as a window; the page that shows it says where a link to other filters goes,
  * the rules page by default.
  */
-const props = withDefaults(
-    defineProps<{
-        rules: RuleListData;
-        urlForFilters?: (filters: RuleFiltersData) => string;
-    }>(),
-    { urlForFilters: rulesPageUrl },
-);
+const props = defineProps<{
+    rules: RuleListData;
+    urlForFilters: (filters: RuleFiltersData) => string;
+}>();
 
 const search = ref(props.rules.filters.q);
 watch(

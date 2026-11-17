@@ -23,6 +23,6 @@ final readonly class HomeController
      */
     public function __invoke(HomeRequest $request, DeclaredPageRequest $pageRequest, PageProps $windows): Response
     {
-        return $this->inertia->render(HomePage::COMPONENT, ['page' => fn () => HomePage::for($request->filters()), ...$windows->forHome($pageRequest)]);
+        return $this->inertia->render(HomePage::COMPONENT, ['page' => fn () => HomePage::make(), ...$windows->forHome($pageRequest)]);
     }
 }

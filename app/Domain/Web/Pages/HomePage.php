@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Pages;
 
-use App\Domain\Web\Data\HomeFiltersData;
 use App\Domain\Web\Data\LayoutData;
-use App\Domain\Web\Data\RuleListData;
 use App\Domain\Web\Views\LayoutsView;
-use App\Domain\Web\Views\RulesView;
 use Spatie\LaravelData\Attributes\Computed;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\FromContainer;
@@ -25,11 +22,6 @@ final class HomePage extends Data
 {
     public const string COMPONENT = 'Home';
 
-    #[Computed]
-    public RuleListData $rules {
-        get => $this->rulesView->rules($this->filters->rules);
-    }
-
     /**
      * @var list<LayoutData>
      */
@@ -39,13 +31,11 @@ final class HomePage extends Data
     }
 
     public function __construct(
-        #[Hidden] public readonly HomeFiltersData $filters,
-        #[Hidden, FromContainer(RulesView::class)] public readonly RulesView $rulesView,
         #[Hidden, FromContainer(LayoutsView::class)] public readonly LayoutsView $layoutsView,
     ) {}
 
-    public static function for(HomeFiltersData $filters): self
+    public static function make(): self
     {
-        return self::from(['filters' => $filters]);
+        return self::from([]);
     }
 }

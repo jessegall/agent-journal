@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Data;
+namespace App\Domain\Rules\Data;
 
 use App\Domain\Rules\Api\RuleView;
 use App\Domain\Rules\Enums\RuleState;
-use App\Domain\Web\Data\Concerns\OptionalOrMissing;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -19,8 +18,6 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class RuleReaderData extends Data
 {
-    use OptionalOrMissing;
-
     public function __construct(
         public readonly string $id,
         public readonly string $text,

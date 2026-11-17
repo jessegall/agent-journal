@@ -2,6 +2,7 @@
 import { Head, usePage } from '@inertiajs/vue3';
 import type { ChatData } from '@generated/types/chat';
 import type { PlanListData } from '@generated/types/plans';
+import type { RuleListData } from '@generated/types/rules';
 import { computed } from 'vue';
 import HomePanes from '@/components/home/HomePanes.vue';
 import { useLiveReload } from '@/composables/usePageChanges';
@@ -22,6 +23,11 @@ const chat = computed(() => {
     return result?.state === 'ready' ? result.data : undefined;
 });
 const session = computed(() => chat.value?.conversation?.sessionId);
+const rules = computed(() => {
+    const result = pageProps.window_rules_list as WindowResult<RuleListData> | undefined;
+
+    return result?.state === 'ready' ? result.data : undefined;
+});
 const plans = computed(() => {
     const result = pageProps.window_plans_list as WindowResult<PlanListData> | undefined;
 
@@ -32,6 +38,6 @@ const plans = computed(() => {
 <template>
     <Head title="Home" />
     <div class="@container h-full">
-        <HomePanes :page="props.page" :chat="chat" :plans="plans" :session="session" />
+        <HomePanes :page="props.page" :chat="chat" :plans="plans" :rules="rules" :session="session" />
     </div>
 </template>

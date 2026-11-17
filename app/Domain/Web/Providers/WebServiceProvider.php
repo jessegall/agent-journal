@@ -6,8 +6,6 @@ namespace App\Domain\Web\Providers;
 
 use App\Core\Links\Support\LinkTypes;
 use App\Domain\Access\Contracts\ViewerReader;
-use App\Domain\Rules\Exceptions\RuleMissing;
-use App\Domain\Rules\Exceptions\RuleNotProposed;
 use App\Domain\UiDeclarations;
 use App\Domain\Web\Console\GenerateUiManifest;
 use App\Domain\Web\Events\UserChannel;
@@ -21,12 +19,9 @@ use Illuminate\Container\Container;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Exceptions\Handler;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Routing\Redirector;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\FileViewFinder;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Registers the browser routes, every declared page and action of the installed domains among them, and the private
@@ -66,13 +61,6 @@ final class WebServiceProvider extends ServiceProvider
         $broadcast->channel(UserChannel::PATTERN, UserChannel::class);
 
         if ($exceptions instanceof Handler) {
-            $exceptions->map(RuleMissing::class, fn (RuleMissing $missing) => new NotFoundHttpException(previous: $missing));
-            $exceptions->renderable(fn (RuleNotProposed $settled) => $this->backWithError('review', $settled->getMessage()));
         }
-    }
-
-    private function backWithError(string $field, string $message): RedirectResponse
-    {
-        return $this->app->make(Redirector::class)->back(303)->withErrors([$field => $message]);
     }
 }

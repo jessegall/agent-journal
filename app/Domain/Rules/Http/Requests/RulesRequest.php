@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Http\Requests;
+namespace App\Domain\Rules\Http\Requests;
 
-use App\Domain\Web\Data\RuleFiltersData;
-use App\Domain\Web\Http\Requests\Concerns\ReadsRuleFilters;
+use App\Domain\Rules\Data\RuleFiltersData;
+use App\Domain\Rules\Http\Requests\Concerns\ReadsRuleFilters;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

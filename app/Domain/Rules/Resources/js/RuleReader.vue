@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import Reader from '@/components/kit/Reader.vue';
-import type { RuleReaderData } from '@/types/generated';
+import Reader from '@kit/Reader';
+import type { RuleReaderData } from '@generated/types/rules';
 import ReviewRuleForm from './ReviewRuleForm.vue';
 import { ruleStateLook } from './ruleLooks';
 

@@ -44,14 +44,15 @@ final class RulesPageTest extends TestCase
     public function test_the_list_and_the_selected_rule_share_one_page(): void
     {
         $this->actingAs($this->owner)->get("/rules?q=phase&rule={$this->proposed->id}")->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('Rules')
-            ->where('page.rules.pagination.total', 1)
-            ->where('page.rules.rows.0.id', (string) $this->proposed->id)
-            ->where('page.rules.rows.0.state', 'proposed')
-            ->where('page.rules.filters.q', 'phase')
-            ->where('page.rules.selected.text', "Every phase ends with its tests.\n  - run them once")
-            ->where('page.rules.selected.canReview', true)
-            ->where('page.rules.selectionMissing', false)
+            ->component('rules/RulesWindow')
+            ->where('page.state', 'ready')
+            ->where('page.data.pagination.total', 1)
+            ->where('page.data.rows.0.id', (string) $this->proposed->id)
+            ->where('page.data.rows.0.state', 'proposed')
+            ->where('page.data.filters.q', 'phase')
+            ->where('page.data.selected.text', "Every phase ends with its tests.\n  - run them once")
+            ->where('page.data.selected.canReview', true)
+            ->where('page.data.selectionMissing', false)
             ->missing('page.filters')
             ->missing('page.view'));
     }
@@ -59,8 +60,8 @@ final class RulesPageTest extends TestCase
     public function test_an_unknown_rule_is_missing_without_text(): void
     {
         $this->actingAs($this->owner)->get('/rules?rule=999999')->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.rules.selectionMissing', true)
-            ->missing('page.rules.selected'));
+            ->where('page.data.selectionMissing', true)
+            ->missing('page.data.selected'));
     }
 
     public function test_approving_returns_to_the_page_it_came_from(): void
