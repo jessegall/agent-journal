@@ -1,3 +1,4 @@
+from core.modules.messages.listeners.unread_limit_listener import UnreadLimitListener
 from core.modules.messages.listeners.deleted_agent_work_source_listener import DeletedAgentWorkSourceListener
 from core.modules.messages.listeners.deleted_work_source_listener import DeletedWorkSourceListener
 from core.modules.messages.listeners.message_edited_mark_listener import MessageEditedMarkListener
@@ -11,4 +12,4 @@ from core.modules.messages.listeners.tagged_image_block_listener import TaggedIm
 from core.modules.messages.listeners.waiting_message_listener import WaitingMessageListener
 from core.modules.messages.listeners.waiting_message_typing_listener import WaitingMessageTypingListener
 
-MESSAGES_LISTENERS = [NewSessionWorkSourceListener, ReportPinListener, MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, ReleasedMessageLineListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener, TaggedImageBlockListener]
+MESSAGES_LISTENERS = [UnreadLimitListener, NewSessionWorkSourceListener, ReportPinListener, MessageRowsListener, MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, WaitingMessageTypingListener, ReadMessageLineListener, ReleasedMessageLineListener, DeletedWorkSourceListener, DeletedAgentWorkSourceListener, TaggedImageBlockListener]
