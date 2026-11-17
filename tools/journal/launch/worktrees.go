@@ -195,6 +195,15 @@ func (worktrees Worktrees) refNames() []string {
 	return names
 }
 
+// CurrentBranch is the branch checked out in the project's root, empty on a detached head or outside git.
+func (worktrees Worktrees) CurrentBranch() string {
+	branch, err := worktrees.git("branch", "--show-current")
+	if err != nil {
+		return ""
+	}
+	return branch
+}
+
 func (worktrees Worktrees) has(ref string) bool {
 	_, err := worktrees.git("rev-parse", "--verify", "--quiet", ref)
 	return err == nil

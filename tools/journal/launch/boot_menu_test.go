@@ -48,21 +48,22 @@ func TestAnotherSuitesEnvironmentsAreNeverOffered(t *testing.T) {
 	}
 }
 
-func TestANewEnvironmentAsksItsNameAndBranchAndIsMadeInTheChosenSuite(t *testing.T) {
+func TestANewEnvironmentAsksOnlyItsNameAndTakesTheCheckedOutBranch(t *testing.T) {
+	root := gitRepository(t)
+	run(t, root, "git", "switch", "--create", "version-5")
 	journal := codingProject()
 	presses := append([]Press{downPress, enterPress}, textPresses("checkout")...)
-	presses = append(presses, textPresses("version-5")...)
 	terminal := keys(append(presses, enterPress, enterPress)...)
-	choice, err := Boot(journal, terminal, Request{Program: "claude", Root: "/work/shop"})
+	choice, err := Boot(journal, terminal, Request{Program: "claude", Root: root})
 	if err != nil || choice.Environment != "checkout" {
 		t.Fatalf("the launch chose %+v, %v", choice, err)
 	}
-	created := Environment{Name: "checkout", Folder: "/work/shop", Branch: "version-5", Suite: "coding"}
+	created := Environment{Name: "checkout", Folder: root, Branch: "version-5", Suite: "coding"}
 	if len(journal.created) != 1 || journal.created[0] != created {
 		t.Fatalf("the journal was asked to make %+v, not %+v", journal.created, created)
 	}
-	if !strings.Contains(terminal.screenText(), NameQuestion) || !strings.Contains(terminal.screenText(), BranchQuestion) {
-		t.Fatalf("the new environment's name and branch were not asked:\n%s", terminal.screenText())
+	if !strings.Contains(terminal.screenText(), NameQuestion) {
+		t.Fatalf("the new environment's name was not asked:\n%s", terminal.screenText())
 	}
 }
 

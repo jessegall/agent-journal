@@ -14,7 +14,6 @@ const (
 	SuiteQuestion        = "Which suite?"
 	EnvironmentQuestion  = "Which environment?"
 	NameQuestion         = "The new environment's name?"
-	BranchQuestion       = "The branch it works on?"
 	RunningQuestion      = "A main agent is running in this environment. Stop it and start here?"
 	StopRunning          = "stop it and start here"
 	LeaveRunning         = "leave it running and quit"
@@ -275,11 +274,8 @@ func (menu *boot) newEnvironment() error {
 	if err != nil {
 		return err
 	}
-	branch, err := menu.query(Question{Title: BranchQuestion})
-	if err != nil {
-		return err
-	}
-	environment := Environment{Name: name.Option, Folder: menu.request.Root, Branch: branch.Option, Suite: menu.choice.Suite}
+	branch := Worktrees{Root: menu.request.Root}.CurrentBranch()
+	environment := Environment{Name: name.Option, Folder: menu.request.Root, Branch: branch, Suite: menu.choice.Suite}
 	if err := menu.journal.MakeEnvironment(environment); err != nil {
 		return err
 	}
