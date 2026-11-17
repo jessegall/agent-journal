@@ -27,7 +27,8 @@ final readonly class LaunchCredentials
 
     public function revoke(AgentSession $session): void
     {
-        LaunchCredential::query()->where('agent_session_id', $session->id)->sole()->revokeAt(CarbonImmutable::now());
+        $credential = $session->credential ?? throw CredentialRejected::unknown();
+        $credential->revokeAt(CarbonImmutable::now());
     }
 
     public static function hashOf(string $token): string

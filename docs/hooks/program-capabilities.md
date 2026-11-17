@@ -25,6 +25,21 @@ Every agent call carries the launch token as a bearer token and three headers th
 
 A retry is accepted while the issue time is within the retry window (`hooks.retry_seconds`, 300 by default). The host shim that adds these headers is not built yet.
 
+## When the journal cannot answer (plan 2, task 72)
+
+The host shim, not the journal, answers a hook when the journal is unreachable, because a journal that is down cannot send anything. `OutageReply` holds the replies the host gives, by role and by how the call failed (`CallFailure`):
+
+| How the call failed | Main agent | Read-only helper |
+|---|---|---|
+| No answer, a timeout, a server error or 503 | the neutral reply; the host logs the bypass and uploads it after recovery | refused with the outage reason |
+| 401 or 403 (credential refused) | refused | refused |
+| 409 (a changed retry or an expired identity) | refused | refused |
+| 422 (a payload the adapter cannot read) | refused | refused |
+
+A refusal, a changed retry or an unreadable payload is the journal answering, so it never falls back to the neutral reply. After recovery the host uploads the bypass facts; it does not replay missed pre-tool calls as fresh permission. The host shim and its upload are not built yet.
+
+A program that exits or is killed without an end hook is handled by `ConfirmLaunchLoss`: silence first makes the loss suspected (`agents.suspect_loss_after_seconds`), a long silence (`agents.confirm_loss_after_seconds`) or the host's report of the exit confirms it, and the stack is closed and kept with its obligations.
+
 ## Claude Code
 
 `ClaudeCodeAdapter` (plan 2, task 67) maps the callbacks below. `tests/Fixtures/Hooks/ClaudeCode/hooks.json` holds one redacted payload per callback, written from the documented shapes, and `capabilities.json` the mapping `ClaudeCodeTest` checks.
