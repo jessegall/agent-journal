@@ -52,6 +52,10 @@ One route owner for signing in: Fortify keeps `views => false`, Web owns the gue
 
 `GET /plans` (`plans.index`, behind `auth` and `journal.person`) renders `Plans` with one page object, `PlansPage`: a hidden `PlanFiltersData` seed and a hidden `PlansView` from the container, and one computed `plans` slot. The controller passes it as a closure, so a partial reload of other props never builds it. `PlansRequest` validates `q` (up to 200), `page` (from 1) and `plan` (a positive decimal string) and turns an empty search into the empty string in its `filters()` getter, not in a global middleware exemption. `PlansView` turns the Plans domain's `PlanList` into `PlanListData`: card ids as strings, absent phase, agent, selection and start left out of the JSON, the page the domain settled on as the accepted filter, and `selectionMissing` with no title when the selected plan cannot be read. The start is offered by `PlanCard::$canStart`, the domain's own rule. Web requires Plans (question 13).
 
+## The start POST (task 106)
+
+`POST /plans/{plan}/start` (`plans.start`) binds the plan after the person middleware, takes `StartPlanInput` from the request (so Laravel Data validates its nested `filters` with `PlanFiltersData`'s attributes; a bad filter stops the start), calls `StartPlan::start` once and answers 303 to `plans.index` with the validated filters only; any other return address in the request is ignored. `StartDenied` alone is rendered as a `start` form error (303 back), by a renderer `WebServiceProvider` registers; a 403, a 404 or an unexpected failure keeps its own response and its log.
+
 ## Interfaces at the seams (task 122, rule 15)
 
 - **Actor.** `App\Core\Actors\Actor` (its kind and id) is what the core talks to. The Access `User` is a person actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.

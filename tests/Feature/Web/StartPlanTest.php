@@ -1,0 +1,71 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Web;
+
+use App\Domain\Access\AccessSettings;
+use App\Domain\Access\Models\User;
+use App\Domain\Plans\Models\Plan;
+use App\Domain\Plans\PlanKind;
+use App\Domain\Plans\PlanState;
+use Tests\Support\RefreshHookDatabase;
+use Tests\TestCase;
+
+final class StartPlanTest extends TestCase
+{
+    use RefreshHookDatabase;
+
+    private User $owner;
+
+    private Plan $plan;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->plan = Plan::query()->create(['title' => 'Build the release page', 'kind' => PlanKind::Build]);
+    }
+
+    public function test_a_start_returns_to_the_plans_page_with_the_validated_filters(): void
+    {
+        $this->actingAs($this->owner)
+            ->post("/plans/{$this->plan->id}/start", ['filters' => ['q' => 'release', 'page' => 2, 'plan' => (string) $this->plan->id], 'redirect' => 'https://example.com'])
+            ->assertStatus(303)
+            ->assertRedirect("/plans?q=release&page=2&plan={$this->plan->id}");
+
+        $this->assertSame(PlanState::Started, $this->plan->fresh()?->state);
+    }
+
+    public function test_a_refused_start_shows_its_reason_and_changes_nothing(): void
+    {
+        Plan::query()->whereKey($this->plan->id)->update(['state' => PlanState::Paused->value]);
+
+        $this->actingAs($this->owner)->from('/plans')
+            ->post("/plans/{$this->plan->id}/start")
+            ->assertStatus(303)
+            ->assertRedirect('/plans')
+            ->assertSessionHasErrors(['start' => 'This plan is paused and cannot start; only a planned plan starts.']);
+
+        $this->assertSame(PlanState::Paused, $this->plan->fresh()?->state);
+    }
+
+    public function test_invalid_filters_stop_the_start(): void
+    {
+        $this->actingAs($this->owner)->from('/plans')
+            ->post("/plans/{$this->plan->id}/start", ['filters' => ['q' => str_repeat('a', 201), 'page' => 0]])
+            ->assertSessionHasErrors(['filters.q', 'filters.page']);
+
+        $this->assertSame(PlanState::Planned, $this->plan->fresh()?->state);
+    }
+
+    public function test_a_guest_and_a_guessed_plan_get_no_start(): void
+    {
+        $this->post("/plans/{$this->plan->id}/start")->assertRedirect('/login');
+        $this->actingAs($this->owner)->post('/plans/999999/start')->assertNotFound();
+
+        $this->assertSame(PlanState::Planned, $this->plan->fresh()?->state);
+    }
+}
