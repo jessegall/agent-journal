@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Chat;
+namespace App\Domain\Chat\Providers;
 
 use App\Core\Links\Support\LinkTypes;
 use App\Domain\Chat\Models\Message;

@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Domain;
+namespace App\Domain\Providers;
 
 use App\Core\Hooks\Events\StateTypesRequested;
+use App\Domain\DomainRegistry;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use Illuminate\Support\ServiceProvider;

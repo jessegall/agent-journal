@@ -13,25 +13,25 @@ use Tests\Architecture\Support\ParsedFile;
 use Tests\TestCase;
 
 /**
- * Every class sits in the folder of its kind. A domain root holds only its Domain class and service provider, a Core
- * area root only its service provider, and a kind folder such as States or Readers only classes of that kind; what
- * helps a kind without being of it sits in that folder's Support subfolder.
+ * Every class sits in the folder of its kind. A domain root holds only its Domain class and a Core area root nothing;
+ * service providers sit in Providers, and a kind folder such as States or Readers holds only classes of that kind;
+ * what helps a kind without being of it sits in that folder's Support subfolder.
  */
 final class FolderLayoutTest extends TestCase
 {
-    public function test_every_domain_and_core_area_root_holds_only_its_descriptor_and_provider(): void
+    public function test_every_domain_root_holds_only_its_domain_class_and_a_core_area_root_nothing(): void
     {
         $loose = [];
 
         foreach ([...glob(app_path('Domain/*'), GLOB_ONLYDIR) ?: [], ...glob(app_path('Core/*'), GLOB_ONLYDIR) ?: []] as $root) {
             $name = basename($root);
 
-            if (in_array($name, ['Contracts', 'Exceptions'], true)) {
+            if (in_array($name, ['Contracts', 'Exceptions', 'Providers'], true)) {
                 continue;
             }
 
             foreach (glob("{$root}/*.php") ?: [] as $file) {
-                if (! in_array(basename($file), ["{$name}Domain.php", "{$name}ServiceProvider.php"], true)) {
+                if (basename($file) !== "{$name}Domain.php") {
                     $loose[] = substr($file, strlen(base_path()) + 1);
                 }
             }

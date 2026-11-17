@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Sequences;
+namespace App\Domain\Sequences\Providers;
 
 use App\Core\Links\Support\LinkTypes;
 use App\Domain\Sequences\Models\SequenceRun;

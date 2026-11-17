@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Domains;
 
 use App\Domain\DomainRegistry;
-use App\Domain\DomainServiceProvider;
 use App\Domain\Exceptions\NotADomain;
 use App\Domain\Exceptions\RequiredDomainMissing;
+use App\Domain\Providers\DomainServiceProvider;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Processes;
+namespace App\Domain\Processes\Providers;
 
 use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Links\Support\LinkTypes;

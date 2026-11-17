@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Memory;
+namespace App\Domain\Memory\Providers;
 
 use App\Core\Links\Support\LinkTypes;
 use App\Domain\Memory\Models\Memory;

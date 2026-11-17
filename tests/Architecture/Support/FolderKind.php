@@ -6,6 +6,7 @@ namespace Tests\Architecture\Support;
 
 use App\Core\Hooks\States\AgentState;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\ServiceProvider;
 use ReflectionClass;
 use Throwable;
 
@@ -23,6 +24,7 @@ enum FolderKind: string
     case Contracts = 'Contracts';
     case Exceptions = 'Exceptions';
     case Listeners = 'Listeners';
+    case Providers = 'Providers';
 
     public static function ofFolder(string $folder): self|null
     {
@@ -45,6 +47,7 @@ enum FolderKind: string
             self::Contracts => $class->isInterface(),
             self::Exceptions => $class->isSubclassOf(Throwable::class),
             self::Listeners => $class->hasMethod('handle'),
+            self::Providers => $class->isSubclassOf(ServiceProvider::class),
         };
 
         return $fits ? null : $this->requirement();
@@ -61,6 +64,7 @@ enum FolderKind: string
             self::Contracts => 'an interface',
             self::Exceptions => 'an exception',
             self::Listeners => 'a listener (it has a handle method)',
+            self::Providers => 'a service provider',
         };
     }
 }

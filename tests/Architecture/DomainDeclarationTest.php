@@ -37,7 +37,7 @@ final class DomainDeclarationTest extends TestCase
         'Contracts/ProvidesStates.php',
         'DomainEntry.php',
         'DomainRegistry.php',
-        'DomainServiceProvider.php',
+        'Providers/DomainServiceProvider.php',
         'Exports.php',
         'Exceptions/AmbiguousDomainRoot.php',
         'Exceptions/DomainCycle.php',

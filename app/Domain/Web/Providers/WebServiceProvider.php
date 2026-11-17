@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web;
+namespace App\Domain\Web\Providers;
 
 use App\Core\Hooks\Exceptions\StackTargetRefused;
 use App\Domain\Plans\Exceptions\PlanMissing;
@@ -26,7 +26,7 @@ final class WebServiceProvider extends ServiceProvider
 {
     public function boot(ExceptionHandler $exceptions, BroadcastManager $broadcast): void
     {
-        $this->loadRoutesFrom(__DIR__.'/Routes/web.php');
+        $this->loadRoutesFrom(dirname(__DIR__).'/Routes/web.php');
         // The channel sign-in runs behind the same session, sign-in and user checks as every page.
         $broadcast->routes(['middleware' => ['web', 'auth', 'journal.user']]);
         $broadcast->channel(UserChannel::PATTERN, UserChannel::class);

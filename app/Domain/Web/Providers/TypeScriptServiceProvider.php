@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Types;
+namespace App\Domain\Web\Providers;
 
+use App\Domain\Web\Types\HiddenAwareDataTransformer;
 use Spatie\LaravelTypeScriptTransformer\LaravelData\LaravelDataTypeScriptTransformerExtension;
 use Spatie\LaravelTypeScriptTransformer\LaravelData\Transformers\DataClassTransformer;
 use Spatie\LaravelTypeScriptTransformer\TypeScriptTransformerApplicationServiceProvider;

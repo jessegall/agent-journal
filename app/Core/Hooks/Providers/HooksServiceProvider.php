@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks;
+namespace App\Core\Hooks\Providers;
 
 use App\Core\Agents\Support\AgentContext;
 use App\Core\Contracts\LaunchTransaction;
@@ -47,7 +47,7 @@ final class HooksServiceProvider extends ServiceProvider
 
     public function boot(Dispatcher $events): void
     {
-        $this->loadRoutesFrom(__DIR__.'/Routes/hooks.php');
+        $this->loadRoutesFrom(dirname(__DIR__).'/Routes/hooks.php');
         $this->commands([PruneHookHistoryCommand::class, RelayHookCommand::class]);
         $this->callAfterResolving(Schedule::class, fn (Schedule $schedule) => $schedule->command('hooks:prune')->daily());
 

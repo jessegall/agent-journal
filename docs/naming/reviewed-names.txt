@@ -50,6 +50,7 @@ case	FolderKind::Enums
 case	FolderKind::Exceptions
 case	FolderKind::Listeners
 case	FolderKind::Models
+case	FolderKind::Providers
 case	FolderKind::Readers
 case	FolderKind::States
 case	HookProgram::ClaudeCode

@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-use App\Core\Actors\ActorsServiceProvider;
-use App\Core\Agents\AgentsServiceProvider;
-use App\Core\CoreServiceProvider;
-use App\Core\Hooks\HooksServiceProvider;
-use App\Domain\Access\AccessServiceProvider;
-use App\Domain\Chat\ChatServiceProvider;
-use App\Domain\DomainServiceProvider;
-use App\Domain\Memory\MemoryServiceProvider;
-use App\Domain\Plans\PlansServiceProvider;
-use App\Domain\Processes\ProcessesServiceProvider;
-use App\Domain\Rules\RulesServiceProvider;
-use App\Domain\Sequences\SequencesServiceProvider;
-use App\Domain\Tasks\TasksServiceProvider;
-use App\Domain\Web\Types\TypeScriptServiceProvider;
-use App\Domain\Web\WebServiceProvider;
+use App\Core\Actors\Providers\ActorsServiceProvider;
+use App\Core\Agents\Providers\AgentsServiceProvider;
+use App\Core\Hooks\Providers\HooksServiceProvider;
+use App\Core\Providers\CoreServiceProvider;
+use App\Domain\Access\Providers\AccessServiceProvider;
+use App\Domain\Chat\Providers\ChatServiceProvider;
+use App\Domain\Memory\Providers\MemoryServiceProvider;
+use App\Domain\Plans\Providers\PlansServiceProvider;
+use App\Domain\Processes\Providers\ProcessesServiceProvider;
+use App\Domain\Providers\DomainServiceProvider;
+use App\Domain\Rules\Providers\RulesServiceProvider;
+use App\Domain\Sequences\Providers\SequencesServiceProvider;
+use App\Domain\Tasks\Providers\TasksServiceProvider;
+use App\Domain\Web\Providers\TypeScriptServiceProvider;
+use App\Domain\Web\Providers\WebServiceProvider;
 use App\Providers\AppServiceProvider;
 
 return [

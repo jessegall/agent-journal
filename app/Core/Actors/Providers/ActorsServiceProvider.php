@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Actors;
+namespace App\Core\Actors\Providers;
 
 use App\Core\Actors\Support\ActorContext;
 use App\Core\Contracts\CurrentActor;

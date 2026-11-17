@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Access;
+namespace App\Domain\Access\Providers;
 
 use App\Domain\Access\Actions\CreateNewUser;
 use App\Domain\Access\Actions\ResetUserPassword;
