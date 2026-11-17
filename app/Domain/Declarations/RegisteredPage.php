@@ -60,6 +60,16 @@ final readonly class RegisteredPage
     }
 
     /**
+     * The checks an actor must pass to see this page, in the order they run.
+     *
+     * @return list<class-string<VisibilityCheck>>
+     */
+    public function visibilityChecks(): array
+    {
+        return $this->page->visibility === null ? [] : [$this->page->visibility];
+    }
+
+    /**
      * @param  list<Slot>  $slots
      * @return array<string, Slot>
      */

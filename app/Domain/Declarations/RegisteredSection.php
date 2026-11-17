@@ -57,4 +57,16 @@ final readonly class RegisteredSection
     {
         return $this->section->actions;
     }
+
+    /**
+     * The checks an actor must pass to see this section: its host page's first, then its own.
+     *
+     * @return list<class-string<VisibilityCheck>>
+     */
+    public function visibilityChecks(): array
+    {
+        return $this->section->visibility === null
+            ? $this->host->visibilityChecks()
+            : [...$this->host->visibilityChecks(), $this->section->visibility];
+    }
 }

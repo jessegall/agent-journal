@@ -31,10 +31,6 @@ final readonly class ChoiceOption implements PageOption
             throw InvalidPageDeclaration::optionWithoutChoices($key);
         }
 
-        if (! array_all($choices, fn (mixed $choiceLabel, int|string $value) => is_string($value) && is_string($choiceLabel))) {
-            throw InvalidPageDeclaration::choicesNotNamed($key);
-        }
-
         if (! array_key_exists($startsOn, $choices)) {
             throw InvalidPageDeclaration::unknownChoice($key, $startsOn);
         }

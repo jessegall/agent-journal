@@ -29,11 +29,6 @@ final class InvalidPageDeclaration extends DomainDeclarationError
         return new self("The pane option {$option} offers no choices.");
     }
 
-    public static function choicesNotNamed(string $option): self
-    {
-        return new self("The pane option {$option} must map each choice's value to its label, both as strings.");
-    }
-
     public static function unknownChoice(string $option, string $choice): self
     {
         return new self("The pane option {$option} starts on {$choice}, which is not one of its choices.");

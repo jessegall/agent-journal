@@ -29,6 +29,7 @@ final readonly class ReaderDefinition
     ) {}
 
     /**
+     * @param  class-string  $reader
      * @param  class-string  $interface  PageReader or SectionReader
      * @param  class-string<Data>  $dataClass
      */

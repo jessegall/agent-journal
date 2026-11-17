@@ -145,7 +145,7 @@ final class NavigationItem
         }
 
         $item = clone $this;
-        $item->children = array_values($children);
+        $item->children = $children;
         $item->childrenReader = $reader;
 
         return $item;

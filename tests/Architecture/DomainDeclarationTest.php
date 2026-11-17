@@ -88,6 +88,7 @@ final class DomainDeclarationTest extends TestCase
         'Exceptions/RequiredDomainMissing.php',
         'Exceptions/RequiredDomainTwice.php',
         'Exceptions/UiComponentMissing.php',
+        'Exceptions/UiDeclarationMissing.php',
         'Exceptions/UiKeyInvalid.php',
         'Exceptions/UiKeyRepeated.php',
         'Exceptions/UiPathInvalid.php',

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain;
 
+use App\Domain\Contracts\VisibilityCheck;
 use App\Domain\Declarations\DomainUi;
 use App\Domain\Declarations\NavigationItem;
 use App\Domain\Declarations\RegisteredAction;
@@ -11,6 +12,7 @@ use App\Domain\Declarations\RegisteredNavigation;
 use App\Domain\Declarations\RegisteredPage;
 use App\Domain\Declarations\RegisteredSection;
 use App\Domain\Exceptions\InvalidNavigationDeclaration;
+use App\Domain\Exceptions\UiDeclarationMissing;
 use App\Domain\Exceptions\UiKeyRepeated;
 use App\Domain\Exceptions\UiPathRepeated;
 use App\Domain\Exceptions\UiRouteConflict;
@@ -117,6 +119,25 @@ final readonly class UiDeclarations
     public function navigation(): array
     {
         return $this->navigation;
+    }
+
+    public function page(string $key): RegisteredPage
+    {
+        return $this->pages[$key] ?? throw UiDeclarationMissing::for($key);
+    }
+
+    /**
+     * The checks an actor must pass to see the page or section with the given full key, in the order they run.
+     *
+     * @return list<class-string<VisibilityCheck>>
+     */
+    public function visibilityChecksOf(string $key): array
+    {
+        if (array_key_exists($key, $this->sections)) {
+            return $this->sections[$key]->visibilityChecks();
+        }
+
+        return $this->page($key)->visibilityChecks();
     }
 
     /**
