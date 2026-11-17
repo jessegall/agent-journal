@@ -19,7 +19,7 @@ use Illuminate\Container\Attributes\Scoped;
  * tasks and every one of them ended; an empty phase is not over.
  */
 #[Scoped]
-final readonly class PhaseAssignments implements AssignableProvider
+final readonly class PhaseAssignmentProvider implements AssignableProvider
 {
     public function __construct(
         private CurrentActor $actors,

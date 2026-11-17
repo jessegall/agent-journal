@@ -17,7 +17,7 @@ use Illuminate\Container\Attributes\Scoped;
  * cancelled.
  */
 #[Scoped]
-final readonly class PlanAssignments implements AssignableProvider
+final readonly class PlanAssignmentProvider implements AssignableProvider
 {
     public function __construct(private CurrentActor $actors) {}
 

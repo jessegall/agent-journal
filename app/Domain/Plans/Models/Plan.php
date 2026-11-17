@@ -73,7 +73,21 @@ final class Plan extends Model implements Assignable
      */
     public function addPhase(string $title): Phase
     {
-        return $this->phases()->create(['title' => $title, 'position' => $this->phases()->count() + 1]);
+        return $this->getConnection()->transaction(function () use ($title): Phase {
+            self::lockStructure($this->id);
+
+            return $this->phases()->create(['title' => $title, 'position' => $this->phases()->count() + 1]);
+        });
+    }
+
+    /**
+     * Locks a plan's row for update, so its phases and their tasks hold still until the transaction ends. Every change
+     * of a plan's membership and every cascade over it takes this lock first; a future move between plans takes both
+     * plans' locks in id order.
+     */
+    public static function lockStructure(int $planId): self
+    {
+        return self::query()->whereKey($planId)->lockForUpdate()->firstOrFail();
     }
 
     /**

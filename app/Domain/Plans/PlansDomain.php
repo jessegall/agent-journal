@@ -15,6 +15,7 @@ use App\Domain\Plans\Api\PlanFilters;
 use App\Domain\Plans\Api\PlanList;
 use App\Domain\Plans\Api\PlanProgress;
 use App\Domain\Plans\Api\PlanSelection;
+use App\Domain\Plans\Contracts\PlanAssignments;
 use App\Domain\Plans\Contracts\PlanReader;
 use App\Domain\Plans\Contracts\PlanStarter;
 use App\Domain\Plans\Enums\PlanKind;
@@ -23,8 +24,8 @@ use App\Domain\Plans\Exceptions\PlanMissing;
 use App\Domain\Plans\Exceptions\StartDenied;
 use App\Domain\Plans\Models\Phase;
 use App\Domain\Plans\Models\Plan;
-use App\Domain\Plans\Support\PhaseAssignments;
-use App\Domain\Plans\Support\PlanAssignments;
+use App\Domain\Plans\Support\PhaseAssignmentProvider;
+use App\Domain\Plans\Support\PlanAssignmentProvider;
 use App\Domain\Tasks\TasksDomain;
 
 final class PlansDomain implements Domain, ProvidesAssignables
@@ -51,6 +52,7 @@ final class PlansDomain implements Domain, ProvidesAssignables
             PlanStarted::class,
             PlanProgressChanged::class,
             PlanReader::class,
+            PlanAssignments::class,
             PlanStarter::class,
             PlanMissing::class,
             StartDenied::class,
@@ -69,8 +71,8 @@ final class PlansDomain implements Domain, ProvidesAssignables
     public function assignables(): array
     {
         return [
-            Plan::LINK_TYPE => PlanAssignments::class,
-            Phase::LINK_TYPE => PhaseAssignments::class,
+            Plan::LINK_TYPE => PlanAssignmentProvider::class,
+            Phase::LINK_TYPE => PhaseAssignmentProvider::class,
         ];
     }
 }

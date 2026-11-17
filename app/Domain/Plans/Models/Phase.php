@@ -51,6 +51,15 @@ final class Phase extends Model implements Assignable
      */
     public function addTasks(array $taskIds): void
     {
+        $this->getConnection()->transaction(fn () => $this->addTasksUnderPlanLock($taskIds));
+    }
+
+    /**
+     * @param  list<int>  $taskIds
+     */
+    private function addTasksUnderPlanLock(array $taskIds): void
+    {
+        Plan::lockStructure($this->plan_id);
         $twice = array_keys(array_filter(array_count_values($taskIds), fn (int $count) => $count > 1));
         $placed = PhaseTask::query()->whereIn('task_id', $taskIds)->value('task_id');
 
