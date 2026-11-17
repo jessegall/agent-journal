@@ -1,4 +1,4 @@
-from engine.file.file_access import FileAccess
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 import fnmatch
 import hashlib
 import os
@@ -26,7 +26,7 @@ class SourceHash:
     @cache
     def folder_hash(root: Path) -> bytes:
         digest = hashlib.sha256()
-        for folder, directories, files in FileAccess.walk_folders(root):
+        for folder, directories, files in FileAccess.walk_folders(root, CODE_TREE_DEPTH):
             directories[:] = sorted(name for name in directories if not any(fnmatch.fnmatch(name, pattern) for pattern in IGNORED))
             for name in sorted(name for name in files if not any(fnmatch.fnmatch(name, pattern) for pattern in IGNORED)):
                 path = Path(folder) / name

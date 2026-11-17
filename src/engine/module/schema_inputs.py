@@ -1,7 +1,7 @@
 import hashlib
 from pathlib import Path
 
-from engine.file.file_access import FileAccess
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 from engine.module.source_hash import SourceHash
 from engine.version.version import ENGINE_VERSION
 
@@ -27,4 +27,4 @@ class SchemaInputs:
 
     @staticmethod
     def files(root: Path) -> list[Path]:
-        return [file for file in FileAccess.rglob(root, "*.py") if file.name.endswith(MANIFEST_SUFFIX) or any(part in SCHEMA_FOLDER_NAMES for part in file.relative_to(root).parts[:-1])]
+        return [file for file in FileAccess.rglob(root, "*.py", CODE_TREE_DEPTH) if file.name.endswith(MANIFEST_SUFFIX) or any(part in SCHEMA_FOLDER_NAMES for part in file.relative_to(root).parts[:-1])]

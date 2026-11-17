@@ -1,4 +1,4 @@
-from engine.file.file_access import FileAccess
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 import os
 import time
 from pathlib import Path
@@ -31,7 +31,7 @@ class TemplateCache:
 
     def folder(self) -> Path:
         checkout = CORE_FOLDER.parent.parent.resolve()
-        support_folders = tuple(sorted(folder for folder in FileAccess.rglob(checkout / "tests", "support") if FileAccess.is_dir(folder)))
+        support_folders = tuple(sorted(folder for folder in FileAccess.rglob(checkout / "tests", "support", CODE_TREE_DEPTH) if FileAccess.is_dir(folder)))
         source_hash = SourceHash.text((*python_source_folders(), *support_folders))
         current = self.root / f"{source_hash[:HASH_CHARACTERS]}{BaseSeedSwitch.folder_suffix()}"
         is_new = not FileAccess.is_dir(current)

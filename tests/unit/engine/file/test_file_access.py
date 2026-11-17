@@ -107,7 +107,16 @@ def test_a_walk_past_its_folder_limit_is_refused_while_the_thread_holds_the_writ
     for name in ("a", "b", "c"):
         (tmp_path / name).mkdir()
     monkeypatch.setattr(file_module, "WALK_LIMIT_UNDER_WRITE_TURN_FOLDERS", 2)
-    assert len(list(FileAccess.walk_folders(tmp_path))) == 4
+    assert len(list(FileAccess.walk_folders(tmp_path, 2))) == 4
     monkeypatch.setattr(THREAD_TURN_COUNT, "count", 1)
     with pytest.raises(WaitDuringWriteTurnError):
-        list(FileAccess.walk_folders(tmp_path))
+        list(FileAccess.walk_folders(tmp_path, 2))
+
+
+def test_a_walk_enters_no_folder_below_its_depth_and_a_glob_with_two_stars_is_refused(tmp_path):
+    from engine.errors.unbounded_search_error import UnboundedSearchError
+    (tmp_path / "a" / "b" / "c").mkdir(parents=True)
+    assert [folder.relative_to(tmp_path).as_posix() for folder, _, _ in FileAccess.walk_folders(tmp_path)] == ["."]
+    assert [folder.relative_to(tmp_path).as_posix() for folder, _, _ in FileAccess.walk_folders(tmp_path, 3)] == [".", "a", "a/b"]
+    with pytest.raises(UnboundedSearchError):
+        FileAccess.glob(tmp_path, "**/c")

@@ -17,6 +17,7 @@ PACKAGE_JSON = "package.json"
 DEFAULT_NPM_TEST = "no test specified"
 ROOT = "."
 NAME_LETTERS = re.compile(r"[^a-z]+")
+MANIFEST_SEARCH_DEPTH = 3
 
 
 class ProjectManifests:
@@ -38,7 +39,7 @@ class ProjectManifests:
     @staticmethod
     def manifest_folders(folder: Path) -> list[tuple[str, list[str]]]:
         manifest_hits: list[tuple[str, list[str]]] = []
-        for current, folder_names, file_names in FileAccess.walk_folders(folder):
+        for current, folder_names, file_names in FileAccess.walk_folders(folder, MANIFEST_SEARCH_DEPTH):
             folder_names[:] = sorted(name for name in folder_names if name not in LIBRARY_FOLDERS and not name.startswith("."))
             place = Path(current).relative_to(folder).as_posix()
             manifest_hits.append((place, sorted(file_names)))

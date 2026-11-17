@@ -3,7 +3,7 @@ import re
 from collections.abc import Collection
 from pathlib import Path
 
-from engine.file.file_access import FileAccess
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 
 from engine.module.suite_contract_breach import SuiteContractBreach
 from engine.module.module_imports import ModuleImports
@@ -21,7 +21,7 @@ class SuiteImportCheck:
 
     def refusals(self, folder: Path) -> tuple[SuiteContractBreach, ...]:
         internal = self.internal_areas()
-        imports = [(file, node, name) for file in sorted(FileAccess.rglob(folder, "*.py")) for node in ast.walk(ast.parse(FileAccess.read(file))) for name in self.imported_names(node)]
+        imports = [(file, node, name) for file in sorted(FileAccess.rglob(folder, "*.py", CODE_TREE_DEPTH)) for node in ast.walk(ast.parse(FileAccess.read(file))) for name in self.imported_names(node)]
         return tuple(SuiteContractBreach(str(file.relative_to(folder)), node.lineno, f"imports {name}, an internal area of the engine: use its contract areas")
                      for file, node, name in imports if self.is_internal(name, internal))
 

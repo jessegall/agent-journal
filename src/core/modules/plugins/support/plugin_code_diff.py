@@ -1,4 +1,4 @@
-from engine.file.file_access import FileAccess
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 import difflib
 from pathlib import Path
 
@@ -18,7 +18,7 @@ class PluginCodeDiff:
         return shown
 
     def files(self, folder: Path) -> set[str]:
-        return {str(path.relative_to(folder)) for path in FileAccess.rglob(folder, "*") if FileAccess.is_file(path) and GIT_FOLDER not in path.relative_to(folder).parts}
+        return {str(path.relative_to(folder)) for path in FileAccess.rglob(folder, "*", CODE_TREE_DEPTH) if FileAccess.is_file(path) and GIT_FOLDER not in path.relative_to(folder).parts}
 
     def file_lines(self, relative: str, old: Path, new: Path) -> list[str]:
         old_text, new_text = self.text(old), self.text(new)

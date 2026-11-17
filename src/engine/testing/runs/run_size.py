@@ -1,6 +1,6 @@
 from engine.text.pytest_line import PytestLine
 from engine.text.run_target import RunTarget
-from engine.file.file_access import FileAccess
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 import re
 from collections.abc import Iterable, Iterator
 from pathlib import Path
@@ -53,5 +53,5 @@ class RunSize:
     @staticmethod
     def python_files(target: Path) -> Iterable[Path]:
         if FileAccess.is_dir(target):
-            return FileAccess.rglob(target, "*.py")
+            return FileAccess.rglob(target, "*.py", CODE_TREE_DEPTH)
         return [target] if FileAccess.is_file(target) else []

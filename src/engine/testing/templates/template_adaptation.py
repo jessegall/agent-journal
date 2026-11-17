@@ -3,7 +3,7 @@ import pickle
 from pathlib import Path
 
 from engine.database.database_text_replacement import DatabaseTextReplacement
-from engine.file.file_access import FileAccess
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 from engine.types.type_guards import is_frozenset, is_list, is_mapping, is_set, is_tuple
 
 CHECKOUT_FILE = "checkout"
@@ -31,12 +31,12 @@ class TemplateAdaptation:
         builder = self.builder_name(template)
         FileAccess.rmtree(adapted, ignore_errors=True)
         FileAccess.copytree(template, adapted)
-        for database in FileAccess.rglob(adapted, "*.db"):
+        for database in FileAccess.rglob(adapted, "*.db", CODE_TREE_DEPTH):
             DatabaseTextReplacement(database).replace(builder, self.checkout)
         for name in REWRITTEN_FILES:
-            for file in FileAccess.rglob(adapted, name):
+            for file in FileAccess.rglob(adapted, name, CODE_TREE_DEPTH):
                 FileAccess.write(file, FileAccess.read(file).replace(builder, self.checkout))
-        for state in FileAccess.rglob(adapted, STATE_FILE):
+        for state in FileAccess.rglob(adapted, STATE_FILE, CODE_TREE_DEPTH):
             FileAccess.write_binary(state, pickle.dumps(self.adapted_value(pickle.loads(FileAccess.binary(state)), builder)))
         self.mark(adapted)
 

@@ -12,6 +12,7 @@ from threading import RLock
 from typing import IO, Any, ClassVar
 from weakref import WeakValueDictionary
 
+from engine.errors.unbounded_search_error import UnboundedSearchError
 from engine.file.file_tally import FileTally
 from engine.file.versions.file_contents import FileContents
 from engine.file.versions.file_version import FileVersion
@@ -23,6 +24,8 @@ FILE_CHANGE_EVENT = "journal.file.write"
 CACHE_SIZE_FILES = 256
 RESOLVED_PATH_COUNT = 8192
 WALK_LIMIT_UNDER_WRITE_TURN_FOLDERS = 20000
+# the depth a walk over one of the journal's own code trees names: its source, its tests, a plugin or a checkout
+CODE_TREE_DEPTH = 32
 
 
 
@@ -234,31 +237,35 @@ class FileAccess:
         FileTally.note("list")
         return Path(folder).iterdir()
 
+    # a pattern with ** walks without a depth: a search at any depth goes through rglob, which names one
     @classmethod
     def glob(cls, folder: Path | str, pattern: str) -> Iterator[Path]:
+        if "**" in pattern:
+            raise UnboundedSearchError(pattern)
         FileTally.note("list")
         return Path(folder).glob(pattern, recurse_symlinks=False)
 
-    # every path under a folder whose path below it matches the pattern at any depth, as Path.rglob matches, walked as
-    # walk() walks
+    # every path under a folder, at most depth levels down, whose path below it matches the pattern, as Path.rglob
+    # matches, walked as walk() walks
     @classmethod
-    def rglob(cls, folder: Path | str, pattern: str) -> Iterator[Path]:
-        return (path for path in cls.walk(folder) if path.relative_to(folder).full_match(f"**/{pattern}"))
+    def rglob(cls, folder: Path | str, pattern: str, depth: int = 1) -> Iterator[Path]:
+        return (path for path in cls.walk(folder, depth) if path.relative_to(folder).full_match(f"**/{pattern}"))
 
-    # every file and folder under a folder, walked as walk_folders() walks
+    # every file and folder under a folder, at most depth levels down, walked as walk_folders() walks
     @classmethod
-    def walk(cls, folder: Path | str) -> Iterator[Path]:
-        for current, folder_names, file_names in cls.walk_folders(folder):
+    def walk(cls, folder: Path | str, depth: int = 1) -> Iterator[Path]:
+        for current, folder_names, file_names in cls.walk_folders(folder, depth):
             yield from (current / name for name in (*folder_names, *file_names))
 
-    # each folder under a folder with the names of its folders and files, as os.walk gives them: a symbolic link is never
-    # followed, a folder is never entered twice, and a caller that removes a name from folder_names skips that folder
+    # each folder under a folder with the names of its folders and files, as os.walk gives them, down to depth levels:
+    # depth 1 lists the folder alone and enters none below it. A symbolic link is never followed, a folder is never
+    # entered twice, and a caller that removes a name from folder_names skips that folder
     @classmethod
-    def walk_folders(cls, folder: Path | str) -> Iterator[tuple[Path, list[str], list[str]]]:
+    def walk_folders(cls, folder: Path | str, depth: int = 1) -> Iterator[tuple[Path, list[str], list[str]]]:
         entered: set[tuple[int, int]] = set()
-        waiting = [Path(folder)]
+        waiting = [(Path(folder), 1)]
         while waiting:
-            current = waiting.pop()
+            current, level = waiting.pop()
             try:
                 status = current.lstat()
                 with os.scandir(current) as listed:
@@ -275,7 +282,8 @@ class FileAccess:
             folder_names = [child.name for child in children if child.is_dir(follow_symlinks=False)]
             file_names = [child.name for child in children if not child.is_dir(follow_symlinks=False)]
             yield current, folder_names, file_names
-            waiting.extend(current / name for name in reversed(folder_names))
+            if level < depth:
+                waiting.extend((current / name, level + 1) for name in reversed(folder_names))
 
     # a stream read, for a file read in parts or line by line, so it is never counted as a repeated whole read
     @classmethod

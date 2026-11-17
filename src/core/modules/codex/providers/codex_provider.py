@@ -62,6 +62,9 @@ PERSON_FOLDER = ".codex"
 PROGRAMS_FOLDER = "programs"
 REQUEST_APPROVAL_ARGUMENTS = ["-c", 'approval_policy="on-request"', "-c", 'sandbox_mode="workspace-write"']
 
+# the sessions folder holds year, month and day folders, and the day folder holds the rollout files
+CODEX_SESSION_FOLDER_DEPTH = 4
+
 
 class CodexProvider(Provider):
     """OpenAI's Codex: hooks and their trust in the journal's own Codex folder, passed as CODEX_HOME, rollouts
@@ -167,7 +170,7 @@ class CodexProvider(Provider):
         if cached is not None and FileAccess.is_file(cached):
             return cached
         sessions = self.person_folder() / "sessions"
-        located = next(FileAccess.glob(sessions, f"**/rollout-*-{session}.jsonl"), None) if FileAccess.is_dir(sessions) else None
+        located = next(FileAccess.rglob(sessions, f"rollout-*-{session}.jsonl", CODEX_SESSION_FOLDER_DEPTH), None) if FileAccess.is_dir(sessions) else None
         if located is not None:
             self.rollouts[session] = located
         return located

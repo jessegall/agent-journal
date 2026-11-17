@@ -1,5 +1,5 @@
 from engine.enums.event_form import EventForm
-from engine.file.file_access import FileAccess
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 from engine.file.versions.file_version import FileVersion
 import json
 from collections.abc import Mapping
@@ -220,7 +220,7 @@ class PluginManifest:
         path = folder / entry
         if not FileAccess.is_dir(path):
             return (entry,)
-        return tuple(sorted(str(file.relative_to(folder)) for file in FileAccess.rglob(path, "*") if FileAccess.is_file(file)))
+        return tuple(sorted(str(file.relative_to(folder)) for file in FileAccess.rglob(path, "*", CODE_TREE_DEPTH) if FileAccess.is_file(file)))
 
     def wrong_files(self, folder: Path) -> tuple[str, ...]:
         return tuple(entry for entry in self.listed_files if not ManifestListener.is_contained_path(entry, folder))

@@ -4,7 +4,7 @@ from collections.abc import Iterator, Sequence
 from pathlib import Path
 from engine.map.code_map import SKIPPED_FOLDERS
 
-from engine.file.file_access import FileAccess
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 from engine.module.layer import Layer
 from engine.module.layer_rules import LayerRules
 from engine.module.layer_table import LayerTable
@@ -43,7 +43,7 @@ class LayerCheck:
         source = self.project_folder / "src"
         parents = [source / "core" / "modules", source / "suites", source / "tunnels", *FileAccess.glob(source, "suites/*/modules")]
         direct = {child for parent in parents if FileAccess.is_dir(parent) for child in FileAccess.iterdir(parent) if FileAccess.is_dir(child) and child.name not in SKIPPED_FOLDERS}
-        declaration_folders = {path.parent for ending in DECLARATION_FILE_ENDINGS for path in FileAccess.rglob(source, f"*_{ending}.py") if path.stem == f"{path.parent.name}_{ending}" and self.is_source(path)}
+        declaration_folders = {path.parent for ending in DECLARATION_FILE_ENDINGS for path in FileAccess.rglob(source, f"*_{ending}.py", CODE_TREE_DEPTH) if path.stem == f"{path.parent.name}_{ending}" and self.is_source(path)}
         return direct | declaration_folders
 
     def dependency_failures(self) -> list[str]:
@@ -60,7 +60,7 @@ class LayerCheck:
 
     def source_failures(self) -> list[str]:
         lines: list[str] = []
-        for path in sorted(FileAccess.rglob(self.project_folder / "src", "*.py")):
+        for path in sorted(FileAccess.rglob(self.project_folder / "src", "*.py", CODE_TREE_DEPTH)):
             if self.is_source(path):
                 lines.extend(self.file_failures(path))
         return lines

@@ -1,4 +1,4 @@
-from engine.file.file_access import FileAccess
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 import os
 from pathlib import Path
 
@@ -18,7 +18,7 @@ class ConflictFiles:
         return tuple(sorted(str(path.relative_to(self.folder)) for path in self.files() if self.has_marker(path)))
 
     def files(self):
-        for folder, directories, names in FileAccess.walk_folders(self.folder):
+        for folder, directories, names in FileAccess.walk_folders(self.folder, CODE_TREE_DEPTH):
             directories[:] = [name for name in directories if name not in IGNORED_FOLDERS]
             for name in names:
                 path = Path(folder, name)

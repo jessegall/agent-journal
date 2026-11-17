@@ -1,4 +1,4 @@
-from engine.file.file_access import FileAccess
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 import hashlib
 import os
 from collections.abc import Sequence
@@ -64,7 +64,7 @@ class CodeFingerprint:
         return (ENGINE_FOLDER, CORE_FOLDER, *(module.folder() for module in modules if not module.folder().is_relative_to(CORE_FOLDER)))
 
     def module_text(self, module: type[Module]) -> str:
-        built_files = sorted(path for path in FileAccess.rglob(module.folder() / BUILT_WINDOWS_FOLDER, "*") if FileAccess.is_file(path))
+        built_files = sorted(path for path in FileAccess.rglob(module.folder() / BUILT_WINDOWS_FOLDER, "*", CODE_TREE_DEPTH) if FileAccess.is_file(path))
         return self.files_text([*FolderListing.kept([module.folder()]).files(), *built_files])
 
     def folder_text(self, folders: Sequence[Path]) -> str:

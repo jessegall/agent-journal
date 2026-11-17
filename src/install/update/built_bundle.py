@@ -2,7 +2,7 @@ import hashlib
 from dataclasses import dataclass
 from pathlib import Path
 
-from engine.file.file_access import FileAccess
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 
 STAMP_NAME = "sources.sha256"
 SKIPPED_FOLDERS = frozenset({"node_modules", "dist", "__pycache__"})
@@ -38,4 +38,4 @@ class BuiltBundle:
     def files(root: Path) -> list[Path]:
         if FileAccess.is_file(root):
             return [root]
-        return sorted(path for path in FileAccess.rglob(root, "*") if FileAccess.is_file(path) and not SKIPPED_FOLDERS.intersection(path.relative_to(root).parts))
+        return sorted(path for path in FileAccess.rglob(root, "*", CODE_TREE_DEPTH) if FileAccess.is_file(path) and not SKIPPED_FOLDERS.intersection(path.relative_to(root).parts))

@@ -1,4 +1,4 @@
-from engine.file.file_access import FileAccess
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 import fnmatch
 import hashlib
 import os
@@ -37,7 +37,7 @@ class CodeVersions:
 
     def tag(self, source: Path) -> str:
         digest = hashlib.sha256()
-        for folder, folders, files in FileAccess.walk_folders(source):
+        for folder, folders, files in FileAccess.walk_folders(source, CODE_TREE_DEPTH):
             folders[:] = sorted(name for name in folders if not self.is_ignored(name))
             for name in sorted(name for name in files if not self.is_ignored(name)):
                 path = Path(folder) / name

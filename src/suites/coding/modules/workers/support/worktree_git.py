@@ -1,4 +1,4 @@
-from engine.file.file_access import FileAccess
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 import fcntl
 import json
 import re
@@ -365,7 +365,7 @@ class WorktreeGit:
         finally:
             if linked:
                 FileAccess.unlink(modules)
-        missing = [built for built in folders if not any(FileAccess.is_file(path) for path in FileAccess.rglob(Path(folder, built), "*"))]
+        missing = [built for built in folders if not any(FileAccess.is_file(path) for path in FileAccess.rglob(Path(folder, built), "*", CODE_TREE_DEPTH))]
         if missing:
             raise Refusal(f"the build produced no files in {', '.join(missing)}", "fix the build before merging")
 

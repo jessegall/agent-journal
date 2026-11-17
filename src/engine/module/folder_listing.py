@@ -1,4 +1,4 @@
-from engine.file.file_access import FileAccess
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 import os
 from collections.abc import Sequence
 from pathlib import Path
@@ -41,7 +41,7 @@ class FolderListing:
         folder_modified_ns: dict[Path, int] = {}
         files: set[Path] = set()
         for root in self.folders:
-            for folder, _, names in FileAccess.walk_folders(root):
+            for folder, _, names in FileAccess.walk_folders(root, CODE_TREE_DEPTH):
                 folder_modified_ns[folder] = FileAccess.stat(folder).st_mtime_ns
                 files.update(Path(folder) / name for name in names if name.endswith(".py"))
         self.folder_modified_ns, self.python_files = folder_modified_ns, sorted(files)

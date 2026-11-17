@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from engine.file.file_access import FileAccess
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 
 ALLOW_LIST_FILE = Path(__file__).with_name("folder_budget_allow_list.txt")
 WIDTH_LIMIT_ENTRIES = 12
@@ -37,12 +37,12 @@ class FolderBudget:
         return [*(line for line in lines if line not in self.allow_list), *stale]
 
     def wide_folders(self) -> list[str]:
-        folders = [self.source, *(folder for folder in sorted(FileAccess.rglob(self.source, "*")) if FileAccess.is_dir(folder) and self.is_judged(folder))]
+        folders = [self.source, *(folder for folder in sorted(FileAccess.rglob(self.source, "*", CODE_TREE_DEPTH)) if FileAccess.is_dir(folder) and self.is_judged(folder))]
         return [f"{self.relative(folder)} holds more than {WIDTH_LIMIT_ENTRIES} entries" for folder in folders
                 if folder.name not in STANDARD_FOLDERS | DECLARATION_FOLDERS and folder != self.source / "engine" and len(self.counted_entries(folder)) > WIDTH_LIMIT_ENTRIES]
 
     def deep_files(self) -> list[str]:
-        files = [path for path in sorted(FileAccess.rglob(self.source, "*.py")) if self.is_judged(path) and path.name != "__init__.py"]
+        files = [path for path in sorted(FileAccess.rglob(self.source, "*.py", CODE_TREE_DEPTH)) if self.is_judged(path) and path.name != "__init__.py"]
         return [f"{self.relative(path)} sits more than {DEPTH_LIMIT_LEVELS} levels below its layer" for path in files if self.layer_depth(path) > DEPTH_LIMIT_LEVELS]
 
     def layer_depth(self, path: Path) -> int:

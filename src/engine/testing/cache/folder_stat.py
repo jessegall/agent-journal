@@ -1,4 +1,4 @@
-from engine.file.file_access import FileAccess
+from engine.file.file_access import CODE_TREE_DEPTH, FileAccess
 import os
 from pathlib import Path
 
@@ -16,7 +16,7 @@ class FolderStat:
     @staticmethod
     def bytes(folder: Path) -> int:
         total = 0
-        for parent, _, names in FileAccess.walk_folders(folder):
+        for parent, _, names in FileAccess.walk_folders(folder, CODE_TREE_DEPTH):
             for name in names:
                 try:
                     total += FileAccess.lstat(os.path.join(parent, name)).st_size
