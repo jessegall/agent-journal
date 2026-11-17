@@ -39,3 +39,15 @@ No owner store existed for the subjects the states are about, so plan 2 built th
 | Captured fixtures from pinned program versions, the Codex settings shape and child identity | Hooks; `tests/Fixtures/Hooks/ClaudeCode`, `tests/Fixtures/Hooks/Codex`, `docs/hooks/program-capabilities.md` | task 89 |
 | Agent scoping (rule 4) on the new task, message, sequence, memory and rule stores | Tasks, Chat, Sequences, Memory, Rules models | task 92 |
 | A full hook call and a lock wait measured on the live Octane app | Hooks; `docs/hooks/program-capabilities.md` | task 93 |
+
+## Core's public surface (plan 5, task 156)
+
+`app/Core/CoreApi.php` lists 67 Core types one by one; the rest of Core is private. By area:
+
+- **Actors** (4): `ActorContext`, `ActorContextMissing`, `ActorKind`, `UserActorRequired`.
+- **Agents** (4): `AgentLabel`, `AgentReader`, `SessionOption`, `SessionReader`.
+- **Contracts** (3): `Actor`, `CurrentActor`, `EstablishActor`.
+- **Hooks** (52): `AgentStack`, `AgentState`, `Answer`, `AnswerKind`, `ChangeKind`, `CommandEffect`, `CommandKind`, `CommandPart`, `CompactionDetails`, `ContextCompacted`, `ContextWasCompacted`, `Decision`, `FileChange`, `FileChanges`, `FileEditRequested`, `FileOperation`, `HookAnswerer`, `HookIdentity`, `HookInput`, `OwnedByOneAgent`, `ParseOutcome`, `PartJoin`, `PromptDetails`, `PromptSubmitted`, `SessionEndDetails`, `SessionEndReason`, `SessionEnded`, `SessionStartDetails`, `SessionStartSource`, `SessionStarted`, `ShellCommand`, `ShellCommandParser`, `ShellCommandRequested`, `ShellDialect`, `StackChange`, `StackEditor`, `StackLockTimedOut`, `StackTarget`, `StackTargetRefused`, `StackTransactionRequired`, `StackWork`, `StateReference`, `StateSubjectMissing`, `StateType`, `StateTypesRequested`, `StopDetails`, `StopRequested`, `SubjectReference`, `ToolFinished`, `ToolOutcome`, `ToolResult`, `UserStack`.
+- **Links** (4): `LinkAccess`, `LinkTypeRenames`, `LinkTypes`, `Linkable`.
+
+`EstablishActor`, `LinkTypes` and `LinkTypeRenames` are for the places that compose the application only: the sign-in middleware, owner providers and owner migrations. `ContextWasCompacted` and `StateTypesRequested` are listed because domains listen to them today; phase 25 settles their final shape. Domain exports: Tasks 4, Plans 11, Chat 6, Rules 8, Access 2; Memory, Processes, Profiles, Reminders, Sequences and Web export nothing yet.
