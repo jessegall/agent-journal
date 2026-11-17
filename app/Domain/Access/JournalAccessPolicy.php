@@ -14,4 +14,11 @@ use Illuminate\Container\Attributes\Bind;
 interface JournalAccessPolicy
 {
     public function allows(Actor $actor): bool;
+
+    /**
+     * The ids of the people who may use the journal, to tell them that something changed.
+     *
+     * @return list<int>
+     */
+    public function allowedPersonIds(): array;
 }

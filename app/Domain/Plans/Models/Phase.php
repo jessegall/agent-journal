@@ -8,6 +8,8 @@ use App\Core\Links\Linkable;
 use App\Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use App\Domain\Tasks\Models\Task;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -73,6 +75,17 @@ final class Phase extends Model
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class);
+    }
+
+    /**
+     * The phase that holds the task, if any.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function holdingTask(Builder $query, int $taskId): void
+    {
+        $query->whereIn('id', PhaseTask::query()->select('phase_id')->where('task_id', $taskId));
     }
 
     /**
