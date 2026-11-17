@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Chat;
 
 use App\Domain\Domain;
+use App\Domain\Hooks\HooksDomain;
 
 final class ChatDomain implements Domain
 {
@@ -18,6 +19,6 @@ final class ChatDomain implements Domain
      */
     public function requires(): array
     {
-        return [];
+        return [HooksDomain::class];
     }
 }
