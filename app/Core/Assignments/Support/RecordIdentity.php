@@ -12,7 +12,7 @@ use App\Core\Assignments\Exceptions\InvalidAssignmentIdentity;
  */
 final readonly class RecordIdentity
 {
-    private const string ALIAS_PATTERN = '/^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$/';
+    private const string ALIAS_PATTERN = '/^[a-z][a-z0-9_-]*\.[a-z][a-z0-9_-]*$/';
 
     /**
      * @throws InvalidAssignmentIdentity
@@ -21,12 +21,20 @@ final readonly class RecordIdentity
         public string $type,
         public int $id,
     ) {
-        if (preg_match(self::ALIAS_PATTERN, $type) !== 1) {
-            throw InvalidAssignmentIdentity::forType($type);
-        }
+        self::checkType($type);
 
         if ($id < 1) {
             throw InvalidAssignmentIdentity::forId($type, $id);
+        }
+    }
+
+    /**
+     * @throws InvalidAssignmentIdentity
+     */
+    public static function checkType(string $type): void
+    {
+        if (preg_match(self::ALIAS_PATTERN, $type) !== 1) {
+            throw InvalidAssignmentIdentity::forType($type);
         }
     }
 

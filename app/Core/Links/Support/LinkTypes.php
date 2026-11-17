@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Links\Support;
 
 use App\Core\Links\Exceptions\LinkTypeRepeated;
+use App\Core\Links\Exceptions\UnknownLinkType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
@@ -33,5 +34,17 @@ final class LinkTypes
 
         Relation::requireMorphMap();
         Relation::morphMap($modelOfName);
+    }
+
+    /**
+     * The model a registered link name stands for.
+     *
+     * @return class-string<Model>
+     *
+     * @throws UnknownLinkType
+     */
+    public function modelFor(string $alias): string
+    {
+        return Relation::getMorphedModel($alias) ?? throw UnknownLinkType::forAlias($alias);
     }
 }

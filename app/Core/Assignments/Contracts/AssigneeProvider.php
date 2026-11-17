@@ -7,6 +7,7 @@ namespace App\Core\Assignments\Contracts;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Assignments\Support\AssigneeList;
 use App\Core\Assignments\Support\AssigneeName;
+use App\Core\Assignments\Support\Page;
 use App\Core\Contracts\Assignee;
 
 /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Core\Actors\Providers\ActorsServiceProvider;
 use App\Core\Agents\Providers\AgentsServiceProvider;
+use App\Core\Assignments\Providers\AssignmentsServiceProvider;
 use App\Core\Hooks\Providers\HooksServiceProvider;
 use App\Core\Providers\CoreServiceProvider;
 use App\Domain\Access\Providers\AccessServiceProvider;
@@ -25,6 +26,7 @@ return [
     CoreServiceProvider::class,
     ActorsServiceProvider::class,
     AgentsServiceProvider::class,
+    AssignmentsServiceProvider::class,
     HooksServiceProvider::class,
     ProcessesServiceProvider::class,
     TasksServiceProvider::class,

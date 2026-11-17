@@ -19,7 +19,11 @@ use App\Core\Assignments\Contracts\AssignmentReader;
 use App\Core\Assignments\Contracts\AssignmentRegistration;
 use App\Core\Assignments\Enums\AssignmentOutcomeKind;
 use App\Core\Assignments\Enums\AssignmentReason;
+use App\Core\Assignments\Exceptions\AssigneeKindRepeated;
 use App\Core\Assignments\Exceptions\AssignmentGroupTooLarge;
+use App\Core\Assignments\Exceptions\AssignmentProviderInvalid;
+use App\Core\Assignments\Exceptions\AssignmentTypeRepeated;
+use App\Core\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Core\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Core\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Core\Assignments\Support\AssigneeList;
@@ -97,6 +101,7 @@ use App\Core\Hooks\Inputs\ToolResult;
 use App\Core\Hooks\Models\Support\OwnedByOneAgent;
 use App\Core\Hooks\States\AgentState;
 use App\Core\Hooks\Support\StackTarget;
+use App\Core\Links\Exceptions\UnknownLinkType;
 use App\Core\Links\Support\Linkable;
 use App\Core\Links\Support\LinkAccess;
 use App\Core\Links\Support\LinkTypeRenames;
@@ -184,6 +189,7 @@ final class CoreApi
             LinkAccess::class,
             LinkTypes::class,
             LinkTypeRenames::class,
+            UnknownLinkType::class,
             StateSubjectMissing::class,
             StackTargetRefused::class,
             StackLockTimedOut::class,
@@ -213,6 +219,10 @@ final class CoreApi
             InvalidAssignmentIdentity::class,
             InvalidAssignmentPage::class,
             AssignmentGroupTooLarge::class,
+            AssignmentTypeUnavailable::class,
+            AssignmentProviderInvalid::class,
+            AssigneeKindRepeated::class,
+            AssignmentTypeRepeated::class,
         ];
     }
 }

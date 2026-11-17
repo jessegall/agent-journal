@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain;
 
+use App\Core\Assignments\Contracts\AssignmentRegistration;
 use App\Core\Hooks\Contracts\StateRegistration;
+use App\Domain\Contracts\ProvidesAssignables;
+use App\Domain\Contracts\ProvidesAssignees;
 use App\Domain\Contracts\ProvidesStates;
 use App\Domain\Exceptions\AmbiguousDomainRoot;
 use App\Domain\Exceptions\DomainCycle;
@@ -93,6 +96,27 @@ final readonly class DomainRegistry
 
             foreach ($entry->domain->states() as $typeKey => $factory) {
                 $registration->register($typeKey, $container->make($factory));
+            }
+        }
+    }
+
+    /**
+     * Registers the assignable record types and the actor kinds able to hold records that domains declare; a domain
+     * that declares neither is left out.
+     */
+    public function registerAssignmentsIn(AssignmentRegistration $registration): void
+    {
+        foreach ($this->all() as $entry) {
+            if ($entry->domain instanceof ProvidesAssignables) {
+                foreach ($entry->domain->assignables() as $type => $providerClass) {
+                    $registration->registerRecord($type, $providerClass);
+                }
+            }
+
+            if ($entry->domain instanceof ProvidesAssignees) {
+                foreach ($entry->domain->assignees() as $assignees) {
+                    $registration->registerAssignees($assignees);
+                }
             }
         }
     }

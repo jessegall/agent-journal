@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Core\Actors\Support\ActorStore;
+use App\Core\Assignments\Contracts\AssignmentRegistration;
+use App\Core\Assignments\Registry\AssignmentRegistry;
 use App\Core\Contracts\CurrentActorSetter;
 use App\Core\CoreApi;
 use App\Core\Hooks\Contracts\ShellCommandParser;
@@ -30,12 +32,26 @@ final class BindingRulesTest extends TestCase
      */
     private const array ACTOR_SITES = [
         'app/Core/Actors/Support/ActorStore.php',
-        'app/Core/Actors/ActorsServiceProvider.php',
+        'app/Core/Actors/Providers/ActorsServiceProvider.php',
         'app/Core/Contracts/CurrentActor.php',
         'app/Core/Contracts/CurrentActorSetter.php',
         'app/Core/CoreApi.php',
         'app/Core/Agents/Http/Middleware/AuthenticateAgent.php',
         'app/Domain/Access/Http/Middleware/AuthenticateUser.php',
+    ];
+
+    /**
+     * The files that compose the application and may register assignable record types and actor kinds: the contract,
+     * the registry, Core's list, the providers of Core's assignment and agent areas, and the domain foundation.
+     */
+    private const array ASSIGNMENT_REGISTRATION_SITES = [
+        'app/Core/Assignments/Contracts/AssignmentRegistration.php',
+        'app/Core/Assignments/Registry/AssignmentRegistry.php',
+        'app/Core/Assignments/Providers/AssignmentsServiceProvider.php',
+        'app/Core/Agents/Providers/AgentsServiceProvider.php',
+        'app/Core/CoreApi.php',
+        'app/Domain/DomainRegistry.php',
+        'app/Domain/Providers/DomainServiceProvider.php',
     ];
 
     public function test_every_stated_binding_of_the_app_is_sound(): void
@@ -81,6 +97,18 @@ final class BindingRulesTest extends TestCase
         $sites = array_map(base_path(...), self::ACTOR_SITES);
 
         $outside = array_filter($uses, fn (NameUse $use) => in_array(ltrim($use->name, '\\'), [CurrentActorSetter::class, ActorStore::class], true)
+            && ! in_array($use->file, $sites, true));
+
+        $this->assertSame([], array_values(array_map(fn (NameUse $use) => "{$use->file}:{$use->line} {$use->name}", $outside)));
+    }
+
+    public function test_only_the_composition_sites_register_assignable_types_and_actor_kinds(): void
+    {
+        $roots = ProjectRoots::fromComposer(base_path('composer.json'));
+        $uses = DomainFiles::usesIn(DomainFiles::in([app_path(), base_path('bootstrap'), base_path('routes')]), $roots);
+        $sites = array_map(base_path(...), self::ASSIGNMENT_REGISTRATION_SITES);
+
+        $outside = array_filter($uses, fn (NameUse $use) => in_array(ltrim($use->name, '\\'), [AssignmentRegistration::class, AssignmentRegistry::class], true)
             && ! in_array($use->file, $sites, true));
 
         $this->assertSame([], array_values(array_map(fn (NameUse $use) => "{$use->file}:{$use->line} {$use->name}", $outside)));

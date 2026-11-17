@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Providers;
 
+use App\Core\Assignments\Contracts\AssignmentRegistration;
 use App\Core\Hooks\Events\StateTypesRequested;
 use App\Domain\DomainRegistry;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -24,13 +25,14 @@ class DomainServiceProvider extends ServiceProvider
         EventServiceProvider::addEventDiscoveryPaths($registry->listenerFolders());
     }
 
-    public function boot(DomainRegistry $registry, Dispatcher $events): void
+    public function boot(DomainRegistry $registry, Dispatcher $events, AssignmentRegistration $assignments): void
     {
         foreach ($registry->all() as $entry) {
             $this->loadMigrationsFrom($entry->migrationFolder());
         }
 
         $events->listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $registry->registerStatesIn($event->registry, $this->app));
+        $registry->registerAssignmentsIn($assignments);
     }
 
     /**
