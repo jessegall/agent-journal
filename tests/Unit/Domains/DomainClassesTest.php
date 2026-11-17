@@ -22,35 +22,38 @@ use PHPUnit\Framework\TestCase;
 final class DomainClassesTest extends TestCase
 {
     /**
-     * Hooks, Agents and Links are the core in app/Core, which every domain uses without declaring it.
+     * Hooks, Agents and Links are the core in app/Core, which every domain uses without declaring it. Each domain's
+     * export list is pinned by short class name, so publishing a type is a visible decision.
      *
-     * @return iterable<string, array{class-string<Domain>, list<class-string<Domain>>}>
+     * @return iterable<string, array{class-string<Domain>, list<class-string<Domain>>, list<string>}>
      */
     public static function domains(): iterable
     {
-        yield 'Tasks' => [TasksDomain::class, []];
-        yield 'Plans' => [PlansDomain::class, [TasksDomain::class]];
-        yield 'Profiles' => [ProfilesDomain::class, []];
-        yield 'Chat' => [ChatDomain::class, []];
-        yield 'Memory' => [MemoryDomain::class, []];
-        yield 'Rules' => [RulesDomain::class, []];
-        yield 'Sequences' => [SequencesDomain::class, []];
-        yield 'Reminders' => [RemindersDomain::class, []];
-        yield 'Processes' => [ProcessesDomain::class, []];
-        yield 'Access' => [AccessDomain::class, []];
-        yield 'Web' => [WebDomain::class, [AccessDomain::class, ChatDomain::class, PlansDomain::class, RulesDomain::class]];
+        yield 'Tasks' => [TasksDomain::class, [], ['TaskStarted', 'TaskFinished', 'TaskBlocked', 'TaskCancelled', 'TaskProgressCounter', 'TaskProgress', 'TaskReader', 'TaskMissing']];
+        yield 'Plans' => [PlansDomain::class, [TasksDomain::class], ['PlanStarted', 'PlanProgressChanged', 'PlanReader', 'PlanStarter', 'PlanMissing', 'StartDenied', 'PlanFilters', 'PlanList', 'PlanSelection', 'PlanCard', 'PlanProgress', 'PlanKind', 'PlanState']];
+        yield 'Profiles' => [ProfilesDomain::class, [], []];
+        yield 'Chat' => [ChatDomain::class, [], ['MessageSent', 'MessageAnswered', 'MessageDismissed', 'ConversationReader', 'MessageSender', 'Conversation', 'MessageView', 'MessageState', 'MessageBodyEmpty']];
+        yield 'Memory' => [MemoryDomain::class, [], []];
+        yield 'Rules' => [RulesDomain::class, [], ['RuleApproved', 'RuleDenied', 'RuleRemoved', 'RuleReader', 'RuleReviewer', 'RuleFilters', 'RuleList', 'RuleView', 'RuleState', 'RuleMissing', 'RuleNotProposed']];
+        yield 'Sequences' => [SequencesDomain::class, [], []];
+        yield 'Reminders' => [RemindersDomain::class, [], []];
+        yield 'Processes' => [ProcessesDomain::class, [], []];
+        yield 'Access' => [AccessDomain::class, [], ['ViewerReader', 'JournalAccessPolicy', 'Viewer']];
+        yield 'Web' => [WebDomain::class, [AccessDomain::class, ChatDomain::class, PlansDomain::class, RulesDomain::class], []];
     }
 
     /**
      * @param  class-string<Domain>  $class
      * @param  list<class-string<Domain>>  $requires
+     * @param  list<string>  $exports
      */
     #[DataProvider('domains')]
-    public function test_each_domain_describes_itself_and_requires_only_what_was_approved(string $class, array $requires): void
+    public function test_each_domain_describes_itself_requires_only_what_was_approved_and_exports_its_listed_types(string $class, array $requires, array $exports): void
     {
         $domain = new $class;
 
         $this->assertNotSame('', $domain->description());
         $this->assertSame($requires, $domain->requires());
+        $this->assertSame($exports, array_map(class_basename(...), $domain->exports()));
     }
 }

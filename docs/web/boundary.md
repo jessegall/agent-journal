@@ -15,7 +15,7 @@ A user who selects an agent stays the actor; the agent is the target. Nothing fo
 
 - **User reads.** `visibleToUser` on `OwnedByOneAgent` is the only way a user lifts the agent scope, and it refuses any actor but a user. Task, Plan and Rule have no agent scope: every agent and the owner read them (rule 4, message 519).
 - **Route binding.** An agent-scoped model binds through the actor's scope: a user's route through `visibleToUser`, an agent's through its own scope; with no actor, binding fails closed. `AuthenticateAgent` runs before `SubstituteBindings`; the user middleware will be placed there too (task 117).
-- **Stack changes for a user.** `App\Core\Hooks\UserStacks::push` puts a state on a running agent's stack for a user, in the caller's stack transaction: it locks the stack through the explicit authorized query, restores it with the target agent's own role and keeps every frame. A guessed, ended or mismatched session is refused with `StackTargetRefused`; an agent actor is refused. Agents keep `AgentStacks::push`, which only reaches their own stack.
+- **Stack changes for a user.** Core's `UserStack` contract (bound to `UserStacks`) puts a state on a running agent's stack for a user, in the caller's stack transaction: it locks the stack through the explicit authorized query, restores it with the target agent's own role and keeps every frame. A guessed, ended or mismatched session is refused with `StackTargetRefused`; an agent actor is refused. Agents keep `AgentStacks::push`, which only reaches their own stack.
 
 ## Access: users and the owner (task 117)
 
@@ -115,9 +115,9 @@ The app shell (`AppSidebarLayout`) owns the tab's one connection through `useLiv
 
 - **Actor.** `App\Core\Contracts\Actor` (its kind and id) is what the core talks to. The Access `User` is a user actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.
 - **Access policy.** `AuthenticateUser` asks `JournalAccessPolicy::allows(Actor)`, bound to `JournalAccess` with `#[Bind]`. Only a user actor whose id is the owner's is let in.
-- **Task progress.** Plans reads progress through `App\Domain\Tasks\TaskProgressCounter`, an interface Tasks owns and binds to `TaskCounts` with `#[Bind]`; Plans names no Tasks service class.
+- **Task progress.** Plans reads progress through `App\Domain\Tasks\Contracts\TaskProgressCounter`, an interface Tasks exports and binds to `TaskCounts` with `#[Bind]`; Plans names no Tasks service class.
 
-A wider design for a public interface layer per domain is being written separately (message 685).
+Plan 5 built the public interface layer of doc 10 revision 2: each domain reaches another only through what it exports (contracts, values, facts), and the checks are listed in `docs/hooks/dependencies.md`.
 
 ## Domain ownership and dependencies
 
@@ -128,4 +128,4 @@ Approved by the user in question 13 (rule 9):
 | Access | User, login through Fortify, the configured owner, the user policy and middleware | nothing |
 | Web | pages, controllers, requests, page and input Data, routes, live updates | Access, Plans, Chat, Rules |
 
-No domain requires Web. Plans keeps its approved edge to Tasks. The core (`app/Core`) needs no edge and names no domain.
+No domain requires Web. Plans keeps its approved edge to Tasks. The core (`app/Core`) needs no edge and names no domain. A requirement lets Web name what Access, Plans, Chat and Rules export (their readers, starters, senders, reviewers, values and facts), never their models or tables: each owner alone reads and writes its own tables.

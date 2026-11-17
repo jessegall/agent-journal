@@ -2,7 +2,7 @@
 
 Plan 2 built the agent stack state machine of doc 3. Since task 96 it lives in the core, `app/Core`, with the agent and session context (`app/Core/Agents`) and the links every model uses (`app/Core/Links`). The core is a foundation under the domains, not a domain: every domain and every module installed later, ours, a paid one or a third party, uses it without declaring it, registers its own state types, pushes its own states and adds context. The core names no domain or module; `tests/Architecture/DomainBoundaryTest.php` scans `app/Core` and fails on any domain name in it.
 
-Question 10 had approved edges from the domains to Hooks, Agents and Links. With those three in the core the edges are gone, and the declared edges are below. Rule 9 still holds: a domain declares a new required domain only after the user approves it. `tests/Unit/Domains/DomainClassesTest.php` lists every domain's requirements.
+Question 10 had approved edges from the domains to Hooks, Agents and Links. With those three in the core the edges are gone, and the declared edges are below. Rule 9 still holds: a domain declares a new required domain only after the user approves it. `tests/Unit/Domains/DomainClassesTest.php` lists every domain's requirements and pins its export list.
 
 ## Declared dependencies
 
@@ -29,7 +29,7 @@ No owner store existed for the subjects the states are about, so plan 2 built th
 | Core (Agents) | `agents`, `agent_sessions`, `launch_credentials` and the launch, loss and child operations | tasks 57, 70, 72 |
 | Memory | `memories`, `memory_compactions`: weights faded once per compaction | task 71 |
 | Rules | `rules`, `Rule`: text and state | task 71 |
-| Links | `links`, `Link`, `Linkable` | task 84 |
+| Core (Links) | `links`, `Link`, `Linkable` | task 84 |
 
 ## Owner work still missing
 
@@ -40,14 +40,29 @@ No owner store existed for the subjects the states are about, so plan 2 built th
 | Agent scoping (rule 4) on the new task, message, sequence, memory and rule stores | Tasks, Chat, Sequences, Memory, Rules models | task 92 |
 | A full hook call and a lock wait measured on the live Octane app | Hooks; `docs/hooks/program-capabilities.md` | task 93 |
 
-## Core's public surface (plan 5, task 156)
+## Core's public surface (plan 5, tasks 156 and 163)
 
-`app/Core/CoreApi.php` lists 67 Core types one by one; the rest of Core is private. By area:
+`app/Core/CoreApi.php` lists 72 Core types one by one; the rest of Core is private, whatever folder a class sits in. By area:
 
 - **Actors** (4): `ActorContext`, `ActorContextMissing`, `ActorKind`, `UserActorRequired`.
 - **Agents** (4): `AgentLabel`, `AgentReader`, `SessionOption`, `SessionReader`.
 - **Contracts** (3): `Actor`, `CurrentActor`, `EstablishActor`.
-- **Hooks** (52): `AgentStack`, `AgentState`, `Answer`, `AnswerKind`, `ChangeKind`, `CommandEffect`, `CommandKind`, `CommandPart`, `CompactionDetails`, `ContextCompacted`, `ContextWasCompacted`, `Decision`, `FileChange`, `FileChanges`, `FileEditRequested`, `FileOperation`, `HookAnswerer`, `HookIdentity`, `HookInput`, `OwnedByOneAgent`, `ParseOutcome`, `PartJoin`, `PromptDetails`, `PromptSubmitted`, `SessionEndDetails`, `SessionEndReason`, `SessionEnded`, `SessionStartDetails`, `SessionStartSource`, `SessionStarted`, `ShellCommand`, `ShellCommandParser`, `ShellCommandRequested`, `ShellDialect`, `StackChange`, `StackEditor`, `StackLockTimedOut`, `StackTarget`, `StackTargetRefused`, `StackTransactionRequired`, `StackWork`, `StateReference`, `StateSubjectMissing`, `StateType`, `StateTypesRequested`, `StopDetails`, `StopRequested`, `SubjectReference`, `ToolFinished`, `ToolOutcome`, `ToolResult`, `UserStack`.
+- **Hooks** (57): `AgentStack`, `AgentState`, `Answer`, `AnswerKind`, `ChangeKind`, `CommandEffect`, `CommandKind`, `CommandPart`, `CompactionDetails`, `ContextCompacted`, `ContextWasCompacted`, `Decision`, `FileChange`, `FileChanges`, `FileEditRequested`, `FileOperation`, `HookAnswerer`, `HookIdentity`, `HookInput`, `NoSubject`, `OwnedByOneAgent`, `ParseOutcome`, `PartJoin`, `PromptDetails`, `PromptSubmitted`, `ReminderContribution`, `SessionEndDetails`, `SessionEndReason`, `SessionEnded`, `SessionStartDetails`, `SessionStartSource`, `SessionStarted`, `ShellCommand`, `ShellCommandParser`, `ShellCommandRequested`, `ShellDialect`, `StackChange`, `StackEditor`, `StackLockTimedOut`, `StackTarget`, `StackTargetRefused`, `StackTransactionRequired`, `StackWork`, `StateReference`, `StateRegistration`, `StateSubjectMissing`, `StateType`, `StateTypeRepeated`, `StateTypesFrozen`, `StateTypesRequested`, `StopDetails`, `StopRequested`, `SubjectReference`, `ToolFinished`, `ToolOutcome`, `ToolResult`, `UserStack`.
 - **Links** (4): `LinkAccess`, `LinkTypeRenames`, `LinkTypes`, `Linkable`.
 
-`EstablishActor`, `LinkTypes` and `LinkTypeRenames` are for the places that compose the application only: the sign-in middleware, owner providers and owner migrations. `ContextWasCompacted` and `StateTypesRequested` are listed because domains listen to them today; phase 25 settles their final shape. Domain exports: Tasks 4, Plans 11, Chat 6, Rules 8, Access 2; Memory, Processes, Profiles, Reminders, Sequences and Web export nothing yet.
+`EstablishActor` is for the authentication sites only (below); `LinkTypes` and `LinkTypeRenames` for owner providers and owner migrations. Domain exports: Tasks 8, Plans 13, Chat 9, Rules 11, Access 3; Memory, Processes, Profiles, Reminders, Sequences and Web export nothing.
+
+## How the boundary is checked (plan 5, phase 26)
+
+Doc 10 revision 2 is the design. The architecture suite (`tests/Architecture`, run by `composer test` and so by `composer ci:check` in CI) enforces it on `app/Domain` and `app/Core`, and on any module registered beside the domains.
+
+- **Names** (`DomainBoundaryTest`). A domain names its own code, Core's listed types, code outside the project, and of a domain it requires only what that domain's `exports()` lists. A descriptor may name the descriptors it requires, in its own Domain class only. Core names no domain. Imports, types, `::class`, `new`, static calls, attributes, docblock types and class-name strings are read; names built at run time are not.
+- **Composition files** (`DomainBoundaryTest`). Outside the domains, exactly five files may name domain or Core classes, and only for what they compose: `bootstrap/domains.php` the descriptors, `bootstrap/providers.php` the providers, `bootstrap/app.php` the middleware, `config/auth.php` the user model and `database/seeders/DatabaseSeeder.php` the owners' seeders.
+- **Public signatures** (`PublicContractTest`). Every export exists and is an interface, an enum, a final immutable value (Data included) or an exception in its owner's `Exceptions` folder; Core may also publish traits, abstract bases and its one Eloquent adapter, `LinkAccess`. Models and services are never exported. The public methods, properties and promoted constructor parameters of an export, with their docblocks and those of its project parents, show only the owner's own exports, Core's list and framework types: never another domain's value, even a required one. A leak names the member, such as `PlanCard::__construct()`.
+- **Tables** (`DomainTableBoundaryTest`). A table belongs to the domain or Core whose migrations create it, and only that owner reads, joins, keys or changes it, also when another domain requires the owner. Core's areas own `agents`, `agent_sessions`, `launch_credentials`, `launch_bypasses`, `agent_stacks`, `hook_calls` and `links`. Raw SQL text and table names built at run time are not read.
+- **Events** (`DomainEventRulesTest`, `DomainEventCallTest`). Another owner's event is named only in a listener, to hear it, and only from a domain that requires the owner; it is raised only by its owner, and a domain never raises a Core event or extension request. The `eloquent.booted` wiring in `HooksServiceProvider` is a framework call, not a named event.
+- **Bindings** (`BindingRulesTest`). `#[Bind]`, `#[Scoped]`, `#[Singleton]` and class-string `bind`, `scoped` and `singleton` calls in providers are read: the target implements what it is bound to and belongs to the binding owner, and only Core's public contracts are filled by another owner (Processes fills `ShellCommandParser`, over Core's explicit `bindIf` fallback `MissingCommandFacts`). A singleton that reaches a per-request service through its constructor fails. Closures in providers are not judged.
+- **Who acts.** Only `ActorStore`, its two contracts, `CoreApi`, `AuthenticateAgent`, `AuthenticateUser` and `ActorsServiceProvider` name `EstablishActor` or `ActorStore`; tests may arrange an actor.
+- **Registered modules** (`RegisteredModuleTest`). `tests/Fixtures/Modules/Notes` is a module outside `app` with its own descriptor, contract, value, private reader, provider, migration and listener. Registered beside the real domains, it is discovered like a domain (listener folder, migrations) and judged by every check above in both directions; its provider is registered by the module itself.
+
+Not checked, and so not promised: names, tables or events built at run time, a query built in one file and run in another, closures bound in providers, and changes to the container at run time. Deferred by doc 10's decisions: a command bus, a separate store per owner, an outbox for facts, a supplier registry and a cross-owner link router.
