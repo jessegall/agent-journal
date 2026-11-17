@@ -47,6 +47,7 @@ use App\Core\Assignments\Support\AssigneeName;
 use App\Core\Assignments\Support\AssigneeRegistration;
 use App\Core\Assignments\Support\Assignment;
 use App\Core\Assignments\Support\AssignmentChange;
+use App\Core\Assignments\Support\AssignmentData;
 use App\Core\Assignments\Support\AssignmentGroup;
 use App\Core\Assignments\Support\AssignmentHolder;
 use App\Core\Assignments\Support\AssignmentHolders;
@@ -241,6 +242,7 @@ final class CoreApi
             AssigneeUnavailable::class,
             RecordUnavailable::class,
             AssignmentRootFinished::class,
+            AssignmentData::class,
             AgentNotAvailable::class,
             AgentRetirementDenied::class,
             AgentRetirement::class,

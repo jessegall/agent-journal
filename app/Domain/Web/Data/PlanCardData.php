@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Data;
 
+use App\Core\Assignments\Support\AssignmentData;
 use App\Domain\Plans\Api\PlanCard;
 use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;

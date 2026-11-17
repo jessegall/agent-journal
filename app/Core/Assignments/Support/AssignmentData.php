@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Web\Data;
+namespace App\Core\Assignments\Support;
 
 use App\Core\Actors\Enums\ActorKind;
-use App\Core\Assignments\Support\AssignmentHolder;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

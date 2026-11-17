@@ -26,6 +26,7 @@ final class PlansServiceProvider extends ServiceProvider
 
     public function boot(LinkTypes $links): void
     {
+        $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
         $links->register([
             Plan::LINK_TYPE => Plan::class,
             Phase::LINK_TYPE => Phase::class,

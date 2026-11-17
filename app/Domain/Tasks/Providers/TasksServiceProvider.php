@@ -25,6 +25,7 @@ final class TasksServiceProvider extends ServiceProvider
 
     public function boot(LinkTypes $links): void
     {
+        $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
         $links->register([
             Task::LINK_TYPE => Task::class,
         ]);
