@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Shelf;
 
-use App\Domain\Contracts\SectionReader;
-use App\Domain\Declarations\SlotContext;
+use App\Core\Ui\Contracts\SectionReader;
+use App\Core\Ui\Declarations\SlotContext;
 use RuntimeException;
 use Tests\Fixtures\UiDeclarations\RecentNotesData;
 

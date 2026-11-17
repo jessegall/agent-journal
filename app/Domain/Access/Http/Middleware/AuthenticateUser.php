@@ -6,7 +6,7 @@ namespace App\Domain\Access\Http\Middleware;
 
 use App\Core\Contracts\Actor;
 use App\Core\Contracts\CurrentActorSetter;
-use App\Domain\Access\Contracts\JournalAccessPolicy;
+use App\Core\Web\Contracts\JournalAccessPolicy;
 use App\Domain\Access\Exceptions\JournalAccessDenied;
 use Closure;
 use Illuminate\Http\Request;

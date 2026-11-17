@@ -6,9 +6,9 @@ namespace App\Domain\Chat\Readers;
 
 use App\Core\Agents\Contracts\SessionReader;
 use App\Core\Agents\Support\SessionOption;
+use App\Core\Ui\Contracts\SectionReader;
+use App\Core\Ui\Declarations\SlotContext;
 use App\Domain\Chat\Data\ChosenAgentData;
-use App\Domain\Contracts\SectionReader;
-use App\Domain\Declarations\SlotContext;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**

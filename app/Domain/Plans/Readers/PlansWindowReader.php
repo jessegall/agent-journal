@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Readers;
 
-use App\Domain\Contracts\PageReader;
+use App\Core\Ui\Contracts\PageReader;
 use App\Domain\Plans\Contracts\PlanReader;
 use App\Domain\Plans\Data\PlanCardData;
 use App\Domain\Plans\Data\PlanListData;

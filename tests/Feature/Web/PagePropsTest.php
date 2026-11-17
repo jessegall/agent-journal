@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Domain\Declarations\DomainUi;
-use App\Domain\Declarations\Page;
-use App\Domain\Declarations\Section;
-use App\Domain\Declarations\Slot;
+use App\Core\Ui\Declarations\Page;
+use App\Core\Ui\Declarations\Section;
+use App\Core\Ui\Declarations\Slot;
+use App\Core\Ui\Enums\Icon;
+use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Ui\Support\UiDeclarations;
+use App\Core\Web\Data\DeniedWindow;
+use App\Core\Web\Data\FailedWindow;
+use App\Core\Web\Data\ReadyWindow;
+use App\Core\Web\Http\PageProps;
+use App\Core\Web\Http\Requests\DeclaredPageRequest;
 use App\Domain\DomainEntry;
-use App\Domain\Enums\Icon;
-use App\Domain\Enums\SlotContextKind;
-use App\Domain\UiDeclarations;
-use App\Domain\Web\Data\DeniedWindow;
-use App\Domain\Web\Data\FailedWindow;
-use App\Domain\Web\Data\ReadyWindow;
-use App\Domain\Web\Http\Requests\DeclaredPageRequest;
-use App\Domain\Web\Support\PageProps;
 use Illuminate\Validation\ValidationException;
 use Tests\Fixtures\UiDeclarations\Desk\NotesReader;
 use Tests\Fixtures\UiDeclarations\Library\NobodySees;
@@ -121,7 +120,7 @@ final class PagePropsTest extends TestCase
 
     private function declarations(): UiDeclarations
     {
-        $shelf = DomainUi::declaring(DomainEntry::fromClass(ShelfDomain::class), pages: [
+        $shelf = DomainEntry::fromClass(ShelfDomain::class)->declaring(pages: [
             Page::make('shelves', 'Shelves', Icon::Docs, ShelfReader::class, 'Shelf.vue')
                 ->at('')
                 ->slots(Slot::make('aside', SlotContextKind::Nothing)),

@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Core\Agents\Models\Agent;
+use App\Core\Ui\Support\UiDeclarations;
+use App\Core\Web\Pages\WebPages;
+use App\Core\Web\Routes\DeclaredRoutes;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
 use App\Domain\DomainRegistry;
-use App\Domain\UiDeclarations;
-use App\Domain\Web\Support\DeclaredRoutes;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Testing\AssertableInertia;
@@ -82,7 +83,7 @@ final class ExternalModulePagesTest extends TestCase
     {
         /** @var list<class-string> $domainClasses */
         $domainClasses = require base_path('bootstrap/domains.php');
-        $declarations = DomainRegistry::from([...$domainClasses, NotesDomain::class])->uiDeclarations();
+        $declarations = DomainRegistry::from([...$domainClasses, NotesDomain::class])->uiDeclarations(new WebPages()->declarations());
         $this->app->instance(UiDeclarations::class, $declarations);
         $router = $this->app->make(Router::class);
         new DeclaredRoutes($declarations)->register($router);

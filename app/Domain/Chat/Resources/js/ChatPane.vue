@@ -20,7 +20,7 @@ const conversation = computed(() => props.chat.conversation);
 const key = computed(() =>
     conversation.value === undefined
         ? undefined
-        : draftKey(page.props.viewer?.id ?? '', conversation.value.id),
+        : draftKey(page.props.currentUser?.id ?? '', conversation.value.id),
 );
 </script>
 

@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
+use App\Core\Ui\Declarations\ActionRoute;
+use App\Core\Ui\Declarations\Page;
+use App\Core\Ui\Declarations\Section;
+use App\Core\Ui\Declarations\Slot;
+use App\Core\Ui\Enums\Icon;
+use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Ui\Support\UiDeclarations;
+use App\Core\Web\Exceptions\UiPrefixUnavailable;
+use App\Core\Web\Routes\DeclaredRoutes;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
-use App\Domain\Declarations\ActionRoute;
-use App\Domain\Declarations\DomainUi;
-use App\Domain\Declarations\Page;
-use App\Domain\Declarations\Section;
-use App\Domain\Declarations\Slot;
 use App\Domain\DomainEntry;
-use App\Domain\Enums\Icon;
-use App\Domain\Enums\SlotContextKind;
-use App\Domain\UiDeclarations;
-use App\Domain\Web\Exceptions\UiPrefixUnavailable;
-use App\Domain\Web\Support\DeclaredRoutes;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\RouteCollection;
 use Illuminate\Routing\Router;
@@ -126,7 +125,7 @@ final class DeclaredRoutesTest extends TestCase
 
     private function declarations(): UiDeclarations
     {
-        $library = DomainUi::declaring(DomainEntry::fromClass(LibraryDomain::class), pages: [
+        $library = DomainEntry::fromClass(LibraryDomain::class)->declaring(pages: [
             Page::make('books', 'Books', Icon::Docs, BooksReader::class, 'Books.vue')
                 ->at('')
                 ->slots(Slot::make('aside', SlotContextKind::Nothing))
@@ -136,7 +135,7 @@ final class DeclaredRoutesTest extends TestCase
                 ->visibleWhen(NobodySees::class)
                 ->actions(ActionRoute::post('hidden/books', AddBook::class, 'add-hidden')),
         ]);
-        $desk = DomainUi::declaring(DomainEntry::fromClass(DeskDomain::class), sections: [
+        $desk = DomainEntry::fromClass(DeskDomain::class)->declaring(sections: [
             Section::make('draft', 'Draft', 'library.aside', SlotContextKind::Nothing, NotesReader::class, 'Notes.vue')
                 ->visibleWhen(NobodySees::class)
                 ->actions(ActionRoute::post('drafts', SaveDraft::class, 'save')),

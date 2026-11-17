@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans;
 
+use App\Core\Ui\Contracts\ProvidesNavigation;
+use App\Core\Ui\Contracts\ProvidesPages;
+use App\Core\Ui\Contracts\ProvidesSections;
+use App\Core\Ui\Declarations\ActionRoute;
+use App\Core\Ui\Declarations\NavigationItem;
+use App\Core\Ui\Declarations\Page;
+use App\Core\Ui\Declarations\Section;
+use App\Core\Ui\Declarations\Slot;
+use App\Core\Ui\Enums\Icon;
+use App\Core\Ui\Enums\SlotContextKind;
 use App\Domain\Contracts\Domain;
 use App\Domain\Contracts\ProvidesAssignables;
-use App\Domain\Contracts\ProvidesNavigation;
-use App\Domain\Contracts\ProvidesPages;
-use App\Domain\Contracts\ProvidesSections;
-use App\Domain\Declarations\ActionRoute;
-use App\Domain\Declarations\NavigationItem;
-use App\Domain\Declarations\Page;
-use App\Domain\Declarations\Section;
-use App\Domain\Declarations\Slot;
-use App\Domain\Enums\Icon;
-use App\Domain\Enums\SlotContextKind;
 use App\Domain\Plans\Api\AssignedPlanFilters;
 use App\Domain\Plans\Api\AssignedPlanList;
 use App\Domain\Plans\Api\Events\PlanProgressChanged;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Library;
 
-use App\Domain\Contracts\NavigationChildren;
-use App\Domain\Declarations\NavigationItem;
+use App\Core\Ui\Contracts\NavigationChildren;
+use App\Core\Ui\Declarations\NavigationItem;
 
 final class ShelfItems implements NavigationChildren
 {

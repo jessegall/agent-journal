@@ -34,7 +34,7 @@ final class LoginTest extends TestCase
             ->component('Login')
             ->where('page.input.email', '')
             ->where('name', config('app.name'))
-            ->missing('viewer'));
+            ->missing('currentUser'));
     }
 
     public function test_the_owner_signs_in_lands_on_plans_and_signs_out(): void

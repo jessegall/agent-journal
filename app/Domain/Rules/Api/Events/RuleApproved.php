@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Rules\Api\Events;
 
-use App\Domain\Contracts\ChangesWhatUsersSee;
+use App\Core\Ui\Contracts\ChangesWhatUsersSee;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**

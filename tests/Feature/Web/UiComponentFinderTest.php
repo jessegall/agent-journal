@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Domain\Declarations\DomainUi;
-use App\Domain\Declarations\Page;
+use App\Core\Ui\Declarations\Page;
+use App\Core\Ui\Enums\Icon;
+use App\Core\Ui\Support\UiDeclarations;
 use App\Domain\DomainEntry;
-use App\Domain\Enums\Icon;
-use App\Domain\UiDeclarations;
 use InvalidArgumentException;
 use Tests\Fixtures\UiDeclarations\Library\BooksReader;
 use Tests\Fixtures\UiDeclarations\Library\LibraryDomain;
@@ -25,7 +24,7 @@ final class UiComponentFinderTest extends TestCase
         parent::setUp();
 
         $this->app->instance(UiDeclarations::class, UiDeclarations::check([
-            DomainUi::declaring(DomainEntry::fromClass(LibraryDomain::class), pages: [
+            DomainEntry::fromClass(LibraryDomain::class)->declaring(pages: [
                 Page::make('index', 'Library', Icon::Docs, BooksReader::class, 'Index.vue')->at(''),
             ]),
         ]));

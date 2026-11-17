@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
+use App\Core\Web\Http\Middleware\HandleInertiaRequests;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
 use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Tasks\Models\Task;
-use App\Domain\Web\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Http\Request;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;

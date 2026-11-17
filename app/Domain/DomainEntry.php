@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain;
 
+use App\Core\Ui\Declarations\DomainUi;
+use App\Core\Ui\Declarations\NavigationItem;
+use App\Core\Ui\Declarations\Page;
+use App\Core\Ui\Declarations\Section;
 use App\Domain\Contracts\Domain;
 use App\Domain\Exceptions\DomainRequiresItself;
 use App\Domain\Exceptions\NotADomain;
@@ -158,5 +162,25 @@ final readonly class DomainEntry
         }
 
         return $seen;
+    }
+
+    /**
+     * The pages, navigation and sections this domain declares, as Core's UI reads them.
+     */
+    public function ui(): DomainUi
+    {
+        return DomainUi::of($this->domain, $this->name, $this->namespace, $this->folder);
+    }
+
+    /**
+     * The given pages, navigation and sections as this domain's, whatever the domain itself declares.
+     *
+     * @param  list<Page>  $pages
+     * @param  list<NavigationItem>  $navigation
+     * @param  list<Section>  $sections
+     */
+    public function declaring(array $pages = [], array $navigation = [], array $sections = []): DomainUi
+    {
+        return DomainUi::declaring($this->name, $this->namespace, $this->folder, $pages, $navigation, $sections);
     }
 }

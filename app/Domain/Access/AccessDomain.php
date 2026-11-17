@@ -6,9 +6,6 @@ namespace App\Domain\Access;
 
 use App\Core\Actors\Enums\ActorKind;
 use App\Core\Assignments\Support\AssigneeRegistration;
-use App\Domain\Access\Api\Viewer;
-use App\Domain\Access\Contracts\JournalAccessPolicy;
-use App\Domain\Access\Contracts\ViewerReader;
 use App\Domain\Access\Support\UserAssignees;
 use App\Domain\Contracts\Domain;
 use App\Domain\Contracts\ProvidesAssignees;
@@ -33,11 +30,7 @@ final class AccessDomain implements Domain, ProvidesAssignees
      */
     public function exports(): array
     {
-        return [
-            ViewerReader::class,
-            JournalAccessPolicy::class,
-            Viewer::class,
-        ];
+        return [];
     }
 
     /**

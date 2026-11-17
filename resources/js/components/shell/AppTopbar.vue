@@ -11,13 +11,13 @@ import { logout } from '@/routes';
 /**
  * Version 5's breadcrumb with its top buttons (shell/Breadcrumb.vue, windows/StageTopButtons.vue; doc 12 section 1.1):
  * 40 px, the project swatch and name, then the page; on the right the sidebar button, the colour scheme menu, full
- * screen, and version 6's signed-in viewer with sign out.
+ * screen, and version 6's signed-in user with sign out.
  */
 defineProps<{ title: string }>();
 
 const page = usePage();
 const appName = computed(() => page.props.name);
-const viewerName = computed(() => page.props.viewer?.name);
+const userName = computed(() => page.props.currentUser?.name);
 const { appearance, update } = useAppearance();
 const { toggle: toggleSidebar } = useSidebar();
 const isSchemeMenuOpen = ref(false);
@@ -70,30 +70,32 @@ function toggleFullScreen(): void {
                 @click="isSchemeMenuOpen = !isSchemeMenuOpen"
                 ><Icon name="scheme" :size="13"
             /></Button>
-            <div
-                v-if="isSchemeMenuOpen"
-                class="absolute top-8 right-0 z-90 flex w-[200px] flex-col gap-0.5 rounded-menu border border-border-2 bg-raised p-1.5 shadow-[0_14px_36px_rgba(0,0,0,.45)]"
-                role="menu"
-            >
-                <span
-                    class="block px-2 pt-2.5 pb-1 text-group font-semibold tracking-[.06em] text-text-4 uppercase"
-                    >Color scheme</span
+            <template v-if="isSchemeMenuOpen">
+                <div
+                    class="absolute top-8 right-0 z-90 flex w-[200px] flex-col gap-0.5 rounded-menu border border-border-2 bg-raised p-1.5 shadow-[0_14px_36px_rgba(0,0,0,.45)]"
+                    role="menu"
                 >
-                <button
-                    v-for="scheme in schemes"
-                    :key="scheme.value"
-                    type="button"
-                    role="menuitemradio"
-                    :aria-checked="appearance === scheme.value"
-                    class="flex items-center gap-2 rounded-control px-2 py-1.5 text-left text-small text-text-2 hover:bg-hover hover:text-text"
-                    :class="{
-                        'bg-brand/16 text-text': appearance === scheme.value,
-                    }"
-                    @click="chooseScheme(scheme.value)"
-                >
-                    {{ scheme.label }}
-                </button>
-            </div>
+                    <span
+                        class="block px-2 pt-2.5 pb-1 text-group font-semibold tracking-[.06em] text-text-4 uppercase"
+                        >Color scheme</span
+                    >
+                    <template v-for="scheme in schemes" :key="scheme.value">
+                        <button
+                            type="button"
+                            role="menuitemradio"
+                            :aria-checked="appearance === scheme.value"
+                            class="flex items-center gap-2 rounded-control px-2 py-1.5 text-left text-small text-text-2 hover:bg-hover hover:text-text"
+                            :class="{
+                                'bg-brand/16 text-text':
+                                    appearance === scheme.value,
+                            }"
+                            @click="chooseScheme(scheme.value)"
+                        >
+                            {{ scheme.label }}
+                        </button>
+                    </template>
+                </div>
+            </template>
         </div>
         <Button
             variant="icon"
@@ -101,8 +103,8 @@ function toggleFullScreen(): void {
             @click="toggleFullScreen"
             ><Icon name="wide" :size="13"
         /></Button>
-        <template v-if="viewerName">
-            <span class="text-small text-text-3">{{ viewerName }}</span>
+        <template v-if="userName">
+            <span class="text-small text-text-3">{{ userName }}</span>
             <Form v-bind="logout.form()">
                 <Button type="submit" variant="icon" aria-label="Sign out"
                     ><Icon name="power" :size="13"

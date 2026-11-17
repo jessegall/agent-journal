@@ -1,7 +1,7 @@
 import { reactive } from 'vue';
 
 /**
- * Unsent message text per viewer and conversation, so leaving and coming back to a conversation, or reloading the page,
+ * Unsent message text per user and conversation, so leaving and coming back to a conversation, or reloading the page,
  * keeps what was typed. Each conversation has its own draft. The drafts live in this tab's session storage; when the
  * browser refuses storage they still last for as long as the page stays open.
  */
@@ -28,8 +28,8 @@ function store(): void {
     }
 }
 
-export function draftKey(viewerId: string, conversationId: string): string {
-    return `${viewerId}/${conversationId}`;
+export function draftKey(userId: string, conversationId: string): string {
+    return `${userId}/${conversationId}`;
 }
 
 export function useMessageDrafts() {

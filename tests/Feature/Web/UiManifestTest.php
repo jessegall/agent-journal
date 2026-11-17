@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Domain\Declarations\DomainUi;
-use App\Domain\Declarations\Page;
+use App\Core\Ui\Declarations\DomainUi;
+use App\Core\Ui\Declarations\Page;
+use App\Core\Ui\Enums\Icon;
+use App\Core\Ui\Support\UiDeclarations;
+use App\Core\Web\Support\UiManifest;
+use App\Core\Web\Types\PagePropTypes;
+use App\Core\Web\Types\TypeOwners;
 use App\Domain\DomainEntry;
 use App\Domain\DomainRegistry;
-use App\Domain\Enums\Icon;
-use App\Domain\UiDeclarations;
-use App\Domain\Web\Support\UiManifest;
-use App\Domain\Web\Types\PagePropTypes;
-use App\Domain\Web\Types\TypeOwners;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\UiDeclarations\Library\BooksReader;
 use Tests\Fixtures\UiDeclarations\Library\LibraryDomain;
@@ -94,10 +94,11 @@ final class UiManifestTest extends TestCase
 
     public function test_a_types_owner_is_core_its_domain_or_shared(): void
     {
-        $owners = TypeOwners::of($this->app->make(DomainRegistry::class));
+        $owners = TypeOwners::of($this->app->make(DomainRegistry::class), $this->app->make(UiDeclarations::class));
 
         $this->assertSame('core', $owners->ownerOf('App\\Core\\Assignments\\Support\\AssignmentData'));
         $this->assertSame('plans', $owners->ownerOf('App\\Domain\\Plans\\Http\\Data\\AssignedPlanListData'));
+        $this->assertSame('web', $owners->ownerOf('App\\Core\\Web\\Data\\HomeData'));
         $this->assertSame('shared', $owners->ownerOf('Tests\\Fixtures\\UiDeclarations\\RecentNotesData'));
     }
 
@@ -108,19 +109,19 @@ final class UiManifestTest extends TestCase
     {
         $declarations = UiDeclarations::check($domains);
 
-        return new UiManifest($declarations, $this->app->make('view'), new PagePropTypes($declarations, TypeOwners::of($this->app->make(DomainRegistry::class))));
+        return new UiManifest($declarations, $this->app->make('view'), new PagePropTypes($declarations, TypeOwners::of($this->app->make(DomainRegistry::class), $declarations)));
     }
 
     private function library(): DomainUi
     {
-        return DomainUi::declaring(DomainEntry::fromClass(LibraryDomain::class), pages: [
+        return DomainEntry::fromClass(LibraryDomain::class)->declaring(pages: [
             Page::make('index', 'Library', Icon::Docs, BooksReader::class, 'Index.vue')->at(''),
         ]);
     }
 
     private function shelf(): DomainUi
     {
-        return DomainUi::declaring(DomainEntry::fromClass(ShelfDomain::class), pages: [
+        return DomainEntry::fromClass(ShelfDomain::class)->declaring(pages: [
             Page::make('index', 'Shelf', Icon::Docs, ShelfReader::class, 'Index.vue')->at(''),
         ]);
     }

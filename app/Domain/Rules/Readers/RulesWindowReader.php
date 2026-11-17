@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Rules\Readers;
 
-use App\Domain\Contracts\PageReader;
+use App\Core\Ui\Contracts\PageReader;
 use App\Domain\Rules\Contracts\RuleReader;
 use App\Domain\Rules\Data\RuleListData;
 use App\Domain\Rules\Data\RulePaginationData;

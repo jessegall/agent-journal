@@ -7,7 +7,6 @@ namespace App\Domain\Providers;
 use App\Core\Assignments\Contracts\AssignmentRegistration;
 use App\Core\Hooks\Events\StateTypesRequested;
 use App\Domain\DomainRegistry;
-use App\Domain\UiDeclarations;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use Illuminate\Support\ServiceProvider;
@@ -22,15 +21,11 @@ class DomainServiceProvider extends ServiceProvider
         $registry = DomainRegistry::from($this->domainClasses());
 
         $this->app->instance(DomainRegistry::class, $registry);
-        $this->app->singleton(UiDeclarations::class, fn () => $registry->uiDeclarations());
 
         EventServiceProvider::addEventDiscoveryPaths($registry->listenerFolders());
     }
 
-    /**
-     * Asking for the UI declarations here makes a declaration the application cannot start with fail the boot.
-     */
-    public function boot(DomainRegistry $registry, Dispatcher $events, AssignmentRegistration $assignments, UiDeclarations $declarations): void
+    public function boot(DomainRegistry $registry, Dispatcher $events, AssignmentRegistration $assignments): void
     {
         foreach ($registry->all() as $entry) {
             $this->loadMigrationsFrom($entry->migrationFolder());

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Rules;
 
+use App\Core\Ui\Contracts\ProvidesNavigation;
+use App\Core\Ui\Contracts\ProvidesPages;
+use App\Core\Ui\Declarations\ActionRoute;
+use App\Core\Ui\Declarations\NavigationItem;
+use App\Core\Ui\Declarations\Page;
+use App\Core\Ui\Enums\Icon;
 use App\Domain\Contracts\Domain;
-use App\Domain\Contracts\ProvidesNavigation;
-use App\Domain\Contracts\ProvidesPages;
-use App\Domain\Declarations\ActionRoute;
-use App\Domain\Declarations\NavigationItem;
-use App\Domain\Declarations\Page;
-use App\Domain\Enums\Icon;
 use App\Domain\Rules\Api\Events\RuleApproved;
 use App\Domain\Rules\Api\Events\RuleDenied;
 use App\Domain\Rules\Api\Events\RuleRemoved;

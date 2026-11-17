@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Access\Providers;
 
+use App\Core\Web\Contracts\CurrentUserReader;
+use App\Core\Web\Contracts\JournalAccessPolicy;
 use App\Domain\Access\Actions\CreateNewUser;
 use App\Domain\Access\Actions\ResetUserPassword;
+use App\Domain\Access\Readers\CurrentUserRecords;
 use App\Domain\Access\Support\AccessSettings;
+use App\Domain\Access\Support\JournalAccess;
 use App\Domain\Access\Support\UserAssignees;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -22,6 +26,8 @@ class AccessServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(CurrentUserReader::class, CurrentUserRecords::class);
+        $this->app->bind(JournalAccessPolicy::class, JournalAccess::class);
         $this->app->singleton(AccessSettings::class, function (): AccessSettings {
             $ownerId = $this->app->make('config')->get('access.owner_id');
 

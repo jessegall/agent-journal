@@ -43,7 +43,7 @@ export function pageChanged(): void {
 }
 
 /**
- * Called by the shell when the viewer signs out or changes: nothing waits any more.
+ * Called by the shell when the user signs out or changes: nothing waits any more.
  */
 export function forgetPageChanges(): void {
     clearTimeout(timer);

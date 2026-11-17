@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Plans\Readers;
 
 use App\Core\Agents\Contracts\SessionReader;
-use App\Domain\Contracts\SectionReader;
-use App\Domain\Declarations\SlotContext;
+use App\Core\Ui\Contracts\SectionReader;
+use App\Core\Ui\Declarations\SlotContext;
 use App\Domain\Plans\Api\PlanFilters;
 use App\Domain\Plans\Contracts\PlanReader;
 use App\Domain\Plans\Data\PlanCardData;

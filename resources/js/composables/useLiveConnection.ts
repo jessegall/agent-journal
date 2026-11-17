@@ -5,15 +5,15 @@ import { connectUser } from '@/echo';
 import { forgetPageChanges, pageChanged } from './usePageChanges';
 
 /**
- * The shell's one connection: opened in the browser for the signed-in viewer, opened again only for a new viewer, and
- * closed when the viewer signs out or the shell leaves.
+ * The shell's one connection: opened in the browser for the signed-in user, opened again only for a new user, and
+ * closed when the user signs out or the shell leaves.
  */
 export function useLiveConnection(): void {
     const page = usePage();
     let connection: UserConnection | undefined;
 
-    function follow(viewerId: string | undefined): void {
-        if (connection?.userId === viewerId) {
+    function follow(userId: string | undefined): void {
+        if (connection?.userId === userId) {
             return;
         }
 
@@ -21,14 +21,14 @@ export function useLiveConnection(): void {
         connection = undefined;
         forgetPageChanges();
 
-        if (viewerId !== undefined) {
-            connection = connectUser(viewerId, pageChanged, pageChanged);
+        if (userId !== undefined) {
+            connection = connectUser(userId, pageChanged, pageChanged);
         }
     }
 
     onMounted(() => {
-        follow(page.props.viewer?.id);
-        watch(() => page.props.viewer?.id, follow);
+        follow(page.props.currentUser?.id);
+        watch(() => page.props.currentUser?.id, follow);
     });
     onBeforeUnmount(() => follow(undefined));
 }

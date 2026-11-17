@@ -7,6 +7,8 @@ use App\Core\Agents\Providers\AgentsServiceProvider;
 use App\Core\Assignments\Providers\AssignmentsServiceProvider;
 use App\Core\Hooks\Providers\HooksServiceProvider;
 use App\Core\Providers\CoreServiceProvider;
+use App\Core\Web\Providers\TypeScriptServiceProvider;
+use App\Core\Web\Providers\WebServiceProvider;
 use App\Domain\Access\Providers\AccessServiceProvider;
 use App\Domain\Chat\Providers\ChatServiceProvider;
 use App\Domain\Memory\Providers\MemoryServiceProvider;
@@ -16,8 +18,6 @@ use App\Domain\Providers\DomainServiceProvider;
 use App\Domain\Rules\Providers\RulesServiceProvider;
 use App\Domain\Sequences\Providers\SequencesServiceProvider;
 use App\Domain\Tasks\Providers\TasksServiceProvider;
-use App\Domain\Web\Providers\TypeScriptServiceProvider;
-use App\Domain\Web\Providers\WebServiceProvider;
 use App\Providers\AppServiceProvider;
 
 return [

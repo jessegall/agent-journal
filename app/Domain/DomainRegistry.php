@@ -6,10 +6,11 @@ namespace App\Domain;
 
 use App\Core\Assignments\Contracts\AssignmentRegistration;
 use App\Core\Hooks\Contracts\StateRegistration;
+use App\Core\Ui\Declarations\DomainUi;
+use App\Core\Ui\Support\UiDeclarations;
 use App\Domain\Contracts\ProvidesAssignables;
 use App\Domain\Contracts\ProvidesAssignees;
 use App\Domain\Contracts\ProvidesStates;
-use App\Domain\Declarations\DomainUi;
 use App\Domain\Exceptions\AmbiguousDomainRoot;
 use App\Domain\Exceptions\DomainCycle;
 use App\Domain\Exceptions\DomainListedTwice;
@@ -103,11 +104,11 @@ final readonly class DomainRegistry
 
     /**
      * The pages, navigation and sections every domain declares through ProvidesPages, ProvidesNavigation and
-     * ProvidesSections, checked together; a domain that declares none of them adds nothing.
+     * ProvidesSections, checked together with Core's own; a domain that declares none of them adds nothing.
      */
-    public function uiDeclarations(): UiDeclarations
+    public function uiDeclarations(DomainUi ...$coreDeclarations): UiDeclarations
     {
-        return UiDeclarations::check(array_map(DomainUi::of(...), $this->all()));
+        return UiDeclarations::check(array_values([...$coreDeclarations, ...array_map(fn (DomainEntry $entry) => $entry->ui(), $this->all())]));
     }
 
     /**

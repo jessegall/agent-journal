@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Library;
 
+use App\Core\Ui\Contracts\ProvidesNavigation;
+use App\Core\Ui\Contracts\ProvidesPages;
+use App\Core\Ui\Declarations\ActionRoute;
+use App\Core\Ui\Declarations\NavigationItem;
+use App\Core\Ui\Declarations\Page;
+use App\Core\Ui\Declarations\Slot;
+use App\Core\Ui\Enums\Icon;
+use App\Core\Ui\Enums\SlotContextKind;
 use App\Domain\Contracts\Domain;
-use App\Domain\Contracts\ProvidesNavigation;
-use App\Domain\Contracts\ProvidesPages;
-use App\Domain\Declarations\ActionRoute;
-use App\Domain\Declarations\NavigationItem;
-use App\Domain\Declarations\Page;
-use App\Domain\Declarations\Slot;
-use App\Domain\Enums\Icon;
-use App\Domain\Enums\SlotContextKind;
 
 /**
  * A fixture domain with a list page, a record page offering a slot, an action and nested navigation.

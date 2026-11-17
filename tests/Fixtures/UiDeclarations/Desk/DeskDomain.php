@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Desk;
 
+use App\Core\Ui\Contracts\ProvidesSections;
+use App\Core\Ui\Declarations\Section;
+use App\Core\Ui\Enums\SlotContextKind;
 use App\Domain\Contracts\Domain;
-use App\Domain\Contracts\ProvidesSections;
-use App\Domain\Declarations\Section;
-use App\Domain\Enums\SlotContextKind;
 
 /**
  * A fixture domain that declares no page and fills the slots of the Library fixture's pages.

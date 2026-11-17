@@ -6,7 +6,7 @@ namespace App\Domain\Access\Support;
 
 use App\Core\Actors\Enums\ActorKind;
 use App\Core\Contracts\Actor;
-use App\Domain\Access\Contracts\JournalAccessPolicy;
+use App\Core\Web\Contracts\JournalAccessPolicy;
 
 /**
  * Who may use the journal: only the configured owner. With no owner configured, nobody gets in; signing up or being

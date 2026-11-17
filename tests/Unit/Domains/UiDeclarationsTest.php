@@ -4,29 +4,28 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Domain\Contracts\VisibilityCheck;
-use App\Domain\Declarations\ActionRoute;
-use App\Domain\Declarations\DomainUi;
-use App\Domain\Declarations\NavigationItem;
-use App\Domain\Declarations\Page;
-use App\Domain\Declarations\RegisteredPage;
-use App\Domain\Declarations\Section;
-use App\Domain\Declarations\Slot;
+use App\Core\Ui\Contracts\VisibilityCheck;
+use App\Core\Ui\Declarations\ActionRoute;
+use App\Core\Ui\Declarations\NavigationItem;
+use App\Core\Ui\Declarations\Page;
+use App\Core\Ui\Declarations\RegisteredPage;
+use App\Core\Ui\Declarations\Section;
+use App\Core\Ui\Declarations\Slot;
+use App\Core\Ui\Enums\Icon;
+use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Ui\Exceptions\InvalidNavigationDeclaration;
+use App\Core\Ui\Exceptions\UiComponentMissing;
+use App\Core\Ui\Exceptions\UiKeyInvalid;
+use App\Core\Ui\Exceptions\UiKeyRepeated;
+use App\Core\Ui\Exceptions\UiPathInvalid;
+use App\Core\Ui\Exceptions\UiPathRepeated;
+use App\Core\Ui\Exceptions\UiReaderInvalid;
+use App\Core\Ui\Exceptions\UiRouteConflict;
+use App\Core\Ui\Exceptions\UiSlotMismatch;
+use App\Core\Ui\Exceptions\UiSlotMissing;
+use App\Core\Ui\Support\UiDeclarations;
 use App\Domain\DomainEntry;
 use App\Domain\DomainRegistry;
-use App\Domain\Enums\Icon;
-use App\Domain\Enums\SlotContextKind;
-use App\Domain\Exceptions\InvalidNavigationDeclaration;
-use App\Domain\Exceptions\UiComponentMissing;
-use App\Domain\Exceptions\UiKeyInvalid;
-use App\Domain\Exceptions\UiKeyRepeated;
-use App\Domain\Exceptions\UiPathInvalid;
-use App\Domain\Exceptions\UiPathRepeated;
-use App\Domain\Exceptions\UiReaderInvalid;
-use App\Domain\Exceptions\UiRouteConflict;
-use App\Domain\Exceptions\UiSlotMismatch;
-use App\Domain\Exceptions\UiSlotMissing;
-use App\Domain\UiDeclarations;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Domains\Books\BooksDomain;
 use Tests\Fixtures\UiDeclarations\Desk\DeskDomain;
@@ -172,8 +171,8 @@ final class UiDeclarationsTest extends TestCase
     {
         $this->expectExceptionObject(UiSlotMismatch::takes('desk.notes', 'library.aside', 'session', 'record'));
 
-        $library = DomainUi::of(DomainEntry::fromClass(LibraryDomain::class));
-        $desk = DomainUi::declaring(DomainEntry::fromClass(DeskDomain::class), sections: [
+        $library = DomainEntry::fromClass(LibraryDomain::class)->ui();
+        $desk = DomainEntry::fromClass(DeskDomain::class)->declaring(sections: [
             Section::make('notes', 'Notes', 'library.aside', SlotContextKind::Record, NotesReader::class, 'Notes.vue'),
         ]);
 
@@ -185,7 +184,7 @@ final class UiDeclarationsTest extends TestCase
         $this->expectExceptionObject(UiSlotMismatch::parameterMissing('library.books', 'library.inspector', 'book'));
 
         RegisteredPage::of(
-            DomainUi::declaring(DomainEntry::fromClass(LibraryDomain::class)),
+            DomainEntry::fromClass(LibraryDomain::class)->declaring(),
             $this->page('books')->slots(Slot::record('inspector', 'book')),
         );
     }
@@ -202,6 +201,6 @@ final class UiDeclarationsTest extends TestCase
      */
     private function check(array $pages = [], array $navigation = [], array $sections = []): UiDeclarations
     {
-        return UiDeclarations::check([DomainUi::declaring(DomainEntry::fromClass(LibraryDomain::class), $pages, $navigation, $sections)]);
+        return UiDeclarations::check([DomainEntry::fromClass(LibraryDomain::class)->declaring($pages, $navigation, $sections)]);
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\UiDeclarations\Library;
 
 use App\Core\Contracts\Actor;
-use App\Domain\Contracts\VisibilityCheck;
+use App\Core\Ui\Contracts\VisibilityCheck;
 
 final class NobodySees implements VisibilityCheck
 {

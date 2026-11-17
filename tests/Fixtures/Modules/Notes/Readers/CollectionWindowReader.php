@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Readers;
 
-use App\Domain\Contracts\PageReader;
+use App\Core\Ui\Contracts\PageReader;
 use Tests\Fixtures\Modules\Notes\Data\CollectionPageData;
 use Tests\Fixtures\Modules\Notes\Http\Requests\CollectionRequest;
 use Tests\Fixtures\Modules\Notes\Models\Note;

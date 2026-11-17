@@ -11,6 +11,7 @@ use App\Core\Actors\Exceptions\InvalidActorText;
 use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Actors\Support\ActorContext;
 use App\Core\Actors\Support\ActorIdentity;
+use App\Core\Actors\Support\CurrentUser;
 use App\Core\Agents\Contracts\AgentReader;
 use App\Core\Agents\Contracts\AgentRequestSender;
 use App\Core\Agents\Contracts\AgentRetirement;
@@ -131,6 +132,32 @@ use App\Core\Links\Support\Linkable;
 use App\Core\Links\Support\LinkAccess;
 use App\Core\Links\Support\LinkTypeRenames;
 use App\Core\Links\Support\LinkTypes;
+use App\Core\Ui\Contracts\ChangesWhatUsersSee;
+use App\Core\Ui\Contracts\CountReader;
+use App\Core\Ui\Contracts\NavigationChildren;
+use App\Core\Ui\Contracts\PageOption;
+use App\Core\Ui\Contracts\PageReader;
+use App\Core\Ui\Contracts\ProvidesNavigation;
+use App\Core\Ui\Contracts\ProvidesPages;
+use App\Core\Ui\Contracts\ProvidesSections;
+use App\Core\Ui\Contracts\SectionReader;
+use App\Core\Ui\Contracts\VisibilityCheck;
+use App\Core\Ui\Declarations\ActionRoute;
+use App\Core\Ui\Declarations\ChoiceOption;
+use App\Core\Ui\Declarations\FloatSize;
+use App\Core\Ui\Declarations\NavigationItem;
+use App\Core\Ui\Declarations\Page as UiPage;
+use App\Core\Ui\Declarations\Section;
+use App\Core\Ui\Declarations\Slot;
+use App\Core\Ui\Declarations\SlotContext;
+use App\Core\Ui\Declarations\ToggleOption;
+use App\Core\Ui\Enums\ActionMethod;
+use App\Core\Ui\Enums\Icon;
+use App\Core\Ui\Enums\PageDestination;
+use App\Core\Ui\Enums\PageSkeleton;
+use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Web\Contracts\CurrentUserReader;
+use App\Core\Web\Contracts\JournalAccessPolicy;
 
 /**
  * Core's public surface: every type a domain or module may use, written out one by one. Everything else in Core is
@@ -273,6 +300,33 @@ final class CoreApi
             AssignmentProviderInvalid::class,
             AssigneeKindRepeated::class,
             AssignmentTypeRepeated::class,
+            CurrentUserReader::class,
+            JournalAccessPolicy::class,
+            CurrentUser::class,
+            ChangesWhatUsersSee::class,
+            CountReader::class,
+            NavigationChildren::class,
+            PageOption::class,
+            PageReader::class,
+            ProvidesNavigation::class,
+            ProvidesPages::class,
+            ProvidesSections::class,
+            SectionReader::class,
+            VisibilityCheck::class,
+            ActionRoute::class,
+            ChoiceOption::class,
+            FloatSize::class,
+            NavigationItem::class,
+            UiPage::class,
+            Section::class,
+            Slot::class,
+            SlotContext::class,
+            ToggleOption::class,
+            ActionMethod::class,
+            Icon::class,
+            PageDestination::class,
+            PageSkeleton::class,
+            SlotContextKind::class,
         ];
     }
 }

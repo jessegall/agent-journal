@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Shelf;
 
-use App\Domain\Contracts\CountReader;
+use App\Core\Ui\Contracts\CountReader;
 
 final readonly class CountedShelves implements CountReader
 {

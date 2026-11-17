@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Chat\Api\Events;
 
 use App\Core\Hooks\Support\StackTarget;
-use App\Domain\Contracts\ChangesWhatUsersSee;
+use App\Core\Ui\Contracts\ChangesWhatUsersSee;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
 /**

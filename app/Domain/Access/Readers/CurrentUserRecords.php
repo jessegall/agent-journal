@@ -1,0 +1,30 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Access\Readers;
+
+use App\Core\Actors\Support\CurrentUser;
+use App\Core\Web\Contracts\CurrentUserReader;
+use App\Domain\Access\Models\User;
+use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Contracts\Auth\Guard;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
+
+/**
+ * Reads the signed-in user of this request's session and hands on only their id and display name.
+ */
+#[Scoped]
+final readonly class CurrentUserRecords implements CurrentUserReader
+{
+    public function __construct(private Guard $auth) {}
+
+    public function currentUser(): Option
+    {
+        $user = $this->auth->user();
+
+        return $user instanceof User ? new Some(new CurrentUser($user->id, $user->name)) : None::create();
+    }
+}

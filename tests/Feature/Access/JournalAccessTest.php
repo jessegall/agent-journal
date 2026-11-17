@@ -7,7 +7,7 @@ namespace Tests\Feature\Access;
 use App\Core\Actors\Enums\ActorKind;
 use App\Core\Actors\Support\ActorContext;
 use App\Core\Agents\Models\Agent;
-use App\Domain\Access\Contracts\JournalAccessPolicy;
+use App\Core\Web\Contracts\JournalAccessPolicy;
 use App\Domain\Access\Database\Factories\UserFactory;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;

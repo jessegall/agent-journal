@@ -6,11 +6,11 @@ namespace App\Domain\Chat\Readers;
 
 use App\Core\Agents\Contracts\SessionReader;
 use App\Core\Agents\Support\SessionOption;
+use App\Core\Ui\Contracts\PageReader;
 use App\Domain\Chat\Contracts\ConversationReader;
 use App\Domain\Chat\Data\ChatData;
 use App\Domain\Chat\Data\ConversationData;
 use App\Domain\Chat\Http\Requests\ConversationRequest;
-use App\Domain\Contracts\PageReader;
 use PhpOption\Option;
 use Spatie\LaravelData\Optional;
 

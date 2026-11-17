@@ -13,7 +13,7 @@ use App\Core\Assignments\Support\AssigneeName;
 use App\Core\Assignments\Support\Page;
 use App\Core\Contracts\Assignee;
 use App\Core\Contracts\CurrentActor;
-use App\Domain\Access\Contracts\JournalAccessPolicy;
+use App\Core\Web\Contracts\JournalAccessPolicy;
 use App\Domain\Access\Models\User;
 
 /**

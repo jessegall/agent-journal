@@ -23,7 +23,7 @@ A user who selects an agent stays the actor; the agent is the target. Nothing fo
 
 ## Web and signing in (task 99)
 
-`app/Domain/Web` owns the browser routes (`Routes/web.php`, loaded only by `WebServiceProvider`) and the one Inertia middleware (`Http/Middleware/HandleInertiaRequests`), which shares `SharedData`: the application name and, once signed in, `ViewerData` with the user's display name and nothing else.
+`app/Core/Web` (formerly the Web domain) owns the browser routes (`Routes/web.php`, loaded only by `WebServiceProvider`) and the one Inertia middleware (`Http/Middleware/HandleInertiaRequests`), which shares `SharedData`: the application name and, once signed in, `ViewerData` with the user's display name and nothing else.
 
 One route owner for signing in: Fortify keeps `views => false`, Web owns the guest `GET /login` (named `login`, rendering `LoginPage` with `LoginInput`), and the form posts to Fortify's own `POST /login`; `POST /logout` is Fortify's too. Fortify's optional features are all off: no registration, password reset, email verification, two-factor or passkeys, so no account screen exists without a page. Two-factor can come back later with its challenge page. After signing in Fortify sends the user to `/plans` (task 111 moves this to Home).
 
@@ -31,8 +31,8 @@ One route owner for signing in: Fortify keeps `views => false`, Web owns the gue
 
 `spatie/laravel-typescript-transformer` 3 turns the PHP Data the pages send into `resources/js/types/generated/index.ts` (`composer types:generate`, i.e. `php artisan typescript:transform`). The file is ignored by git; `composer setup` and `composer ci:check` generate it before the frontend is built or checked, and it is left out of linting and formatting.
 
-- `App\Domain\Web\Types\TypeScriptServiceProvider` configures it: Laravel's extension, the enum transformer, a flat module writer.
-- `App\Domain\Web\Types\HiddenAwareDataTransformer` is the one integration class. It generates only Data marked `#[TypeScript]`, and a property with Laravel Data's `#[Hidden]` leaves the type as well as the JSON, so a seed or an injected service never reaches the browser's types.
+- `App\Core\Web\Types\TypeScriptServiceProvider` configures it: Laravel's extension, the enum transformer, a flat module writer.
+- `App\Core\Web\Types\HiddenAwareDataTransformer` is the one integration class. It generates only Data marked `#[TypeScript]`, and a property with Laravel Data's `#[Hidden]` leaves the type as well as the JSON, so a seed or an injected service never reaches the browser's types.
 - `tests/Feature/Web/BrowserContractTest.php` proves it on a fixture page: computed hook, typed list, enum, optional value, hidden seed and hidden service, in both the generated type and the JSON.
 - Pages use property hooks, so composer requires PHP 8.4 or later and CI runs PHP 8.5, as the image does.
 
@@ -121,14 +121,14 @@ Plan 5 built the public interface layer of doc 10 revision 2: each domain reache
 
 ## Domain ownership and dependencies
 
-Approved by the user in question 13 (rule 9), and narrowed by plan 7:
+Approved by the user in question 13 (rule 9), narrowed by plan 7, and with Web moved into Core by task 226 (users 1885 and 1889):
 
-| Domain | Owns | Requires |
+| Owner | Owns | Requires |
 |---|---|---|
-| Access | User, login through Fortify, the configured owner, the user policy and middleware | nothing |
-| Web | the shell, Home (its layouts and the windows the domains offer it), declared route registration, page props, navigation, the UI manifest and type generation, live updates | Access |
+| Access (domain) | User, login through Fortify, the configured owner; it fills Core's `CurrentUserReader` and `JournalAccessPolicy` | nothing |
+| Web (Core, `app/Core/Web`) | the shell, Home (its layouts and the windows the domains offer it), declared route registration, page props, navigation, the UI manifest and type generation, live updates | nothing: Core names no domain |
 
-No domain requires Web. Chat, Plans and Rules own their pages, actions, Data and components themselves (see "Domain-owned pages" below and `docs/web/domain-pages.md`). The core (`app/Core`) needs no edge and names no domain. Each owner alone reads and writes its own tables.
+The page vocabulary a domain declares with (`ProvidesPages`, `ProvidesNavigation`, `ProvidesSections`, `Page`, `Slot`, `Section`, `NavigationItem`, the readers' contracts, `Icon` and the other enums) lives in `App\Core\Ui` and is on CoreApi's list. Web declares its own Home page in `App\Core\Web\Support\WebPages`, checked with the domains' declarations. Web asks Access for the signed-in user and for who may receive page changes only through `App\Core\Web\Contracts\CurrentUserReader` and `JournalAccessPolicy`, which Access binds in its provider (rule 15). The shared Inertia prop is `currentUser`. Chat, Plans and Rules own their pages, actions, Data and components themselves (see "Domain-owned pages" below and `docs/web/domain-pages.md`). The core (`app/Core`) needs no edge and names no domain. Each owner alone reads and writes its own tables.
 
 ## Domain-owned pages (plan 7)
 
@@ -138,5 +138,5 @@ Plan 7 replaced the Web-owned pages described in the sections above (tasks 104, 
 - **Props.** A page of its own gets `page`, each section of its slots as a deferred `section_<slot>_<section>` prop, and `inspector` when `?inspect=<page key>` names a record page; Home gets one optional `window_<key>` prop per window. Each is a result (`ready` with the reader's Data, `failed` with a neutral message, `denied` with nothing) and runs its visibility checks before any reader, on full and partial requests alike.
 - **Queries.** A window's links change only its own part of Home's query, `window[<page key>][...]` (`useWindowQuery`); on its own page the query is plain. The chosen agent session is the top-level `session`, read by sections that take a session.
 - **Generated files.** `php artisan journal:ui-manifest` (first step of `npm run types:generate`) writes the component manifest, `tsconfig.domains.json`, `vite.domains.ts`, the Tailwind sources, the page prop types and checks, `domain-roots.json` and `bootstrap/cache/ui-components.php`; Wayfinder writes `resources/js/routes/<domain>`; `typescript:transform` writes each owner's types to `resources/js/generated/types/<owner>`.
-- **Live updates.** Every fact that changes what users see implements `App\Domain\Contracts\ChangesWhatUsersSee`; Web's one listener turns it into `PageChanged`. The browser reloads only the props on screen, the navigation and its counts, and the inspector when open.
+- **Live updates.** Every fact that changes what users see implements `App\Core\Ui\Contracts\ChangesWhatUsersSee`; Web's one listener turns it into `PageChanged`. The browser reloads only the props on screen, the navigation and its counts, and the inspector when open.
 - **Imports.** `npm run imports:check` (part of build, check and the type check) refuses a domain component that imports another domain's code, the shell or a path it cannot prove local.

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Readers;
 
-use App\Domain\Contracts\CountReader;
+use App\Core\Ui\Contracts\CountReader;
 use App\Domain\Plans\Api\PlanFilters;
 use App\Domain\Plans\Contracts\PlanReader;
 use App\Domain\Plans\Enums\PlanStateGroup;
