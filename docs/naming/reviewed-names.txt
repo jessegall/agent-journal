@@ -336,6 +336,11 @@ class	LaunchStacks
 class	LaunchStarted
 class	LaunchTimeouts
 class	LaunchedAgent
+class	Layout
+class	LayoutData
+class	LayoutRequest
+class	LayoutsController
+class	LayoutsView
 class	Link
 class	LinkAccess
 class	LinkTypeRenames
@@ -579,6 +584,7 @@ class	UserStacks
 class	Viewer
 class	ViewerData
 class	ViewerRecords
+class	ViewerScope
 class	Violation
 class	VisibleTasks
 class	WalkStep
@@ -1247,6 +1253,16 @@ method	LaunchStarted::__construct()
 method	LaunchTimeouts::__construct()
 method	LaunchTransaction::run()
 method	LaunchedAgent::__construct()
+method	Layout::casts()
+method	LayoutData::__construct()
+method	LayoutRequest::layoutName()
+method	LayoutRequest::rules()
+method	LayoutRequest::shape()
+method	LayoutsController::__construct()
+method	LayoutsController::destroy()
+method	LayoutsController::store()
+method	LayoutsController::update()
+method	LayoutsView::layouts()
 method	Link::between()
 method	Link::connect()
 method	Link::forgetModels()
@@ -1902,6 +1918,8 @@ method	ViewerData::fromViewer()
 method	ViewerReader::viewer()
 method	ViewerRecords::__construct()
 method	ViewerRecords::viewer()
+method	ViewerScope::__construct()
+method	ViewerScope::apply()
 method	Violation::__construct()
 method	Violation::reason()
 method	ViolationKind::reason()
@@ -2070,6 +2088,8 @@ property	HomeFiltersData::$session
 property	HomePage::$chat
 property	HomePage::$chatView
 property	HomePage::$filters
+property	HomePage::$layouts
+property	HomePage::$layoutsView
 property	HomePage::$plans
 property	HomePage::$plansView
 property	HomePage::$rules
@@ -2142,6 +2162,11 @@ property	LaunchTimeouts::$possiblyLostAfterSeconds
 property	LaunchedAgent::$session
 property	LaunchedAgent::$settings
 property	LaunchedAgent::$token
+property	LayoutData::$id
+property	LayoutData::$name
+property	LayoutData::$shape
+property	LayoutsController::$redirect
+property	LayoutsController::$viewers
 property	LinkAccess::$model
 property	LoggedBypass::$failure
 property	LoggedBypass::$nativeEvent
@@ -2492,6 +2517,7 @@ property	Viewer::$name
 property	ViewerData::$id
 property	ViewerData::$name
 property	ViewerRecords::$auth
+property	ViewerScope::$viewers
 property	Violation::$detail
 property	Violation::$file
 property	Violation::$kind
