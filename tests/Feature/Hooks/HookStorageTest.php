@@ -36,7 +36,7 @@ final class HookStorageTest extends TestCase
     public function test_the_tests_run_on_the_dedicated_postgres_database(): void
     {
         $this->assertSame('pgsql', DB::connection()->getDriverName());
-        $this->assertSame(HookDatabase::NAME, DB::connection()->getDatabaseName());
+        $this->assertSame(HookDatabase::expectedName($this->app), DB::connection()->getDatabaseName());
     }
 
     public function test_both_tables_hold_their_payloads_as_jsonb_without_foreign_keys(): void

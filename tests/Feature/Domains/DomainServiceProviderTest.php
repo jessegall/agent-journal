@@ -19,10 +19,13 @@ use Tests\Fixtures\Domains\Shelves\Listeners\CountShelvedBook;
 use Tests\Fixtures\Domains\Shelves\ShelvesDomain;
 use Tests\Fixtures\Domains\Tasks\TaskList;
 use Tests\Fixtures\Domains\Tasks\TasksDomain;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 final class DomainServiceProviderTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private mixed $discoveryPathsBefore;
 
     protected function setUp(): void

@@ -60,7 +60,6 @@ trait CommittedHookStack
 
     protected function setUpCommittedHookStack(): void
     {
-        $this->setUpRefreshHookDatabase();
         $this->emptyTables(...self::committedTables());
         $this->target = new StackTarget(1, 10);
         $this->tasks = new InMemoryTaskType([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
