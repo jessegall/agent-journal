@@ -11,10 +11,16 @@ use App\Domain\Tasks\Api\Events\TaskBlocked;
 use App\Domain\Tasks\Api\Events\TaskCancelled;
 use App\Domain\Tasks\Api\Events\TaskFinished;
 use App\Domain\Tasks\Api\TaskAssignmentCompletion;
+use App\Domain\Tasks\Api\TaskCard;
+use App\Domain\Tasks\Api\TaskFilters;
+use App\Domain\Tasks\Api\TaskList;
 use App\Domain\Tasks\Api\TaskProgress;
+use App\Domain\Tasks\Contracts\AssignedTaskReader;
 use App\Domain\Tasks\Contracts\TaskAssignmentReader;
 use App\Domain\Tasks\Contracts\TaskProgressCounter;
 use App\Domain\Tasks\Contracts\TaskReader;
+use App\Domain\Tasks\Enums\TaskState;
+use App\Domain\Tasks\Enums\TaskWorkState;
 use App\Domain\Tasks\Events\TaskStarted;
 use App\Domain\Tasks\Exceptions\TaskMissing;
 use App\Domain\Tasks\Models\Task;
@@ -53,6 +59,12 @@ final class TasksDomain implements Domain, ProvidesAssignables, ProvidesStates
             TaskMissing::class,
             TaskAssignmentReader::class,
             TaskAssignmentCompletion::class,
+            AssignedTaskReader::class,
+            TaskCard::class,
+            TaskFilters::class,
+            TaskList::class,
+            TaskState::class,
+            TaskWorkState::class,
         ];
     }
 

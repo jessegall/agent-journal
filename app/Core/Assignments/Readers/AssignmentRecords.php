@@ -110,6 +110,23 @@ final readonly class AssignmentRecords implements AssignmentReader
     }
 
     /**
+     * @return list<int>
+     */
+    public function allRecordIdsFor(string $type, ActorIdentity $holder): array
+    {
+        $ids = [];
+        $afterId = null;
+
+        do {
+            $page = $this->recordIdsFor($type, $holder, new Page($afterId, Page::LARGEST_LIMIT));
+            array_push($ids, ...$page->ids);
+            $afterId = $page->nextAfterId;
+        } while ($afterId !== null);
+
+        return $ids;
+    }
+
+    /**
      * @param  list<RecordIdentity>  $records
      * @return array<string, list<RecordIdentity>>
      */

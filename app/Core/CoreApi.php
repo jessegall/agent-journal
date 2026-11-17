@@ -6,6 +6,7 @@ namespace App\Core;
 
 use App\Core\Actors\Enums\ActorKind;
 use App\Core\Actors\Exceptions\ActorContextMissing;
+use App\Core\Actors\Exceptions\AgentActorRequired;
 use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Actors\Support\ActorContext;
 use App\Core\Actors\Support\ActorIdentity;
@@ -36,16 +37,20 @@ use App\Core\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Core\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Core\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Core\Assignments\Exceptions\RecordUnavailable;
+use App\Core\Assignments\Models\Support\AssignableListing;
 use App\Core\Assignments\Support\AssigneeList;
 use App\Core\Assignments\Support\AssigneeName;
 use App\Core\Assignments\Support\AssigneeRegistration;
 use App\Core\Assignments\Support\Assignment;
 use App\Core\Assignments\Support\AssignmentChange;
 use App\Core\Assignments\Support\AssignmentGroup;
+use App\Core\Assignments\Support\AssignmentHolder;
+use App\Core\Assignments\Support\AssignmentHolders;
 use App\Core\Assignments\Support\AssignmentOutcome;
 use App\Core\Assignments\Support\AssignmentReference;
 use App\Core\Assignments\Support\AssignmentResult;
 use App\Core\Assignments\Support\AssignmentSet;
+use App\Core\Assignments\Support\NumberedPage;
 use App\Core\Assignments\Support\Page;
 use App\Core\Assignments\Support\RecordIdentity;
 use App\Core\Assignments\Support\RecordIds;
@@ -231,6 +236,11 @@ final class CoreApi
             AssignmentGroupTooLarge::class,
             AssigneeUnavailable::class,
             RecordUnavailable::class,
+            AssignableListing::class,
+            NumberedPage::class,
+            AgentActorRequired::class,
+            AssignmentHolders::class,
+            AssignmentHolder::class,
             AssigneeReader::class,
             AssignmentsChanged::class,
             AssignmentDenied::class,

@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Readers;
 
+use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Assignments\Contracts\AssigneeReader;
 use App\Core\Assignments\Contracts\AssignmentReader;
-use App\Core\Assignments\Support\AssigneeName;
-use App\Core\Assignments\Support\Assignment;
+use App\Core\Assignments\Contracts\AssignmentTransaction;
 use App\Core\Contracts\CurrentActor;
+use App\Domain\Plans\Api\AssignedPlanFilters;
+use App\Domain\Plans\Api\AssignedPlanList;
 use App\Domain\Plans\Api\PlanCard;
 use App\Domain\Plans\Api\PlanFilters;
-use App\Domain\Plans\Api\PlanHolder;
 use App\Domain\Plans\Api\PlanList;
 use App\Domain\Plans\Api\PlanProgress;
 use App\Domain\Plans\Api\PlanSelection;
@@ -24,9 +25,6 @@ use App\Domain\Tasks\Contracts\TaskProgressCounter;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
-use PhpOption\None;
-use PhpOption\Option;
-use PhpOption\Some;
 
 /**
  * The named reads of plans for whoever acts in this request. Every agent and the user read every plan. Task progress
@@ -42,6 +40,7 @@ final readonly class PlanRecords implements PlanReader
         private TaskProgressCounter $taskCounts,
         private AssignmentReader $assignments,
         private AssigneeReader $assignees,
+        private AssignmentTransaction $transaction,
     ) {}
 
     public function list(PlanFilters $filters): PlanList
@@ -53,6 +52,22 @@ final readonly class PlanRecords implements PlanReader
         $plans = Plan::query()->matching($filters->search)->listOrder()->forPage($page, self::PER_PAGE)->get();
 
         return new PlanList($this->cardsOf($plans), $filters, $page, $lastPage, $total, $this->selection($filters));
+    }
+
+    public function assignedToCaller(AssignedPlanFilters $filters): AssignedPlanList
+    {
+        $caller = $this->actors->actor();
+        $caller->requireAgent();
+        $holder = ActorIdentity::of($caller);
+
+        return $this->transaction->run(function () use ($filters, $holder): AssignedPlanList {
+            $heldIds = $this->assignments->allRecordIdsFor(Plan::LINK_TYPE, $holder);
+            $matching = Plan::query()->amongIds($heldIds)->matching($filters->search)->inStates($filters->states);
+            $total = $matching->clone()->count();
+            $plans = $matching->listOrder()->forPage($filters->page->number, $filters->page->size)->get();
+
+            return new AssignedPlanList($this->cardsOf($plans), $filters->page, $total);
+        });
     }
 
     private function selection(PlanFilters $filters): PlanSelection
@@ -88,30 +103,12 @@ final readonly class PlanRecords implements PlanReader
             ->map(fn (Collection $places) => array_map(intval(...), array_values($places->pluck('task_id')->all())));
         $progressOfPhase = array_map(self::planProgressOf(...), $this->taskCounts->progressByGroup($taskIdsOfPhase->all()));
         $assignments = $this->assignments->assignmentsFor(array_values($plans->map(fn (Plan $plan) => $plan->assignmentIdentity())->all()));
-        $names = $this->assignees->names(array_map(fn (Assignment $assignment) => $assignment->holder(), $assignments->assignments));
+        $holders = $this->assignees->holdersOf($assignments);
 
         return array_values($plans->map(fn (Plan $plan) => $plan->card(
             $phasesOfPlan->get($plan->id, new Collection)->mapWithKeys(fn (Phase $phase) => [$phase->position => $progressOfPhase[$phase->id] ?? PlanProgress::none()])->all(),
-            $assignments->forRecord($plan->assignmentIdentity())->flatMap(fn (Assignment $assignment) => self::holderOf($assignment, $names)),
+            $holders->forRecord($plan->assignmentIdentity()),
         ))->all());
-    }
-
-    /**
-     * The holder of an assignment with the name its owner gives; an actor whose row is gone has no name and shows as no
-     * holder.
-     *
-     * @param  list<AssigneeName>  $names
-     * @return Option<PlanHolder>
-     */
-    private static function holderOf(Assignment $assignment, array $names): Option
-    {
-        foreach ($names as $name) {
-            if ($name->actor->isSameAs($assignment->holder())) {
-                return Some::create(new PlanHolder($assignment->reference, $name->name));
-            }
-        }
-
-        return None::create();
     }
 
     private static function planProgressOf(TaskProgress $progress): PlanProgress

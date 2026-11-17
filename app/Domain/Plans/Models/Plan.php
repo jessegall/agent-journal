@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Models;
 
+use App\Core\Assignments\Models\Support\AssignableListing;
+use App\Core\Assignments\Support\AssignmentHolder;
 use App\Core\Assignments\Support\RecordIdentity;
 use App\Core\Contracts\Assignable;
 use App\Core\Links\Support\Linkable;
 use App\Domain\Plans\Api\PlanCard;
-use App\Domain\Plans\Api\PlanHolder;
 use App\Domain\Plans\Api\PlanProgress;
 use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
@@ -36,7 +37,7 @@ use PhpOption\Option;
 #[Fillable(['title', 'kind'])]
 final class Plan extends Model implements Assignable
 {
-    use Linkable;
+    use AssignableListing, Linkable;
 
     /**
      * The stable name links and assignments use for a plan.
@@ -98,7 +99,7 @@ final class Plan extends Model implements Assignable
      * first one with unfinished tasks, or the last phase once every task is done; a plan without phases has none.
      *
      * @param  array<int, PlanProgress>  $progressOfPhase
-     * @param  Option<PlanHolder>  $holder
+     * @param  Option<AssignmentHolder>  $holder
      */
     public function card(array $progressOfPhase, Option $holder): PlanCard
     {
@@ -107,21 +108,6 @@ final class Plan extends Model implements Assignable
         $currentPhase = $unfinished[0] ?? array_key_last($progressOfPhase);
 
         return new PlanCard($this->id, $this->title, $this->kind, $this->state, $this->state->canStart(), $this->focused, $progress, $currentPhase, $holder);
-    }
-
-    /**
-     * Plans whose title holds the search words, matched without regard to case; an empty search matches every plan.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function matching(Builder $query, string $search): void
-    {
-        if (trim($search) === '') {
-            return;
-        }
-
-        $query->whereLike('title', '%'.addcslashes(trim($search), '%_\\').'%', caseSensitive: false);
     }
 
     /**

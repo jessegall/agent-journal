@@ -21,6 +21,13 @@ interface AssignmentReader
     public function recordIdsFor(string $type, ActorIdentity $holder, Page $page): RecordIds;
 
     /**
+     * Every id of the records of one type the holder holds and the caller may see, page after page.
+     *
+     * @return list<int>
+     */
+    public function allRecordIdsFor(string $type, ActorIdentity $holder): array;
+
+    /**
      * The visible assignments of at most 100 records.
      *
      * @param  list<RecordIdentity>  $records

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Api;
 
+use App\Core\Assignments\Support\AssignmentHolder;
 use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
 use PhpOption\Option;
@@ -15,7 +16,7 @@ use PhpOption\Option;
 final readonly class PlanCard
 {
     /**
-     * @param  Option<PlanHolder>  $holder
+     * @param  Option<AssignmentHolder>  $holder
      */
     public function __construct(
         public int $id,

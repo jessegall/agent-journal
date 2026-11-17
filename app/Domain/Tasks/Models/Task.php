@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks\Models;
 
+use App\Core\Assignments\Models\Support\AssignableListing;
 use App\Core\Assignments\Support\RecordIdentity;
 use App\Core\Contracts\Assignable;
 use App\Core\Hooks\Support\StackTarget;
@@ -31,7 +32,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['title'])]
 final class Task extends Model implements Assignable
 {
-    use Linkable;
+    use AssignableListing, Linkable;
 
     /**
      * The stable name links and assignments use for a task.

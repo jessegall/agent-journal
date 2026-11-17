@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Actors\Support;
 
 use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Exceptions\AgentActorRequired;
 use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Contracts\Actor;
 
@@ -59,6 +60,16 @@ final readonly class ActorContext implements Actor
     {
         if (! $this->isUser()) {
             throw UserActorRequired::forActor($this->kind->value);
+        }
+    }
+
+    /**
+     * @throws AgentActorRequired
+     */
+    public function requireAgent(): void
+    {
+        if ($this->kind !== ActorKind::Agent) {
+            throw AgentActorRequired::forActor($this->kind->value);
         }
     }
 }

@@ -26,7 +26,7 @@ final readonly class AssignmentSet
     public function forRecord(RecordIdentity $record): Option
     {
         foreach ($this->assignments as $assignment) {
-            if ($assignment->record->isSameAs($record)) {
+            if ($assignment->isFor($record)) {
                 return Some::create($assignment);
             }
         }

@@ -22,4 +22,9 @@ final class InvalidAssignmentPage extends InvalidArgumentException
     {
         return new self("One read covers at most 100 records; this one asks for {$count}.");
     }
+
+    public static function forPageNumber(int $number): self
+    {
+        return new self("Pages are numbered from 1; {$number} is not a page.");
+    }
 }

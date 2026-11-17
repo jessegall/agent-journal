@@ -20,4 +20,9 @@ final readonly class Assignment
     {
         return $this->reference->holder;
     }
+
+    public function isFor(RecordIdentity $record): bool
+    {
+        return $this->record->isSameAs($record);
+    }
 }
