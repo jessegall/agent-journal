@@ -5,7 +5,7 @@ from pathlib import PurePosixPath
 
 from engine.errors.refusal import Refusal
 
-TEST_FILE_ENDINGS = (".py", ".js", ".mjs", ".ts", ".go")
+FILE_EXTENSION = re.compile(r"\.[A-Za-z]\w*")
 SHELL_OPERATORS = {"|", ";", "&", "&&", "||", ">", ">>", "<"}
 SHELL_MARKS = ("`", "$(")
 ROOT_OPTIONS = ("-C", "--rootdir", "--prefix", "--cwd", "--config")
@@ -18,7 +18,7 @@ FULL_SUITE_REFUSAL = "name each test file the run covers, never the whole suite"
 
 class WorkerTestArguments:
     """Checks the arguments after a worker's test command name: they change neither the program nor the folder it
-    runs in, and the whole line they make with the command names test files, Go packages or a pattern of Go
+    runs in, and the whole line they make with the command names test files of any language, Go packages or a pattern of Go
     test names, so a command that already names its packages needs no file beside them. A pattern names tests
     only when it holds a letter, digit or underscore: ., .* or ^ match every test and are the whole suite."""
 
@@ -55,4 +55,8 @@ class WorkerTestArguments:
 
     @staticmethod
     def is_test_file(argument: str) -> bool:
-        return not argument.startswith("-") and (RunTarget(argument).is_single_test or argument.endswith(TEST_FILE_ENDINGS))
+        """A file of any language: a name with an extension that starts with a letter, so neither an option, a
+        variable such as DB_HOST=127.0.0.1 nor a program such as python3.14 counts."""
+        if argument.startswith("-") or "=" in argument:
+            return False
+        return RunTarget(argument).is_single_test or FILE_EXTENSION.fullmatch(PurePosixPath(argument).suffix) is not None
