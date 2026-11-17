@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Decisions;
+namespace App\Core\Hooks\Enums;
 
 /**
  * A state about no subject, such as plain guidance.

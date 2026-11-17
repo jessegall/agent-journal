@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Rules\Api;
+namespace App\Domain\Rules\Enums;
 
 /**
  * Where a rule stands: proposed, active, denied or removed. Only an active rule reaches the agents.

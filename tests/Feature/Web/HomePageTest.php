@@ -10,7 +10,7 @@ use App\Core\Agents\Models\AgentSession;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
 use App\Domain\Chat\Models\Message;
-use App\Domain\Plans\Api\PlanKind;
+use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Models\Plan;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;

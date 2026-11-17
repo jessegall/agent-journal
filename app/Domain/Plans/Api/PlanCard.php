@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Api;
 
+use App\Domain\Plans\Enums\PlanKind;
+use App\Domain\Plans\Enums\PlanState;
+
 /**
  * What a plan card shows: the plan, whether it may start now, how far its tasks have got, the phase it is in and the
  * agent it is assigned to.

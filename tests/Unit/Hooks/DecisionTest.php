@@ -6,12 +6,12 @@ namespace Tests\Unit\Hooks;
 
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Decisions\Denied;
-use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\PushState;
-use App\Core\Hooks\Decisions\SimpleTransition;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\StopPrevented;
 use App\Core\Hooks\Decisions\SubjectReference;
+use App\Core\Hooks\Enums\NoSubject;
+use App\Core\Hooks\Enums\SimpleTransition;
 use App\Core\Hooks\Exceptions\ConflictingStackTransition;
 use App\Core\Hooks\Exceptions\EmptyReason;
 use PHPUnit\Framework\TestCase;

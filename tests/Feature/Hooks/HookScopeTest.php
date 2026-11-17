@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Core\Agents\Exceptions\AgentContextMissing;
-use App\Core\Hooks\Decisions\AnswerKind;
-use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
+use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\NoSubject;
 use App\Core\Hooks\Inputs\HookIdentity;
 use App\Core\Hooks\Models\AgentStackRow;
 use App\Core\Hooks\Models\HookCall;

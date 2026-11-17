@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Rules\Models;
 
 use App\Core\Links\Support\Linkable;
-use App\Domain\Rules\Api\RuleState;
+use App\Domain\Rules\Enums\RuleState;
 use App\Domain\Rules\Exceptions\RuleMissing;
 use App\Domain\Rules\Exceptions\RuleNotProposed;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

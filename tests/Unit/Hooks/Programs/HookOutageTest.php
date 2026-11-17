@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\Programs;
 
-use App\Core\Hooks\Programs\CallFailure;
+use App\Core\Hooks\Enums\CallFailure;
+use App\Core\Hooks\Enums\ReadyStateType;
 use App\Core\Hooks\Programs\OutageReply;
-use App\Core\Hooks\States\Support\ReadyStateType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 

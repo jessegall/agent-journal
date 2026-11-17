@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Core\Hooks\Decisions\AnswerKind;
-use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
+use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\NoSubject;
+use App\Core\Hooks\Enums\ReadyStateType;
 use App\Core\Hooks\Events\StateTypesRequested;
 use App\Core\Hooks\Exceptions\InvalidBottomState;
 use App\Core\Hooks\Exceptions\StateSchemaUnknown;
@@ -16,7 +17,6 @@ use App\Core\Hooks\Exceptions\StateTypeUnknown;
 use App\Core\Hooks\Stack\RegisteredStateFactory;
 use App\Core\Hooks\Stack\StackRestorer;
 use App\Core\Hooks\Stack\StateTypes;
-use App\Core\Hooks\States\Support\ReadyStateType;
 use App\Core\Hooks\Storage\FrameRecord;
 use App\Core\Hooks\Storage\FrameRecords;
 use App\Domain\Tasks\Enums\TaskWorkState;

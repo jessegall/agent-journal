@@ -6,6 +6,7 @@ namespace App\Core\Hooks\Decisions;
 
 use App\Core\Hooks\Contracts\StackEditor;
 use App\Core\Hooks\Contracts\StackTransition;
+use App\Core\Hooks\Enums\TransitionKind;
 
 final readonly class PushState implements StackTransition
 {

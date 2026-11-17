@@ -7,7 +7,7 @@ namespace Tests\Feature\Plans;
 use App\Core\Actors\Support\ActorContext;
 use App\Core\Contracts\CurrentActorSetter;
 use App\Domain\Plans\Actions\AddPhaseTasks;
-use App\Domain\Plans\Api\PlanKind;
+use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Tasks\Exceptions\TaskMissing;

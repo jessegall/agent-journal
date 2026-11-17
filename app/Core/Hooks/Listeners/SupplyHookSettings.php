@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Listeners;
 
 use App\Core\Agents\Events\LaunchSettingsRequested;
-use App\Core\Hooks\Programs\HookProgram;
+use App\Core\Hooks\Enums\HookProgram;
 
 /**
  * Adds the journal's hooks for a program it supports to the launch's isolated settings, and turns off its child tools without identity.

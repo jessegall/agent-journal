@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Programs;
+namespace App\Core\Hooks\Enums;
 
 /**
  * How a hook call to the journal failed, as the host sees it. Only an outage may fall back to a neutral reply;

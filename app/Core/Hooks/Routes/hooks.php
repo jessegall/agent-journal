@@ -3,10 +3,10 @@
 declare(strict_types=1);
 
 use App\Core\Agents\Http\Middleware\AuthenticateAgent;
+use App\Core\Hooks\Enums\HookProgram;
 use App\Core\Hooks\Http\BypassReportController;
 use App\Core\Hooks\Http\HookController;
 use App\Core\Hooks\Http\StackInspectionController;
-use App\Core\Hooks\Programs\HookProgram;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/hooks/bypasses', BypassReportController::class)

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Storage;
 
-use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
+use App\Core\Hooks\Enums\NoSubject;
 use Spatie\LaravelData\Data;
 
 /**

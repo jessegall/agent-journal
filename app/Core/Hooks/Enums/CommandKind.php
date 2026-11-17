@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Inputs;
+namespace App\Core\Hooks\Enums;
 
 /**
  * What a command part is, as the parser knows it: a test run or a build must run as a saved command.

@@ -6,8 +6,8 @@ namespace App\Core\Hooks\Inputs;
 
 use App\Core\Hooks\Contracts\HookAnswerer;
 use App\Core\Hooks\Contracts\HookInput;
-use App\Core\Hooks\Decisions\AnswerKind;
 use App\Core\Hooks\Decisions\Decision;
+use App\Core\Hooks\Enums\AnswerKind;
 
 final readonly class SessionStarted implements HookInput
 {

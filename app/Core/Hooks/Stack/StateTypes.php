@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Stack;
 
+use App\Core\Hooks\Enums\ReadyStateType;
 use App\Core\Hooks\Events\StateTypesRequested;
-use App\Core\Hooks\States\Support\ReadyStateType;
 use App\Core\Hooks\States\Support\StateTypeRegistry;
 use Illuminate\Contracts\Events\Dispatcher;
 

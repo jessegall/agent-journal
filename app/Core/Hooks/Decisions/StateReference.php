@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Decisions;
 
+use App\Core\Hooks\Enums\NoSubject;
+
 /**
  * Names a state to put on a stack: its registered type and the subject run it is about.
  */

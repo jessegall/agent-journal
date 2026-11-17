@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Programs;
 
 use App\Core\Hooks\Contracts\ProgramAdapter;
+use App\Core\Hooks\Enums\HookProgram;
 
 /**
  * The adapter of each supported program.

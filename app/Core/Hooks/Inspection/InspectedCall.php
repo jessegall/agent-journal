@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Inspection;
 
-use App\Core\Hooks\Decisions\AnswerKind;
+use App\Core\Hooks\Enums\AnswerKind;
 use App\Core\Hooks\Models\HookCall;
 use App\Core\Hooks\Storage\WalkStep;
 use Spatie\LaravelData\Attributes\DataCollectionOf;

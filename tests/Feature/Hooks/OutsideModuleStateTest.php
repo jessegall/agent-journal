@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
+use App\Core\Hooks\Enums\NoSubject;
 use App\Core\Hooks\Events\StateTypesRequested;
 use App\Domain\DomainRegistry;
 use Illuminate\Contracts\Events\Dispatcher;

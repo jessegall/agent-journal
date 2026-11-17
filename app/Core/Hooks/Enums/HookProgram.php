@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Programs;
+namespace App\Core\Hooks\Enums;
 
 /**
  * The agent programs whose hooks the journal answers, as they appear in the hook endpoint's address.

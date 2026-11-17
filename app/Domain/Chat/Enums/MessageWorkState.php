@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat\Enums;
 
-use App\Domain\Chat\Api\MessageState;
-
 /**
  * Where a message to an agent stands, as the stack sees it.
  */

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Stack;
 
 use App\Core\Hooks\Contracts\StateFactory;
+use App\Core\Hooks\Enums\ReadyStateType;
 use App\Core\Hooks\Exceptions\StateSchemaUnknown;
-use App\Core\Hooks\States\Support\ReadyStateType;
 use App\Core\Hooks\Storage\FrameRecord;
 use App\Core\Hooks\Storage\FrameRecords;
 

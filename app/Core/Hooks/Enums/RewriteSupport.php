@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Programs;
+namespace App\Core\Hooks\Enums;
 
 use App\Core\Hooks\Decisions\Decision;
+use App\Core\Hooks\Programs\ProgramReplies;
+use App\Core\Hooks\Programs\ProgramReply;
+use App\Core\Hooks\Programs\ProgramToolInput;
 use App\Core\Hooks\Stack\AgentStack;
 use App\Core\Hooks\Stack\HookAnswer;
 

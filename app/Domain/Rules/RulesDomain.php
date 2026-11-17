@@ -10,10 +10,10 @@ use App\Domain\Rules\Api\Events\RuleDenied;
 use App\Domain\Rules\Api\Events\RuleRemoved;
 use App\Domain\Rules\Api\RuleFilters;
 use App\Domain\Rules\Api\RuleList;
-use App\Domain\Rules\Api\RuleState;
 use App\Domain\Rules\Api\RuleView;
 use App\Domain\Rules\Contracts\RuleReader;
 use App\Domain\Rules\Contracts\RuleReviewer;
+use App\Domain\Rules\Enums\RuleState;
 use App\Domain\Rules\Exceptions\RuleMissing;
 use App\Domain\Rules\Exceptions\RuleNotProposed;
 

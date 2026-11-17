@@ -7,7 +7,7 @@ namespace Tests\Feature\Web;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
 use App\Domain\Rules\Actions\ProposeRule;
-use App\Domain\Rules\Api\RuleState;
+use App\Domain\Rules\Enums\RuleState;
 use App\Domain\Rules\Models\Rule;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;

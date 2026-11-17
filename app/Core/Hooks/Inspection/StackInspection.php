@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Inspection;
 
+use App\Core\Hooks\Enums\StackStatus;
 use App\Core\Hooks\Models\AgentStackRow;
-use App\Core\Hooks\Storage\StackStatus;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;

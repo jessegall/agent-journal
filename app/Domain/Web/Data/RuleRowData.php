@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Data;
 
-use App\Domain\Rules\Api\RuleState;
 use App\Domain\Rules\Api\RuleView;
+use App\Domain\Rules\Enums\RuleState;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

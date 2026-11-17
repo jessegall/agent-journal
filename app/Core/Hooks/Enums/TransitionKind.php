@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Decisions;
+namespace App\Core\Hooks\Enums;
 
 /**
  * The kind of stack transition a state asked for, as the walk records it.

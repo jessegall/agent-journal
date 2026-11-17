@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Inputs;
 
+use App\Core\Hooks\Enums\ParseOutcome;
+use App\Core\Hooks\Enums\ShellDialect;
+
 /**
  * A shell line as the Processes parser read it: the source, its dialect, how far the parse got, and its parts.
  */

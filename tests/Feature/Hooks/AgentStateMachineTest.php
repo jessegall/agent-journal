@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Core\Hooks\Decisions\AnswerKind;
-use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
+use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\NoSubject;
+use App\Core\Hooks\Enums\RewriteSupport;
 use App\Core\Hooks\Exceptions\HookDeadlineExpired;
 use App\Core\Hooks\Exceptions\HookDigestChanged;
 use App\Core\Hooks\Exceptions\UnsupportedHook;
@@ -18,7 +19,6 @@ use App\Core\Hooks\Models\HookCall;
 use App\Core\Hooks\Programs\ProgramReplies;
 use App\Core\Hooks\Programs\ProgramReply;
 use App\Core\Hooks\Programs\ProgramToolInput;
-use App\Core\Hooks\Programs\RewriteSupport;
 use App\Core\Hooks\Stack\HookAnswer;
 use App\Core\Hooks\Storage\WalkStep;
 use App\Core\Hooks\Support\OperationDeadline;

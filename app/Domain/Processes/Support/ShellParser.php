@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Domain\Processes\Support;
 
 use App\Core\Hooks\Contracts\ShellCommandParser;
-use App\Core\Hooks\Inputs\CommandEffect;
-use App\Core\Hooks\Inputs\CommandKind;
+use App\Core\Hooks\Enums\CommandEffect;
+use App\Core\Hooks\Enums\CommandKind;
+use App\Core\Hooks\Enums\ParseOutcome;
+use App\Core\Hooks\Enums\ShellDialect;
 use App\Core\Hooks\Inputs\CommandPart;
-use App\Core\Hooks\Inputs\ParseOutcome;
 use App\Core\Hooks\Inputs\ShellCommand;
-use App\Core\Hooks\Inputs\ShellDialect;
 
 /**
  * Reads a shell line into its commands and the facts the role bottoms judge: what each command is and whether it

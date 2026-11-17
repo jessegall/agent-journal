@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Console;
 
-use App\Core\Hooks\Programs\HookProgram;
+use App\Core\Hooks\Enums\HookProgram;
 use App\Core\Hooks\Relay\HookRelay;
 use App\Core\Hooks\Relay\RelaySettings;
 use Illuminate\Console\Command;

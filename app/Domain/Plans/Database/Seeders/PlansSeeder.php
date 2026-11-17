@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Database\Seeders;
 
-use App\Domain\Plans\Api\PlanKind;
+use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Models\Plan;
 use Illuminate\Database\Seeder;
 

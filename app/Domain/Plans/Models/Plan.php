@@ -6,9 +6,9 @@ namespace App\Domain\Plans\Models;
 
 use App\Core\Links\Support\Linkable;
 use App\Domain\Plans\Api\PlanCard;
-use App\Domain\Plans\Api\PlanKind;
 use App\Domain\Plans\Api\PlanProgress;
-use App\Domain\Plans\Api\PlanState;
+use App\Domain\Plans\Enums\PlanKind;
+use App\Domain\Plans\Enums\PlanState;
 use App\Domain\Plans\Exceptions\StartDenied;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;

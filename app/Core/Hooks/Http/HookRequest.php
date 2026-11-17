@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Http;
 
+use App\Core\Hooks\Enums\HookProgram;
 use App\Core\Hooks\Programs\HookPayload;
-use App\Core\Hooks\Programs\HookProgram;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

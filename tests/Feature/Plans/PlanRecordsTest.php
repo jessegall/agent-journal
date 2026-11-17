@@ -9,7 +9,7 @@ use App\Core\Agents\Models\Agent;
 use App\Core\Contracts\CurrentActorSetter;
 use App\Domain\Plans\Api\PlanCard;
 use App\Domain\Plans\Api\PlanFilters;
-use App\Domain\Plans\Api\PlanKind;
+use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Plans\Readers\PlanRecords;
 use App\Domain\Tasks\Models\Task;

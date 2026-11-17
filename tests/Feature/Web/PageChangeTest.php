@@ -9,7 +9,7 @@ use App\Core\Contracts\CurrentActorSetter;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
 use App\Domain\Plans\Api\Events\PlanProgressChanged;
-use App\Domain\Plans\Api\PlanKind;
+use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Rules\Actions\ProposeRule;
 use App\Domain\Rules\Actions\RemoveRule;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Inputs;
+namespace App\Core\Hooks\Enums;
 
 /**
  * How a command part joins the part after it.

@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Programs;
+namespace App\Core\Hooks\Enums;
 
 use App\Core\Hooks\Exceptions\UnsupportedHook;
-use App\Core\Hooks\Inputs\FileOperation;
 
 /**
  * The Claude Code tools the adapter knows, and what each one is to the journal.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\States\Support;
+namespace App\Core\Hooks\Enums;
 
 use App\Core\Hooks\Contracts\StateType;
 use App\Core\Hooks\Decisions\StateReference;

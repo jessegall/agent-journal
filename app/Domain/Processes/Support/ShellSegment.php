@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Processes\Support;
 
-use App\Core\Hooks\Inputs\PartJoin;
+use App\Core\Hooks\Enums\PartJoin;
 
 /**
  * The words of one simple command in a shell line, and how it joins the next command.

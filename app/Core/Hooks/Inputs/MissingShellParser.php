@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Inputs;
 
 use App\Core\Hooks\Contracts\ShellCommandParser;
+use App\Core\Hooks\Enums\ShellDialect;
 use App\Core\Hooks\Exceptions\ShellParserMissing;
 
 /**

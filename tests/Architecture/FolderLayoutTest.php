@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use PhpParser\Node\Stmt\ClassLike;
+use PhpParser\Node\Stmt\Enum_;
 use PhpParser\NodeFinder;
 use ReflectionClass;
 use Tests\Architecture\Support\DomainFiles;
@@ -38,6 +39,21 @@ final class FolderLayoutTest extends TestCase
         }
 
         $this->assertSame([], $loose, "These classes sit loose at a domain or Core area root; move each into the folder of its kind, or that area's Support folder.");
+    }
+
+    public function test_every_enum_sits_in_an_enums_folder(): void
+    {
+        $misplaced = [];
+
+        foreach (DomainFiles::in([app_path('Domain'), app_path('Core')]) as $file) {
+            $enums = (new NodeFinder)->findInstanceOf(ParsedFile::fromPath($file)->statements, Enum_::class);
+
+            if ($enums !== [] && basename(dirname($file)) !== 'Enums') {
+                $misplaced[] = substr($file, strlen(base_path()) + 1);
+            }
+        }
+
+        $this->assertSame([], $misplaced, 'These enums sit outside an Enums folder; move each into the Enums folder of its domain or Core area.');
     }
 
     public function test_every_kind_folder_holds_only_its_own_kind(): void

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Programs;
 
+use App\Core\Hooks\Enums\RewriteSupport;
 use App\Core\Hooks\Exceptions\UnsupportedHook;
 use App\Core\Hooks\Stack\AgentStack;
 use App\Core\Hooks\Stack\HookAnswer;

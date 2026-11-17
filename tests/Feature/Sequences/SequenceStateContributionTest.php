@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sequences;
 
+use App\Core\Hooks\Enums\RewriteSupport;
 use App\Core\Hooks\Exceptions\StackAlreadyClosed;
 use App\Core\Hooks\Inputs\CompactionDetails;
 use App\Core\Hooks\Inputs\ContextCompacted;
@@ -11,7 +12,6 @@ use App\Core\Hooks\Inputs\HookIdentity;
 use App\Core\Hooks\Models\AgentStackRow;
 use App\Core\Hooks\Programs\ProgramCapabilities;
 use App\Core\Hooks\Programs\ProgramReply;
-use App\Core\Hooks\Programs\RewriteSupport;
 use App\Core\Hooks\Stack\HookAnswer;
 use App\Core\Hooks\Support\OperationDeadline;
 use App\Domain\Sequences\Actions\StartSequence;

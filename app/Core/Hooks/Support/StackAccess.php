@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Support;
 
 use App\Core\Agents\Support\AgentContext;
+use App\Core\Hooks\Enums\ReadyStateType;
 use App\Core\Hooks\Exceptions\HookIdentityExpired;
 use App\Core\Hooks\Exceptions\StackTargetRefused;
 use App\Core\Hooks\Inputs\HookIdentity;
-use App\Core\Hooks\States\Support\ReadyStateType;
 use Carbon\CarbonImmutable;
 
 /**

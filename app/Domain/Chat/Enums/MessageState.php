@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Chat\Api;
+namespace App\Domain\Chat\Enums;
 
 /**
  * Where a message stands: sent, waiting for an agent's answer, answered or dismissed.

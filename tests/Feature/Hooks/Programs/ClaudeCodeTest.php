@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks\Programs;
 
 use App\Core\Hooks\Decisions\Decision;
+use App\Core\Hooks\Enums\CommandKind;
+use App\Core\Hooks\Enums\FileOperation;
 use App\Core\Hooks\Exceptions\UnsupportedHook;
-use App\Core\Hooks\Inputs\CommandKind;
 use App\Core\Hooks\Inputs\ContextCompacted;
 use App\Core\Hooks\Inputs\FileEditRequested;
-use App\Core\Hooks\Inputs\FileOperation;
 use App\Core\Hooks\Inputs\ShellCommandRequested;
 use App\Core\Hooks\Programs\ClaudeCodeAdapter;
 use App\Core\Hooks\Programs\JudgedCall;

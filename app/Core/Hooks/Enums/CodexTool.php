@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Programs;
+namespace App\Core\Hooks\Enums;
 
 use App\Core\Hooks\Exceptions\UnsupportedHook;
 

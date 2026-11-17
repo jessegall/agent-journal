@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Core\Hooks\Decisions\NoSubject;
+use App\Core\Hooks\Enums\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\States\AgentState;
 use App\Core\Hooks\Exceptions\StateSubjectMissing;

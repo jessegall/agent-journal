@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
+use App\Core\Hooks\Enums\NoSubject;
+use App\Core\Hooks\Enums\ReadyStateType;
 use App\Core\Hooks\Events\StateTypesRequested;
 use App\Core\Hooks\Exceptions\StateTypeRepeated;
 use App\Core\Hooks\Exceptions\StateTypesFrozen;
@@ -15,7 +16,6 @@ use App\Core\Hooks\Stack\RegisteredStateFactory;
 use App\Core\Hooks\Stack\StateTypes;
 use App\Core\Hooks\States\MainAgentReadyState;
 use App\Core\Hooks\States\ReadOnlyHelperReadyState;
-use App\Core\Hooks\States\Support\ReadyStateType;
 use App\Core\Hooks\States\Support\StateTypeRegistry;
 use App\Domain\Tasks\Enums\TaskWorkState;
 use App\Domain\Tasks\States\WorkingOnTaskState;

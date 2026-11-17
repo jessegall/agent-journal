@@ -13,7 +13,7 @@ use App\Domain\Rules\Actions\ReviewRule;
 use App\Domain\Rules\Api\Events\RuleApproved;
 use App\Domain\Rules\Api\Events\RuleDenied;
 use App\Domain\Rules\Api\Events\RuleRemoved;
-use App\Domain\Rules\Api\RuleState;
+use App\Domain\Rules\Enums\RuleState;
 use App\Domain\Rules\Exceptions\RuleNotProposed;
 use App\Domain\Rules\Models\Rule;
 use App\Domain\Rules\Support\ActiveRules;

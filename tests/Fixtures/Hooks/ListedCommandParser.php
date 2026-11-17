@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Core\Hooks\Inputs\CommandEffect;
-use App\Core\Hooks\Inputs\CommandKind;
+use App\Core\Hooks\Enums\CommandEffect;
+use App\Core\Hooks\Enums\CommandKind;
 use App\Core\Hooks\Inputs\CommandPart;
-use App\Core\Hooks\Inputs\ParseOutcome;
+use App\Core\Hooks\Enums\ParseOutcome;
 use App\Core\Hooks\Inputs\ShellCommand;
 use App\Core\Hooks\Contracts\ShellCommandParser;
-use App\Core\Hooks\Inputs\ShellDialect;
+use App\Core\Hooks\Enums\ShellDialect;
 
 /**
  * A parser for tests that knows a few lines by heart and reads every other line as unparsed.

@@ -8,7 +8,7 @@ use App\Core\Hooks\Exceptions\StackAlreadyClosed;
 use App\Core\Hooks\Models\AgentStackRow;
 use App\Core\Hooks\Storage\FrameRecord;
 use App\Domain\Chat\Actions\RequireMessageAnswer;
-use App\Domain\Chat\Api\MessageState;
+use App\Domain\Chat\Enums\MessageState;
 use App\Domain\Chat\Models\Message;
 use App\Domain\Tasks\Actions\StartTask;
 use App\Domain\Tasks\Models\Task;

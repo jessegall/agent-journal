@@ -4,33 +4,33 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Core\Hooks\Inputs\CommandEffect;
-use App\Core\Hooks\Inputs\CommandKind;
+use App\Core\Hooks\Enums\CommandEffect;
+use App\Core\Hooks\Enums\CommandKind;
 use App\Core\Hooks\Inputs\CommandPart;
 use App\Core\Hooks\Inputs\CompactionDetails;
 use App\Core\Hooks\Inputs\ContextCompacted;
 use App\Core\Hooks\Inputs\FileChange;
 use App\Core\Hooks\Inputs\FileChanges;
 use App\Core\Hooks\Inputs\FileEditRequested;
-use App\Core\Hooks\Inputs\FileOperation;
+use App\Core\Hooks\Enums\FileOperation;
 use App\Core\Hooks\Inputs\HookIdentity;
 use App\Core\Hooks\Contracts\HookInput;
-use App\Core\Hooks\Inputs\ParseOutcome;
+use App\Core\Hooks\Enums\ParseOutcome;
 use App\Core\Hooks\Inputs\PromptDetails;
 use App\Core\Hooks\Inputs\PromptSubmitted;
 use App\Core\Hooks\Inputs\SessionEndDetails;
 use App\Core\Hooks\Inputs\SessionEnded;
-use App\Core\Hooks\Inputs\SessionEndReason;
+use App\Core\Hooks\Enums\SessionEndReason;
 use App\Core\Hooks\Inputs\SessionStartDetails;
 use App\Core\Hooks\Inputs\SessionStarted;
-use App\Core\Hooks\Inputs\SessionStartSource;
+use App\Core\Hooks\Enums\SessionStartSource;
 use App\Core\Hooks\Inputs\ShellCommand;
 use App\Core\Hooks\Inputs\ShellCommandRequested;
-use App\Core\Hooks\Inputs\ShellDialect;
+use App\Core\Hooks\Enums\ShellDialect;
 use App\Core\Hooks\Inputs\StopDetails;
 use App\Core\Hooks\Inputs\StopRequested;
 use App\Core\Hooks\Inputs\ToolFinished;
-use App\Core\Hooks\Inputs\ToolOutcome;
+use App\Core\Hooks\Enums\ToolOutcome;
 use App\Core\Hooks\Inputs\ToolResult;
 
 /**

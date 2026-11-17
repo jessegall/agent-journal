@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Programs;
 
-use App\Core\Hooks\Decisions\AnswerKind;
+use App\Core\Hooks\Enums\AnswerKind;
 use App\Core\Hooks\Storage\RecordedAnswer;
 use Spatie\LaravelData\Data;
 

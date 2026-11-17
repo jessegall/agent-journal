@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Storage;
 
+use App\Core\Hooks\Enums\ReadyStateType;
 use App\Core\Hooks\Exceptions\InvalidBottomState;
-use App\Core\Hooks\States\Support\ReadyStateType;
 
 /**
  * The frames of one stack as they are stored, bottom first.

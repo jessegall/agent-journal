@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Programs;
 
-use App\Core\Hooks\Decisions\AnswerKind;
+use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\ProgramPermission;
+use App\Core\Hooks\Enums\ProgramStopDecision;
+use App\Core\Hooks\Enums\RewriteSupport;
 use App\Core\Hooks\Exceptions\InvalidObservationAnswer;
 use App\Core\Hooks\Exceptions\InvalidShellAnswer;
 use App\Core\Hooks\Exceptions\InvalidStopAnswer;

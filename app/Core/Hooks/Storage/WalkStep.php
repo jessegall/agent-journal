@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Storage;
 
-use App\Core\Hooks\Decisions\AnswerKind;
-use App\Core\Hooks\Decisions\TransitionKind;
+use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\TransitionKind;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 

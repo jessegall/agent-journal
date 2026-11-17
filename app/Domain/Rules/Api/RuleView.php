@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Rules\Api;
 
+use App\Domain\Rules\Enums\RuleState;
+
 /**
  * One rule as a page may show it: its number, its text, where it stands and whether it still waits for review.
  */

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Inputs;
+namespace App\Core\Hooks\Enums;
 
 use App\Core\Hooks\Exceptions\UnknownPatchAction;
 

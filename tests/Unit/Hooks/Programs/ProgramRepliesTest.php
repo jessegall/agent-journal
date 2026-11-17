@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks\Programs;
 
 use App\Core\Hooks\Decisions\Decision;
+use App\Core\Hooks\Enums\RewriteSupport;
 use App\Core\Hooks\Exceptions\InvalidShellAnswer;
 use App\Core\Hooks\Exceptions\InvalidStopAnswer;
 use App\Core\Hooks\Programs\ProgramReplies;
 use App\Core\Hooks\Programs\ProgramReply;
 use App\Core\Hooks\Programs\ProgramToolInput;
-use App\Core\Hooks\Programs\RewriteSupport;
 use App\Core\Hooks\Stack\AgentStack;
 use App\Core\Hooks\Stack\HookAnswer;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;

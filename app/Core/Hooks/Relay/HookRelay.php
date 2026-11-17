@@ -6,11 +6,11 @@ namespace App\Core\Hooks\Relay;
 
 use App\Core\Agents\Support\LoggedBypass;
 use App\Core\Agents\Support\SignedCall;
-use App\Core\Hooks\Programs\CallFailure;
-use App\Core\Hooks\Programs\HookProgram;
+use App\Core\Hooks\Enums\CallFailure;
+use App\Core\Hooks\Enums\HookProgram;
+use App\Core\Hooks\Enums\ReadyStateType;
 use App\Core\Hooks\Programs\OutageReply;
 use App\Core\Hooks\Programs\ProgramReply;
-use App\Core\Hooks\States\Support\ReadyStateType;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory;

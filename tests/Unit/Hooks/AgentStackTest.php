@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks;
 
 use App\Core\Hooks\Contracts\HookInput;
-use App\Core\Hooks\Decisions\AnswerKind;
 use App\Core\Hooks\Decisions\Decision;
-use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
-use App\Core\Hooks\Decisions\TransitionKind;
+use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\NoSubject;
+use App\Core\Hooks\Enums\TransitionKind;
 use App\Core\Hooks\Exceptions\BottomStateCannotFinish;
 use App\Core\Hooks\Exceptions\BottomStateDelegated;
 use App\Core\Hooks\Exceptions\InvalidHookAnswer;

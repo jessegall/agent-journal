@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Core\Hooks\Inputs;
+namespace App\Core\Hooks\Enums;
 
 /**
  * How far the parser read a shell line: fully, up to a dynamic expansion it cannot resolve, or not at all.

@@ -7,7 +7,7 @@ namespace App\Domain\Chat\Models;
 use App\Core\Hooks\Models\Support\OwnedByOneAgent;
 use App\Core\Hooks\Support\StackTarget;
 use App\Core\Links\Support\Linkable;
-use App\Domain\Chat\Api\MessageState;
+use App\Domain\Chat\Enums\MessageState;
 use App\Domain\Chat\Enums\MessageWorkState;
 use App\Domain\Chat\Support\MessageWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
