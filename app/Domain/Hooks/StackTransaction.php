@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Hooks;
 
+use App\Domain\Agents\LaunchTransaction;
+use App\Domain\Hooks\Storage\StackTarget;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
@@ -12,7 +14,7 @@ use Illuminate\Database\QueryException;
  * Runs one stack operation in one transaction with a lock and statement time limit set first, before any write.
  * Inside a transaction that already has its limits it joins that transaction and leaves the limits as they are.
  */
-final readonly class StackTransaction
+final readonly class StackTransaction implements LaunchTransaction
 {
     private const LOCK_NOT_AVAILABLE = '55P03';
 
@@ -61,6 +63,16 @@ final readonly class StackTransaction
             }
 
             throw $failure;
+        }
+    }
+
+    /**
+     * Refuses a stack change outside a transaction, so it can only commit together with the work that caused it.
+     */
+    public function requireOpen(StackTarget $target): void
+    {
+        if ($this->database->transactionLevel() === 0) {
+            throw StackTransactionRequired::forTarget($target);
         }
     }
 

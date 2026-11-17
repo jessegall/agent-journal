@@ -6,7 +6,6 @@ namespace Tests\Feature\Hooks;
 
 use App\Domain\Agents\AgentContext;
 use App\Domain\Agents\SignedCall;
-use App\Domain\Hooks\AgentStacks;
 use App\Domain\Hooks\Inputs\CommandEffect;
 use App\Domain\Hooks\Inputs\CommandKind;
 use App\Domain\Hooks\Inputs\CommandPart;
@@ -15,6 +14,7 @@ use App\Domain\Hooks\Inputs\ParseOutcome;
 use App\Domain\Hooks\Inputs\ShellCommand;
 use App\Domain\Hooks\Inputs\ShellCommandParser;
 use App\Domain\Hooks\Inputs\ShellDialect;
+use App\Domain\Hooks\LaunchStacks;
 use App\Domain\Hooks\Models\HookCall;
 use App\Domain\Hooks\StackTransaction;
 use App\Domain\Hooks\States\ReadyStateType;
@@ -44,7 +44,7 @@ final class HookEndpointTest extends TestCase
         $this->emptyTables();
         $this->launch = TestLaunch::start('hooks.main_ready');
         $this->asLaunchedAgent(fn () => $this->app->make(StackTransaction::class)->run(
-            fn () => $this->app->make(AgentStacks::class)->create($this->target(), ReadyStateType::MainAgent),
+            fn () => $this->app->make(LaunchStacks::class)->open($this->target(), ReadyStateType::MainAgent),
         ));
     }
 

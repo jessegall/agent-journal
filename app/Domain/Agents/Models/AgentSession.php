@@ -39,6 +39,18 @@ final class AgentSession extends Model
         $this->save();
     }
 
+    public function useProgram(string $program): void
+    {
+        $this->program = $program;
+        $this->save();
+    }
+
+    public function mapProgramSession(string $programSessionId): void
+    {
+        $this->program_session_id = $programSessionId;
+        $this->save();
+    }
+
     public function endAt(CarbonImmutable $time): void
     {
         $this->status = SessionStatus::Ended;

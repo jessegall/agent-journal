@@ -79,6 +79,20 @@ final class AgentStackRow extends Model
         return $row;
     }
 
+    /**
+     * The active stack of the target for its launch, read through the explicit authorized query and locked.
+     */
+    public static function lockForLaunch(StackTarget $target): self
+    {
+        $row = self::query()->authorizedFor($target)->lockForUpdate()->first() ?? throw StackMissing::forTarget($target);
+
+        if (! $row->isActive()) {
+            throw StackAlreadyClosed::forTarget($target);
+        }
+
+        return $row;
+    }
+
     public function isActive(): bool
     {
         return $this->status === StackStatus::Active;

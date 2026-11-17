@@ -11,6 +11,7 @@ use App\Domain\Hooks\Decisions\NoSubject;
 use App\Domain\Hooks\Decisions\StateReference;
 use App\Domain\Hooks\Decisions\SubjectReference;
 use App\Domain\Hooks\Events\StateTypesRequested;
+use App\Domain\Hooks\LaunchStacks;
 use App\Domain\Hooks\Models\AgentStackRow;
 use App\Domain\Hooks\Models\StackAlreadyClosed;
 use App\Domain\Hooks\Models\StackMissing;
@@ -71,7 +72,7 @@ final class AgentStacksTest extends TestCase
 
     public function test_creating_a_stack_gives_it_one_bottom_state_of_the_role(): void
     {
-        $this->transaction()->run(fn () => $this->stacks()->create($this->target, ReadyStateType::MainAgent));
+        $this->transaction()->run(fn () => $this->launchStacks()->open($this->target, ReadyStateType::MainAgent));
 
         $frames = $this->storedFrames();
 
@@ -82,10 +83,10 @@ final class AgentStacksTest extends TestCase
 
     public function test_creating_the_same_stack_again_leaves_the_first_one(): void
     {
-        $this->transaction()->run(fn () => $this->stacks()->create($this->target, ReadyStateType::MainAgent));
+        $this->transaction()->run(fn () => $this->launchStacks()->open($this->target, ReadyStateType::MainAgent));
         $firstFrameId = $this->storedFrames()[0]->id;
 
-        $this->transaction()->run(fn () => $this->stacks()->create($this->target, ReadyStateType::MainAgent));
+        $this->transaction()->run(fn () => $this->launchStacks()->open($this->target, ReadyStateType::MainAgent));
 
         $this->assertSame(1, DB::table('agent_stacks')->count());
         $this->assertSame($firstFrameId, $this->storedFrames()[0]->id);
@@ -96,7 +97,7 @@ final class AgentStacksTest extends TestCase
         $this->insertStackThrough($this->otherConnection(), 'racer-ready', 'hooks.main_ready');
 
         $this->transaction()->run(function (): void {
-            $this->stacks()->create($this->target, ReadyStateType::MainAgent);
+            $this->launchStacks()->open($this->target, ReadyStateType::MainAgent);
             DB::table('domain_writes')->insert(['name' => 'after the race']);
         });
 
@@ -110,14 +111,14 @@ final class AgentStacksTest extends TestCase
 
         $this->expectException(InvalidBottomState::class);
 
-        $this->transaction()->run(fn () => $this->stacks()->create($this->target, ReadyStateType::MainAgent));
+        $this->transaction()->run(fn () => $this->launchStacks()->open($this->target, ReadyStateType::MainAgent));
     }
 
     public function test_a_stack_changes_only_inside_a_transaction(): void
     {
         $this->expectException(StackTransactionRequired::class);
 
-        $this->stacks()->create($this->target, ReadyStateType::MainAgent);
+        $this->launchStacks()->open($this->target, ReadyStateType::MainAgent);
     }
 
     public function test_a_push_commits_together_with_the_domain_write(): void
@@ -243,6 +244,11 @@ final class AgentStacksTest extends TestCase
         return [];
     }
 
+    private function launchStacks(): LaunchStacks
+    {
+        return $this->app->make(LaunchStacks::class);
+    }
+
     private function stacks(): AgentStacks
     {
         return $this->app->make(AgentStacks::class);
@@ -255,7 +261,7 @@ final class AgentStacksTest extends TestCase
 
     private function createStack(): void
     {
-        $this->transaction()->run(fn () => $this->stacks()->create($this->target, ReadyStateType::MainAgent));
+        $this->transaction()->run(fn () => $this->launchStacks()->open($this->target, ReadyStateType::MainAgent));
     }
 
     private function task(int $number): StateReference

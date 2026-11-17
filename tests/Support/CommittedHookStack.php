@@ -18,6 +18,7 @@ use App\Domain\Hooks\Inputs\ShellCommandRequested;
 use App\Domain\Hooks\Inputs\ShellDialect;
 use App\Domain\Hooks\Inputs\StopDetails;
 use App\Domain\Hooks\Inputs\StopRequested;
+use App\Domain\Hooks\LaunchStacks;
 use App\Domain\Hooks\Models\AgentStackRow;
 use App\Domain\Hooks\Programs\ProgramCapabilities;
 use App\Domain\Hooks\Programs\RewriteSupport;
@@ -71,7 +72,7 @@ trait CommittedHookStack
             )));
         });
         $this->callAs('call-1');
-        $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(AgentStacks::class)->create($this->target, ReadyStateType::MainAgent));
+        $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target, ReadyStateType::MainAgent));
     }
 
     protected function emptyHookTables(): void
