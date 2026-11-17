@@ -170,8 +170,9 @@ if [ "${1:-}" = "update" ]; then
   record_python
   exec env PYTHONPATH="$SOURCE" "$python" -m install.working_tree_install "$ROOT" "$SOURCE"
 fi
-# a plain install in a project that holds version 4 and no version 5 upgrades it, as sh install.sh upgrade --yes does
-if [ -z "${1:-}" ] && [ ! -f "$ROOT/.journal/version-5.db" ] && { [ -f "$ROOT/.journal/journal.db" ] || [ -d "$ROOT/.journal/src/journal" ]; }; then
+# a plain install in a project whose version 4 database is still in .journal upgrades it, as sh install.sh upgrade --yes
+# does; an upgrade that stopped half way is finished the same way, since only a finished upgrade moves journal.db aside
+if [ -z "${1:-}" ] && [ -f "$ROOT/.journal/journal.db" ]; then
   echo "this project holds a version 4 journal: it is upgraded to version 5"
   set -- upgrade --yes
 fi
