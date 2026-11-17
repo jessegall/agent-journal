@@ -88,3 +88,17 @@ def test_a_completed_upgrade_removes_the_version_four_codex_skill_folders(new_st
     story = upgraded_story(new_story, prepare=old_skills)
     story.run_listeners()
     story.expect_rows(not (story.home.project_folder / ".codex/skills/journal-tasks").exists())
+
+
+def test_an_old_codex_skill_folder_linked_to_the_published_one_is_never_cleared(new_story):
+    def linked_skills(home):
+        shared = home.parent / "skills"
+        (shared / "journal-tasks").mkdir(parents=True)
+        (shared / "journal-tasks" / "SKILL.md").write_text("published")
+        for program_folder in (".claude", ".codex"):
+            (home.parent / program_folder).mkdir(exist_ok=True)
+            (home.parent / program_folder / "skills").symlink_to("../skills", target_is_directory=True)
+
+    story = upgraded_story(new_story, prepare=linked_skills)
+    story.run_listeners()
+    story.expect_rows((story.home.project_folder / "skills" / "journal").is_dir(), detail=str(sorted(path.name for path in (story.home.project_folder / "skills").iterdir())))

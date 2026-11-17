@@ -93,9 +93,11 @@ class SkillFiles:
 
     def clear(self, declared: Sequence[SkillEntry]) -> list[str]:
         names, cleared = {skill.folder for skill in declared}, list[str]()
-        legacy_roots = set(self.projects.roots([".codex/skills"]))
+        roots = self.projects.roots(self.providers.skill_folders())
+        published = {root.resolve() for root in roots}
+        legacy_roots = {root for root in self.projects.roots([".codex/skills"]) if root.resolve() not in published}
         permitted: dict[Path, Callable[[str], bool]] = {}
-        for root in (*self.projects.roots(self.providers.skill_folders()), *legacy_roots):
+        for root in (*roots, *legacy_roots):
             is_permitted = permitted.setdefault(root.parents[1], self.projects.permitted(root.parents[1]))
             stale = [folder for folder in FileAccess.glob(root, f"{FOLDER_PREFIX}*") if FileAccess.is_dir(folder) and (root in legacy_roots or folder.name not in names or not is_permitted(folder.name))]
             for folder in stale:
