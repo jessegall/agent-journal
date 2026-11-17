@@ -2,6 +2,23 @@
 
 This is the one place where the journal records what it knows about each agent program's hooks. A `ProgramCapabilities` value in the code records the contract an adapter was written against; this file records the evidence behind it. A program version is supported only when every row of its matrix below is filled from a captured, redacted fixture of that version.
 
+## What plan 2 delivered, and what it did not
+
+The core is built and tested on PostgreSQL: typed hook inputs, the top-first walk with recorded steps, the role bottom states, the state types and restoration, the rewrite recheck, the two Hooks tables with versioned casts, the per-request agent scope, the bounded stack transaction with replay, the domain states pushed by their own listeners, the authoritative shell parser, the Claude Code and Codex adapters, the authenticated endpoint `POST /hooks/{program}`, launches with isolated settings and separate child stacks, compaction once with reminders, loss confirmation, the outage replies, the read-only inspector `GET /hooks/stacks/{agentId}/{sessionId}` and retention.
+
+No production program runs under it yet. No pinned Claude Code or Codex version has been verified, the host shim that would carry calls to the endpoint does not exist, and the fixtures are written from documented shapes. Until tasks 88 and 89 are done, the program support below is a written contract, not a verified capability. The owner work still missing is listed in `docs/hooks/dependencies.md`.
+
+## Measured limits
+
+Measured on 2026-11-17 against the running FrankenPHP Octane app in Docker, from the host, 50 calls each:
+
+| What | Median | Worst |
+|---|---|---|
+| The health check `/up` | 1.7 ms | 6.7 ms |
+| A hook call with an unknown token, refused at the credential lookup | 2.7 ms | 10.5 ms |
+
+Not measured on the live app: an authenticated hook call end to end and a stack lock wait (task 93). In the test suite an uncontended hook call commits in a few tens of milliseconds including setup, and a held lock under a 300 ms deadline times out in about 250 ms (`HookTransactionTest`). The configured limits are a 300 second retry window, a 5 second operation deadline with four fifths of it for the lock wait, 7 days for hook calls and 30 days for closed stacks.
+
 ## The reply contract (plan 2, task 66)
 
 The adapters share these reply shapes, checked against the vendor documentation on 2026-11-17, not against a running pinned program:
