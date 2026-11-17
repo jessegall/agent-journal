@@ -30,6 +30,12 @@ class CommandRunCounts:
             return
         self.repository.update(stored, context, runs_without_reader=stored.runs_without_reader + 1)
 
+    # one command's count, read by its key, so a good run end never reads the counts of other commands
+    def reset_command(self, command_key: str, context: Context) -> None:
+        stored = self.queries.query(CommandRunCount).filter(command_key=command_key).matching(Greater("runs_without_reader", 0)).first()
+        if stored is not None:
+            self.repository.update(stored, context, runs_without_reader=0)
+
     def reset(self, covers: Callable[[str], bool], context: Context) -> None:
         counting = self.queries.query(CommandRunCount).matching(Greater("runs_without_reader", 0)).descending("runs_without_reader").limit(COUNTING_COMMANDS_READ, COUNTING_REASON).get()
         for stored in [row for row in counting if covers(row.command_key)]:

@@ -35,5 +35,5 @@ class ReadingDecisions:
         if point is ReadingPhase.END and decision.state.is_readerless:
             self.run_counts.add_run(command_key, context)
         elif point is ReadingPhase.END:
-            self.run_counts.reset(lambda counted_key: counted_key == command_key, context)
+            self.run_counts.reset_command(command_key, context)
         return self.repository.save(ReadingDecisionRow(process_id=process.id, part_position=part.position, command_key=command_key, phase=point, **values), context)
