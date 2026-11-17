@@ -14,13 +14,11 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class AssignedTasksController
 {
-    public function __construct(private AssignedTaskReader $tasks) {}
-
     /**
      * A plain 200: the call is a POST only because its body is signed, and it reads without creating anything.
      */
-    public function __invoke(AssignedTasksRequest $request): JsonResponse
+    public function __invoke(AssignedTasksRequest $request, AssignedTaskReader $tasks): JsonResponse
     {
-        return new JsonResponse(AssignedTaskListData::from($this->tasks->assignedToCaller($request->filters())));
+        return new JsonResponse(AssignedTaskListData::from($tasks->assignedToCaller($request->filters())));
     }
 }

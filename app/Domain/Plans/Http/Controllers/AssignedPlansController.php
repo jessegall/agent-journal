@@ -14,13 +14,11 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class AssignedPlansController
 {
-    public function __construct(private PlanReader $plans) {}
-
     /**
      * A plain 200: the call is a POST only because its body is signed, and it reads without creating anything.
      */
-    public function __invoke(AssignedPlansRequest $request): JsonResponse
+    public function __invoke(AssignedPlansRequest $request, PlanReader $plans): JsonResponse
     {
-        return new JsonResponse(AssignedPlanListData::from($this->plans->assignedToCaller($request->filters())));
+        return new JsonResponse(AssignedPlanListData::from($plans->assignedToCaller($request->filters())));
     }
 }

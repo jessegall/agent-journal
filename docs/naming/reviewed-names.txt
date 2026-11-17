@@ -225,6 +225,9 @@ class	AnsweringMessageState
 class	AnsweringMessageStateFactory
 class	AnsweringMessageStateReference
 class	AppServiceProvider
+class	AssignRecordCommand
+class	AssignRecordController
+class	AssignRecordRequest
 class	AssignedPlanCardData
 class	AssignedPlanFilters
 class	AssignedPlanList
@@ -256,12 +259,14 @@ class	AssignmentGroupTooLarge
 class	AssignmentHolder
 class	AssignmentHolders
 class	AssignmentOutcome
+class	AssignmentOutcomeData
 class	AssignmentProviderInvalid
 class	AssignmentRecord
 class	AssignmentRecords
 class	AssignmentReference
 class	AssignmentRegistry
 class	AssignmentResult
+class	AssignmentResultData
 class	AssignmentRetryExhausted
 class	AssignmentRootFinished
 class	AssignmentSet
@@ -514,6 +519,10 @@ class	RaisePlanProgressChanged
 class	ReadOnlyHelperReadyState
 class	ReadyState
 class	Reason
+class	ReassignRecordCommand
+class	ReassignRecordController
+class	ReassignRecordRequest
+class	RecordHolderData
 class	RecordIdentity
 class	RecordIds
 class	RecordUnavailable
@@ -535,6 +544,9 @@ class	ResetUserPassword
 class	RetentionPeriods
 class	RetentionTooShort
 class	RetireAgent
+class	RetireAgentCommand
+class	RetireAgentController
+class	RetireAgentRequest
 class	ReviewRule
 class	ReviewRuleController
 class	Rewritten
@@ -583,6 +595,9 @@ class	ShellParser
 class	ShellParserMissing
 class	ShellSegment
 class	ShellWords
+class	ShowAssignmentCommand
+class	ShowAssignmentController
+class	ShowAssignmentRequest
 class	SignedCall
 class	SignedInScope
 class	StackAccess
@@ -651,6 +666,9 @@ class	TestDatabaseTraits
 class	ToolFinished
 class	ToolResult
 class	TypeScriptServiceProvider
+class	UnassignRecordCommand
+class	UnassignRecordController
+class	UnassignRecordRequest
 class	UnjudgedCall
 class	UnknownLinkType
 class	UnknownPatchAction
@@ -897,6 +915,7 @@ method	AgentMemories::__construct()
 method	AgentMemories::lowerWeightsOnce()
 method	AgentMemories::remindersFor()
 method	AgentNotAvailable::forAgent()
+method	AgentNotAvailable::status()
 method	AgentReader::labelsFor()
 method	AgentReply::__construct()
 method	AgentRequestClient::__construct()
@@ -907,6 +926,7 @@ method	AgentRequestSender::send()
 method	AgentRetirement::retire()
 method	AgentRetirementDenied::forCaller()
 method	AgentRetirementDenied::insideTransaction()
+method	AgentRetirementDenied::status()
 method	AgentScope::__construct()
 method	AgentScope::apply()
 method	AgentSession::agent()
@@ -986,6 +1006,9 @@ method	AnsweringMessageStateReference::forMessage()
 method	AppServiceProvider::boot()
 method	AppServiceProvider::configureDefaults()
 method	AppServiceProvider::register()
+method	AssignRecordCommand::handle()
+method	AssignRecordController::__invoke()
+method	AssignRecordRequest::rules()
 method	Assignable::assignmentIdentity()
 method	AssignableListing::amongIds()
 method	AssignableListing::inStates()
@@ -1000,7 +1023,6 @@ method	AssignedPlanList::__construct()
 method	AssignedPlanListData::__construct()
 method	AssignedPlanListData::fromList()
 method	AssignedPlansCommand::handle()
-method	AssignedPlansController::__construct()
 method	AssignedPlansController::__invoke()
 method	AssignedPlansRequest::filters()
 method	AssignedPlansRequest::rules()
@@ -1012,7 +1034,6 @@ method	AssignedTaskReader::assignedToCaller()
 method	AssignedTasks::__construct()
 method	AssignedTasks::assignedToCaller()
 method	AssignedTasksCommand::handle()
-method	AssignedTasksController::__construct()
 method	AssignedTasksController::__invoke()
 method	AssignedTasksRequest::filters()
 method	AssignedTasksRequest::rules()
@@ -1031,6 +1052,7 @@ method	AssigneeRecords::holdersOf()
 method	AssigneeRecords::names()
 method	AssigneeRegistration::__construct()
 method	AssigneeUnavailable::forActor()
+method	AssigneeUnavailable::status()
 method	Assignment::__construct()
 method	Assignment::holder()
 method	Assignment::isFor()
@@ -1043,10 +1065,12 @@ method	AssignmentBatch::skip()
 method	AssignmentChange::__construct()
 method	AssignmentConflict::heldByAnother()
 method	AssignmentConflict::staleReference()
+method	AssignmentConflict::status()
 method	AssignmentData::__construct()
 method	AssignmentData::label()
 method	AssignmentData::ofHolder()
 method	AssignmentDenied::forCaller()
+method	AssignmentDenied::status()
 method	AssignmentFacts::__construct()
 method	AssignmentFacts::publish()
 method	AssignmentGroup::__construct()
@@ -1057,6 +1081,7 @@ method	AssignmentHolder::reference()
 method	AssignmentHolders::__construct()
 method	AssignmentHolders::forRecord()
 method	AssignmentOutcome::__construct()
+method	AssignmentOutcomeData::__construct()
 method	AssignmentProviderInvalid::forAssignees()
 method	AssignmentProviderInvalid::forModel()
 method	AssignmentProviderInvalid::forRecords()
@@ -1090,9 +1115,13 @@ method	AssignmentRegistry::registerRecord()
 method	AssignmentResult::__construct()
 method	AssignmentResult::combined()
 method	AssignmentResult::count()
+method	AssignmentResult::currentAssignments()
 method	AssignmentResult::hasChanges()
+method	AssignmentResultData::__construct()
+method	AssignmentResultData::of()
 method	AssignmentRetryExhausted::after()
 method	AssignmentRootFinished::for()
+method	AssignmentRootFinished::status()
 method	AssignmentSet::__construct()
 method	AssignmentSet::forRecord()
 method	AssignmentStore::__construct()
@@ -1108,6 +1137,7 @@ method	AssignmentTransactionRequired::forStore()
 method	AssignmentTypeRepeated::for()
 method	AssignmentTypeUnavailable::forKind()
 method	AssignmentTypeUnavailable::forType()
+method	AssignmentTypeUnavailable::status()
 method	AssignmentWriter::assign()
 method	AssignmentWriter::assignUnfinished()
 method	AssignmentWriter::reassign()
@@ -1482,9 +1512,11 @@ method	InspectedFrame::fromFrameRecord()
 method	InspectedSubject::__construct()
 method	InterfacePlacement::interfacesDeclaredIn()
 method	InterfacePlacement::misplacedIn()
+method	InvalidAssignmentIdentity::forActorText()
 method	InvalidAssignmentIdentity::forId()
 method	InvalidAssignmentIdentity::forReference()
 method	InvalidAssignmentIdentity::forType()
+method	InvalidAssignmentIdentity::status()
 method	InvalidAssignmentPage::forCursor()
 method	InvalidAssignmentPage::forLimit()
 method	InvalidAssignmentPage::forPageNumber()
@@ -1856,6 +1888,14 @@ method	RaisePlanProgressChanged::__construct()
 method	RaisePlanProgressChanged::handle()
 method	ReadOnlyHelperReadyState::onFileEdit()
 method	ReadOnlyHelperReadyState::onShellCommand()
+method	ReadsAssignmentArguments::actorFields()
+method	ReadsAssignmentArguments::recordFields()
+method	ReadsAssignmentInput::expected()
+method	ReadsAssignmentInput::expectedRules()
+method	ReadsAssignmentInput::recipient()
+method	ReadsAssignmentInput::recipientRules()
+method	ReadsAssignmentInput::record()
+method	ReadsAssignmentInput::recordRules()
 method	ReadsPlanFilters::planFilterRules()
 method	ReadsPlanFilters::planFilters()
 method	ReadsRuleFilters::ruleFilterRules()
@@ -1873,11 +1913,17 @@ method	ReadyStateType::newState()
 method	ReadyStateType::schemaVersion()
 method	ReadyStateType::stateFor()
 method	Reason::__construct()
+method	ReassignRecordCommand::handle()
+method	ReassignRecordController::__invoke()
+method	ReassignRecordRequest::rules()
+method	RecordHolderData::__construct()
+method	RecordHolderData::of()
 method	RecordIdentity::__construct()
 method	RecordIdentity::checkType()
 method	RecordIdentity::isSameAs()
 method	RecordIds::__construct()
 method	RecordUnavailable::for()
+method	RecordUnavailable::status()
 method	RecordedAnswer::__construct()
 method	RecordedAnswer::checkVersion()
 method	RecordedAnswer::of()
@@ -1901,6 +1947,8 @@ method	RemindersDomain::exports()
 method	RemindersDomain::requires()
 method	RemoveRule::__construct()
 method	RemoveRule::remove()
+method	RendersRefusal::render()
+method	RendersRefusal::status()
 method	RepeatedCommandRewrite::for()
 method	ReplayFound::answeredBefore()
 method	RequireMessageAnswer::__construct()
@@ -1916,6 +1964,10 @@ method	RetireAgent::__construct()
 method	RetireAgent::endSessionsOf()
 method	RetireAgent::requireAuthority()
 method	RetireAgent::retire()
+method	RetireAgentCommand::handle()
+method	RetireAgentController::__invoke()
+method	RetireAgentRequest::agentId()
+method	RetireAgentRequest::rules()
 method	ReviewRule::__construct()
 method	ReviewRule::approve()
 method	ReviewRule::deny()
@@ -1980,6 +2032,7 @@ method	SendMessage::__construct()
 method	SendMessage::send()
 method	SendMessageController::__construct()
 method	SendMessageController::__invoke()
+method	SendsSignedCalls::sendAndPrint()
 method	SequenceRecords::followedBy()
 method	SequenceRecords::get()
 method	SequenceRun::advance()
@@ -2049,6 +2102,9 @@ method	ShellWords::of()
 method	ShellWords::operatorAt()
 method	ShellWords::redirectAt()
 method	ShellWords::segments()
+method	ShowAssignmentCommand::handle()
+method	ShowAssignmentController::__invoke()
+method	ShowAssignmentRequest::rules()
 method	SignedCall::__construct()
 method	SignedCall::digestOf()
 method	SignedCall::signatureFor()
@@ -2233,6 +2289,9 @@ method	ToolFinished::identity()
 method	ToolFinished::methodName()
 method	ToolResult::__construct()
 method	TypeScriptServiceProvider::configure()
+method	UnassignRecordCommand::handle()
+method	UnassignRecordController::__invoke()
+method	UnassignRecordRequest::rules()
 method	UnjudgedCall::__construct()
 method	UnjudgedCall::replyWith()
 method	UnknownLinkType::forAlias()
@@ -2347,6 +2406,8 @@ property	AgentStateMachine::$rewrite
 property	AgentStateMachine::$transaction
 property	AnsweringMessageState::$message
 property	AnsweringMessageStateFactory::$messages
+property	AssignRecordCommand::$description
+property	AssignRecordCommand::$signature
 property	AssignedPlanCardData::$holder
 property	AssignedPlanCardData::$id
 property	AssignedPlanCardData::$kind
@@ -2364,7 +2425,6 @@ property	AssignedPlanListData::$perPage
 property	AssignedPlanListData::$total
 property	AssignedPlansCommand::$description
 property	AssignedPlansCommand::$signature
-property	AssignedPlansController::$plans
 property	AssignedTaskCardData::$holder
 property	AssignedTaskCardData::$id
 property	AssignedTaskCardData::$state
@@ -2379,7 +2439,6 @@ property	AssignedTasks::$assignments
 property	AssignedTasks::$transaction
 property	AssignedTasksCommand::$description
 property	AssignedTasksCommand::$signature
-property	AssignedTasksController::$tasks
 property	AssigneeList::$assignees
 property	AssigneeList::$nextAfterId
 property	AssigneeName::$actor
@@ -2407,6 +2466,8 @@ property	AssignmentHolders::$holders
 property	AssignmentOutcome::$current
 property	AssignmentOutcome::$kind
 property	AssignmentOutcome::$record
+property	AssignmentOutcomeData::$kind
+property	AssignmentOutcomeData::$record
 property	AssignmentRecord::$table
 property	AssignmentRecords::$actors
 property	AssignmentRecords::$log
@@ -2418,6 +2479,8 @@ property	AssignmentRegistry::$container
 property	AssignmentRegistry::$recordProviders
 property	AssignmentResult::$changes
 property	AssignmentResult::$outcomes
+property	AssignmentResultData::$changed
+property	AssignmentResultData::$outcomes
 property	AssignmentSet::$assignments
 property	AssignmentStore::$database
 property	AssignmentsChanged::$actor
@@ -2785,6 +2848,11 @@ property	PushTaskState::$stacks
 property	PushTaskState::$tasks
 property	RaisePlanProgressChanged::$events
 property	Reason::$text
+property	ReassignRecordCommand::$description
+property	ReassignRecordCommand::$signature
+property	RecordHolderData::$holder
+property	RecordHolderData::$recordId
+property	RecordHolderData::$recordType
 property	RecordIdentity::$id
 property	RecordIdentity::$type
 property	RecordIds::$ids
@@ -2819,6 +2887,8 @@ property	RetireAgent::$facts
 property	RetireAgent::$lifecycle
 property	RetireAgent::$sessions
 property	RetireAgent::$store
+property	RetireAgentCommand::$description
+property	RetireAgentCommand::$signature
 property	ReviewRule::$actors
 property	ReviewRule::$database
 property	ReviewRule::$events
@@ -2905,6 +2975,8 @@ property	ShellSegment::$words
 property	ShellWords::$hasExpansion
 property	ShellWords::$isComplete
 property	ShellWords::$segments
+property	ShowAssignmentCommand::$description
+property	ShowAssignmentCommand::$signature
 property	SignedCall::$bodyDigest
 property	SignedCall::$callId
 property	SignedCall::$issuedAt
@@ -3000,6 +3072,8 @@ property	ToolFinished::$hook
 property	ToolFinished::$result
 property	ToolResult::$outcome
 property	ToolResult::$toolName
+property	UnassignRecordCommand::$description
+property	UnassignRecordCommand::$signature
 property	UnjudgedCall::$reply
 property	UserAssignees::$access
 property	UserAssignees::$actors
@@ -3041,5 +3115,9 @@ trait	Linkable
 trait	OptionalOrMissing
 trait	OwnedByOneAgent
 trait	PasswordValidationRules
+trait	ReadsAssignmentArguments
+trait	ReadsAssignmentInput
 trait	ReadsPlanFilters
 trait	ReadsRuleFilters
+trait	RendersRefusal
+trait	SendsSignedCalls

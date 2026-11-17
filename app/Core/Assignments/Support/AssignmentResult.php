@@ -40,4 +40,20 @@ final readonly class AssignmentResult
             array_merge(...array_map(fn (self $result) => $result->changes, $results)),
         );
     }
+
+    /**
+     * The assignments the covered records have after the command.
+     */
+    public function currentAssignments(): AssignmentSet
+    {
+        $assignments = [];
+
+        foreach ($this->outcomes as $outcome) {
+            foreach ($outcome->current as $assignment) {
+                $assignments[] = $assignment;
+            }
+        }
+
+        return new AssignmentSet($assignments);
+    }
 }

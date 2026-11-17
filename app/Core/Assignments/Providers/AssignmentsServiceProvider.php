@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace App\Core\Assignments\Providers;
 
 use App\Core\Assignments\Actions\WriteAssignments;
+use App\Core\Assignments\Console\AssignRecordCommand;
+use App\Core\Assignments\Console\ReassignRecordCommand;
+use App\Core\Assignments\Console\ShowAssignmentCommand;
+use App\Core\Assignments\Console\UnassignRecordCommand;
 use App\Core\Assignments\Contracts\AssigneeReader;
 use App\Core\Assignments\Contracts\AssignmentProviders;
 use App\Core\Assignments\Contracts\AssignmentReader;
@@ -37,6 +41,8 @@ final class AssignmentsServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->loadRoutesFrom(dirname(__DIR__).'/Routes/assignments.php');
+        $this->commands([ShowAssignmentCommand::class, AssignRecordCommand::class, ReassignRecordCommand::class, UnassignRecordCommand::class]);
         $this->app->booted(fn () => $this->app->make(AssignmentRegistry::class)->checkRecordModels($this->app->make(LinkTypes::class)));
     }
 }

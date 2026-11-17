@@ -7,6 +7,7 @@ namespace App\Core\Agents\Providers;
 use App\Core\Actors\Enums\ActorKind;
 use App\Core\Agents\Actions\RetireAgent;
 use App\Core\Agents\Actions\SendAgentRequests;
+use App\Core\Agents\Console\RetireAgentCommand;
 use App\Core\Agents\Contracts\AgentAuthority;
 use App\Core\Agents\Contracts\AgentRequestSender;
 use App\Core\Agents\Contracts\AgentRetirement;
@@ -45,6 +46,8 @@ final class AgentsServiceProvider extends ServiceProvider
 
     public function boot(AssignmentRegistration $assignments): void
     {
+        $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agents.php');
+        $this->commands([RetireAgentCommand::class]);
         $assignments->registerAssignees(new AssigneeRegistration(ActorKind::Agent, AgentAssignees::class));
     }
 }
