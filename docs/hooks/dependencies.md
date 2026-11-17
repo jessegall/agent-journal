@@ -6,7 +6,7 @@ Plan 2 builds the agent stack state machine of doc 3 in the Hooks domain (`app/D
 
 | Domain | Would require | Why | Status |
 |---|---|---|---|
-| Hooks | Agents | the scoped agent context, the launch and the session identity | proposed |
+| Hooks | Agents | the scoped agent context, the launch and the session identity | declared under rule 11, awaiting question 10 |
 | Hooks | Links | its two models use the Linkable trait (rule 3) | declared under rule 11, awaiting question 10 |
 | Tasks | Hooks | the WorkingOnTask state and its push from a listener | declared under rule 11, awaiting question 10 |
 | Chat | Hooks | the AnsweringMessage state and its push | declared under rule 11, awaiting question 10 |
@@ -18,7 +18,7 @@ Plan 2 builds the agent stack state machine of doc 3 in the Hooks domain (`app/D
 
 Approved today: Plans requires Tasks (plan 1). Nothing else.
 
-Declared without an answer: rule 11 lets the plan go on with the recommended choice, so Tasks, Chat and Sequences declare Hooks as their first state is written, and Hooks declares Links when its two models are written. Each is one line in the domain class and is removed if you decline.
+Declared without an answer: rule 11 lets the plan go on with the recommended choice, so Tasks, Chat and Sequences declare Hooks as their first state is written, Hooks declares Links when its two models are written, and Hooks declares Agents and Agents declares Links when the agent context is written. Each is one line in the domain class and is removed if you decline.
 
 ## Producers no plan has built yet
 

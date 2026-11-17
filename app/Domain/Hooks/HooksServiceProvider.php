@@ -10,7 +10,7 @@ use App\Domain\Hooks\Stack\StateTypes;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * Binds the state types once per worker, and the state factory once per request.
+ * Binds the state types and the retry window once per worker, and the state factory once per request.
  */
 final class HooksServiceProvider extends ServiceProvider
 {
@@ -18,5 +18,6 @@ final class HooksServiceProvider extends ServiceProvider
     {
         $this->app->singleton(StateTypes::class);
         $this->app->scoped(StateFactory::class, RegisteredStateFactory::class);
+        $this->app->singleton(HookRetryWindow::class, fn () => new HookRetryWindow($this->app->make('config')->integer('hooks.retry_seconds')));
     }
 }

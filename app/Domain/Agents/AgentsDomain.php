@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Agents;
 
 use App\Domain\Domain;
+use App\Domain\Links\LinksDomain;
 
 final class AgentsDomain implements Domain
 {
@@ -18,6 +19,6 @@ final class AgentsDomain implements Domain
      */
     public function requires(): array
     {
-        return [];
+        return [LinksDomain::class];
     }
 }
