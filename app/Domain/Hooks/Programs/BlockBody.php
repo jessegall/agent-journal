@@ -7,9 +7,9 @@ namespace App\Domain\Hooks\Programs;
 use Spatie\LaravelData\Data;
 
 /**
- * A stop reply that asks the program to go on, with the one reason the agent reads. An allowed stop sends an empty object instead.
+ * A reply that blocks: a held stop asks the program to go on, a blocked prompt is not sent. It carries the one reason the agent reads.
  */
-final class StopBody extends Data
+final class BlockBody extends Data
 {
     public function __construct(
         public readonly NativeStopDecision $decision,

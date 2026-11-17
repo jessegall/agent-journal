@@ -58,13 +58,47 @@ final class ProgramReplies
     public static function stop(HookAnswer $answer): ProgramReply
     {
         return match ($answer->decision->answerKind()) {
-            AnswerKind::PreventStop => ProgramReply::json(StopBody::from([
+            AnswerKind::PreventStop => ProgramReply::json(BlockBody::from([
                 'decision' => NativeStopDecision::Block,
                 'reason' => implode("\n", [$answer->decision->refusalReason(), ...$answer->context]),
             ])),
             AnswerKind::Allow => ProgramReply::emptyObject(),
             AnswerKind::Delegate, AnswerKind::Deny, AnswerKind::Rewrite => throw InvalidStopAnswer::forAnswer($answer->decision->answerKind()),
         };
+    }
+
+    /**
+     * The reply to a prompt: a denial blocks the prompt with its reason, an allow passes any context on.
+     */
+    public static function prompt(HookAnswer $answer): ProgramReply
+    {
+        return match ($answer->decision->answerKind()) {
+            AnswerKind::Deny => ProgramReply::json(BlockBody::from([
+                'decision' => NativeStopDecision::Block,
+                'reason' => $answer->decision->refusalReason(),
+            ])),
+            AnswerKind::Allow => self::observation('UserPromptSubmit', $answer),
+            AnswerKind::Delegate, AnswerKind::PreventStop, AnswerKind::Rewrite => throw InvalidObservationAnswer::forAnswer($answer->decision->answerKind()),
+        };
+    }
+
+    /**
+     * The reply to a hook that only reports: an empty object, or the context for the agent to read.
+     */
+    public static function observation(string $hookEventName, HookAnswer $answer): ProgramReply
+    {
+        if ($answer->decision->answerKind() !== AnswerKind::Allow) {
+            throw InvalidObservationAnswer::forAnswer($answer->decision->answerKind());
+        }
+
+        if ($answer->context === []) {
+            return ProgramReply::emptyObject();
+        }
+
+        return ProgramReply::json(ContextBody::from(['hookSpecificOutput' => [
+            'hookEventName' => $hookEventName,
+            'additionalContext' => implode("\n", $answer->context),
+        ]]));
     }
 
     /**

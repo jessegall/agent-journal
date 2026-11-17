@@ -15,4 +15,14 @@ final class UnsupportedHook extends LogicException
     {
         return new self("The {$program} adapter does not map {$hookMethod}.");
     }
+
+    public static function forTool(string $program, string $toolName): self
+    {
+        return new self("The {$program} adapter does not know the tool {$toolName}, so the call is refused rather than let through.");
+    }
+
+    public static function forValue(string $program, string $field, string $value): self
+    {
+        return new self("The {$program} adapter cannot read the {$field} value {$value}.");
+    }
 }

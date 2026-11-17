@@ -27,17 +27,32 @@ A retry is accepted while the issue time is within the retry window (`hooks.retr
 
 ## Claude Code
 
+`ClaudeCodeAdapter` (plan 2, task 67) maps the callbacks below. `tests/Fixtures/Hooks/ClaudeCode/hooks.json` holds one redacted payload per callback, written from the documented shapes, and `capabilities.json` the mapping `ClaudeCodeTest` checks.
+
+| Callback | Journal input |
+|---|---|
+| SessionStart (startup, resume, clear, compact) | onSessionStart, with its source |
+| UserPromptSubmit | onPrompt; a denial blocks the prompt with its reason |
+| PreToolUse, Bash | onShellCommand, read by the Processes parser |
+| PreToolUse, Edit, MultiEdit, Write, NotebookEdit | onFileEdit, with the path; Write counts as a create |
+| PreToolUse, Read, Glob, Grep, LS, WebFetch, WebSearch, TodoWrite | not judged: the neutral reply, so Claude Code's own permissions decide |
+| PostToolUse | onToolFinished |
+| Stop | onStop |
+| SessionEnd | onSessionEnd |
+| PreCompact, SubagentStop, Notification, any other callback or tool | refused by name (`UnsupportedHook`) |
+| onCompaction | not mapped yet: the compaction signal and its correlation are plan 2, task 71 |
+
 | Evidence | State |
 |---|---|
 | Program and pinned version | not verified |
-| Native callbacks and schema | documented PreToolUse and Stop shapes only |
-| Agent, launch, vendor session and child identity | not verified |
-| Tool coverage | not verified |
-| Legal answers | neutral, deny, stop block and `updatedInput` without a permission grant, from the documentation |
+| Native callbacks and schema | the callbacks above, from the documentation |
+| Agent, launch, vendor session and child identity | the vendor session id is kept on session start; child identity is plan 2, task 70 |
+| Tool coverage | the tools above; any other tool, including MCP tools, is refused |
+| Legal answers | neutral, deny, prompt block, stop block, context and `updatedInput` without a permission grant |
 | Native permissions | a neutral reply keeps the user's approval prompt, from the documentation |
-| Model-visible channel | not verified |
+| Model-visible channel | `additionalContext` on SessionStart, UserPromptSubmit, PreToolUse and PostToolUse; the reason on a block |
 | Exit, timeout and stop cap | not verified |
-| Captured fixtures | none yet |
+| Captured fixtures | documented shapes only; none captured from a pinned version yet |
 
 ## Codex
 

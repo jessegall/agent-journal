@@ -1,0 +1,19 @@
+{
+    "source": "Claude Code hooks reference (code.claude.com/docs/en/hooks), checked 2026-11-17; shapes from the documentation, redacted, not captured from a pinned version",
+    "payloads": {
+        "session start": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "SessionStart", "source": "startup"},
+        "session resume after compaction": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "SessionStart", "source": "compact"},
+        "prompt": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "permission_mode": "default", "hook_event_name": "UserPromptSubmit", "prompt": "Build the walk."},
+        "shell command": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "permission_mode": "default", "hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_use_id": "tool-redacted", "tool_input": {"command": "composer test", "description": "Run the tests", "timeout": 120000}},
+        "file edit": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "permission_mode": "default", "hook_event_name": "PreToolUse", "tool_name": "Edit", "tool_use_id": "tool-redacted", "tool_input": {"file_path": "/redacted/app/Domain/Domain.php", "old_string": "a", "new_string": "b"}},
+        "file write": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "permission_mode": "default", "hook_event_name": "PreToolUse", "tool_name": "Write", "tool_use_id": "tool-redacted", "tool_input": {"file_path": "/redacted/notes.md", "content": "redacted"}},
+        "file read": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "permission_mode": "default", "hook_event_name": "PreToolUse", "tool_name": "Read", "tool_use_id": "tool-redacted", "tool_input": {"file_path": "/redacted/notes.md"}},
+        "tool finished": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "PostToolUse", "tool_name": "Bash", "tool_use_id": "tool-redacted", "tool_input": {"command": "git status"}, "tool_response": {"stdout": "redacted", "stderr": "", "interrupted": false}},
+        "stop": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "Stop", "stop_hook_active": false},
+        "session end": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "SessionEnd", "reason": "prompt_input_exit"},
+        "pre-compaction": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "PreCompact", "trigger": "auto", "custom_instructions": ""},
+        "subagent stop": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "SubagentStop", "stop_hook_active": false},
+        "notification": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "Notification", "message": "redacted"},
+        "unknown tool": {"session_id": "session-redacted", "transcript_path": "/redacted/transcript.jsonl", "cwd": "/redacted", "hook_event_name": "PreToolUse", "tool_name": "mcp__redacted__tool", "tool_use_id": "tool-redacted", "tool_input": {}}
+    }
+}

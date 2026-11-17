@@ -1,0 +1,20 @@
+{
+    "program": "Claude Code",
+    "mapping": {
+        "session start": "onSessionStart",
+        "session resume after compaction": "onSessionStart",
+        "prompt": "onPrompt",
+        "shell command": "onShellCommand",
+        "file edit": "onFileEdit",
+        "file write": "onFileEdit",
+        "file read": "untouched",
+        "tool finished": "onToolFinished",
+        "stop": "onStop",
+        "session end": "onSessionEnd",
+        "pre-compaction": "unsupported",
+        "subagent stop": "unsupported",
+        "notification": "unsupported",
+        "unknown tool": "unsupported"
+    },
+    "unmapped inputs": ["onCompaction"]
+}
