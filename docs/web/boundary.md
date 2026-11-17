@@ -86,6 +86,19 @@ In the browser the plans slice is the shared `PlansView` component, given a `url
 
 Decision: doc 6 asks that an approval address the reviewed revision. A rule's text never changes after it is proposed (task 112), so there is no newer text to hold apart, and the approval carries no revision: the text on screen is the text approved, and a rule already settled is refused by the domain. If rule text ever becomes editable, the revision belongs on the rule action's contract then.
 
+## Reverb and the broadcast worker (task 114)
+
+`laravel/reverb` and, in the browser, `@laravel/echo-vue`, `laravel-echo` and `pusher-js` are installed (`php artisan install:broadcasting --reverb`). `resources/js/app.ts` configures Echo for Reverb from the `VITE_REVERB_*` values; `routes/channels.php` is registered in `bootstrap/app.php`, and the channels themselves belong to task 115.
+
+Docker runs two more services from the same image, code, environment and queue connection as the app: `reverb` (`php artisan reverb:start` on port 8080, with a port health check) and `queue` (`php artisan queue:work --tries=3 --backoff=5`; in development `queue:listen`, which loads changed code for every job). Development forwards Reverb to `127.0.0.1:54704` (`FORWARD_REVERB_PORT`). Start them with `docker compose -p agent-journal-6 up -d --build reverb queue`; `docker compose -p agent-journal-6 logs queue reverb` shows each job and connection. After changing Reverb settings, restart `reverb`; after changing a `VITE_` value, restart `vite` or rebuild.
+
+Settings are split in `.env.example`:
+
+- **Server side (secret):** `REVERB_APP_ID`, `REVERB_APP_KEY`, `REVERB_APP_SECRET`, and where the app and the worker publish: `REVERB_HOST=reverb`, `REVERB_PORT=8080`, `REVERB_SCHEME=http` (the container's own name, reachable only inside Docker). `REVERB_ALLOWED_ORIGINS` lists the hosts browsers may connect from (`localhost,127.0.0.1` in development); a client with another or no origin is refused.
+- **Browser side (public, built into the JavaScript):** `VITE_REVERB_APP_KEY`, and the host the browser reaches: `VITE_REVERB_HOST=localhost`, `VITE_REVERB_PORT=54704`, `VITE_REVERB_SCHEME=http`. In production these name the public host with port 443 and `https`, behind the proxy that ends TLS. The built bundle was checked to hold the app key and never the secret.
+
+The Redis queue now pushes a job only after the transaction it was queued in commits (`after_commit` in `config/queue.php`), so rolled-back work never broadcasts; the domain events already dispatch after commit. Checked end to end: a broadcast queued from the app ran in the `queue` container and reached a browser subscribed through the forwarded port. pusher-js reconnects by itself when the server comes back.
+
 ## Interfaces at the seams (task 122, rule 15)
 
 - **Actor.** `App\Core\Actors\Actor` (its kind and id) is what the core talks to. The Access `User` is a person actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.

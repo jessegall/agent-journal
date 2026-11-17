@@ -33,6 +33,20 @@ services:
             - .:/app
             - /app/node_modules
 
+    reverb:
+        ports:
+            - '127.0.0.1:${FORWARD_REVERB_PORT:-54704}:8080'
+        volumes:
+            - .:/app
+            - /app/node_modules
+
+    queue:
+        # queue:listen boots the code again for every job, so a change needs no restart in development.
+        command: ['php', 'artisan', 'queue:listen', '--tries=3', '--backoff=5']
+        volumes:
+            - .:/app
+            - /app/node_modules
+
     postgres:
         ports:
             - '127.0.0.1:${FORWARD_DB_PORT:-54702}:5432'
