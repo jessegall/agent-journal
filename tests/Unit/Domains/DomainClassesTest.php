@@ -35,7 +35,7 @@ final class DomainClassesTest extends TestCase
         yield 'Profiles' => [ProfilesDomain::class, []];
         yield 'Agents' => [AgentsDomain::class, [LinksDomain::class]];
         yield 'Hooks' => [HooksDomain::class, [AgentsDomain::class, LinksDomain::class]];
-        yield 'Chat' => [ChatDomain::class, [HooksDomain::class]];
+        yield 'Chat' => [ChatDomain::class, [HooksDomain::class, LinksDomain::class]];
         yield 'Memory' => [MemoryDomain::class, []];
         yield 'Rules' => [RulesDomain::class, []];
         yield 'Sequences' => [SequencesDomain::class, [HooksDomain::class]];
