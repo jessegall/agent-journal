@@ -1,0 +1,121 @@
+<script setup lang="ts">
+import { router } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
+import Button from '@/components/kit/Button.vue';
+import ListReaderLayout from '@/components/kit/ListReaderLayout.vue';
+import PageHeader from '@/components/kit/PageHeader.vue';
+import { index } from '@/routes/plans';
+import type { PlanFiltersData, PlanListData } from '@/types/generated';
+import PlanCard from './PlanCard.vue';
+import PlanReader from './PlanReader.vue';
+
+/**
+ * The plans slice: a search, the card grid, paging and the reader. It takes the slice alone, so Home can reuse it.
+ */
+const props = defineProps<{ plans: PlanListData }>();
+
+const search = ref(props.plans.filters.q);
+watch(
+    () => props.plans.filters.q,
+    (q) => (search.value = q),
+);
+
+const filters = computed(() => props.plans.filters);
+const pagination = computed(() => props.plans.pagination);
+
+function urlFor(changes: Partial<PlanFiltersData>): string {
+    const next = { ...filters.value, ...changes };
+
+    return index.url({
+        query: {
+            q: next.q || undefined,
+            page: next.page > 1 ? next.page : undefined,
+            plan: next.plan,
+        },
+    });
+}
+
+function submitSearch(): void {
+    router.get(
+        urlFor({ q: search.value, page: 1, plan: undefined }),
+        {},
+        { preserveScroll: true },
+    );
+}
+</script>
+
+<template>
+    <ListReaderLayout>
+        <template #top>
+            <PageHeader title="Plans" :count="pagination.total" />
+            <form
+                role="search"
+                class="flex items-center gap-2 border-b border-border px-3 py-2"
+                @submit.prevent="submitSearch"
+            >
+                <input
+                    v-model="search"
+                    type="search"
+                    name="q"
+                    maxlength="200"
+                    placeholder="Search plans"
+                    aria-label="Search plans"
+                    class="h-[30px] w-56 rounded-control border border-border-2 bg-bg-2 px-2.5 text-body text-text outline-none focus:border-brand"
+                />
+                <span class="ml-auto text-badge text-text-3 tabular-nums"
+                    >Page {{ pagination.page }} of
+                    {{ pagination.lastPage }}</span
+                >
+            </form>
+        </template>
+        <template #list>
+            <div class="@container p-3">
+                <template v-if="plans.rows.length === 0">
+                    <p class="p-3 text-empty text-text-3">
+                        No plans match these filters.
+                    </p>
+                </template>
+                <div
+                    class="grid grid-cols-1 gap-2.5 @[600px]:grid-cols-[repeat(auto-fill,minmax(280px,1fr))]"
+                >
+                    <template v-for="card in plans.rows" :key="card.id">
+                        <PlanCard
+                            :card="card"
+                            :href="urlFor({ plan: card.id })"
+                            :selected="filters.plan === card.id"
+                        />
+                    </template>
+                </div>
+                <nav
+                    class="mt-3 flex items-center justify-between"
+                    aria-label="Pages"
+                >
+                    <Button
+                        size="small"
+                        variant="bordered"
+                        :href="urlFor({ page: pagination.page - 1 })"
+                        :disabled="pagination.page <= 1"
+                        >Previous</Button
+                    >
+                    <Button
+                        size="small"
+                        variant="bordered"
+                        :href="urlFor({ page: pagination.page + 1 })"
+                        :disabled="pagination.page >= pagination.lastPage"
+                        >Next</Button
+                    >
+                </nav>
+            </div>
+        </template>
+        <template #reader>
+            <PlanReader
+                :reader="plans.selected"
+                :selection-missing="plans.selectionMissing"
+            >
+                <template #actions="{ reader }"
+                    ><slot name="reader-actions" :reader="reader"
+                /></template>
+            </PlanReader>
+        </template>
+    </ListReaderLayout>
+</template>
