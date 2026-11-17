@@ -8,6 +8,7 @@ use App\Core\Assignments\Support\RecordIdentity;
 use App\Core\Contracts\Assignable;
 use App\Core\Links\Support\Linkable;
 use App\Domain\Plans\Api\PlanCard;
+use App\Domain\Plans\Api\PlanHolder;
 use App\Domain\Plans\Api\PlanProgress;
 use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use PhpOption\Option;
 
 /**
  * A goal with phases in order and the tasks in each phase. Every agent and the owner read every plan, so it has no
@@ -28,7 +30,6 @@ use Illuminate\Support\Carbon;
  * @property PlanKind $kind
  * @property PlanState $state
  * @property bool $focused
- * @property int|null $agent_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -96,17 +97,16 @@ final class Plan extends Model implements Assignable
      * The card of this plan from the progress of each phase, keyed by the phase's position. The current phase is the
      * first one with unfinished tasks, or the last phase once every task is done; a plan without phases has none.
      *
-     * The assigned agent's name comes from Core's labels; an agent nobody may see, or none, leaves it absent.
-     *
      * @param  array<int, PlanProgress>  $progressOfPhase
+     * @param  Option<PlanHolder>  $holder
      */
-    public function card(array $progressOfPhase, string|null $agentName): PlanCard
+    public function card(array $progressOfPhase, Option $holder): PlanCard
     {
         $progress = array_reduce($progressOfPhase, fn (PlanProgress $sum, PlanProgress $phase) => $sum->plus($phase), PlanProgress::none());
         $unfinished = array_keys(array_filter($progressOfPhase, fn (PlanProgress $phase) => ! $phase->isComplete()));
         $currentPhase = $unfinished[0] ?? array_key_last($progressOfPhase);
 
-        return new PlanCard($this->id, $this->title, $this->kind, $this->state, $this->state->canStart(), $this->focused, $progress, $currentPhase, $agentName);
+        return new PlanCard($this->id, $this->title, $this->kind, $this->state, $this->state->canStart(), $this->focused, $progress, $currentPhase, $holder);
     }
 
     /**
@@ -152,7 +152,6 @@ final class Plan extends Model implements Assignable
             'kind' => PlanKind::class,
             'state' => PlanState::class,
             'focused' => 'boolean',
-            'agent_id' => 'integer',
         ];
     }
 

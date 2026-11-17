@@ -6,13 +6,17 @@ namespace App\Domain\Plans\Api;
 
 use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
+use PhpOption\Option;
 
 /**
  * What a plan card shows: the plan, whether it may start now, how far its tasks have got, the phase it is in and the
- * agent it is assigned to.
+ * actor that holds it, if any.
  */
 final readonly class PlanCard
 {
+    /**
+     * @param  Option<PlanHolder>  $holder
+     */
     public function __construct(
         public int $id,
         public string $title,
@@ -22,6 +26,6 @@ final readonly class PlanCard
         public bool $focused,
         public PlanProgress $progress,
         public int|null $currentPhase,
-        public string|null $agentName,
+        public Option $holder,
     ) {}
 }

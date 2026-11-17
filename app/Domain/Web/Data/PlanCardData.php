@@ -29,11 +29,11 @@ final class PlanCardData extends Data
         public readonly int $doneTasks,
         public readonly int $totalTasks,
         public readonly int|Optional $phase = new Optional,
-        public readonly AgentLabelData|Optional $agent = new Optional,
+        public readonly AssignmentData|Optional $holder = new Optional,
     ) {}
 
     /**
-     * The card as the browser gets it; a plan without phases has no phase key, an unassigned plan no agent key.
+     * The card as the browser gets it; a plan without phases has no phase key, a plan nobody holds no holder key.
      */
     public static function fromPlanCard(PlanCard $card): self
     {
@@ -46,7 +46,7 @@ final class PlanCardData extends Data
             'doneTasks' => $card->progress->done,
             'totalTasks' => $card->progress->total,
             'phase' => $card->currentPhase,
-            'agent' => AgentLabelData::optionalOrMissing($card->agentName === null ? null : ['name' => $card->agentName]),
+            'holder' => $card->holder->map(AssignmentData::ofHolder(...))->getOrElse(null),
         ], fn (mixed $value) => $value !== null));
     }
 }

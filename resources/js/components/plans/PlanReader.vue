@@ -21,8 +21,12 @@ defineProps<{
                 <span :class="stateLook[reader.card.state].tone">{{
                     stateLook[reader.card.state].label
                 }}</span>
-                <template v-if="reader.card.agent">
-                    <span>{{ reader.card.agent.name }}</span>
+                <template v-if="reader.card.holder">
+                    <span
+                        >Held by {{ reader.card.holder.name }} ({{
+                            reader.card.holder.kind
+                        }}), assignment {{ reader.card.holder.reference }}</span
+                    >
                 </template>
             </template>
             <template #actions>

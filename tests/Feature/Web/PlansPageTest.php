@@ -51,7 +51,7 @@ final class PlansPageTest extends TestCase
             ->where('page.plans.rows.1.id', (string) $this->release->id)
             ->where('page.plans.rows.1.totalTasks', 1)
             ->where('page.plans.rows.1.phase', 1)
-            ->missing('page.plans.rows.1.agent')
+            ->missing('page.plans.rows.1.holder')
             ->where('page.plans.filters.q', '')
             ->missing('page.filters')
             ->missing('page.view')

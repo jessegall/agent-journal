@@ -200,7 +200,6 @@ class	AgentContext
 class	AgentContextFactory
 class	AgentContextMissing
 class	AgentLabel
-class	AgentLabelData
 class	AgentLabels
 class	AgentLifecycle
 class	AgentMemories
@@ -229,6 +228,7 @@ class	AssigneeUnavailable
 class	Assignment
 class	AssignmentChange
 class	AssignmentConflict
+class	AssignmentData
 class	AssignmentDenied
 class	AssignmentFacts
 class	AssignmentGroup
@@ -439,6 +439,7 @@ class	PlanCard
 class	PlanCardData
 class	PlanFilters
 class	PlanFiltersData
+class	PlanHolder
 class	PlanList
 class	PlanListData
 class	PlanMissing
@@ -848,7 +849,6 @@ method	AgentContextFactory::header()
 method	AgentContextFactory::verifiedCall()
 method	AgentContextMissing::forRequest()
 method	AgentLabel::__construct()
-method	AgentLabelData::__construct()
 method	AgentLabels::__construct()
 method	AgentLabels::labelsFor()
 method	AgentLifecycle::lockExclusive()
@@ -958,6 +958,8 @@ method	Assignment::holder()
 method	AssignmentChange::__construct()
 method	AssignmentConflict::heldByAnother()
 method	AssignmentConflict::staleReference()
+method	AssignmentData::__construct()
+method	AssignmentData::ofHolder()
 method	AssignmentDenied::forCaller()
 method	AssignmentFacts::__construct()
 method	AssignmentFacts::publish()
@@ -1601,6 +1603,8 @@ method	PlanFiltersData::onPage()
 method	PlanFiltersData::rules()
 method	PlanFiltersData::toDomain()
 method	PlanFiltersData::toQuery()
+method	PlanHolder::__construct()
+method	PlanHolder::actor()
 method	PlanList::__construct()
 method	PlanListData::__construct()
 method	PlanMissing::withId()
@@ -1614,6 +1618,7 @@ method	PlanReaderData::__construct()
 method	PlanReaderData::ofSelection()
 method	PlanRecords::__construct()
 method	PlanRecords::cardsOf()
+method	PlanRecords::holderOf()
 method	PlanRecords::list()
 method	PlanRecords::planProgressOf()
 method	PlanRecords::selection()
@@ -2187,7 +2192,6 @@ property	AgentContext::$sessionId
 property	AgentContextFactory::$credentials
 property	AgentLabel::$agentId
 property	AgentLabel::$name
-property	AgentLabelData::$name
 property	AgentLabels::$actors
 property	AgentMemories::$database
 property	AgentScope::$currentContext
@@ -2217,6 +2221,10 @@ property	Assignment::$reference
 property	AssignmentChange::$after
 property	AssignmentChange::$before
 property	AssignmentChange::$record
+property	AssignmentData::$id
+property	AssignmentData::$kind
+property	AssignmentData::$name
+property	AssignmentData::$reference
 property	AssignmentFacts::$events
 property	AssignmentGroup::$records
 property	AssignmentGroup::$root
@@ -2491,18 +2499,18 @@ property	PhaseAssignments::$tasks
 property	PhaseTask::$timestamps
 property	Plan::$attributes
 property	PlanAssignments::$actors
-property	PlanCard::$agentName
 property	PlanCard::$canStart
 property	PlanCard::$currentPhase
 property	PlanCard::$focused
+property	PlanCard::$holder
 property	PlanCard::$id
 property	PlanCard::$kind
 property	PlanCard::$progress
 property	PlanCard::$state
 property	PlanCard::$title
-property	PlanCardData::$agent
 property	PlanCardData::$doneTasks
 property	PlanCardData::$focused
+property	PlanCardData::$holder
 property	PlanCardData::$id
 property	PlanCardData::$kind
 property	PlanCardData::$phase
@@ -2515,6 +2523,8 @@ property	PlanFilters::$selectedPlanId
 property	PlanFiltersData::$page
 property	PlanFiltersData::$plan
 property	PlanFiltersData::$q
+property	PlanHolder::$name
+property	PlanHolder::$reference
 property	PlanList::$cards
 property	PlanList::$filters
 property	PlanList::$lastPage
@@ -2535,7 +2545,8 @@ property	PlanReaderData::$card
 property	PlanReaderData::$insideResults
 property	PlanReaderData::$start
 property	PlanRecords::$actors
-property	PlanRecords::$agents
+property	PlanRecords::$assignees
+property	PlanRecords::$assignments
 property	PlanRecords::$taskCounts
 property	PlanSelection::$card
 property	PlanSelection::$isInsideFilter

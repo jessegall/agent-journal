@@ -53,8 +53,17 @@ const progress = computed(() =>
             class="flex items-center gap-1 text-small text-text-3 tabular-nums"
         >
             <span>{{ progressText(card) }}</span>
-            <template v-if="card.agent">
-                <span class="ml-auto truncate">{{ card.agent.name }}</span>
+            <template v-if="card.holder">
+                <span
+                    class="ml-auto inline-flex min-w-0 items-center gap-1"
+                    :title="`Held by the ${card.holder.kind} ${card.holder.name}`"
+                >
+                    <Icon
+                        :name="card.holder.kind === 'user' ? 'users' : 'agents'"
+                        :size="12"
+                    />
+                    <span class="truncate">{{ card.holder.name }}</span>
+                </span>
             </template>
         </span>
     </Link>

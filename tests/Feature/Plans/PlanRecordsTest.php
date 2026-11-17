@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Plans;
 
 use App\Core\Actors\Support\ActorContext;
+use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Agents\Models\Agent;
+use App\Core\Assignments\Contracts\AssignmentWriter;
 use App\Core\Contracts\CurrentActorSetter;
 use App\Domain\Plans\Api\PlanCard;
 use App\Domain\Plans\Api\PlanFilters;
@@ -13,12 +15,14 @@ use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Plans\Readers\PlanRecords;
 use App\Domain\Tasks\Models\Task;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
 final class PlanRecordsTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
+
+    private const array TABLES = ['plans', 'phases', 'phase_tasks', 'tasks', 'agents', 'assignments'];
 
     private Plan $build;
 
@@ -46,18 +50,22 @@ final class PlanRecordsTest extends TestCase
         $build = $this->cardOf($cards, $this->build);
         $empty = $this->cardOf($cards, $this->empty);
 
-        $this->assertSame([1, 2, 2, null], [$build->progress->done, $build->progress->total, $build->currentPhase, $build->agentName]);
+        $this->assertSame([1, 2, 2], [$build->progress->done, $build->progress->total, $build->currentPhase]);
+        $this->assertTrue($build->holder->isEmpty());
         $this->assertSame([0, null], [$empty->progress->total, $empty->currentPhase]);
     }
 
     public function test_an_assigned_agent_is_named_and_the_focused_plan_comes_first(): void
     {
         $agent = Agent::query()->create(['name' => 'Planner', 'role' => 'hooks.main_ready']);
-        Plan::query()->whereKey($this->build->id)->update(['agent_id' => $agent->id, 'focused' => true]);
+        Plan::query()->whereKey($this->build->id)->update(['focused' => true]);
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent->id));
+        $this->app->make(AssignmentWriter::class)->assign($this->build->assignmentIdentity(), ActorIdentity::of($agent));
 
         $cards = $this->records()->list(new PlanFilters)->cards;
 
-        $this->assertSame([$this->build->id, 'Planner'], [$cards[0]->id, $cards[0]->agentName]);
+        $this->assertSame([$this->build->id, 'Planner'], [$cards[0]->id, $cards[0]->holder->get()->name]);
+        $this->assertTrue($cards[0]->holder->get()->actor()->isSameAs(ActorIdentity::of($agent)));
     }
 
     public function test_the_search_filters_and_an_empty_result_keeps_its_filters(): void

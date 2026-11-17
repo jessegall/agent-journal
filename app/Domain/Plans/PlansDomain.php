@@ -10,6 +10,7 @@ use App\Domain\Plans\Api\Events\PlanProgressChanged;
 use App\Domain\Plans\Api\Events\PlanStarted;
 use App\Domain\Plans\Api\PlanCard;
 use App\Domain\Plans\Api\PlanFilters;
+use App\Domain\Plans\Api\PlanHolder;
 use App\Domain\Plans\Api\PlanList;
 use App\Domain\Plans\Api\PlanProgress;
 use App\Domain\Plans\Api\PlanSelection;
@@ -56,6 +57,7 @@ final class PlansDomain implements Domain, ProvidesAssignables
             PlanList::class,
             PlanSelection::class,
             PlanCard::class,
+            PlanHolder::class,
             PlanProgress::class,
             PlanKind::class,
             PlanState::class,

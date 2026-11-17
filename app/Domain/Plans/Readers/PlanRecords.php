@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Readers;
 
-use App\Core\Agents\Contracts\AgentReader;
+use App\Core\Assignments\Contracts\AssigneeReader;
+use App\Core\Assignments\Contracts\AssignmentReader;
+use App\Core\Assignments\Support\AssigneeName;
+use App\Core\Assignments\Support\Assignment;
 use App\Core\Contracts\CurrentActor;
 use App\Domain\Plans\Api\PlanCard;
 use App\Domain\Plans\Api\PlanFilters;
+use App\Domain\Plans\Api\PlanHolder;
 use App\Domain\Plans\Api\PlanList;
 use App\Domain\Plans\Api\PlanProgress;
 use App\Domain\Plans\Api\PlanSelection;
@@ -20,6 +24,9 @@ use App\Domain\Tasks\Contracts\TaskProgressCounter;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * The named reads of plans for whoever acts in this request. Every agent and the user read every plan. Task progress
@@ -33,7 +40,8 @@ final readonly class PlanRecords implements PlanReader
     public function __construct(
         private CurrentActor $actors,
         private TaskProgressCounter $taskCounts,
-        private AgentReader $agents,
+        private AssignmentReader $assignments,
+        private AssigneeReader $assignees,
     ) {}
 
     public function list(PlanFilters $filters): PlanList
@@ -65,7 +73,8 @@ final readonly class PlanRecords implements PlanReader
     }
 
     /**
-     * Builds the cards with four queries in all: the phases, their task places, the task states and the agent labels.
+     * Builds the cards with a fixed number of queries: the phases, their task places, the task states, and the plans'
+     * assignments with their holders' names through Core.
      *
      * @param  EloquentCollection<int, Plan>  $plans
      * @return list<PlanCard>
@@ -78,12 +87,31 @@ final readonly class PlanRecords implements PlanReader
             ->groupBy('phase_id')
             ->map(fn (Collection $places) => array_map(intval(...), array_values($places->pluck('task_id')->all())));
         $progressOfPhase = array_map(self::planProgressOf(...), $this->taskCounts->progressByGroup($taskIdsOfPhase->all()));
-        $labels = $this->agents->labelsFor(array_values(array_unique(array_map(intval(...), $plans->pluck('agent_id')->filter()->all()))));
+        $assignments = $this->assignments->assignmentsFor(array_values($plans->map(fn (Plan $plan) => $plan->assignmentIdentity())->all()));
+        $names = $this->assignees->names(array_map(fn (Assignment $assignment) => $assignment->holder(), $assignments->assignments));
 
         return array_values($plans->map(fn (Plan $plan) => $plan->card(
             $phasesOfPlan->get($plan->id, new Collection)->mapWithKeys(fn (Phase $phase) => [$phase->position => $progressOfPhase[$phase->id] ?? PlanProgress::none()])->all(),
-            $plan->agent_id === null ? null : ($labels[$plan->agent_id] ?? null)?->name,
+            $assignments->forRecord($plan->assignmentIdentity())->flatMap(fn (Assignment $assignment) => self::holderOf($assignment, $names)),
         ))->all());
+    }
+
+    /**
+     * The holder of an assignment with the name its owner gives; an actor whose row is gone has no name and shows as no
+     * holder.
+     *
+     * @param  list<AssigneeName>  $names
+     * @return Option<PlanHolder>
+     */
+    private static function holderOf(Assignment $assignment, array $names): Option
+    {
+        foreach ($names as $name) {
+            if ($name->actor->isSameAs($assignment->holder())) {
+                return Some::create(new PlanHolder($assignment->reference, $name->name));
+            }
+        }
+
+        return None::create();
     }
 
     private static function planProgressOf(TaskProgress $progress): PlanProgress
