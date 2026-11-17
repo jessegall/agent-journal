@@ -15,9 +15,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 trait Linkable
 {
-    public function linkTo(Model $other): Link
+    public function linkTo(Model $other): void
     {
-        return Link::connect($this, $other);
+        Link::connect($this, $other);
     }
 
     public function unlinkFrom(Model $other): void

@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 namespace App\Core;
 
+use App\Core\Agents\Models\Agent;
+use App\Core\Agents\Models\AgentSession;
+use App\Core\Agents\Models\LaunchBypass;
+use App\Core\Agents\Models\LaunchCredential;
+use App\Core\Hooks\Models\AgentStackRow;
+use App\Core\Hooks\Models\HookCall;
+use App\Core\Links\LinkTypes;
+use App\Core\Links\Models\Link;
 use App\Domain\Exports;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use Illuminate\Support\ServiceProvider;
@@ -26,8 +34,18 @@ final class CoreServiceProvider extends ServiceProvider
         )));
     }
 
-    public function boot(): void
+    public function boot(LinkTypes $links): void
     {
+        $links->register([
+            'core.agent' => Agent::class,
+            'core.agent-session' => AgentSession::class,
+            'core.launch-bypass' => LaunchBypass::class,
+            'core.launch-credential' => LaunchCredential::class,
+            'core.agent-stack' => AgentStackRow::class,
+            'core.hook-call' => HookCall::class,
+            'core.link' => Link::class,
+        ]);
+
         foreach (self::AREAS as $area) {
             $this->loadMigrationsFrom(__DIR__."/{$area}/Database/Migrations");
         }

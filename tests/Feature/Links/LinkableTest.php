@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Links;
 
+use App\Core\Links\Exceptions\LinkTypeRepeated;
+use App\Core\Links\LinkTypes;
 use App\Core\Links\Models\Link;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\QueryException;
@@ -22,6 +24,7 @@ final class LinkableTest extends TestCase
     {
         parent::setUp();
 
+        $this->app->make(LinkTypes::class)->register(['fixtures.note' => Note::class, 'fixtures.label' => Label::class]);
         Schema::create('notes', function (Blueprint $table) {
             $table->id();
             $table->string('owner');
@@ -52,13 +55,12 @@ final class LinkableTest extends TestCase
         $note = Note::query()->create(['owner' => 'visible']);
         $label = Label::query()->create(['name' => 'urgent']);
 
-        $first = $note->linkTo($label);
-        $again = $note->linkTo($label);
-        $reversed = $label->linkTo($note);
+        $note->linkTo($label);
+        $note->linkTo($label);
+        $label->linkTo($note);
 
-        $this->assertSame($first->id, $again->id);
-        $this->assertSame($first->id, $reversed->id);
         $this->assertSame(1, Link::query()->count());
+        $this->assertSame(['fixtures.note', 'fixtures.label'], [Link::query()->sole()->source_type, Link::query()->sole()->target_type]);
     }
 
     public function test_the_table_refuses_a_second_row_for_the_same_link(): void
@@ -111,7 +113,8 @@ final class LinkableTest extends TestCase
     {
         $note = Note::query()->create(['owner' => 'visible']);
         $label = Label::query()->create(['name' => 'urgent']);
-        $link = $note->linkTo($label);
+        $note->linkTo($label);
+        $link = Link::query()->sole();
 
         $link->linkTo($note);
 
@@ -131,5 +134,12 @@ final class LinkableTest extends TestCase
             'target_type' => $target->getMorphClass(),
             'target_id' => (int) $target->getKey(),
         ]);
+    }
+
+    public function test_a_link_name_registered_for_another_model_is_refused(): void
+    {
+        $this->expectExceptionObject(LinkTypeRepeated::for('fixtures.note', Label::class));
+
+        $this->app->make(LinkTypes::class)->register(['fixtures.note' => Label::class]);
     }
 }
