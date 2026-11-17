@@ -15,16 +15,18 @@ use Illuminate\Database\Seeder;
 final class PlansSeeder extends Seeder
 {
     /**
-     * @param  array<string, list<int>>  $taskIdsOfPhase  task ids by example phase: read, start and reproduce
+     * @param  list<int>  $readingTaskIds  the tasks of the reading phase
+     * @param  list<int>  $startingTaskIds  the tasks of the starting phase
+     * @param  list<int>  $reproducingTaskIds  the tasks of the reproducing phase
      */
-    public function run(array $taskIdsOfPhase = []): void
+    public function run(array $readingTaskIds = [], array $startingTaskIds = [], array $reproducingTaskIds = []): void
     {
         $build = Plan::query()->create(['title' => 'Build the plans page', 'kind' => PlanKind::Build]);
-        $build->addPhase('Read the plans')->addTasks($taskIdsOfPhase['read'] ?? []);
-        $build->addPhase('Start a plan')->addTasks($taskIdsOfPhase['start'] ?? []);
+        $build->addPhase('Read the plans')->addTasks($readingTaskIds);
+        $build->addPhase('Start a plan')->addTasks($startingTaskIds);
 
         $fix = Plan::query()->create(['title' => 'Fix the login redirect', 'kind' => PlanKind::Fix]);
-        $fix->addPhase('Reproduce it')->addTasks($taskIdsOfPhase['reproduce'] ?? []);
+        $fix->addPhase('Reproduce it')->addTasks($reproducingTaskIds);
 
         Plan::query()->create(['title' => 'Compare chat layouts', 'kind' => PlanKind::Research]);
     }

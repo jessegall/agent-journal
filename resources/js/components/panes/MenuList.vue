@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { useCloseOutside } from '@/composables/useCloseOutside';
+import { ref } from 'vue';
 
 /**
  * Version 5's menu column (windows/PaneMenu.vue with kit/MenuItem.vue and kit/MenuLabel.vue): 240 px on the raised
@@ -26,27 +27,7 @@ function choose(entry: MenuEntry): void {
     emit('done');
 }
 
-function closeOnOutsideClick(event: PointerEvent): void {
-    if (panel.value && !panel.value.contains(event.target as Node)) {
-        emit('done');
-    }
-}
-
-function closeOnEscape(event: KeyboardEvent): void {
-    if (event.key === 'Escape') {
-        emit('done');
-    }
-}
-
-onMounted(() => {
-    window.addEventListener('pointerdown', closeOnOutsideClick, true);
-    window.addEventListener('keydown', closeOnEscape);
-});
-
-onBeforeUnmount(() => {
-    window.removeEventListener('pointerdown', closeOnOutsideClick, true);
-    window.removeEventListener('keydown', closeOnEscape);
-});
+useCloseOutside(panel, () => emit('done'));
 </script>
 
 <template>

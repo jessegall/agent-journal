@@ -20,6 +20,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(OwnerSeeder::class);
-        $this->callWith(PlansSeeder::class, ['taskIdsOfPhase' => $this->container->make(PlanTasksSeeder::class)->exampleTaskIds()]);
+        $tasks = $this->container->make(PlanTasksSeeder::class);
+        $this->callWith(PlansSeeder::class, [
+            'readingTaskIds' => $tasks->readingTaskIds(),
+            'startingTaskIds' => $tasks->startingTaskIds(),
+            'reproducingTaskIds' => $tasks->reproducingTaskIds(),
+        ]);
     }
 }

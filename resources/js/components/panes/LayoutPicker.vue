@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { useCloseOutside } from '@/composables/useCloseOutside';
 import { router } from '@inertiajs/vue3';
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import Button from '@/components/kit/Button.vue';
 import Icon from '@/components/kit/Icon.vue';
 import { usePaneLayout } from '@/composables/usePaneLayout';
@@ -167,27 +168,7 @@ async function importFile(event: Event): Promise<void> {
     }
 }
 
-function closeOnOutsideClick(event: PointerEvent): void {
-    if (panel.value && !panel.value.contains(event.target as Node)) {
-        emit('done');
-    }
-}
-
-function closeOnEscape(event: KeyboardEvent): void {
-    if (event.key === 'Escape') {
-        emit('done');
-    }
-}
-
-onMounted(() => {
-    window.addEventListener('pointerdown', closeOnOutsideClick, true);
-    window.addEventListener('keydown', closeOnEscape);
-});
-
-onBeforeUnmount(() => {
-    window.removeEventListener('pointerdown', closeOnOutsideClick, true);
-    window.removeEventListener('keydown', closeOnEscape);
-});
+useCloseOutside(panel, () => emit('done'));
 </script>
 
 <template>

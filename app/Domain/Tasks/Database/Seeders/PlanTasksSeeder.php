@@ -14,15 +14,27 @@ use Illuminate\Database\Seeder;
 final class PlanTasksSeeder extends Seeder
 {
     /**
-     * @return array<string, list<int>> task ids by example phase: read, start and reproduce
+     * @return list<int>
      */
-    public function exampleTaskIds(): array
+    public function readingTaskIds(): array
     {
-        return [
-            'read' => $this->tasks('Persist plans and phases', 'List the plans'),
-            'start' => $this->tasks('Add the start action', 'Show the start form'),
-            'reproduce' => $this->tasks('Write a failing test'),
-        ];
+        return $this->tasks('Persist plans and phases', 'List the plans');
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function startingTaskIds(): array
+    {
+        return $this->tasks('Add the start action', 'Show the start form');
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function reproducingTaskIds(): array
+    {
+        return $this->tasks('Write a failing test');
     }
 
     /**
