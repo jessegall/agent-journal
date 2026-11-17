@@ -30,7 +30,11 @@ def restore(scratch: Scratch, *flags: str, answer: str = "") -> subprocess.Compl
 
 def hook_commands(scratch: Scratch) -> set[str]:
     settings = json.loads((scratch.project / SETTINGS).read_text())
-    return {hook["command"] for groups in settings["hooks"].values() for group in groups for hook in group["hooks"]}
+    return {hook["command"] for groups in settings.get("hooks", {}).values() for group in groups for hook in group["hooks"]}
+
+
+def hook_runner(scratch: Scratch) -> str:
+    return (scratch.journal / "hooks" / "runner").read_text().strip()
 
 
 def test_install_in_an_empty_project_starts_nothing_and_leaves_version_4_names_out(tmp_path):
@@ -62,8 +66,8 @@ def test_the_upgrade_switches_the_hooks_to_version_5_and_keeps_the_rest_of_the_s
     run = upgrade(scratch, "--yes")
     assert run.returncode == 0, run.stdout + run.stderr
     commands = hook_commands(scratch)
-    assert commands and not any("src/journal/hooks/hook.sh" in command for command in commands), commands
-    assert all(".journal/bin/journal-hook" in command or ".journal/hooks/hook.sh" in command for command in commands), commands
+    assert not any("src/journal/hooks/hook.sh" in command for command in commands), commands
+    assert ".journal/bin/journal-hook" in hook_runner(scratch) or ".journal/hooks/hook.sh" in hook_runner(scratch), hook_runner(scratch)
     assert json.loads((scratch.project / SETTINGS).read_text())["permissions"] == KEPT_SETTING["permissions"]
 
 
@@ -153,10 +157,10 @@ def test_an_upgrade_with_the_hook_binary_installed_writes_the_binary_and_without
     binary.write_text("#!/bin/sh\nexit 0\n")
     binary.chmod(0o755)
     assert upgrade(with_binary, "--yes").returncode == 0
-    assert all(command.startswith(f'"{binary}"') for command in hook_commands(with_binary)), hook_commands(with_binary)
+    assert hook_runner(with_binary).startswith(f'"{binary}"'), hook_runner(with_binary)
     without = version_four_project_with_hooks(tmp_path / "without")
     assert upgrade(without, "--yes").returncode == 0
-    assert all("hooks/hook.sh" in command and "journal-hook" not in command for command in hook_commands(without)), hook_commands(without)
+    assert "hooks/hook.sh" in hook_runner(without) and "journal-hook" not in hook_runner(without), hook_runner(without)
 
 
 def test_a_binary_that_does_not_start_is_not_written_into_the_hooks(tmp_path):

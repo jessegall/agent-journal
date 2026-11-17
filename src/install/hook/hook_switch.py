@@ -15,7 +15,9 @@ START_LIMIT_SECONDS = 10
 
 
 class HookSwitch:
-    """Copies project hook files to a backup and switches their journal entries during upgrades and restores."""
+    """Copies project hook files to a backup and switches their journal entries during upgrades and restores: an
+    upgrade takes version 4's hooks out of the project's files, since version 5's live in .journal/programs, and
+    a restore puts them back."""
 
     def __init__(self, root: Path) -> None:
         self.root = root
@@ -31,6 +33,8 @@ class HookSwitch:
             if not FileAccess.exists(kept):
                 FileAccess.mkdir(kept.parent, parents=True, exist_ok=True)
                 FileAccess.copy(self.root / name, kept)
+            current = self.settings(self.root / name)
+            ProgramHooks.store(self.root / name, {**current, "hooks": ProgramHooks.partitioned(current.get("hooks")).native})
         runner = self.runner()
         HookWriter(self.root).write(runner)
         return [f"Claude Code and Codex start on the journal's own settings in .journal/programs, whose hooks call {runner}; the old files are in {self.saved}"]
