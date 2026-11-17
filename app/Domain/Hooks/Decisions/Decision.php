@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Hooks\Decisions;
 
-use App\Domain\Hooks\StateReference;
-
 /**
  * A state's answer to one hook: the answer, one change to the stack, and any context for the agent.
  */
@@ -68,7 +66,7 @@ final readonly class Decision
     public function withPush(StateReference $state): self
     {
         if ($this->change !== SimpleChange::Keep) {
-            throw ConflictingStackChange::forDecision($this);
+            throw ConflictingStackChange::forChange($this->change->kind());
         }
 
         return new self($this->answer, new PushState($state), $this->context);
@@ -79,8 +77,8 @@ final readonly class Decision
         return $this->answer === SimpleAnswer::Delegate;
     }
 
-    public function answerLabel(): string
+    public function answerKind(): AnswerKind
     {
-        return $this->answer->label();
+        return $this->answer->kind();
     }
 }

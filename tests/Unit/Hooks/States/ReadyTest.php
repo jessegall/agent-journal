@@ -49,13 +49,13 @@ final class ReadyTest extends TestCase
     #[DataProvider('inputs')]
     public function test_ready_allows_each_hook(HookInput $input): void
     {
-        $this->assertSame('allow', $input->answerBy(new Ready)->answerLabel());
+        $this->assertSame('allow', $input->answerBy(new Ready)->answerKind()->value);
     }
 
     #[DataProvider('inputs')]
     public function test_the_base_state_delegates_each_hook(HookInput $input): void
     {
-        $this->assertSame('delegate', $input->answerBy(new class extends AgentState {})->answerLabel());
+        $this->assertSame('delegate', $input->answerBy(new class extends AgentState {})->answerKind()->value);
     }
 
     public function test_a_state_is_not_finished_unless_it_says_so(): void

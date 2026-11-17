@@ -9,5 +9,5 @@ namespace App\Domain\Hooks\Decisions;
  */
 interface Answer
 {
-    public function label(): string;
+    public function kind(): AnswerKind;
 }

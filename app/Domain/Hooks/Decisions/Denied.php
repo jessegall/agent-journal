@@ -8,8 +8,8 @@ final readonly class Denied implements Answer
 {
     public function __construct(public Reason $reason) {}
 
-    public function label(): string
+    public function kind(): AnswerKind
     {
-        return 'deny';
+        return AnswerKind::Deny;
     }
 }

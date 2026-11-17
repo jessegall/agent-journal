@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Hooks\Inputs;
 
+use App\Domain\Hooks\Decisions\AnswerKind;
 use App\Domain\Hooks\Decisions\Decision;
 
 final readonly class PromptSubmitted implements HookInput
@@ -21,6 +22,11 @@ final readonly class PromptSubmitted implements HookInput
     public function methodName(): string
     {
         return 'onPrompt';
+    }
+
+    public function accepts(AnswerKind $kind): bool
+    {
+        return $kind->fitsAnAction();
     }
 
     public function answerBy(HookAnswerer $state): Decision

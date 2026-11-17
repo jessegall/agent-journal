@@ -11,8 +11,8 @@ final readonly class Rewritten implements Answer
 {
     public function __construct(public string $line) {}
 
-    public function label(): string
+    public function kind(): AnswerKind
     {
-        return 'rewrite';
+        return AnswerKind::Rewrite;
     }
 }

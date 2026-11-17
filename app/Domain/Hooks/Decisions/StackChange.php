@@ -9,5 +9,7 @@ namespace App\Domain\Hooks\Decisions;
  */
 interface StackChange
 {
-    public function label(): string;
+    public function kind(): ChangeKind;
+
+    public function applyTo(StackEditor $editor): void;
 }

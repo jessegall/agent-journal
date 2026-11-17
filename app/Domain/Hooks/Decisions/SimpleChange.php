@@ -9,8 +9,18 @@ enum SimpleChange: string implements StackChange
     case Keep = 'keep';
     case PopSelf = 'pop_self';
 
-    public function label(): string
+    public function kind(): ChangeKind
     {
-        return $this->value;
+        return match ($this) {
+            self::Keep => ChangeKind::Keep,
+            self::PopSelf => ChangeKind::PopSelf,
+        };
+    }
+
+    public function applyTo(StackEditor $editor): void
+    {
+        if ($this === self::PopSelf) {
+            $editor->popAnsweringState();
+        }
     }
 }

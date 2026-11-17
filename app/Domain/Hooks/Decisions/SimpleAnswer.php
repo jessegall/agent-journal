@@ -9,8 +9,11 @@ enum SimpleAnswer: string implements Answer
     case Delegate = 'delegate';
     case Allow = 'allow';
 
-    public function label(): string
+    public function kind(): AnswerKind
     {
-        return $this->value;
+        return match ($this) {
+            self::Delegate => AnswerKind::Delegate,
+            self::Allow => AnswerKind::Allow,
+        };
     }
 }

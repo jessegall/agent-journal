@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Hooks;
+namespace App\Domain\Hooks\Decisions;
 
 /**
  * A state about no subject, such as plain guidance.

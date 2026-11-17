@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Hooks;
+namespace App\Domain\Hooks\Decisions;
 
 /**
  * The subject a state is about, such as one run of a task.

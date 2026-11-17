@@ -112,7 +112,7 @@ final class AnsweringMessageTest extends TestCase
     {
         $answered = new AnsweringMessage(new MessageWork(95, MessageWorkState::Answered));
 
-        $this->assertNotContains($input->answerBy($answered)->answerLabel(), ['deny', 'prevent_stop']);
+        $this->assertNotContains($input->answerBy($answered)->answerKind()->value, ['deny', 'prevent_stop']);
     }
 
     public function test_answering_leaves_the_message_snapshot_as_it_was(): void

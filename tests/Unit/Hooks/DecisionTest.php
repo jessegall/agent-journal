@@ -8,23 +8,23 @@ use App\Domain\Hooks\Decisions\ConflictingStackChange;
 use App\Domain\Hooks\Decisions\Decision;
 use App\Domain\Hooks\Decisions\Denied;
 use App\Domain\Hooks\Decisions\EmptyReason;
+use App\Domain\Hooks\Decisions\NoSubject;
 use App\Domain\Hooks\Decisions\PushState;
 use App\Domain\Hooks\Decisions\SimpleChange;
+use App\Domain\Hooks\Decisions\StateReference;
 use App\Domain\Hooks\Decisions\StopPrevented;
-use App\Domain\Hooks\NoSubject;
-use App\Domain\Hooks\StateReference;
-use App\Domain\Hooks\SubjectReference;
+use App\Domain\Hooks\Decisions\SubjectReference;
 use PHPUnit\Framework\TestCase;
 
 final class DecisionTest extends TestCase
 {
     public function test_each_named_constructor_gives_its_answer(): void
     {
-        $this->assertSame('delegate', Decision::delegate()->answerLabel());
-        $this->assertSame('allow', Decision::allow()->answerLabel());
-        $this->assertSame('deny', Decision::deny('Save the test run first.')->answerLabel());
-        $this->assertSame('prevent_stop', Decision::preventStop('Task 3 is still open.')->answerLabel());
-        $this->assertSame('rewrite', Decision::rewrite('journal run tests')->answerLabel());
+        $this->assertSame('delegate', Decision::delegate()->answerKind()->value);
+        $this->assertSame('allow', Decision::allow()->answerKind()->value);
+        $this->assertSame('deny', Decision::deny('Save the test run first.')->answerKind()->value);
+        $this->assertSame('prevent_stop', Decision::preventStop('Task 3 is still open.')->answerKind()->value);
+        $this->assertSame('rewrite', Decision::rewrite('journal run tests')->answerKind()->value);
     }
 
     public function test_a_denial_and_a_held_stop_carry_their_reason(): void

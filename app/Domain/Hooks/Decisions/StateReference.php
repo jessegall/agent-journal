@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Hooks;
+namespace App\Domain\Hooks\Decisions;
 
 /**
  * Names a state to put on a stack: its registered type and the subject run it is about.
@@ -13,4 +13,12 @@ final readonly class StateReference
         public string $typeKey,
         public SubjectReference|NoSubject $subject,
     ) {}
+
+    /**
+     * Whether both name the same state type about the same subject run.
+     */
+    public function isSameAs(self $other): bool
+    {
+        return $this->typeKey === $other->typeKey && $this->subject == $other->subject;
+    }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Hooks\Inputs;
 
+use App\Domain\Hooks\Decisions\AnswerKind;
 use App\Domain\Hooks\Decisions\Decision;
 
 final readonly class ShellCommandRequested implements HookInput
@@ -21,6 +22,11 @@ final readonly class ShellCommandRequested implements HookInput
     public function methodName(): string
     {
         return 'onShellCommand';
+    }
+
+    public function accepts(AnswerKind $kind): bool
+    {
+        return $kind->fitsAShellCommand();
     }
 
     public function answerBy(HookAnswerer $state): Decision

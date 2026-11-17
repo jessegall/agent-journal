@@ -8,8 +8,8 @@ final readonly class StopPrevented implements Answer
 {
     public function __construct(public Reason $reason) {}
 
-    public function label(): string
+    public function kind(): AnswerKind
     {
-        return 'prevent_stop';
+        return AnswerKind::PreventStop;
     }
 }

@@ -8,8 +8,8 @@ use LogicException;
 
 final class ConflictingStackChange extends LogicException
 {
-    public static function forDecision(Decision $decision): self
+    public static function forChange(ChangeKind $change): self
     {
-        return new self("A decision makes one stack change; it already makes {$decision->change->label()}.");
+        return new self("A decision makes one stack change; it already makes {$change->value}.");
     }
 }
