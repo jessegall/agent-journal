@@ -23,6 +23,7 @@ use App\Domain\Web\Events\UserChannel;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\Event;
 use RuntimeException;
+use Tests\Fixtures\UiDeclarations\Shelf\ShelfMoved;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -55,6 +56,13 @@ final class PageChangeTest extends TestCase
         Event::assertDispatched(PageChanged::class, fn (PageChanged $change) => $change->userIds === [$this->owner->id]
             && $change->broadcastOn()[0]->name === 'private-'.UserChannel::nameFor($this->owner->id)
             && $change->broadcastWith() === []);
+    }
+
+    public function test_a_new_modules_fact_changes_the_page_once_without_any_change_to_web(): void
+    {
+        event(new ShelfMoved);
+
+        Event::assertDispatchedTimes(PageChanged::class, 1);
     }
 
     public function test_a_removed_rule_changes_the_page_too(): void

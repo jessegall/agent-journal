@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { onBeforeUnmount, onMounted } from 'vue';
 
 /**
@@ -11,6 +11,12 @@ type Reload = () => void;
 const coalesceMilliseconds = 250;
 
 let currentReload: Reload | undefined;
+
+/**
+ * The window and section props on screen now, each counted by the hosts that show it; only these are read again on a
+ * change, so a hidden or closed window is never asked for.
+ */
+const shownProps = new Map<string, number>();
 let formsSending = 0;
 let reloadWaiting = false;
 let timer: ReturnType<typeof setTimeout> | undefined;
@@ -46,11 +52,39 @@ export function forgetPageChanges(): void {
 }
 
 /**
- * Registers the mounted page's reload of its page prop, and removes it again when the page leaves.
+ * Called by a window or section host while its prop is on screen; the function it answers takes the prop off again.
+ */
+export function showProp(name: string): () => void {
+    shownProps.set(name, (shownProps.get(name) ?? 0) + 1);
+
+    return () => {
+        const count = (shownProps.get(name) ?? 1) - 1;
+
+        if (count > 0) {
+            shownProps.set(name, count);
+        } else {
+            shownProps.delete(name);
+        }
+    };
+}
+
+/**
+ * Registers the mounted page's reload, and removes it again when the page leaves: its own page prop, the windows and
+ * sections on screen, the navigation with its counts, and the inspector when a record is open in it.
  */
 export function useLiveReload(): void {
+    const page = usePage();
     const reload: Reload = () =>
-        router.reload({ only: ['page'], preserveUrl: true });
+        router.reload({
+            only: [
+                'page',
+                ...shownProps.keys(),
+                'navigation',
+                'navigationCounts',
+                ...(page.props.inspector === undefined || page.props.inspector === null ? [] : ['inspector']),
+            ],
+            preserveUrl: true,
+        });
 
     onMounted(() => (currentReload = reload));
     onBeforeUnmount(() => {

@@ -1,5 +1,6 @@
 import { router, usePage } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { showProp } from './usePageChanges';
 import type { WindowResult } from '@/generated/types/page-props';
 
 /**
@@ -32,6 +33,10 @@ export function useWindowProps(propName: string, askOnStart = true) {
     if (askOnStart && result.value === undefined) {
         retry();
     }
+
+    let hide: (() => void) | undefined;
+    onMounted(() => (hide = showProp(propName)));
+    onBeforeUnmount(() => hide?.());
 
     return { result, keptData, retry };
 }
