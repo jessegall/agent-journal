@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Sequences;
+
+use App\Domain\Hooks\Decisions\StateReference;
+use App\Domain\Hooks\Decisions\SubjectReference;
+use App\Domain\Hooks\States\AgentState;
+use App\Domain\Hooks\States\StateSubjectMissing;
+use App\Domain\Hooks\States\StateType;
+use App\Domain\Sequences\States\FollowingSequence;
+
+/**
+ * Builds the following-sequence state from the run as it is now, on its current step; it keeps no run between calls.
+ */
+final readonly class FollowingSequenceFactory implements StateType
+{
+    public function __construct(private SequenceRecords $runs) {}
+
+    public function stateFor(StateReference $reference): AgentState
+    {
+        $subject = $reference->subject;
+
+        if (! $subject instanceof SubjectReference) {
+            throw StateSubjectMissing::for($reference);
+        }
+
+        try {
+            $run = $this->runs->get($subject->id);
+        } catch (SequenceRunMissing $missing) {
+            throw StateSubjectMissing::for($reference, $missing);
+        }
+
+        return new FollowingSequence($run->work());
+    }
+
+    public function schemaVersion(): int
+    {
+        return 1;
+    }
+}

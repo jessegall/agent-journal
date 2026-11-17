@@ -6,6 +6,7 @@ namespace App\Domain\Sequences;
 
 use App\Domain\Domain;
 use App\Domain\Hooks\HooksDomain;
+use App\Domain\Links\LinksDomain;
 
 final class SequencesDomain implements Domain
 {
@@ -19,6 +20,6 @@ final class SequencesDomain implements Domain
      */
     public function requires(): array
     {
-        return [HooksDomain::class];
+        return [HooksDomain::class, LinksDomain::class];
     }
 }
