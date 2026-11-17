@@ -43,6 +43,14 @@ final readonly class EventCall
     /**
      * A raise of an event of that domain named by its class, such as Event::dispatch(TaskClosed::class).
      */
+    /**
+     * Whether this call raises, by its class, an event whose name matches the pattern.
+     */
+    public function raisesClassEventIn(string $namePattern): bool
+    {
+        return $this->raises && $this->argument === EventArgument::ClassName && preg_match($namePattern, ltrim($this->event, '\\')) === 1;
+    }
+
     public function raisesClassEventOf(DomainEntry $owner): bool
     {
         return $this->raises && $this->argument === EventArgument::ClassName && $owner->ownsEvent($this->event);

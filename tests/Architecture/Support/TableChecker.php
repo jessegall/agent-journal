@@ -4,23 +4,18 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Domain\DomainEntry;
-
 /**
- * Judges table use: each table belongs to the domain whose migrations create it, and others reach it only as declared.
+ * Judges table use: each table belongs to the domain or Core whose migrations create it, and only that owner reads,
+ * joins, keys or changes it; another owner asks it through what it exports.
  */
 final readonly class TableChecker
 {
-    private const string LINKS_TABLE = 'links';
-
-    private const string LINKS_DOMAIN = 'Links';
-
     private const string ROOT_MIGRATIONS = 'database/migrations';
 
     /**
-     * @param  list<DomainEntry>  $entries
+     * @param  list<TableOwner>  $entries
      * @param  array<string, TableUse>  $creations  the creating migration of each owned table
-     * @param  array<string, DomainEntry>  $owners
+     * @param  array<string, TableOwner>  $owners
      */
     private function __construct(
         private array $entries,
@@ -30,7 +25,7 @@ final readonly class TableChecker
     ) {}
 
     /**
-     * @param  list<DomainEntry>  $entries
+     * @param  list<TableOwner>  $entries
      */
     public static function for(array $entries, string $rootMigrationFolder): self
     {
@@ -38,7 +33,7 @@ final readonly class TableChecker
         $owners = [];
 
         foreach ($entries as $entry) {
-            foreach (self::creationsIn($entry->migrationFolder()) as $creation) {
+            foreach (self::creationsIn($entry->migrationFolders) as $creation) {
                 $creations[$creation->table] ??= $creation;
                 $owners[$creation->table] ??= $entry;
             }
@@ -78,20 +73,18 @@ final readonly class TableChecker
 
     private function violationOf(TableUse $use): ?Violation
     {
-        $user = $this->domainHolding($use->file);
+        $user = $this->ownerHolding($use->file);
         $owner = $this->owners[$use->table] ?? null;
 
         $kind = match (true) {
             $use->kind === TableKind::Create => null,
             $use->kind === TableKind::NotWritten => ViolationKind::TableNotWritten,
             $use->kind === TableKind::PivotNotWritten => ViolationKind::PivotNotWritten,
-            $use->table === self::LINKS_TABLE && $user->name !== self::LINKS_DOMAIN => ViolationKind::LinksTable,
             $owner === null => ViolationKind::TableOfNoDomain,
             $owner === $user => null,
             $use->kind === TableKind::ModelTable => ViolationKind::ModelTableElsewhere,
             $use->kind === TableKind::Change => ViolationKind::ChangesOtherTable,
-            $user->requiresDomain($owner) && $use->kind->isAllowedOnDeclaredTable() => null,
-            default => ViolationKind::UndeclaredTable,
+            default => ViolationKind::OtherOwnersTable,
         };
 
         if ($kind === null) {
@@ -109,7 +102,7 @@ final readonly class TableChecker
         $violations = [];
 
         foreach ($this->entries as $entry) {
-            foreach (self::creationsIn($entry->migrationFolder()) as $creation) {
+            foreach (self::creationsIn($entry->migrationFolders) as $creation) {
                 $first = $this->creations[$creation->table];
 
                 if ($first->file !== $creation->file) {
@@ -126,7 +119,7 @@ final readonly class TableChecker
      */
     private function migrationNamesTwice(): array
     {
-        $folders = [$this->rootMigrationFolder, ...array_map(fn (DomainEntry $entry) => $entry->migrationFolder(), $this->entries)];
+        $folders = [$this->rootMigrationFolder, ...array_merge(...array_map(fn (TableOwner $entry) => $entry->migrationFolders, $this->entries))];
         $seen = [];
         $violations = [];
 
@@ -134,7 +127,7 @@ final readonly class TableChecker
             $name = basename($file);
 
             if (isset($seen[$name])) {
-                $violations[] = new Violation($file, 1, $name, $this->domainNameOf($file), $seen[$name], ViolationKind::MigrationNameTwice);
+                $violations[] = new Violation($file, 1, $name, $this->ownerNameOf($file), $seen[$name], ViolationKind::MigrationNameTwice);
 
                 continue;
             }
@@ -166,13 +159,14 @@ final readonly class TableChecker
     }
 
     /**
+     * @param  list<string>  $folders
      * @return list<TableUse>
      */
-    private static function creationsIn(string $folder): array
+    private static function creationsIn(array $folders): array
     {
         $creations = [];
 
-        foreach (DomainFiles::in([$folder]) as $file) {
+        foreach (DomainFiles::in($folders) as $file) {
             foreach (TableScan::of(ParsedFile::fromPath($file)) as $use) {
                 if ($use->kind === TableKind::Create) {
                     $creations[] = $use;
@@ -183,14 +177,14 @@ final readonly class TableChecker
         return $creations;
     }
 
-    private function domainHolding(string $path): DomainEntry
+    private function ownerHolding(string $path): TableOwner
     {
-        return array_find($this->entries, fn (DomainEntry $entry) => $entry->holdsFile($path))
+        return array_find($this->entries, fn (TableOwner $entry) => $entry->holdsFile($path))
             ?? throw FileOutsideEveryDomain::for($path);
     }
 
-    private function domainNameOf(string $path): string
+    private function ownerNameOf(string $path): string
     {
-        return array_find($this->entries, fn (DomainEntry $entry) => $entry->holdsFile($path))->name ?? self::ROOT_MIGRATIONS;
+        return array_find($this->entries, fn (TableOwner $entry) => $entry->holdsFile($path))->name ?? self::ROOT_MIGRATIONS;
     }
 }

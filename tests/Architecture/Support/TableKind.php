@@ -18,14 +18,4 @@ enum TableKind: string
     case NotWritten = 'not-written';
     case PivotNotWritten = 'pivot-not-written';
 
-    /**
-     * A declared domain's table may be read, keyed or joined, but only its owner changes it or names it as its model table.
-     */
-    public function isAllowedOnDeclaredTable(): bool
-    {
-        return match ($this) {
-            self::Read, self::ForeignKey, self::Pivot => true,
-            self::Create, self::ModelTable, self::Change, self::NotWritten, self::PivotNotWritten => false,
-        };
-    }
 }

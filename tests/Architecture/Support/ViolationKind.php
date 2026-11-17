@@ -19,11 +19,10 @@ enum ViolationKind: string
     case PrivateEventHeard = 'private-event-heard';
     case OutsideEveryDomain = 'outside-every-domain';
     case TableOfNoDomain = 'table-of-no-domain';
-    case UndeclaredTable = 'undeclared-table';
+    case OtherOwnersTable = 'other-owners-table';
     case ChangesOtherTable = 'changes-other-table';
     case TableNotWritten = 'table-not-written';
     case PivotNotWritten = 'pivot-not-written';
-    case LinksTable = 'links-table';
     case ModelTableElsewhere = 'model-table-elsewhere';
     case TableCreatedTwice = 'table-created-twice';
     case MigrationNameTwice = 'migration-name-twice';
@@ -54,11 +53,10 @@ enum ViolationKind: string
             self::PrivateEventHeard => "hears {$violation->used}, an event {$violation->owner} does not publish",
             self::OutsideEveryDomain => "uses {$violation->used}, which is project code outside every domain",
             self::TableOfNoDomain => "uses table {$violation->used}, which no domain owns",
-            self::UndeclaredTable => "uses table {$violation->used} of {$violation->owner}, but {$violation->usingDomain} does not require {$violation->owner}",
+            self::OtherOwnersTable => "uses table {$violation->used} of {$violation->owner}; only {$violation->owner} reads, joins, keys or changes its tables, so use what {$violation->owner} exports",
             self::ChangesOtherTable => "changes table {$violation->used}, which {$violation->owner} owns",
             self::TableNotWritten => "names a table with {$violation->used}; write the table name out",
             self::PivotNotWritten => "leaves the pivot table of {$violation->used} to Laravel; write it out",
-            self::LinksTable => 'uses table links, which only Links may use',
             self::ModelTableElsewhere => "has model table {$violation->used}, which {$violation->owner} owns",
             self::TableCreatedTwice => "creates table {$violation->used}, which {$violation->owner} also creates",
             self::MigrationNameTwice => "has the migration file name {$violation->used}, as does {$violation->owner}",

@@ -21,6 +21,11 @@ final readonly class BoundaryChecker
     private const string SHARED_PLACE = 'the core or the domain foundation';
 
     /**
+     * Core's events and extension requests: a domain hears them, only Core raises them.
+     */
+    private const string CORE_EVENTS = '/^App\\\\Core\\\\(.+\\\\)?Events\\\\/i';
+
+    /**
      * @param  list<DomainEntry>  $entries
      * @param  list<string>  $coreExports  CoreApi's list of the Core types a domain may use
      */
@@ -130,6 +135,10 @@ final readonly class BoundaryChecker
 
             if ($this->raisesAnotherDomainsEvent($call, $userName)) {
                 $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $this->domainOwning($call->event)->name, ViolationKind::ReRaisedEvent);
+            }
+
+            if ($userName !== self::SHARED_PLACE && $call->raisesClassEventIn(self::CORE_EVENTS)) {
+                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, 'Core', ViolationKind::ReRaisedEvent);
             }
         }
 

@@ -8,6 +8,7 @@ use App\Domain\DomainRegistry;
 use Tests\Architecture\Support\ModelTables;
 use Tests\Architecture\Support\ParsedFile;
 use Tests\Architecture\Support\TableChecker;
+use Tests\Architecture\Support\TableOwner;
 use Tests\Architecture\Support\TableScan;
 use Tests\Architecture\Support\Violation;
 use Tests\Fixtures\Boundary\Tables\Chat\ChatDomain;
@@ -17,22 +18,25 @@ use Tests\TestCase;
 
 final class TableCheckerTest extends TestCase
 {
-    public function test_queries_pass_on_own_and_declared_tables_and_fail_on_the_rest(): void
+    public function test_queries_pass_on_own_tables_and_fail_on_every_other_owners_even_a_required_one(): void
     {
         $this->assertSame([
-            '21 uses table messages of Chat, but Plans does not require Chat',
+            '21 uses table messages of Chat; only Chat reads, joins, keys or changes its tables, so use what Chat exports',
             '22 uses table users, which no domain owns',
-            '23 uses table links, which only Links may use',
+            '23 uses table links of Core; only Core reads, joins, keys or changes its tables, so use what Core exports',
             '24 names a table with $name; write the table name out',
             '25 names a table with self::TABLE; write the table name out',
-            '27 uses table messages of Chat, but Plans does not require Chat',
+            '27 uses table messages of Chat; only Chat reads, joins, keys or changes its tables, so use what Chat exports',
+            '20 uses table tasks of Tasks; only Tasks reads, joins, keys or changes its tables, so use what Tasks exports',
         ], $this->violationLines('Plans/Queries.php'));
     }
 
-    public function test_a_migration_keys_declared_tables_but_changes_only_its_own(): void
+    public function test_a_migration_neither_keys_nor_changes_another_owners_table(): void
     {
+        $keysTasks = ' uses table tasks of Tasks; only Tasks reads, joins, keys or changes its tables, so use what Tasks exports';
+
         $this->assertSame(
-            ['26 changes table tasks, which Tasks owns'],
+            ['26 changes table tasks, which Tasks owns', '15'.$keysTasks, '19'.$keysTasks],
             $this->violationLines('Plans/Database/Migrations/2026_01_03_000000_create_plans_table.php'),
         );
     }
@@ -84,7 +88,9 @@ final class TableCheckerTest extends TestCase
 
     private function checker(): TableChecker
     {
-        return TableChecker::for($this->registry()->all(), $this->folder('RootMigrations'));
+        $owners = [TableOwner::core(dirname(__DIR__, 2).'/app/Core'), ...array_map(TableOwner::fromDomain(...), $this->registry()->all())];
+
+        return TableChecker::for($owners, $this->folder('RootMigrations'));
     }
 
     private function registry(): DomainRegistry

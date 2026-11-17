@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\Core\CoreApi;
-use App\Domain\Contracts\Domain;
 use App\Domain\DomainRegistry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Architecture\Support\BoundaryChecker;
@@ -67,10 +66,18 @@ final class DomainEventCallTest extends TestCase
         );
     }
 
+    public function test_a_domain_raising_a_core_event_fails(): void
+    {
+        $this->assertSame(
+            ['14 raises App\Core\Hooks\Events\StateTypesRequested again, an event of Core; only its owner raises it'],
+            $this->violationLines('Plans/Listeners/RaisesCoreRequest.php'),
+        );
+    }
+
     public function test_no_domain_of_the_real_app_names_or_raises_an_event_it_may_not(): void
     {
         $registry = $this->app->make(DomainRegistry::class);
-        $folders = [dirname((string) (new \ReflectionClass(Domain::class))->getFileName())];
+        $folders = [app_path('Domain'), app_path('Core')];
         $calls = [];
 
         foreach (DomainFiles::in($folders) as $file) {
