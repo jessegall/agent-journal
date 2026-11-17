@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Enums;
+
+/**
+ * The HTTP method of an action a domain declares.
+ */
+enum ActionMethod: string
+{
+    case Post = 'POST';
+    case Patch = 'PATCH';
+    case Delete = 'DELETE';
+}

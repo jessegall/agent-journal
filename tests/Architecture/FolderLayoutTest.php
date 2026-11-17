@@ -27,7 +27,7 @@ final class FolderLayoutTest extends TestCase
         foreach ([...glob(app_path('Domain/*'), GLOB_ONLYDIR) ?: [], ...glob(app_path('Core/*'), GLOB_ONLYDIR) ?: []] as $root) {
             $name = basename($root);
 
-            if (in_array($name, ['Contracts', 'Exceptions', 'Providers'], true)) {
+            if (in_array($name, ['Contracts', 'Declarations', 'Enums', 'Exceptions', 'Providers'], true)) {
                 continue;
             }
 
