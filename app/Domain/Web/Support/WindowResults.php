@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Support;
 
-use App\Core\Contracts\CurrentActor;
 use App\Domain\Contracts\VisibilityCheck;
 use App\Domain\Declarations\ReaderDefinition;
 use App\Domain\Web\Data\DeniedWindow;
@@ -13,7 +12,6 @@ use App\Domain\Web\Data\ReadyWindow;
 use App\Domain\Web\Exceptions\ReaderDataMismatch;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException;
@@ -30,8 +28,7 @@ use Throwable;
 final readonly class WindowResults
 {
     public function __construct(
-        private CurrentActor $actors,
-        private Container $container,
+        private VisibilityChecks $visibility,
         private LoggerInterface $log,
     ) {}
 
@@ -41,12 +38,8 @@ final readonly class WindowResults
      */
     public function result(string $key, array $checks, ReaderDefinition $reader, Closure $read): Data
     {
-        $actor = $this->actors->actor();
-
-        foreach ($checks as $check) {
-            if (! $this->container->make($check)->allows($actor)) {
-                return DeniedWindow::make();
-            }
+        if (! $this->visibility->allow($checks)) {
+            return DeniedWindow::make();
         }
 
         try {

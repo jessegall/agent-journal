@@ -28,7 +28,7 @@ final readonly class DeclaredRoutes
     {
         $router->middleware(['web', 'auth', 'journal.user'])->group(function () use ($router): void {
             foreach ($this->declarations->pages() as $page) {
-                $this->requireVisibility($router->get($this->uriOf($page), PageController::class)->name($this->nameOf($page)), $page->key);
+                $this->requireVisibility($router->get($this->uriOf($page), PageController::class)->name(self::routeNameOf($page)), $page->key);
             }
 
             foreach ($this->declarations->actions() as $action) {
@@ -77,7 +77,10 @@ final readonly class DeclaredRoutes
         return $page->key === self::HOME ? '/' : $page->uri;
     }
 
-    private function nameOf(RegisteredPage $page): string
+    /**
+     * The route name of a declared page: Web's home is home, every other page its full key.
+     */
+    public static function routeNameOf(RegisteredPage $page): string
     {
         return $page->key === self::HOME ? 'home' : $page->key;
     }

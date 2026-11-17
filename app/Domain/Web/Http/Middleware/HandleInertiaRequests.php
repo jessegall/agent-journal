@@ -7,9 +7,11 @@ namespace App\Domain\Web\Http\Middleware;
 use App\Domain\Access\Contracts\ViewerReader;
 use App\Domain\Web\Data\SharedData;
 use App\Domain\Web\Data\ViewerData;
+use App\Domain\Web\Support\NavigationRecords;
 use Illuminate\Container\Attributes\Config;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Inertia\ResponseFactory;
 
 /**
  * The one Inertia middleware: the root view, the asset version and the shared Data every page receives.
@@ -28,6 +30,8 @@ class HandleInertiaRequests extends Middleware
     public function __construct(
         #[Config('app.name')] private readonly string $appName,
         private readonly ViewerReader $viewers,
+        private readonly NavigationRecords $navigation,
+        private readonly ResponseFactory $inertia,
     ) {}
 
     /**
@@ -50,13 +54,17 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $viewer = $this->viewers->viewer();
-        $shared = $viewer === null
-            ? SharedData::from(['name' => $this->appName])
-            : SharedData::from(['name' => $this->appName, 'viewer' => ViewerData::from($viewer)]);
+
+        if ($viewer === null) {
+            return [...parent::share($request), ...SharedData::from(['name' => $this->appName])->toArray()];
+        }
 
         return [
             ...parent::share($request),
-            ...$shared->toArray(),
+            ...SharedData::from(['name' => $this->appName, 'viewer' => ViewerData::from($viewer)])->toArray(),
+            // The navigation the signed-in user may see, and its counts after the page, so a slow count never holds it up.
+            'navigation' => fn () => $this->navigation->tree($request),
+            'navigationCounts' => $this->inertia->defer(fn () => $this->navigation->counts(), 'navigation-counts'),
         ];
     }
 }
