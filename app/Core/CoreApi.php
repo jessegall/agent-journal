@@ -30,6 +30,7 @@ use App\Core\Hooks\Contracts\UserStack;
 use App\Core\Hooks\Decisions\AnswerKind;
 use App\Core\Hooks\Decisions\ChangeKind;
 use App\Core\Hooks\Decisions\Decision;
+use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
 use App\Core\Hooks\Events\ContextWasCompacted;
@@ -114,6 +115,7 @@ final class CoreApi
             ChangeKind::class,
             StackEditor::class,
             StateReference::class,
+            NoSubject::class,
             SubjectReference::class,
             ShellCommandParser::class,
             HookAnswerer::class,

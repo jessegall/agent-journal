@@ -16,6 +16,7 @@ final readonly class Violation
         public string $usingDomain,
         public string $owner,
         public ViolationKind $kind,
+        public string $detail = '',
     ) {}
 
     public function reason(): string

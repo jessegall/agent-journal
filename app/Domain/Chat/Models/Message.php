@@ -9,6 +9,7 @@ use App\Core\Hooks\StackTarget;
 use App\Core\Links\Linkable;
 use App\Domain\Chat\Api\MessageState;
 use App\Domain\Chat\MessageWork;
+use App\Domain\Chat\MessageWorkState;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -58,7 +59,7 @@ final class Message extends Model
 
     public function work(): MessageWork
     {
-        return new MessageWork($this->id, $this->state->workState());
+        return new MessageWork($this->id, MessageWorkState::of($this->state));
     }
 
     /**
