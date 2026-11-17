@@ -11,10 +11,12 @@ use App\Core\Assignments\Contracts\AssignmentProviders;
 use App\Core\Assignments\Contracts\AssignmentTransaction;
 use App\Core\Assignments\Contracts\AssignmentWriter;
 use App\Core\Assignments\Enums\AssignmentOutcomeKind;
+use App\Core\Assignments\Enums\AssignmentReason;
 use App\Core\Assignments\Exceptions\AssignmentConflict;
 use App\Core\Assignments\Storage\AssignmentStore;
 use App\Core\Assignments\Support\Assignment;
 use App\Core\Assignments\Support\AssignmentChange;
+use App\Core\Assignments\Support\AssignmentFacts;
 use App\Core\Assignments\Support\AssignmentOutcome;
 use App\Core\Assignments\Support\AssignmentReference;
 use App\Core\Assignments\Support\AssignmentResult;
@@ -27,7 +29,8 @@ use PhpOption\Some;
 /**
  * The assignment writer: in one repeatable-read transaction it checks the caller may give out work and the
  * recipient may receive it, taking their shared lifecycle locks in kind and id order, takes the record from its
- * owner under a key-share lock, then changes the one holding. The caller is always the actor of this request.
+ * owner under a key-share lock, then changes the one holding and raises the one committed fact. The caller is always
+ * the actor of this request.
  */
 final readonly class WriteAssignments implements AssignmentWriter
 {
@@ -37,6 +40,7 @@ final readonly class WriteAssignments implements AssignmentWriter
         private AssignmentProviders $providers,
         private AssignmentTransaction $transaction,
         private AssignmentStore $store,
+        private AssignmentFacts $facts,
     ) {}
 
     public function assign(RecordIdentity $record, ActorIdentity $recipient): AssignmentResult
@@ -50,7 +54,7 @@ final readonly class WriteAssignments implements AssignmentWriter
                 return $this->unchangedIfHeldBy($current->get(), $recipient);
             }
 
-            return $this->changed($record, None::create(), Some::create($this->store->assignIfUnheld($record, $recipient)));
+            return $this->changed(AssignmentReason::Assigned, $record, None::create(), Some::create($this->store->assignIfUnheld($record, $recipient)));
         });
     }
 
@@ -65,7 +69,7 @@ final readonly class WriteAssignments implements AssignmentWriter
                 return $this->unchanged($current);
             }
 
-            return $this->changed($record, Some::create($current), Some::create($this->store->replace($current, $recipient)));
+            return $this->changed(AssignmentReason::Reassigned, $record, Some::create($current), Some::create($this->store->replace($current, $recipient)));
         });
     }
 
@@ -82,7 +86,7 @@ final readonly class WriteAssignments implements AssignmentWriter
             $current = $this->requireExpected($record, $expected);
             $this->store->remove($current);
 
-            return $this->changed($record, Some::create($current), None::create());
+            return $this->changed(AssignmentReason::Unassigned, $record, Some::create($current), None::create());
         });
     }
 
@@ -136,11 +140,14 @@ final readonly class WriteAssignments implements AssignmentWriter
      * @param  Option<Assignment>  $before
      * @param  Option<Assignment>  $after
      */
-    private function changed(RecordIdentity $record, Option $before, Option $after): AssignmentResult
+    private function changed(AssignmentReason $reason, RecordIdentity $record, Option $before, Option $after): AssignmentResult
     {
-        return new AssignmentResult(
+        $result = new AssignmentResult(
             [new AssignmentOutcome($record, $after, AssignmentOutcomeKind::Changed)],
             [new AssignmentChange($record, $before, $after)],
         );
+        $this->facts->publish(ActorIdentity::of($this->actors->actor()), $reason, $result);
+
+        return $result;
     }
 }

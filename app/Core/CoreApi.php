@@ -21,6 +21,7 @@ use App\Core\Assignments\Contracts\AssignmentTransaction;
 use App\Core\Assignments\Contracts\AssignmentWriter;
 use App\Core\Assignments\Enums\AssignmentOutcomeKind;
 use App\Core\Assignments\Enums\AssignmentReason;
+use App\Core\Assignments\Events\AssignmentsChanged;
 use App\Core\Assignments\Exceptions\AssigneeKindRepeated;
 use App\Core\Assignments\Exceptions\AssigneeUnavailable;
 use App\Core\Assignments\Exceptions\AssignmentConflict;
@@ -229,6 +230,7 @@ final class CoreApi
             AssignmentGroupTooLarge::class,
             AssigneeUnavailable::class,
             RecordUnavailable::class,
+            AssignmentsChanged::class,
             AssignmentDenied::class,
             AssignmentWriter::class,
             AssignmentConflict::class,
