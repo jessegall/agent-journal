@@ -6,6 +6,7 @@ namespace App\Domain\Plans\Providers;
 
 use App\Core\Links\Support\LinkTypes;
 use App\Domain\Plans\Actions\ChangePlanAssignments;
+use App\Domain\Plans\Console\AssignedPlansCommand;
 use App\Domain\Plans\Contracts\PlanAssignments;
 use App\Domain\Plans\Contracts\PlanReader;
 use App\Domain\Plans\Models\Phase;
@@ -27,6 +28,7 @@ final class PlansServiceProvider extends ServiceProvider
     public function boot(LinkTypes $links): void
     {
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
+        $this->commands([AssignedPlansCommand::class]);
         $links->register([
             Plan::LINK_TYPE => Plan::class,
             Phase::LINK_TYPE => Phase::class,

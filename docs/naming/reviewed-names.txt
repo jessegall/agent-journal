@@ -197,6 +197,7 @@ class	Agent
 class	AgentActorRequired
 class	AgentAssignees
 class	AgentAuthorityRecords
+class	AgentClientSettings
 class	AgentContext
 class	AgentContextFactory
 class	AgentContextMissing
@@ -205,6 +206,9 @@ class	AgentLabels
 class	AgentLifecycle
 class	AgentMemories
 class	AgentNotAvailable
+class	AgentReply
+class	AgentRequestClient
+class	AgentRequestFailed
 class	AgentRetirementDenied
 class	AgentScope
 class	AgentSession
@@ -225,11 +229,13 @@ class	AssignedPlanCardData
 class	AssignedPlanFilters
 class	AssignedPlanList
 class	AssignedPlanListData
+class	AssignedPlansCommand
 class	AssignedPlansController
 class	AssignedPlansRequest
 class	AssignedTaskCardData
 class	AssignedTaskListData
 class	AssignedTasks
+class	AssignedTasksCommand
 class	AssignedTasksController
 class	AssignedTasksRequest
 class	AssigneeKindRepeated
@@ -388,9 +394,11 @@ class	LaunchBypasses
 class	LaunchCredential
 class	LaunchCredentials
 class	LaunchEnded
+class	LaunchEnvironment
 class	LaunchLost
 class	LaunchRefused
 class	LaunchSessions
+class	LaunchSettingMissing
 class	LaunchSettingsRequested
 class	LaunchStacks
 class	LaunchStarted
@@ -515,7 +523,6 @@ class	RecordedSteps
 class	RecordedStepsCast
 class	RegisteredStateFactory
 class	RelayHookCommand
-class	RelaySettingMissing
 class	RelaySettings
 class	RemindersDomain
 class	RemoveRule
@@ -552,6 +559,7 @@ class	RulesPage
 class	RulesRequest
 class	RulesServiceProvider
 class	RulesView
+class	SendAgentRequests
 class	SendMessage
 class	SendMessageController
 class	SequenceRecords
@@ -775,6 +783,7 @@ enum	ViolationKind
 interface	Actor
 interface	AgentAuthority
 interface	AgentReader
+interface	AgentRequestSender
 interface	AgentRetirement
 interface	AgentStack
 interface	Answer
@@ -869,6 +878,8 @@ method	AgentAssignees::requireEligible()
 method	AgentAuthority::requireDispatcher()
 method	AgentAuthorityRecords::__construct()
 method	AgentAuthorityRecords::requireDispatcher()
+method	AgentClientSettings::__construct()
+method	AgentClientSettings::fromEnvironment()
 method	AgentContext::__construct()
 method	AgentContext::actorId()
 method	AgentContext::actorKind()
@@ -887,6 +898,12 @@ method	AgentMemories::lowerWeightsOnce()
 method	AgentMemories::remindersFor()
 method	AgentNotAvailable::forAgent()
 method	AgentReader::labelsFor()
+method	AgentReply::__construct()
+method	AgentRequestClient::__construct()
+method	AgentRequestClient::post()
+method	AgentRequestFailed::refused()
+method	AgentRequestFailed::unreachable()
+method	AgentRequestSender::send()
 method	AgentRetirement::retire()
 method	AgentRetirementDenied::forCaller()
 method	AgentRetirementDenied::insideTransaction()
@@ -982,6 +999,7 @@ method	AssignedPlanFilters::__construct()
 method	AssignedPlanList::__construct()
 method	AssignedPlanListData::__construct()
 method	AssignedPlanListData::fromList()
+method	AssignedPlansCommand::handle()
 method	AssignedPlansController::__construct()
 method	AssignedPlansController::__invoke()
 method	AssignedPlansRequest::filters()
@@ -993,6 +1011,7 @@ method	AssignedTaskListData::fromList()
 method	AssignedTaskReader::assignedToCaller()
 method	AssignedTasks::__construct()
 method	AssignedTasks::assignedToCaller()
+method	AssignedTasksCommand::handle()
 method	AssignedTasksController::__construct()
 method	AssignedTasksController::__invoke()
 method	AssignedTasksRequest::filters()
@@ -1025,6 +1044,7 @@ method	AssignmentChange::__construct()
 method	AssignmentConflict::heldByAnother()
 method	AssignmentConflict::staleReference()
 method	AssignmentData::__construct()
+method	AssignmentData::label()
 method	AssignmentData::ofHolder()
 method	AssignmentDenied::forCaller()
 method	AssignmentFacts::__construct()
@@ -1436,7 +1456,6 @@ method	HookProgram::hookCommand()
 method	HookProgram::nativeEvents()
 method	HookRelay::__construct()
 method	HookRelay::answerWithoutJournal()
-method	HookRelay::post()
 method	HookRelay::relay()
 method	HookRelay::uploadBypasses()
 method	HookRequest::payload()
@@ -1508,6 +1527,8 @@ method	LaunchCredentials::hashOf()
 method	LaunchCredentials::issue()
 method	LaunchCredentials::revoke()
 method	LaunchEnded::__construct()
+method	LaunchEnvironment::__construct()
+method	LaunchEnvironment::value()
 method	LaunchLost::__construct()
 method	LaunchRefused::forRetiredAgent()
 method	LaunchRefused::withoutHooks()
@@ -1516,6 +1537,7 @@ method	LaunchSessions::end()
 method	LaunchSessions::launch()
 method	LaunchSessions::mapProgramSession()
 method	LaunchSessions::mapProgramSessionFor()
+method	LaunchSettingMissing::forName()
 method	LaunchSettingsRequested::__construct()
 method	LaunchStacks::__construct()
 method	LaunchStacks::close()
@@ -1870,8 +1892,8 @@ method	Refusal::reason()
 method	RegisteredStateFactory::__construct()
 method	RegisteredStateFactory::frameFor()
 method	RelayHookCommand::handle()
-method	RelaySettingMissing::forName()
 method	RelaySettings::__construct()
+method	RelaySettings::client()
 method	RelaySettings::fromEnvironment()
 method	ReminderContribution::add()
 method	RemindersDomain::description()
@@ -1952,6 +1974,8 @@ method	RulesRequest::rules()
 method	RulesServiceProvider::boot()
 method	RulesView::__construct()
 method	RulesView::rules()
+method	SendAgentRequests::__construct()
+method	SendAgentRequests::send()
 method	SendMessage::__construct()
 method	SendMessage::send()
 method	SendMessageController::__construct()
@@ -2293,6 +2317,9 @@ property	AddPhaseTasks::$tasks
 property	AgentAssignees::$actors
 property	AgentAssignees::$lifecycle
 property	AgentAuthorityRecords::$lifecycle
+property	AgentClientSettings::$journalUrl
+property	AgentClientSettings::$timeoutSeconds
+property	AgentClientSettings::$token
 property	AgentContext::$agentId
 property	AgentContext::$call
 property	AgentContext::$role
@@ -2302,6 +2329,8 @@ property	AgentLabel::$agentId
 property	AgentLabel::$name
 property	AgentLabels::$actors
 property	AgentMemories::$database
+property	AgentReply::$body
+property	AgentRequestClient::$http
 property	AgentScope::$currentContext
 property	AgentSessionScope::$currentContext
 property	AgentSessions::$lifecycle
@@ -2333,6 +2362,8 @@ property	AssignedPlanListData::$cards
 property	AssignedPlanListData::$page
 property	AssignedPlanListData::$perPage
 property	AssignedPlanListData::$total
+property	AssignedPlansCommand::$description
+property	AssignedPlansCommand::$signature
 property	AssignedPlansController::$plans
 property	AssignedTaskCardData::$holder
 property	AssignedTaskCardData::$id
@@ -2346,6 +2377,8 @@ property	AssignedTasks::$actors
 property	AssignedTasks::$assignees
 property	AssignedTasks::$assignments
 property	AssignedTasks::$transaction
+property	AssignedTasksCommand::$description
+property	AssignedTasksCommand::$signature
 property	AssignedTasksController::$tasks
 property	AssigneeList::$assignees
 property	AssigneeList::$nextAfterId
@@ -2540,7 +2573,7 @@ property	HookPayload::$stopHookActive
 property	HookPayload::$toolInput
 property	HookPayload::$toolName
 property	HookPayload::$toolResponse
-property	HookRelay::$http
+property	HookRelay::$client
 property	HookResponse::$exitCode
 property	HookResponse::$stderr
 property	HookResponse::$stdout
@@ -2570,6 +2603,7 @@ property	JudgedCall::$input
 property	JudgedCall::$render
 property	LaunchEnded::$agentId
 property	LaunchEnded::$sessionId
+property	LaunchEnvironment::$variables
 property	LaunchLost::$agentId
 property	LaunchLost::$sessionId
 property	LaunchSessions::$credentials
@@ -2829,6 +2863,8 @@ property	RulesPage::$filters
 property	RulesPage::$rules
 property	RulesPage::$view
 property	RulesView::$records
+property	SendAgentRequests::$client
+property	SendAgentRequests::$settings
 property	SendMessage::$events
 property	SendMessage::$stacks
 property	SendMessage::$transaction

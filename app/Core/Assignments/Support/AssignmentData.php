@@ -31,4 +31,12 @@ final class AssignmentData extends Data
             'reference' => (string) $holder->reference()->id,
         ]);
     }
+
+    /**
+     * The holder as one line of text: its kind, id and name.
+     */
+    public function label(): string
+    {
+        return "{$this->kind->value} {$this->id} {$this->name}";
+    }
 }

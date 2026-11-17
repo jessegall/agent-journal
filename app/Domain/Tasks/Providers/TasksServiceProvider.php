@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Tasks\Providers;
 
 use App\Core\Links\Support\LinkTypes;
+use App\Domain\Tasks\Console\AssignedTasksCommand;
 use App\Domain\Tasks\Contracts\AssignedTaskReader;
 use App\Domain\Tasks\Contracts\TaskAssignmentReader;
 use App\Domain\Tasks\Models\Task;
@@ -26,6 +27,7 @@ final class TasksServiceProvider extends ServiceProvider
     public function boot(LinkTypes $links): void
     {
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
+        $this->commands([AssignedTasksCommand::class]);
         $links->register([
             Task::LINK_TYPE => Task::class,
         ]);

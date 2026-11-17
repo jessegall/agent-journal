@@ -11,11 +11,14 @@ use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Actors\Support\ActorContext;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Agents\Contracts\AgentReader;
+use App\Core\Agents\Contracts\AgentRequestSender;
 use App\Core\Agents\Contracts\AgentRetirement;
 use App\Core\Agents\Contracts\SessionReader;
 use App\Core\Agents\Exceptions\AgentNotAvailable;
+use App\Core\Agents\Exceptions\AgentRequestFailed;
 use App\Core\Agents\Exceptions\AgentRetirementDenied;
 use App\Core\Agents\Support\AgentLabel;
+use App\Core\Agents\Support\AgentReply;
 use App\Core\Agents\Support\SessionOption;
 use App\Core\Assignments\Contracts\AssignableProvider;
 use App\Core\Assignments\Contracts\AssigneeProvider;
@@ -243,6 +246,9 @@ final class CoreApi
             RecordUnavailable::class,
             AssignmentRootFinished::class,
             AssignmentData::class,
+            AgentRequestSender::class,
+            AgentRequestFailed::class,
+            AgentReply::class,
             AgentNotAvailable::class,
             AgentRetirementDenied::class,
             AgentRetirement::class,

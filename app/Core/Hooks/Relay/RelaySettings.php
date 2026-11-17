@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Relay;
 
+use App\Core\Agents\Support\AgentClientSettings;
+use App\Core\Agents\Support\LaunchEnvironment;
 use App\Core\Hooks\Enums\ReadyStateType;
-use App\Core\Hooks\Exceptions\RelaySettingMissing;
 
 /**
  * What the relay of one launch needs, given to the program's environment by the launch: where the journal
@@ -26,13 +27,19 @@ final readonly class RelaySettings
      */
     public static function fromEnvironment(array $environment): self
     {
-        $read = fn (string $name): string => $environment[$name] ?? throw RelaySettingMissing::forName($name);
+        $client = AgentClientSettings::fromEnvironment($environment);
+        $launch = new LaunchEnvironment($environment);
 
         return new self(
-            rtrim($read('JOURNAL_URL'), '/'),
-            $read('JOURNAL_LAUNCH_TOKEN'),
-            ReadyStateType::forKey($read('JOURNAL_ROLE')),
-            $read('JOURNAL_BYPASS_LOG'),
+            $client->journalUrl,
+            $client->token,
+            ReadyStateType::forKey($launch->value('JOURNAL_ROLE')),
+            $launch->value('JOURNAL_BYPASS_LOG'),
         );
+    }
+
+    public function client(): AgentClientSettings
+    {
+        return new AgentClientSettings($this->journalUrl, $this->token, $this->timeoutSeconds);
     }
 }

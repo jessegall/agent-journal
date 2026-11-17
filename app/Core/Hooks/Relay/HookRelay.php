@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Relay;
 
+use App\Core\Agents\Support\AgentRequestClient;
 use App\Core\Agents\Support\LoggedBypass;
-use App\Core\Agents\Support\SignedCall;
 use App\Core\Hooks\Enums\CallFailure;
 use App\Core\Hooks\Enums\HookProgram;
 use App\Core\Hooks\Enums\ReadyStateType;
@@ -13,9 +13,6 @@ use App\Core\Hooks\Programs\OutageReply;
 use App\Core\Hooks\Programs\ProgramReply;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\Factory;
-use Illuminate\Http\Client\Response;
-use Illuminate\Support\Str;
 
 /**
  * What the host runs for every native hook call: upload the bypasses logged while the journal was away, sign the
@@ -24,7 +21,7 @@ use Illuminate\Support\Str;
  */
 final readonly class HookRelay
 {
-    public function __construct(private Factory $http) {}
+    public function __construct(private AgentRequestClient $client) {}
 
     public function relay(HookProgram $program, string $payload, RelaySettings $settings): ProgramReply
     {
@@ -32,7 +29,7 @@ final readonly class HookRelay
 
         try {
             $this->uploadBypasses($settings, $log);
-            $response = $this->post($settings, "/hooks/{$program->value}", $payload);
+            $response = $this->client->post($settings->client(), "/hooks/{$program->value}", $payload);
         } catch (ConnectionException) {
             return $this->answerWithoutJournal(CallFailure::Unreachable, $payload, $settings, $log);
         }
@@ -63,25 +60,8 @@ final readonly class HookRelay
             return;
         }
 
-        if ($this->post($settings, '/hooks/bypasses', $report->toJson())->successful()) {
+        if ($this->client->post($settings->client(), '/hooks/bypasses', $report->toJson())->successful()) {
             $log->clear();
         }
-    }
-
-    private function post(RelaySettings $settings, string $path, string $body): Response
-    {
-        $callId = (string) Str::ulid();
-        $issuedAt = CarbonImmutable::now()->getTimestamp();
-
-        return $this->http->timeout($settings->timeoutSeconds)
-            ->withToken($settings->token)
-            ->withHeaders([
-                SignedCall::ID_HEADER => $callId,
-                SignedCall::ISSUED_AT_HEADER => (string) $issuedAt,
-                SignedCall::SIGNATURE_HEADER => SignedCall::signatureFor($settings->token, $callId, $issuedAt, SignedCall::digestOf($body)),
-            ])
-            ->withBody($body, 'application/json')
-            ->accept('application/json')
-            ->post($settings->journalUrl.$path);
     }
 }
