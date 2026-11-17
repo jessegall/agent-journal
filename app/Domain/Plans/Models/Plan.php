@@ -10,7 +10,7 @@ use App\Domain\Plans\Exceptions\StartDenied;
 use App\Domain\Plans\PlanCard;
 use App\Domain\Plans\PlanKind;
 use App\Domain\Plans\PlanState;
-use App\Domain\Tasks\TaskProgress;
+use App\Domain\Tasks\Api\TaskProgress;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

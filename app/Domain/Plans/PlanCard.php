@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans;
 
-use App\Domain\Tasks\TaskProgress;
+use App\Domain\Tasks\Api\TaskProgress;
 
 /**
  * What a plan card shows: the plan, whether it may start now, how far its tasks have got, the phase it is in and the

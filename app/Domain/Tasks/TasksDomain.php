@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace App\Domain\Tasks;
 
 use App\Domain\Contracts\Domain;
+use App\Domain\Tasks\Api\TaskProgress;
+use App\Domain\Tasks\Contracts\TaskProgressCounter;
+use App\Domain\Tasks\Contracts\TaskReader;
+use App\Domain\Tasks\Exceptions\TaskMissing;
 
 final class TasksDomain implements Domain
 {
@@ -26,6 +30,11 @@ final class TasksDomain implements Domain
      */
     public function exports(): array
     {
-        return [];
+        return [
+            TaskProgressCounter::class,
+            TaskProgress::class,
+            TaskReader::class,
+            TaskMissing::class,
+        ];
     }
 }
