@@ -39,7 +39,7 @@ def filled_copy() -> None:
                        ((NOW, NOW) for _ in range(REPORTS)))
     cards = [row[0] for row in record.execute("SELECT id FROM messages WHERE data LIKE '%card_type%' ORDER BY id DESC LIMIT ?", (REPORTS * 3,))]
     record.executemany("INSERT INTO links (created_at, creator, updated_at, updater, source, target, link_type) VALUES (?, 'agent', ?, 'agent', ?, ?, 'mentions')",
-                       ((NOW, NOW, f"message:{card}", f"report:{first_report + index // 3}") for index, card in enumerate(cards)))
+                       ((NOW, NOW, f"messages:{card}", f"reports:{first_report + index // 3}") for index, card in enumerate(cards)))
     record.commit()
     record.close()
 
