@@ -1,0 +1,80 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Web;
+
+use Illuminate\Support\Facades\File;
+use Symfony\Component\Process\Process;
+use Tests\TestCase;
+
+/**
+ * The browser import check: a domain's component may import its own files, @kit, its own generated types and routes
+ * and packages; another domain's component, the shell and an import whose path is not written out are refused.
+ */
+final class DomainImportsTest extends TestCase
+{
+    private string $root;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->root = sys_get_temp_dir().'/domain-imports-'.getmypid();
+        File::ensureDirectoryExists("{$this->root}/plans/js");
+        File::ensureDirectoryExists("{$this->root}/rules/js");
+        File::put("{$this->root}/roots.json", (string) json_encode(['owners' => ['plans' => 'plans/js', 'rules' => 'rules/js']]));
+        File::put("{$this->root}/rules/js/RulesView.vue", "<template><div /></template>\n");
+    }
+
+    protected function tearDown(): void
+    {
+        File::deleteDirectory($this->root);
+
+        parent::tearDown();
+    }
+
+    public function test_own_kit_generated_and_package_imports_pass(): void
+    {
+        File::put("{$this->root}/plans/js/Index.vue", <<<'VUE'
+            <script setup lang="ts">
+            import { ref } from 'vue';
+            import Button from '@kit/Button';
+            import type { PlanListData } from '@generated/types/plans';
+            import { list } from '@generated/routes/plans';
+            import PlanCard from './PlanCard.vue';
+            </script>
+            VUE);
+
+        $this->assertSame(0, $this->check()->getExitCode());
+    }
+
+    public function test_another_domains_component_the_shell_and_an_unwritten_path_are_refused(): void
+    {
+        File::put("{$this->root}/plans/js/Index.vue", <<<'VUE'
+            <script setup lang="ts">
+            import RulesView from '@domain/rules/RulesView.vue';
+            import HomePanes from '@/components/home/HomePanes.vue';
+            import Other from '../../rules/js/RulesView.vue';
+            const name = 'x';
+            const loaded = import(name);
+            </script>
+            VUE);
+
+        $process = $this->check();
+
+        $this->assertSame(1, $process->getExitCode());
+        $this->assertStringContainsString("another domain's component (@domain/rules)", $process->getErrorOutput());
+        $this->assertStringContainsString('the shell (@/)', $process->getErrorOutput());
+        $this->assertStringContainsString('a relative path leaves the domain', $process->getErrorOutput());
+        $this->assertStringContainsString('cannot be proven to stay in the domain', $process->getErrorOutput());
+    }
+
+    private function check(): Process
+    {
+        $process = new Process(['node', base_path('scripts/check-domain-imports.mjs'), "{$this->root}/roots.json", $this->root], base_path());
+        $process->run();
+
+        return $process;
+    }
+}

@@ -61,6 +61,7 @@ final readonly class UiManifest
                 'windows' => $this->propTypes->windowProps(),
             ]),
             'resources/js/generated/ui-prop-checks.ts' => $this->render('ui-prop-checks.ts', ['hash' => $hash, 'checks' => $this->propChecks($root), 'dataTypes' => array_values(array_unique(array_map($this->propTypes->dataTypeOf(...), $this->declarations->pages())))]),
+            'resources/js/generated/domain-roots.json' => json_encode(['hash' => $hash, 'owners' => $folders], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR)."\n",
             'bootstrap/cache/ui-components.php' => "<?php\n\nreturn ".var_export($components, true).";\n",
         ];
 

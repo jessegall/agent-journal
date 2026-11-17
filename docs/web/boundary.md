@@ -121,11 +121,22 @@ Plan 5 built the public interface layer of doc 10 revision 2: each domain reache
 
 ## Domain ownership and dependencies
 
-Approved by the user in question 13 (rule 9):
+Approved by the user in question 13 (rule 9), and narrowed by plan 7:
 
 | Domain | Owns | Requires |
 |---|---|---|
 | Access | User, login through Fortify, the configured owner, the user policy and middleware | nothing |
-| Web | pages, controllers, requests, page and input Data, routes, live updates | Access, Plans, Chat, Rules |
+| Web | the shell, Home (its layouts and the windows the domains offer it), declared route registration, page props, navigation, the UI manifest and type generation, live updates | Access |
 
-No domain requires Web. Plans keeps its approved edge to Tasks. The core (`app/Core`) needs no edge and names no domain. A requirement lets Web name what Access, Plans, Chat and Rules export (their readers, starters, senders, reviewers, values and facts), never their models or tables: each owner alone reads and writes its own tables.
+No domain requires Web. Chat, Plans and Rules own their pages, actions, Data and components themselves (see "Domain-owned pages" below and `docs/web/domain-pages.md`). The core (`app/Core`) needs no edge and names no domain. Each owner alone reads and writes its own tables.
+
+## Domain-owned pages (plan 7)
+
+Plan 7 replaced the Web-owned pages described in the sections above (tasks 104, 106, 110, 111, 113): those routes, controllers, requests and page objects are gone. What holds now:
+
+- **Pages and routes.** Each domain declares its pages, actions, navigation and sections (`ProvidesPages`, `ProvidesNavigation`, `ProvidesSections`); Web registers every declared route in its `web`, `auth` and `journal.user` group, under the domain's prefix, named `<domain>.<key>`, behind `journal.visible:<key>`, and serves every page with one `PageController`. Home is Web's own page (`/`, `home`). Today's routes: `chat.conversation` (`/chat`), `chat.send` (`POST /chat/messages`), `plans.list` (`/plans`), `plans.plan` (`/plans/{plan}`), `plans.start` (`POST /plans/{plan}/start`), `rules.list` (`/rules`), `rules.approve` and `rules.deny` (`PATCH /rules/{rule}/approve|deny`).
+- **Props.** A page of its own gets `page`, each section of its slots as a deferred `section_<slot>_<section>` prop, and `inspector` when `?inspect=<page key>` names a record page; Home gets one optional `window_<key>` prop per window. Each is a result (`ready` with the reader's Data, `failed` with a neutral message, `denied` with nothing) and runs its visibility checks before any reader, on full and partial requests alike.
+- **Queries.** A window's links change only its own part of Home's query, `window[<page key>][...]` (`useWindowQuery`); on its own page the query is plain. The chosen agent session is the top-level `session`, read by sections that take a session.
+- **Generated files.** `php artisan journal:ui-manifest` (first step of `npm run types:generate`) writes the component manifest, `tsconfig.domains.json`, `vite.domains.ts`, the Tailwind sources, the page prop types and checks, `domain-roots.json` and `bootstrap/cache/ui-components.php`; Wayfinder writes `resources/js/routes/<domain>`; `typescript:transform` writes each owner's types to `resources/js/generated/types/<owner>`.
+- **Live updates.** Every fact that changes what users see implements `App\Domain\Contracts\ChangesWhatUsersSee`; Web's one listener turns it into `PageChanged`. The browser reloads only the props on screen, the navigation and its counts, and the inspector when open.
+- **Imports.** `npm run imports:check` (part of build, check and the type check) refuses a domain component that imports another domain's code, the shell or a path it cannot prove local.

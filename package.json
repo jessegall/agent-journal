@@ -3,12 +3,13 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "npm run types:generate && vp build",
-        "build:ssr": "npm run types:generate && vp build && vp build --ssr",
+        "build": "npm run types:generate && npm run imports:check && vp build",
+        "build:ssr": "npm run types:generate && npm run imports:check && vp build && vp build --ssr",
         "dev": "npm run types:generate && vp dev",
-        "check": "npm run types:generate && vp check",
+        "check": "npm run types:generate && npm run imports:check && vp check",
         "check:fix": "vp check --fix",
-        "types:check": "npm run types:generate && vue-tsc --noEmit",
+        "types:check": "npm run types:generate && npm run imports:check && vue-tsc --noEmit",
+        "imports:check": "node scripts/check-domain-imports.mjs",
         "types:generate": "php artisan journal:ui-manifest && php artisan wayfinder:generate --with-form && php artisan typescript:transform"
     },
     "dependencies": {

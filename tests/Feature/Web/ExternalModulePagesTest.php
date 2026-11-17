@@ -1,0 +1,91 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Web;
+
+use App\Core\Agents\Models\Agent;
+use App\Domain\Access\Models\User;
+use App\Domain\Access\Support\AccessSettings;
+use App\Domain\DomainRegistry;
+use App\Domain\UiDeclarations;
+use App\Domain\Web\Support\DeclaredRoutes;
+use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Schema;
+use Inertia\Testing\AssertableInertia;
+use Tests\Fixtures\Modules\Notes\Models\Note;
+use Tests\Fixtures\Modules\Notes\NotesDomain;
+use Tests\Support\RefreshHookDatabase;
+use Tests\TestCase;
+
+/**
+ * A module outside app declares its pages, navigation and a section, and they are served, listed and read through the
+ * same routes, props and navigation as the domains', with no change to Core or Web; without the module its page is
+ * not found.
+ */
+final class ExternalModulePagesTest extends TestCase
+{
+    use RefreshHookDatabase;
+
+    private User $owner;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        foreach (glob(base_path('tests/Fixtures/Modules/Notes/Database/Migrations/*.php')) ?: [] as $migration) {
+            (require $migration)->up();
+        }
+
+        $this->owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+    }
+
+    protected function tearDown(): void
+    {
+        Schema::dropIfExists('module_notes');
+
+        parent::tearDown();
+    }
+
+    public function test_the_modules_page_and_record_page_are_served_and_listed_like_any_domains(): void
+    {
+        $this->installNotes();
+        $writer = Agent::query()->create(['name' => 'Writer', 'role' => 'hooks.read_only_helper_ready']);
+        $note = new Note(['text' => 'Check the lock order']);
+        $note->saveFor($writer->id);
+        $month = $note->created_at?->format('Y-m');
+
+        $this->actingAs($this->owner)->get('/notes')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('notes/Index')
+            ->where('page.state', 'ready')
+            ->where('page.data.texts', ['Check the lock order'])
+            ->where('navigation.items', fn ($items) => collect($items)->contains(fn ($item) => $item['key'] === 'notes.index'
+                && $item['children'][0]['children'][0]['url'] === "/notes/collections/{$month}")));
+
+        $this->actingAs($this->owner)->get("/notes/collections/{$month}")->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('notes/Collection')
+            ->where('page.data.collection', $month)
+            ->where('page.data.texts', ['Check the lock order']));
+        $this->actingAs($this->owner)->get('/notes/collections/not-a-month')->assertNotFound();
+    }
+
+    public function test_without_the_module_its_page_is_not_found(): void
+    {
+        $this->actingAs($this->owner)->get('/notes')->assertNotFound();
+    }
+
+    /**
+     * Installs the module as a deploy would: the registry with it, the checked declarations and their routes.
+     */
+    private function installNotes(): void
+    {
+        /** @var list<class-string> $domainClasses */
+        $domainClasses = require base_path('bootstrap/domains.php');
+        $declarations = DomainRegistry::from([...$domainClasses, NotesDomain::class])->uiDeclarations();
+        $this->app->instance(UiDeclarations::class, $declarations);
+        $router = $this->app->make(Router::class);
+        new DeclaredRoutes($declarations)->register($router);
+        $router->getRoutes()->refreshNameLookups();
+    }
+}
