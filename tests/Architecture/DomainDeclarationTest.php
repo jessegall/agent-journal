@@ -45,7 +45,7 @@ final class DomainDeclarationTest extends TestCase
         'Contracts/SectionReader.php',
         'Contracts/CountReader.php',
         'Contracts/NavigationChildren.php',
-        'Contracts/ChangesWhatPeopleSee.php',
+        'Contracts/ChangesWhatUsersSee.php',
         'Contracts/PageOption.php',
         'Declarations/ActionRoute.php',
         'Declarations/ChoiceOption.php',

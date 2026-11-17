@@ -886,7 +886,7 @@ interface	AssignmentReader
 interface	AssignmentRegistration
 interface	AssignmentTransaction
 interface	AssignmentWriter
-interface	ChangesWhatPeopleSee
+interface	ChangesWhatUsersSee
 interface	ConversationReader
 interface	CountReader
 interface	CurrentActor
