@@ -36,6 +36,14 @@ One route owner for signing in: Fortify keeps `views => false`, Web owns the gue
 - `tests/Feature/Web/BrowserContractTest.php` proves it on a fixture page: computed hook, typed list, enum, optional value, hidden seed and hidden service, in both the generated type and the JSON.
 - Pages use property hooks, so composer requires PHP 8.4 or later and CI runs PHP 8.5, as the image does.
 
+## Plans: states, kinds and order (task 101)
+
+- **States** follow doc 4's badge words: `PlanState` is Planned, Reviewing, Started, Paused, Cancelled and Done. The journal's draft, ready and approved stages all show as Planned; a plan whose review is still open shows Reviewing, so the card says why it cannot start. A new plan is Planned.
+- **Kind** is doc 4's card icon: `PlanKind` is Build, Fix, Research or Cleanup. Doc 4 names the icon but not the kinds; these four are the agent's choice and can change.
+- **Order.** Phases have a position in their plan. A task's place lives in the Plans-owned `phase_tasks` table (phase, task id, position), with a task in one phase at most, not in the unordered links table. It keeps task ids only.
+- **Progress** comes from `App\Domain\Tasks\TaskCounts::progressOf($taskIds)`: done, started, blocked and total. Tasks never reads plans, and Plans calls Tasks through its approved edge. Version 6 tasks have no testing state yet, so there is no testing count.
+- Plan has no agent limit; every agent and the owner read every plan. `php artisan db:seed` adds three plans with phases and tasks.
+
 ## Domain ownership and dependencies
 
 Approved by the user in question 13 (rule 9):
