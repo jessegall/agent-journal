@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Hooks;
 
 use App\Domain\Agents\AgentContext;
+use App\Domain\Hooks\Inputs\MissingCommandFacts;
+use App\Domain\Hooks\Inputs\ShellCommandParser;
 use App\Domain\Hooks\Models\AgentSessionScope;
 use App\Domain\Hooks\Models\AgentStackRow;
 use App\Domain\Hooks\Models\HookCall;
@@ -24,6 +26,7 @@ final class HooksServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(StateTypes::class);
+        $this->app->bindIf(ShellCommandParser::class, MissingCommandFacts::class);
         $this->app->scoped(StateFactory::class, RegisteredStateFactory::class);
         $this->app->singleton(OperationDeadline::class, fn () => new OperationDeadline($this->app->make('config')->integer('hooks.operation_deadline_milliseconds')));
         $this->app->singleton(HookRetryWindow::class, fn () => new HookRetryWindow($this->app->make('config')->integer('hooks.retry_seconds')));

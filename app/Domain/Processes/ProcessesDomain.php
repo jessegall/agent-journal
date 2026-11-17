@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Processes;
 
 use App\Domain\Domain;
+use App\Domain\Hooks\HooksDomain;
 
 final class ProcessesDomain implements Domain
 {
@@ -18,6 +19,6 @@ final class ProcessesDomain implements Domain
      */
     public function requires(): array
     {
-        return [];
+        return [HooksDomain::class];
     }
 }

@@ -11,7 +11,7 @@ Plan 2 builds the agent stack state machine of doc 3 in the Hooks domain (`app/D
 | Tasks | Hooks | the WorkingOnTask state and its push from a listener | declared under rule 11, awaiting question 10 |
 | Chat | Hooks | the AnsweringMessage state and its push | declared under rule 11, awaiting question 10 |
 | Sequences | Hooks | the FollowingSequence state and its push | declared under rule 11, awaiting question 10 |
-| Processes | Hooks | the parsed command facts and the saved command refusal | proposed |
+| Processes | Hooks | the parsed command facts and the saved command refusal | declared under rule 11, awaiting question 10 |
 | Memory | Hooks | context after a compaction | proposed |
 | Rules | Hooks | the rules told at start and after a compaction | proposed |
 | Reminders | Hooks | optional, a reminder as context | proposed |
