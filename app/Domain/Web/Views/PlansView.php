@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Views;
 
-use App\Domain\Plans\PlanRecords;
+use App\Domain\Plans\Contracts\PlanReader;
 use App\Domain\Web\Data\PaginationData;
 use App\Domain\Web\Data\PlanCardData;
 use App\Domain\Web\Data\PlanFiltersData;
@@ -16,7 +16,7 @@ use App\Domain\Web\Data\PlanReaderData;
  */
 final readonly class PlansView
 {
-    public function __construct(private PlanRecords $records) {}
+    public function __construct(private PlanReader $records) {}
 
     public function plans(PlanFiltersData $filters): PlanListData
     {

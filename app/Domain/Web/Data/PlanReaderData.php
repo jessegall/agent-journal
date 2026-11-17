@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Web\Data;
 
-use App\Domain\Plans\PlanSelection;
+use App\Domain\Plans\Api\PlanSelection;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

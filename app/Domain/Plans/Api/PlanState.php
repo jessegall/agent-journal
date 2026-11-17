@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Plans;
+namespace App\Domain\Plans\Api;
 
 /**
  * Where a plan stands, in the words of doc 4's state badge: planned until it starts, reviewing while a review holds it,

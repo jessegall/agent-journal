@@ -6,9 +6,9 @@ namespace Tests\Feature\Web;
 
 use App\Domain\Access\AccessSettings;
 use App\Domain\Access\Models\User;
+use App\Domain\Plans\Api\PlanKind;
+use App\Domain\Plans\Api\PlanState;
 use App\Domain\Plans\Models\Plan;
-use App\Domain\Plans\PlanKind;
-use App\Domain\Plans\PlanState;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 

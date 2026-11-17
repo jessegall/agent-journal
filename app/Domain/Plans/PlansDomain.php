@@ -5,6 +5,14 @@ declare(strict_types=1);
 namespace App\Domain\Plans;
 
 use App\Domain\Contracts\Domain;
+use App\Domain\Plans\Api\PlanCard;
+use App\Domain\Plans\Api\PlanFilters;
+use App\Domain\Plans\Api\PlanKind;
+use App\Domain\Plans\Api\PlanList;
+use App\Domain\Plans\Api\PlanProgress;
+use App\Domain\Plans\Api\PlanSelection;
+use App\Domain\Plans\Api\PlanState;
+use App\Domain\Plans\Contracts\PlanReader;
 use App\Domain\Tasks\TasksDomain;
 
 final class PlansDomain implements Domain
@@ -27,6 +35,15 @@ final class PlansDomain implements Domain
      */
     public function exports(): array
     {
-        return [];
+        return [
+            PlanReader::class,
+            PlanFilters::class,
+            PlanList::class,
+            PlanSelection::class,
+            PlanCard::class,
+            PlanProgress::class,
+            PlanKind::class,
+            PlanState::class,
+        ];
     }
 }

@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Models;
 
-use App\Core\Agents\Models\Agent;
 use App\Core\Links\Linkable;
+use App\Domain\Plans\Api\PlanCard;
+use App\Domain\Plans\Api\PlanKind;
+use App\Domain\Plans\Api\PlanProgress;
+use App\Domain\Plans\Api\PlanState;
 use App\Domain\Plans\Exceptions\StartDenied;
-use App\Domain\Plans\PlanCard;
-use App\Domain\Plans\PlanKind;
-use App\Domain\Plans\PlanState;
-use App\Domain\Tasks\Api\TaskProgress;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
@@ -31,7 +29,6 @@ use Illuminate\Support\Carbon;
  * @property int|null $agent_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Agent|null $agent
  */
 #[Fillable(['title', 'kind'])]
 final class Plan extends Model
@@ -92,15 +89,17 @@ final class Plan extends Model
      * The card of this plan from the progress of each phase, keyed by the phase's position. The current phase is the
      * first one with unfinished tasks, or the last phase once every task is done; a plan without phases has none.
      *
-     * @param  array<int, TaskProgress>  $progressOfPhase
+     * The assigned agent's name comes from Core's labels; an agent nobody may see, or none, leaves it absent.
+     *
+     * @param  array<int, PlanProgress>  $progressOfPhase
      */
-    public function card(array $progressOfPhase): PlanCard
+    public function card(array $progressOfPhase, ?string $agentName): PlanCard
     {
-        $progress = array_reduce($progressOfPhase, fn (TaskProgress $sum, TaskProgress $phase) => $sum->plus($phase), TaskProgress::none());
-        $unfinished = array_keys(array_filter($progressOfPhase, fn (TaskProgress $phase) => ! $phase->isComplete()));
+        $progress = array_reduce($progressOfPhase, fn (PlanProgress $sum, PlanProgress $phase) => $sum->plus($phase), PlanProgress::none());
+        $unfinished = array_keys(array_filter($progressOfPhase, fn (PlanProgress $phase) => ! $phase->isComplete()));
         $currentPhase = $unfinished[0] ?? array_key_last($progressOfPhase);
 
-        return new PlanCard($this->id, $this->title, $this->kind, $this->state, $this->state->canStart(), $this->focused, $progress, $currentPhase, $this->agent?->name);
+        return new PlanCard($this->id, $this->title, $this->kind, $this->state, $this->state->canStart(), $this->focused, $progress, $currentPhase, $agentName);
     }
 
     /**
@@ -127,14 +126,6 @@ final class Plan extends Model
     protected function listOrder(Builder $query): void
     {
         $query->orderByDesc('focused')->orderByDesc('id');
-    }
-
-    /**
-     * @return BelongsTo<Agent, $this>
-     */
-    public function agent(): BelongsTo
-    {
-        return $this->belongsTo(Agent::class);
     }
 
     /**

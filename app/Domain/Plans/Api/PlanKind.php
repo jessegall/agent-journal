@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Plans;
+namespace App\Domain\Plans\Api;
 
 /**
  * What a plan is for, shown as the icon on its card.

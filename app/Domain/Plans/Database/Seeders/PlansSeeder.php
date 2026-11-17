@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Database\Seeders;
 
+use App\Domain\Plans\Api\PlanKind;
 use App\Domain\Plans\Models\Plan;
-use App\Domain\Plans\PlanKind;
 use App\Domain\Tasks\Models\Task;
 use Illuminate\Database\Seeder;
 

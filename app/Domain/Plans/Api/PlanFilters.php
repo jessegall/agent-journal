@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Plans;
+namespace App\Domain\Plans\Api;
 
 /**
  * Which plans to list: a title search, the page, and the plan selected for reading, if any. Web turns its validated

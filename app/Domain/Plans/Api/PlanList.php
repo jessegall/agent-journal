@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Plans;
+namespace App\Domain\Plans\Api;
 
 /**
  * One page of plan cards for the filters, the page it really is after normalizing, and the selected plan.

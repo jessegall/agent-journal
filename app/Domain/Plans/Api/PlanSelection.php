@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Plans;
+namespace App\Domain\Plans\Api;
 
 /**
  * The plan selected for reading: none asked for, one found (inside the current filter or not), or one that cannot be

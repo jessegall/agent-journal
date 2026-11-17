@@ -2,9 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Plans;
-
-use App\Domain\Tasks\Api\TaskProgress;
+namespace App\Domain\Plans\Api;
 
 /**
  * What a plan card shows: the plan, whether it may start now, how far its tasks have got, the phase it is in and the
@@ -19,7 +17,7 @@ final readonly class PlanCard
         public PlanState $state,
         public bool $canStart,
         public bool $focused,
-        public TaskProgress $progress,
+        public PlanProgress $progress,
         public ?int $currentPhase,
         public ?string $agentName,
     ) {}
