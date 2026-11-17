@@ -25,6 +25,7 @@ RUN printf '%s\n' "$COMMIT" > /opt/agent-journal/src/commit
 
 COPY --chmod=755 docker/simple/entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY docker/simple/Caddyfile /etc/caddy/Caddyfile
+COPY docker/simple/time-report-check.py /opt/agent-journal/time-report-check.py
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     XDG_DATA_HOME=/data/caddy
