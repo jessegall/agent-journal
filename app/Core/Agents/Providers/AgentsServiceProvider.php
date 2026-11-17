@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Core\Agents\Providers;
 
 use App\Core\Actors\Enums\ActorKind;
+use App\Core\Agents\Contracts\AgentAuthority;
 use App\Core\Agents\Exceptions\AgentContextMissing;
+use App\Core\Agents\Readers\AgentAuthorityRecords;
 use App\Core\Agents\Support\AgentAssignees;
 use App\Core\Agents\Support\AgentContext;
 use App\Core\Agents\Support\DatabaseLaunchTransaction;
@@ -25,6 +27,7 @@ final class AgentsServiceProvider extends ServiceProvider
     {
         $this->app->scoped(AgentContext::class, fn () => throw AgentContextMissing::forRequest());
         $this->app->scoped(AgentAssignees::class);
+        $this->app->bind(AgentAuthority::class, AgentAuthorityRecords::class);
         $this->app->bindIf(LaunchTransaction::class, DatabaseLaunchTransaction::class);
         $this->app->singleton(LaunchTimeouts::class, fn () => new LaunchTimeouts(
             $this->app->make('config')->integer('agents.possibly_lost_after_seconds'),

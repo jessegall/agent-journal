@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Core\Assignments\Exceptions;
+
+use App\Core\Actors\Support\ActorIdentity;
+use RuntimeException;
+use Throwable;
+
+final class AssignmentDenied extends RuntimeException
+{
+    public static function forCaller(ActorIdentity $caller, Throwable|null $previous = null): self
+    {
+        return new self("Only the owner or a main agent may give out work; {$caller->kind->value} {$caller->id} may not.", 0, $previous);
+    }
+}

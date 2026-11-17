@@ -195,6 +195,7 @@ class	ActorsServiceProvider
 class	AddPhaseTasks
 class	Agent
 class	AgentAssignees
+class	AgentAuthorityRecords
 class	AgentContext
 class	AgentContextFactory
 class	AgentContextMissing
@@ -227,6 +228,7 @@ class	AssigneeUnavailable
 class	Assignment
 class	AssignmentChange
 class	AssignmentConflict
+class	AssignmentDenied
 class	AssignmentGroup
 class	AssignmentGroupTooLarge
 class	AssignmentOutcome
@@ -637,6 +639,7 @@ class	WebServiceProvider
 class	WorkingOnTaskState
 class	WorkingOnTaskStateFactory
 class	WorkingOnTaskStateReference
+class	WriteAssignments
 constant	AnsweringMessageStateReference::TYPE_KEY
 constant	AssignmentGroup::LARGEST
 constant	BindingRules::BINDING_METHODS
@@ -740,6 +743,7 @@ enum	ToolOutcome
 enum	TransitionKind
 enum	ViolationKind
 interface	Actor
+interface	AgentAuthority
 interface	AgentReader
 interface	AgentStack
 interface	Answer
@@ -747,9 +751,11 @@ interface	Assignable
 interface	AssignableProvider
 interface	Assignee
 interface	AssigneeProvider
+interface	AssignmentProviders
 interface	AssignmentReader
 interface	AssignmentRegistration
 interface	AssignmentTransaction
+interface	AssignmentWriter
 interface	ConversationReader
 interface	CurrentActor
 interface	CurrentActorSetter
@@ -824,6 +830,9 @@ method	AgentAssignees::__construct()
 method	AgentAssignees::eligible()
 method	AgentAssignees::names()
 method	AgentAssignees::requireEligible()
+method	AgentAuthority::requireDispatcher()
+method	AgentAuthorityRecords::__construct()
+method	AgentAuthorityRecords::requireDispatcher()
 method	AgentContext::__construct()
 method	AgentContext::actorId()
 method	AgentContext::actorKind()
@@ -938,12 +947,15 @@ method	Assignment::holder()
 method	AssignmentChange::__construct()
 method	AssignmentConflict::heldByAnother()
 method	AssignmentConflict::staleReference()
+method	AssignmentDenied::forCaller()
 method	AssignmentGroup::__construct()
 method	AssignmentGroupTooLarge::for()
 method	AssignmentOutcome::__construct()
 method	AssignmentProviderInvalid::forAssignees()
 method	AssignmentProviderInvalid::forModel()
 method	AssignmentProviderInvalid::forRecords()
+method	AssignmentProviders::assigneeProvider()
+method	AssignmentProviders::recordProvider()
 method	AssignmentReader::assignmentsFor()
 method	AssignmentReader::recordIdsFor()
 method	AssignmentRecord::booted()
@@ -981,6 +993,9 @@ method	AssignmentTransactionRequired::forStore()
 method	AssignmentTypeRepeated::for()
 method	AssignmentTypeUnavailable::forKind()
 method	AssignmentTypeUnavailable::forType()
+method	AssignmentWriter::assign()
+method	AssignmentWriter::reassign()
+method	AssignmentWriter::unassign()
 method	AssignmentsServiceProvider::boot()
 method	AssignmentsServiceProvider::register()
 method	AuthenticateAgent::__construct()
@@ -2125,6 +2140,15 @@ method	WorkingOnTaskStateFactory::__construct()
 method	WorkingOnTaskStateFactory::schemaVersion()
 method	WorkingOnTaskStateFactory::stateFor()
 method	WorkingOnTaskStateReference::forTask()
+method	WriteAssignments::__construct()
+method	WriteAssignments::assign()
+method	WriteAssignments::changed()
+method	WriteAssignments::checkActors()
+method	WriteAssignments::reassign()
+method	WriteAssignments::requireExpected()
+method	WriteAssignments::unassign()
+method	WriteAssignments::unchanged()
+method	WriteAssignments::unchangedIfHeldBy()
 property	AccessSettings::$ownerId
 property	ActorContext::$id
 property	ActorContext::$kind
@@ -2135,6 +2159,7 @@ property	AddPhaseTasks::$database
 property	AddPhaseTasks::$tasks
 property	AgentAssignees::$actors
 property	AgentAssignees::$lifecycle
+property	AgentAuthorityRecords::$lifecycle
 property	AgentContext::$agentId
 property	AgentContext::$call
 property	AgentContext::$role
@@ -2763,6 +2788,11 @@ property	WalkStep::$stateType
 property	WalkStep::$transition
 property	WorkingOnTaskState::$task
 property	WorkingOnTaskStateFactory::$tasks
+property	WriteAssignments::$actors
+property	WriteAssignments::$authority
+property	WriteAssignments::$providers
+property	WriteAssignments::$store
+property	WriteAssignments::$transaction
 trait	Linkable
 trait	OptionalOrMissing
 trait	OwnedByOneAgent

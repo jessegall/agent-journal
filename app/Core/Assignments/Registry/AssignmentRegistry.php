@@ -7,6 +7,7 @@ namespace App\Core\Assignments\Registry;
 use App\Core\Actors\Enums\ActorKind;
 use App\Core\Assignments\Contracts\AssignableProvider;
 use App\Core\Assignments\Contracts\AssigneeProvider;
+use App\Core\Assignments\Contracts\AssignmentProviders;
 use App\Core\Assignments\Contracts\AssignmentRegistration;
 use App\Core\Assignments\Exceptions\AssigneeKindRepeated;
 use App\Core\Assignments\Exceptions\AssignmentProviderInvalid;
@@ -23,7 +24,7 @@ use Illuminate\Contracts\Container\Container;
  * class names only and builds a provider when one is asked for, so a provider that holds the request's actor is never
  * kept beyond its request.
  */
-final class AssignmentRegistry implements AssignmentRegistration
+final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistration
 {
     /**
      * @var array<string, class-string<AssignableProvider>>

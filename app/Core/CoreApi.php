@@ -18,11 +18,13 @@ use App\Core\Assignments\Contracts\AssigneeProvider;
 use App\Core\Assignments\Contracts\AssignmentReader;
 use App\Core\Assignments\Contracts\AssignmentRegistration;
 use App\Core\Assignments\Contracts\AssignmentTransaction;
+use App\Core\Assignments\Contracts\AssignmentWriter;
 use App\Core\Assignments\Enums\AssignmentOutcomeKind;
 use App\Core\Assignments\Enums\AssignmentReason;
 use App\Core\Assignments\Exceptions\AssigneeKindRepeated;
 use App\Core\Assignments\Exceptions\AssigneeUnavailable;
 use App\Core\Assignments\Exceptions\AssignmentConflict;
+use App\Core\Assignments\Exceptions\AssignmentDenied;
 use App\Core\Assignments\Exceptions\AssignmentGroupTooLarge;
 use App\Core\Assignments\Exceptions\AssignmentProviderInvalid;
 use App\Core\Assignments\Exceptions\AssignmentRetryExhausted;
@@ -227,6 +229,8 @@ final class CoreApi
             AssignmentGroupTooLarge::class,
             AssigneeUnavailable::class,
             RecordUnavailable::class,
+            AssignmentDenied::class,
+            AssignmentWriter::class,
             AssignmentConflict::class,
             AssignmentRetryExhausted::class,
             AssignmentTransactionRequired::class,

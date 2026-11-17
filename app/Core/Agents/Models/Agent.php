@@ -51,7 +51,7 @@ final class Agent extends Model implements Assignee
 
     public function retireAt(CarbonInterface $retiredAt): void
     {
-        $this->retired_at = $retiredAt;
+        $this->retired_at = Carbon::instance($retiredAt);
         $this->save();
     }
 
