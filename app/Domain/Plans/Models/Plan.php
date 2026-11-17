@@ -4,11 +4,17 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Models;
 
+use App\Core\Agents\Models\Agent;
 use App\Core\Links\Linkable;
+use App\Domain\Plans\PlanCard;
 use App\Domain\Plans\PlanKind;
 use App\Domain\Plans\PlanState;
+use App\Domain\Tasks\TaskProgress;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
@@ -24,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $agent_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read Agent|null $agent
  */
 #[Fillable(['title', 'kind'])]
 final class Plan extends Model
@@ -59,6 +66,55 @@ final class Plan extends Model
             ->all();
 
         return array_map(intval(...), array_values($taskIds));
+    }
+
+    /**
+     * The card of this plan from the progress of each phase, keyed by the phase's position. The current phase is the
+     * first one with unfinished tasks, or the last phase once every task is done; a plan without phases has none.
+     *
+     * @param  array<int, TaskProgress>  $progressOfPhase
+     */
+    public function card(array $progressOfPhase): PlanCard
+    {
+        $progress = array_reduce($progressOfPhase, fn (TaskProgress $sum, TaskProgress $phase) => $sum->plus($phase), TaskProgress::none());
+        $unfinished = array_keys(array_filter($progressOfPhase, fn (TaskProgress $phase) => ! $phase->isComplete()));
+        $currentPhase = $unfinished[0] ?? array_key_last($progressOfPhase);
+
+        return new PlanCard($this->id, $this->title, $this->kind, $this->state, $this->focused, $progress, $currentPhase, $this->agent?->name);
+    }
+
+    /**
+     * Plans whose title holds the search words, matched without regard to case; an empty search matches every plan.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function matching(Builder $query, string $search): void
+    {
+        if (trim($search) === '') {
+            return;
+        }
+
+        $query->whereLike('title', '%'.addcslashes(trim($search), '%_\\').'%', caseSensitive: false);
+    }
+
+    /**
+     * The focused plan first, then the newest.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function listOrder(Builder $query): void
+    {
+        $query->orderByDesc('focused')->orderByDesc('id');
+    }
+
+    /**
+     * @return BelongsTo<Agent, $this>
+     */
+    public function agent(): BelongsTo
+    {
+        return $this->belongsTo(Agent::class);
     }
 
     /**
