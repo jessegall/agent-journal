@@ -45,7 +45,7 @@ No owner store existed for the subjects the states are about, so plan 2 built th
 
 | Missing | Owner and files | Follow-up |
 |---|---|---|
-| The host shim that signs calls, posts them and answers with the outage reply when the journal is down | Agents and Hooks host side; the `journal-hook <program>` command the isolated settings name | task 88 |
+| Starting a program with the relay environment (JOURNAL_URL, JOURNAL_LAUNCH_TOKEN, JOURNAL_ROLE, JOURNAL_BYPASS_LOG) | the host that launches programs; `bin/journal-hook` and `hooks:relay` exist (task 88) | task 89 |
 | Captured fixtures from pinned program versions, the Codex settings shape and child identity | Hooks; `tests/Fixtures/Hooks/ClaudeCode`, `tests/Fixtures/Hooks/Codex`, `docs/hooks/program-capabilities.md` | task 89 |
 | Recording the program's session id on every session start | Hooks endpoint with Agents' `LaunchSessions::mapProgramSession` | task 90 |
 | Saved command records, so a journal command counts as saved only when it is one | Processes; `app/Domain/Processes/CommandCatalog.php` | task 91 |

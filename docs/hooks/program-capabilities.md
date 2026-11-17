@@ -6,7 +6,7 @@ This is the one place where the journal records what it knows about each agent p
 
 The core is built and tested on PostgreSQL: typed hook inputs, the top-first walk with recorded steps, the role bottom states, the state types and restoration, the rewrite recheck, the two Hooks tables with versioned casts, the per-request agent scope, the bounded stack transaction with replay, the domain states pushed by their own listeners, the authoritative shell parser, the Claude Code and Codex adapters, the authenticated endpoint `POST /hooks/{program}`, launches with isolated settings and separate child stacks, compaction once with reminders, loss confirmation, the outage replies, the read-only inspector `GET /hooks/stacks/{agentId}/{sessionId}` and retention.
 
-No production program runs under it yet. No pinned Claude Code or Codex version has been verified, the host shim that would carry calls to the endpoint does not exist, and the fixtures are written from documented shapes. Until tasks 88 and 89 are done, the program support below is a written contract, not a verified capability. The owner work still missing is listed in `docs/hooks/dependencies.md`.
+No production program runs under it yet. No pinned Claude Code or Codex version has been verified, the host relay exists but has not run under a real program, and the fixtures are written from documented shapes. Until task 89 is done, the program support below is a written contract, not a verified capability. The owner work still missing is listed in `docs/hooks/dependencies.md`.
 
 ## Measured limits
 
@@ -53,7 +53,7 @@ The host shim, not the journal, answers a hook when the journal is unreachable, 
 | 409 (a changed retry or an expired identity) | refused | refused |
 | 422 (a payload the adapter cannot read) | refused | refused |
 
-A refusal, a changed retry or an unreadable payload is the journal answering, so it never falls back to the neutral reply. After recovery the host uploads the bypass facts; it does not replay missed pre-tool calls as fresh permission. The host shim and its upload are not built yet.
+A refusal, a changed retry or an unreadable payload is the journal answering, so it never falls back to the neutral reply. After recovery the host uploads the bypass facts; it does not replay missed pre-tool calls as fresh permission. The host relay is `bin/journal-hook <program>`, which runs `php artisan hooks:relay <program>` (`HookRelay`): it signs each call, posts it, answers alone with `OutageReply` when the journal is unreachable, logs a main agent's bypass to the file `JOURNAL_BYPASS_LOG`, and uploads the logged bypasses to `POST /hooks/bypasses` before its next call, where Agents keeps them in `launch_bypasses`. The launch must set `JOURNAL_URL`, `JOURNAL_LAUNCH_TOKEN`, `JOURNAL_ROLE` and `JOURNAL_BYPASS_LOG` in the program's environment.
 
 A program that exits or is killed without an end hook is handled by `ConfirmLaunchLoss`: silence first makes the loss suspected (`agents.suspect_loss_after_seconds`), a long silence (`agents.confirm_loss_after_seconds`) or the host's report of the exit confirms it, and the stack is closed and kept with its obligations.
 

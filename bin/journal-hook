@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# The command a launched program's isolated settings run for every hook: it passes the call to the journal.
+# The launch sets JOURNAL_URL, JOURNAL_LAUNCH_TOKEN, JOURNAL_ROLE and JOURNAL_BYPASS_LOG in the program's environment.
+exec php "$(dirname "$0")/../artisan" hooks:relay "$@"

@@ -7,6 +7,7 @@ namespace App\Domain\Hooks;
 use App\Domain\Agents\AgentContext;
 use App\Domain\Agents\LaunchTransaction;
 use App\Domain\Hooks\Console\PruneHookHistoryCommand;
+use App\Domain\Hooks\Console\RelayHookCommand;
 use App\Domain\Hooks\Inputs\MissingCommandFacts;
 use App\Domain\Hooks\Inputs\ShellCommandParser;
 use App\Domain\Hooks\Models\AgentSessionScope;
@@ -43,7 +44,7 @@ final class HooksServiceProvider extends ServiceProvider
     public function boot(Dispatcher $events): void
     {
         $this->loadRoutesFrom(__DIR__.'/Routes/hooks.php');
-        $this->commands([PruneHookHistoryCommand::class]);
+        $this->commands([PruneHookHistoryCommand::class, RelayHookCommand::class]);
         $this->callAfterResolving(Schedule::class, fn (Schedule $schedule) => $schedule->command('hooks:prune')->daily());
 
         $scope = new AgentSessionScope(static fn () => Container::getInstance()->make(AgentContext::class));
