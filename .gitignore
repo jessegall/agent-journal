@@ -56,3 +56,4 @@ frankenphp-worker.php
 /.playwright-mcp
 /resources/css/generated
 /resources/js/generated
+/resources/js/typescript-transformer-manifest.json

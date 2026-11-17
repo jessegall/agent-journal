@@ -5,11 +5,11 @@
     "scripts": {
         "build": "npm run types:generate && vp build",
         "build:ssr": "npm run types:generate && vp build && vp build --ssr",
-        "dev": "vp dev",
-        "check": "vp check",
+        "dev": "npm run types:generate && vp dev",
+        "check": "npm run types:generate && vp check",
         "check:fix": "vp check --fix",
-        "types:check": "vue-tsc --noEmit",
-        "types:generate": "php artisan journal:ui-manifest && php artisan typescript:transform"
+        "types:check": "npm run types:generate && vue-tsc --noEmit",
+        "types:generate": "php artisan journal:ui-manifest && php artisan wayfinder:generate --with-form && php artisan typescript:transform"
     },
     "dependencies": {
         "@inertiajs/vite": "^3.0.0",

@@ -7,9 +7,12 @@ namespace Tests\Feature\Web;
 use App\Domain\Declarations\DomainUi;
 use App\Domain\Declarations\Page;
 use App\Domain\DomainEntry;
+use App\Domain\DomainRegistry;
 use App\Domain\Enums\Icon;
 use App\Domain\UiDeclarations;
 use App\Domain\Web\Support\UiManifest;
+use App\Domain\Web\Types\PagePropTypes;
+use App\Domain\Web\Types\TypeOwners;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\UiDeclarations\Library\BooksReader;
 use Tests\Fixtures\UiDeclarations\Library\LibraryDomain;
@@ -73,12 +76,37 @@ final class UiManifestTest extends TestCase
         $this->assertStringNotContainsString('Shelf', File::get("{$this->root}/resources/css/generated/domain-sources.css"));
     }
 
+    public function test_each_page_gets_props_typed_with_its_readers_data_and_a_component_check(): void
+    {
+        $this->manifest([$this->library(), $this->shelf()])->write($this->root);
+        $props = File::get("{$this->root}/resources/js/generated/types/page-props.ts");
+        $checks = File::get("{$this->root}/resources/js/generated/ui-prop-checks.ts");
+
+        $this->assertStringContainsString("export type WindowResult<T> = { state: 'ready'; data: T }", $props);
+        $this->assertStringContainsString("import type { RecentNotesData } from './shared';", $props);
+        $this->assertStringContainsString("export type LibraryIndexPageProps = {\n    page: WindowResult<RecentNotesData>;", $props);
+        $this->assertStringContainsString('window_shelf_index?: WindowResult<RecentNotesData>;', $props);
+        $this->assertStringContainsString("export const accepts_shelf_index: Accepts<ShelfIndexPageProps, typeof import('", $checks);
+        $this->assertStringContainsString("Shelf/Resources/js/Index.vue').default> = true;", $checks);
+    }
+
+    public function test_a_types_owner_is_core_its_domain_or_shared(): void
+    {
+        $owners = TypeOwners::of($this->app->make(DomainRegistry::class));
+
+        $this->assertSame('core', $owners->ownerOf('App\\Core\\Assignments\\Support\\AssignmentData'));
+        $this->assertSame('plans', $owners->ownerOf('App\\Domain\\Plans\\Http\\Data\\AssignedPlanListData'));
+        $this->assertSame('shared', $owners->ownerOf('Tests\\Fixtures\\UiDeclarations\\RecentNotesData'));
+    }
+
     /**
      * @param  list<DomainUi>  $domains
      */
     private function manifest(array $domains): UiManifest
     {
-        return new UiManifest(UiDeclarations::check($domains), $this->app->make('view'));
+        $declarations = UiDeclarations::check($domains);
+
+        return new UiManifest($declarations, $this->app->make('view'), new PagePropTypes($declarations, TypeOwners::of($this->app->make(DomainRegistry::class))));
     }
 
     private function library(): DomainUi

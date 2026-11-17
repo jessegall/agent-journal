@@ -367,6 +367,7 @@ class	DomainNotFound
 class	DomainRegistry
 class	DomainRequiresItself
 class	DomainServiceProvider
+class	DomainTypeWriter
 class	DomainUi
 class	EmptyReason
 class	EventCall
@@ -502,6 +503,7 @@ class	OwnerSeeder
 class	Page
 class	PageChanged
 class	PageController
+class	PagePropTypes
 class	PageProps
 class	PaginationData
 class	ParseFailed
@@ -728,6 +730,7 @@ class	TestDatabaseTraits
 class	ToggleOption
 class	ToolFinished
 class	ToolResult
+class	TypeOwners
 class	TypeScriptServiceProvider
 class	UiComponentMissing
 class	UiDeclarationMissing
@@ -799,6 +802,7 @@ constant	DatabaseAssignmentTransaction::ATTEMPTS
 constant	DatabaseAssignmentTransaction::RETRYABLE_STATES
 constant	DeclaredRouteKey::NAME
 constant	DeclaredRoutes::HOME
+constant	DomainTypeWriter::COMPATIBILITY_FILE
 constant	EventCallScan::EVENT_FACADES
 constant	EventCallScan::FACADE_METHODS
 constant	EventCallScan::HELPERS
@@ -1503,6 +1507,10 @@ method	DomainRequiresItself::for()
 method	DomainServiceProvider::boot()
 method	DomainServiceProvider::domainClasses()
 method	DomainServiceProvider::register()
+method	DomainTypeWriter::__construct()
+method	DomainTypeWriter::output()
+method	DomainTypeWriter::pathOf()
+method	DomainTypeWriter::resolveReference()
 method	DomainUi::__construct()
 method	DomainUi::checkController()
 method	DomainUi::checkImplements()
@@ -1902,6 +1910,13 @@ method	PageController::__construct()
 method	PageController::__invoke()
 method	PageOption::key()
 method	PageOption::label()
+method	PagePropTypes::__construct()
+method	PagePropTypes::dataName()
+method	PagePropTypes::imports()
+method	PagePropTypes::pageProps()
+method	PagePropTypes::resultOf()
+method	PagePropTypes::typeName()
+method	PagePropTypes::windowProps()
 method	PageProps::__construct()
 method	PageProps::forHome()
 method	PageProps::forPage()
@@ -2567,7 +2582,13 @@ method	ToolFinished::answerBy()
 method	ToolFinished::identity()
 method	ToolFinished::methodName()
 method	ToolResult::__construct()
+method	TypeOwners::__construct()
+method	TypeOwners::keys()
+method	TypeOwners::of()
+method	TypeOwners::ownerOf()
 method	TypeScriptServiceProvider::configure()
+method	TypeScriptServiceProvider::register()
+method	TypeScriptServiceProvider::sourceFolders()
 method	UiComponentMissing::at()
 method	UiComponentMissing::outsideOwner()
 method	UiDeclarationMissing::for()
@@ -2594,6 +2615,7 @@ method	UiManifest::aliases()
 method	UiManifest::components()
 method	UiManifest::domainFolders()
 method	UiManifest::fromRoot()
+method	UiManifest::propChecks()
 method	UiManifest::render()
 method	UiManifest::replaceTogether()
 method	UiManifest::typeScriptConfig()
@@ -2918,6 +2940,7 @@ property	DomainEntry::$name
 property	DomainEntry::$namespace
 property	DomainEntry::$requires
 property	DomainRegistry::$entries
+property	DomainTypeWriter::$owners
 property	DomainUi::$key
 property	DomainUi::$name
 property	DomainUi::$namespace
@@ -3138,6 +3161,8 @@ property	Page::$visibility
 property	PageChanged::$userIds
 property	PageController::$declarations
 property	PageController::$inertia
+property	PagePropTypes::$declarations
+property	PagePropTypes::$owners
 property	PageProps::$contexts
 property	PageProps::$declarations
 property	PageProps::$inertia
@@ -3545,12 +3570,14 @@ property	ToolFinished::$hook
 property	ToolFinished::$result
 property	ToolResult::$outcome
 property	ToolResult::$toolName
+property	TypeOwners::$owners
 property	UiDeclarations::$actions
 property	UiDeclarations::$navigation
 property	UiDeclarations::$owners
 property	UiDeclarations::$pages
 property	UiDeclarations::$sections
 property	UiManifest::$declarations
+property	UiManifest::$propTypes
 property	UiManifest::$views
 property	UnassignPlanWorkCommand::$description
 property	UnassignPlanWorkCommand::$signature

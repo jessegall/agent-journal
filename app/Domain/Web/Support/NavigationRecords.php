@@ -12,8 +12,6 @@ use App\Domain\UiDeclarations;
 use App\Domain\Web\Data\NavigationCountsData;
 use App\Domain\Web\Data\NavigationData;
 use App\Domain\Web\Data\NavigationItemData;
-use App\Domain\Web\Support\DeclaredRoutes;
-use App\Domain\Web\Support\VisibilityChecks;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Http\Request;

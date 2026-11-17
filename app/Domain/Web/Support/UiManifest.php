@@ -6,6 +6,7 @@ namespace App\Domain\Web\Support;
 
 use App\Domain\UiDeclarations;
 use App\Domain\Web\Exceptions\UiManifestInvalid;
+use App\Domain\Web\Types\PagePropTypes;
 use Illuminate\Contracts\View\Factory;
 
 /**
@@ -24,6 +25,7 @@ final readonly class UiManifest
     public function __construct(
         private UiDeclarations $declarations,
         private Factory $views,
+        private PagePropTypes $propTypes,
     ) {}
 
     /**
@@ -50,6 +52,13 @@ final readonly class UiManifest
                 'hash' => $hash,
                 'sources' => array_map(fn (string $path) => '../../../'.$path, array_values($folders)),
             ]),
+            'resources/js/generated/types/page-props.ts' => $this->render('page-props.ts', [
+                'hash' => $hash,
+                'imports' => $this->propTypes->imports(),
+                'pages' => $this->propTypes->pageProps(),
+                'windows' => $this->propTypes->windowProps(),
+            ]),
+            'resources/js/generated/ui-prop-checks.ts' => $this->render('ui-prop-checks.ts', ['hash' => $hash, 'checks' => $this->propChecks($root)]),
             'bootstrap/cache/ui-components.php' => "<?php\n\nreturn ".var_export($components, true).";\n",
         ];
 
@@ -89,6 +98,24 @@ final readonly class UiManifest
         ksort($components);
 
         return $components;
+    }
+
+    /**
+     * One check per page component: the props its page gives it, and the component file.
+     *
+     * @return array<string, array{type: string, path: string}>
+     */
+    private function propChecks(string $root): array
+    {
+        $checks = [];
+
+        foreach ($this->declarations->pages() as $page) {
+            $checks['accepts_'.str_replace(['.', '-'], '_', $page->key)] = ['type' => $this->propTypes->typeName($page), 'path' => '../../../'.$this->fromRoot($root, $page->componentFile)];
+        }
+
+        ksort($checks);
+
+        return $checks;
     }
 
     /**
