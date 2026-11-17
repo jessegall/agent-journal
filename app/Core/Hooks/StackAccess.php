@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Core\Hooks;
 
 use App\Core\Agents\AgentContext;
+use App\Core\Hooks\Exceptions\HookIdentityExpired;
+use App\Core\Hooks\Exceptions\StackTargetRefused;
 use App\Core\Hooks\Inputs\HookIdentity;
 use App\Core\Hooks\States\ReadyStateType;
 use App\Core\Hooks\Storage\StackTarget;
@@ -39,7 +41,7 @@ final readonly class StackAccess
     public function checkTarget(StackTarget $target): void
     {
         if ($target != $this->target()) {
-            throw StackTargetRefused::forTarget($target);
+            throw StackTargetRefused::forTarget($target->description());
         }
     }
 

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Tasks;
 
 use App\Core\Hooks\Decisions\SubjectReference;
+use App\Core\Hooks\Exceptions\StackAlreadyClosed;
 use App\Core\Hooks\Models\AgentStackRow;
-use App\Core\Hooks\Models\StackAlreadyClosed;
 use App\Core\Hooks\Storage\FrameRecord;
 use App\Domain\Tasks\Models\Task;
 use App\Domain\Tasks\StartTask;

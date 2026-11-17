@@ -6,7 +6,7 @@ namespace Tests\Feature\Agents;
 
 use App\Core\Agents\Http\Middleware\AuthenticateAgent;
 use App\Core\Agents\SignedCall;
-use App\Core\Hooks\HookIdentityExpired;
+use App\Core\Hooks\Exceptions\HookIdentityExpired;
 use App\Core\Hooks\HookRetryWindow;
 use App\Core\Hooks\StackAccess;
 use Carbon\CarbonImmutable;

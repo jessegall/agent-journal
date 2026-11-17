@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Core\Hooks\Decisions\ConflictingStackChange;
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Decisions\Denied;
-use App\Core\Hooks\Decisions\EmptyReason;
 use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\PushState;
 use App\Core\Hooks\Decisions\SimpleChange;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\StopPrevented;
 use App\Core\Hooks\Decisions\SubjectReference;
+use App\Core\Hooks\Exceptions\ConflictingStackChange;
+use App\Core\Hooks\Exceptions\EmptyReason;
 use PHPUnit\Framework\TestCase;
 
 final class DecisionTest extends TestCase

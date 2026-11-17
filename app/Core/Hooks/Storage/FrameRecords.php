@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Storage;
 
+use App\Core\Hooks\Exceptions\InvalidBottomState;
 use App\Core\Hooks\States\ReadyStateType;
 
 /**
@@ -36,7 +37,7 @@ final readonly class FrameRecords
         }
 
         if ($first->reference->typeKey !== $role->value) {
-            throw InvalidBottomState::ofAnotherRole($first->reference->typeKey, $role);
+            throw InvalidBottomState::ofAnotherRole($first->reference->typeKey, $role->value);
         }
 
         foreach (array_slice($this->records, 1) as $record) {

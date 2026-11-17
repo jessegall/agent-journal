@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Programs;
 
+use App\Core\Hooks\Exceptions\UnreadablePayload;
 use App\Core\Hooks\Inputs\SessionStartSource;
 use App\Core\Hooks\Inputs\ToolOutcome;
 use Spatie\LaravelData\Attributes\MapInputName;

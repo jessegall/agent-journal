@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Programs;
 
+use App\Core\Hooks\Exceptions\UnsupportedHook;
+
 /**
  * The Codex tools the adapter knows: running a shell command, and applying a patch to files.
  */

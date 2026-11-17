@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks;
 
+use App\Domain\Tasks\Exceptions\TaskMissing;
 use App\Domain\Tasks\Models\Task;
 
 /**

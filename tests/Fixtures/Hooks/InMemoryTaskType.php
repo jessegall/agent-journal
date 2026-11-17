@@ -7,7 +7,7 @@ namespace Tests\Fixtures\Hooks;
 use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\States\AgentState;
-use App\Core\Hooks\States\StateSubjectMissing;
+use App\Core\Hooks\Exceptions\StateSubjectMissing;
 use App\Core\Hooks\States\StateType;
 use App\Domain\Tasks\States\WorkingOnTask;
 use App\Domain\Tasks\TaskWork;
@@ -29,7 +29,7 @@ final class InMemoryTaskType implements StateType
     public function stateFor(StateReference $reference): AgentState
     {
         if ($reference->subject === NoSubject::None || ! isset($this->tasks[$reference->subject->id])) {
-            throw StateSubjectMissing::for($reference);
+            throw StateSubjectMissing::for($reference->typeKey);
         }
 
         $subject = $reference->subject;

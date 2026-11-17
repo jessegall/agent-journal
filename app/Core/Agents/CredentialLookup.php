@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Agents;
 
+use App\Core\Agents\Exceptions\CredentialRejected;
 use App\Core\Agents\Models\AgentSession;
 use App\Core\Agents\Models\LaunchCredential;
 

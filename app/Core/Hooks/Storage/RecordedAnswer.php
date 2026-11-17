@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Storage;
 
 use App\Core\Hooks\Decisions\AnswerKind;
+use App\Core\Hooks\Exceptions\StoredValueInvalid;
 use Spatie\LaravelData\Data;
 
 /**

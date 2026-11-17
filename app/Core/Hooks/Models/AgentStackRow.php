@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Models;
 
+use App\Core\Hooks\Exceptions\StackAlreadyClosed;
+use App\Core\Hooks\Exceptions\StackMissing;
 use App\Core\Hooks\Storage\FrameRecords;
 use App\Core\Hooks\Storage\FrameRecordsCast;
 use App\Core\Hooks\Storage\StackStatus;
@@ -71,10 +73,10 @@ final class AgentStackRow extends Model
      */
     public static function lockFor(StackTarget $target): self
     {
-        $row = self::query()->forTarget($target)->lockForUpdate()->first() ?? throw StackMissing::forTarget($target);
+        $row = self::query()->forTarget($target)->lockForUpdate()->first() ?? throw StackMissing::forTarget($target->description());
 
         if (! $row->isActive()) {
-            throw StackAlreadyClosed::forTarget($target);
+            throw StackAlreadyClosed::forTarget($target->description());
         }
 
         return $row;
@@ -85,10 +87,10 @@ final class AgentStackRow extends Model
      */
     public static function lockForLaunch(StackTarget $target): self
     {
-        $row = self::query()->authorizedFor($target)->lockForUpdate()->first() ?? throw StackMissing::forTarget($target);
+        $row = self::query()->authorizedFor($target)->lockForUpdate()->first() ?? throw StackMissing::forTarget($target->description());
 
         if (! $row->isActive()) {
-            throw StackAlreadyClosed::forTarget($target);
+            throw StackAlreadyClosed::forTarget($target->description());
         }
 
         return $row;

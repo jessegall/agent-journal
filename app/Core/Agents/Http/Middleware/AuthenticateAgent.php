@@ -6,8 +6,8 @@ namespace App\Core\Agents\Http\Middleware;
 
 use App\Core\Agents\AgentContext;
 use App\Core\Agents\AgentContextFactory;
-use App\Core\Agents\CallSignatureInvalid;
-use App\Core\Agents\CredentialRejected;
+use App\Core\Agents\Exceptions\CallSignatureInvalid;
+use App\Core\Agents\Exceptions\CredentialRejected;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\JsonResponse;

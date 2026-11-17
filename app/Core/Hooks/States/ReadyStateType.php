@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Hooks\States;
 
 use App\Core\Hooks\Decisions\StateReference;
+use App\Core\Hooks\Exceptions\UnknownReadyState;
 
 /**
  * The built-in bottom states, one for each checked role, under the type keys they are stored by.

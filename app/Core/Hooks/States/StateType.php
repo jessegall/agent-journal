@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Hooks\States;
 
 use App\Core\Hooks\Decisions\StateReference;
+use App\Core\Hooks\Exceptions\StateSubjectMissing;
 
 /**
  * Builds the state for a stored reference, reading its subject fresh for this request; it keeps nothing between calls.

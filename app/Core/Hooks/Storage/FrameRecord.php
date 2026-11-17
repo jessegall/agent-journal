@@ -17,4 +17,12 @@ final readonly class FrameRecord
         public bool $isBottom,
         public int $schemaVersion,
     ) {}
+
+    /**
+     * The frame named in words with the version it was stored in, for a message.
+     */
+    public function description(): string
+    {
+        return "The frame {$this->id} of {$this->reference->typeKey} is stored in version {$this->schemaVersion}";
+    }
 }

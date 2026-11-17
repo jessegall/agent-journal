@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Core\Hooks\Decisions\AnswerKind;
+use App\Core\Hooks\Exceptions\CommandFactsMissing;
 use App\Core\Hooks\Inputs\CommandEffect;
-use App\Core\Hooks\Inputs\CommandFactsMissing;
 use App\Core\Hooks\Inputs\CommandKind;
 use App\Core\Hooks\Inputs\HookIdentity;
 use App\Core\Hooks\Inputs\MissingCommandFacts;

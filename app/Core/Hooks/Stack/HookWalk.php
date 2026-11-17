@@ -6,6 +6,7 @@ namespace App\Core\Hooks\Stack;
 
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Decisions\StateReference;
+use App\Core\Hooks\Exceptions\CoveredStatePushed;
 use App\Core\Hooks\Storage\WalkStep;
 
 /**
@@ -56,7 +57,7 @@ final class HookWalk
     public function pushOver(Frame $frame, StateReference $state): void
     {
         if ($frame->id !== $this->walkTop->id) {
-            throw CoveredStatePushed::for($frame);
+            throw CoveredStatePushed::for($frame->typeKey());
         }
 
         $this->stack = $this->stack->withStateOnTop($state);
@@ -68,10 +69,12 @@ final class HookWalk
     }
 
     /**
-     * @return list<WalkStep>
+     * The frames this walk asked, top first.
+     *
+     * @return list<string>
      */
-    public function steps(): array
+    public function visitedFrames(): array
     {
-        return $this->steps;
+        return array_map(fn (WalkStep $step) => $step->frameId, $this->steps);
     }
 }

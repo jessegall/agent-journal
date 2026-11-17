@@ -20,43 +20,36 @@ final class DomainEventRulesTest extends TestCase
     private const string TASK_CLOSED = 'Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClosed';
 
     /**
-     * @return iterable<string, array{string}>
+     * @return iterable<string, array{string, list<string>}>
      */
-    public static function passingFiles(): iterable
+    public static function eventFixtures(): iterable
     {
-        yield 'a listener importing a declared domain event' => ['Plans/Listeners/StartNextTask.php'];
-        yield 'a listener with an alias import' => ['Plans/Listeners/AliasListener.php'];
-        yield 'a listener with a group import' => ['Plans/Listeners/GroupListener.php'];
-        yield 'the owner raising its own event' => ['Tasks/Actions/CloseTask.php'];
-    }
+        $onlyAListener = ', an event of Tasks; only a listener of Plans may name it, as an import, a type or ::class';
 
-    #[DataProvider('passingFiles')]
-    public function test_hearing_an_event_in_a_listener_passes(string $fixture): void
-    {
-        $this->assertSame([], $this->violationLines($fixture));
-    }
-
-    public function test_building_another_domain_event_in_a_listener_fails(): void
-    {
-        $this->assertSame([
-            '13 names '.self::TASK_CLOSED.', an event of Tasks; only a listener of Plans may name it, as an import, a type or ::class',
-        ], $this->violationLines('Plans/Listeners/RaisesTaskClosed.php'));
-    }
-
-    public function test_naming_another_domain_event_outside_a_listener_fails(): void
-    {
-        $this->assertSame([
-            '7 names '.self::TASK_CLOSED.', an event of Tasks; only a listener of Plans may name it, as an import, a type or ::class',
-            '13 names '.self::TASK_CLOSED.', an event of Tasks; only a listener of Plans may name it, as an import, a type or ::class',
-        ], $this->violationLines('Plans/Actions/UsesTaskClosed.php'));
-    }
-
-    public function test_an_event_of_an_undeclared_domain_fails_in_a_listener(): void
-    {
-        $this->assertSame([
+        yield 'a listener importing a declared domain event' => ['Plans/Listeners/StartNextTask.php', []];
+        yield 'a listener with an alias import' => ['Plans/Listeners/AliasListener.php', []];
+        yield 'a listener with a group import' => ['Plans/Listeners/GroupListener.php', []];
+        yield 'the owner raising its own event' => ['Tasks/Actions/CloseTask.php', []];
+        yield 'a listener building another domain event' => ['Plans/Listeners/RaisesTaskClosed.php', [
+            '13 names '.self::TASK_CLOSED.$onlyAListener,
+        ]];
+        yield 'another domain event named outside a listener' => ['Plans/Actions/UsesTaskClosed.php', [
+            '7 names '.self::TASK_CLOSED.$onlyAListener,
+            '13 names '.self::TASK_CLOSED.$onlyAListener,
+        ]];
+        yield 'an event of an undeclared domain in a listener' => ['Plans/Listeners/HearsMessage.php', [
             '7 uses Tests\Fixtures\Boundary\Events\Chat\Events\MessageSent, but Plans does not require Chat',
             '11 uses Tests\Fixtures\Boundary\Events\Chat\Events\MessageSent, but Plans does not require Chat',
-        ], $this->violationLines('Plans/Listeners/HearsMessage.php'));
+        ]];
+    }
+
+    /**
+     * @param  list<string>  $expected
+     */
+    #[DataProvider('eventFixtures')]
+    public function test_each_event_name_is_judged_by_where_it_is_named(string $fixture, array $expected): void
+    {
+        $this->assertSame($expected, $this->violationLines($fixture));
     }
 
     /**

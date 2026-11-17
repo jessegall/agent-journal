@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Core\Agents\AgentContextMissing;
+use App\Core\Agents\Exceptions\AgentContextMissing;
 use App\Core\Hooks\Decisions\AnswerKind;
 use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;

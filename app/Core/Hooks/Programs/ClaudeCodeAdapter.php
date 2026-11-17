@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Programs;
 
+use App\Core\Hooks\Exceptions\UnreadablePayload;
+use App\Core\Hooks\Exceptions\UnsupportedHook;
 use App\Core\Hooks\Inputs\CompactionDetails;
 use App\Core\Hooks\Inputs\ContextCompacted;
 use App\Core\Hooks\Inputs\FileChange;

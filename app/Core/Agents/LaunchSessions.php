@@ -7,6 +7,7 @@ namespace App\Core\Agents;
 use App\Core\Agents\Events\LaunchEnded;
 use App\Core\Agents\Events\LaunchSettingsRequested;
 use App\Core\Agents\Events\LaunchStarted;
+use App\Core\Agents\Exceptions\LaunchRefused;
 use App\Core\Agents\Models\Agent;
 use App\Core\Agents\Models\AgentSession;
 use Illuminate\Contracts\Events\Dispatcher;

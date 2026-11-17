@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks;
 
+use App\Core\Hooks\Exceptions\HookDeadlineExpired;
+use App\Core\Hooks\Exceptions\HookDigestChanged;
+use App\Core\Hooks\Exceptions\ReplayFound;
 use App\Core\Hooks\Inputs\ContextCompacted;
 use App\Core\Hooks\Inputs\HookIdentity;
 use App\Core\Hooks\Inputs\HookInput;
@@ -45,14 +48,18 @@ final readonly class AgentStateMachine
             throw HookDeadlineExpired::forCall($identity->hookId);
         }
 
+        $replayed = null;
+
         try {
-            return $this->transaction->runWithin($deadline, function () use ($input, $capabilities, $render, $identity): ProgramReply {
+            return $this->transaction->runWithin($deadline, function () use ($input, $capabilities, $render, $identity, &$replayed): ProgramReply {
                 $reminders = $this->remindersFor($input);
                 $row = AgentStackRow::lockFor($this->access->target());
                 $recorded = HookCall::query()->forHookId($identity->hookId)->first();
 
                 if ($recorded !== null) {
-                    throw ReplayFound::withReply($this->replay($recorded, $identity));
+                    $replayed = $this->replay($recorded, $identity);
+
+                    throw ReplayFound::answeredBefore($identity->hookId);
                 }
 
                 $stackBefore = $this->restorer->restore($row->frames, $this->access->role());
@@ -67,8 +74,8 @@ final readonly class AgentStateMachine
 
                 return $reply;
             });
-        } catch (ReplayFound $replay) {
-            return $replay->reply;
+        } catch (ReplayFound) {
+            return $replayed;
         }
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Stack;
 
+use App\Core\Hooks\Exceptions\StateSchemaUnknown;
 use App\Core\Hooks\States\ReadyStateType;
 use App\Core\Hooks\Storage\FrameRecord;
 use App\Core\Hooks\Storage\FrameRecords;
@@ -32,7 +33,7 @@ final readonly class StackRestorer
         $type = $this->types->registry()->get($record->reference->typeKey);
 
         if ($record->schemaVersion !== $type->schemaVersion()) {
-            throw StateSchemaUnknown::for($record, $type->schemaVersion());
+            throw StateSchemaUnknown::for($record->description(), $type->schemaVersion());
         }
 
         return Frame::restored($record, $type->stateFor($record->reference));

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Core\Agents\AgentContextMissing;
+use App\Core\Agents\Exceptions\AgentContextMissing;
 use App\Core\Hooks\Storage\StackTarget;
-use App\Domain\Chat\MessageMissing;
+use App\Domain\Chat\Exceptions\MessageMissing;
 use App\Domain\Chat\MessageRecords;
 use App\Domain\Chat\Models\Message;
 use App\Domain\Memory\Models\Memory;

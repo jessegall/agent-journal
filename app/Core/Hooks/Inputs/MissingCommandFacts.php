@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Inputs;
 
+use App\Core\Hooks\Exceptions\CommandFactsMissing;
+
 /**
  * The parser Hooks falls back to while no domain supplies one: it refuses every line by name.
  */

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Decisions;
 
+use App\Core\Hooks\Exceptions\EmptyReason;
+
 /**
  * The words an agent reads when a state denies a hook or holds its stop; never empty.
  */

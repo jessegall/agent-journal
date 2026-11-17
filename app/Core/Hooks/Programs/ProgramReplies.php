@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Programs;
 
 use App\Core\Hooks\Decisions\AnswerKind;
+use App\Core\Hooks\Exceptions\InvalidObservationAnswer;
+use App\Core\Hooks\Exceptions\InvalidShellAnswer;
+use App\Core\Hooks\Exceptions\InvalidStopAnswer;
 use App\Core\Hooks\Stack\HookAnswer;
 
 /**
@@ -47,23 +50,27 @@ final class ProgramReplies
      */
     public static function shell(HookAnswer $answer, NativeToolInput $original, RewriteSupport $rewrites): ProgramReply
     {
-        return match ($answer->decision->answerKind()) {
+        $kind = $answer->decision->answerKind();
+
+        return match ($kind) {
             AnswerKind::Allow => self::admitTool($answer->context),
             AnswerKind::Deny => self::denyTool($answer->decision->refusalReason(), $answer->context),
             AnswerKind::Rewrite => $rewrites->reply($answer, $original),
-            AnswerKind::Delegate, AnswerKind::PreventStop => throw InvalidShellAnswer::forAnswer($answer->decision->answerKind()),
+            AnswerKind::Delegate, AnswerKind::PreventStop => throw InvalidShellAnswer::forAnswer($kind->value),
         };
     }
 
     public static function stop(HookAnswer $answer): ProgramReply
     {
-        return match ($answer->decision->answerKind()) {
+        $kind = $answer->decision->answerKind();
+
+        return match ($kind) {
             AnswerKind::PreventStop => ProgramReply::json(BlockBody::from([
                 'decision' => NativeStopDecision::Block,
                 'reason' => implode("\n", [$answer->decision->refusalReason(), ...$answer->context]),
             ])),
             AnswerKind::Allow => ProgramReply::emptyObject(),
-            AnswerKind::Delegate, AnswerKind::Deny, AnswerKind::Rewrite => throw InvalidStopAnswer::forAnswer($answer->decision->answerKind()),
+            AnswerKind::Delegate, AnswerKind::Deny, AnswerKind::Rewrite => throw InvalidStopAnswer::forAnswer($kind->value),
         };
     }
 
@@ -72,13 +79,15 @@ final class ProgramReplies
      */
     public static function prompt(HookAnswer $answer): ProgramReply
     {
-        return match ($answer->decision->answerKind()) {
+        $kind = $answer->decision->answerKind();
+
+        return match ($kind) {
             AnswerKind::Deny => ProgramReply::json(BlockBody::from([
                 'decision' => NativeStopDecision::Block,
                 'reason' => $answer->decision->refusalReason(),
             ])),
             AnswerKind::Allow => self::observation('UserPromptSubmit', $answer),
-            AnswerKind::Delegate, AnswerKind::PreventStop, AnswerKind::Rewrite => throw InvalidObservationAnswer::forAnswer($answer->decision->answerKind()),
+            AnswerKind::Delegate, AnswerKind::PreventStop, AnswerKind::Rewrite => throw InvalidObservationAnswer::forAnswer($kind->value),
         };
     }
 
@@ -87,8 +96,10 @@ final class ProgramReplies
      */
     public static function observation(string $hookEventName, HookAnswer $answer): ProgramReply
     {
-        if ($answer->decision->answerKind() !== AnswerKind::Allow) {
-            throw InvalidObservationAnswer::forAnswer($answer->decision->answerKind());
+        $kind = $answer->decision->answerKind();
+
+        if ($kind !== AnswerKind::Allow) {
+            throw InvalidObservationAnswer::forAnswer($kind->value);
         }
 
         if ($answer->context === []) {

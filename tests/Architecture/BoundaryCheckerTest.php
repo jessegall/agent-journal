@@ -20,24 +20,14 @@ use Tests\Fixtures\Boundary\Tasks\TasksDomain;
 final class BoundaryCheckerTest extends TestCase
 {
     /**
-     * @return iterable<string, array{string}>
+     * @return iterable<string, array{string, list<string>}>
      */
-    public static function filesWithOnlyAllowedUses(): iterable
+    public static function boundaryFixtures(): iterable
     {
-        yield 'allowed uses of every kind' => ['Plans/UsesAllowed.php'];
-        yield 'the Plans domain class' => ['Plans/PlansDomain.php'];
-        yield 'the Tasks domain class' => ['Tasks/TasksDomain.php'];
-    }
-
-    #[DataProvider('filesWithOnlyAllowedUses')]
-    public function test_allowed_uses_pass(string $fixture): void
-    {
-        $this->assertSame([], $this->violationLines($fixture));
-    }
-
-    public function test_every_forbidden_use_is_listed_with_its_reason(): void
-    {
-        $this->assertSame([
+        yield 'allowed uses of every kind' => ['Plans/UsesAllowed.php', []];
+        yield 'the Plans domain class' => ['Plans/PlansDomain.php', []];
+        yield 'the Tasks domain class' => ['Tasks/TasksDomain.php', []];
+        yield 'every forbidden use with its reason' => ['Plans/UsesForbidden.php', [
             '7 uses Tests\Fixtures\Boundary\Chat\Message, but Plans does not require Chat',
             '8 uses Tests\Fixtures\Boundary\Outside\Helper, which is project code outside every domain',
             '9 uses Tests\Fixtures\Boundary\PlansExtra\Thing, which is project code outside every domain',
@@ -45,7 +35,16 @@ final class BoundaryCheckerTest extends TestCase
             '18 uses Tests\Fixtures\Boundary\Outside\Helper, which is project code outside every domain',
             '18 uses Tests\Fixtures\Boundary\PlansExtra\Thing, which is project code outside every domain',
             '18 uses tests\fixtures\boundary\chat\Message, but Plans does not require Chat',
-        ], $this->violationLines('Plans/UsesForbidden.php'));
+        ]];
+    }
+
+    /**
+     * @param  list<string>  $expected
+     */
+    #[DataProvider('boundaryFixtures')]
+    public function test_each_use_is_judged_against_the_declared_domains(string $fixture, array $expected): void
+    {
+        $this->assertSame($expected, $this->violationLines($fixture));
     }
 
     public function test_the_shared_place_may_use_no_domain(): void

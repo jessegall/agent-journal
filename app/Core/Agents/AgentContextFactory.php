@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Agents;
 
+use App\Core\Agents\Exceptions\CallSignatureInvalid;
+use App\Core\Agents\Exceptions\CredentialRejected;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 

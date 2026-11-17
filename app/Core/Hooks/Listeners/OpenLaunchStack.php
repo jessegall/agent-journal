@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Listeners;
 
 use App\Core\Agents\Events\LaunchStarted;
-use App\Core\Hooks\Inputs\CommandFactsMissing;
+use App\Core\Hooks\Exceptions\CommandFactsMissing;
 use App\Core\Hooks\Inputs\MissingCommandFacts;
 use App\Core\Hooks\Inputs\ShellCommandParser;
 use App\Core\Hooks\LaunchStacks;

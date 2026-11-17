@@ -6,9 +6,10 @@ namespace App\Domain\Chat;
 
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
+use App\Core\Hooks\Exceptions\StateSubjectMissing;
 use App\Core\Hooks\States\AgentState;
-use App\Core\Hooks\States\StateSubjectMissing;
 use App\Core\Hooks\States\StateType;
+use App\Domain\Chat\Exceptions\MessageMissing;
 use App\Domain\Chat\States\AnsweringMessage;
 
 /**
@@ -23,13 +24,13 @@ final readonly class AnsweringMessageFactory implements StateType
         $subject = $reference->subject;
 
         if (! $subject instanceof SubjectReference) {
-            throw StateSubjectMissing::for($reference);
+            throw StateSubjectMissing::for($reference->typeKey);
         }
 
         try {
             $message = $this->messages->get($subject->id);
         } catch (MessageMissing $missing) {
-            throw StateSubjectMissing::for($reference, $missing);
+            throw StateSubjectMissing::for($reference->typeKey, $missing);
         }
 
         return new AnsweringMessage($message->work());

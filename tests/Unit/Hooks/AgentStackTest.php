@@ -10,17 +10,17 @@ use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
+use App\Core\Hooks\Exceptions\ActivityAllowed;
+use App\Core\Hooks\Exceptions\BottomStateCannotFinish;
+use App\Core\Hooks\Exceptions\BottomStateDelegated;
+use App\Core\Hooks\Exceptions\CoveredStatePushed;
+use App\Core\Hooks\Exceptions\InvalidHookAnswer;
+use App\Core\Hooks\Exceptions\MissingBottomState;
 use App\Core\Hooks\Inputs\HookInput;
 use App\Core\Hooks\Inputs\StopRequested;
-use App\Core\Hooks\Stack\ActivityAllowed;
 use App\Core\Hooks\Stack\AgentStack;
-use App\Core\Hooks\Stack\BottomStateCannotFinish;
-use App\Core\Hooks\Stack\BottomStateDelegated;
-use App\Core\Hooks\Stack\CoveredStatePushed;
 use App\Core\Hooks\Stack\Frame;
 use App\Core\Hooks\Stack\HookAnswer;
-use App\Core\Hooks\Stack\InvalidHookAnswer;
-use App\Core\Hooks\Stack\MissingBottomState;
 use App\Core\Hooks\States\AgentState;
 use App\Core\Hooks\States\Ready;
 use App\Core\Hooks\Storage\WalkStep;
@@ -171,7 +171,7 @@ final class AgentStackTest extends TestCase
             $stack->answer($this->stop());
             $this->fail('The delegating bottom state was not refused.');
         } catch (BottomStateDelegated $failure) {
-            $this->assertSame(['top', 'ready'], array_map(fn (WalkStep $step) => $step->frameId, $failure->steps));
+            $this->assertSame(['top', 'ready'], $failure->visitedFrames);
         }
     }
 

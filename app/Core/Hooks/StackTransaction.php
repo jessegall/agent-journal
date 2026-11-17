@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Core\Hooks;
 
 use App\Core\Agents\LaunchTransaction;
+use App\Core\Hooks\Exceptions\StackLockTimedOut;
+use App\Core\Hooks\Exceptions\StackTransactionRequired;
 use App\Core\Hooks\Storage\StackTarget;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
@@ -59,7 +61,7 @@ final readonly class StackTransaction implements LaunchTransaction
             });
         } catch (QueryException $failure) {
             if (in_array($failure->getCode(), [self::LOCK_NOT_AVAILABLE, self::QUERY_CANCELED], true)) {
-                throw StackLockTimedOut::after($deadline, $failure);
+                throw StackLockTimedOut::after($deadline->milliseconds, $failure);
             }
 
             throw $failure;
@@ -72,7 +74,7 @@ final readonly class StackTransaction implements LaunchTransaction
     public function requireOpen(StackTarget $target): void
     {
         if ($this->database->transactionLevel() === 0) {
-            throw StackTransactionRequired::forTarget($target);
+            throw StackTransactionRequired::forTarget($target->description());
         }
     }
 

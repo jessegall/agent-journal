@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks;
 
+use App\Core\Hooks\Exceptions\RetentionTooShort;
+
 /**
  * How long hook history is kept: answered calls, and stacks after they closed. Active stacks are never pruned.
  */

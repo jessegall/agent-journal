@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Storage;
 
+use App\Core\Hooks\Exceptions\StoredValueInvalid;
 use Closure;
 use JsonException;
 use Spatie\LaravelData\Exceptions\CannotCreateData;

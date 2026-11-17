@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Inputs;
 
+use App\Core\Hooks\Exceptions\UnknownPatchAction;
+
 enum FileOperation: string
 {
     case Create = 'create';

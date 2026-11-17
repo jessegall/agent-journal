@@ -9,16 +9,16 @@ use App\Core\Hooks\Decisions\NoSubject;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
 use App\Core\Hooks\Events\StateTypesRequested;
+use App\Core\Hooks\Exceptions\InvalidBottomState;
+use App\Core\Hooks\Exceptions\StateSchemaUnknown;
+use App\Core\Hooks\Exceptions\StateSubjectMissing;
+use App\Core\Hooks\Exceptions\StateTypeUnknown;
 use App\Core\Hooks\Stack\RegisteredStateFactory;
 use App\Core\Hooks\Stack\StackRestorer;
-use App\Core\Hooks\Stack\StateSchemaUnknown;
 use App\Core\Hooks\Stack\StateTypes;
 use App\Core\Hooks\States\ReadyStateType;
-use App\Core\Hooks\States\StateSubjectMissing;
-use App\Core\Hooks\States\StateTypeUnknown;
 use App\Core\Hooks\Storage\FrameRecord;
 use App\Core\Hooks\Storage\FrameRecords;
-use App\Core\Hooks\Storage\InvalidBottomState;
 use App\Domain\Tasks\TaskWorkState;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
@@ -103,7 +103,7 @@ final class StackRestorerTest extends TestCase
 
     public function test_a_bottom_of_another_role_is_refused(): void
     {
-        $this->expectExceptionObject(InvalidBottomState::ofAnotherRole('hooks.main_ready', ReadyStateType::ReadOnlyHelper));
+        $this->expectExceptionObject(InvalidBottomState::ofAnotherRole('hooks.main_ready', ReadyStateType::ReadOnlyHelper->value));
 
         $this->restorer->restore($this->records($this->bottom()), ReadyStateType::ReadOnlyHelper);
     }

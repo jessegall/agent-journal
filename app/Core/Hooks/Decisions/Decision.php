@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Decisions;
 
+use App\Core\Hooks\Exceptions\ConflictingStackChange;
+use App\Core\Hooks\Exceptions\NoRefusalReason;
+use App\Core\Hooks\Exceptions\NoReplacementLine;
+
 /**
  * A state's answer to one hook: the answer, one change to the stack, and any context for the agent.
  */
@@ -66,7 +70,7 @@ final readonly class Decision
     public function withPush(StateReference $state): self
     {
         if ($this->change !== SimpleChange::Keep) {
-            throw ConflictingStackChange::forChange($this->change->kind());
+            throw ConflictingStackChange::forChange($this->change->kind()->value);
         }
 
         return new self($this->answer, new PushState($state), $this->context);
@@ -83,7 +87,7 @@ final readonly class Decision
     public function replacementLine(): string
     {
         if (! $this->answer instanceof Rewritten) {
-            throw NoReplacementLine::forAnswer($this->answerKind());
+            throw NoReplacementLine::forAnswer($this->answerKind()->value);
         }
 
         return $this->answer->line;
@@ -95,7 +99,7 @@ final readonly class Decision
     public function refusalReason(): string
     {
         if (! $this->answer instanceof Refusal) {
-            throw NoRefusalReason::forAnswer($this->answerKind());
+            throw NoRefusalReason::forAnswer($this->answerKind()->value);
         }
 
         return $this->answer->reason()->text;

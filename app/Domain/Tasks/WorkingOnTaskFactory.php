@@ -6,9 +6,10 @@ namespace App\Domain\Tasks;
 
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
+use App\Core\Hooks\Exceptions\StateSubjectMissing;
 use App\Core\Hooks\States\AgentState;
-use App\Core\Hooks\States\StateSubjectMissing;
 use App\Core\Hooks\States\StateType;
+use App\Domain\Tasks\Exceptions\TaskMissing;
 use App\Domain\Tasks\States\WorkingOnTask;
 
 /**
@@ -23,13 +24,13 @@ final readonly class WorkingOnTaskFactory implements StateType
         $subject = $reference->subject;
 
         if (! $subject instanceof SubjectReference) {
-            throw StateSubjectMissing::for($reference);
+            throw StateSubjectMissing::for($reference->typeKey);
         }
 
         try {
             $task = $this->tasks->get($subject->id);
         } catch (TaskMissing $missing) {
-            throw StateSubjectMissing::for($reference, $missing);
+            throw StateSubjectMissing::for($reference->typeKey, $missing);
         }
 
         return new WorkingOnTask($task->workFor($subject->runNumber));

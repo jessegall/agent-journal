@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Relay;
 
+use App\Core\Hooks\Exceptions\RelaySettingMissing;
 use App\Core\Hooks\States\ReadyStateType;
 
 /**

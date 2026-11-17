@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks\Programs;
 
 use App\Core\Hooks\Decisions\Decision;
+use App\Core\Hooks\Exceptions\UnsupportedHook;
 use App\Core\Hooks\Programs\NativeToolInput;
 use App\Core\Hooks\Programs\ProgramCapabilities;
 use App\Core\Hooks\Programs\RewriteSupport;
-use App\Core\Hooks\Programs\UnsupportedHook;
 use App\Core\Hooks\Stack\AgentStack;
 use App\Core\Hooks\Stack\HookAnswer;
 use App\Core\Hooks\States\AgentState;

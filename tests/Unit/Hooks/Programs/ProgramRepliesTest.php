@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks\Programs;
 
 use App\Core\Hooks\Decisions\Decision;
-use App\Core\Hooks\Programs\InvalidShellAnswer;
-use App\Core\Hooks\Programs\InvalidStopAnswer;
+use App\Core\Hooks\Exceptions\InvalidShellAnswer;
+use App\Core\Hooks\Exceptions\InvalidStopAnswer;
 use App\Core\Hooks\Programs\NativeToolInput;
 use App\Core\Hooks\Programs\ProgramReplies;
 use App\Core\Hooks\Programs\ProgramReply;

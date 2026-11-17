@@ -7,6 +7,11 @@ namespace App\Core\Hooks\Stack;
 use App\Core\Hooks\Decisions\AnswerKind;
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Decisions\StateReference;
+use App\Core\Hooks\Exceptions\ActivityAllowed;
+use App\Core\Hooks\Exceptions\BottomStateCannotFinish;
+use App\Core\Hooks\Exceptions\BottomStateDelegated;
+use App\Core\Hooks\Exceptions\InvalidHookAnswer;
+use App\Core\Hooks\Exceptions\MissingBottomState;
 use App\Core\Hooks\Inputs\HookInput;
 use App\Core\Hooks\Storage\FrameRecord;
 use App\Core\Hooks\Storage\FrameRecords;
@@ -30,7 +35,7 @@ final readonly class AgentStack
         $walkFrames = array_reverse($this->frames);
 
         if ($walkFrames === []) {
-            throw MissingBottomState::for($input);
+            throw MissingBottomState::for($input->methodName());
         }
 
         $walk = new HookWalk($input->methodName(), $this, $walkFrames[0]);
@@ -46,7 +51,7 @@ final readonly class AgentStack
             }
         }
 
-        throw MissingBottomState::for($input);
+        throw MissingBottomState::for($input->methodName());
     }
 
     /**
@@ -69,7 +74,7 @@ final readonly class AgentStack
     public function withoutFrame(Frame $frame): self
     {
         if ($frame->isBottom()) {
-            throw BottomStateCannotFinish::for($frame);
+            throw BottomStateCannotFinish::for($frame->typeKey());
         }
 
         return new self(
@@ -113,15 +118,15 @@ final readonly class AgentStack
     private function checkDecision(Frame $frame, HookInput $input, Decision $decision, HookWalk $walk): void
     {
         if ($frame->isBottom() && $decision->isDelegating()) {
-            throw BottomStateDelegated::for($frame, $input, $walk->steps());
+            throw BottomStateDelegated::for($frame->typeKey(), $input->methodName(), $walk->visitedFrames());
         }
 
         if (! $frame->isBottom() && $decision->answerKind() === AnswerKind::Allow) {
-            throw ActivityAllowed::for($frame, $input);
+            throw ActivityAllowed::for($frame->typeKey(), $input->methodName());
         }
 
         if (! $input->accepts($decision->answerKind())) {
-            throw InvalidHookAnswer::for($input, $decision);
+            throw InvalidHookAnswer::for($input->methodName(), $decision->answerKind()->value);
         }
     }
 }

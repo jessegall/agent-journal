@@ -7,7 +7,7 @@ namespace Tests\Feature\Hooks;
 use App\Core\Agents\AgentContext;
 use App\Core\Agents\ConfirmLaunchLoss;
 use App\Core\Agents\CredentialLookup;
-use App\Core\Agents\CredentialRejected;
+use App\Core\Agents\Exceptions\CredentialRejected;
 use App\Core\Agents\LaunchedAgent;
 use App\Core\Agents\LaunchSessions;
 use App\Core\Agents\Models\Agent;
