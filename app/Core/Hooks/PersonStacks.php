@@ -4,31 +4,31 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks;
 
-use App\Core\Actors\ActorContext;
+use App\Core\Actors\CurrentActor;
 use App\Core\Agents\Models\AgentSession;
+use App\Core\Hooks\Contracts\PersonStack;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Exceptions\StackTargetRefused;
 use App\Core\Hooks\Models\AgentStackRow;
 use App\Core\Hooks\Stack\StackRestorer;
 use App\Core\Hooks\States\ReadyStateType;
-use App\Core\Hooks\Storage\StackTarget;
 
 /**
  * Pushes a state onto a running agent's stack for the person acting in this request, such as a message they want
  * answered. The agent stays the target: its own role restores the stack, its frames stay, and the change runs in the
  * caller's stack transaction under the stack's row lock. An agent never reaches another agent's stack this way.
  */
-final readonly class PersonStacks
+final readonly class PersonStacks implements PersonStack
 {
     public function __construct(
         private StackTransaction $transaction,
-        private ActorContext $actor,
+        private CurrentActor $actors,
         private StackRestorer $restorer,
     ) {}
 
     public function push(StackTarget $target, StateReference $state): void
     {
-        $this->actor->requirePerson();
+        $this->actors->actor()->requirePerson();
         $this->transaction->requireOpen($target);
 
         $role = $this->roleOf($target);

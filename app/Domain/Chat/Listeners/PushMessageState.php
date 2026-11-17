@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat\Listeners;
 
-use App\Core\Hooks\AgentStacks;
+use App\Core\Hooks\Contracts\AgentStack;
 use App\Domain\Chat\AnsweringMessageReference;
 use App\Domain\Chat\Events\MessageNeedsAnswer;
 use App\Domain\Chat\MessageRecords;
@@ -16,7 +16,7 @@ final readonly class PushMessageState
 {
     public function __construct(
         private MessageRecords $messages,
-        private AgentStacks $stacks,
+        private AgentStack $stacks,
     ) {}
 
     public function handle(MessageNeedsAnswer $event): void

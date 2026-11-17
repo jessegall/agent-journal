@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks\Models;
 
-use App\Core\Hooks\Storage\StackTarget;
+use App\Core\Hooks\StackTarget;
 use App\Core\Links\Linkable;
 use App\Domain\Tasks\TaskState;
 use App\Domain\Tasks\TaskWork;

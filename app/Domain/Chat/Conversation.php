@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat;
 
-use App\Core\Hooks\Storage\StackTarget;
+use App\Core\Hooks\StackTarget;
 use App\Domain\Chat\Models\Message;
 
 /**

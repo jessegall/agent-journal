@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sequences\Listeners;
 
-use App\Core\Hooks\AgentStacks;
+use App\Core\Hooks\Contracts\AgentStack;
 use App\Domain\Sequences\Events\SequenceStarted;
 use App\Domain\Sequences\FollowingSequenceReference;
 use App\Domain\Sequences\SequenceRecords;
@@ -16,7 +16,7 @@ final readonly class PushSequenceState
 {
     public function __construct(
         private SequenceRecords $runs,
-        private AgentStacks $stacks,
+        private AgentStack $stacks,
     ) {}
 
     public function handle(SequenceStarted $event): void

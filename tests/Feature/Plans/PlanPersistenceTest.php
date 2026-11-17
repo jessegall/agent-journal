@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plans;
 
-use App\Core\Hooks\Storage\StackTarget;
+use App\Core\Hooks\StackTarget;
 use App\Domain\Plans\Database\Seeders\PlansSeeder;
 use App\Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use App\Domain\Plans\Models\Plan;

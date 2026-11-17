@@ -18,33 +18,41 @@ final readonly class Decision
      */
     private function __construct(
         public Answer $answer,
-        public StackChange $change = SimpleChange::Keep,
+        public StackChange $change,
         public array $context = [],
     ) {}
 
+    /**
+     * A decision that answers and leaves the stack as it is; the stack changes only through push() and pop().
+     */
+    private static function answering(Answer $answer): self
+    {
+        return new self($answer, SimpleChange::Keep);
+    }
+
     public static function delegate(): self
     {
-        return new self(SimpleAnswer::Delegate);
+        return self::answering(SimpleAnswer::Delegate);
     }
 
     public static function allow(): self
     {
-        return new self(SimpleAnswer::Allow);
+        return self::answering(SimpleAnswer::Allow);
     }
 
     public static function deny(string $reason): self
     {
-        return new self(new Denied(new Reason($reason)));
+        return self::answering(new Denied(new Reason($reason)));
     }
 
     public static function preventStop(string $reason): self
     {
-        return new self(new StopPrevented(new Reason($reason)));
+        return self::answering(new StopPrevented(new Reason($reason)));
     }
 
     public static function rewrite(string $line): self
     {
-        return new self(new Rewritten($line));
+        return self::answering(new Rewritten($line));
     }
 
     public static function addContext(string $text): self

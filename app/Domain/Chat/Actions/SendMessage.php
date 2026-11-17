@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat\Actions;
 
-use App\Core\Hooks\PersonStacks;
-use App\Core\Hooks\StackTransaction;
-use App\Core\Hooks\Storage\StackTarget;
+use App\Core\Hooks\Contracts\PersonStack;
+use App\Core\Hooks\Contracts\StackWork;
+use App\Core\Hooks\StackTarget;
 use App\Domain\Chat\AnsweringMessageReference;
 use App\Domain\Chat\Events\MessageSent;
 use App\Domain\Chat\Exceptions\MessageBodyEmpty;
@@ -21,8 +21,8 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class SendMessage
 {
     public function __construct(
-        private StackTransaction $transaction,
-        private PersonStacks $stacks,
+        private StackWork $transaction,
+        private PersonStack $stacks,
         private Dispatcher $events,
     ) {}
 

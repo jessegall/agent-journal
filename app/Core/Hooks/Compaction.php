@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Core\Hooks;
 
 use App\Core\Hooks\Events\ContextWasCompacted;
-use App\Core\Hooks\Storage\StackTarget;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**

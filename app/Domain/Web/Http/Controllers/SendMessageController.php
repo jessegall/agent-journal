@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Web\Http\Controllers;
 
 use App\Core\Agents\Models\AgentSession;
-use App\Core\Hooks\Storage\StackTarget;
+use App\Core\Hooks\StackTarget;
 use App\Domain\Chat\Actions\SendMessage;
 use App\Domain\Web\Data\MessageInput;
 use Illuminate\Http\RedirectResponse;

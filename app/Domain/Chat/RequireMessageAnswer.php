@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Chat;
 
-use App\Core\Hooks\StackTransaction;
-use App\Core\Hooks\Storage\StackTarget;
+use App\Core\Hooks\Contracts\StackWork;
+use App\Core\Hooks\StackTarget;
 use App\Domain\Chat\Events\MessageNeedsAnswer;
 use App\Domain\Chat\Models\Message;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -16,7 +16,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class RequireMessageAnswer
 {
     public function __construct(
-        private StackTransaction $transaction,
+        private StackWork $transaction,
         private Dispatcher $events,
     ) {}
 

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks;
 
+use App\Core\Hooks\Contracts\AgentStack;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Models\AgentStackRow;
 use App\Core\Hooks\Stack\StackRestorer;
-use App\Core\Hooks\Storage\StackTarget;
 
 /**
  * Pushes states onto the calling agent's own stack, always inside the caller's stack transaction and under the stack's row lock.
  */
-final readonly class AgentStacks
+final readonly class AgentStacks implements AgentStack
 {
     public function __construct(
         private StackTransaction $transaction,

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks;
 
-use App\Core\Hooks\StackTransaction;
-use App\Core\Hooks\Storage\StackTarget;
+use App\Core\Hooks\Contracts\StackWork;
+use App\Core\Hooks\StackTarget;
 use App\Domain\Tasks\Events\TaskStarted;
 use App\Domain\Tasks\Models\Task;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -16,7 +16,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class StartTask
 {
     public function __construct(
-        private StackTransaction $transaction,
+        private StackWork $transaction,
         private Dispatcher $events,
     ) {}
 

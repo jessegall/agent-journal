@@ -7,7 +7,7 @@ namespace App\Core\Hooks\Listeners;
 use App\Core\Agents\Events\LaunchEnded;
 use App\Core\Agents\Events\LaunchLost;
 use App\Core\Hooks\LaunchStacks;
-use App\Core\Hooks\Storage\StackTarget;
+use App\Core\Hooks\StackTarget;
 
 /**
  * Closes a launch's stack when the launch ends or is lost. The closed stack is kept, frames and all, so a lost

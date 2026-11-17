@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Models;
 
 use App\Core\Hooks\Inputs\HookIdentity;
+use App\Core\Hooks\StackTarget;
 use App\Core\Hooks\Storage\RecordedAnswer;
 use App\Core\Hooks\Storage\RecordedAnswerCast;
 use App\Core\Hooks\Storage\RecordedSteps;
 use App\Core\Hooks\Storage\RecordedStepsCast;
-use App\Core\Hooks\Storage\StackTarget;
 use App\Core\Links\Linkable;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

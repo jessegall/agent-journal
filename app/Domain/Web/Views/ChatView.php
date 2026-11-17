@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Web\Views;
 
 use App\Core\Agents\Models\AgentSession;
-use App\Core\Hooks\Storage\StackTarget;
+use App\Core\Hooks\StackTarget;
 use App\Domain\Chat\MessageRecords;
 use App\Domain\Web\Data\ChatData;
 use App\Domain\Web\Data\ConversationData;
