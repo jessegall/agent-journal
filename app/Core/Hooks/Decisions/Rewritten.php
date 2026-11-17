@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Decisions;
 
 use App\Core\Hooks\Contracts\Answer;
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 
 /**
  * The shell line to run instead of the one the agent wrote; the Processes parser reads it again.
@@ -14,8 +14,8 @@ final readonly class Rewritten implements Answer
 {
     public function __construct(public string $line) {}
 
-    public function kind(): AnswerKind
+    public function type(): AnswerType
     {
-        return AnswerKind::Rewrite;
+        return AnswerType::Rewrite;
     }
 }

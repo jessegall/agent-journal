@@ -4,27 +4,27 @@ declare(strict_types=1);
 
 namespace App\Core\Actors\Support;
 
-use App\Core\Actors\Enums\ActorKind;
-use App\Core\Actors\Exceptions\InvalidActorText;
 use App\Core\Actors\Contracts\Actor;
+use App\Core\Actors\Enums\ActorType;
+use App\Core\Actors\Exceptions\InvalidActorText;
 
 /**
- * Who an actor is, by kind and id, apart from any request or session: user 3 and agent 3 are different actors.
+ * Who an actor is, by type and id, apart from any request or session: user 3 and agent 3 are different actors.
  */
 final readonly class ActorIdentity
 {
     public function __construct(
-        public ActorKind $kind,
+        public ActorType $type,
         public int $id,
     ) {}
 
     public static function of(Actor $actor): self
     {
-        return new self($actor->actorKind(), $actor->actorId());
+        return new self($actor->actorType(), $actor->actorId());
     }
 
     /**
-     * An actor written as kind:id, such as agent:12 or user:1, as a command line takes it.
+     * An actor written as type:id, such as agent:12 or user:1, as a command line takes it.
      *
      * @throws InvalidActorText
      */
@@ -34,21 +34,21 @@ final readonly class ActorIdentity
             throw InvalidActorText::for($text);
         }
 
-        return new self(ActorKind::from($parts[1]), (int) $parts[2]);
+        return new self(ActorType::from($parts[1]), (int) $parts[2]);
     }
 
     /**
-     * This actor as the two fields of a call body that the prefix names, such as recipientKind and recipientId.
+     * This actor as the two fields of a call body that the prefix names, such as recipientType and recipientId.
      *
      * @return array<string, string|int>
      */
     public function asFields(string $prefix): array
     {
-        return ["{$prefix}Kind" => $this->kind->value, "{$prefix}Id" => $this->id];
+        return ["{$prefix}Type" => $this->type->value, "{$prefix}Id" => $this->id];
     }
 
     public function isSameAs(self $other): bool
     {
-        return $this->kind === $other->kind && $this->id === $other->id;
+        return $this->type === $other->type && $this->id === $other->id;
     }
 }

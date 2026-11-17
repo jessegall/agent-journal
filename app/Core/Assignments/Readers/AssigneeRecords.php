@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Assignments\Readers;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Assignments\Contracts\AssigneeReader;
 use App\Core\Assignments\Contracts\AssignmentProviders;
@@ -17,7 +17,7 @@ use App\Core\Assignments\Support\AssignmentSet;
 use App\Core\Assignments\Support\Page;
 
 /**
- * Reads actors' names and eligible actors through the owner of each actor kind, one call per kind.
+ * Reads actors' names and eligible actors through the owner of each actor type, one call per type.
  */
 final readonly class AssigneeRecords implements AssigneeReader
 {
@@ -31,16 +31,16 @@ final readonly class AssigneeRecords implements AssigneeReader
     {
         $names = [];
 
-        foreach (array_unique(array_map(fn (ActorIdentity $actor) => $actor->kind, $actors), SORT_REGULAR) as $kind) {
-            array_push($names, ...$this->providers->assigneeProvider($kind)->names(array_values(array_filter($actors, fn (ActorIdentity $actor) => $actor->kind === $kind))));
+        foreach (array_unique(array_map(fn (ActorIdentity $actor) => $actor->type, $actors), SORT_REGULAR) as $type) {
+            array_push($names, ...$this->providers->assigneeProvider($type)->names(array_values(array_filter($actors, fn (ActorIdentity $actor) => $actor->type === $type))));
         }
 
         return $names;
     }
 
-    public function eligible(ActorKind $kind, Page $page): AssigneeList
+    public function eligible(ActorType $type, Page $page): AssigneeList
     {
-        return $this->providers->assigneeProvider($kind)->eligible($page);
+        return $this->providers->assigneeProvider($type)->eligible($page);
     }
 
     public function holdersOf(AssignmentSet $assignments): AssignmentHolders

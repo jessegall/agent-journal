@@ -6,7 +6,7 @@ namespace Tests\Unit\Hooks;
 
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Enums\NoSubject;
 use App\Core\Hooks\Enums\ReadyStateType;
 use App\Core\Hooks\Events\StateTypesRequested;
@@ -44,7 +44,7 @@ final class StackRestorerTest extends TestCase
         $stack = $this->restorer->restore($this->records($this->bottom(), $this->task('task-42', 42)), ReadyStateType::MainAgent);
 
         $this->assertSame(['ready', 'task-42'], $stack->frameIds());
-        $this->assertSame(AnswerKind::Deny, $stack->answer(HookInputs::all()['stop'])->decision->answerKind());
+        $this->assertSame(AnswerType::Deny, $stack->answer(HookInputs::all()['stop'])->decision->answerType());
     }
 
     public function test_each_restore_reads_the_subjects_fresh(): void
@@ -77,7 +77,7 @@ final class StackRestorerTest extends TestCase
 
         $edit = HookInputs::all()['file edit'];
 
-        $this->assertSame(AnswerKind::Deny, $helper->answer($edit)->decision->answerKind());
+        $this->assertSame(AnswerType::Deny, $helper->answer($edit)->decision->answerType());
     }
 
     public function test_a_stack_without_a_bottom_is_refused(): void

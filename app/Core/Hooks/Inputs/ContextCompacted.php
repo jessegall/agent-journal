@@ -7,7 +7,7 @@ namespace App\Core\Hooks\Inputs;
 use App\Core\Hooks\Contracts\HookAnswerer;
 use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Decisions\Decision;
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 
 final readonly class ContextCompacted implements HookInput
 {
@@ -31,9 +31,9 @@ final readonly class ContextCompacted implements HookInput
         return 'onCompaction';
     }
 
-    public function accepts(AnswerKind $kind): bool
+    public function accepts(AnswerType $type): bool
     {
-        return $kind->fitsEveryHook();
+        return $type->fitsEveryHook();
     }
 
     public function answerBy(HookAnswerer $state): Decision

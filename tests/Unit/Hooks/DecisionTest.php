@@ -19,11 +19,11 @@ final class DecisionTest extends TestCase
 {
     public function test_each_named_constructor_gives_its_answer(): void
     {
-        $this->assertSame('delegate', Decision::delegate()->answerKind()->value);
-        $this->assertSame('allow', Decision::allow()->answerKind()->value);
-        $this->assertSame('deny', Decision::deny('Save the test run first.')->answerKind()->value);
-        $this->assertSame('deny', Decision::deny('Task 3 is still open.')->answerKind()->value);
-        $this->assertSame('rewrite', Decision::rewrite('journal run tests')->answerKind()->value);
+        $this->assertSame('delegate', Decision::delegate()->answerType()->value);
+        $this->assertSame('allow', Decision::allow()->answerType()->value);
+        $this->assertSame('deny', Decision::deny('Save the test run first.')->answerType()->value);
+        $this->assertSame('deny', Decision::deny('Task 3 is still open.')->answerType()->value);
+        $this->assertSame('rewrite', Decision::rewrite('journal run tests')->answerType()->value);
     }
 
     public function test_a_denial_carries_its_reason(): void

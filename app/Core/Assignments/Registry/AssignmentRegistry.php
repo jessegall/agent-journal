@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace App\Core\Assignments\Registry;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Enums\ActorType;
+use App\Core\Assignments\Contracts\Assignable;
 use App\Core\Assignments\Contracts\AssignableProvider;
 use App\Core\Assignments\Contracts\AssigneeProvider;
 use App\Core\Assignments\Contracts\AssignmentProviders;
 use App\Core\Assignments\Contracts\AssignmentRegistration;
-use App\Core\Assignments\Exceptions\AssigneeKindRepeated;
+use App\Core\Assignments\Exceptions\AssigneeTypeRepeated;
 use App\Core\Assignments\Exceptions\AssignmentProviderInvalid;
 use App\Core\Assignments\Exceptions\AssignmentTypeRepeated;
 use App\Core\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Core\Assignments\Support\AssigneeRegistration;
 use App\Core\Assignments\Support\RecordIdentity;
-use App\Core\Assignments\Contracts\Assignable;
 use App\Core\Links\Support\LinkTypes;
 use Illuminate\Contracts\Container\Container;
 
 /**
- * Which provider answers for each assignable record type and each kind of actor that can hold records. It keeps
+ * Which provider answers for each assignable record type and each type of actor that can hold records. It keeps
  * class names only and builds a provider when one is asked for, so a provider that holds the request's actor is never
  * kept beyond its request.
  */
@@ -58,22 +58,22 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
     }
 
     /**
-     * @throws AssigneeKindRepeated
+     * @throws AssigneeTypeRepeated
      * @throws AssignmentProviderInvalid
      */
     public function registerAssignees(AssigneeRegistration $registration): void
     {
-        $kind = $registration->kind->value;
+        $type = $registration->type->value;
 
-        if (array_key_exists($kind, $this->assigneeProviders)) {
-            throw AssigneeKindRepeated::for($registration->kind);
+        if (array_key_exists($type, $this->assigneeProviders)) {
+            throw AssigneeTypeRepeated::for($registration->type);
         }
 
         if (! is_subclass_of($registration->providerClass, AssigneeProvider::class)) {
-            throw AssignmentProviderInvalid::forAssignees($registration->kind, $registration->providerClass);
+            throw AssignmentProviderInvalid::forAssignees($registration->type, $registration->providerClass);
         }
 
-        $this->assigneeProviders[$kind] = $registration->providerClass;
+        $this->assigneeProviders[$type] = $registration->providerClass;
     }
 
     /**
@@ -89,9 +89,9 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
     /**
      * @throws AssignmentTypeUnavailable
      */
-    public function assigneeProvider(ActorKind $kind): AssigneeProvider
+    public function assigneeProvider(ActorType $type): AssigneeProvider
     {
-        $providerClass = $this->assigneeProviders[$kind->value] ?? throw AssignmentTypeUnavailable::forKind($kind);
+        $providerClass = $this->assigneeProviders[$type->value] ?? throw AssignmentTypeUnavailable::forActorType($type);
 
         return $this->container->make($providerClass);
     }

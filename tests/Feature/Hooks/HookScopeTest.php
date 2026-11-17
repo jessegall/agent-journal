@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Core\Agents\Exceptions\AgentContextMissing;
+use App\Core\Agents\Support\StackTarget;
 use App\Core\Hooks\Decisions\StateReference;
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Enums\NoSubject;
 use App\Core\Hooks\Inputs\HookIdentity;
 use App\Core\Hooks\Models\AgentStackRow;
@@ -16,7 +17,6 @@ use App\Core\Hooks\Storage\FrameRecord;
 use App\Core\Hooks\Storage\FrameRecords;
 use App\Core\Hooks\Storage\RecordedAnswer;
 use App\Core\Hooks\Storage\RecordedSteps;
-use App\Core\Agents\Support\StackTarget;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
@@ -112,7 +112,7 @@ final class HookScopeTest extends TestCase
         ]));
         (new HookCall)->recordFor(
             new HookIdentity($target->agentId, $target->sessionId, 'hook-1', str_repeat('a', 64)),
-            RecordedAnswer::of(AnswerKind::Allow, '{}'),
+            RecordedAnswer::of(AnswerType::Allow, '{}'),
             RecordedSteps::of([]),
         );
     }

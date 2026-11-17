@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Core\Agents\Support\AgentContext;
 use App\Core\AgentRequests\Support\SignedCall;
+use App\Core\Agents\Exceptions\StackTargetRefused;
+use App\Core\Agents\Support\AgentContext;
+use App\Core\Agents\Support\StackTarget;
 use App\Core\Hooks\Actions\AgentStacks;
 use App\Core\Hooks\Actions\LaunchStacks;
 use App\Core\Hooks\Decisions\StateReference;
@@ -17,7 +19,6 @@ use App\Core\Hooks\Exceptions\InvalidBottomState;
 use App\Core\Hooks\Exceptions\StackAlreadyClosed;
 use App\Core\Hooks\Exceptions\StackLockTimedOut;
 use App\Core\Hooks\Exceptions\StackMissing;
-use App\Core\Agents\Exceptions\StackTargetRefused;
 use App\Core\Hooks\Exceptions\StackTransactionRequired;
 use App\Core\Hooks\Exceptions\StateTypeUnknown;
 use App\Core\Hooks\Models\AgentStackRow;
@@ -25,7 +26,6 @@ use App\Core\Hooks\Storage\FrameRecord;
 use App\Core\Hooks\Storage\FrameRecords;
 use App\Core\Hooks\Storage\StoredFrames;
 use App\Core\Hooks\Support\OperationDeadline;
-use App\Core\Agents\Support\StackTarget;
 use App\Core\Hooks\Support\StackTransaction;
 use App\Domain\Tasks\Enums\TaskWorkState;
 use Carbon\CarbonImmutable;

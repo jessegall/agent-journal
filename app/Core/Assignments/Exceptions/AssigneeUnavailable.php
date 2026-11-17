@@ -15,7 +15,7 @@ final class AssigneeUnavailable extends RuntimeException
 
     public static function forActor(ActorIdentity $actor, Throwable|null $previous = null): self
     {
-        return new self("The {$actor->kind->value} {$actor->id} cannot receive work now.", 0, $previous);
+        return new self("The {$actor->type->value} {$actor->id} cannot receive work now.", 0, $previous);
     }
 
     protected function status(): int

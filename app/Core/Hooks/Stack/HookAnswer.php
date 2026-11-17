@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Stack;
 
 use App\Core\Hooks\Decisions\Decision;
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Storage\WalkStep;
 
 /**
@@ -44,12 +44,12 @@ final readonly class HookAnswer
 
     public function isRewrite(): bool
     {
-        return $this->decision->answerKind() === AnswerKind::Rewrite;
+        return $this->decision->answerType() === AnswerType::Rewrite;
     }
 
     public function isAllowed(): bool
     {
-        return $this->decision->answerKind() === AnswerKind::Allow;
+        return $this->decision->answerType() === AnswerType::Allow;
     }
 
     /**

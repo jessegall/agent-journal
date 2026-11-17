@@ -6,7 +6,7 @@ namespace App\Core\Ui\Declarations;
 
 use App\Core\Ui\Contracts\SectionReader;
 use App\Core\Ui\Contracts\VisibilityCheck;
-use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Ui\Enums\SlotContextType;
 use App\Core\Ui\Exceptions\InvalidSectionDeclaration;
 use Spatie\LaravelData\Data;
 
@@ -26,7 +26,7 @@ final class Section
         public readonly string $key,
         public readonly string $title,
         public readonly string $slot,
-        public readonly SlotContextKind $takes,
+        public readonly SlotContextType $takes,
         public readonly string $reader,
         public readonly string $dataClass,
         public readonly string $component,
@@ -39,7 +39,7 @@ final class Section
      * @param  string  $slot  the slot's full key, such as plans.inspector
      * @param  class-string<SectionReader>  $reader
      */
-    public static function make(string $key, string $title, string $slot, SlotContextKind $takes, string $reader, string $component): self
+    public static function make(string $key, string $title, string $slot, SlotContextType $takes, string $reader, string $component): self
     {
         if (preg_match('/^[a-z0-9-]+\.[a-z0-9-]+$/', $slot) !== 1) {
             throw InvalidSectionDeclaration::slotNotFullKey($key, $slot);

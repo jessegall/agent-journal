@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Http;
 
-use App\Core\Hooks\Inspection\StackInspectionQuery;
 use App\Core\Agents\Support\StackTarget;
+use App\Core\Hooks\Inspection\StackInspectionQuery;
 use Illuminate\Http\JsonResponse;
 
 /**

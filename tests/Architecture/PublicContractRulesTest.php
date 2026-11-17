@@ -10,7 +10,7 @@ use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\PublicContracts;
 use Tests\Architecture\Support\PublicOwner;
 use Tests\Architecture\Support\Violation;
-use Tests\Architecture\Support\ViolationKind;
+use Tests\Architecture\Support\ViolationType;
 use Tests\Fixtures\PublicContracts\Plans\Api\PlanCard;
 use Tests\Fixtures\PublicContracts\Plans\Api\PlanData;
 use Tests\Fixtures\PublicContracts\Plans\Api\PlanStatus;
@@ -75,8 +75,8 @@ final class PublicContractRulesTest extends TestCase
 
     private static function describe(Violation $violation): string
     {
-        return match ($violation->kind) {
-            ViolationKind::PrivateTypeInSignature => "{$violation->detail} shows {$violation->used}, private to {$violation->owner}",
+        return match ($violation->type) {
+            ViolationType::PrivateTypeInSignature => "{$violation->detail} shows {$violation->used}, private to {$violation->owner}",
             default => "{$violation->used} is {$violation->detail}",
         };
     }

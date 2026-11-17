@@ -6,8 +6,8 @@ namespace Tests\Feature\Web;
 
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
-use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
+use App\Domain\Plans\Enums\PlanType;
 use App\Domain\Plans\Models\Plan;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
@@ -26,7 +26,7 @@ final class StartPlanTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->plan = Plan::query()->create(['title' => 'Build the release page', 'kind' => PlanKind::Build]);
+        $this->plan = Plan::query()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
     }
 
     public function test_a_start_returns_to_the_page_it_came_from(): void

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Core\Actors\Support;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Contracts\Actor;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\Actors\Exceptions\AgentActorRequired;
 use App\Core\Actors\Exceptions\UserActorRequired;
-use App\Core\Actors\Contracts\Actor;
 
 /**
  * Who acts in this request, filled by the middleware that authenticated them and kept for this request only. A user
@@ -16,7 +16,7 @@ use App\Core\Actors\Contracts\Actor;
 final readonly class ActorContext implements Actor
 {
     private function __construct(
-        public ActorKind $kind,
+        public ActorType $type,
         public int $id,
     ) {}
 
@@ -25,12 +25,12 @@ final readonly class ActorContext implements Actor
      */
     public static function of(Actor $actor): self
     {
-        return new self($actor->actorKind(), $actor->actorId());
+        return new self($actor->actorType(), $actor->actorId());
     }
 
     public static function forAgent(int $agentId): self
     {
-        return new self(ActorKind::Agent, $agentId);
+        return new self(ActorType::Agent, $agentId);
     }
 
     /**
@@ -38,12 +38,12 @@ final readonly class ActorContext implements Actor
      */
     public static function forUser(int $userId): self
     {
-        return new self(ActorKind::User, $userId);
+        return new self(ActorType::User, $userId);
     }
 
-    public function actorKind(): ActorKind
+    public function actorType(): ActorType
     {
-        return $this->kind;
+        return $this->type;
     }
 
     public function actorId(): int
@@ -53,13 +53,13 @@ final readonly class ActorContext implements Actor
 
     public function isUser(): bool
     {
-        return $this->kind === ActorKind::User;
+        return $this->type === ActorType::User;
     }
 
     public function requireUser(): void
     {
         if (! $this->isUser()) {
-            throw UserActorRequired::forActor($this->kind->value);
+            throw UserActorRequired::forActor($this->type->value);
         }
     }
 
@@ -68,8 +68,8 @@ final readonly class ActorContext implements Actor
      */
     public function requireAgent(): void
     {
-        if ($this->kind !== ActorKind::Agent) {
-            throw AgentActorRequired::forActor($this->kind->value);
+        if ($this->type !== ActorType::Agent) {
+            throw AgentActorRequired::forActor($this->type->value);
         }
     }
 }

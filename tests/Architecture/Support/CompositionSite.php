@@ -10,7 +10,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * A file outside every domain that puts the application together, and the one kind of domain or Core class it may name.
+ * A file outside every domain that puts the application together, and the one type of domain or Core class it may name.
  */
 enum CompositionSite: string
 {

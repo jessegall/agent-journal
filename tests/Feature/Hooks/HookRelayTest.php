@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Core\Agents\Models\LaunchBypass;
+use App\Core\Agents\Support\StackTarget;
 use App\Core\Hooks\Actions\LaunchStacks;
 use App\Core\Hooks\Enums\HookProgram;
 use App\Core\Hooks\Enums\ReadyStateType;
@@ -12,7 +13,6 @@ use App\Core\Hooks\Programs\OutageReply;
 use App\Core\Hooks\Programs\ProgramReply;
 use App\Core\Hooks\Relay\HookRelay;
 use App\Core\Hooks\Relay\RelaySettings;
-use App\Core\Agents\Support\StackTarget;
 use App\Core\Hooks\Support\StackTransaction;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;

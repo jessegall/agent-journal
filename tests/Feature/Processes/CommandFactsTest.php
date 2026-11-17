@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Core\Hooks\Contracts\ShellCommandParser;
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Enums\CommandEffect;
-use App\Core\Hooks\Enums\CommandKind;
+use App\Core\Hooks\Enums\CommandType;
 use App\Core\Hooks\Enums\ParseOutcome;
 use App\Core\Hooks\Enums\PartJoin;
 use App\Core\Hooks\Enums\ShellDialect;
@@ -37,32 +37,32 @@ final class CommandFactsTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{string, AnswerKind, AnswerKind}>
+     * @return iterable<string, array{string, AnswerType, AnswerType}>
      */
     public static function linesAndRoleAnswers(): iterable
     {
-        yield 'a command alias' => ['journal run tests', AnswerKind::Allow, AnswerKind::Allow];
-        yield 'a command alias by its name' => ['journal tests --tail 5', AnswerKind::Allow, AnswerKind::Allow];
-        yield 'a journal subcommand' => ['journal task list', AnswerKind::Allow, AnswerKind::Allow];
-        yield 'an unknown journal name' => ['journal not-saved', AnswerKind::Deny, AnswerKind::Deny];
-        yield 'an unknown command alias' => ['journal run not-saved', AnswerKind::Deny, AnswerKind::Deny];
-        yield 'a plain read' => ['git status', AnswerKind::Allow, AnswerKind::Allow];
-        yield 'a quoted search' => ['grep -rn "needs work" app', AnswerKind::Allow, AnswerKind::Allow];
-        yield 'an unsaved test run' => ['composer test', AnswerKind::Deny, AnswerKind::Deny];
-        yield 'a test run behind an assignment' => ['APP_ENV=testing vendor/bin/phpunit', AnswerKind::Deny, AnswerKind::Deny];
-        yield 'a test run in a pipe' => ['php artisan test | tail -5', AnswerKind::Deny, AnswerKind::Deny];
-        yield 'a build after a read' => ['ls && npm run build', AnswerKind::Deny, AnswerKind::Deny];
-        yield 'a file removal' => ['rm -rf build', AnswerKind::Allow, AnswerKind::Deny];
-        yield 'a write through a redirect' => ['echo done > notes.txt', AnswerKind::Allow, AnswerKind::Deny];
-        yield 'a write through a redirect without spaces' => ['cat a.txt>b.txt', AnswerKind::Allow, AnswerKind::Deny];
-        yield 'an unknown program' => ['some-tool --flag', AnswerKind::Allow, AnswerKind::Deny];
-        yield 'a command substitution' => ['$(echo composer) test', AnswerKind::Deny, AnswerKind::Deny];
-        yield 'a variable' => ['cat $FILE', AnswerKind::Deny, AnswerKind::Deny];
-        yield 'a quote left open' => ['echo "unfinished', AnswerKind::Deny, AnswerKind::Deny];
+        yield 'a command alias' => ['journal run tests', AnswerType::Allow, AnswerType::Allow];
+        yield 'a command alias by its name' => ['journal tests --tail 5', AnswerType::Allow, AnswerType::Allow];
+        yield 'a journal subcommand' => ['journal task list', AnswerType::Allow, AnswerType::Allow];
+        yield 'an unknown journal name' => ['journal not-saved', AnswerType::Deny, AnswerType::Deny];
+        yield 'an unknown command alias' => ['journal run not-saved', AnswerType::Deny, AnswerType::Deny];
+        yield 'a plain read' => ['git status', AnswerType::Allow, AnswerType::Allow];
+        yield 'a quoted search' => ['grep -rn "needs work" app', AnswerType::Allow, AnswerType::Allow];
+        yield 'an unsaved test run' => ['composer test', AnswerType::Deny, AnswerType::Deny];
+        yield 'a test run behind an assignment' => ['APP_ENV=testing vendor/bin/phpunit', AnswerType::Deny, AnswerType::Deny];
+        yield 'a test run in a pipe' => ['php artisan test | tail -5', AnswerType::Deny, AnswerType::Deny];
+        yield 'a build after a read' => ['ls && npm run build', AnswerType::Deny, AnswerType::Deny];
+        yield 'a file removal' => ['rm -rf build', AnswerType::Allow, AnswerType::Deny];
+        yield 'a write through a redirect' => ['echo done > notes.txt', AnswerType::Allow, AnswerType::Deny];
+        yield 'a write through a redirect without spaces' => ['cat a.txt>b.txt', AnswerType::Allow, AnswerType::Deny];
+        yield 'an unknown program' => ['some-tool --flag', AnswerType::Allow, AnswerType::Deny];
+        yield 'a command substitution' => ['$(echo composer) test', AnswerType::Deny, AnswerType::Deny];
+        yield 'a variable' => ['cat $FILE', AnswerType::Deny, AnswerType::Deny];
+        yield 'a quote left open' => ['echo "unfinished', AnswerType::Deny, AnswerType::Deny];
     }
 
     #[DataProvider('linesAndRoleAnswers')]
-    public function test_the_parsed_facts_decide_each_role_answer(string $line, AnswerKind $mainAgent, AnswerKind $readOnlyHelper): void
+    public function test_the_parsed_facts_decide_each_role_answer(string $line, AnswerType $mainAgent, AnswerType $readOnlyHelper): void
     {
         $this->assertSame($mainAgent, $this->answer(new MainAgentReadyState, $line));
         $this->assertSame($readOnlyHelper, $this->answer(new ReadOnlyHelperReadyState, $line));
@@ -80,7 +80,7 @@ final class CommandFactsTest extends TestCase
         $this->assertSame(ParseOutcome::Complete, $command->outcome);
         $this->assertSame(['composer', 'tee', 'git'], array_map(fn ($part) => $part->program, $command->parts));
         $this->assertSame([PartJoin::Pipe, PartJoin::Sequence, PartJoin::End], array_map(fn ($part) => $part->join, $command->parts));
-        $this->assertSame([CommandKind::TestRun, CommandKind::Ordinary, CommandKind::Ordinary], array_map(fn ($part) => $part->kind, $command->parts));
+        $this->assertSame([CommandType::TestRun, CommandType::Ordinary, CommandType::Ordinary], array_map(fn ($part) => $part->type, $command->parts));
         $this->assertSame(CommandEffect::ChangesFiles, $command->parts[1]->effect);
         $this->assertSame(['test'], $command->parts[0]->arguments);
     }
@@ -113,8 +113,8 @@ final class CommandFactsTest extends TestCase
         return $this->app->make(ShellCommandParser::class)->parse($line, ShellDialect::Bash);
     }
 
-    private function answer(ReadyState $ready, string $line): AnswerKind
+    private function answer(ReadyState $ready, string $line): AnswerType
     {
-        return (new ShellCommandRequested(new HookIdentity(1, 10, 'call-1', 'digest'), $this->parse($line)))->answerBy($ready)->answerKind();
+        return (new ShellCommandRequested(new HookIdentity(1, 10, 'call-1', 'digest'), $this->parse($line)))->answerBy($ready)->answerType();
     }
 }

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Contracts\CurrentActor;
+use App\Core\Actors\Contracts\CurrentActorSetter;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\Actors\Exceptions\ActorContextMissing;
 use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Actors\Support\ActorContext;
-use App\Core\Agents\Support\AgentContext;
 use App\Core\AgentRequests\Support\SignedCall;
-use App\Core\Actors\Contracts\CurrentActor;
-use App\Core\Actors\Contracts\CurrentActorSetter;
+use App\Core\Agents\Support\AgentContext;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
 use Carbon\CarbonImmutable;
@@ -32,7 +32,7 @@ final class ActorContextTest extends TestCase
     public function test_the_next_request_on_a_worker_does_not_see_the_previous_actor(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
-        $this->assertSame([ActorKind::User, 7], [$this->app->make(ActorContext::class)->kind, $this->app->make(ActorContext::class)->id]);
+        $this->assertSame([ActorType::User, 7], [$this->app->make(ActorContext::class)->type, $this->app->make(ActorContext::class)->id]);
 
         $this->app->forgetScopedInstances();
 
@@ -46,7 +46,7 @@ final class ActorContextTest extends TestCase
         $this->assertFalse($actors->hasActor());
 
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(3));
-        $this->assertSame([ActorKind::Agent, 3], [$actors->actor()->kind, $actors->actor()->id]);
+        $this->assertSame([ActorType::Agent, 3], [$actors->actor()->type, $actors->actor()->id]);
 
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->assertFalse($actors->hasActor());
@@ -68,7 +68,7 @@ final class ActorContextTest extends TestCase
     {
         $actor = ActorContext::of(new AgentContext(3, 30, 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64))));
 
-        $this->assertSame([ActorKind::Agent, 3], [$actor->kind, $actor->id]);
+        $this->assertSame([ActorType::Agent, 3], [$actor->type, $actor->id]);
     }
 
     public function test_an_agent_is_not_a_user(): void

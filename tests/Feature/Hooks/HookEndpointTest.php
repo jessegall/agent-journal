@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Core\AgentRequests\Support\SignedCall;
 use App\Core\Agents\Models\AgentSession;
 use App\Core\Agents\Support\AgentContext;
-use App\Core\AgentRequests\Support\SignedCall;
+use App\Core\Agents\Support\StackTarget;
 use App\Core\Hooks\Actions\LaunchStacks;
 use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Hooks\Enums\CommandEffect;
-use App\Core\Hooks\Enums\CommandKind;
+use App\Core\Hooks\Enums\CommandType;
 use App\Core\Hooks\Enums\ParseOutcome;
 use App\Core\Hooks\Enums\ReadyStateType;
 use App\Core\Hooks\Enums\ShellDialect;
@@ -18,7 +19,6 @@ use App\Core\Hooks\Inputs\CommandPart;
 use App\Core\Hooks\Inputs\MissingShellParser;
 use App\Core\Hooks\Inputs\ShellCommand;
 use App\Core\Hooks\Models\HookCall;
-use App\Core\Agents\Support\StackTarget;
 use App\Core\Hooks\Support\StackTransaction;
 use App\Domain\Tasks\Actions\StartTask;
 use App\Domain\Tasks\Models\Task;
@@ -79,7 +79,7 @@ final class HookEndpointTest extends TestCase
         {
             public function parse(string $line, ShellDialect $dialect): ShellCommand
             {
-                return new ShellCommand($line, $dialect, ParseOutcome::Complete, [new CommandPart('composer', ['test'], CommandEffect::ReadsOnly, CommandKind::Alias)]);
+                return new ShellCommand($line, $dialect, ParseOutcome::Complete, [new CommandPart('composer', ['test'], CommandEffect::ReadsOnly, CommandType::Alias)]);
             }
         });
         $flagged = json_decode($this->bashBody('composer test'), true);

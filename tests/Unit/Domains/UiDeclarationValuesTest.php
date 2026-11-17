@@ -17,7 +17,7 @@ use App\Core\Ui\Enums\ActionMethod;
 use App\Core\Ui\Enums\Icon;
 use App\Core\Ui\Enums\PageDestination;
 use App\Core\Ui\Enums\PageSkeleton;
-use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Ui\Enums\SlotContextType;
 use App\Core\Ui\Exceptions\InvalidNavigationDeclaration;
 use App\Core\Ui\Exceptions\InvalidPageDeclaration;
 use App\Core\Ui\Exceptions\InvalidSectionDeclaration;
@@ -52,7 +52,7 @@ final class UiDeclarationValuesTest extends TestCase
         $this->assertSame(20, $page->homePosition);
         $this->assertSame([400, 500], [$page->floatSize->width, $page->floatSize->height]);
         $this->assertSame(['wide', 'sort'], array_map(fn ($option) => $option->key(), $page->options));
-        $this->assertSame([SlotContextKind::Record, 'plan'], [$page->slots[0]->takes, $page->slots[0]->recordParameter]);
+        $this->assertSame([SlotContextType::Record, 'plan'], [$page->slots[0]->takes, $page->slots[0]->recordParameter]);
         $this->assertSame([ActionMethod::Post, 'start', 'start'], [$page->actions[0]->method, $page->actions[0]->path, $page->actions[0]->name]);
     }
 
@@ -79,7 +79,7 @@ final class UiDeclarationValuesTest extends TestCase
     {
         $this->expectExceptionObject(InvalidPageDeclaration::recordSlotWithoutParameter('inspector'));
 
-        Slot::make('inspector', SlotContextKind::Record);
+        Slot::make('inspector', SlotContextType::Record);
     }
 
     public function test_a_choice_must_start_on_one_of_its_choices(): void
@@ -138,7 +138,7 @@ final class UiDeclarationValuesTest extends TestCase
 
     public function test_a_section_names_its_slot_by_full_key_and_records_its_reader_data_class(): void
     {
-        $section = Section::make('on-plan', 'Notes', 'plans.inspector', SlotContextKind::Record, RecentNotesReader::class, 'OnPlan.vue')->at(5);
+        $section = Section::make('on-plan', 'Notes', 'plans.inspector', SlotContextType::Record, RecentNotesReader::class, 'OnPlan.vue')->at(5);
 
         $this->assertSame(RecentNotesData::class, $section->dataClass);
         $this->assertSame(5, $section->position);
@@ -149,14 +149,14 @@ final class UiDeclarationValuesTest extends TestCase
     {
         $this->expectExceptionObject(InvalidSectionDeclaration::slotNotFullKey('on-plan', 'inspector'));
 
-        Section::make('on-plan', 'Notes', 'inspector', SlotContextKind::Record, RecentNotesReader::class, 'OnPlan.vue');
+        Section::make('on-plan', 'Notes', 'inspector', SlotContextType::Record, RecentNotesReader::class, 'OnPlan.vue');
     }
 
     public function test_a_slot_context_carries_a_decimal_id_only_for_a_session_or_record(): void
     {
         $this->assertNull(SlotContext::nothing()->id);
-        $this->assertSame([SlotContextKind::Session, '12'], [SlotContext::session(12)->kind, SlotContext::session(12)->id]);
-        $this->assertSame([SlotContextKind::Record, '7'], [SlotContext::record(7)->kind, SlotContext::record(7)->id]);
+        $this->assertSame([SlotContextType::Session, '12'], [SlotContext::session(12)->type, SlotContext::session(12)->id]);
+        $this->assertSame([SlotContextType::Record, '7'], [SlotContext::record(7)->type, SlotContext::record(7)->id]);
     }
 
     public function test_an_icon_the_host_does_not_draw_is_refused(): void

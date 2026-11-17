@@ -11,16 +11,16 @@ use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ModelTables;
-use Tests\Architecture\Support\NameKind;
+use Tests\Architecture\Support\NameType;
 use Tests\Architecture\Support\NameUse;
 use Tests\Architecture\Support\ParsedFile;
 use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\PublicContracts;
 use Tests\Architecture\Support\PublicOwner;
 use Tests\Architecture\Support\TableChecker;
-use Tests\Architecture\Support\TableKind;
 use Tests\Architecture\Support\TableOwner;
 use Tests\Architecture\Support\TableScan;
+use Tests\Architecture\Support\TableType;
 use Tests\Architecture\Support\TableUse;
 use Tests\Architecture\Support\Violation;
 use Tests\Fixtures\Modules\Notes\Api\NoteValue;
@@ -74,13 +74,13 @@ final class RegisteredModuleTest extends TestCase
         $notesFile = $this->registry()->get('Notes')->folder.'/UsesTasks.php';
 
         $names = $this->boundaryChecker()->violations([
-            new NameUse($plansFile, 3, NoteValue::class, NameKind::Type),
-            new NameUse($notesFile, 4, 'App\Domain\Tasks\Models\Task', NameKind::Type),
-            new NameUse($notesFile, 5, 'App\Core\Hooks\Actions\AgentStacks', NameKind::Type),
+            new NameUse($plansFile, 3, NoteValue::class, NameType::Type),
+            new NameUse($notesFile, 4, 'App\Domain\Tasks\Models\Task', NameType::Type),
+            new NameUse($notesFile, 5, 'App\Core\Hooks\Actions\AgentStacks', NameType::Type),
         ]);
         $tables = $this->tableChecker()->violations([
-            new TableUse($plansFile, 6, 'module_notes', TableKind::Read),
-            new TableUse($notesFile, 7, 'tasks', TableKind::Read),
+            new TableUse($plansFile, 6, 'module_notes', TableType::Read),
+            new TableUse($notesFile, 7, 'tasks', TableType::Read),
         ]);
 
         $this->assertSame([

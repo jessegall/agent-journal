@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Inspection;
 
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Models\HookCall;
 use App\Core\Hooks\Storage\WalkStep;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
@@ -24,7 +24,7 @@ final class InspectedCall extends Data
      */
     public function __construct(
         public readonly string $hookId,
-        public readonly AnswerKind $answer,
+        public readonly AnswerType $answer,
         public readonly string $stdout,
         #[DataCollectionOf(WalkStep::class)]
         public readonly array $steps,
@@ -32,6 +32,6 @@ final class InspectedCall extends Data
 
     public static function fromHookCall(HookCall $call): self
     {
-        return new self($call->event_id, $call->answer->kind, $call->answer->stdout, $call->steps->steps);
+        return new self($call->event_id, $call->answer->type, $call->answer->stdout, $call->steps->steps);
     }
 }

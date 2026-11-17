@@ -8,8 +8,8 @@ use LogicException;
 
 final class InvalidStopAnswer extends LogicException
 {
-    public static function forAnswer(string $answerKind): self
+    public static function forAnswer(string $answerType): self
     {
-        return new self("The answer {$answerKind} has no reply to a stop.");
+        return new self("The answer {$answerType} has no reply to a stop.");
     }
 }

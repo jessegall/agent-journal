@@ -6,7 +6,7 @@ namespace Tests\Architecture\Support;
 
 /**
  * Cycles between areas: each Core area (App\Core\Agents, App\Core\Hooks), each domain (App\Domain\Plans) and the
- * domain foundation is one unit, and no group of units may reach each other. Kind folders inside one area (Contracts,
+ * domain foundation is one unit, and no group of units may reach each other. Type folders inside one area (Contracts,
  * Support, Enums) are filing, not layers, so references between them are never a cycle (question 26).
  */
 final readonly class AreaCycles

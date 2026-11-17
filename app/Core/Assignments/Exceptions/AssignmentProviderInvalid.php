@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Assignments\Exceptions;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Enums\ActorType;
 use LogicException;
 
 final class AssignmentProviderInvalid extends LogicException
@@ -14,9 +14,9 @@ final class AssignmentProviderInvalid extends LogicException
         return new self("The provider {$providerClass} of record type {$type} does not implement AssignableProvider.");
     }
 
-    public static function forAssignees(ActorKind $kind, string $providerClass): self
+    public static function forAssignees(ActorType $type, string $providerClass): self
     {
-        return new self("The provider {$providerClass} of actor kind {$kind->value} does not implement AssigneeProvider.");
+        return new self("The provider {$providerClass} of actor type {$type->value} does not implement AssigneeProvider.");
     }
 
     public static function forModel(string $type, string $model): self

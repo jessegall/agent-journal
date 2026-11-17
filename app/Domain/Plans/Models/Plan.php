@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Models;
 
+use App\Core\Assignments\Contracts\Assignable;
 use App\Core\Assignments\Models\Support\AssignableListing;
 use App\Core\Assignments\Support\AssignmentHolder;
 use App\Core\Assignments\Support\RecordIdentity;
-use App\Core\Assignments\Contracts\Assignable;
 use App\Core\Links\Support\Linkable;
 use App\Domain\Plans\Api\PlanCard;
 use App\Domain\Plans\Api\PlanProgress;
-use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
+use App\Domain\Plans\Enums\PlanType;
 use App\Domain\Plans\Exceptions\StartDenied;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -28,13 +28,13 @@ use PhpOption\Option;
  *
  * @property int $id
  * @property string $title
- * @property PlanKind $kind
+ * @property PlanType $type
  * @property PlanState $state
  * @property bool $focused
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['title', 'kind'])]
+#[Fillable(['title', 'type'])]
 final class Plan extends Model implements Assignable
 {
     use AssignableListing, Linkable;
@@ -55,7 +55,7 @@ final class Plan extends Model implements Assignable
     protected function casts(): array
     {
         return [
-            'kind' => PlanKind::class,
+            'type' => PlanType::class,
             'state' => PlanState::class,
             'focused' => 'boolean',
         ];
@@ -133,7 +133,7 @@ final class Plan extends Model implements Assignable
         $unfinished = array_keys(array_filter($progressOfPhase, fn (PlanProgress $phase) => ! $phase->isComplete()));
         $currentPhase = $unfinished[0] ?? array_key_last($progressOfPhase);
 
-        return new PlanCard($this->id, $this->title, $this->kind, $this->state, $this->state->canStart(), $this->focused, $progress, $currentPhase, $holder);
+        return new PlanCard($this->id, $this->title, $this->type, $this->state, $this->state->canStart(), $this->focused, $progress, $currentPhase, $holder);
     }
 
     /**

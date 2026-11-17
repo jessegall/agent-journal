@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks\Readers;
 
-use App\Core\Assignments\Support\RecordIdentity;
 use App\Core\Actors\Contracts\CurrentActor;
+use App\Core\Assignments\Support\RecordIdentity;
 use App\Domain\Tasks\Api\TaskAssignmentCompletion;
 use App\Domain\Tasks\Contracts\TaskAssignmentReader;
 use App\Domain\Tasks\Enums\TaskState;

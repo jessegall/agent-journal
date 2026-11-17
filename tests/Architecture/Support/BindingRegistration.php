@@ -20,6 +20,6 @@ final readonly class BindingRegistration
 
     public function violation(string $userOwner, string $owner, string $detail): Violation
     {
-        return new Violation($this->file, $this->line, $this->abstract, $userOwner, $owner, ViolationKind::BindingMisuse, $detail);
+        return new Violation($this->file, $this->line, $this->abstract, $userOwner, $owner, ViolationType::BindingMisuse, $detail);
     }
 }

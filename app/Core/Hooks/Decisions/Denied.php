@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Decisions;
 
 use App\Core\Hooks\Contracts\Refusal;
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 
 final readonly class Denied implements Refusal
 {
@@ -16,8 +16,8 @@ final readonly class Denied implements Refusal
         return $this->reason;
     }
 
-    public function kind(): AnswerKind
+    public function type(): AnswerType
     {
-        return AnswerKind::Deny;
+        return AnswerType::Deny;
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Core\Hooks\Decisions\StateReference;
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Enums\NoSubject;
 use App\Core\Hooks\Enums\RewriteSupport;
 use App\Core\Hooks\Exceptions\HookDeadlineExpired;
@@ -41,7 +41,7 @@ final class AgentStateMachineTest extends TestCase
         $recorded = HookCall::query()->sole();
         $this->assertSame('block', json_decode($reply->stdout, true)['decision']);
         $this->assertSame($reply->stdout, $recorded->answer->stdout);
-        $this->assertSame(AnswerKind::Deny, $recorded->answer->kind);
+        $this->assertSame(AnswerType::Deny, $recorded->answer->type);
         $this->assertSame(['test.tasks deny'], array_map(fn (WalkStep $step) => "{$step->stateType} {$step->answer->value}", $recorded->steps->steps));
         $this->assertSame(3, AgentStackRow::query()->sole()->version);
     }
@@ -65,7 +65,7 @@ final class AgentStateMachineTest extends TestCase
 
         $this->assertSame('journal run tests', json_decode($reply->stdout, true)['hookSpecificOutput']['updatedInput']['command']);
         $this->assertSame(['hooks.main_ready', 'test.rewriting', 'guide'], $this->storedTypeKeys());
-        $this->assertSame(AnswerKind::Rewrite, HookCall::query()->sole()->answer->kind);
+        $this->assertSame(AnswerType::Rewrite, HookCall::query()->sole()->answer->type);
     }
 
     public function test_a_rewrite_the_program_cannot_take_is_refused_and_its_child_is_dropped(): void
@@ -76,7 +76,7 @@ final class AgentStateMachineTest extends TestCase
 
         $this->assertSame('deny', json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecision']);
         $this->assertSame(['hooks.main_ready', 'test.rewriting'], $this->storedTypeKeys());
-        $this->assertSame(AnswerKind::Deny, HookCall::query()->sole()->answer->kind);
+        $this->assertSame(AnswerType::Deny, HookCall::query()->sole()->answer->type);
     }
 
     public function test_a_retry_after_a_lost_response_gets_the_same_bytes_without_changing_the_stack(): void

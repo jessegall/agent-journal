@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
-use App\Core\Agents\Http\Middleware\AuthenticateAgent;
 use App\Core\AgentRequests\Support\SignedCall;
+use App\Core\Agents\Http\Middleware\AuthenticateAgent;
 use App\Core\Hooks\Exceptions\HookIdentityExpired;
 use App\Core\Hooks\Support\HookRetryWindow;
 use App\Core\Hooks\Support\StackAccess;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Agents\Support;
 
 use App\Core\Actors\Contracts\Actor;
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\AgentRequests\Support\SignedCall;
 use App\Core\Agents\Models\AgentSession;
 
@@ -29,9 +29,9 @@ final readonly class AgentContext implements Actor
         return new self($session->agent_id, $session->id, $session->agent->role, $call);
     }
 
-    public function actorKind(): ActorKind
+    public function actorType(): ActorType
     {
-        return ActorKind::Agent;
+        return ActorType::Agent;
     }
 
     public function actorId(): int

@@ -17,7 +17,7 @@ use ReflectionClass;
 use Throwable;
 
 /**
- * Judges what each owner exports: every export exists, is a kind of type an owner may publish, and shows in its public
+ * Judges what each owner exports: every export exists, is a type of type an owner may publish, and shows in its public
  * signatures only the owner's own exports, Core's public types and code outside the project.
  */
 final readonly class PublicContracts
@@ -57,7 +57,7 @@ final readonly class PublicContracts
     private function violationsOf(string $export, PublicOwner $owner): array
     {
         if (! self::exists($export)) {
-            return [new Violation('', 0, $export, $owner->name, $owner->name, ViolationKind::DisallowedCategory, 'a name that does not exist')];
+            return [new Violation('', 0, $export, $owner->name, $owner->name, ViolationType::DisallowedCategory, 'a name that does not exist')];
         }
 
         $class = new ReflectionClass($export);
@@ -65,7 +65,7 @@ final readonly class PublicContracts
         $category = self::disallowedCategoryOf($class, $owner);
 
         if ($category !== null) {
-            return [new Violation($file, (int) $class->getStartLine(), $export, $owner->name, $owner->name, ViolationKind::DisallowedCategory, $category)];
+            return [new Violation($file, (int) $class->getStartLine(), $export, $owner->name, $owner->name, ViolationType::DisallowedCategory, $category)];
         }
 
         $violations = [];
@@ -74,7 +74,7 @@ final readonly class PublicContracts
             $leakOwner = $this->privateOwnerOf($path->name, $owner, $export);
 
             if ($leakOwner !== null) {
-                $violations[] = new Violation($path->file, $path->line, $path->name, $owner->name, $leakOwner, ViolationKind::PrivateTypeInSignature, $path->member);
+                $violations[] = new Violation($path->file, $path->line, $path->name, $owner->name, $leakOwner, ViolationType::PrivateTypeInSignature, $path->member);
             }
         }
 

@@ -41,7 +41,7 @@ final class BindingRulesTest extends TestCase
     ];
 
     /**
-     * The files that compose the application and may register assignable record types and actor kinds: the contract,
+     * The files that compose the application and may register assignable record types and actor types: the contract,
      * the registry, Core's list, the providers of Core's assignment and agent areas, and the domain foundation.
      */
     private const array ASSIGNMENT_REGISTRATION_SITES = [
@@ -102,7 +102,7 @@ final class BindingRulesTest extends TestCase
         $this->assertSame([], array_values(array_map(fn (NameUse $use) => "{$use->file}:{$use->line} {$use->name}", $outside)));
     }
 
-    public function test_only_the_composition_sites_register_assignable_types_and_actor_kinds(): void
+    public function test_only_the_composition_sites_register_assignable_types_and_actor_types(): void
     {
         $roots = ProjectRoots::fromComposer(base_path('composer.json'));
         $uses = DomainFiles::usesIn(DomainFiles::in([app_path(), base_path('bootstrap'), base_path('routes')]), $roots);

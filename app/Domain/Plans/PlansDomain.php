@@ -13,7 +13,7 @@ use App\Core\Ui\Declarations\Page;
 use App\Core\Ui\Declarations\Section;
 use App\Core\Ui\Declarations\Slot;
 use App\Core\Ui\Enums\Icon;
-use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Ui\Enums\SlotContextType;
 use App\Domain\Contracts\Domain;
 use App\Domain\Contracts\ProvidesAssignables;
 use App\Domain\Plans\Api\AssignedPlanFilters;
@@ -28,8 +28,8 @@ use App\Domain\Plans\Api\PlanSelection;
 use App\Domain\Plans\Contracts\PlanAssignments;
 use App\Domain\Plans\Contracts\PlanReader;
 use App\Domain\Plans\Contracts\PlanStarter;
-use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
+use App\Domain\Plans\Enums\PlanType;
 use App\Domain\Plans\Exceptions\PlanMissing;
 use App\Domain\Plans\Exceptions\StartDenied;
 use App\Domain\Plans\Http\Controllers\StartPlanController;
@@ -79,7 +79,7 @@ final class PlansDomain implements Domain, ProvidesAssignables, ProvidesNavigati
             AssignedPlanFilters::class,
             AssignedPlanList::class,
             PlanProgress::class,
-            PlanKind::class,
+            PlanType::class,
             PlanState::class,
         ];
     }
@@ -109,7 +109,7 @@ final class PlansDomain implements Domain, ProvidesAssignables, ProvidesNavigati
     public function sections(): array
     {
         return [
-            Section::make('waiting', 'Waiting for review', 'chat.dock', SlotContextKind::Session, WaitingPlansSection::class, 'WaitingPlansSection.vue'),
+            Section::make('waiting', 'Waiting for review', 'chat.dock', SlotContextType::Session, WaitingPlansSection::class, 'WaitingPlansSection.vue'),
         ];
     }
 

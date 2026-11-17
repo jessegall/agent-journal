@@ -15,7 +15,7 @@ final class AssignmentDenied extends RuntimeException
 
     public static function forCaller(ActorIdentity $caller, Throwable|null $previous = null): self
     {
-        return new self("Only the owner or a main agent may give out work; {$caller->kind->value} {$caller->id} may not.", 0, $previous);
+        return new self("Only the owner or a main agent may give out work; {$caller->type->value} {$caller->id} may not.", 0, $previous);
     }
 
     protected function status(): int

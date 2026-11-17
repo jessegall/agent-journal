@@ -11,7 +11,7 @@ use App\Core\Ui\Declarations\NavigationItem;
 use App\Core\Ui\Declarations\Page;
 use App\Core\Ui\Declarations\Slot;
 use App\Core\Ui\Enums\Icon;
-use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Ui\Enums\SlotContextType;
 use App\Domain\Contracts\Domain;
 
 /**
@@ -40,7 +40,7 @@ final class LibraryDomain implements Domain, ProvidesNavigation, ProvidesPages
             Page::make('books', 'Books', Icon::Docs, BooksReader::class, 'Books.vue')
                 ->at('')
                 ->onHome(10)
-                ->slots(Slot::make('aside', SlotContextKind::Session))
+                ->slots(Slot::make('aside', SlotContextType::Session))
                 ->actions(ActionRoute::post('books', AddBook::class, 'add')),
             Page::make('book', 'Book', Icon::Docs, BooksReader::class, 'Book/Reader.vue')
                 ->at('{book}')

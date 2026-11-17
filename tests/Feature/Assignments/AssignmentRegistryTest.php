@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\Assignments\Contracts\AssignableProvider;
 use App\Core\Assignments\Contracts\AssigneeProvider;
-use App\Core\Assignments\Exceptions\AssigneeKindRepeated;
+use App\Core\Assignments\Exceptions\AssigneeTypeRepeated;
 use App\Core\Assignments\Exceptions\AssignmentProviderInvalid;
 use App\Core\Assignments\Exceptions\AssignmentTypeRepeated;
 use App\Core\Assignments\Exceptions\AssignmentTypeUnavailable;
@@ -21,7 +21,7 @@ use App\Domain\Plans\Models\Plan;
 use Tests\TestCase;
 
 /**
- * The assignment registry: each record type and actor kind is declared once with a provider of the right interface,
+ * The assignment registry: each record type and actor type is declared once with a provider of the right interface,
  * a provider is built only when asked for, and a declared type must be the link alias of an Assignable model once the
  * application has booted.
  */
@@ -49,30 +49,30 @@ final class AssignmentRegistryTest extends TestCase
         $this->registry->registerRecord('tests.record', $provider::class);
     }
 
-    public function test_a_type_that_is_no_alias_or_a_provider_of_the_wrong_kind_is_refused(): void
+    public function test_a_type_that_is_no_alias_or_a_provider_of_the_wrong_type_is_refused(): void
     {
         $this->assertThrows(fn () => $this->registry->registerRecord('Tasks', $this->createStub(AssignableProvider::class)::class), InvalidAssignmentIdentity::class);
         // A module's descriptor is read at runtime, so a wrong class must be refused even though the types forbid it.
         $this->assertThrows(fn () => $this->registry->registerRecord('tests.record', self::class), AssignmentProviderInvalid::class); // @phpstan-ignore argument.type
-        $this->assertThrows(fn () => $this->registry->registerAssignees(new AssigneeRegistration(ActorKind::User, self::class)), AssignmentProviderInvalid::class); // @phpstan-ignore argument.type
+        $this->assertThrows(fn () => $this->registry->registerAssignees(new AssigneeRegistration(ActorType::User, self::class)), AssignmentProviderInvalid::class); // @phpstan-ignore argument.type
     }
 
-    public function test_an_actor_kind_is_declared_once(): void
+    public function test_an_actor_type_is_declared_once(): void
     {
         $provider = $this->createStub(AssigneeProvider::class);
         $this->app->instance($provider::class, $provider);
-        $this->registry->registerAssignees(new AssigneeRegistration(ActorKind::User, $provider::class));
+        $this->registry->registerAssignees(new AssigneeRegistration(ActorType::User, $provider::class));
 
-        $this->assertSame($provider, $this->registry->assigneeProvider(ActorKind::User));
-        $this->expectException(AssigneeKindRepeated::class);
+        $this->assertSame($provider, $this->registry->assigneeProvider(ActorType::User));
+        $this->expectException(AssigneeTypeRepeated::class);
 
-        $this->registry->registerAssignees(new AssigneeRegistration(ActorKind::User, $provider::class));
+        $this->registry->registerAssignees(new AssigneeRegistration(ActorType::User, $provider::class));
     }
 
-    public function test_an_undeclared_type_or_kind_is_unavailable(): void
+    public function test_an_undeclared_type_or_type_is_unavailable(): void
     {
         $this->assertThrows(fn () => $this->registry->recordProvider('tests.record'), AssignmentTypeUnavailable::class);
-        $this->assertThrows(fn () => $this->registry->assigneeProvider(ActorKind::Agent), AssignmentTypeUnavailable::class);
+        $this->assertThrows(fn () => $this->registry->assigneeProvider(ActorType::Agent), AssignmentTypeUnavailable::class);
     }
 
     public function test_an_alias_registered_after_the_type_passes_once_its_model_is_assignable(): void

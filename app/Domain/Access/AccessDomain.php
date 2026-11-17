@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Access;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\Assignments\Support\AssigneeRegistration;
 use App\Domain\Access\Support\UserAssignees;
 use App\Domain\Contracts\Domain;
@@ -38,6 +38,6 @@ final class AccessDomain implements Domain, ProvidesAssignees
      */
     public function assignees(): array
     {
-        return [new AssigneeRegistration(ActorKind::User, UserAssignees::class)];
+        return [new AssigneeRegistration(ActorType::User, UserAssignees::class)];
     }
 }

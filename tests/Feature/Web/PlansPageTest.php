@@ -7,8 +7,8 @@ namespace Tests\Feature\Web;
 use App\Core\Web\Http\Middleware\HandleInertiaRequests;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
-use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
+use App\Domain\Plans\Enums\PlanType;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Tasks\Models\Task;
 use Illuminate\Http\Request;
@@ -32,9 +32,9 @@ final class PlansPageTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->release = Plan::query()->create(['title' => 'Build the release page', 'kind' => PlanKind::Build]);
+        $this->release = Plan::query()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
         $this->release->addPhase('Read')->addTasks([Task::query()->create(['title' => 'List the plans'])->id]);
-        $this->paused = Plan::query()->create(['title' => 'Compare chat layouts', 'kind' => PlanKind::Research]);
+        $this->paused = Plan::query()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
         Plan::query()->whereKey($this->paused->id)->update(['state' => PlanState::Paused->value]);
     }
 

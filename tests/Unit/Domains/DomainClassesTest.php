@@ -29,7 +29,7 @@ final class DomainClassesTest extends TestCase
     public static function domains(): iterable
     {
         yield 'Tasks' => [TasksDomain::class, [], ['TaskStarted', 'TaskFinished', 'TaskBlocked', 'TaskCancelled', 'TaskProgressCounter', 'TaskProgress', 'TaskReader', 'TaskMissing', 'TaskAssignmentReader', 'TaskAssignmentCompletion', 'AssignedTaskReader', 'TaskCard', 'TaskFilters', 'TaskList', 'TaskState', 'TaskWorkState']];
-        yield 'Plans' => [PlansDomain::class, [TasksDomain::class], ['PlanStarted', 'PlanProgressChanged', 'PlanReader', 'PlanAssignments', 'PlanStarter', 'PlanMissing', 'StartDenied', 'PlanFilters', 'PlanList', 'PlanSelection', 'PlanCard', 'AssignedPlanFilters', 'AssignedPlanList', 'PlanProgress', 'PlanKind', 'PlanState']];
+        yield 'Plans' => [PlansDomain::class, [TasksDomain::class], ['PlanStarted', 'PlanProgressChanged', 'PlanReader', 'PlanAssignments', 'PlanStarter', 'PlanMissing', 'StartDenied', 'PlanFilters', 'PlanList', 'PlanSelection', 'PlanCard', 'AssignedPlanFilters', 'AssignedPlanList', 'PlanProgress', 'PlanType', 'PlanState']];
         yield 'Profiles' => [ProfilesDomain::class, [], []];
         yield 'Chat' => [ChatDomain::class, [], ['MessageSent', 'MessageAnswered', 'MessageDismissed', 'ConversationReader', 'MessageSender', 'Conversation', 'MessageView', 'MessageState', 'MessageBodyEmpty']];
         yield 'Memory' => [MemoryDomain::class, [], []];

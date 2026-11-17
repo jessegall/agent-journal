@@ -1,0 +1,19 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "php",
+    "find": {
+        "select": "kind:VarLikeIdentifier",
+        "where": [
+            {
+                "nameMatches": "(?i)kind"
+            }
+        ],
+        "reject": []
+    },
+    "sin": {
+        "description": "A name says Kind where the project says Type for a category of things.",
+        "name": "name-says-kind",
+        "rule": "Name a category of things with Type, never Kind (rule 22): ActorType, StateType, $type.",
+        "skill": "name-says-kind"
+    }
+}

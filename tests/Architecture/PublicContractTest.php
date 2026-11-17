@@ -13,7 +13,7 @@ use Tests\Architecture\Support\PublicOwner;
 use Tests\TestCase;
 
 /**
- * What every domain and Core exports is a kind of type an owner may publish, and its public signatures show nothing
+ * What every domain and Core exports is a type of type an owner may publish, and its public signatures show nothing
  * private: no model, no service and no other owner's value.
  */
 final class PublicContractTest extends TestCase

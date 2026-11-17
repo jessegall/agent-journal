@@ -222,10 +222,10 @@ None is bound globally to the shared interface. Web resolves the class the decla
 | `NavigationItem` | key, label, icon, page (a page key of the same domain, or none), route values (`array<string,string>`), query values (`array<string,string>`), children (`list<NavigationItem>`, nested as values), children reader (`class-string<NavigationChildren>`, or none), position, group (root items only), at foot (root items only), visibility (`class-string<VisibilityCheck>`, or none), count (`class-string<CountReader>`, or none) | Needs a page, children, a children reader, or a mix of them. Children are values, so a cycle cannot be written. Keys are unique within the domain. The page must belong to the same domain. Route values must fill the page's route parameters exactly. |
 | `Page` | key, title, icon, path (relative to the domain's prefix, with `{name}` parameters), reader (`class-string<PageReader>`), component (path under the domain's `Resources/js`), opens in (page or inspector), skeleton (rows, cards or reader), home position (none means it is not in the Default preset), float size, options (toggles and choices for the pane menu), slots (`list<Slot>`), actions (`list<ActionRoute>`), visibility | A page needs no navigation entry. |
 | `ActionRoute` | method (POST, PATCH or DELETE), path, controller class, name | Runs behind its owner's visibility check. |
-| `Slot` | key, takes (`SlotContextKind`), and, for a record, the route parameter of the host page that names it | A host page lists the slots it offers. |
-| `Section` | key, title, slot (the full key), takes (`SlotContextKind`), reader (`class-string<SectionReader>`), component, position, actions (`list<ActionRoute>`), visibility | It may target the slot of any domain's page. It reads only through its own code and the exports of domains it requires (rule 9). A section with no page can still have its own actions. |
-| `SlotContext` | its kind, and for Session or Record the id (a decimal string) | Built by Web for each request (below). |
-| `SlotContextKind` (`app/Domain/Enums`) | Nothing, Session, Record | |
+| `Slot` | key, takes (`SlotContextType`), and, for a record, the route parameter of the host page that names it | A host page lists the slots it offers. |
+| `Section` | key, title, slot (the full key), takes (`SlotContextType`), reader (`class-string<SectionReader>`), component, position, actions (`list<ActionRoute>`), visibility | It may target the slot of any domain's page. It reads only through its own code and the exports of domains it requires (rule 9). A section with no page can still have its own actions. |
+| `SlotContext` | its type, and for Session or Record the id (a decimal string) | Built by Web for each request (below). |
+| `SlotContextType` (`app/Domain/Enums`) | Nothing, Session, Record | |
 | `Icon` (`app/Domain/Enums`) | version 5's icon names | A closed set: a module picks from the host's icons, as version 5's `WindowIcon` did. |
 
 **Keys and names come from the domain's name.** Every key is prefixed with the domain's name when the foundation reads it: `inspector` in PlansDomain becomes `plans.inspector`, and Web's bar slot is `web.bar`. The registry already refuses two domains with one name (`DomainListedTwice`). The domain name also gives:
@@ -357,7 +357,7 @@ final class ChatDomain implements Domain, ProvidesNavigation, ProvidesPages
     {
         return [Page::make('conversation', 'Chat', ChatWindowReader::class, 'ChatWindow.vue')
             ->onHome(position: 10)
-            ->slots(Slot::make('dock', SlotContextKind::Session))
+            ->slots(Slot::make('dock', SlotContextType::Session))
             ->actions(ActionRoute::post('messages', SendMessageController::class, 'send'))];
     }
 }
@@ -381,7 +381,7 @@ NavigationItem::page('list', 'Plans', Icon::Plan, group: 'Work', position: 200)
 
 ## 4. Files and the browser build
 
-- **Domain Vue.** A domain's Vue lives in `<domain folder>/Resources/js`. Its PHP readers, Data and action controllers live in its usual kind folders.
+- **Domain Vue.** A domain's Vue lives in `<domain folder>/Resources/js`. Its PHP readers, Data and action controllers live in its usual type folders.
 - **Shared kit.** The shell and the shared kit stay in `resources/js`.
 - **Imports.** A domain's Vue may import only:
   - `@kit/*`;

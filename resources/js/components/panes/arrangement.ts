@@ -291,7 +291,7 @@ function isNode(value: unknown): value is LayoutNode {
         return false;
     }
 
-    if (value.kind === 'pane') {
+    if (value.type === 'pane') {
         return (
             Array.isArray(value.windows) &&
             value.windows.every((key) => typeof key === 'string') &&
@@ -301,7 +301,7 @@ function isNode(value: unknown): value is LayoutNode {
     }
 
     return (
-        value.kind === 'split' &&
+        value.type === 'split' &&
         (value.axis === 'row' || value.axis === 'column') &&
         typeof value.ratio === 'number' &&
         value.ratio > 0 &&

@@ -34,9 +34,9 @@ final class HookInputTest extends TestCase
         $plainState = new class extends AgentState {};
 
         $this->assertSame($method, $input->methodName());
-        $this->assertSame('allow', $input->answerBy($recording)->answerKind()->value);
+        $this->assertSame('allow', $input->answerBy($recording)->answerType()->value);
         $this->assertSame([$method], $recording->askedMethods);
-        $this->assertSame('delegate', $input->answerBy($plainState)->answerKind()->value);
+        $this->assertSame('delegate', $input->answerBy($plainState)->answerType()->value);
     }
 
     public function test_an_input_keeps_the_identity_it_was_given(): void

@@ -24,7 +24,7 @@ final class LayoutsTest extends TestCase
     /**
      * @var array<string, mixed>
      */
-    private array $shape = ['grid' => ['kind' => 'pane', 'id' => 'pane-chat', 'windows' => ['chat'], 'active' => 'chat', 'limitWidth' => false], 'detached' => []];
+    private array $shape = ['grid' => ['type' => 'pane', 'id' => 'pane-chat', 'windows' => ['chat'], 'active' => 'chat', 'limitWidth' => false], 'detached' => []];
 
     protected function setUp(): void
     {

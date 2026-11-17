@@ -6,7 +6,7 @@ namespace Tests\Fixtures\UiDeclarations\Desk;
 
 use App\Core\Ui\Contracts\ProvidesSections;
 use App\Core\Ui\Declarations\Section;
-use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Ui\Enums\SlotContextType;
 use App\Domain\Contracts\Domain;
 
 /**
@@ -32,8 +32,8 @@ final class DeskDomain implements Domain, ProvidesSections
     public function sections(): array
     {
         return [
-            Section::make('notes', 'Notes', 'library.book-inspector', SlotContextKind::Record, NotesReader::class, 'Notes.vue'),
-            Section::make('draft', 'Draft', 'library.aside', SlotContextKind::Session, NotesReader::class, 'Notes.vue'),
+            Section::make('notes', 'Notes', 'library.book-inspector', SlotContextType::Record, NotesReader::class, 'Notes.vue'),
+            Section::make('draft', 'Draft', 'library.aside', SlotContextType::Session, NotesReader::class, 'Notes.vue'),
         ];
     }
 }

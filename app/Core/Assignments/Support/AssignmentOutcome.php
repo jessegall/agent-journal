@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Assignments\Support;
 
-use App\Core\Assignments\Enums\AssignmentOutcomeKind;
+use App\Core\Assignments\Enums\AssignmentOutcomeType;
 use PhpOption\Option;
 
 /**
@@ -18,6 +18,6 @@ final readonly class AssignmentOutcome
     public function __construct(
         public RecordIdentity $record,
         public Option $current,
-        public AssignmentOutcomeKind $kind,
+        public AssignmentOutcomeType $type,
     ) {}
 }

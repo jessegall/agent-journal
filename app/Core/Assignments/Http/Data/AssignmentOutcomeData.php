@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Assignments\Http\Data;
 
-use App\Core\Assignments\Enums\AssignmentOutcomeKind;
+use App\Core\Assignments\Enums\AssignmentOutcomeType;
 use Spatie\LaravelData\Data;
 
 /**
@@ -15,6 +15,6 @@ final class AssignmentOutcomeData extends Data
 {
     public function __construct(
         public readonly RecordHolderData $record,
-        public readonly AssignmentOutcomeKind $kind,
+        public readonly AssignmentOutcomeType $type,
     ) {}
 }

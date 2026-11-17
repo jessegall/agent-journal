@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Access\Support;
 
-use App\Core\Actors\Enums\ActorKind;
 use App\Core\Actors\Contracts\Actor;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\Web\Contracts\JournalAccessPolicy;
 
 /**
@@ -18,7 +18,7 @@ final readonly class JournalAccess implements JournalAccessPolicy
 
     public function allows(Actor $actor): bool
     {
-        return $actor->actorKind() === ActorKind::User && $actor->actorId() === $this->settings->ownerId;
+        return $actor->actorType() === ActorType::User && $actor->actorId() === $this->settings->ownerId;
     }
 
     /**

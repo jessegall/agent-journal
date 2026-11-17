@@ -7,7 +7,7 @@ namespace Tests\Architecture\Support;
 /**
  * How code uses a table, as fine as the table rules decide on.
  */
-enum TableKind: string
+enum TableType: string
 {
     case Create = 'create';
     case Read = 'read';

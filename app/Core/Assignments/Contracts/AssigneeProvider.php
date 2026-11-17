@@ -8,10 +8,9 @@ use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Assignments\Support\AssigneeList;
 use App\Core\Assignments\Support\AssigneeName;
 use App\Core\Assignments\Support\Page;
-use App\Core\Assignments\Contracts\Assignee;
 
 /**
- * What the owner of one kind of actor answers for assignments: whether an actor may receive work, the names actors are
+ * What the owner of one type of actor answers for assignments: whether an actor may receive work, the names actors are
  * shown by, and the actors work may be given to.
  */
 interface AssigneeProvider

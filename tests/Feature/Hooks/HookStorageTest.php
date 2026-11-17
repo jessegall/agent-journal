@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Core\Agents\Support\AgentContext;
 use App\Core\AgentRequests\Support\SignedCall;
+use App\Core\Agents\Support\AgentContext;
+use App\Core\Agents\Support\StackTarget;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Enums\NoSubject;
 use App\Core\Hooks\Enums\StackStatus;
-use App\Core\Hooks\Enums\TransitionKind;
+use App\Core\Hooks\Enums\TransitionType;
 use App\Core\Hooks\Exceptions\StoredValueInvalid;
 use App\Core\Hooks\Inputs\HookIdentity;
 use App\Core\Hooks\Models\AgentStackRow;
@@ -21,7 +22,6 @@ use App\Core\Hooks\Storage\FrameRecords;
 use App\Core\Hooks\Storage\RecordedAnswer;
 use App\Core\Hooks\Storage\RecordedSteps;
 use App\Core\Hooks\Storage\WalkStep;
-use App\Core\Agents\Support\StackTarget;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -93,28 +93,28 @@ final class HookStorageTest extends TestCase
     {
         $response = "{\"decision\":\"block\",\"reason\":\"Task 42 still needs work: finish it.\"}\n\t\u{00e9}\u{1F600}";
         $steps = RecordedSteps::of([
-            new WalkStep('frame-2', 'tasks.working', 'onStop', AnswerKind::Delegate, TransitionKind::Keep),
-            new WalkStep('frame-1', 'hooks.main_ready', 'onStop', AnswerKind::Deny, TransitionKind::Push),
+            new WalkStep('frame-2', 'tasks.working', 'onStop', AnswerType::Delegate, TransitionType::Keep),
+            new WalkStep('frame-1', 'hooks.main_ready', 'onStop', AnswerType::Deny, TransitionType::Push),
         ]);
         $call = new HookCall;
-        $call->recordFor($this->hook(), RecordedAnswer::of(AnswerKind::Deny, $response), $steps);
+        $call->recordFor($this->hook(), RecordedAnswer::of(AnswerType::Deny, $response), $steps);
 
         $stored = HookCall::query()->sole();
 
         $this->assertSame($response, $stored->answer->stdout);
-        $this->assertSame(AnswerKind::Deny, $stored->answer->kind);
+        $this->assertSame(AnswerType::Deny, $stored->answer->type);
         $this->assertSame($steps->toArray(), $stored->steps->toArray());
-        $this->assertSame(TransitionKind::Push, $stored->steps->steps[1]->transition);
+        $this->assertSame(TransitionType::Push, $stored->steps->steps[1]->transition);
         $this->assertSame(['hook-1', str_repeat('a', 64)], [$stored->event_id, $stored->input_digest]);
     }
 
     public function test_one_hook_id_is_recorded_once_per_agent_and_session(): void
     {
-        (new HookCall)->recordFor($this->hook(), RecordedAnswer::of(AnswerKind::Allow, '{}'), RecordedSteps::of([]));
+        (new HookCall)->recordFor($this->hook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
 
         $this->expectException(QueryException::class);
 
-        (new HookCall)->recordFor($this->hook(), RecordedAnswer::of(AnswerKind::Allow, '{}'), RecordedSteps::of([]));
+        (new HookCall)->recordFor($this->hook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
     }
 
     public function test_the_agent_and_session_cannot_be_mass_assigned(): void
@@ -137,7 +137,7 @@ final class HookStorageTest extends TestCase
 
     public function test_steps_without_their_fields_are_refused(): void
     {
-        (new HookCall)->recordFor($this->hook(), RecordedAnswer::of(AnswerKind::Allow, '{}'), RecordedSteps::of([]));
+        (new HookCall)->recordFor($this->hook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
         DB::table('hook_calls')->update(['steps' => '{"version":1,"steps":[{"frameId":"frame-1"}]}']);
 
         $this->expectException(StoredValueInvalid::class);
@@ -150,7 +150,7 @@ final class HookStorageTest extends TestCase
         $stack = new AgentStackRow;
         $stack->startFor(new StackTarget(7, 9), $this->frames());
         $call = new HookCall;
-        $call->recordFor($this->hook(), RecordedAnswer::of(AnswerKind::Allow, '{}'), RecordedSteps::of([]));
+        $call->recordFor($this->hook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
 
         $stack->linkTo($call);
 

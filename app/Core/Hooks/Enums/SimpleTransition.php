@@ -12,11 +12,11 @@ enum SimpleTransition: string implements StackTransition
     case Keep = 'keep';
     case PopSelf = 'pop_self';
 
-    public function kind(): TransitionKind
+    public function type(): TransitionType
     {
         return match ($this) {
-            self::Keep => TransitionKind::Keep,
-            self::PopSelf => TransitionKind::PopSelf,
+            self::Keep => TransitionType::Keep,
+            self::PopSelf => TransitionType::PopSelf,
         };
     }
 

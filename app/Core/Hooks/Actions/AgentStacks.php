@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Actions;
 
+use App\Core\Agents\Support\StackTarget;
 use App\Core\Hooks\Contracts\AgentStack;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Models\AgentStackRow;
 use App\Core\Hooks\Stack\StackRestorer;
 use App\Core\Hooks\Support\StackAccess;
-use App\Core\Agents\Support\StackTarget;
 use App\Core\Hooks\Support\StackTransaction;
 
 /**

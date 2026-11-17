@@ -26,12 +26,12 @@ final class TableScan
 
     private const array QUERY_TABLE_METHODS = ['from', 'join', 'leftJoin', 'rightJoin', 'crossJoin'];
 
-    private const array SCHEMA_KINDS = [
-        'create' => TableKind::Create,
-        'hasTable' => TableKind::Read,
-        'table' => TableKind::Change,
-        'drop' => TableKind::Change,
-        'dropIfExists' => TableKind::Change,
+    private const array SCHEMA_TYPES = [
+        'create' => TableType::Create,
+        'hasTable' => TableType::Read,
+        'table' => TableType::Change,
+        'drop' => TableType::Change,
+        'dropIfExists' => TableType::Change,
     ];
 
     /**
@@ -71,15 +71,15 @@ final class TableScan
         $method = $call->name->toString();
 
         if ($facade === self::DB && $method === 'table') {
-            return self::tableArgument($file, $call, 0, TableKind::Read);
+            return self::tableArgument($file, $call, 0, TableType::Read);
         }
 
         if ($facade === self::SCHEMA && $method === 'rename') {
-            return [...self::tableArgument($file, $call, 0, TableKind::Change), ...self::tableArgument($file, $call, 1, TableKind::Create)];
+            return [...self::tableArgument($file, $call, 0, TableType::Change), ...self::tableArgument($file, $call, 1, TableType::Create)];
         }
 
-        if ($facade === self::SCHEMA && isset(self::SCHEMA_KINDS[$method])) {
-            return self::tableArgument($file, $call, 0, self::SCHEMA_KINDS[$method]);
+        if ($facade === self::SCHEMA && isset(self::SCHEMA_TYPES[$method])) {
+            return self::tableArgument($file, $call, 0, self::SCHEMA_TYPES[$method]);
         }
 
         return [];
@@ -98,9 +98,9 @@ final class TableScan
 
         return match (true) {
             in_array($method, self::QUERY_TABLE_METHODS, true) => self::queryTable($file, $call),
-            $method === 'setTable' => self::tableArgument($file, $call, 0, TableKind::ModelTable),
+            $method === 'setTable' => self::tableArgument($file, $call, 0, TableType::ModelTable),
             $method === 'constrained' => self::constrainedTable($file, $call),
-            $method === 'on' && self::followsReferences($call) => self::tableArgument($file, $call, 0, TableKind::ForeignKey),
+            $method === 'on' && self::followsReferences($call) => self::tableArgument($file, $call, 0, TableType::ForeignKey),
             isset(self::PIVOT_ARGUMENTS[$method]) => self::pivotTable($file, $call, self::PIVOT_ARGUMENTS[$method]),
             default => [],
         };
@@ -123,7 +123,7 @@ final class TableScan
             return [];
         }
 
-        return self::tableArgument($file, $call, 0, TableKind::Read);
+        return self::tableArgument($file, $call, 0, TableType::Read);
     }
 
     /**
@@ -134,18 +134,18 @@ final class TableScan
     private static function constrainedTable(ParsedFile $file, MethodCall $call): array
     {
         if (self::argument($call, 0) !== null) {
-            return self::tableArgument($file, $call, 0, TableKind::ForeignKey);
+            return self::tableArgument($file, $call, 0, TableType::ForeignKey);
         }
 
         $column = $call->var instanceof MethodCall ? self::argument($call->var, 0) : null;
 
         if (! $column instanceof String_) {
-            return [new TableUse($file->path, $call->getStartLine(), self::code($call), TableKind::NotWritten)];
+            return [new TableUse($file->path, $call->getStartLine(), self::code($call), TableType::NotWritten)];
         }
 
         $table = Str::of($column->value)->beforeLast('_id')->plural()->toString();
 
-        return [new TableUse($file->path, $call->getStartLine(), $table, TableKind::ForeignKey)];
+        return [new TableUse($file->path, $call->getStartLine(), $table, TableType::ForeignKey)];
     }
 
     /**
@@ -154,16 +154,16 @@ final class TableScan
     private static function pivotTable(ParsedFile $file, MethodCall $call, int $position): array
     {
         if (self::argument($call, $position) === null) {
-            return [new TableUse($file->path, $call->getStartLine(), self::code($call), TableKind::PivotNotWritten)];
+            return [new TableUse($file->path, $call->getStartLine(), self::code($call), TableType::PivotNotWritten)];
         }
 
-        return self::tableArgument($file, $call, $position, TableKind::Pivot);
+        return self::tableArgument($file, $call, $position, TableType::Pivot);
     }
 
     /**
      * @return list<TableUse>
      */
-    private static function tableArgument(ParsedFile $file, MethodCall|StaticCall $call, int $position, TableKind $kind): array
+    private static function tableArgument(ParsedFile $file, MethodCall|StaticCall $call, int $position, TableType $type): array
     {
         $table = self::argument($call, $position);
 
@@ -172,10 +172,10 @@ final class TableScan
         }
 
         if (! $table instanceof String_) {
-            return [new TableUse($file->path, $call->getStartLine(), self::code($table), TableKind::NotWritten)];
+            return [new TableUse($file->path, $call->getStartLine(), self::code($table), TableType::NotWritten)];
         }
 
-        return [new TableUse($file->path, $call->getStartLine(), self::withoutAlias($table->value), $kind)];
+        return [new TableUse($file->path, $call->getStartLine(), self::withoutAlias($table->value), $type)];
     }
 
     private static function argument(MethodCall|StaticCall $call, int $position): Expr|null

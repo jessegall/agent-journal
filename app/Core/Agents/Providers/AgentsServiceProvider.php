@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Providers;
 
-use App\Core\Actors\Enums\ActorKind;
-use App\Core\Agents\Actions\RetireAgent;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\AgentRequests\Actions\SendAgentRequests;
-use App\Core\Agents\Console\RetireAgentCommand;
-use App\Core\Assignments\Contracts\AgentAuthority;
 use App\Core\AgentRequests\Contracts\AgentRequestSender;
+use App\Core\AgentRequests\Support\AgentClientSettings;
+use App\Core\Agents\Actions\RetireAgent;
+use App\Core\Agents\Console\RetireAgentCommand;
 use App\Core\Agents\Contracts\AgentRetirement;
 use App\Core\Agents\Exceptions\AgentContextMissing;
 use App\Core\Agents\Readers\AgentAuthorityRecords;
 use App\Core\Agents\Support\AgentAssignees;
-use App\Core\AgentRequests\Support\AgentClientSettings;
 use App\Core\Agents\Support\AgentContext;
 use App\Core\Agents\Support\DatabaseLaunchTransaction;
 use App\Core\Agents\Support\LaunchTimeouts;
+use App\Core\Assignments\Contracts\AgentAuthority;
 use App\Core\Assignments\Contracts\AssignmentRegistration;
 use App\Core\Assignments\Support\AssigneeRegistration;
 use App\Core\Contracts\LaunchTransaction;
@@ -48,6 +48,6 @@ final class AgentsServiceProvider extends ServiceProvider
     {
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agents.php');
         $this->commands([RetireAgentCommand::class]);
-        $assignments->registerAssignees(new AssigneeRegistration(ActorKind::Agent, AgentAssignees::class));
+        $assignments->registerAssignees(new AssigneeRegistration(ActorType::Agent, AgentAssignees::class));
     }
 }

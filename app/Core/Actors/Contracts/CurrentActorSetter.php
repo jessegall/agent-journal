@@ -6,7 +6,6 @@ namespace App\Core\Actors\Contracts;
 
 use App\Core\Actors\Support\ActorStore;
 use Illuminate\Container\Attributes\Bind;
-use App\Core\Actors\Contracts\Actor;
 
 /**
  * Makes an authenticated actor the one of this request, and forgets it again when the request ends. Only the

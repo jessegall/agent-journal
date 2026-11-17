@@ -117,6 +117,9 @@ foreach ($renames as $rename) {
         $failed++;
         fwrite(STDERR, 'Refused '.implode(' ', $rename).': '.$refusal->getMessage()."\n");
     }
+
+    // the parsed files hold parent links in cycles, which only a collection frees before the next rename parses again
+    gc_collect_cycles();
 }
 
 exit($failed > 0 ? 1 : 0);

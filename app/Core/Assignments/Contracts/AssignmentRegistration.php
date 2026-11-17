@@ -7,7 +7,7 @@ namespace App\Core\Assignments\Contracts;
 use App\Core\Assignments\Support\AssigneeRegistration;
 
 /**
- * Where the application's composition registers which provider answers for each record type and actor kind. Only the
+ * Where the application's composition registers which provider answers for each record type and actor type. Only the
  * domain foundation and Core's own providers call it, while the application boots.
  */
 interface AssignmentRegistration

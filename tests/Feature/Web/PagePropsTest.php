@@ -8,7 +8,7 @@ use App\Core\Ui\Declarations\Page;
 use App\Core\Ui\Declarations\Section;
 use App\Core\Ui\Declarations\Slot;
 use App\Core\Ui\Enums\Icon;
-use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Ui\Enums\SlotContextType;
 use App\Core\Ui\Support\UiDeclarations;
 use App\Core\Web\Data\DeniedWindow;
 use App\Core\Web\Data\FailedWindow;
@@ -123,7 +123,7 @@ final class PagePropsTest extends TestCase
         $shelf = DomainEntry::fromClass(ShelfDomain::class)->declaring(pages: [
             Page::make('shelves', 'Shelves', Icon::Docs, ShelfReader::class, 'Shelf.vue')
                 ->at('')
-                ->slots(Slot::make('aside', SlotContextKind::Nothing)),
+                ->slots(Slot::make('aside', SlotContextType::Nothing)),
             Page::make('hidden', 'Hidden', Icon::Docs, ShelfReader::class, 'Shelf.vue')
                 ->at('hidden')
                 ->visibleWhen(NobodySees::class),
@@ -131,9 +131,9 @@ final class PagePropsTest extends TestCase
                 ->at('{shelf}')
                 ->inInspector(),
         ], sections: [
-            Section::make('broken', 'Broken', 'shelf.aside', SlotContextKind::Nothing, BrokenReader::class, 'Aside.vue'),
-            Section::make('notes', 'Notes', 'shelf.aside', SlotContextKind::Nothing, NotesReader::class, 'Aside.vue'),
-            Section::make('secret', 'Secret', 'shelf.aside', SlotContextKind::Nothing, NotesReader::class, 'Aside.vue')
+            Section::make('broken', 'Broken', 'shelf.aside', SlotContextType::Nothing, BrokenReader::class, 'Aside.vue'),
+            Section::make('notes', 'Notes', 'shelf.aside', SlotContextType::Nothing, NotesReader::class, 'Aside.vue'),
+            Section::make('secret', 'Secret', 'shelf.aside', SlotContextType::Nothing, NotesReader::class, 'Aside.vue')
                 ->visibleWhen(NobodySees::class),
         ]);
 

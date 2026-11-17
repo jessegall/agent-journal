@@ -7,7 +7,7 @@ namespace App\Core\Hooks\Enums;
 /**
  * What a command part is, as the parser knows it: a test run or a build must run through a command alias.
  */
-enum CommandKind: string
+enum CommandType: string
 {
     case Ordinary = 'ordinary';
     case TestRun = 'test_run';

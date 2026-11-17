@@ -60,10 +60,10 @@ final readonly class BoundaryChecker
 
         if (! $this->isDomainName($use->name)) {
             if ($user !== null && $this->isPrivateCoreName($use->name)) {
-                return [new Violation($use->file, $use->line, $use->name, $userName, 'Core', ViolationKind::PrivateCoreType)];
+                return [new Violation($use->file, $use->line, $use->name, $userName, 'Core', ViolationType::PrivateCoreType)];
             }
 
-            return $this->isFreeToUse($use->name) ? [] : [new Violation($use->file, $use->line, $use->name, $userName, 'no domain', ViolationKind::OutsideEveryDomain)];
+            return $this->isFreeToUse($use->name) ? [] : [new Violation($use->file, $use->line, $use->name, $userName, 'no domain', ViolationType::OutsideEveryDomain)];
         }
 
         $owner = $this->domainOwning($use->name);
@@ -77,10 +77,10 @@ final readonly class BoundaryChecker
         if ($user !== null && $user->requiresDomain($owner)) {
             $isPublic = $owner->exportsName($use->name) || self::isRequirementInDescriptor($use, $user, $owner);
 
-            return $isPublic ? $violations : [...$violations, new Violation($use->file, $use->line, $use->name, $userName, $owner->name, ViolationKind::PrivateType)];
+            return $isPublic ? $violations : [...$violations, new Violation($use->file, $use->line, $use->name, $userName, $owner->name, ViolationType::PrivateType)];
         }
 
-        return [...$violations, new Violation($use->file, $use->line, $use->name, $userName, $owner->name, ViolationKind::UndeclaredDomain)];
+        return [...$violations, new Violation($use->file, $use->line, $use->name, $userName, $owner->name, ViolationType::UndeclaredDomain)];
     }
 
     /**
@@ -107,7 +107,7 @@ final readonly class BoundaryChecker
             }
 
             $owner = $this->isDomainName($name) ? $this->domainOwning($name)->name : 'Core';
-            $violations[] = new Violation($use->file, $use->line, $name, self::SHARED_PLACE, $owner, ViolationKind::CompositionMisuse);
+            $violations[] = new Violation($use->file, $use->line, $name, self::SHARED_PLACE, $owner, ViolationType::CompositionMisuse);
         }
 
         return $violations;
@@ -126,19 +126,19 @@ final readonly class BoundaryChecker
         foreach ($calls as $call) {
             $userName = $this->domainHolding($call->file)->name ?? self::SHARED_PLACE;
             if ($call->isEventNamedByString()) {
-                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $userName, ViolationKind::StringEventName);
+                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $userName, ViolationType::StringEventName);
             }
 
             if ($call->raisesReceivedEvent()) {
-                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $userName, ViolationKind::ReRaisedReceivedEvent);
+                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $userName, ViolationType::ReRaisedReceivedEvent);
             }
 
             if ($this->raisesAnotherDomainsEvent($call, $userName)) {
-                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $this->domainOwning($call->event)->name, ViolationKind::ReRaisedEvent);
+                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $this->domainOwning($call->event)->name, ViolationType::ReRaisedEvent);
             }
 
             if ($userName !== self::SHARED_PLACE && $call->raisesClassEventIn(self::CORE_EVENTS)) {
-                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, 'Core', ViolationKind::ReRaisedEvent);
+                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, 'Core', ViolationType::ReRaisedEvent);
             }
         }
 
@@ -156,11 +156,11 @@ final readonly class BoundaryChecker
             return [];
         }
 
-        if ($user !== null && $user->holdsListenerFile($use->file) && $use->kind->canNameAnEventToHearIt()) {
+        if ($user !== null && $user->holdsListenerFile($use->file) && $use->type->canNameAnEventToHearIt()) {
             return [];
         }
 
-        return [new Violation($use->file, $use->line, $use->name, $user->name ?? self::SHARED_PLACE, $owner->name, ViolationKind::EventOutsideListener)];
+        return [new Violation($use->file, $use->line, $use->name, $user->name ?? self::SHARED_PLACE, $owner->name, ViolationType::EventOutsideListener)];
     }
 
     /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Database\Seeders;
 
-use App\Domain\Plans\Enums\PlanKind;
+use App\Domain\Plans\Enums\PlanType;
 use App\Domain\Plans\Models\Plan;
 use Illuminate\Database\Seeder;
 
@@ -21,13 +21,13 @@ final class PlansSeeder extends Seeder
      */
     public function run(array $readingTaskIds = [], array $startingTaskIds = [], array $reproducingTaskIds = []): void
     {
-        $build = Plan::query()->create(['title' => 'Build the plans page', 'kind' => PlanKind::Build]);
+        $build = Plan::query()->create(['title' => 'Build the plans page', 'type' => PlanType::Build]);
         $build->addPhase('Read the plans')->addTasks($readingTaskIds);
         $build->addPhase('Start a plan')->addTasks($startingTaskIds);
 
-        $fix = Plan::query()->create(['title' => 'Fix the login redirect', 'kind' => PlanKind::Fix]);
+        $fix = Plan::query()->create(['title' => 'Fix the login redirect', 'type' => PlanType::Fix]);
         $fix->addPhase('Reproduce it')->addTasks($reproducingTaskIds);
 
-        Plan::query()->create(['title' => 'Compare chat layouts', 'kind' => PlanKind::Research]);
+        Plan::query()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
     }
 }

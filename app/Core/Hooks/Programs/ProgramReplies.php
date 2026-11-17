@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Programs;
 
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Enums\ProgramPermission;
 use App\Core\Hooks\Enums\ProgramStopDecision;
 use App\Core\Hooks\Enums\RewriteSupport;
@@ -53,27 +53,27 @@ final class ProgramReplies
      */
     public static function shell(HookAnswer $answer, ProgramToolInput $original, RewriteSupport $rewrites): ProgramReply
     {
-        $kind = $answer->decision->answerKind();
+        $type = $answer->decision->answerType();
 
-        return match ($kind) {
-            AnswerKind::Allow => self::allowTool($answer->context),
-            AnswerKind::Deny => self::denyTool($answer->decision->refusalReason(), $answer->context),
-            AnswerKind::Rewrite => $rewrites->reply($answer, $original),
-            AnswerKind::Delegate => throw InvalidShellAnswer::forAnswer($kind->value),
+        return match ($type) {
+            AnswerType::Allow => self::allowTool($answer->context),
+            AnswerType::Deny => self::denyTool($answer->decision->refusalReason(), $answer->context),
+            AnswerType::Rewrite => $rewrites->reply($answer, $original),
+            AnswerType::Delegate => throw InvalidShellAnswer::forAnswer($type->value),
         };
     }
 
     public static function stop(HookAnswer $answer): ProgramReply
     {
-        $kind = $answer->decision->answerKind();
+        $type = $answer->decision->answerType();
 
-        return match ($kind) {
-            AnswerKind::Deny => ProgramReply::json(BlockBody::from([
+        return match ($type) {
+            AnswerType::Deny => ProgramReply::json(BlockBody::from([
                 'decision' => ProgramStopDecision::Block,
                 'reason' => implode("\n", [$answer->decision->refusalReason(), ...$answer->context]),
             ])),
-            AnswerKind::Allow => ProgramReply::emptyObject(),
-            AnswerKind::Delegate, AnswerKind::Rewrite => throw InvalidStopAnswer::forAnswer($kind->value),
+            AnswerType::Allow => ProgramReply::emptyObject(),
+            AnswerType::Delegate, AnswerType::Rewrite => throw InvalidStopAnswer::forAnswer($type->value),
         };
     }
 
@@ -82,15 +82,15 @@ final class ProgramReplies
      */
     public static function prompt(HookAnswer $answer): ProgramReply
     {
-        $kind = $answer->decision->answerKind();
+        $type = $answer->decision->answerType();
 
-        return match ($kind) {
-            AnswerKind::Deny => ProgramReply::json(BlockBody::from([
+        return match ($type) {
+            AnswerType::Deny => ProgramReply::json(BlockBody::from([
                 'decision' => ProgramStopDecision::Block,
                 'reason' => $answer->decision->refusalReason(),
             ])),
-            AnswerKind::Allow => self::observation('UserPromptSubmit', $answer),
-            AnswerKind::Delegate, AnswerKind::Rewrite => throw InvalidObservationAnswer::forAnswer($kind->value),
+            AnswerType::Allow => self::observation('UserPromptSubmit', $answer),
+            AnswerType::Delegate, AnswerType::Rewrite => throw InvalidObservationAnswer::forAnswer($type->value),
         };
     }
 
@@ -99,10 +99,10 @@ final class ProgramReplies
      */
     public static function observation(string $hookEventName, HookAnswer $answer): ProgramReply
     {
-        $kind = $answer->decision->answerKind();
+        $type = $answer->decision->answerType();
 
-        if ($kind !== AnswerKind::Allow) {
-            throw InvalidObservationAnswer::forAnswer($kind->value);
+        if ($type !== AnswerType::Allow) {
+            throw InvalidObservationAnswer::forAnswer($type->value);
         }
 
         if ($answer->context === []) {

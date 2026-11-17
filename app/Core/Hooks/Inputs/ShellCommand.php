@@ -54,7 +54,7 @@ final readonly class ShellCommand
     public function needsAlias(): bool
     {
         foreach ($this->parts as $part) {
-            if ($part->kind->needsAlias()) {
+            if ($part->type->needsAlias()) {
                 return true;
             }
         }

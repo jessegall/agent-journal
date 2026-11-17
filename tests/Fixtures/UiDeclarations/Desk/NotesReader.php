@@ -12,6 +12,6 @@ final class NotesReader implements SectionReader
 {
     public function read(SlotContext $context): RecentNotesData
     {
-        return new RecentNotesData([$context->kind->value]);
+        return new RecentNotesData([$context->type->value]);
     }
 }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Storage;
 
-use App\Core\Hooks\Enums\AnswerKind;
-use App\Core\Hooks\Enums\TransitionKind;
+use App\Core\Hooks\Enums\AnswerType;
+use App\Core\Hooks\Enums\TransitionType;
 use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Data;
 
@@ -19,8 +19,8 @@ final class WalkStep extends Data
         public readonly string $frameId,
         public readonly string $stateType,
         public readonly string $hookMethod,
-        public readonly AnswerKind $answer,
+        public readonly AnswerType $answer,
         #[MapName('change')]
-        public readonly TransitionKind $transition,
+        public readonly TransitionType $transition,
     ) {}
 }

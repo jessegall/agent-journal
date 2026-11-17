@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plans;
 
-use App\Core\Actors\Support\ActorContext;
 use App\Core\Actors\Contracts\CurrentActorSetter;
+use App\Core\Actors\Support\ActorContext;
 use App\Domain\Plans\Actions\AddPhaseTasks;
-use App\Domain\Plans\Enums\PlanKind;
+use App\Domain\Plans\Enums\PlanType;
 use App\Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Tasks\Exceptions\TaskMissing;
@@ -25,7 +25,7 @@ final class AddPhaseTasksTest extends TestCase
     public function test_tasks_join_a_phase_in_order_once_tasks_confirmed_them(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
-        $phase = Plan::query()->create(['title' => 'Build', 'kind' => PlanKind::Build])->addPhase('Read');
+        $phase = Plan::query()->create(['title' => 'Build', 'type' => PlanType::Build])->addPhase('Read');
         $first = Task::query()->create(['title' => 'First'])->id;
         $second = Task::query()->create(['title' => 'Second'])->id;
 
@@ -37,7 +37,7 @@ final class AddPhaseTasksTest extends TestCase
     public function test_one_missing_task_refuses_the_whole_addition(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
-        $phase = Plan::query()->create(['title' => 'Build', 'kind' => PlanKind::Build])->addPhase('Read');
+        $phase = Plan::query()->create(['title' => 'Build', 'type' => PlanType::Build])->addPhase('Read');
         $real = Task::query()->create(['title' => 'Real'])->id;
 
         try {
@@ -50,7 +50,7 @@ final class AddPhaseTasksTest extends TestCase
 
     public function test_a_task_named_twice_is_refused_before_anything_is_written(): void
     {
-        $phase = Plan::query()->create(['title' => 'Build', 'kind' => PlanKind::Build])->addPhase('Read');
+        $phase = Plan::query()->create(['title' => 'Build', 'type' => PlanType::Build])->addPhase('Read');
         $task = Task::query()->create(['title' => 'Twice'])->id;
 
         $this->expectExceptionObject(TaskAlreadyInAPhase::forTask($task));

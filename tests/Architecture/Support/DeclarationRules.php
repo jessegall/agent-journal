@@ -43,7 +43,7 @@ final readonly class DeclarationRules
                 }
 
                 if (preg_match('/^'.preg_quote($root, '/').'\\\\(\w+)\\\\\1Domain$/', $name) !== 1) {
-                    $violations[] = new Violation($path, $class->getStartLine(), $name, 'none', 'none', ViolationKind::MisnamedDomainClass);
+                    $violations[] = new Violation($path, $class->getStartLine(), $name, 'none', 'none', ViolationType::MisnamedDomainClass);
                 }
             }
         }
@@ -68,7 +68,7 @@ final readonly class DeclarationRules
                 continue;
             }
 
-            $violations[] = new Violation($path, 1, $path, 'none', 'none', ViolationKind::FileOutsideDomains);
+            $violations[] = new Violation($path, 1, $path, 'none', 'none', ViolationType::FileOutsideDomains);
         }
 
         return $violations;
@@ -94,7 +94,7 @@ final readonly class DeclarationRules
             $owner = array_find($this->entries, fn (DomainEntry $entry) => $entry->ownsName($use->name));
 
             if ($owner !== null) {
-                $violations[] = new Violation($use->file, $use->line, $use->name, 'starter kit', $owner->name, ViolationKind::StarterKitUsesDomain);
+                $violations[] = new Violation($use->file, $use->line, $use->name, 'starter kit', $owner->name, ViolationType::StarterKitUsesDomain);
             }
         }
 
@@ -116,7 +116,7 @@ final readonly class DeclarationRules
                     $name = $namespace->name?->toString() ?? 'the global namespace';
 
                     if (! $entry->ownsName($name.'\\')) {
-                        $violations[] = new Violation($path, $namespace->getStartLine(), $name, $entry->name, $entry->namespace, ViolationKind::NamespaceOutsideDomain);
+                        $violations[] = new Violation($path, $namespace->getStartLine(), $name, $entry->name, $entry->namespace, ViolationType::NamespaceOutsideDomain);
                     }
                 }
             }
@@ -141,7 +141,7 @@ final readonly class DeclarationRules
             }
 
             if (! in_array(substr($path, strlen($sharedFolder) + 1), $fixedFiles, true)) {
-                $violations[] = new Violation($path, 1, $path, 'App\Domain', 'App\Domain', ViolationKind::SharedPlaceFile);
+                $violations[] = new Violation($path, 1, $path, 'App\Domain', 'App\Domain', ViolationType::SharedPlaceFile);
             }
         }
 

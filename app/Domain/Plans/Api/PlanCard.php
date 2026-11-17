@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Plans\Api;
 
 use App\Core\Assignments\Support\AssignmentHolder;
-use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
+use App\Domain\Plans\Enums\PlanType;
 use PhpOption\Option;
 
 /**
@@ -21,7 +21,7 @@ final readonly class PlanCard
     public function __construct(
         public int $id,
         public string $title,
-        public PlanKind $kind,
+        public PlanType $type,
         public PlanState $state,
         public bool $canStart,
         public bool $focused,

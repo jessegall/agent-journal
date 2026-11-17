@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Storage;
 
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Exceptions\StoredValueInvalid;
 use Spatie\LaravelData\Data;
 
 /**
- * The final answer of one hook call as it is kept for a retry: its kind and the exact reply the program received.
+ * The final answer of one hook call as it is kept for a retry: its type and the exact reply the program received.
  */
 final class RecordedAnswer extends Data
 {
@@ -17,15 +17,15 @@ final class RecordedAnswer extends Data
 
     public function __construct(
         public readonly int $version,
-        public readonly AnswerKind $kind,
+        public readonly AnswerType $type,
         public readonly string $stdout,
         public readonly string $stderr,
         public readonly int $exitCode,
     ) {}
 
-    public static function of(AnswerKind $kind, string $stdout, string $stderr = '', int $exitCode = 0): self
+    public static function of(AnswerType $type, string $stdout, string $stderr = '', int $exitCode = 0): self
     {
-        return new self(self::CURRENT_VERSION, $kind, $stdout, $stderr, $exitCode);
+        return new self(self::CURRENT_VERSION, $type, $stdout, $stderr, $exitCode);
     }
 
     public function checkVersion(): self

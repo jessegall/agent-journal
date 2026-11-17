@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Core\Agents\Support\AgentContext;
 use App\Core\AgentRequests\Support\SignedCall;
+use App\Core\Agents\Support\AgentContext;
+use App\Core\Agents\Support\StackTarget;
 use App\Core\Hooks\Actions\PruneHookHistory;
 use App\Core\Hooks\Decisions\StateReference;
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Enums\NoSubject;
 use App\Core\Hooks\Exceptions\HookIdentityExpired;
 use App\Core\Hooks\Exceptions\RetentionTooShort;
@@ -22,7 +23,6 @@ use App\Core\Hooks\Storage\RecordedSteps;
 use App\Core\Hooks\Support\HookRetryWindow;
 use App\Core\Hooks\Support\RetentionPeriods;
 use App\Core\Hooks\Support\StackAccess;
-use App\Core\Agents\Support\StackTarget;
 use App\Core\Links\Models\Link;
 use Carbon\CarbonImmutable;
 use Tests\Support\RefreshHookDatabase;
@@ -146,7 +146,7 @@ final class HookRetentionTest extends TestCase
     private function recordCall(StackTarget $target, string $hookId): HookCall
     {
         $call = new HookCall;
-        $call->recordFor(new HookIdentity($target->agentId, $target->sessionId, $hookId, str_repeat('a', 64)), RecordedAnswer::of(AnswerKind::Allow, '{}'), RecordedSteps::of([]));
+        $call->recordFor(new HookIdentity($target->agentId, $target->sessionId, $hookId, str_repeat('a', 64)), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
 
         return $call;
     }

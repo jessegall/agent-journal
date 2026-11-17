@@ -8,7 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Architecture\Support\DocblockScan;
 use Tests\Architecture\Support\DocblockTagInvalid;
-use Tests\Architecture\Support\NameKind;
+use Tests\Architecture\Support\NameType;
 use Tests\Architecture\Support\NameUse;
 use Tests\Architecture\Support\ParsedFile;
 use Tests\Architecture\Support\ProjectRoots;
@@ -40,7 +40,7 @@ final class DocblockAndStringScanTest extends TestCase
         $file = $this->fixture('DocblockTypes');
 
         $this->assertContainsEquals(
-            new NameUse($file->path, $line, self::CHAT.'\\'.$chatName, NameKind::Type),
+            new NameUse($file->path, $line, self::CHAT.'\\'.$chatName, NameType::Type),
             DocblockScan::of($file),
         );
     }
@@ -89,7 +89,7 @@ final class DocblockAndStringScanTest extends TestCase
         $file = $this->fixture('StringNames');
 
         $this->assertContainsEquals(
-            new NameUse($file->path, $line, $name, NameKind::String),
+            new NameUse($file->path, $line, $name, NameType::String),
             StringScan::of($file, $this->roots()),
         );
     }

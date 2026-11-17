@@ -1,10 +1,10 @@
 import type { IconName } from '@kit/Icon';
-import type { PlanCardData, PlanKind, PlanState } from '@generated/types/plans';
+import type { PlanCardData, PlanType, PlanState } from '@generated/types/plans';
 
 /**
- * How a plan's kind and state look; keyed by the server's enum values, never by a translated label.
+ * How a plan's type and state look; keyed by the server's enum values, never by a translated label.
  */
-export const kindIcon: Record<PlanKind, IconName> = {
+export const typeIcon: Record<PlanType, IconName> = {
     build: 'plan',
     fix: 'warn',
     research: 'search',

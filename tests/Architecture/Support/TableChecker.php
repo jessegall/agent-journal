@@ -76,22 +76,22 @@ final readonly class TableChecker
         $user = $this->ownerHolding($use->file);
         $owner = $this->owners[$use->table] ?? null;
 
-        $kind = match (true) {
-            $use->kind === TableKind::Create => null,
-            $use->kind === TableKind::NotWritten => ViolationKind::TableNotWritten,
-            $use->kind === TableKind::PivotNotWritten => ViolationKind::PivotNotWritten,
-            $owner === null => ViolationKind::TableOfNoDomain,
+        $type = match (true) {
+            $use->type === TableType::Create => null,
+            $use->type === TableType::NotWritten => ViolationType::TableNotWritten,
+            $use->type === TableType::PivotNotWritten => ViolationType::PivotNotWritten,
+            $owner === null => ViolationType::TableOfNoDomain,
             $owner === $user => null,
-            $use->kind === TableKind::ModelTable => ViolationKind::ModelTableElsewhere,
-            $use->kind === TableKind::Change => ViolationKind::ChangesOtherTable,
-            default => ViolationKind::OtherOwnersTable,
+            $use->type === TableType::ModelTable => ViolationType::ModelTableElsewhere,
+            $use->type === TableType::Change => ViolationType::ChangesOtherTable,
+            default => ViolationType::OtherOwnersTable,
         };
 
-        if ($kind === null) {
+        if ($type === null) {
             return null;
         }
 
-        return new Violation($use->file, $use->line, $use->table, $user->name, $owner->name ?? 'no domain', $kind);
+        return new Violation($use->file, $use->line, $use->table, $user->name, $owner->name ?? 'no domain', $type);
     }
 
     /**
@@ -106,7 +106,7 @@ final readonly class TableChecker
                 $first = $this->creations[$creation->table];
 
                 if ($first->file !== $creation->file) {
-                    $violations[] = new Violation($creation->file, $creation->line, $creation->table, $entry->name, $first->file, ViolationKind::TableCreatedTwice);
+                    $violations[] = new Violation($creation->file, $creation->line, $creation->table, $entry->name, $first->file, ViolationType::TableCreatedTwice);
                 }
             }
         }
@@ -127,7 +127,7 @@ final readonly class TableChecker
             $name = basename($file);
 
             if (isset($seen[$name])) {
-                $violations[] = new Violation($file, 1, $name, $this->ownerNameOf($file), $seen[$name], ViolationKind::MigrationNameTwice);
+                $violations[] = new Violation($file, 1, $name, $this->ownerNameOf($file), $seen[$name], ViolationType::MigrationNameTwice);
 
                 continue;
             }
@@ -149,8 +149,8 @@ final readonly class TableChecker
             foreach (TableScan::of(ParsedFile::fromPath($file)) as $use) {
                 $owner = $this->owners[$use->table] ?? null;
 
-                if ($owner !== null && $use->kind === TableKind::Change) {
-                    $violations[] = new Violation($file, $use->line, $use->table, self::ROOT_MIGRATIONS, $owner->name, ViolationKind::RootMigrationChangesDomainTable);
+                if ($owner !== null && $use->type === TableType::Change) {
+                    $violations[] = new Violation($file, $use->line, $use->table, self::ROOT_MIGRATIONS, $owner->name, ViolationType::RootMigrationChangesDomainTable);
                 }
             }
         }
@@ -168,7 +168,7 @@ final readonly class TableChecker
 
         foreach (DomainFiles::in($folders) as $file) {
             foreach (TableScan::of(ParsedFile::fromPath($file)) as $use) {
-                if ($use->kind === TableKind::Create) {
+                if ($use->type === TableType::Create) {
                     $creations[] = $use;
                 }
             }

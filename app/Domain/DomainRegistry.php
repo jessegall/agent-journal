@@ -110,7 +110,7 @@ final readonly class DomainRegistry
     }
 
     /**
-     * Registers the assignable record types and the actor kinds able to hold records that domains declare; a domain
+     * Registers the assignable record types and the actor types able to hold records that domains declare; a domain
      * that declares neither is left out.
      */
     public function registerAssignmentsIn(AssignmentRegistration $registration): void

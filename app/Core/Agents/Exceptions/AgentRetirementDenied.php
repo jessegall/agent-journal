@@ -14,7 +14,7 @@ final class AgentRetirementDenied extends RuntimeException
 
     public static function forCaller(ActorIdentity $caller, int $agentId): self
     {
-        return new self("The {$caller->kind->value} {$caller->id} may not retire agent {$agentId}; only the owner, or a main agent retiring an agent that is not a main agent, may.");
+        return new self("The {$caller->type->value} {$caller->id} may not retire agent {$agentId}; only the owner, or a main agent retiring an agent that is not a main agent, may.");
     }
 
     public static function insideTransaction(): self

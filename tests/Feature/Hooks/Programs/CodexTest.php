@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks\Programs;
 
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Decisions\StateReference;
-use App\Core\Hooks\Enums\CommandKind;
+use App\Core\Hooks\Enums\CommandType;
 use App\Core\Hooks\Enums\FileOperation;
 use App\Core\Hooks\Enums\NoSubject;
 use App\Core\Hooks\Exceptions\UnsupportedHook;
@@ -54,7 +54,7 @@ final class CodexTest extends TestCase
 
         $this->assertInstanceOf(ShellCommandRequested::class, $input);
         $this->assertSame('echo hello', $input->command->source);
-        $this->assertSame([CommandKind::Ordinary], array_map(fn ($part) => $part->kind, $input->command->parts));
+        $this->assertSame([CommandType::Ordinary], array_map(fn ($part) => $part->type, $input->command->parts));
     }
 
     public function test_a_patch_names_the_file_it_updates_or_adds(): void

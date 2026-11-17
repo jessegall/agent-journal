@@ -32,7 +32,7 @@ final class NotesDomain implements Domain, ProvidesNavigation, ProvidesPages, Pr
 
     public function sections(): array
     {
-        return [Section::make('count', 'Notes', 'chat.dock', SlotContextKind::Session, NoteSectionReader::class, 'NoteSection.vue')];
+        return [Section::make('count', 'Notes', 'chat.dock', SlotContextType::Session, NoteSectionReader::class, 'NoteSection.vue')];
     }
 }
 ```

@@ -13,7 +13,7 @@ use App\Core\Ui\Declarations\Page;
 use App\Core\Ui\Declarations\Section;
 use App\Core\Ui\Declarations\Slot;
 use App\Core\Ui\Enums\Icon;
-use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Ui\Enums\SlotContextType;
 use App\Domain\Chat\Api\Conversation;
 use App\Domain\Chat\Api\Events\MessageAnswered;
 use App\Domain\Chat\Api\Events\MessageDismissed;
@@ -35,7 +35,7 @@ final class ChatDomain implements Domain, ProvidesNavigation, ProvidesPages, Pro
 {
     public function description(): string
     {
-        return 'Messages between the user and agents; a question is a kind of message.';
+        return 'Messages between the user and agents; a question is a type of message.';
     }
 
     /**
@@ -75,7 +75,7 @@ final class ChatDomain implements Domain, ProvidesNavigation, ProvidesPages, Pro
             Page::make('conversation', 'Chat', Icon::Chat, ChatWindowReader::class, 'ChatWindow.vue')
                 ->at('')
                 ->onHome(10)
-                ->slots(Slot::make('dock', SlotContextKind::Session))
+                ->slots(Slot::make('dock', SlotContextType::Session))
                 ->actions(ActionRoute::post('messages', SendMessageController::class, 'send')),
         ];
     }
@@ -87,6 +87,6 @@ final class ChatDomain implements Domain, ProvidesNavigation, ProvidesPages, Pro
 
     public function sections(): array
     {
-        return [Section::make('agent', 'Agent', 'web.bar', SlotContextKind::Session, ChosenAgentSection::class, 'ChosenAgent.vue')];
+        return [Section::make('agent', 'Agent', 'web.bar', SlotContextType::Session, ChosenAgentSection::class, 'ChosenAgent.vue')];
     }
 }

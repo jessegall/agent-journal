@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Core\Actors\Support;
 
-use App\Core\Actors\Exceptions\ActorContextMissing;
 use App\Core\Actors\Contracts\Actor;
 use App\Core\Actors\Contracts\CurrentActor;
 use App\Core\Actors\Contracts\CurrentActorSetter;
+use App\Core\Actors\Exceptions\ActorContextMissing;
 use Illuminate\Container\Attributes\Scoped;
 
 /**

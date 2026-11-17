@@ -6,8 +6,8 @@ namespace App\Domain\Plans\Http\Data;
 
 use App\Core\Assignments\Support\AssignmentData;
 use App\Domain\Plans\Api\PlanCard;
-use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
+use App\Domain\Plans\Enums\PlanType;
 use Spatie\LaravelData\Data;
 
 /**
@@ -22,7 +22,7 @@ final class AssignedPlanCardData extends Data
     public function __construct(
         public readonly int $id,
         public readonly string $title,
-        public readonly PlanKind $kind,
+        public readonly PlanType $type,
         public readonly PlanState $state,
         public readonly AssignmentData $holder,
     ) {}
@@ -32,7 +32,7 @@ final class AssignedPlanCardData extends Data
         return self::from([
             'id' => $card->id,
             'title' => $card->title,
-            'kind' => $card->kind,
+            'type' => $card->type,
             'state' => $card->state,
             'holder' => AssignmentData::ofHolder($card->holder->get()),
         ]);

@@ -141,10 +141,10 @@ final class NavigationItem
     /**
      * @param  array<mixed>  $values
      */
-    private static function refuseLooseValues(string $item, string $kind, array $values): void
+    private static function refuseLooseValues(string $item, string $type, array $values): void
     {
         if (! array_all($values, fn (mixed $value, int|string $name) => is_string($name) && is_string($value))) {
-            throw InvalidNavigationDeclaration::valuesNotStrings($item, $kind);
+            throw InvalidNavigationDeclaration::valuesNotStrings($item, $type);
         }
     }
 }

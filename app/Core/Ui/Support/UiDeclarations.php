@@ -209,11 +209,11 @@ final readonly class UiDeclarations
     /**
      * @param  list<string>  $keys
      */
-    private static function refuseRepeatedKeys(DomainUi $owner, string $kind, array $keys): void
+    private static function refuseRepeatedKeys(DomainUi $owner, string $type, array $keys): void
     {
         foreach (array_count_values($keys) as $key => $count) {
             if ($count > 1) {
-                throw UiKeyRepeated::inDomain($owner->name, $kind, (string) $key);
+                throw UiKeyRepeated::inDomain($owner->name, $type, (string) $key);
             }
         }
     }

@@ -12,7 +12,7 @@ use App\Core\Ui\Declarations\RegisteredPage;
 use App\Core\Ui\Declarations\Section;
 use App\Core\Ui\Declarations\Slot;
 use App\Core\Ui\Enums\Icon;
-use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Ui\Enums\SlotContextType;
 use App\Core\Ui\Exceptions\InvalidNavigationDeclaration;
 use App\Core\Ui\Exceptions\UiComponentMissing;
 use App\Core\Ui\Exceptions\UiKeyInvalid;
@@ -164,7 +164,7 @@ final class UiDeclarationsTest extends TestCase
     {
         $this->expectExceptionObject(UiSlotMissing::for('library.notes', 'library.nowhere'));
 
-        $this->check(sections: [Section::make('notes', 'Notes', 'library.nowhere', SlotContextKind::Nothing, NotesReader::class, 'Books.vue')]);
+        $this->check(sections: [Section::make('notes', 'Notes', 'library.nowhere', SlotContextType::Nothing, NotesReader::class, 'Books.vue')]);
     }
 
     public function test_a_section_taking_other_than_its_slot_is_refused(): void
@@ -173,7 +173,7 @@ final class UiDeclarationsTest extends TestCase
 
         $library = DomainEntry::fromClass(LibraryDomain::class)->ui();
         $desk = DomainEntry::fromClass(DeskDomain::class)->declaring(sections: [
-            Section::make('notes', 'Notes', 'library.aside', SlotContextKind::Record, NotesReader::class, 'Notes.vue'),
+            Section::make('notes', 'Notes', 'library.aside', SlotContextType::Record, NotesReader::class, 'Notes.vue'),
         ]);
 
         UiDeclarations::check([$library, $desk]);

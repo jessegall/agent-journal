@@ -8,7 +8,7 @@ use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Contracts\StateFactory;
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Decisions\StateReference;
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Exceptions\BottomStateCannotFinish;
 use App\Core\Hooks\Exceptions\BottomStateDelegated;
 use App\Core\Hooks\Exceptions\InvalidHookAnswer;
@@ -126,12 +126,12 @@ final readonly class AgentStack
             throw BottomStateDelegated::for($frame->typeKey(), $input->methodName(), $walk->visitedFrames());
         }
 
-        if (! $frame->isBottom() && $decision->answerKind() === AnswerKind::Allow) {
+        if (! $frame->isBottom() && $decision->answerType() === AnswerType::Allow) {
             throw NonBottomStateAllowed::for($frame->typeKey(), $input->methodName());
         }
 
-        if (! $input->accepts($decision->answerKind())) {
-            throw InvalidHookAnswer::for($input->methodName(), $decision->answerKind()->value);
+        if (! $input->accepts($decision->answerType())) {
+            throw InvalidHookAnswer::for($input->methodName(), $decision->answerType()->value);
         }
     }
 }

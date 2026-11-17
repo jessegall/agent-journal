@@ -10,7 +10,7 @@ use App\Core\AgentRequests\Support\AgentClientSettings;
 use App\Core\Assignments\Contracts\AssignmentWriter;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
-use App\Domain\Plans\Enums\PlanKind;
+use App\Domain\Plans\Enums\PlanType;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Tasks\Models\Task;
 use Illuminate\Http\Client\ConnectionException;
@@ -51,7 +51,7 @@ final class AssignedListCommandsTest extends TestCase
     {
         $writer = $this->app->make(AssignmentWriter::class);
         $task = Task::query()->create(['title' => 'Write the client']);
-        $plan = Plan::query()->create(['title' => 'Release', 'kind' => PlanKind::Build]);
+        $plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $held = $writer->assign($task->assignmentIdentity(), ActorIdentity::of($this->caller->agent))->outcomes[0]->current->get();
         $writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->caller->agent));
         $this->runCommandsAs($this->caller->token);

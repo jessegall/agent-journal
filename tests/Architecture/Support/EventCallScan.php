@@ -15,7 +15,7 @@ use PhpParser\NodeFinder;
 use PhpParser\PrettyPrinter\Standard;
 
 /**
- * Every call of a file that raises or hears an event, with the kind of event it passes.
+ * Every call of a file that raises or hears an event, with the type of event it passes.
  */
 final class EventCallScan
 {
@@ -86,12 +86,12 @@ final class EventCallScan
             $label,
             $raises,
             $takesOnlyEvents,
-            self::argumentKind($event, $call),
+            self::argumentType($event, $call),
             self::eventText($event),
         );
     }
 
-    private static function argumentKind(Expr|null $event, Node $call): EventArgument
+    private static function argumentType(Expr|null $event, Node $call): EventArgument
     {
         return match (true) {
             $event instanceof String_ => EventArgument::String,

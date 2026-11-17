@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Rules;
 
+use App\Core\Actors\Contracts\CurrentActorSetter;
 use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Actors\Support\ActorContext;
-use App\Core\Actors\Contracts\CurrentActorSetter;
 use App\Domain\Rules\Actions\ProposeRule;
 use App\Domain\Rules\Actions\RemoveRule;
 use App\Domain\Rules\Actions\ReviewRule;

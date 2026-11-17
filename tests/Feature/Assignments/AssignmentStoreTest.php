@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Assignments\Contracts\AssignmentTransaction;
 use App\Core\Assignments\Exceptions\AssignmentRetryExhausted;
@@ -45,8 +45,8 @@ final class AssignmentStoreTest extends TestCase
         parent::setUp();
 
         $this->task = new RecordIdentity('tasks.task', 12);
-        $this->builder = new ActorIdentity(ActorKind::Agent, 7);
-        $this->reviewer = new ActorIdentity(ActorKind::Agent, 8);
+        $this->builder = new ActorIdentity(ActorType::Agent, 7);
+        $this->reviewer = new ActorIdentity(ActorType::Agent, 8);
         $this->startUserRequestAs(1);
     }
 
@@ -113,7 +113,7 @@ final class AssignmentStoreTest extends TestCase
             $store->lockCurrent(new RecordIdentity('tasks.task', 99));
 
             if ($attempts === 1) {
-                $other->table('assignments')->insert(['record_type' => 'tasks.task', 'record_id' => 12, 'holder_kind' => 'agent', 'holder_id' => 8, 'created_at' => now(), 'updated_at' => now()]);
+                $other->table('assignments')->insert(['record_type' => 'tasks.task', 'record_id' => 12, 'holder_type' => 'agent', 'holder_id' => 8, 'created_at' => now(), 'updated_at' => now()]);
             }
 
             return $store->assignIfUnheld($this->task, $this->builder);

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Assignments\Storage;
 
 use App\Core\Actors\Support\ActorIdentity;
-use App\Core\Assignments\Enums\AssignmentOutcomeKind;
+use App\Core\Assignments\Enums\AssignmentOutcomeType;
 use App\Core\Assignments\Exceptions\AssignmentTransactionRequired;
 use App\Core\Assignments\Models\AssignmentRecord;
 use App\Core\Assignments\Support\Assignment;
@@ -48,8 +48,8 @@ final readonly class AssignmentStore
     {
         $this->requireTransaction();
         $this->database->insert(
-            'INSERT INTO assignments (record_type, record_id, holder_kind, holder_id, created_at, updated_at) VALUES (?, ?, ?, ?, now(), now()) ON CONFLICT (record_type, record_id) DO NOTHING',
-            [$record->type, $record->id, $holder->kind->value, $holder->id],
+            'INSERT INTO assignments (record_type, record_id, holder_type, holder_id, created_at, updated_at) VALUES (?, ?, ?, ?, now(), now()) ON CONFLICT (record_type, record_id) DO NOTHING',
+            [$record->type, $record->id, $holder->type->value, $holder->id],
         );
 
         return AssignmentRecord::query()->forRecord($record)->lockForUpdate()->firstOrFail()->toAssignment();
@@ -84,7 +84,7 @@ final readonly class AssignmentStore
         $released = array_values($rows->map(fn (AssignmentRecord $row) => $row->toAssignment())->all());
 
         return new AssignmentResult(
-            array_map(fn (Assignment $assignment) => new AssignmentOutcome($assignment->record, None::create(), AssignmentOutcomeKind::Changed), $released),
+            array_map(fn (Assignment $assignment) => new AssignmentOutcome($assignment->record, None::create(), AssignmentOutcomeType::Changed), $released),
             array_map(fn (Assignment $assignment) => new AssignmentChange($assignment->record, Some::create($assignment), None::create()), $released),
         );
     }

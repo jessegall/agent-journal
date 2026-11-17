@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Processes\Support;
 
 use App\Core\Hooks\Enums\CommandEffect;
-use App\Core\Hooks\Enums\CommandKind;
+use App\Core\Hooks\Enums\CommandType;
 
 /**
  * What Processes knows about programs: which command lines are test runs or builds, which only read files and
@@ -43,21 +43,21 @@ final readonly class CommandCatalog
     /**
      * @param  list<string>  $words  the program and its arguments
      */
-    public function kindOf(array $words): CommandKind
+    public function typeOf(array $words): CommandType
     {
         if ($words[0] === 'journal') {
-            return $this->journalKindOf(array_slice($words, 1));
+            return $this->journalTypeOf(array_slice($words, 1));
         }
 
         if (self::startsWithAny($words, self::TEST_RUNS)) {
-            return CommandKind::TestRun;
+            return CommandType::TestRun;
         }
 
         if (self::startsWithAny($words, self::BUILDS)) {
-            return CommandKind::Build;
+            return CommandType::Build;
         }
 
-        return CommandKind::Ordinary;
+        return CommandType::Ordinary;
     }
 
     /**
@@ -86,20 +86,20 @@ final readonly class CommandCatalog
      *
      * @param  list<string>  $arguments  the words after journal
      */
-    private function journalKindOf(array $arguments): CommandKind
+    private function journalTypeOf(array $arguments): CommandType
     {
         $first = $arguments[0] ?? '';
         $name = $first === 'run' ? ($arguments[1] ?? '') : $first;
 
         if ($this->aliases->exists($name)) {
-            return CommandKind::Alias;
+            return CommandType::Alias;
         }
 
         if (in_array($first, self::JOURNAL_SUBCOMMANDS, true)) {
-            return CommandKind::Ordinary;
+            return CommandType::Ordinary;
         }
 
-        return CommandKind::Unknown;
+        return CommandType::Unknown;
     }
 
     /**

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Models;
 
-use App\Core\Assignments\Support\RecordIdentity;
 use App\Core\Assignments\Contracts\Assignable;
+use App\Core\Assignments\Support\RecordIdentity;
 use App\Core\Links\Support\Linkable;
 use App\Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

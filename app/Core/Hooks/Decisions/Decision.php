@@ -7,7 +7,7 @@ namespace App\Core\Hooks\Decisions;
 use App\Core\Hooks\Contracts\Answer;
 use App\Core\Hooks\Contracts\Refusal;
 use App\Core\Hooks\Contracts\StackTransition;
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Enums\SimpleAnswer;
 use App\Core\Hooks\Enums\SimpleTransition;
 use App\Core\Hooks\Exceptions\ConflictingStackTransition;
@@ -79,7 +79,7 @@ final readonly class Decision
     public function withPush(StateReference $state): self
     {
         if ($this->transition !== SimpleTransition::Keep) {
-            throw ConflictingStackTransition::forTransition($this->transition->kind()->value);
+            throw ConflictingStackTransition::forTransition($this->transition->type()->value);
         }
 
         return new self($this->answer, new PushState($state), $this->context);
@@ -96,7 +96,7 @@ final readonly class Decision
     public function replacementLine(): string
     {
         if (! $this->answer instanceof Rewritten) {
-            throw NoReplacementLine::forAnswer($this->answerKind()->value);
+            throw NoReplacementLine::forAnswer($this->answerType()->value);
         }
 
         return $this->answer->line;
@@ -108,14 +108,14 @@ final readonly class Decision
     public function refusalReason(): string
     {
         if (! $this->answer instanceof Refusal) {
-            throw NoRefusalReason::forAnswer($this->answerKind()->value);
+            throw NoRefusalReason::forAnswer($this->answerType()->value);
         }
 
         return $this->answer->reason()->text;
     }
 
-    public function answerKind(): AnswerKind
+    public function answerType(): AnswerType
     {
-        return $this->answer->kind();
+        return $this->answer->type();
     }
 }

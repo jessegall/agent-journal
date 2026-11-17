@@ -7,7 +7,7 @@ namespace Tests\Feature\Assignments;
 use App\Core\Assignments\Models\AssignmentRecord;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
-use App\Domain\Plans\Enums\PlanKind;
+use App\Domain\Plans\Enums\PlanType;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Tasks\Models\Task;
 use Tests\Fixtures\Agents\TestLaunch;
@@ -41,7 +41,7 @@ final class PlanWorkCommandsTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->main = TestLaunch::start('hooks.main_ready');
         $this->helper = TestLaunch::start('hooks.read_only_helper_ready');
-        $this->plan = Plan::query()->create(['title' => 'Release', 'kind' => PlanKind::Build]);
+        $this->plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $open = Task::query()->create(['title' => 'Open']);
         $finished = Task::query()->create(['title' => 'Finished']);
         $finished->finish();
@@ -53,18 +53,18 @@ final class PlanWorkCommandsTest extends TestCase
     {
         $root = ['rootType' => Plan::LINK_TYPE, 'rootId' => $this->plan->id];
 
-        $given = $this->signed($this->main, '/agent/plans/work/assign', [...$root, 'recipientKind' => 'agent', 'recipientId' => $this->helper->agent->id])
+        $given = $this->signed($this->main, '/agent/plans/work/assign', [...$root, 'recipientType' => 'agent', 'recipientId' => $this->helper->agent->id])
             ->assertOk()->assertJson(['cascade' => true, 'changed' => 3, 'unchanged' => 0, 'skipped' => 2])->assertJsonMissingPath('outcomes');
         $reference = (int) $given->json('root.holder.reference');
         $this->assertSame(3, AssignmentRecord::query()->withoutGlobalScopes()->count());
 
-        $this->signed($this->main, '/agent/plans/work/reassign', [...$root, 'assignmentId' => 999999, 'holderKind' => 'agent', 'holderId' => $this->helper->agent->id, 'recipientKind' => 'agent', 'recipientId' => $this->main->agent->id])
+        $this->signed($this->main, '/agent/plans/work/reassign', [...$root, 'assignmentId' => 999999, 'holderType' => 'agent', 'holderId' => $this->helper->agent->id, 'recipientType' => 'agent', 'recipientId' => $this->main->agent->id])
             ->assertConflict();
-        $this->signed($this->helper, '/agent/plans/work/unassign', [...$root, 'assignmentId' => $reference, 'holderKind' => 'agent', 'holderId' => $this->helper->agent->id])
+        $this->signed($this->helper, '/agent/plans/work/unassign', [...$root, 'assignmentId' => $reference, 'holderType' => 'agent', 'holderId' => $this->helper->agent->id])
             ->assertForbidden();
-        $moved = $this->signed($this->main, '/agent/plans/work/reassign', [...$root, 'assignmentId' => $reference, 'holderKind' => 'agent', 'holderId' => $this->helper->agent->id, 'recipientKind' => 'agent', 'recipientId' => $this->main->agent->id])
+        $moved = $this->signed($this->main, '/agent/plans/work/reassign', [...$root, 'assignmentId' => $reference, 'holderType' => 'agent', 'holderId' => $this->helper->agent->id, 'recipientType' => 'agent', 'recipientId' => $this->main->agent->id])
             ->assertOk()->assertJson(['changed' => 3, 'skipped' => 2]);
-        $this->signed($this->main, '/agent/plans/work/unassign', [...$root, 'assignmentId' => (int) $moved->json('root.holder.reference'), 'holderKind' => 'agent', 'holderId' => $this->main->agent->id])
+        $this->signed($this->main, '/agent/plans/work/unassign', [...$root, 'assignmentId' => (int) $moved->json('root.holder.reference'), 'holderType' => 'agent', 'holderId' => $this->main->agent->id])
             ->assertOk()->assertJson(['changed' => 3]);
 
         $this->assertSame(0, AssignmentRecord::query()->withoutGlobalScopes()->count());
@@ -80,6 +80,6 @@ final class PlanWorkCommandsTest extends TestCase
         $this->artisan('plan:unassign-work', ['type' => Plan::LINK_TYPE, 'id' => $this->plan->id, '--assignment' => 999999, '--holder' => "agent:{$this->helper->agent->id}"])
             ->expectsOutputToContain('(409)')->assertExitCode(1);
         $this->artisan('plan:assign-work', ['type' => Plan::LINK_TYPE, 'id' => $this->plan->id, '--to' => 'nobody'])
-            ->expectsOutputToContain('kind:id')->assertExitCode(1);
+            ->expectsOutputToContain('type:id')->assertExitCode(1);
     }
 }

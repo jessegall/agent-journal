@@ -11,10 +11,10 @@ use PHPUnit\Framework\TestCase;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
-use Tests\Architecture\Support\NameKind;
+use Tests\Architecture\Support\NameType;
 use Tests\Architecture\Support\NameUse;
 use Tests\Architecture\Support\ProjectRoots;
-use Tests\Architecture\Support\ViolationKind;
+use Tests\Architecture\Support\ViolationType;
 use Tests\Fixtures\Boundary\Chat\ChatDomain;
 use Tests\Fixtures\Boundary\Plans\PlansDomain;
 use Tests\Fixtures\Boundary\Tasks\TasksDomain;
@@ -26,7 +26,7 @@ final class BoundaryCheckerTest extends TestCase
      */
     public static function boundaryFixtures(): iterable
     {
-        yield 'allowed uses of every kind' => ['Plans/UsesAllowed.php', []];
+        yield 'allowed uses of every type' => ['Plans/UsesAllowed.php', []];
         yield 'the Plans domain class' => ['Plans/PlansDomain.php', []];
         yield 'the Tasks domain class' => ['Tasks/TasksDomain.php', []];
         yield 'every forbidden use with its reason' => ['Plans/UsesForbidden.php', [
@@ -51,7 +51,7 @@ final class BoundaryCheckerTest extends TestCase
 
     public function test_the_shared_place_may_use_no_domain(): void
     {
-        $use = new NameUse(dirname(__DIR__, 2).'/app/Domain/DomainRegistry.php', 3, 'Tests\Fixtures\Boundary\Chat\Message', NameKind::Type);
+        $use = new NameUse(dirname(__DIR__, 2).'/app/Domain/DomainRegistry.php', 3, 'Tests\Fixtures\Boundary\Chat\Message', NameType::Type);
 
         $violations = $this->checker()->violations([$use]);
 
@@ -61,7 +61,7 @@ final class BoundaryCheckerTest extends TestCase
 
     public function test_the_core_may_use_no_domain(): void
     {
-        $use = new NameUse(dirname(__DIR__, 2).'/app/Core/Hooks/AgentStacks.php', 3, 'Tests\Fixtures\Boundary\Chat\Message', NameKind::Type);
+        $use = new NameUse(dirname(__DIR__, 2).'/app/Core/Hooks/AgentStacks.php', 3, 'Tests\Fixtures\Boundary\Chat\Message', NameType::Type);
 
         $this->assertCount(1, $this->checker()->violations([$use]));
     }
@@ -69,8 +69,8 @@ final class BoundaryCheckerTest extends TestCase
     public function test_a_domain_uses_the_core_and_its_events_without_declaring_it(): void
     {
         $uses = [
-            new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Core\Actors\Contracts\Actor', NameKind::Type),
-            new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 4, 'App\Core\Hooks\Events\StateTypesRequested', NameKind::Type),
+            new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Core\Actors\Contracts\Actor', NameType::Type),
+            new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 4, 'App\Core\Hooks\Events\StateTypesRequested', NameType::Type),
         ];
 
         $this->assertSame([], $this->checker()->violations($uses));
@@ -78,7 +78,7 @@ final class BoundaryCheckerTest extends TestCase
 
     public function test_a_private_type_of_a_required_domain_is_refused(): void
     {
-        $use = new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'Tests\Fixtures\Boundary\Tasks\TaskRecords', NameKind::Type);
+        $use = new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'Tests\Fixtures\Boundary\Tasks\TaskRecords', NameType::Type);
 
         $this->assertSame(
             ["3 uses Tests\Fixtures\Boundary\Tasks\TaskRecords, which Tasks does not export; add it to Tasks's exports() if it is meant to be public, or use what Tasks exports"],
@@ -88,25 +88,25 @@ final class BoundaryCheckerTest extends TestCase
 
     public function test_a_core_type_off_the_core_list_is_refused_to_a_domain(): void
     {
-        $use = new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Core\Hooks\Actions\AgentStacks', NameKind::Type);
+        $use = new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Core\Hooks\Actions\AgentStacks', NameType::Type);
 
         $violations = $this->checker()->violations([$use]);
 
-        $this->assertSame([ViolationKind::PrivateCoreType], array_map(fn ($violation) => $violation->kind, $violations));
+        $this->assertSame([ViolationType::PrivateCoreType], array_map(fn ($violation) => $violation->type, $violations));
     }
 
     public function test_a_composition_file_names_only_what_it_composes(): void
     {
         $base = dirname(__DIR__, 2);
         $uses = [
-            new NameUse("{$base}/bootstrap/domains.php", 4, ChatDomain::class, NameKind::Import),
-            new NameUse("{$base}/bootstrap/app.php", 5, 'Tests\Fixtures\Boundary\Chat\Message', NameKind::Import),
-            new NameUse("{$base}/config/auth.php", 6, 'App\Core\Hooks\Actions\AgentStacks', NameKind::Import),
+            new NameUse("{$base}/bootstrap/domains.php", 4, ChatDomain::class, NameType::Import),
+            new NameUse("{$base}/bootstrap/app.php", 5, 'Tests\Fixtures\Boundary\Chat\Message', NameType::Import),
+            new NameUse("{$base}/config/auth.php", 6, 'App\Core\Hooks\Actions\AgentStacks', NameType::Import),
         ];
 
         $this->assertSame(
-            [[5, ViolationKind::CompositionMisuse, 'Chat'], [6, ViolationKind::CompositionMisuse, 'Core']],
-            array_map(fn ($violation) => [$violation->line, $violation->kind, $violation->owner], $this->checker()->compositionViolations($uses, $base)),
+            [[5, ViolationType::CompositionMisuse, 'Chat'], [6, ViolationType::CompositionMisuse, 'Core']],
+            array_map(fn ($violation) => [$violation->line, $violation->type, $violation->owner], $this->checker()->compositionViolations($uses, $base)),
         );
     }
 

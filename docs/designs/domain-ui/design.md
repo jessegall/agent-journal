@@ -71,7 +71,7 @@ No Core UI registry and no provider push API. DomainRegistry reads the optional 
 
 Keep shared UI support inside the domain foundation's Support tree, not a new domain root named Ui:
 
-| Kind | Proposed location |
+| Type | Proposed location |
 | --- | --- |
 | Optional interfaces, PageReader, SectionReader, VisibilityCheck and ChangesPages marker | app/Domain/Contracts, matching App\Domain\Contracts namespace |
 | Immutable NavigationItem, PageDefinition, SectionDefinition, SlotDefinition, RouteDefinition, SectionResult and SlotContext | app/Domain/Support/Ui/Data, matching App\Domain\Support\Ui\Data namespace |
@@ -110,7 +110,7 @@ A navigation item points only at a same-owner declared page. Chat cannot claim W
 
 Derive prefix from the registered domain name, lowercased: chat, notes, web. Reject normalized collisions; the registry already rejects duplicate owners. No vendor-qualified UI namespace, owner contract version or independently declared source roots. Convention: each reflected owner root contains Ui/resources/js and Ui/Data. Web keeps its existing resources/js/pages compatibility path. Installed outside-app modules use the same relative paths.
 
-Keep reader implementations/controllers in kind folders under the owner's Ui. They may use their own Contracts and own code freely. Export an interface only when a different domain needs it; do not widen exports solely for a local presentation consumer. Foreign data still needs an approved direct dependency and exports, never private models/tables. Web reaches unknown owners solely through foundation readers.
+Keep reader implementations/controllers in type folders under the owner's Ui. They may use their own Contracts and own code freely. Export an interface only when a different domain needs it; do not widen exports solely for a local presentation consumer. Foreign data still needs an approved direct dependency and exports, never private models/tables. Web reaches unknown owners solely through foundation readers.
 
 ## Web registers guarded routes
 
@@ -214,7 +214,7 @@ No additional user-dependent choices are concealed as implementation details. AP
 ## Evidence and limits
 
 - app/Domain/Contracts/ProvidesStates.php:9–22 and DomainRegistry.php:84–97: optional interfaces and foundation discovery.
-- tests/Architecture/FolderLayoutTest.php:26–40; Support/FolderKind.php:16–47: kind placement. Support/BoundaryChecker.php:17–19 already recognizes foundation.
+- tests/Architecture/FolderLayoutTest.php:26–40; Support/FolderType.php:16–47: type placement. Support/BoundaryChecker.php:17–19 already recognizes foundation.
 - app/Domain/DomainEntry.php:35–58,126–133: reflected roots and conventions. bootstrap/domains.php:16–28: explicit installation list.
 - docs/web/boundary.md:122–131 and app/Domain/Web/Providers/WebServiceProvider.php: approved ownership, not silently superseded.
 - resources/js/components/shell/AppSidebar.vue:11–16; AppTopbar.vue:23–53: current navigation and viewer/appearance/sign-out.
@@ -243,5 +243,5 @@ Paths below are relative to /Users/jessegall/projects/agent-journal/src/viewer. 
 - Message 1372: replaced the static-shell specification with real v5 windows, panes, splitters, information-bar layout picker, per-pane add/menu controls and dock; mapped each Provides contribution to those surfaces.
 - Settled every finding from reports 61 and 63 and separated user ownership decisions.
 - Retained v5 appearance, recursive navigation and the three optional Provides interfaces.
-- Replaced loose foundation files, executable route registration, separate section fetches and runtime module machinery with kind folders, guarded route values, host props and deploys.
+- Replaced loose foundation files, executable route registration, separate section fetches and runtime module machinery with type folders, guarded route values, host props and deploys.
 - Added Web/Chat ownership examples, page-only navigation, plan context, every recovery preview, deeper nesting and mobile drawer.

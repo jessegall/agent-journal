@@ -17,7 +17,7 @@ final class UnassignPlanWorkCommand extends Command
 {
     use SendsPlanWorkCommands;
 
-    protected $signature = 'plan:unassign-work {type : plans.plan or plans.phase} {id} {--assignment= : The root assignment row id it has now} {--holder= : The root holder now as kind:id} {--json}';
+    protected $signature = 'plan:unassign-work {type : plans.plan or plans.phase} {id} {--assignment= : The root assignment row id it has now} {--holder= : The root holder now as type:id} {--json}';
 
     protected $description = 'Release a plan or phase and all its unfinished work';
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Http\Data;
 
-use App\Core\Assignments\Enums\AssignmentOutcomeKind;
+use App\Core\Assignments\Enums\AssignmentOutcomeType;
 use App\Core\Assignments\Http\Data\RecordHolderData;
 use App\Core\Assignments\Support\AssignmentHolders;
 use App\Core\Assignments\Support\AssignmentResult;
@@ -30,9 +30,9 @@ final class PlanWorkResultData extends Data
         return new self(
             true,
             RecordHolderData::of($root, $holders->forRecord($root)),
-            $result->count(AssignmentOutcomeKind::Changed),
-            $result->count(AssignmentOutcomeKind::Unchanged),
-            $result->count(AssignmentOutcomeKind::SkippedFinished),
+            $result->count(AssignmentOutcomeType::Changed),
+            $result->count(AssignmentOutcomeType::Unchanged),
+            $result->count(AssignmentOutcomeType::SkippedFinished),
         );
     }
 }

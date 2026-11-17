@@ -7,7 +7,7 @@ namespace Tests\Architecture\Support;
 /**
  * What a domain did wrong, each case writing its own reason.
  */
-enum ViolationKind: string
+enum ViolationType: string
 {
     case UndeclaredDomain = 'undeclared-domain';
     case PrivateType = 'private-type';

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Ui\Declarations;
 
-use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Ui\Enums\SlotContextType;
 use App\Core\Ui\Exceptions\InvalidPageDeclaration;
 
 /**
@@ -14,16 +14,16 @@ final readonly class Slot
 {
     private function __construct(
         public string $key,
-        public SlotContextKind $takes,
+        public SlotContextType $takes,
         public string|null $recordParameter,
     ) {}
 
     /**
      * A slot that hands its sections nothing or the session chosen in Chat.
      */
-    public static function make(string $key, SlotContextKind $takes): self
+    public static function make(string $key, SlotContextType $takes): self
     {
-        if ($takes === SlotContextKind::Record) {
+        if ($takes === SlotContextType::Record) {
             throw InvalidPageDeclaration::recordSlotWithoutParameter($key);
         }
 
@@ -35,6 +35,6 @@ final readonly class Slot
      */
     public static function record(string $key, string $parameter): self
     {
-        return new self($key, SlotContextKind::Record, $parameter);
+        return new self($key, SlotContextType::Record, $parameter);
     }
 }

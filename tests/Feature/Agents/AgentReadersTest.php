@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
+use App\Core\Actors\Contracts\CurrentActorSetter;
 use App\Core\Actors\Exceptions\ActorContextMissing;
 use App\Core\Actors\Support\ActorContext;
 use App\Core\Agents\Actions\LaunchSessions;
 use App\Core\Agents\Contracts\AgentReader;
 use App\Core\Agents\Contracts\SessionReader;
+use App\Core\Agents\Exceptions\StackTargetRefused;
 use App\Core\Agents\Models\Agent;
 use App\Core\Agents\Models\AgentSession;
 use App\Core\Agents\Support\SessionOption;
-use App\Core\Actors\Contracts\CurrentActorSetter;
-use App\Core\Agents\Exceptions\StackTargetRefused;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;

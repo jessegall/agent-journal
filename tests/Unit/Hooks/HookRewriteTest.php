@@ -6,7 +6,7 @@ namespace Tests\Unit\Hooks;
 
 use App\Core\Hooks\Contracts\StateType;
 use App\Core\Hooks\Decisions\StateReference;
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Enums\NoSubject;
 use App\Core\Hooks\Enums\ReadyStateType;
 use App\Core\Hooks\Enums\ShellDialect;
@@ -31,7 +31,7 @@ final class HookRewriteTest extends TestCase
     {
         $answer = $this->rewrite()->answer($this->stack(ReadyStateType::MainAgent, new RewritingState([])), $this->command('composer test'));
 
-        $this->assertSame(AnswerKind::Deny, $answer->decision->answerKind());
+        $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
         $this->assertSame(['rewriter delegate keep', 'ready deny keep'], $this->stepsOf($answer));
     }
 
@@ -41,7 +41,7 @@ final class HookRewriteTest extends TestCase
 
         $answer = $this->rewrite()->answer($this->stack(ReadyStateType::MainAgent, $rewriter), $this->command('composer test'));
 
-        $this->assertSame(AnswerKind::Rewrite, $answer->decision->answerKind());
+        $this->assertSame(AnswerType::Rewrite, $answer->decision->answerType());
         $this->assertSame('journal run tests', $answer->decision->replacementLine());
         $this->assertSame(['rewriter rewrite keep', 'rewriter delegate keep', 'ready allow keep'], $this->stepsOf($answer));
         $this->assertSame(2, $rewriter->askedCount);
@@ -53,7 +53,7 @@ final class HookRewriteTest extends TestCase
 
         $answer = $this->rewrite()->answer($this->stack(ReadyStateType::ReadOnlyHelper, $rewriter), $this->command('composer test'));
 
-        $this->assertSame(AnswerKind::Deny, $answer->decision->answerKind());
+        $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
         $this->assertStringContainsString('changes no files', $answer->decision->refusalReason());
         $this->assertSame(['rewriter rewrite keep', 'rewriter delegate keep', 'ready deny keep'], $this->stepsOf($answer));
     }
@@ -65,7 +65,7 @@ final class HookRewriteTest extends TestCase
 
         $answer = $this->rewrite()->answer($stack, $this->command('composer test'));
 
-        $this->assertSame(AnswerKind::Deny, $answer->decision->answerKind());
+        $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
         $this->assertSame(['ready', 'rewriter'], $answer->stack->frameIds());
     }
 
@@ -75,7 +75,7 @@ final class HookRewriteTest extends TestCase
 
         $answer = $this->rewrite()->answer($this->stack(ReadyStateType::MainAgent, $rewriter), $this->command('composer test'));
 
-        $this->assertSame(AnswerKind::Rewrite, $answer->decision->answerKind());
+        $this->assertSame(AnswerType::Rewrite, $answer->decision->answerType());
         $this->assertSame(['ready', 'rewriter', 'pushed-1'], $answer->stack->frameIds());
         $this->assertSame(['rewriter rewrite push', 'pushed-1 delegate keep', 'rewriter delegate keep', 'ready allow keep'], $this->stepsOf($answer));
     }
@@ -95,7 +95,7 @@ final class HookRewriteTest extends TestCase
 
         $answer = $this->rewrite()->answer($this->stack(ReadyStateType::MainAgent, $rewriter), $this->command('git status'));
 
-        $this->assertSame(AnswerKind::Allow, $answer->decision->answerKind());
+        $this->assertSame(AnswerType::Allow, $answer->decision->answerType());
         $this->assertSame(1, $rewriter->askedCount);
     }
 

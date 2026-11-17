@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Core;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Contracts\Actor;
+use App\Core\Actors\Contracts\CurrentActor;
+use App\Core\Actors\Contracts\CurrentActorSetter;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\Actors\Exceptions\ActorContextMissing;
 use App\Core\Actors\Exceptions\AgentActorRequired;
 use App\Core\Actors\Exceptions\InvalidActorText;
@@ -12,27 +15,31 @@ use App\Core\Actors\Exceptions\UserActorRequired;
 use App\Core\Actors\Support\ActorContext;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Actors\Support\CurrentUser;
-use App\Core\Agents\Contracts\AgentReader;
 use App\Core\AgentRequests\Contracts\AgentRequestSender;
+use App\Core\AgentRequests\Exceptions\AgentRequestFailed;
+use App\Core\AgentRequests\Support\AgentReply;
+use App\Core\Agents\Contracts\AgentReader;
 use App\Core\Agents\Contracts\AgentRetirement;
 use App\Core\Agents\Contracts\SessionReader;
 use App\Core\Agents\Exceptions\AgentNotAvailable;
-use App\Core\AgentRequests\Exceptions\AgentRequestFailed;
 use App\Core\Agents\Exceptions\AgentRetirementDenied;
+use App\Core\Agents\Exceptions\StackTargetRefused;
 use App\Core\Agents\Support\AgentLabel;
-use App\Core\AgentRequests\Support\AgentReply;
 use App\Core\Agents\Support\SessionOption;
+use App\Core\Agents\Support\StackTarget;
+use App\Core\Assignments\Contracts\Assignable;
 use App\Core\Assignments\Contracts\AssignableProvider;
+use App\Core\Assignments\Contracts\Assignee;
 use App\Core\Assignments\Contracts\AssigneeProvider;
 use App\Core\Assignments\Contracts\AssigneeReader;
 use App\Core\Assignments\Contracts\AssignmentReader;
 use App\Core\Assignments\Contracts\AssignmentRegistration;
 use App\Core\Assignments\Contracts\AssignmentTransaction;
 use App\Core\Assignments\Contracts\AssignmentWriter;
-use App\Core\Assignments\Enums\AssignmentOutcomeKind;
+use App\Core\Assignments\Enums\AssignmentOutcomeType;
 use App\Core\Assignments\Enums\AssignmentReason;
 use App\Core\Assignments\Events\AssignmentsChanged;
-use App\Core\Assignments\Exceptions\AssigneeKindRepeated;
+use App\Core\Assignments\Exceptions\AssigneeTypeRepeated;
 use App\Core\Assignments\Exceptions\AssigneeUnavailable;
 use App\Core\Assignments\Exceptions\AssignmentConflict;
 use App\Core\Assignments\Exceptions\AssignmentDenied;
@@ -65,11 +72,6 @@ use App\Core\Assignments\Support\NumberedPage;
 use App\Core\Assignments\Support\Page;
 use App\Core\Assignments\Support\RecordIdentity;
 use App\Core\Assignments\Support\RecordIds;
-use App\Core\Actors\Contracts\Actor;
-use App\Core\Assignments\Contracts\Assignable;
-use App\Core\Assignments\Contracts\Assignee;
-use App\Core\Actors\Contracts\CurrentActor;
-use App\Core\Actors\Contracts\CurrentActorSetter;
 use App\Core\Hooks\Contracts\AgentStack;
 use App\Core\Hooks\Contracts\Answer;
 use App\Core\Hooks\Contracts\HookAnswerer;
@@ -85,9 +87,9 @@ use App\Core\Hooks\Contracts\UserStack;
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Enums\CommandEffect;
-use App\Core\Hooks\Enums\CommandKind;
+use App\Core\Hooks\Enums\CommandType;
 use App\Core\Hooks\Enums\FileOperation;
 use App\Core\Hooks\Enums\NoSubject;
 use App\Core\Hooks\Enums\ParseOutcome;
@@ -96,11 +98,10 @@ use App\Core\Hooks\Enums\SessionEndReason;
 use App\Core\Hooks\Enums\SessionStartSource;
 use App\Core\Hooks\Enums\ShellDialect;
 use App\Core\Hooks\Enums\ToolOutcome;
-use App\Core\Hooks\Enums\TransitionKind;
+use App\Core\Hooks\Enums\TransitionType;
 use App\Core\Hooks\Events\ContextWasCompacted;
 use App\Core\Hooks\Events\StateTypesRequested;
 use App\Core\Hooks\Exceptions\StackLockTimedOut;
-use App\Core\Agents\Exceptions\StackTargetRefused;
 use App\Core\Hooks\Exceptions\StackTransactionRequired;
 use App\Core\Hooks\Exceptions\StateSubjectMissing;
 use App\Core\Hooks\Exceptions\StateTypeRepeated;
@@ -126,7 +127,6 @@ use App\Core\Hooks\Inputs\ToolFinished;
 use App\Core\Hooks\Inputs\ToolResult;
 use App\Core\Hooks\Models\Support\OwnedByOneAgent;
 use App\Core\Hooks\States\AgentState;
-use App\Core\Agents\Support\StackTarget;
 use App\Core\Links\Exceptions\UnknownLinkType;
 use App\Core\Links\Support\Linkable;
 use App\Core\Links\Support\LinkAccess;
@@ -155,7 +155,7 @@ use App\Core\Ui\Enums\ActionMethod;
 use App\Core\Ui\Enums\Icon;
 use App\Core\Ui\Enums\PageDestination;
 use App\Core\Ui\Enums\PageSkeleton;
-use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Ui\Enums\SlotContextType;
 use App\Core\Web\Contracts\CurrentUserReader;
 use App\Core\Web\Contracts\JournalAccessPolicy;
 
@@ -176,7 +176,7 @@ final class CoreApi
             Actor::class,
             CurrentActor::class,
             CurrentActorSetter::class,
-            ActorKind::class,
+            ActorType::class,
             ActorContext::class,
             ActorContextMissing::class,
             UserActorRequired::class,
@@ -192,9 +192,9 @@ final class CoreApi
             StateType::class,
             Decision::class,
             Answer::class,
-            AnswerKind::class,
+            AnswerType::class,
             StackTransition::class,
-            TransitionKind::class,
+            TransitionType::class,
             StackEditor::class,
             StateReference::class,
             NoSubject::class,
@@ -220,7 +220,7 @@ final class CoreApi
             ShellCommandRequested::class,
             ShellCommand::class,
             CommandPart::class,
-            CommandKind::class,
+            CommandType::class,
             CommandEffect::class,
             PartJoin::class,
             ShellDialect::class,
@@ -267,7 +267,7 @@ final class CoreApi
             AssigneeList::class,
             AssigneeName::class,
             AssignmentReason::class,
-            AssignmentOutcomeKind::class,
+            AssignmentOutcomeType::class,
             InvalidAssignmentIdentity::class,
             InvalidAssignmentPage::class,
             AssignmentGroupTooLarge::class,
@@ -298,7 +298,7 @@ final class CoreApi
             AssignmentTransaction::class,
             AssignmentTypeUnavailable::class,
             AssignmentProviderInvalid::class,
-            AssigneeKindRepeated::class,
+            AssigneeTypeRepeated::class,
             AssignmentTypeRepeated::class,
             CurrentUserReader::class,
             JournalAccessPolicy::class,
@@ -326,7 +326,7 @@ final class CoreApi
             Icon::class,
             PageDestination::class,
             PageSkeleton::class,
-            SlotContextKind::class,
+            SlotContextType::class,
         ];
     }
 }

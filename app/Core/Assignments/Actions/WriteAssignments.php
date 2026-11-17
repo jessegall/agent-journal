@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Core\Assignments\Actions;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Contracts\CurrentActor;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\Actors\Support\ActorIdentity;
-use App\Core\Assignments\Contracts\AgentAuthority;
 use App\Core\Assignments\Actions\Support\AssignmentBatch;
+use App\Core\Assignments\Contracts\AgentAuthority;
 use App\Core\Assignments\Contracts\AssignmentProviders;
 use App\Core\Assignments\Contracts\AssignmentTransaction;
 use App\Core\Assignments\Contracts\AssignmentWriter;
-use App\Core\Assignments\Enums\AssignmentOutcomeKind;
+use App\Core\Assignments\Enums\AssignmentOutcomeType;
 use App\Core\Assignments\Enums\AssignmentReason;
 use App\Core\Assignments\Exceptions\AssignmentConflict;
 use App\Core\Assignments\Exceptions\AssignmentRootFinished;
@@ -24,7 +25,6 @@ use App\Core\Assignments\Support\AssignmentOutcome;
 use App\Core\Assignments\Support\AssignmentReference;
 use App\Core\Assignments\Support\AssignmentResult;
 use App\Core\Assignments\Support\RecordIdentity;
-use App\Core\Actors\Contracts\CurrentActor;
 use Closure;
 use PhpOption\None;
 use PhpOption\Option;
@@ -32,7 +32,7 @@ use PhpOption\Some;
 
 /**
  * The assignment writer: in one repeatable-read transaction it checks the caller may give out work and the
- * recipient may receive it, taking their shared lifecycle locks in kind and id order, takes the record from its
+ * recipient may receive it, taking their shared lifecycle locks in type and id order, takes the record from its
  * owner under a key-share lock, then changes the one holding and raises the one committed fact. The caller is always
  * the actor of this request.
  */
@@ -85,7 +85,7 @@ final readonly class WriteAssignments implements AssignmentWriter
             $this->providers->recordProvider($record->type)->requireAssignable($record);
 
             if ($this->store->lockCurrent($record)->isEmpty()) {
-                return new AssignmentResult([new AssignmentOutcome($record, None::create(), AssignmentOutcomeKind::Unchanged)], []);
+                return new AssignmentResult([new AssignmentOutcome($record, None::create(), AssignmentOutcomeType::Unchanged)], []);
             }
 
             $current = $this->requireExpected($record, $expected);
@@ -171,22 +171,22 @@ final readonly class WriteAssignments implements AssignmentWriter
     }
 
     /**
-     * Checks the caller and the recipient, each under its shared lifecycle lock, in kind and id order so two commands
+     * Checks the caller and the recipient, each under its shared lifecycle lock, in type and id order so two commands
      * never take them in opposite orders.
      */
     private function checkActors(ActorIdentity|null $recipient): void
     {
         $caller = ActorIdentity::of($this->actors->actor());
         $actors = array_filter([$caller, $recipient]);
-        usort($actors, fn (ActorIdentity $one, ActorIdentity $other) => [$one->kind->value, $one->id] <=> [$other->kind->value, $other->id]);
+        usort($actors, fn (ActorIdentity $one, ActorIdentity $other) => [$one->type->value, $one->id] <=> [$other->type->value, $other->id]);
 
         foreach ($actors as $actor) {
-            if ($actor === $caller && $caller->kind === ActorKind::Agent) {
+            if ($actor === $caller && $caller->type === ActorType::Agent) {
                 $this->authority->requireDispatcher($caller->id);
             }
 
             if ($actor === $recipient) {
-                $this->providers->assigneeProvider($recipient->kind)->requireEligible($recipient);
+                $this->providers->assigneeProvider($recipient->type)->requireEligible($recipient);
             }
         }
     }
@@ -213,7 +213,7 @@ final readonly class WriteAssignments implements AssignmentWriter
 
     private function unchanged(Assignment $current): AssignmentResult
     {
-        return new AssignmentResult([new AssignmentOutcome($current->record, Some::create($current), AssignmentOutcomeKind::Unchanged)], []);
+        return new AssignmentResult([new AssignmentOutcome($current->record, Some::create($current), AssignmentOutcomeType::Unchanged)], []);
     }
 
     /**
@@ -223,7 +223,7 @@ final readonly class WriteAssignments implements AssignmentWriter
     private function changed(AssignmentReason $reason, RecordIdentity $record, Option $before, Option $after): AssignmentResult
     {
         $result = new AssignmentResult(
-            [new AssignmentOutcome($record, $after, AssignmentOutcomeKind::Changed)],
+            [new AssignmentOutcome($record, $after, AssignmentOutcomeType::Changed)],
             [new AssignmentChange($record, $before, $after)],
         );
         $this->facts->publish(ActorIdentity::of($this->actors->actor()), $reason, $result);

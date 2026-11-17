@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Access\Models;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\Assignments\Contracts\Assignee;
 use App\Core\Links\Support\Linkable;
 use App\Domain\Access\Database\Factories\UserFactory;
@@ -59,9 +59,9 @@ class User extends Authenticatable implements Assignee, MustVerifyEmail, Passkey
         ];
     }
 
-    public function actorKind(): ActorKind
+    public function actorType(): ActorType
     {
-        return ActorKind::User;
+        return ActorType::User;
     }
 
     public function actorId(): int

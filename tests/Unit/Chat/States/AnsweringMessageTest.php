@@ -6,7 +6,7 @@ namespace Tests\Unit\Chat\States;
 
 use App\Core\Hooks\Decisions\Denied;
 use App\Core\Hooks\Enums\CommandEffect;
-use App\Core\Hooks\Enums\CommandKind;
+use App\Core\Hooks\Enums\CommandType;
 use App\Core\Hooks\Enums\FileOperation;
 use App\Core\Hooks\Enums\ParseOutcome;
 use App\Core\Hooks\Enums\ShellDialect;
@@ -110,7 +110,7 @@ final class AnsweringMessageTest extends TestCase
 
     private static function command(ParseOutcome $outcome, CommandEffect $effect): ShellCommand
     {
-        return new ShellCommand('tool run', ShellDialect::Bash, $outcome, [new CommandPart('tool', ['run'], $effect, CommandKind::Ordinary)]);
+        return new ShellCommand('tool run', ShellDialect::Bash, $outcome, [new CommandPart('tool', ['run'], $effect, CommandType::Ordinary)]);
     }
 
     private function message(): MessageWork

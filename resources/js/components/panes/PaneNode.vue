@@ -22,7 +22,7 @@ function move(splitId: string, ratio: number, spaceSize: number): void {
 </script>
 
 <template>
-    <template v-if="node.kind === 'pane'">
+    <template v-if="node.type === 'pane'">
         <PaneFrame :pane="node">
             <template #default="{ windowKey }">
                 <slot :window-key="windowKey" />

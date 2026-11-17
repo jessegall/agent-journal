@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plans;
 
-use App\Core\Actors\Support\ActorContext;
 use App\Core\Actors\Contracts\CurrentActorSetter;
+use App\Core\Actors\Support\ActorContext;
 use App\Core\Agents\Support\StackTarget;
-use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
+use App\Domain\Plans\Enums\PlanType;
 use App\Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Tasks\Contracts\TaskProgressCounter;
@@ -26,7 +26,7 @@ final class PlanPersistenceTest extends TestCase
 
     public function test_phases_and_their_tasks_keep_their_order(): void
     {
-        $plan = Plan::query()->create(['title' => 'Build the plans page', 'kind' => PlanKind::Build]);
+        $plan = Plan::query()->create(['title' => 'Build the plans page', 'type' => PlanType::Build]);
         $read = $plan->addPhase('Read');
         $start = $plan->addPhase('Start');
         $second = $this->task('Second');
@@ -45,7 +45,7 @@ final class PlanPersistenceTest extends TestCase
 
     public function test_a_task_sits_in_one_phase_at_most(): void
     {
-        $plan = Plan::query()->create(['title' => 'Fix the login redirect', 'kind' => PlanKind::Fix]);
+        $plan = Plan::query()->create(['title' => 'Fix the login redirect', 'type' => PlanType::Fix]);
         $task = $this->task('Write a failing test');
         $plan->addPhase('Reproduce')->addTask($task->id);
 
@@ -73,7 +73,7 @@ final class PlanPersistenceTest extends TestCase
 
     public function test_every_agent_reads_every_plan(): void
     {
-        Plan::query()->create(['title' => 'Compare chat layouts', 'kind' => PlanKind::Research]);
+        Plan::query()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
 
         $this->startRequestAs(2, 20);
 

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Readers;
 
+use App\Core\Actors\Contracts\CurrentActor;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Assignments\Contracts\AssigneeReader;
 use App\Core\Assignments\Contracts\AssignmentReader;
 use App\Core\Assignments\Contracts\AssignmentTransaction;
-use App\Core\Actors\Contracts\CurrentActor;
 use App\Domain\Plans\Api\AssignedPlanFilters;
 use App\Domain\Plans\Api\AssignedPlanList;
 use App\Domain\Plans\Api\PlanCard;

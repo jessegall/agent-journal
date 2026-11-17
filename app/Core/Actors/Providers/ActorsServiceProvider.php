@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Actors\Providers;
 
-use App\Core\Actors\Support\ActorContext;
 use App\Core\Actors\Contracts\CurrentActor;
+use App\Core\Actors\Support\ActorContext;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 

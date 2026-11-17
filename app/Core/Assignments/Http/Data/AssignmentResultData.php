@@ -30,7 +30,7 @@ final class AssignmentResultData extends Data
         return new self(
             array_map(fn (AssignmentOutcome $outcome) => new AssignmentOutcomeData(
                 RecordHolderData::of($outcome->record, $holders->forRecord($outcome->record)),
-                $outcome->kind,
+                $outcome->type,
             ), $result->outcomes),
             count($result->changes),
         );

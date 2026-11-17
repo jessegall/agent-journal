@@ -11,7 +11,7 @@ use App\Core\Assignments\Models\AssignmentRecord;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
 use App\Domain\Plans\Contracts\PlanAssignments;
-use App\Domain\Plans\Enums\PlanKind;
+use App\Domain\Plans\Enums\PlanType;
 use App\Domain\Plans\Models\Phase;
 use App\Domain\Plans\Models\PhaseTask;
 use App\Domain\Plans\Models\Plan;
@@ -53,7 +53,7 @@ final class PlanCascadeTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
         $this->builder = ActorIdentity::of(Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.read_only_helper_ready']));
-        $this->plan = Plan::query()->create(['title' => 'Release', 'kind' => PlanKind::Build]);
+        $this->plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $this->open = Task::query()->create(['title' => 'Open']);
         $finished = Task::query()->create(['title' => 'Finished']);
         $cancelled = Task::query()->create(['title' => 'Cancelled']);

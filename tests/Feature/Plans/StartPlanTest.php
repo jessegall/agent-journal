@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plans;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Contracts\CurrentActorSetter;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\Actors\Exceptions\ActorContextMissing;
 use App\Core\Actors\Support\ActorContext;
-use App\Core\Actors\Contracts\CurrentActorSetter;
 use App\Domain\Plans\Api\Events\PlanStarted;
 use App\Domain\Plans\Api\PlanFilters;
 use App\Domain\Plans\Contracts\PlanStarter;
-use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
+use App\Domain\Plans\Enums\PlanType;
 use App\Domain\Plans\Exceptions\StartDenied;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Plans\Readers\PlanRecords;
@@ -33,7 +33,7 @@ final class StartPlanTest extends TestCase
         parent::setUp();
 
         Event::fake([PlanStarted::class]);
-        $this->plan = Plan::query()->create(['title' => 'Build the plans page', 'kind' => PlanKind::Build]);
+        $this->plan = Plan::query()->create(['title' => 'Build the plans page', 'type' => PlanType::Build]);
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
     }
 
@@ -43,7 +43,7 @@ final class StartPlanTest extends TestCase
 
         $this->assertSame(PlanState::Started, $this->plan->fresh()?->state);
         Event::assertDispatchedTimes(PlanStarted::class, 1);
-        Event::assertDispatched(PlanStarted::class, fn (PlanStarted $event) => $event->planId === $this->plan->id && $event->startedBy->kind === ActorKind::User);
+        Event::assertDispatched(PlanStarted::class, fn (PlanStarted $event) => $event->planId === $this->plan->id && $event->startedBy->type === ActorType::User);
     }
 
     public function test_starting_a_started_plan_again_changes_nothing_and_raises_nothing(): void
@@ -83,7 +83,7 @@ final class StartPlanTest extends TestCase
 
     public function test_the_read_offers_the_start_by_the_same_rule(): void
     {
-        $paused = Plan::query()->create(['title' => 'Paused plan', 'kind' => PlanKind::Fix]);
+        $paused = Plan::query()->create(['title' => 'Paused plan', 'type' => PlanType::Fix]);
         Plan::query()->whereKey($paused->id)->update(['state' => PlanState::Paused->value]);
 
         $canStart = [];

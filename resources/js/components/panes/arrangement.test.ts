@@ -178,7 +178,7 @@ describe('a stored or imported arrangement', () => {
 
     it('refuses what is not an arrangement', () => {
         expect(
-            arrangementFrom({ grid: { kind: 'pane' }, detached: [] }, ['chat']),
+            arrangementFrom({ grid: { type: 'pane' }, detached: [] }, ['chat']),
         ).toBeNull();
         expect(arrangementFrom('layout', ['chat'])).toBeNull();
         expect(

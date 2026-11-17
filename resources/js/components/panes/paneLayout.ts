@@ -6,7 +6,7 @@ import type { IconName } from '@/components/kit/Icon.vue';
  * a new layout and leaves the one it was given unchanged.
  */
 export type Pane = {
-    kind: 'pane';
+    type: 'pane';
     id: string;
     windows: string[];
     active: string | null;
@@ -14,7 +14,7 @@ export type Pane = {
 };
 
 export type Split = {
-    kind: 'split';
+    type: 'split';
     id: string;
     axis: 'row' | 'column';
     ratio: number;
@@ -66,7 +66,7 @@ function newId(prefix: string): string {
 
 export function pane(windows: string[], id: string = newId('pane')): Pane {
     return {
-        kind: 'pane',
+        type: 'pane',
         id,
         windows,
         active: windows[0] ?? null,
@@ -86,7 +86,7 @@ export function defaultLayout(
     }
 
     return {
-        kind: 'split',
+        type: 'split',
         id: 'split-home',
         axis: 'row',
         ratio: 0.5,
@@ -117,7 +117,7 @@ export function withRatio(
     spaceSize: number,
 ): LayoutNode {
     return mapNodes(node, (each) =>
-        each.kind === 'split' && each.id === splitId
+        each.type === 'split' && each.id === splitId
             ? { ...each, ratio: settledRatio(ratio, spaceSize) }
             : each,
     );
@@ -128,7 +128,7 @@ export function withRatio(
  */
 export function centreSplit(node: LayoutNode, splitId: string): LayoutNode {
     return mapNodes(node, (each) =>
-        each.kind === 'split' && each.id === splitId
+        each.type === 'split' && each.id === splitId
             ? { ...each, ratio: 0.5 }
             : each,
     );
@@ -140,7 +140,7 @@ export function activate(
     windowKey: string,
 ): LayoutNode {
     return mapNodes(node, (each) =>
-        each.kind === 'pane' &&
+        each.type === 'pane' &&
         each.id === paneId &&
         each.windows.includes(windowKey)
             ? { ...each, active: windowKey }
@@ -153,7 +153,7 @@ export function activate(
  */
 export function toggleLimitWidth(node: LayoutNode, paneId: string): LayoutNode {
     return mapNodes(node, (each) =>
-        each.kind === 'pane' && each.id === paneId
+        each.type === 'pane' && each.id === paneId
             ? { ...each, limitWidth: !each.limitWidth }
             : each,
     );
@@ -165,7 +165,7 @@ export function toggleLimitWidth(node: LayoutNode, paneId: string): LayoutNode {
  */
 export function closeWindow(node: LayoutNode, windowKey: string): LayoutNode {
     return mapNodes(node, (each) => {
-        if (each.kind !== 'pane' || !each.windows.includes(windowKey)) {
+        if (each.type !== 'pane' || !each.windows.includes(windowKey)) {
             return each;
         }
 
@@ -181,15 +181,15 @@ export function closeWindow(node: LayoutNode, windowKey: string): LayoutNode {
  * Removes a pane, and the split that held it gives its whole space to the other side. The last pane cannot be removed.
  */
 export function closePane(node: LayoutNode, paneId: string): LayoutNode {
-    if (node.kind === 'pane') {
+    if (node.type === 'pane') {
         return node;
     }
 
-    if (node.first.kind === 'pane' && node.first.id === paneId) {
+    if (node.first.type === 'pane' && node.first.id === paneId) {
         return node.second;
     }
 
-    if (node.second.kind === 'pane' && node.second.id === paneId) {
+    if (node.second.type === 'pane' && node.second.id === paneId) {
         return node.first;
     }
 
@@ -210,7 +210,7 @@ export function moveWindow(
     place?: number,
 ): LayoutNode {
     return mapNodes(closeWindow(node, windowKey), (each) => {
-        if (each.kind !== 'pane' || each.id !== paneId) {
+        if (each.type !== 'pane' || each.id !== paneId) {
             return each;
         }
 
@@ -233,7 +233,7 @@ export function splitPane(
     const withoutWindow = closeWindow(node, windowKey);
 
     return mapNodes(withoutWindow, (each) => {
-        if (each.kind !== 'pane' || each.id !== paneId) {
+        if (each.type !== 'pane' || each.id !== paneId) {
             return each;
         }
 
@@ -241,7 +241,7 @@ export function splitPane(
         const isNewPaneFirst = side === 'left' || side === 'above';
 
         return {
-            kind: 'split',
+            type: 'split',
             id: newId('split'),
             axis: side === 'left' || side === 'right' ? 'row' : 'column',
             ratio: 0.5,
@@ -259,7 +259,7 @@ export function addPaneAtRight(
     windowKey: string,
 ): LayoutNode {
     return {
-        kind: 'split',
+        type: 'split',
         id: newId('split'),
         axis: 'row',
         ratio: 0.5,
@@ -303,13 +303,13 @@ export function zoneAt(
  * Every window key the layout shows, in the order of its panes and tabs.
  */
 export function windowsIn(node: LayoutNode): string[] {
-    return node.kind === 'pane'
+    return node.type === 'pane'
         ? node.windows
         : [...windowsIn(node.first), ...windowsIn(node.second)];
 }
 
 export function panesIn(node: LayoutNode): Pane[] {
-    return node.kind === 'pane'
+    return node.type === 'pane'
         ? [node]
         : [...panesIn(node.first), ...panesIn(node.second)];
 }
@@ -320,7 +320,7 @@ function mapNodes(
 ): LayoutNode {
     const changed = change(node);
 
-    if (changed.kind === 'pane' || changed !== node) {
+    if (changed.type === 'pane' || changed !== node) {
         return changed;
     }
 
@@ -339,7 +339,7 @@ export function paneBoxes(
     node: LayoutNode,
     box = { left: 0, top: 0, width: 1, height: 1 },
 ): { pane: Pane; left: number; top: number; width: number; height: number }[] {
-    if (node.kind === 'pane') {
+    if (node.type === 'pane') {
         return [{ pane: node, ...box }];
     }
 

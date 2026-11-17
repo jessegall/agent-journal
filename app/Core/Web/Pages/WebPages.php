@@ -9,7 +9,7 @@ use App\Core\Ui\Declarations\DomainUi;
 use App\Core\Ui\Declarations\Page;
 use App\Core\Ui\Declarations\Slot;
 use App\Core\Ui\Enums\Icon;
-use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Ui\Enums\SlotContextType;
 use App\Core\Web\Readers\HomeWindowReader;
 
 /**
@@ -22,7 +22,7 @@ final class WebPages implements ProvidesPages
         return [
             Page::make('home', 'Home', Icon::Home, HomeWindowReader::class, 'Home.vue')
                 ->at('')
-                ->slots(Slot::make('bar', SlotContextKind::Session)),
+                ->slots(Slot::make('bar', SlotContextType::Session)),
         ];
     }
 

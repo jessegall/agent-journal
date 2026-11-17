@@ -12,7 +12,7 @@ use App\Core\Ui\Declarations\Page;
 use App\Core\Ui\Declarations\Section;
 use App\Core\Ui\Declarations\Slot;
 use App\Core\Ui\Enums\Icon;
-use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Ui\Enums\SlotContextType;
 use App\Domain\Contracts\Domain;
 use App\Domain\Contracts\ProvidesAssignables;
 use App\Domain\Contracts\ProvidesStates;
@@ -79,6 +79,6 @@ final class NotesDomain implements Domain, ProvidesAssignables, ProvidesNavigati
 
     public function sections(): array
     {
-        return [Section::make('count', 'Notes', 'chat.dock', SlotContextKind::Session, NoteSectionReader::class, 'NoteSection.vue')];
+        return [Section::make('count', 'Notes', 'chat.dock', SlotContextType::Session, NoteSectionReader::class, 'NoteSection.vue')];
     }
 }

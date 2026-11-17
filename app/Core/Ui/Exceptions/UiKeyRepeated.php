@@ -9,9 +9,9 @@ namespace App\Core\Ui\Exceptions;
  */
 final class UiKeyRepeated extends UiDeclarationError
 {
-    public static function inDomain(string $owner, string $kind, string $key): self
+    public static function inDomain(string $owner, string $type, string $key): self
     {
-        return new self("{$owner} declares the {$kind} key '{$key}' twice.");
+        return new self("{$owner} declares the {$type} key '{$key}' twice.");
     }
 
     public static function propName(string $propName, string $first, string $second): self

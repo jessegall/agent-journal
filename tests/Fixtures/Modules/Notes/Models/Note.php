@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Models;
 
-use App\Core\Assignments\Support\RecordIdentity;
 use App\Core\Assignments\Contracts\Assignable;
+use App\Core\Assignments\Support\RecordIdentity;
 use App\Core\Hooks\Models\Support\OwnedByOneAgent;
 use App\Core\Links\Support\Linkable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

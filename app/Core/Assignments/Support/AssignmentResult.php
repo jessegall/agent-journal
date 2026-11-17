@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Assignments\Support;
 
-use App\Core\Assignments\Enums\AssignmentOutcomeKind;
+use App\Core\Assignments\Enums\AssignmentOutcomeType;
 
 /**
  * What a command did: one outcome for every record it was asked about, and only the actual changes.
@@ -20,9 +20,9 @@ final readonly class AssignmentResult
         public array $changes,
     ) {}
 
-    public function count(AssignmentOutcomeKind $kind): int
+    public function count(AssignmentOutcomeType $type): int
     {
-        return count(array_filter($this->outcomes, fn (AssignmentOutcome $outcome) => $outcome->kind === $kind));
+        return count(array_filter($this->outcomes, fn (AssignmentOutcome $outcome) => $outcome->type === $type));
     }
 
     public function hasChanges(): bool

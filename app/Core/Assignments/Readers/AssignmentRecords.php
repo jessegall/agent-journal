@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Assignments\Readers;
 
+use App\Core\Actors\Contracts\CurrentActor;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Assignments\Contracts\AssignmentProviders;
 use App\Core\Assignments\Contracts\AssignmentReader;
@@ -14,7 +15,6 @@ use App\Core\Assignments\Support\AssignmentSet;
 use App\Core\Assignments\Support\Page;
 use App\Core\Assignments\Support\RecordIdentity;
 use App\Core\Assignments\Support\RecordIds;
-use App\Core\Actors\Contracts\CurrentActor;
 use Illuminate\Database\Eloquent\Builder;
 use Psr\Log\LoggerInterface;
 
@@ -74,7 +74,7 @@ final readonly class AssignmentRecords implements AssignmentReader
 
         while (true) {
             $candidates = AssignmentRecord::query()
-                ->where('holder_kind', $holder->kind)
+                ->where('holder_type', $holder->type)
                 ->where('holder_id', $holder->id)
                 ->where('record_type', $type)
                 ->when($examinedUpTo !== null, fn (Builder $query) => $query->where('record_id', '>', $examinedUpTo))

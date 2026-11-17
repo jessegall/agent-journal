@@ -1,6 +1,6 @@
 # Public events
 
-A public event is a fact a domain publishes for anyone to hear: it lives in the owner's `Api/Events` folder and is on the owner's export list. Every other event stays private to its owner. Core's two extension requests are the other kind of public event: they ask listeners to contribute, at once, inside the work that raised them.
+A public event is a fact a domain publishes for anyone to hear: it lives in the owner's `Api/Events` folder and is on the owner's export list. Every other event stays private to its owner. Core's two extension requests are the other type of public event: they ask listeners to contribute, at once, inside the work that raised them.
 
 ## Facts, raised after the outermost commit
 

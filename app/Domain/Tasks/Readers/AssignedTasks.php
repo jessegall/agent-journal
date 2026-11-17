@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks\Readers;
 
+use App\Core\Actors\Contracts\CurrentActor;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Assignments\Contracts\AssigneeReader;
 use App\Core\Assignments\Contracts\AssignmentReader;
 use App\Core\Assignments\Contracts\AssignmentTransaction;
-use App\Core\Actors\Contracts\CurrentActor;
 use App\Domain\Tasks\Api\TaskCard;
 use App\Domain\Tasks\Api\TaskFilters;
 use App\Domain\Tasks\Api\TaskList;

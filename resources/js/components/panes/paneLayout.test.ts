@@ -17,14 +17,14 @@ describe('the default layout', () => {
     it('puts the chat on the left and every other window as a tab on the right', () => {
         const layout = defaultLayout('chat', ['plans', 'rules']) as Split;
 
-        expect(layout.kind).toBe('split');
+        expect(layout.type).toBe('split');
         expect(layout.axis).toBe('row');
         expect(windowsIn(layout.first)).toEqual(['chat']);
         expect(windowsIn(layout.second)).toEqual(['plans', 'rules']);
     });
 
     it('is a single pane when the chat is the only window', () => {
-        expect(defaultLayout('chat', []).kind).toBe('pane');
+        expect(defaultLayout('chat', []).type).toBe('pane');
     });
 });
 
@@ -90,7 +90,7 @@ describe('windows in panes', () => {
             'pane-windows',
         );
 
-        expect(layout.kind).toBe('pane');
+        expect(layout.type).toBe('pane');
         expect(windowsIn(layout)).toEqual(['chat']);
     });
 

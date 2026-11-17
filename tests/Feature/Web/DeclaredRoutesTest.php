@@ -9,7 +9,7 @@ use App\Core\Ui\Declarations\Page;
 use App\Core\Ui\Declarations\Section;
 use App\Core\Ui\Declarations\Slot;
 use App\Core\Ui\Enums\Icon;
-use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Ui\Enums\SlotContextType;
 use App\Core\Ui\Support\UiDeclarations;
 use App\Core\Web\Exceptions\UiPrefixUnavailable;
 use App\Core\Web\Routes\DeclaredRoutes;
@@ -128,7 +128,7 @@ final class DeclaredRoutesTest extends TestCase
         $library = DomainEntry::fromClass(LibraryDomain::class)->declaring(pages: [
             Page::make('books', 'Books', Icon::Docs, BooksReader::class, 'Books.vue')
                 ->at('')
-                ->slots(Slot::make('aside', SlotContextKind::Nothing))
+                ->slots(Slot::make('aside', SlotContextType::Nothing))
                 ->actions(ActionRoute::post('books', AddBook::class, 'add')),
             Page::make('hidden', 'Hidden', Icon::Docs, BooksReader::class, 'Books.vue')
                 ->at('hidden')
@@ -136,7 +136,7 @@ final class DeclaredRoutesTest extends TestCase
                 ->actions(ActionRoute::post('hidden/books', AddBook::class, 'add-hidden')),
         ]);
         $desk = DomainEntry::fromClass(DeskDomain::class)->declaring(sections: [
-            Section::make('draft', 'Draft', 'library.aside', SlotContextKind::Nothing, NotesReader::class, 'Notes.vue')
+            Section::make('draft', 'Draft', 'library.aside', SlotContextType::Nothing, NotesReader::class, 'Notes.vue')
                 ->visibleWhen(NobodySees::class)
                 ->actions(ActionRoute::post('drafts', SaveDraft::class, 'save')),
         ]);

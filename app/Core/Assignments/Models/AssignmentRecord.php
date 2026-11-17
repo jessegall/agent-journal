@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Core\Assignments\Models;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Contracts\CurrentActor;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Assignments\Models\Support\SignedInScope;
 use App\Core\Assignments\Support\Assignment;
 use App\Core\Assignments\Support\AssignmentReference;
 use App\Core\Assignments\Support\RecordIdentity;
-use App\Core\Actors\Contracts\CurrentActor;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -25,12 +25,12 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property string $record_type
  * @property int $record_id
- * @property ActorKind $holder_kind
+ * @property ActorType $holder_type
  * @property int $holder_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['record_type', 'record_id', 'holder_kind', 'holder_id'])]
+#[Fillable(['record_type', 'record_id', 'holder_type', 'holder_id'])]
 final class AssignmentRecord extends Model
 {
     protected $table = 'assignments';
@@ -40,7 +40,7 @@ final class AssignmentRecord extends Model
      */
     protected function casts(): array
     {
-        return ['holder_kind' => ActorKind::class];
+        return ['holder_type' => ActorType::class];
     }
 
     public static function holding(RecordIdentity $record, ActorIdentity $holder): self
@@ -48,7 +48,7 @@ final class AssignmentRecord extends Model
         return self::query()->create([
             'record_type' => $record->type,
             'record_id' => $record->id,
-            'holder_kind' => $holder->kind,
+            'holder_type' => $holder->type,
             'holder_id' => $holder->id,
         ]);
     }
@@ -57,7 +57,7 @@ final class AssignmentRecord extends Model
     {
         return new Assignment(
             new RecordIdentity($this->record_type, $this->record_id),
-            new AssignmentReference($this->id, new ActorIdentity($this->holder_kind, $this->holder_id)),
+            new AssignmentReference($this->id, new ActorIdentity($this->holder_type, $this->holder_id)),
         );
     }
 
@@ -85,7 +85,7 @@ final class AssignmentRecord extends Model
     protected function heldForRetirement(Builder $query, ActorIdentity $holder): void
     {
         $query->withoutGlobalScope(SignedInScope::class)
-            ->where('holder_kind', $holder->kind)
+            ->where('holder_type', $holder->type)
             ->where('holder_id', $holder->id);
     }
 }

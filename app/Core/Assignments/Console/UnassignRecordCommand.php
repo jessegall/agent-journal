@@ -19,7 +19,7 @@ final class UnassignRecordCommand extends Command
     use ReadsAssignmentArguments;
     use SendsSignedCalls;
 
-    protected $signature = 'assignment:unassign {type} {id} {--assignment= : The assignment row id it has now} {--holder= : Its holder now as kind:id} {--json}';
+    protected $signature = 'assignment:unassign {type} {id} {--assignment= : The assignment row id it has now} {--holder= : Its holder now as type:id} {--json}';
 
     protected $description = 'Release one record from the holder it has now';
 

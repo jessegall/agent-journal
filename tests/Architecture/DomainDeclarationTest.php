@@ -68,7 +68,7 @@ final class DomainDeclarationTest extends TestCase
         'Enums/Icon.php',
         'Enums/PageDestination.php',
         'Enums/PageSkeleton.php',
-        'Enums/SlotContextKind.php',
+        'Enums/SlotContextType.php',
         'DomainEntry.php',
         'DomainRegistry.php',
         'UiDeclarations.php',

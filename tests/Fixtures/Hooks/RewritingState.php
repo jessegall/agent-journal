@@ -21,7 +21,7 @@ final class RewritingState extends AgentState
      */
     public function __construct(
         private readonly array $replacements,
-        private readonly ?StateReference $childToPush = null,
+        private readonly StateReference|null $childToPush = null,
     ) {}
 
     public function onShellCommand(ShellCommandRequested $input): Decision

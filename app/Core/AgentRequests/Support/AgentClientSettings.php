@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Core\AgentRequests\Support;
 
-use App\Core\AgentRequests\Support\LaunchEnvironment;
 /**
  * Where a launched program reaches the journal and the token it signs its calls with, both given to its environment
  * by the launch.

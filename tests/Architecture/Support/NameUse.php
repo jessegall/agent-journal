@@ -13,6 +13,6 @@ final readonly class NameUse
         public string $file,
         public int $line,
         public string $name,
-        public NameKind $kind,
+        public NameType $type,
     ) {}
 }

@@ -11,10 +11,10 @@ use ReflectionClass;
 use Throwable;
 
 /**
- * A folder that holds one kind of class at its root, and what a class must be to sit there. Anything that helps that
- * kind without being of it goes in the folder's Support subfolder.
+ * A folder that holds one type of class at its root, and what a class must be to sit there. Anything that helps that
+ * type without being of it goes in the folder's Support subfolder.
  */
-enum FolderKind: string
+enum FolderType: string
 {
     case States = 'States';
     case Readers = 'Readers';

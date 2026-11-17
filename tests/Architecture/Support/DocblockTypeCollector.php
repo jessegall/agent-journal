@@ -35,7 +35,7 @@ final class DocblockTypeCollector extends AbstractNodeVisitor
         }
 
         if ($node instanceof IdentifierTypeNode && self::isClassName($node->name)) {
-            $this->uses[] = new NameUse($this->path, $this->lineOf($node), $this->resolved($node->name), NameKind::Type);
+            $this->uses[] = new NameUse($this->path, $this->lineOf($node), $this->resolved($node->name), NameType::Type);
         }
 
         return null;

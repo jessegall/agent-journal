@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Contracts;
 
+use App\Core\Agents\Exceptions\StackTargetRefused;
 use App\Core\Agents\Readers\SessionRecords;
 use App\Core\Agents\Support\SessionOption;
-use App\Core\Agents\Exceptions\StackTargetRefused;
 use App\Core\Agents\Support\StackTarget;
 use Illuminate\Container\Attributes\Bind;
 

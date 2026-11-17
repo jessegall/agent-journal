@@ -7,9 +7,9 @@ namespace Tests\Unit\Hooks\States;
 use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Decisions\Denied;
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Enums\CommandEffect;
-use App\Core\Hooks\Enums\CommandKind;
+use App\Core\Hooks\Enums\CommandType;
 use App\Core\Hooks\Enums\FileOperation;
 use App\Core\Hooks\Enums\ParseOutcome;
 use App\Core\Hooks\Enums\PartJoin;
@@ -47,14 +47,14 @@ final class RoleReadyTest extends TestCase
     public static function commandsWithoutAlias(): iterable
     {
         foreach (self::roles() as $role => [$ready]) {
-            yield "{$role}, a test run" => [$ready, self::line([self::part(CommandKind::TestRun)])];
-            yield "{$role}, a build" => [$ready, self::line([self::part(CommandKind::Build)])];
-            yield "{$role}, an unnamed program" => [$ready, self::line([self::part(CommandKind::Unknown)])];
+            yield "{$role}, a test run" => [$ready, self::line([self::part(CommandType::TestRun)])];
+            yield "{$role}, a build" => [$ready, self::line([self::part(CommandType::Build)])];
+            yield "{$role}, an unnamed program" => [$ready, self::line([self::part(CommandType::Unknown)])];
             yield "{$role}, a test run piped behind a read" => [$ready, self::line([
-                self::part(CommandKind::Ordinary, join: PartJoin::Pipe),
-                self::part(CommandKind::TestRun),
+                self::part(CommandType::Ordinary, join: PartJoin::Pipe),
+                self::part(CommandType::TestRun),
             ])];
-            yield "{$role}, a dynamic expansion" => [$ready, self::line([self::part(CommandKind::Ordinary)], ParseOutcome::DynamicExpansion)];
+            yield "{$role}, a dynamic expansion" => [$ready, self::line([self::part(CommandType::Ordinary)], ParseOutcome::DynamicExpansion)];
             yield "{$role}, an unparsed line" => [$ready, self::line([], ParseOutcome::Unparsed)];
         }
     }
@@ -64,9 +64,9 @@ final class RoleReadyTest extends TestCase
      */
     public static function helperWrites(): iterable
     {
-        yield 'a command alias that writes' => [self::line([self::part(CommandKind::Alias, CommandEffect::ChangesFiles)])];
-        yield 'an ordinary write' => [self::line([self::part(CommandKind::Ordinary, CommandEffect::ChangesFiles)])];
-        yield 'an unknown effect' => [self::line([self::part(CommandKind::Ordinary, CommandEffect::Unknown)])];
+        yield 'a command alias that writes' => [self::line([self::part(CommandType::Alias, CommandEffect::ChangesFiles)])];
+        yield 'an ordinary write' => [self::line([self::part(CommandType::Ordinary, CommandEffect::ChangesFiles)])];
+        yield 'an unknown effect' => [self::line([self::part(CommandType::Ordinary, CommandEffect::Unknown)])];
     }
 
     #[DataProvider('commandsWithoutAlias')]
@@ -81,19 +81,19 @@ final class RoleReadyTest extends TestCase
     #[DataProvider('roles')]
     public function test_each_role_allows_a_command_alias_and_an_ordinary_read(ReadyState $ready): void
     {
-        $saved = self::line([self::part(CommandKind::Alias)]);
-        $read = self::line([self::part(CommandKind::Ordinary)]);
+        $saved = self::line([self::part(CommandType::Alias)]);
+        $read = self::line([self::part(CommandType::Ordinary)]);
 
-        $this->assertSame(AnswerKind::Allow, $ready->onShellCommand($this->request($saved))->answerKind());
-        $this->assertSame(AnswerKind::Allow, $ready->onShellCommand($this->request($read))->answerKind());
+        $this->assertSame(AnswerType::Allow, $ready->onShellCommand($this->request($saved))->answerType());
+        $this->assertSame(AnswerType::Allow, $ready->onShellCommand($this->request($read))->answerType());
     }
 
     public function test_the_main_agent_may_run_a_write_and_edit_files(): void
     {
-        $write = self::line([self::part(CommandKind::Ordinary, CommandEffect::ChangesFiles)]);
+        $write = self::line([self::part(CommandType::Ordinary, CommandEffect::ChangesFiles)]);
 
-        $this->assertSame(AnswerKind::Allow, (new MainAgentReadyState)->onShellCommand($this->request($write))->answerKind());
-        $this->assertSame(AnswerKind::Allow, (new MainAgentReadyState)->onFileEdit($this->edit(['app/Domain/Domain.php']))->answerKind());
+        $this->assertSame(AnswerType::Allow, (new MainAgentReadyState)->onShellCommand($this->request($write))->answerType());
+        $this->assertSame(AnswerType::Allow, (new MainAgentReadyState)->onFileEdit($this->edit(['app/Domain/Domain.php']))->answerType());
     }
 
     #[DataProvider('helperWrites')]
@@ -144,11 +144,11 @@ final class RoleReadyTest extends TestCase
     }
 
     private static function part(
-        CommandKind $kind,
+        CommandType $type,
         CommandEffect $effect = CommandEffect::ReadsOnly,
         PartJoin $join = PartJoin::End,
     ): CommandPart {
-        return new CommandPart('program', [], $effect, $kind, $join);
+        return new CommandPart('program', [], $effect, $type, $join);
     }
 
     private function request(ShellCommand $command): ShellCommandRequested

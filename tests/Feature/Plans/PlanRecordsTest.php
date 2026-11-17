@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plans;
 
+use App\Core\Actors\Contracts\CurrentActorSetter;
 use App\Core\Actors\Support\ActorContext;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Agents\Models\Agent;
 use App\Core\Assignments\Contracts\AssignmentWriter;
-use App\Core\Actors\Contracts\CurrentActorSetter;
 use App\Domain\Plans\Api\PlanCard;
 use App\Domain\Plans\Api\PlanFilters;
-use App\Domain\Plans\Enums\PlanKind;
+use App\Domain\Plans\Enums\PlanType;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Plans\Readers\PlanRecords;
 use App\Domain\Tasks\Models\Task;
@@ -34,13 +34,13 @@ final class PlanRecordsTest extends TestCase
 
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
 
-        $this->build = Plan::query()->create(['title' => 'Build the release page', 'kind' => PlanKind::Build]);
+        $this->build = Plan::query()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
         $read = $this->build->addPhase('Read');
         $done = Task::query()->create(['title' => 'Done']);
         $done->finish();
         $read->addTasks([$done->id]);
         $this->build->addPhase('Start')->addTasks([Task::query()->create(['title' => 'Open'])->id]);
-        $this->empty = Plan::query()->create(['title' => 'Compare chat layouts', 'kind' => PlanKind::Research]);
+        $this->empty = Plan::query()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
     }
 
     public function test_cards_carry_real_progress_the_current_phase_and_an_absent_agent(): void

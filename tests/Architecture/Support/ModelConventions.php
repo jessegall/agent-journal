@@ -60,7 +60,7 @@ final class ModelConventions
 
             foreach ($calls as $call) {
                 if ($call->name instanceof Identifier && in_array($call->name->toLowerString(), self::OPENING_CALLS, true)) {
-                    $violations[] = new Violation($path, $call->getStartLine(), $call->name->toString().'()', 'none', 'none', ViolationKind::OpeningModelCall);
+                    $violations[] = new Violation($path, $call->getStartLine(), $call->name->toString().'()', 'none', 'none', ViolationType::OpeningModelCall);
                 }
             }
         }
@@ -78,11 +78,11 @@ final class ModelConventions
         $violations = [];
 
         if (! self::listsFillableOnlyInTheAttribute($class, $model)) {
-            $violations[] = new Violation($path, $line, $class, 'none', 'none', ViolationKind::FillableNotListed);
+            $violations[] = new Violation($path, $line, $class, 'none', 'none', ViolationType::FillableNotListed);
         }
 
         if ($model->getGuarded() === []) {
-            $violations[] = new Violation($path, $line, $class, 'none', 'none', ViolationKind::OpenModel);
+            $violations[] = new Violation($path, $line, $class, 'none', 'none', ViolationType::OpenModel);
         }
 
         return $violations;

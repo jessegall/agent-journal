@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Assignments\Support;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Enums\ActorType;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -16,7 +16,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class AssignmentData extends Data
 {
     public function __construct(
-        public readonly ActorKind $kind,
+        public readonly ActorType $type,
         public readonly string $id,
         public readonly string $name,
         public readonly string $reference,
@@ -25,7 +25,7 @@ final class AssignmentData extends Data
     public static function ofHolder(AssignmentHolder $holder): self
     {
         return self::from([
-            'kind' => $holder->actor()->kind,
+            'type' => $holder->actor()->type,
             'id' => (string) $holder->actor()->id,
             'name' => $holder->name,
             'reference' => (string) $holder->reference()->id,
@@ -33,10 +33,10 @@ final class AssignmentData extends Data
     }
 
     /**
-     * The holder as one line of text: its kind, id and name.
+     * The holder as one line of text: its type, id and name.
      */
     public function label(): string
     {
-        return "{$this->kind->value} {$this->id} {$this->name}";
+        return "{$this->type->value} {$this->id} {$this->name}";
     }
 }

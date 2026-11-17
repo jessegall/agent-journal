@@ -19,7 +19,7 @@ final class AssignRecordCommand extends Command
     use ReadsAssignmentArguments;
     use SendsSignedCalls;
 
-    protected $signature = 'assignment:assign {type} {id} {--to= : The new holder as kind:id} {--json}';
+    protected $signature = 'assignment:assign {type} {id} {--to= : The new holder as type:id} {--json}';
 
     protected $description = 'Give one record to a holder';
 

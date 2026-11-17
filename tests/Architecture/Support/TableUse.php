@@ -13,6 +13,6 @@ final readonly class TableUse
         public string $file,
         public int $line,
         public string $table,
-        public TableKind $kind,
+        public TableType $type,
     ) {}
 }

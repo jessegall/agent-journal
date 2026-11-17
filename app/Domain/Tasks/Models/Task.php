@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Tasks\Models;
 
+use App\Core\Agents\Support\StackTarget;
+use App\Core\Assignments\Contracts\Assignable;
 use App\Core\Assignments\Models\Support\AssignableListing;
 use App\Core\Assignments\Support\RecordIdentity;
-use App\Core\Assignments\Contracts\Assignable;
-use App\Core\Agents\Support\StackTarget;
 use App\Core\Links\Support\Linkable;
 use App\Domain\Tasks\Enums\TaskState;
 use App\Domain\Tasks\Enums\TaskWorkState;

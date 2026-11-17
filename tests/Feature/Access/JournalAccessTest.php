@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Access;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\Actors\Support\ActorContext;
 use App\Core\Agents\Models\Agent;
 use App\Core\Web\Contracts\JournalAccessPolicy;
@@ -24,7 +24,7 @@ final class JournalAccessTest extends TestCase
     {
         parent::setUp();
 
-        Route::middleware(['web', 'auth', 'journal.user'])->get('/access-test/actor', fn (ActorContext $actor) => "{$actor->kind->value} {$actor->id}");
+        Route::middleware(['web', 'auth', 'journal.user'])->get('/access-test/actor', fn (ActorContext $actor) => "{$actor->type->value} {$actor->id}");
     }
 
     public function test_the_moved_user_and_its_factory_find_each_other_both_ways(): void
@@ -64,8 +64,8 @@ final class JournalAccessTest extends TestCase
         $policy = $this->app->make(JournalAccessPolicy::class);
 
         $this->assertInstanceOf(JournalAccess::class, $policy);
-        $this->assertSame([ActorKind::User, $owner->id], [$owner->actorKind(), $owner->actorId()]);
-        $this->assertSame(ActorKind::Agent, $agent->actorKind());
+        $this->assertSame([ActorType::User, $owner->id], [$owner->actorType(), $owner->actorId()]);
+        $this->assertSame(ActorType::Agent, $agent->actorType());
         $this->assertTrue($policy->allows($owner));
         $this->assertFalse($policy->allows($agent));
     }

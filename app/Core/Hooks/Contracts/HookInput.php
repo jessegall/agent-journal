@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Contracts;
 
 use App\Core\Hooks\Decisions\Decision;
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Inputs\HookIdentity;
 
 /**
@@ -18,9 +18,9 @@ interface HookInput
     public function methodName(): string;
 
     /**
-     * Whether this hook can take an answer of that kind: only a stop can be prevented, only a shell command rewritten.
+     * Whether this hook can take an answer of that type: only a stop can be prevented, only a shell command rewritten.
      */
-    public function accepts(AnswerKind $kind): bool;
+    public function accepts(AnswerType $type): bool;
 
     public function answerBy(HookAnswerer $state): Decision;
 }

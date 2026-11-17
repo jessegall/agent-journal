@@ -174,7 +174,7 @@ final class AgentRetirementTest extends TestCase
         DB::reconnect();
         DB::transaction(function () use ($taskId): void {
             DB::select('SELECT id FROM agents WHERE id = ? FOR SHARE', [$this->helper->id]);
-            DB::table('assignments')->insert(['record_type' => 'tasks.task', 'record_id' => $taskId, 'holder_kind' => 'agent', 'holder_id' => $this->helper->id, 'created_at' => now(), 'updated_at' => now()]);
+            DB::table('assignments')->insert(['record_type' => 'tasks.task', 'record_id' => $taskId, 'holder_type' => 'agent', 'holder_id' => $this->helper->id, 'created_at' => now(), 'updated_at' => now()]);
             usleep(800_000);
         });
         DB::disconnect();

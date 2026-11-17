@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Support;
 
+use App\Core\Agents\Support\StackTarget;
 use App\Core\Contracts\LaunchTransaction;
 use App\Core\Hooks\Contracts\StackTransactionRunner;
 use App\Core\Hooks\Exceptions\StackLockTimedOut;
@@ -11,7 +12,6 @@ use App\Core\Hooks\Exceptions\StackTransactionRequired;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
-use App\Core\Agents\Support\StackTarget;
 
 /**
  * Runs one stack operation in one transaction with a lock and statement time limit set first, before any write.

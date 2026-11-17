@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Core\Ui\Exceptions;
 
 /**
- * A class a declaration names to read, check, count or run an action that is not of the kind the declaration needs.
+ * A class a declaration names to read, check, count or run an action that is not of the type the declaration needs.
  */
 final class UiReaderInvalid extends UiDeclarationError
 {

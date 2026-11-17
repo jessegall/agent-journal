@@ -11,11 +11,11 @@ enum SimpleAnswer: string implements Answer
     case Delegate = 'delegate';
     case Allow = 'allow';
 
-    public function kind(): AnswerKind
+    public function type(): AnswerType
     {
         return match ($this) {
-            self::Delegate => AnswerKind::Delegate,
-            self::Allow => AnswerKind::Allow,
+            self::Delegate => AnswerType::Delegate,
+            self::Allow => AnswerType::Allow,
         };
     }
 }

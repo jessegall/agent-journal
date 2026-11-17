@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Programs;
 
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Storage\RecordedAnswer;
 use Spatie\LaravelData\Data;
 
@@ -34,8 +34,8 @@ final readonly class ProgramReply
         return new self(json_encode((object) $body->toArray(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), '', 0);
     }
 
-    public function recordedAs(AnswerKind $kind): RecordedAnswer
+    public function recordedAs(AnswerType $type): RecordedAnswer
     {
-        return RecordedAnswer::of($kind, $this->stdout, $this->stderr, $this->exitCode);
+        return RecordedAnswer::of($type, $this->stdout, $this->stderr, $this->exitCode);
     }
 }

@@ -15,12 +15,12 @@ final readonly class Violation
         public string $used,
         public string $usingDomain,
         public string $owner,
-        public ViolationKind $kind,
+        public ViolationType $type,
         public string $detail = '',
     ) {}
 
     public function reason(): string
     {
-        return $this->kind->reason($this);
+        return $this->type->reason($this);
     }
 }

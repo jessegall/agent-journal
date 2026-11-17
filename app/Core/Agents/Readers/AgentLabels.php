@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Readers;
 
+use App\Core\Actors\Contracts\CurrentActor;
 use App\Core\Agents\Contracts\AgentReader;
 use App\Core\Agents\Models\Agent;
 use App\Core\Agents\Support\AgentLabel;
-use App\Core\Actors\Contracts\CurrentActor;
 
 /**
  * Reads agent labels for the actor of this request: the user sees every agent, an agent only itself. Without an actor

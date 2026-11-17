@@ -32,7 +32,7 @@ final class DomainModelConventionTest extends TestCase
             'OpenPivot' => 'open-model',
             'PropertyOnlyModel' => 'fillable-not-listed',
             'UnguardedModel' => 'open-model',
-        ], $this->kindsByModel($violations));
+        ], $this->typesByModel($violations));
     }
 
     public function test_every_call_that_opens_a_model_fails(): void
@@ -60,17 +60,17 @@ final class DomainModelConventionTest extends TestCase
      * @param  list<Violation>  $violations
      * @return array<string, string>
      */
-    private function kindsByModel(array $violations): array
+    private function typesByModel(array $violations): array
     {
-        $kinds = [];
+        $types = [];
 
         foreach ($violations as $violation) {
-            $kinds[class_basename($violation->used)] = $violation->kind->value;
+            $types[class_basename($violation->used)] = $violation->type->value;
         }
 
-        ksort($kinds);
+        ksort($types);
 
-        return $kinds;
+        return $types;
     }
 
     private function fixtureFolder(): string

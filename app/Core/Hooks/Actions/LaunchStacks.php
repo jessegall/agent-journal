@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Core\Hooks\Actions;
 
+use App\Core\Agents\Support\StackTarget;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Enums\NoSubject;
 use App\Core\Hooks\Enums\ReadyStateType;
 use App\Core\Hooks\Models\AgentStackRow;
 use App\Core\Hooks\Storage\FrameRecord;
 use App\Core\Hooks\Storage\FrameRecords;
-use App\Core\Agents\Support\StackTarget;
 use App\Core\Hooks\Support\StackTransaction;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;

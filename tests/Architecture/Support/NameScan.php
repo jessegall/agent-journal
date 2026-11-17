@@ -38,7 +38,7 @@ final class NameScan
 
         foreach ((new NodeFinder)->findInstanceOf($file->statements, Stmt\Use_::class) as $import) {
             foreach ($import->uses as $item) {
-                $uses[] = new NameUse($file->path, $item->getStartLine(), $item->name->toString(), NameKind::forImportType($import->type));
+                $uses[] = new NameUse($file->path, $item->getStartLine(), $item->name->toString(), NameType::forImportType($import->type));
             }
         }
 
@@ -57,7 +57,7 @@ final class NameScan
                 $type = $item->type === Stmt\Use_::TYPE_UNKNOWN ? $group->type : $item->type;
                 $name = Name::concat($group->prefix, $item->name);
 
-                $uses[] = new NameUse($file->path, $item->getStartLine(), $name->toString(), NameKind::forImportType($type));
+                $uses[] = new NameUse($file->path, $item->getStartLine(), $name->toString(), NameType::forImportType($type));
             }
         }
 
@@ -76,7 +76,7 @@ final class NameScan
                 continue;
             }
 
-            $uses[] = new NameUse($file->path, $name->getStartLine(), $name->toString(), self::kindOf($name));
+            $uses[] = new NameUse($file->path, $name->getStartLine(), $name->toString(), self::typeOf($name));
         }
 
         return $uses;
@@ -96,41 +96,41 @@ final class NameScan
         return ! $name->isSpecialClassName();
     }
 
-    private static function kindOf(Name $name): NameKind
+    private static function typeOf(Name $name): NameType
     {
         $parent = $name->getAttribute('parent');
 
         return match (true) {
-            $parent instanceof Expr\FuncCall => NameKind::Function,
-            $parent instanceof Expr\ConstFetch => NameKind::Constant,
-            $parent instanceof Expr\ClassConstFetch => self::classConstantKind($parent),
-            $parent instanceof Expr\StaticCall, $parent instanceof Expr\StaticPropertyFetch => NameKind::StaticAccess,
-            $parent instanceof Expr\New_ => NameKind::Construction,
-            $parent instanceof Stmt\Class_ => self::classStatementKind($parent, $name),
-            self::isType($parent, $name) => NameKind::Type,
-            default => NameKind::Other,
+            $parent instanceof Expr\FuncCall => NameType::Function,
+            $parent instanceof Expr\ConstFetch => NameType::Constant,
+            $parent instanceof Expr\ClassConstFetch => self::classConstantType($parent),
+            $parent instanceof Expr\StaticCall, $parent instanceof Expr\StaticPropertyFetch => NameType::StaticAccess,
+            $parent instanceof Expr\New_ => NameType::Construction,
+            $parent instanceof Stmt\Class_ => self::classStatementType($parent, $name),
+            self::isType($parent, $name) => NameType::Type,
+            default => NameType::Other,
         };
     }
 
-    private static function classConstantKind(Expr\ClassConstFetch $fetch): NameKind
+    private static function classConstantType(Expr\ClassConstFetch $fetch): NameType
     {
         if ($fetch->name instanceof Identifier && $fetch->name->toLowerString() === 'class') {
-            return NameKind::ClassName;
+            return NameType::ClassName;
         }
 
-        return NameKind::StaticAccess;
+        return NameType::StaticAccess;
     }
 
     /**
      * The class an anonymous class extends is built where it is written: new class extends Message.
      */
-    private static function classStatementKind(Stmt\Class_ $class, Name $name): NameKind
+    private static function classStatementType(Stmt\Class_ $class, Name $name): NameType
     {
         if ($class->isAnonymous() && $class->extends === $name) {
-            return NameKind::Construction;
+            return NameType::Construction;
         }
 
-        return NameKind::Other;
+        return NameType::Other;
     }
 
     private static function isType(mixed $parent, Name $name): bool

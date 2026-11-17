@@ -9,7 +9,7 @@ use PhpParser\Node\Stmt\Use_;
 /**
  * How a name is used, kept only as fine as the boundary rules decide on.
  */
-enum NameKind: string
+enum NameType: string
 {
     case Import = 'import';
     case Type = 'type';
@@ -33,7 +33,7 @@ enum NameKind: string
     }
 
     /**
-     * The kind an import line gives its names: use function and use const import a function or a constant.
+     * The type an import line gives its names: use function and use const import a function or a constant.
      */
     public static function forImportType(int $type): self
     {

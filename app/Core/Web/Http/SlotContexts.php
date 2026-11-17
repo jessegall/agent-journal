@@ -6,7 +6,7 @@ namespace App\Core\Web\Http;
 
 use App\Core\Ui\Declarations\Slot;
 use App\Core\Ui\Declarations\SlotContext;
-use App\Core\Ui\Enums\SlotContextKind;
+use App\Core\Ui\Enums\SlotContextType;
 use App\Core\Web\Http\Requests\DeclaredPageRequest;
 use PhpOption\None;
 use PhpOption\Option;
@@ -25,9 +25,9 @@ final readonly class SlotContexts
     public function for(Slot $slot, DeclaredPageRequest $request): Option
     {
         return match ($slot->takes) {
-            SlotContextKind::Nothing => Some::create(SlotContext::nothing()),
-            SlotContextKind::Session => $this->idIn($request->chosenSession())->map(SlotContext::session(...)),
-            SlotContextKind::Record => $this->idIn($request->route((string) $slot->recordParameter))->map(SlotContext::record(...)),
+            SlotContextType::Nothing => Some::create(SlotContext::nothing()),
+            SlotContextType::Session => $this->idIn($request->chosenSession())->map(SlotContext::session(...)),
+            SlotContextType::Record => $this->idIn($request->route((string) $slot->recordParameter))->map(SlotContext::record(...)),
         };
     }
 

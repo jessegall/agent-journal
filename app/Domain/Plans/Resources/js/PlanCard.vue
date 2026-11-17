@@ -3,10 +3,10 @@ import { Link } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import Icon from '@kit/Icon';
 import type { PlanCardData } from '@generated/types/plans';
-import { kindIcon, progressText, stateLook } from './planLooks';
+import { typeIcon, progressText, stateLook } from './planLooks';
 
 /**
- * One plan card (doc 4, 7.3 and choice 16): kind, number, focus and state, the title, a progress bar and the foot.
+ * One plan card (doc 4, 7.3 and choice 16): type, number, focus and state, the title, a progress bar and the foot.
  */
 const props = defineProps<{
     card: PlanCardData;
@@ -31,7 +31,7 @@ const progress = computed(() =>
         :class="{ 'border-brand': card.focused, 'bg-sel': selected }"
     >
         <span class="flex items-center gap-1.5 text-small text-text-3">
-            <Icon :name="kindIcon[card.kind]" :size="12" />
+            <Icon :name="typeIcon[card.type]" :size="12" />
             <span>Plan</span>
             <span class="font-mono tabular-nums">{{ card.id }}</span>
             <template v-if="card.focused">
@@ -56,10 +56,10 @@ const progress = computed(() =>
             <template v-if="card.holder">
                 <span
                     class="ml-auto inline-flex min-w-0 items-center gap-1"
-                    :title="`Held by the ${card.holder.kind} ${card.holder.name}`"
+                    :title="`Held by the ${card.holder.type} ${card.holder.name}`"
                 >
                     <Icon
-                        :name="card.holder.kind === 'user' ? 'users' : 'agents'"
+                        :name="card.holder.type === 'user' ? 'users' : 'agents'"
                         :size="12"
                     />
                     <span class="truncate">{{ card.holder.name }}</span>

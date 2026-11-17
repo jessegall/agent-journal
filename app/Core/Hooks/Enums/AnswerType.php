@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Core\Hooks\Enums;
 
 /**
- * The kind of answer a state gave, as the walk records it, and which hooks can take it.
+ * The type of answer a state gave, as the walk records it, and which hooks can take it.
  */
-enum AnswerKind: string
+enum AnswerType: string
 {
     case Delegate = 'delegate';
     case Allow = 'allow';

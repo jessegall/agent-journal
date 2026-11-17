@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Domain\Access\Support;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Contracts\CurrentActor;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\Actors\Support\ActorIdentity;
+use App\Core\Assignments\Contracts\Assignee;
 use App\Core\Assignments\Contracts\AssigneeProvider;
 use App\Core\Assignments\Exceptions\AssigneeUnavailable;
 use App\Core\Assignments\Support\AssigneeList;
 use App\Core\Assignments\Support\AssigneeName;
 use App\Core\Assignments\Support\Page;
-use App\Core\Assignments\Contracts\Assignee;
-use App\Core\Actors\Contracts\CurrentActor;
 use App\Core\Web\Contracts\JournalAccessPolicy;
 use App\Domain\Access\Models\User;
 
@@ -34,7 +34,7 @@ final readonly class UserAssignees implements AssigneeProvider
     {
         $this->actors->actor();
 
-        if ($recipient->kind !== ActorKind::User) {
+        if ($recipient->type !== ActorType::User) {
             throw AssigneeUnavailable::forActor($recipient);
         }
 
@@ -54,7 +54,7 @@ final readonly class UserAssignees implements AssigneeProvider
     public function names(array $actors): array
     {
         $this->actors->actor();
-        $ids = array_values(array_unique(array_map(fn (ActorIdentity $actor) => $actor->id, array_filter($actors, fn (ActorIdentity $actor) => $actor->kind === ActorKind::User))));
+        $ids = array_values(array_unique(array_map(fn (ActorIdentity $actor) => $actor->id, array_filter($actors, fn (ActorIdentity $actor) => $actor->type === ActorType::User))));
 
         return array_values(User::query()->whereKey($ids)->orderBy('id')->get()
             ->map(fn (User $user) => new AssigneeName(ActorIdentity::of($user), $user->name))
@@ -69,7 +69,7 @@ final readonly class UserAssignees implements AssigneeProvider
         $shownIds = array_slice($ids, 0, $page->limit);
 
         return new AssigneeList(
-            $this->names(array_map(fn (int $id) => new ActorIdentity(ActorKind::User, $id), $shownIds)),
+            $this->names(array_map(fn (int $id) => new ActorIdentity(ActorType::User, $id), $shownIds)),
             $this->nextAfterId($shownIds, count($ids) > $page->limit),
         );
     }

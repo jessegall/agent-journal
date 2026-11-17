@@ -8,7 +8,7 @@ use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Agents\Models\Agent;
 use App\Core\Assignments\Contracts\AssignmentTransaction;
 use App\Core\Assignments\Contracts\AssignmentWriter;
-use App\Core\Assignments\Enums\AssignmentOutcomeKind;
+use App\Core\Assignments\Enums\AssignmentOutcomeType;
 use App\Core\Assignments\Exceptions\AssigneeUnavailable;
 use App\Core\Assignments\Exceptions\AssignmentConflict;
 use App\Core\Assignments\Exceptions\AssignmentDenied;
@@ -72,9 +72,9 @@ final class AssignmentWriterTest extends TestCase
         $first = $this->writer()->assign($this->task, ActorIdentity::of($this->helper));
         $again = $this->writer()->assign($this->task, ActorIdentity::of($this->helper));
 
-        $this->assertSame(AssignmentOutcomeKind::Changed, $first->outcomes[0]->kind);
+        $this->assertSame(AssignmentOutcomeType::Changed, $first->outcomes[0]->type);
         $this->assertTrue($first->changes[0]->before->isEmpty());
-        $this->assertSame(AssignmentOutcomeKind::Unchanged, $again->outcomes[0]->kind);
+        $this->assertSame(AssignmentOutcomeType::Unchanged, $again->outcomes[0]->type);
         $this->assertSame([], $again->changes);
         $this->assertTrue($again->outcomes[0]->current->get()->reference->isSameAs($first->outcomes[0]->current->get()->reference));
         $this->assertThrows(fn () => $this->writer()->assign($this->task, ActorIdentity::of($this->main)), AssignmentConflict::class);
@@ -100,7 +100,7 @@ final class AssignmentWriterTest extends TestCase
         $back = $this->writer()->reassign($this->task, $toMain->reference, ActorIdentity::of($this->helper))->outcomes[0]->current->get();
 
         $this->assertThrows(fn () => $this->writer()->reassign($this->task, $first->reference, ActorIdentity::of($this->main)), AssignmentConflict::class);
-        $this->assertSame(AssignmentOutcomeKind::Unchanged, $this->writer()->reassign($this->task, $back->reference, ActorIdentity::of($this->helper))->outcomes[0]->kind);
+        $this->assertSame(AssignmentOutcomeType::Unchanged, $this->writer()->reassign($this->task, $back->reference, ActorIdentity::of($this->helper))->outcomes[0]->type);
     }
 
     public function test_releasing_removes_the_holder_and_releasing_an_unheld_record_is_unchanged(): void
@@ -112,7 +112,7 @@ final class AssignmentWriterTest extends TestCase
 
         $this->assertTrue($released->outcomes[0]->current->isEmpty());
         $this->assertCount(1, $released->changes);
-        $this->assertSame(AssignmentOutcomeKind::Unchanged, $again->outcomes[0]->kind);
+        $this->assertSame(AssignmentOutcomeType::Unchanged, $again->outcomes[0]->type);
         $this->assertSame(0, AssignmentRecord::query()->count());
     }
 
@@ -142,7 +142,7 @@ final class AssignmentWriterTest extends TestCase
         $other->transaction(function () use ($other): void {
             $other->select('SELECT id FROM agents WHERE id = ? FOR UPDATE', [$this->helper->id]);
 
-            $this->assertCount(1, $other->select("SELECT id FROM assignments WHERE holder_kind = 'agent' AND holder_id = ?", [$this->helper->id]));
+            $this->assertCount(1, $other->select("SELECT id FROM assignments WHERE holder_type = 'agent' AND holder_id = ?", [$this->helper->id]));
         });
     }
 
@@ -159,7 +159,7 @@ final class AssignmentWriterTest extends TestCase
                 AssignmentRecord::query()->count();
 
                 if ($attempts === 1) {
-                    $other->table('assignments')->insert(['record_type' => $this->task->type, 'record_id' => $this->task->id, 'holder_kind' => 'agent', 'holder_id' => $this->main->id, 'created_at' => now(), 'updated_at' => now()]);
+                    $other->table('assignments')->insert(['record_type' => $this->task->type, 'record_id' => $this->task->id, 'holder_type' => 'agent', 'holder_id' => $this->main->id, 'created_at' => now(), 'updated_at' => now()]);
                 }
 
                 $this->writer()->assign($this->task, ActorIdentity::of($this->helper));

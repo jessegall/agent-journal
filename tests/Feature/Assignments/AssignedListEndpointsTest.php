@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
+use App\Core\Actors\Contracts\CurrentActorSetter;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Assignments\Contracts\AssignmentWriter;
-use App\Core\Actors\Contracts\CurrentActorSetter;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
-use App\Domain\Plans\Enums\PlanKind;
+use App\Domain\Plans\Enums\PlanType;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Tasks\Models\Task;
 use Illuminate\Testing\TestResponse;
@@ -50,7 +50,7 @@ final class AssignedListEndpointsTest extends TestCase
         $writer = $this->app->make(AssignmentWriter::class);
         $held = Task::query()->create(['title' => 'Write the endpoint']);
         $others = Task::query()->create(['title' => 'Not mine']);
-        $plan = Plan::query()->create(['title' => 'Release', 'kind' => PlanKind::Build]);
+        $plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $writer->assign($held->assignmentIdentity(), ActorIdentity::of($this->caller->agent));
         $writer->assign($others->assignmentIdentity(), ActorIdentity::of($this->other->agent));
         $writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->caller->agent));
@@ -62,10 +62,10 @@ final class AssignedListEndpointsTest extends TestCase
             'id' => $held->id,
             'title' => 'Write the endpoint',
             'state' => 'open',
-            'holder' => ['kind' => 'agent', 'id' => (string) $this->caller->agent->id, 'name' => 'Test agent'],
+            'holder' => ['type' => 'agent', 'id' => (string) $this->caller->agent->id, 'name' => 'Test agent'],
         ]]]);
         $this->assertCount(1, $tasks->json('cards'));
-        $plans->assertOk()->assertJson(['total' => 1, 'cards' => [['id' => $plan->id, 'kind' => 'build']]]);
+        $plans->assertOk()->assertJson(['total' => 1, 'cards' => [['id' => $plan->id, 'type' => 'build']]]);
     }
 
     public function test_an_agent_holding_nothing_gets_an_empty_success(): void

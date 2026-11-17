@@ -7,7 +7,7 @@ namespace App\Domain\Plans\Enums;
 /**
  * What a plan is for, shown as the icon on its card.
  */
-enum PlanKind: string
+enum PlanType: string
 {
     case Build = 'build';
     case Fix = 'fix';

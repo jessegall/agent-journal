@@ -7,7 +7,7 @@ namespace Tests\Feature\Assignments;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Agents\Models\Agent;
 use App\Core\Assignments\Contracts\AssignmentWriter;
-use App\Core\Assignments\Enums\AssignmentOutcomeKind;
+use App\Core\Assignments\Enums\AssignmentOutcomeType;
 use App\Core\Assignments\Exceptions\AssignmentConflict;
 use App\Core\Assignments\Exceptions\AssignmentGroupTooLarge;
 use App\Core\Assignments\Exceptions\AssignmentRootFinished;
@@ -18,7 +18,7 @@ use App\Core\Assignments\Support\AssignmentReference;
 use App\Core\Assignments\Support\RecordIdentity;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
-use App\Domain\Plans\Enums\PlanKind;
+use App\Domain\Plans\Enums\PlanType;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Tasks\Models\Task;
 use Tests\Support\CommitsHookRows;
@@ -57,7 +57,7 @@ final class AssignmentCascadeTest extends TestCase
         $this->startUserRequestAs($owner->id);
         $this->builder = ActorIdentity::of(Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.read_only_helper_ready']));
         $this->other = ActorIdentity::of(Agent::query()->create(['name' => 'Other', 'role' => 'hooks.read_only_helper_ready']));
-        $this->plan = Plan::query()->create(['title' => 'Release', 'kind' => PlanKind::Build]);
+        $this->plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $this->open = Task::query()->create(['title' => 'Open']);
         $this->finished = Task::query()->create(['title' => 'Finished']);
         $this->unheld = Task::query()->create(['title' => 'Unheld']);
@@ -71,8 +71,8 @@ final class AssignmentCascadeTest extends TestCase
         $result = $this->writer()->assignUnfinished($this->builder, fn () => $this->group());
 
         $this->assertSame(
-            [AssignmentOutcomeKind::Changed, AssignmentOutcomeKind::Changed, AssignmentOutcomeKind::SkippedFinished, AssignmentOutcomeKind::Changed],
-            array_map(fn ($outcome) => $outcome->kind, $result->outcomes),
+            [AssignmentOutcomeType::Changed, AssignmentOutcomeType::Changed, AssignmentOutcomeType::SkippedFinished, AssignmentOutcomeType::Changed],
+            array_map(fn ($outcome) => $outcome->type, $result->outcomes),
         );
         $this->assertCount(3, $result->changes);
         $this->assertTrue($this->holderOf($this->open->assignmentIdentity())->isSameAs($this->builder));

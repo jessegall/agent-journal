@@ -99,7 +99,7 @@ final class ModuleAssignmentTest extends TestCase
 
     public function test_without_the_module_its_records_cannot_be_read_but_retirement_still_releases_them(): void
     {
-        AssignmentRecord::query()->insert(['record_type' => Note::LINK_TYPE, 'record_id' => $this->note->id, 'holder_kind' => 'agent', 'holder_id' => $this->writer->id, 'created_at' => now(), 'updated_at' => now()]);
+        AssignmentRecord::query()->insert(['record_type' => Note::LINK_TYPE, 'record_id' => $this->note->id, 'holder_type' => 'agent', 'holder_id' => $this->writer->id, 'created_at' => now(), 'updated_at' => now()]);
         $this->startUserRequestAs($this->owner->id);
 
         $this->assertThrows(fn () => $this->app->make(AssignmentReader::class)->assignmentsFor([$this->note->assignmentIdentity()]), AssignmentTypeUnavailable::class);

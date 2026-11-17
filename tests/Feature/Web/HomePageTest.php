@@ -10,8 +10,8 @@ use App\Core\Agents\Models\AgentSession;
 use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
 use App\Domain\Chat\Models\Message;
-use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
+use App\Domain\Plans\Enums\PlanType;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Rules\Models\Rule;
 use Inertia\Testing\AssertableInertia;
@@ -39,7 +39,7 @@ final class HomePageTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $agent = Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']);
         $this->session = $this->app->make(LaunchSessions::class)->launch($agent, 'claude-code')->session;
-        Plan::query()->create(['title' => 'Build the release page', 'kind' => PlanKind::Build]);
+        Plan::query()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
     }
 
     public function test_a_guest_is_sent_to_sign_in(): void
@@ -111,7 +111,7 @@ final class HomePageTest extends TestCase
 
     public function test_chats_dock_shows_the_plans_waiting_for_review_beside_the_chosen_session(): void
     {
-        $waiting = Plan::query()->create(['title' => 'Review the dock', 'kind' => PlanKind::Build]);
+        $waiting = Plan::query()->create(['title' => 'Review the dock', 'type' => PlanType::Build]);
         Plan::query()->whereKey($waiting->id)->update(['state' => PlanState::Reviewing->value]);
 
         $this->actingAs($this->owner)->get("/chat?session={$this->session->id}")->assertInertia(fn (AssertableInertia $page) => $page

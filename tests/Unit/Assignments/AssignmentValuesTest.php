@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Assignments;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\Actors\Support\ActorIdentity;
-use App\Core\Assignments\Enums\AssignmentOutcomeKind;
+use App\Core\Assignments\Enums\AssignmentOutcomeType;
 use App\Core\Assignments\Exceptions\AssignmentGroupTooLarge;
 use App\Core\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Core\Assignments\Exceptions\InvalidAssignmentPage;
@@ -50,10 +50,10 @@ final class AssignmentValuesTest extends TestCase
 
     public function test_a_user_and_an_agent_with_the_same_id_are_different_actors(): void
     {
-        $user = new ActorIdentity(ActorKind::User, 7);
+        $user = new ActorIdentity(ActorType::User, 7);
 
-        $this->assertFalse($user->isSameAs(new ActorIdentity(ActorKind::Agent, 7)));
-        $this->assertTrue($user->isSameAs(new ActorIdentity(ActorKind::User, 7)));
+        $this->assertFalse($user->isSameAs(new ActorIdentity(ActorType::Agent, 7)));
+        $this->assertTrue($user->isSameAs(new ActorIdentity(ActorType::User, 7)));
     }
 
     public function test_a_group_holds_its_root_and_each_record_once(): void
@@ -96,22 +96,22 @@ final class AssignmentValuesTest extends TestCase
     public function test_a_set_finds_a_records_assignment_or_answers_none(): void
     {
         $task = new RecordIdentity('tasks.task', 12);
-        $assignment = new Assignment($task, new AssignmentReference(42, new ActorIdentity(ActorKind::Agent, 7)));
+        $assignment = new Assignment($task, new AssignmentReference(42, new ActorIdentity(ActorType::Agent, 7)));
         $set = new AssignmentSet([$assignment]);
 
         $this->assertSame($assignment, $set->forRecord(new RecordIdentity('tasks.task', 12))->get());
         $this->assertTrue($set->forRecord(new RecordIdentity('tasks.task', 13))->isEmpty());
     }
 
-    public function test_a_result_counts_its_outcomes_by_kind(): void
+    public function test_a_result_counts_its_outcomes_by_type(): void
     {
         $result = new AssignmentResult([
-            new AssignmentOutcome(new RecordIdentity('tasks.task', 1), None::create(), AssignmentOutcomeKind::Unchanged),
-            new AssignmentOutcome(new RecordIdentity('tasks.task', 2), None::create(), AssignmentOutcomeKind::SkippedFinished),
-            new AssignmentOutcome(new RecordIdentity('tasks.task', 3), None::create(), AssignmentOutcomeKind::SkippedFinished),
+            new AssignmentOutcome(new RecordIdentity('tasks.task', 1), None::create(), AssignmentOutcomeType::Unchanged),
+            new AssignmentOutcome(new RecordIdentity('tasks.task', 2), None::create(), AssignmentOutcomeType::SkippedFinished),
+            new AssignmentOutcome(new RecordIdentity('tasks.task', 3), None::create(), AssignmentOutcomeType::SkippedFinished),
         ], []);
 
-        $this->assertSame(2, $result->count(AssignmentOutcomeKind::SkippedFinished));
+        $this->assertSame(2, $result->count(AssignmentOutcomeType::SkippedFinished));
         $this->assertFalse($result->hasChanges());
     }
 }

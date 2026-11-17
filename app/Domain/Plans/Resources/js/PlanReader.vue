@@ -24,7 +24,7 @@ defineProps<{
                 <template v-if="reader.card.holder">
                     <span
                         >Held by {{ reader.card.holder.name }} ({{
-                            reader.card.holder.kind
+                            reader.card.holder.type
                         }}), assignment {{ reader.card.holder.reference }}</span
                     >
                 </template>

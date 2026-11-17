@@ -42,7 +42,7 @@ final class AssignedPlansCommand extends Command
         }
 
         $list = AssignedPlanListData::from($reply->body);
-        $this->table(['Id', 'Title', 'Kind', 'State', 'Holder', 'Reference'], array_map(fn (AssignedPlanCardData $card) => [$card->id, $card->title, $card->kind->value, $card->state->value, $card->holder->label(), $card->holder->reference], $list->cards));
+        $this->table(['Id', 'Title', 'Type', 'State', 'Holder', 'Reference'], array_map(fn (AssignedPlanCardData $card) => [$card->id, $card->title, $card->type->value, $card->state->value, $card->holder->label(), $card->holder->reference], $list->cards));
         $this->line("Page {$list->page}: ".count($list->cards)." of {$list->total}");
 
         return self::SUCCESS;

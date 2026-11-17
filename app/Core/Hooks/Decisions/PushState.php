@@ -6,15 +6,15 @@ namespace App\Core\Hooks\Decisions;
 
 use App\Core\Hooks\Contracts\StackEditor;
 use App\Core\Hooks\Contracts\StackTransition;
-use App\Core\Hooks\Enums\TransitionKind;
+use App\Core\Hooks\Enums\TransitionType;
 
 final readonly class PushState implements StackTransition
 {
     public function __construct(public StateReference $state) {}
 
-    public function kind(): TransitionKind
+    public function type(): TransitionType
     {
-        return TransitionKind::Push;
+        return TransitionType::Push;
     }
 
     public function applyTo(StackEditor $editor): void

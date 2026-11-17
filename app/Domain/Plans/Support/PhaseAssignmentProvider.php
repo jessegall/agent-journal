@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Plans\Support;
 
+use App\Core\Actors\Contracts\CurrentActor;
+use App\Core\Assignments\Contracts\Assignable;
 use App\Core\Assignments\Contracts\AssignableProvider;
 use App\Core\Assignments\Exceptions\RecordUnavailable;
 use App\Core\Assignments\Support\RecordIdentity;
-use App\Core\Assignments\Contracts\Assignable;
-use App\Core\Actors\Contracts\CurrentActor;
 use App\Domain\Plans\Models\Phase;
 use App\Domain\Plans\Models\PhaseTask;
 use App\Domain\Tasks\Contracts\TaskAssignmentReader;

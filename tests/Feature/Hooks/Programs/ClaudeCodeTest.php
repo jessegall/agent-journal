@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks\Programs;
 
 use App\Core\Hooks\Decisions\Decision;
-use App\Core\Hooks\Enums\CommandKind;
+use App\Core\Hooks\Enums\CommandType;
 use App\Core\Hooks\Enums\FileOperation;
 use App\Core\Hooks\Exceptions\UnsupportedHook;
 use App\Core\Hooks\Inputs\ContextCompacted;
@@ -57,7 +57,7 @@ final class ClaudeCodeTest extends TestCase
 
         $this->assertInstanceOf(ShellCommandRequested::class, $input);
         $this->assertSame('echo hello', $input->command->source);
-        $this->assertSame(CommandKind::Ordinary, $input->command->parts[0]->kind);
+        $this->assertSame(CommandType::Ordinary, $input->command->parts[0]->type);
     }
 
     public function test_edits_and_writes_name_their_path_and_operation(): void

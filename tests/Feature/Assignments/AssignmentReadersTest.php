@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\Actors\Exceptions\ActorContextMissing;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Agents\Models\Agent;
@@ -25,7 +25,7 @@ use Tests\TestCase;
 
 /**
  * Reading assignments: a batch of records costs one visibility query per type and one assignment query, a holder's
- * record ids come page by page with a cursor that hides nothing, and names come from each actor kind's owner.
+ * record ids come page by page with a cursor that hides nothing, and names come from each actor type's owner.
  */
 final class AssignmentReadersTest extends TestCase
 {
@@ -97,10 +97,10 @@ final class AssignmentReadersTest extends TestCase
         $this->assertThrows(fn () => $reader->assignmentsFor([new RecordIdentity('notes.note', 1)]), AssignmentTypeUnavailable::class);
     }
 
-    public function test_names_come_from_each_actor_kinds_owner(): void
+    public function test_names_come_from_each_actor_types_owner(): void
     {
         $names = $this->app->make(AssigneeReader::class)->names([$this->helper, ActorIdentity::of($this->owner)]);
-        $users = $this->app->make(AssigneeReader::class)->eligible(ActorKind::User, new Page);
+        $users = $this->app->make(AssigneeReader::class)->eligible(ActorType::User, new Page);
 
         $this->assertEqualsCanonicalizing(['Helper', 'Jesse'], array_map(fn ($name) => $name->name, $names));
         $this->assertSame(['Jesse'], array_map(fn ($name) => $name->name, $users->assignees));

@@ -6,8 +6,8 @@ namespace App\Domain\Plans\Data;
 
 use App\Core\Assignments\Support\AssignmentData;
 use App\Domain\Plans\Api\PlanCard;
-use App\Domain\Plans\Enums\PlanKind;
 use App\Domain\Plans\Enums\PlanState;
+use App\Domain\Plans\Enums\PlanType;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -24,7 +24,7 @@ final class PlanCardData extends Data
     public function __construct(
         public readonly string $id,
         public readonly string $title,
-        public readonly PlanKind $kind,
+        public readonly PlanType $type,
         public readonly PlanState $state,
         public readonly bool $focused,
         public readonly int $doneTasks,
@@ -41,7 +41,7 @@ final class PlanCardData extends Data
         return self::from(array_filter([
             'id' => (string) $card->id,
             'title' => $card->title,
-            'kind' => $card->kind,
+            'type' => $card->type,
             'state' => $card->state,
             'focused' => $card->focused,
             'doneTasks' => $card->progress->done,

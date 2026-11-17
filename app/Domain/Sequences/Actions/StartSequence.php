@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Sequences\Actions;
 
-use App\Core\Hooks\Contracts\StackTransactionRunner;
 use App\Core\Agents\Support\StackTarget;
+use App\Core\Hooks\Contracts\StackTransactionRunner;
 use App\Domain\Sequences\Events\SequenceStarted;
 use App\Domain\Sequences\Models\SequenceRun;
 use Illuminate\Contracts\Events\Dispatcher;

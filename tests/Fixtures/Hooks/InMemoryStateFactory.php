@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
+use App\Core\Hooks\Contracts\StateFactory;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Stack\Frame;
-use App\Core\Hooks\Contracts\StateFactory;
 use App\Core\Hooks\States\AgentState;
 use Closure;
 

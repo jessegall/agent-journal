@@ -70,10 +70,10 @@ final readonly class DomainUi
     /**
      * The key prefixed with the domain's key, such as plans.inspector for inspector in Plans.
      */
-    public function fullKey(string $kind, string $key): string
+    public function fullKey(string $type, string $key): string
     {
         if (preg_match('/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/', $key) !== 1) {
-            throw UiKeyInvalid::notLocal($this->name, $kind, $key);
+            throw UiKeyInvalid::notLocal($this->name, $type, $key);
         }
 
         return "{$this->key}.{$key}";

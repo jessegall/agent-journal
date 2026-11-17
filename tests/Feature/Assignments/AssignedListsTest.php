@@ -13,7 +13,7 @@ use App\Core\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Core\Assignments\Support\NumberedPage;
 use App\Domain\Plans\Api\AssignedPlanFilters;
 use App\Domain\Plans\Contracts\PlanReader;
-use App\Domain\Plans\Enums\PlanKind;
+use App\Domain\Plans\Enums\PlanType;
 use App\Domain\Plans\Models\Plan;
 use App\Domain\Tasks\Api\TaskFilters;
 use App\Domain\Tasks\Contracts\AssignedTaskReader;
@@ -85,8 +85,8 @@ final class AssignedListsTest extends TestCase
     public function test_a_held_plan_is_listed_but_holding_one_of_its_tasks_adds_no_plan(): void
     {
         $writer = $this->app->make(AssignmentWriter::class);
-        $plan = Plan::query()->create(['title' => 'Release', 'kind' => PlanKind::Build]);
-        $other = Plan::query()->create(['title' => 'Research', 'kind' => PlanKind::Research]);
+        $plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
+        $other = Plan::query()->create(['title' => 'Research', 'type' => PlanType::Research]);
         $task = Task::query()->create(['title' => 'In the research plan']);
         $other->addPhase('One')->addTasks([$task->id]);
         $writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->main));
@@ -116,7 +116,7 @@ final class AssignedListsTest extends TestCase
 
         [$before, $after] = $this->app->make(AssignmentTransaction::class)->run(function () use ($other, $late): array {
             $before = $this->app->make(AssignedTaskReader::class)->assignedToCaller(new TaskFilters);
-            $other->table('assignments')->insert(['record_type' => 'tasks.task', 'record_id' => $late->id, 'holder_kind' => 'agent', 'holder_id' => $this->main->id, 'created_at' => now(), 'updated_at' => now()]);
+            $other->table('assignments')->insert(['record_type' => 'tasks.task', 'record_id' => $late->id, 'holder_type' => 'agent', 'holder_id' => $this->main->id, 'created_at' => now(), 'updated_at' => now()]);
 
             return [$before, $this->app->make(AssignedTaskReader::class)->assignedToCaller(new TaskFilters)];
         });

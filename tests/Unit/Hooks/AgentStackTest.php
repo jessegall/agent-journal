@@ -8,9 +8,9 @@ use App\Core\Hooks\Contracts\HookInput;
 use App\Core\Hooks\Decisions\Decision;
 use App\Core\Hooks\Decisions\StateReference;
 use App\Core\Hooks\Decisions\SubjectReference;
-use App\Core\Hooks\Enums\AnswerKind;
+use App\Core\Hooks\Enums\AnswerType;
 use App\Core\Hooks\Enums\NoSubject;
-use App\Core\Hooks\Enums\TransitionKind;
+use App\Core\Hooks\Enums\TransitionType;
 use App\Core\Hooks\Exceptions\BottomStateCannotFinish;
 use App\Core\Hooks\Exceptions\BottomStateDelegated;
 use App\Core\Hooks\Exceptions\InvalidHookAnswer;
@@ -56,7 +56,7 @@ final class AgentStackTest extends TestCase
         $done = $this->exampleStack(TaskWorkState::Finished, MessageWorkState::Answered)->withoutFinishedFrames();
         $answer = $done->answer($stop);
 
-        $this->assertSame(AnswerKind::Allow, $answer->decision->answerKind());
+        $this->assertSame(AnswerType::Allow, $answer->decision->answerType());
         $this->assertSame(['ready allow keep'], $this->stepsOf($answer));
     }
 
@@ -65,7 +65,7 @@ final class AgentStackTest extends TestCase
         $answer = $this->exampleStack(TaskWorkState::Active, MessageWorkState::Unanswered)
             ->answer(HookInputs::all()['shell command']);
 
-        $this->assertSame(AnswerKind::Deny, $answer->decision->answerKind());
+        $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
         $this->assertSame(['message-95 deny keep'], $this->stepsOf($answer));
     }
 
@@ -280,12 +280,12 @@ final class AgentStackTest extends TestCase
 
     public function test_a_step_keeps_its_typed_labels_through_an_array(): void
     {
-        $step = new WalkStep('top', 'guide', 'onStop', AnswerKind::Deny, TransitionKind::Push);
+        $step = new WalkStep('top', 'guide', 'onStop', AnswerType::Deny, TransitionType::Push);
 
         $copy = WalkStep::from($step->toArray());
 
-        $this->assertSame(AnswerKind::Deny, $copy->answer);
-        $this->assertSame(TransitionKind::Push, $copy->transition);
+        $this->assertSame(AnswerType::Deny, $copy->answer);
+        $this->assertSame(TransitionType::Push, $copy->transition);
         $this->assertSame($step->toArray(), $copy->toArray());
     }
 

@@ -10,6 +10,6 @@ final class InvalidActorText extends RuntimeException
 {
     public static function for(string $text): self
     {
-        return new self("An actor is written as kind:id, such as agent:12 or user:1; \"{$text}\" is not.");
+        return new self("An actor is written as type:id, such as agent:12 or user:1; \"{$text}\" is not.");
     }
 }

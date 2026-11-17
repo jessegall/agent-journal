@@ -6,7 +6,7 @@ namespace App\Domain\Processes\Support;
 
 use App\Core\Hooks\Contracts\ShellCommandParser;
 use App\Core\Hooks\Enums\CommandEffect;
-use App\Core\Hooks\Enums\CommandKind;
+use App\Core\Hooks\Enums\CommandType;
 use App\Core\Hooks\Enums\ParseOutcome;
 use App\Core\Hooks\Enums\ShellDialect;
 use App\Core\Hooks\Inputs\CommandPart;
@@ -39,11 +39,11 @@ final readonly class ShellParser implements ShellCommandParser
         $words = $segment->commandWords();
 
         if ($words === [] || $segment->programIsDynamic()) {
-            return new CommandPart('', [], CommandEffect::Unknown, CommandKind::Unknown, $segment->join);
+            return new CommandPart('', [], CommandEffect::Unknown, CommandType::Unknown, $segment->join);
         }
 
         $effect = $segment->hasWritingRedirect() ? CommandEffect::ChangesFiles : $this->catalog->effectOf($words);
 
-        return new CommandPart($words[0], array_slice($words, 1), $effect, $this->catalog->kindOf($words), $segment->join);
+        return new CommandPart($words[0], array_slice($words, 1), $effect, $this->catalog->typeOf($words), $segment->join);
     }
 }

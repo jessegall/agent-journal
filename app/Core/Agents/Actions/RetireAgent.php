@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Core\Agents\Actions;
 
-use App\Core\Actors\Enums\ActorKind;
+use App\Core\Actors\Contracts\CurrentActor;
+use App\Core\Actors\Enums\ActorType;
 use App\Core\Actors\Support\ActorIdentity;
 use App\Core\Agents\Contracts\AgentRetirement;
 use App\Core\Agents\Exceptions\AgentRetirementDenied;
@@ -15,7 +16,6 @@ use App\Core\Assignments\Enums\AssignmentReason;
 use App\Core\Assignments\Storage\AssignmentStore;
 use App\Core\Assignments\Support\AssignmentFacts;
 use App\Core\Assignments\Support\AssignmentResult;
-use App\Core\Actors\Contracts\CurrentActor;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\ConnectionInterface;
 
@@ -69,7 +69,7 @@ final readonly class RetireAgent implements AgentRetirement
      */
     private function requireAuthority(ActorIdentity $caller, Agent $target): void
     {
-        if ($caller->kind === ActorKind::User) {
+        if ($caller->type === ActorType::User) {
             return;
         }
 
