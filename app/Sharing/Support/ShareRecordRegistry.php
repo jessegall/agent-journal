@@ -105,6 +105,14 @@ final class ShareRecordRegistry
     }
 
     /**
+     * @throws UnknownShareRecordType when no domain registered the type for sharing
+     */
+    public function requireShareable(string $alias): void
+    {
+        $this->get($alias);
+    }
+
+    /**
      * @throws UnknownShareRecordType
      */
     public function get(string $alias): ShareRecordRegistration

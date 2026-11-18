@@ -427,7 +427,9 @@ use App\Settings\Values\Decimal;
 use App\Settings\Values\GroupReference;
 use App\Settings\Values\SettingReference;
 use App\Settings\Values\SettingsChange;
+use App\Sharing\Commands\ApproveShareRequest;
 use App\Sharing\Commands\CreateShare;
+use App\Sharing\Commands\RequestShare;
 use App\Sharing\Commands\SaveSharePreview;
 use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ProvidesShareRecords;
@@ -454,6 +456,7 @@ use App\Sharing\Support\SharedContent;
 use App\Sharing\Support\SharedPage;
 use App\Sharing\Support\SharedPageItem;
 use App\Sharing\Support\ShareLinkedCandidate;
+use App\Sharing\Support\ShareProposalStatus;
 use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareRecordRegistration;
 use App\Sharing\Support\ShareRecords;
@@ -851,6 +854,7 @@ final class CoreApi
                 DisabledSettingsGroup::class,
                 SavedSharePreview::class,
                 ShareSummary::class,
+                ShareProposalStatus::class,
                 ShareState::class,
             )
             ->commands(
@@ -883,6 +887,8 @@ final class CoreApi
                 SettleFrameTimes::class,
                 SaveSharePreview::class,
                 CreateShare::class,
+                RequestShare::class,
+                ApproveShareRequest::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,

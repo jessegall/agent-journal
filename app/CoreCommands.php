@@ -49,8 +49,10 @@ use App\Settings\Commands\SetIntegerChoice;
 use App\Settings\Commands\SetIntegerSetting;
 use App\Settings\Commands\SetStringChoice;
 use App\Settings\Commands\SetStringSetting;
+use App\Sharing\Commands\ApproveShareRequest;
 use App\Sharing\Commands\CreateShare;
 use App\Sharing\Commands\ReadShare;
+use App\Sharing\Commands\RequestShare;
 use App\Sharing\Commands\SaveSharePreview;
 use App\Web\Commands\RecordUserHeartbeat;
 
@@ -68,7 +70,7 @@ final class CoreCommands
             AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, EnrollHost::class, OpenAgentRuntime::class, DeliverAgent::class, WakeAgent::class, ChangeAgentModel::class, ChangeAgentEffort::class, InterruptAgent::class, StopAgent::class, ClaimDriverRequests::class, ClaimLaunchGrant::class, ReportRuntimeActivity::class, ReportRequestProgress::class, ReportDriverTurn::class, ReportRuntimeHeartbeat::class, ReportRuntimeExit::class, OpenHostMainRuntime::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, SettleFrameTimes::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class,
             SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class,
             SetStringSetting::class, SetBooleanSetting::class, SetIntegerSetting::class, SetDecimalSetting::class, SetStringChoice::class, SetIntegerChoice::class, ResetSetting::class, EnableSettingGroup::class, DisableSettingGroup::class, ResetSettingGroup::class,
-            SaveSharePreview::class, CreateShare::class,
+            SaveSharePreview::class, CreateShare::class, RequestShare::class, ApproveShareRequest::class,
             ReadShare::class,
         ];
     }
