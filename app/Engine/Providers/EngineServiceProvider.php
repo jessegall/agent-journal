@@ -12,6 +12,7 @@ use App\Engine\Support\EngineListenerSet;
 use App\Engine\Support\EngineSettings;
 use App\Engine\Support\EngineTickedDelivery;
 use App\Engine\Support\SystemMonotonicClock;
+use App\Reads\Support\SelfMeasuredCommands;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
@@ -36,5 +37,10 @@ final class EngineServiceProvider extends ServiceProvider
         $this->app->singleton(MonotonicClock::class, SystemMonotonicClock::class);
         $this->app->singleton(EngineListenerSet::class);
         $this->app->scoped(EngineTickedDelivery::class);
+    }
+
+    public function boot(SelfMeasuredCommands $selfMeasured): void
+    {
+        $selfMeasured->add('engine:tick');
     }
 }
