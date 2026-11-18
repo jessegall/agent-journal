@@ -6,9 +6,14 @@ namespace Domain\Plans\Readers;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Contracts\CurrentSession;
+use App\Agents\Support\StackTarget;
 use App\Assignments\Contracts\AssigneeReader;
 use App\Assignments\Contracts\AssignmentReader;
 use App\Assignments\Contracts\AssignmentTransaction;
+use App\Hooks\Contracts\CurrentState;
+use App\Hooks\Decisions\StateReference;
+use App\Hooks\Decisions\SubjectReference;
 use Domain\Plans\Api\AssignedPlanFilters;
 use Domain\Plans\Api\AssignedPlanList;
 use Domain\Plans\Api\PlanCard;
@@ -20,12 +25,16 @@ use Domain\Plans\Contracts\PlanReader;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\States\Support\WorkingOnPlanStateReference;
 use Domain\Tasks\Api\TaskProgress;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * The named reads of plans for whoever acts in this request. Every agent and the user read every plan. Task progress
@@ -42,17 +51,19 @@ final readonly class PlanRecords implements PlanReader
         private AssignmentReader $assignments,
         private AssigneeReader $assignees,
         private AssignmentTransaction $transaction,
+        private CurrentSession $session,
+        private CurrentState $currentState,
     ) {}
 
     public function list(PlanFilters $filters): PlanList
     {
-        $this->actors->actor();
+        $focused = $this->focusedPlanId();
         $total = $this->listed($filters)->count();
         $lastPage = max(1, (int) ceil($total / self::PER_PAGE));
         $page = min(max(1, $filters->page), $lastPage);
-        $plans = $this->listed($filters)->listOrder()->forPage($page, self::PER_PAGE)->get();
+        $plans = $this->listed($filters)->listOrder($focused)->forPage($page, self::PER_PAGE)->get();
 
-        return new PlanList($this->cardsOf($plans), $filters, $page, $lastPage, $total, $this->selection($filters));
+        return new PlanList($this->cardsOf($plans, $focused), $filters, $page, $lastPage, $total, $this->selection($filters, $focused));
     }
 
     /**
@@ -70,18 +81,40 @@ final readonly class PlanRecords implements PlanReader
         $caller = $this->actors->actor();
         $caller->requireAgent();
         $holder = ActorIdentity::of($caller);
+        $focused = $this->focusedPlanId();
 
-        return $this->transaction->run(function () use ($filters, $holder): AssignedPlanList {
+        return $this->transaction->run(function () use ($filters, $holder, $focused): AssignedPlanList {
             $heldIds = $this->assignments->allRecordIdsFor(Plan::LINK_TYPE, $holder);
             $matching = Plan::query()->amongIds($heldIds)->matching($filters->search)->inStates($filters->states);
             $total = $matching->clone()->count();
-            $plans = $matching->listOrder()->forPage($filters->page->number, $filters->page->size)->get();
+            $plans = $matching->listOrder($focused)->forPage($filters->page->number, $filters->page->size)->get();
 
-            return new AssignedPlanList($this->cardsOf($plans), $filters->page, $total);
+            return new AssignedPlanList($this->cardsOf($plans, $focused), $filters->page, $total);
         });
     }
 
-    private function selection(PlanFilters $filters): PlanSelection
+    /**
+     * The plan the caller's own stack works on now, read once from its highest live plan frame; none for a user, who
+     * has no stack, and never another target's plan.
+     *
+     * @return Option<string>
+     */
+    private function focusedPlanId(): Option
+    {
+        $caller = $this->actors->actor();
+
+        if ($caller->isUser()) {
+            return None::create();
+        }
+
+        return $this->currentState->of(new StackTarget($caller->actorId(), $this->session->sessionId()), WorkingOnPlanStateReference::TYPE_KEY)
+            ->flatMap(fn (StateReference $frame) => $frame->subject instanceof SubjectReference ? new Some($frame->subject->id) : None::create());
+    }
+
+    /**
+     * @param  Option<string>  $focused
+     */
+    private function selection(PlanFilters $filters, Option $focused): PlanSelection
     {
         if ($filters->selectedPlanId === null && $filters->selectedPlanNumber === null) {
             return PlanSelection::none();
@@ -97,7 +130,7 @@ final readonly class PlanRecords implements PlanReader
 
         $isInsideFilter = Plan::query()->matching($filters->search)->whereKey($plan->id)->exists();
 
-        return PlanSelection::found($this->cardsOf($plan->newCollection([$plan]))[0], $isInsideFilter);
+        return PlanSelection::found($this->cardsOf($plan->newCollection([$plan]), $focused)[0], $isInsideFilter);
     }
 
     /**
@@ -105,9 +138,10 @@ final readonly class PlanRecords implements PlanReader
      * assignments with their holders' names through Core.
      *
      * @param  EloquentCollection<int, Plan>  $plans
+     * @param  Option<string>  $focused
      * @return list<PlanCard>
      */
-    private function cardsOf(EloquentCollection $plans): array
+    private function cardsOf(EloquentCollection $plans, Option $focused): array
     {
         $phases = Phase::query()->whereIn('plan_id', $plans->modelKeys())->readAll('every phase of the listed plans')->orderBy('number')->get();
         $phasesOfPlan = $phases->groupBy('plan_id');
@@ -121,6 +155,7 @@ final readonly class PlanRecords implements PlanReader
         return array_values($plans->map(fn (Plan $plan) => $plan->card(
             $phasesOfPlan->get($plan->id, new Collection)->mapWithKeys(fn (Phase $phase) => [$phase->number => $progressOfPhase[$phase->id] ?? PlanProgress::none()])->all(),
             $holders->forRecord($plan->assignmentIdentity()),
+            $focused->getOrElse(null) === $plan->id,
         ))->all());
     }
 

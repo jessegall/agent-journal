@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('title');
             $table->string('type', 16);
             $table->string('state', 16)->default('planned');
-            $table->boolean('focused')->default(false);
             $table->timestampsTz();
 
             $table->index('state');

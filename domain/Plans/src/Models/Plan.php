@@ -36,7 +36,6 @@ use PhpOption\Option;
  * @property string $title
  * @property PlanType $type
  * @property PlanState $state
- * @property bool $focused
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -54,7 +53,7 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel
     /**
      * @var array<string, mixed>
      */
-    protected $attributes = ['state' => 'planned', 'focused' => false];
+    protected $attributes = ['state' => 'planned'];
 
     /**
      * @return array<string, string>
@@ -64,7 +63,6 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel
         return [
             'type' => PlanType::class,
             'state' => PlanState::class,
-            'focused' => 'boolean',
         ];
     }
 
@@ -142,25 +140,28 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel
      *
      * @param  array<int, PlanProgress>  $progressOfPhase
      * @param  Option<AssignmentHolder>  $holder
+     * @param  bool  $focused  whether this is the plan the caller's stack works on now
      */
-    public function card(array $progressOfPhase, Option $holder): PlanCard
+    public function card(array $progressOfPhase, Option $holder, bool $focused): PlanCard
     {
         $progress = array_reduce($progressOfPhase, fn (PlanProgress $sum, PlanProgress $phase) => $sum->plus($phase), PlanProgress::none());
         $unfinished = array_keys(array_filter($progressOfPhase, fn (PlanProgress $phase) => ! $phase->isComplete()));
         $currentPhase = $unfinished[0] ?? array_key_last($progressOfPhase);
 
-        return new PlanCard($this->id, $this->number, $this->title, $this->type, $this->state, $this->state->canStart(), $this->focused, $progress, $currentPhase, $holder);
+        return new PlanCard($this->id, $this->number, $this->title, $this->type, $this->state, $this->state->canStart(), $focused, $progress, $currentPhase, $holder);
     }
 
     /**
-     * The focused plan first, then the newest.
+     * The caller's current plan first when it has one, then the newest.
      *
      * @param  Builder<self>  $query
+     * @param  Option<string>  $focusedPlanId
      */
     #[Scope]
-    protected function listOrder(Builder $query): void
+    protected function listOrder(Builder $query, Option $focusedPlanId): void
     {
-        $query->orderByDesc('focused')->orderByDesc('id');
+        $focusedPlanId->forAll(fn (string $id) => $query->orderByRaw('case when "plans"."id" = ? then 0 else 1 end', [$id]));
+        $query->orderByDesc('id');
     }
 
     /**

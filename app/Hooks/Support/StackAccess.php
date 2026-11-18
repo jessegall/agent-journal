@@ -11,20 +11,22 @@ use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Exceptions\HookIdentityExpired;
 use App\Hooks\Inputs\HookIdentity;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Container\Container;
 
 /**
- * The stack and hook identity of the authenticated agent in this request, and nothing wider.
+ * The stack and hook identity of the authenticated agent in this request, and nothing wider. The agent context is read
+ * when asked for, like the current session, so a class that only may act for an agent can be built in any request.
  */
 final readonly class StackAccess
 {
     public function __construct(
-        private AgentContext $context,
+        private Container $container,
         private HookRetryWindow $retryWindow,
     ) {}
 
     public function target(): StackTarget
     {
-        return new StackTarget($this->context->agentId, $this->context->sessionId);
+        return new StackTarget($this->context()->agentId, $this->context()->sessionId);
     }
 
     /**
@@ -32,7 +34,7 @@ final readonly class StackAccess
      */
     public function role(): ReadyStateType
     {
-        return ReadyStateType::forKey($this->context->role);
+        return ReadyStateType::forKey($this->context()->role);
     }
 
     /**
@@ -47,12 +49,21 @@ final readonly class StackAccess
 
     public function hookIdentity(): HookIdentity
     {
-        $call = $this->context->call;
+        $context = $this->context();
+        $call = $context->call;
 
         if (! $this->retryWindow->includes($call->issuedAt, CarbonImmutable::now())) {
             throw HookIdentityExpired::forCall($call->callId, $this->retryWindow->seconds);
         }
 
-        return new HookIdentity($this->context->agentId, $this->context->sessionId, $call->callId, $call->bodyDigest);
+        return new HookIdentity($context->agentId, $context->sessionId, $call->callId, $call->bodyDigest);
+    }
+
+    /**
+     * The calling agent's context; asking for it outside an agent request fails with AgentContextMissing.
+     */
+    private function context(): AgentContext
+    {
+        return $this->container->make(AgentContext::class);
     }
 }

@@ -41,7 +41,7 @@ final class PlanPersistenceTest extends TestCase
         $this->assertSame(['Read', 'Start'], $plan->phases()->pluck('title')->all());
         $this->assertSame([$second->id, $first->id], $read->taskIds());
         $this->assertSame([$second->id, $first->id, $third->id], $plan->taskIds());
-        $this->assertSame([PlanState::Planned, false], [$plan->fresh()?->state, $plan->fresh()?->focused]);
+        $this->assertSame(PlanState::Planned, $plan->fresh()?->state);
     }
 
     public function test_a_task_sits_in_one_phase_at_most(): void

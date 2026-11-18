@@ -8,8 +8,10 @@ use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Concerns\HasLinkRecords;
 use App\Domains\Concerns\HasNumberedModels;
+use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesLinkRecords;
+use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
@@ -53,15 +55,17 @@ use Domain\Plans\Readers\PlansWindowReader;
 use Domain\Plans\Readers\PlanWindowReader;
 use Domain\Plans\Readers\WaitingPlansCount;
 use Domain\Plans\Readers\WaitingPlansSection;
+use Domain\Plans\States\Support\WorkingOnPlanStateFactory;
+use Domain\Plans\States\Support\WorkingOnPlanStateReference;
 use Domain\Plans\Support\PhaseAssignmentProvider;
 use Domain\Plans\Support\PhaseRecords;
 use Domain\Plans\Support\PlanAssignmentProvider;
 use Domain\Plans\Support\PlanRecords;
 use Domain\Tasks\TasksDomain;
 
-final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections
+final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesStates
 {
-    use HasAssignables, HasLinkRecords, HasNumberedModels;
+    use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
     public function description(): string
     {
@@ -163,5 +167,10 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function numberedModels(): array
     {
         return [NumberedModel::global(Plan::class), NumberedModel::within(Phase::class, Plan::class)];
+    }
+
+    public function states(): array
+    {
+        return [WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateFactory::class];
     }
 }
