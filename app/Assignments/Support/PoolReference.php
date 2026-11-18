@@ -30,4 +30,16 @@ final readonly class PoolReference
     ) {
         $this->recordIds = new OrderedRecordIds($recordIds)->ids;
     }
+
+    /**
+     * Whether the other reference names the same pool, target and ids in the same order.
+     */
+    public function isSameAs(self $other): bool
+    {
+        $sameTarget = $this->target === null
+            ? $other->target === null
+            : $other->target !== null && $this->target->isSameAs($other->target);
+
+        return $this->type === $other->type && $sameTarget && $this->recordIds === $other->recordIds;
+    }
 }
