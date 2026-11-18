@@ -15,6 +15,7 @@ final class ExplanationData extends Data
 {
     /**
      * @param  list<ExplainedNodeData>  $nodes
+     * @param  list<string>  $requiredClasses  the union of every class the command needs
      */
     public function __construct(
         public readonly string $outcome,
@@ -23,5 +24,7 @@ final class ExplanationData extends Data
         public readonly int $executableParts,
         #[DataCollectionOf(ExplainedNodeData::class)]
         public readonly array $nodes,
+        public readonly array $requiredClasses = [],
+        public readonly bool $isKnown = true,
     ) {}
 }

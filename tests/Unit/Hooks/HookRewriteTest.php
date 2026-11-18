@@ -30,7 +30,7 @@ use Tests\Support\TestIds;
 
 final class HookRewriteTest extends TestCase
 {
-    public function test_without_the_rewrite_the_main_agent_refuses_the_unsaved_test_run(): void
+    public function test_without_the_rewrite_the_main_agent_refuses_the_unsaved_check(): void
     {
         $answer = $this->rewrite()->answer($this->stack(ReadyStateType::MainAgent, new RewritingState([])), $this->command('composer test'));
 

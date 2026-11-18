@@ -15,6 +15,8 @@ use App\Domains\Support\Exports as ExportsCheck;
 use App\Domains\Support\Psr4ClassNames;
 use App\Domains\Support\SettingsDomainAvailability;
 use App\Mcp\Support\McpCatalogue;
+use App\Processes\Rules\CoreRules;
+use App\Processes\Support\CommandRuleRegistry;
 use App\Settings\Support\CoreSettings;
 use App\Settings\Support\EmptySettingsDefinition;
 use App\Settings\Support\SettingRegistry;
@@ -38,6 +40,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->instance(DomainRegistry::class, $registry);
         $this->app->singleton(CommandRegistry::class, fn () => $registry->commandDeclarations(CoreCommands::owner()));
         $this->app->singleton(McpCatalogue::class, fn (): McpCatalogue => $this->mcpCatalogue($registry));
+        $this->app->singleton(CommandRuleRegistry::class, fn (): CommandRuleRegistry => $registry->commandRules(new CoreRules()->all()));
         $this->app->singleton(DomainSwitches::class, fn () => $registry->domainSwitches());
         $this->app->singleton(SettingRegistry::class, fn () => $this->settingRegistry($registry, $this->app->make(DomainSwitches::class)));
         $this->app->scoped(DomainAvailability::class, SettingsDomainAvailability::class);

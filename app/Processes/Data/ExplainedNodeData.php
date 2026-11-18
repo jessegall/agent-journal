@@ -13,6 +13,9 @@ final class ExplainedNodeData extends Data
 {
     /**
      * @param  list<string>  $redirects
+     * @param  list<string>  $classes  the classes this node carries itself, as values such as read
+     * @param  list<string>  $provenance  where each of those classes comes from, such as rule:core.cat@1
+     * @param  list<string>  $unresolved  why something about this node could not be placed
      */
     public function __construct(
         public readonly int $id,
@@ -20,5 +23,10 @@ final class ExplainedNodeData extends Data
         public readonly int|null $parent,
         public readonly string $snippet,
         public readonly array $redirects,
+        public readonly string $program = '',
+        public readonly string $original = '',
+        public readonly array $classes = [],
+        public readonly array $provenance = [],
+        public readonly array $unresolved = [],
     ) {}
 }

@@ -19,6 +19,12 @@ use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
+use App\Processes\Contracts\ProvidesCommandRules;
+use App\Processes\Enums\CommandClass;
+use App\Processes\Values\ArgumentGrammar;
+use App\Processes\Values\CommandClassSet;
+use App\Processes\Values\CommandRule;
+use App\Processes\Values\ProgramSpellings;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Contracts\ProvidesSections;
@@ -63,7 +69,7 @@ use Tests\Fixtures\Modules\Notes\Support\NoteAssignments;
 /**
  * A module installed outside the domain folder, registered beside the domains only in the architecture fixtures.
  */
-final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesCommandMiddleware, ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesStates
+final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesCommandMiddleware, ProvidesCommandRules, ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -142,6 +148,18 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
             MiddlewareDeclaration::around(RecordWriteNote::class, CommandScope::command(WriteNote::class)),
             MiddlewareDeclaration::inside(AuditNotes::class, CommandScope::ownedBy(self::class)),
             MiddlewareDeclaration::inside(AuditRules::class, CommandScope::ownedBy(RulesDomain::class)),
+        ];
+    }
+
+    /**
+     * The module's own command-line tool: notes-cli list only reads notes.
+     *
+     * @return list<CommandRule>
+     */
+    public function commandRules(): array
+    {
+        return [
+            CommandRule::forProgram('notes.notes-cli.list', new ProgramSpellings('notes-cli'), ['list'], ArgumentGrammar::options(['--all']), CommandClassSet::of(CommandClass::Read)),
         ];
     }
 }
