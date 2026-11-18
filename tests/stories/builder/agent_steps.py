@@ -588,6 +588,12 @@ class AgentSteps:
         shutil.rmtree(self.app.config.root / name)
         return self.observed(f"the project lost {name}", None, None)
 
+    def project_link_dangling(self, name: str) -> StepResult:
+        path = self.app.config.root / name
+        shutil.rmtree(path, ignore_errors=True)
+        path.symlink_to(self.app.config.root / "nowhere")
+        return self.observed(f"the project has a dangling link at {name}", None, None)
+
     def project_file(self, name: str, line_count: int) -> str:
         path = self.app.config.root / name
         path.write_text("".join(f"line {number}\n" for number in range(line_count)))

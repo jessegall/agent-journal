@@ -42,12 +42,16 @@ class PluginSkills:
             text = self.stamped((folder / manifest.skills / name / "SKILL.md").read_text(), plugin.name)
             for home in HOMES:
                 published = self.config.root / home / name
+                self.clear_link(published)
                 published.mkdir(parents=True, exist_ok=True)
                 (published / "SKILL.md").write_text(text)
                 (published / ".gitignore").write_text("*\n")
 
     def withdraw(self, plugin: Plugin) -> None:
+        folder = self.folders.folder(plugin)
         for home in HOMES:
+            for name in ManifestReader.skill_names(folder, plugin.manifest):
+                self.clear_link(self.config.root / home / name)
             for skill in (self.config.root / home).glob("*/SKILL.md"):
                 if f"\n{PLUGIN_OWNER_PREFIX}{plugin.name}\n" in skill.read_text():
                     self.remove(skill.parent)
@@ -58,6 +62,11 @@ class PluginSkills:
             folder.unlink()
         else:
             shutil.rmtree(folder)
+
+    @staticmethod
+    def clear_link(path: Path) -> None:
+        if path.is_symlink() or (path.exists() and not path.is_dir()):
+            path.unlink()
 
     @staticmethod
     def stamped(text: str, name: str) -> str:
