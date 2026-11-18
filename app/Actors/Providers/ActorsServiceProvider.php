@@ -23,6 +23,7 @@ final class ActorsServiceProvider extends ServiceProvider
         $this->app->singleton(PresenceWindow::class, fn (Application $app) => new PresenceWindow(
             $app->make('config')->integer('actors.presence_seconds'),
             $app->make('config')->integer('actors.heartbeat_seconds'),
+            $app->make('config')->integer('actors.signed_call_refresh_seconds'),
         ));
     }
 }

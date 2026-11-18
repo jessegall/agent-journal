@@ -175,6 +175,7 @@ final class HookEndpointTest extends TestCase
             $this->launch->session->id,
             'hooks.main_ready',
             new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')),
+            null,
         ));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->launch->agent->id));
         $work();

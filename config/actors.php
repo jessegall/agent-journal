@@ -15,4 +15,10 @@ return [
     */
     'heartbeat_seconds' => 30,
 
+    /*
+    | How old an agent session's stored beat must be before a signed call of that agent records a new one, in seconds,
+    | so a busy agent stays present without a write on every request.
+    */
+    'signed_call_refresh_seconds' => 15,
+
 ];

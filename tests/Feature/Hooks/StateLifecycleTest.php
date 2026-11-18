@@ -55,7 +55,7 @@ final class StateLifecycleTest extends TestCase
 
         DB::table('agent_stacks')->truncate();
         $this->target = new StackTarget(TestIds::of(1), TestIds::of(10));
-        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64))));
+        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(1)));
         $this->log = new LifecycleLog;
         $this->tasks = new RecordingStateLoader($this->log);

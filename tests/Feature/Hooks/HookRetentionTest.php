@@ -99,7 +99,7 @@ final class HookRetentionTest extends TestCase
         $this->recordCall(new StackTarget(TestIds::of(1), TestIds::of(10)), 'call-7');
         $this->moveDays(8);
         $this->app->make(PruneHookHistory::class)->prune();
-        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), 'hooks.main_ready', new SignedCall('call-7', $issuedAt, str_repeat('a', 64))));
+        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), 'hooks.main_ready', new SignedCall('call-7', $issuedAt, str_repeat('a', 64)), null));
 
         $this->expectException(HookIdentityExpired::class);
 

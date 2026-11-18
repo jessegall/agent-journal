@@ -115,7 +115,7 @@ trait CommittedHookStack
 
     protected function callAs(string $callId, string|null $inputDigest = null): void
     {
-        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), 'hooks.main_ready', new SignedCall($callId, CarbonImmutable::now(), $inputDigest ?? self::inputDigest())));
+        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), 'hooks.main_ready', new SignedCall($callId, CarbonImmutable::now(), $inputDigest ?? self::inputDigest()), null));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(1)));
     }
 
