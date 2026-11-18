@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
+use App\Settings\Casts\SettingsDocumentCast;
 use App\Settings\Exceptions\SettingsDocumentInvalid;
 use App\Settings\Models\SettingsRecord;
 use App\Settings\Storage\SettingsDocument;
@@ -79,7 +80,6 @@ final class SettingsRecordTest extends TestCase
     public static function brokenDocuments(): array
     {
         return [
-            'invalid json' => ['{"settings":[{"key":"secret_value"'],
             'missing toggles list' => ['{"settings":[{"key":"secret_value","value":1}]}'],
             'toggles not a list' => ['{"settings":[],"toggles":{"key":"secret_value"}}'],
             'extra envelope field' => ['{"settings":[],"toggles":[],"secret_value":1}'],
@@ -103,6 +103,16 @@ final class SettingsRecordTest extends TestCase
         } catch (SettingsDocumentInvalid $invalid) {
             $this->assertStringContainsString('Library', $invalid->getMessage());
             $this->assertStringNotContainsString('secret_value', $invalid->getMessage());
+        }
+    }
+
+    public function test_text_that_is_not_json_is_refused_by_the_cast_without_its_content(): void
+    {
+        try {
+            (new SettingsDocumentCast)->get(new SettingsRecord, 'document', '{"settings":[{"key":"secret_value"', ['owner' => 'Library']);
+            $this->fail('Text that is not JSON was read.');
+        } catch (SettingsDocumentInvalid $invalid) {
+            $this->assertSame(SettingsDocumentInvalid::notJson('Library')->getMessage(), $invalid->getMessage());
         }
     }
 
