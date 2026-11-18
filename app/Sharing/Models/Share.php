@@ -128,6 +128,17 @@ final class Share extends Model implements ReadableModel
         return self::query()->whereKey($ids)->liveNow()->readLimit(count($ids))->pluck('scope_version', 'id')->map(fn (mixed $version) => (int) $version)->all();
     }
 
+    /**
+     * The share a token digest opens, with only its id, state, scope version and deadline: the one query the public
+     * bridge runs, as the system, before any read.
+     *
+     * @return Option<self>
+     */
+    public static function forTokenDigest(string $digest): Option
+    {
+        return Option::fromValue(self::query()->openedByDigest($digest)->first(['id', 'state', 'scope_version', 'expires_at']));
+    }
+
     public function root(): RecordIdentity
     {
         return new RecordIdentity($this->root_type, $this->root_id);
@@ -159,6 +170,15 @@ final class Share extends Model implements ReadableModel
     protected function liveNow(Builder $query): void
     {
         $query->whereIn('state', array_map(fn (ShareState $state) => $state->value, ShareState::liveStates()))->where('expires_at', '>', CarbonImmutable::now());
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function openedByDigest(Builder $query, string $digest): void
+    {
+        $query->where('token_digest', $digest);
     }
 
     private static function forRoot(RecordIdentity $root, ShareState $state, CarbonImmutable $expiresAt): self
