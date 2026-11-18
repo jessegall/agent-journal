@@ -1379,6 +1379,7 @@ workers.most_out = 3
 workers.auto_dispatch = False  (the user sets it)
 workers.auto_dispatch_most = 0
 workers.next_at_clock_out = False  (the user sets it)
+workers.digest_seconds = 0
 workers.most_subagents = 5
 workers.idle_kept = 8
 workers.worktree_step = True
@@ -1908,6 +1909,7 @@ workers.worker_costly_on_shaped_work  [workers]  {{model}} cost ${{dollars}} on 
 workers.worker_has_no_work_left  [workers]  worker {{n}} idle: queue it tasks or `journal worker complete {{n}} --why "<why>"`
 workers.worker_keeps_failing  [workers]  worker {{n}} failed {{runs}} test runs in a row
 workers.worker_log_due  [workers]  you logged nothing for {{minutes}} min. log where you stand: `journal todo add "<step>"` or `journal proof <point> "<proof>"`
+workers.worker_news  [workers]  last {{span}}: {{counts}}; needs you: {{needs|cap=48}}. `journal worker open`
 workers.worker_quiet  [workers]  worker {{n}} silent {{minutes}} min; last: {{last|cap=20}}. notify it or stop it
 workers.worker_reported  [workers]  worker {{n}} reported
 workers.worker_runs_no_git  [workers]  never run git; the journal commits at clock-out. on a clash, fix the files, then `journal clock-out "<report>"`

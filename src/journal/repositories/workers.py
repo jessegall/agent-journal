@@ -1,5 +1,6 @@
 from journal.support.actor import Actor
 from collections.abc import Callable
+from datetime import datetime, timezone
 from journal.db.connection import Connection
 from journal.db.query import Query
 from journal.events.bus import Bus
@@ -71,6 +72,9 @@ class Workers(ScopedRepository[Worker]):
 
     def limit_passed(self, time: float) -> list[Worker]:
         return self.selected_globally(self.query().filter(state=WorkerState.LIMITED).filter_less_equal("resumes_at", time).order("id"))
+
+    def changed_since(self, time: float) -> list[Worker]:
+        return self.selected(self.query().filter_greater_equal("updated_at", datetime.fromtimestamp(time, timezone.utc)).order("id"))
 
     def recently_merged(self, time: float) -> list[Worker]:
         return self.selected(self.query().filter_greater("merged_at", time).order("merged_at"))

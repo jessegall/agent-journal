@@ -31,6 +31,7 @@ from journal.models.subagent import Subagent
 from journal.models.support.path_overlap import PathOverlap
 from journal.models.worker import Worker
 from journal.features.workers.support.workers_data import WorkersData
+from journal.features.workers.support.worker_news import WorkerNews
 from journal.support.subagent_dispatch import SubagentDispatch
 from journal.features.workers.workers_nudges import WorkersNudges
 from journal.features.workers.support.measure_lines import MeasureLines
@@ -53,7 +54,7 @@ STRUGGLE_REJECTIONS = 3
 
 
 class WorkersConduct(Conduct):
-    """The workers feature's conduct in every state: a subagent past the most allowed at once is blocked, a write into a worker's worktree is blocked, a new subagent whose job names files an idle one of the same kind worked on is blocked in favour of those, unless they are retired, a dispatch whose brief names files an idle worker touched is blocked in favour of that worker, a dispatch past its profile's stored workers is blocked while one of them is idle, retiring an idle worker is blocked until the repeat says why it cannot be reused, the reports not acted on are named at a stop and on the tick, work waiting to be checked is named again every so many tool uses, a worker of this agent's silent for twenty minutes is named once on the tick, a worker this agent dispatches pushes Awaiting on its work when the agent has no task in hand, a worker's report is informed as it comes, a worker that stopped at the usage limit is named with the time it goes on by itself, a worker whose processes pass the memory warning is named once, and in orchestrator mode a stop is refused while work this agent sent out waits clocked out, naming each worker, but for one it awaits, the worker itself or a run in its worktree, and once, with journal worker wait, while its workers are only still out; a stop carries the status of every started plan, and names once a started plan that has not moved for the set minutes while another moves, and once a run of the whole suite that failed after merges, with the workers merged since it last passed and the send-back; and, with the test budget, the agent that sent a worker hears in one short line of each of its test runs that failed, unless that line is off, and once when it has failed the set runs in a row, never of a passed run; and in orchestrator mode its load is named in one line from the warning level on, with what waits and the oldest to clear first, the ways to ease it added from the critical level on, and each place the load opens or closes in one line; with the fitness warnings on, each failing measure's one line, as often as its nudge repeats; and in orchestrator mode a merged worker's model that did not fit its work, too strong or too weak, is named in one short line."""
+    """The workers feature's conduct in every state: a subagent past the most allowed at once is blocked, a write into a worker's worktree is blocked, a new subagent whose job names files an idle one of the same kind worked on is blocked in favour of those, unless they are retired, a dispatch whose brief names files an idle worker touched is blocked in favour of that worker, a dispatch past its profile's stored workers is blocked while one of them is idle, retiring an idle worker is blocked until the repeat says why it cannot be reused, the reports not acted on are named at a stop and on the tick, unless the orchestrator's worker news gathers them, work waiting to be checked is named again every so many tool uses, a worker of this agent's silent for twenty minutes is named once on the tick, a worker this agent dispatches pushes Awaiting on its work when the agent has no task in hand, a worker's report, clock-out, unfinished run, failed test run and empty queue are each informed as they come, unless the orchestrator's worker news gathers them, a worker that stopped at the usage limit is named with the time it goes on by itself, a worker whose processes pass the memory warning is named once, and in orchestrator mode a stop is refused while work this agent sent out waits clocked out, naming each worker, but for one it awaits, the worker itself or a run in its worktree, and once, with journal worker wait, while its workers are only still out; a stop carries the status of every started plan, and names once a started plan that has not moved for the set minutes while another moves, and once a run of the whole suite that failed after merges, with the workers merged since it last passed and the send-back; and, with the test budget, the agent that sent a worker hears in one short line of each of its test runs that failed, unless that line is off, and once when it has failed the set runs in a row, never of a passed run; and in orchestrator mode its load is named in one line from the warning level on, with what waits and the oldest to clear first, the ways to ease it added from the critical level on, and each place the load opens or closes in one line; with the fitness warnings on, each failing measure's one line, as often as its nudge repeats; and in orchestrator mode a merged worker's model that did not fit its work, too strong or too weak, is named in one short line."""
 
     def on_setting_changed(self, event: SettingChanged, settings: Settings) -> Transition:
         return self.pop() if event.setting == WorkersOptions.MODE.key and self.is_mode_bound() else self.none()
@@ -63,10 +64,10 @@ class WorkersConduct(Conduct):
         return Transition.merged(self, [check(self, event, settings) for check in checks])
 
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
-        return self.none(*report_mentions(event.data))
+        return self.none(*report_mentions(event.data, settings))
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
-        return self.none(*report_mentions(event.data))
+        return self.none(*report_mentions(event.data, settings))
 
     def on_worker_silent(self, event: WorkerSilent, settings: Settings) -> Transition:
         if event.worker.dispatcher != event.session or not event.is_split_due:
@@ -84,14 +85,14 @@ class WorkersConduct(Conduct):
         return self.none(WorkersNudges.WORKER_LIMITED.create(n=event.worker.id, at=time.strftime("%H:%M", time.localtime(event.resumes_at))))
 
     def on_worker_unfinished(self, event: WorkerUnfinished, settings: Settings) -> Transition:
-        if event.worker.is_other_dispatcher(event.session):
+        if event.worker.is_other_dispatcher(event.session) or WorkerNews.is_gathered(settings):
             return self.none()
         if event.times < 2 and event.worker.id in event.data.part(WorkersPart).resumable:
             return self.none()
         return self.none(WorkersNudges.RUN_UNFINISHED.create(n=event.worker.id, cause=RUN_LIMIT_CAUSE if event.is_run_limit else ""))
 
     def on_worker_delivered(self, event: WorkerDelivered, settings: Settings) -> Transition:
-        if event.worker.is_other_dispatcher(event.session):
+        if event.worker.is_other_dispatcher(event.session) or WorkerNews.is_gathered(settings):
             return self.none()
         ready = [work for work in event.data.part(WorkersPart).ready_work if work.worker == event.worker.id]
         return self.none(*(WorkersNudges.WORK_READY.create(n=work.worker, name=work.name, task=work.task) for work in ready))
@@ -102,12 +103,12 @@ class WorkersConduct(Conduct):
         return self.none(WorkersNudges.BRANCH_KEEPS_CLASHING.create(n=event.worker.id, clashes=event.clashes, clashing=event.clashing))
 
     def on_worker_reported(self, event: WorkerReported, settings: Settings) -> Transition:
-        if event.worker.is_other_dispatcher(event.session):
+        if event.worker.is_other_dispatcher(event.session) or WorkerNews.is_gathered(settings):
             return self.none()
         return self.none(WorkersNudges.WORKER_REPORTED.create(n=event.worker.id, name=event.worker.name))
 
     def on_worker_test_failed(self, event: WorkerTestFailed, settings: Settings) -> Transition:
-        if event.worker.is_other_dispatcher(event.session):
+        if event.worker.is_other_dispatcher(event.session) or WorkerNews.is_gathered(settings):
             return self.none()
         name = event.worker.name[:TEST_LINE_NAME]
         failed = (WorkersNudges.TEST_RUN_FAILED.create(n=event.worker.id, name=name, failed=event.failed),) if settings.value(WorkersOptions.TEST_RUN_LINES) else ()
@@ -141,7 +142,7 @@ class WorkersConduct(Conduct):
         return self.none(rejection_line(event))
 
     def on_worker_queue_empty(self, event: WorkerQueueEmpty, settings: Settings) -> Transition:
-        if event.worker.is_other_dispatcher(event.session):
+        if event.worker.is_other_dispatcher(event.session) or WorkerNews.is_gathered(settings):
             return self.none()
         return self.none(WorkersNudges.IDLE_WORKER.create(n=event.worker.id))
 
@@ -184,7 +185,9 @@ def rejection_line(event: ProofShort) -> Nudge:
 
 
 
-def report_mentions(data: FeatureData) -> list[Nudge]:
+def report_mentions(data: FeatureData, settings: Settings) -> list[Nudge]:
+    if WorkerNews.is_gathered(settings):
+        return []
     workers = data.part(WorkersPart)
     summary = ", ".join(f"worker {w.id} ({w.name})" for w in workers.idle_workers)
     return [WorkersNudges.UNREAD_WORKER_REPORTS.create(reports_waiting=summary)] if summary else []
