@@ -47,7 +47,7 @@ final class Page
     ) {}
 
     /**
-     * A page at the path of its own key, read by the reader and drawn by the component under the domain's Resources/js.
+     * A page at the path of its own key, read by the reader and drawn by the component in the domain's script folder (resources/js).
      *
      * @param  class-string<PageReader>  $reader
      */

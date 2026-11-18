@@ -37,12 +37,12 @@ final readonly class DomainUi
      * Reads what a domain or module declares through ProvidesPages, ProvidesNavigation and ProvidesSections, given its
      * name, namespace and folder.
      */
-    public static function of(object $domain, string $name, string $namespace, string $folder): self
+    public static function of(object $domain, string $name, string $namespace, string $scriptFolder): self
     {
         return self::declaring(
             $name,
             $namespace,
-            $folder,
+            $scriptFolder,
             pages: $domain instanceof ProvidesPages ? $domain->pages() : [],
             navigation: $domain instanceof ProvidesNavigation ? $domain->navigation() : [],
             sections: $domain instanceof ProvidesSections ? $domain->sections() : [],
@@ -54,13 +54,13 @@ final readonly class DomainUi
      * @param  list<NavigationItem>  $navigation
      * @param  list<Section>  $sections
      */
-    public static function declaring(string $name, string $namespace, string $folder, array $pages = [], array $navigation = [], array $sections = []): self
+    public static function declaring(string $name, string $namespace, string $scriptFolder, array $pages = [], array $navigation = [], array $sections = []): self
     {
         return new self(
             name: $name,
             key: Str::kebab($name),
             namespace: $namespace,
-            scriptFolder: $folder.'/Resources/js',
+            scriptFolder: $scriptFolder,
             pages: $pages,
             navigation: $navigation,
             sections: $sections,
@@ -88,7 +88,7 @@ final readonly class DomainUi
     }
 
     /**
-     * The real path of a component named relative to the domain's Resources/js, refused when it lies elsewhere.
+     * The real path of a component named relative to the domain's script folder, refused when it lies elsewhere.
      */
     public function componentFile(string $declaration, string $component): string
     {

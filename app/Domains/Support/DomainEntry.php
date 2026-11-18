@@ -136,6 +136,15 @@ final readonly class DomainEntry
     }
 
     /**
+     * Where the domain's JavaScript, TypeScript and Vue files sit: resources/js beside src in a package, as a Laravel
+     * project keeps them, or Resources/js in a flat test module's folder.
+     */
+    public function scriptFolder(): string
+    {
+        return $this->isPackage() ? dirname($this->folder).'/resources/js' : $this->folder.'/Resources/js';
+    }
+
+    /**
      * Whether the domain is a package whose code sits in src, as every domain in domain/<Name> is.
      */
     private function isPackage(): bool
@@ -187,7 +196,7 @@ final readonly class DomainEntry
      */
     public function ui(): DomainUi
     {
-        return DomainUi::of($this->domain, $this->name, $this->namespace, $this->folder);
+        return DomainUi::of($this->domain, $this->name, $this->namespace, $this->scriptFolder());
     }
 
     /**
@@ -199,7 +208,7 @@ final readonly class DomainEntry
      */
     public function declaring(array $pages = [], array $navigation = [], array $sections = []): DomainUi
     {
-        return DomainUi::declaring($this->name, $this->namespace, $this->folder, $pages, $navigation, $sections);
+        return DomainUi::declaring($this->name, $this->namespace, $this->scriptFolder(), $pages, $navigation, $sections);
     }
 
     /**

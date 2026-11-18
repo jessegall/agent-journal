@@ -31,6 +31,6 @@ final class WebPages implements ProvidesPages
      */
     public function declarations(): DomainUi
     {
-        return DomainUi::of($this, 'Web', 'App\\Web', dirname(__DIR__));
+        return DomainUi::of($this, 'Web', 'App\\Web', dirname(__DIR__).'/Resources/js');
     }
 }
