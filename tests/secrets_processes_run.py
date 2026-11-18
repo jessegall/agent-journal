@@ -40,7 +40,7 @@ def test_secret_run_gives_a_value_to_an_allowed_program_and_masks_every_form_of_
     secrets = app.container.get(Secrets)
     secrets.save(Secret(title="Fake", secret_type=SecretType.API_KEY, fields=SecretType.API_KEY.first_fields("Fake"), programs=("fakeapi",)), Actor.user("u"))
     console = app.console()
-    assert "no value for key on this machine" in console.run(["secret", "run", "Fake", "--", "fakeapi"], AGENT).error
+    assert "no value for key here" in console.run(["secret", "run", "Fake", "--", "fakeapi"], AGENT).error
     app.container.get(SecretValues).put("FAKE_KEY", "s3cretvalue123")
     secrets.save(secrets.find(1).is_filled("key"), Actor.user("u"))
     completed = console.run(["secret", "run", "1", "--env", "--", "fakeapi"], AGENT)
@@ -50,9 +50,40 @@ def test_secret_run_gives_a_value_to_an_allowed_program_and_masks_every_form_of_
     templated = console.run(["secret", "run", "Fake", "--stdin", "Bearer {key}", "--", "fakeapi"], AGENT)
     assert "got:Bearer [secret FAKE_KEY]" in templated.text
     assert "name the program bare" in console.run(["secret", "run", "Fake", "--", str(echoer)], AGENT).error
-    assert "never given to bash" in console.run(["secret", "run", "Fake", "--", "bash", "-c", "echo"], AGENT).error
+    assert "never passed to bash" in console.run(["secret", "run", "Fake", "--", "bash", "-c", "echo"], AGENT).error
     assert "`journal secret propose 1 ls`" in console.run(["secret", "run", "Fake", "--", "ls"], AGENT).error
     assert "proposed for secret 1" in console.run(["secret", "propose", "1", "ls"], AGENT).text and secrets.find(1).proposed == ("ls",)
-    assert "never given to python3" in console.run(["secret", "propose", "1", "python3"], AGENT).error
+    assert "never passed to python3" in console.run(["secret", "propose", "1", "python3"], AGENT).error
     assert "already" in console.run(["secret", "propose", "1", "fakeapi"], AGENT).text
     assert secrets.find(1).used_at is not None
+
+
+def test_secret_run_gives_gh_the_project_token_in_its_environment_and_masks_it(app, tmp_path, monkeypatch):
+    from journal.models.secret import Secret
+    from journal.models.secret_type import SecretType
+    from journal.repositories.secrets import Secrets
+    from journal.support.secret_values import SecretValues
+    import tempfile
+    monkeypatch.setenv("AGENT_JOURNAL_SECRETS", str(tmp_path / "private"))
+    monkeypatch.setenv("GITHUB_TOKEN", "process-token-456")
+    monkeypatch.setenv("GH_TOKEN", "never-given-789")
+    tools = Path(tempfile.mkdtemp(prefix="tools-"))
+    fake_gh = tools / "gh"
+    fake_gh.write_text("#!/bin/sh\necho \"token:$GITHUB_TOKEN\"\necho \"gh-token:$GH_TOKEN\"\necho \"args:$*\"\n")
+    fake_gh.chmod(0o755)
+    monkeypatch.setenv("PATH", f"{tools}:/usr/bin:/bin")
+    secrets = app.container.get(Secrets)
+    secrets.save(Secret(title="Signing", secret_type=SecretType.API_KEY, fields=SecretType.API_KEY.first_fields("Signing"), programs=("gh",)), Actor.user("u"))
+    app.container.get(SecretValues).put("SIGNING_KEY", "signingvalue123")
+    secrets.save(secrets.find(1).is_filled("key"), Actor.user("u"))
+    console = app.console()
+    command = ["secret", "run", "1", "--", "gh", "secret", "set", "SIGNING", "--env", "tcc-staging"]
+    from_environment = console.run(command, AGENT)
+    assert "token:[secret GITHUB_TOKEN]" in from_environment.text and "process-token-456" not in from_environment.text, from_environment.text
+    assert "gh-token:\n" in from_environment.text and "never-given-789" not in from_environment.text, "GH_TOKEN never reaches gh"
+    (app.config.root / ".env").write_text("GITHUB_TOKEN=dotenv-token-321\n")
+    from_dotenv = console.run(command, AGENT)
+    assert "token:[secret GITHUB_TOKEN]" in from_dotenv.text and "dotenv-token-321" not in from_dotenv.text and "args:secret set SIGNING --env tcc-staging" in from_dotenv.text, from_dotenv.text
+    (app.config.root / ".env").unlink()
+    monkeypatch.delenv("GITHUB_TOKEN")
+    assert "gh needs GITHUB_TOKEN" in console.run(command, AGENT).error

@@ -7,6 +7,7 @@ from pathlib import Path
 
 from journal.config import Config
 from journal.support.output_mask import OutputMask
+from journal.features.secrets.support.github_token import GithubToken
 from journal.features.secrets.support.programs import Programs
 from journal.models.secret import Secret
 from journal.support.secret_field import SecretField
@@ -37,16 +38,25 @@ class SecretRun:
             raise Rejection(f"secret {secret.id} has no value for {', '.join(missing)} here: ask with `journal secret request`")
         name_index = {f.name: values[f.variable] for f in fields}
         value = PLACEHOLDER.sub(lambda rows: name_index.get(rows[1], rows[0]), template) if template else next((values[f.variable] for f in fields if f.hidden), "")
-        mask = OutputMask({values[f.variable]: f.variable for f in fields if f.hidden})
+        given = self.program_variables(command[0])
+        mask = OutputMask({**{token: name for name, token in given.items()}, **{values[f.variable]: f.variable for f in fields if f.hidden}})
         runs = self.values.path.parent / "runs"
         runs.mkdir(mode=0o700, exist_ok=True)
         home = tempfile.mkdtemp(prefix="run-", dir=runs)
         try:
-            environ = {"PATH": self.search_path(), "LANG": os.environ.get("LANG", "C.UTF-8"), **dict.fromkeys(TEMPORARY_HOME_VARIABLES, home), **({f.variable: values[f.variable] for f in fields} if as_variables else {})}
+            environ = {"PATH": self.search_path(), "LANG": os.environ.get("LANG", "C.UTF-8"), **dict.fromkeys(TEMPORARY_HOME_VARIABLES, home), **given, **({f.variable: values[f.variable] for f in fields} if as_variables else {})}
             finished = subprocess.run([program, *command[1:]], input=f"{value}\n".encode(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=environ, cwd=self.config.root, timeout=LONGEST_SECONDS)
             return finished.returncode, mask.masked(finished.stdout)
         finally:
             shutil.rmtree(home, ignore_errors=True)
+
+    def program_variables(self, name: str) -> dict[str, str]:
+        if name != "gh":
+            return {}
+        token = GithubToken(self.config.root).found()
+        if token is None:
+            raise Rejection("gh needs GITHUB_TOKEN in the project root's .env or the journal's environment: a cached gh login is never used")
+        return {"GITHUB_TOKEN": token}
 
     def program(self, secret: Secret, command: list[str]) -> str:
         if not command:
