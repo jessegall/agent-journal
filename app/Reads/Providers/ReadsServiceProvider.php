@@ -75,7 +75,7 @@ final class ReadsServiceProvider extends ServiceProvider
 
     private static function countQueriesOn(Connection $connection): void
     {
-        $connection->beforeExecuting(static fn (string $query, array $bindings, Connection $on) => ScopedReadMeter::ofCurrentScope()->recordQuery((string) $on->getName(), ! self::onlyReads($query)));
+        $connection->beforeExecuting(static fn (string $query, array $bindings, Connection $on) => ScopedReadMeter::ofCurrentScope()->recordQuery((string) $on->getName(), ! self::onlyReads($query), $query));
     }
 
     /**

@@ -1,0 +1,40 @@
+{
+    "$schema": "../../rule.schema.json",
+    "engine": "php",
+    "find": {
+        "select": "function",
+        "where": [
+            {
+                "nameMatches": "^get[A-Z][A-Za-z]*Attribute$"
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "call"
+                        },
+                        {
+                            "nameIn": [
+                                "query",
+                                "where",
+                                "get",
+                                "first",
+                                "count",
+                                "exists",
+                                "sole",
+                                "pluck"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": []
+    },
+    "sin": {
+        "description": "An accessor runs a query, so every read of the attribute queries again.",
+        "name": "query-in-accessor",
+        "rule": "An accessor computes from what is loaded; load the relation with with() and read it there.",
+        "skill": "bounded-reads"
+    }
+}

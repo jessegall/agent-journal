@@ -1,0 +1,29 @@
+{
+    "$schema": "../../rule.schema.json",
+    "engine": "php",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "hrtime",
+                    "microtime"
+                ]
+            },
+            {
+                "testCode": true
+            }
+        ],
+        "reject": [
+            {
+                "file": "tests/Support/TimeLimits/**"
+            }
+        ]
+    },
+    "sin": {
+        "description": "A test measures elapsed time, which passes or fails with the machine's load.",
+        "name": "elapsed-time-assertion",
+        "rule": "Assert counts, states and refusals; a ceiling on a test's run belongs in #[TimeLimit].",
+        "skill": "bounded-reads"
+    }
+}

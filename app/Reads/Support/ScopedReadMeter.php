@@ -6,6 +6,7 @@ namespace App\Reads\Support;
 
 use App\Reads\Contracts\ReadMeter;
 use App\Reads\Exceptions\QueryInValueRead;
+use App\Reads\Exceptions\RepeatedReadRefused;
 use App\Reads\Values\Measurement;
 use App\Reads\Values\ReadCounts;
 use Illuminate\Container\Container;
@@ -27,6 +28,13 @@ final class ScopedReadMeter implements ReadMeter
      * @var list<string>
      */
     private array $queryFreeBoundaries = [];
+
+    /**
+     * The declared schedules running now, in which a read repeats on purpose: chunk batches and retried transactions.
+     *
+     * @var list<string>
+     */
+    private array $schedules = [];
 
     /**
      * The meter of the request, job or command running now, for the database and model hooks that cannot take it
@@ -94,9 +102,29 @@ final class ScopedReadMeter implements ReadMeter
     }
 
     /**
-     * @throws QueryInValueRead when a query-free boundary is open
+     * Runs work whose reads repeat on purpose, such as the batches of a chunked read or a retried transaction.
+     *
+     * @template TValue
+     *
+     * @param  callable(): TValue  $work
+     * @return TValue
      */
-    public function recordQuery(string $connection, bool $writes): void
+    public function withinSchedule(string $schedule, callable $work): mixed
+    {
+        $this->schedules[] = $schedule;
+
+        try {
+            return $work();
+        } finally {
+            array_pop($this->schedules);
+        }
+    }
+
+    /**
+     * @throws QueryInValueRead when a query-free boundary is open
+     * @throws RepeatedReadRefused when a read runs in a loop inside an open measurement
+     */
+    public function recordQuery(string $connection, bool $writes, string $query = ''): void
     {
         $boundary = end($this->queryFreeBoundaries);
 
@@ -108,6 +136,36 @@ final class ScopedReadMeter implements ReadMeter
 
         foreach ($this->open as $tally) {
             $tally->addQuery($connection, $writes);
+        }
+
+        $this->refuseRepeatedRead($connection, $writes, $query);
+    }
+
+    /**
+     * A row lock is read on purpose, again after a wait, so only plain reads count.
+     *
+     * @throws RepeatedReadRefused
+     */
+    private function refuseRepeatedRead(string $connection, bool $writes, string $query): void
+    {
+        if ($writes || $query === '' || $this->open === [] || $this->schedules !== [] || preg_match('/\\bfor\\s+(update|share|no key update|key share)\\b/i', $query) === 1) {
+            return;
+        }
+
+        $site = ReadSite::ofQuery($connection, $query, base_path());
+
+        if ($site === null) {
+            return;
+        }
+
+        $readsAgain = false;
+
+        foreach ($this->open as $tally) {
+            $readsAgain = $tally->readsInALoop($site) || $readsAgain;
+        }
+
+        if ($readsAgain) {
+            throw RepeatedReadRefused::at($site->callSite, $query);
         }
     }
 

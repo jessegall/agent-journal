@@ -1,0 +1,26 @@
+{
+    "$schema": "../../rule.schema.json",
+    "engine": "php",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "toBase",
+                    "getQuery"
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "file": "app/Reads/**"
+            }
+        ]
+    },
+    "sin": {
+        "description": "toBase() or getQuery() leaves the model's bounded read builder.",
+        "name": "query-escape",
+        "rule": "Stay on the model's builder so the read bound and the read order apply; only app/Reads may step out of it.",
+        "skill": "bounded-reads"
+    }
+}

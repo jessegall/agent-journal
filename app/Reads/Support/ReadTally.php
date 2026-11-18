@@ -11,6 +11,18 @@ use App\Reads\Values\ReadCounts;
  */
 final class ReadTally
 {
+    /**
+     * How often a read of one shape from one place may run in a measurement before it counts as a loop.
+     */
+    public const int READS_BEFORE_A_LOOP = 10;
+
+    /**
+     * How often each read shape ran from each place in this measurement.
+     *
+     * @var array<string, int>
+     */
+    private array $readsOfShape = [];
+
     private int $modelsLoaded = 0;
 
     private int $queriesRun = 0;
@@ -71,5 +83,15 @@ final class ReadTally
             queriesByConnection: $this->queriesByConnection,
             queriesByCategory: $this->queriesByCategory,
         );
+    }
+
+    /**
+     * Whether the same read from the same place has now run more often than a loop is allowed; counts it either way.
+     */
+    public function readsInALoop(ReadSite $site): bool
+    {
+        $this->readsOfShape[$site->key()] = ($this->readsOfShape[$site->key()] ?? 0) + 1;
+
+        return $this->readsOfShape[$site->key()] > self::READS_BEFORE_A_LOOP;
     }
 }

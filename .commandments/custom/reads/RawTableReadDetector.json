@@ -1,0 +1,35 @@
+{
+    "$schema": "../../rule.schema.json",
+    "engine": "php",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "table",
+                    "select",
+                    "selectOne",
+                    "cursor"
+                ]
+            },
+            {
+                "resolves": "Illuminate\\Support\\Facades\\DB",
+                "of": "child:class"
+            }
+        ],
+        "reject": [
+            {
+                "file": "**/migrations/**"
+            },
+            {
+                "file": "**/Migrations/**"
+            }
+        ]
+    },
+    "sin": {
+        "description": "A table is read through the DB facade instead of its model.",
+        "name": "raw-table-read",
+        "rule": "Read a table only through its Eloquent model, its scopes and its bounded reads (rule 25).",
+        "skill": "bounded-reads"
+    }
+}

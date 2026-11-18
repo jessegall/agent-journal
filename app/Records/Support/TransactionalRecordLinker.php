@@ -50,10 +50,14 @@ final readonly class TransactionalRecordLinker implements RecordLinker
         $ordered = [$from, $to];
         usort($ordered, fn (Model $one, Model $other) => [$one->getMorphClass(), (string) $one->getKey()] <=> [$other->getMorphClass(), (string) $other->getKey()]);
 
-        foreach ($ordered as $model) {
-            $model->newQuery()->whereKey($model->getKey())->lockForUpdate()->first();
-        }
+        self::lock($ordered[0]);
+        self::lock($ordered[1]);
 
         return [$from, $to];
+    }
+
+    private static function lock(Model $record): void
+    {
+        $record->newQuery()->whereKey($record->getKey())->lockForUpdate()->first();
     }
 }

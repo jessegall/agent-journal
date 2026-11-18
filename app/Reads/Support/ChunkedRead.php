@@ -25,6 +25,14 @@ final readonly class ChunkedRead
      */
     public function run(callable $each): void
     {
+        ScopedReadMeter::ofCurrentScope()->withinSchedule('chunked read', fn () => $this->readBatches($each));
+    }
+
+    /**
+     * @param  callable(Collection<int, TModel>): (bool|void)  $each
+     */
+    private function readBatches(callable $each): void
+    {
         $key = $this->query->getModel()->getQualifiedKeyName();
         $highest = (clone $this->query)->toBase()->reorder()->max($key);
         $last = null;

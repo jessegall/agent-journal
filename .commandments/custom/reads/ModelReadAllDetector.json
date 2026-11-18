@@ -1,0 +1,23 @@
+{
+    "$schema": "../../rule.schema.json",
+    "engine": "php",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "all"
+            },
+            {
+                "of": "child:class",
+                "extendsAny": "Illuminate\\Database\\Eloquent\\Model"
+            }
+        ],
+        "reject": []
+    },
+    "sin": {
+        "description": "Model::all() reads every row of a table with no bound.",
+        "name": "model-read-all",
+        "rule": "Read a bounded page, a named readAll('reason') or readInChunks instead of Model::all().",
+        "skill": "bounded-reads"
+    }
+}

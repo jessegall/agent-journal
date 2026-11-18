@@ -848,6 +848,7 @@ class	ReadOrder
 class	ReadPolicyMissing
 class	ReadReasonMissing
 class	ReadShapeUnsupported
+class	ReadSite
 class	ReadTally
 class	ReadTiming
 class	ReaderDataClass
@@ -918,6 +919,7 @@ class	RemoveRule
 class	RemoveRuleHandler
 class	RepeatableRead
 class	RepeatedCommandRewrite
+class	RepeatedReadRefused
 class	ReplaceDocumentBody
 class	ReplaceDocumentBodyHandler
 class	ReplaceDocumentSection
@@ -1250,6 +1252,7 @@ constant	PublicContracts::CORE_ELOQUENT_ADAPTERS
 constant	PublicOwner::CORE
 constant	RawRowAccess::DB
 constant	RawRowAccess::ROW_METHODS
+constant	ReadTally::READS_BEFORE_A_LOOP
 constant	RecordComment::LINK_TYPE
 constant	RecordDock::LINK_TYPE
 constant	RecordIdentity::ALIAS_PATTERN
@@ -1876,6 +1879,7 @@ method	ChosenAgentData::__construct()
 method	ChosenAgentSection::__construct()
 method	ChosenAgentSection::read()
 method	ChunkedRead::__construct()
+method	ChunkedRead::readBatches()
 method	ChunkedRead::run()
 method	ClassesDeclared::findingsIn()
 method	ClassesDeclared::key()
@@ -3323,11 +3327,15 @@ method	ReadOrder::newestFirst()
 method	ReadPolicyMissing::for()
 method	ReadReasonMissing::create()
 method	ReadShapeUnsupported::method()
+method	ReadSite::__construct()
+method	ReadSite::key()
+method	ReadSite::ofQuery()
 method	ReadTally::addCompletedQuery()
 method	ReadTally::addModel()
 method	ReadTally::addQuery()
 method	ReadTally::addRefusedQuery()
 method	ReadTally::counts()
+method	ReadTally::readsInALoop()
 method	ReadTiming::__construct()
 method	ReadTiming::of()
 method	ReadableModel::defaultReadLimit()
@@ -3536,6 +3544,7 @@ method	RemoveRuleHandler::handle()
 method	RendersRefusal::render()
 method	RendersRefusal::status()
 method	RepeatedCommandRewrite::for()
+method	RepeatedReadRefused::at()
 method	ReplaceDocumentBody::__construct()
 method	ReplaceDocumentBodyHandler::__construct()
 method	ReplaceDocumentBodyHandler::handle()
@@ -3704,6 +3713,8 @@ method	ScopedReadMeter::recordCompletedQuery()
 method	ScopedReadMeter::recordModel()
 method	ScopedReadMeter::recordQuery()
 method	ScopedReadMeter::recordRefusedQuery()
+method	ScopedReadMeter::refuseRepeatedRead()
+method	ScopedReadMeter::withinSchedule()
 method	ScopedReadMeter::withoutQueries()
 method	SearchesText::matchingText()
 method	SearchesText::snippetFor()
@@ -4070,6 +4081,7 @@ method	TraitsUsed::key()
 method	TransactionalRecordLinker::__construct()
 method	TransactionalRecordLinker::link()
 method	TransactionalRecordLinker::linkFrom()
+method	TransactionalRecordLinker::lock()
 method	TransactionalRecordLinker::lockedPair()
 method	TransactionalRecordLinker::unlink()
 method	TypeOwners::__construct()
@@ -5152,6 +5164,8 @@ property	ReadCounts::$queriesRefused
 property	ReadCounts::$queriesRun
 property	ReadLog::$logger
 property	ReadOrder::$columns
+property	ReadSite::$callSite
+property	ReadSite::$shape
 property	ReadTally::$modelsByClass
 property	ReadTally::$modelsLoaded
 property	ReadTally::$queriesByCategory
@@ -5159,6 +5173,7 @@ property	ReadTally::$queriesByConnection
 property	ReadTally::$queriesCompleted
 property	ReadTally::$queriesRefused
 property	ReadTally::$queriesRun
+property	ReadTally::$readsOfShape
 property	ReadTiming::$p50
 property	ReadTiming::$p95
 property	ReadTiming::$queries
@@ -5461,6 +5476,7 @@ property	RunningCommandTransaction::$database
 property	RunningCommandTransaction::$running
 property	ScopedReadMeter::$open
 property	ScopedReadMeter::$queryFreeBoundaries
+property	ScopedReadMeter::$schedules
 property	Section::$actions
 property	Section::$component
 property	Section::$dataClass

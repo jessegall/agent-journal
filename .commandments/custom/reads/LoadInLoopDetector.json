@@ -1,0 +1,33 @@
+{
+    "$schema": "../../rule.schema.json",
+    "engine": "php",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "find",
+                    "findOrFail",
+                    "first",
+                    "firstOrFail",
+                    "sole",
+                    "firstWhere"
+                ]
+            },
+            {
+                "withinLoop": true
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "description": "A row is read once per item of a loop.",
+        "name": "load-in-loop",
+        "rule": "Read every row the loop needs in one query before the loop (whereKey, whereIn, with), or use readInChunks.",
+        "skill": "bounded-reads"
+    }
+}

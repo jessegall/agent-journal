@@ -12,6 +12,7 @@ use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\CommandCall;
 use App\Bus\Support\OperationDeadline;
 use App\Bus\Support\RunningCommand;
+use App\Reads\Support\ScopedReadMeter;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\QueryException;
@@ -50,7 +51,7 @@ final readonly class RunInTransaction implements CommandMiddleware
 
         for ($attempt = 1; ; $attempt++) {
             try {
-                return $this->attempt($call, $next);
+                return $attempt === 1 ? $this->attempt($call, $next) : ScopedReadMeter::ofCurrentScope()->withinSchedule('transaction retry', fn () => $this->attempt($call, $next));
             } catch (QueryException $failure) {
                 if (in_array($failure->getCode(), self::TIMED_OUT_CODES, true)) {
                     throw StackLockTimedOut::after($this->deadline->milliseconds, $failure);
