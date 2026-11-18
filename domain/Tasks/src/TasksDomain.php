@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks;
 
+use App\Assignments\Contracts\ProvidesAutoAssignments;
+use App\Assignments\Support\AutoAssignerDefinition;
+use App\Assignments\Support\PoolDefinition;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Concerns\HasLinkRecords;
@@ -30,6 +33,10 @@ use Domain\Tasks\Api\TaskList;
 use Domain\Tasks\Api\TaskProgress;
 use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Api\TaskType;
+use Domain\Tasks\Assignments\ActiveTaskAssignments;
+use Domain\Tasks\Assignments\NamedTaskPoolFactory;
+use Domain\Tasks\Assignments\OpenTaskPoolFactory;
+use Domain\Tasks\Assignments\TaskAssigner;
 use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Commands\CancelTask;
 use Domain\Tasks\Commands\CreateTask;
@@ -58,6 +65,7 @@ use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 
 final class TasksDomain extends Domain implements
     ProvidesAssignables,
+    ProvidesAutoAssignments,
     ProvidesCommands,
     ProvidesLinkRecords,
     ProvidesMcpTools,
@@ -138,6 +146,19 @@ final class TasksDomain extends Domain implements
     public function assignables(): array
     {
         return [Task::LINK_TYPE => TaskAssignments::class];
+    }
+
+    public function autoAssigners(): array
+    {
+        return [new AutoAssignerDefinition(TaskType::VALUE, TaskAssigner::class, ActiveTaskAssignments::class)];
+    }
+
+    public function assignmentPools(): array
+    {
+        return [
+            new PoolDefinition(OpenTaskPoolFactory::KEY, TaskType::VALUE, OpenTaskPoolFactory::class, 'Open tasks'),
+            new PoolDefinition(NamedTaskPoolFactory::KEY, TaskType::VALUE, NamedTaskPoolFactory::class, 'Named tasks'),
+        ];
     }
 
     public function linkRecords(): array
