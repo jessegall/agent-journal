@@ -27,6 +27,7 @@ use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\DB;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -109,7 +110,7 @@ final class HookRecoveryTest extends TestCase
         $this->startTask($exited);
         $this->heartbeats()->markExited($exited->session, 'killed');
 
-        $replacement = $this->app->make(LaunchSessions::class)->launch($exited->session->loadMissing('agent')->agent, 'claude-code');
+        $replacement = $this->app->make(LaunchSessions::class)->launch($exited->session->loadMissing('agent')->agent, TestSelections::of('claude-code'), TestSelections::requestId());
 
         $this->assertNotSame($exited->session->id, $replacement->session->id);
         $this->assertSame(['hooks.main_ready'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($replacement)->frames->all()));
@@ -117,7 +118,7 @@ final class HookRecoveryTest extends TestCase
 
     private function launch(): LaunchedAgent
     {
-        return $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Test agent', 'role' => 'hooks.main_ready']), 'claude-code');
+        return $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Test agent', 'role' => 'hooks.main_ready']), TestSelections::of('claude-code'), TestSelections::requestId());
     }
 
     private function startTask(LaunchedAgent $launched): Task

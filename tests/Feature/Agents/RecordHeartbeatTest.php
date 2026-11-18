@@ -20,6 +20,7 @@ use App\Bus\Contracts\CommandBus;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -113,7 +114,7 @@ final class RecordHeartbeatTest extends TestCase
 
     private function launch(): LaunchedAgent
     {
-        $launched = $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Test agent', 'role' => 'hooks.main_ready']), 'claude-code');
+        $launched = $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Test agent', 'role' => 'hooks.main_ready']), TestSelections::of('claude-code'), TestSelections::requestId());
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id));
 
         return $launched;

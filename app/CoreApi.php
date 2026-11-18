@@ -56,6 +56,7 @@ use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchExecutor;
 use App\Agents\Contracts\LaunchReadiness;
+use App\Agents\Contracts\LaunchRecordReader;
 use App\Agents\Contracts\RuntimeReader;
 use App\Agents\Contracts\SessionReader;
 use App\Agents\Data\DriverRequestStatus;
@@ -65,12 +66,15 @@ use App\Agents\Enums\AccessRuleType;
 use App\Agents\Enums\AccountModeType;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\CapabilityStatusType;
+use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\DriverType;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\HostCapabilityType;
+use App\Agents\Enums\LaunchDisposition;
+use App\Agents\Enums\LaunchOriginType;
 use App\Agents\Enums\LaunchRefusalType;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\ProgramSourceType;
@@ -87,6 +91,8 @@ use App\Agents\Exceptions\DefaultUnavailable;
 use App\Agents\Exceptions\ExecutionBudgetInvalid;
 use App\Agents\Exceptions\ExecutionPolicyInvalid;
 use App\Agents\Exceptions\HostCapabilityUnsupported;
+use App\Agents\Exceptions\LaunchRecordMissing;
+use App\Agents\Exceptions\LaunchRequestConflict;
 use App\Agents\Exceptions\ModelRequired;
 use App\Agents\Exceptions\ModelUnavailable;
 use App\Agents\Exceptions\ProgramConflict;
@@ -106,6 +112,8 @@ use App\Agents\Support\ExecutionReference;
 use App\Agents\Support\ExitReceipt;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
+use App\Agents\Support\LaunchRecordDetails;
+use App\Agents\Support\LaunchRequest;
 use App\Agents\Support\ModelSelection;
 use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\PreparedLaunch;
@@ -587,6 +595,7 @@ final class CoreApi
                 LaunchReadiness::class,
                 LaunchExecutor::class,
                 HostCapabilities::class,
+                LaunchRecordReader::class,
                 RuntimeReader::class,
                 AgentStack::class,
                 UserStack::class,
@@ -707,6 +716,11 @@ final class CoreApi
                 ModelSelectionType::class,
                 ProgramSourceType::class,
                 LaunchRefusalType::class,
+                LaunchRequest::class,
+                LaunchRecordDetails::class,
+                LaunchOriginType::class,
+                ConversationModeType::class,
+                LaunchDisposition::class,
                 AccessType::class,
                 ResourceAreaType::class,
                 AccessRuleType::class,
@@ -1092,6 +1106,8 @@ final class CoreApi
                 ProgramRequired::class,
                 ProgramConflict::class,
                 ProgramUnsupported::class,
+                LaunchRequestConflict::class,
+                LaunchRecordMissing::class,
                 UnknownAccessType::class,
                 UnknownResourceArea::class,
                 AccessPolicyInvalid::class,

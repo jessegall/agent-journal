@@ -23,6 +23,7 @@ use App\Hooks\Support\StackTransaction;
 use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Support\Facades\Event;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\Ticks\TickingLoader;
 use Tests\Fixtures\Hooks\Ticks\TickingState;
@@ -90,7 +91,7 @@ final class TickingStackFlagTest extends TestCase
 
     private function launch(): LaunchedAgent
     {
-        return $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Test agent', 'role' => 'hooks.main_ready']), 'claude-code');
+        return $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Test agent', 'role' => 'hooks.main_ready']), TestSelections::of('claude-code'), TestSelections::requestId());
     }
 
     private function push(LaunchedAgent $launched, string $typeKey, string $subject): void

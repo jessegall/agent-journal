@@ -7,6 +7,7 @@ namespace App\Agents\Actions;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\LaunchedAgent;
+use App\Agents\Support\SelectedProgram;
 
 /**
  * Gives a child agent its own journal session, credential and stack under its parent session, so a child's stop
@@ -17,8 +18,8 @@ final readonly class ProgramChildSessions
 {
     public function __construct(private LaunchSessions $launches) {}
 
-    public function open(AgentSession $parent, Agent $child, string $program): LaunchedAgent
+    public function open(AgentSession $parent, Agent $child, SelectedProgram $selection, string $requestId): LaunchedAgent
     {
-        return $this->launches->launch($child, $program, $parent);
+        return $this->launches->launch($child, $selection, $requestId, $parent);
     }
 }

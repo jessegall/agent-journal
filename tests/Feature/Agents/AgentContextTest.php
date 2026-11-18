@@ -16,6 +16,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -106,7 +107,7 @@ final class AgentContextTest extends TestCase
     {
         $launch = TestLaunch::start();
 
-        $child = new AgentSessions(new AgentLifecycle())->start($launch->agent, $launch->session);
+        $child = new AgentSessions(new AgentLifecycle())->start($launch->agent, TestSelections::of(), TestSelections::requestId(), $launch->session);
 
         $this->assertSame($launch->session->id, $child->parent_session_id);
     }

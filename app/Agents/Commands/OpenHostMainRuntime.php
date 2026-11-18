@@ -28,5 +28,6 @@ final readonly class OpenHostMainRuntime implements Command
         public string $program,
         public string $programBuild,
         public string $profile,
+        public string|null $model,
     ) {}
 }

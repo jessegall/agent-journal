@@ -22,6 +22,7 @@ use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -75,7 +76,7 @@ final class TaskCommandsTest extends TestCase
     public function test_a_start_for_a_session_the_actor_may_not_see_is_refused_and_the_task_stays_unstarted(): void
     {
         $task = $this->task('Start');
-        $session = $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']), 'claude-code')->session;
+        $session = $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']), TestSelections::of('claude-code'), TestSelections::requestId())->session;
 
         try {
             $this->app->make(CommandBus::class)->run(new StartTask($task->id, TestIds::of(999999)));

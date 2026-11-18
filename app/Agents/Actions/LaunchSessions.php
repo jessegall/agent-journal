@@ -13,6 +13,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Support\IsolatedHookSettings;
 use App\Agents\Support\LaunchedAgent;
 use App\Agents\Support\RuntimeIntent;
+use App\Agents\Support\SelectedProgram;
 use App\Contracts\LaunchTransaction;
 use Illuminate\Contracts\Events\Dispatcher;
 
@@ -34,8 +35,9 @@ final readonly class LaunchSessions
      * Starts a session with its credential, and, with a runtime intent, its runtime in Starting and the first delivery,
      * all in one launch transaction (doc 40, section 11).
      */
-    public function launch(Agent $agent, string $program, AgentSession|null $parent = null, RuntimeIntent|null $intent = null): LaunchedAgent
+    public function launch(Agent $agent, SelectedProgram $selection, string $requestId, AgentSession|null $parent = null, RuntimeIntent|null $intent = null): LaunchedAgent
     {
+        $program = $selection->program->value;
         $settings = new IsolatedHookSettings();
         $this->events->dispatch(new LaunchSettingsRequested($program, $settings));
 
@@ -43,9 +45,8 @@ final readonly class LaunchSessions
             throw LaunchRefused::withoutHooks($program);
         }
 
-        return $this->transaction->run(function () use ($agent, $program, $parent, $settings, $intent): LaunchedAgent {
-            $session = $this->sessions->start($agent, $parent);
-            $session->useProgram($program);
+        return $this->transaction->run(function () use ($agent, $selection, $requestId, $parent, $settings, $intent): LaunchedAgent {
+            $session = $this->sessions->start($agent, $selection, $requestId, $parent);
             $token = $this->credentials->issue($session);
             [$runtime, $firstRequest] = $intent === null ? [null, null] : $this->runtimes->open($session, $intent, $token);
 

@@ -76,7 +76,7 @@ final class AgentDriverLedgerTest extends TestCase
 
         $this->expectExceptionMessage('/elsewhere');
 
-        $this->asOwner(new OpenAgentRuntime($this->agent()->id, $host->hostId, '/elsewhere', 'claude-code', '2.1.323', 'claude', DriverType::Process));
+        $this->asOwner(new OpenAgentRuntime($this->agent()->id, $host->hostId, '/elsewhere', 'claude-code', '2.1.323', 'claude', DriverType::Process, 'claude-opus-5-5'));
     }
 
     public function test_a_repeated_key_returns_the_same_request_and_other_content_conflicts(): void
@@ -305,7 +305,7 @@ final class AgentDriverLedgerTest extends TestCase
     private function openRuntime(string|null $firstMessage = null): array
     {
         $host = $this->enrollHost();
-        $opened = $this->asOwner(new OpenAgentRuntime($this->agent()->id, $host->hostId, self::FOLDER, 'claude-code', '2.1.323', 'claude', DriverType::Process, firstMessage: $firstMessage));
+        $opened = $this->asOwner(new OpenAgentRuntime($this->agent()->id, $host->hostId, self::FOLDER, 'claude-code', '2.1.323', 'claude', DriverType::Process, 'claude-opus-5-5', firstMessage: $firstMessage));
 
         return [$host, $opened];
     }

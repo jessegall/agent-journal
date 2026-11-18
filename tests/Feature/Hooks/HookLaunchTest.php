@@ -40,6 +40,7 @@ use Closure;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\DB;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -129,7 +130,7 @@ final class HookLaunchTest extends TestCase
         $this->as($parent, fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id, $parent->session->id)));
         $childAgent = Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.read_only_helper_ready']);
 
-        $child = $this->app->make(ProgramChildSessions::class)->open($parent->session, $childAgent, 'claude-code');
+        $child = $this->app->make(ProgramChildSessions::class)->open($parent->session, $childAgent, TestSelections::of('claude-code'), TestSelections::requestId());
 
         $this->assertSame($parent->session->id, $child->session->fresh()?->parent_session_id);
         $this->assertSame('{}', $this->stopAs($child, 'call-1'));
@@ -151,7 +152,7 @@ final class HookLaunchTest extends TestCase
     {
         $agent = Agent::query()->create(['name' => 'Test agent', 'role' => $role]);
 
-        return $this->app->make(LaunchSessions::class)->launch($agent, $program);
+        return $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of($program), TestSelections::requestId());
     }
 
     /**

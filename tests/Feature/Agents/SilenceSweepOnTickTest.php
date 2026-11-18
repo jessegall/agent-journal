@@ -24,6 +24,7 @@ use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Ticks\ElapsedTime;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -75,7 +76,7 @@ final class SilenceSweepOnTickTest extends TestCase
 
     private function launch(): LaunchedAgent
     {
-        return $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Test agent', 'role' => 'hooks.main_ready']), 'claude-code');
+        return $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Test agent', 'role' => 'hooks.main_ready']), TestSelections::of('claude-code'), TestSelections::requestId());
     }
 
     private function startedSecondsAgo(LaunchedAgent $launched, int $seconds): void
