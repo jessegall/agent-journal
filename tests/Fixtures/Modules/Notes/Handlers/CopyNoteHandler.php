@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Handlers;
 
-use App\Core\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\CommandBus;
 use Tests\Fixtures\Modules\Notes\Commands\CopyNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
 

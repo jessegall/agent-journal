@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plans;
 
-use App\Core\Actors\Contracts\CurrentActorSetter;
-use App\Core\Actors\Support\ActorContext;
-use App\Core\Actors\Support\ActorIdentity;
-use App\Core\Agents\Models\Agent;
-use App\Core\Assignments\Contracts\AssignmentWriter;
-use App\Domain\Plans\Api\PlanCard;
-use App\Domain\Plans\Api\PlanFilters;
-use App\Domain\Plans\Enums\PlanType;
-use App\Domain\Plans\Models\Plan;
-use App\Domain\Plans\Readers\PlanRecords;
-use App\Domain\Tasks\Models\Task;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
+use App\Agents\Models\Agent;
+use App\Assignments\Contracts\AssignmentWriter;
+use Domain\Plans\Api\PlanCard;
+use Domain\Plans\Api\PlanFilters;
+use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Models\Plan;
+use Domain\Plans\Readers\PlanRecords;
+use Domain\Tasks\Models\Task;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 

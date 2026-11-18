@@ -16,18 +16,18 @@ final class AreaCycleTest extends TestCase
     public function test_a_cycle_through_three_areas_is_named_and_a_one_way_chain_passes(): void
     {
         $cycle = AreaCycles::ofEdges([
-            'Core\\Agents' => ['Core\\Hooks' => 'a'],
-            'Core\\Hooks' => ['Core\\Links' => 'b'],
-            'Core\\Links' => ['Core\\Agents' => 'c'],
+            'App\\Agents' => ['App\\Hooks' => 'a'],
+            'App\\Hooks' => ['App\\Links' => 'b'],
+            'App\\Links' => ['App\\Agents' => 'c'],
             'Domain\\Plans' => ['Domain\\Tasks' => 'd'],
         ]);
 
-        $this->assertSame(['Core\\Agents, Core\\Hooks, Core\\Links: Core\\Agents -> Core\\Hooks (a); Core\\Hooks -> Core\\Links (b); Core\\Links -> Core\\Agents (c)'], $cycle->cycles());
-        $this->assertSame([], AreaCycles::ofEdges(['Domain\\Plans' => ['Domain\\Tasks' => 'd'], 'Domain\\Tasks' => ['Core\\Hooks' => 'e']])->cycles());
+        $this->assertSame(['App\\Agents, App\\Hooks, App\\Links: App\\Agents -> App\\Hooks (a); App\\Hooks -> App\\Links (b); App\\Links -> App\\Agents (c)'], $cycle->cycles());
+        $this->assertSame([], AreaCycles::ofEdges(['Domain\\Plans' => ['Domain\\Tasks' => 'd'], 'Domain\\Tasks' => ['App\\Hooks' => 'e']])->cycles());
     }
 
     public function test_no_areas_of_the_core_or_the_domains_reach_each_other(): void
     {
-        $this->assertSame([], AreaCycles::ofProject(app_path())->cycles());
+        $this->assertSame([], AreaCycles::ofProject(app_path(), base_path('domain'))->cycles());
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Domain\DomainEntry;
+use App\Domains\Support\DomainEntry;
 
 /**
  * Judges name uses against the domain each file belongs to, the domains it declares it requires and what each owner
@@ -16,14 +16,14 @@ final readonly class BoundaryChecker
     /**
      * The domain foundation and the core: every domain uses them without declaring it, and they name no domain.
      */
-    private const array SHARED_NAMESPACES = ['App\\Domain\\', 'App\\Core\\'];
+    private const array SHARED_NAMESPACES = ['App\\'];
 
     private const string SHARED_PLACE = 'the core or the domain foundation';
 
     /**
      * Core's events and extension requests: a domain hears them, only Core raises them.
      */
-    private const string CORE_EVENTS = '/^App\\\\Core\\\\(.+\\\\)?Events\\\\/i';
+    private const string CORE_EVENTS = '/^App\\\\(?!Domains\\\\)(.+\\\\)?Events\\\\/i';
 
     /**
      * @param  list<DomainEntry>  $entries
@@ -221,7 +221,16 @@ final readonly class BoundaryChecker
     {
         $name = ltrim($name, '\\');
 
-        return stripos($name, 'App\\Core\\') === 0 && ! in_array(strtolower($name), array_map(strtolower(...), $this->coreExports), true);
+        return stripos($name, 'App\\') === 0 && stripos($name, 'App\\Domains\\') !== 0 && self::isDeclared($name) && ! in_array(strtolower($name), array_map(strtolower(...), $this->coreExports), true);
+    }
+
+    /**
+     * Whether the name is a class, interface, enum or trait that exists: a migration's text naming a class that has
+     * since moved is a stored value, not a use.
+     */
+    private static function isDeclared(string $name): bool
+    {
+        return class_exists($name) || interface_exists($name) || enum_exists($name) || trait_exists($name);
     }
 
     private function isShared(string $name): bool

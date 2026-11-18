@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Access;
 
-use App\Core\Actors\Support\CurrentUser;
-use App\Core\Web\Contracts\CurrentUserReader;
-use App\Domain\Access\Models\User;
+use App\Actors\Support\CurrentUser;
+use App\Web\Contracts\CurrentUserReader;
+use Domain\Access\Models\User;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Core\Actors\Exceptions\ActorContextMissing;
-use App\Core\Actors\Exceptions\UserActorRequired;
-use App\Core\Bus\Contracts\CommandBus;
+use App\Actors\Exceptions\ActorContextMissing;
+use App\Actors\Exceptions\UserActorRequired;
+use App\Bus\Contracts\CommandBus;
 use Illuminate\Support\Facades\Log;
 use Tests\Fixtures\Modules\Notes\Commands\UserNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;

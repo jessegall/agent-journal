@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Core\Agents\Models\Agent;
-use App\Core\Agents\Models\AgentSession;
-use App\Core\Assignments\Models\AssignmentRecord;
-use App\Domain\Access\Models\User;
-use App\Domain\Access\Support\AccessSettings;
-use App\Domain\Tasks\Models\Task;
+use App\Agents\Models\Agent;
+use App\Agents\Models\AgentSession;
+use App\Assignments\Models\AssignmentRecord;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
+use Domain\Tasks\Models\Task;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;

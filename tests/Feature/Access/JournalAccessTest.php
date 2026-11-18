@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Access;
 
-use App\Core\Actors\Enums\ActorType;
-use App\Core\Actors\Support\ActorContext;
-use App\Core\Agents\Models\Agent;
-use App\Core\Web\Contracts\JournalAccessPolicy;
-use App\Domain\Access\Database\Factories\UserFactory;
-use App\Domain\Access\Models\User;
-use App\Domain\Access\Support\AccessSettings;
-use App\Domain\Access\Support\JournalAccess;
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorContext;
+use App\Agents\Models\Agent;
+use App\Web\Contracts\JournalAccessPolicy;
+use Domain\Access\Database\Factories\UserFactory;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
+use Domain\Access\Support\JournalAccess;
 use Illuminate\Support\Facades\Route;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

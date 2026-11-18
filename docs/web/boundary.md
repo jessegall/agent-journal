@@ -4,7 +4,7 @@ Plan 3 builds the browser interface of doc 6. This file records the decisions it
 
 ## Who acts in a request (task 98)
 
-Every request has one actor, kept in `App\Core\Actors\ActorContext` for that request only (a scoped binding, so an Octane worker forgets it between requests). Asking for it without one throws `ActorContextMissing`, so a read or a route binding fails before any row is read.
+Every request has one actor, kept in `App\Actors\ActorContext` for that request only (a scoped binding, so an Octane worker forgets it between requests). Asking for it without one throws `ActorContextMissing`, so a read or a route binding fails before any row is read.
 
 | Actor | Filled by | Reads |
 |---|---|---|
@@ -19,11 +19,11 @@ A user who selects an agent stays the actor; the agent is the target. Nothing fo
 
 ## Access: users and the owner (task 117)
 
-`app/Domain/Access` owns the User model (with its factory beside it), the users, password reset, sessions, passkeys and two-factor migrations, the Fortify actions and wiring (`AccessServiceProvider`), and `JournalAccess`, the one policy for who may use the journal: only the user whose id is `JOURNAL_OWNER_ID` (config/access.php). Unset means nobody; the first account or a registration grants nothing. The `journal.user` middleware (`AuthenticateUser`) runs after session authentication and before route binding: it makes the owner the user actor and refuses everyone else with 403. Locally, `php artisan db:seed` creates owner@journal.local (password `password`); set `JOURNAL_OWNER_ID` to its id.
+`domain/Access` owns the User model (with its factory beside it), the users, password reset, sessions, passkeys and two-factor migrations, the Fortify actions and wiring (`AccessServiceProvider`), and `JournalAccess`, the one policy for who may use the journal: only the user whose id is `JOURNAL_OWNER_ID` (config/access.php). Unset means nobody; the first account or a registration grants nothing. The `journal.user` middleware (`AuthenticateUser`) runs after session authentication and before route binding: it makes the owner the user actor and refuses everyone else with 403. Locally, `php artisan db:seed` creates owner@journal.local (password `password`); set `JOURNAL_OWNER_ID` to its id.
 
 ## Web and signing in (task 99)
 
-`app/Core/Web` (formerly the Web domain) owns the browser routes (`Routes/web.php`, loaded only by `WebServiceProvider`) and the one Inertia middleware (`Http/Middleware/HandleInertiaRequests`), which shares `SharedData`: the application name and, once signed in, `ViewerData` with the user's display name and nothing else.
+`app/Web` (formerly the Web domain) owns the browser routes (`Routes/web.php`, loaded only by `WebServiceProvider`) and the one Inertia middleware (`Http/Middleware/HandleInertiaRequests`), which shares `SharedData`: the application name and, once signed in, `ViewerData` with the user's display name and nothing else.
 
 One route owner for signing in: Fortify keeps `views => false`, Web owns the guest `GET /login` (named `login`, rendering `LoginPage` with `LoginInput`), and the form posts to Fortify's own `POST /login`; `POST /logout` is Fortify's too. Fortify's optional features are all off: no registration, password reset, email verification, two-factor or passkeys, so no account screen exists without a page. Two-factor can come back later with its challenge page. After signing in Fortify sends the user to `/plans` (task 111 moves this to Home).
 
@@ -31,8 +31,8 @@ One route owner for signing in: Fortify keeps `views => false`, Web owns the gue
 
 `spatie/laravel-typescript-transformer` 3 turns the PHP Data the pages send into `resources/js/types/generated/index.ts` (`composer types:generate`, i.e. `php artisan typescript:transform`). The file is ignored by git; `composer setup` and `composer ci:check` generate it before the frontend is built or checked, and it is left out of linting and formatting.
 
-- `App\Core\Web\Types\TypeScriptServiceProvider` configures it: Laravel's extension, the enum transformer, a flat module writer.
-- `App\Core\Web\Types\HiddenAwareDataTransformer` is the one integration class. It generates only Data marked `#[TypeScript]`, and a property with Laravel Data's `#[Hidden]` leaves the type as well as the JSON, so a seed or an injected service never reaches the browser's types.
+- `App\Web\Types\TypeScriptServiceProvider` configures it: Laravel's extension, the enum transformer, a flat module writer.
+- `App\Web\Types\HiddenAwareDataTransformer` is the one integration class. It generates only Data marked `#[TypeScript]`, and a property with Laravel Data's `#[Hidden]` leaves the type as well as the JSON, so a seed or an injected service never reaches the browser's types.
 - `tests/Feature/Web/BrowserContractTest.php` proves it on a fixture page: computed hook, typed list, enum, optional value, hidden seed and hidden service, in both the generated type and the JSON.
 - Pages use property hooks, so composer requires PHP 8.4 or later and CI runs PHP 8.5, as the image does.
 
@@ -41,12 +41,12 @@ One route owner for signing in: Fortify keeps `views => false`, Web owns the gue
 - **States** follow doc 4's badge words: `PlanState` is Planned, Reviewing, Started, Paused, Cancelled and Done. The journal's draft, ready and approved stages all show as Planned; a plan whose review is still open shows Reviewing, so the card says why it cannot start. A new plan is Planned.
 - **Type** is doc 4's card icon: `PlanType` is Build, Fix, Research or Cleanup. Doc 4 names the icon but not the types; these four are the agent's choice and can change.
 - **Order.** Phases have a position in their plan. A task's place lives in the Plans-owned `phase_tasks` table (phase, task id, position), with a task in one phase at most, not in the unordered links table. It keeps task ids only.
-- **Progress** comes from `App\Domain\Tasks\TaskCounts::progressOf($taskIds)`: done, started, blocked and total. Tasks never reads plans, and Plans calls Tasks through its approved edge. Version 6 tasks have no testing state yet, so there is no testing count.
+- **Progress** comes from `Domain\Tasks\TaskCounts::progressOf($taskIds)`: done, started, blocked and total. Tasks never reads plans, and Plans calls Tasks through its approved edge. Version 6 tasks have no testing state yet, so there is no testing count.
 - Plan has no agent limit; every agent and the owner read every plan. `php artisan db:seed` adds three plans with phases and tasks.
 
 ## Starting a plan (task 102)
 
-`App\Domain\Plans\Actions\StartPlan::start(Plan)` serves the browser and the agent path alike, for the actor of the request; a selected agent is never the caller. Under the plan's row lock: a Planned plan starts; a Started plan is a no-op with no second event; Reviewing, Paused, Cancelled and Done refuse with `StartDenied`, whose message is safe to show. `PlanState::canStart()` is the one rule: the plans read offers the start through `PlanCard::$canStart` by it, and the action enforces it. `PlanStarted` (the plan and who started it) implements `ShouldDispatchAfterCommit`, so a rolled-back start raises nothing. Starting a plan starts no task.
+`Domain\Plans\Actions\StartPlan::start(Plan)` serves the browser and the agent path alike, for the actor of the request; a selected agent is never the caller. Under the plan's row lock: a Planned plan starts; a Started plan is a no-op with no second event; Reviewing, Paused, Cancelled and Done refuse with `StartDenied`, whose message is safe to show. `PlanState::canStart()` is the one rule: the plans read offers the start through `PlanCard::$canStart` by it, and the action enforces it. `PlanStarted` (the plan and who started it) implements `ShouldDispatchAfterCommit`, so a rolled-back start raises nothing. Starting a plan starts no task.
 
 ## The plans page (task 104)
 
@@ -66,11 +66,11 @@ Generated files are build output and ignored by git: `resources/js/types/generat
 
 ## Sending a message (task 110)
 
-`App\Domain\Chat\Actions\SendMessage::send($body, StackTarget)` is the user's way to message a running agent's session: in one stack transaction it creates the message (body kept byte for byte; a blank body is refused with `MessageBodyEmpty`), asks that session to answer it and pushes the answering state through `UserStacks`, so a guessed, ended or foreign target is refused and leaves no message. The agent path keeps `RequireMessageAnswer`. `MessageSent`, `MessageAnswered` and `MessageDismissed` (raised by `CloseMessage`) fire after the commit. `MessageRecords::conversationWith(StackTarget)` reads the conversation with a session for the user; its id is `"<agent>-<session>"`. States read their subject with the `forActor` scope: a user reads through `visibleToUser`, an agent keeps its own scope.
+`Domain\Chat\Actions\SendMessage::send($body, StackTarget)` is the user's way to message a running agent's session: in one stack transaction it creates the message (body kept byte for byte; a blank body is refused with `MessageBodyEmpty`), asks that session to answer it and pushes the answering state through `UserStacks`, so a guessed, ended or foreign target is refused and leaves no message. The agent path keeps `RequireMessageAnswer`. `MessageSent`, `MessageAnswered` and `MessageDismissed` (raised by `CloseMessage`) fire after the commit. `MessageRecords::conversationWith(StackTarget)` reads the conversation with a session for the user; its id is `"<agent>-<session>"`. States read their subject with the `forActor` scope: a user reads through `visibleToUser`, an agent keeps its own scope.
 
 ## Rule approval (task 112)
 
-Rules use doc 4's states: Proposed, Active, Denied, Removed. Existing rules stayed Active (the state column is a string, so no migration was needed). A rule comes to exist proposed, with fixed text, through `App\Domain\Rules\Actions\ProposeRule` (used by tests and the seeder; the agent path will call it). `ReviewRule::approve` and `deny` take the rule, need a user actor, lock the row and act once on a Proposed rule; any other state is refused with `RuleNotProposed`, whose message is safe to show. `RemoveRule` ends a rule. `RuleApproved`, `RuleDenied` and `RuleRemoved` fire after the commit. `ActiveRules` still gives agents only Active rules; `RuleRecords::all()` lists every rule for a page.
+Rules use doc 4's states: Proposed, Active, Denied, Removed. Existing rules stayed Active (the state column is a string, so no migration was needed). A rule comes to exist proposed, with fixed text, through `Domain\Rules\Actions\ProposeRule` (used by tests and the seeder; the agent path will call it). `ReviewRule::approve` and `deny` take the rule, need a user actor, lock the row and act once on a Proposed rule; any other state is refused with `RuleNotProposed`, whose message is safe to show. `RemoveRule` ends a rule. `RuleApproved`, `RuleDenied` and `RuleRemoved` fire after the commit. `ActiveRules` still gives agents only Active rules; `RuleRecords::all()` lists every rule for a page.
 
 ## Home (task 111)
 
@@ -113,9 +113,9 @@ The app shell (`AppSidebarLayout`) owns the tab's one connection through `useLiv
 
 ## Interfaces at the seams (task 122, rule 15)
 
-- **Actor.** `App\Core\Actors\Contracts\Actor` (its type and id) is what the core talks to. The Access `User` is a user actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.
+- **Actor.** `App\Actors\Contracts\Actor` (its type and id) is what the core talks to. The Access `User` is a user actor, the Core `Agent` model and the signed `AgentContext` are agent actors. `ActorContext::of(Actor)` builds the request's actor; both authenticating middlewares pass the actor they vouched for and never build ids by hand.
 - **Access policy.** `AuthenticateUser` asks `JournalAccessPolicy::allows(Actor)`, bound to `JournalAccess` with `#[Bind]`. Only a user actor whose id is the owner's is let in.
-- **Task progress.** Plans reads progress through `App\Domain\Tasks\Contracts\TaskProgressCounter`, an interface Tasks exports and binds to `TaskCounts` with `#[Bind]`; Plans names no Tasks service class.
+- **Task progress.** Plans reads progress through `Domain\Tasks\Contracts\TaskProgressCounter`, an interface Tasks exports and binds to `TaskCounts` with `#[Bind]`; Plans names no Tasks service class.
 
 Plan 5 built the public interface layer of doc 10 revision 2: each domain reaches another only through what it exports (contracts, values, facts), and the checks are listed in `docs/hooks/dependencies.md`.
 
@@ -126,9 +126,9 @@ Approved by the user in question 13 (rule 9), narrowed by plan 7, and with Web m
 | Owner | Owns | Requires |
 |---|---|---|
 | Access (domain) | User, login through Fortify, the configured owner; it fills Core's `CurrentUserReader` and `JournalAccessPolicy` | nothing |
-| Web (Core, `app/Core/Web`) | the shell, Home (its layouts and the windows the domains offer it), declared route registration, page props, navigation, the UI manifest and type generation, live updates | nothing: Core names no domain |
+| Web (Core, `app/Web`) | the shell, Home (its layouts and the windows the domains offer it), declared route registration, page props, navigation, the UI manifest and type generation, live updates | nothing: Core names no domain |
 
-The page vocabulary a domain declares with (`ProvidesPages`, `ProvidesNavigation`, `ProvidesSections`, `Page`, `Slot`, `Section`, `NavigationItem`, the readers' contracts, `Icon` and the other enums) lives in `App\Core\Ui` and is on CoreApi's list. Web declares its own Home page in `App\Core\Web\Support\WebPages`, checked with the domains' declarations. Web asks Access for the signed-in user and for who may receive page changes only through `App\Core\Web\Contracts\CurrentUserReader` and `JournalAccessPolicy`, which Access binds in its provider (rule 15). The shared Inertia prop is `currentUser`. Chat, Plans and Rules own their pages, actions, Data and components themselves (see "Domain-owned pages" below and `docs/web/domain-pages.md`). The core (`app/Core`) needs no edge and names no domain. Each owner alone reads and writes its own tables.
+The page vocabulary a domain declares with (`ProvidesPages`, `ProvidesNavigation`, `ProvidesSections`, `Page`, `Slot`, `Section`, `NavigationItem`, the readers' contracts, `Icon` and the other enums) lives in `App\Ui` and is on CoreApi's list. Web declares its own Home page in `App\Web\Support\WebPages`, checked with the domains' declarations. Web asks Access for the signed-in user and for who may receive page changes only through `App\Web\Contracts\CurrentUserReader` and `JournalAccessPolicy`, which Access binds in its provider (rule 15). The shared Inertia prop is `currentUser`. Chat, Plans and Rules own their pages, actions, Data and components themselves (see "Domain-owned pages" below and `docs/web/domain-pages.md`). The core (`app`) needs no edge and names no domain. Each owner alone reads and writes its own tables.
 
 ## Domain-owned pages (plan 7)
 
@@ -138,5 +138,5 @@ Plan 7 replaced the Web-owned pages described in the sections above (tasks 104, 
 - **Props.** A page of its own gets `page`, each section of its slots as a deferred `section_<slot>_<section>` prop, and `inspector` when `?inspect=<page key>` names a record page; Home gets one optional `window_<key>` prop per window. Each is a result (`ready` with the reader's Data, `failed` with a neutral message, `denied` with nothing) and runs its visibility checks before any reader, on full and partial requests alike.
 - **Queries.** A window's links change only its own part of Home's query, `window[<page key>][...]` (`useWindowQuery`); on its own page the query is plain. The chosen agent session is the top-level `session`, read by sections that take a session.
 - **Generated files.** `php artisan journal:ui-manifest` (first step of `npm run types:generate`) writes the component manifest, `tsconfig.domains.json`, `vite.domains.ts`, the Tailwind sources, the page prop types and checks, `domain-roots.json` and `bootstrap/cache/ui-components.php`; Wayfinder writes `resources/js/routes/<domain>`; `typescript:transform` writes each owner's types to `resources/js/generated/types/<owner>`.
-- **Live updates.** Every fact that changes what users see implements `App\Core\Ui\Contracts\UpdatesUserInterface`; Web's one listener turns it into `PageChanged`. The browser reloads only the props on screen, the navigation and its counts, and the inspector when open.
+- **Live updates.** Every fact that changes what users see implements `App\Ui\Contracts\UpdatesUserInterface`; Web's one listener turns it into `PageChanged`. The browser reloads only the props on screen, the navigation and its counts, and the inspector when open.
 - **Imports.** `npm run imports:check` (part of build, check and the type check) refuses a domain component that imports another domain's code, the shell or a path it cannot prove local.

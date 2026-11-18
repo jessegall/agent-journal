@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Shop\Commands;
 
-use App\Core\Bus\Contracts\Command;
+use App\Bus\Contracts\Command;
 
 /**
  * @implements Command<mixed>

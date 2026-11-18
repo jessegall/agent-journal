@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Core\Bus\Support\CommandOwner;
-use App\Core\Bus\Support\CommandRegistry;
-use App\Core\Bus\Support\MiddlewareDeclaration;
-use App\Core\CoreCommands;
-use App\Domain\DomainEntry;
-use App\Domain\DomainRegistry;
+use App\Bus\Support\CommandOwner;
+use App\Bus\Support\CommandRegistry;
+use App\Bus\Support\MiddlewareDeclaration;
+use App\CoreCommands;
+use App\Domains\Support\DomainEntry;
+use App\Domains\Support\DomainRegistry;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Modules\Cards\CardsDomain;

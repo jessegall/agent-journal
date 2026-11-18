@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Core\Actors\Contracts\CurrentActorSetter;
-use App\Core\Actors\Support\ActorIdentity;
-use App\Core\Assignments\Contracts\AssignmentWriter;
-use App\Domain\Access\Models\User;
-use App\Domain\Access\Support\AccessSettings;
-use App\Domain\Plans\Enums\PlanType;
-use App\Domain\Plans\Models\Plan;
-use App\Domain\Tasks\Models\Task;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Support\ActorIdentity;
+use App\Assignments\Contracts\AssignmentWriter;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
+use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Models\Plan;
+use Domain\Tasks\Models\Task;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;

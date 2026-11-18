@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Core\Agents\Http\Middleware\AuthenticateAgent;
-use App\Core\Web\Http\Middleware\HandleInertiaRequests;
-use App\Domain\Access\Http\Middleware\AuthenticateUser;
+use App\Agents\Http\Middleware\AuthenticateAgent;
+use App\Web\Http\Middleware\HandleInertiaRequests;
+use Domain\Access\Http\Middleware\AuthenticateUser;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;

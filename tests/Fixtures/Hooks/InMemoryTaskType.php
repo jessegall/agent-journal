@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Core\Hooks\Contracts\StateType;
-use App\Core\Hooks\Decisions\StateReference;
-use App\Core\Hooks\Enums\NoSubject;
-use App\Core\Hooks\Exceptions\StateSubjectMissing;
-use App\Core\Hooks\States\AgentState;
-use App\Domain\Tasks\Enums\TaskWorkState;
-use App\Domain\Tasks\States\WorkingOnTaskState;
-use App\Domain\Tasks\Support\TaskWork;
+use App\Hooks\Contracts\StateType;
+use App\Hooks\Decisions\StateReference;
+use App\Hooks\Enums\NoSubject;
+use App\Hooks\Exceptions\StateSubjectMissing;
+use App\Hooks\States\AgentState;
+use Domain\Tasks\Enums\TaskWorkState;
+use Domain\Tasks\States\WorkingOnTaskState;
+use Domain\Tasks\Support\TaskWork;
 
 /**
  * A task state type for tests that reads each task's state from a list the test can change between restores.

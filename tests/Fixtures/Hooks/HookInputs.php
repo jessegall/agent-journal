@@ -4,34 +4,34 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Core\Hooks\Contracts\HookInput;
-use App\Core\Hooks\Enums\CommandEffect;
-use App\Core\Hooks\Enums\CommandType;
-use App\Core\Hooks\Enums\FileOperation;
-use App\Core\Hooks\Enums\ParseOutcome;
-use App\Core\Hooks\Enums\SessionEndReason;
-use App\Core\Hooks\Enums\SessionStartSource;
-use App\Core\Hooks\Enums\ShellDialect;
-use App\Core\Hooks\Enums\ToolOutcome;
-use App\Core\Hooks\Inputs\CommandPart;
-use App\Core\Hooks\Inputs\CompactionDetails;
-use App\Core\Hooks\Inputs\ContextCompacted;
-use App\Core\Hooks\Inputs\FileChange;
-use App\Core\Hooks\Inputs\FileChanges;
-use App\Core\Hooks\Inputs\FileEditRequested;
-use App\Core\Hooks\Inputs\HookIdentity;
-use App\Core\Hooks\Inputs\PromptDetails;
-use App\Core\Hooks\Inputs\PromptSubmitted;
-use App\Core\Hooks\Inputs\SessionEndDetails;
-use App\Core\Hooks\Inputs\SessionEnded;
-use App\Core\Hooks\Inputs\SessionStartDetails;
-use App\Core\Hooks\Inputs\SessionStarted;
-use App\Core\Hooks\Inputs\ShellCommand;
-use App\Core\Hooks\Inputs\ShellCommandRequested;
-use App\Core\Hooks\Inputs\StopDetails;
-use App\Core\Hooks\Inputs\StopRequested;
-use App\Core\Hooks\Inputs\ToolFinished;
-use App\Core\Hooks\Inputs\ToolResult;
+use App\Hooks\Contracts\HookInput;
+use App\Hooks\Enums\CommandEffect;
+use App\Hooks\Enums\CommandType;
+use App\Hooks\Enums\FileOperation;
+use App\Hooks\Enums\ParseOutcome;
+use App\Hooks\Enums\SessionEndReason;
+use App\Hooks\Enums\SessionStartSource;
+use App\Hooks\Enums\ShellDialect;
+use App\Hooks\Enums\ToolOutcome;
+use App\Hooks\Inputs\CommandPart;
+use App\Hooks\Inputs\CompactionDetails;
+use App\Hooks\Inputs\ContextCompacted;
+use App\Hooks\Inputs\FileChange;
+use App\Hooks\Inputs\FileChanges;
+use App\Hooks\Inputs\FileEditRequested;
+use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\PromptDetails;
+use App\Hooks\Inputs\PromptSubmitted;
+use App\Hooks\Inputs\SessionEndDetails;
+use App\Hooks\Inputs\SessionEnded;
+use App\Hooks\Inputs\SessionStartDetails;
+use App\Hooks\Inputs\SessionStarted;
+use App\Hooks\Inputs\ShellCommand;
+use App\Hooks\Inputs\ShellCommandRequested;
+use App\Hooks\Inputs\StopDetails;
+use App\Hooks\Inputs\StopRequested;
+use App\Hooks\Inputs\ToolFinished;
+use App\Hooks\Inputs\ToolResult;
 
 /**
  * One input of every hook, for tests that must cover them all.
@@ -61,7 +61,7 @@ final class HookInputs
             'session start' => new SessionStarted($hook, new SessionStartDetails('vendor-1', SessionStartSource::Startup)),
             'prompt' => new PromptSubmitted($hook, new PromptDetails('prompt-1', 'Build the plan.')),
             'shell command' => new ShellCommandRequested($hook, new ShellCommand('composer test', ShellDialect::Bash, ParseOutcome::Complete, [new CommandPart('composer', ['test'], CommandEffect::ChangesFiles, CommandType::TestRun)])),
-            'file edit' => new FileEditRequested($hook, new FileChanges([new FileChange('app/Domain/Domain.php', FileOperation::Edit)])),
+            'file edit' => new FileEditRequested($hook, new FileChanges([new FileChange('app/Domains/Contracts/Domain.php', FileOperation::Edit)])),
             'stop' => new StopRequested($hook, new StopDetails('turn-1', false)),
             'compaction' => new ContextCompacted($hook, new CompactionDetails('compaction-1')),
             'tool finished' => new ToolFinished($hook, new ToolResult('Bash', ToolOutcome::Succeeded)),

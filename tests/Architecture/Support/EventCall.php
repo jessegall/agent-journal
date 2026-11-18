@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Domain\DomainEntry;
+use App\Domains\Support\DomainEntry;
 
 /**
  * One call that raises or hears an event: the call as written, what it passes, and whether a string there is surely an event.

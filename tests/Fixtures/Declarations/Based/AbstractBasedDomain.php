@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Declarations\Based;
 
-use App\Domain\Contracts\Domain;
+use App\Domains\Contracts\Domain;
 
 abstract class AbstractBasedDomain implements Domain
 {

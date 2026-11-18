@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Core\Actors\Exceptions\ActorContextMissing;
-use App\Core\Assignments\Exceptions\RecordUnavailable;
-use App\Core\Assignments\Registry\AssignmentRegistry;
-use App\Core\Assignments\Support\RecordIdentity;
-use App\Domain\Plans\Enums\PlanType;
-use App\Domain\Plans\Models\Phase;
-use App\Domain\Plans\Models\Plan;
-use App\Domain\Tasks\Contracts\TaskAssignmentReader;
-use App\Domain\Tasks\Exceptions\TaskMissing;
-use App\Domain\Tasks\Models\Task;
+use App\Actors\Exceptions\ActorContextMissing;
+use App\Assignments\Exceptions\RecordUnavailable;
+use App\Assignments\Registry\AssignmentRegistry;
+use App\Assignments\Support\RecordIdentity;
+use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Models\Phase;
+use Domain\Plans\Models\Plan;
+use Domain\Tasks\Contracts\TaskAssignmentReader;
+use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Models\Task;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;

@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Core\Hooks\Decisions\Decision;
-use App\Core\Hooks\Decisions\Denied;
-use App\Core\Hooks\Decisions\PushState;
-use App\Core\Hooks\Decisions\StateReference;
-use App\Core\Hooks\Decisions\SubjectReference;
-use App\Core\Hooks\Enums\NoSubject;
-use App\Core\Hooks\Enums\SimpleTransition;
-use App\Core\Hooks\Exceptions\ConflictingStackTransition;
-use App\Core\Hooks\Exceptions\EmptyReason;
+use App\Hooks\Decisions\Decision;
+use App\Hooks\Decisions\Denied;
+use App\Hooks\Decisions\PushState;
+use App\Hooks\Decisions\StateReference;
+use App\Hooks\Decisions\SubjectReference;
+use App\Hooks\Enums\NoSubject;
+use App\Hooks\Enums\SimpleTransition;
+use App\Hooks\Exceptions\ConflictingStackTransition;
+use App\Hooks\Exceptions\EmptyReason;
 use PHPUnit\Framework\TestCase;
 
 final class DecisionTest extends TestCase

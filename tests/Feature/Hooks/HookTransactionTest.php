@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Core\Hooks\Exceptions\StackLockTimedOut;
-use App\Core\Hooks\Models\HookCall;
-use App\Core\Hooks\Programs\ProgramReplies;
-use App\Core\Hooks\Stack\HookAnswer;
-use App\Core\Hooks\Storage\WalkStep;
-use App\Core\Hooks\Support\OperationDeadline;
+use App\Hooks\Exceptions\StackLockTimedOut;
+use App\Hooks\Models\HookCall;
+use App\Hooks\Programs\ProgramReplies;
+use App\Hooks\Stack\HookAnswer;
+use App\Hooks\Storage\WalkStep;
+use App\Hooks\Support\OperationDeadline;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommittedHookStack;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Core\CoreApi;
-use App\Domain\DomainRegistry;
+use App\CoreApi;
+use App\Domains\Support\DomainRegistry;
 use Tests\Architecture\Support\BindingRules;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;
@@ -32,7 +32,7 @@ use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
 use Tests\TestCase;
 
 /**
- * A module outside app/Domain, registered beside the domains as a package would be, is discovered like a domain and
+ * A module outside the domain folder, registered beside the domains as a package would be, is discovered like a domain and
  * judged by every boundary check in both directions: what it uses, and what others use of it.
  */
 final class RegisteredModuleTest extends TestCase
@@ -71,13 +71,13 @@ final class RegisteredModuleTest extends TestCase
 
     public function test_the_module_and_the_domains_are_judged_in_both_directions(): void
     {
-        $plansFile = app_path('Domain/Plans/UsesNotes.php');
+        $plansFile = base_path('domain/Plans/src/UsesNotes.php');
         $notesFile = $this->registry()->get('Notes')->folder.'/UsesTasks.php';
 
         $names = $this->boundaryChecker()->violations([
             new NameUse($plansFile, 3, NoteValue::class, NameType::Type),
-            new NameUse($notesFile, 4, 'App\Domain\Tasks\Models\Task', NameType::Type),
-            new NameUse($notesFile, 5, 'App\Core\Hooks\Actions\AgentStacks', NameType::Type),
+            new NameUse($notesFile, 4, 'Domain\Tasks\Models\Task', NameType::Type),
+            new NameUse($notesFile, 5, 'App\Hooks\Actions\AgentStacks', NameType::Type),
         ]);
         $tables = $this->tableChecker()->violations([
             new TableUse($plansFile, 6, 'module_notes', TableType::Read),
@@ -86,8 +86,8 @@ final class RegisteredModuleTest extends TestCase
 
         $this->assertSame([
             '3 uses Tests\Fixtures\Modules\Notes\Api\NoteValue, but Plans does not require Notes',
-            '4 uses App\Domain\Tasks\Models\Task, but Notes does not require Tasks',
-            '5 uses App\Core\Hooks\Actions\AgentStacks, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists',
+            '4 uses Domain\Tasks\Models\Task, but Notes does not require Tasks',
+            '5 uses App\Hooks\Actions\AgentStacks, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists',
             '6 uses table module_notes of Notes; only Notes reads, joins, keys or changes its tables, so use what Notes exports',
             '7 uses table tasks of Tasks; only Tasks reads, joins, keys or changes its tables, so use what Tasks exports',
         ], array_map(fn (Violation $violation) => "{$violation->line} {$violation->reason()}", [...$names, ...$tables]));
@@ -113,7 +113,7 @@ final class RegisteredModuleTest extends TestCase
 
     private function tableChecker(): TableChecker
     {
-        $owners = [TableOwner::core(app_path('Core')), ...array_map(TableOwner::fromDomain(...), $this->registry()->all())];
+        $owners = [TableOwner::core(app_path()), ...array_map(TableOwner::fromDomain(...), $this->registry()->all())];
 
         return TableChecker::for($owners, database_path('migrations'));
     }

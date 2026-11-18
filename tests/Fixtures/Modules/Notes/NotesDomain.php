@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
-use App\Core\Bus\Contracts\ProvidesCommandMiddleware;
-use App\Core\Bus\Contracts\ProvidesCommands;
-use App\Core\Bus\Support\CommandScope;
-use App\Core\Bus\Support\MiddlewareDeclaration;
-use App\Core\Ui\Contracts\ProvidesNavigation;
-use App\Core\Ui\Contracts\ProvidesPages;
-use App\Core\Ui\Contracts\ProvidesSections;
-use App\Core\Ui\Declarations\NavigationItem;
-use App\Core\Ui\Declarations\Page;
-use App\Core\Ui\Declarations\Section;
-use App\Core\Ui\Declarations\Slot;
-use App\Core\Ui\Enums\Icon;
-use App\Core\Ui\Enums\SlotContextType;
-use App\Domain\Contracts\Domain;
-use App\Domain\Contracts\ProvidesAssignables;
-use App\Domain\Contracts\ProvidesStates;
+use App\Bus\Contracts\ProvidesCommandMiddleware;
+use App\Bus\Contracts\ProvidesCommands;
+use App\Bus\Support\CommandScope;
+use App\Bus\Support\MiddlewareDeclaration;
+use App\Ui\Contracts\ProvidesNavigation;
+use App\Ui\Contracts\ProvidesPages;
+use App\Ui\Contracts\ProvidesSections;
+use App\Ui\Declarations\NavigationItem;
+use App\Ui\Declarations\Page;
+use App\Ui\Declarations\Section;
+use App\Ui\Declarations\Slot;
+use App\Ui\Enums\Icon;
+use App\Ui\Enums\SlotContextType;
+use App\Domains\Contracts\Domain;
+use App\Domains\Contracts\ProvidesAssignables;
+use App\Domains\Contracts\ProvidesStates;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\Api\NoteValue;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\AuditNotes;
@@ -42,13 +42,13 @@ use Tests\Fixtures\Modules\Notes\Readers\NotesWindowReader;
 use Tests\Fixtures\Modules\Notes\Support\NoteAssignments;
 
 /**
- * A module installed outside app/Domain, registered beside the domains only in the architecture fixtures.
+ * A module installed outside the domain folder, registered beside the domains only in the architecture fixtures.
  */
 final class NotesDomain implements Domain, ProvidesAssignables, ProvidesCommandMiddleware, ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesStates
 {
     public function description(): string
     {
-        return 'Notes an agent writes while it works: a module outside app/Domain.';
+        return 'Notes an agent writes while it works: a module outside the domain folder.';
     }
 
     public function requires(): array

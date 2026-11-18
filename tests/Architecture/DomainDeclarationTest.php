@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Domain\Contracts\Domain;
-use App\Domain\DomainRegistry;
+use App\Domains\Contracts\Domain;
+use App\Domains\Support\DomainRegistry;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DeclarationRules;
 use Tests\Architecture\Support\DomainFiles;
@@ -16,7 +16,7 @@ use Tests\Fixtures\Declarations\Wrong\WrongDomain;
 use Tests\TestCase;
 
 /**
- * Domain classes, the files outside every domain, namespaces inside domain folders and the shared places: the domain foundation and app/Core.
+ * Domain classes, the files outside every domain, namespaces inside domain folders and the shared places: the domain foundation and Core in app.
  * It does not see edits inside the listed starter-kit files beyond the domain names they use.
  */
 final class DomainDeclarationTest extends TestCase
@@ -69,11 +69,13 @@ final class DomainDeclarationTest extends TestCase
         'Enums/PageDestination.php',
         'Enums/PageSkeleton.php',
         'Enums/SlotContextType.php',
-        'DomainEntry.php',
-        'DomainRegistry.php',
+        'Support/DomainEntry.php',
+        'Support/DomainRegistry.php',
         'UiDeclarations.php',
         'Providers/DomainServiceProvider.php',
-        'Exports.php',
+        'Support/Exports.php',
+        'Support/Psr4ClassNames.php',
+        'Exceptions/FileOutsideAutoload.php',
         'Exceptions/AmbiguousDomainRoot.php',
         'Exceptions/DomainCycle.php',
         'Exceptions/DomainDeclarationError.php',
@@ -102,14 +104,14 @@ final class DomainDeclarationTest extends TestCase
     public function test_the_real_app_declares_everything_where_it_belongs(): void
     {
         $appFolder = $this->appFolder();
-        $sharedFolder = $appFolder.'/Domain';
+        $sharedFolder = $appFolder.'/Domains';
         $starterKitFiles = array_map(fn (string $file) => "{$appFolder}/{$file}", self::STARTER_KIT_FILES);
         $rules = $this->rules($this->app->make(DomainRegistry::class));
-        $files = DomainFiles::in([$appFolder]);
+        $files = DomainFiles::in([base_path('domain')]);
 
         $violations = [
-            ...$rules->misnamedDomainClasses($files, 'App\Domain'),
-            ...$rules->filesOutsideDomains($files, [$sharedFolder, $appFolder.'/Core'], $starterKitFiles),
+            ...$rules->misnamedDomainClasses($files, 'Domain'),
+            ...$rules->filesOutsideDomains($files, [], []),
             ...$rules->starterKitDomainUses($starterKitFiles),
             ...$rules->namespacesOutsideDomains(),
             ...$rules->extraSharedFiles($sharedFolder, self::SHARED_PLACE_FILES),
@@ -123,8 +125,8 @@ final class DomainDeclarationTest extends TestCase
         $files = DomainFiles::in([$this->fixture('Good'), $this->fixture('Deep'), $this->fixture('Based')]);
 
         $this->assertSame([
-            'declares Tests\Fixtures\Declarations\Based\ConcreteBased, but a Domain class must be App\Domain\<Name>\<Name>Domain',
-            'declares Tests\Fixtures\Declarations\Deep\Inner\InnerDomain, but a Domain class must be App\Domain\<Name>\<Name>Domain',
+            'declares Tests\Fixtures\Declarations\Based\ConcreteBased, but a Domain class must be Domain\<Name>\<Name>Domain',
+            'declares Tests\Fixtures\Declarations\Deep\Inner\InnerDomain, but a Domain class must be Domain\<Name>\<Name>Domain',
         ], $this->reasons($this->rules($this->registry())->misnamedDomainClasses($files, 'Tests\Fixtures\Declarations')));
     }
 

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Models;
 
-use App\Core\Assignments\Contracts\Assignable;
-use App\Core\Assignments\Support\RecordIdentity;
-use App\Core\Hooks\Models\Support\BelongsToOneAgent;
-use App\Core\Links\Support\Linkable;
+use App\Assignments\Contracts\Assignable;
+use App\Assignments\Support\RecordIdentity;
+use App\Hooks\Models\Support\BelongsToOneAgent;
+use App\Links\Support\Linkable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;

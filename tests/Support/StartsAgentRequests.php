@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Core\Actors\Contracts\CurrentActorSetter;
-use App\Core\Actors\Support\ActorContext;
-use App\Core\AgentRequests\Support\SignedCall;
-use App\Core\Agents\Support\AgentContext;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Support\ActorContext;
+use App\AgentRequests\Support\SignedCall;
+use App\Agents\Support\AgentContext;
 use Carbon\CarbonImmutable;
 
 /**

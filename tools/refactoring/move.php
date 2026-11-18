@@ -997,7 +997,8 @@ function namespaceOf(string $file): string
         }
     }
 
-    throw new RuntimeException(sprintf('[%s] lies under no PSR-4 root of composer.json.', $path));
+    // routes, config and bootstrap files lie under no root and declare no namespace
+    return '';
 }
 
 /**

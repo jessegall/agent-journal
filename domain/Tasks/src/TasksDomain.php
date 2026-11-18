@@ -1,0 +1,80 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Tasks;
+
+use App\Domains\Contracts\Domain;
+use App\Domains\Contracts\ProvidesAssignables;
+use App\Domains\Contracts\ProvidesStates;
+use Domain\Tasks\Api\Events\TaskBlocked;
+use Domain\Tasks\Api\Events\TaskCancelled;
+use Domain\Tasks\Api\Events\TaskFinished;
+use Domain\Tasks\Api\TaskAssignmentCompletion;
+use Domain\Tasks\Api\TaskCard;
+use Domain\Tasks\Api\TaskFilters;
+use Domain\Tasks\Api\TaskList;
+use Domain\Tasks\Api\TaskProgress;
+use Domain\Tasks\Contracts\AssignedTaskReader;
+use Domain\Tasks\Contracts\TaskAssignmentReader;
+use Domain\Tasks\Contracts\TaskProgressCounter;
+use Domain\Tasks\Contracts\TaskReader;
+use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskWorkState;
+use Domain\Tasks\Events\TaskStarted;
+use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Models\Task;
+use Domain\Tasks\Readers\TaskAssignments;
+use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
+use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
+
+final class TasksDomain implements Domain, ProvidesAssignables, ProvidesStates
+{
+    public function description(): string
+    {
+        return 'A task, its state, its log and what it waits on.';
+    }
+
+    /**
+     * @return list<class-string<Domain>>
+     */
+    public function requires(): array
+    {
+        return [];
+    }
+
+    /**
+     * @return list<class-string>
+     */
+    public function exports(): array
+    {
+        return [
+            TaskStarted::class,
+            TaskFinished::class,
+            TaskBlocked::class,
+            TaskCancelled::class,
+            TaskProgressCounter::class,
+            TaskProgress::class,
+            TaskReader::class,
+            TaskMissing::class,
+            TaskAssignmentReader::class,
+            TaskAssignmentCompletion::class,
+            AssignedTaskReader::class,
+            TaskCard::class,
+            TaskFilters::class,
+            TaskList::class,
+            TaskState::class,
+            TaskWorkState::class,
+        ];
+    }
+
+    public function states(): array
+    {
+        return [WorkingOnTaskStateReference::TYPE_KEY => WorkingOnTaskStateFactory::class];
+    }
+
+    public function assignables(): array
+    {
+        return [Task::LINK_TYPE => TaskAssignments::class];
+    }
+}

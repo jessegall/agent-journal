@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Core\Actors\Support\ActorIdentity;
-use App\Core\AgentRequests\Exceptions\LaunchSettingMissing;
-use App\Core\AgentRequests\Support\AgentClientSettings;
-use App\Core\Assignments\Contracts\AssignmentWriter;
-use App\Domain\Access\Models\User;
-use App\Domain\Access\Support\AccessSettings;
-use App\Domain\Plans\Enums\PlanType;
-use App\Domain\Plans\Models\Plan;
-use App\Domain\Tasks\Models\Task;
+use App\Actors\Support\ActorIdentity;
+use App\AgentRequests\Exceptions\LaunchSettingMissing;
+use App\AgentRequests\Support\AgentClientSettings;
+use App\Assignments\Contracts\AssignmentWriter;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
+use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Models\Plan;
+use Domain\Tasks\Models\Task;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\Process\Process;

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Core\Agents\Models\Agent;
-use App\Core\Ui\Support\UiDeclarations;
-use App\Core\Web\Pages\WebPages;
-use App\Core\Web\Routes\DeclaredRoutes;
-use App\Domain\Access\Models\User;
-use App\Domain\Access\Support\AccessSettings;
-use App\Domain\DomainRegistry;
+use App\Agents\Models\Agent;
+use App\Domains\Support\DomainRegistry;
+use App\Ui\Support\UiDeclarations;
+use App\Web\Pages\WebPages;
+use App\Web\Routes\DeclaredRoutes;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Testing\AssertableInertia;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Domain\Access\Models\User;
-use App\Domain\Access\Support\AccessSettings;
-use App\Domain\Plans\Enums\PlanState;
-use App\Domain\Plans\Enums\PlanType;
-use App\Domain\Plans\Models\Plan;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
+use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Models\Plan;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 

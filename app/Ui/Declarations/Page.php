@@ -1,0 +1,115 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Ui\Declarations;
+
+use App\Ui\Contracts\PageOption;
+use App\Ui\Contracts\PageReader;
+use App\Ui\Contracts\VisibilityCheck;
+use App\Ui\Enums\Icon;
+use App\Ui\Enums\PageDestination;
+use App\Ui\Enums\PageSkeleton;
+use App\Ui\Exceptions\InvalidPageDeclaration;
+use Spatie\LaravelData\Data;
+
+/**
+ * A page a domain owns, keyed within its domain: where it lives under the domain's prefix, the reader and component
+ * that draw it, how it shows on Home, and the slots and actions it offers. Each change returns a new page.
+ */
+final class Page
+{
+    /**
+     * @param  class-string<PageReader>  $reader
+     * @param  class-string<Data>  $dataClass  the Data class the reader's read method declares
+     * @param  int|null  $homePosition  null when the page is not in Home's Default preset
+     * @param  list<PageOption>  $options
+     * @param  list<Slot>  $slots
+     * @param  list<ActionRoute>  $actions
+     * @param  class-string<VisibilityCheck>|null  $visibility  null when everyone signed in sees the page
+     */
+    private function __construct(
+        public readonly string $key,
+        public readonly string $title,
+        public readonly Icon $icon,
+        public readonly string $path,
+        public readonly string $reader,
+        public readonly string $dataClass,
+        public readonly string $component,
+        public readonly FloatSize $floatSize,
+        public readonly PageDestination $opensIn = PageDestination::Page,
+        public readonly PageSkeleton $skeleton = PageSkeleton::Rows,
+        public readonly int|null $homePosition = null,
+        public readonly array $options = [],
+        public readonly array $slots = [],
+        public readonly array $actions = [],
+        public readonly string|null $visibility = null,
+    ) {}
+
+    /**
+     * A page at the path of its own key, read by the reader and drawn by the component under the domain's Resources/js.
+     *
+     * @param  class-string<PageReader>  $reader
+     */
+    public static function make(string $key, string $title, Icon $icon, string $reader, string $component): self
+    {
+        $dataClass = ReaderDataClass::of($reader);
+
+        if ($dataClass === null) {
+            throw InvalidPageDeclaration::readerReturnsNoData($key, $reader);
+        }
+
+        return new self($key, $title, $icon, $key, $reader, $dataClass, $component, FloatSize::standard());
+    }
+
+    /**
+     * The path relative to the domain's prefix, with {name} route parameters; an empty path is the prefix itself.
+     */
+    public function at(string $path): self
+    {
+        return clone ($this, ['path' => $path]);
+    }
+
+    public function inInspector(): self
+    {
+        return clone ($this, ['opensIn' => PageDestination::Inspector]);
+    }
+
+    public function loadingAs(PageSkeleton $skeleton): self
+    {
+        return clone ($this, ['skeleton' => $skeleton]);
+    }
+
+    public function onHome(int $position): self
+    {
+        return clone ($this, ['homePosition' => $position]);
+    }
+
+    public function floating(FloatSize $size): self
+    {
+        return clone ($this, ['floatSize' => $size]);
+    }
+
+    public function options(PageOption ...$options): self
+    {
+        return clone ($this, ['options' => array_values($options)]);
+    }
+
+    public function slots(Slot ...$slots): self
+    {
+        return clone ($this, ['slots' => array_values($slots)]);
+    }
+
+    public function actions(ActionRoute ...$actions): self
+    {
+        return clone ($this, ['actions' => array_values($actions)]);
+    }
+
+    /**
+     * @param  class-string<VisibilityCheck>  $check
+     */
+    public function visibleWhen(string $check): self
+    {
+        return clone ($this, ['visibility' => $check]);
+    }
+}

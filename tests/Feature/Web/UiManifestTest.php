@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Core\Ui\Declarations\DomainUi;
-use App\Core\Ui\Declarations\Page;
-use App\Core\Ui\Enums\Icon;
-use App\Core\Ui\Support\UiDeclarations;
-use App\Core\Web\Support\UiManifest;
-use App\Core\Web\Types\PagePropTypes;
-use App\Core\Web\Types\TypeOwners;
-use App\Domain\DomainEntry;
-use App\Domain\DomainRegistry;
+use App\Domains\Support\DomainEntry;
+use App\Domains\Support\DomainRegistry;
+use App\Ui\Declarations\DomainUi;
+use App\Ui\Declarations\Page;
+use App\Ui\Enums\Icon;
+use App\Ui\Support\UiDeclarations;
+use App\Web\Support\UiManifest;
+use App\Web\Types\PagePropTypes;
+use App\Web\Types\TypeOwners;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\UiDeclarations\Library\BooksReader;
 use Tests\Fixtures\UiDeclarations\Library\LibraryDomain;
@@ -96,9 +96,9 @@ final class UiManifestTest extends TestCase
     {
         $owners = TypeOwners::of($this->app->make(DomainRegistry::class), $this->app->make(UiDeclarations::class));
 
-        $this->assertSame('core', $owners->ownerOf('App\\Core\\Assignments\\Support\\AssignmentData'));
-        $this->assertSame('plans', $owners->ownerOf('App\\Domain\\Plans\\Http\\Data\\AssignedPlanListData'));
-        $this->assertSame('web', $owners->ownerOf('App\\Core\\Web\\Data\\HomeData'));
+        $this->assertSame('core', $owners->ownerOf('App\\Assignments\\Support\\AssignmentData'));
+        $this->assertSame('plans', $owners->ownerOf('Domain\\Plans\\Http\\Data\\AssignedPlanListData'));
+        $this->assertSame('web', $owners->ownerOf('App\\Web\\Data\\HomeData'));
         $this->assertSame('shared', $owners->ownerOf('Tests\\Fixtures\\UiDeclarations\\RecentNotesData'));
     }
 

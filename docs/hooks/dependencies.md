@@ -1,6 +1,6 @@
 # Hooks: the core and the domain dependencies
 
-Plan 2 built the agent stack state machine of doc 3. Since task 96 it lives in the core, `app/Core`, with the agent and session context (`app/Core/Agents`) and the links every model uses (`app/Core/Links`). The core is a foundation under the domains, not a domain: every domain and every module installed later, ours, a paid one or a third party, uses it without declaring it, registers its own state types, pushes its own states and adds context. The core names no domain or module; `tests/Architecture/DomainBoundaryTest.php` scans `app/Core` and fails on any domain name in it.
+Plan 2 built the agent stack state machine of doc 3. Since task 96 it lives in the core, `app`, with the agent and session context (`app/Agents`) and the links every model uses (`app/Links`). The core is a foundation under the domains, not a domain: every domain and every module installed later, ours, a paid one or a third party, uses it without declaring it, registers its own state types, pushes its own states and adds context. The core names no domain or module; `tests/Architecture/DomainBoundaryTest.php` scans `app` and fails on any domain name in it.
 
 Question 10 had approved edges from the domains to Hooks, Agents and Links. With those three in the core the edges are gone, and the declared edges are below. Rule 9 still holds: a domain declares a new required domain only after the user approves it. `tests/Unit/Domains/DomainClassesTest.php` lists every domain's requirements and pins its export list.
 
@@ -41,7 +41,7 @@ No owner store existed for the subjects the states are about, so plan 2 built th
 
 ## Core's public surface (plan 5, tasks 156 and 163; plan 6)
 
-`app/Core/CoreApi.php` lists 127 Core types one by one; the rest of Core is private, whatever folder a class sits in. By area:
+`appApi.php` lists 127 Core types one by one; the rest of Core is private, whatever folder a class sits in. By area:
 
 - **Actors** (7): `ActorContext`, `ActorContextMissing`, `ActorIdentity`, `ActorType`, `AgentActorRequired`, `InvalidActorText`, `UserActorRequired`.
 - **Agents** (10): `AgentLabel`, `AgentNotAvailable`, `AgentReader`, `AgentReply`, `AgentRequestFailed`, `AgentRequestSender`, `AgentRetirement`, `AgentRetirementDenied`, `SessionOption`, `SessionReader`.
@@ -50,7 +50,7 @@ No owner store existed for the subjects the states are about, so plan 2 built th
 - **Hooks** (57): `AgentStack`, `AgentState`, `Answer`, `AnswerType`, `CommandEffect`, `CommandType`, `CommandPart`, `CompactionDetails`, `ContextCompacted`, `ContextWasCompacted`, `Decision`, `FileChange`, `FileChanges`, `FileEditRequested`, `FileOperation`, `HookAnswerer`, `HookIdentity`, `HookInput`, `NoSubject`, `BelongsToOneAgent`, `ParseOutcome`, `PartJoin`, `PromptDetails`, `PromptSubmitted`, `ReminderContribution`, `SessionEndDetails`, `SessionEndReason`, `SessionEnded`, `SessionStartDetails`, `SessionStartSource`, `SessionStarted`, `ShellCommand`, `ShellCommandParser`, `ShellCommandRequested`, `ShellDialect`, `StackEditor`, `StackLockTimedOut`, `StackTarget`, `StackTargetRefused`, `StackTransactionRequired`, `StackTransactionRunner`, `StackTransition`, `StateReference`, `StateRegistration`, `StateSubjectMissing`, `StateType`, `StateTypeRepeated`, `StateTypesFrozen`, `StateTypesRequested`, `StopDetails`, `StopRequested`, `SubjectReference`, `ToolFinished`, `ToolOutcome`, `ToolResult`, `TransitionType`, `UserStack`.
 - **Links** (5): `LinkAccess`, `LinkTypeRenames`, `LinkTypes`, `Linkable`, `UnknownLinkType`.
 
-`CurrentActorSetter` is for the authentication sites only (below); `LinkTypes` and `LinkTypeRenames` for owner providers and owner migrations; `AssignmentRegistration` for the composition sites only (below). Domain exports: Tasks 16, Plans 16, Chat 9, Rules 11, Access 0; Memory, Processes, Profiles, Reminders and Sequences export nothing. Web is part of Core since task 226 (`app/Core/Web`) and requires no domain: Chat, Plans and Rules declare their own pages with Core's page vocabulary (`App\Core\Ui`), and Access fills Core's `CurrentUserReader` and `JournalAccessPolicy`.
+`CurrentActorSetter` is for the authentication sites only (below); `LinkTypes` and `LinkTypeRenames` for owner providers and owner migrations; `AssignmentRegistration` for the composition sites only (below). Domain exports: Tasks 16, Plans 16, Chat 9, Rules 11, Access 0; Memory, Processes, Profiles, Reminders and Sequences export nothing. Web is part of Core since task 226 (`app/Web`) and requires no domain: Chat, Plans and Rules declare their own pages with Core's page vocabulary (`App\Ui`), and Access fills Core's `CurrentUserReader` and `JournalAccessPolicy`.
 
 ## Assignments: one holder per record (plan 6, doc 13)
 
@@ -64,7 +64,7 @@ Core owns the `assignments` table and is the only code that reads or writes it. 
 
 ## How the boundary is checked (plan 5, phase 26)
 
-Doc 10 revision 2 is the design. The architecture suite (`tests/Architecture`, run by `composer test` and so by `composer ci:check` in CI) enforces it on `app/Domain` and `app/Core`, and on any module registered beside the domains.
+Doc 10 revision 2 is the design. The architecture suite (`tests/Architecture`, run by `composer test` and so by `composer ci:check` in CI) enforces it on `domain` and `app`, and on any module registered beside the domains.
 
 - **Names** (`DomainBoundaryTest`). A domain names its own code, Core's listed types, code outside the project, and of a domain it requires only what that domain's `exports()` lists. A descriptor may name the descriptors it requires, in its own Domain class only. Core names no domain. Imports, types, `::class`, `new`, static calls, attributes, docblock types and class-name strings are read; names built at run time are not.
 - **Composition files** (`DomainBoundaryTest`). Outside the domains, exactly five files may name domain or Core classes, and only for what they compose: `bootstrap/domains.php` the descriptors, `bootstrap/providers.php` the providers, `bootstrap/app.php` the middleware, `config/auth.php` the user model and `database/seeders/DatabaseSeeder.php` the owners' seeders.
@@ -79,4 +79,4 @@ Not checked, and so not promised: names, tables or events built at run time, a q
 
 ## Cycles between areas (task 221, question 26)
 
-Each Core area (`App\Core\Agents`, `App\Core\Hooks` and the others), each domain and the domain foundation is one unit, and `tests/Architecture/AreaCycleTest.php` fails on any group of units that reach each other, directly or through others. Type folders inside one area (Contracts, Support, Enums) are filing, not layers, so the per-folder `php/NamespaceCycleDetector` is switched off in `.commandments/config.json`. The signed client that the CLI uses to send agent requests is its own area, `App\Core\AgentRequests`, below Agents, Hooks and Assignments; Agents owns `AgentRole`; Assignments owns `AgentAuthority`, which Agents fills.
+Each Core area (`App\Agents`, `App\Hooks` and the others), each domain and the domain foundation is one unit, and `tests/Architecture/AreaCycleTest.php` fails on any group of units that reach each other, directly or through others. Type folders inside one area (Contracts, Support, Enums) are filing, not layers, so the per-folder `php/NamespaceCycleDetector` is switched off in `.commandments/config.json`. The signed client that the CLI uses to send agent requests is its own area, `App\AgentRequests`, below Agents, Hooks and Assignments; Agents owns `AgentRole`; Assignments owns `AgentAuthority`, which Agents fills.

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Core\Ui\Declarations\NavigationItem;
-use App\Core\Ui\Declarations\Page;
-use App\Core\Ui\Enums\Icon;
-use App\Core\Ui\Support\UiDeclarations;
-use App\Core\Web\Data\NavigationItemData;
-use App\Core\Web\Routes\DeclaredRoutes;
-use App\Core\Web\Support\NavigationRecords;
-use App\Domain\DomainEntry;
+use App\Domains\Support\DomainEntry;
+use App\Ui\Declarations\NavigationItem;
+use App\Ui\Declarations\Page;
+use App\Ui\Enums\Icon;
+use App\Ui\Support\UiDeclarations;
+use App\Web\Data\NavigationItemData;
+use App\Web\Routes\DeclaredRoutes;
+use App\Web\Support\NavigationRecords;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Tests\Fixtures\UiDeclarations\Library\BookCount;

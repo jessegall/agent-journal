@@ -6,7 +6,7 @@ this file is how it works now.
 
 ## Declare
 
-A domain's descriptor implements the interfaces it needs, each in `App\Core\Ui\Contracts` (the declarations are in `App\Core\Ui\Declarations` and the enums in `App\Core\Ui\Enums`, all on CoreApi's list):
+A domain's descriptor implements the interfaces it needs, each in `App\Ui\Contracts` (the declarations are in `App\Ui\Declarations` and the enums in `App\Ui\Enums`, all on CoreApi's list):
 
 ```php
 final class NotesDomain implements Domain, ProvidesNavigation, ProvidesPages, ProvidesSections

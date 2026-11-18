@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\Tables\Chat;
 
-use App\Domain\Contracts\Domain;
+use App\Domains\Contracts\Domain;
 
 final class ChatDomain implements Domain
 {

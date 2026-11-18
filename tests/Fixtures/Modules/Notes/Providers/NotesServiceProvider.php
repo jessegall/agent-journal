@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Providers;
 
-use App\Core\Links\Support\LinkTypeRegistry;
+use App\Links\Support\LinkTypeRegistry;
 use Illuminate\Support\ServiceProvider;
 use Tests\Fixtures\Modules\Notes\Contracts\NoteReader;
 use Tests\Fixtures\Modules\Notes\Models\Note;

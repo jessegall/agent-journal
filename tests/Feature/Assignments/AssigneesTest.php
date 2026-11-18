@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Core\Actors\Enums\ActorType;
-use App\Core\Actors\Support\ActorIdentity;
-use App\Core\Agents\Exceptions\AgentNotAvailable;
-use App\Core\Agents\Lifecycle\AgentLifecycle;
-use App\Core\Agents\Models\Agent;
-use App\Core\Assignments\Exceptions\AssigneeUnavailable;
-use App\Core\Assignments\Registry\AssignmentRegistry;
-use App\Core\Assignments\Support\Page;
-use App\Domain\Access\Models\User;
-use App\Domain\Access\Support\AccessSettings;
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
+use App\Agents\Exceptions\AgentNotAvailable;
+use App\Agents\Lifecycle\AgentLifecycle;
+use App\Agents\Models\Agent;
+use App\Assignments\Exceptions\AssigneeUnavailable;
+use App\Assignments\Registry\AssignmentRegistry;
+use App\Assignments\Support\Page;
 use Carbon\CarbonImmutable;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
 use Illuminate\Database\Connection;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Core\Bus\Attributes\HandledBy;
-use App\Core\Bus\Attributes\RepeatableRead;
-use App\Core\Bus\Attributes\RequiresActor;
-use App\Core\Bus\Support\CommandRegistry;
-use App\Core\Bus\Support\RegisteredMiddleware;
+use App\Bus\Attributes\HandledBy;
+use App\Bus\Attributes\RepeatableRead;
+use App\Bus\Attributes\RequiresActor;
+use App\Bus\Support\CommandRegistry;
+use App\Bus\Support\RegisteredMiddleware;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\NodeFinder;
 use ReflectionClass;

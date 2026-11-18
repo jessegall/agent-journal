@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Core\Bus\Contracts\CommandBus;
-use App\Core\Bus\Exceptions\CommandNestingTooDeep;
-use App\Core\Bus\Exceptions\CommandNotRegistered;
-use App\Core\Bus\Support\CommandNesting;
-use App\Core\Bus\Support\LaravelCommandBus;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandNestingTooDeep;
+use App\Bus\Exceptions\CommandNotRegistered;
+use App\Bus\Support\CommandNesting;
+use App\Bus\Support\LaravelCommandBus;
 use Tests\Fixtures\Bus\Shop\Commands\AddItem;
 use Tests\Fixtures\Bus\Shop\Enums\ItemSize;
 use Tests\Fixtures\Modules\Cards\Commands\DrawCard;

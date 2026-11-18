@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Domain\Exceptions\DomainCycle;
-use App\Domain\Exceptions\DomainListedTwice;
-use App\Domain\Exceptions\DomainNotFound;
-use App\Domain\Exceptions\DomainRequiresItself;
-use App\Domain\Exceptions\NotADomain;
-use App\Domain\Exceptions\RequiredDomainMissing;
-use App\Domain\Exceptions\RequiredDomainTwice;
+use App\Domains\Exceptions\DomainCycle;
+use App\Domains\Exceptions\DomainListedTwice;
+use App\Domains\Exceptions\DomainNotFound;
+use App\Domains\Exceptions\DomainRequiresItself;
+use App\Domains\Exceptions\NotADomain;
+use App\Domains\Exceptions\RequiredDomainMissing;
+use App\Domains\Exceptions\RequiredDomainTwice;
 use PHPUnit\Framework\TestCase;
 
 final class DomainDeclarationErrorTest extends TestCase
@@ -50,7 +50,7 @@ final class DomainDeclarationErrorTest extends TestCase
     public function test_a_class_that_is_not_a_domain_is_named(): void
     {
         $this->assertSame(
-            'App\Domain\Tasks\TaskList does not implement App\Domain\Contracts\Domain.',
+            'App\Domain\Tasks\TaskList does not implement App\Domains\Contracts\Domain.',
             NotADomain::for('App\Domain\Tasks\TaskList')->getMessage(),
         );
     }

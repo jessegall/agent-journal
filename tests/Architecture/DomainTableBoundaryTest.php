@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Domain\DomainEntry;
-use App\Domain\DomainRegistry;
+use App\Domains\Support\DomainEntry;
+use App\Domains\Support\DomainRegistry;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ModelTables;
@@ -25,9 +25,9 @@ final class DomainTableBoundaryTest extends TestCase
     public function test_no_domain_uses_a_table_it_may_not(): void
     {
         $registry = $this->app->make(DomainRegistry::class);
-        $owners = [TableOwner::core(app_path('Core')), ...array_map(TableOwner::fromDomain(...), $registry->all())];
+        $owners = [TableOwner::core(app_path()), ...array_map(TableOwner::fromDomain(...), $registry->all())];
         $checker = TableChecker::for($owners, database_path('migrations'));
-        $files = DomainFiles::in([app_path('Core'), ...array_map(fn (DomainEntry $entry) => $entry->folder, $registry->all())]);
+        $files = DomainFiles::in([app_path(), ...array_map(fn (DomainEntry $entry) => $entry->folder, $registry->all())]);
         $uses = ModelTables::in($files);
 
         foreach ($files as $file) {

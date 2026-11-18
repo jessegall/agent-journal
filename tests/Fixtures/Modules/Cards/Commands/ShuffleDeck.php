@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Cards\Commands;
 
-use App\Core\Bus\Attributes\HandledBy;
-use App\Core\Bus\Contracts\Command;
+use App\Bus\Attributes\HandledBy;
+use App\Bus\Contracts\Command;
 use Tests\Fixtures\Modules\Cards\Handlers\ShuffleDeckHandler;
 
 /**

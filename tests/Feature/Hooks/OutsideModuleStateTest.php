@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Core\Hooks\Decisions\StateReference;
-use App\Core\Hooks\Enums\NoSubject;
-use App\Core\Hooks\Events\StateTypesRequested;
-use App\Domain\DomainRegistry;
+use App\Domains\Support\DomainRegistry;
+use App\Hooks\Decisions\StateReference;
+use App\Hooks\Enums\NoSubject;
+use App\Hooks\Events\StateTypesRequested;
 use Illuminate\Contracts\Events\Dispatcher;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
@@ -15,7 +15,7 @@ use Tests\Support\CommittedHookStack;
 use Tests\TestCase;
 
 /**
- * A module outside app/Domain, such as a paid or third-party one, declares its own state in its Domain class and plugs it
+ * A module outside the domain folder, such as a paid or third-party one, declares its own state in its Domain class and plugs it
  * into the core without the core naming it.
  */
 final class OutsideModuleStateTest extends TestCase

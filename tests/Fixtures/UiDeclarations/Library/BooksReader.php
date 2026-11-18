@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Library;
 
-use App\Core\Ui\Contracts\PageReader;
+use App\Ui\Contracts\PageReader;
 use Tests\Fixtures\UiDeclarations\RecentNotesData;
 
 final readonly class BooksReader implements PageReader

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Readers;
 
-use App\Core\Ui\Contracts\NavigationChildren;
-use App\Core\Ui\Declarations\NavigationItem;
+use App\Ui\Contracts\NavigationChildren;
+use App\Ui\Declarations\NavigationItem;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 
 /**

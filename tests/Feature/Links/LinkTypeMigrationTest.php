@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Links;
 
-use App\Core\Links\Exceptions\UnknownLinkType;
-use App\Core\Links\Support\LinkTypeRenames;
+use App\Links\Exceptions\UnknownLinkType;
+use App\Links\Support\LinkTypeRenames;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
@@ -62,6 +62,6 @@ final class LinkTypeMigrationTest extends TestCase
 
     private function coreMigration(): Migration
     {
-        return require app_path('Core/Links/Database/Migrations/2026_11_19_000001_alias_link_types.php');
+        return require app_path('Links/Database/Migrations/2026_11_19_000001_alias_link_types.php');
     }
 }

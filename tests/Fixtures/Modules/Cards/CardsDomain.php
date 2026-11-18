@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Cards;
 
-use App\Core\Bus\Contracts\ProvidesCommandMiddleware;
-use App\Core\Bus\Contracts\ProvidesCommands;
-use App\Core\Bus\Support\CommandScope;
-use App\Core\Bus\Support\MiddlewareDeclaration;
-use App\Domain\Contracts\Domain;
+use App\Bus\Contracts\ProvidesCommandMiddleware;
+use App\Bus\Contracts\ProvidesCommands;
+use App\Bus\Support\CommandScope;
+use App\Bus\Support\MiddlewareDeclaration;
+use App\Domains\Contracts\Domain;
 use Tests\Fixtures\Modules\Cards\CommandMiddleware\RecordCards;
 use Tests\Fixtures\Modules\Cards\Commands\DrawCard;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck;
@@ -20,7 +20,7 @@ final class CardsDomain implements Domain, ProvidesCommandMiddleware, ProvidesCo
 {
     public function description(): string
     {
-        return 'Cards drawn and shuffled: a second module outside app/Domain for the command bus tests.';
+        return 'Cards drawn and shuffled: a second module outside the domain folder for the command bus tests.';
     }
 
     public function requires(): array

@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Core\Actors\Enums\ActorType;
-use App\Core\Assignments\Contracts\AssignableProvider;
-use App\Core\Assignments\Contracts\AssigneeProvider;
-use App\Core\Assignments\Exceptions\AssigneeTypeRepeated;
-use App\Core\Assignments\Exceptions\AssignmentProviderInvalid;
-use App\Core\Assignments\Exceptions\AssignmentTypeRepeated;
-use App\Core\Assignments\Exceptions\AssignmentTypeUnavailable;
-use App\Core\Assignments\Exceptions\InvalidAssignmentIdentity;
-use App\Core\Assignments\Registry\AssignmentRegistry;
-use App\Core\Assignments\Support\AssigneeRegistration;
-use App\Core\Links\Exceptions\UnknownLinkType;
-use App\Core\Links\Support\LinkTypeRegistry;
-use App\Domain\Access\Models\User;
-use App\Domain\Plans\Models\Plan;
+use App\Actors\Enums\ActorType;
+use App\Assignments\Contracts\AssignableProvider;
+use App\Assignments\Contracts\AssigneeProvider;
+use App\Assignments\Exceptions\AssigneeTypeRepeated;
+use App\Assignments\Exceptions\AssignmentProviderInvalid;
+use App\Assignments\Exceptions\AssignmentTypeRepeated;
+use App\Assignments\Exceptions\AssignmentTypeUnavailable;
+use App\Assignments\Exceptions\InvalidAssignmentIdentity;
+use App\Assignments\Registry\AssignmentRegistry;
+use App\Assignments\Support\AssigneeRegistration;
+use App\Links\Exceptions\UnknownLinkType;
+use App\Links\Support\LinkTypeRegistry;
+use Domain\Access\Models\User;
+use Domain\Plans\Models\Plan;
 use Tests\TestCase;
 
 /**

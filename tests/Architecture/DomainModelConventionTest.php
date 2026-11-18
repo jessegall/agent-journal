@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Domain\DomainEntry;
-use App\Domain\DomainRegistry;
+use App\Domains\Support\DomainEntry;
+use App\Domains\Support\DomainRegistry;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ModelConventions;
@@ -49,7 +49,7 @@ final class DomainModelConventionTest extends TestCase
     {
         $files = DomainFiles::in([
             ...array_map(fn (DomainEntry $entry) => $entry->folder, $this->app->make(DomainRegistry::class)->all()),
-            app_path('Core'),
+            app_path(),
         ]);
         $violations = [...ModelConventions::modelViolations($files), ...ModelConventions::openingCalls($files)];
 

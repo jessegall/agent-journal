@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Lifecycle\Listeners;
 
-use App\Core\Hooks\Events\StateTypesRequested;
+use App\Hooks\Events\StateTypesRequested;
 use Tests\Fixtures\Hooks\Lifecycle\NoteStateType;
 
 final class RegisterNoteState

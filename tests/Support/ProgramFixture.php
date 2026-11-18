@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Core\Hooks\Programs\HookPayload;
+use App\Hooks\Programs\HookPayload;
 
 /**
  * The recorded hook payloads of one program and the mapping its capability record expects, read from tests/Fixtures/Hooks.

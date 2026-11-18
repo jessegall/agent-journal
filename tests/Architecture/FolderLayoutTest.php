@@ -24,8 +24,9 @@ final class FolderLayoutTest extends TestCase
     {
         $loose = [];
 
-        foreach ([...glob(app_path('Domain/*'), GLOB_ONLYDIR) ?: [], ...glob(app_path('Core/*'), GLOB_ONLYDIR) ?: []] as $root) {
-            $name = basename($root);
+        foreach ([...glob(base_path('domain/*/src'), GLOB_ONLYDIR) ?: [], ...glob(app_path('*'), GLOB_ONLYDIR) ?: []] as $root) {
+            // a domain's root is its src folder, named after the domain's package folder
+            $name = basename($root) === 'src' ? basename(dirname($root)) : basename($root);
 
             if (in_array($name, ['Contracts', 'Declarations', 'Enums', 'Exceptions', 'Providers'], true)) {
                 continue;
@@ -45,7 +46,7 @@ final class FolderLayoutTest extends TestCase
     {
         $misplaced = [];
 
-        foreach (DomainFiles::in([app_path('Domain'), app_path('Core')]) as $file) {
+        foreach (DomainFiles::in([app_path(), base_path('domain')]) as $file) {
             $enums = (new NodeFinder)->findInstanceOf(ParsedFile::fromPath($file)->statements, Enum_::class);
 
             if ($enums !== [] && basename(dirname($file)) !== 'Enums') {
@@ -60,7 +61,7 @@ final class FolderLayoutTest extends TestCase
     {
         $misfits = [];
 
-        foreach (DomainFiles::in([app_path('Domain'), app_path('Core')]) as $file) {
+        foreach (DomainFiles::in([app_path(), base_path('domain')]) as $file) {
             $type = FolderType::ofFolder(dirname($file));
 
             if ($type === null) {

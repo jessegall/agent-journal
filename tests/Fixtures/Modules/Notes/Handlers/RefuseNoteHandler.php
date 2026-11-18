@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Handlers;
 
-use App\Core\Bus\Exceptions\CommandRefused;
+use App\Bus\Exceptions\CommandRefused;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
 

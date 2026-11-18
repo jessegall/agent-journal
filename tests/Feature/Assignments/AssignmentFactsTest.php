@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Core\Actors\Support\ActorIdentity;
-use App\Core\Agents\Models\Agent;
-use App\Core\Assignments\Contracts\AssignmentTransaction;
-use App\Core\Assignments\Contracts\AssignmentWriter;
-use App\Core\Assignments\Enums\AssignmentReason;
-use App\Core\Assignments\Events\AssignmentsChanged;
-use App\Core\Assignments\Models\AssignmentRecord;
-use App\Core\Assignments\Support\RecordIdentity;
-use App\Domain\Access\Models\User;
-use App\Domain\Access\Support\AccessSettings;
-use App\Domain\Tasks\Models\Task;
+use App\Actors\Support\ActorIdentity;
+use App\Agents\Models\Agent;
+use App\Assignments\Contracts\AssignmentTransaction;
+use App\Assignments\Contracts\AssignmentWriter;
+use App\Assignments\Enums\AssignmentReason;
+use App\Assignments\Events\AssignmentsChanged;
+use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Support\RecordIdentity;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
+use Domain\Tasks\Models\Task;
 use Exception;
 use Illuminate\Database\DatabaseTransactionsManager;
 use Illuminate\Database\QueryException;

@@ -1,0 +1,47 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Rules\Actions;
+
+use App\Actors\Contracts\CurrentActor;
+use Domain\Rules\Api\Events\RuleApproved;
+use Domain\Rules\Api\Events\RuleDenied;
+use Domain\Rules\Contracts\RuleReviewer;
+use Domain\Rules\Models\Rule;
+use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Database\ConnectionInterface;
+
+/**
+ * The owner approves or denies a proposed rule, once, under the rule's row lock; only a user may.
+ */
+#[Scoped]
+final readonly class ReviewRule implements RuleReviewer
+{
+    public function __construct(
+        private CurrentActor $actors,
+        private ConnectionInterface $database,
+        private Dispatcher $events,
+    ) {}
+
+    public function approve(int $ruleId): void
+    {
+        $this->actors->actor()->requireUser();
+
+        $this->database->transaction(function () use ($ruleId): void {
+            Rule::lockedById($ruleId)->approve();
+            $this->events->dispatch(new RuleApproved($ruleId));
+        });
+    }
+
+    public function deny(int $ruleId): void
+    {
+        $this->actors->actor()->requireUser();
+
+        $this->database->transaction(function () use ($ruleId): void {
+            Rule::lockedById($ruleId)->deny();
+            $this->events->dispatch(new RuleDenied($ruleId));
+        });
+    }
+}

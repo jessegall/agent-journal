@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sequences;
 
-use App\Core\Hooks\Enums\RewriteSupport;
-use App\Core\Hooks\Exceptions\StackAlreadyClosed;
-use App\Core\Hooks\Inputs\CompactionDetails;
-use App\Core\Hooks\Inputs\ContextCompacted;
-use App\Core\Hooks\Inputs\HookIdentity;
-use App\Core\Hooks\Models\AgentStackRow;
-use App\Core\Hooks\Programs\ProgramCapabilities;
-use App\Core\Hooks\Programs\ProgramReply;
-use App\Core\Hooks\Stack\HookAnswer;
-use App\Core\Hooks\Support\OperationDeadline;
-use App\Domain\Sequences\Actions\StartSequence;
-use App\Domain\Sequences\Enums\SequenceRunState;
-use App\Domain\Sequences\Models\SequenceRun;
+use App\Hooks\Enums\RewriteSupport;
+use App\Hooks\Exceptions\StackAlreadyClosed;
+use App\Hooks\Inputs\CompactionDetails;
+use App\Hooks\Inputs\ContextCompacted;
+use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Models\AgentStackRow;
+use App\Hooks\Programs\ProgramCapabilities;
+use App\Hooks\Programs\ProgramReply;
+use App\Hooks\Stack\HookAnswer;
+use App\Hooks\Support\OperationDeadline;
 use Carbon\CarbonImmutable;
+use Domain\Sequences\Actions\StartSequence;
+use Domain\Sequences\Enums\SequenceRunState;
+use Domain\Sequences\Models\SequenceRun;
 use Tests\Support\CommittedHookStack;
 use Tests\TestCase;
 

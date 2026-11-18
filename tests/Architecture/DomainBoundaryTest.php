@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Core\CoreApi;
-use App\Domain\Contracts\Domain;
-use App\Domain\DomainRegistry;
+use App\CoreApi;
+use App\Domains\Contracts\Domain;
+use App\Domains\Support\DomainRegistry;
 use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\CompositionSite;
@@ -29,7 +29,7 @@ final class DomainBoundaryTest extends TestCase
     {
         $registry = $this->app->make(DomainRegistry::class);
         $roots = ProjectRoots::fromComposer(base_path('composer.json'));
-        $folders = [app_path('Domain'), app_path('Core')];
+        $folders = [app_path(), base_path('domain')];
 
         $violations = (new BoundaryChecker($registry->all(), $roots, CoreApi::exports()))
             ->violations(DomainFiles::usesIn(DomainFiles::in($folders), $roots));

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plans;
 
-use App\Core\Actors\Contracts\CurrentActorSetter;
-use App\Core\Actors\Support\ActorContext;
-use App\Domain\Plans\Actions\AddPhaseTasks;
-use App\Domain\Plans\Enums\PlanType;
-use App\Domain\Plans\Exceptions\TaskAlreadyInAPhase;
-use App\Domain\Plans\Models\Plan;
-use App\Domain\Tasks\Exceptions\TaskMissing;
-use App\Domain\Tasks\Models\Task;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Support\ActorContext;
+use Domain\Plans\Actions\AddPhaseTasks;
+use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
+use Domain\Plans\Models\Plan;
+use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Models\Task;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 

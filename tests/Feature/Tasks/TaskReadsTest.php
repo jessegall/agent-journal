@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Tasks;
 
-use App\Core\Actors\Contracts\CurrentActorSetter;
-use App\Core\Actors\Exceptions\ActorContextMissing;
-use App\Core\Actors\Support\ActorContext;
-use App\Domain\Tasks\Contracts\TaskProgressCounter;
-use App\Domain\Tasks\Contracts\TaskReader;
-use App\Domain\Tasks\Exceptions\TaskMissing;
-use App\Domain\Tasks\Models\Task;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Exceptions\ActorContextMissing;
+use App\Actors\Support\ActorContext;
+use Domain\Tasks\Contracts\TaskProgressCounter;
+use Domain\Tasks\Contracts\TaskReader;
+use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Models\Task;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 

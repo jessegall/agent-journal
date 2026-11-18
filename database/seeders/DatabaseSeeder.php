@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Domain\Access\Database\Seeders\OwnerSeeder;
-use App\Domain\Plans\Database\Seeders\PlansSeeder;
-use App\Domain\Tasks\Database\Seeders\PlanTasksSeeder;
+use Domain\Access\Database\Seeders\OwnerSeeder;
+use Domain\Plans\Database\Seeders\PlansSeeder;
+use Domain\Tasks\Database\Seeders\PlanTasksSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 

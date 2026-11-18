@@ -19,6 +19,6 @@ final class InterfacePlacementTest extends TestCase
 
     public function test_every_interface_of_the_domains_and_the_core_lies_in_a_contracts_folder(): void
     {
-        $this->assertSame([], InterfacePlacement::misplacedIn([app_path('Domain'), app_path('Core')]));
+        $this->assertSame([], InterfacePlacement::misplacedIn([app_path(), base_path('domain')]));
     }
 }

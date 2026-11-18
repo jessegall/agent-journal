@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Domain\Access\Models\User;
-use App\Domain\Access\Support\AccessSettings;
-use App\Domain\Rules\Actions\ProposeRule;
-use App\Domain\Rules\Enums\RuleState;
-use App\Domain\Rules\Models\Rule;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
+use Domain\Rules\Actions\ProposeRule;
+use Domain\Rules\Enums\RuleState;
+use Domain\Rules\Models\Rule;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;

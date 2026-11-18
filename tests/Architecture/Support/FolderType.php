@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Core\Bus\Contracts\Command;
-use App\Core\Bus\Contracts\CommandMiddleware as CommandMiddlewareContract;
-use App\Core\Hooks\States\AgentState;
+use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandMiddleware as CommandMiddlewareContract;
+use App\Hooks\States\AgentState;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 use ReflectionClass;

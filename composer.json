@@ -40,7 +40,16 @@
     "autoload": {
         "psr-4": {
             "App\\": "app/",
-            "Domain\\": "domain/",
+            "Domain\\Access\\": "domain/Access/src/",
+            "Domain\\Chat\\": "domain/Chat/src/",
+            "Domain\\Memory\\": "domain/Memory/src/",
+            "Domain\\Plans\\": "domain/Plans/src/",
+            "Domain\\Processes\\": "domain/Processes/src/",
+            "Domain\\Profiles\\": "domain/Profiles/src/",
+            "Domain\\Reminders\\": "domain/Reminders/src/",
+            "Domain\\Rules\\": "domain/Rules/src/",
+            "Domain\\Sequences\\": "domain/Sequences/src/",
+            "Domain\\Tasks\\": "domain/Tasks/src/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         }

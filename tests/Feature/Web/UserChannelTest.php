@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Core\Web\Events\UserChannel;
-use App\Domain\Access\Models\User;
-use App\Domain\Access\Support\AccessSettings;
+use App\Web\Events\UserChannel;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 

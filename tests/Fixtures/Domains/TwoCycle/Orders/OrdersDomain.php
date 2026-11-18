@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\TwoCycle\Orders;
 
-use App\Domain\Contracts\Domain;
+use App\Domains\Contracts\Domain;
 use Tests\Fixtures\Domains\TwoCycle\Payments\PaymentsDomain;
 
 final class OrdersDomain implements Domain

@@ -31,7 +31,7 @@ From helper 62 to the main agent. This is a design and its specification. It is 
   - Visibility is checked whenever a window, section or count prop is resolved, not only on the page's own route.
   - Prop names and the refresh set are concrete.
   - A section names the context it takes.
-  - The values move to `app/Domain/Declarations`.
+  - The values move to `domain/Declarations`.
 - **New drawings.**
   - Plans opens a plan in version 5's inspector, so Home and the page use one component.
   - The narrow stacked layout, compact tabs, the tab menu and the empty pane.
@@ -186,10 +186,10 @@ Each window, section and count owns its state; one never affects another (sectio
 
 **Where the files go.**
 
-- Interfaces go in `app/Domain/Contracts` (rule 17).
-- Values go in a new folder named for what they are, `app/Domain/Declarations` (`App\Domain\Declarations`). Enums go in `app/Domain/Enums`.
+- Interfaces go in `domains/Contracts` (rule 17).
+- Values go in a new folder named for what they are, `domain/Declarations` (`Domain\Declarations`). Enums go in `domain/Enums`.
 - `UiDeclarations` sits beside `DomainRegistry` at the foundation root. It checks the declarations at start-up and composes them.
-- Start-up failures go in `app/Domain/Exceptions`, under `DomainDeclarationError`.
+- Start-up failures go in `domains/Exceptions`, under `DomainDeclarationError`.
 
 **Two architecture tests change** (a worker's change):
 
@@ -201,7 +201,7 @@ interface ProvidesNavigation   { /** @return list<NavigationItem> */ public func
 interface ProvidesPages        { /** @return list<Page> */           public function pages(): array; }
 interface ProvidesSections     { /** @return list<Section> */        public function sections(): array; }
 
-interface VisibilityCheck      { public function allows(Actor $actor): bool; }   // App\Core\Actors\Contracts\Actor
+interface VisibilityCheck      { public function allows(Actor $actor): bool; }   // App\Actors\Contracts\Actor
 interface PageReader           { public function read(): Data; }                 // built per request: its own request class and the actor come through its constructor
 interface SectionReader        { public function read(SlotContext $context): Data; }
 interface CountReader          { public function count(): int; }
@@ -217,7 +217,7 @@ A reader is resolved from the container for each request, so its constructor rec
 
 None is bound globally to the shared interface. Web resolves the class the declaration names.
 
-| Value (`App\Domain\Declarations`) | Fields | Rules |
+| Value (`Domain\Declarations`) | Fields | Rules |
 | --- | --- | --- |
 | `NavigationItem` | key, label, icon, page (a page key of the same domain, or none), route values (`array<string,string>`), query values (`array<string,string>`), children (`list<NavigationItem>`, nested as values), children reader (`class-string<NavigationChildren>`, or none), position, group (root items only), at foot (root items only), visibility (`class-string<VisibilityCheck>`, or none), count (`class-string<CountReader>`, or none) | Needs a page, children, a children reader, or a mix of them. Children are values, so a cycle cannot be written. Keys are unique within the domain. The page must belong to the same domain. Route values must fill the page's route parameters exactly. |
 | `Page` | key, title, icon, path (relative to the domain's prefix, with `{name}` parameters), reader (`class-string<PageReader>`), component (path under the domain's `Resources/js`), opens in (page or inspector), skeleton (rows, cards or reader), home position (none means it is not in the Default preset), float size, options (toggles and choices for the pane menu), slots (`list<Slot>`), actions (`list<ActionRoute>`), visibility | A page needs no navigation entry. |
@@ -225,8 +225,8 @@ None is bound globally to the shared interface. Web resolves the class the decla
 | `Slot` | key, takes (`SlotContextType`), and, for a record, the route parameter of the host page that names it | A host page lists the slots it offers. |
 | `Section` | key, title, slot (the full key), takes (`SlotContextType`), reader (`class-string<SectionReader>`), component, position, actions (`list<ActionRoute>`), visibility | It may target the slot of any domain's page. It reads only through its own code and the exports of domains it requires (rule 9). A section with no page can still have its own actions. |
 | `SlotContext` | its type, and for Session or Record the id (a decimal string) | Built by Web for each request (below). |
-| `SlotContextType` (`app/Domain/Enums`) | Nothing, Session, Record | |
-| `Icon` (`app/Domain/Enums`) | version 5's icon names | A closed set: a module picks from the host's icons, as version 5's `WindowIcon` did. |
+| `SlotContextType` (`domain/Enums`) | Nothing, Session, Record | |
+| `Icon` (`domain/Enums`) | version 5's icon names | A closed set: a module picks from the host's icons, as version 5's `WindowIcon` did. |
 
 **Keys and names come from the domain's name.** Every key is prefixed with the domain's name when the foundation reads it: `inspector` in PlansDomain becomes `plans.inspector`, and Web's bar slot is `web.bar`. The registry already refuses two domains with one name (`DomainListedTwice`). The domain name also gives:
 
@@ -234,7 +234,7 @@ None is bound globally to the shared interface. Web resolves the class the decla
 - the route name prefix `<name>.`;
 - the Vue root `<domain folder>/Resources/js`.
 
-`UiDeclarations` reads the three interfaces the way `registerStatesIn` reads `ProvidesStates` (`app/Domain/DomainRegistry.php:84-97`). At start-up it refuses:
+`UiDeclarations` reads the three interfaces the way `registerStatesIn` reads `ProvidesStates` (`domains/Support/DomainRegistry.php:84-97`). At start-up it refuses:
 
 - repeated keys or route names;
 - duplicate or unnormalised paths within an owner;
@@ -496,7 +496,7 @@ Decided by the main agent with the recommended options, on the user's standing i
 | C4 one failure fails all | `WindowResult` per prop; the cost of the second request is stated |
 | C5 slot context | `takes` on Section; Web builds the context; nothing selected means nothing shown |
 | C6 approval and name clash | The Plans edge is named for rule 9; `ChatWindowReader` |
-| C7 Support folder | `app/Domain/Declarations`; `UiDeclarations` at the root; Icon is a closed enum |
+| C7 Support folder | `domain/Declarations`; `UiDeclarations` at the root; Icon is a closed enum |
 | C8 small points | `navigationCounts`; the "today" column and Q labels removed |
 | A1 Home and host-page reads | Checked at prop resolution (section 2, Visibility) |
 | A2 add bar and counts | Refused windows and counts are absent |

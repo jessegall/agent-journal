@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Tasks\States;
 
-use App\Core\Hooks\Contracts\HookInput;
-use App\Core\Hooks\Decisions\Denied;
-use App\Core\Hooks\Enums\SimpleTransition;
-use App\Core\Hooks\Inputs\HookIdentity;
-use App\Core\Hooks\Inputs\StopDetails;
-use App\Core\Hooks\Inputs\StopRequested;
-use App\Domain\Tasks\Enums\TaskWorkState;
-use App\Domain\Tasks\States\WorkingOnTaskState;
-use App\Domain\Tasks\Support\TaskWork;
+use App\Hooks\Contracts\HookInput;
+use App\Hooks\Decisions\Denied;
+use App\Hooks\Enums\SimpleTransition;
+use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\StopDetails;
+use App\Hooks\Inputs\StopRequested;
+use Domain\Tasks\Enums\TaskWorkState;
+use Domain\Tasks\States\WorkingOnTaskState;
+use Domain\Tasks\Support\TaskWork;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;

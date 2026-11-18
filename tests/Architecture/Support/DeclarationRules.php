@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Domain\Contracts\Domain;
-use App\Domain\DomainEntry;
+use App\Domains\Contracts\Domain;
+use App\Domains\Support\DomainEntry;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\NodeFinder;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Cards\CommandMiddleware;
 
-use App\Core\Bus\Contracts\CommandMiddleware;
-use App\Core\Bus\Support\CommandCall;
+use App\Bus\Contracts\CommandMiddleware;
+use App\Bus\Support\CommandCall;
 use Closure;
 use Tests\Fixtures\Modules\Notes\Support\CommandTrail;
 

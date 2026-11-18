@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plans;
 
-use App\Core\Actors\Contracts\CurrentActorSetter;
-use App\Core\Actors\Support\ActorContext;
-use App\Core\Agents\Support\StackTarget;
-use App\Domain\Plans\Enums\PlanState;
-use App\Domain\Plans\Enums\PlanType;
-use App\Domain\Plans\Exceptions\TaskAlreadyInAPhase;
-use App\Domain\Plans\Models\Plan;
-use App\Domain\Tasks\Contracts\TaskProgressCounter;
-use App\Domain\Tasks\Models\Task;
-use App\Domain\Tasks\Readers\TaskCounts;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Support\ActorContext;
+use App\Agents\Support\StackTarget;
 use Database\Seeders\DatabaseSeeder;
+use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
+use Domain\Plans\Models\Plan;
+use Domain\Tasks\Contracts\TaskProgressCounter;
+use Domain\Tasks\Models\Task;
+use Domain\Tasks\Readers\TaskCounts;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;

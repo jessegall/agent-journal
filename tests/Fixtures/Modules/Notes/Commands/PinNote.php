@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Commands;
 
-use App\Core\Bus\Attributes\HandledBy;
-use App\Core\Bus\Attributes\RepeatableRead;
-use App\Core\Bus\Contracts\Command;
+use App\Bus\Attributes\HandledBy;
+use App\Bus\Attributes\RepeatableRead;
+use App\Bus\Contracts\Command;
 use Tests\Fixtures\Modules\Notes\Handlers\PinNoteHandler;
 
 /**

@@ -65,7 +65,7 @@ All state previews retain v5 surfaces in both appearances. Browser interaction c
 
 ## Ownership and optional Domain interfaces
 
-The Domain class declares its UI through ProvidesNavigation::navigation(), ProvidesPages::pages() and ProvidesSections::sections(), all in App\Domain\Contracts beside ProvidesStates. Implement only what is needed. These methods are argument-free, return immutable definitions, and never read an actor/database or resolve a service.
+The Domain class declares its UI through ProvidesNavigation::navigation(), ProvidesPages::pages() and ProvidesSections::sections(), all in App\Domains\Contracts beside ProvidesStates. Implement only what is needed. These methods are argument-free, return immutable definitions, and never read an actor/database or resolve a service.
 
 No Core UI registry and no provider push API. DomainRegistry reads the optional interfaces on exactly the registered entries, following its current ProvidesStates pattern. A derived foundation catalog retains structural definitions and reader class references, never resolved readers, actor context or permission results. Web consumes the foundation contracts without naming unknown owners.
 
@@ -73,13 +73,13 @@ Keep shared UI support inside the domain foundation's Support tree, not a new do
 
 | Type | Proposed location |
 | --- | --- |
-| Optional interfaces, PageReader, SectionReader, VisibilityCheck and ChangesPages marker | app/Domain/Contracts, matching App\Domain\Contracts namespace |
-| Immutable NavigationItem, PageDefinition, SectionDefinition, SlotDefinition, RouteDefinition, SectionResult and SlotContext | app/Domain/Support/Ui/Data, matching App\Domain\Support\Ui\Data namespace |
-| Derived UiCatalog and validation/composition support | app/Domain/Support/Ui, matching App\Domain\Support\Ui namespace |
-| Startup declaration failures | Existing app/Domain/Exceptions, under DomainDeclarationError |
+| Optional interfaces, PageReader, SectionReader, VisibilityCheck and ChangesPages marker | domains/Contracts, matching App\Domains\Contracts namespace |
+| Immutable NavigationItem, PageDefinition, SectionDefinition, SlotDefinition, RouteDefinition, SectionResult and SlotContext | domain/Support/Ui/Data, matching Domain\Support\Ui\Data namespace |
+| Derived UiCatalog and validation/composition support | domain/Support/Ui, matching Domain\Support\Ui namespace |
+| Startup declaration failures | Existing domains/Exceptions, under DomainDeclarationError |
 | Ordinary listeners | Registered owner's root Listeners folder, never Ui/Listeners |
 
-There is no app/Domain/Ui directory and no UiDomain. Shared support is nested under app/Domain/Support/Ui; immutable values are nested under its Data folder. FolderLayoutTest sees no new loose files at a domain root, and no blanket exemption is requested. BoundaryChecker already recognizes foundation names, so no namespace allowlist widening is needed. Public signature/event checks must explicitly permit these listed foundation contracts where necessary, particularly ChangesPages on exported facts; they still reject private type leaks. No Core notification interface or Core export is added.
+There is no domain/Ui directory and no UiDomain. Shared support is nested under domain/Support/Ui; immutable values are nested under its Data folder. FolderLayoutTest sees no new loose files at a domain root, and no blanket exemption is requested. BoundaryChecker already recognizes foundation names, so no namespace allowlist widening is needed. Public signature/event checks must explicitly permit these listed foundation contracts where necessary, particularly ChangesPages on exported facts; they still reject private type leaks. No Core notification interface or Core export is added.
 
 ## Today's owners and the Chat example
 
@@ -140,7 +140,7 @@ The plan reader exposes web.plan.details, drawn below its main reader text. Its 
 
 ## Live updates without a Core UI service
 
-Remove Core UiChanges, invalidation keys and catalog revision. Preserve the empty PageChanged broadcast on journal.user.{id}. Choose a small foundation marker, App\Domain\Contracts\ChangesPages, for owner-published after-commit facts that can affect browser data. It has no methods, record keys or additional payload. Web's ordinary Listeners/BroadcastPageChange listens to this shared marker instead of naming all optional owners' facts, then produces its existing broadcast for Access's permitted audience.
+Remove Core UiChanges, invalidation keys and catalog revision. Preserve the empty PageChanged broadcast on journal.user.{id}. Choose a small foundation marker, App\Domains\Contracts\ChangesPages, for owner-published after-commit facts that can affect browser data. It has no methods, record keys or additional payload. Web's ordinary Listeners/BroadcastPageChange listens to this shared marker instead of naming all optional owners' facts, then produces its existing broadcast for Access's permitted audience.
 
 For a page-only module, exported NoteSaved implements ChangesPages and ShouldDispatchAfterCommit; no dummy section or extra page registration is required. Chat's committed message facts can do likewise. Owners never raise Web/Core events. Ordinary business listeners remain discovered exactly once from the root Listeners folder; no definitions list listener classes and no listener lives under Ui. Existing foreign-event listeners retain dependency/export requirements.
 
@@ -172,7 +172,7 @@ Fresh visits see new declarations. Existing tabs cross versions through normal I
 
 The main agent should present these choices. Review continues with the recommendations; they are not permission to change approved ownership.
 
-1. **Extend browser ownership?** Recommend: Web owns shell, shared pages, mandatory browser route registration and live transport; each domain/module owns the pages/sections/readers/controllers it declares. Alternative: keep all presentation in Web, which cannot support independent unknown modules without another approved adapter arrangement. This changes docs/web/boundary.md:129 and the “only place” ownership wording in app/Domain/Web/Providers/WebServiceProvider.php. State this boundary change explicitly before implementation.
+1. **Extend browser ownership?** Recommend: Web owns shell, shared pages, mandatory browser route registration and live transport; each domain/module owns the pages/sections/readers/controllers it declares. Alternative: keep all presentation in Web, which cannot support independent unknown modules without another approved adapter arrangement. This changes docs/web/boundary.md:129 and the “only place” ownership wording in domain/Web/Providers/WebServiceProvider.php. State this boundary change explicitly before implementation.
 2. **Move today's existing presentation now?** Recommend keep current Home, Plans, Rules and Home chat in Web and register their existing owners first. Chat demonstrates a new owner page under the approved extension. Alternative: transfer current Plans/Rules/Chat presentation immediately, with controllers/routes, URL compatibility and one owner each. The proposed registry does not require that broader move.
 3. **Make Plans on Home a summary?** Recommend no: retain the full Plans tab, with contributed sections as sibling tabs. Alternative: approve a summary plus stacked sections and accept the change in full-height reader behavior. Revised visual uses the recommendation.
 
@@ -190,7 +190,7 @@ No additional user-dependent choices are concealed as implementation details. AP
 | 63 G1 Chat/current owners | Added explicit declaration table and Chat preview; same-owner navigation. |
 | 63 G2 Owner metadata | Derive prefix/source roots from DomainEntry conventions; remove independent metadata/version. |
 | 63 G3 Record slot | Added plan-record section and authorized context. |
-| 63 K1 Layout test | Foundation Support/Ui tree, no app/Domain/Ui domain root, existing exception hierarchy; no broad folder exemption or unnecessary namespace allowlist change. |
+| 63 K1 Layout test | Foundation Support/Ui tree, no domain/Ui domain root, existing exception hierarchy; no broad folder exemption or unnecessary namespace allowlist change. |
 | 63 K2 Web ownership | Explicit proposed boundary and both affected files; Questions 1–2 keep recommendation pending approval. |
 | 63 K3 Listeners | Root Listeners discovery only; no duplicate declaration references. |
 | 63 K4 Core UiChanges | Removed; shared foundation event marker avoids Core browser service and cross-owner bindings. Targeted public-signature/event support specified. |
@@ -213,13 +213,13 @@ No additional user-dependent choices are concealed as implementation details. AP
 
 ## Evidence and limits
 
-- app/Domain/Contracts/ProvidesStates.php:9–22 and DomainRegistry.php:84–97: optional interfaces and foundation discovery.
+- domains/Contracts/ProvidesStates.php:9–22 and DomainRegistry.php:84–97: optional interfaces and foundation discovery.
 - tests/Architecture/FolderLayoutTest.php:26–40; Support/FolderType.php:16–47: type placement. Support/BoundaryChecker.php:17–19 already recognizes foundation.
-- app/Domain/DomainEntry.php:35–58,126–133: reflected roots and conventions. bootstrap/domains.php:16–28: explicit installation list.
-- docs/web/boundary.md:122–131 and app/Domain/Web/Providers/WebServiceProvider.php: approved ownership, not silently superseded.
+- domains/Support/DomainEntry.php:35–58,126–133: reflected roots and conventions. bootstrap/domains.php:16–28: explicit installation list.
+- docs/web/boundary.md:122–131 and domain/Web/Providers/WebServiceProvider.php: approved ownership, not silently superseded.
 - resources/js/components/shell/AppSidebar.vue:11–16; AppTopbar.vue:23–53: current navigation and viewer/appearance/sign-out.
 - resources/js/components/home/HomePanes.vue:28–36, components/plans/PlansView.vue and composables/usePageChanges.ts:51–59: full Plans pane and current page-prop reload.
-- app/Domain/Web/Providers/TypeScriptServiceProvider.php:21–29; tsconfig.json:36–38,121–125; config/inertia.php:39–43,59–68: integration gaps. Provider paths reflect the concurrent Providers-folder change.
+- domain/Web/Providers/TypeScriptServiceProvider.php:21–29; tsconfig.json:36–38,121–125; config/inertia.php:39–43,59–68: integration gaps. Provider paths reflect the concurrent Providers-folder change.
 - docs/hooks/public-events.md:3–7,27–31 and doc 10: boundaries and after-commit limits.
 - Version 5 reference folder /Users/jessegall/projects/agent-journal/docs/designs/viewer-v5: read prototype/Viewer v5.html, styles.css, palette.css, home-now.css/.jsx, app.jsx, layouts.jsx and round-fourteen.css; inspected pages/home.png, r14-home.png, r14-home-plans.png, r14-home-tasks.png and r14-documents.png.
 - Light palette: /Users/jessegall/projects/agent-journal/src/viewer/src/light.css:1–51. External record-section example: that checkout's tests/stories/fixtures/acme_plan_notes/module.py:14–23.

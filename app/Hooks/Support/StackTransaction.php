@@ -1,0 +1,88 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Hooks\Support;
+
+use App\Agents\Support\StackTarget;
+use App\Contracts\LaunchTransaction;
+use App\Hooks\Contracts\StackTransactionRunner;
+use App\Hooks\Exceptions\StackLockTimedOut;
+use App\Hooks\Exceptions\StackTransactionRequired;
+use Closure;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\QueryException;
+
+/**
+ * Runs one stack operation in one transaction with a lock and statement time limit set first, before any write.
+ * Inside a transaction that already has its limits it joins that transaction and leaves the limits as they are.
+ */
+final readonly class StackTransaction implements LaunchTransaction, StackTransactionRunner
+{
+    private const string LOCK_NOT_AVAILABLE = '55P03';
+
+    private const string QUERY_CANCELED = '57014';
+
+    public function __construct(
+        private ConnectionInterface $database,
+        private OperationDeadline $deadline,
+    ) {}
+
+    /**
+     * @template TResult
+     *
+     * @param  Closure(): TResult  $work
+     * @return TResult
+     */
+    public function run(Closure $work): mixed
+    {
+        return $this->runWithin($this->deadline, $work);
+    }
+
+    /**
+     * @template TResult
+     *
+     * @param  Closure(): TResult  $work
+     * @return TResult
+     */
+    public function runWithin(OperationDeadline $deadline, Closure $work): mixed
+    {
+        if ($this->database->transactionLevel() > 0) {
+            $this->checkLimitsAreSet();
+
+            return $work();
+        }
+
+        try {
+            return $this->database->transaction(function () use ($deadline, $work): mixed {
+                $this->database->statement("SET LOCAL lock_timeout = '{$deadline->lockMilliseconds()}ms'");
+                $this->database->statement("SET LOCAL statement_timeout = '{$deadline->milliseconds}ms'");
+
+                return $work();
+            });
+        } catch (QueryException $failure) {
+            if (in_array($failure->getCode(), [self::LOCK_NOT_AVAILABLE, self::QUERY_CANCELED], true)) {
+                throw StackLockTimedOut::after($deadline->milliseconds, $failure);
+            }
+
+            throw $failure;
+        }
+    }
+
+    /**
+     * Refuses a stack change outside a transaction, so it can only commit together with the work that caused it.
+     */
+    public function requireOpen(StackTarget $target): void
+    {
+        if ($this->database->transactionLevel() === 0) {
+            throw StackTransactionRequired::forTarget($target->description());
+        }
+    }
+
+    private function checkLimitsAreSet(): void
+    {
+        if ($this->database->scalar("SELECT current_setting('lock_timeout')") === '0') {
+            throw StackTransactionRequired::withoutLimits();
+        }
+    }
+}

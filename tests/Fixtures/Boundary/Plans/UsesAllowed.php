@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\Plans;
 
-use App\Domain\DomainRegistry;
+use App\Domains\Support\DomainRegistry;
 use Exception;
 use Illuminate\Support\Collection;
 use Tests\Fixtures\Boundary\Tasks\Task;

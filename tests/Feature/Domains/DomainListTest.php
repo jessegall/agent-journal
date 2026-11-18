@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
-use App\Domain\DomainEntry;
-use App\Domain\DomainRegistry;
-use App\Domain\Tasks\TasksDomain;
+use App\Domains\Support\DomainEntry;
+use App\Domains\Support\DomainRegistry;
+use Domain\Tasks\TasksDomain;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use ReflectionProperty;
 use Tests\TestCase;
@@ -21,7 +21,7 @@ final class DomainListTest extends TestCase
             ['Tasks', 'Plans', 'Chat', 'Memory', 'Rules', 'Sequences', 'Reminders', 'Profiles', 'Processes', 'Access'],
             array_map(fn (DomainEntry $entry) => $entry->name, $registry->all()),
         );
-        $this->assertStringEndsWith('/app/Domain/Plans', $registry->get('Plans')->folder);
+        $this->assertStringEndsWith('/domain/Plans/src', $registry->get('Plans')->folder);
         $this->assertSame([TasksDomain::class], $registry->get('Plans')->requires);
         $this->assertSame([], $registry->get('Tasks')->requires);
     }
@@ -35,7 +35,7 @@ final class DomainListTest extends TestCase
             $this->assertContains($folder, $paths);
         }
 
-        $this->assertContains(app_path('Core/Hooks/Listeners'), $paths);
+        $this->assertContains(app_path('Hooks/Listeners'), $paths);
 
         $this->assertNotContains(app_path('Listeners'), $paths);
         $this->assertNotContains(app_path('Http/Listeners'), $paths);

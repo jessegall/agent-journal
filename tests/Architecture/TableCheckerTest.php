@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Domain\DomainRegistry;
+use App\Domains\Support\DomainRegistry;
 use Tests\Architecture\Support\ModelTables;
 use Tests\Architecture\Support\ParsedFile;
 use Tests\Architecture\Support\TableChecker;
@@ -88,7 +88,7 @@ final class TableCheckerTest extends TestCase
 
     private function checker(): TableChecker
     {
-        $owners = [TableOwner::core(dirname(__DIR__, 2).'/app/Core'), ...array_map(TableOwner::fromDomain(...), $this->registry()->all())];
+        $owners = [TableOwner::core(dirname(__DIR__, 2).'/app'), ...array_map(TableOwner::fromDomain(...), $this->registry()->all())];
 
         return TableChecker::for($owners, $this->folder('RootMigrations'));
     }

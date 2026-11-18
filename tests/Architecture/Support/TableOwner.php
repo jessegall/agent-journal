@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Domain\DomainEntry;
+use App\Domains\Support\DomainEntry;
 
 /**
  * A domain or Core as the owner of the tables its migrations create: only its own files use them.
@@ -26,7 +26,7 @@ final readonly class TableOwner
     }
 
     /**
-     * Core, with the migrations of each of its areas, such as app/Core/Hooks/Database/Migrations.
+     * Core, with the migrations of each of its areas, such as app/Hooks/Database/Migrations.
      */
     public static function core(string $coreFolder): self
     {

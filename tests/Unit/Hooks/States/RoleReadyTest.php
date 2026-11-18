@@ -4,28 +4,28 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks\States;
 
-use App\Core\Hooks\Contracts\HookInput;
-use App\Core\Hooks\Decisions\Decision;
-use App\Core\Hooks\Decisions\Denied;
-use App\Core\Hooks\Enums\AnswerType;
-use App\Core\Hooks\Enums\CommandEffect;
-use App\Core\Hooks\Enums\CommandType;
-use App\Core\Hooks\Enums\FileOperation;
-use App\Core\Hooks\Enums\ParseOutcome;
-use App\Core\Hooks\Enums\PartJoin;
-use App\Core\Hooks\Enums\ReadyStateType;
-use App\Core\Hooks\Enums\ShellDialect;
-use App\Core\Hooks\Exceptions\UnknownReadyState;
-use App\Core\Hooks\Inputs\CommandPart;
-use App\Core\Hooks\Inputs\FileChange;
-use App\Core\Hooks\Inputs\FileChanges;
-use App\Core\Hooks\Inputs\FileEditRequested;
-use App\Core\Hooks\Inputs\HookIdentity;
-use App\Core\Hooks\Inputs\ShellCommand;
-use App\Core\Hooks\Inputs\ShellCommandRequested;
-use App\Core\Hooks\States\MainAgentReadyState;
-use App\Core\Hooks\States\ReadOnlyHelperReadyState;
-use App\Core\Hooks\States\ReadyState;
+use App\Hooks\Contracts\HookInput;
+use App\Hooks\Decisions\Decision;
+use App\Hooks\Decisions\Denied;
+use App\Hooks\Enums\AnswerType;
+use App\Hooks\Enums\CommandEffect;
+use App\Hooks\Enums\CommandType;
+use App\Hooks\Enums\FileOperation;
+use App\Hooks\Enums\ParseOutcome;
+use App\Hooks\Enums\PartJoin;
+use App\Hooks\Enums\ReadyStateType;
+use App\Hooks\Enums\ShellDialect;
+use App\Hooks\Exceptions\UnknownReadyState;
+use App\Hooks\Inputs\CommandPart;
+use App\Hooks\Inputs\FileChange;
+use App\Hooks\Inputs\FileChanges;
+use App\Hooks\Inputs\FileEditRequested;
+use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\ShellCommand;
+use App\Hooks\Inputs\ShellCommandRequested;
+use App\Hooks\States\MainAgentReadyState;
+use App\Hooks\States\ReadOnlyHelperReadyState;
+use App\Hooks\States\ReadyState;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;
@@ -93,7 +93,7 @@ final class RoleReadyTest extends TestCase
         $write = self::line([self::part(CommandType::Ordinary, CommandEffect::ChangesFiles)]);
 
         $this->assertSame(AnswerType::Allow, (new MainAgentReadyState)->onShellCommand($this->request($write))->answerType());
-        $this->assertSame(AnswerType::Allow, (new MainAgentReadyState)->onFileEdit($this->edit(['app/Domain/Domain.php']))->answerType());
+        $this->assertSame(AnswerType::Allow, (new MainAgentReadyState)->onFileEdit($this->edit(['app/Domains/Contracts/Domain.php']))->answerType());
     }
 
     #[DataProvider('helperWrites')]
@@ -107,10 +107,10 @@ final class RoleReadyTest extends TestCase
 
     public function test_a_read_only_helper_refuses_an_edit_and_names_every_path(): void
     {
-        $decision = (new ReadOnlyHelperReadyState)->onFileEdit($this->edit(['app/Domain/Domain.php', 'docs/hooks/dependencies.md']));
+        $decision = (new ReadOnlyHelperReadyState)->onFileEdit($this->edit(['app/Domains/Contracts/Domain.php', 'docs/hooks/dependencies.md']));
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertStringContainsString('app/Domain/Domain.php, docs/hooks/dependencies.md', $decision->refusalReason());
+        $this->assertStringContainsString('app/Domains/Contracts/Domain.php, docs/hooks/dependencies.md', $decision->refusalReason());
     }
 
     #[DataProvider('roles')]

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Domain\DomainRegistry;
-use App\Domain\Exceptions\DomainCycle;
-use App\Domain\Exceptions\DomainListedTwice;
-use App\Domain\Exceptions\DomainNotFound;
-use App\Domain\Exceptions\DomainRequiresItself;
-use App\Domain\Exceptions\NotADomain;
-use App\Domain\Exceptions\RequiredDomainMissing;
-use App\Domain\Exceptions\RequiredDomainTwice;
+use App\Domains\Exceptions\DomainCycle;
+use App\Domains\Exceptions\DomainListedTwice;
+use App\Domains\Exceptions\DomainNotFound;
+use App\Domains\Exceptions\DomainRequiresItself;
+use App\Domains\Exceptions\NotADomain;
+use App\Domains\Exceptions\RequiredDomainMissing;
+use App\Domains\Exceptions\RequiredDomainTwice;
+use App\Domains\Support\DomainRegistry;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Domains\ClassRequiring\ClassRequiringDomain;
 use Tests\Fixtures\Domains\DoubleRequiring\DoubleRequiringDomain;

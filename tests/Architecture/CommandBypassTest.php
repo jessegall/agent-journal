@@ -18,7 +18,7 @@ final class CommandBypassTest extends TestCase
     /**
      * The folders judged: Core's bus and the test modules now; each later phase adds the owner it moves.
      */
-    public const array CHECKED = ['app/Core/Bus', 'tests/Fixtures/Modules'];
+    public const array CHECKED = ['app/Bus', 'tests/Fixtures/Modules'];
 
     /**
      * Calls that reach Laravel's shared bus around the CommandBus.
@@ -28,7 +28,7 @@ final class CommandBypassTest extends TestCase
     /**
      * The one place that may call Laravel's dispatcher directly.
      */
-    private const string BUS = 'app/Core/Bus/Support/LaravelCommandBus.php';
+    private const string BUS = 'app/Bus/Support/LaravelCommandBus.php';
 
     public function test_nothing_reaches_laravels_dispatcher_around_the_command_bus(): void
     {

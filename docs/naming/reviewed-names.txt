@@ -427,6 +427,7 @@ class	FailedWindow
 class	FileChange
 class	FileChanges
 class	FileEditRequested
+class	FileOutsideAutoload
 class	FileOutsideEveryDomain
 class	FloatSize
 class	FollowingSequenceState
@@ -617,6 +618,7 @@ class	ProposeRule
 class	PruneHookHistory
 class	PruneHookHistoryCommand
 class	PrunedHistory
+class	Psr4ClassNames
 class	PublicContracts
 class	PublicOwner
 class	PublicTypePath
@@ -850,7 +852,7 @@ class	WorkingOnTaskStateReference
 class	WriteAssignments
 constant	AnsweringMessageStateReference::TYPE_KEY
 constant	AreaCycles::CORE_ROOT
-constant	AreaCycles::FOUNDATION_FOLDERS
+constant	AreaCycles::FOUNDATION_FOLDER
 constant	AssignmentGroup::LARGEST
 constant	AssignmentRecords::LARGEST_BATCH
 constant	BindingRules::BINDING_METHODS
@@ -1399,6 +1401,7 @@ method	BoundaryChecker::domainHolding()
 method	BoundaryChecker::domainOwning()
 method	BoundaryChecker::eventCallViolations()
 method	BoundaryChecker::eventViolations()
+method	BoundaryChecker::isDeclared()
 method	BoundaryChecker::isDomainName()
 method	BoundaryChecker::isFreeToUse()
 method	BoundaryChecker::isPrivateCoreName()
@@ -1749,6 +1752,8 @@ method	FileEditRequested::answerBy()
 method	FileEditRequested::identity()
 method	FileEditRequested::methodName()
 method	FileOperation::fromPatchAction()
+method	FileOutsideAutoload::for()
+method	FileOutsideAutoload::missingClass()
 method	FileOutsideEveryDomain::for()
 method	FloatSize::__construct()
 method	FloatSize::of()
@@ -2319,6 +2324,9 @@ method	PruneHookHistory::deleteInBatches()
 method	PruneHookHistory::prune()
 method	PruneHookHistoryCommand::handle()
 method	PrunedHistory::__construct()
+method	Psr4ClassNames::__construct()
+method	Psr4ClassNames::classOf()
+method	Psr4ClassNames::fromComposer()
 method	PublicContracts::__construct()
 method	PublicContracts::disallowedCategoryOf()
 method	PublicContracts::docblockNames()
@@ -3572,6 +3580,7 @@ property	PruneHookHistoryCommand::$description
 property	PruneHookHistoryCommand::$signature
 property	PrunedHistory::$closedStacks
 property	PrunedHistory::$hookCalls
+property	Psr4ClassNames::$roots
 property	PublicContracts::$owners
 property	PublicContracts::$roots
 property	PublicOwner::$exports

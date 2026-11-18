@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Core\Bus\Contracts\CommandBus;
-use App\Core\Bus\Exceptions\CommandRefused;
-use App\Core\Bus\Exceptions\CommandReplacementRefused;
-use App\Core\Bus\Exceptions\CommandResultChanged;
-use App\Core\Bus\Exceptions\ContinuationCalledTwice;
-use App\Core\Bus\Exceptions\MiddlewareSkippedCommand;
-use App\Core\Bus\Exceptions\MiddlewareSwallowedFailure;
-use App\Core\Bus\Support\CommandScope;
-use App\Core\Bus\Support\MiddlewareDeclaration;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandRefused;
+use App\Bus\Exceptions\CommandReplacementRefused;
+use App\Bus\Exceptions\CommandResultChanged;
+use App\Bus\Exceptions\ContinuationCalledTwice;
+use App\Bus\Exceptions\MiddlewareSkippedCommand;
+use App\Bus\Exceptions\MiddlewareSwallowedFailure;
+use App\Bus\Support\CommandScope;
+use App\Bus\Support\MiddlewareDeclaration;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\CallsNextTwice;

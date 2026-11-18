@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use App\Domain\DomainEntry;
+use App\Domains\Support\DomainEntry;
 
 /**
  * A domain or Core, with the namespace it owns and the types it exports.
@@ -32,7 +32,7 @@ final readonly class PublicOwner
      */
     public static function core(array $exports): self
     {
-        return new self(self::CORE, 'App\\Core\\', $exports);
+        return new self(self::CORE, 'App\\', $exports);
     }
 
     public function isCore(): bool

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bus\Shop\Commands;
 
-use App\Core\Actors\Enums\ActorType;
-use App\Core\Bus\Attributes\HandledBy;
-use App\Core\Bus\Attributes\RepeatableRead;
-use App\Core\Bus\Attributes\RequiresActor;
-use App\Core\Bus\Contracts\Command;
+use App\Actors\Enums\ActorType;
+use App\Bus\Attributes\HandledBy;
+use App\Bus\Attributes\RepeatableRead;
+use App\Bus\Attributes\RequiresActor;
+use App\Bus\Contracts\Command;
 use Tests\Fixtures\Bus\Shop\Enums\ItemSize;
 use Tests\Fixtures\Bus\Shop\Handlers\AddItemHandler;
 

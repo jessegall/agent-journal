@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Core\Bus\Exceptions\CommandRefused;
+use App\Bus\Exceptions\CommandRefused;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 

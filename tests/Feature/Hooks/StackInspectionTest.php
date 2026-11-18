@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Core\Hooks\Decisions\StateReference;
-use App\Core\Hooks\Enums\NoSubject;
-use App\Domain\Access\Models\User;
+use App\Hooks\Decisions\StateReference;
+use App\Hooks\Enums\NoSubject;
+use Domain\Access\Models\User;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommittedHookStack;
 use Tests\TestCase;

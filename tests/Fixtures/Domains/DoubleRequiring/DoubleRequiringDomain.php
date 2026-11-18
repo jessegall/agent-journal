@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\DoubleRequiring;
 
-use App\Domain\Contracts\Domain;
+use App\Domains\Contracts\Domain;
 use Tests\Fixtures\Domains\Tasks\TasksDomain;
 
 final class DoubleRequiringDomain implements Domain

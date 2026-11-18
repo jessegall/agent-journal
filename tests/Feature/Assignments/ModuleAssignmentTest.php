@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Core\Actors\Exceptions\ActorContextMissing;
-use App\Core\Actors\Support\ActorIdentity;
-use App\Core\Agents\Contracts\AgentRetirement;
-use App\Core\Agents\Models\Agent;
-use App\Core\Assignments\Contracts\AssignmentReader;
-use App\Core\Assignments\Contracts\AssignmentRegistration;
-use App\Core\Assignments\Contracts\AssignmentWriter;
-use App\Core\Assignments\Exceptions\AssignmentTypeUnavailable;
-use App\Core\Assignments\Exceptions\RecordUnavailable;
-use App\Core\Assignments\Models\AssignmentRecord;
-use App\Domain\Access\Models\User;
-use App\Domain\Access\Support\AccessSettings;
-use App\Domain\DomainRegistry;
+use App\Actors\Exceptions\ActorContextMissing;
+use App\Actors\Support\ActorIdentity;
+use App\Agents\Contracts\AgentRetirement;
+use App\Agents\Models\Agent;
+use App\Assignments\Contracts\AssignmentReader;
+use App\Assignments\Contracts\AssignmentRegistration;
+use App\Assignments\Contracts\AssignmentWriter;
+use App\Assignments\Exceptions\AssignmentTypeUnavailable;
+use App\Assignments\Exceptions\RecordUnavailable;
+use App\Assignments\Models\AssignmentRecord;
+use App\Domains\Support\DomainRegistry;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\Models\Note;
@@ -27,7 +27,7 @@ use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
 
 /**
- * A module outside app/Domain declares its own assignable record: its notes take a holder like any record, an agent
+ * A module outside the domain folder declares its own assignable record: its notes take a holder like any record, an agent
  * sees only the notes it wrote, and with the module gone its records can no longer be read while retirement still
  * releases them.
  */

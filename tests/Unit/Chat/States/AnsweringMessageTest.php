@@ -4,25 +4,25 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Chat\States;
 
-use App\Core\Hooks\Decisions\Denied;
-use App\Core\Hooks\Enums\CommandEffect;
-use App\Core\Hooks\Enums\CommandType;
-use App\Core\Hooks\Enums\FileOperation;
-use App\Core\Hooks\Enums\ParseOutcome;
-use App\Core\Hooks\Enums\ShellDialect;
-use App\Core\Hooks\Enums\SimpleTransition;
-use App\Core\Hooks\Inputs\CommandPart;
-use App\Core\Hooks\Inputs\FileChange;
-use App\Core\Hooks\Inputs\FileChanges;
-use App\Core\Hooks\Inputs\FileEditRequested;
-use App\Core\Hooks\Inputs\HookIdentity;
-use App\Core\Hooks\Inputs\ShellCommand;
-use App\Core\Hooks\Inputs\ShellCommandRequested;
-use App\Core\Hooks\Inputs\StopDetails;
-use App\Core\Hooks\Inputs\StopRequested;
-use App\Domain\Chat\Enums\MessageWorkState;
-use App\Domain\Chat\States\AnsweringMessageState;
-use App\Domain\Chat\Support\MessageWork;
+use App\Hooks\Decisions\Denied;
+use App\Hooks\Enums\CommandEffect;
+use App\Hooks\Enums\CommandType;
+use App\Hooks\Enums\FileOperation;
+use App\Hooks\Enums\ParseOutcome;
+use App\Hooks\Enums\ShellDialect;
+use App\Hooks\Enums\SimpleTransition;
+use App\Hooks\Inputs\CommandPart;
+use App\Hooks\Inputs\FileChange;
+use App\Hooks\Inputs\FileChanges;
+use App\Hooks\Inputs\FileEditRequested;
+use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\ShellCommand;
+use App\Hooks\Inputs\ShellCommandRequested;
+use App\Hooks\Inputs\StopDetails;
+use App\Hooks\Inputs\StopRequested;
+use Domain\Chat\Enums\MessageWorkState;
+use Domain\Chat\States\AnsweringMessageState;
+use Domain\Chat\Support\MessageWork;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;
@@ -84,7 +84,7 @@ final class AnsweringMessageTest extends TestCase
 
     public function test_a_file_edit_is_denied_until_the_message_is_answered(): void
     {
-        $edit = new FileEditRequested($this->hook(), new FileChanges([new FileChange('app/Domain/Domain.php', FileOperation::Edit)]));
+        $edit = new FileEditRequested($this->hook(), new FileChanges([new FileChange('app/Domains/Contracts/Domain.php', FileOperation::Edit)]));
 
         $this->assertInstanceOf(Denied::class, $this->unanswered()->onFileEdit($edit)->answer);
     }

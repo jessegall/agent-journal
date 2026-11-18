@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Core\Bus\Contracts\CommandBus;
-use App\Core\Bus\Exceptions\CommandRefused;
+use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\CommandRefused;
 use Illuminate\Support\Facades\Log;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;

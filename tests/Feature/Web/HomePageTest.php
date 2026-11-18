@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
-use App\Core\Agents\Actions\LaunchSessions;
-use App\Core\Agents\Models\Agent;
-use App\Core\Agents\Models\AgentSession;
-use App\Domain\Access\Models\User;
-use App\Domain\Access\Support\AccessSettings;
-use App\Domain\Chat\Models\Message;
-use App\Domain\Plans\Enums\PlanState;
-use App\Domain\Plans\Enums\PlanType;
-use App\Domain\Plans\Models\Plan;
-use App\Domain\Rules\Models\Rule;
+use App\Agents\Actions\LaunchSessions;
+use App\Agents\Models\Agent;
+use App\Agents\Models\AgentSession;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
+use Domain\Chat\Models\Message;
+use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Models\Plan;
+use Domain\Rules\Models\Rule;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;

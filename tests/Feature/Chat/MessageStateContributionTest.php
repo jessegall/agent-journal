@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Chat;
 
-use App\Core\Hooks\Exceptions\StackAlreadyClosed;
-use App\Core\Hooks\Models\AgentStackRow;
-use App\Core\Hooks\Storage\FrameRecord;
-use App\Domain\Chat\Actions\RequireMessageAnswer;
-use App\Domain\Chat\Enums\MessageState;
-use App\Domain\Chat\Models\Message;
-use App\Domain\Tasks\Actions\StartTask;
-use App\Domain\Tasks\Models\Task;
+use App\Hooks\Exceptions\StackAlreadyClosed;
+use App\Hooks\Models\AgentStackRow;
+use App\Hooks\Storage\FrameRecord;
 use Carbon\CarbonImmutable;
+use Domain\Chat\Actions\RequireMessageAnswer;
+use Domain\Chat\Enums\MessageState;
+use Domain\Chat\Models\Message;
+use Domain\Tasks\Actions\StartTask;
+use Domain\Tasks\Models\Task;
 use Tests\Support\CommittedHookStack;
 use Tests\TestCase;
 

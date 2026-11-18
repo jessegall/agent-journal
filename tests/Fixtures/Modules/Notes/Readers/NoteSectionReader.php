@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Readers;
 
-use App\Core\Agents\Contracts\SessionReader;
-use App\Core\Ui\Contracts\SectionReader;
-use App\Core\Ui\Declarations\SlotContext;
+use App\Agents\Contracts\SessionReader;
+use App\Ui\Contracts\SectionReader;
+use App\Ui\Declarations\SlotContext;
 use Tests\Fixtures\Modules\Notes\Data\NoteSectionData;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 

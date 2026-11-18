@@ -19,6 +19,6 @@ final class ExceptionPlacementTest extends TestCase
 
     public function test_every_exception_of_the_domains_and_the_core_lies_in_an_exceptions_folder(): void
     {
-        $this->assertSame([], ExceptionPlacement::misplacedIn([app_path('Domain'), app_path('Core')]));
+        $this->assertSame([], ExceptionPlacement::misplacedIn([app_path(), base_path('domain')]));
     }
 }

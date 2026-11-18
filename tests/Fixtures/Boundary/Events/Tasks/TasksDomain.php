@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\Events\Tasks;
 
-use App\Domain\Contracts\Domain;
+use App\Domains\Contracts\Domain;
 use Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClosed;
 
 final class TasksDomain implements Domain

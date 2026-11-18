@@ -18,7 +18,7 @@ Each fact implements `ShouldDispatchAfterCommit`, so a listener hears it only on
 
 `AssignmentsChanged` is raised once per command, never per record, and only from the attempt that committed: an attempt the writer ran again after a serialization failure leaves no fact. A cascade over a plan raises one fact for all its changes.
 
-A fact that changes what users see also implements `App\Core\Ui\Contracts\UpdatesUserInterface` (Chat's three, Plans' two and Rules' three today). Web listens for that marker once, through the dispatcher's interface listeners, so a new domain's or module's fact refreshes the open pages without any change to Web; Core owns the marker and names no domain.
+A fact that changes what users see also implements `App\Ui\Contracts\UpdatesUserInterface` (Chat's three, Plans' two and Rules' three today). Web listens for that marker once, through the dispatcher's interface listeners, so a new domain's or module's fact refreshes the open pages without any change to Web; Core owns the marker and names no domain.
 
 `TaskStarted`, `SequenceStarted` and `MessageNeedsAnswer` stay private: their listeners push stack states inside the same transaction, so they are not facts after a commit. Plans hears `TaskStarted` through its approved requirement of Tasks: `TasksDomain::exports()` lists it, so only a domain that requires Tasks may name it.
 

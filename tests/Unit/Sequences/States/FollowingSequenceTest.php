@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Sequences\States;
 
-use App\Core\Hooks\Contracts\HookInput;
-use App\Core\Hooks\Decisions\Denied;
-use App\Core\Hooks\Enums\SimpleTransition;
-use App\Core\Hooks\Inputs\CompactionDetails;
-use App\Core\Hooks\Inputs\ContextCompacted;
-use App\Core\Hooks\Inputs\HookIdentity;
-use App\Core\Hooks\Inputs\StopDetails;
-use App\Core\Hooks\Inputs\StopRequested;
-use App\Domain\Sequences\Enums\SequenceRunState;
-use App\Domain\Sequences\States\FollowingSequenceState;
-use App\Domain\Sequences\Support\SequenceWork;
+use App\Hooks\Contracts\HookInput;
+use App\Hooks\Decisions\Denied;
+use App\Hooks\Enums\SimpleTransition;
+use App\Hooks\Inputs\CompactionDetails;
+use App\Hooks\Inputs\ContextCompacted;
+use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\StopDetails;
+use App\Hooks\Inputs\StopRequested;
+use Domain\Sequences\Enums\SequenceRunState;
+use Domain\Sequences\States\FollowingSequenceState;
+use Domain\Sequences\Support\SequenceWork;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;

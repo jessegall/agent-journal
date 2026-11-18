@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Desk;
 
-use App\Core\Ui\Contracts\SectionReader;
-use App\Core\Ui\Declarations\SlotContext;
+use App\Ui\Contracts\SectionReader;
+use App\Ui\Declarations\SlotContext;
 use Tests\Fixtures\UiDeclarations\RecentNotesData;
 
 final class NotesReader implements SectionReader

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Core\CoreApi;
-use App\Domain\DomainRegistry;
+use App\CoreApi;
+use App\Domains\Support\DomainRegistry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Architecture\Support\BoundaryChecker;
@@ -51,7 +51,7 @@ final class BoundaryCheckerTest extends TestCase
 
     public function test_the_shared_place_may_use_no_domain(): void
     {
-        $use = new NameUse(dirname(__DIR__, 2).'/app/Domain/DomainRegistry.php', 3, 'Tests\Fixtures\Boundary\Chat\Message', NameType::Type);
+        $use = new NameUse(dirname(__DIR__, 2).'/app/Domains/DomainRegistry.php', 3, 'Tests\Fixtures\Boundary\Chat\Message', NameType::Type);
 
         $violations = $this->checker()->violations([$use]);
 
@@ -61,7 +61,7 @@ final class BoundaryCheckerTest extends TestCase
 
     public function test_the_core_may_use_no_domain(): void
     {
-        $use = new NameUse(dirname(__DIR__, 2).'/app/Core/Hooks/AgentStacks.php', 3, 'Tests\Fixtures\Boundary\Chat\Message', NameType::Type);
+        $use = new NameUse(dirname(__DIR__, 2).'/app/Hooks/AgentStacks.php', 3, 'Tests\Fixtures\Boundary\Chat\Message', NameType::Type);
 
         $this->assertCount(1, $this->checker()->violations([$use]));
     }
@@ -69,8 +69,8 @@ final class BoundaryCheckerTest extends TestCase
     public function test_a_domain_uses_the_core_and_its_events_without_declaring_it(): void
     {
         $uses = [
-            new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Core\Actors\Contracts\Actor', NameType::Type),
-            new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 4, 'App\Core\Hooks\Events\StateTypesRequested', NameType::Type),
+            new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Actors\Contracts\Actor', NameType::Type),
+            new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 4, 'App\Hooks\Events\StateTypesRequested', NameType::Type),
         ];
 
         $this->assertSame([], $this->checker()->violations($uses));
@@ -88,7 +88,7 @@ final class BoundaryCheckerTest extends TestCase
 
     public function test_a_core_type_off_the_core_list_is_refused_to_a_domain(): void
     {
-        $use = new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Core\Hooks\Actions\AgentStacks', NameType::Type);
+        $use = new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Hooks\Actions\AgentStacks', NameType::Type);
 
         $violations = $this->checker()->violations([$use]);
 
@@ -101,7 +101,7 @@ final class BoundaryCheckerTest extends TestCase
         $uses = [
             new NameUse("{$base}/bootstrap/domains.php", 4, ChatDomain::class, NameType::Import),
             new NameUse("{$base}/bootstrap/app.php", 5, 'Tests\Fixtures\Boundary\Chat\Message', NameType::Import),
-            new NameUse("{$base}/config/auth.php", 6, 'App\Core\Hooks\Actions\AgentStacks', NameType::Import),
+            new NameUse("{$base}/config/auth.php", 6, 'App\Hooks\Actions\AgentStacks', NameType::Import),
         ];
 
         $this->assertSame(

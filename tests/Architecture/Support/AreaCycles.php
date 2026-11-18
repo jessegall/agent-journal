@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 /**
- * Cycles between areas: each Core area (App\Core\Agents, App\Core\Hooks), each domain (App\Domain\Plans) and the
+ * Cycles between areas: each Core area (App\Agents, App\Hooks), each domain (Domain\Plans) and the
  * domain foundation is one unit, and no group of units may reach each other. Type folders inside one area (Contracts,
  * Support, Enums) are filing, not layers, so references between them are never a cycle (question 26).
  */
 final readonly class AreaCycles
 {
     /**
-     * The folders at the root of app/Domain that are the domain foundation, not a domain.
+     * The folder of app that is the domain foundation, not a Core area.
      */
-    private const array FOUNDATION_FOLDERS = ['Contracts', 'Exceptions', 'Providers'];
+    private const string FOUNDATION_FOLDER = 'Domains';
 
     /**
      * Core's root lists name every area they compose (CoreApi's exports, Core's commands); they are composition, like
      * bootstrap/domains.php, not a dependency of Core on its areas.
      */
-    private const string CORE_ROOT = 'Core';
+    private const string CORE_ROOT = 'App';
 
     /**
      * @param  array<string, array<string, string>>  $edges  for each area, the areas it names with one example use
@@ -28,14 +28,14 @@ final readonly class AreaCycles
     private function __construct(private array $edges) {}
 
     /**
-     * The areas of app/Core and app/Domain and the names each uses.
+     * The areas of app and of the domain folder and the names each uses.
      */
-    public static function ofProject(string $appFolder): self
+    public static function ofProject(string $appFolder, string $domainFolder): self
     {
         $edges = [];
 
-        foreach (DomainFiles::in([$appFolder.'/Core', $appFolder.'/Domain']) as $path) {
-            $user = self::areaOfFile($path, $appFolder);
+        foreach (DomainFiles::in([$appFolder, $domainFolder]) as $path) {
+            $user = self::areaOfFile($path, $appFolder, $domainFolder);
 
             if ($user === self::CORE_ROOT) {
                 continue;
@@ -45,7 +45,7 @@ final readonly class AreaCycles
                 $used = self::areaOfName($use->name);
 
                 if ($used !== null && $used !== $user && ! isset($edges[$user][$used])) {
-                    $edges[$user][$used] = substr($path, strlen($appFolder) + 1).":{$use->line} uses {$use->name}";
+                    $edges[$user][$used] = substr($path, strlen(dirname($appFolder)) + 1).":{$use->line} uses {$use->name}";
                 }
             }
         }
@@ -142,34 +142,38 @@ final readonly class AreaCycles
         return $groups;
     }
 
-    private static function areaOfFile(string $path, string $appFolder): string
+    private static function areaOfFile(string $path, string $appFolder, string $domainFolder): string
     {
+        if (str_starts_with($path, $domainFolder.'/')) {
+            return 'Domain\\'.explode('/', substr($path, strlen($domainFolder) + 1))[0];
+        }
+
         $parts = explode('/', substr($path, strlen($appFolder) + 1));
 
-        return self::areaOf($parts[0], count($parts) > 2 ? $parts[1] : null);
+        return self::areaOf(count($parts) > 1 ? $parts[0] : null);
     }
 
     private static function areaOfName(string $name): string|null
     {
-        $parts = explode('\\', $name);
+        $parts = explode('\\', ltrim($name, '\\'));
 
-        if ($parts[0] !== 'App' || ! in_array($parts[1] ?? '', ['Core', 'Domain'], true)) {
-            return null;
-        }
-
-        return self::areaOf($parts[1], count($parts) > 3 ? $parts[2] : null);
+        return match ($parts[0]) {
+            'Domain' => count($parts) > 2 ? "Domain\\{$parts[1]}" : null,
+            'App' => self::areaOf(count($parts) > 2 ? $parts[1] : null),
+            default => null,
+        };
     }
 
     /**
-     * Core's root and the foundation's root classes are their own areas; every folder below Core is an area, and
-     * every folder below Domain is a domain unless it is one of the foundation's.
+     * Core's root classes are their own area, the foundation folder is one area, and every other folder of app is a
+     * Core area.
      */
-    private static function areaOf(string $root, string|null $folder): string
+    private static function areaOf(string|null $folder): string
     {
-        if ($root === 'Domain' && ($folder === null || in_array($folder, self::FOUNDATION_FOLDERS, true))) {
-            return 'Domain foundation';
-        }
-
-        return $folder === null ? $root : "{$root}\\{$folder}";
+        return match ($folder) {
+            null => self::CORE_ROOT,
+            self::FOUNDATION_FOLDER => 'Domain foundation',
+            default => "App\\{$folder}",
+        };
     }
 }

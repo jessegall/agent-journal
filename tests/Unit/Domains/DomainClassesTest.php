@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Domains;
 
-use App\Domain\Access\AccessDomain;
-use App\Domain\Chat\ChatDomain;
-use App\Domain\Contracts\Domain;
-use App\Domain\Memory\MemoryDomain;
-use App\Domain\Plans\PlansDomain;
-use App\Domain\Processes\ProcessesDomain;
-use App\Domain\Profiles\ProfilesDomain;
-use App\Domain\Reminders\RemindersDomain;
-use App\Domain\Rules\RulesDomain;
-use App\Domain\Sequences\SequencesDomain;
-use App\Domain\Tasks\TasksDomain;
+use App\Domains\Contracts\Domain;
+use Domain\Access\AccessDomain;
+use Domain\Chat\ChatDomain;
+use Domain\Memory\MemoryDomain;
+use Domain\Plans\PlansDomain;
+use Domain\Processes\ProcessesDomain;
+use Domain\Profiles\ProfilesDomain;
+use Domain\Reminders\RemindersDomain;
+use Domain\Rules\RulesDomain;
+use Domain\Sequences\SequencesDomain;
+use Domain\Tasks\TasksDomain;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class DomainClassesTest extends TestCase
 {
     /**
-     * Hooks, Agents and Links are the core in app/Core, which every domain uses without declaring it. Each domain's
+     * Hooks, Agents and Links are the core in app, which every domain uses without declaring it. Each domain's
      * export list is pinned by short class name, so publishing a type is a visible decision.
      *
      * @return iterable<string, array{class-string<Domain>, list<class-string<Domain>>, list<string>}>

@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Core\Actors\Contracts\CurrentActorSetter;
-use App\Core\Actors\Support\ActorStore;
-use App\Core\Assignments\Contracts\AssignmentRegistration;
-use App\Core\Assignments\Registry\AssignmentRegistry;
-use App\Core\CoreApi;
-use App\Core\Hooks\Contracts\ShellCommandParser;
-use App\Domain\DomainRegistry;
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Support\ActorStore;
+use App\Assignments\Contracts\AssignmentRegistration;
+use App\Assignments\Registry\AssignmentRegistry;
+use App\CoreApi;
+use App\Domains\Support\DomainRegistry;
+use App\Hooks\Contracts\ShellCommandParser;
 use Tests\Architecture\Support\BindingRules;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
@@ -31,13 +31,13 @@ final class BindingRulesTest extends TestCase
      * the two middleware that authenticate a request and the provider that reads the actor.
      */
     private const array ACTOR_SITES = [
-        'app/Core/Actors/Support/ActorStore.php',
-        'app/Core/Actors/Providers/ActorsServiceProvider.php',
-        'app/Core/Actors/Contracts/CurrentActor.php',
-        'app/Core/Actors/Contracts/CurrentActorSetter.php',
-        'app/Core/CoreApi.php',
-        'app/Core/Agents/Http/Middleware/AuthenticateAgent.php',
-        'app/Domain/Access/Http/Middleware/AuthenticateUser.php',
+        'app/Actors/Support/ActorStore.php',
+        'app/Actors/Providers/ActorsServiceProvider.php',
+        'app/Actors/Contracts/CurrentActor.php',
+        'app/Actors/Contracts/CurrentActorSetter.php',
+        'app/CoreApi.php',
+        'app/Agents/Http/Middleware/AuthenticateAgent.php',
+        'domain/Access/Http/Middleware/AuthenticateUser.php',
     ];
 
     /**
@@ -45,13 +45,13 @@ final class BindingRulesTest extends TestCase
      * the registry, Core's list, the providers of Core's assignment and agent areas, and the domain foundation.
      */
     private const array ASSIGNMENT_REGISTRATION_SITES = [
-        'app/Core/Assignments/Contracts/AssignmentRegistration.php',
-        'app/Core/Assignments/Registry/AssignmentRegistry.php',
-        'app/Core/Assignments/Providers/AssignmentsServiceProvider.php',
-        'app/Core/Agents/Providers/AgentsServiceProvider.php',
-        'app/Core/CoreApi.php',
-        'app/Domain/DomainRegistry.php',
-        'app/Domain/Providers/DomainServiceProvider.php',
+        'app/Assignments/Contracts/AssignmentRegistration.php',
+        'app/Assignments/Registry/AssignmentRegistry.php',
+        'app/Assignments/Providers/AssignmentsServiceProvider.php',
+        'app/Agents/Providers/AgentsServiceProvider.php',
+        'app/CoreApi.php',
+        'app/Domains/Support/DomainRegistry.php',
+        'app/Domains/Providers/DomainServiceProvider.php',
     ];
 
     public function test_every_stated_binding_of_the_app_is_sound(): void
@@ -61,7 +61,7 @@ final class BindingRulesTest extends TestCase
             ...array_map(PublicOwner::fromDomain(...), $this->app->make(DomainRegistry::class)->all()),
         ];
 
-        $violations = (new BindingRules($owners, DomainFiles::in([app_path('Core'), app_path('Domain')])))->violations();
+        $violations = (new BindingRules($owners, DomainFiles::in([app_path(), base_path('domain')])))->violations();
 
         $this->assertSame([], $violations, BoundaryReport::of($violations, base_path()));
     }
@@ -81,13 +81,13 @@ final class BindingRulesTest extends TestCase
             'PlanReader.php:10 binds Tests\Fixtures\Bindings\Plans\Contracts\PlanReader, but Tests\Fixtures\Bindings\Plans\PlanNotes does not implement it',
             'PlansServiceProvider.php:17 binds Tests\Fixtures\Bindings\Tasks\Contracts\TaskReader, but Tasks owns it; only Core\'s public contracts are filled by another owner',
             'PlansServiceProvider.php:18 binds Tests\Fixtures\Bindings\Plans\Contracts\PlanCounter, but the target Tests\Fixtures\Bindings\Tasks\TaskList belongs to Tasks',
-            'PlanCounts.php:11 binds Tests\Fixtures\Bindings\Plans\PlanCounts, but the singleton Tests\Fixtures\Bindings\Plans\PlanCounts keeps the per-request App\Core\Actors\Contracts\CurrentActor beyond its request',
+            'PlanCounts.php:11 binds Tests\Fixtures\Bindings\Plans\PlanCounts, but the singleton Tests\Fixtures\Bindings\Plans\PlanCounts keeps the per-request App\Actors\Contracts\CurrentActor beyond its request',
         ], array_map(fn (Violation $violation) => basename($violation->file).":{$violation->line} {$violation->reason()}", $violations));
     }
 
     public function test_cores_parser_comes_from_processes(): void
     {
-        $this->assertStringStartsWith('App\Domain\Processes\\', $this->app->make(ShellCommandParser::class)::class);
+        $this->assertStringStartsWith('Domain\Processes\\', $this->app->make(ShellCommandParser::class)::class);
     }
 
     public function test_only_the_authentication_sites_name_the_actor_store_or_set_the_actor(): void
