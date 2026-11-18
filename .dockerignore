@@ -12,3 +12,6 @@ storage/framework/sessions/*
 storage/framework/views/*
 public/build
 public/hot
+corpus
+tools/journal-agent/testdata
+tools/shell-oracle/bin

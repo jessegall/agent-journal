@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ShareFiltersData, ShareListData } from '@/types/generated';
+import type { ShareFiltersData, ShareListData } from '@generated/types/sharing';
 import { Link, router } from '@inertiajs/vue3';
 import PageHeader from '@kit/PageHeader';
 import { reactive } from 'vue';

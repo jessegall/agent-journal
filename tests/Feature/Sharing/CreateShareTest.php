@@ -41,6 +41,7 @@ use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -176,6 +177,7 @@ final class CreateShareTest extends TestCase
         $this->assertSame(Share::MOST_LIVE, Share::query()->count());
     }
 
+    #[TimeLimit(5, 'It fills the live-share quota of a hundred shares first.')]
     public function test_an_expired_share_whose_state_has_not_caught_up_does_not_count(): void
     {
         for ($index = 0; $index < Share::MOST_LIVE; $index++) {

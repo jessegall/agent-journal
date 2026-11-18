@@ -32,6 +32,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -121,6 +122,7 @@ final class ShareEndTest extends TestCase
         $this->assertSame([ShareAuditType::Expired, ShareAuditType::Expired], $this->auditTypes());
     }
 
+    #[TimeLimit(5, 'It creates over a hundred shares to reach the batch limit.')]
     public function test_expire_shares_takes_at_most_a_hundred_and_says_more_wait(): void
     {
         for ($index = 0; $index <= 100; $index++) {
