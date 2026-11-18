@@ -38,6 +38,22 @@ type ScreenReader interface {
 	// Snapshot reads the screen as it stands.
 	Snapshot() Snapshot
 
-	// Generation counts the changes of a named region of rows, so a reader waits for a region to settle.
+	// Generation counts the changes of a named region's text, so a reader waits for a region to settle.
 	Generation(region string) uint64
+}
+
+// RowRange is a run of screen rows from First up to, not including, Last.
+type RowRange struct {
+	First int
+	Last  int
+}
+
+// Region is a named part of a program's screen, such as its composer, a menu, its spinner or its status line,
+// found anew in every snapshot because it moves as the program draws above and below it.
+type Region interface {
+	// Name is the region's name, unique within a screen layout.
+	Name() string
+
+	// Rows finds the region's rows in the snapshot, or found is false while it is not drawn.
+	Rows(snapshot Snapshot) (rows RowRange, found bool)
 }
