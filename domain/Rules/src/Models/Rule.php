@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Domain\Rules\Models;
 
 use App\Links\Support\Linkable;
+use App\Numbers\Contracts\Numbered;
+use App\Numbers\Support\HasNumber;
 use App\Queries\Support\TextSearch;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Exceptions\RuleMissing;
@@ -21,15 +23,17 @@ use Illuminate\Support\Carbon;
  * Every agent reads every rule, so it has no agent limit.
  *
  * @property string $id
+ * @property string $number_group_id
+ * @property int $number
  * @property string $text
  * @property RuleState $state
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable(['text'])]
-final class Rule extends Model
+final class Rule extends Model implements Numbered
 {
-    use HasUlids, Linkable;
+    use HasNumber, HasUlids, Linkable;
 
     /**
      * @var array<string, mixed>

@@ -67,7 +67,7 @@ final class TaskStateContributionTest extends TestCase
         $task->finish();
         $allowed = $this->answerStop('call-2');
 
-        $this->assertStringContainsString("Task {$task->id} still needs work", $held);
+        $this->assertStringContainsString("Task {$task->number} still needs work", $held);
         $this->assertSame('{}', $allowed);
         $this->assertSame([], $this->taskFrames());
     }

@@ -166,12 +166,18 @@ use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Hooks\States\AgentState;
 use App\Http\Data\Assignments\RecordHolderData;
-use App\Http\Requests\Web\Concerns\ReadsRouteId;
+use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
 use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Support\Linkable;
 use App\Links\Support\LinkAccess;
 use App\Links\Support\LinkTypeRegistry;
 use App\Numbers\Commands\InstallNumbers;
+use App\Numbers\Contracts\Numbered;
+use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Numbers\Exceptions\InvalidRecordReference;
+use App\Numbers\Support\HasNumber;
+use App\Numbers\Support\NumberedModel;
+use App\Numbers\Support\RecordReference;
 use App\Queries\Support\TextSearch;
 use App\Ui\Contracts\CountReader;
 use App\Ui\Contracts\NavigationChildren;
@@ -324,6 +330,12 @@ final class CoreApi
             AgentRetirementDenied::class,
             RetireAgent::class,
             InstallNumbers::class,
+            Numbered::class,
+            HasNumber::class,
+            ProvidesNumberedModels::class,
+            NumberedModel::class,
+            RecordReference::class,
+            InvalidRecordReference::class,
             AssignRecord::class,
             ReassignRecord::class,
             UnassignRecord::class,
@@ -382,7 +394,7 @@ final class CoreApi
             MiddlewareSwallowedFailure::class,
             NestedCommandFailureIgnored::class,
             TextSearch::class,
-            ReadsRouteId::class,
+            ReadsRouteNumber::class,
             JournalAccessPolicy::class,
             CurrentUser::class,
             UpdatesUserInterface::class,

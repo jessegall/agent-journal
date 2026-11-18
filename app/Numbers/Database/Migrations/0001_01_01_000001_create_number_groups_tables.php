@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 return new class extends Migration
 {
@@ -29,6 +30,7 @@ return new class extends Migration
         });
 
         DB::statement('ALTER TABLE number_groups ADD CONSTRAINT number_groups_last_number_not_negative CHECK (last_number >= 0)');
+        DB::table('global_groups')->insert(['id' => strtolower((string) Str::ulid()), 'name' => 'journal', 'created_at' => now(), 'updated_at' => now()]);
     }
 
     public function down(): void

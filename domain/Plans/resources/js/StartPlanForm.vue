@@ -15,7 +15,7 @@ const props = defineProps<{ start: StartPlanData }>();
 const form = useForm({});
 
 function submit(): void {
-    form.submit(startRoute({ plan: Number(props.start.planId) }), {
+    form.submit(startRoute({ plan: props.start.planNumber }), {
         preserveScroll: true,
         ...formSendingHooks(),
     });

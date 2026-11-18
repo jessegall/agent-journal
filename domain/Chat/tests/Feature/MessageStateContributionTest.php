@@ -55,8 +55,8 @@ final class MessageStateContributionTest extends TestCase
         $message->markAnswered();
         $afterAnswer = $this->answerStop('call-2');
 
-        $this->assertStringContainsString("Message {$message->id} waits for your answer", $whileWaiting);
-        $this->assertStringContainsString("Task {$task->id} still needs work", $afterAnswer);
+        $this->assertStringContainsString("Message {$message->number} waits for your answer", $whileWaiting);
+        $this->assertStringContainsString("Task {$task->number} still needs work", $afterAnswer);
         $this->assertSame(['hooks.main_ready', 'tasks.working'], $this->storedTypeKeys());
     }
 

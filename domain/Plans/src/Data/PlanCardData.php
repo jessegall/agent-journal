@@ -23,13 +23,14 @@ final class PlanCardData extends Data
 {
     public function __construct(
         public readonly string $id,
+        public readonly string $number,
         public readonly string $title,
         public readonly PlanType $type,
         public readonly PlanState $state,
         public readonly bool $focused,
         public readonly int $doneTasks,
         public readonly int $totalTasks,
-        public readonly int|Optional $phase = new Optional,
+        public readonly string|Optional $phase = new Optional,
         public readonly AssignmentData|Optional $holder = new Optional,
     ) {}
 
@@ -40,13 +41,14 @@ final class PlanCardData extends Data
     {
         return self::from(array_filter([
             'id' => (string) $card->id,
+            'number' => (string) $card->number,
             'title' => $card->title,
             'type' => $card->type,
             'state' => $card->state,
             'focused' => $card->focused,
             'doneTasks' => $card->progress->done,
             'totalTasks' => $card->progress->total,
-            'phase' => $card->currentPhase,
+            'phase' => $card->currentPhase === null ? null : (string) $card->currentPhase,
             'holder' => $card->holder->map(AssignmentData::ofHolder(...))->getOrElse(null),
         ], fn (mixed $value) => $value !== null));
     }

@@ -9,6 +9,8 @@ use App\Assignments\Contracts\Assignable;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\RecordIdentity;
 use App\Links\Support\Linkable;
+use App\Numbers\Contracts\Numbered;
+use App\Numbers\Support\HasNumber;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\Exceptions\TaskMissing;
@@ -23,6 +25,8 @@ use Illuminate\Support\Carbon;
  * Every agent reads every task, so it has no agent limit.
  *
  * @property string $id
+ * @property string $number_group_id
+ * @property int $number
  * @property string $title
  * @property TaskState $state
  * @property int $run_number
@@ -32,9 +36,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['title'])]
-final class Task extends Model implements Assignable
+final class Task extends Model implements Assignable, Numbered
 {
-    use AssignableListing, HasUlids, Linkable;
+    use AssignableListing, HasNumber, HasUlids, Linkable;
 
     /**
      * The stable name links and assignments use for a task.
@@ -104,10 +108,10 @@ final class Task extends Model implements Assignable
     public function workFor(int $runNumber): TaskWork
     {
         if ($runNumber !== $this->run_number) {
-            return new TaskWork($this->id, $runNumber, TaskWorkState::Finished);
+            return new TaskWork($this->number, $runNumber, TaskWorkState::Finished);
         }
 
-        return new TaskWork($this->id, $runNumber, $this->state->workState());
+        return new TaskWork($this->number, $runNumber, $this->state->workState());
     }
 
     public function assignmentIdentity(): RecordIdentity

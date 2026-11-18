@@ -93,7 +93,7 @@ final class AnsweringMessageTest extends TestCase
     #[DataProvider('settledStates')]
     public function test_a_settled_message_is_finished(MessageWorkState $state): void
     {
-        $this->assertTrue((new AnsweringMessageState(new MessageWork('95', $state)))->isFinished());
+        $this->assertTrue((new AnsweringMessageState(new MessageWork(95, $state)))->isFinished());
         $this->assertFalse($this->unanswered()->isFinished());
     }
 
@@ -116,7 +116,7 @@ final class AnsweringMessageTest extends TestCase
 
     private function message(): MessageWork
     {
-        return new MessageWork('95', MessageWorkState::Unanswered);
+        return new MessageWork(95, MessageWorkState::Unanswered);
     }
 
     private function unanswered(): AnsweringMessageState

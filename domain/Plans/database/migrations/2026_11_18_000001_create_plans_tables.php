@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -12,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('plans', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
+            $table->unsignedBigInteger('number');
             $table->string('title');
             $table->string('type', 16);
             $table->string('state', 16)->default('planned');
@@ -19,17 +22,22 @@ return new class extends Migration
             $table->timestampsTz();
 
             $table->index('state');
+            $table->unique(['number_group_id', 'number']);
         });
 
         Schema::create('phases', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->foreignUlid('plan_id')->constrained('plans')->cascadeOnDelete();
+            $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
+            $table->unsignedBigInteger('number');
             $table->string('title');
-            $table->unsignedInteger('position');
             $table->timestampsTz();
 
-            $table->unique(['plan_id', 'position']);
+            $table->unique(['number_group_id', 'number']);
         });
+
+        DB::statement('ALTER TABLE plans ADD CONSTRAINT plans_number_positive CHECK (number > 0)');
+        DB::statement('ALTER TABLE phases ADD CONSTRAINT phases_number_positive CHECK (number > 0)');
 
         Schema::create('phase_tasks', function (Blueprint $table) {
             $table->ulid('id')->primary();

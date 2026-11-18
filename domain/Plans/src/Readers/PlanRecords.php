@@ -83,11 +83,13 @@ final readonly class PlanRecords implements PlanReader
 
     private function selection(PlanFilters $filters): PlanSelection
     {
-        if ($filters->selectedPlanId === null) {
+        if ($filters->selectedPlanId === null && $filters->selectedPlanNumber === null) {
             return PlanSelection::none();
         }
 
-        $plan = Plan::query()->find($filters->selectedPlanId);
+        $plan = $filters->selectedPlanId !== null
+            ? Plan::query()->find($filters->selectedPlanId)
+            : Plan::query()->where('number', $filters->selectedPlanNumber)->first();
 
         if ($plan === null) {
             return PlanSelection::missing();
@@ -107,7 +109,7 @@ final readonly class PlanRecords implements PlanReader
      */
     private function cardsOf(EloquentCollection $plans): array
     {
-        $phases = Phase::query()->whereIn('plan_id', $plans->modelKeys())->orderBy('position')->get();
+        $phases = Phase::query()->whereIn('plan_id', $plans->modelKeys())->orderBy('number')->get();
         $phasesOfPlan = $phases->groupBy('plan_id');
         $taskIdsOfPhase = PhaseTask::query()->whereIn('phase_id', $phases->modelKeys())->orderBy('position')->get()
             ->groupBy('phase_id')
@@ -117,7 +119,7 @@ final readonly class PlanRecords implements PlanReader
         $holders = $this->assignees->holdersOf($assignments);
 
         return array_values($plans->map(fn (Plan $plan) => $plan->card(
-            $phasesOfPlan->get($plan->id, new Collection)->mapWithKeys(fn (Phase $phase) => [$phase->position => $progressOfPhase[$phase->id] ?? PlanProgress::none()])->all(),
+            $phasesOfPlan->get($plan->id, new Collection)->mapWithKeys(fn (Phase $phase) => [$phase->number => $progressOfPhase[$phase->id] ?? PlanProgress::none()])->all(),
             $holders->forRecord($plan->assignmentIdentity()),
         ))->all());
     }

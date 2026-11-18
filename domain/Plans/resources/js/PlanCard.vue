@@ -33,7 +33,7 @@ const progress = computed(() =>
         <span class="flex items-center gap-1.5 text-small text-text-3">
             <Icon :name="typeIcon[card.type]" :size="12" />
             <span>Plan</span>
-            <span class="font-mono tabular-nums">{{ card.id }}</span>
+            <span class="font-mono tabular-nums">{{ card.number }}</span>
             <template v-if="card.focused">
                 <span class="text-brand-text">Focus</span>
             </template>

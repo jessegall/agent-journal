@@ -132,7 +132,7 @@ final class HookLaunchTest extends TestCase
 
         $this->assertSame($parent->session->id, $child->session->fresh()?->parent_session_id);
         $this->assertSame('{}', $this->stopAs($child, 'call-1'));
-        $this->assertStringContainsString("Task {$task->id} still needs work", $this->stopAs($parent, 'call-2'));
+        $this->assertStringContainsString("Task {$task->number} still needs work", $this->stopAs($parent, 'call-2'));
     }
 
     public function test_ending_a_launch_closes_its_stack_and_revokes_its_credential(): void

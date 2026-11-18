@@ -20,5 +20,6 @@ final readonly class PlanFilters
         public int $page = 1,
         public string|null $selectedPlanId = null,
         public array $states = [],
+        public int|null $selectedPlanNumber = null,
     ) {}
 }

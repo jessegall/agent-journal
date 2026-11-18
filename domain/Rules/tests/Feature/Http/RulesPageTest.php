@@ -72,7 +72,7 @@ final class RulesPageTest extends TestCase
     public function test_approving_returns_to_the_page_it_came_from(): void
     {
         $this->actingAs($this->owner)->from("/rules?q=phase&rule={$this->proposed->id}")
-            ->patch("/rules/{$this->proposed->id}/approve")
+            ->patch("/rules/{$this->proposed->number}/approve")
             ->assertStatus(303)
             ->assertRedirect("/rules?q=phase&rule={$this->proposed->id}");
 
@@ -82,7 +82,7 @@ final class RulesPageTest extends TestCase
     public function test_approving_from_home_returns_to_home_with_every_windows_query(): void
     {
         $this->actingAs($this->owner)->from("/?q=release&rules_q=phase&rule={$this->proposed->id}")
-            ->patch("/rules/{$this->proposed->id}/approve")
+            ->patch("/rules/{$this->proposed->number}/approve")
             ->assertStatus(303)
             ->assertRedirect("/?q=release&rules_q=phase&rule={$this->proposed->id}");
 
@@ -91,7 +91,7 @@ final class RulesPageTest extends TestCase
 
     public function test_denying_settles_the_rule(): void
     {
-        $this->actingAs($this->owner)->from('/rules')->patch("/rules/{$this->proposed->id}/deny")->assertRedirect('/rules');
+        $this->actingAs($this->owner)->from('/rules')->patch("/rules/{$this->proposed->number}/deny")->assertRedirect('/rules');
 
         $this->assertSame(RuleState::Denied, $this->proposed->fresh()?->state);
     }
@@ -99,7 +99,7 @@ final class RulesPageTest extends TestCase
     public function test_a_rule_settled_meanwhile_is_refused_as_a_review_error(): void
     {
         $this->actingAs($this->owner)->from('/rules')
-            ->patch("/rules/{$this->active->id}/approve")
+            ->patch("/rules/{$this->active->number}/approve")
             ->assertRedirect('/rules')
             ->assertSessionHasErrors(['review' => 'This rule is active already, so it cannot be approved or denied.']);
     }

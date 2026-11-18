@@ -70,7 +70,7 @@ final class FollowingSequenceTest extends TestCase
     #[DataProvider('settledStates')]
     public function test_a_settled_run_is_finished(SequenceRunState $state): void
     {
-        $this->assertTrue((new FollowingSequenceState(new SequenceWork('8', 3, 'Run the phase tests.', $state)))->isFinished());
+        $this->assertTrue((new FollowingSequenceState(new SequenceWork(8, 3, 'Run the phase tests.', $state)))->isFinished());
     }
 
     public function test_a_running_sequence_is_not_finished(): void
@@ -86,7 +86,7 @@ final class FollowingSequenceTest extends TestCase
 
     private function running(): SequenceWork
     {
-        return new SequenceWork('8', 3, 'Run the phase tests.', SequenceRunState::Running);
+        return new SequenceWork(8, 3, 'Run the phase tests.', SequenceRunState::Running);
     }
 
     private function following(): FollowingSequenceState

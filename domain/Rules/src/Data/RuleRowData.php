@@ -19,12 +19,13 @@ final class RuleRowData extends Data
 {
     public function __construct(
         public readonly string $id,
+        public readonly string $number,
         public readonly string $text,
         public readonly RuleState $state,
     ) {}
 
     public static function fromRuleView(RuleView $rule): self
     {
-        return new self(id: (string) $rule->id, text: $rule->text, state: $rule->state);
+        return new self(id: (string) $rule->id, number: (string) $rule->number, text: $rule->text, state: $rule->state);
     }
 }

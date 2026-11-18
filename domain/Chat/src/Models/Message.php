@@ -7,6 +7,8 @@ namespace Domain\Chat\Models;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Links\Support\Linkable;
+use App\Numbers\Contracts\Numbered;
+use App\Numbers\Support\HasNumber;
 use Domain\Chat\Enums\MessageState;
 use Domain\Chat\Enums\MessageWorkState;
 use Domain\Chat\Exceptions\MessageMissing;
@@ -21,6 +23,8 @@ use Illuminate\Support\Carbon;
  * Only the agent it is addressed to reads it; a message not yet addressed belongs to no agent.
  *
  * @property string $id
+ * @property string $number_group_id
+ * @property int $number
  * @property string $body
  * @property MessageState $state
  * @property string|null $agent_id
@@ -29,9 +33,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['body'])]
-final class Message extends Model
+final class Message extends Model implements Numbered
 {
-    use BelongsToOneAgent, HasUlids;
+    use BelongsToOneAgent, HasNumber, HasUlids;
     use Linkable;
 
     /**
@@ -80,6 +84,6 @@ final class Message extends Model
 
     public function work(): MessageWork
     {
-        return new MessageWork($this->id, MessageWorkState::of($this->state));
+        return new MessageWork($this->number, MessageWorkState::of($this->state));
     }
 }

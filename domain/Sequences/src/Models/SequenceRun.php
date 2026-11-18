@@ -7,6 +7,8 @@ namespace Domain\Sequences\Models;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Links\Support\Linkable;
+use App\Numbers\Contracts\Numbered;
+use App\Numbers\Support\HasNumber;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Exceptions\SequenceRunMissing;
 use Domain\Sequences\Support\SequenceWork;
@@ -20,6 +22,8 @@ use Illuminate\Support\Carbon;
  * Only the agent following it reads it.
  *
  * @property string $id
+ * @property string $number_group_id
+ * @property int $number
  * @property string $name
  * @property list<string> $steps
  * @property int $current_step
@@ -30,9 +34,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'steps'])]
-final class SequenceRun extends Model
+final class SequenceRun extends Model implements Numbered
 {
-    use BelongsToOneAgent, HasUlids;
+    use BelongsToOneAgent, HasNumber, HasUlids;
     use Linkable;
 
     /**
@@ -94,6 +98,6 @@ final class SequenceRun extends Model
 
     public function work(): SequenceWork
     {
-        return new SequenceWork($this->id, $this->current_step, $this->steps[$this->current_step - 1], $this->state);
+        return new SequenceWork($this->number, $this->current_step, $this->steps[$this->current_step - 1], $this->state);
     }
 }

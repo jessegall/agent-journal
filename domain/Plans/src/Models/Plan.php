@@ -9,6 +9,8 @@ use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\AssignmentHolder;
 use App\Assignments\Support\RecordIdentity;
 use App\Links\Support\Linkable;
+use App\Numbers\Contracts\Numbered;
+use App\Numbers\Support\HasNumber;
 use Domain\Plans\Api\PlanCard;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Enums\PlanState;
@@ -36,9 +38,9 @@ use PhpOption\Option;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['title', 'type'])]
-final class Plan extends Model implements Assignable
+final class Plan extends Model implements Assignable, Numbered
 {
-    use AssignableListing, HasUlids, Linkable;
+    use AssignableListing, HasNumber, HasUlids, Linkable;
 
     /**
      * The stable name links and assignments use for a plan.
@@ -88,7 +90,7 @@ final class Plan extends Model implements Assignable
     {
         self::lockStructure($this->id);
 
-        return $this->phases()->create(['title' => $title, 'position' => $this->phases()->count() + 1]);
+        return $this->phases()->create(['title' => $title]);
     }
 
     /**
@@ -111,7 +113,7 @@ final class Plan extends Model implements Assignable
         $taskIds = PhaseTask::query()
             ->join('phases', 'phases.id', '=', 'phase_tasks.phase_id')
             ->where('phases.plan_id', $this->id)
-            ->orderBy('phases.position')
+            ->orderBy('phases.number')
             ->orderBy('phase_tasks.position')
             ->pluck('phase_tasks.task_id')
             ->all();
@@ -120,7 +122,7 @@ final class Plan extends Model implements Assignable
     }
 
     /**
-     * The card of this plan from the progress of each phase, keyed by the phase's position. The current phase is the
+     * The card of this plan from the progress of each phase, keyed by the phase's number. The current phase is the
      * first one with unfinished tasks, or the last phase once every task is done; a plan without phases has none.
      *
      * @param  array<int, PlanProgress>  $progressOfPhase
@@ -132,7 +134,7 @@ final class Plan extends Model implements Assignable
         $unfinished = array_keys(array_filter($progressOfPhase, fn (PlanProgress $phase) => ! $phase->isComplete()));
         $currentPhase = $unfinished[0] ?? array_key_last($progressOfPhase);
 
-        return new PlanCard($this->id, $this->title, $this->type, $this->state, $this->state->canStart(), $this->focused, $progress, $currentPhase, $holder);
+        return new PlanCard($this->id, $this->number, $this->title, $this->type, $this->state, $this->state->canStart(), $this->focused, $progress, $currentPhase, $holder);
     }
 
     /**
@@ -151,7 +153,7 @@ final class Plan extends Model implements Assignable
      */
     public function phases(): HasMany
     {
-        return $this->hasMany(Phase::class)->orderBy('position');
+        return $this->hasMany(Phase::class)->orderBy('number');
     }
 
     public function assignmentIdentity(): RecordIdentity

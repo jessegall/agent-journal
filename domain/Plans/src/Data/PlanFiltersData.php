@@ -6,14 +6,14 @@ namespace Domain\Plans\Data;
 
 use Domain\Plans\Api\PlanFilters;
 use Domain\Plans\Enums\PlanStateGroup;
-use Spatie\LaravelData\Attributes\Validation\Ulid;
+use Spatie\LaravelData\Attributes\Validation\Regex;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * The accepted filters of the plans page as the browser keeps them in the query string: search words, page and the
- * selected plan's id as a ULID.
+ * selected plan's number.
  */
 #[TypeScript]
 final class PlanFiltersData extends Data
@@ -21,7 +21,7 @@ final class PlanFiltersData extends Data
     public function __construct(
         public readonly string $q = '',
         public readonly int $page = 1,
-        #[Ulid] public readonly string|Optional $plan = new Optional,
+        #[Regex('/^[1-9][0-9]{0,18}$/')] public readonly string|Optional $plan = new Optional,
         public readonly PlanStateGroup|Optional $state = new Optional,
     ) {}
 
@@ -60,10 +60,10 @@ final class PlanFiltersData extends Data
     public function toDomain(): PlanFilters
     {
         return new PlanFilters(
-            $this->q,
-            $this->page,
-            $this->plan instanceof Optional ? null : (string) $this->plan,
-            $this->state instanceof Optional ? [] : $this->state->states(),
+            search: $this->q,
+            page: $this->page,
+            states: $this->state instanceof Optional ? [] : $this->state->states(),
+            selectedPlanNumber: $this->plan instanceof Optional ? null : (int) $this->plan,
         );
     }
 }

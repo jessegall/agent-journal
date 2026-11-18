@@ -13,6 +13,7 @@ use App\Numbers\Exceptions\NumberChanged;
 use App\Numbers\Exceptions\NumberLimitReached;
 use App\Numbers\Models\GlobalGroup;
 use App\Numbers\Models\NumberGroup;
+use App\Numbers\Support\NumberingOutsideCommands;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -40,7 +41,7 @@ final class NumberAllocationTest extends TestCase
     use InstallsCommandModules;
     use StartsAgentRequests;
 
-    private const array TABLES = ['number_groups', 'global_groups'];
+    private const array TABLES = ['number_groups'];
 
     private CommandBus $commands;
 
@@ -50,6 +51,7 @@ final class NumberAllocationTest extends TestCase
 
         $this->createLedgerTables();
         $this->bootModules(LedgerDomain::class);
+        $this->app->make(NumberingOutsideCommands::class)->forbid();
         GlobalGroup::installJournal();
         $this->startUserRequestAs(TestIds::of(1));
         $this->commands = $this->app->make(CommandBus::class);

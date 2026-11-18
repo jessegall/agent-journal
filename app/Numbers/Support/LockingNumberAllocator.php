@@ -18,11 +18,14 @@ use Illuminate\Database\Eloquent\Model;
  */
 final readonly class LockingNumberAllocator implements NumberAllocator
 {
-    public function __construct(private CommandTransaction $transaction, private NumberedTypeRegistry $types) {}
+    public function __construct(private CommandTransaction $transaction, private NumberedTypeRegistry $types, private NumberingOutsideCommands $outsideCommands) {}
 
     public function allocate(Model&Numbered $record): void
     {
-        $this->transaction->requireRunning($record->getConnection());
+        if (! $this->outsideCommands->isAllowed()) {
+            $this->transaction->requireRunning($record->getConnection());
+        }
+
         $this->types->requireDeclared($record->getMorphClass());
         $holder = $record->numberHolder();
 
@@ -32,7 +35,7 @@ final readonly class LockingNumberAllocator implements NumberAllocator
 
         $holder->newQuery()->whereKey($holder->getKey())->lockForUpdate()->sole();
         $group = $this->lockedGroup($holder, $record->getMorphClass());
-        $record->assignNumber($group, $group->takeNumber());
+        $record->assignNumber($group->id, $group->takeNumber());
     }
 
     private function lockedGroup(Model $holder, string $recordType): NumberGroup

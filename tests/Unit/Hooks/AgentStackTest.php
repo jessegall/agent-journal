@@ -72,11 +72,11 @@ final class AgentStackTest extends TestCase
     public function test_a_pushed_sequence_answers_the_next_stop_before_the_task(): void
     {
         $factory = new InMemoryStateFactory([
-            'sequences.following' => fn () => new FollowingSequenceState(new SequenceWork('8', 3, 'Run the phase tests.', SequenceRunState::Running)),
+            'sequences.following' => fn () => new FollowingSequenceState(new SequenceWork(8, 3, 'Run the phase tests.', SequenceRunState::Running)),
         ]);
         $stack = new AgentStack([
             $this->ready(),
-            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork('42', 1, TaskWorkState::Active))),
+            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active))),
         ], $factory);
 
         $stack = $stack->withStateOnTop($this->reference('sequences.following', '8'));
@@ -293,8 +293,8 @@ final class AgentStackTest extends TestCase
     {
         return $this->stack(
             $this->ready(),
-            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork('42', 1, $taskState))),
-            new Frame('message-95', $this->reference('chat.answering', '95'), new AnsweringMessageState(new MessageWork('95', $messageState))),
+            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, $taskState))),
+            new Frame('message-95', $this->reference('chat.answering', '95'), new AnsweringMessageState(new MessageWork(95, $messageState))),
         );
     }
 

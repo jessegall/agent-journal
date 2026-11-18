@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\Numbers\Support\NumberingOutsideCommands;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Events\ConnectionEstablished;
@@ -20,6 +21,7 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         Http::preventStrayRequests();
+        $this->app->make(NumberingOutsideCommands::class)->allow();
     }
 
     /**

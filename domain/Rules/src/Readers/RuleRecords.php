@@ -52,6 +52,6 @@ final readonly class RuleRecords implements RuleReader
 
     private static function viewOf(Rule $rule): RuleView
     {
-        return new RuleView($rule->id, $rule->text, $rule->state, $rule->canBeReviewed());
+        return new RuleView($rule->id, $rule->number, $rule->text, $rule->state, $rule->canBeReviewed());
     }
 }

@@ -6,6 +6,8 @@ namespace Domain\Memory\Models;
 
 use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Links\Support\Linkable;
+use App\Numbers\Contracts\Numbered;
+use App\Numbers\Support\HasNumber;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +18,8 @@ use Illuminate\Support\Carbon;
  * Only the agent that keeps it reads it.
  *
  * @property string $id
+ * @property string $number_group_id
+ * @property int $number
  * @property string $agent_id
  * @property string $text
  * @property int $weight
@@ -23,9 +27,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['text', 'weight'])]
-final class Memory extends Model
+final class Memory extends Model implements Numbered
 {
-    use BelongsToOneAgent, HasUlids;
+    use BelongsToOneAgent, HasNumber, HasUlids;
     use Linkable;
 
     /**

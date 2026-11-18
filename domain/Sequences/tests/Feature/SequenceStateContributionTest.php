@@ -59,8 +59,8 @@ final class SequenceStateContributionTest extends TestCase
         $run->advance();
         $onSecondStep = $this->answerStop('call-2');
 
-        $this->assertStringContainsString("Sequence run {$run->id} is on step 1: Read the brief.", $onFirstStep);
-        $this->assertStringContainsString("Sequence run {$run->id} is on step 2: Run the phase tests.", $onSecondStep);
+        $this->assertStringContainsString("Sequence run {$run->number} is on step 1: Read the brief.", $onFirstStep);
+        $this->assertStringContainsString("Sequence run {$run->number} is on step 2: Run the phase tests.", $onSecondStep);
     }
 
     public function test_a_compaction_repeats_the_step_without_advancing_the_run(): void
@@ -70,7 +70,7 @@ final class SequenceStateContributionTest extends TestCase
 
         $context = json_decode($this->answerCompaction('call-1'), true, flags: JSON_THROW_ON_ERROR);
 
-        $this->assertSame(["Sequence run {$run->id} is on step 1: Read the brief."], $context);
+        $this->assertSame(["Sequence run {$run->number} is on step 1: Read the brief."], $context);
         $this->assertSame(1, $run->fresh()?->current_step);
     }
 

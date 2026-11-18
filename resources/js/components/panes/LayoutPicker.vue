@@ -81,7 +81,7 @@ function saveNew(name: string, arrangement: Arrangement): void {
 
 function saveTo(id: string, name: string, arrangement: Arrangement): void {
     router.put(
-        layoutRoutes.update.url(Number(id)),
+        layoutRoutes.update.url(id),
         { name, shape: arrangement },
         {
             ...requestOptions,
@@ -94,7 +94,7 @@ function saveTo(id: string, name: string, arrangement: Arrangement): void {
 }
 
 function remove(id: string): void {
-    router.delete(layoutRoutes.destroy.url(Number(id)), requestOptions);
+    router.delete(layoutRoutes.destroy.url(id), requestOptions);
 }
 
 function submitNewName(): void {

@@ -20,6 +20,7 @@ final readonly class PlanCard
      */
     public function __construct(
         public string $id,
+        public int $number,
         public string $title,
         public PlanType $type,
         public PlanState $state,

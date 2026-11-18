@@ -20,6 +20,7 @@ final class RuleReaderData extends Data
 {
     public function __construct(
         public readonly string $id,
+        public readonly string $number,
         public readonly string $text,
         public readonly RuleState $state,
         public readonly bool $canReview,
@@ -29,6 +30,7 @@ final class RuleReaderData extends Data
     {
         return new self(
             id: (string) $rule->id,
+            number: (string) $rule->number,
             text: $rule->text,
             state: $rule->state,
             canReview: $rule->canReview,

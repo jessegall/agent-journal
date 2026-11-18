@@ -57,7 +57,7 @@ final class HookCompactionTest extends TestCase
         $this->assertContains('Memory: Use plain words.', $context);
         $this->assertNotContains('Memory: Question 10 is still open.', $context);
         $this->assertSame([], array_values(array_filter($context, fn (string $line) => str_contains($line, 'An old rule.'))));
-        $this->assertContains("Sequence run {$this->run->id} is on step 1: Read the brief.", $context);
+        $this->assertContains("Sequence run {$this->run->number} is on step 1: Read the brief.", $context);
     }
 
     public function test_a_repeated_callback_fades_the_memories_once_and_gets_the_same_reply(): void

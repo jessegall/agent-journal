@@ -13,5 +13,5 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class StartPlanData extends Data
 {
-    public function __construct(public readonly string $planId) {}
+    public function __construct(public readonly string $planId, public readonly string $planNumber) {}
 }

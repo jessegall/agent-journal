@@ -38,7 +38,7 @@ final class StartPlanTest extends TestCase
     public function test_a_start_returns_to_the_page_it_came_from(): void
     {
         $this->actingAs($this->owner)->from("/plans?q=release&page=2&plan={$this->plan->id}")
-            ->post("/plans/{$this->plan->id}/start", ['redirect' => 'https://example.com'])
+            ->post("/plans/{$this->plan->number}/start", ['redirect' => 'https://example.com'])
             ->assertStatus(303)
             ->assertRedirect("/plans?q=release&page=2&plan={$this->plan->id}");
 
@@ -48,7 +48,7 @@ final class StartPlanTest extends TestCase
     public function test_a_start_from_home_returns_to_home_with_every_windows_query(): void
     {
         $this->actingAs($this->owner)->from("/?q=release&plan={$this->plan->id}&rules_q=phase")
-            ->post("/plans/{$this->plan->id}/start")
+            ->post("/plans/{$this->plan->number}/start")
             ->assertStatus(303)
             ->assertRedirect("/?q=release&plan={$this->plan->id}&rules_q=phase");
 
@@ -60,7 +60,7 @@ final class StartPlanTest extends TestCase
         Plan::query()->whereKey($this->plan->id)->update(['state' => PlanState::Paused->value]);
 
         $this->actingAs($this->owner)->from('/plans')
-            ->post("/plans/{$this->plan->id}/start")
+            ->post("/plans/{$this->plan->number}/start")
             ->assertStatus(303)
             ->assertRedirect('/plans')
             ->assertSessionHasErrors(['start' => 'This plan is paused and cannot start; only a planned plan starts.']);
@@ -79,7 +79,7 @@ final class StartPlanTest extends TestCase
 
     public function test_a_guest_and_a_guessed_plan_get_no_start(): void
     {
-        $this->post("/plans/{$this->plan->id}/start")->assertRedirect('/login');
+        $this->post("/plans/{$this->plan->number}/start")->assertRedirect('/login');
         $this->actingAs($this->owner)->post('/plans/'.TestIds::of(999999).'/start')->assertNotFound();
 
         $this->assertSame(PlanState::Planned, $this->plan->fresh()?->state);

@@ -22,7 +22,7 @@ trait ReadsPlanFilters
         return [
             'q' => ['nullable', 'string', 'max:200'],
             'page' => ['nullable', 'integer', 'min:1'],
-            'plan' => ['nullable', 'string', 'ulid'],
+            'plan' => ['nullable', 'string', 'regex:/^[1-9][0-9]{0,18}$/'],
             'state' => ['nullable', Rule::enum(PlanStateGroup::class)],
         ];
     }

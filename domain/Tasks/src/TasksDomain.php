@@ -6,10 +6,13 @@ namespace Domain\Tasks;
 
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasAssignables;
+use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Support\Domain;
+use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Numbers\Support\NumberedModel;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
@@ -20,6 +23,7 @@ use Domain\Tasks\Api\TaskList;
 use Domain\Tasks\Api\TaskProgress;
 use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Commands\CancelTask;
+use Domain\Tasks\Commands\CreateTask;
 use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Contracts\AssignedTaskReader;
@@ -35,9 +39,9 @@ use Domain\Tasks\Readers\TaskAssignments;
 use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 
-final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesStates
+final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesNumberedModels, ProvidesStates
 {
-    use HasAssignables, HasStates;
+    use HasAssignables, HasNumberedModels, HasStates;
 
     public function description(): string
     {
@@ -49,7 +53,7 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesC
      */
     public function commands(): array
     {
-        return [BlockTask::class, CancelTask::class, FinishTask::class, StartTask::class];
+        return [BlockTask::class, CancelTask::class, CreateTask::class, FinishTask::class, StartTask::class];
     }
 
     /**
@@ -93,5 +97,10 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function assignables(): array
     {
         return [Task::LINK_TYPE => TaskAssignments::class];
+    }
+
+    public function numberedModels(): array
+    {
+        return [NumberedModel::global(Task::class)];
     }
 }

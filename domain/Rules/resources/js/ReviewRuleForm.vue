@@ -10,12 +10,12 @@ import { approve, deny } from '@generated/routes/rules';
  * text on screen is the text approved. The server decides whether it may still be reviewed; a rule settled meanwhile
  * comes back as an error that stays visible. Its parent keys it by rule, so another rule never shows this error.
  */
-const props = defineProps<{ ruleId: string }>();
+const props = defineProps<{ ruleNumber: string }>();
 
 const form = useForm({});
 
 function review(action: typeof approve): void {
-    form.submit(action({ rule: Number(props.ruleId) }), {
+    form.submit(action({ rule: props.ruleNumber }), {
         preserveScroll: true,
         ...formSendingHooks(),
     });

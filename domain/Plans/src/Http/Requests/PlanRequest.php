@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Requests;
 
-use App\Http\Requests\Web\Concerns\ReadsRouteId;
+use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
+use Domain\Plans\Models\Plan;
 use Illuminate\Foundation\Http\FormRequest;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * The plan a record page shows, named by its route; an id that is no ULID is not found.
+ * The plan a record page shows, named by its route; by the record's number; a number no record has is not found.
  */
 final class PlanRequest extends FormRequest
 {
-    use ReadsRouteId;
+    use ReadsRouteNumber;
 
     /**
      * @return array<string, list<string>>
@@ -24,6 +26,6 @@ final class PlanRequest extends FormRequest
 
     public function planId(): string
     {
-        return $this->routeId('plan');
+        return Plan::idOfNumber($this->routeNumber('plan')) ?? throw new NotFoundHttpException;
     }
 }

@@ -13,6 +13,7 @@ final readonly class RuleView
 {
     public function __construct(
         public string $id,
+        public int $number,
         public string $text,
         public RuleState $state,
         public bool $canReview,

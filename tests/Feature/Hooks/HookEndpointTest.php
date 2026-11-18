@@ -63,7 +63,7 @@ final class HookEndpointTest extends TestCase
 
         $stdout = $this->hook('claude-code', $this->stopBody())->assertOk()->json('stdout');
 
-        $this->assertStringContainsString("Task {$task->id} still needs work", (string) $stdout);
+        $this->assertStringContainsString("Task {$task->number} still needs work", (string) $stdout);
     }
 
     public function test_the_parsed_facts_refuse_an_unsaved_test_run_and_admit_a_read(): void

@@ -78,8 +78,8 @@ function submitSearch(): void {
                     <template v-for="card in plans.rows" :key="card.id">
                         <PlanCard
                             :card="card"
-                            :href="urlFor({ plan: card.id })"
-                            :selected="filters.plan === card.id"
+                            :href="urlFor({ plan: card.number })"
+                            :selected="filters.plan === card.number"
                         />
                     </template>
                 </div>

@@ -7,6 +7,8 @@ namespace Domain\Plans\Models;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Support\RecordIdentity;
 use App\Links\Support\Linkable;
+use App\Numbers\Contracts\Numbered;
+use App\Numbers\Support\HasNumber;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -22,14 +24,15 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $plan_id
  * @property string $title
- * @property int $position
+ * @property string $number_group_id
+ * @property int $number
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['title', 'position'])]
-final class Phase extends Model implements Assignable
+#[Fillable(['title'])]
+final class Phase extends Model implements Assignable, Numbered
 {
-    use HasUlids, Linkable;
+    use HasNumber, HasUlids, Linkable;
 
     /**
      * The stable name links and assignments use for a phase.
@@ -41,7 +44,7 @@ final class Phase extends Model implements Assignable
      */
     protected function casts(): array
     {
-        return ['position' => 'integer'];
+        return ['number' => 'integer'];
     }
 
     /**
@@ -115,5 +118,13 @@ final class Phase extends Model implements Assignable
     public function assignmentIdentity(): RecordIdentity
     {
         return new RecordIdentity(self::LINK_TYPE, $this->id);
+    }
+
+    /**
+     * A phase is numbered within its plan: plan 12's phase 2.
+     */
+    public function numberHolder(): Model
+    {
+        return $this->plan;
     }
 }

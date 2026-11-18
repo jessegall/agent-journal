@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Numbers\Contracts;
 
-use App\Numbers\Models\NumberGroup;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -17,5 +16,8 @@ interface Numbered
      */
     public function numberHolder(): Model;
 
-    public function assignNumber(NumberGroup $group, int $number): void;
+    /**
+     * Gives the record its number within the number group of this id, as it is created.
+     */
+    public function assignNumber(string $numberGroupId, int $number): void;
 }

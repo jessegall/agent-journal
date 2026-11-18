@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -12,10 +13,16 @@ return new class extends Migration
     {
         Schema::create('rules', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
+            $table->unsignedBigInteger('number');
             $table->text('text');
             $table->string('state', 16)->default('active');
             $table->timestampsTz();
+
+            $table->unique(['number_group_id', 'number']);
         });
+
+        DB::statement('ALTER TABLE rules ADD CONSTRAINT rules_number_positive CHECK (number > 0)');
     }
 
     public function down(): void

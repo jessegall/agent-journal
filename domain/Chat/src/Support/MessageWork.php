@@ -12,7 +12,7 @@ use Domain\Chat\Enums\MessageWorkState;
 final readonly class MessageWork
 {
     public function __construct(
-        public string $messageId,
+        public int $number,
         public MessageWorkState $state,
     ) {}
 
@@ -23,6 +23,6 @@ final readonly class MessageWork
 
     public function replyInstruction(): string
     {
-        return "Message {$this->messageId} waits for your answer: reply to it with journal message reply {$this->messageId} before you change anything else.";
+        return "Message {$this->number} waits for your answer: reply to it with journal message reply {$this->number} before you change anything else.";
     }
 }

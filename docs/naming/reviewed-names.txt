@@ -225,6 +225,8 @@ class	ActorContextMissing
 class	ActorIdentity
 class	ActorStore
 class	ActorsServiceProvider
+class	AddPhase
+class	AddPhaseHandler
 class	AddPhaseTasks
 class	AddPhaseTasksHandler
 class	Agent
@@ -400,6 +402,8 @@ class	CoreApi
 class	CoreCommands
 class	CoreServiceProvider
 class	CreateNewUser
+class	CreateTask
+class	CreateTaskHandler
 class	CredentialLookup
 class	CredentialRejected
 class	CurrentUser
@@ -502,6 +506,7 @@ class	InvalidHookAnswer
 class	InvalidNavigationDeclaration
 class	InvalidObservationAnswer
 class	InvalidPageDeclaration
+class	InvalidRecordReference
 class	InvalidSectionDeclaration
 class	InvalidShellAnswer
 class	InvalidStopAnswer
@@ -597,6 +602,8 @@ class	NumberedModelInvalid
 class	NumberedModelUndeclared
 class	NumberedPage
 class	NumberedTypeRegistry
+class	NumberingOutsideCommands
+class	NumbersSeeder
 class	NumbersServiceProvider
 class	OpenLaunchStack
 class	OpenPlansCount
@@ -687,6 +694,7 @@ class	ReassignRecordRequest
 class	RecordHolderData
 class	RecordIdentity
 class	RecordIds
+class	RecordReference
 class	RecordUnavailable
 class	RecordedAnswer
 class	RecordedAnswerCast
@@ -704,6 +712,8 @@ class	RegisteredSection
 class	RegisteredStateFactory
 class	RelayHookCommand
 class	RelaySettings
+class	RememberForAgent
+class	RememberForAgentHandler
 class	RemindersDomain
 class	RemoveRule
 class	RemoveRuleHandler
@@ -725,7 +735,7 @@ class	RetireAgentHandler
 class	RetireAgentRequest
 class	ReviewRuleRequest
 class	Rewritten
-class	RouteId
+class	RouteNumber
 class	RoutePath
 class	Rule
 class	RuleApproved
@@ -1142,6 +1152,8 @@ method	ActorStore::clear()
 method	ActorStore::hasActor()
 method	ActorStore::set()
 method	ActorsServiceProvider::register()
+method	AddPhase::__construct()
+method	AddPhaseHandler::handle()
 method	AddPhaseTasks::__construct()
 method	AddPhaseTasksHandler::__construct()
 method	AddPhaseTasksHandler::handle()
@@ -1512,6 +1524,7 @@ method	ChatDomain::commands()
 method	ChatDomain::description()
 method	ChatDomain::exports()
 method	ChatDomain::navigation()
+method	ChatDomain::numberedModels()
 method	ChatDomain::pages()
 method	ChatDomain::requires()
 method	ChatDomain::sections()
@@ -1666,6 +1679,8 @@ method	CoreServiceProvider::register()
 method	CountReader::count()
 method	CreateNewUser::__construct()
 method	CreateNewUser::create()
+method	CreateTask::__construct()
+method	CreateTaskHandler::handle()
 method	CredentialLookup::sessionFor()
 method	CredentialRejected::agentRetired()
 method	CredentialRejected::missing()
@@ -1889,7 +1904,7 @@ method	HandlerServesTwoCommands::for()
 method	HasAssignables::bootstrappersHasAssignables()
 method	HasNumber::assignNumber()
 method	HasNumber::bootHasNumber()
-method	HasNumber::numberGroup()
+method	HasNumber::idOfNumber()
 method	HasNumber::numberHolder()
 method	HasNumberedModels::bootstrappersHasNumberedModels()
 method	HasStates::bootstrappersHasStates()
@@ -2007,6 +2022,8 @@ method	InvalidPageDeclaration::optionWithoutChoices()
 method	InvalidPageDeclaration::readerReturnsNoData()
 method	InvalidPageDeclaration::recordSlotWithoutParameter()
 method	InvalidPageDeclaration::unknownChoice()
+method	InvalidRecordReference::number()
+method	InvalidRecordReference::unreadable()
 method	InvalidSectionDeclaration::readerReturnsNoData()
 method	InvalidSectionDeclaration::slotNotFullKey()
 method	InvalidShellAnswer::forAnswer()
@@ -2116,8 +2133,10 @@ method	MainAgentReadyState::onShellCommand()
 method	Memory::casts()
 method	Memory::saveFor()
 method	MemoryCompaction::recordOnce()
+method	MemoryDomain::commands()
 method	MemoryDomain::description()
 method	MemoryDomain::exports()
+method	MemoryDomain::numberedModels()
 method	MemoryDomain::requires()
 method	MemoryServiceProvider::boot()
 method	Message::casts()
@@ -2245,6 +2264,10 @@ method	NumberedPage::__construct()
 method	NumberedTypeRegistry::checkDeclarations()
 method	NumberedTypeRegistry::register()
 method	NumberedTypeRegistry::requireDeclared()
+method	NumberingOutsideCommands::allow()
+method	NumberingOutsideCommands::forbid()
+method	NumberingOutsideCommands::isAllowed()
+method	NumbersSeeder::run()
 method	NumbersServiceProvider::boot()
 method	NumbersServiceProvider::register()
 method	OpenLaunchStack::__construct()
@@ -2307,6 +2330,7 @@ method	Phase::addTasksUnderPlanLock()
 method	Phase::assignmentIdentity()
 method	Phase::casts()
 method	Phase::holdingTask()
+method	Phase::numberHolder()
 method	Phase::plan()
 method	Phase::taskIds()
 method	PhaseAssignmentProvider::__construct()
@@ -2382,6 +2406,7 @@ method	PlansDomain::commands()
 method	PlansDomain::description()
 method	PlansDomain::exports()
 method	PlansDomain::navigation()
+method	PlansDomain::numberedModels()
 method	PlansDomain::pages()
 method	PlansDomain::requires()
 method	PlansDomain::sections()
@@ -2518,7 +2543,7 @@ method	ReadsPlanWorkInput::recipient()
 method	ReadsPlanWorkInput::recipientRules()
 method	ReadsPlanWorkInput::rootRecord()
 method	ReadsPlanWorkInput::rootRules()
-method	ReadsRouteId::routeId()
+method	ReadsRouteNumber::routeNumber()
 method	ReadsRuleFilters::ruleFilterRules()
 method	ReadsRuleFilters::ruleFilters()
 method	ReadyState::onCompaction()
@@ -2553,6 +2578,12 @@ method	RecordHolderData::of()
 method	RecordIdentity::__construct()
 method	RecordIdentity::checkType()
 method	RecordIds::__construct()
+method	RecordReference::__construct()
+method	RecordReference::label()
+method	RecordReference::number()
+method	RecordReference::of()
+method	RecordReference::parse()
+method	RecordReference::within()
 method	RecordUnavailable::for()
 method	RecordUnavailable::status()
 method	RecordedAnswer::__construct()
@@ -2603,6 +2634,8 @@ method	RelayHookCommand::handle()
 method	RelaySettings::__construct()
 method	RelaySettings::client()
 method	RelaySettings::fromEnvironment()
+method	RememberForAgent::__construct()
+method	RememberForAgentHandler::handle()
 method	ReminderContribution::add()
 method	RemindersDomain::description()
 method	RemindersDomain::exports()
@@ -2640,7 +2673,7 @@ method	RewriteSupport::finalAnswer()
 method	RewriteSupport::reply()
 method	Rewritten::__construct()
 method	Rewritten::type()
-method	RouteId::of()
+method	RouteNumber::of()
 method	RoutePath::__construct()
 method	RoutePath::hasParameter()
 method	RoutePath::isFilledBy()
@@ -2686,6 +2719,7 @@ method	RulesDomain::commands()
 method	RulesDomain::description()
 method	RulesDomain::exports()
 method	RulesDomain::navigation()
+method	RulesDomain::numberedModels()
 method	RulesDomain::pages()
 method	RulesDomain::requires()
 method	RulesRequest::filters()
@@ -2737,6 +2771,7 @@ method	SequenceWork::needsWork()
 method	SequencesDomain::commands()
 method	SequencesDomain::description()
 method	SequencesDomain::exports()
+method	SequencesDomain::numberedModels()
 method	SequencesDomain::requires()
 method	SequencesDomain::states()
 method	SequencesServiceProvider::boot()
@@ -2979,6 +3014,7 @@ method	TasksDomain::assignables()
 method	TasksDomain::commands()
 method	TasksDomain::description()
 method	TasksDomain::exports()
+method	TasksDomain::numberedModels()
 method	TasksDomain::requires()
 method	TasksDomain::states()
 method	TasksServiceProvider::boot()
@@ -3143,6 +3179,8 @@ property	ActorContext::$type
 property	ActorIdentity::$id
 property	ActorIdentity::$type
 property	ActorStore::$actor
+property	AddPhase::$planId
+property	AddPhase::$title
 property	AddPhaseTasks::$phaseId
 property	AddPhaseTasks::$taskIds
 property	AddPhaseTasksHandler::$tasks
@@ -3364,6 +3402,7 @@ property	ConversationData::$id
 property	ConversationData::$messages
 property	ConversationData::$sessionId
 property	CreateNewUser::$validation
+property	CreateTask::$title
 property	CurrentUser::$id
 property	CurrentUser::$name
 property	CurrentUserData::$id
@@ -3544,6 +3583,7 @@ property	LayoutsController::$users
 property	Link::$guarded
 property	LinkAccess::$model
 property	LoadMigrations::$app
+property	LockingNumberAllocator::$outsideCommands
 property	LockingNumberAllocator::$transaction
 property	LockingNumberAllocator::$types
 property	LogCommand::$log
@@ -3573,7 +3613,7 @@ property	MessageSent::$target
 property	MessageView::$body
 property	MessageView::$id
 property	MessageView::$state
-property	MessageWork::$messageId
+property	MessageWork::$number
 property	MessageWork::$state
 property	MiddlewareDeclaration::$middleware
 property	MiddlewareDeclaration::$scope
@@ -3626,6 +3666,7 @@ property	NumberedPage::$number
 property	NumberedPage::$size
 property	NumberedTypeRegistry::$declared
 property	NumberedTypeRegistry::$declaredOfLinkType
+property	NumberingOutsideCommands::$allowed
 property	OpenLaunchStack::$parser
 property	OpenLaunchStack::$stacks
 property	OpenPlansCount::$records
@@ -3673,6 +3714,7 @@ property	PlanCard::$currentPhase
 property	PlanCard::$focused
 property	PlanCard::$holder
 property	PlanCard::$id
+property	PlanCard::$number
 property	PlanCard::$progress
 property	PlanCard::$state
 property	PlanCard::$title
@@ -3681,6 +3723,7 @@ property	PlanCardData::$doneTasks
 property	PlanCardData::$focused
 property	PlanCardData::$holder
 property	PlanCardData::$id
+property	PlanCardData::$number
 property	PlanCardData::$phase
 property	PlanCardData::$state
 property	PlanCardData::$title
@@ -3689,6 +3732,7 @@ property	PlanCardData::$type
 property	PlanFilters::$page
 property	PlanFilters::$search
 property	PlanFilters::$selectedPlanId
+property	PlanFilters::$selectedPlanNumber
 property	PlanFilters::$states
 property	PlanFiltersData::$page
 property	PlanFiltersData::$plan
@@ -3810,6 +3854,9 @@ property	RecordIdentity::$id
 property	RecordIdentity::$type
 property	RecordIds::$ids
 property	RecordIds::$nextAfterId
+property	RecordReference::$number
+property	RecordReference::$parent
+property	RecordReference::$type
 property	RecordedAnswer::$exitCode
 property	RecordedAnswer::$stderr
 property	RecordedAnswer::$stdout
@@ -3865,6 +3912,9 @@ property	RelaySettings::$journalUrl
 property	RelaySettings::$role
 property	RelaySettings::$timeoutSeconds
 property	RelaySettings::$token
+property	RememberForAgent::$agentId
+property	RememberForAgent::$text
+property	RememberForAgent::$weight
 property	RemoveRule::$ruleId
 property	RemoveRuleHandler::$events
 property	RequireMessageAnswer::$messageId
@@ -3913,15 +3963,18 @@ property	RulePaginationData::$page
 property	RulePaginationData::$total
 property	RuleReaderData::$canReview
 property	RuleReaderData::$id
+property	RuleReaderData::$number
 property	RuleReaderData::$state
 property	RuleReaderData::$text
 property	RuleRecords::$actors
 property	RuleRemoved::$ruleId
 property	RuleRowData::$id
+property	RuleRowData::$number
 property	RuleRowData::$state
 property	RuleRowData::$text
 property	RuleView::$canReview
 property	RuleView::$id
+property	RuleView::$number
 property	RuleView::$state
 property	RuleView::$text
 property	RulesWindowReader::$records
@@ -3954,7 +4007,7 @@ property	SendMessageHandler::$stacks
 property	SequenceRun::$attributes
 property	SequenceStarted::$runId
 property	SequenceStarted::$target
-property	SequenceWork::$runId
+property	SequenceWork::$runNumber
 property	SequenceWork::$state
 property	SequenceWork::$stepInstruction
 property	SequenceWork::$stepNumber
@@ -4013,6 +4066,7 @@ property	StackTransaction::$database
 property	StackTransaction::$deadline
 property	StartPlan::$planId
 property	StartPlanData::$planId
+property	StartPlanData::$planNumber
 property	StartPlanHandler::$actors
 property	StartPlanHandler::$events
 property	StartSequence::$sequenceRunId
@@ -4082,9 +4136,9 @@ property	TaskProgress::$started
 property	TaskProgress::$total
 property	TaskStarted::$target
 property	TaskStarted::$taskId
+property	TaskWork::$number
 property	TaskWork::$runNumber
 property	TaskWork::$state
-property	TaskWork::$taskId
 property	ToggleOption::$key
 property	ToggleOption::$label
 property	ToggleOption::$startsOn
@@ -4164,7 +4218,7 @@ trait	ReadsAssignmentArguments
 trait	ReadsAssignmentInput
 trait	ReadsPlanFilters
 trait	ReadsPlanWorkInput
-trait	ReadsRouteId
+trait	ReadsRouteNumber
 trait	ReadsRuleFilters
 trait	RendersRefusal
 trait	SendsPlanWorkCommands

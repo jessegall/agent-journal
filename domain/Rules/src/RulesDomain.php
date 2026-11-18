@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Domain\Rules;
 
 use App\Bus\Contracts\ProvidesCommands;
+use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Support\Domain;
+use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Numbers\Support\NumberedModel;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Declarations\ActionRoute;
@@ -28,10 +31,13 @@ use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Exceptions\RuleNotProposed;
 use Domain\Rules\Http\Controllers\ApproveRuleController;
 use Domain\Rules\Http\Controllers\DenyRuleController;
+use Domain\Rules\Models\Rule;
 use Domain\Rules\Readers\RulesWindowReader;
 
-final class RulesDomain extends Domain implements ProvidesCommands, ProvidesNavigation, ProvidesPages
+final class RulesDomain extends Domain implements ProvidesCommands, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages
 {
+    use HasNumberedModels;
+
     public function description(): string
     {
         return 'The standing project rules every agent is told.';
@@ -90,5 +96,10 @@ final class RulesDomain extends Domain implements ProvidesCommands, ProvidesNavi
     public function navigation(): array
     {
         return [NavigationItem::page('list', 'Rules', Icon::Rules, group: 'Agents', position: 30)];
+    }
+
+    public function numberedModels(): array
+    {
+        return [NumberedModel::global(Rule::class)];
     }
 }

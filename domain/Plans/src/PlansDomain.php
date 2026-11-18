@@ -6,8 +6,11 @@ namespace Domain\Plans;
 
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasAssignables;
+use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Support\Domain;
+use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Numbers\Support\NumberedModel;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Contracts\ProvidesSections;
@@ -27,6 +30,7 @@ use Domain\Plans\Api\PlanFilters;
 use Domain\Plans\Api\PlanList;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Api\PlanSelection;
+use Domain\Plans\Commands\AddPhase;
 use Domain\Plans\Commands\AddPhaseTasks;
 use Domain\Plans\Commands\AssignPlanWork;
 use Domain\Plans\Commands\ReassignPlanWork;
@@ -49,9 +53,9 @@ use Domain\Plans\Support\PhaseAssignmentProvider;
 use Domain\Plans\Support\PlanAssignmentProvider;
 use Domain\Tasks\TasksDomain;
 
-final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesSections
+final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections
 {
-    use HasAssignables;
+    use HasAssignables, HasNumberedModels;
 
     public function description(): string
     {
@@ -106,7 +110,7 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
      */
     public function commands(): array
     {
-        return [StartPlan::class, AddPhaseTasks::class, AssignPlanWork::class, ReassignPlanWork::class, UnassignPlanWork::class];
+        return [StartPlan::class, AddPhase::class, AddPhaseTasks::class, AssignPlanWork::class, ReassignPlanWork::class, UnassignPlanWork::class];
     }
 
     public function pages(): array
@@ -139,5 +143,10 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
                 NavigationItem::page('closed', 'Closed', page: 'list', query: ['state' => 'closed']),
             ]),
         ];
+    }
+
+    public function numberedModels(): array
+    {
+        return [NumberedModel::global(Plan::class), NumberedModel::within(Phase::class, Plan::class)];
     }
 }

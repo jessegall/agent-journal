@@ -12,7 +12,7 @@ use Domain\Sequences\Enums\SequenceRunState;
 final readonly class SequenceWork
 {
     public function __construct(
-        public string $runId,
+        public int $runNumber,
         public int $stepNumber,
         public string $stepInstruction,
         public SequenceRunState $state,
@@ -25,6 +25,6 @@ final readonly class SequenceWork
 
     public function currentInstruction(): string
     {
-        return "Sequence run {$this->runId} is on step {$this->stepNumber}: {$this->stepInstruction}";
+        return "Sequence run {$this->runNumber} is on step {$this->stepNumber}: {$this->stepInstruction}";
     }
 }

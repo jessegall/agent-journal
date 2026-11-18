@@ -28,7 +28,7 @@ const title = computed(() =>
             </template>
             <template #actions>
                 <template v-if="reader.canReview">
-                    <ReviewRuleForm :key="reader.id" :rule-id="reader.id" />
+                    <ReviewRuleForm :key="reader.id" :rule-number="reader.number" />
                 </template>
             </template>
             <p class="mt-4 text-body whitespace-pre-wrap text-text">

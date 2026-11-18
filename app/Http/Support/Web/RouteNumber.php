@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Support\Web;
+
+use App\Numbers\Exceptions\InvalidRecordReference;
+use App\Numbers\Support\RecordReference;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
+/**
+ * Reads a record number from a human route, such as the 12 of /plans/12, through the one record number parser; a
+ * route without a valid number is not found before any work.
+ */
+final class RouteNumber
+{
+    public static function of(string $value): int
+    {
+        try {
+            return RecordReference::number($value);
+        } catch (InvalidRecordReference $invalid) {
+            throw new NotFoundHttpException(previous: $invalid);
+        }
+    }
+}

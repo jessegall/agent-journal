@@ -52,7 +52,7 @@ final class PlansPageTest extends TestCase
             ->where('page.data.pagination.total', 2)
             ->where('page.data.rows.1.id', (string) $this->release->id)
             ->where('page.data.rows.1.totalTasks', 1)
-            ->where('page.data.rows.1.phase', 1)
+            ->where('page.data.rows.1.phase', '1')
             ->missing('page.data.rows.1.holder')
             ->where('page.data.filters.q', '')
             ->where('page.data.selectionMissing', false)
@@ -61,22 +61,22 @@ final class PlansPageTest extends TestCase
 
     public function test_the_search_and_selection_survive_in_the_query_and_the_start_is_offered_by_the_domain_rule(): void
     {
-        $this->actingAs($this->owner)->get("/plans?q=release&plan={$this->release->id}")->assertInertia(fn (AssertableInertia $page) => $page
+        $this->actingAs($this->owner)->get("/plans?q=release&plan={$this->release->number}")->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.filters.q', 'release')
-            ->where('page.data.filters.plan', (string) $this->release->id)
+            ->where('page.data.filters.plan', (string) $this->release->number)
             ->count('page.data.rows', 1)
             ->where('page.data.selected.card.title', 'Build the release page')
             ->where('page.data.selected.insideResults', true)
             ->where('page.data.selected.start.planId', (string) $this->release->id));
 
-        $this->actingAs($this->owner)->get("/plans?q=release&plan={$this->paused->id}")->assertInertia(fn (AssertableInertia $page) => $page
+        $this->actingAs($this->owner)->get("/plans?q=release&plan={$this->paused->number}")->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.selected.insideResults', false)
             ->missing('page.data.selected.start'));
     }
 
     public function test_a_selection_that_cannot_be_read_shows_no_title(): void
     {
-        $this->actingAs($this->owner)->get('/plans?plan='.TestIds::of(999999))->assertInertia(fn (AssertableInertia $page) => $page
+        $this->actingAs($this->owner)->get('/plans?plan=999999')->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.selectionMissing', true)
             ->missing('page.data.selected'));
     }
@@ -113,12 +113,12 @@ final class PlansPageTest extends TestCase
 
     public function test_a_plan_has_its_own_record_page_and_opens_in_the_inspector(): void
     {
-        $this->actingAs($this->owner)->get("/plans/{$this->release->id}")->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+        $this->actingAs($this->owner)->get("/plans/{$this->release->number}")->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
             ->component('plans/PlanWindow')
             ->where('page.state', 'ready')
             ->where('page.data.card.title', 'Build the release page'));
 
-        $this->actingAs($this->owner)->get("/plans?inspect=plans.plan&plan={$this->release->id}")->assertInertia(fn (AssertableInertia $page) => $page
+        $this->actingAs($this->owner)->get("/plans?inspect=plans.plan&plan={$this->release->number}")->assertInertia(fn (AssertableInertia $page) => $page
             ->reloadOnly('inspector', fn (AssertableInertia $reload) => $reload->where('inspector.data.card.title', 'Build the release page')));
     }
 

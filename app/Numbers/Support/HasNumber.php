@@ -6,10 +6,8 @@ namespace App\Numbers\Support;
 
 use App\Numbers\Exceptions\NumberChanged;
 use App\Numbers\Models\GlobalGroup;
-use App\Numbers\Models\NumberGroup;
 use App\Numbers\Observers\NumberObserver;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * The model side of Numbered: numbered within the journal unless the model names another holder, given its number
@@ -30,22 +28,25 @@ trait HasNumber
         });
     }
 
-    /**
-     * @return BelongsTo<NumberGroup, $this>
-     */
-    public function numberGroup(): BelongsTo
-    {
-        return $this->belongsTo(NumberGroup::class);
-    }
 
     public function numberHolder(): Model
     {
         return GlobalGroup::journal();
     }
 
-    public function assignNumber(NumberGroup $group, int $number): void
+    /**
+     * The id of the record with this number, for a model numbered across the journal; none when no record has it.
+     */
+    public static function idOfNumber(int $number): string|null
     {
-        $this->number_group_id = $group->id;
+        $id = static::query()->where('number', $number)->value((new static)->getKeyName());
+
+        return is_string($id) ? $id : null;
+    }
+
+    public function assignNumber(string $numberGroupId, int $number): void
+    {
+        $this->number_group_id = $numberGroupId;
         $this->number = $number;
     }
 }
