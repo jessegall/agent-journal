@@ -89,6 +89,14 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     }
 
     /**
+     * The configuration of this id, enabled or not, locked until the transaction ends.
+     */
+    public static function lockById(string $configurationId): self
+    {
+        return self::query()->whereKey($configurationId)->lockForUpdate()->firstOrFail();
+    }
+
+    /**
      * The gateway key of each of these configurations, by configuration id.
      *
      * @param  list<string>  $ids

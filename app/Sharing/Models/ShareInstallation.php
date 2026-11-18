@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Sharing\Models;
 
 use App\Links\Support\Linkable;
-use App\Sharing\Exceptions\GatewayRunStale;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Sharing\Exceptions\GatewayRunStale;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;

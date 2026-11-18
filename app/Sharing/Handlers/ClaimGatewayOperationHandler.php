@@ -8,26 +8,26 @@ use App\Contracts\CommandHandler;
 use App\Sharing\Commands\ClaimGatewayOperation;
 use App\Sharing\Enums\GatewayEndpointState;
 use App\Sharing\Enums\GatewayOperationType;
+use App\Sharing\Enums\GatewayOutcome;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\ShareGatewayEndpoint;
 use App\Sharing\Models\ShareGatewayOperation;
 use App\Sharing\Models\ShareInstallation;
 use App\Sharing\Support\ClaimedGatewayOperation;
-use App\Sharing\Support\GatewayOperation;
 
 /**
  * Locks the installation and holds it for the run (a newer run takes over and every endpoint of older runs counts as
- * stopped), then the operation's configuration, its endpoint and the operation, in that order. An open reuses the
- * run's running endpoint or starts the next version; a close moves the run's endpoint to closing. No I/O happens here.
+ * stopped and their unfinished operations are released), then the operation's configuration, the run's running endpoint and the operation, in that order. An open
+ * reuses the run's running endpoint or starts the next version, never a closing one; a close moves the run's endpoint
+ * to closing, and with none running it is done at once. No I/O happens here.
  */
 final readonly class ClaimGatewayOperationHandler implements CommandHandler
 {
     public function handle(ClaimGatewayOperation $command): ClaimedGatewayOperation|null
     {
-        $installation = ShareInstallation::lockForAdmission();
-
-        if ($installation->holdFor($command->runId)) {
+        if (ShareInstallation::lockForAdmission()->holdFor($command->runId)) {
             ShareGatewayEndpoint::stopAllButRun($command->runId);
+            ShareGatewayOperation::releaseAllButRun($command->runId);
         }
 
         $operationId = $command->operationId ?? ShareGatewayOperation::nextClaimable()->getOrElse(null);
@@ -44,23 +44,18 @@ final readonly class ClaimGatewayOperationHandler implements CommandHandler
             return null;
         }
 
-        $endpoint = $operation->type === GatewayOperationType::Open
-            ? $running->getOrCall(fn () => ShareGatewayEndpoint::openNextFor($configuration, $command->runId))
-            : $running->getOrCall(fn () => ShareGatewayEndpoint::openNextFor($configuration, $command->runId));
+        if ($operation->type === GatewayOperationType::Close && $running->isEmpty()) {
+            $operation->finish(GatewayOutcome::Succeeded);
+
+            return null;
+        }
+
+        $endpoint = $running->getOrCall(fn () => ShareGatewayEndpoint::openNextFor($configuration, $command->runId));
 
         if ($operation->type === GatewayOperationType::Close) {
             $endpoint->moveTo(GatewayEndpointState::Closing);
         }
 
-        $operation->claimFor($command->runId, $endpoint);
-
-        return new ClaimedGatewayOperation($operation->type, new GatewayOperation(
-            $operation->id,
-            $command->runId,
-            $endpoint->endpoint_version,
-            (string) $operation->lease_token,
-            $operation->lease_ends_at?->getTimestamp() ?? 0,
-            $configuration->toConfiguration(),
-        ));
+        return new ClaimedGatewayOperation($operation->type, $operation->claimFor($command->runId, $endpoint, $configuration->toConfiguration()));
     }
 }

@@ -10,6 +10,8 @@ use App\Reads\Support\BoundedReads;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\GatewayOutcome;
 use App\Sharing\Exceptions\GatewayLeaseRefused;
+use App\Sharing\Support\GatewayConfiguration;
+use App\Sharing\Support\GatewayOperation;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -88,6 +90,15 @@ final class ShareGatewayOperation extends Model implements ReadableModel
     }
 
     /**
+     * Releases every operation another run holds without an outcome, so the run that took the gateways over claims it
+     * again at once.
+     */
+    public static function releaseAllButRun(string $runId): void
+    {
+        self::query()->whereNull('outcome_code')->whereNotNull('run_id')->where('run_id', '!=', $runId)->update(['lease_ends_at' => CarbonImmutable::now()]);
+    }
+
+    /**
      * The operation of this id, read without a lock to learn which configuration to lock first.
      *
      * @throws GatewayLeaseRefused
@@ -114,16 +125,21 @@ final class ShareGatewayOperation extends Model implements ReadableModel
     }
 
     /**
-     * The run claims the operation for the endpoint under a new random lease token for 90 seconds.
+     * The run claims the operation for the endpoint under a new random lease token for 90 seconds, and gets what it
+     * carries the operation out under.
      */
-    public function claimFor(string $runId, ShareGatewayEndpoint $endpoint): void
+    public function claimFor(string $runId, ShareGatewayEndpoint $endpoint, GatewayConfiguration $configuration): GatewayOperation
     {
+        $leaseToken = bin2hex(random_bytes(self::LEASE_TOKEN_BYTES));
+        $leaseEndsAt = CarbonImmutable::now()->addSeconds(self::LEASE_SECONDS);
         $this->run_id = $runId;
         $this->share_gateway_endpoint_id = $endpoint->id;
         $this->endpoint_version = $endpoint->endpoint_version;
-        $this->lease_token = bin2hex(random_bytes(self::LEASE_TOKEN_BYTES));
-        $this->lease_ends_at = CarbonImmutable::now()->addSeconds(self::LEASE_SECONDS);
+        $this->lease_token = $leaseToken;
+        $this->lease_ends_at = $leaseEndsAt;
         $this->save();
+
+        return new GatewayOperation($this->id, $runId, $endpoint->endpoint_version, $leaseToken, $leaseEndsAt->getTimestamp(), $configuration);
     }
 
     /**
