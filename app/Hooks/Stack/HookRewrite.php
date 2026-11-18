@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack;
 
-use App\Hooks\Contracts\ShellCommandParser;
+use App\Processes\Contracts\ShellCommandParser;
 use App\Hooks\Exceptions\RepeatedCommandRewrite;
 use App\Hooks\Inputs\ShellCommandRequested;
 

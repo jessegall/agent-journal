@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Domain\Processes\Support;
+namespace App\Processes\Support;
 
-use App\Hooks\Enums\PartJoin;
+use App\Processes\Enums\PartJoin;
 
 /**
  * A shell line split into words and the operators between them, honouring quotes and backslashes.

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks\Programs;
 
 use App\Hooks\Decisions\Decision;
-use App\Hooks\Enums\CommandType;
+use App\Processes\Enums\CommandType;
 use App\Hooks\Enums\FileOperation;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Inputs\ContextCompacted;

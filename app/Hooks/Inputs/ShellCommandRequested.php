@@ -8,6 +8,7 @@ use App\Hooks\Contracts\HookAnswerer;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Enums\AnswerType;
+use App\Processes\Values\ShellCommand;
 
 final readonly class ShellCommandRequested implements HookInput
 {

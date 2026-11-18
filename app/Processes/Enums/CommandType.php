@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Enums;
+namespace App\Processes\Enums;
 
 /**
  * What a command part is, as the parser knows it: a test run or a build must run through a command alias.

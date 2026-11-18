@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Enums;
+namespace App\Processes\Enums;
 
 enum ShellDialect: string
 {

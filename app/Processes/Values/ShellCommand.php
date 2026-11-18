@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Inputs;
+namespace App\Processes\Values;
 
-use App\Hooks\Enums\ParseOutcome;
-use App\Hooks\Enums\ShellDialect;
+use App\Processes\Enums\ParseOutcome;
+use App\Processes\Enums\ShellDialect;
 
 /**
  * A shell line as the Processes parser read it: the source, its dialect, how far the parse got, and its parts.

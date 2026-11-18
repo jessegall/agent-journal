@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Contracts;
+namespace App\Processes\Contracts;
 
-use App\Hooks\Enums\ShellDialect;
-use App\Hooks\Inputs\ShellCommand;
+use App\Processes\Enums\ShellDialect;
+use App\Processes\Values\ShellCommand;
 
 /**
  * Reads a shell line into its parsed parts and facts; the Processes domain supplies the parser.

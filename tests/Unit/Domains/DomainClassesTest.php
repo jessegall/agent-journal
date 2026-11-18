@@ -9,7 +9,6 @@ use Domain\Access\AccessDomain;
 use Domain\Chat\ChatDomain;
 use Domain\Memory\MemoryDomain;
 use Domain\Plans\PlansDomain;
-use Domain\Processes\ProcessesDomain;
 use Domain\Profiles\ProfilesDomain;
 use Domain\Reminders\RemindersDomain;
 use Domain\Rules\RulesDomain;
@@ -36,7 +35,6 @@ final class DomainClassesTest extends TestCase
         yield 'Rules' => [RulesDomain::class, [], ['RuleApproved', 'RuleDenied', 'RuleRemoved', 'RuleReader', 'ApproveRule', 'DenyRule', 'RuleFilters', 'RuleList', 'RuleView', 'RuleState', 'RuleMissing', 'RuleNotProposed']];
         yield 'Sequences' => [SequencesDomain::class, [], []];
         yield 'Reminders' => [RemindersDomain::class, [], []];
-        yield 'Processes' => [ProcessesDomain::class, [], []];
         yield 'Access' => [AccessDomain::class, [], []];
     }
 

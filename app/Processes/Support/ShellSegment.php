@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Domain\Processes\Support;
+namespace App\Processes\Support;
 
-use App\Hooks\Enums\PartJoin;
+use App\Processes\Enums\PartJoin;
 
 /**
  * The words of one simple command in a shell line, and how it joins the next command.
