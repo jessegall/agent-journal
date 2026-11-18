@@ -25,7 +25,7 @@ class PlanCheckpoints:
     """Reads the checkpoints of a plan and records what happens at them. A window that is reached gets a reach
     for its run, one at a time, with the completed tasks it had then; a reached window with no completed task
     has nothing to run and passes at once. A window whose run failed is reached again once its tasks are all
-    completed again, and gets a new reach. The core runs no test: a suite ends the run of a reach. The last
+    completed again, and gets a new reach; a window that passed is not run again. The core runs no test: a suite ends the run of a reach. The last
     phase of a plan is always a checkpoint, so a plan is over once that one has passed. A window whose run on
     an agent's commit passed with the same tasks passes at the merge with no new run, unless it is the plan's
     last window and the branch moved after that commit. A window whose checkpoint was made with a person check
@@ -82,7 +82,8 @@ class PlanCheckpoints:
                 continue
             if not completed and checkpoint.id not in passed:
                 self.repository.save(CheckpointPass(creator_id=context.actor.id, plan_id=plan_id, phase_id=checkpoint.id, passed_at=context.timestamp), context)
-            starts_reach = bool(completed) and not record_passes and run_tasks.get(checkpoint.id) != completed
+            # a window that passed is never run again: closing one of its tasks again starts no new run
+            starts_reach = bool(completed) and not record_passes and checkpoint.id not in passed and run_tasks.get(checkpoint.id) != completed
             if starts_reach:
                 self.repository.save(CheckpointReach.started(context.actor.id, plan_id, checkpoint.id, completed), context)
 
