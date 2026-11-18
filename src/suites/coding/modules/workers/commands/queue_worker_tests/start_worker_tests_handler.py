@@ -1,5 +1,7 @@
 from dataclasses import replace
 
+import shlex
+from suites.coding.modules.workers.support.proof_test_command import ProofTestCommand
 from engine.command.bus import Bus
 from engine.command.context import Context
 from engine.command.handler import Handler
@@ -49,15 +51,12 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
         queued = [proof for proof in proofs if proof.state is ProofState.QUEUED]
         ready = {worktree_id for worktree_id in {proof.worktree_id for proof in queued} if self.is_ready(worktrees[worktree_id], running)}
         folders = {worktree_id: self.test_folder(worktrees[worktree_id], running) for worktree_id in ready}
-        # proofs of one worktree with the same command share one run instead of each queueing it again
-        shared: dict[tuple[int, str], int] = {}
-        for proof in (proof for proof in queued if proof.worktree_id in ready):
-            key = (proof.worktree_id, proof.test_command)
-            if key in shared:
-                self.repository.save_change(proof, proof.moved(ProofLifecycle.run, process_id=shared[key]), context)
-                continue
-            shared[key] = self.start(proof, worktrees[proof.worktree_id], folders[proof.worktree_id], context)
-            running.add(proof.worktree_id)
+        for members in self.run_groups([proof for proof in queued if proof.worktree_id in ready]):
+            worktree_id = members[0].worktree_id
+            process_id = self.start(members[0], worktrees[worktree_id], folders[worktree_id], ProofTestCommand.combined([proof.test_command for proof in members]), context)
+            for proof in members[1:]:
+                self.repository.save_change(proof, proof.moved(ProofLifecycle.run, process_id=process_id), context)
+            running.add(worktree_id)
         for first_answer in first_answers:
             if first_answer.worktree_id not in worktrees or first_answer.worktree_id in running:
                 continue
@@ -79,8 +78,18 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
             return self.runner.folder(self.environments.find(worktree.environment_id), self.plans.find_phase(worktree.task_id).plan_id)
         return self.git.test_folder(worktree) if worktree.id in running else self.git.test_checkout(worktree)
 
-    def start(self, proof: Proof, worktree: Worktree, folder: str, context: Context) -> int:
-        start = WorkerTestStart.started(worktree.session_agent_id, proof.test_command, folder)
+    # the queued proofs of one worktree that run one test program over named files run as one run over all their
+    # files; a proof that names no file runs alone, or with the proofs of the very same command
+    @staticmethod
+    def run_groups(proofs: list[Proof]) -> list[list[Proof]]:
+        groups: dict[tuple[int, str], list[Proof]] = {}
+        for proof in proofs:
+            parsed = ProofTestCommand.parsed(proof.test_command)
+            groups.setdefault((proof.worktree_id, shlex.join(parsed.program) if parsed.files else proof.test_command), []).append(proof)
+        return list(groups.values())
+
+    def start(self, proof: Proof, worktree: Worktree, folder: str, command: str, context: Context) -> int:
+        start = WorkerTestStart.started(worktree.session_agent_id, command, folder)
         process = self.bus.dispatch(replace(start, owner_agent_id=worktree.session_agent_id, task_id=proof.task_id), context)
         self.repository.save_change(proof, proof.moved(ProofLifecycle.run, process_id=process.id), context)
         return process.id

@@ -70,10 +70,12 @@ class TaskWaits(KeptRowChanges[TaskWait]):
 
     # one task's open waits and one target's, each read through its index, so a save never loads every open wait
     def pending_task(self, task_id: int) -> tuple[TaskWait, ...]:
-        return tuple(self.pending_waits().filter(task_id=task_id).every_row(TASK_WAITS_REASON))
+        waits = self.pending_waits().filter(task_id=task_id)
+        return self.kept.read(waits, lambda: tuple(waits.every_row(TASK_WAITS_REASON)), name="tasks.task_pending_waits")
 
     def pending_target(self, target: str) -> tuple[TaskWait, ...]:
-        return tuple(self.pending_waits().filter(target=target).every_row(TARGET_WAITS_REASON))
+        waits = self.pending_waits().filter(target=target)
+        return self.kept.read(waits, lambda: tuple(waits.every_row(TARGET_WAITS_REASON)), name="tasks.target_pending_waits")
 
     def pending_rows(self) -> tuple[TaskWait, ...]:
         waits = self.pending_waits()

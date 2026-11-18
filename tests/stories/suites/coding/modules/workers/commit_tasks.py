@@ -60,7 +60,7 @@ def three_started(new_story) -> StoryWorker:
     return worker
 
 
-def test_24_26_proofs_shown_forty_minutes_before_a_commit_of_two_tasks_start_no_test_until_it_and_both_tasks_go_to_testing(two_proved_unplanned):
+def test_24_26_proofs_shown_forty_minutes_before_a_commit_of_two_tasks_start_no_test_until_it_then_one_shared_run_and_both_tasks_go_to_testing(two_proved_unplanned):
     story = two_proved_unplanned.story
     story.advance(PRE_COMMIT_WAIT)
     story.run_listeners()
@@ -70,7 +70,7 @@ def test_24_26_proofs_shown_forty_minutes_before_a_commit_of_two_tasks_start_no_
     story.run_listeners()
     expect_task_states(two_proved_unplanned, "testing", 1, 2)
     story.expect_rows(precommit_states == [ProofState.SHOWN] * 2, started_precommit == [], outcome.code == 0, "committed tasks 1, 2 as " in outcome.output_text,
-                      len(two_proved_unplanned.started) == 2, detail=f"{outcome.output_text} | {precommit_states} | {two_proved_unplanned.started}")
+                      len(two_proved_unplanned.started) == 1, detail=f"{outcome.output_text} | {precommit_states} | {two_proved_unplanned.started}")
 
 
 def test_25_158_163_165_a_commit_of_two_tasks_in_a_started_plan_is_one_git_commit_starts_no_test_and_its_merge_completes_both(two_proved):

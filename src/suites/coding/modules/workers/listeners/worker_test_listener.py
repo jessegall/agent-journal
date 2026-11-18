@@ -7,10 +7,12 @@ from core.modules.agents.models.agent import Agent
 from core.modules.processes.models.process import Process
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.models.proof import Proof
+from suites.coding.modules.workers.support.proof_test_command import ProofTestCommand
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 from suites.coding.modules.workers.listeners.support.worker_test_starts import WorkerTestStarts
 
 QUEUED_EVENT = "proof.queue"
+SHARED_RUN_REASON = "the proofs one worktree runs together share one run, a handful at a time"
 
 
 class WorkerTestListener(CommitListener[Moved[Proof]]):
@@ -29,12 +31,12 @@ class WorkerTestListener(CommitListener[Moved[Proof]]):
             self.starts.start_next(logged)
             return
         proof = event.row
-        # a run several proofs share is launched once, by the first of them
-        if proof.process_id is None or not self.is_first_sharer(proof):
+        if proof.process_id is None:
+            return
+        # a run several proofs share is launched once, by the first of them, with the command over all their files
+        sharers = tuple(self.queries.query(Proof).filter(process_id=proof.process_id).oldest().every_row(SHARED_RUN_REASON))
+        if sharers and sharers[0].id != proof.id:
             return
         process = self.rows.required(Process, proof.process_id)
-        self.launch.start(process, proof.test_command, self.rows.required(Agent, process.session_agent_id).session)
-
-    def is_first_sharer(self, proof: Proof) -> bool:
-        first = self.queries.query(Proof).filter(process_id=proof.process_id).oldest().first()
-        return first is None or first.id == proof.id
+        command = ProofTestCommand.combined([row.test_command for row in sharers] or [proof.test_command])
+        self.launch.start(process, command, self.rows.required(Agent, process.session_agent_id).session)
