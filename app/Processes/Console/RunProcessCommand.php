@@ -32,13 +32,49 @@ final class RunProcessCommand extends Command
      */
     private const array SECRET_VARIABLES = ['JOURNAL_LAUNCH_TOKEN', 'JOURNAL_EVENT_KEY'];
 
-    protected $signature = 'process:run {--admission= : The admitted run to start} {--permit= : An evidence permit to run its exact command line once} {--request-id= : The id this use of the permit goes under}';
+    protected $signature = 'process:run {--admission= : The admitted run to start}'
+        .' {--line= : A shell line to admit and run directly} {--dialect=bash : bash, sh or zsh}'
+        .' {--permit= : An evidence permit to run its exact command line once}'
+        .' {--request-id= : The id this use of the line or permit goes under}';
 
     protected $description = 'Run an admitted command line under the supervisor and print the start of its output';
 
     public function handle(AgentRequestSender $journal, Supervisor $supervisor): int
     {
-        $admissionId = $this->admissionId($journal);
+        if ($this->option('line') !== null) {
+            return $this->runLine($journal, $supervisor);
+        }
+
+        return $this->runAdmission($journal, $supervisor, $this->admissionId($journal));
+    }
+
+    /**
+     * Admits a direct line through the one shell admission; a refusal prints why and starts nothing.
+     */
+    private function runLine(AgentRequestSender $journal, Supervisor $supervisor): int
+    {
+        $requestId = (string) ($this->option('request-id') ?? bin2hex(random_bytes(16)));
+        $answer = $journal->send('/agent/processes/admit', [
+            'line' => (string) $this->option('line'),
+            'dialect' => (string) $this->option('dialect'),
+            'working_folder' => (string) getcwd(),
+            'request_id' => $requestId,
+        ])->body;
+        if ($answer['allowed'] !== true) {
+            $this->error("{$answer['code']}: {$answer['reason']} {$answer['notice']}");
+            $this->line("Correction: {$answer['correction']}");
+            if ($answer['request_id'] !== '') {
+                $this->line("Request {$answer['request_id']}. Next: {$answer['next']}");
+            }
+
+            return self::FAILURE;
+        }
+
+        return $this->runAdmission($journal, $supervisor, (string) $answer['run_id']);
+    }
+
+    private function runAdmission(AgentRequestSender $journal, Supervisor $supervisor, string $admissionId): int
+    {
         if ($admissionId === '') {
             $this->error('An evidence permit is required: a project owner issues one for the exact command line.');
 
@@ -57,13 +93,30 @@ final class RunProcessCommand extends Command
             return self::FAILURE;
         }
         $folder = (string) $admission['working_folder'];
-        $context = new ExecutionContext(ShellDialect::from((string) $admission['dialect']), $folder, $folder, $this->environment());
-        $events = new ChannelRunEvents($journal, (string) $admission['run_id'], (string) $admission['event_key'], sys_get_temp_dir().'/journal-runs/'.$admission['run_id']);
+        $dialect = ShellDialect::from((string) $admission['dialect']);
+        $context = new ExecutionContext($dialect, $folder, $folder, $this->environment());
+        $spool = sys_get_temp_dir().'/journal-runs/'.$admission['run_id'];
+        $runId = (string) $admission['run_id'];
+        $events = new ChannelRunEvents($journal, $runId, (string) $admission['event_key'], $spool);
         $outcome = $supervisor->run($events, $plan, $context);
         $events->flush();
-        $this->output->write(mb_substr($outcome->output, 0, self::PREVIEW_CHARACTERS));
+        $this->output->write(mb_substr($outcome->output, -self::PREVIEW_CHARACTERS));
+        $this->printResults($journal, (string) $admission['run_id']);
 
         return $outcome->status;
+    }
+
+    /**
+     * The output number and each part's result as the receipt gate answers it, never a pass read from the exit.
+     */
+    private function printResults(AgentRequestSender $journal, string $runId): void
+    {
+        $summary = $journal->send("/agent/processes/runs/{$runId}/output", ['mode' => 'summary'])->body;
+        $this->line('');
+        $this->line("Output {$runId}: read it with journal output read {$runId}");
+        foreach ($summary['parts'] as $part) {
+            $this->line("{$part['operation']}: {$part['result']}");
+        }
     }
 
     /**
@@ -72,7 +125,11 @@ final class RunProcessCommand extends Command
     private function admissionId(AgentRequestSender $journal): string
     {
         if ($this->option('permit') !== null) {
-            return (string) $journal->send('/agent/processes/permits/'.$this->option('permit').'/runs', ['request_id' => (string) $this->option('request-id')])->body['run_id'];
+            $path = '/agent/processes/permits/'.$this->option('permit').'/runs';
+
+            $started = $journal->send($path, ['request_id' => (string) $this->option('request-id')]);
+
+            return (string) $started->body['run_id'];
         }
 
         return (string) $this->option('admission');
