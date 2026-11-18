@@ -189,8 +189,10 @@ case	ViolationType::DisallowedCategory
 case	ViolationType::EventOutsideListener
 case	ViolationType::FileOutsideDomains
 case	ViolationType::FillableNotListed
+case	ViolationType::KeyNotUlid
 case	ViolationType::MigrationNameTwice
 case	ViolationType::MisnamedDomainClass
+case	ViolationType::ModelNotLinkable
 case	ViolationType::ModelTableElsewhere
 case	ViolationType::NamespaceOutsideDomain
 case	ViolationType::OpenModel
@@ -202,6 +204,7 @@ case	ViolationType::PrivateCoreType
 case	ViolationType::PrivateEventHeard
 case	ViolationType::PrivateType
 case	ViolationType::PrivateTypeInSignature
+case	ViolationType::RawRowAccess
 case	ViolationType::ReRaisedEvent
 case	ViolationType::ReRaisedReceivedEvent
 case	ViolationType::RootMigrationChangesDomainTable
@@ -675,6 +678,7 @@ class	PushSequenceState
 class	PushState
 class	PushTaskState
 class	RaisePlanProgressChanged
+class	RawRowAccess
 class	ReadOnlyHelperReadyState
 class	ReaderDataClass
 class	ReaderDataMismatch
@@ -971,6 +975,8 @@ constant	PlanRecords::PER_PAGE
 constant	ProgramReplies::REWRITE_REFUSAL
 constant	PublicContracts::CORE_ELOQUENT_ADAPTERS
 constant	PublicOwner::CORE
+constant	RawRowAccess::DB
+constant	RawRowAccess::ROW_METHODS
 constant	RecordIdentity::ALIAS_PATTERN
 constant	RecordedAnswer::CURRENT_VERSION
 constant	RecordedSteps::CURRENT_VERSION
@@ -2188,6 +2194,7 @@ method	MissingBottomState::for()
 method	MissingShellParser::parse()
 method	ModelConventions::declaresFillableProperty()
 method	ModelConventions::fillableAttributeColumns()
+method	ModelConventions::identityViolations()
 method	ModelConventions::listsFillableOnlyInTheAttribute()
 method	ModelConventions::modelViolations()
 method	ModelConventions::modelsIn()
@@ -2522,6 +2529,11 @@ method	PushTaskState::__construct()
 method	PushTaskState::handle()
 method	RaisePlanProgressChanged::__construct()
 method	RaisePlanProgressChanged::handle()
+method	RawRowAccess::changesSchema()
+method	RawRowAccess::findingsIn()
+method	RawRowAccess::isRowQuery()
+method	RawRowAccess::key()
+method	RawRowAccess::violation()
 method	ReadOnlyHelperReadyState::onFileEdit()
 method	ReadOnlyHelperReadyState::onShellCommand()
 method	ReaderDataClass::of()

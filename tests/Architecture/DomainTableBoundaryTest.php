@@ -10,9 +10,12 @@ use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ModelTables;
 use Tests\Architecture\Support\ParsedFile;
+use Tests\Architecture\Support\RawRowAccess;
 use Tests\Architecture\Support\TableChecker;
 use Tests\Architecture\Support\TableOwner;
 use Tests\Architecture\Support\TableScan;
+use Tests\Architecture\Support\Violation;
+use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -39,5 +42,20 @@ final class DomainTableBoundaryTest extends TestCase
         $violations = [...$checker->violations($uses), ...$checker->migrationViolations()];
 
         $this->assertSame([], $violations, BoundaryReport::of($violations, base_path()));
+    }
+
+    public function test_no_code_reaches_rows_past_their_model(): void
+    {
+        $folders = [app_path(), ...array_map(fn (DomainEntry $entry) => $entry->folder, $this->app->make(DomainRegistry::class)->all())];
+        $violations = ScanCache::findings(new RawRowAccess, DomainFiles::in($folders));
+
+        $this->assertSame([], $violations, BoundaryReport::of($violations, base_path()));
+    }
+
+    public function test_a_planted_raw_query_is_found(): void
+    {
+        $violations = ScanCache::findings(new RawRowAccess, DomainFiles::in([base_path('tests/Fixtures/Boundary/RawRows')]));
+
+        $this->assertSame(['DB::table()', 'DB::select()', '->table()'], array_map(fn (Violation $violation) => $violation->used, $violations));
     }
 }

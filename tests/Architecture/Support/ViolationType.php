@@ -39,6 +39,9 @@ enum ViolationType: string
     case FillableNotListed = 'fillable-not-listed';
     case OpenModel = 'open-model';
     case OpeningModelCall = 'opening-model-call';
+    case KeyNotUlid = 'key-not-ulid';
+    case ModelNotLinkable = 'model-not-linkable';
+    case RawRowAccess = 'raw-row-access';
 
     public function reason(Violation $violation): string
     {
@@ -72,6 +75,9 @@ enum ViolationType: string
             self::FillableNotListed => "declares model {$violation->used}; list every fillable attribute with #[Fillable([...])], and nothing else",
             self::OpenModel => "declares model {$violation->used}, which is open to mass assignment; close its guard",
             self::OpeningModelCall => "calls {$violation->used}, which opens a model to mass assignment",
+            self::KeyNotUlid => "declares model {$violation->used}, whose key is no ULID; use HasUlids",
+            self::RawRowAccess => "calls {$violation->used}, which reaches rows past their model; use the model's scopes and methods (rule 25)",
+            self::ModelNotLinkable => "declares model {$violation->used}, which cannot be linked; use Linkable (rule 29)",
             self::EventOutsideListener => "names {$violation->used}, an event of {$violation->owner}; only a listener of {$violation->usingDomain} may name it, as an import, a type or ::class",
         };
     }

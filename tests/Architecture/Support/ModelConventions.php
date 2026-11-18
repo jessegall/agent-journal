@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
+use App\Links\Support\Linkable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\NullsafeMethodCall;
@@ -61,6 +63,33 @@ final class ModelConventions
             foreach ($calls as $call) {
                 if ($call->name instanceof Identifier && in_array($call->name->toLowerString(), self::OPENING_CALLS, true)) {
                     $violations[] = new Violation($path, $call->getStartLine(), $call->name->toString().'()', 'none', 'none', ViolationType::OpeningModelCall);
+                }
+            }
+        }
+
+        return $violations;
+    }
+
+    /**
+     * Every model is keyed by a ULID through HasUlids and can be linked through Linkable (rule 29).
+     *
+     * @param  list<string>  $files
+     * @return list<Violation>
+     */
+    public static function identityViolations(array $files): array
+    {
+        $violations = [];
+
+        foreach (self::modelsIn($files) as $path => $models) {
+            foreach ($models as $line => $class) {
+                $traits = class_uses_recursive($class);
+
+                if (! in_array(HasUlids::class, $traits, true) || (new $class)->getKeyType() !== 'string') {
+                    $violations[] = new Violation($path, $line, $class, 'none', 'none', ViolationType::KeyNotUlid);
+                }
+
+                if (! in_array(Linkable::class, $traits, true)) {
+                    $violations[] = new Violation($path, $line, $class, 'none', 'none', ViolationType::ModelNotLinkable);
                 }
             }
         }
