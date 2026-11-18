@@ -7,6 +7,6 @@ class SteerUnansweredStopMessage(MessageTemplate):
 
     key = "helpers.steer_unanswered_at_stop"
     type = AgentMessageType.REFUSAL
-    text = "Your parent added helper-steer:{steer} to your job: answer it and take it into your work before you report"
+    text = 'helper-steer:{steer} is unanswered: run journal helper answer-steer {steer} "<what you change>" before you report'
     turn_limited = False
     id_field = "steer"

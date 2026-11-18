@@ -7,6 +7,6 @@ class SteerUnansweredMessage(MessageTemplate):
 
     key = "helpers.steer_unanswered"
     type = AgentMessageType.REFUSAL
-    text = "Your parent added helper-steer:{steer} to your job: act on it now"
+    text = 'helper-steer:{steer} changes your job: run journal helper answer-steer {steer} "<what you change>" first'
     turn_limited = False
     id_field = "steer"

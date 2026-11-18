@@ -11,13 +11,13 @@ from core.modules.helpers.support.block_conditions.steers_answered import Steers
 
 STEER_RANK = "helpers.steer"
 TOOL_KEY, STOP_KEY = "helpers.steer-unanswered", "helpers.steer-unanswered-at-stop"
-ANSWER_COMMANDS = ("journal helper answer-steer", "journal helper-steer show")
+ANSWER_COMMANDS = ("journal helper answer-steer", "journal helper-steer", "journal helper --help", "journal overview")
 
 
 class SteerStates(AgentPlanStates):
     """Plans the block of the steers a helper's parent added to its open job and it has not answered: every
-    tool at once, reads too, and its stop, so its report waits for its answer; the answer and a read of the
-    steer pass."""
+    tool at once, reads too, and its stop, so its report waits for its answer; the answer, a read of the
+    steer, the helper command's help and the overview pass."""
     state_type = Blocked
     rank = STEER_RANK
     agent_types = [HELPER_TYPE]
