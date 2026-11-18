@@ -14,7 +14,7 @@ class WorkerAssigner:
         self.tasks, self.agents, self.events = tasks, agents, events
 
     def assigned(self, row: Worker) -> None:
-        print("PROBE assigned", row.id, row.state, row.session, self.tasks.holder_task_ids(Ref.build(row)), [a.session for a in self.agents.session_rows(row.session)] if row.session else None)
+        print("PROBE assigned", self.is_on_started_task(row), self.tasks.find(1).state, row.id, row.state, row.session, self.tasks.holder_task_ids(Ref.build(row)), [a.session for a in self.agents.session_rows(row.session)] if row.session else None)
         if row.state == WorkerState.READY:
             self.assign(row)
 
@@ -23,3 +23,4 @@ class WorkerAssigner:
         agents = self.agents.session_rows(row.session) if row.session else []
         if task_ids and agents:
             self.events.helper_assigned(WorkingTask(task_id=task_ids[0]), agents[0])
+            print("PROBE after", self.agents.session_rows(row.session)[0].stack)
