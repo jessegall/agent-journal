@@ -538,7 +538,6 @@ class	DocumentRevisionController
 class	DocumentRevisionsController
 class	DocumentView
 class	DocumentWindowReader
-class	DocumentsBenchmarkCommand
 class	DocumentsDomain
 class	DocumentsServiceProvider
 class	Domain
@@ -866,7 +865,6 @@ class	ReadReasonMissing
 class	ReadShapeUnsupported
 class	ReadSite
 class	ReadTally
-class	ReadTiming
 class	ReaderDataClass
 class	ReaderDataMismatch
 class	ReaderDefinition
@@ -2353,6 +2351,7 @@ method	DocumentRevision::booted()
 method	DocumentRevision::card()
 method	DocumentRevision::casts()
 method	DocumentRevision::document()
+method	DocumentRevision::forCards()
 method	DocumentRevision::numberHolder()
 method	DocumentRevision::ownedBy()
 method	DocumentRevision::sharedPublished()
@@ -2362,9 +2361,6 @@ method	DocumentRevisionsController::__invoke()
 method	DocumentView::__construct()
 method	DocumentWindowReader::__construct()
 method	DocumentWindowReader::read()
-method	DocumentsBenchmarkCommand::bodyOf()
-method	DocumentsBenchmarkCommand::handle()
-method	DocumentsBenchmarkCommand::timed()
 method	DocumentsDomain::commands()
 method	DocumentsDomain::description()
 method	DocumentsDomain::exports()
@@ -3441,8 +3437,6 @@ method	ReadTally::addQuery()
 method	ReadTally::addRefusedQuery()
 method	ReadTally::counts()
 method	ReadTally::readsInALoop()
-method	ReadTiming::__construct()
-method	ReadTiming::of()
 method	ReadableModel::defaultReadLimit()
 method	ReadableModel::defaultReadOrder()
 method	ReaderDataClass::of()
@@ -4837,9 +4831,6 @@ property	DocumentWindowReader::$documents
 property	DocumentWindowReader::$drafts
 property	DocumentWindowReader::$request
 property	DocumentWindowReader::$sessions
-property	DocumentsBenchmarkCommand::$description
-property	DocumentsBenchmarkCommand::$help
-property	DocumentsBenchmarkCommand::$signature
 property	DomainEntry::$domain
 property	DomainEntry::$exports
 property	DomainEntry::$folder
@@ -5365,9 +5356,6 @@ property	ReadTally::$queriesCompleted
 property	ReadTally::$queriesRefused
 property	ReadTally::$queriesRun
 property	ReadTally::$readsOfShape
-property	ReadTiming::$p50
-property	ReadTiming::$p95
-property	ReadTiming::$queries
 property	ReaderDefinition::$dataClass
 property	ReaderDefinition::$reader
 property	ReaderDefinition::$request

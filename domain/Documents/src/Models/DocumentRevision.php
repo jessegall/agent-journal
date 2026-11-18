@@ -116,6 +116,17 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
     }
 
     /**
+     * Only the columns a record card shows, so a list never loads revision bodies.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forCards(Builder $query): void
+    {
+        $query->select(['id', 'document_id', 'number', 'title', 'abstract', 'closed_at']);
+    }
+
+    /**
      * The closed revisions, which every signed-in actor may read.
      *
      * @param  Builder<self>  $query
