@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Readers;
 
 use App\Records\Contracts\RecordReader;
+use App\Text\Support\TextSelection;
 use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Contracts\DraftReader;
 use Domain\Documents\Data\DocumentFilters;
@@ -17,9 +18,7 @@ use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Exceptions\StaleRead;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
-use Domain\Documents\Models\RecordComment;
 use Domain\Documents\Support\RecordReading;
-use Domain\Documents\Support\TextSelection;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -91,14 +90,6 @@ final readonly class DocumentRecords implements DocumentReader
         $document = Document::query()->sharedPublished()->with('currentRevision')->where('number', $number)->first();
 
         return $document?->view() ?? throw DocumentMissing::numbered($number);
-    }
-
-    public function comments(int $number, int $page): array
-    {
-        $record = Document::query()->sharedPublished()->where('number', $number)->first() ?? throw DocumentMissing::numbered($number);
-
-        return array_values(RecordComment::query()->onRecord(Document::LINK_TYPE, $record->id)->forPage(max(1, $page), 50)->get()
-            ->map(fn (RecordComment $comment) => $comment->card())->all());
     }
 
     /**

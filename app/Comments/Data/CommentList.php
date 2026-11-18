@@ -1,0 +1,23 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Comments\Data;
+
+use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
+
+/**
+ * One page of a record's comments, oldest first, and the id to read on after, when there are more.
+ */
+#[TypeScript]
+final class CommentList extends Data
+{
+    /**
+     * @param  list<RecordCommentView|TextCommentView>  $items
+     */
+    public function __construct(
+        public readonly array $items,
+        public readonly string|null $nextAfter,
+    ) {}
+}

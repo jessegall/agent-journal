@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
-use Domain\Documents\Exceptions\ContentTooLarge;
+use App\Text\Exceptions\ContentTooLarge;
 
 /**
  * How many records one write may link to.

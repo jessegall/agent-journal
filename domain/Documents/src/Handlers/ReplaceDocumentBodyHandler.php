@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Domain\Documents\Handlers;
 
 use App\Contracts\CommandHandler;
+use App\Text\Support\MarkdownText;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Commands\ReplaceDocumentBody;
 use Domain\Documents\Support\DraftEditing;
 use Domain\Documents\Support\DraftText;
-use Domain\Documents\Support\MarkdownText;
 
 final readonly class ReplaceDocumentBodyHandler implements CommandHandler
 {

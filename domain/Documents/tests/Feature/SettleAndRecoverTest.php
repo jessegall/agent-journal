@@ -11,6 +11,7 @@ use App\AgentRequests\Support\SignedCall;
 use App\Agents\Events\LaunchEnded;
 use App\Agents\Support\AgentContext;
 use App\Bus\Contracts\CommandBus;
+use App\Text\Exceptions\ContentMissing;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\DraftTarget;
@@ -25,7 +26,6 @@ use Domain\Documents\Commands\SettleReport;
 use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Enums\CloseCause;
-use Domain\Documents\Exceptions\ContentMissing;
 use Domain\Documents\Exceptions\DraftConflict;
 use Domain\Documents\Exceptions\SettlementDenied;
 use Domain\Documents\Listeners\CloseEndedSessionDraft;
@@ -51,7 +51,7 @@ final class SettleAndRecoverTest extends TestCase
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['record_settlements', 'record_comments', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'number_groups'];
+    private const array TABLES = ['record_settlements', 'comments', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'number_groups'];
 
     protected function setUp(): void
     {

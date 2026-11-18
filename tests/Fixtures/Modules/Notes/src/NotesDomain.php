@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
+use App\Domains\Concerns\HasLinkRecords;
+use App\Domains\Concerns\HasNumberedModels;
+use App\Domains\Contracts\ProvidesLinkRecords;
+use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Numbers\Support\NumberedModel;
+use Tests\Fixtures\Modules\Notes\Links\NoteLinkRecords;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Support\CommandScope;
@@ -49,9 +55,9 @@ use Tests\Fixtures\Modules\Notes\Support\NoteAssignments;
 /**
  * A module installed outside the domain folder, registered beside the domains only in the architecture fixtures.
  */
-final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesCommandMiddleware, ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesStates
+final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesCommandMiddleware, ProvidesCommands, ProvidesLinkRecords, ProvidesNumberedModels, ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesStates
 {
-    use HasAssignables, HasStates;
+    use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
     public function description(): string
     {
@@ -70,6 +76,16 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
             ->values(NoteValue::class)
             ->commands(WriteNote::class)
             ->build();
+    }
+
+    public function numberedModels(): array
+    {
+        return [NumberedModel::global(Note::class)];
+    }
+
+    public function linkRecords(): array
+    {
+        return [Note::LINK_TYPE => NoteLinkRecords::class];
     }
 
     public function states(): array

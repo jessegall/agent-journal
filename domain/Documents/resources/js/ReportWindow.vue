@@ -7,7 +7,7 @@ import RecordStatus from './RecordStatus.vue';
 import RecordWindow from './RecordWindow.vue';
 
 /**
- * A report's page: its text, and the comments users wrote on it.
+ * A report's page: its text, and the comments left on it.
  */
 const props = defineProps<{ data: RecordPageData }>();
 
@@ -20,6 +20,6 @@ const number = props.data.label.replace('report ', '');
         <RecordStatus :data="data" editing="free" :settle-action="`/documents/reports/${number}/settle`" />
         <DockToSession type="report" :number="number" :sessions="data.sessions" />
         <LinksPanel :source="data.label" :links="data.links" />
-        <CommentsPanel :comments="data.comments" :action="`/documents/reports/${number}/comments`" :body="data.body" />
+        <CommentsPanel :comments="data.comments" :target="data.label" :body="data.body" version="1" />
     </div>
 </template>

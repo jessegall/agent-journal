@@ -56,3 +56,9 @@ frankenphp-worker.php
 /resources/css/generated
 /resources/js/generated
 /resources/js/typescript-transformer-manifest.json
+
+# code-commandments skill library (regenerated on composer update)
+.agents/skills/commandments-*/
+
+# code-commandments published skills (regenerated on composer update)
+.claude/skills/commandments-*

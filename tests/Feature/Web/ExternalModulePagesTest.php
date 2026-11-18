@@ -17,6 +17,7 @@ use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
+use Tests\Support\InstallsNotesModule;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -27,6 +28,7 @@ use Tests\TestCase;
  */
 final class ExternalModulePagesTest extends TestCase
 {
+    use InstallsNotesModule;
     use RefreshHookDatabase;
 
     private User $owner;
@@ -89,5 +91,6 @@ final class ExternalModulePagesTest extends TestCase
         $router = $this->app->make(Router::class);
         new DeclaredRoutes($declarations)->register($router);
         $router->getRoutes()->refreshNameLookups();
+        $this->installNotesModule();
     }
 }

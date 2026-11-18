@@ -8,13 +8,14 @@ use App\Actors\Contracts\CurrentActor;
 use App\Assignments\Support\RecordIdentity;
 use App\Contracts\CommandHandler;
 use App\Records\Contracts\RecordLinker;
+use App\Text\Support\MarkdownText;
 use Domain\Documents\Api\CreatedRecord;
 use Domain\Documents\Api\Events\ReportFiled;
 use Domain\Documents\Commands\CreateReport;
 use Domain\Documents\Models\Report;
 use Domain\Documents\Support\Docking;
 use Domain\Documents\Support\LinkLimit;
-use Domain\Documents\Support\MarkdownText;
+use Domain\Documents\Support\RecordFields;
 use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class CreateReportHandler implements CommandHandler
@@ -30,7 +31,7 @@ final readonly class CreateReportHandler implements CommandHandler
     {
         $actor = $this->actors->actor();
         LinkLimit::require($command->about, CreateReport::MOST_LINKS);
-        $report = Report::file(MarkdownText::title($command->title), MarkdownText::abstract($command->abstract), MarkdownText::body($command->body), $actor);
+        $report = Report::file(RecordFields::title($command->title), RecordFields::abstract($command->abstract), MarkdownText::body($command->body), $actor);
         $this->links->linkFrom($report, $command->about);
         $this->docks->dockInCreatorSession(new RecordIdentity(Report::LINK_TYPE, $report->id));
         $this->events->dispatch(new ReportFiled($report->id, $report->number, $actor));

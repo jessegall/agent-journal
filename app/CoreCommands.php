@@ -11,6 +11,8 @@ use App\Assignments\Commands\UnassignRecord;
 use App\Bus\Contracts\Command;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\MiddlewareDeclaration;
+use App\Comments\Commands\PostComment;
+use App\Comments\Commands\PostTextComment;
 use App\Numbers\Commands\InstallNumbers;
 use App\Records\Commands\LinkRecords;
 use App\Records\Commands\UnlinkRecords;
@@ -36,7 +38,7 @@ final class CoreCommands
     public static function commands(): array
     {
         return [
-            AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class,
+            AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class,
             SetStringSetting::class, SetBooleanSetting::class, SetIntegerSetting::class, SetDecimalSetting::class, SetStringChoice::class, SetIntegerChoice::class, ResetSetting::class, EnableSettingGroup::class, DisableSettingGroup::class, ResetSettingGroup::class,
         ];
     }

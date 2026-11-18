@@ -12,8 +12,12 @@ return new class extends Migration
     {
         Schema::create('module_notes', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
+            $table->unsignedBigInteger('number');
             $table->text('text');
             $table->timestamps();
+
+            $table->unique(['number_group_id', 'number']);
         });
     }
 

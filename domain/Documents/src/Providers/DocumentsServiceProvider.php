@@ -27,7 +27,6 @@ use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentClose;
 use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Models\DocumentRevision;
-use Domain\Documents\Models\RecordComment;
 use Domain\Documents\Models\RecordDock;
 use Domain\Documents\Models\RecordSettlement;
 use Domain\Documents\Models\Report;
@@ -46,7 +45,6 @@ final class DocumentsServiceProvider extends ServiceProvider
             Report::LINK_TYPE => Report::class,
             DocumentDraft::LINK_TYPE => DocumentDraft::class,
             DocumentClose::LINK_TYPE => DocumentClose::class,
-            RecordComment::LINK_TYPE => RecordComment::class,
             RecordSettlement::LINK_TYPE => RecordSettlement::class,
             RecordDock::LINK_TYPE => RecordDock::class,
         ]);

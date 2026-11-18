@@ -24,6 +24,7 @@ final class Exports
      * Adding one is an architecture decision, never a fallback for a type that fits no list.
      */
     private const array CORE_SUPPORT = [
+        'App\Comments\Support\HasComments',
         'App\Hooks\States\AgentState',
         'App\Hooks\Models\Support\BelongsToOneAgent',
         'App\Links\Support\Linkable',
