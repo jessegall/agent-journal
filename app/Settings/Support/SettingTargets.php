@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Support;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Settings\Contracts\Setting;
-use App\Settings\Contracts\SettingsAccessPolicy;
 use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Enums\SettingType;
 use App\Settings\Exceptions\SettingsAccessDenied;
@@ -23,11 +21,7 @@ use App\Settings\Values\SettingReference;
  */
 final readonly class SettingTargets
 {
-    public function __construct(
-        private CurrentActor $actor,
-        private SettingsAccessPolicy $access,
-        private SettingRegistry $registry,
-    ) {}
+    public function __construct(private SettingsAccessGate $gate, private SettingRegistry $registry) {}
 
     /**
      * The registered setting of exactly this declaration class.
@@ -56,7 +50,7 @@ final readonly class SettingTargets
      */
     public function anySetting(SettingReference $reference): Setting
     {
-        $this->requireAccess();
+        $this->gate->require();
 
         return $this->registry->settingAt($reference->owner, $reference->key);
     }
@@ -70,19 +64,9 @@ final readonly class SettingTargets
      */
     public function toggleGroup(GroupReference $reference): ToggleGroup
     {
-        $this->requireAccess();
+        $this->gate->require();
         $group = $this->registry->groupAt($reference->owner, $reference->key);
 
         return $group instanceof ToggleGroup ? $group : throw SettingValueInvalid::notToggleGroup($reference->owner, $reference->key);
-    }
-
-    /**
-     * @throws SettingsAccessDenied
-     */
-    private function requireAccess(): void
-    {
-        if (! $this->access->allows($this->actor->actor())) {
-            throw SettingsAccessDenied::forActor();
-        }
     }
 }
