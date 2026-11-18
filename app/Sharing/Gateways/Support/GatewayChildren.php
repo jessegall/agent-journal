@@ -14,6 +14,14 @@ use Illuminate\Contracts\Process\InvokedProcess;
 #[Singleton]
 final class GatewayChildren
 {
+    private const int TERMINATE = 15;
+
+    private const int KILL = 9;
+
+    private const int GRACE_SECONDS = 10;
+
+    private const int LOOK_MICROSECONDS = 100_000;
+
     /**
      * @var array<string, InvokedProcess>
      */
@@ -26,8 +34,29 @@ final class GatewayChildren
 
     public function stop(string $reference): void
     {
-        $child = $this->children[$reference] ?? null;
+        if (! array_key_exists($reference, $this->children)) {
+            return;
+        }
+
+        $child = $this->children[$reference];
         unset($this->children[$reference]);
-        $child?->stop();
+        $this->end($child);
+    }
+
+    /**
+     * Asks the program to end, and ends it by force when it is still running ten seconds later.
+     */
+    public function end(InvokedProcess $child): void
+    {
+        $child->signal(self::TERMINATE);
+        $deadline = microtime(true) + self::GRACE_SECONDS;
+
+        while ($child->running() && microtime(true) < $deadline) {
+            usleep(self::LOOK_MICROSECONDS);
+        }
+
+        if ($child->running()) {
+            $child->signal(self::KILL);
+        }
     }
 }

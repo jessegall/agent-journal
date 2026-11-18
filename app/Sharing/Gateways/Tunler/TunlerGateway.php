@@ -7,7 +7,9 @@ namespace App\Sharing\Gateways\Tunler;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Exceptions\GatewayOpenFailed;
 use App\Sharing\Gateways\Support\ChallengeProbe;
+use App\Sharing\Gateways\Support\GatewayAddressCheck;
 use App\Sharing\Gateways\Support\GatewayChildren;
+use App\Sharing\Gateways\Support\GatewayLaunches;
 use App\Sharing\Gateways\Support\PublicOriginCheck;
 use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewayEndpoint;
@@ -15,6 +17,7 @@ use App\Sharing\Support\GatewayHealth;
 use App\Sharing\Support\GatewayOperation;
 use App\Sharing\Support\GatewayReadiness;
 use Illuminate\Container\Attributes\Config;
+use Illuminate\Contracts\Process\InvokedProcess;
 use Illuminate\Process\Factory as Processes;
 use JsonException;
 
@@ -29,13 +32,12 @@ final readonly class TunlerGateway implements ShareGateway
 
     private const int STATUS_SECONDS = 10;
 
-    private const int CONNECT_SECONDS = 60;
-
     private const string CONNECTED_PREFIX = 'tunnel up: ';
 
     public function __construct(
         private Processes $processes,
         private GatewayChildren $children,
+        private GatewayLaunches $launches,
         private PublicOriginCheck $origins,
         private ChallengeProbe $probe,
         #[Config('sharing.tunler.binary')] private string $binary,
@@ -87,34 +89,10 @@ final readonly class TunlerGateway implements ShareGateway
             throw GatewayOpenFailed::notReady(self::KEY);
         }
 
-        $child = $this->processes->env($this->environment())->timeout(0)
+        $child = $this->processes->newPendingProcess()->env($this->environment())->timeout(0)
             ->start([$this->binary, (string) $settings->listenerPort, "--domain={$this->subdomain}", '--inspect=0']);
-        $address = null;
-        $deadline = time() + self::CONNECT_SECONDS;
 
-        while ($address === null && $child->running() && time() < $deadline) {
-            $address = $this->addressIn($child->latestOutput());
-            usleep(200_000);
-        }
-
-        $address ??= $this->addressIn($child->latestOutput());
-
-        if ($address === null) {
-            $child->stop();
-
-            throw GatewayOpenFailed::noAddressInTime(self::KEY, self::CONNECT_SECONDS);
-        }
-
-        if (! $this->isExpectedOrigin($address, $settings->publicOrigin, $settings->providerHost)) {
-            $child->stop();
-
-            throw GatewayOpenFailed::unexpectedAddress(self::KEY);
-        }
-
-        $reference = "{$operation->runId}:{$operation->endpointVersion}";
-        $this->children->keep($reference, $child);
-
-        return new GatewayEndpoint($operation->runId, $operation->endpointVersion, $settings->publicOrigin, $reference);
+        return $this->launches->open(self::KEY, $operation, $child, fn (InvokedProcess $started) => $this->lookAt($started->latestOutput(), $settings->publicOrigin, $settings->providerHost));
     }
 
     public function health(GatewayEndpoint $endpoint): GatewayHealth
@@ -125,6 +103,20 @@ final readonly class TunlerGateway implements ShareGateway
     public function close(GatewayEndpoint $endpoint): void
     {
         $this->children->stop($endpoint->processReference);
+    }
+
+    /**
+     * What the launch's newest output says: nothing yet, the configured origin, or another address.
+     */
+    private function lookAt(string $output, string $publicOrigin, string $providerHost): GatewayAddressCheck
+    {
+        $address = $this->addressIn($output);
+
+        if ($address === null) {
+            return GatewayAddressCheck::Waiting;
+        }
+
+        return $this->isExpectedOrigin($address, $publicOrigin, $providerHost) ? GatewayAddressCheck::Confirmed : GatewayAddressCheck::Unexpected;
     }
 
     /**
@@ -172,7 +164,7 @@ final readonly class TunlerGateway implements ShareGateway
      */
     private function run(array $arguments): string
     {
-        return $this->processes->env($this->environment())->timeout(self::STATUS_SECONDS)->run([$this->binary, ...$arguments])->output();
+        return $this->processes->newPendingProcess()->env($this->environment())->timeout(self::STATUS_SECONDS)->run([$this->binary, ...$arguments])->output();
     }
 
     /**
