@@ -12,8 +12,8 @@ use App\Sharing\Commands\SaveSharePreview;
 use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\SharePreview;
+use App\Sharing\Support\MeteredShareBudget;
 use App\Sharing\Support\SavedSharePreview;
-use App\Sharing\Support\ShareBudget;
 use App\Sharing\Support\ShareScope;
 
 final readonly class SaveSharePreviewHandler implements CommandHandler
@@ -33,7 +33,7 @@ final readonly class SaveSharePreviewHandler implements CommandHandler
         $configuration = $command->gatewayConfigurationId === null
             ? ShareGatewayConfiguration::usableDefault()
             : ShareGatewayConfiguration::usable($command->gatewayConfigurationId);
-        $candidates = $this->scope->discover($root, ShareBudget::forPreview($this->meter));
+        $candidates = $this->scope->discover($root, MeteredShareBudget::forPreview($this->meter));
         $preview = SharePreview::createFor($owner->actorId(), $root, $candidates->selection($command->selectedIds), $configuration);
 
         return new SavedSharePreview($preview->id, $preview->checksum, $candidates);

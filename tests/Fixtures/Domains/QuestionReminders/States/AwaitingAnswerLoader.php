@@ -11,7 +11,6 @@ use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use Tests\Fixtures\Domains\QuestionReminders\Models\Question;
-use Tests\Fixtures\Domains\QuestionReminders\States\AwaitingAnswerState;
 
 /**
  * Restores the waiting questions of a batch in one read.

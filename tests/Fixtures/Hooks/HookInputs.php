@@ -5,15 +5,10 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Hooks;
 
 use App\Hooks\Contracts\HookInput;
-use App\Hooks\Enums\CommandEffect;
-use App\Hooks\Enums\CommandType;
 use App\Hooks\Enums\FileOperation;
-use App\Hooks\Enums\ParseOutcome;
 use App\Hooks\Enums\SessionEndReason;
 use App\Hooks\Enums\SessionStartSource;
-use App\Hooks\Enums\ShellDialect;
 use App\Hooks\Enums\ToolOutcome;
-use App\Hooks\Inputs\CommandPart;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\FileChange;
@@ -26,12 +21,17 @@ use App\Hooks\Inputs\SessionEndDetails;
 use App\Hooks\Inputs\SessionEnded;
 use App\Hooks\Inputs\SessionStartDetails;
 use App\Hooks\Inputs\SessionStarted;
-use App\Hooks\Inputs\ShellCommand;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
 use App\Hooks\Inputs\ToolResult;
+use App\Processes\Enums\CommandEffect;
+use App\Processes\Enums\CommandType;
+use App\Processes\Enums\ParseOutcome;
+use App\Processes\Enums\ShellDialect;
+use App\Processes\Values\CommandPart;
+use App\Processes\Values\ShellCommand;
 
 /**
  * One input of every hook, for tests that must cover them all.

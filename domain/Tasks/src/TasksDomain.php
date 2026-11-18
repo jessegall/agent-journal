@@ -22,6 +22,8 @@ use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Api\TaskAssignmentCompletion;
 use Domain\Tasks\Api\TaskCard;
+use Domain\Tasks\Api\TaskDetails;
+use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Api\TaskList;
 use Domain\Tasks\Api\TaskProgress;
@@ -34,9 +36,12 @@ use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Contracts\AssignedTaskReader;
 use Domain\Tasks\Contracts\TaskAssignmentReader;
+use Domain\Tasks\Contracts\TaskDetailsReader;
+use Domain\Tasks\Contracts\TaskListReader;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Contracts\TaskReader;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskView;
 use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\TaskMissing;
@@ -87,6 +92,8 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesC
                 TaskReader::class,
                 TaskAssignmentReader::class,
                 AssignedTaskReader::class,
+                TaskListReader::class,
+                TaskDetailsReader::class,
             )
             ->values(
                 TaskProgress::class,
@@ -97,6 +104,9 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesC
                 TaskList::class,
                 TaskState::class,
                 TaskWorkState::class,
+                TaskExecution::class,
+                TaskDetails::class,
+                TaskView::class,
             )
             ->exceptions(TaskMissing::class)
             ->build();

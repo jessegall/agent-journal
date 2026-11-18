@@ -28,6 +28,16 @@ enum ShareState: string
     }
 
     /**
+     * The states of a share that holds an owner's grant.
+     *
+     * @return list<self>
+     */
+    public static function liveStates(): array
+    {
+        return array_values(array_filter(self::cases(), fn (self $state) => $state->isLive()));
+    }
+
+    /**
      * Whether the share has ended for good, so no command brings it back.
      */
     public function isTerminal(): bool

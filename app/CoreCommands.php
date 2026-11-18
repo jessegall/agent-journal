@@ -49,6 +49,7 @@ use App\Settings\Commands\SetIntegerChoice;
 use App\Settings\Commands\SetIntegerSetting;
 use App\Settings\Commands\SetStringChoice;
 use App\Settings\Commands\SetStringSetting;
+use App\Sharing\Commands\ReadShare;
 use App\Sharing\Commands\SaveSharePreview;
 use App\Web\Commands\RecordUserHeartbeat;
 
@@ -67,7 +68,19 @@ final class CoreCommands
             SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class,
             SetStringSetting::class, SetBooleanSetting::class, SetIntegerSetting::class, SetDecimalSetting::class, SetStringChoice::class, SetIntegerChoice::class, ResetSetting::class, EnableSettingGroup::class, DisableSettingGroup::class, ResetSettingGroup::class,
             SaveSharePreview::class,
+            ReadShare::class,
         ];
+    }
+
+    /**
+     * Core's commands that stay private: registered for Core's own runtime, such as the system's public share read,
+     * and never exported to a domain or module.
+     *
+     * @return list<class-string<Command<mixed>>>
+     */
+    public static function privateCommands(): array
+    {
+        return [ReadShare::class];
     }
 
     /**
@@ -79,7 +92,8 @@ final class CoreCommands
     }
 
     /**
-     * Core as an owner of commands: the commands on CoreApi's commands list are exported to the domains.
+     * Core as an owner of commands: the commands on CoreApi's commands list are exported to the domains; the private
+     * ones are not.
      */
     public static function owner(): CommandOwner
     {

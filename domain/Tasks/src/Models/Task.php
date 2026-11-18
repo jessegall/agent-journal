@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Models;
 
 use App\Actors\Enums\ActorType;
+use App\Agents\Support\AgentLabel;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Hooks\Contracts\WorkedOnStack;
@@ -16,6 +17,7 @@ use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
+use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Database\Factories\TaskFactory;
 use Domain\Tasks\Enums\TaskState;
@@ -226,6 +228,22 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
         if ($runNumber !== $this->run_number || ($sessionId !== null && $this->run_session_id !== $sessionId)) {
             throw TaskRunNotYours::forRun($this->number, $runNumber);
         }
+    }
+
+    /**
+     * Who works on the task's latest run, with the agent's label when the caller may see it; null before any run.
+     *
+     * @param  array<string, AgentLabel>  $labels  keyed by agent id
+     */
+    public function executionWith(array $labels): TaskExecution|null
+    {
+        if ($this->run_agent_id === null || $this->run_session_id === null) {
+            return null;
+        }
+
+        $label = $labels[$this->run_agent_id] ?? null;
+
+        return new TaskExecution($this->run_agent_id, $label?->name, $this->run_session_id, $this->run_number, $this->state->workState());
     }
 
     public function isRunOwnedBy(string $sessionId): bool

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Middleware\Agents;
 
 use App\Actors\Support\ActorStore;
-use App\Agents\Exceptions\CallSignatureInvalid;
 use App\AgentRequests\Support\SignedCall;
+use App\Agents\Exceptions\CallSignatureInvalid;
 use App\Agents\Exceptions\HostCredentialRejected;
 use App\Agents\Models\Host;
 use App\Agents\Support\HostContext;

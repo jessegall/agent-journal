@@ -28,10 +28,6 @@ use App\Records\Contracts\RecordProvider;
 use App\Settings\Contracts\ProvidesSettings;
 use App\Settings\Contracts\SettingsDefinition;
 use App\Settings\Support\EmptySettingsDefinition;
-use App\Sharing\Contracts\ProvidesShareGateways;
-use App\Sharing\Contracts\ProvidesShareRecords;
-use App\Sharing\Contracts\ShareGateway;
-use App\Sharing\Support\ShareRecordRegistration;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
@@ -288,26 +284,6 @@ final readonly class DomainEntry
         foreach ($this->domain->overviewContributions() as $contribution) {
             $registration->registerOverviewContribution($contribution);
         }
-    }
-
-    /**
-     * The record types this domain lets the owner share; none without ProvidesShareRecords.
-     *
-     * @return list<ShareRecordRegistration>
-     */
-    public function shareRecords(): array
-    {
-        return $this->domain instanceof ProvidesShareRecords ? $this->domain->shareRecords() : [];
-    }
-
-    /**
-     * The share gateways this domain brings, each key with its class; none without ProvidesShareGateways.
-     *
-     * @return array<string, class-string<ShareGateway>>
-     */
-    public function shareGateways(): array
-    {
-        return $this->domain instanceof ProvidesShareGateways ? $this->domain->shareGateways() : [];
     }
 
     /**

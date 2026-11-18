@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Domains\Binders;
 
 use App\Records\Support\RecordIdentity;
+use App\Sharing\Contracts\ShareBudget;
 use App\Sharing\Contracts\ShareRecordProvider;
-use App\Sharing\Contracts\ShareCharges;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\SharedContent;
 use App\Sharing\Support\ShareRecordCard;
@@ -33,12 +33,12 @@ final class BinderShareProvider implements ShareRecordProvider
         return ! in_array($record->id, [self::INELIGIBLE_ID, self::HIDDEN_ROOT_ID], true);
     }
 
-    public function preview(ShareSelection $selection, ShareCharges $budget): ShareRecordCard
+    public function preview(ShareSelection $selection, ShareBudget $budget): ShareRecordCard
     {
         return $this->card($selection->root);
     }
 
-    public function readTargets(ShareTargetRead $read, ShareCharges $budget): ShareRecords
+    public function readTargets(ShareTargetRead $read, ShareBudget $budget): ShareRecords
     {
         DB::select('select 1');
         $eligible = array_values(array_filter($read->targets, fn (RecordIdentity $target) => $this->mayDisclose($target)));
@@ -47,12 +47,12 @@ final class BinderShareProvider implements ShareRecordProvider
         return new ShareRecords(array_map($this->card(...), $eligible), $ineligible, null);
     }
 
-    public function readRelated(ShareRelationRead $read, ShareCharges $budget): ShareRecords
+    public function readRelated(ShareRelationRead $read, ShareBudget $budget): ShareRecords
     {
         return new ShareRecords([], [], null);
     }
 
-    public function content(ShareContentRead $read, ShareCharges $budget): SharedContent
+    public function content(ShareContentRead $read, ShareBudget $budget): SharedContent
     {
         return new SharedContent($this->card($read->record), 'A binder page.');
     }

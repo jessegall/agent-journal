@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks\Programs;
 
 use App\Hooks\Decisions\Decision;
-use App\Hooks\Enums\CommandType;
 use App\Hooks\Enums\FileOperation;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Inputs\ContextCompacted;
@@ -16,6 +15,7 @@ use App\Hooks\Programs\JudgedCall;
 use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\HookAnswer;
+use App\Processes\Enums\CommandType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Support\ChecksProgramFixtures;

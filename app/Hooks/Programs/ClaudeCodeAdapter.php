@@ -6,11 +6,9 @@ namespace App\Hooks\Programs;
 
 use App\Hooks\Contracts\ProgramAdapter;
 use App\Hooks\Contracts\ProgramCall;
-use App\Hooks\Contracts\ShellCommandParser;
 use App\Hooks\Enums\ClaudeCodeTool;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\SessionStartSource;
-use App\Hooks\Enums\ShellDialect;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
@@ -30,6 +28,8 @@ use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
 use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Stack\HookAnswer;
+use App\Processes\Contracts\ShellCommandParser;
+use App\Processes\Enums\ShellDialect;
 
 /**
  * Reads Claude Code's hook payloads into the journal's inputs and renders its answers as Claude Code replies.

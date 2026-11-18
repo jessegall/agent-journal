@@ -28,7 +28,8 @@ interface CurrentActor
     public function isSignedIn(): bool;
 
     /**
-     * Whether the journal's own system principal acts, which sees no row through an ordinary content scope.
+     * Whether the journal itself acts, as the system or the engine, which sees no row through an ordinary content
+     * scope.
      */
-    public function isSystem(): bool;
+    public function isJournalActor(): bool;
 }

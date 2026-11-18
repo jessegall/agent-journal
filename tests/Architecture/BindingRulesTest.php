@@ -11,7 +11,7 @@ use App\Assignments\Registry\AssignmentRegistry;
 use App\CoreApi;
 use App\Domains\Support\DomainRegistry;
 use App\Exports\Support\Exports;
-use App\Hooks\Contracts\ShellCommandParser;
+use App\Processes\Contracts\ShellCommandParser;
 use Tests\Architecture\Support\BindingRules;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
@@ -31,8 +31,9 @@ final class BindingRulesTest extends TestCase
 {
     /**
      * The files that may name the actor store or set the actor: the store, its two contracts, Core's list,
-     * the two middleware that authenticate a request, the engine pass that signs the engine in, and the provider that
-     * reads the actor.
+     * the two middleware that authenticate a request, the host middleware and the host enrollment command, the engine
+     * pass that signs the engine in, the provider that reads the actor and the public share bridge, which acts as the
+     * system around its one read.
      */
     private const array ACTOR_SITES = [
         'app/Actors/Support/ActorStore.php',
@@ -41,6 +42,7 @@ final class BindingRulesTest extends TestCase
         'app/Actors/Contracts/CurrentActorSetter.php',
         'app/CoreApi.php',
         'app/Http/Middleware/Agents/AuthenticateAgent.php',
+        'app/Http/Controllers/Sharing/ReadShareController.php',
         'app/Http/Middleware/Agents/AuthenticateHost.php',
         'app/Agents/Console/EnrollHostCommand.php',
         'domain/Access/Http/Middleware/AuthenticateUser.php',
@@ -93,7 +95,7 @@ final class BindingRulesTest extends TestCase
 
     public function test_cores_parser_comes_from_processes(): void
     {
-        $this->assertStringStartsWith('Domain\Processes\\', $this->app->make(ShellCommandParser::class)::class);
+        $this->assertStringStartsWith('App\Processes\\', $this->app->make(ShellCommandParser::class)::class);
     }
 
     public function test_only_the_authentication_sites_name_the_actor_store_or_set_the_actor(): void

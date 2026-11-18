@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    /*
+     * The share-only listener: it serves public share links and nothing else, on loopback inside its container, on
+     * its own port. Gateways forward only there.
+     */
+    /*
+     * The cache store the public listener counts its rate limits in; Redis, so every listener process shares them.
+     */
+    'rate_limit_store' => env('SHARING_RATE_LIMIT_STORE', 'redis'),
+
+    /*
+     * The Tunler gateway: its pinned program, the configuration folder kept for the journal alone (never a user's
+     * home), and the subdomain it opens, the setting version 5 named journal.tunnels.tunler.subdomain.
+     */
+    'tunler' => [
+        'binary' => env('SHARING_TUNLER_BINARY', '/opt/sharing/bin/tunler'),
+        'config_dir' => env('SHARING_TUNLER_CONFIG_DIR', storage_path('sharing/tunler')),
+        'subdomain' => env('SHARING_TUNLER_SUBDOMAIN'),
+    ],
+
+    /*
+     * The ngrok gateway: its pinned program, the journal's own configuration folder and the loopback port of its
+     * control API.
+     */
+    'ngrok' => [
+        'binary' => env('SHARING_NGROK_BINARY', '/opt/sharing/bin/ngrok'),
+        'config_dir' => env('SHARING_NGROK_CONFIG_DIR', storage_path('sharing/ngrok')),
+        'control_port' => (int) env('SHARING_NGROK_CONTROL_PORT', 4041),
+    ],
+
+    /*
+     * The gateways' secrets, one file per secret reference, readable by the share service alone.
+     */
+    'secrets_dir' => env('SHARING_SECRETS_DIR', storage_path('sharing/secrets')),
+
+    'listener' => [
+        'host' => '127.0.0.1',
+        'port' => (int) env('SHARING_LISTENER_PORT', 8090),
+    ],
+];

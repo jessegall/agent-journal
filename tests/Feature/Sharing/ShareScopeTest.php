@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Domains\Support\DomainEntry;
+use App\Domains\Support\Domain;
 use App\Links\Models\Link;
 use App\Reads\Contracts\ReadMeter;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
+use App\Sharing\Contracts\ProvidesShareGateways;
+use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Exceptions\ShareScopeTooLarge;
 use App\Sharing\Exceptions\UnknownShareRecordType;
-use App\Sharing\Support\ShareBudget;
+use App\Sharing\Support\MeteredShareBudget;
+use App\Sharing\Support\ShareGatewayRegistry;
 use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareRecordRegistry;
 use App\Sharing\Support\ShareScope;
@@ -37,7 +40,7 @@ final class ShareScopeTest extends TestCase
     {
         parent::setUp();
 
-        DomainEntry::fromClass(BindersDomain::class)->boot($this->app);
+        $this->registerShareDomain(new BindersDomain);
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
     }
 
@@ -94,9 +97,9 @@ final class ShareScopeTest extends TestCase
         return $this->app->make(ShareScope::class);
     }
 
-    private function budget(): ShareBudget
+    private function budget(): MeteredShareBudget
     {
-        return ShareBudget::forPreview($this->app->make(ReadMeter::class));
+        return MeteredShareBudget::forPreview($this->app->make(ReadMeter::class));
     }
 
     private function root(int $number): RecordIdentity
@@ -124,5 +127,19 @@ final class ShareScopeTest extends TestCase
     private function link(RecordIdentity $root, RecordIdentity $target): Link
     {
         return Link::query()->create(['source_type' => $root->type, 'source_id' => $root->id, 'target_type' => $target->type, 'target_id' => $target->id]);
+    }
+
+    /**
+     * Registers a fixture domain's share records and gateways as the sharing provider does at boot.
+     */
+    private function registerShareDomain(Domain $domain): void
+    {
+        if ($domain instanceof ProvidesShareRecords) {
+            $this->app->make(ShareRecordRegistry::class)->registerFrom($domain);
+        }
+
+        if ($domain instanceof ProvidesShareGateways) {
+            $this->app->make(ShareGatewayRegistry::class)->registerFrom($domain);
+        }
     }
 }

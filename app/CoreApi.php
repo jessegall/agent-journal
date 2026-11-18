@@ -33,39 +33,34 @@ use App\Actors\Support\CurrentUser;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Exceptions\AgentRequestFailed;
 use App\AgentRequests\Support\AgentReply;
-use App\Agents\Commands\RecordHeartbeat;
-use App\Agents\Commands\RetireAgent;
-use App\Agents\Contracts\AgentReader;
-use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\LaunchReadiness;
-use App\Agents\Commands\EnrollHost;
-use App\Agents\Commands\OpenAgentRuntime;
-use App\Agents\Commands\DeliverAgent;
-use App\Agents\Commands\WakeAgent;
-use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ChangeAgentEffort;
-use App\Agents\Commands\InterruptAgent;
-use App\Agents\Commands\StopAgent;
+use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ClaimDriverRequests;
 use App\Agents\Commands\ClaimLaunchGrant;
-use App\Agents\Commands\ReportRuntimeActivity;
-use App\Agents\Commands\ReportRequestProgress;
-use App\Agents\Commands\ReportDriverTurn;
-use App\Agents\Commands\ReportRuntimeHeartbeat;
-use App\Agents\Commands\ReportRuntimeExit;
+use App\Agents\Commands\DeliverAgent;
+use App\Agents\Commands\EnrollHost;
+use App\Agents\Commands\InterruptAgent;
+use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\OpenHostMainRuntime;
-use App\Agents\Support\EnrolledHost;
-use App\Agents\Support\OpenedRuntime;
-use App\Agents\Enums\DriverType;
-use App\Agents\Support\DriverReceipt;
-use App\Agents\Support\ClaimedRequests;
-use App\Agents\Support\ClaimedRequest;
+use App\Agents\Commands\RecordHeartbeat;
+use App\Agents\Commands\ReportDriverTurn;
+use App\Agents\Commands\ReportRequestProgress;
+use App\Agents\Commands\ReportRuntimeActivity;
+use App\Agents\Commands\ReportRuntimeExit;
+use App\Agents\Commands\ReportRuntimeHeartbeat;
+use App\Agents\Commands\RetireAgent;
+use App\Agents\Commands\StopAgent;
+use App\Agents\Commands\WakeAgent;
+use App\Agents\Contracts\AgentReader;
+use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\RuntimeReader;
 use App\Agents\Contracts\SessionReader;
 use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
 use App\Agents\Enums\DriverOperation;
+use App\Agents\Enums\DriverType;
 use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RequestOutcome;
@@ -77,6 +72,11 @@ use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Exceptions\AgentRetirementDenied;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\AgentLabel;
+use App\Agents\Support\ClaimedRequest;
+use App\Agents\Support\ClaimedRequests;
+use App\Agents\Support\DriverReceipt;
+use App\Agents\Support\EnrolledHost;
+use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\SessionOption;
 use App\Agents\Support\StackTarget;
 use App\Assignments\Commands\AssignRecord;
@@ -172,6 +172,7 @@ use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
 use App\Comments\Contracts\Commentable;
 use App\Comments\Contracts\CommentReader;
+use App\Comments\Contracts\PublicCommentReader;
 use App\Comments\Data\CommentDetails;
 use App\Comments\Data\CommentList;
 use App\Comments\Data\RecordCommentLocation;
@@ -185,6 +186,8 @@ use App\Comments\Exceptions\CommentUnavailable;
 use App\Comments\Exceptions\SubmissionKeyConflict;
 use App\Comments\Exceptions\TargetNotCommentable;
 use App\Comments\Support\HasComments;
+use App\Comments\Support\PublicComment;
+use App\Comments\Support\PublicCommentPage;
 use App\Communication\Commands\AnswerMessage;
 use App\Communication\Commands\DismissMessage;
 use App\Communication\Commands\RequireMessageAnswer;
@@ -221,7 +224,6 @@ use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Contracts\HookAnswerer;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Contracts\ReminderContribution;
-use App\Hooks\Contracts\ShellCommandParser;
 use App\Hooks\Contracts\StackCleanup;
 use App\Hooks\Contracts\StackEditor;
 use App\Hooks\Contracts\StackTransactionRunner;
@@ -237,15 +239,10 @@ use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\AnswerType;
-use App\Hooks\Enums\CommandEffect;
-use App\Hooks\Enums\CommandType;
 use App\Hooks\Enums\FileOperation;
 use App\Hooks\Enums\NoSubject;
-use App\Hooks\Enums\ParseOutcome;
-use App\Hooks\Enums\PartJoin;
 use App\Hooks\Enums\SessionEndReason;
 use App\Hooks\Enums\SessionStartSource;
-use App\Hooks\Enums\ShellDialect;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Enums\TransitionType;
 use App\Hooks\Events\ContextWasCompacted;
@@ -257,7 +254,6 @@ use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\Exceptions\StateTypeMissing;
 use App\Hooks\Exceptions\StateTypeRepeated;
 use App\Hooks\Exceptions\StateTypesFrozen;
-use App\Hooks\Inputs\CommandPart;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\FileChange;
@@ -270,7 +266,6 @@ use App\Hooks\Inputs\SessionEndDetails;
 use App\Hooks\Inputs\SessionEnded;
 use App\Hooks\Inputs\SessionStartDetails;
 use App\Hooks\Inputs\SessionStarted;
-use App\Hooks\Inputs\ShellCommand;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
@@ -305,6 +300,14 @@ use App\Numbers\Exceptions\InvalidRecordReference;
 use App\Numbers\Support\HasNumber;
 use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\RecordReference;
+use App\Processes\Contracts\ShellCommandParser;
+use App\Processes\Enums\CommandEffect;
+use App\Processes\Enums\CommandType;
+use App\Processes\Enums\ParseOutcome;
+use App\Processes\Enums\PartJoin;
+use App\Processes\Enums\ShellDialect;
+use App\Processes\Values\CommandPart;
+use App\Processes\Values\ShellCommand;
 use App\Queries\Support\TextSearch;
 use App\Reads\Attributes\ReadBudget;
 use App\Reads\Contracts\ReadableModel;
@@ -420,10 +423,11 @@ use App\Sharing\Commands\SaveSharePreview;
 use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Contracts\Shareable;
-use App\Sharing\Contracts\ShareCharges;
+use App\Sharing\Contracts\ShareBudget;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Contracts\ShareRecordProvider;
+use App\Sharing\Contracts\ShareStatusReader;
 use App\Sharing\Enums\ShareRelationType;
 use App\Sharing\Exceptions\ShareBudgetExceeded;
 use App\Sharing\Exceptions\SharingNotAllowed;
@@ -437,6 +441,8 @@ use App\Sharing\Support\SavedSharePreview;
 use App\Sharing\Support\ShareCandidates;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\SharedContent;
+use App\Sharing\Support\SharedPage;
+use App\Sharing\Support\SharedPageItem;
 use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareRecordRegistration;
@@ -595,19 +601,21 @@ final class CoreApi
                 SettingsDefinition::class,
                 GroupDeclaration::class,
                 ChoiceLabel::class,
+                Shareable::class,
+                ShareRecordProvider::class,
+                ShareBudget::class,
+                ShareGateway::class,
+                ProvidesShareRecords::class,
+                ProvidesShareGateways::class,
+                SharePolicy::class,
+                ShareStatusReader::class,
+                PublicCommentReader::class,
                 SettingsReader::class,
                 SettingCommands::class,
                 SettingsSnapshot::class,
                 EnabledSettingsGroup::class,
                 SettingsCatalogue::class,
                 SettingsAccessPolicy::class,
-                Shareable::class,
-                ShareRecordProvider::class,
-                ShareCharges::class,
-                ShareGateway::class,
-                ProvidesShareRecords::class,
-                ProvidesShareGateways::class,
-                SharePolicy::class,
                 CodedRefusal::class,
                 OperationReader::class,
                 OverviewContribution::class,
@@ -760,6 +768,30 @@ final class CoreApi
                 EnumSetting::class,
                 Choice::class,
                 SettingType::class,
+                ShareRelationSet::class,
+                ShareRelation::class,
+                ShareRecordRegistration::class,
+                ShareSelection::class,
+                ShareCandidates::class,
+                ShareLinkedCandidate::class,
+                ShareRecordCard::class,
+                ShareRecords::class,
+                ShareTargetRead::class,
+                ShareRelationRead::class,
+                ShareContentRead::class,
+                SharedContent::class,
+                ShareSelectedTarget::class,
+                GatewayConfiguration::class,
+                GatewaySettings::class,
+                GatewayOperation::class,
+                GatewayEndpoint::class,
+                GatewayReadiness::class,
+                GatewayHealth::class,
+                ShareRelationType::class,
+                SharedPage::class,
+                SharedPageItem::class,
+                PublicComment::class,
+                PublicCommentPage::class,
                 SettingSource::class,
                 CurrentSettingsReader::class,
                 SettingTarget::class,
@@ -805,27 +837,7 @@ final class CoreApi
                 RuntimeSetting::class,
                 DriverRequestStatus::class,
                 DisabledSettingsGroup::class,
-                ShareRelationSet::class,
-                ShareRelation::class,
-                ShareRecordRegistration::class,
-                ShareSelection::class,
-                ShareCandidates::class,
                 SavedSharePreview::class,
-                ShareLinkedCandidate::class,
-                ShareRecordCard::class,
-                ShareRecords::class,
-                ShareTargetRead::class,
-                ShareRelationRead::class,
-                ShareContentRead::class,
-                SharedContent::class,
-                ShareSelectedTarget::class,
-                GatewayConfiguration::class,
-                GatewaySettings::class,
-                GatewayOperation::class,
-                GatewayEndpoint::class,
-                GatewayReadiness::class,
-                GatewayHealth::class,
-                ShareRelationType::class,
             )
             ->commands(
                 PostComment::class,

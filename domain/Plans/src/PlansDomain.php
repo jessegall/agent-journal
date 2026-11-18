@@ -17,6 +17,8 @@ use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
+use App\Sharing\Contracts\ProvidesShareRecords;
+use App\Sharing\Support\ShareRecordRegistration;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Contracts\ProvidesSections;
@@ -65,9 +67,10 @@ use Domain\Plans\Support\PhaseAssignmentProvider;
 use Domain\Plans\Support\PhaseRecords;
 use Domain\Plans\Support\PlanAssignmentProvider;
 use Domain\Plans\Support\PlanRecords;
+use Domain\Plans\Support\PlanShareProvider;
 use Domain\Tasks\TasksDomain;
 
-final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesStates
+final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesShareRecords, ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -116,6 +119,14 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
             Plan::LINK_TYPE => PlanAssignmentProvider::class,
             Phase::LINK_TYPE => PhaseAssignmentProvider::class,
         ];
+    }
+
+    /**
+     * A plan may be shared as a summary root; it is never selected as a linked record of another share.
+     */
+    public function shareRecords(): array
+    {
+        return [new ShareRecordRegistration(Plan::LINK_TYPE, Plan::class, PlanShareProvider::class, [])];
     }
 
     public function linkRecords(): array

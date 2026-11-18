@@ -13,9 +13,12 @@ use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use PhpOption\Option;
 
 /**
  * A public share of one root record: an agent's proposal, or the owner's grant with its bearer token kept as a
@@ -50,6 +53,11 @@ final class Share extends Model implements ReadableModel
     use BoundedReads, HasUlids, Linkable;
 
     public const string LINK_TYPE = 'core.share';
+
+    /**
+     * The most live, unexpired shares an installation holds at once.
+     */
+    public const int MOST_LIVE = 100;
 
     /**
      * @return array<string, string>
@@ -99,6 +107,56 @@ final class Share extends Model implements ReadableModel
         return $share;
     }
 
+    /**
+     * The newest live, unexpired share of the root, if it has one.
+     *
+     * @return Option<self>
+     */
+    public static function liveFor(RecordIdentity $root): Option
+    {
+        return Option::fromValue(self::query()->ofRoot($root)->liveNow()->orderByDesc('id')->first());
+    }
+
+    /**
+     * The current scope version of each of these shares that is live and unexpired, by share id.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, int>
+     */
+    public static function liveScopeVersions(array $ids): array
+    {
+        return self::query()->whereKey($ids)->liveNow()->readLimit(count($ids))->pluck('scope_version', 'id')->map(fn (mixed $version) => (int) $version)->all();
+    }
+
+    /**
+     * The share a token digest opens, with only its id, state, scope version and deadline: the one query the public
+     * bridge runs, as the system, before any read.
+     *
+     * @return Option<self>
+     */
+    public static function forTokenDigest(string $digest): Option
+    {
+        return Option::fromValue(self::query()->openedByDigest($digest)->first(['id', 'state', 'scope_version', 'expires_at']));
+    }
+
+    /**
+     * The share locked for reading until the transaction ends: readers share the lock, while a revoke or a scope
+     * change waits for them.
+     */
+    public static function lockForRead(string $id): self
+    {
+        return self::query()->whereKey($id)->sharedLock()->firstOrFail();
+    }
+
+    /**
+     * Whether a public read may proceed: the share is active and its deadline has not passed, whatever the state
+     * column has caught up with.
+     */
+    public function isReadableNow(): bool
+    {
+        return $this->state === ShareState::Active && $this->expires_at->isFuture();
+    }
+
     public function root(): RecordIdentity
     {
         return new RecordIdentity($this->root_type, $this->root_id);
@@ -112,6 +170,33 @@ final class Share extends Model implements ReadableModel
     public function isGrantedByOneOf(array $userIds): bool
     {
         return $this->owner_user_id !== null && in_array($this->owner_user_id, $userIds, true);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofRoot(Builder $query, RecordIdentity $root): void
+    {
+        $query->where('root_type', $root->type)->where('root_id', $root->id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function liveNow(Builder $query): void
+    {
+        $query->whereIn('state', array_map(fn (ShareState $state) => $state->value, ShareState::liveStates()))->where('expires_at', '>', CarbonImmutable::now());
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function openedByDigest(Builder $query, string $digest): void
+    {
+        $query->where('token_digest', $digest);
     }
 
     private static function forRoot(RecordIdentity $root, ShareState $state, CarbonImmutable $expiresAt): self

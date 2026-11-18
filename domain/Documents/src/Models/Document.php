@@ -13,6 +13,8 @@ use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Sharing\Contracts\Shareable;
+use App\Sharing\Support\ShareRecordCard;
 use App\Text\Contracts\TextContent;
 use App\Text\Exceptions\TextVersionUnavailable;
 use App\Text\Support\MarkdownText;
@@ -26,6 +28,7 @@ use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Models\Concerns\CreatedWithAttention;
 use Domain\Documents\Models\Concerns\Settles;
+use Domain\Documents\Models\Concerns\SharedWithComments;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -49,9 +52,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  */
 #[Fillable(['creator_type', 'creator_id'])]
-final class Document extends Model implements Commentable, Numbered, ReadableModel, TextContent
+final class Document extends Model implements Commentable, Numbered, ReadableModel, Shareable, TextContent
 {
-    use BoundedReads, CreatedWithAttention, HasComments, HasNumber, HasUlids, Linkable, Settles;
+    use BoundedReads, CreatedWithAttention, HasComments, HasNumber, HasUlids, Linkable, Settles, SharedWithComments;
 
     public const string LINK_TYPE = 'documents.document';
 
@@ -156,6 +159,17 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
         $found = $relation === 'revisions' ? $this->revisions->sortByDesc('number')->first() : $this->currentRevision;
 
         return $found ?? $this->currentRevisionOrFail();
+    }
+
+    /**
+     * The document's safe card for a share: its current closed revision's title, and that revision's number as the
+     * published version.
+     */
+    public function shareCard(): ShareRecordCard
+    {
+        $revision = $this->currentRevisionOrFail();
+
+        return new ShareRecordCard($this->shareIdentity(), $revision->title, (string) $revision->number);
     }
 
     public function dockCard(): DockCard

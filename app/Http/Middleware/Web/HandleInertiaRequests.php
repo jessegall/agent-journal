@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Web;
 
+use App\Actors\Support\ActorContext;
+use App\Sharing\Contracts\SharePolicy;
 use App\Web\Contracts\CurrentUserReader;
 use App\Web\Data\CurrentUserData;
 use App\Web\Data\SharedData;
@@ -32,6 +34,7 @@ class HandleInertiaRequests extends Middleware
         private readonly CurrentUserReader $users,
         private readonly NavigationRecords $navigation,
         private readonly ResponseFactory $inertia,
+        private readonly SharePolicy $sharing,
     ) {}
 
     /**
@@ -61,7 +64,7 @@ class HandleInertiaRequests extends Middleware
 
         return [
             ...parent::share($request),
-            ...SharedData::from(['name' => $this->appName, 'currentUser' => CurrentUserData::from($user->get())])->toArray(),
+            ...SharedData::from(['name' => $this->appName, 'currentUser' => CurrentUserData::from($user->get()), 'canShare' => $this->sharing->mayManage(ActorContext::forUser($user->get()->id))])->toArray(),
             // The navigation the signed-in user may see, and its counts after the page, so a slow count never holds it up.
             'navigation' => fn () => $this->navigation->tree($request),
             'navigationCounts' => $this->inertia->defer(fn () => $this->navigation->counts(), 'navigation-counts'),

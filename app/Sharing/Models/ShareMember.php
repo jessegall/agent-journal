@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Models;
 
+use App\Links\Models\Link;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -90,6 +91,43 @@ final class ShareMember extends Model implements ReadableModel
         return array_values(array_map(strval(...), self::query()->ofScope($share)->stillApproved()->readAll('a share scope holds at most the preview limit of members')->pluck('link_id')->all()));
     }
 
+    /**
+     * Whether a live, unexpired share approves the record in its current scope.
+     */
+    public static function isApprovedInLiveShare(RecordIdentity $record): bool
+    {
+        $members = self::query()->targeting($record)->stillApproved()->readLimit(Share::MOST_LIVE)->get(['share_id', 'scope_version']);
+        $scopeOfShare = Share::liveScopeVersions(array_values(array_unique($members->pluck('share_id')->all())));
+
+        return $members->contains(fn (self $member) => ($scopeOfShare[$member->share_id] ?? null) === $member->scope_version);
+    }
+
+    /**
+     * Whether the share's current scope approves the target linked from the source, over a link that still exists.
+     */
+    public static function approvesOverLiveLink(Share $share, RecordIdentity $source, RecordIdentity $target): bool
+    {
+        $linkIds = self::query()->ofScope($share)->stillApproved()->fromSource($source)->targeting($target)->readLimit(1)->pluck('link_id')->all();
+
+        return $linkIds !== [] && Link::query()->whereKey($linkIds)->exists();
+    }
+
+    /**
+     * The targets the share's current scope approves from the source, grouped by their link alias.
+     *
+     * @return array<string, list<RecordIdentity>>
+     */
+    public static function approvedTargetsFrom(Share $share, RecordIdentity $source): array
+    {
+        $grouped = [];
+
+        foreach (self::query()->ofScope($share)->stillApproved()->fromSource($source)->readAll('a share scope holds at most the preview limit of members')->get(['target_type', 'target_id']) as $member) {
+            $grouped[$member->target_type][] = $member->target();
+        }
+
+        return $grouped;
+    }
+
     public function target(): RecordIdentity
     {
         return new RecordIdentity($this->target_type, $this->target_id);
@@ -103,6 +141,24 @@ final class ShareMember extends Model implements ReadableModel
     protected function onLinks(Builder $query, array $linkIds): void
     {
         $query->whereIn('link_id', $linkIds);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function fromSource(Builder $query, RecordIdentity $source): void
+    {
+        $query->where('source_type', $source->type)->where('source_id', $source->id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function targeting(Builder $query, RecordIdentity $record): void
+    {
+        $query->where('target_type', $record->type)->where('target_id', $record->id);
     }
 
     /**

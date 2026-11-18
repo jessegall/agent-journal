@@ -1,0 +1,60 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Sharing\Support;
+
+use App\Sharing\Exceptions\ReadPermitMissing;
+use App\Sharing\Exceptions\ShareLinkRefused;
+use App\Sharing\Models\Share;
+use Illuminate\Container\Attributes\Scoped;
+
+/**
+ * The read permits of one request: the public bridge issues one from a token, the read command takes it once by its
+ * reference, and the bridge clears the rest when the request ends. A token never leaves this class.
+ */
+#[Scoped]
+final class ReadPermits
+{
+    private const int REFERENCE_BYTES = 16;
+
+    /**
+     * @var array<string, ReadPermit>
+     */
+    private array $permits = [];
+
+    /**
+     * A permit for the share the token opens, even one no longer readable, so the read can record its denial; a
+     * malformed token is refused before anything is read.
+     *
+     * @throws ShareLinkRefused
+     */
+    public function issue(string $token): ReadPermit
+    {
+        if (! ShareToken::hasShape($token)) {
+            throw ShareLinkRefused::malformed();
+        }
+
+        $share = Share::forTokenDigest(ShareToken::digestOf($token))->getOrThrow(ShareLinkRefused::unknown());
+        $permit = new ReadPermit($share->id, $share->scope_version, bin2hex(random_bytes(self::REFERENCE_BYTES)));
+        $this->permits[$permit->reference] = $permit;
+
+        return $permit;
+    }
+
+    /**
+     * @throws ReadPermitMissing
+     */
+    public function take(string $reference): ReadPermit
+    {
+        $permit = $this->permits[$reference] ?? throw ReadPermitMissing::forReference($reference);
+        unset($this->permits[$reference]);
+
+        return $permit;
+    }
+
+    public function clear(): void
+    {
+        $this->permits = [];
+    }
+}
