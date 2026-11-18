@@ -1,0 +1,42 @@
+{
+  "program": "claude",
+  "version": "2.1.323",
+  "binary_sha256": "5432918d904a9b6afef7bb79d20df24d76052eabc1f41bceb84091d21f8889a7",
+  "captured_at": "2026-11-18",
+  "environment": {
+    "allowlist": ["PATH", "HOME", "CLAUDE_CONFIG_DIR", "ANTHROPIC_CONFIG_DIR"],
+    "HOME": "<empty directory>",
+    "CLAUDE_CONFIG_DIR": "<empty directory>",
+    "ANTHROPIC_CONFIG_DIR": "<empty directory>"
+  },
+  "launch_invocation": [
+    "claude", "-p",
+    "--restricted",
+    "--strict-mcp-config", "--mcp-config", "<journal mcp.json>",
+    "--settings", "<journal settings.json>",
+    "--tools", "Read,Edit",
+    "--no-session-persistence",
+    "--output-format", "json",
+    "<prompt>"
+  ],
+  "flags_present": [
+    "--restricted", "--strict-mcp-config", "--mcp-config", "--settings", "--setting-sources", "--tools",
+    "--allowed-tools", "--disallowed-tools", "--add-dir", "--model", "--effort", "--permission-mode",
+    "--permission-prompts", "--session-id", "--no-session-persistence", "--output-format",
+    "--include-hook-events", "--bare", "--safe-mode"
+  ],
+  "account_commands": ["auth login", "auth logout", "auth status", "setup-token"],
+  "auth_login_options": ["--claudeai", "--console", "--email", "--sso"],
+  "config_directory_after_signed_out_runs": [
+    ".claude.json",
+    "backups/.claude.json.backup.<time>",
+    "plugins/store/<builtin plugin>.json",
+    "sessions/"
+  ],
+  "claude_json_keys": [
+    "firstStartTime", "firstStartVersion", "hasResetAutoModeOptInForDefaultOffer", "machineID",
+    "migrationVersion", "opusProMigrationComplete", "seenNotifications", "sonnet1m45MigrationComplete"
+  ],
+  "home_after_runs": [],
+  "anthropic_config_directory_after_runs": []
+}

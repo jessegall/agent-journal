@@ -1,0 +1,69 @@
+{
+  "program": "codex",
+  "version": "0.165.0",
+  "binary_sha256": "a45099154d7fb4a5ed8a56f40966a95deb938e508bab23e6985035c709e9a85a",
+  "captured_at": "2026-11-18",
+  "environment": {
+    "allowlist": ["PATH", "HOME", "CODEX_HOME"],
+    "HOME": "<empty directory>",
+    "CODEX_HOME": "<empty directory>"
+  },
+  "login_status_signed_out": {"stdout": "Not logged in", "exit": 1},
+  "exec_signed_out": {"exit": 0, "last_event": "turn.failed", "reconnect_attempts": 5, "reaches_network": true},
+  "login_options": ["--with-api-key", "--with-access-token", "--device-auth", "-c"],
+  "app_server": {
+    "transports": ["stdio://", "unix://", "unix://PATH", "ws://IP:PORT", "off"],
+    "print_startup_config": {"appServerVersion": "0.165.0", "configRequirements": {"requirements": null}},
+    "account_requests": [
+      "account/login/start",
+      "account/login/cancel",
+      "account/logout",
+      "account/read",
+      "account/rateLimits/read",
+      "account/usage/read"
+    ],
+    "account_notifications": ["account/login/completed", "account/updated", "account/rateLimits/updated"],
+    "login_start_types": [
+      "apiKey",
+      "chatgpt",
+      "chatgptDeviceCode",
+      "chatgptAuthTokens",
+      "amazonBedrock",
+      "amazonBedrockAccessKeys"
+    ],
+    "login_start_chatgpt_response": ["authUrl", "loginId", "type"],
+    "login_start_device_code_response": ["loginId", "type", "userCode", "verificationUrl"],
+    "login_cancel_statuses": ["canceled", "notFound"],
+    "login_completed_fields": ["success", "loginId", "error"],
+    "account_read_params": ["refreshToken"],
+    "account_read_response": ["account", "requiresOpenaiAuth"],
+    "account_types": ["apiKey", "chatgpt", "amazonBedrock", "gcp"],
+    "execution_requests": ["thread/start", "thread/resume", "thread/fork", "turn/start", "turn/steer", "turn/interrupt"],
+    "execution_notifications": ["thread/started", "thread/closed", "turn/started", "turn/completed"],
+    "turn_start_required": ["input", "threadId"],
+    "auth_recovery_notifications": ["modelProvider/authRecoveryStarted", "modelProvider/authRecoveryCompleted"]
+  },
+  "project_config": {
+    "untrusted_folder_layer_loaded": false,
+    "trusted_exact_folder_layer_loaded": true,
+    "untrusted_parent_root_layer_loaded": false,
+    "cli_override_empties_a_table": false,
+    "trusted_empty_folder_layer_loaded": false,
+    "outside_a_folder_reads_the_enclosing_repository_project_hooks_config": true
+  },
+  "codex_home_after_signed_out_exec": [
+    "config.toml",
+    "installation_id",
+    "sessions/<year>/...",
+    "state_5.sqlite",
+    "logs_2.sqlite",
+    "thread_history_1.sqlite",
+    "memories_1.sqlite",
+    "queue_1.sqlite",
+    "goals_1.sqlite",
+    "thread-writer-locks/.coordination.lock",
+    "shell_snapshots/",
+    "skills/.system/",
+    ".tmp/plugins*"
+  ]
+}
