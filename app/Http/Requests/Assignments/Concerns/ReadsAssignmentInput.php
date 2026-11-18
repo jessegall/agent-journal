@@ -39,7 +39,7 @@ trait ReadsAssignmentInput
     protected function recipientRules(): array
     {
         return [
-            'recipientType' => ['required', Rule::enum(ActorType::class)],
+            'recipientType' => ['required', Rule::enum(ActorType::class)->only(ActorType::requestTypes())],
             'recipientId' => ['required', 'ulid'],
         ];
     }
@@ -51,7 +51,7 @@ trait ReadsAssignmentInput
     {
         return [
             'assignmentId' => ['required', 'ulid'],
-            'holderType' => ['required', Rule::enum(ActorType::class)],
+            'holderType' => ['required', Rule::enum(ActorType::class)->only(ActorType::requestTypes())],
             'holderId' => ['required', 'ulid'],
         ];
     }

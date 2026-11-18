@@ -59,8 +59,8 @@ final readonly class StackCleanups implements StackCleanup
 
     /**
      * The target's stack, open or closed, locked once the caller may settle it: an agent any stack of its own, in
-     * whichever session its work was started, a user the stack it was authorized for. Any other actor, or none, is
-     * refused.
+     * whichever session its work was started, a user the stack it was authorized for. Any other actor, the engine
+     * included, or none, is refused.
      */
     private function lockedRowFor(StackTarget $target): AgentStackRow
     {
@@ -69,6 +69,7 @@ final readonly class StackCleanups implements StackCleanup
         if (match ($actor->actorType()) {
             ActorType::Agent => $actor->actorId() !== $target->agentId,
             ActorType::User => false,
+            ActorType::Engine => true,
         }) {
             throw StackTargetRefused::forTarget($target->description());
         }
