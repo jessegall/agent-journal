@@ -11,6 +11,8 @@ from core.modules.processes.support.output_page import NEWLINE, OutputPage
 FOLDER_NAME = "processes"
 END_POLL_SECONDS = 0.5
 PAGE_BYTES = 1 << 20
+# a reader's summary and counts sit at an output's ends: a sample keeps this much of each, so judging a reader stays quick
+SAMPLE_EDGE_BYTES = 64 * 1024
 READS_FILE = "reads"
 LINE_FILE = "line"
 PARTS_FILE = "parts"
@@ -247,10 +249,10 @@ class OutputFolder:
     def edges(path: Path) -> bytes:
         size = FileAccess.stat(path).st_size
         with FileAccess.reader(path, "rb") as handle:
-            if size <= 2 * PAGE_BYTES:
+            if size <= 2 * SAMPLE_EDGE_BYTES:
                 return handle.read()
-            head = handle.read(PAGE_BYTES)
-            handle.seek(size - PAGE_BYTES)
+            head = handle.read(SAMPLE_EDGE_BYTES)
+            handle.seek(size - SAMPLE_EDGE_BYTES)
             tail = handle.read()
         return head[:head.rfind(b"\n") + 1] + tail[tail.find(b"\n") + 1:]
 
