@@ -39,6 +39,9 @@ const exitText = computed(() => {
     <article class="flex flex-col gap-1" :aria-label="`Part ${part.operation}`">
         <h3>{{ part.operation }}</h3>
         <p>Lifecycle: {{ part.lifecycle }}, end: {{ part.end }}</p>
+        <template v-if="part.capture === 'removed'">
+            <p>Its output was removed.</p>
+        </template>
         <p>Capture: {{ part.capture }}; {{ part.elapsedSeconds }} seconds; {{ JSON.stringify(part.bytes) }} bytes</p>
         <p>Reading: {{ part.reading }}</p>
         <p>Progress: indeterminate</p>

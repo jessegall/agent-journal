@@ -26,6 +26,7 @@ use App\Processes\Models\ProcessRun;
 use App\Processes\Models\RuleRevision;
 use App\Processes\Support\ActiveRules;
 use App\Processes\Support\ExecutionPlanner;
+use App\Processes\Support\OutputDiskCapacity;
 use App\Processes\Support\ProjectKey;
 use App\Processes\Support\RunnerCapability;
 use App\Processes\Values\Admission;
@@ -64,6 +65,7 @@ final readonly class LineAdmission implements ShellAdmission
         private CurrentActor $actors,
         private CommandBus $commands,
         private ProjectKey $projects,
+        private OutputDiskCapacity $capacity,
     ) {}
 
     public function admit(
@@ -139,6 +141,11 @@ final readonly class LineAdmission implements ShellAdmission
 
                 return $this->held($refusal, $part, $tree, $context, RequestHoldReason::ReaderRequired);
             }
+        }
+        if (! $this->capacity->hasRoom()) {
+            $correction = 'Free space on the output disk, then run it again.';
+
+            return $this->refusal(RefusalCode::RunnerUnavailable, $tree, 'The output disk is full.', $correction);
         }
         if (! $this->runner->isOn()) {
             $correction = 'Use a host with its runner on.';

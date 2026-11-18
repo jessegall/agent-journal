@@ -19,8 +19,10 @@ use App\Processes\Console\CommandTypeShowCommand;
 use App\Processes\Console\CommandTypeWithdrawCommand;
 use App\Processes\Console\ExplainCommandTypeCommand;
 use App\Processes\Console\OutputReadCommand;
+use App\Processes\Console\ProcessCleanCommand;
 use App\Processes\Console\ProcessExportCommand;
 use App\Processes\Console\ProcessReconcileCommand;
+use App\Processes\Console\ProcessRestoreCheckCommand;
 use App\Processes\Console\ProcessShowCommand;
 use App\Processes\Console\ReaderProposeCommand;
 use App\Processes\Console\ReaderProveCommand;
@@ -149,6 +151,8 @@ final class ProcessesServiceProvider extends ServiceProvider
             ReaderProposeCommand::class,
             ReaderProveCommand::class,
             ProcessReconcileCommand::class,
+            ProcessCleanCommand::class,
+            ProcessRestoreCheckCommand::class,
             ReaderSampleApproveCommand::class,
             ReaderSampleRunCommand::class,
         ]);

@@ -7,6 +7,7 @@ namespace App\Processes\Pages;
 use App\Http\Controllers\Processes\ApproveBundlePageController;
 use App\Http\Controllers\Processes\ApproveProposalPageController;
 use App\Http\Controllers\Processes\ApproveSamplePageController;
+use App\Http\Controllers\Processes\CleanRunPageController;
 use App\Http\Controllers\Processes\RejectProposalPageController;
 use App\Http\Controllers\Processes\StopRunPageController;
 use App\Processes\Readers\RequestListReader;
@@ -82,6 +83,9 @@ final class ProcessPages implements ProvidesPages
     {
         return Page::make('run', 'Run', Icon::Rules, RunWindowReader::class, 'RunView.vue')
             ->at('runs/{run}')
-            ->actions(ActionRoute::post('runs/{run}/stop', StopRunPageController::class, 'stop-run'));
+            ->actions(
+                ActionRoute::post('runs/{run}/stop', StopRunPageController::class, 'stop-run'),
+                ActionRoute::post('runs/{run}/clean', CleanRunPageController::class, 'clean-run'),
+            );
     }
 }

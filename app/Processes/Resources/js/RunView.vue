@@ -15,6 +15,23 @@ const page = usePage<{ errors: Record<string, string> }>();
 const refusal = computed(() => page.props.errors.review ?? '');
 const running = computed(() => !['ended', 'stopped', 'lost'].includes(props.data.snapshot.lifecycle));
 
+const storedBytes = computed(() =>
+    props.data.snapshot.parts.reduce(
+        (total, part) => total + Object.values(part.bytes).reduce((sum, bytes) => sum + bytes, 0),
+        0,
+    ),
+);
+
+function clean(): void {
+    if (!window.confirm(`Remove ${storedBytes.value} bytes of stored output from this run? Its parts stay listed.`)) {
+        return;
+    }
+    router.post(`/processes/runs/${props.data.snapshot.runId}/clean`, {}, {
+        headers: { 'Idempotency-Key': crypto.randomUUID() },
+        preserveScroll: true,
+    });
+}
+
 function stop(): void {
     router.post(`/processes/runs/${props.data.snapshot.runId}/stop`, {}, {
         headers: { 'Idempotency-Key': crypto.randomUUID() },
@@ -38,6 +55,9 @@ function stop(): void {
         </template>
         <template v-if="running">
             <button type="button" @click="stop">Stop this run</button>
+        </template>
+        <template v-else>
+            <button type="button" @click="clean">Remove stored output ({{ storedBytes }} bytes)</button>
         </template>
         <template v-for="part in data.snapshot.parts" :key="part.id">
             <PartCard

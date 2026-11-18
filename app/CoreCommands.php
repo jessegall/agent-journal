@@ -45,6 +45,7 @@ use App\Processes\Commands\ApproveRuleBundle;
 use App\Processes\Commands\AssessPartOutput;
 use App\Processes\Commands\ApproveRuleProposal;
 use App\Processes\Commands\ApproveSample;
+use App\Processes\Commands\CleanProcessOutput;
 use App\Processes\Commands\ImportRuleProposals;
 use App\Processes\Commands\IssueEvidencePermit;
 use App\Processes\Commands\MarkRunsStale;
@@ -67,6 +68,7 @@ use App\Processes\Commands\SettleSample;
 use App\Processes\Commands\StartSample;
 use App\Processes\Commands\StopProcessRun;
 use App\Processes\Commands\StopSurvivors;
+use App\Processes\Commands\VerifyRestoredOutput;
 use App\Processes\Commands\WithdrawCommandRequest;
 use App\Processes\Commands\WithdrawRuleProposal;
 use App\Profiles\Commands\ActivateProfiles;
@@ -153,6 +155,8 @@ final class CoreCommands
             ReconcileLostRuns::class,
             StopSurvivors::class,
             RetryProcessRun::class,
+            CleanProcessOutput::class,
+            VerifyRestoredOutput::class,
             CreateSkill::class, ReviseSkill::class, RestoreSkill::class, RetireSkill::class, CopySkill::class,
             RefreshSkills::class, PublishSkills::class, PrepareSkillPublication::class, ActivateSkillPublication::class, FailSkillPublication::class,
         ];
