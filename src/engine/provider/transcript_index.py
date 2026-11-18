@@ -9,10 +9,10 @@ from engine.provider.transcript_row import TranscriptRow
 
 
 class TranscriptIndex:
-    """Reads one page of a session's transcript without reading the session again. Per file it keeps, in the
-    server's memory, the byte offset and length of each row's line; a read parses only the lines the file grew
-    by since the last read, then seeks to the lines of the asked page. A line without its newline yet is still
-    being written and waits for the next read. A file that shrank is indexed anew."""
+    """Reads one page of a session's transcript without parsing the session. Per file it keeps the byte offset and
+    length of each line, found by its newline alone; a read parses only the lines of the asked page, so a page
+    holds fewer rows when some of its lines are no row. A line without its newline yet is still being written and
+    waits for the next read. A file that shrank is indexed anew."""
 
     def __init__(self) -> None:
         self.files: dict[Path, IndexedTranscript] = {}
@@ -22,7 +22,7 @@ class TranscriptIndex:
         end = max(len(indexed.lines) - (number - 1) * size, 0)
         start = max(end - size, 0)
         with FileAccess.reader(path, "rb") as transcript:
-            rows = tuple(self.row(provider, transcript, indexed.lines[position], position + 1) for position in range(start, end))
+            rows = tuple(row for position in range(start, end) if (row := self.row(provider, transcript, indexed.lines[position], position + 1)) is not None)
         return Page(rows, number, size, len(indexed.lines))
 
     def older_rows(self, provider: Provider, path: Path, row_id: int, size: int) -> Page[TranscriptRow]:
@@ -30,7 +30,7 @@ class TranscriptIndex:
         end = min(max(row_id - 1, 0), len(indexed.lines))
         start = max(end - size, 0)
         with FileAccess.reader(path, "rb") as transcript:
-            rows = tuple(self.row(provider, transcript, indexed.lines[position], position + 1) for position in range(start, end))
+            rows = tuple(row for position in range(start, end) if (row := self.row(provider, transcript, indexed.lines[position], position + 1)) is not None)
         return Page(rows, 1, size, end)
 
     def indexed(self, provider: Provider, path: Path) -> IndexedTranscript:
@@ -45,16 +45,12 @@ class TranscriptIndex:
         for line in grown.splitlines(keepends=True):
             if not line.endswith(b"\n"):
                 break
-            if provider.transcript_row(line.decode(), len(indexed.lines) + 1) is not None:
-                indexed.lines.append((offset, len(line)))
+            indexed.lines.append((offset, len(line)))
             offset += len(line)
         indexed.end_offset = offset
         return indexed
 
     @staticmethod
-    def row(provider: Provider, transcript: BinaryIO, line: tuple[int, int], position: int) -> TranscriptRow:
+    def row(provider: Provider, transcript: BinaryIO, line: tuple[int, int], position: int) -> TranscriptRow | None:
         transcript.seek(line[0])
-        row = provider.transcript_row(transcript.read(line[1]).decode(), position)
-        if row is None:
-            raise LookupError(f"the transcript line at byte {line[0]} no longer gives row {position}")
-        return row
+        return provider.transcript_row(transcript.read(line[1]).decode(errors="replace"), position)
