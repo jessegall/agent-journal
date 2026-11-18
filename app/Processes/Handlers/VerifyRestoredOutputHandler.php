@@ -8,6 +8,8 @@ use App\Contracts\CommandHandler;
 use App\Processes\Commands\VerifyRestoredOutput;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Support\ManifestCheck;
+use App\Processes\Values\PartCapture;
+use App\Processes\Values\RestoredCaptures;
 
 /**
  * Sets each part's capture from its manifest as the disk holds it now: complete only when every chunk is there with
@@ -17,18 +19,15 @@ final readonly class VerifyRestoredOutputHandler implements CommandHandler
 {
     public function __construct(private ManifestCheck $manifests) {}
 
-    /**
-     * @return array<string, string> part id => capture state
-     */
-    public function handle(VerifyRestoredOutput $command): array
+    public function handle(VerifyRestoredOutput $command): RestoredCaptures
     {
         $run = ProcessRun::query()->withoutGlobalScopes()->whereKey($command->runId)->sole();
-        $states = [];
+        $captures = [];
         foreach ($run->parts()->readLimit(500)->get() as $part) {
             $part->markCapture($this->manifests->stateOf($part));
-            $states[$part->id] = $part->capture_state->value;
+            $captures[] = new PartCapture($part->id, $part->capture_state);
         }
 
-        return $states;
+        return new RestoredCaptures($captures);
     }
 }

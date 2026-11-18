@@ -77,10 +77,10 @@ final class OutputCleanupTest extends TestCase
         Storage::disk(SpoolRecorder::DISK)->put($path, 'X'.substr(self::PASSED_OUTPUT, 1));
 
         $check = new VerifyRestoredOutput($this->part->process_run_id);
-        $this->assertSame(['corrupt'], array_values($this->asUser($check)));
+        $this->assertSame([CaptureState::Corrupt], $this->asUser($check)->states());
 
         Storage::disk(SpoolRecorder::DISK)->put($path, self::PASSED_OUTPUT);
-        $this->assertSame(['complete'], array_values($this->asUser($check)));
+        $this->assertSame([CaptureState::Complete], $this->asUser($check)->states());
     }
 
     public function test_a_full_output_disk_starts_nothing_until_room_returns(): void

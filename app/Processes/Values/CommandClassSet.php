@@ -13,21 +13,16 @@ use App\Processes\Enums\CommandClass;
 final readonly class CommandClassSet
 {
     /**
-     * @var list<CommandClass>
+     * @param  list<CommandClass>  $classes
      */
-    public array $classes;
-
-    private function __construct(CommandClass ...$classes)
-    {
-        $this->classes = array_values(array_filter(
-            CommandClass::cases(),
-            fn (CommandClass $class) => in_array($class, $classes, true),
-        ));
-    }
+    private function __construct(public array $classes) {}
 
     public static function of(CommandClass ...$classes): self
     {
-        return new self(...$classes);
+        return new self(array_values(array_filter(
+            CommandClass::cases(),
+            fn (CommandClass $class) => in_array($class, $classes, true),
+        )));
     }
 
     /**
@@ -43,22 +38,22 @@ final readonly class CommandClassSet
      */
     public static function fromArray(array $values): self
     {
-        return new self(...array_map(CommandClass::from(...), $values));
+        return self::of(...array_map(CommandClass::from(...), $values));
     }
 
     public static function empty(): self
     {
-        return new self();
+        return new self([]);
     }
 
     public function with(CommandClass $class): self
     {
-        return new self($class, ...$this->classes);
+        return self::of($class, ...$this->classes);
     }
 
     public function union(self $other): self
     {
-        return new self(...$this->classes, ...$other->classes);
+        return self::of(...$this->classes, ...$other->classes);
     }
 
     public function contains(CommandClass $class): bool
@@ -76,7 +71,7 @@ final readonly class CommandClassSet
      */
     public function missingFrom(self $other): self
     {
-        return new self(...array_filter($this->classes, fn (CommandClass $class) => ! $other->contains($class)));
+        return self::of(...array_filter($this->classes, fn (CommandClass $class) => ! $other->contains($class)));
     }
 
     public function sharesAnyWith(self $other): bool

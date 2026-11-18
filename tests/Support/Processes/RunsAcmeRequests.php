@@ -73,9 +73,9 @@ trait RunsAcmeRequests
     private function reader(): string
     {
         $definition = new ReaderDefinition([
-            new RecordRule(RecordRole::Outcome, "test='{name:word}' status='ok'"),
-            new RecordRule(RecordRole::Outcome, "test='{name:word}' status='fail'"),
-            new RecordRule(RecordRole::Summary, 'passed={passed:int} failed={failed:int}'),
+            RecordRule::of(RecordRole::Outcome, "test='{name:word}' status='ok'"),
+            RecordRule::of(RecordRole::Outcome, "test='{name:word}' status='fail'"),
+            RecordRule::of(RecordRole::Summary, 'passed={passed:int} failed={failed:int}'),
         ], failureField: 'failed');
 
         return $this->asAgent(new ProposeReader($this->requestId, 1, $definition));

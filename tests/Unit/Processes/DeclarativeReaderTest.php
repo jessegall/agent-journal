@@ -133,11 +133,11 @@ final class DeclarativeReaderTest extends TestCase
     {
         $definition = new ReaderDefinition(
             [
-                new RecordRule(RecordRole::Outcome, 'PASS {name:rest}'),
-                new RecordRule(RecordRole::Diagnostic, 'FAIL {name:rest}'),
-                new RecordRule(RecordRole::Progress, 'step {completed:int}'),
-                new RecordRule(RecordRole::Progress, 'progress {completed:int}/{total:int}'),
-                new RecordRule(RecordRole::Summary, 'Tests: {total:int}, Failures: {failed:int}'),
+                RecordRule::of(RecordRole::Outcome, 'PASS {name:rest}'),
+                RecordRule::of(RecordRole::Diagnostic, 'FAIL {name:rest}'),
+                RecordRule::of(RecordRole::Progress, 'step {completed:int}'),
+                RecordRule::of(RecordRole::Progress, 'progress {completed:int}/{total:int}'),
+                RecordRule::of(RecordRole::Summary, 'Tests: {total:int}, Failures: {failed:int}'),
             ],
             failureField: 'failed',
         );

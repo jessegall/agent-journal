@@ -15,16 +15,20 @@ final readonly class RecordRule
 {
     private const array PLACEHOLDERS = ['int' => '\d++', 'word' => '\S++', 'rest' => '.*+'];
 
-    private string $expression;
-
-    /**
-     * @throws ReaderDefinitionInvalid
-     */
-    public function __construct(
+    private function __construct(
         public RecordRole $role,
         public string $pattern,
-    ) {
-        $this->expression = '/^'.self::compile($pattern).'$/u';
+        public string $expression,
+    ) {}
+
+    /**
+     * The rule of a role and a pattern, compiled to its anchored expression.
+     *
+     * @throws ReaderDefinitionInvalid
+     */
+    public static function of(RecordRole $role, string $pattern): self
+    {
+        return new self($role, $pattern, '/^'.self::compile($pattern).'$/u');
     }
 
     public function matches(string $line): bool

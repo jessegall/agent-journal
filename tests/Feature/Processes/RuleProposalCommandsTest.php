@@ -162,7 +162,7 @@ final class RuleProposalCommandsTest extends TestCase
             'rule' => AcmeDeclarations::verify()->toArray(),
         ]]], JSON_THROW_ON_ERROR);
 
-        $receipts = $this->runAs('agent-1', new ImportRuleProposals($file));
+        $receipts = $this->runAs('agent-1', new ImportRuleProposals($file))->receipts;
 
         $this->assertCount(1, $receipts);
         $this->assertSame(ProposalState::Pending, $receipts[0]->state);
@@ -189,8 +189,6 @@ final class RuleProposalCommandsTest extends TestCase
         }
         $this->assertSame(0, RuleProposal::query()->count());
     }
-
-
 
     private function ordinary(): CommandRule
     {

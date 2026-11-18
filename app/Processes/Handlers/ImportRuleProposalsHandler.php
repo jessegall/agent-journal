@@ -15,6 +15,7 @@ use App\Processes\Models\RuleProposal;
 use App\Processes\Support\ProjectKey;
 use App\Processes\Support\ProposalChecks;
 use App\Processes\Values\DeclaredProposal;
+use App\Processes\Values\ImportedProposals;
 use App\Processes\Values\ProposalReceipt;
 
 /**
@@ -31,12 +32,10 @@ final readonly class ImportRuleProposalsHandler implements CommandHandler
     ) {}
 
     /**
-     * @return list<ProposalReceipt>
-     *
      * @throws DeclarationInvalid
      * @throws RuleProposalRefused
      */
-    public function handle(ImportRuleProposals $command): array
+    public function handle(ImportRuleProposals $command): ImportedProposals
     {
         $actor = ActorIdentity::of($this->actors->actor());
         $projectKey = $this->projects->current();
@@ -45,9 +44,11 @@ final readonly class ImportRuleProposalsHandler implements CommandHandler
             $this->checks->check($declaration->proposed->rule, false);
         }
 
-        return array_map(fn (DeclaredProposal $declaration): ProposalReceipt => ProposalReceipt::of(
+        $open = fn (DeclaredProposal $declaration): ProposalReceipt => ProposalReceipt::of(
             RuleProposal::open($projectKey, $actor, $declaration->requestId, $declaration->proposed, null),
             $declaration->proposed,
-        ), $declared);
+        );
+
+        return new ImportedProposals(array_map($open, $declared));
     }
 }
