@@ -38,7 +38,12 @@ final readonly class Word
      */
     public function shiftedBy(int $bytes): self
     {
-        return $bytes === 0 ? $this : new self(array_map(fn (WordSegment $segment) => $segment->shiftedBy($bytes), $this->segments), $this->range->shiftedBy($bytes));
+        if ($bytes === 0) {
+            return $this;
+        }
+        $segments = array_map(fn (WordSegment $segment) => $segment->shiftedBy($bytes), $this->segments);
+
+        return new self($segments, $this->range->shiftedBy($bytes));
     }
 
     /**
@@ -46,7 +51,11 @@ final readonly class Word
      */
     public function literal(): string|null
     {
-        return $this->hasExpansion() ? null : implode('', array_map(fn (WordSegment $segment) => $segment->text, $this->segments));
+        if ($this->hasExpansion()) {
+            return null;
+        }
+
+        return implode('', array_map(fn (WordSegment $segment) => $segment->text, $this->segments));
     }
 
     /**
@@ -61,12 +70,49 @@ final readonly class Word
             return $this;
         }
 
-        return new self(array_map(function (WordSegment $segment) use ($positional): WordSegment {
-            if ($segment->type !== WordSegmentType::Expansion || preg_match('/^\$\{?([1-9])\}?$/', $segment->text, $match) !== 1 || ! isset($positional[(int) $match[1] - 1])) {
-                return $segment;
-            }
+        $segments = array_map(fn (WordSegment $segment) => $this->bindSegment($segment, $positional), $this->segments);
 
-            return new WordSegment(WordSegmentType::SingleQuoted, $positional[(int) $match[1] - 1], $segment->range);
-        }, $this->segments), $this->range);
+        return new self($segments, $this->range);
+    }
+
+    /**
+     * A positional parameter segment with a bound value becomes that value, single-quoted; any other stays as it is.
+     *
+     * @param  list<string>  $positional
+     */
+    private function bindSegment(WordSegment $segment, array $positional): WordSegment
+    {
+        if ($segment->type !== WordSegmentType::Expansion) {
+            return $segment;
+        }
+        if (preg_match('/^\$\{?([1-9])\}?$/', $segment->text, $match) !== 1) {
+            return $segment;
+        }
+        $index = (int) $match[1] - 1;
+        if (! isset($positional[$index])) {
+            return $segment;
+        }
+
+        return new WordSegment(WordSegmentType::SingleQuoted, $positional[$index], $segment->range);
+    }
+
+    /**
+     * Whether the word starts as NAME= or NAME+=, an assignment before a command.
+     */
+    public function isAssignment(): bool
+    {
+        if ($this->segments === [] || $this->segments[0]->type !== WordSegmentType::Literal) {
+            return false;
+        }
+
+        return preg_match('/^[A-Za-z_][A-Za-z0-9_]*\+?=/', $this->segments[0]->text) === 1;
+    }
+
+    /**
+     * Whether the word is one segment ending in =, the name part before the ( of an array assignment.
+     */
+    public function isArrayName(): bool
+    {
+        return count($this->segments) === 1 && str_ends_with($this->segments[0]->text, '=');
     }
 }

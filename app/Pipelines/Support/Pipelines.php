@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace App\Pipelines\Support;
 
-use App\Pipelines\Contracts\Pipe;
 use App\Pipelines\Contracts\PipelineDefinition;
 use App\Pipelines\Exceptions\StepOutOfOrder;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Container\Container;
-use ReflectionMethod;
-use ReflectionNamedType;
 
 /**
  * Runs a pipeline definition: every pipe in turn takes the stage the one before returned, and a pipe may run another
@@ -23,29 +20,29 @@ use ReflectionNamedType;
 final class Pipelines
 {
     /**
-     * @var array<class-string<PipelineDefinition>, list<array{pipe: Pipe, takes: class-string|null}>>
+     * @var array<class-string<PipelineDefinition>, list<ResolvedPipe>>
      */
     private array $resolved = [];
 
     public function __construct(private readonly Container $container) {}
 
     /**
-     * @template TStage of object
+     * Runs the input through every pipe of the definition and returns the stage the last pipe produced.
+     *
+     * @template TOutput of object
      *
      * @param  class-string<PipelineDefinition>  $definition
-     * @param  class-string<TStage>  $produces
-     * @return TStage
+     * @param  class-string<TOutput>  $output
+     * @return TOutput
      */
-    public function run(string $definition, object $stage, string $produces): object
+    public function run(string $definition, object $input, string $output): object
     {
-        foreach ($this->resolved[$definition] ??= $this->resolve($definition) as $step) {
-            if ($step['takes'] !== null && ! $stage instanceof $step['takes']) {
-                throw StepOutOfOrder::handing($step['pipe']::class, $stage);
-            }
-            $stage = $step['pipe']->handle($stage);
+        $stage = $input;
+        foreach ($this->resolved[$definition] ??= $this->resolve($definition) as $pipe) {
+            $stage = $pipe->handle($stage);
         }
-        if (! $stage instanceof $produces) {
-            throw StepOutOfOrder::ending($definition, $produces, $stage);
+        if (! $stage instanceof $output) {
+            throw StepOutOfOrder::ending($definition, $output, $stage);
         }
 
         return $stage;
@@ -53,24 +50,15 @@ final class Pipelines
 
     /**
      * @param  class-string<PipelineDefinition>  $definition
-     * @return list<array{pipe: Pipe, takes: class-string|null}>
+     * @return list<ResolvedPipe>
      */
     private function resolve(string $definition): array
     {
-        $steps = [];
-        foreach ($this->container->make($definition)->pipes() as $pipeClass) {
-            /**
-             * @var Pipe $pipe
-             */
-            $pipe = $this->container->make($pipeClass);
-            $type = new ReflectionMethod($pipe, 'handle')->getParameters()[0]->getType();
-            /**
-             * @var class-string|null $takes
-             */
-            $takes = $type instanceof ReflectionNamedType && ! $type->isBuiltin() ? $type->getName() : null;
-            $steps[] = ['pipe' => $pipe, 'takes' => $takes];
+        $pipes = [];
+        foreach ($this->container->make($definition)->pipes() as $pipe) {
+            $pipes[] = ResolvedPipe::of($this->container->make($pipe));
         }
 
-        return $steps;
+        return $pipes;
     }
 }

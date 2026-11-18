@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Storage;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -45,6 +46,7 @@ final class EvidencePermitTest extends TestCase
         touch($this->folder.'/project/notes.txt');
     }
 
+    #[TimeLimit(10, 'It runs process:run twice through the signed channel.')]
     public function test_a_permit_runs_once_as_evidence_and_its_request_id_returns_the_same_run(): void
     {
         $permit = $this->permit();

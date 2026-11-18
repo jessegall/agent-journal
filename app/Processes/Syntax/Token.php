@@ -24,4 +24,12 @@ final readonly class Token
         public int $descriptor = 0,
         public HereDocument|null $hereDocument = null,
     ) {}
+
+    /**
+     * The text of a word token without expansions; any other token has none.
+     */
+    public function literal(): string|null
+    {
+        return $this->type === TokenType::Word ? $this->word?->literal() : null;
+    }
 }

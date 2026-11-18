@@ -62,9 +62,12 @@ final class ChannelRunEvents implements RunEvents
         $key = "{$part->name()}:{$stream->value}";
         $offset = $this->offsets[$key] ?? 0;
         $this->offsets[$key] = $offset + strlen($bytes);
-        $chunk = ['part' => ['node' => $part->node, 'attempt' => $part->attempt, 'operation' => $part->operation], 'stream' => $stream->value, 'offset' => $offset, 'bytes' => base64_encode($bytes)];
-        file_put_contents($this->spoolFolder.'/chunks.jsonl', json_encode($chunk, JSON_THROW_ON_ERROR)."\n", FILE_APPEND | LOCK_EX);
-        $this->flush();
+        $this->append('chunks.jsonl', [
+            'part' => ['node' => $part->node, 'attempt' => $part->attempt, 'operation' => $part->operation],
+            'stream' => $stream->value,
+            'offset' => $offset,
+            'bytes' => base64_encode($bytes),
+        ]);
     }
 
     public function ended(PartKey $part, PartEnd $end, bool $drained): void
@@ -135,8 +138,17 @@ final class ChannelRunEvents implements RunEvents
      */
     private function emit(RunEventType $type, PartKey|null $part, array $details = []): void
     {
-        $event = new RunEvent(++$this->sequence, $type, $part, $details);
-        file_put_contents($this->spoolFolder.'/events.jsonl', json_encode($event->toArray(), JSON_THROW_ON_ERROR)."\n", FILE_APPEND | LOCK_EX);
+        $this->append('events.jsonl', new RunEvent(++$this->sequence, $type, $part, $details)->toArray());
+    }
+
+    /**
+     * Appends one JSON line to a spool file and sends what waits.
+     *
+     * @param  array<string, mixed>  $record
+     */
+    private function append(string $file, array $record): void
+    {
+        file_put_contents("{$this->spoolFolder}/{$file}", json_encode($record, JSON_THROW_ON_ERROR)."\n", FILE_APPEND | LOCK_EX);
         $this->flush();
     }
 

@@ -27,6 +27,30 @@ final readonly class ShellTree
     ) {}
 
     /**
+     * The source text a range covers.
+     */
+    public function textOf(SourceRange $range): string
+    {
+        return substr($this->source, $range->start, max(0, $range->end - $range->start));
+    }
+
+    /**
+     * A node's own source with its redirects taken out and its spaces collapsed, as the command to run instead.
+     */
+    public function withoutRedirects(ShellNode $node): string
+    {
+        $text = '';
+        $at = $node->range->start;
+        foreach ($node->redirects as $redirect) {
+            $text .= $this->textOf(new SourceRange($at, $redirect->range->start));
+            $at = $redirect->range->end;
+        }
+        $text .= $this->textOf(new SourceRange($at, $node->range->end));
+
+        return trim((string) preg_replace('/\s+/', ' ', $text));
+    }
+
+    /**
      * @throws ShellNodeMissing
      */
     public function node(int $id): ShellNode

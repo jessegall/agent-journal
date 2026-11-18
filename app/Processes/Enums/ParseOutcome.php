@@ -20,6 +20,14 @@ enum ParseOutcome: string
     case DynamicExpansion = 'dynamic_expansion';
     case Unparsed = 'unparsed';
 
+    /**
+     * Whether the line could not be read at all: invalid, or past a limit.
+     */
+    public function isUnreadable(): bool
+    {
+        return $this === self::Invalid || $this === self::LimitExceeded;
+    }
+
     public function isComplete(): bool
     {
         return $this === self::Complete;
