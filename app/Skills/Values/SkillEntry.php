@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Skills\Values;
 
+use App\Skills\Enums\SkillOrigin;
+
 /**
- * One skill of the catalogue as readers see it: key, name, owner, description and rendered text.
+ * One skill of the catalogue as readers see it: key, name, owner, whether it is shipped or stored, description and
+ * rendered text.
  */
 final readonly class SkillEntry
 {
@@ -13,6 +16,7 @@ final readonly class SkillEntry
         public SkillKey $key,
         public string $name,
         public string $owner,
+        public SkillOrigin $origin,
         public string $description,
         public RenderedSkill $rendered,
     ) {}

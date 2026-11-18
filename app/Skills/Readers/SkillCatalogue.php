@@ -7,6 +7,7 @@ namespace App\Skills\Readers;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillReader;
 use App\Skills\Contracts\SkillRenderer;
+use App\Skills\Enums\SkillOrigin;
 use App\Skills\Exceptions\SkillConflict;
 use App\Skills\Exceptions\SkillMissing;
 use App\Skills\Support\SkillRegistry;
@@ -45,7 +46,7 @@ final readonly class SkillCatalogue implements SkillReader
                     throw SkillConflict::between($key->key, $entries[$key->key]->owner, $owner->name);
                 }
 
-                $entries[$key->key] = new SkillEntry($key, $skill->name(), $owner->name, $skill->description(), $renderer->render($skill, $owner));
+                $entries[$key->key] = new SkillEntry($key, $skill->name(), $owner->name, SkillOrigin::Shipped, $skill->description(), $renderer->render($skill, $owner));
             }
         }
 
