@@ -39,7 +39,7 @@ final class ReadyTest extends TestCase
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
     public function test_ready_allows_each_hook(HookInput $input): void
     {
-        $this->assertSame('allow', $input->answerBy(new ReadyState)->answerType()->value);
+        $this->assertSame('allow', $input->answerBy(new ReadyState())->answerType()->value);
     }
 
     #[DataProviderExternal(HookInputs::class, 'dataSets')]
@@ -50,7 +50,7 @@ final class ReadyTest extends TestCase
 
     public function test_a_state_is_not_finished_unless_it_says_so(): void
     {
-        $this->assertFalse((new ReadyState)->isFinished());
+        $this->assertFalse(new ReadyState()->isFinished());
     }
 
     /**
@@ -62,13 +62,13 @@ final class ReadyTest extends TestCase
     private function hooksNotAnsweredBy(string $class): array
     {
         $hooks = array_filter(
-            (new ReflectionClass(AgentState::class))->getMethods(ReflectionMethod::IS_PUBLIC),
+            new ReflectionClass(AgentState::class)->getMethods(ReflectionMethod::IS_PUBLIC),
             fn (ReflectionMethod $method) => str_starts_with($method->getName(), 'on') && (string) $method->getReturnType() === Decision::class,
         );
 
         return array_values(array_map(
             fn (ReflectionMethod $method) => $method->getName(),
-            array_filter($hooks, fn (ReflectionMethod $method) => (new ReflectionMethod($class, $method->getName()))->getDeclaringClass()->getName() !== $class),
+            array_filter($hooks, fn (ReflectionMethod $method) => new ReflectionMethod($class, $method->getName())->getDeclaringClass()->getName() !== $class),
         ));
     }
 }

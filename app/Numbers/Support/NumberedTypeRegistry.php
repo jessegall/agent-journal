@@ -41,7 +41,7 @@ final class NumberedTypeRegistry
             }
 
             $linkType = (string) Relation::getMorphAlias($declared->model);
-            $table = (new $declared->model)->getTable();
+            $table = new $declared->model()->getTable();
 
             if ($linkType === $declared->model) {
                 throw NumberedModelInvalid::withoutLinkType($declared->model);

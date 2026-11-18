@@ -122,6 +122,6 @@ final class ProgramRepliesTest extends TestCase
      */
     private function answer(Decision $decision, array $context = []): HookAnswer
     {
-        return new HookAnswer($decision, $context, [], new AgentStack([], new InMemoryStateFactory));
+        return new HookAnswer($decision, $context, [], new AgentStack([], new InMemoryStateFactory()));
     }
 }

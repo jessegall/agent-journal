@@ -34,7 +34,7 @@ final class EngineActorTypeTest extends TestCase
 
     public function test_the_engine_actor_is_of_the_engine_type(): void
     {
-        $engine = new EngineActor;
+        $engine = new EngineActor();
 
         $this->assertSame(ActorType::Engine, $engine->actorType());
         $this->assertSame(EngineActor::ID, ActorIdentity::of($engine)->id);
@@ -69,10 +69,10 @@ final class EngineActorTypeTest extends TestCase
 
     public function test_a_command_for_users_refuses_the_engine(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new EngineActor));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new EngineActor()));
 
         $this->expectException(EngineNotAllowed::class);
 
-        $this->app->make(CommandBus::class)->run(new RecordUserHeartbeat);
+        $this->app->make(CommandBus::class)->run(new RecordUserHeartbeat());
     }
 }

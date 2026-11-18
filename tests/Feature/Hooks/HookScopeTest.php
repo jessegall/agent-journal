@@ -104,7 +104,7 @@ final class HookScopeTest extends TestCase
         $scope = new AgentScope(fn (): CurrentActor => $store, fn (): AgentContext => $this->app->make(AgentContext::class));
 
         $query = AgentStackRow::query()->withoutGlobalScopes();
-        $store->actAsSystem(fn () => $scope->apply($query, new AgentStackRow));
+        $store->actAsSystem(fn () => $scope->apply($query, new AgentStackRow()));
 
         $this->assertSame(0, $query->count());
         $this->assertStringNotContainsString('agent_id', $query->toSql());
@@ -136,10 +136,10 @@ final class HookScopeTest extends TestCase
 
     private function storeFor(StackTarget $target): void
     {
-        (new AgentStackRow)->startFor($target, new FrameRecords([
+        new AgentStackRow()->startFor($target, new FrameRecords([
             new FrameRecord('ready', new StateReference('hooks.main_ready', NoSubject::None), true, 1, CarbonImmutable::now()),
         ]), new TickingTypes([]));
-        (new HookCall)->recordFor(
+        new HookCall()->recordFor(
             new HookIdentity($target->agentId, $target->sessionId, 'hook-1', str_repeat('a', 64)),
             RecordedAnswer::of(AnswerType::Allow, '{}'),
             RecordedSteps::of([]),

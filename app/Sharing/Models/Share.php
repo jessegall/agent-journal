@@ -201,7 +201,7 @@ final class Share extends Model implements ReadableModel
 
     private static function forRoot(RecordIdentity $root, ShareState $state, CarbonImmutable $expiresAt): self
     {
-        $share = new self;
+        $share = new self();
         $share->state = $state;
         $share->root_type = $root->type;
         $share->root_id = $root->id;

@@ -19,8 +19,8 @@ final class DecimalConstraintsData extends Data
     public function __construct(
         public readonly int $precision,
         public readonly int $scale,
-        public readonly string|Optional $minimum = new Optional,
-        public readonly string|Optional $maximum = new Optional,
+        public readonly string|Optional $minimum = new Optional(),
+        public readonly string|Optional $maximum = new Optional(),
         #[LiteralTypeScriptType("'decimal'")]
         public readonly string $type = 'decimal',
     ) {}

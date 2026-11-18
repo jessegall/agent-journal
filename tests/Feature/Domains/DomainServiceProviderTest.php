@@ -58,7 +58,7 @@ final class DomainServiceProviderTest extends TestCase
     {
         $this->registerDomains([ShelvesDomain::class]);
 
-        $events = (new DomainEventServiceProvider($this->app))->discoverEvents();
+        $events = new DomainEventServiceProvider($this->app)->discoverEvents();
 
         $this->assertSame([CountShelvedBook::class.'@handle'], $events[BookShelved::class]);
     }
@@ -67,7 +67,7 @@ final class DomainServiceProviderTest extends TestCase
     {
         $this->registerDomains([ShelvesDomain::class, BooksDomain::class]);
 
-        $paths = (new DomainEventServiceProvider($this->app))->discoverEventsWithin();
+        $paths = new DomainEventServiceProvider($this->app)->discoverEventsWithin();
         $folders = $this->app->make(DomainRegistry::class)->listenerFolders();
 
         $this->assertSame($folders, array_values(array_intersect($paths, $folders)));

@@ -39,8 +39,8 @@ enum ReadyStateType: string implements StateLoader
     public function newState(): ReadyState
     {
         return match ($this) {
-            self::MainAgent => new MainAgentReadyState,
-            self::ReadOnlyHelper => new ReadOnlyHelperReadyState,
+            self::MainAgent => new MainAgentReadyState(),
+            self::ReadOnlyHelper => new ReadOnlyHelperReadyState(),
         };
     }
 }

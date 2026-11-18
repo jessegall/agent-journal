@@ -108,7 +108,7 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
         $next = PhaseTask::query()->where('phase_id', $this->id)->count() + 1;
 
         PhaseTask::query()->insert(array_map(
-            fn (string $taskId, int $offset) => ['id' => (new PhaseTask)->newUniqueId(), 'phase_id' => $this->id, 'task_id' => $taskId, 'position' => $next + $offset],
+            fn (string $taskId, int $offset) => ['id' => new PhaseTask()->newUniqueId(), 'phase_id' => $this->id, 'task_id' => $taskId, 'position' => $next + $offset],
             $taskIds,
             array_keys($taskIds),
         ));

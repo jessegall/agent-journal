@@ -58,7 +58,7 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
      */
     public static function configure(GatewaySettings $settings): self
     {
-        $configuration = new self;
+        $configuration = new self();
         $configuration->gateway_key = $settings->gatewayKey;
         $configuration->configuration_version = 1;
         $configuration->settings = $settings;

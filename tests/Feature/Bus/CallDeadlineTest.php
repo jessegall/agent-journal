@@ -91,7 +91,7 @@ final class CallDeadlineTest extends TestCase
         $this->app->make(SetCallDeadline::class)->handle(Request::create('/agent/mcp/v1', 'POST'), function () use ($inside, &$seen): Response {
             $seen = $inside();
 
-            return new Response;
+            return new Response();
         });
 
         return $seen;

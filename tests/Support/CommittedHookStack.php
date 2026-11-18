@@ -67,7 +67,7 @@ trait CommittedHookStack
         $this->emptyTables(...self::committedTables());
         $this->target = $this->launchedTarget();
         $this->tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
-        $this->app->instance(ShellCommandParser::class, new ListedCommandParser);
+        $this->app->instance(ShellCommandParser::class, new ListedCommandParser());
         $tasks = $this->tasks;
         $this->app->make(Dispatcher::class)->listen(StateTypesRequested::class, function (StateTypesRequested $event) use ($tasks): void {
             $event->registry->register('test.tasks', $tasks);
@@ -146,7 +146,7 @@ trait CommittedHookStack
 
     protected function shell(string $line): ShellCommandRequested
     {
-        return new ShellCommandRequested($this->hookIdentity(), (new ListedCommandParser)->parse($line, ShellDialect::Bash));
+        return new ShellCommandRequested($this->hookIdentity(), new ListedCommandParser()->parse($line, ShellDialect::Bash));
     }
 
     /**

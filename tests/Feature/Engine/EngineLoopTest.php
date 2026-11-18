@@ -47,10 +47,10 @@ final class EngineLoopTest extends TestCase
         $this->databases = $this->app->make(DatabaseManager::class);
         $this->app->make('config')->set('database.connections.engine.database', $this->databases->connection()->getDatabaseName());
         $this->clock = new FakeMonotonicClock(5 * self::SECOND);
-        $this->watchdog = new FakeWatchdog;
+        $this->watchdog = new FakeWatchdog();
         $this->app->instance(MonotonicClock::class, $this->clock);
         $this->app->instance(Watchdog::class, $this->watchdog);
-        $this->app->instance(EngineListenerSet::class, new EngineListenerSet);
+        $this->app->instance(EngineListenerSet::class, new EngineListenerSet());
     }
 
     protected function tearDown(): void

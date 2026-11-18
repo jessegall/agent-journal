@@ -24,8 +24,8 @@ final class RecordText extends Data
         public readonly string $title,
         public readonly string $abstract,
         public readonly array $outline,
-        public readonly string|Optional $text = new Optional,
-        public readonly string|Optional $lines = new Optional,
-        public readonly string|Optional $continuation = new Optional,
+        public readonly string|Optional $text = new Optional(),
+        public readonly string|Optional $lines = new Optional(),
+        public readonly string|Optional $continuation = new Optional(),
     ) {}
 }

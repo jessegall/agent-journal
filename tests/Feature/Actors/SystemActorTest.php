@@ -23,7 +23,7 @@ final class SystemActorTest extends TestCase
 {
     public function test_text_from_outside_never_names_the_system(): void
     {
-        $this->assertTrue(ActorIdentity::system()->isSameAs(ActorIdentity::of(new SystemActor)));
+        $this->assertTrue(ActorIdentity::system()->isSameAs(ActorIdentity::of(new SystemActor())));
         $this->expectException(InvalidActorText::class);
 
         ActorIdentity::fromText('system:1');
@@ -32,7 +32,7 @@ final class SystemActorTest extends TestCase
     public function test_acting_as_the_system_lasts_only_for_its_work_even_when_it_throws(): void
     {
         $store = $this->app->make(ActorStore::class);
-        $store->set((new User)->forceFill(['id' => '01jd8x0g9m3qz6v4k2t7r5w1ce']));
+        $store->set(new User()->forceFill(['id' => '01jd8x0g9m3qz6v4k2t7r5w1ce']));
 
         $inside = $store->actAsSystem(fn () => $store->actor()->actorType());
 

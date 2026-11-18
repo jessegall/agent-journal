@@ -32,7 +32,7 @@ final class TestDatabaseTraits
      */
     public static function offendersIn(array $folders, array $skipped): array
     {
-        $traitsByFile = ScanCache::findingsByFile(new TraitsUsed, DomainFiles::in($folders));
+        $traitsByFile = ScanCache::findingsByFile(new TraitsUsed(), DomainFiles::in($folders));
         $offenders = array_filter(
             array_keys($traitsByFile),
             fn (string $path) => ! self::isSkipped($path, $skipped) && array_intersect($traitsByFile[$path], self::LARAVEL_DATABASE_TRAITS) !== [],

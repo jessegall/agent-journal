@@ -27,6 +27,6 @@ final readonly class PlanWindowReader implements PageReader
     {
         $reader = PlanReaderData::ofSelection($this->records->list(new PlanFilters(selectedPlanId: $this->request->planId()))->selection);
 
-        return $reader instanceof Optional ? throw new NotFoundHttpException : $reader;
+        return $reader instanceof Optional ? throw new NotFoundHttpException() : $reader;
     }
 }

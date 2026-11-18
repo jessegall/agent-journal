@@ -47,7 +47,7 @@ final class EngineStackTest extends TestCase
     {
         parent::setUp();
 
-        $this->log = new LifecycleLog;
+        $this->log = new LifecycleLog();
         $this->tasks = new RecordingStateLoader($this->log);
         Event::listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('test.tasks', $this->tasks));
     }

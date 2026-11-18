@@ -49,7 +49,7 @@ final class ModelConventions
     {
         $violations = [];
 
-        foreach (ScanCache::findingsByFile(new CallScan, $files) as $path => $calls) {
+        foreach (ScanCache::findingsByFile(new CallScan(), $files) as $path => $calls) {
             foreach ($calls as $call) {
                 if (in_array(strtolower($call['method']), self::OPENING_CALLS, true)) {
                     $violations[] = new Violation($path, $call['line'], $call['method'].'()', 'none', 'none', ViolationType::OpeningModelCall);
@@ -74,7 +74,7 @@ final class ModelConventions
             foreach ($models as $line => $class) {
                 $traits = class_uses_recursive($class);
 
-                if (! in_array(HasUlids::class, $traits, true) || (new $class)->getKeyType() !== 'string') {
+                if (! in_array(HasUlids::class, $traits, true) || new $class()->getKeyType() !== 'string') {
                     $violations[] = new Violation($path, $line, $class, 'none', 'none', ViolationType::KeyNotUlid);
                 }
 
@@ -114,7 +114,7 @@ final class ModelConventions
      */
     private static function violationsOf(string $path, int $line, string $class): array
     {
-        $model = new $class;
+        $model = new $class();
         $violations = [];
 
         if (! self::listsFillableOnlyInTheAttribute($class, $model)) {
@@ -138,7 +138,7 @@ final class ModelConventions
     {
         $models = [];
 
-        foreach (ScanCache::findingsByFile(new ClassesDeclared, $files) as $path => $classes) {
+        foreach (ScanCache::findingsByFile(new ClassesDeclared(), $files) as $path => $classes) {
             foreach ($classes as $name) {
                 if (is_subclass_of($name, Model::class) && ! ($reflection = new ReflectionClass($name))->isAbstract()) {
                     $models[$path][(int) $reflection->getStartLine()] = $name;
@@ -191,6 +191,6 @@ final class ModelConventions
      */
     private static function declaresFillableProperty(string $class): bool
     {
-        return (new ReflectionProperty($class, 'fillable'))->getDefaultValue() !== [];
+        return new ReflectionProperty($class, 'fillable')->getDefaultValue() !== [];
     }
 }

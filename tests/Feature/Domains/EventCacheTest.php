@@ -40,7 +40,7 @@ final class EventCacheTest extends TestCase
         $this->expectException(InvalidListener::class);
         $this->expectExceptionMessage(DomainEventServiceProvider::class);
 
-        (new DomainEventServiceProvider($this->app))->getEvents();
+        new DomainEventServiceProvider($this->app)->getEvents();
     }
 
     private function useEventCachePath(string|null $path): void

@@ -138,7 +138,7 @@ final class ClaudeCodeTest extends TestCase
         $call = $this->adapter()->callFor($this->payload($name), $this->hook());
         $this->assertInstanceOf(JudgedCall::class, $call);
 
-        return ($call->render)(new HookAnswer($decision, $context, [], new AgentStack([], new InMemoryStateFactory)));
+        return ($call->render)(new HookAnswer($decision, $context, [], new AgentStack([], new InMemoryStateFactory())));
     }
 
     private function adapter(): ClaudeCodeAdapter

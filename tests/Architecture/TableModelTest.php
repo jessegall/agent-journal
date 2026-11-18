@@ -90,8 +90,8 @@ final class TableModelTest extends TestCase
 
             $class = $namespace[1].'\\'.basename($file, '.php');
 
-            if (class_exists($class) && is_subclass_of($class, Model::class) && ! (new ReflectionClass($class))->isAbstract()) {
-                $models[(new $class)->getTable()] = $class;
+            if (class_exists($class) && is_subclass_of($class, Model::class) && ! new ReflectionClass($class)->isAbstract()) {
+                $models[new $class()->getTable()] = $class;
             }
         }
 

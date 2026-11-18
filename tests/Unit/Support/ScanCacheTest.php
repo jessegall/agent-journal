@@ -23,7 +23,7 @@ final class ScanCacheTest extends TestCase
         $second = "{$folder}/Second.php";
         file_put_contents($first, "<?php\n// run {$run}\nnamespace Cached;\ninterface First {}\n");
         file_put_contents($second, "<?php\n// run {$run}\nnamespace Cached;\ninterface Second {}\n");
-        $scan = new InterfacesDeclared;
+        $scan = new InterfacesDeclared();
 
         $before = ScanCache::parsedFiles();
         $found = ScanCache::findings($scan, [$first, $second]);

@@ -45,9 +45,9 @@ final class TunlerGatewayTest extends TestCase
             'sharing.tunler.subdomain' => 'docs',
             'sharing.rate_limit_store' => 'array',
         ]);
-        $this->processes = new Processes;
+        $this->processes = new Processes();
         $this->app->instance(Processes::class, $this->processes);
-        $this->http = new HttpClient;
+        $this->http = new HttpClient();
         $this->app->instance(HttpClient::class, $this->http);
         $this->app->instance(PublicAddresses::class, new class extends PublicAddresses
         {
@@ -105,7 +105,7 @@ final class TunlerGatewayTest extends TestCase
 
         $this->assertTrue($this->gateway()->health($endpoint)->isHealthy());
 
-        $this->http = new HttpClient;
+        $this->http = new HttpClient();
         $this->http->fake(fn () => $this->http->response('', 302, ['Location' => 'https://elsewhere.test/']));
         $this->app->instance(HttpClient::class, $this->http);
 

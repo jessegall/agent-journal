@@ -60,7 +60,7 @@ final class RelayTest extends TestCase
 
     public function test_a_stopped_server_gives_one_unavailable_error_and_the_next_frame_works_once_it_answers(): void
     {
-        $input = new InputStream;
+        $input = new InputStream();
         $relay = $this->startRelay($input);
 
         $input->write('{"jsonrpc":"2.0","id":1,"method":"ping"}'."\n");

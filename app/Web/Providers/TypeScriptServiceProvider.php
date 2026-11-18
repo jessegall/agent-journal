@@ -34,8 +34,8 @@ final class TypeScriptServiceProvider extends TypeScriptTransformerApplicationSe
     {
         $registry = $this->app->make(DomainRegistry::class);
         $config
-            ->extension(new LaravelDataTypeScriptTransformerExtension)
-            ->replaceTransformer(DataClassTransformer::class, new HiddenAwareDataTransformer)
+            ->extension(new LaravelDataTypeScriptTransformerExtension())
+            ->replaceTransformer(DataClassTransformer::class, new HiddenAwareDataTransformer())
             ->transformer(EnumTransformer::class)
             ->transformDirectories(...$this->sourceFolders($registry))
             ->outputDirectory(resource_path('js'))

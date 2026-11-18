@@ -27,6 +27,6 @@ final class ReviewRuleRequest extends FormRequest
 
     public function ruleId(): string
     {
-        return Rule::idOfNumber($this->routeNumber('rule')) ?? throw new NotFoundHttpException;
+        return Rule::idOfNumber($this->routeNumber('rule')) ?? throw new NotFoundHttpException();
     }
 }

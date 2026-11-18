@@ -28,7 +28,7 @@ trait BuildsTickingStacks
     private function tickingStack(string $tickingType, array $subjects, CarbonImmutable $enteredAt, string $plainType = 'test.plain'): AgentStackRow
     {
         $agent = Agent::query()->create(['name' => 'Ticking agent', 'role' => 'hooks.main_ready']);
-        $session = new AgentSession;
+        $session = new AgentSession();
         $session->startFor($agent, null);
         $records = [
             new FrameRecord("{$session->id}-ready", new StateReference('hooks.main_ready', NoSubject::None), true, 1, $enteredAt),
@@ -39,7 +39,7 @@ trait BuildsTickingStacks
             $records[] = new FrameRecord($subject, new StateReference($tickingType, new SubjectReference($subject, 1)), false, 1, $enteredAt);
         }
 
-        $row = new AgentStackRow;
+        $row = new AgentStackRow();
         $row->startFor(new StackTarget($agent->id, $session->id), new FrameRecords($records), $this->app->make(StateTypes::class)->ticking());
 
         return $row;

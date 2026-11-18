@@ -46,7 +46,7 @@ final class DomainClassesTest extends TestCase
     #[DataProvider('domains')]
     public function test_each_domain_describes_itself_requires_only_what_was_approved_and_exports_its_listed_types(string $class, array $requires, array $exports): void
     {
-        $domain = new $class;
+        $domain = new $class();
 
         $this->assertNotSame('', $domain->description());
         $this->assertSame($requires, $domain->requires());

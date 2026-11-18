@@ -36,7 +36,7 @@ final readonly class LaunchSessions
      */
     public function launch(Agent $agent, string $program, AgentSession|null $parent = null, RuntimeIntent|null $intent = null): LaunchedAgent
     {
-        $settings = new IsolatedHookSettings;
+        $settings = new IsolatedHookSettings();
         $this->events->dispatch(new LaunchSettingsRequested($program, $settings));
 
         if (! $settings->hasHooks()) {

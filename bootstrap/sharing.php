@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(using: function (Application $app, Router $router): void {
         $app->booted(function () use ($router): void {
-            $router->setRoutes(new RouteCollection);
+            $router->setRoutes(new RouteCollection());
             $router->group([], dirname(__DIR__).'/routes/sharing.php');
         });
     })

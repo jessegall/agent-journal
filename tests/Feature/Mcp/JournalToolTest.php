@@ -57,11 +57,11 @@ final class JournalToolTest extends TestCase
 
     public function test_the_published_schema_refuses_additional_properties(): void
     {
-        $schema = (new FixtureReadTool)->toArray()['inputSchema'];
+        $schema = new FixtureReadTool()->toArray()['inputSchema'];
 
         $this->assertFalse($schema['additionalProperties']);
         $this->assertSame(['number', 'answer'], array_keys($schema['properties']));
-        $this->assertTrue((new FixtureReadTool)->toArray()['annotations']['readOnlyHint']);
+        $this->assertTrue(new FixtureReadTool()->toArray()['annotations']['readOnlyHint']);
     }
 
     public function test_a_coded_refusal_becomes_an_error_result_with_its_code(): void

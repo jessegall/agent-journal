@@ -18,8 +18,8 @@ final class DraftState extends Data
 {
     public function __construct(
         public readonly EditingState $state,
-        public readonly DraftView|Optional $draft = new Optional,
-        public readonly string|Optional $holder = new Optional,
-        public readonly DraftView|Optional $held = new Optional,
+        public readonly DraftView|Optional $draft = new Optional(),
+        public readonly string|Optional $holder = new Optional(),
+        public readonly DraftView|Optional $held = new Optional(),
     ) {}
 }

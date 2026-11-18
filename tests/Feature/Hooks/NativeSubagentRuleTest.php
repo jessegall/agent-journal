@@ -44,7 +44,7 @@ final class NativeSubagentRuleTest extends TestCase
     public function test_rule_36_every_program_launch_denies_each_native_child_tool(): void
     {
         foreach (HookProgram::cases() as $program) {
-            $settings = new IsolatedHookSettings;
+            $settings = new IsolatedHookSettings();
             $this->app->make(Dispatcher::class)->dispatch(new LaunchSettingsRequested($program->value, $settings));
             $denied = json_decode($settings->content(), true, flags: JSON_THROW_ON_ERROR)['permissions']['deny'];
 

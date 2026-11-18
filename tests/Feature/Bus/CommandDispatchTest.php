@@ -34,7 +34,7 @@ final class CommandDispatchTest extends CommandBusTestCase
         $this->assertTrue($bus->hasHandlerFor(new DrawCard('red')));
         $this->assertSame('card from red', $bus->run(new DrawCard('red')));
         $bus->run(new WriteNote('cleared'));
-        $bus->run(new ClearNotes);
+        $bus->run(new ClearNotes());
         $this->assertSame(0, $this->rowCount());
     }
 

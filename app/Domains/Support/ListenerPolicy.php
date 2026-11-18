@@ -95,7 +95,7 @@ final readonly class ListenerPolicy
                     throw InvalidListener::staleCache($listener, $event);
                 }
 
-                $file = (string) (new ReflectionClass($class))->getFileName();
+                $file = (string) new ReflectionClass($class)->getFileName();
                 $domain = array_find($this->registry->all(), fn (DomainEntry $entry) => $entry->holdsListenerFile($file));
                 $gated[$event][] = $domain === null ? $listener : new AvailableListener($domain->name, $listener);
             }
@@ -112,7 +112,7 @@ final readonly class ListenerPolicy
             throw InvalidListener::staleCache($listener, $event);
         }
 
-        if (! class_exists($event) || ! is_subclass_of($event, Event::class) || (new ReflectionClass($event))->isAbstract()) {
+        if (! class_exists($event) || ! is_subclass_of($event, Event::class) || new ReflectionClass($event)->isAbstract()) {
             throw InvalidListener::notAConcreteEvent($listener, $event);
         }
 
@@ -159,7 +159,7 @@ final readonly class ListenerPolicy
      */
     private function listenerDomain(string $class, string $listener, string $event): DomainEntry|null
     {
-        $file = (string) (new ReflectionClass($class))->getFileName();
+        $file = (string) new ReflectionClass($class)->getFileName();
         $domain = array_find($this->registry->all(), fn (DomainEntry $entry) => $entry->holdsListenerFile($file));
         $isCoreListener = array_any($this->coreListenerFolders, fn (string $folder) => str_starts_with($file, $folder.DIRECTORY_SEPARATOR));
 

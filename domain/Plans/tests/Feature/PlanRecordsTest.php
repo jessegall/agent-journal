@@ -52,7 +52,7 @@ final class PlanRecordsTest extends TestCase
 
     public function test_cards_carry_real_progress_the_current_phase_and_an_absent_agent(): void
     {
-        $cards = $this->records()->list(new PlanFilters)->cards;
+        $cards = $this->records()->list(new PlanFilters())->cards;
 
         $this->assertSame([false, false], array_map(fn (PlanCard $card) => $card->focused, $cards));
 
@@ -72,7 +72,7 @@ final class PlanRecordsTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent->id));
         $this->app->make(AssignmentWriterInTransaction::class)->assign($this->build->assignmentIdentity(), ActorIdentity::of($agent));
 
-        $cards = $this->records()->list(new PlanFilters)->cards;
+        $cards = $this->records()->list(new PlanFilters())->cards;
 
         $this->assertSame([$this->build->id, 'Planner', true], [$cards[0]->id, $cards[0]->holder->get()->name, $cards[0]->focused]);
         $this->assertTrue($cards[0]->holder->get()->actor()->isSameAs(ActorIdentity::of($agent)));

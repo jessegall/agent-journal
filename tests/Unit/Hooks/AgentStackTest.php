@@ -328,12 +328,12 @@ final class AgentStackTest extends TestCase
 
     private function stack(Frame ...$frames): AgentStack
     {
-        return new AgentStack(array_values($frames), new InMemoryStateFactory);
+        return new AgentStack(array_values($frames), new InMemoryStateFactory());
     }
 
     private function ready(): Frame
     {
-        return new Frame('ready', $this->reference('ready'), new ReadyState, CarbonImmutable::now(), bottom: true);
+        return new Frame('ready', $this->reference('ready'), new ReadyState(), CarbonImmutable::now(), bottom: true);
     }
 
     private function frame(string $id, AgentState $state): Frame

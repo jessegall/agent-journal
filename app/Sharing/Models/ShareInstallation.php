@@ -54,7 +54,7 @@ final class ShareInstallation extends Model implements ReadableModel
         $now = CarbonImmutable::now();
 
         self::query()->insertOrIgnore([
-            'id' => (new self)->newUniqueId(),
+            'id' => new self()->newUniqueId(),
             'name' => self::NAME,
             'created_at' => $now,
             'updated_at' => $now,

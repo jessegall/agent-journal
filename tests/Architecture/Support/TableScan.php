@@ -58,7 +58,7 @@ final readonly class TableScan implements FileScan
     public static function of(ParsedFile $file): array
     {
         $uses = [];
-        $finder = new NodeFinder;
+        $finder = new NodeFinder();
 
         foreach ($finder->findInstanceOf($file->statements, StaticCall::class) as $call) {
             array_push($uses, ...self::facadeUses($file, $call));
@@ -220,6 +220,6 @@ final readonly class TableScan implements FileScan
 
     private static function code(Expr $expression): string
     {
-        return (new Standard)->prettyPrintExpr($expression);
+        return new Standard()->prettyPrintExpr($expression);
     }
 }

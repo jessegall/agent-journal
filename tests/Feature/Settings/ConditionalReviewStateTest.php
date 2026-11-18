@@ -61,7 +61,7 @@ final class ConditionalReviewStateTest extends TestCase
     {
         parent::setUp();
 
-        $registry = DomainRegistry::from([ReviewsDomain::class])->settingDeclarations(new CoreSettings);
+        $registry = DomainRegistry::from([ReviewsDomain::class])->settingDeclarations(new CoreSettings());
         $this->app->instance(SettingRegistry::class, $registry);
         $this->reviews = $registry->definition('Reviews');
         $this->app->instance(ReviewSettings::class, $this->reviews);

@@ -68,7 +68,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
         $now = CarbonImmutable::now();
 
         self::query()->insertOrIgnore([
-            'id' => (new self)->newUniqueId(),
+            'id' => new self()->newUniqueId(),
             'record_type' => $record->type,
             'record_id' => $record->id,
             'holder_type' => $holder->type->value,

@@ -21,7 +21,7 @@ final readonly class LaunchCredentials
     public function issue(AgentSession $session): string
     {
         $token = Str::random(64);
-        (new LaunchCredential)->issueFor($session, self::hashOf($token));
+        new LaunchCredential()->issueFor($session, self::hashOf($token));
 
         return $token;
     }

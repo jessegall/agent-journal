@@ -92,7 +92,7 @@ final class PreparedCallTest extends TestCase
         Http::fake();
 
         foreach (['', '${JOURNAL_LAUNCH_TOKEN}', '<token>'] as $token) {
-            $this->assertThrows(fn () => (new EnvironmentCredentialSource(['JOURNAL_URL' => 'http://127.0.0.1:8000', 'JOURNAL_LAUNCH_TOKEN' => $token]))->forThisLaunch(), LaunchCredentialRefused::class);
+            $this->assertThrows(fn () => new EnvironmentCredentialSource(['JOURNAL_URL' => 'http://127.0.0.1:8000', 'JOURNAL_LAUNCH_TOKEN' => $token])->forThisLaunch(), LaunchCredentialRefused::class);
         }
 
         Http::assertNothingSent();
@@ -100,15 +100,15 @@ final class PreparedCallTest extends TestCase
 
     public function test_a_journal_off_this_machine_needs_https(): void
     {
-        $this->assertThrows(fn () => (new EnvironmentCredentialSource(['JOURNAL_URL' => 'http://journal.example', 'JOURNAL_LAUNCH_TOKEN' => 'launch-token']))->forThisLaunch(), LaunchCredentialRefused::class);
+        $this->assertThrows(fn () => new EnvironmentCredentialSource(['JOURNAL_URL' => 'http://journal.example', 'JOURNAL_LAUNCH_TOKEN' => 'launch-token'])->forThisLaunch(), LaunchCredentialRefused::class);
 
-        $this->assertSame('https://journal.example', (new EnvironmentCredentialSource(['JOURNAL_URL' => 'https://journal.example/', 'JOURNAL_LAUNCH_TOKEN' => 'launch-token']))->forThisLaunch()->journalUrl);
-        $this->assertSame('http://localhost:8000', (new EnvironmentCredentialSource(['JOURNAL_URL' => 'http://localhost:8000', 'JOURNAL_LAUNCH_TOKEN' => 'launch-token']))->forThisLaunch()->journalUrl);
+        $this->assertSame('https://journal.example', new EnvironmentCredentialSource(['JOURNAL_URL' => 'https://journal.example/', 'JOURNAL_LAUNCH_TOKEN' => 'launch-token'])->forThisLaunch()->journalUrl);
+        $this->assertSame('http://localhost:8000', new EnvironmentCredentialSource(['JOURNAL_URL' => 'http://localhost:8000', 'JOURNAL_LAUNCH_TOKEN' => 'launch-token'])->forThisLaunch()->journalUrl);
     }
 
     public function test_a_missing_setting_is_named(): void
     {
-        $this->assertThrows(fn () => (new EnvironmentCredentialSource(['JOURNAL_URL' => 'https://journal.example']))->forThisLaunch(), LaunchSettingMissing::class, 'JOURNAL_LAUNCH_TOKEN');
+        $this->assertThrows(fn () => new EnvironmentCredentialSource(['JOURNAL_URL' => 'https://journal.example'])->forThisLaunch(), LaunchSettingMissing::class, 'JOURNAL_LAUNCH_TOKEN');
     }
 
     private function settings(): AgentClientSettings

@@ -70,7 +70,7 @@ class DomainServiceProvider extends ServiceProvider
      */
     private function mcpCatalogue(DomainRegistry $registry): McpCatalogue
     {
-        $catalogue = new McpCatalogue;
+        $catalogue = new McpCatalogue();
         CoreMcpTools::registerIn($catalogue);
         $registry->registerMcpToolsIn($catalogue);
 

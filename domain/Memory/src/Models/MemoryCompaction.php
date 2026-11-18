@@ -39,7 +39,7 @@ final class MemoryCompaction extends Model implements ReadableModel
         $now = CarbonImmutable::now();
 
         return self::query()->insertOrIgnore([
-            'id' => (new self)->newUniqueId(),
+            'id' => new self()->newUniqueId(),
             'actor_type' => $actor->type->value,
             'actor_id' => $actor->id,
             'compaction_key' => $compactionId,

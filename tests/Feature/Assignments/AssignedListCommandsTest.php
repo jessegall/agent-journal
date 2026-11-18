@@ -88,7 +88,7 @@ final class AssignedListCommandsTest extends TestCase
 
     public function test_the_launcher_turns_subject_and_verb_into_the_command_and_needs_the_launch_settings(): void
     {
-        $this->assertThrows(fn () => (new EnvironmentCredentialSource([]))->forThisLaunch(), LaunchSettingMissing::class);
+        $this->assertThrows(fn () => new EnvironmentCredentialSource([])->forThisLaunch(), LaunchSettingMissing::class);
 
         $process = new Process([base_path('bin/journal'), 'task', 'assigned'], base_path(), ['JOURNAL_URL' => false, 'JOURNAL_LAUNCH_TOKEN' => false]);
         $process->run();

@@ -39,7 +39,7 @@ final class AgentHeartbeatRouteTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->instance(ServerClock::class, new TestTimeServerClock);
+        $this->app->instance(ServerClock::class, new TestTimeServerClock());
         Route::post(self::PING, fn () => new Response(status: Response::HTTP_NO_CONTENT))->middleware('journal.agent');
         $this->launch = TestLaunch::start();
         DB::listen(function (QueryExecuted $query): void {
@@ -82,7 +82,7 @@ final class AgentHeartbeatRouteTest extends TestCase
 
     public function test_a_revoked_credential_gets_401_and_no_beat(): void
     {
-        (new LaunchCredentials)->revoke($this->launch->session);
+        new LaunchCredentials()->revoke($this->launch->session);
 
         $this->signed($this->launch, '/agent/heartbeat', [])->assertUnauthorized();
 

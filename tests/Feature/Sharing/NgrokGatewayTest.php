@@ -45,10 +45,10 @@ final class NgrokGatewayTest extends TestCase
             'sharing.secrets_dir' => $this->folder.'/secrets',
             'sharing.rate_limit_store' => 'array',
         ]);
-        $this->processes = new Processes;
+        $this->processes = new Processes();
         $this->processes->fake(['*version*' => 'ngrok version 3.20.0', '*http 127.0.0.1:8090*' => $this->processes->describe()->output('started')->iterations(3)]);
         $this->app->instance(Processes::class, $this->processes);
-        $this->http = new HttpClient;
+        $this->http = new HttpClient();
         $this->app->instance(HttpClient::class, $this->http);
     }
 
@@ -94,7 +94,7 @@ final class NgrokGatewayTest extends TestCase
      */
     private function controlApiAnswers(array $tunnels): void
     {
-        $this->http = new HttpClient;
+        $this->http = new HttpClient();
         $this->http->fake(['http://127.0.0.1:4041/api/tunnels' => $this->http->response(['tunnels' => $tunnels])]);
         $this->app->instance(HttpClient::class, $this->http);
     }

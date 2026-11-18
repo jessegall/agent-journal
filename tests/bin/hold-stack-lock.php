@@ -49,7 +49,7 @@ $frames['frames'][] = [
     'schemaVersion' => 1,
     'isBottom' => false,
     'subject' => ['id' => (string) $environment('LOCK_TASK_NUMBER'), 'runNumber' => 1],
-    'enteredAt' => (new DateTimeImmutable)->format('Y-m-d\\TH:i:s.uP'),
+    'enteredAt' => new DateTimeImmutable()->format('Y-m-d\\TH:i:s.uP'),
 ];
 
 $update = $database->prepare('UPDATE agent_stacks SET frames = ?, version = version + 1 WHERE id = ?');

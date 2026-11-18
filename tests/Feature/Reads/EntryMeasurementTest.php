@@ -31,7 +31,7 @@ final class EntryMeasurementTest extends TestCase
         Log::spy();
 
         $input = new ArrayInput([]);
-        $output = new NullOutput;
+        $output = new NullOutput();
         event(new CommandStarting('notes:list', $input, $output));
         event(new CommandFinished('notes:list', $input, $output, 0));
 

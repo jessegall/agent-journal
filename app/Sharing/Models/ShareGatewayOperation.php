@@ -51,7 +51,7 @@ final class ShareGatewayOperation extends Model implements ReadableModel
      */
     public static function request(ShareGatewayEndpoint $endpoint, GatewayOperationType $type): self
     {
-        $operation = new self;
+        $operation = new self();
         $operation->share_gateway_endpoint_id = $endpoint->id;
         $operation->type = $type;
         $operation->save();

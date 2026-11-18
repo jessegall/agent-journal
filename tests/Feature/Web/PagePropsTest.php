@@ -42,7 +42,7 @@ final class PagePropsTest extends TestCase
     {
         parent::setUp();
 
-        $this->calls = new ReaderCalls;
+        $this->calls = new ReaderCalls();
         $this->app->instance(ReaderCalls::class, $this->calls);
         $this->app->instance(UiDeclarations::class, $this->declarations());
         $this->startUserRequestAs(TestIds::of(1));

@@ -150,7 +150,7 @@ final class McpCatalogue implements McpRegistration
      */
     private function toolName(string $className): string
     {
-        $attributes = (new ReflectionClass($className))->getAttributes(Name::class);
+        $attributes = new ReflectionClass($className)->getAttributes(Name::class);
 
         if ($attributes === []) {
             throw McpToolNameInvalid::missing($className);
@@ -175,6 +175,6 @@ final class McpCatalogue implements McpRegistration
      */
     private function definitionOf(string $className): JournalTool|JournalResource
     {
-        return (new ReflectionClass($className))->newInstanceWithoutConstructor();
+        return new ReflectionClass($className)->newInstanceWithoutConstructor();
     }
 }

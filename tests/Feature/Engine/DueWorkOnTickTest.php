@@ -72,7 +72,7 @@ final class DueWorkOnTickTest extends TestCase
         Event::listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('test.plain', new ClosureStateLoader(fn () => ScriptedState::delegating())));
         $this->bootModules(QuestionRemindersDomain::class);
         $this->asked = CarbonImmutable::parse('2026-11-18 12:00:00');
-        $this->clock = new FakeMonotonicClock;
+        $this->clock = new FakeMonotonicClock();
         $this->serverClock = new FakeServerClock($this->asked);
         $this->app->instance(MonotonicClock::class, $this->clock);
         $this->app->instance(ServerClock::class, $this->serverClock);

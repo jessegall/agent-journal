@@ -42,7 +42,7 @@ final readonly class AreaCycles
     {
         $edges = [];
 
-        $namesOfFile = ScanCache::findingsByFile(new NamesUsed, DomainFiles::in([$appFolder, ...glob("{$domainFolder}/*/src", GLOB_ONLYDIR) ?: []]));
+        $namesOfFile = ScanCache::findingsByFile(new NamesUsed(), DomainFiles::in([$appFolder, ...glob("{$domainFolder}/*/src", GLOB_ONLYDIR) ?: []]));
 
         foreach ($namesOfFile as $path => $names) {
             $user = self::areaOfFile($path, $appFolder, $domainFolder);

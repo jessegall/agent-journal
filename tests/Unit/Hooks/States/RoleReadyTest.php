@@ -38,8 +38,8 @@ final class RoleReadyTest extends TestCase
      */
     public static function roles(): iterable
     {
-        yield 'main agent' => [new MainAgentReadyState];
-        yield 'read-only helper' => [new ReadOnlyHelperReadyState];
+        yield 'main agent' => [new MainAgentReadyState()];
+        yield 'read-only helper' => [new ReadOnlyHelperReadyState()];
     }
 
     /**
@@ -93,14 +93,14 @@ final class RoleReadyTest extends TestCase
     {
         $write = self::line([self::part(CommandType::Ordinary, CommandEffect::ChangesFiles)]);
 
-        $this->assertSame(AnswerType::Allow, (new MainAgentReadyState)->onShellCommand($this->request($write))->answerType());
-        $this->assertSame(AnswerType::Allow, (new MainAgentReadyState)->onFileEdit($this->edit(['app/Domains/Contracts/Domain.php']))->answerType());
+        $this->assertSame(AnswerType::Allow, new MainAgentReadyState()->onShellCommand($this->request($write))->answerType());
+        $this->assertSame(AnswerType::Allow, new MainAgentReadyState()->onFileEdit($this->edit(['app/Domains/Contracts/Domain.php']))->answerType());
     }
 
     #[DataProvider('helperWrites')]
     public function test_a_read_only_helper_refuses_any_command_that_may_change_files(ShellCommand $command): void
     {
-        $decision = (new ReadOnlyHelperReadyState)->onShellCommand($this->request($command));
+        $decision = new ReadOnlyHelperReadyState()->onShellCommand($this->request($command));
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
         $this->assertStringContainsString('changes no files', $decision->refusalReason());
@@ -108,7 +108,7 @@ final class RoleReadyTest extends TestCase
 
     public function test_a_read_only_helper_refuses_an_edit_and_names_every_path(): void
     {
-        $decision = (new ReadOnlyHelperReadyState)->onFileEdit($this->edit(['app/Domains/Contracts/Domain.php', 'docs/hooks/dependencies.md']));
+        $decision = new ReadOnlyHelperReadyState()->onFileEdit($this->edit(['app/Domains/Contracts/Domain.php', 'docs/hooks/dependencies.md']));
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
         $this->assertStringContainsString('app/Domains/Contracts/Domain.php, docs/hooks/dependencies.md', $decision->refusalReason());

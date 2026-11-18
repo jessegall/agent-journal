@@ -143,7 +143,7 @@ final class HookRuntimeReadinessTest extends TestCase
     {
         return array_values(array_map(
             fn (ReflectionMethod $method) => $method->getName(),
-            array_filter((new ReflectionClass(AgentState::class))->getMethods(), fn (ReflectionMethod $method) => str_starts_with($method->getName(), 'on')),
+            array_filter(new ReflectionClass(AgentState::class)->getMethods(), fn (ReflectionMethod $method) => str_starts_with($method->getName(), 'on')),
         ));
     }
 }

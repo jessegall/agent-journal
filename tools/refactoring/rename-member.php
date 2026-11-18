@@ -174,7 +174,7 @@ function renameMember(string $root, array $rename, array $with, bool $dry): arra
  */
 function parsedFiles(string $root, array $folders): array
 {
-    $parser = (new ParserFactory)->createForNewestSupportedVersion();
+    $parser = new ParserFactory()->createForNewestSupportedVersion();
     $files = [];
 
     foreach ($folders as $folder) {
@@ -193,7 +193,7 @@ function parsedFiles(string $root, array $folders): array
 
             $code = (string) file_get_contents($name);
             $statements = $parser->parse($code) ?? [];
-            $traverser = new NodeTraverser(new NameResolver, new DeclaringTypeMarker);
+            $traverser = new NodeTraverser(new NameResolver(), new DeclaringTypeMarker());
             $files[substr($name, strlen($root) + 1)] = ['code' => $code, 'statements' => $traverser->traverse($statements)];
         }
     }
@@ -212,7 +212,7 @@ function parsedFiles(string $root, array $folders): array
 function typeIndex(array $files): array
 {
     $index = [];
-    $finder = new NodeFinder;
+    $finder = new NodeFinder();
 
     foreach ($files as $file) {
         foreach ($finder->findInstanceOf($file['statements'], Node\Stmt\ClassLike::class) as $type) {
@@ -334,7 +334,7 @@ function memberEdits(array $files, string $what, string $class, string $old, str
     }
 
     $edits = [];
-    $finder = new NodeFinder;
+    $finder = new NodeFinder();
 
     foreach ($files as $path => $file) {
         $found = [];
@@ -415,7 +415,7 @@ function memberSites(Node $node, string $what, string $old, string $new, array $
 function promotedVariableSites(array $statements, string $old, string $new, array $family): array
 {
     $sites = [];
-    $finder = new NodeFinder;
+    $finder = new NodeFinder();
 
     foreach ($finder->findInstanceOf($statements, Node\Stmt\ClassMethod::class) as $method) {
         if ($method->name->toLowerString() !== '__construct' || ! isset($family[declaringType($method)])) {
@@ -447,7 +447,7 @@ function promotedVariableSites(array $statements, string $old, string $new, arra
 function variableEdits(array $files, string $old, string $new): array
 {
     $edits = [];
-    $finder = new NodeFinder;
+    $finder = new NodeFinder();
 
     foreach ($files as $path => $file) {
         $found = [];
@@ -525,7 +525,7 @@ function applied(string $code, array $edits): string
 function stringsSpelling(array $files, string $old): array
 {
     $lines = [];
-    $finder = new NodeFinder;
+    $finder = new NodeFinder();
 
     foreach ($files as $path => $file) {
         foreach ($finder->findInstanceOf($file['statements'], Node\Scalar\String_::class) as $string) {

@@ -68,7 +68,7 @@ final class SharePreview extends Model implements ReadableModel
      */
     public static function createFor(string $ownerUserId, RecordIdentity $root, array $selection, ShareGatewayConfiguration $configuration): self
     {
-        $preview = new self;
+        $preview = new self();
         $preview->owner_user_id = $ownerUserId;
         $preview->root_type = $root->type;
         $preview->root_id = $root->id;

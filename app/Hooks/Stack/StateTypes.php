@@ -31,7 +31,7 @@ final class StateTypes
 
     private function build(): StateTypeRegistry
     {
-        $registry = new StateTypeRegistry;
+        $registry = new StateTypeRegistry();
 
         foreach (ReadyStateType::cases() as $role) {
             $registry->register($role->value, $role);

@@ -41,11 +41,11 @@ final class DomainListenerGateTest extends TestCase
         $this->app->instance(DomainAvailability::class, $available);
         $gate = new AvailableListener('Plans', CountingListener::class);
 
-        $gate(new stdClass);
+        $gate(new stdClass());
         $this->assertSame(0, CountingListener::$heard);
 
         $available->plansOn = true;
-        $gate(new stdClass);
+        $gate(new stdClass());
         $this->assertSame(1, CountingListener::$heard);
     }
 

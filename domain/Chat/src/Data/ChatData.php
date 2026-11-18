@@ -20,6 +20,6 @@ final class ChatData extends Data
      */
     public function __construct(
         #[DataCollectionOf(SessionOptionData::class)] public readonly array $sessions,
-        public readonly ConversationData|Optional $conversation = new Optional,
+        public readonly ConversationData|Optional $conversation = new Optional(),
     ) {}
 }

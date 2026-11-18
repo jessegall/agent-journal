@@ -89,7 +89,7 @@ final class AgentStackRow extends Model implements ReadableModel
         $now = CarbonImmutable::now();
 
         self::query()->withoutGlobalScope(AgentSessionScope::class)->insertOrIgnore([
-            'id' => (new self)->newUniqueId(),
+            'id' => new self()->newUniqueId(),
             'agent_id' => $target->agentId,
             'session_id' => $target->sessionId,
             'version' => 1,

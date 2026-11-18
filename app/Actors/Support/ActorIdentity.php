@@ -31,7 +31,7 @@ final readonly class ActorIdentity
      */
     public static function system(): self
     {
-        return self::of(new SystemActor);
+        return self::of(new SystemActor());
     }
 
     /**

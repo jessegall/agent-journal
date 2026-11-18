@@ -79,7 +79,7 @@ exit(1);
  */
 function declaredNames(array $folders): array
 {
-    $parser = (new ParserFactory)->createForNewestSupportedVersion();
+    $parser = new ParserFactory()->createForNewestSupportedVersion();
     $names = [];
 
     foreach ($folders as $folder) {
@@ -91,9 +91,9 @@ function declaredNames(array $folders): array
             }
 
             $path = $file->getPathname();
-            $statements = (new NodeTraverser(new NameResolver))->traverse($parser->parse((string) file_get_contents($path)) ?? []);
+            $statements = new NodeTraverser(new NameResolver())->traverse($parser->parse((string) file_get_contents($path)) ?? []);
 
-            foreach ((new NodeFinder)->findInstanceOf($statements, ClassLike::class) as $type) {
+            foreach (new NodeFinder()->findInstanceOf($statements, ClassLike::class) as $type) {
                 if ($type->name === null) {
                     continue;
                 }

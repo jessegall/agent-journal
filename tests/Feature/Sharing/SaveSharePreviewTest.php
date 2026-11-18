@@ -52,10 +52,10 @@ final class SaveSharePreviewTest extends TestCase
     {
         parent::setUp();
 
-        $this->registerShareDomain(new BindersDomain);
+        $this->registerShareDomain(new BindersDomain());
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
         $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
-        $this->publications = new BinderPublications;
+        $this->publications = new BinderPublications();
         $this->app->instance(BinderPublications::class, $this->publications);
         $this->configuration = ShareGatewayConfiguration::configure(new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []));
         $this->root = new RecordIdentity('binders.binder', TestIds::of(1));

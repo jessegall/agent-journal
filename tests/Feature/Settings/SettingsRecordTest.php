@@ -109,7 +109,7 @@ final class SettingsRecordTest extends TestCase
     public function test_text_that_is_not_json_is_refused_by_the_cast_without_its_content(): void
     {
         try {
-            (new SettingsDocumentCast)->get(new SettingsRecord, 'document', '{"settings":[{"key":"secret_value"', ['owner' => 'Library']);
+            new SettingsDocumentCast()->get(new SettingsRecord(), 'document', '{"settings":[{"key":"secret_value"', ['owner' => 'Library']);
             $this->fail('Text that is not JSON was read.');
         } catch (SettingsDocumentInvalid $invalid) {
             $this->assertSame(SettingsDocumentInvalid::notJson('Library')->getMessage(), $invalid->getMessage());

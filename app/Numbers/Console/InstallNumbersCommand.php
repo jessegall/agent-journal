@@ -16,7 +16,7 @@ final class InstallNumbersCommand extends Command
 
     public function handle(CommandBus $commands): int
     {
-        $commands->run(new InstallNumbers);
+        $commands->run(new InstallNumbers());
         $this->info('The journal number group is installed.');
 
         return self::SUCCESS;

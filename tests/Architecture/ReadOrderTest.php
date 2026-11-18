@@ -27,7 +27,7 @@ final class ReadOrderTest extends TestCase
                 continue;
             }
 
-            $model = new $class;
+            $model = new $class();
             $columns = $model->defaultReadOrder()->columns;
             $last = end($columns);
 

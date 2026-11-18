@@ -63,7 +63,7 @@ final class SilenceSweepOnTickTest extends TestCase
         $stale = $this->launch();
         $this->startedSecondsAgo($stale, 121);
 
-        $this->assertThrows(fn () => $this->pass(fn () => $this->app->make(CommandBus::class)->run(new MarkSilentSessions)), EngineAccessRefused::class);
+        $this->assertThrows(fn () => $this->pass(fn () => $this->app->make(CommandBus::class)->run(new MarkSilentSessions())), EngineAccessRefused::class);
 
         $this->assertSame(SessionStatus::Active, $stale->session->refresh()->status);
     }

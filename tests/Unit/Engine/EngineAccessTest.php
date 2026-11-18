@@ -16,7 +16,7 @@ final class EngineAccessTest extends TestCase
 {
     public function test_with_no_grant_every_target_and_capability_is_refused(): void
     {
-        $access = new EngineAccess;
+        $access = new EngineAccess();
 
         $this->assertRefused(fn () => $access->checkTarget(new StackTarget('a', 's')));
         $this->assertRefused(fn () => $access->checkMaintenance('launches.silence'));
@@ -24,7 +24,7 @@ final class EngineAccessTest extends TestCase
 
     public function test_a_frame_grant_allows_its_own_target_only(): void
     {
-        $access = new EngineAccess;
+        $access = new EngineAccess();
         $access->grantFrame(new StackTarget('a', 's'), 'frame-1');
 
         $access->checkTarget(new StackTarget('a', 's'));
@@ -34,7 +34,7 @@ final class EngineAccessTest extends TestCase
 
     public function test_a_maintenance_grant_allows_its_capability_only(): void
     {
-        $access = new EngineAccess;
+        $access = new EngineAccess();
         $access->grantMaintenance('launches.silence');
 
         $access->checkMaintenance('launches.silence');
@@ -44,7 +44,7 @@ final class EngineAccessTest extends TestCase
 
     public function test_clear_takes_the_grant_back(): void
     {
-        $access = new EngineAccess;
+        $access = new EngineAccess();
         $access->grantFrame(new StackTarget('a', 's'), 'frame-1');
         $access->clear();
 

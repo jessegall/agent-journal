@@ -82,7 +82,7 @@ final readonly class DomainEntry
             domain: $domain,
             requires: self::checkedRequirements($name, $className, $domain->requires()),
             exports: ExportsCheck::check($name, $namespace, $domain->exports()),
-            settings: $domain instanceof ProvidesSettings ? $domain->settings() : new EmptySettingsDefinition,
+            settings: $domain instanceof ProvidesSettings ? $domain->settings() : new EmptySettingsDefinition(),
             switchable: $domain->canDisable(),
         );
     }

@@ -100,6 +100,6 @@ final class OperationsReadTest extends TestCase
 
     private function receipt(string $sessionId, CascadeResult $result): void
     {
-        CommandReceipt::take($sessionId, self::KEY, new stdClass, ActorContext::forAgent($this->launch->agent->id))->complete($result);
+        CommandReceipt::take($sessionId, self::KEY, new stdClass(), ActorContext::forAgent($this->launch->agent->id))->complete($result);
     }
 }

@@ -55,10 +55,10 @@ final class TickDeliveryTest extends TestCase
     {
         parent::setUp();
 
-        $this->loader = new ScriptedTickingLoader;
+        $this->loader = new ScriptedTickingLoader();
         Event::listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
             $event->registry->register('test.ticking', $this->loader);
-            $event->registry->register('test.plain', new UnreadLoader);
+            $event->registry->register('test.plain', new UnreadLoader());
         });
         $this->entry = CarbonImmutable::parse('2026-11-18 12:00:10');
         $this->clock = new FakeMonotonicClock(10 * self::SECOND);
@@ -106,7 +106,7 @@ final class TickDeliveryTest extends TestCase
     {
         $stack = $this->tickingStack('test.ticking', ['a'], $this->entry);
         EngineFrameTime::recordMany([FrameSettlement::at(new StackTarget($stack->agent_id, $stack->session_id), $stack->id, 'a', CarbonImmutable::parse('2026-11-18 12:00:14'))]);
-        $this->app->instance(FrameBaselines::class, new FrameBaselines);
+        $this->app->instance(FrameBaselines::class, new FrameBaselines());
 
         $this->passAt(10.0);
 
@@ -121,7 +121,7 @@ final class TickDeliveryTest extends TestCase
         $target = new StackTarget($stack->agent_id, $stack->session_id);
         $this->loader->scripts['a'] = fn (TickContext $tick) => TickCommands::of(
             new SettleFrameTimes([FrameSettlement::at($target, $stack->id, 'effect-of-a', $tick->now)]),
-            new MarkSilentSessions,
+            new MarkSilentSessions(),
         );
 
         $this->passAt(0.0);

@@ -25,7 +25,7 @@ final class DomainSettingsTest extends TestCase
     public function test_a_domain_declaring_settings_is_registered_under_its_name_built_once(): void
     {
         LibrarySettings::$built = 0;
-        $registry = DomainRegistry::from([LibraryDomain::class])->settingDeclarations(new CoreSettings);
+        $registry = DomainRegistry::from([LibraryDomain::class])->settingDeclarations(new CoreSettings());
 
         $this->assertSame(['Core', 'Library'], array_keys($registry->definitions()));
         $this->assertInstanceOf(LibrarySettings::class, $registry->definition('Library'));
@@ -34,7 +34,7 @@ final class DomainSettingsTest extends TestCase
 
     public function test_a_domain_declaring_every_type_registers_both_types_of_group(): void
     {
-        $registry = DomainRegistry::from([ReviewsDomain::class])->settingDeclarations(new CoreSettings);
+        $registry = DomainRegistry::from([ReviewsDomain::class])->settingDeclarations(new CoreSettings());
         $reviews = $registry->definition('Reviews');
 
         $this->assertInstanceOf(ReviewSettings::class, $reviews);

@@ -26,12 +26,12 @@ final class BrowserContractTest extends TestCase
         parent::setUp();
 
         $this->output = sys_get_temp_dir().'/browser-contract-'.getmypid();
-        (new Filesystem)->ensureDirectoryExists($this->output);
+        new Filesystem()->ensureDirectoryExists($this->output);
     }
 
     protected function tearDown(): void
     {
-        (new Filesystem)->deleteDirectory($this->output);
+        new Filesystem()->deleteDirectory($this->output);
 
         parent::tearDown();
     }
@@ -39,7 +39,7 @@ final class BrowserContractTest extends TestCase
     public function test_the_generated_types_describe_the_page_and_hide_its_seed_and_service(): void
     {
         TypeScriptTransformer::create(TypeScriptTransformerConfigFactory::create()
-            ->transformer(new HiddenAwareDataTransformer, EnumTransformer::class)
+            ->transformer(new HiddenAwareDataTransformer(), EnumTransformer::class)
             ->transformDirectories(base_path('tests/Fixtures/Web/Types'))
             ->outputDirectory($this->output)
             ->writer(new FlatModuleWriter('index.ts')))->execute();

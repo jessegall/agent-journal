@@ -59,7 +59,7 @@ final class DocumentsTest extends TestCase
 
         $this->assertSame('report 1', $report->label());
         $this->assertSame('All good'."\n", $this->app->make(ReportReader::class)->show(1)->body);
-        $this->assertCount(1, $this->app->make(DocumentReader::class)->list(new DocumentFilters)->rows);
+        $this->assertCount(1, $this->app->make(DocumentReader::class)->list(new DocumentFilters())->rows);
         $this->expectException(ReportMissing::class);
         $this->app->make(ReportReader::class)->show(2);
     }

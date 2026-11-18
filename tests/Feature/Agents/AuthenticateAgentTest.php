@@ -40,7 +40,7 @@ final class AuthenticateAgentTest extends TestCase
     public function test_a_revoked_credential_gets_the_unauthenticated_body(): void
     {
         $launch = TestLaunch::start();
-        (new LaunchCredentials)->revoke($launch->session);
+        new LaunchCredentials()->revoke($launch->session);
 
         $this->signed($launch, '/agent/heartbeat', [])->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED);
     }
@@ -48,7 +48,7 @@ final class AuthenticateAgentTest extends TestCase
     public function test_an_ended_session_gets_the_unauthenticated_body(): void
     {
         $launch = TestLaunch::start();
-        (new AgentSessions(new AgentLifecycle))->end($launch->session);
+        new AgentSessions(new AgentLifecycle())->end($launch->session);
 
         $this->signed($launch, '/agent/heartbeat', [])->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED);
     }

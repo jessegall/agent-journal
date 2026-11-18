@@ -21,7 +21,7 @@ final class DocumentCard extends Data
         public readonly string $title,
         public readonly string $abstract,
         public readonly AttentionState $attention,
-        public readonly string|Optional $snippet = new Optional,
-        public readonly string|Optional $foundIn = new Optional,
+        public readonly string|Optional $snippet = new Optional(),
+        public readonly string|Optional $foundIn = new Optional(),
     ) {}
 }

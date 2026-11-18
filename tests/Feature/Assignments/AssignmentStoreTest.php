@@ -129,7 +129,7 @@ final class AssignmentStoreTest extends TestCase
     {
         $attempts = 0;
         $conflict = new PDOException('could not serialize access');
-        (new ReflectionProperty(Exception::class, 'code'))->setValue($conflict, '40001');
+        new ReflectionProperty(Exception::class, 'code')->setValue($conflict, '40001');
 
         $this->expectException(AssignmentRetryExhausted::class);
 

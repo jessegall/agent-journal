@@ -50,7 +50,7 @@ final readonly class EnumSetting implements Setting
     {
         SettingKey::require($key, $label);
 
-        if (! enum_exists($enum) || ! (new ReflectionEnum($enum))->isBacked()) {
+        if (! enum_exists($enum) || ! new ReflectionEnum($enum)->isBacked()) {
             throw SettingDeclarationInvalid::notABackedEnum($key);
         }
 
@@ -58,7 +58,7 @@ final readonly class EnumSetting implements Setting
             throw SettingDeclarationInvalid::defaultNotAnOption($key);
         }
 
-        $backing = (string) (new ReflectionEnum($enum))->getBackingType() === 'int' ? SettingType::Integer : SettingType::String;
+        $backing = (string) new ReflectionEnum($enum)->getBackingType() === 'int' ? SettingType::Integer : SettingType::String;
         $options = array_map(fn (BackedEnum $case) => self::choiceOf($case), $enum::cases());
 
         return new self($key, $label, $enum, $default, $backing, ChoiceOptions::check($key, $options, $default->value));

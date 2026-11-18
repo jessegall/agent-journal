@@ -55,13 +55,13 @@ final class RegisteredModuleTest extends TestCase
     {
         $roots = $this->roots();
         $files = DomainFiles::in([$this->registry()->get('Notes')->folder]);
-        $tableUses = [...ModelTables::in($files), ...ScanCache::findings(new TableScan, $files)];
+        $tableUses = [...ModelTables::in($files), ...ScanCache::findings(new TableScan(), $files)];
 
         $violations = [
             ...$this->boundaryChecker()->violations(DomainFiles::usesIn($files, $roots)),
-            ...(new PublicContracts($this->publicOwners(), $roots))->violations(),
+            ...new PublicContracts($this->publicOwners(), $roots)->violations(),
             ...$this->tableChecker()->violations($tableUses),
-            ...(new BindingRules($this->publicOwners(), $files))->violations(),
+            ...new BindingRules($this->publicOwners(), $files)->violations(),
         ];
 
         $this->assertSame([], $violations, BoundaryReport::of($violations, base_path()));

@@ -23,8 +23,8 @@ final class SettingRegistryTest extends TestCase
 {
     public function test_each_registered_setting_resolves_to_its_owner_and_key(): void
     {
-        $core = new CoreSettings;
-        $library = new LibrarySettings;
+        $core = new CoreSettings();
+        $library = new LibrarySettings();
         $registry = SettingRegistry::from(['Core' => $core, 'Library' => $library]);
 
         $this->assertSame(['Core', 'display_name'], [$registry->ownerOf($core->displayName)->owner, $registry->ownerOf($core->displayName)->key]);
@@ -38,7 +38,7 @@ final class SettingRegistryTest extends TestCase
         $this->expectException(SettingDeclarationInvalid::class);
         $this->expectExceptionMessage('Library declares the settings group desk twice');
 
-        SettingRegistry::from(['Core' => new CoreSettings, 'Library' => new SettingsList([
+        SettingRegistry::from(['Core' => new CoreSettings(), 'Library' => new SettingsList([
             SettingGroup::make('desk', 'Desk', []),
             ToggleGroup::make('desk', 'Desk', true, []),
         ])]);
@@ -51,7 +51,7 @@ final class SettingRegistryTest extends TestCase
         $this->expectException(SettingDeclarationInvalid::class);
         $this->expectExceptionMessage('Library declares the setting greeting twice');
 
-        SettingRegistry::from(['Core' => new CoreSettings, 'Library' => new SettingsList([
+        SettingRegistry::from(['Core' => new CoreSettings(), 'Library' => new SettingsList([
             SettingGroup::make('desk', 'Desk', [$greeting]),
             ToggleGroup::make('door', 'Door', true, [$greeting]),
         ])]);
@@ -59,12 +59,12 @@ final class SettingRegistryTest extends TestCase
 
     public function test_a_setting_from_another_instance_is_unknown(): void
     {
-        $registry = SettingRegistry::from(['Core' => new CoreSettings]);
+        $registry = SettingRegistry::from(['Core' => new CoreSettings()]);
 
         $this->expectException(SettingHandleUnknown::class);
         $this->expectExceptionMessage('display_name');
 
-        $registry->ownerOf((new CoreSettings)->displayName);
+        $registry->ownerOf(new CoreSettings()->displayName);
     }
 
     public function test_an_owner_named_core_in_another_case_is_refused(): void
@@ -72,14 +72,14 @@ final class SettingRegistryTest extends TestCase
         $this->expectException(SettingDeclarationInvalid::class);
         $this->expectExceptionMessage('core');
 
-        SettingRegistry::from(['Core' => new CoreSettings, 'core' => new LibrarySettings]);
+        SettingRegistry::from(['Core' => new CoreSettings(), 'core' => new LibrarySettings()]);
     }
 
     public function test_core_must_come_first(): void
     {
         $this->expectException(SettingDeclarationInvalid::class);
 
-        SettingRegistry::from(['Library' => new LibrarySettings, 'Core' => new CoreSettings]);
+        SettingRegistry::from(['Library' => new LibrarySettings(), 'Core' => new CoreSettings()]);
     }
 
     public function test_two_owners_differing_only_in_case_are_refused(): void
@@ -87,7 +87,7 @@ final class SettingRegistryTest extends TestCase
         $this->expectException(SettingDeclarationInvalid::class);
         $this->expectExceptionMessage('library');
 
-        SettingRegistry::from(['Core' => new CoreSettings, 'Library' => new LibrarySettings, 'library' => new SettingsList([])]);
+        SettingRegistry::from(['Core' => new CoreSettings(), 'Library' => new LibrarySettings(), 'library' => new SettingsList([])]);
     }
 
     public function test_one_definition_class_for_two_owners_is_refused(): void
@@ -95,7 +95,7 @@ final class SettingRegistryTest extends TestCase
         $this->expectException(SettingDeclarationInvalid::class);
         $this->expectExceptionMessage('Shelves');
 
-        SettingRegistry::from(['Core' => new CoreSettings, 'Library' => new LibrarySettings, 'Shelves' => new LibrarySettings]);
+        SettingRegistry::from(['Core' => new CoreSettings(), 'Library' => new LibrarySettings(), 'Shelves' => new LibrarySettings()]);
     }
 
     public function test_a_key_in_two_groups_is_refused_with_owner_and_key(): void
@@ -103,7 +103,7 @@ final class SettingRegistryTest extends TestCase
         $this->expectException(SettingDeclarationInvalid::class);
         $this->expectExceptionMessage('Library declares the setting greeting twice');
 
-        SettingRegistry::from(['Core' => new CoreSettings, 'Library' => new SettingsList([
+        SettingRegistry::from(['Core' => new CoreSettings(), 'Library' => new SettingsList([
             SettingGroup::make('desk', 'Desk', [StringSetting::make('greeting', 'Greeting', 'Hi')]),
             SettingGroup::make('door', 'Door', [StringSetting::make('greeting', 'Greeting', 'Hi')]),
         ])]);
@@ -114,7 +114,7 @@ final class SettingRegistryTest extends TestCase
         $this->expectException(SettingDeclarationInvalid::class);
         $this->expectExceptionMessage('desk');
 
-        SettingRegistry::from(['Core' => new CoreSettings, 'Library' => new SettingsList([
+        SettingRegistry::from(['Core' => new CoreSettings(), 'Library' => new SettingsList([
             SettingGroup::make('desk', 'Desk', []),
             SettingGroup::make('desk', 'Desk', []),
         ])]);
@@ -127,6 +127,6 @@ final class SettingRegistryTest extends TestCase
         $this->expectException(SettingDeclarationInvalid::class);
         $this->expectExceptionMessage('Library declares more than '.SettingRegistry::SETTINGS_PER_OWNER.' settings');
 
-        SettingRegistry::from(['Core' => new CoreSettings, 'Library' => new SettingsList([SettingGroup::make('many', 'Many', $settings)])]);
+        SettingRegistry::from(['Core' => new CoreSettings(), 'Library' => new SettingsList([SettingGroup::make('many', 'Many', $settings)])]);
     }
 }

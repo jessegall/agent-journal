@@ -99,8 +99,8 @@ final class CodexTest extends TestCase
     public function test_a_rewrite_is_refused_with_the_journal_command_and_its_child_is_dropped(): void
     {
         $capabilities = $this->adapter()->capabilities();
-        $stackBefore = new AgentStack([], new InMemoryStateFactory);
-        $stackAfter = new AgentStack([new Frame('guide', new StateReference('guide', NoSubject::None), ScriptedState::delegating(), CarbonImmutable::now())], new InMemoryStateFactory);
+        $stackBefore = new AgentStack([], new InMemoryStateFactory());
+        $stackAfter = new AgentStack([new Frame('guide', new StateReference('guide', NoSubject::None), ScriptedState::delegating(), CarbonImmutable::now())], new InMemoryStateFactory());
         $rewrite = new HookAnswer(Decision::rewrite('journal run tests'), [], [], $stackAfter);
 
         $settled = $capabilities->rewrites->finalAnswer($rewrite, $stackBefore);
@@ -129,7 +129,7 @@ final class CodexTest extends TestCase
 
     private function render(string $name, Decision $decision): ProgramReply
     {
-        return $this->renderAnswer($name, new HookAnswer($decision, [], [], new AgentStack([], new InMemoryStateFactory)));
+        return $this->renderAnswer($name, new HookAnswer($decision, [], [], new AgentStack([], new InMemoryStateFactory())));
     }
 
     private function renderAnswer(string $name, HookAnswer $answer): ProgramReply

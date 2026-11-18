@@ -23,6 +23,6 @@ final readonly class MarkSilentSessionsOnTick implements EngineListener
 
     public function __invoke(EngineTicked $event): void
     {
-        $this->commands->run(new MarkSilentSessions);
+        $this->commands->run(new MarkSilentSessions());
     }
 }

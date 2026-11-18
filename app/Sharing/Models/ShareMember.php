@@ -57,7 +57,7 @@ final class ShareMember extends Model implements ReadableModel
      */
     public static function approve(Share $share, RecordIdentity $source, ShareSelectedTarget $target): self
     {
-        $member = new self;
+        $member = new self();
         $member->share_id = $share->id;
         $member->scope_version = $share->scope_version;
         $member->link_id = $target->linkId;

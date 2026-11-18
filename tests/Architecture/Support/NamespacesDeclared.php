@@ -24,7 +24,7 @@ final readonly class NamespacesDeclared implements FileScan
     {
         return array_values(array_map(
             fn (Namespace_ $namespace) => ['name' => $namespace->name?->toString() ?? '', 'line' => $namespace->getStartLine()],
-            (new NodeFinder)->findInstanceOf($file->statements, Namespace_::class),
+            new NodeFinder()->findInstanceOf($file->statements, Namespace_::class),
         ));
     }
 }

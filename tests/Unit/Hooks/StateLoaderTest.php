@@ -31,8 +31,8 @@ final class StateLoaderTest extends TestCase
 {
     public function test_a_registered_type_is_found_by_its_key(): void
     {
-        $type = new InMemoryTaskLoader;
-        $registry = new StateTypeRegistry;
+        $type = new InMemoryTaskLoader();
+        $registry = new StateTypeRegistry();
         $registry->register('tasks.working', $type);
 
         $this->assertTrue($registry->has('tasks.working'));
@@ -44,36 +44,36 @@ final class StateLoaderTest extends TestCase
     {
         $this->expectException(StateTypeUnknown::class);
 
-        (new StateTypeRegistry)->get('communication.answering');
+        new StateTypeRegistry()->get('communication.answering');
     }
 
     public function test_a_key_registered_twice_is_an_error(): void
     {
-        $registry = new StateTypeRegistry;
-        $registry->register('tasks.working', new InMemoryTaskLoader);
+        $registry = new StateTypeRegistry();
+        $registry->register('tasks.working', new InMemoryTaskLoader());
 
         $this->expectException(StateTypeRepeated::class);
 
-        $registry->register('tasks.working', new InMemoryTaskLoader);
+        $registry->register('tasks.working', new InMemoryTaskLoader());
     }
 
     public function test_nothing_is_registered_after_the_registry_is_frozen(): void
     {
-        $registry = new StateTypeRegistry;
+        $registry = new StateTypeRegistry();
         $registry->freeze();
 
         $this->expectException(StateTypesFrozen::class);
 
-        $registry->register('tasks.working', new InMemoryTaskLoader);
+        $registry->register('tasks.working', new InMemoryTaskLoader());
     }
 
     public function test_the_types_are_built_once_with_the_roles_and_every_listener_type(): void
     {
-        $events = new Dispatcher;
+        $events = new Dispatcher();
         $buildCount = 0;
         $events->listen(StateTypesRequested::class, function (StateTypesRequested $event) use (&$buildCount) {
             $buildCount++;
-            $event->registry->register('tasks.working', new InMemoryTaskLoader);
+            $event->registry->register('tasks.working', new InMemoryTaskLoader());
         });
         $types = new StateTypes($events);
 
@@ -89,7 +89,7 @@ final class StateLoaderTest extends TestCase
 
     public function test_the_built_in_roles_build_their_own_bottom_states(): void
     {
-        $registry = (new StateTypes(new Dispatcher))->registry();
+        $registry = new StateTypes(new Dispatcher())->registry();
         $noSubject = fn (string $key) => new StateReference($key, NoSubject::None);
 
         $this->assertSame(MainAgentReadyState::class, $registry->get('hooks.main_ready')->statesFor(new StateReferences([$noSubject('hooks.main_ready')]))->stateAt(0)::class);
@@ -98,7 +98,7 @@ final class StateLoaderTest extends TestCase
 
     public function test_a_failed_build_is_not_kept_and_the_next_use_builds_again(): void
     {
-        $events = new Dispatcher;
+        $events = new Dispatcher();
         $attempts = 0;
         $events->listen(StateTypesRequested::class, function (StateTypesRequested $event) use (&$attempts) {
             $attempts++;
@@ -107,7 +107,7 @@ final class StateLoaderTest extends TestCase
                 throw TestFailure::listenerFailed();
             }
 
-            $event->registry->register('tasks.working', new InMemoryTaskLoader);
+            $event->registry->register('tasks.working', new InMemoryTaskLoader());
         });
         $types = new StateTypes($events);
 
@@ -125,7 +125,7 @@ final class StateLoaderTest extends TestCase
     public function test_a_pushed_frame_reads_its_subject_through_the_registered_type(): void
     {
         $tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active]);
-        $events = new Dispatcher;
+        $events = new Dispatcher();
         $events->listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('tasks.working', $tasks));
         $factory = new RegisteredStateFactory(new StateTypes($events), new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00')));
         $reference = new StateReference('tasks.working', new SubjectReference('42', 1));

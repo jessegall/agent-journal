@@ -35,7 +35,7 @@ final class ShareRegistriesTest extends TestCase
 {
     public function test_a_booted_domain_resolves_its_alias_to_model_provider_and_relation(): void
     {
-        $this->registerShareDomain(new PamphletsDomain);
+        $this->registerShareDomain(new PamphletsDomain());
         $records = $this->app->make(ShareRecordRegistry::class);
         $records->checkRelations();
 
@@ -47,16 +47,16 @@ final class ShareRegistriesTest extends TestCase
 
     public function test_a_second_domain_registering_the_same_alias_stops_its_boot(): void
     {
-        $this->registerShareDomain(new PamphletsDomain);
+        $this->registerShareDomain(new PamphletsDomain());
 
         $this->expectExceptionObject(ShareRecordInvalid::repeated('pamphlets.pamphlet'));
 
-        $this->registerShareDomain(new LeafletsDomain);
+        $this->registerShareDomain(new LeafletsDomain());
     }
 
     public function test_a_relation_needing_a_capability_no_record_advertises_is_refused(): void
     {
-        $this->registerShareDomain(new FlyersDomain);
+        $this->registerShareDomain(new FlyersDomain());
 
         $this->expectExceptionObject(ShareRelationInvalid::unknownCapability('flyers.flyer', 'records', 'share-nothing-advertises'));
 
@@ -74,7 +74,7 @@ final class ShareRegistriesTest extends TestCase
 
     public function test_an_unknown_alias_or_relation_is_a_named_refusal(): void
     {
-        $this->registerShareDomain(new PamphletsDomain);
+        $this->registerShareDomain(new PamphletsDomain());
         $records = $this->app->make(ShareRecordRegistry::class);
         $records->checkRelations();
 

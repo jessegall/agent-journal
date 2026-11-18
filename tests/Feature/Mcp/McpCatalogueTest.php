@@ -36,7 +36,7 @@ final class McpCatalogueTest extends TestCase
 
     public function test_a_domain_tool_appears_in_tools_list(): void
     {
-        $catalogue = new McpCatalogue;
+        $catalogue = new McpCatalogue();
         DomainRegistry::from([LedgerDomain::class])->registerMcpToolsIn($catalogue);
         $this->app->instance(McpCatalogue::class, $catalogue);
         $this->mock(LaunchReadiness::class)->shouldReceive('recordDiscovery')->once();
@@ -51,7 +51,7 @@ final class McpCatalogueTest extends TestCase
 
     public function test_a_second_class_with_the_same_name_fails_naming_both(): void
     {
-        $catalogue = new McpCatalogue;
+        $catalogue = new McpCatalogue();
         $catalogue->registerTool(LedgerReadTool::class);
 
         $this->expectException(McpToolNameTaken::class);
@@ -65,14 +65,14 @@ final class McpCatalogueTest extends TestCase
         $this->expectException(McpToolNameInvalid::class);
         $this->expectExceptionMessage('ledger-read');
 
-        (new McpCatalogue)->registerTool(KebabLedgerTool::class);
+        new McpCatalogue()->registerTool(KebabLedgerTool::class);
     }
 
     public function test_a_class_that_is_not_a_journal_tool_fails(): void
     {
         $this->expectException(McpClassInvalid::class);
 
-        (new McpCatalogue)->registerTool(FixtureServer::class);
+        new McpCatalogue()->registerTool(FixtureServer::class);
     }
 
     public function test_execute_tools_and_search_tools_are_not_tools_of_the_journal(): void

@@ -36,7 +36,7 @@ final class NameScan
     {
         $uses = [];
 
-        foreach ((new NodeFinder)->findInstanceOf($file->statements, Stmt\Use_::class) as $import) {
+        foreach (new NodeFinder()->findInstanceOf($file->statements, Stmt\Use_::class) as $import) {
             foreach ($import->uses as $item) {
                 $uses[] = new NameUse($file->path, $item->getStartLine(), $item->name->toString(), NameType::forImportType($import->type));
             }
@@ -52,7 +52,7 @@ final class NameScan
     {
         $uses = [];
 
-        foreach ((new NodeFinder)->findInstanceOf($file->statements, Stmt\GroupUse::class) as $group) {
+        foreach (new NodeFinder()->findInstanceOf($file->statements, Stmt\GroupUse::class) as $group) {
             foreach ($group->uses as $item) {
                 $type = $item->type === Stmt\Use_::TYPE_UNKNOWN ? $group->type : $item->type;
                 $name = Name::concat($group->prefix, $item->name);
@@ -71,7 +71,7 @@ final class NameScan
     {
         $uses = [];
 
-        foreach ((new NodeFinder)->findInstanceOf($file->statements, Name::class) as $name) {
+        foreach (new NodeFinder()->findInstanceOf($file->statements, Name::class) as $name) {
             if (! self::isUse($name)) {
                 continue;
             }

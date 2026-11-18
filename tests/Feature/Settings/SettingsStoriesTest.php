@@ -64,7 +64,7 @@ final class SettingsStoriesTest extends TestCase
     {
         parent::setUp();
 
-        $registry = DomainRegistry::from([ReviewsDomain::class, BooksDomain::class])->settingDeclarations(new CoreSettings);
+        $registry = DomainRegistry::from([ReviewsDomain::class, BooksDomain::class])->settingDeclarations(new CoreSettings());
         $this->app->instance(SettingRegistry::class, $registry);
         $this->reviews = $registry->definition('Reviews');
         $this->commands = new RegisteredSettingCommands($registry);
@@ -116,7 +116,7 @@ final class SettingsStoriesTest extends TestCase
             }
         };
 
-        $registry = SettingRegistry::from(['Core' => new CoreSettings, 'First' => $first, 'Second' => $second]);
+        $registry = SettingRegistry::from(['Core' => new CoreSettings(), 'First' => $first, 'Second' => $second]);
 
         $this->assertSame(['First', 'retry_limit'], [$registry->ownerOf($first->retryLimit)->owner, $registry->ownerOf($first->retryLimit)->key]);
         $this->assertSame(['Second', 'retry_limit'], [$registry->ownerOf($second->retryLimit)->owner, $registry->ownerOf($second->retryLimit)->key]);
@@ -251,7 +251,7 @@ final class SettingsStoriesTest extends TestCase
         $this->expectException(SettingDeclarationInvalid::class);
         $this->expectExceptionMessage('more than '.SettingRegistry::GROUPS_PER_OWNER.' settings groups');
 
-        SettingRegistry::from(['Core' => new CoreSettings, 'Many' => $this->definitionOf($groups)]);
+        SettingRegistry::from(['Core' => new CoreSettings(), 'Many' => $this->definitionOf($groups)]);
     }
 
     /**
