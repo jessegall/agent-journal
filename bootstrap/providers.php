@@ -8,6 +8,7 @@ use App\Assignments\Providers\AssignmentsServiceProvider;
 use App\Bus\Providers\CommandBusServiceProvider;
 use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Providers\DomainServiceProvider;
+use App\Engine\Providers\EngineServiceProvider;
 use App\Hooks\Providers\HooksServiceProvider;
 use App\Numbers\Providers\NumbersServiceProvider;
 use App\Providers\AppServiceProvider;
@@ -37,6 +38,7 @@ return [
     RecordsServiceProvider::class,
     HooksServiceProvider::class,
     CommandBusServiceProvider::class,
+    EngineServiceProvider::class,
     ReadsServiceProvider::class,
     NumbersServiceProvider::class,
     ProcessesServiceProvider::class,
