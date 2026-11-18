@@ -32,6 +32,10 @@ final class BoundaryCheckerTest extends TestCase
         yield 'allowed uses of every type' => ['Plans/UsesAllowed.php', []];
         yield 'the Plans domain class' => ['Plans/PlansDomain.php', []];
         yield 'the Tasks domain class' => ['Tasks/TasksDomain.php', []];
+        yield 'a domain skill reading an undeclared domain' => ['Plans/Skills/PlanSkillReadingChat.php', [
+            '7 uses Tests\Fixtures\Boundary\Chat\Message, but Plans does not require Chat',
+            '16 uses Tests\Fixtures\Boundary\Chat\Message, but Plans does not require Chat',
+        ]];
         yield 'every forbidden use with its reason' => ['Plans/UsesForbidden.php', [
             '7 uses Tests\Fixtures\Boundary\Chat\Message, but Plans does not require Chat',
             '8 uses Tests\Fixtures\Boundary\Outside\Helper, which is project code outside every domain',

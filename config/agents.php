@@ -5,6 +5,15 @@ declare(strict_types=1);
 return [
 
     /*
+    | The maintenance key scripts an operator may run on an agent's terminal, by name, each with its parameters and
+    | their rules. The host registers the same names (tools/journal-agent/keyscripts); nothing else runs (doc 40,
+    | section 26).
+    */
+    'key_scripts' => [
+        'LoginMcp' => ['version' => 1, 'parameters' => ['server' => 'required|string|max:200']],
+    ],
+
+    /*
     | What this host gives all its helper containers together; each required-container launch reserves its budgets
     | from it and is refused when they do not fit. The defaults are one helper's host maxima (doc 14, section 62).
     */

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorStore;
 use App\AgentRequests\Support\SignedCall;
@@ -16,9 +17,11 @@ use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\InterruptAgent;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\ReportDriverTurn;
+use App\Agents\Commands\ReportRequestProgress;
 use App\Agents\Commands\ReportRuntimeActivity;
 use App\Agents\Commands\ReportRuntimeExit;
 use App\Agents\Commands\ReportRuntimeHeartbeat;
+use App\Agents\Commands\RunKeyScript;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\RuntimeReader;
@@ -30,6 +33,7 @@ use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Exceptions\DriverRequestRefused;
 use App\Agents\Exceptions\HostReportRefused;
+use App\Agents\Exceptions\KeyScriptRefused;
 use App\Agents\Exceptions\StaleProcessGeneration;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
@@ -42,6 +46,8 @@ use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\LaunchGrant;
 use App\Agents\Support\NativeTurns;
 use App\Agents\Support\OpenedRuntime;
+use App\Agents\Values\ScriptParameter;
+use App\Agents\Values\ScriptProgress;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use Carbon\CarbonImmutable;
@@ -302,6 +308,60 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame($opened->firstRequestId, $response->json('requests.0.requestId'));
     }
 
+    public function test_an_operator_appends_one_registered_key_script_request(): void
+    {
+        [, $opened] = $this->openRuntime();
+
+        $receipt = $this->asOwner($this->keyScript($opened, 'LoginMcp', ['server' => 'journal']));
+
+        $request = DriverRequest::query()->findOrFail($receipt->requestId);
+        $this->assertSame(DriverOperation::KeyScript, $request->operation);
+        $this->assertSame('LoginMcp', $request->script_id);
+        $this->assertSame(['server' => 'journal'], $request->script_parameters);
+    }
+
+    public function test_an_unregistered_script_or_an_extra_parameter_is_refused_before_acceptance(): void
+    {
+        [, $opened] = $this->openRuntime();
+        $before = DriverRequest::query()->count();
+
+        $refused = [['Format', ['server' => 'journal']], ['LoginMcp', ['server' => 'journal', 'shell' => 'rm']]];
+
+        foreach ($refused as [$name, $parameters]) {
+            try {
+                $this->asOwner($this->keyScript($opened, $name, $parameters));
+                $this->fail("{$name} with these parameters was accepted.");
+            } catch (KeyScriptRefused) {
+                $this->assertSame($before, DriverRequest::query()->count());
+            }
+        }
+    }
+
+    public function test_an_agent_cannot_run_a_key_script(): void
+    {
+        [, $opened] = $this->openRuntime();
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agentIdOf($opened)));
+
+        $this->expectException(UserActorRequired::class);
+        $this->app->make(CommandBus::class)->run($this->keyScript($opened, 'LoginMcp', ['server' => 'journal']));
+    }
+
+    public function test_a_progress_report_records_the_scripts_step_and_evidence(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $receipt = $this->asOwner($this->keyScript($opened, 'LoginMcp', ['server' => 'journal']));
+        $request = DriverRequest::query()->findOrFail($receipt->requestId);
+        $progress = new ScriptProgress(2, 7, 'menu login-method, stable');
+
+        $attempt = $request->attempt_version;
+        $this->asSystem(new ReportRequestProgress($host->hostId, $request->id, $attempt, RequestProgress::Applying, null, null, $progress));
+
+        $request->refresh();
+        $this->assertSame(2, $request->script_step);
+        $this->assertSame(7, $request->script_generation);
+        $this->assertSame('menu login-method, stable', $request->script_evidence);
+    }
+
     /**
      * @return array{EnrolledHost, OpenedRuntime}
      */
@@ -326,6 +386,21 @@ final class AgentDriverLedgerTest extends TestCase
     private function agentIdOf(OpenedRuntime $opened): string
     {
         return AgentSession::query()->findOrFail($opened->sessionId)->agent_id;
+    }
+
+    /**
+     * @param  array<string, string>  $parameters
+     */
+    private function keyScript(OpenedRuntime $opened, string $script, array $parameters): RunKeyScript
+    {
+        $key = (string) Str::ulid();
+        $named = array_map(
+            fn (string $name, string $value) => new ScriptParameter($name, $value),
+            array_keys($parameters),
+            $parameters,
+        );
+
+        return new RunKeyScript($this->agentIdOf($opened), $opened->sessionId, $key, $script, array_values($named));
     }
 
     private function deliver(OpenedRuntime $opened, string $key, string $message): DriverReceipt

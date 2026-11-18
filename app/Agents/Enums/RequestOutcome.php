@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Agents\Enums;
 
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
+
 /**
  * Why a driver request ended the way it did, beside its progress (doc 40, sections 14 and 21).
  */
+#[TypeScript]
 enum RequestOutcome: string
 {
     case NoWork = 'no_work';

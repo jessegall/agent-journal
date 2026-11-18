@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Sharing\Console;
 
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Support\ConsoleOwner;
 use App\Sharing\Commands\ConfigureShareGateway;
 use App\Sharing\Gateways\Support\GatewaySecrets;
-use App\Sharing\Support\ConsoleOwner;
 use Illuminate\Console\Command;
 
 /**

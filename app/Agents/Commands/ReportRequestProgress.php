@@ -8,6 +8,7 @@ use App\Actors\Enums\ActorType;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Handlers\ReportRequestProgressHandler;
+use App\Agents\Values\ScriptProgress;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
@@ -28,5 +29,6 @@ final readonly class ReportRequestProgress implements Command
         public RequestProgress $progress,
         public string|null $actualBinding,
         public RequestOutcome|null $outcome,
+        public ScriptProgress|null $script = null,
     ) {}
 }
