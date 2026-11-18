@@ -6,6 +6,7 @@ namespace Tests\Unit\Settings;
 
 use App\Settings\Declarations\SettingGroup;
 use App\Settings\Declarations\StringSetting;
+use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Exceptions\SettingHandleUnknown;
 use App\Settings\Support\CoreSettings;
@@ -30,6 +31,30 @@ final class SettingRegistryTest extends TestCase
         $this->assertSame(['Library', 'greeting'], [$registry->ownerOf($library->greeting)->owner, $registry->ownerOf($library->greeting)->key]);
         $this->assertSame('desk', $registry->ownerOf($library->desk)->key);
         $this->assertSame($library, $registry->definition('Library'));
+    }
+
+    public function test_a_group_key_used_by_a_plain_and_a_toggle_group_is_refused(): void
+    {
+        $this->expectException(SettingDeclarationInvalid::class);
+        $this->expectExceptionMessage('Library declares the settings group desk twice');
+
+        SettingRegistry::from(['Core' => new CoreSettings, 'Library' => new SettingsList([
+            SettingGroup::make('desk', 'Desk', []),
+            ToggleGroup::make('desk', 'Desk', true, []),
+        ])]);
+    }
+
+    public function test_a_setting_in_a_plain_and_a_toggle_group_is_refused(): void
+    {
+        $greeting = StringSetting::make('greeting', 'Greeting', 'Hi');
+
+        $this->expectException(SettingDeclarationInvalid::class);
+        $this->expectExceptionMessage('Library declares the setting greeting twice');
+
+        SettingRegistry::from(['Core' => new CoreSettings, 'Library' => new SettingsList([
+            SettingGroup::make('desk', 'Desk', [$greeting]),
+            ToggleGroup::make('door', 'Door', true, [$greeting]),
+        ])]);
     }
 
     public function test_a_setting_from_another_instance_is_unknown(): void

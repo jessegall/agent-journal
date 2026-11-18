@@ -70,4 +70,44 @@ final class SettingDeclarationInvalid extends LogicException
     {
         return new self("{$owner} declares more than {$limit} settings.");
     }
+
+    public static function badBounds(string $key): self
+    {
+        return new self("The setting {$key} declares a minimum above its maximum, or a bound past the largest exact number.");
+    }
+
+    public static function badDigits(string $key, int $mostDigits, int $mostFractionalDigits): self
+    {
+        return new self("The setting {$key} declares digits outside 1 to {$mostDigits}, fractional digits outside 0 to {$mostFractionalDigits}, or more fractional digits than digits.");
+    }
+
+    public static function badChoiceLabel(int $longest): self
+    {
+        return new self("A choice label is empty or longer than {$longest} characters.");
+    }
+
+    public static function badOptionCount(string $key, int $most): self
+    {
+        return new self("The setting {$key} declares no options, or more than {$most}.");
+    }
+
+    public static function optionTwice(string $key): self
+    {
+        return new self("The setting {$key} declares one option value twice.");
+    }
+
+    public static function defaultNotAnOption(string $key): self
+    {
+        return new self("The default of setting {$key} is not one of its options.");
+    }
+
+    public static function notABackedEnum(string $key): self
+    {
+        return new self("The setting {$key} names an enum without backing values.");
+    }
+
+    public static function mixedOptionTypes(string $key): self
+    {
+        return new self("The setting {$key} mixes text and whole-number options, or its default is of the other type.");
+    }
 }

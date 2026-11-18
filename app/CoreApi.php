@@ -221,14 +221,25 @@ use App\Records\Contracts\RecordProvider;
 use App\Records\Contracts\RecordReader;
 use App\Records\Data\RecordCard;
 use App\Records\Support\ProvidesModelRecords;
+use App\Settings\Contracts\ChoiceLabel;
+use App\Settings\Contracts\GroupDeclaration;
 use App\Settings\Contracts\ProvidesSettings;
 use App\Settings\Contracts\Setting;
 use App\Settings\Contracts\SettingsDefinition;
+use App\Settings\Declarations\BooleanSetting;
+use App\Settings\Declarations\ChoiceSetting;
+use App\Settings\Declarations\DecimalSetting;
+use App\Settings\Declarations\EnumSetting;
+use App\Settings\Declarations\IntegerSetting;
 use App\Settings\Declarations\SettingGroup;
 use App\Settings\Declarations\StringSetting;
+use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Enums\SettingType;
+use App\Settings\Exceptions\DecimalInvalid;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Exceptions\SettingHandleUnknown;
+use App\Settings\Values\Choice;
+use App\Settings\Values\Decimal;
 use App\Ui\Contracts\CountReader;
 use App\Ui\Contracts\NavigationChildren;
 use App\Ui\Contracts\PageOption;
@@ -326,6 +337,8 @@ final class CoreApi
                 ProvidesSettings::class,
                 Setting::class,
                 SettingsDefinition::class,
+                GroupDeclaration::class,
+                ChoiceLabel::class,
             )
             ->values(
                 RecordCard::class,
@@ -428,6 +441,14 @@ final class CoreApi
                 SlotContextType::class,
                 StringSetting::class,
                 SettingGroup::class,
+                ToggleGroup::class,
+                BooleanSetting::class,
+                IntegerSetting::class,
+                DecimalSetting::class,
+                Decimal::class,
+                ChoiceSetting::class,
+                EnumSetting::class,
+                Choice::class,
                 SettingType::class,
             )
             ->commands(
@@ -442,6 +463,7 @@ final class CoreApi
             ->exceptions(
                 SettingDeclarationInvalid::class,
                 SettingHandleUnknown::class,
+                DecimalInvalid::class,
                 CommandTransactionMissing::class,
                 AgentContextMissing::class,
                 ReadPolicyMissing::class,

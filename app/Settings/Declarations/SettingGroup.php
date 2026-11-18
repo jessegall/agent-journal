@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Declarations;
 
+use App\Settings\Contracts\GroupDeclaration;
 use App\Settings\Contracts\Setting;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Support\SettingKey;
@@ -11,7 +12,7 @@ use App\Settings\Support\SettingKey;
 /**
  * A named group of settings, always enabled.
  */
-final readonly class SettingGroup
+final readonly class SettingGroup implements GroupDeclaration
 {
     /**
      * @param  list<Setting>  $settings

@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Settings\Support;
 
+use App\Settings\Contracts\GroupDeclaration;
 use App\Settings\Contracts\Setting;
 use App\Settings\Contracts\SettingsDefinition;
-use App\Settings\Declarations\SettingGroup;
+use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Exceptions\SettingHandleUnknown;
 
@@ -25,8 +26,9 @@ final readonly class SettingRegistry
     /**
      * @param  array<string, SettingsDefinition>  $definitions
      * @param  array<int, SettingAddress>  $addresses  keyed by the object id of each registered setting and group
+     * @param  array<int, GroupDeclaration>  $groups  the group of each registered setting, keyed by the setting's object id
      */
-    private function __construct(private array $definitions, private array $addresses) {}
+    private function __construct(private array $definitions, private array $addresses, private array $groups) {}
 
     /**
      * @param  array<string, SettingsDefinition>  $definitions  keyed by owner name, Core first
@@ -42,6 +44,7 @@ final readonly class SettingRegistry
         $ownerNames = [];
         $definitionOwners = [];
         $addresses = [];
+        $groups = [];
 
         foreach ($definitions as $owner => $definition) {
             if (isset($ownerNames[strtolower($owner)])) {
@@ -56,9 +59,15 @@ final readonly class SettingRegistry
 
             $definitionOwners[$definition::class] = $owner;
             $addresses += self::addressesOf($owner, $definition);
+
+            foreach ($definition->groups() as $group) {
+                foreach ($group->settings() as $setting) {
+                    $groups[spl_object_id($setting)] = $group;
+                }
+            }
         }
 
-        return new self($definitions, $addresses);
+        return new self($definitions, $addresses, $groups);
     }
 
     /**
@@ -80,9 +89,29 @@ final readonly class SettingRegistry
     /**
      * @throws SettingHandleUnknown
      */
-    public function ownerOf(Setting|SettingGroup $handle): SettingAddress
+    public function ownerOf(Setting|GroupDeclaration $handle): SettingAddress
     {
         return $this->addresses[spl_object_id($handle)] ?? throw SettingHandleUnknown::for($handle::class, $handle->key());
+    }
+
+    /**
+     * The group a registered setting is declared in.
+     *
+     * @throws SettingHandleUnknown
+     */
+    public function groupOf(Setting $setting): GroupDeclaration
+    {
+        return $this->groups[spl_object_id($setting)] ?? throw SettingHandleUnknown::for($setting::class, $setting->key());
+    }
+
+    /**
+     * Whether a registered setting sits in a group that can be switched off, so it is read through its group.
+     *
+     * @throws SettingHandleUnknown
+     */
+    public function isInToggleGroup(Setting $setting): bool
+    {
+        return $this->groupOf($setting) instanceof ToggleGroup;
     }
 
     /**

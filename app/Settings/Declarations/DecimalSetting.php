@@ -1,0 +1,99 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Settings\Declarations;
+
+use App\Settings\Contracts\Setting;
+use App\Settings\Enums\SettingType;
+use App\Settings\Exceptions\DecimalInvalid;
+use App\Settings\Exceptions\SettingDeclarationInvalid;
+use App\Settings\Support\SettingKey;
+use App\Settings\Values\Decimal;
+
+/**
+ * An exact decimal setting with a fixed number of digits and fractional digits, and optional bounds. A value with
+ * more fractional digits is refused, never rounded.
+ */
+final readonly class DecimalSetting implements Setting
+{
+    public const int MOST_DIGITS = 30;
+
+    public const int MOST_FRACTIONAL_DIGITS = 12;
+
+    /**
+     * @param  int<1, max>  $precision
+     * @param  int<0, max>  $scale
+     */
+    private function __construct(
+        public string $key,
+        public string $label,
+        public Decimal $default,
+        public int $precision,
+        public int $scale,
+        public Decimal|null $minimum,
+        public Decimal|null $maximum,
+    ) {}
+
+    /**
+     * @throws SettingDeclarationInvalid
+     */
+    public static function make(string $key, string $label, Decimal $default, int $precision, int $scale, Decimal|null $minimum = null, Decimal|null $maximum = null): self
+    {
+        SettingKey::require($key, $label);
+
+        if ($precision < 1 || $precision > self::MOST_DIGITS || $scale < 0 || $scale > self::MOST_FRACTIONAL_DIGITS || $scale > $precision) {
+            throw SettingDeclarationInvalid::badDigits($key, self::MOST_DIGITS, self::MOST_FRACTIONAL_DIGITS);
+        }
+
+        if ($minimum !== null && $maximum !== null && $minimum->isGreaterThan($maximum)) {
+            throw SettingDeclarationInvalid::badBounds($key);
+        }
+
+        $setting = new self($key, $label, $default, $precision, $scale, $minimum, $maximum);
+
+        try {
+            $default = $setting->normalized($default);
+        } catch (DecimalInvalid) {
+            throw SettingDeclarationInvalid::defaultOutOfBounds($key);
+        }
+
+        return new self($key, $label, $default, $precision, $scale, $minimum, $maximum);
+    }
+
+    public function key(): string
+    {
+        return $this->key;
+    }
+
+    public function label(): string
+    {
+        return $this->label;
+    }
+
+    public function type(): SettingType
+    {
+        return SettingType::Decimal;
+    }
+
+    /**
+     * The value written at this setting's scale, refused when it has more fractional digits, more digits than the
+     * precision allows, or lies outside the bounds.
+     *
+     * @throws DecimalInvalid
+     */
+    public function normalized(Decimal $value): Decimal
+    {
+        $value = $value->toScale($this->scale);
+
+        if ($value->precision() > $this->precision) {
+            throw DecimalInvalid::tooManyDigits($this->precision);
+        }
+
+        if ($this->minimum !== null && $value->isLessThan($this->minimum) || $this->maximum !== null && $value->isGreaterThan($this->maximum)) {
+            throw DecimalInvalid::outOfBounds();
+        }
+
+        return $value;
+    }
+}

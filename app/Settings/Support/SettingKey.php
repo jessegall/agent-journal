@@ -29,8 +29,16 @@ final class SettingKey
             throw SettingDeclarationInvalid::emptyLabel($key);
         }
 
-        if (mb_strlen($label) > self::LABEL_CHARACTERS) {
+        if (! self::labelFits($label)) {
             throw SettingDeclarationInvalid::labelTooLong($key, self::LABEL_CHARACTERS);
         }
+    }
+
+    /**
+     * Whether a label is not empty and has at most LABEL_CHARACTERS.
+     */
+    public static function labelFits(string $label): bool
+    {
+        return trim($label) !== '' && mb_strlen($label) <= self::LABEL_CHARACTERS;
     }
 }
