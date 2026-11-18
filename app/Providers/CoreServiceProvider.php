@@ -8,6 +8,7 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\LaunchBypass;
 use App\Agents\Models\LaunchCredential;
+use App\Comments\Models\Comment;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\HookCall;
 use App\Links\Models\Link;
@@ -21,7 +22,7 @@ use Illuminate\Support\ServiceProvider;
  */
 final class CoreServiceProvider extends ServiceProvider
 {
-    private const array AREAS = ['Agents', 'Assignments', 'Hooks', 'Links', 'Numbers', 'Settings', 'Web'];
+    private const array AREAS = ['Agents', 'Assignments', 'Comments', 'Hooks', 'Links', 'Numbers', 'Settings', 'Web'];
 
     public function boot(LinkTypeRegistry $links): void
     {
@@ -33,6 +34,7 @@ final class CoreServiceProvider extends ServiceProvider
             'core.agent-stack' => AgentStackRow::class,
             'core.hook-call' => HookCall::class,
             'core.link' => Link::class,
+            'core.comment' => Comment::class,
             'core.settings-record' => SettingsRecord::class,
         ]);
 

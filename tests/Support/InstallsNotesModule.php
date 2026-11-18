@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Support;
+
+use App\Domains\Support\DomainEntry;
+use App\Numbers\Support\NumberedTypeRegistry;
+use Tests\Fixtures\Modules\Notes\NotesDomain;
+use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
+
+/**
+ * Installs the Notes fixture module as a package would, after the application booted: its provider, its domain
+ * declarations and the check of the models it numbers.
+ */
+trait InstallsNotesModule
+{
+    protected function installNotesModule(): void
+    {
+        $this->app->register(NotesServiceProvider::class);
+        DomainEntry::fromClass(NotesDomain::class)->boot($this->app);
+        $this->app->make(NumberedTypeRegistry::class)->checkDeclarations();
+    }
+}

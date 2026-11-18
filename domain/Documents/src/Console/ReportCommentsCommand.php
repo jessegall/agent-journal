@@ -12,14 +12,14 @@ final class ReportCommentsCommand extends Command
 {
     use PrintsComments;
 
-    protected $signature = 'report:comments {number} {--page=1}';
+    protected $signature = 'report:comments {number} {--after=}';
 
-    protected $description = 'List the comments users wrote on a report, oldest first';
+    protected $description = 'List the comments on a report, oldest first';
 
     protected $help = 'Example: php artisan report:comments 7';
 
     public function handle(AgentRequestSender $journal): int
     {
-        return $this->showComments($journal, '/agent/reports/comments');
+        return $this->showComments($journal, 'report');
     }
 }

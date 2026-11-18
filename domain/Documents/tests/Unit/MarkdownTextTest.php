@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Tests\Unit;
 
-use Domain\Documents\Exceptions\MarkdownInvalid;
-use Domain\Documents\Support\MarkdownText;
+use App\Text\Exceptions\MarkdownInvalid;
+use App\Text\Support\MarkdownText;
 use PHPUnit\Framework\TestCase;
 
 /**

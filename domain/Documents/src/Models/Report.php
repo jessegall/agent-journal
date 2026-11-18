@@ -6,11 +6,17 @@ namespace Domain\Documents\Models;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
+use App\Comments\Contracts\Commentable;
+use App\Comments\Support\HasComments;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Text\Contracts\TextContent;
+use App\Text\Exceptions\TextVersionUnavailable;
+use App\Text\Support\MarkdownText;
+use App\Text\Values\TextVersion;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\DockCard;
 use Domain\Documents\Data\ReportCard;
@@ -20,7 +26,6 @@ use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Models\Concerns\CreatedWithAttention;
 use Domain\Documents\Models\Concerns\SearchesText;
 use Domain\Documents\Models\Concerns\Settles;
-use Domain\Documents\Support\MarkdownText;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -44,9 +49,9 @@ use Illuminate\Support\Carbon;
  * @property AttentionState $attention
  */
 #[Fillable(['title', 'abstract', 'body', 'creator_type', 'creator_id', 'origin_agent_id', 'origin_session_id', 'filed_at'])]
-final class Report extends Model implements Numbered, ReadableModel
+final class Report extends Model implements Commentable, Numbered, ReadableModel, TextContent
 {
-    use BoundedReads, CreatedWithAttention, HasNumber, HasUlids, Linkable, SearchesText, Settles;
+    use BoundedReads, CreatedWithAttention, HasComments, HasNumber, HasUlids, Linkable, SearchesText, Settles;
 
     public const string LINK_TYPE = 'documents.report';
 
@@ -138,5 +143,17 @@ final class Report extends Model implements Numbered, ReadableModel
     protected function sharedPublished(Builder $query): void
     {
         $query->whereNotNull('filed_at');
+    }
+
+    /**
+     * A report's text, filed once: version 1 is its only version.
+     */
+    public function textVersion(string|null $version = null): TextVersion
+    {
+        if ($version !== null && $version !== '1') {
+            throw TextVersionUnavailable::named($version);
+        }
+
+        return TextVersion::ofMarkdown('1', 'Report', $this->body);
     }
 }

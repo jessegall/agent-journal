@@ -5,13 +5,26 @@ declare(strict_types=1);
 namespace Domain\Documents\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\UserActorRequired;
+use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
+use App\Agents\Models\Agent;
+use App\Assignments\Support\Page;
+use App\Assignments\Support\RecordIdentity;
 use App\Bus\Contracts\CommandBus;
+use App\Comments\Commands\PostComment;
+use App\Comments\Commands\PostTextComment;
+use App\Comments\Contracts\CommentReader;
+use App\Comments\Data\RecordCommentView;
+use App\Comments\Data\TextCommentView;
+use App\Comments\Enums\WholeRecord;
+use App\Numbers\Support\RecordReference;
+use App\Records\Contracts\RecordReader;
+use App\Text\Exceptions\AnchorMismatch;
+use App\Text\Support\TextSelection;
+use App\Text\Values\TextRange;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Commands\CloseDocument;
-use Domain\Documents\Commands\CommentDocument;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
 use Domain\Documents\Commands\OpenDocument;
@@ -19,27 +32,26 @@ use Domain\Documents\Commands\ReplaceDocumentText;
 use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Contracts\ReportReader;
 use Domain\Documents\Data\DocumentFilters;
-use Domain\Documents\Exceptions\AnchorMismatch;
 use Domain\Documents\Exceptions\StaleRead;
-use Domain\Documents\Models\RecordComment;
-use Domain\Documents\Support\CommentAnchor;
-use Domain\Documents\Support\TextSelection;
 use Domain\Documents\Tests\TestCase;
+use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 
 /**
- * Users comment on records, in general or on an exact quote of a revision; agents read records a bounded part at a
+ * Users and agents comment on records through Core, on the whole record or on an exact quote of a revision; agents read records a bounded part at a
  * time and search the library literally.
  */
 final class CommentsAndReadsTest extends TestCase
 {
     use CommitsHookRows;
+    use StartsAgentRequests;
 
     /**
      * The bus commits these commands for real, so these tables are emptied around each test.
      */
-    private const array TABLES = ['record_comments', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'number_groups'];
+    private const array TABLES = ['comments', 'agents', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'number_groups'];
 
     protected function setUp(): void
     {
@@ -49,15 +61,17 @@ final class CommentsAndReadsTest extends TestCase
         $this->bus()->run(new CreateDocument('Design', 'What we build', "# Goal\nShip the editor.\n\n## Risks\nNone.\n"));
     }
 
-    public function test_a_user_comments_generally_and_on_an_exact_quote_without_changing_the_document(): void
+    public function test_a_user_comments_on_the_whole_document_and_on_an_exact_quote_without_changing_it(): void
     {
-        $this->bus()->run(new CommentDocument(1, 'Looks right.'));
-        $this->bus()->run(new CommentDocument(1, 'Which editor?', new CommentAnchor(1, 'the editor', 2, 2, 5, 15)));
+        $this->comment('Looks right.', WholeRecord::Record);
+        $this->comment('Which editor?', TextRange::quote('1', 2, 2, 'the editor', 5, 15));
 
-        $comments = $this->documents()->comments(1, 1);
+        $items = $this->comments()->list($this->document(), new Page)->items;
 
-        $this->assertSame(['Looks right.', 'Which editor?'], array_map(fn ($comment) => $comment->body, $comments));
-        $this->assertSame(['1', 'the editor'], [$comments[1]->revision, $comments[1]->quote]);
+        $this->assertSame(['Looks right.', 'Which editor?'], array_map(fn ($item) => $item->comment->body, $items));
+        $this->assertInstanceOf(RecordCommentView::class, $items[0]);
+        $this->assertInstanceOf(TextCommentView::class, $items[1]);
+        $this->assertSame(['1', 'the editor'], [$items[1]->anchor->versionId, $items[1]->anchor->quote]);
         $this->assertSame('1', $this->documents()->show(1)->revision);
     }
 
@@ -66,30 +80,29 @@ final class CommentsAndReadsTest extends TestCase
         $this->expectException(AnchorMismatch::class);
 
         try {
-            $this->bus()->run(new CommentDocument(1, 'Hm.', new CommentAnchor(1, 'the plan', 2, 2, 5, 13)));
+            $this->comment('Hm.', TextRange::quote('1', 2, 2, 'the plan', 5, 13));
         } finally {
-            $this->assertSame(0, RecordComment::query()->count());
+            $this->assertSame([], $this->comments()->list($this->document(), new Page)->items);
         }
     }
 
-    public function test_an_agent_cannot_comment(): void
+    public function test_an_agent_comments_as_itself(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(9)));
+        $agent = Agent::query()->create(['name' => 'Commenter', 'role' => 'hooks.read_only_helper_ready']);
+        $this->startRequestAs($agent->id, TestIds::of(9));
 
-        $this->expectException(UserActorRequired::class);
+        $this->comment('From an agent.', WholeRecord::Record);
 
-        try {
-            $this->bus()->run(new CommentDocument(1, 'From an agent.'));
-        } finally {
-            $this->assertSame(0, RecordComment::query()->count());
-        }
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)));
+        $comment = $this->comments()->list($this->document(), new Page)->items[0]->comment;
+        $this->assertSame([ActorType::Agent, $agent->id], [$comment->authorType, $comment->authorId]);
     }
 
     public function test_a_comment_with_a_script_shows_as_text(): void
     {
-        $this->bus()->run(new CommentDocument(1, '<script>alert(1)</script>'));
+        $this->comment('<script>alert(1)</script>', WholeRecord::Record);
 
-        $this->assertStringNotContainsString('<script>', $this->documents()->comments(1, 1)[0]->bodyHtml);
+        $this->assertStringNotContainsString('<script>', $this->comments()->list($this->document(), new Page)->items[0]->comment->bodyHtml);
     }
 
     public function test_a_read_without_flags_gives_the_outline_and_a_long_section_is_cut_with_its_continuation(): void
@@ -164,5 +177,20 @@ final class CommentsAndReadsTest extends TestCase
     private function bus(): CommandBus
     {
         return $this->app->make(CommandBus::class);
+    }
+
+    private function comment(string $body, WholeRecord|TextRange $subject): void
+    {
+        $this->bus()->run($subject instanceof TextRange ? new PostTextComment($this->document(), $body, $subject, (string) Str::uuid()) : new PostComment($this->document(), $body, (string) Str::uuid()));
+    }
+
+    private function document(): RecordIdentity
+    {
+        return $this->app->make(RecordReader::class)->identify(RecordReference::of('doc', 1));
+    }
+
+    private function comments(): CommentReader
+    {
+        return $this->app->make(CommentReader::class);
     }
 }

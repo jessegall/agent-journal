@@ -113,6 +113,24 @@ use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
+use App\Comments\Commands\PostComment;
+use App\Comments\Commands\PostTextComment;
+use App\Comments\Contracts\Commentable;
+use App\Comments\Contracts\CommentReader;
+use App\Comments\Data\CommentDetails;
+use App\Comments\Data\CommentList;
+use App\Comments\Data\RecordCommentLocation;
+use App\Comments\Data\RecordCommentView;
+use App\Comments\Data\TextCommentLocation;
+use App\Comments\Data\TextCommentView;
+use App\Comments\Enums\CommentType;
+use App\Comments\Enums\WholeRecord;
+use App\Comments\Events\CommentPosted;
+use App\Comments\Exceptions\CommentUnavailable;
+use App\Comments\Exceptions\SubmissionKeyConflict;
+use App\Comments\Exceptions\TargetHasNoText;
+use App\Comments\Exceptions\TargetNotCommentable;
+use App\Comments\Support\HasComments;
 use App\Contracts\CommandHandler;
 use App\Contracts\CommandRefusal;
 use App\Contracts\Event;
@@ -246,6 +264,25 @@ use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Exceptions\SettingHandleUnknown;
 use App\Settings\Values\Choice;
 use App\Settings\Values\Decimal;
+use App\Text\Contracts\TextContent;
+use App\Text\Enums\TextAnchorType;
+use App\Text\Exceptions\AnchorMismatch;
+use App\Text\Exceptions\ContentMissing;
+use App\Text\Exceptions\ContentTooLarge;
+use App\Text\Exceptions\IncompleteTextAnchor;
+use App\Text\Exceptions\InvalidTextRange;
+use App\Text\Exceptions\MarkdownInvalid;
+use App\Text\Exceptions\SectionMissing;
+use App\Text\Exceptions\TextMatchInvalid;
+use App\Text\Exceptions\TextVersionUnavailable;
+use App\Text\Support\MarkdownText;
+use App\Text\Support\Section as TextSection;
+use App\Text\Support\TextPart;
+use App\Text\Support\TextReading;
+use App\Text\Support\TextSelection;
+use App\Text\Values\TextAnchor;
+use App\Text\Values\TextRange;
+use App\Text\Values\TextVersion;
 use App\Ui\Contracts\CountReader;
 use App\Ui\Contracts\NavigationChildren;
 use App\Ui\Contracts\PageOption;
@@ -284,7 +321,7 @@ final class CoreApi
     public static function exports(): Exports
     {
         return Exports::make()
-            ->events(ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class)
+            ->events(CommentPosted::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class)
             ->contracts(
                 RecordProvider::class,
                 RecordReader::class,
@@ -307,6 +344,9 @@ final class CoreApi
                 StackCleanup::class,
                 CurrentState::class,
                 WorkedOnStack::class,
+                TextContent::class,
+                Commentable::class,
+                CommentReader::class,
                 ShellCommandParser::class,
                 HookAnswerer::class,
                 HookInput::class,
@@ -372,6 +412,23 @@ final class CoreApi
                 TransitionType::class,
                 StateReference::class,
                 LifecycleContext::class,
+                TextSection::class,
+                TextPart::class,
+                TextSelection::class,
+                MarkdownText::class,
+                TextReading::class,
+                TextVersion::class,
+                TextRange::class,
+                TextAnchor::class,
+                TextAnchorType::class,
+                WholeRecord::class,
+                CommentType::class,
+                CommentDetails::class,
+                RecordCommentView::class,
+                TextCommentView::class,
+                RecordCommentLocation::class,
+                TextCommentLocation::class,
+                CommentList::class,
                 NoSubject::class,
                 SubjectReference::class,
                 ContextCompacted::class,
@@ -464,6 +521,8 @@ final class CoreApi
                 SettingType::class,
             )
             ->commands(
+                PostComment::class,
+                PostTextComment::class,
                 RetireAgent::class,
                 InstallNumbers::class,
                 LinkRecords::class,
@@ -473,6 +532,19 @@ final class CoreApi
                 UnassignRecord::class,
             )
             ->exceptions(
+                ContentMissing::class,
+                ContentTooLarge::class,
+                MarkdownInvalid::class,
+                SectionMissing::class,
+                TextMatchInvalid::class,
+                AnchorMismatch::class,
+                InvalidTextRange::class,
+                TextVersionUnavailable::class,
+                IncompleteTextAnchor::class,
+                TargetNotCommentable::class,
+                TargetHasNoText::class,
+                SubmissionKeyConflict::class,
+                CommentUnavailable::class,
                 SettingDeclarationInvalid::class,
                 SettingHandleUnknown::class,
                 DecimalInvalid::class,
@@ -543,6 +615,7 @@ final class CoreApi
                 NestedCommandFailureIgnored::class,
             )
             ->support(
+                HasComments::class,
                 BoundedReads::class,
                 ReadBuilder::class,
                 CountsLoads::class,

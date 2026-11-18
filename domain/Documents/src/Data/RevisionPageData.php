@@ -8,7 +8,7 @@ use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
- * One revision of a document on its own page, read-only, with the quote a comment points at to highlight.
+ * One revision of a document on its own page, read-only.
  */
 #[TypeScript]
 final class RevisionPageData extends Data
@@ -20,6 +20,5 @@ final class RevisionPageData extends Data
         public readonly string $abstract,
         public readonly string $bodyHtml,
         public readonly bool $historical,
-        public readonly string|null $highlight,
     ) {}
 }

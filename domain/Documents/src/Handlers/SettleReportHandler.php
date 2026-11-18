@@ -10,7 +10,7 @@ use Domain\Documents\Api\Events\RecordSettled;
 use Domain\Documents\Commands\SettleReport;
 use Domain\Documents\Exceptions\ReportMissing;
 use Domain\Documents\Models\Report;
-use Domain\Documents\Support\MarkdownText;
+use Domain\Documents\Support\RecordFields;
 use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class SettleReportHandler implements CommandHandler
@@ -19,7 +19,7 @@ final readonly class SettleReportHandler implements CommandHandler
 
     public function handle(SettleReport $command): void
     {
-        $reason = MarkdownText::settlementReason($command->reason);
+        $reason = RecordFields::settlementReason($command->reason);
         $report = Report::query()->where('number', $command->reportNumber)->lockForUpdate()->first() ?? throw ReportMissing::numbered($command->reportNumber);
 
         if ($report->settle($this->actors->actor(), $reason, null)) {

@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Data;
 
+use App\Comments\Data\CommentList;
 use App\Records\Data\RecordCard;
+use App\Text\Support\MarkdownText;
 use Domain\Documents\Enums\AttentionState;
-use Domain\Documents\Support\MarkdownText;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -19,7 +20,6 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class RecordPageData extends Data
 {
     /**
-     * @param  list<CommentCard>  $comments
      * @param  list<SettlementCard>  $settlements
      * @param  list<RecordCard>  $links
      * @param  list<DockSession>  $sessions
@@ -30,8 +30,7 @@ final class RecordPageData extends Data
         public readonly string $abstract,
         public readonly string $body,
         public readonly string $bodyHtml,
-        #[DataCollectionOf(CommentCard::class)]
-        public readonly array $comments,
+        public readonly CommentList $comments,
         public readonly AttentionState $attention,
         #[DataCollectionOf(SettlementCard::class)]
         public readonly array $settlements,
@@ -43,12 +42,11 @@ final class RecordPageData extends Data
     ) {}
 
     /**
-     * @param  list<CommentCard>  $comments
      * @param  list<SettlementCard>  $settlements
      * @param  list<RecordCard>  $links
      * @param  list<DockSession>  $sessions
      */
-    public static function fromDocumentView(DocumentView $document, array $comments, array $settlements, array $links, array $sessions): self
+    public static function fromDocumentView(DocumentView $document, CommentList $comments, array $settlements, array $links, array $sessions): self
     {
         return self::from([
             'label' => "doc {$document->number}",
@@ -66,12 +64,11 @@ final class RecordPageData extends Data
     }
 
     /**
-     * @param  list<CommentCard>  $comments
      * @param  list<SettlementCard>  $settlements
      * @param  list<RecordCard>  $links
      * @param  list<DockSession>  $sessions
      */
-    public static function fromReportView(ReportView $report, array $comments, array $settlements, array $links, array $sessions): self
+    public static function fromReportView(ReportView $report, CommentList $comments, array $settlements, array $links, array $sessions): self
     {
         return self::from([
             'label' => "report {$report->number}",

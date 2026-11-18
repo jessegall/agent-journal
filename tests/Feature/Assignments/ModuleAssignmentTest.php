@@ -12,17 +12,16 @@ use App\Assignments\Contracts\AssignmentReader;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\RecordUnavailable;
 use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Support\RecordIdentity;
 use App\Bus\Contracts\CommandBus;
-use App\Domains\Support\DomainEntry;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Modules\Notes\Models\Note;
-use Tests\Fixtures\Modules\Notes\NotesDomain;
-use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\InstallsNotesModule;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -35,6 +34,7 @@ use Tests\TestCase;
 final class ModuleAssignmentTest extends TestCase
 {
     use CommitsHookRows;
+    use InstallsNotesModule;
     use StartsAgentRequests;
 
     private const array TABLES = ['users', 'agents', 'assignments'];
@@ -56,8 +56,6 @@ final class ModuleAssignmentTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->main = Agent::query()->create(['name' => 'Main', 'role' => 'hooks.main_ready']);
         $this->writer = Agent::query()->create(['name' => 'Writer', 'role' => 'hooks.read_only_helper_ready']);
-        $this->note = new Note(['text' => 'Check the lock order']);
-        $this->note->saveFor($this->writer->id);
     }
 
     protected function tearDown(): void
@@ -101,10 +99,11 @@ final class ModuleAssignmentTest extends TestCase
 
     public function test_without_the_module_its_records_cannot_be_read_but_retirement_still_releases_them(): void
     {
-        AssignmentRecord::query()->insert(['id' => strtolower((string) Str::ulid()), 'record_type' => Note::LINK_TYPE, 'record_id' => $this->note->id, 'holder_type' => 'agent', 'holder_id' => $this->writer->id, 'created_at' => now(), 'updated_at' => now()]);
+        $noteId = strtolower((string) Str::ulid());
+        AssignmentRecord::query()->insert(['id' => strtolower((string) Str::ulid()), 'record_type' => Note::LINK_TYPE, 'record_id' => $noteId, 'holder_type' => 'agent', 'holder_id' => $this->writer->id, 'created_at' => now(), 'updated_at' => now()]);
         $this->startUserRequestAs($this->owner->id);
 
-        $this->assertThrows(fn () => $this->app->make(AssignmentReader::class)->assignmentsFor([$this->note->assignmentIdentity()]), AssignmentTypeUnavailable::class);
+        $this->assertThrows(fn () => $this->app->make(AssignmentReader::class)->assignmentsFor([new RecordIdentity(Note::LINK_TYPE, $noteId)]), AssignmentTypeUnavailable::class);
 
         $result = $this->app->make(CommandBus::class)->run(new RetireAgent($this->writer->id));
 
@@ -117,8 +116,9 @@ final class ModuleAssignmentTest extends TestCase
      */
     private function installNotes(): void
     {
-        $this->app->register(NotesServiceProvider::class);
-        DomainEntry::fromClass(NotesDomain::class)->boot($this->app);
+        $this->installNotesModule();
+        $this->note = new Note(['text' => 'Check the lock order']);
+        $this->note->saveFor($this->writer->id);
     }
 
     /**

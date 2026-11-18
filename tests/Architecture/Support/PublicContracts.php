@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
+use App\Comments\Models\Comment;
+use App\Comments\Support\HasComments;
 use App\Exports\Support\Exports;
 use App\Links\Support\LinkAccess;
 use App\Reads\Support\ReadBuilder;
@@ -25,9 +27,17 @@ use Throwable;
 final readonly class PublicContracts
 {
     /**
-     * Core's one Eloquent adapter: it holds the model whose links it reads and hands back the caller's own query.
+     * Core's Eloquent adapters: LinkAccess holds the model whose links it reads and hands back the caller's own query,
+     * ReadBuilder bounds a domain's reads, and HasComments gives a Commentable model its comments relation, while
+     * domains read comment content only through CommentReader.
      */
-    private const array CORE_ELOQUENT_ADAPTERS = [LinkAccess::class, ReadBuilder::class];
+    private const array CORE_ELOQUENT_ADAPTERS = [LinkAccess::class, ReadBuilder::class, HasComments::class];
+
+    /**
+     * The one member allowed to name a private Core model in its signature: the comments relation that HasComments
+     * supplies returns the private Comment model.
+     */
+    private const array PRIVATE_RELATION_RESULTS = [HasComments::class => ['HasComments::comments()', Comment::class]];
 
     /**
      * @param  list<PublicOwner>  $owners
@@ -87,7 +97,7 @@ final readonly class PublicContracts
         foreach ($this->signatureNamesOf($class) as $path) {
             $leakOwner = $this->privateOwnerOf($path->name, $owner, $export);
 
-            if ($leakOwner !== null) {
+            if ($leakOwner !== null && ! self::isAllowedRelationResult($export, $path->member, $path->name)) {
                 $violations[] = new Violation($path->file, $path->line, $path->name, $owner->name, $leakOwner, ViolationType::PrivateTypeInSignature, $path->member);
             }
         }
@@ -303,5 +313,13 @@ final readonly class PublicContracts
     private static function exists(string $name): bool
     {
         return class_exists($name) || interface_exists($name) || enum_exists($name) || trait_exists($name);
+    }
+
+    /**
+     * Whether a private type in a signature is the one relation result the comments trait may name.
+     */
+    private static function isAllowedRelationResult(string $export, string $member, string $name): bool
+    {
+        return (self::PRIVATE_RELATION_RESULTS[$export] ?? null) === [$member, $name];
     }
 }

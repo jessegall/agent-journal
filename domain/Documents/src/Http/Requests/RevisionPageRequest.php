@@ -8,7 +8,7 @@ use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * The document and revision a revision page shows, and the quote to highlight in it.
+ * The document and revision a revision page shows.
  */
 final class RevisionPageRequest extends FormRequest
 {
@@ -19,7 +19,7 @@ final class RevisionPageRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['quote' => ['nullable', 'string', 'max:16384']];
+        return [];
     }
 
     public function documentNumber(): int
@@ -30,13 +30,5 @@ final class RevisionPageRequest extends FormRequest
     public function revisionNumber(): int
     {
         return $this->routeNumber('revision');
-    }
-
-    /**
-     * The quote to highlight, when the page was opened from an anchored comment.
-     */
-    public function quote(): string|null
-    {
-        return $this->filled('quote') ? $this->string('quote')->toString() : null;
     }
 }
