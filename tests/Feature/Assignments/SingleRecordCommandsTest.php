@@ -45,7 +45,7 @@ final class SingleRecordCommandsTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->main = TestLaunch::start('hooks.main_ready');
         $this->helper = TestLaunch::start('hooks.read_only_helper_ready');
-        $this->task = Task::query()->create(['title' => 'Write the commands']);
+        $this->task = Task::factory()->create(['title' => 'Write the commands']);
     }
 
     public function test_a_main_agent_reads_the_reference_and_deliberately_changes_the_work(): void
@@ -71,7 +71,7 @@ final class SingleRecordCommandsTest extends TestCase
 
     public function test_the_admitted_user_assigns_over_the_web_as_itself_without_an_agent_session(): void
     {
-        $other = Task::query()->create(['title' => 'For an agent']);
+        $other = Task::factory()->create(['title' => 'For an agent']);
         $sessions = AgentSession::query()->withoutGlobalScopes()->count();
 
         $this->actingAs($this->owner)->postJson('/assignments/assign', ['recordType' => 'tasks.task', 'recordId' => $this->task->id, 'recipientType' => 'user', 'recipientId' => $this->owner->id])

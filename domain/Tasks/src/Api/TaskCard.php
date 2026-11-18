@@ -6,16 +6,22 @@ namespace Domain\Tasks\Api;
 
 use App\Assignments\Support\AssignmentHolder;
 use Domain\Tasks\Enums\TaskState;
+use PhpOption\Option;
 
 /**
- * One task as a list of held tasks shows it: the task, its state, and who holds it with the assignment reference.
+ * One task as a task list shows it: the task, its state, who holds it with the assignment reference, if anyone, and
+ * who works on its run, if anyone.
  */
 final readonly class TaskCard
 {
+    /**
+     * @param  Option<AssignmentHolder>  $holder
+     */
     public function __construct(
         public string $id,
         public string $title,
         public TaskState $state,
-        public AssignmentHolder $holder,
+        public Option $holder,
+        public TaskExecution|null $execution,
     ) {}
 }

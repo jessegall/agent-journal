@@ -23,6 +23,7 @@ final class AssignedTaskCardData extends Data
         public readonly string $title,
         public readonly TaskState $state,
         public readonly AssignmentData $holder,
+        public readonly TaskExecutionData|null $execution = null,
     ) {}
 
     public static function fromCard(TaskCard $card): self
@@ -31,7 +32,8 @@ final class AssignedTaskCardData extends Data
             'id' => $card->id,
             'title' => $card->title,
             'state' => $card->state,
-            'holder' => AssignmentData::ofHolder($card->holder),
+            'holder' => AssignmentData::ofHolder($card->holder->get()),
+            'execution' => $card->execution === null ? null : TaskExecutionData::fromExecution($card->execution),
         ]);
     }
 }

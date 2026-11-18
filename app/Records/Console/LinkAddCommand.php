@@ -12,7 +12,7 @@ final class LinkAddCommand extends Command
 {
     use SendsSignedCalls;
 
-    protected $signature = 'link:add {source : Such as "doc 12"} {target : Such as "task 7"} {--json}';
+    protected $signature = 'link:add {source : Such as "doc 12"} {target : Such as "task 7"} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Link two records, such as doc 12 and task 7';
 
@@ -20,6 +20,6 @@ final class LinkAddCommand extends Command
 
     public function handle(AgentRequestSender $journal): int
     {
-        return $this->sendAndPrint($journal, '/agent/links/add', ['source' => (string) $this->argument('source'), 'target' => (string) $this->argument('target')]);
+        return $this->sendWriteAndPrint($journal, '/agent/links/add', ['source' => (string) $this->argument('source'), 'target' => (string) $this->argument('target')]);
     }
 }

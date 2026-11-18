@@ -34,6 +34,7 @@ final readonly class AssignedTasks implements AssignedTaskReader
         private AssigneeReader $assignees,
         private CurrentSession $session,
         private CurrentState $currentState,
+        private TaskExecutions $executions,
     ) {}
 
     public function currentForCaller(): Option
@@ -57,9 +58,10 @@ final readonly class AssignedTasks implements AssignedTaskReader
             $total = $matching->clone()->count();
             $tasks = $matching->orderBy('id')->forPage($filters->page->number, $filters->page->size)->get();
             $holders = $this->assignees->holdersOf($this->assignments->assignmentsFor(array_values($tasks->map(fn (Task $task) => $task->assignmentIdentity())->all())));
+            $executions = $this->executions->of($tasks);
 
             return new TaskList(
-                array_values($tasks->map(fn (Task $task) => new TaskCard($task->id, $task->title, $task->state, $holders->forRecord($task->assignmentIdentity())->get()))->all()),
+                array_values($tasks->map(fn (Task $task) => new TaskCard($task->id, $task->title, $task->state, $holders->forRecord($task->assignmentIdentity()), $executions[$task->id]))->all()),
                 $filters->page,
                 $total,
             );

@@ -40,7 +40,7 @@ final class ReviewRuleTest extends TestCase
 
         Event::fake([RuleApproved::class, RuleDenied::class]);
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
-        $this->proposed = Rule::proposed('No phase waits on the user.');
+        $this->proposed = Rule::proposed('No phase waits on the user.', 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)));
     }
 
     public function test_a_proposed_rule_does_not_hold_until_approved_once(): void

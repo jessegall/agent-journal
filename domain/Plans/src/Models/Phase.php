@@ -11,6 +11,7 @@ use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
+use Domain\Plans\Exceptions\PhaseRevisionChanged;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -28,10 +29,11 @@ use Illuminate\Support\Carbon;
  * @property string $title
  * @property string $number_group_id
  * @property int $number
+ * @property int $revision
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['title'])]
+#[Fillable(['title', 'revision'])]
 final class Phase extends Model implements Assignable, Numbered, ReadableModel
 {
     use BoundedReads;
@@ -47,7 +49,7 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
      */
     protected function casts(): array
     {
-        return ['number' => 'integer'];
+        return ['number' => 'integer', 'revision' => 'integer'];
     }
 
     /**
@@ -67,6 +69,27 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
     public function addTasks(array $taskIds): void
     {
         $this->addTasksUnderPlanLock($taskIds);
+    }
+
+    /**
+     * Adds the tasks only when the phase is still at the revision the caller read, and makes a new revision of it.
+     *
+     * @param  list<string>  $taskIds
+     *
+     * @throws PhaseRevisionChanged
+     */
+    public function addTasksAtRevision(int $expectedRevision, array $taskIds): void
+    {
+        Plan::lockStructure($this->plan_id);
+        $this->refresh();
+
+        if ($this->revision !== $expectedRevision) {
+            throw PhaseRevisionChanged::for($this->number, $expectedRevision, $this->revision);
+        }
+
+        $this->addTasksUnderPlanLock($taskIds);
+        $this->revision++;
+        $this->save();
     }
 
     /**

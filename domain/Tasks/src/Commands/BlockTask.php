@@ -9,7 +9,7 @@ use App\Bus\Contracts\Command;
 use Domain\Tasks\Handlers\BlockTaskHandler;
 
 /**
- * Blocks a task until what it waits on arrives.
+ * Blocks the caller's current run of a task with the reason it waits; the task's work ends on every stack.
  *
  * @implements Command<null>
  */
@@ -18,5 +18,7 @@ final readonly class BlockTask implements Command
 {
     public function __construct(
         public string $taskId,
+        public int $runNumber,
+        public string $reason,
     ) {}
 }

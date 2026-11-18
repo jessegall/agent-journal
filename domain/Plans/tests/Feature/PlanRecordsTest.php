@@ -41,13 +41,13 @@ final class PlanRecordsTest extends TestCase
 
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
 
-        $this->build = Plan::query()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
+        $this->build = Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
         $read = $this->build->addPhase('Read');
-        $done = Task::query()->create(['title' => 'Done']);
+        $done = Task::factory()->create(['title' => 'Done']);
         $done->finish();
         $read->addTasks([$done->id]);
-        $this->build->addPhase('Start')->addTasks([Task::query()->create(['title' => 'Open'])->id]);
-        $this->empty = Plan::query()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
+        $this->build->addPhase('Start')->addTasks([Task::factory()->create(['title' => 'Open'])->id]);
+        $this->empty = Plan::factory()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
     }
 
     public function test_cards_carry_real_progress_the_current_phase_and_an_absent_agent(): void

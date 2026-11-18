@@ -63,7 +63,7 @@ final readonly class PlanRecords implements PlanReader
         $page = min(max(1, $filters->page), $lastPage);
         $plans = $this->listed($filters)->listOrder($focused)->forPage($page, self::PER_PAGE)->get();
 
-        return new PlanList($this->cardsOf($plans, $focused), $filters, $page, $lastPage, $total, $this->selection($filters, $focused));
+        return new PlanList($this->cardsOf($plans, $focused), $filters, $page, self::PER_PAGE, $lastPage, $total, $this->selection($filters, $focused));
     }
 
     /**
@@ -131,6 +131,14 @@ final readonly class PlanRecords implements PlanReader
         $isInsideFilter = Plan::query()->matching($filters->search)->whereKey($plan->id)->exists();
 
         return PlanSelection::found($this->cardsOf($plan->newCollection([$plan]), $focused)[0], $isInsideFilter);
+    }
+
+    /**
+     * One plan's card, with the same progress and current phase every list of plans shows.
+     */
+    public function cardOf(Plan $plan): PlanCard
+    {
+        return $this->cardsOf($plan->newCollection([$plan]), $this->focusedPlanId())[0];
     }
 
     /**

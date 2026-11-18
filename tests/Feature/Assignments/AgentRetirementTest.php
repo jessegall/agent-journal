@@ -69,8 +69,8 @@ final class AgentRetirementTest extends TestCase
     {
         $session = $this->app->make(LaunchSessions::class)->launch($this->helper, 'claude-code')->session;
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
-        $writer->assign(Task::query()->create(['title' => 'One'])->assignmentIdentity(), ActorIdentity::of($this->helper));
-        $writer->assign(Task::query()->create(['title' => 'Two'])->assignmentIdentity(), ActorIdentity::of($this->helper));
+        $writer->assign(Task::factory()->create(['title' => 'One'])->assignmentIdentity(), ActorIdentity::of($this->helper));
+        $writer->assign(Task::factory()->create(['title' => 'Two'])->assignmentIdentity(), ActorIdentity::of($this->helper));
 
         $result = $this->app->make(CommandBus::class)->run(new RetireAgent($this->helper->id));
 
@@ -106,7 +106,7 @@ final class AgentRetirementTest extends TestCase
 
     public function test_a_retirement_that_waited_for_work_given_meanwhile_still_releases_it(): void
     {
-        $task = Task::query()->create(['title' => 'Given while retirement waits']);
+        $task = Task::factory()->create(['title' => 'Given while retirement waits']);
         DB::disconnect();
         [$parentEnd, $childEnd] = $this->handshake();
         $child = pcntl_fork();
@@ -136,7 +136,7 @@ final class AgentRetirementTest extends TestCase
     public function test_ending_a_session_keeps_the_agents_work(): void
     {
         $launched = $this->app->make(LaunchSessions::class)->launch($this->helper, 'claude-code');
-        $this->app->make(AssignmentWriterInTransaction::class)->assign(Task::query()->create(['title' => 'Kept'])->assignmentIdentity(), ActorIdentity::of($this->helper));
+        $this->app->make(AssignmentWriterInTransaction::class)->assign(Task::factory()->create(['title' => 'Kept'])->assignmentIdentity(), ActorIdentity::of($this->helper));
 
         $this->app->make(LaunchSessions::class)->end($launched->session);
 

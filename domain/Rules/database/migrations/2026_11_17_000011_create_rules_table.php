@@ -17,6 +17,10 @@ return new class extends Migration
             $table->unsignedBigInteger('number');
             $table->text('text');
             $table->string('state', 16)->default('active');
+            $table->text('reason')->nullable();
+            $table->ulid('replaces_rule_id')->nullable();
+            $table->string('proposer_type', 16)->nullable();
+            $table->string('proposer_id', 64)->nullable();
             $table->timestampsTz();
 
             $table->unique(['number_group_id', 'number']);

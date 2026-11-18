@@ -15,17 +15,23 @@ use App\Agents\Support\AgentContextFactory;
 use App\Bus\Contracts\CommandBus;
 use Carbon\CarbonImmutable;
 use Closure;
-use Illuminate\Contracts\Container\Container;
+use Illuminate\Container\Container;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Authenticates an agent request by its launch credential and signed call, refreshes its session's heartbeat when the
- * stored one is stale, and makes its agent context and its actor the ones for this request.
+ * stored one is stale, and makes its agent context and its actor the ones for this request only: both are forgotten
+ * when it ends. A refused call gets one unauthenticated answer, whichever check failed.
  */
 final readonly class AuthenticateAgent
 {
+    /**
+     * The one refusal every failed check gives, so the answer never tells which check failed.
+     */
+    private const string UNAUTHENTICATED = 'The call could not be authenticated with this launch credential.';
+
     public function __construct(
         private AgentContextFactory $contexts,
         private Container $container,
@@ -41,8 +47,8 @@ final readonly class AuthenticateAgent
     {
         try {
             $context = $this->contexts->fromRequest($request);
-        } catch (CredentialRejected|CallSignatureInvalid $rejection) {
-            return new JsonResponse(['message' => $rejection->getMessage()], Response::HTTP_UNAUTHORIZED);
+        } catch (CredentialRejected|CallSignatureInvalid) {
+            return new JsonResponse(['code' => 'unauthenticated', 'message' => self::UNAUTHENTICATED], Response::HTTP_UNAUTHORIZED);
         } catch (CallProtocolUnsupported $unsupported) {
             return new JsonResponse(['message' => $unsupported->getMessage()], Response::HTTP_UPGRADE_REQUIRED);
         }
@@ -56,6 +62,7 @@ final readonly class AuthenticateAgent
             return $next($request);
         } finally {
             $this->actors->clear();
+            $this->container->forgetInstance(AgentContext::class);
         }
     }
 

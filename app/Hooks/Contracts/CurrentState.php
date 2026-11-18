@@ -21,4 +21,11 @@ interface CurrentState
      * @return Option<StateReference> none when the stack is closed or holds no live frame of the type
      */
     public function of(StackTarget $target, string $typeKey): Option;
+
+    /**
+     * The state the stack answers from now: its highest frame whose work is not done.
+     *
+     * @return Option<StateReference> none when the stack is closed or holds no live frame
+     */
+    public function top(StackTarget $target): Option;
 }

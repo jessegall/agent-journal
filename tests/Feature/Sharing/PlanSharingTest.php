@@ -41,7 +41,7 @@ final class PlanSharingTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)));
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
         $document = Document::query()->where('number', 1)->sole();
-        $plan = Plan::query()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
+        $plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
         $plan->addPhase('Secret phase');
         $plan->linkTo($document);
 

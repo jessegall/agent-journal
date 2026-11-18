@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Support;
 
 use App\Agents\Support\StackTarget;
+use App\Bus\Contracts\StackAdmission;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
 use App\Contracts\LaunchTransaction;
@@ -27,6 +28,7 @@ final readonly class StackTransaction implements LaunchTransaction, StackTransac
     public function __construct(
         private ConnectionInterface $database,
         private OperationDeadline $deadline,
+        private StackAdmission $admission,
     ) {}
 
     /**
@@ -38,6 +40,25 @@ final readonly class StackTransaction implements LaunchTransaction, StackTransac
     public function run(Closure $work): mixed
     {
         return $this->runWithin($this->deadline, $work);
+    }
+
+    public function runForSession(string $sessionId, Closure $work): mixed
+    {
+        return $this->runAdmitted($sessionId, $this->deadline, $work);
+    }
+
+    /**
+     * Runs the work for one session's stack: admitted to the stack first, then in its transaction, both within the
+     * deadline.
+     *
+     * @template TResult
+     *
+     * @param  Closure(): TResult  $work
+     * @return TResult
+     */
+    public function runAdmitted(string $sessionId, OperationDeadline $deadline, Closure $work): mixed
+    {
+        return $this->admission->admit($sessionId, $deadline, fn (): mixed => $this->runWithin($deadline, $work));
     }
 
     /**

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Api;
 
 /**
- * One page of plan cards for the filters, the page it really is after normalizing, and the selected plan.
+ * One page of plan cards for the filters, the page it really is after normalizing, its size, and the selected plan.
  */
 final readonly class PlanList
 {
@@ -16,6 +16,7 @@ final readonly class PlanList
         public array $cards,
         public PlanFilters $filters,
         public int $page,
+        public int $perPage,
         public int $lastPage,
         public int $total,
         public PlanSelection $selection,

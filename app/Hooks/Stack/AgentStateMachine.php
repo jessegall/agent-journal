@@ -56,7 +56,7 @@ final readonly class AgentStateMachine
         $replayed = null;
 
         try {
-            return $this->transaction->runWithin($deadline, function () use ($input, $capabilities, $render, $identity, &$replayed): ProgramReply {
+            return $this->transaction->runAdmitted($this->access->target()->sessionId, $deadline, function () use ($input, $capabilities, $render, $identity, &$replayed): ProgramReply {
                 $reminders = $this->remindersFor($input);
                 $row = AgentStackRow::lockFor($this->access->target());
                 $recorded = HookCall::query()->forHookId($identity->hookId)->first();

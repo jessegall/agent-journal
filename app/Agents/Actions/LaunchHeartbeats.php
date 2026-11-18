@@ -41,7 +41,7 @@ final readonly class LaunchHeartbeats
      */
     public function markExited(AgentSession $session, string $evidence): void
     {
-        $this->transaction->run(function () use ($session, $evidence): void {
+        $this->transaction->runForSession($session->id, function () use ($session, $evidence): void {
             $session->endWithEvidenceAt(CarbonImmutable::now(), "host reported exit: {$evidence}");
             $this->credentials->revoke($session);
 

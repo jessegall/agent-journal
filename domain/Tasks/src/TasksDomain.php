@@ -11,6 +11,7 @@ use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesLinkRecords;
+use App\Domains\Contracts\ProvidesMcpTools;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
@@ -21,6 +22,8 @@ use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Api\TaskAssignmentCompletion;
 use Domain\Tasks\Api\TaskCard;
+use Domain\Tasks\Api\TaskDetails;
+use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Api\TaskList;
 use Domain\Tasks\Api\TaskProgress;
@@ -28,23 +31,29 @@ use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Commands\CancelTask;
 use Domain\Tasks\Commands\CreateTask;
+use Domain\Tasks\Commands\EditTask;
 use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Contracts\AssignedTaskReader;
 use Domain\Tasks\Contracts\TaskAssignmentReader;
+use Domain\Tasks\Contracts\TaskDetailsReader;
+use Domain\Tasks\Contracts\TaskListReader;
 use Domain\Tasks\Contracts\TaskProgressCounter;
 use Domain\Tasks\Contracts\TaskReader;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Enums\TaskView;
 use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Mcp\AssignedTasksTool;
+use Domain\Tasks\Mcp\HeldTasksOverview;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Readers\TaskAssignments;
 use Domain\Tasks\Readers\TaskRecords;
 use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 
-final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesNumberedModels, ProvidesStates
+final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNumberedModels, ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -58,7 +67,7 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesC
      */
     public function commands(): array
     {
-        return [BlockTask::class, CancelTask::class, CreateTask::class, FinishTask::class, StartTask::class];
+        return [BlockTask::class, CancelTask::class, CreateTask::class, EditTask::class, FinishTask::class, StartTask::class];
     }
 
     /**
@@ -83,6 +92,8 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesC
                 TaskReader::class,
                 TaskAssignmentReader::class,
                 AssignedTaskReader::class,
+                TaskListReader::class,
+                TaskDetailsReader::class,
             )
             ->values(
                 TaskProgress::class,
@@ -93,6 +104,9 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesC
                 TaskList::class,
                 TaskState::class,
                 TaskWorkState::class,
+                TaskExecution::class,
+                TaskDetails::class,
+                TaskView::class,
             )
             ->exceptions(TaskMissing::class)
             ->build();
@@ -116,5 +130,20 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function numberedModels(): array
     {
         return [NumberedModel::global(Task::class)];
+    }
+
+    public function mcpTools(): array
+    {
+        return [AssignedTasksTool::class];
+    }
+
+    public function mcpResources(): array
+    {
+        return [];
+    }
+
+    public function overviewContributions(): array
+    {
+        return [HeldTasksOverview::class];
     }
 }

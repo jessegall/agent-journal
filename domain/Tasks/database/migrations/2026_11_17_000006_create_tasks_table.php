@@ -16,8 +16,17 @@ return new class extends Migration
             $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
             $table->unsignedBigInteger('number');
             $table->string('title');
+            $table->text('brief');
+            $table->string('creator_type', 16);
+            $table->string('creator_id', 64);
+            $table->unsignedInteger('revision')->default(1);
             $table->string('state', 16)->default('open');
             $table->unsignedInteger('run_number')->default(0);
+            $table->string('run_actor_type', 16)->nullable();
+            $table->string('run_actor_id', 64)->nullable();
+            $table->text('result_note')->nullable();
+            $table->text('block_reason')->nullable();
+            $table->text('cancel_reason')->nullable();
             $table->timestampsTz();
 
             $table->unique(['number_group_id', 'number']);

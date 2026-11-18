@@ -9,12 +9,14 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\LaunchBypass;
 use App\Agents\Models\LaunchCredential;
+use App\Bus\Models\CommandReceipt;
 use App\Comments\Models\Comment;
 use App\Engine\Models\EngineFrameTime;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\HookCall;
 use App\Links\Models\Link;
 use App\Links\Support\LinkTypeRegistry;
+use App\Mcp\Models\RetainedPage;
 use App\Settings\Models\SettingsRecord;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
@@ -32,7 +34,7 @@ use Illuminate\Support\ServiceProvider;
  */
 final class CoreServiceProvider extends ServiceProvider
 {
-    private const array AREAS = ['Actors', 'Agents', 'Assignments', 'Comments', 'Communication', 'Engine', 'Hooks', 'Links', 'Numbers', 'Processes', 'Settings', 'Sharing', 'Web'];
+    private const array AREAS = ['Actors', 'Agents', 'Assignments', 'Bus', 'Comments', 'Communication', 'Engine', 'Hooks', 'Links', 'Mcp', 'Numbers', 'Processes', 'Settings', 'Sharing', 'Web'];
 
     public function boot(LinkTypeRegistry $links): void
     {
@@ -48,6 +50,8 @@ final class CoreServiceProvider extends ServiceProvider
             'core.settings-record' => SettingsRecord::class,
             'core.user-presence' => UserPresence::class,
             'core.engine-frame-time' => EngineFrameTime::class,
+            RetainedPage::LINK_TYPE => RetainedPage::class,
+            CommandReceipt::LINK_TYPE => CommandReceipt::class,
             Share::LINK_TYPE => Share::class,
             ShareAudit::LINK_TYPE => ShareAudit::class,
             ShareGatewayConfiguration::LINK_TYPE => ShareGatewayConfiguration::class,

@@ -12,6 +12,7 @@ use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Providers\DomainServiceProvider;
 use App\Engine\Providers\EngineServiceProvider;
 use App\Hooks\Providers\HooksServiceProvider;
+use App\Mcp\Providers\McpServiceProvider;
 use App\Numbers\Providers\NumbersServiceProvider;
 use App\Processes\Providers\ProcessesServiceProvider;
 use App\Providers\AppServiceProvider;
@@ -46,6 +47,7 @@ return [
     CommentsServiceProvider::class,
     TextServiceProvider::class,
     HooksServiceProvider::class,
+    McpServiceProvider::class,
     CommandBusServiceProvider::class,
     EngineServiceProvider::class,
     ReadsServiceProvider::class,

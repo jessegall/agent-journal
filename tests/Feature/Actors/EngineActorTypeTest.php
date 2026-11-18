@@ -52,7 +52,7 @@ final class EngineActorTypeTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $task = Task::query()->create(['title' => 'Not for the engine']);
+        $task = Task::factory()->create(['title' => 'Not for the engine']);
 
         $this->actingAs($owner)->postJson('/assignments/assign', ['recordType' => 'tasks.task', 'recordId' => $task->id, 'recipientType' => 'engine', 'recipientId' => EngineActor::ID])
             ->assertUnprocessable();

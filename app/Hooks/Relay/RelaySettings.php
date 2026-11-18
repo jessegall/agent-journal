@@ -24,11 +24,12 @@ final readonly class RelaySettings
     ) {}
 
     /**
+     * The launch's credential with the role and bypass file its environment names.
+     *
      * @param  array<string, string>  $environment
      */
-    public static function fromEnvironment(array $environment): self
+    public static function forLaunch(AgentClientSettings $client, array $environment): self
     {
-        $client = AgentClientSettings::fromEnvironment($environment);
         $launch = new LaunchEnvironment($environment);
 
         return new self(

@@ -33,12 +33,13 @@ use Illuminate\Support\Carbon;
  * @property CarbonImmutable|null $last_heartbeat_at
  * @property CarbonImmutable|null $silent_since
  * @property string|null $end_evidence
+ * @property CarbonImmutable|null $discovered_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Agent $agent
  * @property-read LaunchCredential|null $credential
  */
-#[Fillable(['program', 'program_session_id'])]
+#[Fillable(['program', 'program_session_id', 'discovered_at'])]
 final class AgentSession extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -54,6 +55,7 @@ final class AgentSession extends Model implements ReadableModel
             'ended_at' => 'immutable_datetime',
             'last_heartbeat_at' => 'immutable_datetime',
             'silent_since' => 'immutable_datetime',
+            'discovered_at' => 'immutable_datetime',
         ];
     }
 
@@ -110,6 +112,24 @@ final class AgentSession extends Model implements ReadableModel
     public static function lockedForHeartbeat(string $sessionId): self
     {
         return self::query()->whereKey($sessionId)->with(['credential', 'agent'])->lockForUpdate()->firstOrFail();
+    }
+
+    /**
+     * Records the launched program's tool discovery at its signed issue time; an older discovery never moves it back.
+     */
+    public static function recordDiscoveryAt(string $sessionId, CarbonImmutable $signedAt): void
+    {
+        self::query()->whereKey($sessionId)
+            ->where(fn (Builder $older) => $older->whereNull('discovered_at')->orWhere('discovered_at', '<', $signedAt))
+            ->update(['discovered_at' => $signedAt]);
+    }
+
+    /**
+     * Whether the session's program discovered its tools after the moment given.
+     */
+    public static function discoveredAfter(string $sessionId, CarbonImmutable $moment): bool
+    {
+        return self::query()->whereKey($sessionId)->where('discovered_at', '>', $moment)->exists();
     }
 
     /**

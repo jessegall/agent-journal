@@ -40,7 +40,7 @@ final class HookCompactionTest extends TestCase
     {
         parent::setUp();
 
-        $this->task = Task::query()->create(['title' => 'Write the walk']);
+        $this->task = Task::factory()->create(['title' => 'Write the walk']);
         $this->app->make(CommandBus::class)->run(new StartTask($this->task->id, $this->target->sessionId));
         $this->run = SequenceRun::query()->create(['name' => 'Close a task', 'steps' => ['Read the brief.', 'Run the phase tests.']]);
         $this->app->make(CommandBus::class)->run(new StartSequence($this->run->id, $this->target->sessionId));

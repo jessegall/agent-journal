@@ -26,4 +26,9 @@ final readonly class FixedCurrentState implements CurrentState
     {
         return $target == $this->target && isset($this->frames[$typeKey]) ? new Some($this->frames[$typeKey]) : None::create();
     }
+
+    public function top(StackTarget $target): Option
+    {
+        return $target == $this->target && $this->frames !== [] ? new Some($this->frames[array_key_last($this->frames)]) : None::create();
+    }
 }

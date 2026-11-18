@@ -45,6 +45,12 @@ final class AssignedTasksCommand extends Command
         $this->table(['Id', 'Title', 'State', 'Holder', 'Reference'], array_map(fn (AssignedTaskCardData $card) => [$card->id, $card->title, $card->state->value, $card->holder->label(), $card->holder->reference], $list->cards));
         $this->line("Page {$list->page}: ".count($list->cards)." of {$list->total}");
 
+        foreach ($list->cards as $card) {
+            if ($card->execution !== null) {
+                $this->line("{$card->id}: {$card->execution->label()}");
+            }
+        }
+
         return self::SUCCESS;
     }
 }

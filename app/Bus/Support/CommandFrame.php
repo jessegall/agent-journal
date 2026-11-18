@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
+use App\Bus\CommandMiddleware\AdmitStack;
 use App\Bus\CommandMiddleware\CheckActor;
 use App\Bus\CommandMiddleware\LogCommand;
+use App\Bus\CommandMiddleware\RecordReceipt;
+use App\Bus\CommandMiddleware\RecordRefusalReceipt;
 use App\Bus\CommandMiddleware\RunInTransaction;
 use App\Bus\Contracts\CommandMiddleware;
 
 /**
- * The order every command passes (doc 19, section 6.5): LogCommand, CheckActor, [stack admission], the module
- * middleware of the BeforeTransaction stage, RunInTransaction, [receipt check], [guard], the module middleware of the
- * InsideTransaction stage, the handler, [receipt write]. The places in brackets belong to doc 16's MCP plan, which
- * adds its steps to these lists without changing MiddlewareRunner.
+ * The order every command passes (doc 19, section 6.5): LogCommand, CheckActor, AdmitStack, RecordRefusalReceipt,
+ * the module middleware of the BeforeTransaction stage, RunInTransaction, RecordReceipt (check, then write after the
+ * handler), [guard], the module middleware of the InsideTransaction stage, the handler. The place in brackets belongs
+ * to doc 16's MCP plan, which adds its step to these lists without changing MiddlewareRunner.
  */
 final class CommandFrame
 {
@@ -22,7 +25,7 @@ final class CommandFrame
      *
      * @var list<class-string<CommandMiddleware>>
      */
-    public const array FIRST = [LogCommand::class, CheckActor::class];
+    public const array FIRST = [LogCommand::class, CheckActor::class, AdmitStack::class, RecordRefusalReceipt::class];
 
     /**
      * The Core step that opens or joins the command's transaction.
@@ -36,5 +39,5 @@ final class CommandFrame
      *
      * @var list<class-string<CommandMiddleware>>
      */
-    public const array INSIDE = [];
+    public const array INSIDE = [RecordReceipt::class];
 }

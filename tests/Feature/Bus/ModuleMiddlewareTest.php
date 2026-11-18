@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Commands\RetireAgent;
@@ -140,7 +141,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $this->startUserRequestAs(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);
 
-        $bus->run(new ApproveRule(Rule::proposed('Every phase ends with its tests.')->id));
+        $bus->run(new ApproveRule(Rule::proposed('Every phase ends with its tests.', 'Phases ended untested.', null, ActorContext::forUser(TestIds::of(1)))->id));
         $bus->run(new WriteNote('not a rules command'));
 
         $this->assertSame(1, $this->app->make(ConnectionInterface::class)->table('module_command_rows')->where('text', 'audit ApproveRule')->count());
@@ -170,7 +171,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     {
         $trail = $this->installCommandModulesRequiring(['Plans'], MiddlewareDeclaration::around(LimitPlanStarts::class, CommandScope::command(StartPlan::class)));
         $this->startUserRequestAs(TestIds::of(1));
-        $plan = Plan::query()->create(['title' => 'Quota', 'type' => PlanType::Build]);
+        $plan = Plan::factory()->create(['title' => 'Quota', 'type' => PlanType::Build]);
 
         try {
             $this->app->make(CommandBus::class)->run(new StartPlan($plan->id));
@@ -215,14 +216,14 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
 
         $this->expectException(CommandReplacementRefused::class);
 
-        $this->app->make(CommandBus::class)->run(new FinishTask(Task::query()->create(['title' => 'Kept'])->id));
+        $this->app->make(CommandBus::class)->run(new FinishTask(Task::factory()->create(['title' => 'Kept'])->id, 0, 'Done.'));
     }
 
     public function test_a_refusal_after_retirement_leaves_the_agent_unretired_with_its_assignments(): void
     {
         $this->installCommandModules(MiddlewareDeclaration::inside(RefusesAfterRetirement::class, CommandScope::command(RetireAgent::class)));
         $helper = Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.read_only_helper_ready']);
-        $task = Task::query()->create(['title' => 'Held']);
+        $task = Task::factory()->create(['title' => 'Held']);
         $this->startUserRequestAs(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new AssignRecord($task->assignmentIdentity(), ActorIdentity::of($helper)));

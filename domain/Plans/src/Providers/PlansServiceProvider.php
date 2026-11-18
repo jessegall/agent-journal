@@ -5,15 +5,17 @@ declare(strict_types=1);
 namespace Domain\Plans\Providers;
 
 use App\Links\Support\LinkTypeRegistry;
-use Domain\Plans\Console\AssignedPlansCommand;
 use Domain\Plans\Console\AssignPlanWorkCommand;
+use Domain\Plans\Console\AssignedPlansCommand;
 use Domain\Plans\Console\ReassignPlanWorkCommand;
 use Domain\Plans\Console\UnassignPlanWorkCommand;
+use Domain\Plans\Contracts\PlanDetailsReader;
 use Domain\Plans\Contracts\PlanReader;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
+use Domain\Plans\Readers\PlanDetailRecords;
 use Domain\Plans\Readers\PlanRecords;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
@@ -29,6 +31,7 @@ final class PlansServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(PlanReader::class, PlanRecords::class);
+        $this->app->scoped(PlanDetailsReader::class, PlanDetailRecords::class);
     }
 
     public function boot(LinkTypeRegistry $links, ExceptionHandler $exceptions): void

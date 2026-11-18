@@ -9,7 +9,9 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActiveActorCounterRegistry;
 use App\AgentRequests\Actions\SendAgentRequests;
 use App\AgentRequests\Contracts\AgentRequestSender;
+use App\AgentRequests\Contracts\LaunchCredentialSource;
 use App\AgentRequests\Support\AgentClientSettings;
+use App\AgentRequests\Support\EnvironmentCredentialSource;
 use App\Agents\Console\RetireAgentCommand;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Readers\AgentAuthorityRecords;
@@ -18,9 +20,11 @@ use App\Agents\Support\AgentAssignees;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\AgentSessionCounter;
 use App\Agents\Support\DatabaseLaunchTransaction;
+use App\Agents\Support\RequestSession;
 use App\Assignments\Contracts\AgentAuthority;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Support\AssigneeRegistration;
+use App\Bus\Contracts\CallerSession;
 use App\Contracts\LaunchTransaction;
 use Illuminate\Support\ServiceProvider;
 
@@ -36,8 +40,10 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->scoped(AgentAssignees::class);
         $this->app->bind(AgentAuthority::class, AgentAuthorityRecords::class);
         $this->app->bindIf(LaunchTransaction::class, DatabaseLaunchTransaction::class);
-        $this->app->bind(AgentClientSettings::class, fn () => AgentClientSettings::fromEnvironment(array_filter(getenv(), is_string(...))));
+        $this->app->bind(LaunchCredentialSource::class, fn () => new EnvironmentCredentialSource(array_filter(getenv(), is_string(...))));
+        $this->app->bind(AgentClientSettings::class, fn ($app) => $app->make(LaunchCredentialSource::class)->forThisLaunch());
         $this->app->bind(AgentRequestSender::class, SendAgentRequests::class);
+        $this->app->bind(CallerSession::class, RequestSession::class);
     }
 
     public function boot(AssignmentRegistration $assignments, ActorProviderRegistration $actors, ActiveActorCounterRegistry $presentActors): void

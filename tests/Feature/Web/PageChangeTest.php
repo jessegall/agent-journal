@@ -57,15 +57,15 @@ final class PageChangeTest extends TestCase
 
     public function test_a_finished_task_of_a_plan_moves_the_plan_and_changes_the_page(): void
     {
-        $task = Task::query()->create(['title' => 'List the plans']);
-        $plan = Plan::query()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
+        $task = Task::factory()->create(['title' => 'List the plans']);
+        $plan = Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
         $plan->addPhase('Read')->addTasks([$task->id]);
         $progress = [];
         Event::listen(PlanProgressChanged::class, function (PlanProgressChanged $changed) use (&$progress): void {
             $progress[] = $changed->planId;
         });
 
-        $this->app->make(CommandBus::class)->run(new FinishTask($task->id));
+        $this->app->make(CommandBus::class)->run(new FinishTask($task->id, 0, 'Done.'));
 
         $this->assertSame([$plan->id], $progress);
         Event::assertDispatchedTimes(PageChanged::class, 1);
@@ -73,15 +73,15 @@ final class PageChangeTest extends TestCase
 
     public function test_a_task_outside_every_plan_changes_no_page(): void
     {
-        $this->app->make(CommandBus::class)->run(new CancelTask(Task::query()->create(['title' => 'Loose task'])->id));
+        $this->app->make(CommandBus::class)->run(new CancelTask(Task::factory()->create(['title' => 'Loose task'])->id, 'Dropped.'));
 
         Event::assertNotDispatched(PageChanged::class);
     }
 
     public function test_a_rolled_back_change_sends_nothing(): void
     {
-        $task = Task::query()->create(['title' => 'List the plans']);
-        Plan::query()->create(['title' => 'Build the release page', 'type' => PlanType::Build])->addPhase('Read')->addTasks([$task->id]);
+        $task = Task::factory()->create(['title' => 'List the plans']);
+        Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build])->addPhase('Read')->addTasks([$task->id]);
 
         try {
             $this->app->make(ConnectionInterface::class)->transaction(function () use ($task): void {

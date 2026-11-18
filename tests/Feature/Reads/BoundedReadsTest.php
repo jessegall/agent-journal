@@ -36,7 +36,7 @@ final class BoundedReadsTest extends TestCase
         parent::setUp();
 
         for ($number = 1; $number <= 60; $number++) {
-            $this->taskIds[] = Task::query()->create(['title' => "Task {$number}"])->id;
+            $this->taskIds[] = Task::factory()->create(['title' => "Task {$number}"])->id;
         }
     }
 

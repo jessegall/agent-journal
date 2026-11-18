@@ -46,7 +46,7 @@ final class MessageStateContributionTest extends TestCase
 
     public function test_an_answered_message_leaves_on_the_next_hook_and_the_task_below_still_holds_the_stop(): void
     {
-        $task = Task::query()->create(['title' => 'Write the walk']);
+        $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
         $message = Message::query()->create(['body' => 'Which database?']);
         $this->app->make(CommandBus::class)->run(new RequireMessageAnswer($message->id, $this->target->sessionId));

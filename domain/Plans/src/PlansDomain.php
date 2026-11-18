@@ -11,6 +11,7 @@ use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesLinkRecords;
+use App\Domains\Contracts\ProvidesMcpTools;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
@@ -30,31 +31,45 @@ use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
 use Domain\Plans\Api\AssignedPlanFilters;
 use Domain\Plans\Api\AssignedPlanList;
+use Domain\Plans\Api\Events\PlanCancelled;
+use Domain\Plans\Api\Events\PlanFinished;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Api\Events\PlanStarted;
+use Domain\Plans\Api\PhaseDetails;
 use Domain\Plans\Api\PlanCard;
+use Domain\Plans\Api\PlanDetails;
 use Domain\Plans\Api\PlanFilters;
 use Domain\Plans\Api\PlanList;
+use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Api\PlanSelection;
 use Domain\Plans\Commands\AddPhase;
 use Domain\Plans\Commands\AddPhaseTasks;
 use Domain\Plans\Commands\AssignPlanWork;
+use Domain\Plans\Commands\CancelPlan;
+use Domain\Plans\Commands\CreatePlan;
+use Domain\Plans\Commands\EditPlan;
+use Domain\Plans\Commands\FinishPlan;
 use Domain\Plans\Commands\ReassignPlanWork;
 use Domain\Plans\Commands\StartPlan;
 use Domain\Plans\Commands\UnassignPlanWork;
+use Domain\Plans\Contracts\PlanDetailsReader;
 use Domain\Plans\Contracts\PlanReader;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Enums\PlanView;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Http\Controllers\StartPlanController;
+use Domain\Plans\Mcp\AssignedPlansTool;
+use Domain\Plans\Mcp\HeldPlansOverview;
+use Domain\Plans\Mcp\PlansListTool;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Readers\OpenPlansCount;
 use Domain\Plans\Readers\PhaseWindowReader;
-use Domain\Plans\Readers\PlansWindowReader;
 use Domain\Plans\Readers\PlanWindowReader;
+use Domain\Plans\Readers\PlansWindowReader;
 use Domain\Plans\Readers\WaitingPlansCount;
 use Domain\Plans\Readers\WaitingPlansSection;
 use Domain\Plans\States\Support\WorkingOnPlanStateFactory;
@@ -66,7 +81,7 @@ use Domain\Plans\Support\PlanRecords;
 use Domain\Plans\Support\PlanShareProvider;
 use Domain\Tasks\TasksDomain;
 
-final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesShareRecords, ProvidesStates
+final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesShareRecords, ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -86,8 +101,8 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function exports(): Exports
     {
         return Exports::make()
-            ->events(PlanStarted::class, PlanProgressChanged::class)
-            ->contracts(PlanReader::class)
+            ->events(PlanStarted::class, PlanFinished::class, PlanCancelled::class, PlanProgressChanged::class)
+            ->contracts(PlanReader::class, PlanDetailsReader::class)
             ->values(
                 PlanFilters::class,
                 PlanList::class,
@@ -98,6 +113,10 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
                 PlanProgress::class,
                 PlanType::class,
                 PlanState::class,
+                PlanDetails::class,
+                PlanPhaseTasks::class,
+                PhaseDetails::class,
+                PlanView::class,
             )
             ->commands(
                 StartPlan::class,
@@ -138,7 +157,7 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
      */
     public function commands(): array
     {
-        return [StartPlan::class, AddPhase::class, AddPhaseTasks::class, AssignPlanWork::class, ReassignPlanWork::class, UnassignPlanWork::class];
+        return [StartPlan::class, CreatePlan::class, EditPlan::class, FinishPlan::class, CancelPlan::class, AddPhase::class, AddPhaseTasks::class, AssignPlanWork::class, ReassignPlanWork::class, UnassignPlanWork::class];
     }
 
     public function pages(): array
@@ -183,5 +202,20 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function states(): array
     {
         return [WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateFactory::class];
+    }
+
+    public function mcpTools(): array
+    {
+        return [AssignedPlansTool::class, PlansListTool::class];
+    }
+
+    public function mcpResources(): array
+    {
+        return [];
+    }
+
+    public function overviewContributions(): array
+    {
+        return [HeldPlansOverview::class];
     }
 }

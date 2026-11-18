@@ -122,7 +122,7 @@ final class HookRecoveryTest extends TestCase
 
     private function startTask(LaunchedAgent $launched): Task
     {
-        $task = Task::query()->create(['title' => 'Write the walk']);
+        $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->app->instance(AgentContext::class, new AgentContext($launched->session->agent_id, $launched->session->id, 'hooks.main_ready', new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')), null));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id));
         $this->app->make(CommandBus::class)->run(new StartTask($task->id, $launched->session->id));

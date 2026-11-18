@@ -21,6 +21,7 @@ return new class extends Migration
             $table->timestampTz('last_heartbeat_at')->nullable();
             $table->timestampTz('silent_since')->nullable();
             $table->string('end_evidence')->nullable();
+            $table->timestampTz('discovered_at')->nullable();
             $table->timestampsTz();
 
             $table->unique(['program', 'program_session_id']);
