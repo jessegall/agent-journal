@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Middleware\Sharing\GuardShareRequest;
 use App\Http\Middleware\Sharing\SecureShareResponse;
 use App\Http\Responses\Sharing\SharedPageResponses;
+use Illuminate\Container\Container;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -30,5 +31,9 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Every failure, a refusal that renders itself included, ends as one of the fixed pages.
-        $exceptions->respond(fn (Response $response, Throwable $failure) => SharedPageResponses::forFailure($failure));
+        $exceptions->respond(
+            fn (Response $response, Throwable $failure) => Container::getInstance()
+                ->make(SharedPageResponses::class)
+                ->forFailure($failure),
+        );
     })->create();
