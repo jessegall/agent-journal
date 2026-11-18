@@ -20,7 +20,9 @@ use App\Assignments\Support\AutoAssignmentKey;
 use App\Assignments\Support\AutoAssignmentPage;
 use App\Assignments\Support\AutoAssignmentStatus;
 use App\Assignments\Support\Page;
+use PhpOption\None;
 use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * The auto-assignments kept in their table: read by key or by page, and changed only inside the bus's repeatable-read
@@ -37,8 +39,9 @@ final readonly class DatabaseAutoAssignments implements AutoAssignmentReader, Au
 
     public function forActor(AutoAssignmentKey $key): Option
     {
-        return Option::fromValue(AutoAssignment::query()->forKey($key)->first())
-            ->map(fn (AutoAssignment $row) => $row->toFact());
+        $row = AutoAssignment::query()->forKey($key)->first();
+
+        return $row === null ? None::create() : Some::create($row->toFact());
     }
 
     public function status(AutoAssignmentKey $key): AutoAssignmentStatus

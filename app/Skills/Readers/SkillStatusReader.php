@@ -82,7 +82,7 @@ final readonly class SkillStatusReader
                 $generation?->entry($key)['digest'] ?? null,
                 $selected,
                 $selected ? 'selected' : $selection['reasons'][$key] ?? 'not-selected',
-                $deliveredEntry === null ? null : $delivered?->generation_id,
+                $deliveredEntry === null ? null : $delivered->generation_id,
                 $deliveredEntry === null ? 'not-delivered' : PublicationState::Delivered->value,
                 $deliveredEntry !== null && SkillReceipt::hasRead($sessionId, $key, $deliveredEntry['digest']),
                 $reloadsAtNewSession && $selected && ($launchedDigest === null || $launchedDigest !== $currentDigest),

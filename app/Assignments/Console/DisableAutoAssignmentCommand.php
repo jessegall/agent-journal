@@ -7,7 +7,7 @@ namespace App\Assignments\Console;
 use App\Actors\Exceptions\InvalidActorText;
 use App\AgentRequests\Console\Concerns\SendsSignedWrites;
 use App\AgentRequests\Contracts\AgentRequestSender;
-use App\Assignments\Console\Concerns\ReadsAutoAssignmentArguments;
+use App\Assignments\Console\Concerns\ReadsAutoAssignmentKey;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
@@ -18,7 +18,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class DisableAutoAssignmentCommand extends Command
 {
-    use ReadsAutoAssignmentArguments;
+    use ReadsAutoAssignmentKey;
     use SendsSignedWrites;
 
     protected $signature = 'assignment:auto-disable {actor : The actor as type:id} {type : The record type}

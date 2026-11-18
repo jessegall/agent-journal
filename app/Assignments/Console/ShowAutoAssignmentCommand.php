@@ -7,7 +7,7 @@ namespace App\Assignments\Console;
 use App\Actors\Exceptions\InvalidActorText;
 use App\AgentRequests\Console\Concerns\SendsSignedCalls;
 use App\AgentRequests\Contracts\AgentRequestSender;
-use App\Assignments\Console\Concerns\ReadsAutoAssignmentArguments;
+use App\Assignments\Console\Concerns\ReadsAutoAssignmentKey;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
@@ -18,7 +18,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class ShowAutoAssignmentCommand extends Command
 {
-    use ReadsAutoAssignmentArguments;
+    use ReadsAutoAssignmentKey;
     use SendsSignedCalls;
 
     protected $signature = 'assignment:auto-show {actor : The actor as type:id} {type : The record type} {--json}';

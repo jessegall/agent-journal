@@ -88,19 +88,7 @@ use Domain\Plans\Support\PlanShareProvider;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\TasksDomain;
 
-final class PlansDomain extends Domain implements
-    ProvidesAssignables,
-    ProvidesAutoAssignments,
-    ProvidesCommands,
-    ProvidesLinkRecords,
-    ProvidesMcpTools,
-    ProvidesNavigation,
-    ProvidesNumberedModels,
-    ProvidesPages,
-    ProvidesSections,
-    ProvidesShareRecords,
-    ProvidesSkills,
-    ProvidesStates
+final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesAutoAssignments, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesShareRecords, ProvidesSkills, ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 

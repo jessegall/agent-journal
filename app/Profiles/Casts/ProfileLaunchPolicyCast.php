@@ -127,20 +127,20 @@ final class ProfileLaunchPolicyCast implements CastsAttributes
     {
         return AccessPolicy::make(
             $role,
-            array_map(fn (array $grant) => new ClassGrant(
+            array_values(array_map(fn (array $grant) => new ClassGrant(
                 ResourceAreaType::from($grant['area']),
-                array_map(AccessType::from(...), $grant['access']),
-            ), $stored['class_grants']),
-            array_map(fn (array $grant) => new OperationGrant(
+                array_values(array_map(AccessType::from(...), $grant['access'])),
+            ), $stored['class_grants'])),
+            array_values(array_map(fn (array $grant) => new OperationGrant(
                 $grant['operation'],
-                array_map(
+                array_values(array_map(
                     fn (array $resource) => new ResourceRequest(
                         ResourceAreaType::from($resource['area']),
                         $resource['target'],
                     ),
                     $grant['resources'],
-                ),
-            ), $stored['operation_grants']),
+                )),
+            ), $stored['operation_grants'])),
             $stored['denials'],
             $stored['paths'],
             $stored['destinations'],
@@ -152,17 +152,17 @@ final class ProfileLaunchPolicyCast implements CastsAttributes
      */
     private static function stopConditions(AgentRole $role, array $stored): StopConditions
     {
-        return StopConditions::make($role, array_map(fn (array $condition) => new StopCondition(
+        return StopConditions::make($role, array_values(array_map(fn (array $condition) => new StopCondition(
             $condition['key'],
             $condition['label'],
             $condition['executable'],
             $condition['arguments'],
-            array_map(AccessType::from(...), $condition['access']),
+            array_values(array_map(AccessType::from(...), $condition['access'])),
             $condition['directory'],
             $condition['timeout_seconds'],
             $condition['output_bytes'],
             $condition['guidance'],
-        ), $stored['conditions']), $stored['attempt_seconds']);
+        ), $stored['conditions'])), $stored['attempt_seconds']);
     }
 
     /**

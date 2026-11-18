@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Data\Assignments;
 
 use App\Assignments\Support\AutoAssignmentFact;
-use Carbon\CarbonImmutable;
-use PhpOption\Option;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 
@@ -39,9 +37,7 @@ final class AutoAssignmentFactData extends Data
             'pool' => $fact->pool->type,
             'size' => $fact->size,
             'revision' => $fact->revision,
-            'lastServedAt' => Option::fromValue($fact->lastServedAt)
-                ->map(fn (CarbonImmutable $time) => $time->toIso8601String())
-                ->getOrElse(Optional::create()),
+            'lastServedAt' => $fact->lastServedAt?->toIso8601String() ?? Optional::create(),
         ]);
     }
 }

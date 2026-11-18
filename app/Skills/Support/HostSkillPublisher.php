@@ -164,7 +164,7 @@ final readonly class HostSkillPublisher implements SkillPublisher
 
     private function isEmptyFolder(string $folder): bool
     {
-        return is_dir($folder) && ! is_link($folder) && (new FilesystemIterator($folder))->valid() === false;
+        return is_dir($folder) && ! is_link($folder) && new FilesystemIterator($folder)->valid() === false;
     }
 
     /**

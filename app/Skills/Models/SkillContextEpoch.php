@@ -41,7 +41,7 @@ final class SkillContextEpoch extends Model implements ReadableModel
      */
     public static function currentOf(string $sessionId): int
     {
-        return self::query()->where('session_id', $sessionId)->first()?->epoch ?? 0;
+        return self::query()->where('session_id', $sessionId)->first()->epoch ?? 0;
     }
 
     /**

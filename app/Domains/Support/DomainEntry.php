@@ -6,9 +6,9 @@ namespace App\Domains\Support;
 
 use App\Assignments\Contracts\AssignableProvider;
 use App\Assignments\Contracts\ProvidesAutoAssignments;
+use App\Assignments\Support\AssigneeRegistration;
 use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
-use App\Assignments\Support\AssigneeRegistration;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Support\CommandOwner;

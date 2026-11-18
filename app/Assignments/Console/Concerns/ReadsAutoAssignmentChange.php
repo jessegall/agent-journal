@@ -5,27 +5,14 @@ declare(strict_types=1);
 namespace App\Assignments\Console\Concerns;
 
 use App\Actors\Exceptions\InvalidActorText;
-use App\Actors\Support\ActorIdentity;
 
 /**
- * The auto-assignment an auto-assignment command names by its actor and type arguments, and the pool its options
- * describe: task numbers and a plan number are sent as people name the records, such as task 3, for the journal to
- * look up. The launch decides who calls, never an option.
+ * The change an enable or configure command sends: its auto-assignment key and the pool its options describe. Task
+ * numbers and a plan number are sent as people name the records, such as task 3, for the journal to look up.
  */
-trait ReadsAutoAssignmentArguments
+trait ReadsAutoAssignmentChange
 {
-    /**
-     * @return array<string, string|int>
-     *
-     * @throws InvalidActorText
-     */
-    protected function keyFields(): array
-    {
-        return [
-            ...ActorIdentity::fromText((string) $this->argument('actor'))->asFields('actor'),
-            'assignableType' => (string) $this->argument('type'),
-        ];
-    }
+    use ReadsAutoAssignmentKey;
 
     /**
      * @return array<string, mixed>

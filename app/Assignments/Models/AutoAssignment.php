@@ -14,6 +14,7 @@ use App\Assignments\Support\AutoAssignmentKey;
 use App\Assignments\Support\AutoAssignmentPage;
 use App\Assignments\Support\Page;
 use App\Assignments\Support\PoolReference;
+use App\Reads\Support\ReadBuilder;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -169,19 +170,19 @@ final class AutoAssignment extends Model implements ReadableModel
     }
 
     /**
-     * @param  Builder<self>  $query
+     * @param  ReadBuilder<self>  $query
      */
-    private static function pageOf(Builder $query, Page $page): AutoAssignmentPage
+    private static function pageOf(ReadBuilder $query, Page $page): AutoAssignmentPage
     {
         $rows = $query
             ->when($page->afterId !== null, fn (Builder $after) => $after->where('id', '>', $page->afterId))
             ->orderBy('id')
             ->readLimit($page->limit + 1)
-            ->get()
-            ->all();
-        $facts = array_map(fn (self $row) => $row->toFact(), array_slice($rows, 0, $page->limit));
-        $hasMore = count($rows) > $page->limit;
+            ->get();
+        $shown = $rows->take($page->limit);
+        $facts = array_values($shown->map(fn (self $row) => $row->toFact())->all());
+        $hasMore = $rows->count() > $page->limit;
 
-        return new AutoAssignmentPage($facts, $hasMore ? $facts[array_key_last($facts)]->id : null);
+        return new AutoAssignmentPage($facts, $hasMore ? $shown->last()?->id : null);
     }
 }

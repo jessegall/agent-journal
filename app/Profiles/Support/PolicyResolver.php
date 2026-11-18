@@ -110,7 +110,7 @@ final readonly class PolicyResolver
         return AccessPolicy::make(
             $role,
             self::classGrants($classes),
-            array_values($grants),
+            $grants,
             array_values(array_unique($denials)),
             [],
             [],
@@ -214,7 +214,7 @@ final readonly class PolicyResolver
             fn (ClassRule $existing) => $existing->isSameAs($class),
         ));
 
-        return array_values([...$kept, ...$added]);
+        return [...$kept, ...$added];
     }
 
     /**
@@ -229,10 +229,13 @@ final readonly class PolicyResolver
             $areas[$class->area->value][] = $class->access;
         }
 
-        return array_map(
-            fn (string $area) => new ClassGrant(ResourceAreaType::from($area), $areas[$area]),
-            array_keys($areas),
-        );
+        $grants = [];
+
+        foreach ($areas as $area => $access) {
+            $grants[] = new ClassGrant(ResourceAreaType::from($area), $access);
+        }
+
+        return $grants;
     }
 
     private static function originOf(PolicyOverride $project, PolicyOverride $profile): PolicyOriginType

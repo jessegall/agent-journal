@@ -131,7 +131,10 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         }
 
         return new JudgedCall(
-            new ToolFinished($hook, new ToolResult($payload->toolNameText(), $payload->toolOutcome())),
+            new ToolFinished(
+                $hook,
+                new ToolResult($payload->toolNameText(), $payload->toolOutcome(), $payload->toolArguments()),
+            ),
             fn (HookAnswer $answer) => ProgramReplies::observation('PostToolUse', $answer),
         );
     }

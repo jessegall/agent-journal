@@ -7,7 +7,7 @@ namespace App\Assignments\Console;
 use App\Actors\Exceptions\InvalidActorText;
 use App\AgentRequests\Console\Concerns\SendsSignedWrites;
 use App\AgentRequests\Contracts\AgentRequestSender;
-use App\Assignments\Console\Concerns\ReadsAutoAssignmentArguments;
+use App\Assignments\Console\Concerns\ReadsAutoAssignmentChange;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
@@ -18,7 +18,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class ConfigureAutoAssignmentCommand extends Command
 {
-    use ReadsAutoAssignmentArguments;
+    use ReadsAutoAssignmentChange;
     use SendsSignedWrites;
 
     protected $signature = 'assignment:auto-configure {actor : The actor as type:id} {type : The record type}
