@@ -28,6 +28,8 @@ use App\Sharing\Models\ShareGatewayOperation;
 use App\Sharing\Models\ShareInstallation;
 use App\Sharing\Models\ShareMember;
 use App\Sharing\Models\SharePreview;
+use App\Skills\Models\Skill;
+use App\Skills\Models\SkillRevision;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -36,7 +38,7 @@ use Illuminate\Support\ServiceProvider;
  */
 final class CoreServiceProvider extends ServiceProvider
 {
-    private const array AREAS = ['Actors', 'Agents', 'Assignments', 'Bus', 'Comments', 'Communication', 'Engine', 'Hooks', 'Links', 'Mcp', 'Numbers', 'Processes', 'Profiles', 'Settings', 'Sharing', 'Web'];
+    private const array AREAS = ['Actors', 'Agents', 'Assignments', 'Bus', 'Comments', 'Communication', 'Engine', 'Hooks', 'Links', 'Mcp', 'Numbers', 'Processes', 'Profiles', 'Settings', 'Sharing', 'Skills', 'Web'];
 
     public function boot(LinkTypeRegistry $links): void
     {
@@ -64,6 +66,8 @@ final class CoreServiceProvider extends ServiceProvider
             ShareInstallation::LINK_TYPE => ShareInstallation::class,
             ShareMember::LINK_TYPE => ShareMember::class,
             SharePreview::LINK_TYPE => SharePreview::class,
+            Skill::LINK_TYPE => Skill::class,
+            SkillRevision::LINK_TYPE => SkillRevision::class,
         ]);
 
         foreach (self::AREAS as $area) {

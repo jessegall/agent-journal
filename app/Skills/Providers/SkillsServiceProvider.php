@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Skills\Providers;
 
 use App\Domains\Support\DomainRegistry;
+use App\Numbers\Support\NumberedModel;
+use App\Numbers\Support\NumberedTypeRegistry;
 use App\Skills\Console\SkillListCommand;
 use App\Skills\Console\SkillPreviewCommand;
 use App\Skills\Console\SkillShowCommand;
 use App\Skills\Contracts\SkillReader;
 use App\Skills\Contracts\SkillRenderer;
 use App\Skills\CoreSkills;
+use App\Skills\Models\Skill;
 use App\Skills\Readers\SkillCatalogue;
 use App\Skills\Readers\SkillContextReader;
 use App\Skills\Support\CanonicalRenderer;
@@ -39,8 +42,10 @@ final class SkillsServiceProvider extends ServiceProvider
         $this->app->scoped(SkillReader::class, fn (Application $app) => SkillCatalogue::build($app->make(SkillRegistry::class), $app, $app->make(SkillRenderer::class), $app->make(ConditionTree::class)));
     }
 
-    public function boot(): void
+    public function boot(NumberedTypeRegistry $numbers): void
     {
+        $numbers->register(NumberedModel::global(Skill::class));
+
         if ($this->app->runningInConsole()) {
             $this->commands([SkillListCommand::class, SkillShowCommand::class, SkillPreviewCommand::class]);
         }
