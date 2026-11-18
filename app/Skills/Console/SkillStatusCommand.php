@@ -10,6 +10,7 @@ use App\Skills\Readers\SkillStatusReader;
 use App\Skills\Support\SkillAuthoring;
 use App\Skills\Values\GenerationStatus;
 use App\Skills\Values\PublicationStatus;
+use App\Skills\Values\SessionSkillStatus;
 use App\Skills\Values\SkillStatus;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Container\Container;
@@ -41,6 +42,7 @@ final class SkillStatusCommand extends Command
 
         try {
             $status = is_string($session) ? $reader->statusOfSession($session) : $reader->status();
+            $skills = is_string($session) ? $reader->skillsOfSession($session) : [];
         } catch (SkillSessionHidden $hidden) {
             $this->error($hidden->getMessage());
 
@@ -48,14 +50,42 @@ final class SkillStatusCommand extends Command
         }
 
         if ($this->option('json')) {
-            $this->line(json_encode($status->toArray(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
+            $skillRows = array_map(fn (SessionSkillStatus $skill) => $skill->toArray(), $skills);
+            $this->line(json_encode(
+                [...$status->toArray(), 'skills' => $skillRows],
+                JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES,
+            ));
 
             return self::SUCCESS;
         }
 
         $this->printStatus($status);
+        $this->printSkills($skills);
 
         return self::SUCCESS;
+    }
+
+    /**
+     * @param  list<SessionSkillStatus>  $skills
+     */
+    private function printSkills(array $skills): void
+    {
+        if ($skills === []) {
+            return;
+        }
+
+        $this->table(
+            ['Skill', 'Stored revision', 'Generated', 'Selected', 'Delivered', 'Loaded', 'New session needed'],
+            array_map(fn (SessionSkillStatus $skill) => [
+                $skill->key,
+                $skill->storedRevision === null ? 'shipped' : (string) $skill->storedRevision,
+                $skill->generatedDigest === null ? 'not generated' : substr($skill->generatedDigest, 0, 12),
+                $skill->selected ? 'yes' : "no: {$skill->selectionReason}",
+                $skill->deliveryText(),
+                $skill->loaded ? 'read in this context' : 'not read',
+                $skill->needsNewSession ? 'yes' : 'no',
+            ], $skills),
+        );
     }
 
     private function printStatus(SkillStatus $status): void
@@ -75,7 +105,9 @@ final class SkillStatusCommand extends Command
 
         foreach ($status->publications as $publication) {
             if ($publication->isRetryable()) {
-                $this->line("Once its cause is fixed, retry {$publication->publicationId}: {$publication->retryCommand()}");
+                $this->line(
+                    "Once its cause is fixed, retry {$publication->publicationId}: {$publication->retryCommand()}",
+                );
             }
         }
     }

@@ -373,6 +373,19 @@ final class SkillPublication extends Model implements ReadableModel
     }
 
     /**
+     * The session's newest delivered publication, or null when none was delivered yet.
+     */
+    public static function latestDeliveredOfSession(string $sessionId): self|null
+    {
+        return self::query()
+            ->where('session_id', $sessionId)
+            ->inState(PublicationState::Delivered)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    /**
      * The session's newest publication, or null when none was asked for it.
      */
     public static function latestOfSession(string $sessionId): self|null
