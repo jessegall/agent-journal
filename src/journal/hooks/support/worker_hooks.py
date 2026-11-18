@@ -11,7 +11,7 @@ from journal.hooks.support.agent_identity import AgentIdentity
 
 
 class WorkerHooks:
-    """A hook from a worker's run: named a worker's by its session when it carries no worker header, taken in by the worker's token or its own session in place of the launch id, its session bound to the worker's row when the row names none yet, its agent row made in the worker's role, and a clocked-in worker out on a task it holds put to work on it while its row rests on Void, so a session sent a new job meets it at its first tool use."""
+    """A hook from a worker's run: named a worker's by its session when it carries no worker header, taken in by the worker's token or its own session in place of the launch id, its session bound to the worker's row when the row names none yet, its agent row made in the worker's role, and a worker out on a task it holds put to work on it while its row rests on Void, once it clocked in or when it is sent back or sent a job on the task its clock-in started, so a session sent a new job meets it at its first tool use."""
 
     def __init__(self, identity: AgentIdentity, workers: Workers, agents: SessionAgents, assigner: WorkerAssigner) -> None:
         self.identity, self.workers, self.agents, self.assigner = identity, workers, agents, assigner
@@ -33,6 +33,5 @@ class WorkerHooks:
         agent = self.agents.worker_agent(hook.session, environment.row_id, hook.provider)
         if agent.state != Void.name:
             return agent
-        # only a worker that clocked in is put to work: one still before its clock-in rests on its floor's rules
         self.assigner.assigned(worker)
         return self.agents.worker_agent(hook.session, environment.row_id, hook.provider)
