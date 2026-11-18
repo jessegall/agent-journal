@@ -6,8 +6,8 @@ namespace Tests\Feature\Web;
 
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Process\Process;
-use Tests\TestCase;
 use Tests\Support\TimeLimits\TimeLimit;
+use Tests\TestCase;
 
 /**
  * The browser import check: a domain's component may import its own files, @kit, its own generated types and routes
