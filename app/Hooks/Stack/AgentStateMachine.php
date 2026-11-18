@@ -9,7 +9,6 @@ use App\Hooks\Contracts\HookInput;
 use App\Hooks\Exceptions\HookDeadlineExpired;
 use App\Hooks\Exceptions\HookDigestChanged;
 use App\Hooks\Exceptions\ReplayFound;
-use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Lifecycle\FrameLifecycle;
@@ -18,7 +17,7 @@ use App\Hooks\Models\HookCall;
 use App\Hooks\Programs\ProgramCapabilities;
 use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Storage\RecordedSteps;
-use App\Hooks\Support\Compaction;
+use App\Hooks\Support\ContextCollection;
 use App\Hooks\Support\StackAccess;
 use App\Hooks\Support\StackTransaction;
 use Closure;
@@ -37,7 +36,7 @@ final readonly class AgentStateMachine
         private StackAccess $access,
         private StackRestorer $restorer,
         private HookRewrite $rewrite,
-        private Compaction $compaction,
+        private ContextCollection $context,
         private FrameLifecycle $lifecycle,
         private StateTypes $types,
         private SessionStartStep $sessionStart,
@@ -93,18 +92,14 @@ final readonly class AgentStateMachine
     }
 
     /**
-     * The reminders a new compaction brings, read after the replay check under the stack lock; a replayed compaction and
-     * any other hook bring none.
+     * The reminders a new context start brings (launch, clear, resume or compaction), collected after the replay check
+     * under the stack lock; a replay and any other hook bring none.
      *
      * @return list<string>
      */
     private function remindersFor(HookInput $input): array
     {
-        if (! $input instanceof ContextCompacted) {
-            return [];
-        }
-
-        return $this->compaction->collectReminders($this->access->target(), $input->compactionId());
+        return $this->context->collectReminders($this->access->target(), $input);
     }
 
     private function walk(AgentStack $stack, HookInput $input): HookAnswer

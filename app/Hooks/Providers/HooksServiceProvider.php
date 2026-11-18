@@ -19,6 +19,7 @@ use App\Hooks\Models\Support\AgentSessionScope;
 use App\Hooks\Stack\AdvisoryStackAdmission;
 use App\Hooks\Stack\RegisteredStateFactory;
 use App\Hooks\Stack\StateTypes;
+use App\Hooks\Support\ContextBudget;
 use App\Hooks\Support\HookRetryWindow;
 use App\Hooks\Support\RetentionPeriods;
 use App\Hooks\Support\StackTransaction;
@@ -46,6 +47,7 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->bindIf(ShellCommandParser::class, MissingShellParser::class);
         $this->app->scoped(StateFactory::class, RegisteredStateFactory::class);
         $this->app->singleton(OperationDeadline::class, fn () => new OperationDeadline($this->app->make('config')->integer('hooks.operation_deadline_milliseconds')));
+        $this->app->singleton(ContextBudget::class, fn () => new ContextBudget($this->app->make('config')->integer('hooks.context_budget_characters')));
         $this->app->singleton(HookRetryWindow::class, fn () => new HookRetryWindow($this->app->make('config')->integer('hooks.retry_seconds')));
     }
 

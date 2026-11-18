@@ -303,13 +303,14 @@ use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\AnswerType;
+use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\FileOperation;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\SessionEndReason;
 use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Enums\TransitionType;
-use App\Hooks\Events\ContextWasCompacted;
+use App\Hooks\Events\ContextStarted;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Exceptions\MonotonicClockWentBack;
 use App\Hooks\Exceptions\StackTransactionRequired;
@@ -672,7 +673,7 @@ final class CoreApi
     public static function exports(): Exports
     {
         return Exports::make()
-            ->events(LinksRemoved::class, CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, LaunchAccepted::class, EngineTicked::class, SettingsChanged::class, ShareRequested::class, ShareCreated::class, ShareActivated::class, ShareFailed::class, ShareScopeChanged::class, ShareRevoked::class, ShareExpired::class, ShareGatewayChanged::class)
+            ->events(LinksRemoved::class, CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextStarted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, LaunchAccepted::class, EngineTicked::class, SettingsChanged::class, ShareRequested::class, ShareCreated::class, ShareActivated::class, ShareFailed::class, ShareScopeChanged::class, ShareRevoked::class, ShareExpired::class, ShareGatewayChanged::class)
             ->contracts(
                 RecordProvider::class,
                 RecordReader::class,
@@ -883,6 +884,7 @@ final class CoreApi
                 SubjectReference::class,
                 ContextCompacted::class,
                 CompactionDetails::class,
+                ContextStartType::class,
                 FileEditRequested::class,
                 FileChanges::class,
                 FileChange::class,

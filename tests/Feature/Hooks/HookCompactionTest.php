@@ -9,7 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Enums\RewriteSupport;
-use App\Hooks\Events\ContextWasCompacted;
+use App\Hooks\Events\ContextStarted;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\HookIdentity;
@@ -108,7 +108,7 @@ final class HookCompactionTest extends TestCase
     {
         $this->compact('call-1');
         $heard = 0;
-        Event::listen(ContextWasCompacted::class, function () use (&$heard): void {
+        Event::listen(ContextStarted::class, function () use (&$heard): void {
             $heard++;
         });
 

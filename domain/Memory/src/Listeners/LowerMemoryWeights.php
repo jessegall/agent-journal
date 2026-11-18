@@ -5,22 +5,26 @@ declare(strict_types=1);
 namespace Domain\Memory\Listeners;
 
 use App\Contracts\Listener;
-use App\Hooks\Events\ContextWasCompacted;
+use App\Hooks\Enums\ContextStartType;
+use App\Hooks\Events\ContextStarted;
 use Domain\Memory\Support\AgentMemories;
 
 /**
- * Fades the agent's memories once for this compaction, then reminds it of the ones that remain.
+ * Fades the agent's memories once for a compaction, then reminds it of the ones that remain whenever its context
+ * starts again.
  */
 final readonly class LowerMemoryWeights implements Listener
 {
     public function __construct(private AgentMemories $memories) {}
 
-    public function handle(ContextWasCompacted $event): void
+    public function handle(ContextStarted $event): void
     {
-        $this->memories->lowerWeightsOnce($event->target, $event->compactionId);
+        if ($event->type === ContextStartType::Compact) {
+            $this->memories->lowerWeightsOnce($event->target, $event->hookId);
+        }
 
         foreach ($this->memories->remindersFor($event->target->actorIdentity()) as $reminder) {
-            $event->reminders->add($reminder);
+            $event->reminders->add($reminder, false);
         }
     }
 }

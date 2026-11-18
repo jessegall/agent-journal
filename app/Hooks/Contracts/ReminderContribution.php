@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Hooks\Contracts;
 
 /**
- * Where a domain adds its current reminders after a compaction, inside the hook call that handles it.
+ * Where a domain adds its current reminders when an agent's context starts again, inside the hook call; a required
+ * reminder is always given, the others while the context budget lasts.
  */
 interface ReminderContribution
 {
-    public function add(string $reminder): void;
+    public function add(string $reminder, bool $required): void;
 }
