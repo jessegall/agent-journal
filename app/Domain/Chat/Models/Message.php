@@ -29,8 +29,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['body'])]
 final class Message extends Model
 {
-    use Linkable;
     use BelongsToOneAgent;
+    use Linkable;
 
     /**
      * @var array<string, mixed>

@@ -12,7 +12,7 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
  * A plan started, and who started it. Raised only once the start has committed, so a listener never hears of a start
  * that rolled back.
  */
-final readonly class PlanStarted implements UpdatesUserInterface, ShouldDispatchAfterCommit
+final readonly class PlanStarted implements ShouldDispatchAfterCommit, UpdatesUserInterface
 {
     public function __construct(
         public int $planId,

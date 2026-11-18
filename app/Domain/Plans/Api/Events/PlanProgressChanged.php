@@ -11,7 +11,7 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
  * A task in one of the plan's phases started, finished, was blocked or was cancelled, so the plan's progress moved.
  * Raised only once that change has committed.
  */
-final readonly class PlanProgressChanged implements UpdatesUserInterface, ShouldDispatchAfterCommit
+final readonly class PlanProgressChanged implements ShouldDispatchAfterCommit, UpdatesUserInterface
 {
     public function __construct(public int $planId) {}
 }

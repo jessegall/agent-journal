@@ -24,8 +24,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['text', 'weight'])]
 final class Memory extends Model
 {
-    use Linkable;
     use BelongsToOneAgent;
+    use Linkable;
 
     /**
      * @return array<string, string>

@@ -10,7 +10,7 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 /**
  * A rule stopped holding. Raised once the change has committed.
  */
-final readonly class RuleRemoved implements UpdatesUserInterface, ShouldDispatchAfterCommit
+final readonly class RuleRemoved implements ShouldDispatchAfterCommit, UpdatesUserInterface
 {
     public function __construct(public int $ruleId) {}
 }

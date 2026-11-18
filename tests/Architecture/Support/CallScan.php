@@ -21,7 +21,10 @@ final class CallScan
     {
         $calls = [];
 
-        foreach ((new NodeFinder)->find($file->statements, fn (Node $node) => $node instanceof Expr\MethodCall || $node instanceof Expr\StaticCall || $node instanceof Expr\NullsafeMethodCall) as $call) {
+        /** @var list<Expr\MethodCall|Expr\StaticCall|Expr\NullsafeMethodCall> $found */
+        $found = (new NodeFinder)->find($file->statements, fn (Node $node) => $node instanceof Expr\MethodCall || $node instanceof Expr\StaticCall || $node instanceof Expr\NullsafeMethodCall);
+
+        foreach ($found as $call) {
             if (! $call->name instanceof Node\Identifier) {
                 continue;
             }

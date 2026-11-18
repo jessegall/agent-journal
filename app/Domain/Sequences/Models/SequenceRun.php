@@ -30,8 +30,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['name', 'steps'])]
 final class SequenceRun extends Model
 {
-    use Linkable;
     use BelongsToOneAgent;
+    use Linkable;
 
     /**
      * @var array<string, mixed>
