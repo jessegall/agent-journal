@@ -10,6 +10,7 @@ use App\Processes\Console\ExplainCommandTypeCommand;
 use App\Processes\Console\OutputReadCommand;
 use App\Processes\Console\ProcessExportCommand;
 use App\Processes\Console\ProcessShowCommand;
+use App\Processes\Console\ReaderProposeCommand;
 use App\Processes\Console\RunProcessCommand;
 use App\Processes\Contracts\AliasReader;
 use App\Processes\Contracts\CommandClassifier;
@@ -89,6 +90,7 @@ final class ProcessesServiceProvider extends ServiceProvider
             OutputReadCommand::class,
             ProcessShowCommand::class,
             ProcessExportCommand::class,
+            ReaderProposeCommand::class,
         ]);
     }
 }

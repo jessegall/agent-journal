@@ -12,14 +12,18 @@ return new class extends Migration
     {
         Schema::create('reader_revisions', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->string('project_key', 64);
+            $table->foreignUlid('command_request_id')->constrained('command_requests')->cascadeOnDelete();
+            $table->unsignedInteger('declaration_revision');
             $table->string('operation');
             $table->string('contract_label');
             $table->jsonb('definition');
+            $table->string('state', 16);
             $table->string('actor_type', 16);
             $table->string('actor_id');
             $table->timestampTz('created_at');
 
-            $table->index('operation');
+            $table->index(['project_key', 'operation']);
         });
 
         Schema::create('reader_positions', function (Blueprint $table) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Exceptions;
 
+use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
 
@@ -12,6 +13,8 @@ use RuntimeException;
  */
 final class DeclarationInvalid extends RuntimeException implements CommandRefusal
 {
+    use RendersRefusal;
+
     /**
      * @param  list<string>  $fields  one line per field: its path and what is wrong with it
      */
@@ -31,5 +34,10 @@ final class DeclarationInvalid extends RuntimeException implements CommandRefusa
     public static function notJson(string $reason): self
     {
         return new self("The declarations are not JSON: {$reason}", ['declarations']);
+    }
+
+    protected function status(): int
+    {
+        return 422;
     }
 }

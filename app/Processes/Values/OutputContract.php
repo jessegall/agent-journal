@@ -67,6 +67,11 @@ final readonly class OutputContract
         return "output {$this->framing->value}, summary {$this->summary->value}, empty {$this->empty->policy->value}";
     }
 
+    public function requiresSummary(): bool
+    {
+        return $this->summary === SummaryRule::RequiredTerminalRecord;
+    }
+
     /**
      * Plain text lines on merged streams with no promised summary: the contract of a check whose reader is not proven.
      */

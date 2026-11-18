@@ -44,6 +44,8 @@ use App\Processes\Commands\ImportRuleProposals;
 use App\Processes\Commands\IssueEvidencePermit;
 use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\ProposeCommandRule;
+use App\Processes\Commands\ProposeReader;
+use App\Processes\Commands\RecordEvidenceReads;
 use App\Processes\Commands\ReviseRuleProposal;
 use App\Processes\Commands\RevokeCommandPermissions;
 use App\Processes\Commands\WithdrawCommandRequest;
@@ -112,6 +114,8 @@ final class CoreCommands
             ReviseRuleProposal::class,
             WithdrawRuleProposal::class,
             ImportRuleProposals::class,
+            ProposeReader::class,
+            RecordEvidenceReads::class,
             CreateSkill::class, ReviseSkill::class, RestoreSkill::class, RetireSkill::class, CopySkill::class,
             RefreshSkills::class, PublishSkills::class, PrepareSkillPublication::class, ActivateSkillPublication::class, FailSkillPublication::class,
         ];

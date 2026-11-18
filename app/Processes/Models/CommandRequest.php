@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Processes\Models;
 
+use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
+use App\Processes\Enums\EvidenceSource;
+use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\ProposalState;
 use App\Processes\Enums\RequestHoldReason;
 use App\Processes\Enums\RequestState;
@@ -68,6 +71,27 @@ final class CommandRequest extends Model implements ReadableModel
     public function nextStep(): NextStep
     {
         return $this->state->nextStep($this->id, $this->operation);
+    }
+
+    /**
+     * Whether the request's actor read the run's envelope and at least one range of every stream its parts wrote,
+     * as a reader must be proven only against evidence its author looked at (story 202).
+     */
+    public function hasReadEvidence(ProcessRun $run): bool
+    {
+        $opener = new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
+        $reads = EvidenceRead::query()->ofRunReadBy($run, $opener)->readLimit(1_000)->get();
+        if (! $reads->contains(fn (EvidenceRead $read): bool => $read->source === EvidenceSource::Envelope)) {
+            return false;
+        }
+
+        return $run->parts()->readLimit(500)->get()->every(fn (PartRun $part): bool => array_all(
+            $part->recordedStreams(),
+            fn (OutputStream $stream): bool => $reads->contains(
+                fn (EvidenceRead $read): bool => $read->part_run_id === $part->id
+                    && $read->source === EvidenceSource::of($stream),
+            ),
+        ));
     }
 
     public function isOpenedBy(ActorIdentity $actor): bool

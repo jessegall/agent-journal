@@ -4,22 +4,69 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Processes;
 
+use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Processes\ReadOutputRequest;
+use App\Processes\Commands\RecordEvidenceReads;
+use App\Processes\Enums\EvidenceSource;
+use App\Processes\Enums\OutputStream;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Support\StoredOutput;
+use App\Processes\Values\EvidenceRange;
 use Illuminate\Http\JsonResponse;
 
 /**
  * Reads a run's stored output for the agent that owns it: another agent never finds the run. Everything it returns is
- * labelled diagnostic output, never a result.
+ * labelled diagnostic output, never a result, and what it showed is recorded as an evidence read.
  */
 final readonly class ReadOutputController
 {
-    public function __invoke(ReadOutputRequest $request, ProcessRun $processRun, StoredOutput $output): JsonResponse
+    public function __construct(private StoredOutput $output, private CommandBus $commands) {}
+
+    public function __invoke(ReadOutputRequest $request, ProcessRun $processRun): JsonResponse
     {
         if ($request->mode() === 'summary') {
-            return new JsonResponse(['label' => 'diagnostic output', 'mode' => $processRun->mode->value, 'lifecycle' => $processRun->lifecycle->value, 'parts' => $processRun->parts()->orderBy('syntax_node')->orderBy('attempt')->readLimit(500)->get()->map(fn (PartRun $part) => [
+            return $this->summary($processRun);
+        }
+        $part = $processRun->parts()->where('syntax_node', $request->partNode())->orderByDesc('attempt')->firstOrFail();
+        $stream = $request->stream();
+        $source = EvidenceSource::of($stream);
+        $shown = match ($request->mode()) {
+            'tail' => $this->output->tail($part, $stream, $request->tailLines()),
+            'search' => ['offsets' => $this->output->search($part, $stream, $request->needle())],
+            default => $this->raw($part, $stream),
+        };
+        $ranges = match ($request->mode()) {
+            'tail' => [EvidenceRange::bytes($part->id, $source, $shown['before'], $shown['end'])],
+            'search' => [],
+            default => [EvidenceRange::bytes($part->id, $source, 0, $shown['length'])],
+        };
+        $this->commands->run(new RecordEvidenceReads($processRun->id, $ranges));
+
+        return new JsonResponse(['label' => 'diagnostic output', 'stream' => $stream->value, ...$shown]);
+    }
+
+    /**
+     * @return array{bytes: string, length: int}
+     */
+    private function raw(PartRun $part, OutputStream $stream): array
+    {
+        $bytes = $this->output->bytes($part, $stream);
+
+        return ['bytes' => base64_encode($bytes), 'length' => strlen($bytes)];
+    }
+
+    private function summary(ProcessRun $run): JsonResponse
+    {
+        $parts = $run->parts()->orderBy('syntax_node')->orderBy('attempt')->readLimit(500)->get();
+        $envelopes = $parts->map(fn (PartRun $part): EvidenceRange => EvidenceRange::envelope($part->id))->all();
+        $this->commands->run(new RecordEvidenceReads($run->id, array_values($envelopes)));
+
+        return new JsonResponse([
+            'label' => 'diagnostic output',
+            'mode' => $run->mode->value,
+            'lifecycle' => $run->lifecycle->value,
+            'parts' => $parts->map(fn (PartRun $part): array => [
                 'node' => $part->syntax_node,
                 'attempt' => $part->attempt,
                 'operation' => $part->operation,
@@ -28,14 +75,7 @@ final readonly class ReadOutputController
                 'code' => $part->end()->hasStatus() ? $part->end_code : null,
                 'capture' => $part->capture_state->value,
                 'bytes' => $part->stream_offsets,
-            ])->all()]);
-        }
-        $part = $processRun->parts()->where('syntax_node', $request->partNode())->orderByDesc('attempt')->firstOrFail();
-
-        return new JsonResponse(['label' => 'diagnostic output', 'stream' => $request->stream()->value, ...match ($request->mode()) {
-            'tail' => $output->tail($part, $request->stream(), $request->tailLines()),
-            'search' => ['offsets' => $output->search($part, $request->stream(), $request->needle())],
-            default => ['bytes' => base64_encode($output->bytes($part, $request->stream()))],
-        }]);
+            ])->all(),
+        ]);
     }
 }

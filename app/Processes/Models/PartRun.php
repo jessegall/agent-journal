@@ -7,6 +7,7 @@ namespace App\Processes\Models;
 use App\Links\Support\Linkable;
 use App\Processes\Enums\CaptureState;
 use App\Processes\Enums\LifecycleState;
+use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\PartEndType;
 use App\Processes\Exceptions\PartTransitionRefused;
 use App\Processes\Values\PartEnd;
@@ -57,7 +58,12 @@ final class PartRun extends Model implements ReadableModel
     /**
      * @var array<string, mixed>
      */
-    protected $attributes = ['lifecycle' => 'queued', 'end_type' => 'not_yet', 'capture_state' => 'recording', 'stream_offsets' => '{}'];
+    protected $attributes = [
+        'lifecycle' => 'queued',
+        'end_type' => 'not_yet',
+        'capture_state' => 'recording',
+        'stream_offsets' => '{}',
+    ];
 
     /**
      * @return array<string, string>
@@ -179,6 +185,18 @@ final class PartRun extends Model implements ReadableModel
     {
         $this->capture_state = $state;
         $this->save();
+    }
+
+    /**
+     * The streams this part wrote at least one byte to.
+     *
+     * @return list<OutputStream>
+     */
+    public function recordedStreams(): array
+    {
+        $written = array_keys(array_filter($this->stream_offsets, fn (int $end): bool => $end > 0));
+
+        return array_map(fn (string $stream): OutputStream => OutputStream::from($stream), $written);
     }
 
     /**

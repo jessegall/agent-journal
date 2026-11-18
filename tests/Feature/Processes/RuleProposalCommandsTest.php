@@ -12,18 +12,11 @@ use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\ProposeCommandRule;
 use App\Processes\Commands\ReviseRuleProposal;
 use App\Processes\Commands\WithdrawRuleProposal;
-use App\Processes\Declarations\VerificationContract;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\CommandType;
-use App\Processes\Enums\EmptySelection;
-use App\Processes\Enums\FramingType;
-use App\Processes\Enums\Outcome;
-use App\Processes\Enums\OutputEncoding;
 use App\Processes\Enums\ProposalState;
 use App\Processes\Enums\RequestHoldReason;
 use App\Processes\Enums\RequestState;
-use App\Processes\Enums\StreamUse;
-use App\Processes\Enums\SummaryRule;
 use App\Processes\Enums\ToolType;
 use App\Processes\Exceptions\DeclarationInvalid;
 use App\Processes\Exceptions\RuleProposalRefused;
@@ -35,18 +28,12 @@ use App\Processes\Support\CommandRuleRegistry;
 use App\Processes\Values\ArgumentGrammar;
 use App\Processes\Values\CommandClassSet;
 use App\Processes\Values\CommandRule;
-use App\Processes\Values\EmptyRunPolicy;
-use App\Processes\Values\ExecutableBinding;
-use App\Processes\Values\ExitBranch;
-use App\Processes\Values\ExitPolicy;
-use App\Processes\Values\OutputContract;
 use App\Processes\Values\ProgramSpellings;
-use App\Processes\Values\ProgressPolicy;
 use App\Processes\Values\ProposalReceipt;
 use App\Processes\Values\ProposedRule;
-use App\Processes\Values\ReaderReference;
 use App\Processes\Values\RuleExample;
 use App\Processes\Values\RuleScope;
+use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
@@ -64,7 +51,7 @@ final class RuleProposalCommandsTest extends TestCase
     {
         $request = $this->openRequest('agent-1', RequestHoldReason::UnknownCommand);
 
-        $receipt = $this->propose('agent-1', $request, 'request-1', $this->proposed($this->verifyRule()));
+        $receipt = $this->propose('agent-1', $request, 'request-1', AcmeDeclarations::proposedVerify());
 
         $this->assertSame(ProposalState::Pending, $receipt->state);
         $this->assertSame([], $receipt->missingFields);
@@ -86,7 +73,7 @@ final class RuleProposalCommandsTest extends TestCase
             ToolType::Other,
         )->ownedBy(RuleScope::project(), 1);
 
-        $receipt = $this->propose('agent-1', $request, 'request-1', $this->proposed($unproven));
+        $receipt = $this->propose('agent-1', $request, 'request-1', AcmeDeclarations::proposed($unproven));
 
         $this->assertSame(ProposalState::Draft, $receipt->state);
         $this->assertSame(['contracts.0.exits'], $receipt->missingFields);
@@ -95,16 +82,17 @@ final class RuleProposalCommandsTest extends TestCase
 
     public function test_a_command_known_as_a_check_cannot_be_relabelled_as_ordinary(): void
     {
+        $ordinary = AcmeDeclarations::proposed($this->ordinary());
         $readerRequest = $this->openRequest('agent-1', RequestHoldReason::ReaderRequired);
         $this->assertThrows(
-            fn () => $this->propose('agent-1', $readerRequest, 'request-1', $this->proposed($this->ordinary())),
+            fn () => $this->propose('agent-1', $readerRequest, 'request-1', $ordinary),
             RuleProposalRefused::class,
         );
 
-        $this->app->instance(CommandRuleRegistry::class, CommandRuleRegistry::from([$this->verifyRule()]));
+        $this->app->instance(CommandRuleRegistry::class, CommandRuleRegistry::from([AcmeDeclarations::verify()]));
         $unknownRequest = $this->openRequest('agent-2', RequestHoldReason::UnknownCommand);
         $this->assertThrows(
-            fn () => $this->propose('agent-2', $unknownRequest, 'request-2', $this->proposed($this->ordinary())),
+            fn () => $this->propose('agent-2', $unknownRequest, 'request-2', $ordinary),
             RuleProposalRefused::class,
         );
         $this->assertSame(0, RuleProposal::query()->count());
@@ -114,13 +102,14 @@ final class RuleProposalCommandsTest extends TestCase
     {
         $request = $this->openRequest('agent-1', RequestHoldReason::UnknownCommand);
 
-        $first = $this->propose('agent-1', $request, 'request-1', $this->proposed($this->verifyRule()));
-        $again = $this->propose('agent-1', $request, 'request-1', $this->proposed($this->verifyRule()));
+        $first = $this->propose('agent-1', $request, 'request-1', AcmeDeclarations::proposedVerify());
+        $again = $this->propose('agent-1', $request, 'request-1', AcmeDeclarations::proposedVerify());
 
         $this->assertSame($first->proposalId, $again->proposalId);
         $this->assertSame(1, RuleProposal::query()->count());
+        $other = new ProposedRule(AcmeDeclarations::verify(), '', []);
         $this->assertThrows(
-            fn () => $this->propose('agent-1', $request, 'request-1', new ProposedRule($this->verifyRule(), 'x', [])),
+            fn () => $this->propose('agent-1', $request, 'request-1', $other),
             RuleProposalRefused::class,
         );
     }
@@ -128,7 +117,7 @@ final class RuleProposalCommandsTest extends TestCase
     public function test_the_author_revises_to_revision_two_and_another_agent_cannot(): void
     {
         $request = $this->openRequest('agent-1', RequestHoldReason::UnknownCommand);
-        $receipt = $this->propose('agent-1', $request, 'request-1', $this->proposed($this->verifyRule()));
+        $receipt = $this->propose('agent-1', $request, 'request-1', AcmeDeclarations::proposedVerify());
 
         $this->assertThrows(
             fn () => $this->revise('agent-2', $receipt->proposalId, 1),
@@ -149,7 +138,7 @@ final class RuleProposalCommandsTest extends TestCase
     public function test_only_the_author_withdraws_and_a_withdrawn_proposal_takes_no_revision(): void
     {
         $request = $this->openRequest('agent-1', RequestHoldReason::UnknownCommand);
-        $receipt = $this->propose('agent-1', $request, 'request-1', $this->proposed($this->verifyRule()));
+        $receipt = $this->propose('agent-1', $request, 'request-1', AcmeDeclarations::proposedVerify());
 
         $this->assertThrows(
             fn () => $this->runAs('agent-2', new WithdrawRuleProposal($receipt->proposalId)),
@@ -170,7 +159,7 @@ final class RuleProposalCommandsTest extends TestCase
             'request_id' => 'import-1',
             'evidence' => 'acme --help documents verify',
             'examples' => [RuleExample::positive('acme verify', CommandClassSet::of(CommandClass::Read))->toArray()],
-            'rule' => $this->verifyRule()->toArray(),
+            'rule' => AcmeDeclarations::verify()->toArray(),
         ]]], JSON_THROW_ON_ERROR);
 
         $receipts = $this->runAs('agent-1', new ImportRuleProposals(self::FOLDER, $file));
@@ -178,14 +167,14 @@ final class RuleProposalCommandsTest extends TestCase
         $this->assertCount(1, $receipts);
         $this->assertSame(ProposalState::Pending, $receipts[0]->state);
         $proposal = RuleProposal::query()->findOrFail($receipts[0]->proposalId);
-        $this->assertEquals($this->verifyRule(), $proposal->revisions()->firstOrFail()->payload);
+        $this->assertEquals(AcmeDeclarations::verify(), $proposal->revisions()->firstOrFail()->payload);
         $this->assertSame(0, ClassificationRule::query()->count());
         $this->assertSame(0, RuleRevision::query()->count());
     }
 
     public function test_an_invalid_declaration_file_is_refused_naming_its_fields(): void
     {
-        $rule = $this->verifyRule()->toArray();
+        $rule = AcmeDeclarations::verify()->toArray();
         $rule['purpose'] = 'harmless';
         $rule['contracts'][0]['exits'][0]['status'] = 300;
         $declaration = ['request_id' => 'import-1', 'evidence' => '', 'examples' => [], 'rule' => $rule];
@@ -201,51 +190,7 @@ final class RuleProposalCommandsTest extends TestCase
         $this->assertSame(0, RuleProposal::query()->count());
     }
 
-    private function proposed(CommandRule $rule): ProposedRule
-    {
-        return new ProposedRule($rule, 'acme --help documents verify as read-only', [
-            RuleExample::positive('acme verify', CommandClassSet::of(CommandClass::Read)),
-            RuleExample::negative('acme verify --fix'),
-        ]);
-    }
 
-    /**
-     * The acme verify check of section 72, with its proven exits.
-     */
-    private function verifyRule(): CommandRule
-    {
-        $rule = CommandRule::forCheck(
-            'project.acme.verify',
-            new ProgramSpellings('acme', ['acme-cli']),
-            ['verify'],
-            ArgumentGrammar::none(),
-            CommandClassSet::of(CommandClass::Read),
-            CommandType::Verification,
-            ToolType::Other,
-        )->ownedBy(RuleScope::project(), 1);
-        $contract = new VerificationContract(
-            'acme verify',
-            ToolType::Other,
-            ExecutableBinding::builtin('acme', ['/opt/tools']),
-            new OutputContract(
-                OutputEncoding::Utf8,
-                FramingType::JsonLines,
-                '1',
-                StreamUse::Separate,
-                SummaryRule::RequiredTerminalRecord,
-                EmptyRunPolicy::invalid(),
-                EmptySelection::ConfigurationProblem,
-            ),
-            ExitPolicy::of(
-                ExitBranch::of(0, Outcome::Passed, 'summary.failed == 0'),
-                ExitBranch::of(1, Outcome::Findings, 'summary.failed > 0'),
-            ),
-            ProgressPolicy::indeterminate(),
-            ReaderReference::required(),
-        );
-
-        return CommandRule::fromArray([...$rule->toArray(), 'contracts' => [$contract->toArray()]]);
-    }
 
     private function ordinary(): CommandRule
     {
@@ -260,7 +205,7 @@ final class RuleProposalCommandsTest extends TestCase
 
     private function revise(string $agentId, string $proposalId, int $expectedRevision): ProposalReceipt
     {
-        $command = new ReviseRuleProposal($proposalId, $expectedRevision, $this->proposed($this->verifyRule()));
+        $command = new ReviseRuleProposal($proposalId, $expectedRevision, AcmeDeclarations::proposedVerify());
 
         return $this->runAs($agentId, $command);
     }

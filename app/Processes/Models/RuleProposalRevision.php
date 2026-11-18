@@ -73,6 +73,17 @@ final class RuleProposalRevision extends Model implements ReadableModel
     }
 
     /**
+     * The revision of the proposal that answers the request.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function answering(Builder $query, CommandRequest $request, int $revision): void
+    {
+        $query->whereRelation('proposal', 'command_request_id', $request->id)->where('revision', $revision);
+    }
+
+    /**
      * @param  Builder<self>  $query
      */
     #[Scope]

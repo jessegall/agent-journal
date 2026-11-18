@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Exceptions;
 
+use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use App\Processes\Enums\ProposalState;
 use RuntimeException;
@@ -14,6 +15,8 @@ use RuntimeException;
  */
 final class RuleProposalRefused extends RuntimeException implements CommandRefusal
 {
+    use RendersRefusal;
+
     public static function requestReused(string $requestId): self
     {
         return new self("The request id {$requestId} already proposed another declaration; use a new request id.");
@@ -51,5 +54,10 @@ final class RuleProposalRefused extends RuntimeException implements CommandRefus
         return new self(
             "{$operation} is known as a test, check or build, so it is declared with its contract and proven reader.",
         );
+    }
+
+    protected function status(): int
+    {
+        return 409;
     }
 }

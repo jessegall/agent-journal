@@ -50,13 +50,21 @@ final readonly class ReaderDefinition
         return null;
     }
 
+    public function hasRole(RecordRole $role): bool
+    {
+        return array_any($this->rules, fn (RecordRule $rule): bool => $rule->role === $role);
+    }
+
     /**
      * @return array<string, mixed>
      */
     public function toArray(): array
     {
         return [
-            'rules' => array_map(fn (RecordRule $rule) => ['role' => $rule->role->value, 'pattern' => $rule->pattern], $this->rules),
+            'rules' => array_map(
+                fn (RecordRule $rule) => ['role' => $rule->role->value, 'pattern' => $rule->pattern],
+                $this->rules,
+            ),
             'count_fields' => $this->countFields,
             'total_field' => $this->totalField,
             'failure_field' => $this->failureField,
