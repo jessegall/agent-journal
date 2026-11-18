@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Hooks\States\Support;
 
+use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Contracts\StateRegistration;
-use App\Hooks\Contracts\StateType;
 use App\Hooks\Exceptions\StateTypeRepeated;
 use App\Hooks\Exceptions\StateTypesFrozen;
 use App\Hooks\Exceptions\StateTypeUnknown;
@@ -16,13 +16,13 @@ use App\Hooks\Exceptions\StateTypeUnknown;
 final class StateTypeRegistry implements StateRegistration
 {
     /**
-     * @var array<string, StateType>
+     * @var array<string, StateLoader>
      */
     private array $types = [];
 
     private bool $isFrozen = false;
 
-    public function register(string $typeKey, StateType $type): void
+    public function register(string $typeKey, StateLoader $type): void
     {
         if ($this->isFrozen) {
             throw StateTypesFrozen::forKey($typeKey);
@@ -35,7 +35,7 @@ final class StateTypeRegistry implements StateRegistration
         $this->types[$typeKey] = $type;
     }
 
-    public function get(string $typeKey): StateType
+    public function get(string $typeKey): StateLoader
     {
         return $this->types[$typeKey] ?? throw StateTypeUnknown::forKey($typeKey);
     }

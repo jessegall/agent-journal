@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
-use App\Hooks\Contracts\StateType;
+use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
@@ -13,7 +13,7 @@ use App\Hooks\States\AgentState;
 /**
  * The state of a module installed outside the domain folder: while the agent writes a note, it may not stop.
  */
-final class WritingNoteStateFactory implements StateType
+final class WritingNoteStateFactory implements StateLoader
 {
     public function statesFor(StateReferences $references): StateSet
     {

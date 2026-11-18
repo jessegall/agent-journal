@@ -36,8 +36,8 @@ use App\Hooks\Support\StackTransaction;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskWorkState;
 use Illuminate\Contracts\Events\Dispatcher;
-use Tests\Fixtures\Hooks\ClosureStateType;
-use Tests\Fixtures\Hooks\InMemoryTaskType;
+use Tests\Fixtures\Hooks\ClosureStateLoader;
+use Tests\Fixtures\Hooks\InMemoryTaskLoader;
 use Tests\Fixtures\Hooks\ListedCommandParser;
 use Tests\Fixtures\Hooks\RewritingState;
 use Tests\Fixtures\Hooks\ScriptedState;
@@ -50,7 +50,7 @@ trait CommittedHookStack
 {
     use RefreshHookDatabase;
 
-    protected InMemoryTaskType $tasks;
+    protected InMemoryTaskLoader $tasks;
 
     protected StackTarget $target;
 
@@ -66,13 +66,13 @@ trait CommittedHookStack
     {
         $this->emptyTables(...self::committedTables());
         $this->target = $this->launchedTarget();
-        $this->tasks = new InMemoryTaskType([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
+        $this->tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
         $this->app->instance(ShellCommandParser::class, new ListedCommandParser);
         $tasks = $this->tasks;
         $this->app->make(Dispatcher::class)->listen(StateTypesRequested::class, function (StateTypesRequested $event) use ($tasks): void {
             $event->registry->register('test.tasks', $tasks);
-            $event->registry->register('guide', new ClosureStateType(fn () => ScriptedState::delegating()));
-            $event->registry->register('test.rewriting', new ClosureStateType(fn () => new RewritingState(
+            $event->registry->register('guide', new ClosureStateLoader(fn () => ScriptedState::delegating()));
+            $event->registry->register('test.rewriting', new ClosureStateLoader(fn () => new RewritingState(
                 ['composer test' => 'journal run tests'],
                 new StateReference('guide', NoSubject::None),
             )));

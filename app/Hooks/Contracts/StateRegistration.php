@@ -16,5 +16,5 @@ interface StateRegistration
      * @throws StateTypeRepeated when the key is registered already
      * @throws StateTypesFrozen when the state types were built already
      */
-    public function register(string $typeKey, StateType $type): void;
+    public function register(string $typeKey, StateLoader $type): void;
 }

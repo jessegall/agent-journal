@@ -23,11 +23,11 @@ use Domain\Tasks\Enums\TaskWorkState;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;
-use Tests\Fixtures\Hooks\InMemoryTaskType;
+use Tests\Fixtures\Hooks\InMemoryTaskLoader;
 
 final class StackRestorerTest extends TestCase
 {
-    private InMemoryTaskType $tasks;
+    private InMemoryTaskLoader $tasks;
 
     private StackRestorer $restorer;
 
@@ -35,7 +35,7 @@ final class StackRestorerTest extends TestCase
     {
         parent::setUp();
 
-        $this->tasks = new InMemoryTaskType([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
+        $this->tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
         $this->restorer = $this->restorerWith($this->tasks);
     }
 
@@ -121,7 +121,7 @@ final class StackRestorerTest extends TestCase
 
     public function test_a_frame_stored_in_an_unknown_version_is_an_error(): void
     {
-        $restorer = $this->restorerWith(new InMemoryTaskType([42 => TaskWorkState::Active], version: 2));
+        $restorer = $this->restorerWith(new InMemoryTaskLoader([42 => TaskWorkState::Active], version: 2));
 
         $this->expectException(StateSchemaUnknown::class);
 
@@ -135,7 +135,7 @@ final class StackRestorerTest extends TestCase
         $this->restorer->restore($this->records($this->bottom(), $this->task('task-99', 99)), ReadyStateType::MainAgent);
     }
 
-    private function restorerWith(InMemoryTaskType $tasks): StackRestorer
+    private function restorerWith(InMemoryTaskLoader $tasks): StackRestorer
     {
         $events = new Dispatcher;
         $events->listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('tasks.working', $tasks));

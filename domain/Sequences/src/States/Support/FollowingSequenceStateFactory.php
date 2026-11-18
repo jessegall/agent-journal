@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\States\Support;
 
-use App\Hooks\Contracts\StateType;
+use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
@@ -17,7 +17,7 @@ use Domain\Sequences\States\FollowingSequenceState;
 /**
  * Builds the following-sequence state from the run as it is now, on its current step; it keeps no run between calls.
  */
-final readonly class FollowingSequenceStateFactory implements StateType
+final readonly class FollowingSequenceStateFactory implements StateLoader
 {
     public function __construct(private SequenceRecords $runs) {}
 
