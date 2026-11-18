@@ -6,6 +6,7 @@ namespace App\Skills\Providers;
 
 use App\Domains\Support\DomainRegistry;
 use App\Skills\Console\SkillListCommand;
+use App\Skills\Console\SkillPreviewCommand;
 use App\Skills\Console\SkillShowCommand;
 use App\Skills\Contracts\SkillReader;
 use App\Skills\Contracts\SkillRenderer;
@@ -41,7 +42,7 @@ final class SkillsServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->commands([SkillListCommand::class, SkillShowCommand::class]);
+            $this->commands([SkillListCommand::class, SkillShowCommand::class, SkillPreviewCommand::class]);
         }
     }
 }

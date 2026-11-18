@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Skills;
 
+use App\Profiles\Enums\ProfileType;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
@@ -32,7 +33,7 @@ final class PlanSkill implements Skill
 
     public function condition(): SkillCondition
     {
-        return Conditions::everyone();
+        return Conditions::any(Conditions::mainAgent(), Conditions::agentTypes(ProfileType::WritingHelper));
     }
 
     public function sections(): array

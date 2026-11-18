@@ -34,7 +34,7 @@ final class ChatSkill implements Skill
 
     public function condition(): SkillCondition
     {
-        return Conditions::everyone();
+        return Conditions::mainAgent();
     }
 
     public function sections(): array
