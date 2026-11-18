@@ -26,7 +26,7 @@ use Illuminate\Support\Carbon;
  * @property string $reader_revision_id
  * @property PositionPurpose $purpose
  * @property CheckpointFields $checkpoint
- * @property InterpretationState $interpretation  Provisional while reading, ReaderFailed once the reader broke
+ * @property InterpretationState $interpretation Provisional while reading, ReaderFailed once the reader broke
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */

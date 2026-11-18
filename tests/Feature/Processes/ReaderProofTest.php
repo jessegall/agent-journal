@@ -23,9 +23,8 @@ use Tests\TestCase;
 final class ReaderProofTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedCalls;
-
     use RunsAcmeRequests;
+    use SendsSignedCalls;
 
     protected function setUp(): void
     {

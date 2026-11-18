@@ -53,8 +53,7 @@ final readonly class Supervisor
         ExecutionPlan $plan,
         ExecutionContext $context,
         StopSignal $stop = new NoStop(),
-    ): StepOutcome
-    {
+    ): StepOutcome {
         $this->builtins->check($plan);
         $state = new RunState($events, $stop);
         $outcome = $this->execute($plan->root, $context, $state);
@@ -114,8 +113,7 @@ final readonly class Supervisor
         ExecutionContext $context,
         RunState $state,
         bool $runsOnSuccess,
-    ): StepOutcome
-    {
+    ): StepOutcome {
         $outcome = $this->execute($steps[0], $context, $state);
         foreach (array_slice($steps, 1) as $step) {
             if (($outcome->status === 0) === $runsOnSuccess) {
@@ -261,8 +259,7 @@ final readonly class Supervisor
         ExecutionContext $context,
         RunState $state,
         array $input,
-    ): SpawnedProcess|string
-    {
+    ): SpawnedProcess|string {
         $stale = $state->events->staleReason($part);
         if ($stale !== '') {
             $state->events->skipped($part, $stale);

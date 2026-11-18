@@ -156,8 +156,8 @@ final readonly class CommandRule implements StoredValue
             OutputRequirement::from($fields['output_requirement']),
             ExecutableBinding::fromArray($fields['binding']),
             $fields['revision'],
-            array_map(RuleReference::fromArray(...), $fields['replaces']),
-            array_map(VerificationContract::fromArray(...), $fields['contracts']),
+            array_values(array_map(RuleReference::fromArray(...), $fields['replaces'])),
+            array_values(array_map(VerificationContract::fromArray(...), $fields['contracts'])),
         );
     }
 

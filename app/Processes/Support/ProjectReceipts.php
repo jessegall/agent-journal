@@ -6,8 +6,9 @@ namespace App\Processes\Support;
 
 use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Models\ResultReceipt;
-use App\Processes\Values\PublishedResult;
+use PhpOption\None;
 use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * The current project's current result receipts, read through named scopes.
@@ -24,7 +25,7 @@ final readonly class ProjectReceipts implements ResultReceipts
             ->whereKey($receiptId)
             ->first();
 
-        return Option::fromValue($receipt)->map(fn (ResultReceipt $current): PublishedResult => $current->published());
+        return $receipt === null ? None::create() : Some::create($receipt->published());
     }
 
     public function forPart(string $partRunId): Option
@@ -35,6 +36,6 @@ final readonly class ProjectReceipts implements ResultReceipts
             ->where('part_run_id', $partRunId)
             ->first();
 
-        return Option::fromValue($receipt)->map(fn (ResultReceipt $current): PublishedResult => $current->published());
+        return $receipt === null ? None::create() : Some::create($receipt->published());
     }
 }

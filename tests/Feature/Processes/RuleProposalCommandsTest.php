@@ -220,8 +220,7 @@ final class RuleProposalCommandsTest extends TestCase
         string $request,
         string $requestId,
         ProposedRule $proposed,
-    ): ProposalReceipt
-    {
+    ): ProposalReceipt {
         return $this->runAs($agentId, new ProposeCommandRule($request, $requestId, $proposed));
     }
 

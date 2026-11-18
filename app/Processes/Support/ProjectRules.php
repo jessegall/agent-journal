@@ -22,15 +22,14 @@ final readonly class ProjectRules implements CommandRuleReader
     public function activeRevisions(): array
     {
         try {
-            return ClassificationRule::query()
+            return array_values(ClassificationRule::query()
                 ->ofProject($this->projects->current())
                 ->active()
                 ->with('activeRevision')
                 ->readLimit(1_000)
                 ->get()
                 ->map(fn (ClassificationRule $rule): RuleRevision => $rule->activeRevision)
-                ->values()
-                ->all();
+                ->all());
         } catch (QueryException $failure) {
             throw ClassificationUnavailable::storeFailed($failure);
         }
@@ -39,7 +38,9 @@ final readonly class ProjectRules implements CommandRuleReader
     public function approvedBundles(): array
     {
         try {
-            return ModuleRuleBundle::query()->ofProject($this->projects->current())->readLimit(500)->get()->all();
+            return array_values(
+                ModuleRuleBundle::query()->ofProject($this->projects->current())->readLimit(500)->get()->all(),
+            );
         } catch (QueryException $failure) {
             throw ClassificationUnavailable::storeFailed($failure);
         }

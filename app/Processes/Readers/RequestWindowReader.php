@@ -46,7 +46,9 @@ final readonly class RequestWindowReader implements PageReader
         return new RequestWindowData(
             RequestRowData::fromRequest($request),
             $request->nextStep()->obligations,
-            $proposals->map(fn (RuleProposal $proposal): ProposalData => $this->proposalOf($proposal, $active))->all(),
+            array_values(
+                $proposals->map(fn (RuleProposal $proposal): ProposalData => $this->proposalOf($proposal, $active))->all(),
+            ),
             $this->samplesOf($request),
             $this->readersOf($request),
             $this->unsampledOf($request, $latest),
@@ -78,9 +80,9 @@ final readonly class RequestWindowReader implements PageReader
             $proposal->state->value,
             $proposal->current_revision,
             "{$proposal->author_type}:{$proposal->author_id}",
-            $revisions->map(
+            array_values($revisions->map(
                 fn (RuleProposalRevision $revision): DeclarationData => DeclarationData::fromRevision($revision, $classes),
-            )->all(),
+            )->all()),
         );
     }
 
@@ -91,7 +93,7 @@ final readonly class RequestWindowReader implements PageReader
     {
         $permits = EvidencePermit::query()->where('command_request_id', $request->id)->readLimit(20)->get();
 
-        return $permits->map(fn (EvidencePermit $permit): SampleData => new SampleData(
+        return array_values($permits->map(fn (EvidencePermit $permit): SampleData => new SampleData(
             $permit->id,
             $permit->source_line,
             $permit->approved_classes,
@@ -99,7 +101,7 @@ final readonly class RequestWindowReader implements PageReader
             $permit->seconds_cap,
             (string) $permit->process_run_id,
             $permit->process_run_id === null ? [] : $this->partsOf($permit->process_run_id),
-        ))->values()->all();
+        ))->all());
     }
 
     /**
@@ -107,10 +109,10 @@ final readonly class RequestWindowReader implements PageReader
      */
     private function partsOf(string $runId): array
     {
-        return PartRun::query()->where('process_run_id', $runId)->readLimit(50)->get()->map(
+        return array_values(PartRun::query()->where('process_run_id', $runId)->readLimit(50)->get()->map(
             fn (PartRun $part): string => "{$part->operation}: {$part->lifecycle->value}, end {$part->end_type->value}"
                 .($part->end()->hasStatus() ? " {$part->end_code}" : '').", capture {$part->capture_state->value}",
-        )->all();
+        )->all());
     }
 
     /**
@@ -120,16 +122,16 @@ final readonly class RequestWindowReader implements PageReader
     {
         $readers = ReaderRevision::query()->where('command_request_id', $request->id)->readLimit(20)->get();
 
-        return $readers->map(fn (ReaderRevision $reader): ReaderProofData => new ReaderProofData(
+        return array_values($readers->map(fn (ReaderRevision $reader): ReaderProofData => new ReaderProofData(
             $reader->id,
             $reader->declaration_revision,
-            ReaderProof::query()->where('reader_revision_id', $reader->id)->readLimit(10)->get()->map(
+            array_values(ReaderProof::query()->where('reader_revision_id', $reader->id)->readLimit(10)->get()->map(
                 fn (ReaderProof $proof): string => "{$proof->id}: ".implode(', ', array_map(
                     fn (ProvenBranch $branch): string => "exit {$branch->status} {$branch->outcome->value}",
                     $proof->proven_branches,
                 )),
-            )->all(),
-        ))->all();
+            )->all()),
+        ))->all());
     }
 
     /**

@@ -17,5 +17,5 @@ interface StoredValue
     /**
      * @param  array<string, mixed>  $fields  the shape toArray writes
      */
-    public static function fromArray(array $fields): self;
+    public static function fromArray(array $fields): static;
 }

@@ -205,7 +205,7 @@ final readonly class LineAdmission implements ShellAdmission
         ExecutionContext $context,
         RequestHoldReason $reason,
     ): AdmissionRefusal {
-        $operation = $part->contracts === [] ? $part->program?->family ?? 'unknown' : $part->contracts[0]->operation;
+        $operation = $part->contracts === [] ? $part->program->family ?? 'unknown' : $part->contracts[0]->operation;
         $digest = hash('sha256', $operation);
         $open = new OpenCommandRequest($operation, $digest, $tree->source, $context->workingFolder, $reason);
         $request = CommandRequest::query()->findOrFail($this->commands->run($open));

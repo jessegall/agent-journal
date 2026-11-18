@@ -40,8 +40,7 @@ final class ChannelRunEvents implements RunEvents
         private readonly string $runId,
         private readonly string $eventKey,
         private readonly string $spoolFolder,
-    )
-    {
+    ) {
         if (! is_dir($spoolFolder)) {
             mkdir($spoolFolder, 0700, true);
         }

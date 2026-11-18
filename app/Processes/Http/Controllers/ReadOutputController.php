@@ -38,15 +38,10 @@ final readonly class ReadOutputController
         $part = $processRun->parts()->where('syntax_node', $request->partNode())->orderByDesc('attempt')->firstOrFail();
         $stream = $request->stream();
         $source = EvidenceSource::of($stream);
-        $shown = match ($request->mode()) {
-            'tail' => $this->output->tail($part, $stream, $request->tailLines()),
-            'search' => ['offsets' => $this->output->search($part, $stream, $request->needle())],
-            default => $this->raw($part, $stream),
-        };
-        $ranges = match ($request->mode()) {
-            'tail' => [EvidenceRange::bytes($part->id, $source, $shown['before'], $shown['end'])],
-            'search' => [],
-            default => [EvidenceRange::bytes($part->id, $source, 0, $shown['length'])],
+        [$shown, $ranges] = match ($request->mode()) {
+            'tail' => $this->tail($part, $stream, $source, $request->tailLines()),
+            'search' => [['offsets' => $this->output->search($part, $stream, $request->needle())], []],
+            default => $this->raw($part, $stream, $source),
         };
         $commands->run(new RecordEvidenceReads($processRun->id, $ranges));
 
@@ -54,13 +49,30 @@ final readonly class ReadOutputController
     }
 
     /**
-     * @return array{bytes: string, length: int}
+     * The last lines of the stream, and the byte range they were read from.
+     *
+     * @return array{array<string, mixed>, list<EvidenceRange>}
      */
-    private function raw(PartRun $part, OutputStream $stream): array
+    private function tail(PartRun $part, OutputStream $stream, EvidenceSource $source, int $lines): array
+    {
+        $tail = $this->output->tail($part, $stream, $lines);
+
+        return [$tail, [EvidenceRange::bytes($part->id, $source, $tail['before'], $tail['end'])]];
+    }
+
+    /**
+     * The whole stream, and the byte range it was read from.
+     *
+     * @return array{array<string, mixed>, list<EvidenceRange>}
+     */
+    private function raw(PartRun $part, OutputStream $stream, EvidenceSource $source): array
     {
         $bytes = $this->output->bytes($part, $stream);
 
-        return ['bytes' => base64_encode($bytes), 'length' => strlen($bytes)];
+        return [
+            ['bytes' => base64_encode($bytes), 'length' => strlen($bytes)],
+            [EvidenceRange::bytes($part->id, $source, 0, strlen($bytes))],
+        ];
     }
 
     /**

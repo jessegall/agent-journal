@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Processes\Exceptions;
 
-use App\Processes\Enums\ClassificationState;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
+use App\Processes\Enums\ClassificationState;
 use RuntimeException;
 
 /**

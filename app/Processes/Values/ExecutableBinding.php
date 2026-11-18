@@ -45,8 +45,7 @@ final readonly class ExecutableBinding
         string $relativePath,
         string $contentDigest,
         int $configurationRevision,
-    ): self
-    {
+    ): self {
         return new self(BindingType::ProjectContent, $family, [$relativePath], $contentDigest, $configurationRevision);
     }
 

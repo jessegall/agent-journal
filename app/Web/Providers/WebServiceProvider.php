@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Web\Providers;
 
-use App\Actors\Exceptions\AgentActorRequired;
-use App\Actors\Exceptions\UserActorRequired;
 use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Contracts\CommandRefusal;
 use App\CorePages;
@@ -82,8 +80,8 @@ final class WebServiceProvider extends ServiceProvider
     }
 
     /**
-     * A refused command is a form error on a web page and a 403 with its message on an agent route; so is a command
-     * run by the wrong type of actor. The text names no class and holds no trace.
+     * A refused command is a form error on a web page and a 403 with its message on an agent route. The text names no
+     * class and holds no trace.
      */
     private function renderRefusals(ExceptionHandler $exceptions): void
     {
@@ -92,7 +90,7 @@ final class WebServiceProvider extends ServiceProvider
         }
 
         $exceptions->renderable(function (Throwable $failure, Request $request): JsonResponse|RedirectResponse|null {
-            if (! $failure instanceof CommandRefusal && ! $failure instanceof UserActorRequired && ! $failure instanceof AgentActorRequired) {
+            if (! $failure instanceof CommandRefusal) {
                 return null;
             }
 

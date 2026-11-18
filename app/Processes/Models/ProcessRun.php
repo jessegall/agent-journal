@@ -41,11 +41,11 @@ use Illuminate\Support\Carbon;
  * @property LifecycleState $lifecycle
  * @property CaptureState $capture_state
  * @property string $stop_reason
- * @property int $update_sequence  the number of the last live update sent for this run
- * @property string $stale_reason  why the run's admission no longer holds, or empty while it does
+ * @property int $update_sequence the number of the last live update sent for this run
+ * @property string $stale_reason why the run's admission no longer holds, or empty while it does
  * @property string $event_key_hash
  * @property string $working_folder
- * @property array<string, mixed> $plan
+ * @property array{root: array<string, mixed>, tree_digest: string} $plan
  * @property CarbonImmutable|null $consumed_at
  * @property CarbonImmutable|null $heartbeat_at
  * @property CarbonImmutable|null $started_at

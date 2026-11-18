@@ -7,6 +7,7 @@ namespace App\Processes\Http\Controllers;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Processes\ImportProposalsRequest;
 use App\Processes\Commands\ImportRuleProposals;
+use App\Processes\Values\ProposalReceipt;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -18,6 +19,6 @@ final readonly class ImportProposalsController
     {
         $imported = $commands->run(new ImportRuleProposals($request->declarations()));
 
-        return new JsonResponse($imported->toArray());
+        return new JsonResponse(array_map(fn (ProposalReceipt $receipt) => $receipt->toArray(), $imported));
     }
 }

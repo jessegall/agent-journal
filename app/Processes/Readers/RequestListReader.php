@@ -44,8 +44,8 @@ final readonly class RequestListReader implements PageReader
         );
 
         return new RequestListData(
-            $requests->map(RequestRowData::fromRequest(...))->values()->all(),
-            $rules->map(RuleRowData::fromRule(...))->values()->all(),
+            array_values($requests->map(RequestRowData::fromRequest(...))->all()),
+            array_values($rules->map(RuleRowData::fromRule(...))->all()),
             array_values(array_map(BundleRowData::fromBundle(...), $waiting)),
         );
     }

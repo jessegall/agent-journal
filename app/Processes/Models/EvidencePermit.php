@@ -9,8 +9,8 @@ use App\Links\Support\Linkable;
 use App\Processes\Casts\StoredValuesCast;
 use App\Processes\Exceptions\EvidencePermitRefused;
 use App\Processes\Values\CommandRule;
-use App\Processes\Values\PermittedLine;
 use App\Processes\Values\PermitLimits;
+use App\Processes\Values\PermittedLine;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -42,7 +42,7 @@ use Illuminate\Support\Carbon;
  * @property CarbonImmutable|null $consumed_at
  * @property string|null $process_run_id
  * @property string|null $command_request_id
- * @property list<CommandRule> $candidate_rules  the proposed rules the line is classified with, for a request's sample
+ * @property list<CommandRule> $candidate_rules the proposed rules the line is classified with, for a request's sample
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */

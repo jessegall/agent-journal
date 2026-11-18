@@ -21,8 +21,7 @@ final readonly class StartEvidenceRunController
         EvidencePermit $evidencePermit,
         CurrentActor $actors,
         EvidenceRuns $evidence,
-    ): JsonResponse
-    {
+    ): JsonResponse {
         $run = $evidence->start($evidencePermit, ActorIdentity::of($actors->actor()), $request->requestId());
 
         return new JsonResponse(['run_id' => $run->id]);

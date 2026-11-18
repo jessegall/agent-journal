@@ -46,8 +46,8 @@ use Tests\TestCase;
 final class RuleApprovalTest extends TestCase
 {
     use RefreshHookDatabase;
-    use SendsSignedCalls;
     use RunsAcmeRequests;
+    use SendsSignedCalls;
 
     protected function setUp(): void
     {

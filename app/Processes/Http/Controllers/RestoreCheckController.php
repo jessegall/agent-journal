@@ -15,6 +15,6 @@ final readonly class RestoreCheckController
 {
     public function __invoke(string $processRun, CommandBus $commands): JsonResponse
     {
-        return new JsonResponse(['capture' => $commands->run(new VerifyRestoredOutput($processRun))->toArray()]);
+        return new JsonResponse(['capture' => $commands->run(new VerifyRestoredOutput($processRun))]);
     }
 }

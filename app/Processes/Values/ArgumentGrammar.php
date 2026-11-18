@@ -47,8 +47,8 @@ final readonly class ArgumentGrammar
     public static function fromArray(array $fields): self
     {
         return new self(
-            array_map(OptionGrammar::fromArray(...), $fields['options']),
-            array_map(OperandType::from(...), $fields['operands']),
+            array_values(array_map(OptionGrammar::fromArray(...), $fields['options'])),
+            array_values(array_map(OperandType::from(...), $fields['operands'])),
             $fields['repeats_last_operand'],
             $fields['ends_options_at_double_dash'],
             $fields['accepts_numeric_options'],
