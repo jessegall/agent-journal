@@ -139,8 +139,21 @@ use App\Comments\Exceptions\CommentUnavailable;
 use App\Comments\Exceptions\SubmissionKeyConflict;
 use App\Comments\Exceptions\TargetNotCommentable;
 use App\Comments\Support\HasComments;
+use App\Communication\Commands\AnswerMessage;
+use App\Communication\Commands\DismissMessage;
+use App\Communication\Commands\RequireMessageAnswer;
+use App\Communication\Commands\SendMessage;
+use App\Communication\Contracts\ConversationReader;
 use App\Communication\Contracts\MessageAddressReader;
+use App\Communication\Data\Conversation;
+use App\Communication\Data\MessageView;
+use App\Communication\Enums\MessageState;
+use App\Communication\Events\MessageAnswered;
+use App\Communication\Events\MessageDismissed;
+use App\Communication\Events\MessageSent;
 use App\Communication\Exceptions\ActorCannotSend;
+use App\Communication\Exceptions\MessageBodyEmpty;
+use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Support\MessageAddress;
 use App\Contracts\CommandHandler;
 use App\Contracts\CommandRefusal;
@@ -397,7 +410,7 @@ final class CoreApi
     public static function exports(): Exports
     {
         return Exports::make()
-            ->events(CommentPosted::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, SettingsChanged::class)
+            ->events(CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, SettingsChanged::class)
             ->contracts(
                 RecordProvider::class,
                 RecordReader::class,
@@ -429,6 +442,7 @@ final class CoreApi
                 ActorProvider::class,
                 ActorProviderRegistration::class,
                 MessageAddressReader::class,
+                ConversationReader::class,
                 CommentReader::class,
                 ShellCommandParser::class,
                 HookAnswerer::class,
@@ -516,6 +530,9 @@ final class CoreApi
                 WholeRecord::class,
                 CommentType::class,
                 MessageAddress::class,
+                Conversation::class,
+                MessageView::class,
+                MessageState::class,
                 CommentDetails::class,
                 RecordCommentView::class,
                 TextCommentView::class,
@@ -646,6 +663,10 @@ final class CoreApi
             ->commands(
                 PostComment::class,
                 PostTextComment::class,
+                SendMessage::class,
+                RequireMessageAnswer::class,
+                AnswerMessage::class,
+                DismissMessage::class,
                 RetireAgent::class,
                 InstallNumbers::class,
                 LinkRecords::class,
@@ -695,6 +716,8 @@ final class CoreApi
                 ActorProviderRepeated::class,
                 SystemActorRequired::class,
                 ActorCannotSend::class,
+                MessageBodyEmpty::class,
+                MessageMissing::class,
                 SettingDeclarationInvalid::class,
                 SettingHandleUnknown::class,
                 DecimalInvalid::class,

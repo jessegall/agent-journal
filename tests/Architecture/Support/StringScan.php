@@ -9,7 +9,7 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\NodeFinder;
 
 /**
- * Every string, string part or heredoc of a file that names project code, such as 'Domain\Chat\Models\Message'.
+ * Every string, string part or heredoc of a file that names project code, such as 'App\Communication\Models\Message'.
  */
 final class StringScan
 {

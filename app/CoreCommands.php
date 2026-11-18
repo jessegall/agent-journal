@@ -13,6 +13,10 @@ use App\Bus\Support\CommandOwner;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
+use App\Communication\Commands\AnswerMessage;
+use App\Communication\Commands\DismissMessage;
+use App\Communication\Commands\RequireMessageAnswer;
+use App\Communication\Commands\SendMessage;
 use App\Numbers\Commands\InstallNumbers;
 use App\Records\Commands\LinkRecords;
 use App\Records\Commands\UnlinkRecords;
@@ -39,6 +43,7 @@ final class CoreCommands
     {
         return [
             AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class,
+            SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class,
             SetStringSetting::class, SetBooleanSetting::class, SetIntegerSetting::class, SetDecimalSetting::class, SetStringChoice::class, SetIntegerChoice::class, ResetSetting::class, EnableSettingGroup::class, DisableSettingGroup::class, ResetSettingGroup::class,
         ];
     }

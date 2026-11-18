@@ -35,14 +35,14 @@ final class StateLoaderTest extends TestCase
 
         $this->assertTrue($registry->has('tasks.working'));
         $this->assertSame($type, $registry->get('tasks.working'));
-        $this->assertFalse($registry->has('chat.answering'));
+        $this->assertFalse($registry->has('communication.answering'));
     }
 
     public function test_an_unknown_key_is_an_error(): void
     {
         $this->expectException(StateTypeUnknown::class);
 
-        (new StateTypeRegistry)->get('chat.answering');
+        (new StateTypeRegistry)->get('communication.answering');
     }
 
     public function test_a_key_registered_twice_is_an_error(): void

@@ -21,17 +21,12 @@ final class DomainActorColumnsTest extends TestCase
      * The columns still being removed, each with the work that removes it. The list only shrinks: a new entry fails
      * review, and a removed column must leave the list.
      */
-    private const array BEING_REMOVED = [
-        'messages.agent_id' => 'plan 16: messages between actors (doc 27)',
-        'messages.session_id' => 'plan 16: messages between actors (doc 27)',
-    ];
+    private const array BEING_REMOVED = [];
 
     /**
      * The model methods still being removed, each with the work that removes it; the list only shrinks.
      */
-    private const array METHODS_BEING_REMOVED = [
-        'Message::requireAnswerFrom()' => 'plan 16: messages between actors (doc 27)',
-    ];
+    private const array METHODS_BEING_REMOVED = [];
 
     public function test_no_domain_table_names_an_agent_or_a_session(): void
     {

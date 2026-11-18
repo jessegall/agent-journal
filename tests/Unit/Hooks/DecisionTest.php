@@ -53,7 +53,7 @@ final class DecisionTest extends TestCase
 
     public function test_a_push_carries_its_state(): void
     {
-        $reference = new StateReference('chat.answering', NoSubject::None);
+        $reference = new StateReference('communication.answering', NoSubject::None);
         $change = Decision::push($reference)->transition;
 
         $this->assertInstanceOf(PushState::class, $change);
