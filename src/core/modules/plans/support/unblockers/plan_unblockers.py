@@ -20,7 +20,7 @@ from core.modules.tasks.queries.task_query import TaskQuery
 
 WALK_REASON = "the unblockers read every task, plan, wait and agent the waiting walk names"
 
-GRAPH_REASON = "Every open wait between tasks, read once to follow the waits of a plan in memory instead of one read for each task."
+GRAPH_REASON = "The open waits of a step of the walk from a plan's unfinished tasks, read for all its tasks together."
 PLAN_REASON = "Every place of the plans the tasks at the end of the waits sit in, to know each plan's working phase and checkpoint."
 
 
@@ -47,17 +47,24 @@ class PlanUnblockers:
                 unfinished_ids[row.plan_id].append(row.task_id)
             if row.state is TaskState.BLOCKED:
                 blocked_ids[row.plan_id].append(row.task_id)
-        graph = self.wait_graph()
+        graph = self.wait_graph([task_id for task_ids in unfinished_ids.values() for task_id in task_ids])
         walks = {plan_id: PlanWaitWalk.walked(unfinished_ids[plan_id], graph, blocked_ids[plan_id]) for plan_id in plan_ids}
         end_ids = sorted({task_id for walk in walks.values() for task_id in walk.waiting_tasks})
         end_tasks = {task.id: task for task in self.tasks.unclosed().matching(Among("id", end_ids)).every_row(WALK_REASON)} if end_ids else {}
         facts = self.facts(tuple(end_tasks.values()), agent, plan_rows)
         return {plan_id: walk.unblockers(end_tasks, facts) for plan_id, walk in walks.items()}
 
-    def wait_graph(self) -> WaitGraph:
+    # follows the open waits from these tasks only, a step at a time, instead of reading every open wait of the project
+    def wait_graph(self, task_ids: Sequence[int]) -> WaitGraph:
         waits: dict[int, list[int]] = defaultdict(list)
-        for dependency in self.queries.query(OpenDependency).every_row(GRAPH_REASON):
-            waits[dependency.task_id].append(dependency.dependency_id)
+        reached: set[int] = set()
+        frontier = set(task_ids)
+        while frontier:
+            reached |= frontier
+            dependencies = self.queries.query(OpenDependency).matching(Among("task_id", sorted(frontier))).every_row(GRAPH_REASON)
+            for dependency in dependencies:
+                waits[dependency.task_id].append(dependency.dependency_id)
+            frontier = {dependency.dependency_id for dependency in dependencies} - reached
         return WaitGraph(waits)
 
     def facts(self, end_tasks: Sequence[Task], agent: Agent, plan_rows: dict[int, list[PlanTask]]) -> UnblockerFacts:

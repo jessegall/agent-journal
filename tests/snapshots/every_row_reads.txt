@@ -169,7 +169,7 @@ src/core/modules/plans/support/plan_task_order.py:the order of the tasks asked a
 src/core/modules/plans/support/positions.py:positions stay without gaps, so every row after a moved one is numbered again
 src/core/modules/plans/support/positions.py:positions stay without gaps, so every row after a moved one is numbered again
 src/core/modules/plans/support/task_plans.py:the phase of every task asked about is kept for the request
-src/core/modules/plans/support/unblockers/plan_unblockers.py:Every open wait between tasks, read once to follow the waits of a plan in memory instead of one read for each task.
+src/core/modules/plans/support/unblockers/plan_unblockers.py:The open waits of a step of the walk from a plan's unfinished tasks, read for all its tasks together.
 src/core/modules/plans/support/unblockers/plan_unblockers.py:Every place of the plans the tasks at the end of the waits sit in, to know each plan's working phase and checkpoint.
 src/core/modules/plans/support/unblockers/plan_unblockers.py:Every place of the plans the tasks at the end of the waits sit in, to know each plan's working phase and checkpoint.
 src/core/modules/plans/support/unblockers/plan_unblockers.py:the unblockers read every task, plan, wait and agent the waiting walk names
