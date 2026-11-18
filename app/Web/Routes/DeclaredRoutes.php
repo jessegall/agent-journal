@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Web\Routes;
 
+use App\Http\Controllers\Web\PageController;
+use App\Http\Support\Web\DeclaredRouteKey;
 use App\Ui\Support\UiDeclarations;
 use App\Web\Exceptions\UiPrefixUnavailable;
-use App\Web\Http\Controllers\PageController;
-use App\Web\Http\DeclaredRouteKey;
 use Illuminate\Routing\Route;
 use Illuminate\Routing\RouteCollectionInterface;
 use Illuminate\Routing\Router;

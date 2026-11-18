@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature\Http;
 
-use App\Web\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\Web\HandleInertiaRequests;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanState;

@@ -36,7 +36,7 @@ final class BindingRulesTest extends TestCase
         'app/Actors/Contracts/CurrentActor.php',
         'app/Actors/Contracts/CurrentActorSetter.php',
         'app/CoreApi.php',
-        'app/Agents/Http/Middleware/AuthenticateAgent.php',
+        'app/Http/Middleware/Agents/AuthenticateAgent.php',
         'domain/Access/Http/Middleware/AuthenticateUser.php',
     ];
 

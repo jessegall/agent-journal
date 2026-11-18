@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Domain\Plans\Http\Data;
 
 use App\Assignments\Enums\AssignmentOutcomeType;
-use App\Assignments\Http\Data\RecordHolderData;
 use App\Assignments\Support\AssignmentHolders;
 use App\Assignments\Support\AssignmentResult;
 use App\Assignments\Support\RecordIdentity;
+use App\Http\Data\Assignments\RecordHolderData;
 use Spatie\LaravelData\Data;
 
 /**

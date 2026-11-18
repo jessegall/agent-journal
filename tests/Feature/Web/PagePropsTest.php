@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Domains\Support\DomainEntry;
+use App\Http\Requests\Web\DeclaredPageRequest;
+use App\Http\Support\Web\PageProps;
 use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Section;
 use App\Ui\Declarations\Slot;
@@ -14,8 +16,6 @@ use App\Ui\Support\UiDeclarations;
 use App\Web\Data\DeniedWindow;
 use App\Web\Data\FailedWindow;
 use App\Web\Data\ReadyWindow;
-use App\Web\Http\PageProps;
-use App\Web\Http\Requests\DeclaredPageRequest;
 use Illuminate\Validation\ValidationException;
 use Tests\Fixtures\UiDeclarations\Desk\NotesReader;
 use Tests\Fixtures\UiDeclarations\Library\NobodySees;

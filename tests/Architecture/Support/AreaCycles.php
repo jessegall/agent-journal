@@ -23,6 +23,12 @@ final readonly class AreaCycles
     private const string CORE_ROOT = 'App';
 
     /**
+     * Laravel's app/Http is the entry layer: its controllers, middleware and requests reach the areas below them, so its
+     * references are no area's dependency on another.
+     */
+    private const string ENTRY_AREA = 'App\\Http';
+
+    /**
      * @param  array<string, array<string, string>>  $edges  for each area, the areas it names with one example use
      */
     private function __construct(private array $edges) {}
@@ -37,7 +43,7 @@ final readonly class AreaCycles
         foreach (DomainFiles::in([$appFolder, ...glob("{$domainFolder}/*/src", GLOB_ONLYDIR) ?: []]) as $path) {
             $user = self::areaOfFile($path, $appFolder, $domainFolder);
 
-            if ($user === self::CORE_ROOT) {
+            if (in_array($user, [self::CORE_ROOT, self::ENTRY_AREA], true)) {
                 continue;
             }
 

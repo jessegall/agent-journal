@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Assignments\Http\Controllers\AssignRecordController;
-use App\Assignments\Http\Controllers\ReassignRecordController;
-use App\Assignments\Http\Controllers\ShowAssignmentController;
-use App\Assignments\Http\Controllers\UnassignRecordController;
+use App\Http\Controllers\Assignments\AssignRecordController;
+use App\Http\Controllers\Assignments\ReassignRecordController;
+use App\Http\Controllers\Assignments\ShowAssignmentController;
+use App\Http\Controllers\Assignments\UnassignRecordController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('journal.agent')->prefix('agent/assignments')->name('assignments.agent.')->group(function (): void {

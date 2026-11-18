@@ -879,6 +879,7 @@ class	WorkingOnTaskStateReference
 class	WriteAssignments
 constant	AnsweringMessageStateReference::TYPE_KEY
 constant	AreaCycles::CORE_ROOT
+constant	AreaCycles::ENTRY_AREA
 constant	AreaCycles::FOUNDATION_FOLDER
 constant	AssignmentGroup::LARGEST
 constant	AssignmentRecords::LARGEST_BATCH

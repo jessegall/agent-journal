@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Http\Requests;
 
-use App\Web\Http\Requests\Concerns\ReadsRouteId;
+use App\Http\Requests\Web\Concerns\ReadsRouteId;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

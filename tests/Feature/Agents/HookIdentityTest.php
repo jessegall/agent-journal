@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\AgentRequests\Support\SignedCall;
-use App\Agents\Http\Middleware\AuthenticateAgent;
 use App\Hooks\Exceptions\HookIdentityExpired;
 use App\Hooks\Support\HookRetryWindow;
 use App\Hooks\Support\StackAccess;
+use App\Http\Middleware\Agents\AuthenticateAgent;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;

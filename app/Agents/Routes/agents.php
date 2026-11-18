@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Agents\Http\Controllers\RetireAgentController;
+use App\Http\Controllers\Agents\RetireAgentController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/agent/agents/retire', RetireAgentController::class)->middleware('journal.agent')->name('agents.agent.retire');
