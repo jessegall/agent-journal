@@ -8,9 +8,11 @@ use App\Agents\Commands\ChangeAgentEffort;
 use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ClaimDriverRequests;
 use App\Agents\Commands\ClaimLaunchGrant;
+use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\InterruptAgent;
+use App\Agents\Commands\LaunchAgent;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\OpenHostMainRuntime;
 use App\Agents\Commands\RecordHeartbeat;
@@ -39,7 +41,9 @@ use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Numbers\Commands\InstallNumbers;
 use App\Processes\Commands\IssueEvidencePermit;
+use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\RevokeCommandPermissions;
+use App\Processes\Commands\WithdrawCommandRequest;
 use App\Records\Commands\LinkRecords;
 use App\Records\Commands\UnlinkRecords;
 use App\Settings\Commands\DisableSettingGroup;
@@ -82,7 +86,7 @@ final class CoreCommandsTest extends CommandBusTestCase
         $this->installCommandModules();
         $registry = $this->app->make(CommandRegistry::class);
 
-        $this->assertSame([AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, EnrollHost::class, OpenAgentRuntime::class, DeliverAgent::class, WakeAgent::class, ChangeAgentModel::class, ChangeAgentEffort::class, InterruptAgent::class, StopAgent::class, ClaimDriverRequests::class, ClaimLaunchGrant::class, ReportRuntimeActivity::class, ReportRequestProgress::class, ReportDriverTurn::class, ReportRuntimeHeartbeat::class, ReportRuntimeExit::class, OpenHostMainRuntime::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, SettleFrameTimes::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class, SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class, SetStringSetting::class, SetBooleanSetting::class, SetIntegerSetting::class, SetDecimalSetting::class, SetStringChoice::class, SetIntegerChoice::class, ResetSetting::class, EnableSettingGroup::class, DisableSettingGroup::class, ResetSettingGroup::class, SaveSharePreview::class, CreateShare::class, RequestShare::class, ApproveShareRequest::class, RevokeShare::class, RevokeCommandPermissions::class, IssueEvidencePermit::class, RefreshShareScope::class, RetryShare::class, ConfigureShareGateway::class, DisableShareGateway::class, ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class, ReopenSharedGateways::class, PruneShareAudit::class], CoreCommands::commands());
+        $this->assertSame([AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, LaunchAgent::class, CreateAgent::class, EnrollHost::class, OpenAgentRuntime::class, DeliverAgent::class, WakeAgent::class, ChangeAgentModel::class, ChangeAgentEffort::class, InterruptAgent::class, StopAgent::class, ClaimDriverRequests::class, ClaimLaunchGrant::class, ReportRuntimeActivity::class, ReportRequestProgress::class, ReportDriverTurn::class, ReportRuntimeHeartbeat::class, ReportRuntimeExit::class, OpenHostMainRuntime::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, SettleFrameTimes::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class, SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class, SetStringSetting::class, SetBooleanSetting::class, SetIntegerSetting::class, SetDecimalSetting::class, SetStringChoice::class, SetIntegerChoice::class, ResetSetting::class, EnableSettingGroup::class, DisableSettingGroup::class, ResetSettingGroup::class, SaveSharePreview::class, CreateShare::class, RequestShare::class, ApproveShareRequest::class, RevokeShare::class, RevokeCommandPermissions::class, IssueEvidencePermit::class, OpenCommandRequest::class, WithdrawCommandRequest::class, RefreshShareScope::class, RetryShare::class, ConfigureShareGateway::class, DisableShareGateway::class, ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class, ReopenSharedGateways::class, PruneShareAudit::class], CoreCommands::commands());
 
         foreach (CoreCommands::commands() as $command) {
             $this->assertTrue($registry->has($command));

@@ -52,7 +52,7 @@ final readonly class EvidenceRuns
         }
 
         return EvidencePermit::query()->create([
-            'project_key' => $this->context($workingFolder)->projectKey(),
+            'project_key' => ExecutionContext::inFolder($workingFolder)->projectKey(),
             'working_folder' => $workingFolder,
             'source_line' => $line,
             'source_digest' => hash('sha256', $line),
@@ -107,12 +107,7 @@ final readonly class EvidenceRuns
             throw EvidencePermitRefused::unknown();
         }
 
-        return $this->classifier->classify($tree, $this->context($workingFolder));
-    }
-
-    private function context(string $workingFolder): ExecutionContext
-    {
-        return new ExecutionContext(ShellDialect::Bash, $workingFolder, $workingFolder);
+        return $this->classifier->classify($tree, ExecutionContext::inFolder($workingFolder));
     }
 
     private function digestOf(Classification $classification): string

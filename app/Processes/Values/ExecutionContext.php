@@ -34,6 +34,14 @@ final readonly class ExecutionContext
     ) {}
 
     /**
+     * A bash context in a folder that is also its project root, as an admitted command or a request is scoped.
+     */
+    public static function inFolder(string $folder): self
+    {
+        return new self(ShellDialect::Bash, $folder, $folder);
+    }
+
+    /**
      * The key that scopes a project's saved aliases: a digest of its root folder.
      */
     public function projectKey(): string

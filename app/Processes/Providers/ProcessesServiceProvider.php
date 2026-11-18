@@ -18,12 +18,15 @@ use App\Processes\Contracts\ProcessRunner;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Models\CommandAlias;
+use App\Processes\Models\CommandRequest;
 use App\Processes\Models\EvidencePermit;
 use App\Processes\Models\OutputChunk;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\PermissionRevocation;
 use App\Processes\Models\ProcessEvent;
 use App\Processes\Models\ProcessRun;
+use App\Processes\Models\ReaderPosition;
+use App\Processes\Models\ReaderRevision;
 use App\Processes\Rules\JournalClassifier;
 use App\Processes\Support\CommandAliases;
 use App\Processes\Support\JournalRoutes;
@@ -58,7 +61,7 @@ final class ProcessesServiceProvider extends ServiceProvider
 
     public function boot(LinkTypeRegistry $links): void
     {
-        $links->register(['processes.command-alias' => CommandAlias::class, 'processes.process-run' => ProcessRun::class, 'processes.part-run' => PartRun::class, 'processes.process-event' => ProcessEvent::class, 'processes.output-chunk' => OutputChunk::class, 'processes.permission-revocation' => PermissionRevocation::class, 'processes.evidence-permit' => EvidencePermit::class]);
+        $links->register(['processes.command-alias' => CommandAlias::class, 'processes.process-run' => ProcessRun::class, 'processes.part-run' => PartRun::class, 'processes.process-event' => ProcessEvent::class, 'processes.output-chunk' => OutputChunk::class, 'processes.permission-revocation' => PermissionRevocation::class, 'processes.evidence-permit' => EvidencePermit::class, 'processes.command-request' => CommandRequest::class, 'processes.reader-revision' => ReaderRevision::class, 'processes.reader-position' => ReaderPosition::class]);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/processes.php');
         $this->commands([ExplainCommandTypeCommand::class, RunProcessCommand::class, OutputReadCommand::class, ProcessShowCommand::class, ProcessExportCommand::class]);
     }

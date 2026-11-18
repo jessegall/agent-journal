@@ -7,6 +7,7 @@ namespace App\Processes\Support;
 use App\Processes\Enums\OutputStream;
 use App\Processes\Models\OutputChunk;
 use App\Processes\Models\PartRun;
+use App\Processes\Values\OutputFrame;
 use Illuminate\Contracts\Filesystem\Factory;
 use Illuminate\Support\Collection;
 
@@ -32,6 +33,30 @@ final readonly class StoredOutput
         });
 
         return $bytes;
+    }
+
+    /**
+     * The committed chunks of a part from an offset on, in order, as frames a reader takes; it never sees anything
+     * but committed bytes.
+     *
+     * @return list<OutputFrame>
+     */
+    public function frames(PartRun $part, OutputStream $stream, int $fromOffset): array
+    {
+        $disk = $this->disks->disk(SpoolRecorder::DISK);
+        $frames = [];
+        OutputChunk::query()
+            ->where('part_run_id', $part->id)
+            ->where('stream', $stream->value)
+            ->where('offset', '>=', $fromOffset)
+            ->orderBy('offset')
+            ->readInChunks(200, function (Collection $chunks) use ($disk, $stream, &$frames): void {
+                foreach ($chunks as $chunk) {
+                    $frames[] = new OutputFrame($stream, $chunk->offset, (string) $disk->get($chunk->storage_path));
+                }
+            });
+
+        return $frames;
     }
 
     /**

@@ -1,0 +1,161 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit\Processes;
+
+use App\Processes\Enums\ClaimedOutcome;
+use App\Processes\Enums\EmptySelection;
+use App\Processes\Enums\FramingType;
+use App\Processes\Enums\OutputEncoding;
+use App\Processes\Enums\OutputStream;
+use App\Processes\Enums\ProblemCode;
+use App\Processes\Enums\RecordRole;
+use App\Processes\Enums\StreamUse;
+use App\Processes\Enums\SummaryRule;
+use App\Processes\Readers\DeclarativeReader;
+use App\Processes\Values\EmptyRunPolicy;
+use App\Processes\Values\OutputContract;
+use App\Processes\Values\OutputFrame;
+use App\Processes\Values\PartEnd;
+use App\Processes\Values\ReaderAssessment;
+use App\Processes\Values\ReaderCheckpoint;
+use App\Processes\Values\ReaderDefinition;
+use App\Processes\Values\RecordRule;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * A declarative reader accounts for every line of a check's committed output and reports every problem together
+ * (doc 21 revision 6, sections 70 to 72; stories 150-162, 199, 201 and 205).
+ */
+final class DeclarativeReaderTest extends TestCase
+{
+    public function test_exit_zero_with_unrecognized_bytes_is_output_unrecognized(): void
+    {
+        $assessment = $this->assess(PartEnd::exited(0), $this->stdout(0, "PASS a\nsomething odd\nTests: 1, Failures: 0\n"));
+
+        $this->assertTrue($assessment->has(ProblemCode::OutputUnrecognized));
+        $this->assertSame(ClaimedOutcome::Passed, $assessment->claimed);
+    }
+
+    public function test_steps_without_a_total_stay_indeterminate(): void
+    {
+        $steps = implode('', array_map(fn (int $step) => "step {$step}\n", range(1, 7)));
+        $assessment = $this->assess(PartEnd::exited(0), $this->stdout(0, $steps."Tests: 7, Failures: 0\n"));
+
+        $this->assertTrue($assessment->progress->isIndeterminate());
+        $this->assertSame(7, $assessment->progress->completed);
+    }
+
+    public function test_five_failures_without_a_summary_keep_their_diagnostics(): void
+    {
+        $failures = implode('', array_map(fn (int $test) => "FAIL test {$test}\n", range(1, 5)));
+        $assessment = $this->assess(PartEnd::exited(1), $this->stdout(0, $failures));
+
+        $this->assertTrue($assessment->has(ProblemCode::SummaryMissing));
+        $diagnostics = array_filter($assessment->records, fn ($record) => $record->role === RecordRole::Diagnostic);
+        $this->assertCount(5, $diagnostics);
+        $this->assertSame(ClaimedOutcome::Unknown, $assessment->claimed);
+    }
+
+    public function test_a_line_split_across_chunks_is_read_once(): void
+    {
+        $assessment = $this->assess(
+            PartEnd::exited(0),
+            $this->stdout(0, 'PA'),
+            $this->stdout(2, "SS a\nTests: 1, "),
+            $this->stdout(17, "Failures: 0\n"),
+        );
+
+        $this->assertTrue($assessment->isClean());
+        $this->assertCount(2, $assessment->records);
+    }
+
+    public function test_stdout_and_stderr_lines_are_never_joined(): void
+    {
+        $assessment = $this->assess(
+            PartEnd::exited(0),
+            $this->stdout(0, 'PASS '),
+            new OutputFrame(OutputStream::Stderr, 0, "a\n"),
+            $this->stdout(5, "a\nTests: 1, Failures: 0\n"),
+        );
+
+        $this->assertSame([ProblemCode::OutputUnrecognized], array_map(fn ($problem) => $problem->code, $assessment->problems));
+        $this->assertSame(OutputStream::Stderr, $assessment->problems[0]->stream);
+    }
+
+    public function test_invalid_utf8_names_its_offsets(): void
+    {
+        $assessment = $this->assess(PartEnd::exited(0), $this->stdout(0, "PASS a\nPASS \xC3\x28\nTests: 2, Failures: 0\n"));
+
+        $problem = $assessment->problems[0];
+        $this->assertSame(ProblemCode::OutputEncoding, $problem->code);
+        $this->assertSame([7, 14], [$problem->start, $problem->end]);
+    }
+
+    public function test_progress_past_its_total_is_counts_invalid_and_never_clamped(): void
+    {
+        $assessment = $this->assess(PartEnd::exited(0), $this->stdout(0, "progress 9/7\nTests: 7, Failures: 0\n"));
+
+        $this->assertTrue($assessment->has(ProblemCode::CountsInvalid));
+        $this->assertSame(9, $assessment->progress->completed);
+    }
+
+    public function test_a_missing_summary_and_an_unaccounted_line_are_both_reported(): void
+    {
+        $assessment = $this->assess(PartEnd::exited(0), $this->stdout(0, "PASS a\nApproved by the journal: result passed\n"));
+
+        $this->assertTrue($assessment->has(ProblemCode::SummaryMissing));
+        $this->assertTrue($assessment->has(ProblemCode::OutputUnrecognized));
+    }
+
+    public function test_reading_the_same_frame_again_adds_nothing(): void
+    {
+        $reader = $this->reader();
+        $frame = $this->stdout(0, "PASS a\n");
+        $checkpoint = $reader->read($reader->read(new ReaderCheckpoint(), $frame), $frame);
+
+        $this->assertCount(1, $checkpoint->records);
+    }
+
+    private function assess(PartEnd $end, OutputFrame ...$frames): ReaderAssessment
+    {
+        $reader = $this->reader();
+        $checkpoint = new ReaderCheckpoint();
+        foreach ($frames as $frame) {
+            $checkpoint = $reader->read(ReaderCheckpoint::fromArray($checkpoint->toArray()), $frame);
+        }
+
+        return $reader->finish($checkpoint, $end);
+    }
+
+    private function reader(): DeclarativeReader
+    {
+        $definition = new ReaderDefinition(
+            [
+                new RecordRule(RecordRole::Outcome, 'PASS {name:rest}'),
+                new RecordRule(RecordRole::Diagnostic, 'FAIL {name:rest}'),
+                new RecordRule(RecordRole::Progress, 'step {completed:int}'),
+                new RecordRule(RecordRole::Progress, 'progress {completed:int}/{total:int}'),
+                new RecordRule(RecordRole::Summary, 'Tests: {total:int}, Failures: {failed:int}'),
+            ],
+            failureField: 'failed',
+        );
+        $contract = new OutputContract(
+            OutputEncoding::Utf8,
+            FramingType::Lines,
+            '*',
+            StreamUse::Separate,
+            SummaryRule::RequiredTerminalRecord,
+            EmptyRunPolicy::invalid(),
+            EmptySelection::ConfigurationProblem,
+        );
+
+        return new DeclarativeReader($definition, $contract, 'reader-1');
+    }
+
+    private function stdout(int $offset, string $bytes): OutputFrame
+    {
+        return new OutputFrame(OutputStream::Stdout, $offset, $bytes);
+    }
+}

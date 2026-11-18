@@ -55,13 +55,13 @@ use App\Agents\Commands\RetireAgent;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\AgentReader;
-use App\Agents\Contracts\HelperImages;
-use App\Agents\Contracts\ProgramConversationReader;
 use App\Agents\Contracts\CurrentSession;
+use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchExecutor;
 use App\Agents\Contracts\LaunchReadiness;
 use App\Agents\Contracts\LaunchRecordReader;
+use App\Agents\Contracts\ProgramConversationReader;
 use App\Agents\Contracts\RuntimeReader;
 use App\Agents\Contracts\SessionReader;
 use App\Agents\Data\DriverRequestStatus;
@@ -118,9 +118,6 @@ use App\Agents\Support\AgentLabel;
 use App\Agents\Support\ClaimedRequest;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\ContainerManifest;
-use App\Agents\Support\HostCapacity;
-use App\Agents\Support\ManifestMount;
-use App\Agents\Support\ProgramConversationSummary;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\ExecutionBudgets;
@@ -130,13 +127,16 @@ use App\Agents\Support\ExecutionReference;
 use App\Agents\Support\ExitReceipt;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
+use App\Agents\Support\HostCapacity;
 use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\LaunchRecordDetails;
 use App\Agents\Support\LaunchRequest;
+use App\Agents\Support\ManifestMount;
 use App\Agents\Support\ModelSelection;
 use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\PreparedLaunch;
 use App\Agents\Support\ProfileDefaults;
+use App\Agents\Support\ProgramConversationSummary;
 use App\Agents\Support\SelectedProgram;
 use App\Agents\Support\SelectionSource;
 use App\Agents\Support\SessionOption;
@@ -386,7 +386,9 @@ use App\Operations\Exceptions\UnknownAccessType;
 use App\Operations\Exceptions\UnknownResourceArea;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Commands\IssueEvidencePermit;
+use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\RevokeCommandPermissions;
+use App\Processes\Commands\WithdrawCommandRequest;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\FactOrigin;
 use App\Processes\Contracts\ProgramClassifier;
@@ -400,6 +402,7 @@ use App\Processes\Enums\CommandType;
 use App\Processes\Enums\EmptyPolicy;
 use App\Processes\Enums\EmptySelection;
 use App\Processes\Enums\FramingType;
+use App\Processes\Enums\RequestHoldReason;
 use App\Processes\Enums\JournalRouteType;
 use App\Processes\Enums\NodeType;
 use App\Processes\Enums\OperandType;
@@ -410,6 +413,7 @@ use App\Processes\Enums\ParseOutcome;
 use App\Processes\Enums\PartJoin;
 use App\Processes\Enums\ProgressType;
 use App\Processes\Enums\RedirectType;
+use App\Processes\Enums\RequestState;
 use App\Processes\Enums\ScopeType;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Enums\StreamUse;
@@ -435,6 +439,7 @@ use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\ExitBranch;
 use App\Processes\Values\ExitPolicy;
 use App\Processes\Values\HereDocument;
+use App\Processes\Values\NextStep;
 use App\Processes\Values\OptionGrammar;
 use App\Processes\Values\OutputContract;
 use App\Processes\Values\PartClassification;
@@ -933,6 +938,9 @@ final class CoreApi
                 RuleReference::class,
                 ProgramIdentity::class,
                 CommandPattern::class,
+                RequestHoldReason::class,
+                RequestState::class,
+                NextStep::class,
                 VerificationContract::class,
                 ToolType::class,
                 OutputEncoding::class,
@@ -1157,6 +1165,8 @@ final class CoreApi
                 RevokeShare::class,
                 RevokeCommandPermissions::class,
                 IssueEvidencePermit::class,
+                OpenCommandRequest::class,
+                WithdrawCommandRequest::class,
                 RefreshShareScope::class,
                 RetryShare::class,
                 ConfigureShareGateway::class,
