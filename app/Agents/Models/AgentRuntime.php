@@ -9,6 +9,8 @@ use App\Agents\Data\RuntimeStatus;
 use App\Agents\Enums\DriverType;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RuntimeActivity;
+use App\Links\Support\Linkable;
+use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -16,8 +18,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Links\Support\Linkable;
-use App\Reads\Contracts\ReadableModel;
 
 /**
  * The running program behind one agent session on one host: its driver, activity and hold, the requested, staged
@@ -48,9 +48,9 @@ use App\Reads\Contracts\ReadableModel;
 #[Fillable(['agent_session_id', 'host_id', 'driver_type', 'program', 'program_build', 'profile', 'canonical_folder'])]
 final class AgentRuntime extends Model implements ReadableModel
 {
-    use Linkable;
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     /**
      * How old a host observation may be before the runtime's status is shown as stale.

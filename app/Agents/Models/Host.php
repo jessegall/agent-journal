@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Agents\Models;
 
 use App\Agents\Exceptions\HostCredentialRejected;
+use App\Links\Support\Linkable;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use App\Links\Support\Linkable;
-use App\Reads\Support\BoundedReads;
-use App\Reads\Contracts\ReadableModel;
 
 /**
  * A machine enrolled to run agent programs: an infrastructure principal with its own credential, never an actor.
@@ -26,8 +26,8 @@ use App\Reads\Contracts\ReadableModel;
 final class Host extends Model implements ReadableModel
 {
     use BoundedReads;
-    use Linkable;
     use HasUlids;
+    use Linkable;
 
     /**
      * @return array<string, string>

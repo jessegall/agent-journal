@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Providers;
 
-use App\Processes\Contracts\ShellCommandParser;
 use App\Links\Support\LinkTypeRegistry;
+use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Models\CommandAlias;
 use App\Processes\Support\ShellParser;
 use Illuminate\Support\ServiceProvider;

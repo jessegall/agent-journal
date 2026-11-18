@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack;
 
-use App\Processes\Contracts\ShellCommandParser;
 use App\Hooks\Exceptions\RepeatedCommandRewrite;
 use App\Hooks\Inputs\ShellCommandRequested;
+use App\Processes\Contracts\ShellCommandParser;
 
 /**
  * Answers a shell command, and when a state rewrites it, walks the replacement once more on the stack the rewrite left.

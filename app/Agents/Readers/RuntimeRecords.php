@@ -6,7 +6,6 @@ namespace App\Agents\Readers;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Agents\Contracts\RuntimeReader;
-use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Data\RuntimeStatus;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\AgentRuntime;

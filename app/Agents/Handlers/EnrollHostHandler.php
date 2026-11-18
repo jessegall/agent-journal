@@ -7,8 +7,8 @@ namespace App\Agents\Handlers;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Models\Host;
 use App\Agents\Support\EnrolledHost;
-use Illuminate\Support\Str;
 use App\Contracts\CommandHandler;
+use Illuminate\Support\Str;
 
 final readonly class EnrollHostHandler implements CommandHandler
 {

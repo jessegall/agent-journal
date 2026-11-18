@@ -5,21 +5,21 @@ declare(strict_types=1);
 namespace App\Agents\Models;
 
 use App\Agents\Data\DriverRequestStatus;
-use App\Agents\Support\ClaimedRequest;
-use App\Agents\Support\DriverReceipt;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
+use App\Agents\Support\ClaimedRequest;
+use App\Agents\Support\DriverReceipt;
+use App\Links\Support\Linkable;
+use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Links\Support\Linkable;
-use App\Reads\Contracts\ReadableModel;
 
 /**
  * One accepted request to a runtime's driver, in the order it was accepted: its payload, attempts, progress and
@@ -52,9 +52,9 @@ use App\Reads\Contracts\ReadableModel;
 #[Fillable(['agent_runtime_id', 'sequence', 'operation', 'idempotency_key', 'payload_digest', 'message', 'model', 'effort', 'expected_timing', 'expected_observed_at'])]
 final class DriverRequest extends Model implements ReadableModel
 {
-    use Linkable;
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     /**
      * @return array<string, string>
