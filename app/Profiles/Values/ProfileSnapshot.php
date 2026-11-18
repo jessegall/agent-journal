@@ -8,8 +8,8 @@ use App\Profiles\Enums\ProfileType;
 use Spatie\LaravelData\Data;
 
 /**
- * One immutable revision of a profile as a launch reads it. A null skill allowlist means every applicable skill;
- * an empty one means none.
+ * One immutable revision of a profile as a launch reads it: its type, instructions, default model, skill lists and
+ * launch policy. A null skill allowlist means every applicable skill; an empty one means none.
  */
 final class ProfileSnapshot extends Data
 {
@@ -25,5 +25,6 @@ final class ProfileSnapshot extends Data
         public readonly string $model,
         public readonly array|null $skillAllowlist,
         public readonly array $requiredSkills,
+        public readonly ProfileLaunchPolicy $launch,
     ) {}
 }

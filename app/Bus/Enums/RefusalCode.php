@@ -24,6 +24,7 @@ enum RefusalCode: string
     case DeadlineExpired = 'deadline_expired';
     case OutcomeUnknown = 'outcome_unknown';
     case UnsupportedVersion = 'unsupported_version';
+    case ProfilesUnavailable = 'profiles_unavailable';
 
     /**
      * Whether the same call may succeed when it is sent again unchanged a little later.
@@ -34,7 +35,7 @@ enum RefusalCode: string
             self::Busy, self::Unavailable, self::DeadlineExpired => true,
             self::InvalidInput, self::Unauthenticated, self::Forbidden, self::RecordUnavailable, self::StateBlocked,
             self::Conflict, self::RequestKeyConflict, self::RequestKeyExpired, self::StaleContinuation,
-            self::Cancelled, self::OutcomeUnknown, self::UnsupportedVersion => false,
+            self::Cancelled, self::OutcomeUnknown, self::UnsupportedVersion, self::ProfilesUnavailable => false,
         };
     }
 }

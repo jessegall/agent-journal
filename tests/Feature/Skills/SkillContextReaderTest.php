@@ -22,6 +22,7 @@ use App\Skills\Exceptions\SkillContextUnavailable;
 use App\Skills\Readers\Support\SkillContextReader;
 use App\Skills\Values\SkillContext;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Fixtures\Profiles\TestLaunchPolicies;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
@@ -115,7 +116,16 @@ final class SkillContextReaderTest extends TestCase
     private function activateReviewer(string $instructions): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
-        $this->app->make(CommandBus::class)->run(new ActivateProfiles([new ProfileDefinition(ProfileKey::from('journal-reviewer'), 'Reviewer', ProfileType::ReadOnlyHelper, $instructions, 'opus', null, [])]));
+        $this->app->make(CommandBus::class)->run(new ActivateProfiles([new ProfileDefinition(
+            ProfileKey::from('journal-reviewer'),
+            'Reviewer',
+            ProfileType::ReadOnlyHelper,
+            $instructions,
+            'opus',
+            null,
+            [],
+            TestLaunchPolicies::for(ProfileType::ReadOnlyHelper),
+        )]));
     }
 
     /**

@@ -20,6 +20,7 @@ use App\Profiles\Values\ProfileKey;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Fixtures\Profiles\TestLaunchPolicies;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -44,7 +45,16 @@ final class SkillPreviewTest extends TestCase
 
         $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(7)));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
-        $this->app->make(CommandBus::class)->run(new ActivateProfiles([new ProfileDefinition(ProfileKey::from('journal-reviewer'), 'Reviewer', ProfileType::ReadOnlyHelper, 'Review.', 'opus', null, [])]));
+        $this->app->make(CommandBus::class)->run(new ActivateProfiles([new ProfileDefinition(
+            ProfileKey::from('journal-reviewer'),
+            'Reviewer',
+            ProfileType::ReadOnlyHelper,
+            'Review.',
+            'opus',
+            null,
+            [],
+            TestLaunchPolicies::for(ProfileType::ReadOnlyHelper),
+        )]));
         $this->main = $this->launch('Main', AgentRole::MainAgent, null);
         $this->reviewer = $this->launch('Reviewer', AgentRole::ReadOnlyHelper, 1);
     }

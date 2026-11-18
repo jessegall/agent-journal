@@ -7,8 +7,8 @@ namespace App\Profiles\Values;
 use App\Profiles\Enums\ProfileType;
 
 /**
- * What an owner activates for one profile: its stable key, label and the content of its next revision. A null skill
- * allowlist means every applicable skill; an empty one means none.
+ * What an owner activates for one profile: its stable key, label and the content of its next revision, its launch
+ * policy included. A null skill allowlist means every applicable skill; an empty one means none.
  */
 final readonly class ProfileDefinition
 {
@@ -24,5 +24,6 @@ final readonly class ProfileDefinition
         public string $model,
         public array|null $skillAllowlist,
         public array $requiredSkills,
+        public ProfileLaunchPolicy $launch,
     ) {}
 }

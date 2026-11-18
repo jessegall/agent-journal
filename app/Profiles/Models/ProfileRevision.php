@@ -7,10 +7,13 @@ namespace App\Profiles\Models;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
+use App\Profiles\Casts\ProfileLaunchPolicyCast;
 use App\Profiles\Enums\ProfileType;
+use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Exceptions\ProfileRevisionImmutable;
 use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
+use App\Profiles\Values\ProfileLaunchPolicy;
 use App\Profiles\Values\ProfileSnapshot;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -22,8 +25,9 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * One numbered, immutable revision of a profile: its type, instructions, model and skill lists, and who wrote it. A
- * null skill allowlist means every applicable skill; an empty one means none.
+ * One numbered, immutable revision of a profile: its type, instructions, default model, skill lists, launch policy
+ * and who wrote it. A null skill allowlist means every applicable skill; an empty one means none. The launch policy
+ * is kept in its own columns and read back through ProfileLaunchPolicyCast.
  *
  * @property string $id
  * @property string $profile_id
@@ -33,11 +37,23 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $model
  * @property list<string>|null $skill_allowlist
  * @property list<string> $required_skills
+ * @property ProfileLaunchPolicy $launch_policy
  * @property ActorType $author_type
  * @property string $author_id
  * @property CarbonImmutable $created_at
  */
-#[Fillable(['profile_id', 'revision', 'type', 'instructions', 'model', 'skill_allowlist', 'required_skills', 'author_type', 'author_id'])]
+#[Fillable([
+    'profile_id',
+    'revision',
+    'type',
+    'instructions',
+    'model',
+    'skill_allowlist',
+    'required_skills',
+    'launch_policy',
+    'author_type',
+    'author_id',
+])]
 final class ProfileRevision extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
@@ -56,6 +72,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'type' => ProfileType::class,
             'skill_allowlist' => 'array',
             'required_skills' => 'array',
+            'launch_policy' => ProfileLaunchPolicyCast::class,
             'author_type' => ActorType::class,
             'created_at' => 'immutable_datetime',
         ];
@@ -82,17 +99,21 @@ final class ProfileRevision extends Model implements ReadableModel
             'model' => $definition->model,
             'skill_allowlist' => $definition->skillAllowlist,
             'required_skills' => $definition->requiredSkills,
+            'launch_policy' => $definition->launch,
             'author_type' => $author->type,
             'author_id' => $author->id,
         ]);
     }
 
     /**
-     * The profile's current revision.
+     * The profile's current revision; a profile without an activated revision is missing.
+     *
+     * @throws ProfileMissing
      */
     public static function currentOf(Profile $profile): self
     {
-        return self::query()->ofProfile($profile)->whereKey($profile->current_revision_id)->firstOrFail();
+        return self::query()->ofProfile($profile)->whereKey($profile->current_revision_id)->first()
+            ?? throw ProfileMissing::for(ProfileKey::from($profile->key));
     }
 
     /**
@@ -113,6 +134,7 @@ final class ProfileRevision extends Model implements ReadableModel
             'model' => $this->model,
             'skillAllowlist' => $this->skill_allowlist,
             'requiredSkills' => $this->required_skills,
+            'launch' => $this->launch_policy,
         ]);
     }
 

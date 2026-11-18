@@ -19,6 +19,14 @@ return new class extends Migration
             $table->string('model');
             $table->json('skill_allowlist')->nullable();
             $table->json('required_skills');
+            $table->string('program', 32)->nullable();
+            $table->boolean('program_pinned');
+            $table->json('allowed_models');
+            $table->json('access_policy');
+            $table->json('stop_conditions');
+            $table->json('execution_policy');
+            $table->string('configuration_hash', 64);
+            $table->json('provenance');
             $table->string('author_type', 16);
             $table->string('author_id');
             $table->timestampTz('created_at');

@@ -19,6 +19,7 @@ use App\Skills\Support\ConditionTree;
 use App\Skills\Values\LaunchProfile;
 use App\Skills\Values\SkillContext;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Fixtures\Profiles\TestLaunchPolicies;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -134,7 +135,16 @@ final class ConditionTreeTest extends TestCase
 
     private function reviewerOn(string $program, string|null $provider = 'openai'): SkillContext
     {
-        $snapshot = ProfileSnapshot::from(['key' => ProfileKey::from('journal-reviewer'), 'revision' => 1, 'type' => ProfileType::ReadOnlyHelper, 'instructions' => 'Review.', 'model' => 'opus', 'skillAllowlist' => null, 'requiredSkills' => []]);
+        $snapshot = ProfileSnapshot::from([
+            'key' => ProfileKey::from('journal-reviewer'),
+            'revision' => 1,
+            'type' => ProfileType::ReadOnlyHelper,
+            'instructions' => 'Review.',
+            'model' => 'opus',
+            'skillAllowlist' => null,
+            'requiredSkills' => [],
+            'launch' => TestLaunchPolicies::for(ProfileType::ReadOnlyHelper),
+        ]);
 
         return new SkillContext(new ActorIdentity(ActorType::Agent, TestIds::of(2)), AgentRole::ReadOnlyHelper, TestIds::of(3), 'main', LaunchProfile::of($snapshot), ProgramKey::from($program), $provider === null ? null : ProviderKey::from($provider));
     }

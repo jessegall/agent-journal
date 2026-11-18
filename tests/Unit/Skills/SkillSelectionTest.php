@@ -22,6 +22,7 @@ use App\Skills\Values\RenderedSkill;
 use App\Skills\Values\SkillContext;
 use App\Skills\Values\SkillEntry;
 use App\Skills\Values\SkillKey;
+use Tests\Fixtures\Profiles\TestLaunchPolicies;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -107,7 +108,16 @@ final class SkillSelectionTest extends TestCase
      */
     private function helper(array|null $allowlist, array $required): SkillContext
     {
-        $snapshot = ProfileSnapshot::from(['key' => ProfileKey::from('journal-reviewer'), 'revision' => 1, 'type' => ProfileType::ReadOnlyHelper, 'instructions' => 'Review.', 'model' => 'opus', 'skillAllowlist' => $allowlist, 'requiredSkills' => $required]);
+        $snapshot = ProfileSnapshot::from([
+            'key' => ProfileKey::from('journal-reviewer'),
+            'revision' => 1,
+            'type' => ProfileType::ReadOnlyHelper,
+            'instructions' => 'Review.',
+            'model' => 'opus',
+            'skillAllowlist' => $allowlist,
+            'requiredSkills' => $required,
+            'launch' => TestLaunchPolicies::for(ProfileType::ReadOnlyHelper),
+        ]);
 
         return new SkillContext(new ActorIdentity(ActorType::Agent, TestIds::of(2)), AgentRole::ReadOnlyHelper, TestIds::of(3), 'main', LaunchProfile::of($snapshot), ProgramKey::from('gemini-cli'), null);
     }

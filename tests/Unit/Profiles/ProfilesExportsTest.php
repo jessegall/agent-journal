@@ -11,6 +11,7 @@ use App\Profiles\Exceptions\ProfileKeyInvalid;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
+use Tests\Fixtures\Profiles\TestLaunchPolicies;
 use Tests\TestCase;
 
 /**
@@ -50,8 +51,14 @@ final class ProfilesExportsTest extends TestCase
             'model' => 'opus',
             'skillAllowlist' => null,
             'requiredSkills' => [],
+            'launch' => TestLaunchPolicies::for(ProfileType::ReadOnlyHelper),
         ]);
-        $none = ProfileSnapshot::from([...$absent->all(), 'key' => $absent->key, 'skillAllowlist' => []]);
+        $none = ProfileSnapshot::from([
+            ...$absent->all(),
+            'key' => $absent->key,
+            'launch' => $absent->launch,
+            'skillAllowlist' => [],
+        ]);
 
         $this->assertNull($absent->skillAllowlist);
         $this->assertSame([], $none->skillAllowlist);

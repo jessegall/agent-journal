@@ -489,14 +489,20 @@ use App\Processes\Values\WordSegment;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Profiles\Contracts\ProfileReader;
+use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Enums\ProfileType;
+use App\Profiles\Exceptions\ProfileFieldUnknown;
 use App\Profiles\Exceptions\ProfileKeyInvalid;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Exceptions\ProfileRetired;
+use App\Profiles\Exceptions\ProfileRevisionUnreadable;
 use App\Profiles\Values\ActivatedProfile;
+use App\Profiles\Values\FieldOrigin;
 use App\Profiles\Values\ProfileActivation;
 use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
+use App\Profiles\Values\ProfileLaunchPolicy;
+use App\Profiles\Values\ProfileProvenance;
 use App\Profiles\Values\ProfileSnapshot;
 use App\Programs\Enums\HookProgram;
 use App\Programs\Exceptions\ProgramKeyInvalid;
@@ -1271,6 +1277,10 @@ final class CoreApi
                 ProfileKey::class,
                 ProfileType::class,
                 ProfileSnapshot::class,
+                ProfileLaunchPolicy::class,
+                ProfileProvenance::class,
+                FieldOrigin::class,
+                PolicyOriginType::class,
                 ProfileDefinition::class,
                 ProfileActivation::class,
                 ActivatedProfile::class,
@@ -1525,6 +1535,8 @@ final class CoreApi
                 ProfileKeyInvalid::class,
                 ProfileMissing::class,
                 ProfileRetired::class,
+                ProfileRevisionUnreadable::class,
+                ProfileFieldUnknown::class,
                 SkillDeclarationInvalid::class,
                 SkillKeyInvalid::class,
                 ProgramKeyInvalid::class,

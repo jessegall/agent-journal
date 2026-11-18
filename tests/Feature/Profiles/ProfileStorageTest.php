@@ -19,6 +19,7 @@ use App\Profiles\Models\ProfileRevision;
 use App\Profiles\Values\ProfileActivation;
 use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
+use Tests\Fixtures\Profiles\TestLaunchPolicies;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -104,7 +105,16 @@ final class ProfileStorageTest extends TestCase
     public function test_the_console_lists_and_shows_a_profile_with_its_skill_lists(): void
     {
         $this->activate($this->reviewer('Review the change.', null));
-        $this->activate(new ProfileDefinition(ProfileKey::from('journal-quiet'), 'Quiet', ProfileType::WritingHelper, 'Write.', 'sonnet', [], ['journal']));
+        $this->activate(new ProfileDefinition(
+            ProfileKey::from('journal-quiet'),
+            'Quiet',
+            ProfileType::WritingHelper,
+            'Write.',
+            'sonnet',
+            [],
+            ['journal'],
+            TestLaunchPolicies::for(ProfileType::WritingHelper),
+        ));
 
         $this->artisan('profile:list')->expectsOutputToContain('journal-reviewer')->expectsOutputToContain('journal-quiet')->assertSuccessful();
         $this->artisan('profile:show', ['key' => 'journal-reviewer'])
@@ -123,7 +133,16 @@ final class ProfileStorageTest extends TestCase
      */
     private function reviewer(string $instructions, array|null $allowlist): ProfileDefinition
     {
-        return new ProfileDefinition(ProfileKey::from('journal-reviewer'), 'Reviewer', ProfileType::ReadOnlyHelper, $instructions, 'opus', $allowlist, []);
+        return new ProfileDefinition(
+            ProfileKey::from('journal-reviewer'),
+            'Reviewer',
+            ProfileType::ReadOnlyHelper,
+            $instructions,
+            'opus',
+            $allowlist,
+            [],
+            TestLaunchPolicies::for(ProfileType::ReadOnlyHelper),
+        );
     }
 
     private function activate(ProfileDefinition $definition): ProfileActivation
