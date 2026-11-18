@@ -66,7 +66,7 @@ trait BelongsToOneActor
     {
         $actors = Container::getInstance()->make(CurrentActor::class);
 
-        if ($actors->hasActor() && $actors->actor()->isUser()) {
+        if ($actors->isSignedIn() && $actors->actor()->isUser()) {
             $query->visibleToUser();
         }
     }

@@ -11,8 +11,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 
 /**
- * Limits assignments to requests with someone acting: every signed-in user or agent sees every assignment, as every
- * one sees every task and plan, and a request with nobody acting sees none. It asks for the actor on every query, so
+ * Limits assignments to requests where a user or an agent signed in: each of them sees every assignment, as every
+ * one sees every task and plan, while a request with nobody acting, or with the system acting, sees none. It asks for the actor on every query, so
  * a worker that serves many requests never keeps an earlier request's actor.
  *
  * @implements Scope<Model>
@@ -29,8 +29,8 @@ final readonly class SignedInScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        if (! ($this->actors)()->hasActor()) {
-            $builder->whereRaw('1 = 0');
+        if (! ($this->actors)()->isSignedIn()) {
+            $builder->whereKey([]);
         }
     }
 }

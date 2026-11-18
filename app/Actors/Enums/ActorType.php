@@ -19,6 +19,18 @@ enum ActorType: string
     case System = 'system';
 
     /**
+     * Whether an actor of this type signed in, as a user or an agent, and so may read ordinary content; the system
+     * reads only through named queries.
+     */
+    public function isSignedIn(): bool
+    {
+        return match ($this) {
+            self::User, self::Agent => true,
+            self::System => false,
+        };
+    }
+
+    /**
      * The refusal for a command that requires this type of actor but was run by another.
      */
     public function refusalFor(self $given): UserActorRequired|AgentActorRequired|SystemActorRequired
