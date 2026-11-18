@@ -47,7 +47,7 @@ final readonly class AgentStack
         $walk = new HookWalk($input->methodName(), $this, $walkFrames[0]);
 
         foreach ($walkFrames as $frame) {
-            if ($frame->isFinished()) {
+            if ($frame->isFinished() || ! $frame->isEnabled()) {
                 continue;
             }
 
@@ -102,14 +102,15 @@ final readonly class AgentStack
     }
 
     /**
-     * The stack without every frame whose state reports its work done, wherever it sits.
+     * The stack without every frame whose state reports its work done or is switched off, wherever it sits; a switched-
+     * off frame is only left out, its work is not finished.
      */
-    public function withoutFinishedFrames(): self
+    public function withoutInactiveFrames(): self
     {
         $stack = $this;
 
         foreach ($this->frames as $frame) {
-            if ($frame->isFinished()) {
+            if ($frame->isFinished() || ! $frame->isEnabled()) {
                 $stack = $stack->withoutFrame($frame);
             }
         }

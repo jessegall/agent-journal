@@ -180,6 +180,23 @@ final class AgentStacksTest extends TestCase
         $this->assertSame(['hooks.main_ready', 'test.switched_on'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
     }
 
+    public function test_a_push_saves_the_stack_without_a_frame_switched_off_since_it_was_stored(): void
+    {
+        $enabled = true;
+        Event::listen(StateTypesRequested::class, function (StateTypesRequested $event) use (&$enabled): void {
+            $event->registry->register('test.switchable', new ClosureStateLoader(function () use (&$enabled) {
+                return new SwitchableState($enabled);
+            }));
+        });
+        $this->createStack();
+        $this->transaction()->run(fn () => $this->stacks()->push($this->target, new StateReference('test.switchable', NoSubject::None)));
+
+        $enabled = false;
+        $this->transaction()->run(fn () => $this->stacks()->push($this->target, $this->task(42)));
+
+        $this->assertSame(['hooks.main_ready', 'test.tasks'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
+    }
+
     public function test_a_push_onto_another_agents_stack_is_refused(): void
     {
         $this->expectException(StackTargetRefused::class);
