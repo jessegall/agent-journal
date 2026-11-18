@@ -6,11 +6,13 @@ namespace App;
 
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Resources\JournalResource;
+use App\Mcp\Resources\OperationResource;
 use App\Mcp\Resources\OverviewResource;
 use App\Mcp\Tools\AssigneesListTool;
 use App\Mcp\Tools\AssignmentReadTool;
 use App\Mcp\Tools\CapabilitiesReadTool;
 use App\Mcp\Tools\JournalTool;
+use App\Mcp\Tools\OperationsReadTool;
 use App\Mcp\Tools\OverviewReadTool;
 
 /**
@@ -23,7 +25,7 @@ final class CoreMcpTools
      */
     public static function tools(): array
     {
-        return [OverviewReadTool::class, CapabilitiesReadTool::class, AssignmentReadTool::class, AssigneesListTool::class];
+        return [OverviewReadTool::class, CapabilitiesReadTool::class, OperationsReadTool::class, AssignmentReadTool::class, AssigneesListTool::class];
     }
 
     /**
@@ -31,7 +33,7 @@ final class CoreMcpTools
      */
     public static function resources(): array
     {
-        return [OverviewResource::class];
+        return [OverviewResource::class, OperationResource::class];
     }
 
     public static function registerIn(McpRegistration $registration): void
