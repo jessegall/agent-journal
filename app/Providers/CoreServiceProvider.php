@@ -12,6 +12,7 @@ use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\HookCall;
 use App\Links\Models\Link;
 use App\Links\Support\LinkTypeRegistry;
+use App\Settings\Models\SettingsRecord;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -20,7 +21,7 @@ use Illuminate\Support\ServiceProvider;
  */
 final class CoreServiceProvider extends ServiceProvider
 {
-    private const array AREAS = ['Agents', 'Assignments', 'Hooks', 'Links', 'Numbers', 'Web'];
+    private const array AREAS = ['Agents', 'Assignments', 'Hooks', 'Links', 'Numbers', 'Settings', 'Web'];
 
     public function boot(LinkTypeRegistry $links): void
     {
@@ -32,6 +33,7 @@ final class CoreServiceProvider extends ServiceProvider
             'core.agent-stack' => AgentStackRow::class,
             'core.hook-call' => HookCall::class,
             'core.link' => Link::class,
+            'core.settings-record' => SettingsRecord::class,
         ]);
 
         foreach (self::AREAS as $area) {
