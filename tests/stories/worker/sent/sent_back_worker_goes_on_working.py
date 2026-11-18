@@ -13,6 +13,8 @@ def test_a_worker_sent_back_after_its_clock_out_runs_a_shell_command_at_once(sto
     story.worker_run_ends_with_its_session(story.agents.subject, "the parser is done")
     result = story.agent_runs(story.agents.main, f"worker check {story.agents.subject} 1 --short 'name the test'")
     result.expect_command_passed()
+    story.expect_worker(story.agents.workers.first(), state=WorkerState.DISPATCHED)
+    story.expect_task(story.tasks.briefed, state=TaskState.STARTED)
     story.agent_resumes_the_session(story.agents.subject)
     result = story.agent_runs_in_the_shell(story.agents.subject, "docker ps")
     result.expect_allowed()
