@@ -88,6 +88,7 @@ final class DomainDeclarationTest extends TestCase
         'Enums/SlotContextType.php',
         'Support/DomainEntry.php',
         'Support/DomainRegistry.php',
+        'Support/AvailableListener.php',
         'Support/DomainStateType.php',
         'Support/DomainStatus.php',
         'Support/DomainSwitches.php',

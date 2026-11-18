@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Sharing;
 
 use App\Actors\Contracts\Actor;
+use App\Actors\Contracts\JournalAccessPolicy;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Domains\Support\DomainEntry;
@@ -17,7 +18,6 @@ use App\Sharing\Support\GatewaySettings;
 use App\Sharing\Support\OwnerSharePolicy;
 use App\Sharing\Support\ShareRecordRegistry;
 use App\Sharing\Support\ShareToken;
-use App\Web\Contracts\JournalAccessPolicy;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Domains\Pamphlets\PamphletsDomain;
 use Tests\Support\RefreshHookDatabase;

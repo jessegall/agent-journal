@@ -1,0 +1,178 @@
+package profiles
+
+import (
+	"crypto/sha256"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"journal-agent/profiles/contracts"
+)
+
+// Codex is the launch profile of codex-cli 0.165.0: an isolated CODEX_HOME whose config turns every agent-spawning
+// feature off, a workspace-write sandbox, native approvals in the terminal and none asked in a one-shot turn, and a
+// resume only by the conversation ID Codex acknowledged.
+type Codex struct{}
+
+var _ contracts.ProgramProfile = Codex{}
+
+// codexAgentFeatures are the features of 0.165.0 that start or coordinate another agent; all of them stay off.
+var codexAgentFeatures = []string{"multi_agent", "multi_agent_mode", "multi_agent_v2", "multi_agent_v2_dynamic_tools", "agent_message_board", "runtime_agent_instances"}
+
+func (Codex) Program() string {
+	return "codex"
+}
+
+func (Codex) Build() string {
+	return "0.165.0"
+}
+
+// CheckBuild refuses any build but 0.165.0. That build still offers the collaboration tools (spawn_agent and the
+// rest) with every agent feature off (task 888 evidence); the hook policy refuses every call to them, as version 5
+// does (task 885), so no native child starts.
+func (profile Codex) CheckBuild(reportedVersion string) error {
+	if strings.TrimSpace(reportedVersion) == "codex-cli "+profile.Build() {
+		return nil
+	}
+
+	return fmt.Errorf("codex build %q is not the proven build %s: refused before any work", strings.TrimSpace(reportedVersion), profile.Build())
+}
+
+// AllowedTools is empty for Codex: its tools are not named one by one; the agent features above are switched off.
+func (Codex) AllowedTools() []string {
+	return nil
+}
+
+func (Codex) Arguments(launch contracts.Launch) ([]string, error) {
+	if launch.Resume && launch.SessionID == "" {
+		return nil, errors.New("a codex resume needs the conversation ID codex acknowledged; the latest is never resumed")
+	}
+
+	arguments := []string{}
+	if launch.Mode == contracts.ProcessMode {
+		arguments = append(arguments, "exec")
+	}
+	if launch.Resume {
+		arguments = append(arguments, "resume", launch.SessionID)
+	}
+
+	arguments = append(arguments, "--sandbox", "workspace-write")
+	if launch.Mode == contracts.ProcessMode {
+		arguments = append(arguments, "--json", "--skip-git-repo-check")
+	}
+	for _, feature := range codexAgentFeatures {
+		arguments = append(arguments, "-c", "features."+feature+"=false")
+	}
+
+	if launch.Prompt != "" {
+		arguments = append(arguments, launch.Prompt)
+	}
+
+	return arguments, nil
+}
+
+// Environment points Codex at the isolated home and drops inherited Codex variables; the login is a link in the isolated home,
+// never a copy.
+func (Codex) Environment(inherited []string, launch contracts.Launch) []string {
+	kept := make([]string, 0, len(inherited)+1)
+
+	for _, entry := range inherited {
+		if strings.HasPrefix(entry, "CODEX_") {
+			continue
+		}
+		kept = append(kept, entry)
+	}
+
+	return append(kept, "CODEX_HOME="+launch.SettingsFolder)
+}
+
+func (Codex) SettingsFiles(launch contracts.Launch) ([]contracts.SettingsFile, error) {
+	var config strings.Builder
+	config.WriteString("[features]\n")
+	for _, feature := range codexAgentFeatures {
+		config.WriteString(feature + " = false\n")
+	}
+
+	files := []contracts.SettingsFile{}
+	if launch.HookCommand != "" {
+		hookFile := filepath.Join(launch.SettingsFolder, "hooks.json")
+		hooks, trust, err := codexHooks(hookFile, launch.HookCommand)
+		if err != nil {
+			return nil, err
+		}
+		config.WriteString(trust)
+		files = append(files, contracts.SettingsFile{Name: "hooks.json", Content: hooks})
+	}
+
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return nil, err
+	}
+
+	return append(files,
+		contracts.SettingsFile{Name: "config.toml", Content: []byte(config.String())},
+		contracts.SettingsFile{Name: "auth.json", LinkTo: filepath.Join(home, ".codex", "auth.json")},
+	), nil
+}
+
+func (Codex) RejectContrary(extraArguments []string) error {
+	for _, argument := range extraArguments {
+		if strings.HasPrefix(argument, "--dangerously") || argument == "--last" || argument == "--full-auto" {
+			return fmt.Errorf("the argument %s would undo the codex profile", argument)
+		}
+		for _, feature := range codexAgentFeatures {
+			if strings.Contains(argument, feature) {
+				return fmt.Errorf("the argument %s touches the agent feature %s", argument, feature)
+			}
+		}
+	}
+
+	return nil
+}
+
+// codexHookEvent is one hook event of Codex: its name in hooks.json, its key in a trust entry, and whether its
+// definition carries a matcher.
+type codexHookEvent struct {
+	name       string
+	key        string
+	hasMatcher bool
+	timeout    int
+}
+
+var codexHookEvents = []codexHookEvent{
+	{"SessionStart", "session_start", true, 600},
+	{"UserPromptSubmit", "user_prompt_submit", false, 600},
+	{"PreToolUse", "pre_tool_use", true, 600},
+	{"PostToolUse", "post_tool_use", true, 600},
+	{"Stop", "stop", false, 600},
+	{"SessionEnd", "session_end", true, 1},
+}
+
+// codexHooks gives the hooks.json that runs the command on every event, and the [hooks.state] tables that mark each
+// hook trusted, hashed the way Codex hashes a command hook's identity, so the hooks run without a trust prompt.
+func codexHooks(hookFile, command string) ([]byte, string, error) {
+	events := map[string]any{}
+	var trust strings.Builder
+
+	for _, event := range codexHookEvents {
+		events[event.name] = []map[string]any{{"hooks": []map[string]any{{"type": "command", "command": command}}}}
+
+		identity := map[string]any{
+			"event_name": event.key,
+			"hooks":      []map[string]any{{"type": "command", "command": command, "timeout": event.timeout, "async": false}},
+		}
+		body, err := json.Marshal(identity)
+		if err != nil {
+			return nil, "", err
+		}
+		digest := sha256.Sum256(body)
+		fmt.Fprintf(&trust, "\n[hooks.state.%q]\nenabled = true\ntrusted_hash = \"sha256:%x\"\n", hookFile+":"+event.key+":0:0", digest)
+	}
+
+	hooks, err := json.MarshalIndent(map[string]any{"hooks": events}, "", "  ")
+
+	return hooks, trust.String(), err
+}

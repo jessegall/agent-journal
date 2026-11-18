@@ -16,8 +16,8 @@ final readonly class ElapsedTime
     private const int NANOSECONDS_PER_MILLISECOND = 1_000_000;
 
     private function __construct(
-        private int $nanoseconds,
-        private bool $approximate,
+        public int $nanoseconds,
+        public bool $approximate,
     ) {}
 
     /**

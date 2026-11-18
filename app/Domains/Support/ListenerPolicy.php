@@ -74,6 +74,36 @@ final readonly class ListenerPolicy
         return $events;
     }
 
+    /**
+     * The checked map as the dispatcher runs it: each domain's listener gated by that domain's availability, Core's
+     * listeners as they are. The map itself keeps every declaration.
+     *
+     * @param  array<string, list<string>>  $events
+     * @return array<string, list<string|AvailableListener>>
+     *
+     * @throws InvalidListener
+     */
+    public function gated(array $events): array
+    {
+        $gated = [];
+
+        foreach ($events as $event => $listeners) {
+            foreach ($listeners as $listener) {
+                $class = explode('@', $listener, 2)[0];
+
+                if (! class_exists($class)) {
+                    throw InvalidListener::staleCache($listener, $event);
+                }
+
+                $file = (string) (new ReflectionClass($class))->getFileName();
+                $domain = array_find($this->registry->all(), fn (DomainEntry $entry) => $entry->holdsListenerFile($file));
+                $gated[$event][] = $domain === null ? $listener : new AvailableListener($domain->name, $listener);
+            }
+        }
+
+        return $gated;
+    }
+
     private function checkPair(string $event, string $listener): void
     {
         [$class, $method] = array_pad(explode('@', $listener, 2), 2, 'handle');

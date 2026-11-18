@@ -6,10 +6,10 @@ namespace Domain\Access\Support;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\ActorProvider;
+use App\Actors\Contracts\JournalAccessPolicy;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Support\ActorIdentity;
-use App\Web\Contracts\JournalAccessPolicy;
 use Domain\Access\Models\User;
 
 /**

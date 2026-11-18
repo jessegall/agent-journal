@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Access\Support;
 
 use App\Actors\Contracts\Actor;
+use App\Actors\Contracts\JournalAccessPolicy;
 use App\Actors\Enums\ActorType;
-use App\Web\Contracts\JournalAccessPolicy;
 
 /**
  * Who may use the journal: only the configured owner. With no owner configured, nobody gets in; signing up or being

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Web\Support;
 
 use App\Actors\Contracts\Actor;
-use App\Web\Contracts\JournalAccessPolicy;
+use App\Actors\Contracts\JournalAccessPolicy;
 
 /**
  * The private channel of one user: only that signed-in user joins it, and only while Access lets them use the

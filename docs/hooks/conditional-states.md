@@ -78,9 +78,9 @@ For the builders of doc 36 revision 3's frame lifecycle (plan 24) and doc 35 rev
   without finished or switched-off frames (`withoutInactiveFrames()`). Lifecycle callbacks come only from the final
   difference between `before` and the saved stack, as they do today.
 - **Ticks.** The ticker skips a switched-off candidate both when it selects frames to tick and when it revalidates one,
-  without pruning it from the stack. A domain wrapper around a state type keeps `TickableStateType` visible. A skipped
-  tick advances no timing baseline.
+  without pruning it from the stack (`TickCandidates::restore`). A domain wrapper around a ticking loader keeps the
+  `TickableStateLoader` mark (`DomainTickableStateType`). A skipped tick advances no timing baseline.
 
 When this phase ran, doc 36's lifecycle already existed (`FrameLifecycle::settle` in `AgentStateMachine`, `StatePush`
-and `StackCleanups`), and its baseline was moved to `withoutInactiveFrames()` in the same change. No ticker existed yet;
-its builder applies the tick rule above.
+and `StackCleanups`), and its baseline was moved to `withoutInactiveFrames()` in the same change. The ticker follows the
+tick rule above.

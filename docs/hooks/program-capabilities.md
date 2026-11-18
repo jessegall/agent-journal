@@ -8,6 +8,10 @@ The core is built and tested on PostgreSQL: typed hook inputs, the top-first wal
 
 No production program runs under it yet: the host relay exists but has not run under a real program. Task 89 pinned Claude Code 2.1.323 and codex-cli 0.165.0 and captured their hook payloads on 2026-11-17, each run headless under isolated settings with a capture hook that answered every callback with `{}`; the fixtures are those payloads, redacted. What the capture could not show (the replies a program accepts, timeouts, the stop cap) is marked below as not verified. The owner work still missing is listed in `docs/hooks/dependencies.md`.
 
+## Native subagents are never started (rule 36)
+
+The prohibition is permanent: only the journal's own helpers and workers are ever started, never a program's native subagent, team or forked skill. Each program's `HookProgram::nativeChildTools()` lists the tools that start or reach another agent; the launch settings deny every one, and `POST /hooks/{program}` refuses a pre-tool call to any of them, and any call from inside a native child (one that carries `agent_id`), before a session is mapped or a stack is touched.
+
 ## Measured limits
 
 Measured on 2026-11-17 against the running FrankenPHP Octane app in Docker, from the host, 50 calls each:
@@ -89,7 +93,7 @@ A program that exits or is killed without an end hook is handled by `LaunchHeart
 |---|---|
 | Program and pinned version | Claude Code 2.1.323, captured 2026-11-17 with `claude -p --settings <file> --setting-sources local` |
 | Native callbacks and schema | captured: SessionStart (`source` startup, resume or compact; resume adds `seconds_since_last_response` and `context_tokens`, compact adds `model`), UserPromptSubmit (`prompt`, `prompt_id`, `permission_mode`), PreToolUse and PostToolUse (`tool_name`, `tool_input`, `tool_use_id`; PostToolUse adds `tool_response` as an object and `duration_ms`), Stop (`stop_hook_active`, `last_assistant_message`), SessionEnd (`reason` other), PreCompact (`trigger`, `custom_instructions`), SubagentStop. Notification: a headless run raises none, so its fixture keeps the documented shape |
-| Agent, launch, vendor session and child identity | the vendor session id is kept on session start. A child starts through the `Agent` tool; its tool calls and its SubagentStop carry `agent_id` and `agent_type` on the parent's `session_id`. The isolated settings deny `Agent` and `Task` until the journal gives a child its own identity (plan 2, task 70) |
+| Agent, launch, vendor session and child identity | the vendor session id is kept on session start. A child starts through the `Agent` tool; its tool calls and its SubagentStop carry `agent_id` and `agent_type` on the parent's `session_id`. Native children are never started (rule 36): the isolated settings deny `Agent`, `Task`, `Workflow`, `SendMessage`, `ListAgents`, `RemoteTrigger` and `Skill` for 2.1.323, and the hook endpoint refuses any call carrying `agent_id` and any of those tools |
 | Tool coverage | captured: Bash, Read, Edit, Write and Agent; any other tool, MCP tools included, is refused |
 | Legal answers | neutral, deny, prompt block, stop block, context and `updatedInput` without a permission grant, from the documentation: the capture answered every hook with `{}` |
 | Native permissions | a neutral reply keeps the user's approval prompt, from the documentation |
@@ -118,7 +122,7 @@ A program that exits or is killed without an end hook is handled by `LaunchHeart
 | Program and pinned version | codex-cli 0.165.0, captured 2026-11-17 with `codex exec` under an isolated `CODEX_HOME` |
 | Native callbacks and schema | captured: SessionStart (`source` startup, `model`, `permission_mode`), UserPromptSubmit (`turn_id`, `prompt`), PreToolUse and PostToolUse (`tool_name`, `tool_input`, `tool_use_id`; PostToolUse adds `tool_response` as the tool's text, which starts with `Exit code: N` for apply_patch), Stop (`stop_hook_active`, `last_assistant_message`), SessionEnd (`reason` other). PreCompact: `codex exec` raises none, so its fixture keeps the documented shape |
 | Settings file shape | `hooks.json` in `CODEX_HOME`, shaped as Claude Code's: each event holds `[{"matcher": "*", "hooks": [{"type": "command", "command": "..."}]}]`, with no matcher on UserPromptSubmit and Stop. Codex runs a hook only when `config.toml` holds `[hooks.state."<hooks.json path>:<event_key>:<group>:<index>"]` with `enabled = true` and `trusted_hash`, the sha256 of the hook's normalized definition, and the work folder has `trust_level = "trusted"`; an untrusted hook is skipped without a word |
-| Agent, launch, vendor session and child identity | the vendor session id is kept on session start; child identity not verified: the capture started no child |
+| Agent, launch, vendor session and child identity | the vendor session id is kept on session start. Native children are never started (rule 36): with every agent feature off, 0.165.0 still offers `collaboration.spawn_agent`, `wait_agent`, `send_message`, `followup_task`, `interrupt_agent` and `list_agents` (plan 26 task 888), so the hook endpoint refuses every call to them, as version 5 does |
 | Tool coverage | captured: Bash and apply_patch; any other tool is refused |
 | Legal answers | neutral, deny and stop block from the documentation; `updatedInput` only with `permissionDecision: allow`, so the journal refuses rewrites |
 | Native permissions | a neutral reply omits `permissionDecision`, from the documentation |

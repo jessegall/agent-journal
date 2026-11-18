@@ -25,6 +25,9 @@ var claudeCodeAllowedTools = []string{"Bash", "Read", "Edit", "Write", "Notebook
 // claudeCodeDelegationTools are the native routes to another agent, denied by name on top of the explicit set.
 var claudeCodeDelegationTools = []string{"Agent", "Task", "Workflow", "SendMessage", "ListAgents", "RemoteTrigger", "Skill"}
 
+// nativeHookEvents are the hook events both programs send, the ones the journal answers.
+var nativeHookEvents = []string{"SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop", "SessionEnd"}
+
 // claudeCodeAllowedWithoutAsking is the pinned noninteractive allowlist of a one-shot turn, which has nobody to
 // answer a prompt: reading and editing files, the journal's own commands and read-only git. Anything else is refused.
 var claudeCodeAllowedWithoutAsking = []string{"Read", "Edit", "Write", "NotebookEdit", "Bash(journal:*)", "Bash(ls:*)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)"}
@@ -84,13 +87,14 @@ func (profile ClaudeCode) Arguments(launch contracts.Launch) ([]string, error) {
 	return arguments, nil
 }
 
-// Environment drops every inherited variable that could turn on agent teams, forked skills or a nested session.
-func (ClaudeCode) Environment(inherited []string) []string {
+// Environment drops every inherited Claude Code variable: one from the launching session marks the program as its
+// child (no transcript, the parent's permission mode) and others could turn on agent teams or forked skills.
+func (ClaudeCode) Environment(inherited []string, _ contracts.Launch) []string {
 	kept := make([]string, 0, len(inherited))
 
 	for _, entry := range inherited {
 		name := strings.SplitN(entry, "=", 2)[0]
-		if strings.Contains(name, "AGENT_TEAM") || name == "CLAUDECODE" || name == "CLAUDE_CODE_ENTRYPOINT" {
+		if strings.HasPrefix(name, "CLAUDE_CODE_") || name == "CLAUDECODE" {
 			continue
 		}
 		kept = append(kept, entry)
@@ -99,13 +103,28 @@ func (ClaudeCode) Environment(inherited []string) []string {
 	return kept
 }
 
-func (ClaudeCode) SettingsFile() ([]byte, error) {
-	return json.MarshalIndent(map[string]any{
+func (ClaudeCode) SettingsFiles(launch contracts.Launch) ([]contracts.SettingsFile, error) {
+	settings := map[string]any{
 		"permissions": map[string]any{
 			"allow": claudeCodeAllowedWithoutAsking,
 			"deny":  append(slices.Clone(claudeCodeDelegationTools), claudeCodeNestedPrograms...),
 		},
-	}, "", "  ")
+	}
+
+	if launch.HookCommand != "" {
+		hooks := map[string]any{}
+		for _, event := range nativeHookEvents {
+			hooks[event] = []map[string]any{{"hooks": []map[string]any{{"type": "command", "command": launch.HookCommand}}}}
+		}
+		settings["hooks"] = hooks
+	}
+
+	content, err := json.MarshalIndent(settings, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+
+	return []contracts.SettingsFile{{Name: "settings.json", Content: content}}, nil
 }
 
 func (ClaudeCode) RejectContrary(extraArguments []string) error {
