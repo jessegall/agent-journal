@@ -91,7 +91,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
                 continue;
             }
 
-            SkillPublication::intend($session->id, $context->program->key, $target, $generation, $selected->digest);
+            SkillPublication::intend($session->id, $context->program->key, $target, $generation, $selected->digest, $selected->selectedKeys());
             $intended++;
         }
 

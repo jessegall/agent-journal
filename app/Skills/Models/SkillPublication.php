@@ -11,6 +11,7 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Exceptions\SkillPublicationFailed;
+use App\Skills\Exceptions\SkillPublicationStale;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -30,6 +31,7 @@ use Illuminate\Support\Carbon;
  * @property string $target
  * @property string $generation_id
  * @property string $selection_digest
+ * @property list<string> $skill_keys
  * @property string|null $expected_previous_generation_id
  * @property int $fencing_version
  * @property string|null $lease_holder
@@ -42,7 +44,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['session_id', 'program', 'target', 'generation_id', 'selection_digest', 'expected_previous_generation_id', 'fencing_version', 'lease_holder', 'lease_until', 'progress', 'state', 'open_key', 'manifest', 'error'])]
+#[Fillable(['session_id', 'program', 'target', 'generation_id', 'selection_digest', 'skill_keys', 'expected_previous_generation_id', 'fencing_version', 'lease_holder', 'lease_until', 'progress', 'state', 'open_key', 'manifest', 'error'])]
 final class SkillPublication extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids;
@@ -56,6 +58,7 @@ final class SkillPublication extends Model implements ReadableModel
             'fencing_version' => 'integer',
             'lease_until' => 'immutable_datetime',
             'progress' => 'integer',
+            'skill_keys' => 'array',
             'state' => PublicationState::class,
             'manifest' => 'array',
         ];
@@ -64,8 +67,10 @@ final class SkillPublication extends Model implements ReadableModel
     /**
      * Records the intent to deliver this selection to the session's target; an open intent for the same target is
      * superseded, so one target has one open intent.
+     *
+     * @param  list<string>  $skillKeys  the keys of the selected skills, in the generation's order
      */
-    public static function intend(string $sessionId, string $program, string $target, SkillGeneration $generation, string $selectionDigest): self
+    public static function intend(string $sessionId, string $program, string $target, SkillGeneration $generation, string $selectionDigest, array $skillKeys): self
     {
         $openKey = self::openKeyOf($sessionId, $target);
         $earlier = self::query()->where('open_key', $openKey)->lockForUpdate()->first();
@@ -78,6 +83,7 @@ final class SkillPublication extends Model implements ReadableModel
             'target' => $target,
             'generation_id' => $generation->id,
             'selection_digest' => $selectionDigest,
+            'skill_keys' => $skillKeys,
             'expected_previous_generation_id' => $delivered?->generation_id,
             'state' => PublicationState::Pending,
             'open_key' => $openKey,
@@ -99,7 +105,7 @@ final class SkillPublication extends Model implements ReadableModel
     }
 
     /**
-     * @throws SkillPublicationFailed when a newer worker holds it
+     * @throws SkillPublicationStale when a newer worker holds it
      */
     public function recordProgress(int $fence, int $filesStaged): void
     {
@@ -111,7 +117,7 @@ final class SkillPublication extends Model implements ReadableModel
     /**
      * @param  array<string, mixed>  $manifest
      *
-     * @throws SkillPublicationFailed when a newer worker holds it
+     * @throws SkillPublicationStale when a newer worker holds it
      */
     public function deliver(int $fence, array $manifest): void
     {
@@ -226,12 +232,12 @@ final class SkillPublication extends Model implements ReadableModel
     }
 
     /**
-     * @throws SkillPublicationFailed when a newer worker holds it
+     * @throws SkillPublicationStale when a newer worker holds it
      */
     private function checkFence(int $fence): void
     {
         if (! $this->isHeldBy($fence)) {
-            throw SkillPublicationFailed::stale($fence, $this->fencing_version);
+            throw SkillPublicationStale::for($fence, $this->fencing_version);
         }
     }
 

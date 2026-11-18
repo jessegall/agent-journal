@@ -17,6 +17,7 @@ use App\Skills\Console\SkillRetireCommand;
 use App\Skills\Console\SkillRevisionCommand;
 use App\Skills\Console\SkillRevisionsCommand;
 use App\Skills\Console\SkillShowCommand;
+use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Contracts\SkillReader;
 use App\Skills\Contracts\SkillRenderer;
 use App\Skills\Contracts\SkillSource;
@@ -29,6 +30,7 @@ use App\Skills\Support\CanonicalRenderer;
 use App\Skills\Support\ConditionRegistry;
 use App\Skills\Support\ConditionTree;
 use App\Skills\Support\EvaluationGuard;
+use App\Skills\Support\HostSkillPublisher;
 use App\Skills\Support\SkillRegistry;
 use App\Skills\Support\SkillTargets;
 use App\Skills\Support\StoredSkillSource;
@@ -52,6 +54,7 @@ final class SkillsServiceProvider extends ServiceProvider
         $this->app->bind(SkillRenderer::class, CanonicalRenderer::class);
         $this->app->bind(SkillSource::class, StoredSkillSource::class);
         $this->app->singleton(SkillTargets::class, fn () => new SkillTargets(storage_path('app/skills')));
+        $this->app->bind(SkillPublisher::class, HostSkillPublisher::class);
         $this->app->scoped(SkillReader::class, fn (Application $app) => new CatalogueOnFirstRead(fn () => SkillCatalogue::build(
             $app->make(SkillRegistry::class),
             $app,

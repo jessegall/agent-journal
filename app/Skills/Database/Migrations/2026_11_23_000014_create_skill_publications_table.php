@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('target', 1024);
             $table->foreignUlid('generation_id')->constrained('skill_generations')->restrictOnDelete();
             $table->string('selection_digest', 64);
+            $table->json('skill_keys');
             $table->ulid('expected_previous_generation_id')->nullable();
             $table->unsignedBigInteger('fencing_version')->default(0);
             $table->string('lease_holder', 128)->nullable();

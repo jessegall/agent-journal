@@ -10,8 +10,8 @@ use App\Skills\Enums\PublicationState;
 use RuntimeException;
 
 /**
- * A publication step that cannot go on: a state it may not move to, a worker whose fence is stale, a target the
- * journal does not own, or a path that leaves the protected root.
+ * A publication step that cannot go on: a state it may not move to, a target the journal does not own, a path that
+ * leaves the protected root, or a write the host refused.
  */
 final class SkillPublicationFailed extends RuntimeException implements CodedRefusal
 {
@@ -20,9 +20,9 @@ final class SkillPublicationFailed extends RuntimeException implements CodedRefu
         return new self("A publication that is {$from->value} cannot become {$to->value}.");
     }
 
-    public static function stale(int $fence, int $current): self
+    public static function notClaimable(PublicationState $state): self
     {
-        return new self("This worker holds fence {$fence}, but the publication is at fence {$current}; a newer worker owns it.");
+        return new self("A publication that is {$state->value} is not waiting for a worker.");
     }
 
     public static function collision(string $target): self
