@@ -64,6 +64,7 @@ use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchExecutor;
 use App\Agents\Contracts\LaunchReadiness;
 use App\Agents\Contracts\LaunchRecordReader;
+use App\Agents\Contracts\NativeTurnRecords;
 use App\Agents\Contracts\ProgramConversationReader;
 use App\Agents\Contracts\RuntimeReader;
 use App\Agents\Contracts\SessionReader;
@@ -769,6 +770,7 @@ final class CoreApi
                 RecordLinker::class,
                 CurrentSession::class,
                 ConversationVisits::class,
+                NativeTurnRecords::class,
                 ReadableModel::class,
                 ReadMeter::class,
                 Actor::class,

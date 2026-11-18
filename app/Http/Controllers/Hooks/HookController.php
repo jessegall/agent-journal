@@ -22,6 +22,7 @@ use App\Hooks\Support\StackAccess;
 use App\Http\Requests\Hooks\HookRequest;
 use App\Http\Support\Hooks\HookFailure;
 use App\Http\Support\Hooks\HookResponse;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,7 +33,8 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class HookController
 {
-    private const string NATIVE_CHILD_REFUSAL = 'A program\'s own subagents never run here (rule 36): start a journal helper or worker instead.';
+    private const string NATIVE_CHILD_REFUSAL = 'A program\'s own subagents never run here (rule 36): '
+        .'start a journal helper or worker instead.';
 
     public function __construct(
         private ProgramAdapters $adapters,
@@ -52,17 +54,29 @@ final readonly class HookController
             $payload = $request->payload();
 
             if ($payload->isFromNativeChild() || $payload->callsAnyOf($request->program()->nativeChildTools())) {
-                return new JsonResponse(HookResponse::fromProgramReply(ProgramReplies::denyTool(self::NATIVE_CHILD_REFUSAL, []))->toArray());
+                $refusal = ProgramReplies::denyTool(self::NATIVE_CHILD_REFUSAL, []);
+
+                return new JsonResponse(HookResponse::fromProgramReply($refusal)->toArray());
             }
 
-            $this->turns->checkGeneration($access->target()->sessionId, $request->processGeneration());
-
-            if ($payload->hookEventName === 'UserPromptSubmit') {
-                $this->turns->recordPrompt($access->target()->sessionId, $request->processGeneration(), $payload->nativePromptId());
-            }
+            $sessionId = $access->target()->sessionId;
+            $generation = $request->processGeneration();
+            $this->turns->checkGeneration($sessionId, $generation);
+            $this->turns->acknowledgeWake($sessionId, CarbonImmutable::now());
 
             $call = $adapter->callFor($payload, $access->hookIdentity());
-            $reply = $call->replyWith(fn (HookInput $input, Closure $render) => $machine->answer($input, $adapter->capabilities(), $this->deadline, $render));
+            $capabilities = $adapter->capabilities();
+            $answer = function (HookInput $input, Closure $render) use (
+                $sessionId,
+                $generation,
+                $machine,
+                $capabilities,
+            ) {
+                $input->recordTurn($this->turns, $sessionId, $generation);
+
+                return $machine->answer($input, $capabilities, $this->deadline, $render);
+            };
+            $reply = $call->replyWith($answer);
         } catch (UnsupportedHook|UnreadablePayload $refused) {
             return $this->failure($refused->getMessage(), Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (HookIdentityExpired|HookDigestChanged|StaleProcessGeneration|ConversationIncompatible $conflict) {

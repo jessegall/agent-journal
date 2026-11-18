@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Inputs;
 
 use App\Agents\Contracts\ConversationVisits;
+use App\Agents\Contracts\NativeTurnRecords;
 use App\Hooks\Contracts\HookAnswerer;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
@@ -55,4 +56,6 @@ final readonly class ContextCompacted implements HookInput
     {
         $visits->compacted($sessionId, $this->hook->hookId, $at);
     }
+
+    public function recordTurn(NativeTurnRecords $turns, string $sessionId, int|null $generation): void {}
 }

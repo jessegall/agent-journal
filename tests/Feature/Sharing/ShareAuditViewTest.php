@@ -47,7 +47,6 @@ final class ShareAuditViewTest extends TestCase
     {
         parent::setUp();
 
-        $this->withoutVite();
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());

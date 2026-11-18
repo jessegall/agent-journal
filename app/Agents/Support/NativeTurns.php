@@ -4,16 +4,21 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Agents\Contracts\NativeTurnRecords;
+use App\Agents\Enums\DriverOperation;
+use App\Agents\Enums\RequestProgress;
 use App\Agents\Exceptions\StaleProcessGeneration;
 use App\Agents\Models\AgentRuntime;
+use App\Agents\Models\DriverRequest;
 use App\Agents\Models\DriverTurn;
 use Carbon\CarbonImmutable;
 
 /**
- * Checks a hook call's process generation against its runtime and records the native turns its prompts start.
+ * Checks a hook call's process generation against its runtime, records the native turns its prompts start and
+ * acknowledges the wake the call answers.
  * Sessions without a runtime (launches from before the drivers, tests) pass untouched.
  */
-final readonly class NativeTurns
+final readonly class NativeTurns implements NativeTurnRecords
 {
     /**
      * @throws StaleProcessGeneration
@@ -28,6 +33,27 @@ final readonly class NativeTurns
     }
 
     /**
+     * An authenticated hook of the session is activity after its wake was taken: it acknowledges the watermark the
+     * host claimed, and never reads or answers a message.
+     */
+    public function acknowledgeWake(string $sessionId, CarbonImmutable $activityAt): void
+    {
+        $runtime = AgentRuntime::query()->where('agent_session_id', $sessionId)->first();
+
+        if ($runtime === null) {
+            return;
+        }
+
+        DriverRequest::query()
+            ->where('agent_runtime_id', $runtime->id)
+            ->where('operation', DriverOperation::Wake)
+            ->whereIn('progress', [RequestProgress::Staged, RequestProgress::Applying])
+            ->lockForUpdate()
+            ->get()
+            ->each(fn (DriverRequest $wake) => $wake->acknowledgeActivityAt($activityAt));
+    }
+
+    /**
      * Records the turn a prompt starts once per (runtime, generation, native prompt id); a repeated hook adds none.
      * The prompt's text is never stored or logged here.
      */
@@ -39,6 +65,7 @@ final readonly class NativeTurns
             return;
         }
 
-        DriverTurn::recordStart($runtime->id, $generation ?? $runtime->process_generation, $nativePromptId, CarbonImmutable::now());
+        $turnGeneration = $generation ?? $runtime->process_generation;
+        DriverTurn::recordStart($runtime->id, $turnGeneration, $nativePromptId, CarbonImmutable::now());
     }
 }

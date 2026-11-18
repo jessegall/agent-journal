@@ -21,9 +21,15 @@ trait RefreshHookDatabase
         beginDatabaseTransaction as beginLaravelDatabaseTransaction;
     }
 
+    /**
+     * The database whose migrations this process already compared with its fingerprint.
+     */
+    private static string|null $checkedDatabase = null;
+
     public function beginDatabaseTransaction(): void
     {
         HookDatabase::select($this->app);
+        $this->rebuildWhenMigrationsChanged();
 
         if (! HookDatabase::isParallelWorker($this->app)) {
             $this->app->make(Kernel::class)->call('migrate', ['--force' => true]);
@@ -41,6 +47,46 @@ trait RefreshHookDatabase
         $connection = $this->app->make(DatabaseManager::class)->connection();
         $connection->statement("SET LOCAL lock_timeout = '5000ms'");
         $connection->statement("SET LOCAL statement_timeout = '30000ms'");
+    }
+
+    /**
+     * A create migration is edited in place (rule 34), so a database kept from an earlier run can hold old tables that
+     * migrate never touches. The database keeps a fingerprint of the migration files it was built from; once per
+     * process a differing fingerprint rebuilds it with migrate:fresh.
+     */
+    private function rebuildWhenMigrationsChanged(): void
+    {
+        $connection = $this->app->make(DatabaseManager::class)->connection();
+        $database = $connection->getDatabaseName();
+
+        if (self::$checkedDatabase === $database) {
+            return;
+        }
+
+        $fingerprint = $this->migrationFingerprint();
+        $stored = $connection->scalar(
+            "select shobj_description(oid, 'pg_database') from pg_database where datname = current_database()",
+        );
+
+        if ($stored !== $fingerprint) {
+            $this->app->make(Kernel::class)->call('migrate:fresh', ['--force' => true]);
+            $connection->statement(sprintf('comment on database "%s" is \'%s\'', $database, $fingerprint));
+        }
+
+        self::$checkedDatabase = $database;
+    }
+
+    private function migrationFingerprint(): string
+    {
+        $migrator = $this->app->make('migrator');
+        $files = $migrator->getMigrationFiles([database_path('migrations'), ...$migrator->paths()]);
+        ksort($files);
+
+        return hash('sha256', implode("\n", array_map(
+            fn (string $name, string $path): string => $name.' '.hash_file('sha256', $path),
+            array_keys($files),
+            $files,
+        )));
     }
 
     /**

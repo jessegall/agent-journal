@@ -44,6 +44,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $attempt_version
  * @property int|null $wake_requested
  * @property int|null $wake_acknowledged
+ * @property int|null $wake_claimed
+ * @property CarbonImmutable|null $staged_at
  * @property string|null $script_id
  * @property int|null $script_version
  * @property int|null $script_step
@@ -86,6 +88,7 @@ final class DriverRequest extends Model implements ReadableModel
             'outcome' => RequestOutcome::class,
             'expected_timing' => ExpectedTiming::class,
             'expected_observed_at' => 'immutable_datetime',
+            'staged_at' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',
             'hold_reason' => HoldReason::class,
         ];
@@ -118,9 +121,14 @@ final class DriverRequest extends Model implements ReadableModel
         $this->save();
     }
 
-    public function stage(): void
+    /**
+     * Hands the request to its host; a wake keeps the watermark the host claims, so a later wake stays pending.
+     */
+    public function stage(CarbonImmutable $at): void
     {
         $this->moveTo(RequestProgress::Staged);
+        $this->wake_claimed = $this->wake_requested;
+        $this->staged_at = $at;
         $this->save();
     }
 
@@ -174,7 +182,14 @@ final class DriverRequest extends Model implements ReadableModel
      */
     public function receipt(): DriverReceipt
     {
-        return new DriverReceipt($this->id, $this->sequence, $this->operation, $this->progress, $this->expected_timing, $this->expected_observed_at?->toIso8601String());
+        return new DriverReceipt(
+            $this->id,
+            $this->sequence,
+            $this->operation,
+            $this->progress,
+            $this->expected_timing,
+            $this->expected_observed_at?->toIso8601String(),
+        );
     }
 
     /**
@@ -182,7 +197,16 @@ final class DriverRequest extends Model implements ReadableModel
      */
     public function claimed(): ClaimedRequest
     {
-        return new ClaimedRequest($this->agent_runtime_id, $this->id, $this->sequence, $this->attempt_version, $this->operation->value, $this->message, $this->model, $this->effort);
+        return new ClaimedRequest(
+            $this->agent_runtime_id,
+            $this->id,
+            $this->sequence,
+            $this->attempt_version,
+            $this->operation->value,
+            $this->message,
+            $this->model,
+            $this->effort,
+        );
     }
 
     /**
@@ -210,16 +234,46 @@ final class DriverRequest extends Model implements ReadableModel
      */
     public function claimWake(int $requested): void
     {
-        $this->wake_requested = $this->wake_requested === null ? $requested : max($requested, $this->wake_requested);
+        $this->wake_requested = max($requested, $this->wake_requested ?? 0);
         $this->row_version++;
         $this->save();
     }
 
     public function acknowledgeWake(int $acknowledged): void
     {
-        $this->wake_acknowledged = $this->wake_acknowledged === null ? $acknowledged : max($acknowledged, $this->wake_acknowledged);
+        $this->wake_acknowledged = max($acknowledged, $this->wake_acknowledged ?? 0);
         $this->row_version++;
         $this->save();
+    }
+
+    /**
+     * Activity of the woken session after the host took the wake acknowledges what the host claimed: a wake promises
+     * attention, not reading. A wake raised since goes back to pending for the next claim.
+     */
+    public function acknowledgeActivityAt(CarbonImmutable $activityAt): void
+    {
+        if ($this->wake_claimed === null || $this->staged_at === null || $activityAt->lessThan($this->staged_at)) {
+            return;
+        }
+
+        $this->acknowledgeWake($this->wake_claimed);
+
+        if ($this->wake_requested > $this->wake_claimed) {
+            $this->accept();
+
+            return;
+        }
+
+        $this->markApplied('session_activity');
+    }
+
+    /**
+     * Settles a wake of an idle session with nothing pending: no turn starts.
+     */
+    public function settleWithoutWork(): void
+    {
+        $this->wake_acknowledged = $this->wake_requested;
+        $this->markApplied('no_pending_work', RequestOutcome::NoWork);
     }
 
     private function finish(RequestProgress $progress, RequestOutcome|null $outcome): void

@@ -66,7 +66,11 @@ final readonly class CodexAdapter implements ProgramAdapter
                 fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer),
             ),
             'UserPromptSubmit' => new JudgedCall(
-                new PromptSubmitted($hook, new PromptDetails($payload->nativePromptId() ?? $hook->hookId, $payload->promptText())),
+                new PromptSubmitted($hook, new PromptDetails(
+                    $payload->nativePromptId() ?? $hook->hookId,
+                    $payload->promptText(),
+                    $payload->nativePromptId(),
+                )),
                 fn (HookAnswer $answer) => ProgramReplies::prompt($answer),
             ),
             'PreToolUse' => $this->toolCall($payload, $hook),

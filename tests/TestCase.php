@@ -28,6 +28,7 @@ abstract class TestCase extends BaseTestCase
 
         $this->applicationMorphMap = Relation::morphMap();
         Http::preventStrayRequests();
+        $this->withoutVite();
         $this->app->make(NumberingOutsideCommands::class)->allow();
     }
 

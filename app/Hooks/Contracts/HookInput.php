@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Contracts;
 
 use App\Agents\Contracts\ConversationVisits;
+use App\Agents\Contracts\NativeTurnRecords;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\ContextStartType;
@@ -39,4 +40,9 @@ interface HookInput
      * Records the agent's visit to its program conversation, for a session start or a compaction.
      */
     public function recordVisit(ConversationVisits $visits, string $sessionId, CarbonImmutable $at): void;
+
+    /**
+     * Records the native turn this hook starts, for a submitted prompt; any other hook starts none.
+     */
+    public function recordTurn(NativeTurnRecords $turns, string $sessionId, int|null $generation): void;
 }

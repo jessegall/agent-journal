@@ -28,6 +28,7 @@ use App\Agents\Contracts\RuntimeReader;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\DriverType;
 use App\Agents\Enums\HoldReason;
+use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Enums\SessionStatus;
@@ -45,6 +46,7 @@ use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\NativeTurns;
 use App\Agents\Support\OpenedRuntime;
+use App\Agents\Support\PendingWorkSources;
 use App\Agents\Values\ScriptParameter;
 use App\Agents\Values\ScriptProgress;
 use App\Bus\Contracts\Command;
@@ -52,6 +54,7 @@ use App\Bus\Contracts\CommandBus;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 use Spatie\LaravelData\Optional;
+use Tests\Fixtures\Agents\CountedPendingWork;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -140,6 +143,70 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame($first->requestId, $second->requestId);
         $this->assertSame(1, DriverRequest::query()->where('operation', DriverOperation::Wake)->count());
         $this->assertSame(2, DriverRequest::query()->findOrFail($first->requestId)->wake_requested);
+    }
+
+    public function test_session_activity_acknowledges_only_the_claimed_wake_and_a_later_one_stays_pending(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $this->asSystem(new ReportRuntimeActivity($host->hostId, $opened->runtimeId, RuntimeActivity::Running, HoldReason::None, 1));
+        $this->asOwner(new WakeAgent($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
+        $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+        $this->asOwner(new WakeAgent($this->agentIdOf($opened), $opened->sessionId, 'wake-2'));
+        $turns = $this->app->make(NativeTurns::class);
+
+        $turns->acknowledgeWake($opened->sessionId, CarbonImmutable::now()->addSecond());
+
+        $wake = DriverRequest::query()->where('operation', DriverOperation::Wake)->sole();
+        $this->assertSame([1, 2, RequestProgress::Accepted], [$wake->wake_acknowledged, $wake->wake_requested, $wake->progress]);
+
+        $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+        $turns->acknowledgeWake($opened->sessionId, CarbonImmutable::now()->addSecond());
+
+        $wake->refresh();
+        $this->assertSame([2, RequestProgress::Applied], [$wake->wake_acknowledged, $wake->progress]);
+        $this->assertNull($wake->outcome);
+    }
+
+    public function test_activity_from_before_the_wake_was_taken_acknowledges_nothing(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $this->asSystem(new ReportRuntimeActivity($host->hostId, $opened->runtimeId, RuntimeActivity::Running, HoldReason::None, 1));
+        $this->asOwner(new WakeAgent($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
+        $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+
+        $this->app->make(NativeTurns::class)->acknowledgeWake($opened->sessionId, CarbonImmutable::now()->subMinute());
+
+        $wake = DriverRequest::query()->where('operation', DriverOperation::Wake)->sole();
+        $this->assertSame([null, RequestProgress::Staged], [$wake->wake_acknowledged, $wake->progress]);
+    }
+
+    public function test_a_wake_of_an_idle_session_with_nothing_pending_settles_as_no_work_and_starts_no_turn(): void
+    {
+        $this->app->make(PendingWorkSources::class)->register(CountedPendingWork::class);
+        CountedPendingWork::$count = 0;
+        [$host, $opened] = $this->openRuntime();
+        $this->asSystem(new ReportRuntimeActivity($host->hostId, $opened->runtimeId, RuntimeActivity::Idle, HoldReason::None, 1));
+        $this->asOwner(new WakeAgent($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
+
+        $claimed = $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+
+        $wake = DriverRequest::query()->where('operation', DriverOperation::Wake)->sole();
+        $this->assertSame([], $claimed->requests);
+        $this->assertSame([RequestProgress::Applied, RequestOutcome::NoWork], [$wake->progress, $wake->outcome]);
+    }
+
+    public function test_a_wake_of_an_idle_session_with_pending_work_goes_to_the_host(): void
+    {
+        $this->app->make(PendingWorkSources::class)->register(CountedPendingWork::class);
+        CountedPendingWork::$count = 1;
+        [$host, $opened] = $this->openRuntime();
+        $this->asSystem(new ReportRuntimeActivity($host->hostId, $opened->runtimeId, RuntimeActivity::Idle, HoldReason::None, 1));
+        $this->asOwner(new WakeAgent($this->agentIdOf($opened), $opened->sessionId, 'wake-1'));
+
+        $claimed = $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+
+        $this->assertCount(1, $claimed->requests);
+        $this->assertSame(RequestProgress::Staged, DriverRequest::query()->where('operation', DriverOperation::Wake)->sole()->progress);
     }
 
     public function test_an_interrupt_holds_the_runtime_at_once(): void

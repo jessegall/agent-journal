@@ -29,6 +29,8 @@ return new class extends Migration
             $table->unsignedInteger('attempt_version')->default(0);
             $table->unsignedBigInteger('wake_requested')->nullable();
             $table->unsignedBigInteger('wake_acknowledged')->nullable();
+            $table->unsignedBigInteger('wake_claimed')->nullable();
+            $table->timestampTz('staged_at')->nullable();
             $table->string('script_id')->nullable();
             $table->unsignedInteger('script_version')->nullable();
             $table->unsignedInteger('script_step')->nullable();

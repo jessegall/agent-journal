@@ -47,8 +47,6 @@ final class ShareStatusTest extends TestCase
     {
         parent::setUp();
 
-        $this->withoutVite();
-
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id));

@@ -46,8 +46,6 @@ final class GatewaySettingsPageTest extends TestCase
     {
         parent::setUp();
 
-        $this->withoutVite();
-
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->secretsFolder = sys_get_temp_dir().'/sharing-secrets-'.Str::lower((string) Str::ulid());

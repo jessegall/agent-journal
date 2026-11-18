@@ -9,5 +9,6 @@ final readonly class PromptDetails
     public function __construct(
         public string $promptId,
         public string $text,
+        public string|null $nativePromptId,
     ) {}
 }

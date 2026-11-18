@@ -33,6 +33,7 @@ use App\Agents\Support\AgentContext;
 use App\Agents\Support\AgentSessionCounter;
 use App\Agents\Support\DatabaseLaunchTransaction;
 use App\Agents\Support\HostCapacity;
+use App\Agents\Support\PendingWorkSources;
 use App\Agents\Support\RequestSession;
 use App\Agents\Support\RolePermissionReader;
 use App\Assignments\Contracts\AgentAuthority;
@@ -71,6 +72,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(AgentClientSettings::class, fn ($app) => $app->make(LaunchCredentialSource::class)->forThisLaunch());
         $this->app->bind(AgentRequestSender::class, SendAgentRequests::class);
         $this->app->bind(CallerSession::class, RequestSession::class);
+        $this->app->singleton(PendingWorkSources::class);
     }
 
     public function boot(AssignmentRegistration $assignments, ActorProviderRegistration $actors, ActiveActorCounterRegistry $presentActors): void

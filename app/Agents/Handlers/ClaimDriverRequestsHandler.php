@@ -4,28 +4,46 @@ declare(strict_types=1);
 
 namespace App\Agents\Handlers;
 
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\ClaimDriverRequests;
+use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\RequestProgress;
+use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
 use App\Agents\Support\ClaimedRequests;
+use App\Agents\Support\PendingWorkSources;
 use App\Contracts\CommandHandler;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
 
+/**
+ * Hands a host its pending requests in turn per runtime. A wake of an idle session with no pending work anywhere is
+ * settled as NoWork here and never reaches the host, so no turn starts for nothing.
+ */
 final readonly class ClaimDriverRequestsHandler implements CommandHandler
 {
+    public function __construct(private PendingWorkSources $pendingWork) {}
+
     public function handle(ClaimDriverRequests $command): ClaimedRequests
     {
-        $runtimeIds = AgentRuntime::query()->where('host_id', $command->hostId)->pluck('id')->all();
+        /** @var Collection<string, AgentRuntime> $runtimes */
+        $runtimes = AgentRuntime::query()
+            ->with('session.agent')
+            ->where('host_id', $command->hostId)
+            ->get()
+            ->keyBy('id');
         $pending = DriverRequest::query()
-            ->whereIn('agent_runtime_id', $runtimeIds)
+            ->whereIn('agent_runtime_id', $runtimes->keys()->all())
             ->where('progress', RequestProgress::Accepted)
             ->orderBy('sequence')
             ->lockForUpdate()
-            ->limit($command->limit * max(1, count($runtimeIds)))
+            ->limit($command->limit * max(1, $runtimes->count()))
             ->get()
             ->groupBy('agent_runtime_id');
 
         $claimed = [];
+        $now = CarbonImmutable::now();
         for ($round = 0; count($claimed) < $command->limit && $pending->isNotEmpty(); $round++) {
             foreach ($pending as $runtimeId => $requests) {
                 $request = $requests->shift();
@@ -34,7 +52,10 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
 
                     continue;
                 }
-                $request->stage();
+                if ($this->settledWithoutWork($request, $runtimes->get($runtimeId))) {
+                    continue;
+                }
+                $request->stage($now);
                 $claimed[] = $request->claimed();
                 if (count($claimed) === $command->limit) {
                     break;
@@ -43,5 +64,19 @@ final readonly class ClaimDriverRequestsHandler implements CommandHandler
         }
 
         return new ClaimedRequests($claimed);
+    }
+
+    private function settledWithoutWork(DriverRequest $request, AgentRuntime $runtime): bool
+    {
+        if ($request->operation !== DriverOperation::Wake || $runtime->activity !== RuntimeActivity::Idle) {
+            return false;
+        }
+        if ($this->pendingWork->hasWorkFor(ActorIdentity::of($runtime->session->agent))) {
+            return false;
+        }
+
+        $request->settleWithoutWork();
+
+        return true;
     }
 }
