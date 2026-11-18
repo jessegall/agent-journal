@@ -48,6 +48,14 @@ Signed out, `auth status --json` answers (`auth-status-signed-out.json`) with `l
 launch's pre-check reads these fields: a signed-in account must report `authMethod` `claude.ai` and the expected
 `configDirectory`.
 
+## MCP tool names
+
+A session of 2.1.323 lists its MCP discovery and resource tools by these native names: `ToolSearch`,
+`ListMcpResourcesTool`, `ReadMcpResourceTool` and `ReadMcpResourceDirTool`; an MCP tool is named
+`mcp__<server>__<tool>`. The hook adapter recognizes exactly these (task 323). Codex 0.165.0 keeps the same
+`mcp__<server>__<tool>` identifiers and names its own `tool_search`, `list_mcp_resources`,
+`list_mcp_resource_templates` and `read_mcp_resource`; that comes from its binary, not yet from a captured hook payload.
+
 ## What the program writes
 
 Every file the program wrote lies inside `CLAUDE_CONFIG_DIR`: `.claude.json` (mode 0600; keys `firstStartTime`,

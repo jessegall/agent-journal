@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Mcp\Providers;
 
 use App\Agents\Support\AgentContext;
+use App\Hooks\Contracts\JournalToolNames;
 use App\Mcp\Console\RelayCommand;
 use App\Mcp\Contracts\McpCall;
 use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Models\RetainedPage;
 use App\Mcp\Support\LoggedMcpCall;
+use App\Mcp\Support\McpCatalogue;
 use App\Mcp\Support\RetainedNumberedPages;
 use Illuminate\Cache\RateLimiter;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -30,13 +32,17 @@ final class McpServiceProvider extends ServiceProvider
     {
         $this->app->bind(McpCall::class, LoggedMcpCall::class);
         $this->app->bind(NumberedPages::class, RetainedNumberedPages::class);
+        $this->app->bind(JournalToolNames::class, McpCatalogue::class);
     }
 
     public function boot(RateLimiter $limiter): void
     {
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/mcp.php');
         $this->commands([RelayCommand::class]);
-        $this->callAfterResolving(Schedule::class, fn (Schedule $schedule) => $schedule->command('model:prune', ['--model' => [RetainedPage::class]])->daily());
+        $this->callAfterResolving(
+            Schedule::class,
+            fn (Schedule $schedule) => $schedule->command('model:prune', ['--model' => [RetainedPage::class]])->daily(),
+        );
 
         $limiter->for('journal-mcp', fn (Request $request): Limit => Limit::perMinute(self::CALLS_PER_MINUTE)
             ->by($this->app->make(AgentContext::class)->sessionId)

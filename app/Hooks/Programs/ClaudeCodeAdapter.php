@@ -40,14 +40,26 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
 {
     private const string PROGRAM = 'Claude Code';
 
-    public function __construct(private ShellCommandParser $parser) {}
+    public function __construct(
+        private ShellCommandParser $parser,
+        private JournalTools $journalTools,
+    ) {}
 
     public function capabilities(): ProgramCapabilities
     {
         return new ProgramCapabilities(
             self::PROGRAM,
             'Claude Code 2.1.323, hook payloads captured on 2026-11-17',
-            ['onSessionStart', 'onPrompt', 'onCompaction', 'onShellCommand', 'onFileEdit', 'onStop', 'onToolFinished', 'onSessionEnd'],
+            [
+                'onSessionStart',
+                'onPrompt',
+                'onCompaction',
+                'onShellCommand',
+                'onFileEdit',
+                'onStop',
+                'onToolFinished',
+                'onSessionEnd',
+            ],
             RewriteSupport::WithoutApproval,
         );
     }
@@ -62,14 +74,14 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         return match ($payload->hookEventName) {
             'SessionStart' => $this->startCall($payload, $hook),
             'UserPromptSubmit' => new JudgedCall(
-                new PromptSubmitted($hook, new PromptDetails($payload->nativePromptId() ?? $hook->hookId, $payload->promptText())),
+                new PromptSubmitted(
+                    $hook,
+                    new PromptDetails($payload->nativePromptId() ?? $hook->hookId, $payload->promptText()),
+                ),
                 fn (HookAnswer $answer) => ProgramReplies::prompt($answer),
             ),
             'PreToolUse' => $this->toolCall($payload, $hook),
-            'PostToolUse' => new JudgedCall(
-                new ToolFinished($hook, new ToolResult($payload->toolNameText(), $payload->toolOutcome())),
-                fn (HookAnswer $answer) => ProgramReplies::observation('PostToolUse', $answer),
-            ),
+            'PostToolUse' => $this->finishedCall($payload, $hook),
             'Stop' => new JudgedCall(
                 new StopRequested($hook, new StopDetails($hook->hookId, $payload->isStopContinuation())),
                 fn (HookAnswer $answer) => ProgramReplies::stop($answer),
@@ -105,15 +117,53 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         return new JudgedCall($input, fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer));
     }
 
+    /**
+     * After a call to the journal's own tools nothing walks the stack again; after any other tool the journal hears it.
+     */
+    private function finishedCall(HookPayload $payload, HookIdentity $hook): ProgramCall
+    {
+        if ($this->callsJournalTools($payload)) {
+            return JournalToolCall::finished();
+        }
+
+        return new JudgedCall(
+            new ToolFinished($hook, new ToolResult($payload->toolNameText(), $payload->toolOutcome())),
+            fn (HookAnswer $answer) => ProgramReplies::observation('PostToolUse', $answer),
+        );
+    }
+
+    private function callsJournalTools(HookPayload $payload): bool
+    {
+        $tool = ClaudeCodeTool::tryFrom($payload->toolNameText());
+
+        return $this->journalTools->names($payload->toolNameText())
+            || ($tool instanceof ClaudeCodeTool && $tool->discoversJournalTools());
+    }
+
     private function toolCall(HookPayload $payload, HookIdentity $hook): ProgramCall
     {
+        if ($this->journalTools->names($payload->toolNameText())) {
+            return JournalToolCall::starting();
+        }
+
         $tool = ClaudeCodeTool::named($payload->toolNameText());
+
+        if ($tool->readsResources()) {
+            $this->journalTools->requireJournalResource(self::PROGRAM, $payload);
+        }
+
+        if ($tool->discoversJournalTools()) {
+            return JournalToolCall::starting();
+        }
 
         if ($tool === ClaudeCodeTool::Bash) {
             $original = new ProgramToolInput($payload->toolArguments());
             $command = $this->parser->parse($payload->argument('command'), ShellDialect::Bash);
 
-            return new JudgedCall(new ShellCommandRequested($hook, $command), fn (HookAnswer $answer) => $this->renderShell($answer, $original));
+            return new JudgedCall(
+                new ShellCommandRequested($hook, $command),
+                fn (HookAnswer $answer) => $this->renderShell($answer, $original),
+            );
         }
 
         if ($tool->changesFiles()) {

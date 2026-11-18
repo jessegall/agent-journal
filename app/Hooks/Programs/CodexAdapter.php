@@ -33,7 +33,8 @@ use App\Programs\Enums\HookProgram;
 
 /**
  * Reads Codex's hook payloads into the journal's inputs and renders its answers as Codex replies. Codex takes a
- * rewritten command only with a native allow, which the journal never sends, so a rewrite is refused with the journal run alternative.
+ * rewritten command only with a native allow, which the journal never sends, so a rewrite is refused with the journal
+ * run alternative.
  */
 final readonly class CodexAdapter implements ProgramAdapter
 {
@@ -41,7 +42,10 @@ final readonly class CodexAdapter implements ProgramAdapter
 
     private const string PATCH_FILE_LINE = '/^\*\*\* (Add|Update|Delete) File: (.+)$/m';
 
-    public function __construct(private ShellCommandParser $parser) {}
+    public function __construct(
+        private ShellCommandParser $parser,
+        private JournalTools $journalTools,
+    ) {}
 
     public function capabilities(): ProgramCapabilities
     {
@@ -66,14 +70,14 @@ final readonly class CodexAdapter implements ProgramAdapter
                 fn (HookAnswer $answer) => ProgramReplies::observation('SessionStart', $answer),
             ),
             'UserPromptSubmit' => new JudgedCall(
-                new PromptSubmitted($hook, new PromptDetails($payload->nativePromptId() ?? $hook->hookId, $payload->promptText())),
+                new PromptSubmitted(
+                    $hook,
+                    new PromptDetails($payload->nativePromptId() ?? $hook->hookId, $payload->promptText()),
+                ),
                 fn (HookAnswer $answer) => ProgramReplies::prompt($answer),
             ),
             'PreToolUse' => $this->toolCall($payload, $hook),
-            'PostToolUse' => new JudgedCall(
-                new ToolFinished($hook, new ToolResult($payload->toolNameText(), $payload->toolOutcome())),
-                fn (HookAnswer $answer) => ProgramReplies::observation('PostToolUse', $answer),
-            ),
+            'PostToolUse' => $this->finishedCall($payload, $hook),
             'Stop' => new JudgedCall(
                 new StopRequested($hook, new StopDetails($hook->hookId, $payload->isStopContinuation())),
                 fn (HookAnswer $answer) => ProgramReplies::stop($answer),
@@ -96,15 +100,54 @@ final readonly class CodexAdapter implements ProgramAdapter
         return ProgramReplies::stop($answer);
     }
 
+    /**
+     * After a call to the journal's own tools nothing walks the stack again; after any other tool the journal hears it.
+     */
+    private function finishedCall(HookPayload $payload, HookIdentity $hook): ProgramCall
+    {
+        if ($this->callsJournalTools($payload)) {
+            return JournalToolCall::finished();
+        }
+
+        return new JudgedCall(
+            new ToolFinished($hook, new ToolResult($payload->toolNameText(), $payload->toolOutcome())),
+            fn (HookAnswer $answer) => ProgramReplies::observation('PostToolUse', $answer),
+        );
+    }
+
+    private function callsJournalTools(HookPayload $payload): bool
+    {
+        $tool = CodexTool::tryFrom($payload->toolNameText());
+
+        return $this->journalTools->names($payload->toolNameText())
+            || ($tool instanceof CodexTool && $tool->discoversJournalTools());
+    }
+
     private function toolCall(HookPayload $payload, HookIdentity $hook): ProgramCall
     {
+        if ($this->journalTools->names($payload->toolNameText())) {
+            return JournalToolCall::starting();
+        }
+
         $tool = CodexTool::named($payload->toolNameText());
+
+        if ($tool->readsResources()) {
+            $this->journalTools->requireJournalResource(self::PROGRAM, $payload);
+        }
+
+        if ($tool->discoversJournalTools()) {
+            return JournalToolCall::starting();
+        }
+
         $original = new ProgramToolInput($payload->toolArguments());
 
         if ($tool->isShell()) {
             $command = $this->parser->parse($payload->argument('command'), ShellDialect::Bash);
 
-            return new JudgedCall(new ShellCommandRequested($hook, $command), fn (HookAnswer $answer) => $this->renderShell($answer, $original));
+            return new JudgedCall(
+                new ShellCommandRequested($hook, $command),
+                fn (HookAnswer $answer) => $this->renderShell($answer, $original),
+            );
         }
 
         $edit = new FileEditRequested($hook, $this->patchChanges($payload->argument('command')));

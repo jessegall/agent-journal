@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
+use App\Hooks\Contracts\JournalToolNames;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Exceptions\McpBudgetExceeded;
@@ -21,7 +22,7 @@ use ReflectionClass;
  * class per tool name and resource URI, snake_case tool names, and the main profile's discovery budget. It holds class
  * names and their sizes only, never a tool built to answer a call.
  */
-final class McpCatalogue implements McpRegistration
+final class McpCatalogue implements JournalToolNames, McpRegistration
 {
     private const string MAIN_PROFILE = 'main';
 
