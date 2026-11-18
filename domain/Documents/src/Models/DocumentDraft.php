@@ -173,15 +173,7 @@ final class DocumentDraft extends Model implements ReadableModel
     public function closeInto(Document $document, DocumentRevision $base, CloseCause $cause, Actor|null $closer, string|null $reason): DocumentClose
     {
         $published = $this->hasChangesFrom($base);
-        $resultNumber = $published ? $document->revisions()->create([
-            'title' => $this->title,
-            'abstract' => $this->abstract,
-            'body' => $this->body,
-            'author_type' => $this->author_type,
-            'author_id' => $this->author_id,
-            'session_id' => $this->session_id,
-            'closed_at' => CarbonImmutable::now(),
-        ])->number : $base->number;
+        $resultNumber = $published ? $document->addRevision($this->title, $this->abstract, $this->body, $this->author_type, $this->author_id, $this->session_id)->number : $base->number;
         $close = DocumentClose::record($this, $resultNumber, $cause, $closer, $reason, $published);
 
         if ($published) {

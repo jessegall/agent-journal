@@ -16,6 +16,8 @@ final class DocRevisionsCommand extends Command
 
     protected $description = 'List the revisions of a document';
 
+    protected $help = 'Example: php artisan doc:revisions 4';
+
     public function handle(AgentRequestSender $journal): int
     {
         $reply = $this->sendSigned($journal, '/agent/docs/revisions', ['number' => (string) $this->argument('number'), 'page' => (int) $this->option('page')]);

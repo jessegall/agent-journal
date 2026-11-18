@@ -16,6 +16,8 @@ final class ReportListCommand extends Command
 
     protected $description = 'List the reports of this journal, newest first';
 
+    protected $help = 'Example: php artisan report:list --state all --query "launcher"';
+
     public function handle(AgentRequestSender $journal): int
     {
         $reply = $this->sendSigned($journal, '/agent/reports/list', ['attention' => (string) $this->option('state'), 'page' => (int) $this->option('page'), 'query' => $this->option('query'), 'after' => $this->option('after')]);

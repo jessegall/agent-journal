@@ -16,6 +16,8 @@ final class DocCommentsCommand extends Command
 
     protected $description = 'List the comments users wrote on a document, oldest first';
 
+    protected $help = 'Example: php artisan doc:comments 4';
+
     public function handle(AgentRequestSender $journal): int
     {
         return $this->showComments($journal, '/agent/docs/comments');

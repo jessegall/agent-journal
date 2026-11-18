@@ -17,6 +17,8 @@ final class DocMakeCommand extends Command
 
     protected $description = 'File a new document; it is shared with every agent and user of this journal';
 
+    protected $help = 'Example: php artisan doc:make "Release plan" --abstract "What ships in 6.0" --file plan.md --about "task 12"';
+
     public function handle(AgentRequestSender $journal): int
     {
         $body = $this->bodyText();

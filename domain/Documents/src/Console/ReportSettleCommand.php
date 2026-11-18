@@ -16,6 +16,8 @@ final class ReportSettleCommand extends Command
 
     protected $description = 'Settle a report as needing no more attention';
 
+    protected $help = 'Example: php artisan report:settle 7 --why "Handled in task 12"';
+
     public function handle(AgentRequestSender $journal): int
     {
         return $this->sendSettlement($journal, '/agent/reports/settle', ['revision' => 1]);

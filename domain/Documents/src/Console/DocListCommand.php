@@ -16,6 +16,8 @@ final class DocListCommand extends Command
 
     protected $description = 'List the documents of this journal, newest first';
 
+    protected $help = 'Example: php artisan doc:list --query "retention" ; continue a long list with --after <cursor>';
+
     public function handle(AgentRequestSender $journal): int
     {
         $reply = $this->sendSigned($journal, '/agent/docs/list', ['attention' => (string) $this->option('state'), 'page' => (int) $this->option('page'), 'query' => $this->option('query'), 'after' => $this->option('after'), 'revisions' => $this->option('revisions') === true]);

@@ -16,6 +16,7 @@ use Domain\Documents\Console\DocRevisionCommand;
 use Domain\Documents\Console\DocRevisionsCommand;
 use Domain\Documents\Console\DocSettleCommand;
 use Domain\Documents\Console\DocShowCommand;
+use Domain\Documents\Console\DocumentsBenchmarkCommand;
 use Domain\Documents\Console\ReportCommentsCommand;
 use Domain\Documents\Console\ReportEditCommand;
 use Domain\Documents\Console\ReportInspectCommand;
@@ -52,6 +53,6 @@ final class DocumentsServiceProvider extends ServiceProvider
         ]);
 
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
-        $this->commands([DocMakeCommand::class, DocListCommand::class, DocShowCommand::class, DocOpenCommand::class, DocEditCommand::class, DocCloseCommand::class, DocRevisionsCommand::class, DocRevisionCommand::class, DocCommentsCommand::class, ReportCommentsCommand::class, DocSettleCommand::class, ReportSettleCommand::class, DocInspectCommand::class, ReportInspectCommand::class, ReportEditCommand::class, ReportMakeCommand::class, ReportListCommand::class, ReportShowCommand::class]);
+        $this->commands([DocMakeCommand::class, DocListCommand::class, DocShowCommand::class, DocOpenCommand::class, DocEditCommand::class, DocCloseCommand::class, DocRevisionsCommand::class, DocRevisionCommand::class, DocCommentsCommand::class, ReportCommentsCommand::class, DocSettleCommand::class, ReportSettleCommand::class, DocInspectCommand::class, ReportInspectCommand::class, ReportEditCommand::class, ReportMakeCommand::class, ReportListCommand::class, ReportShowCommand::class, DocumentsBenchmarkCommand::class]);
     }
 }

@@ -16,6 +16,8 @@ final class ReportCommentsCommand extends Command
 
     protected $description = 'List the comments users wrote on a report, oldest first';
 
+    protected $help = 'Example: php artisan report:comments 7';
+
     public function handle(AgentRequestSender $journal): int
     {
         return $this->showComments($journal, '/agent/reports/comments');

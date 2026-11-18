@@ -16,6 +16,8 @@ final class DocSettleCommand extends Command
 
     protected $description = 'Settle a document as needing no more attention';
 
+    protected $help = 'Example: php artisan doc:settle 4 --why "Shipped in 6.0"; a document with an open draft must be closed first';
+
     public function handle(AgentRequestSender $journal): int
     {
         $revision = is_string($this->option('revision')) ? $this->option('revision') : $this->currentRevision($journal);

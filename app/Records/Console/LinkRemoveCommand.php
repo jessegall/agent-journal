@@ -16,6 +16,8 @@ final class LinkRemoveCommand extends Command
 
     protected $description = 'Remove the link between two records; both records stay';
 
+    protected $help = 'Example: php artisan link:remove "report 7" "plan 3"; both records stay';
+
     public function handle(AgentRequestSender $journal): int
     {
         return $this->sendAndPrint($journal, '/agent/links/remove', ['source' => (string) $this->argument('source'), 'target' => (string) $this->argument('target')]);

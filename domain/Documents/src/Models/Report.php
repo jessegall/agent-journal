@@ -81,7 +81,7 @@ final class Report extends Model implements Numbered, ReadableModel
 
     public function card(): ReportCard
     {
-        return new ReportCard($this->id, (string) $this->number, $this->title, $this->abstract, $this->attention);
+        return ReportCard::from(['id' => $this->id, 'number' => (string) $this->number, 'title' => $this->title, 'abstract' => $this->abstract, 'attention' => $this->attention]);
     }
 
     /**

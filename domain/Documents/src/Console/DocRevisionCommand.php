@@ -16,6 +16,8 @@ final class DocRevisionCommand extends Command
 
     protected $description = 'Show one revision of a document with its whole text';
 
+    protected $help = 'Example: php artisan doc:revision 4 1 prints revision 1 of doc 4 in full';
+
     public function handle(AgentRequestSender $journal): int
     {
         $reply = $this->sendSigned($journal, '/agent/docs/revision', ['number' => (string) $this->argument('number'), 'revision' => (int) $this->argument('revision')]);

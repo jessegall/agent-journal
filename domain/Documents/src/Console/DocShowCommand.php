@@ -18,6 +18,8 @@ final class DocShowCommand extends Command
 
     protected $description = 'Show one document: its outline, or the part of its text you ask for';
 
+    protected $help = 'Example: php artisan doc:show 4 prints the outline; doc:show 4 --section 3 or --lines 10-40 prints a part; --draft shows your own open draft';
+
     public function handle(AgentRequestSender $journal): int
     {
         $number = (string) $this->argument('number');

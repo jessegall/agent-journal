@@ -18,6 +18,8 @@ final class ReportShowCommand extends Command
 
     protected $description = 'Show one report: its outline, or the part of its text you ask for';
 
+    protected $help = 'Example: php artisan report:show 7 prints the outline; report:show 7 --section 2 prints a part';
+
     public function handle(AgentRequestSender $journal): int
     {
         $number = (string) $this->argument('number');

@@ -17,6 +17,8 @@ final class DocOpenCommand extends Command
 
     protected $description = 'Open a draft of a document to edit it';
 
+    protected $help = 'Example: php artisan doc:open 4, then edit with doc:edit 4 and finish with doc:close 4';
+
     public function handle(AgentRequestSender $journal, DraftTokens $drafts): int
     {
         $reply = $this->sendSigned($journal, '/agent/docs/open', ['number' => (string) $this->argument('number')]);

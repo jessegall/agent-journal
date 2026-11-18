@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
@@ -41,6 +42,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $origin_agent_id
  * @property string|null $origin_session_id
  * @property AttentionState $attention
+ * @property string|null $current_revision_id
  * @property Carbon|null $created_at
  */
 #[Fillable(['creator_type', 'creator_id', 'origin_agent_id', 'origin_session_id'])]
@@ -72,16 +74,30 @@ final class Document extends Model implements Numbered, ReadableModel
             'creator_id' => $author->actorId(),
             'origin_agent_id' => $author->actorType() === ActorType::Agent ? $author->actorId() : null,
         ]);
-        $document->revisions()->create([
-            'title' => $title,
-            'abstract' => $abstract,
-            'body' => $body->text,
-            'author_type' => $author->actorType(),
-            'author_id' => $author->actorId(),
-            'closed_at' => CarbonImmutable::now(),
-        ]);
+        $document->addRevision($title, $abstract, $body->text, $author->actorType(), $author->actorId(), null);
 
         return $document;
+    }
+
+    /**
+     * Adds the next revision and makes it the document's current one.
+     */
+    public function addRevision(string $title, string $abstract, string $body, ActorType $authorType, string $authorId, string|null $sessionId): DocumentRevision
+    {
+        $revision = $this->revisions()->create([
+            'title' => $title,
+            'abstract' => $abstract,
+            'body' => $body,
+            'author_type' => $authorType,
+            'author_id' => $authorId,
+            'session_id' => $sessionId,
+            'closed_at' => CarbonImmutable::now(),
+        ]);
+        $this->current_revision_id = $revision->id;
+        $this->save();
+        $this->setRelation('currentRevision', $revision);
+
+        return $revision;
     }
 
     /**
@@ -110,7 +126,7 @@ final class Document extends Model implements Numbered, ReadableModel
     {
         $revision = $this->currentRevisionOrFail();
 
-        return new DocumentCard($this->id, (string) $this->number, $revision->title, $revision->abstract, $this->attention);
+        return DocumentCard::from(['id' => $this->id, 'number' => (string) $this->number, 'title' => $revision->title, 'abstract' => $revision->abstract, 'attention' => $this->attention]);
     }
 
     /**
@@ -201,13 +217,13 @@ final class Document extends Model implements Numbered, ReadableModel
     }
 
     /**
-     * The revision with the highest number: the document's text as it is now.
+     * The revision the document shows now: the last one published.
      *
-     * @return HasOne<DocumentRevision, $this>
+     * @return BelongsTo<DocumentRevision, $this>
      */
-    public function currentRevision(): HasOne
+    public function currentRevision(): BelongsTo
     {
-        return $this->hasOne(DocumentRevision::class)->ofMany('number', 'max');
+        return $this->belongsTo(DocumentRevision::class, 'current_revision_id');
     }
 
     /**

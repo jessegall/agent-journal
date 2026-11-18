@@ -46,8 +46,17 @@ export default defineConfig({
         watch: {
             // In the Docker container on macOS the mounted folder sends no file events, so poll there.
             usePolling: process.env.LARAVEL_SAIL === '1',
-            interval: 300,
+            // Each poll walks every watched file, so it runs every two seconds rather than several times a second.
+            interval: 2000,
+            binaryInterval: 5000,
+            // A change counts once the file has been still for five seconds, so a burst of generated files reloads once.
+            awaitWriteFinish: { stabilityThreshold: 5000, pollInterval: 1000 },
             ignored: [
+                // Polling walks every watched file each interval, so folders of run outputs, logs and history are left out.
+                '**/.journal/**',
+                '**/.git/**',
+                '**/storage/**',
+                '**/node_modules/**',
                 '**/.agents/**',
                 '**/.claude/**',
                 '**/.cursor/**',

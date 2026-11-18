@@ -16,6 +16,8 @@ final class LinkAddCommand extends Command
 
     protected $description = 'Link two records, such as doc 12 and task 7';
 
+    protected $help = 'Example: php artisan link:add "report 7" "plan 3"; you must be allowed to change the first record and read the second';
+
     public function handle(AgentRequestSender $journal): int
     {
         return $this->sendAndPrint($journal, '/agent/links/add', ['source' => (string) $this->argument('source'), 'target' => (string) $this->argument('target')]);

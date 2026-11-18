@@ -18,6 +18,8 @@ final class DocEditCommand extends Command
 
     protected $description = 'Edit the open draft of a document: the body, one section, one exact piece, or the title and abstract';
 
+    protected $help = 'Example: php artisan doc:edit 4 --section "Risks" --body - < risks.md ; or --replace "old words" --with "new words" ; or --title "New title"';
+
     public function handle(AgentRequestSender $journal, DraftTokens $drafts): int
     {
         $number = (int) $this->argument('number');

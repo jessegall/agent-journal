@@ -20,6 +20,7 @@ return new class extends Migration
             $table->ulid('origin_agent_id')->nullable();
             $table->ulid('origin_session_id')->nullable();
             $table->string('attention', 16)->default('active');
+            $table->ulid('current_revision_id')->nullable()->index();
             $table->timestampsTz();
 
             $table->unique(['number_group_id', 'number']);
@@ -64,6 +65,15 @@ return new class extends Migration
         DB::statement('ALTER TABLE documents ADD CONSTRAINT documents_number_positive CHECK (number > 0)');
         DB::statement('ALTER TABLE document_revisions ADD CONSTRAINT document_revisions_number_positive CHECK (number > 0)');
         DB::statement('ALTER TABLE reports ADD CONSTRAINT reports_number_positive CHECK (number > 0)');
+
+        // The library search matches words anywhere in a title, abstract or body, which only a trigram index can serve.
+        DB::statement('CREATE EXTENSION IF NOT EXISTS pg_trgm');
+
+        foreach (['document_revisions', 'reports'] as $searched) {
+            foreach (['title', 'abstract', 'body'] as $column) {
+                DB::statement("CREATE INDEX {$searched}_{$column}_search ON {$searched} USING gin (({$column}::text) gin_trgm_ops)");
+            }
+        }
     }
 
     public function down(): void

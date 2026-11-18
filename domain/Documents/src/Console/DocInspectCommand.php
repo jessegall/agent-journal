@@ -16,6 +16,8 @@ final class DocInspectCommand extends Command
 
     protected $description = 'Show whether a document is being edited, whether it asks for attention, and its history';
 
+    protected $help = 'Example: php artisan doc:inspect 4 shows who edits it, its attention, settlements, draft closes and links';
+
     public function handle(AgentRequestSender $journal): int
     {
         return $this->showInspection($journal, '/agent/docs/inspect');
