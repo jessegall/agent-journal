@@ -43,6 +43,14 @@ final class TickCandidates
     }
 
     /**
+     * Sends the cursor back so the next pass starts at this candidate, which this pass had no time left for.
+     */
+    public function returnFrom(TickCandidate $candidate): void
+    {
+        $this->cursor = TickCursor::after($candidate->stackId, $candidate->position - 1);
+    }
+
+    /**
      * The candidate as it stands now, after a preceding command may have changed its stack: none when its frame is
      * gone or its work is done.
      *
@@ -163,6 +171,7 @@ final class TickCandidates
             $frame->row->id,
             $frame->row->version,
             $frame->record->id,
+            $frame->position,
             $frame->record->enteredAt,
             $state,
         );

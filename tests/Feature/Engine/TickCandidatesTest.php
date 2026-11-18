@@ -4,16 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Engine;
 
-use App\Agents\Models\Agent;
-use App\Agents\Models\AgentSession;
-use App\Agents\Support\StackTarget;
 use App\Engine\Support\EnginePass;
 use App\Engine\Support\TickCandidates;
 use App\Engine\Values\TickBatch;
 use App\Engine\Values\TickCandidate;
-use App\Hooks\Decisions\StateReference;
-use App\Hooks\Decisions\SubjectReference;
-use App\Hooks\Enums\NoSubject;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\StateTypes;
@@ -23,6 +17,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Hooks\Ticks\CountingTickingLoader;
 use Tests\Fixtures\Hooks\Ticks\UnreadLoader;
+use Tests\Support\BuildsTickingStacks;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -33,6 +28,7 @@ use Tests\TestCase;
  */
 final class TickCandidatesTest extends TestCase
 {
+    use BuildsTickingStacks;
     use CommitsHookRows;
 
     private const array TABLES = ['agents', 'agent_sessions', 'agent_stacks'];
@@ -94,29 +90,16 @@ final class TickCandidatesTest extends TestCase
     }
 
     /**
-     * A running session's stack: a bottom frame, a frame of a type that does not tick, and the given number of ticking
-     * frames named after the prefix.
+     * A running session's stack with the given number of ticking frames named after the prefix.
      *
      * @return list<array{string, int, string}> stack id, position and frame id of each ticking frame
      */
     private function stackWith(int $tickingFrames, string $prefix): array
     {
-        $agent = Agent::query()->create(['name' => "Agent {$prefix}", 'role' => 'hooks.main_ready']);
-        $session = new AgentSession;
-        $session->startFor($agent, null);
-        $records = [
-            new FrameRecord("{$prefix}-ready", new StateReference('hooks.main_ready', NoSubject::None), true, 1, CarbonImmutable::now()),
-            new FrameRecord("{$prefix}-plain", new StateReference('test.plain', NoSubject::None), false, 1, CarbonImmutable::now()),
-        ];
+        $subjects = array_map(fn (int $number) => "{$prefix}-{$number}", range(1, $tickingFrames));
+        $row = $this->tickingStack('test.ticking', $subjects, CarbonImmutable::now());
 
-        foreach (range(1, $tickingFrames) as $number) {
-            $records[] = new FrameRecord("{$prefix}-{$number}", new StateReference('test.ticking', new SubjectReference("{$prefix}-{$number}", 1)), false, 1, CarbonImmutable::now());
-        }
-
-        $row = new AgentStackRow;
-        $row->startFor(new StackTarget($agent->id, $session->id), new FrameRecords($records), $this->app->make(StateTypes::class)->ticking());
-
-        return array_map(fn (int $number) => [$row->id, $number + 1, "{$prefix}-{$number}"], range(1, $tickingFrames));
+        return array_map(fn (int $index) => [$row->id, $index + 2, $subjects[$index]], array_keys($subjects));
     }
 
     /**

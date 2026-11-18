@@ -16,9 +16,11 @@ use App\Engine\Support\EngineListenerSet;
 use App\Engine\Support\EngineLoop;
 use App\Engine\Support\EngineSettings;
 use App\Engine\Support\EngineTickedDelivery;
+use App\Engine\Support\FrameBaselines;
 use App\Engine\Support\SystemMonotonicClock;
 use App\Engine\Support\SystemSleeper;
 use App\Engine\Support\TickCandidates;
+use App\Engine\Support\TickDelivery;
 use App\Reads\Support\SelfMeasuredCommands;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
@@ -48,6 +50,8 @@ final class EngineServiceProvider extends ServiceProvider
         $this->app->singleton(Watchdog::class, AlarmWatchdog::class);
         $this->app->singleton(EngineLoop::class);
         $this->app->singleton(TickCandidates::class);
+        $this->app->singleton(FrameBaselines::class);
+        $this->app->scoped(TickDelivery::class);
     }
 
     public function boot(SelfMeasuredCommands $selfMeasured): void

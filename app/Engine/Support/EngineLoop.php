@@ -19,7 +19,8 @@ use Throwable;
 /**
  * The engine's life: it takes the lock, then runs one pass on each one-second boundary of the monotonic clock. A pass
  * that starts late runs once for the current boundary and logs the boundaries it missed; passes never overlap or catch
- * up. Ownership is checked before every pass, and a stop ends the loop after the current pass.
+ * up. Each pass delivers EngineTicked, then ticks the selected frames. Ownership is checked before every pass, and a
+ * stop ends the loop after the current pass.
  */
 final class EngineLoop
 {
@@ -116,7 +117,10 @@ final class EngineLoop
         $this->watchdog->arm($this->settings->watchdogSeconds);
 
         try {
-            $this->pass->run(fn () => $this->container->make(EngineTickedDelivery::class)->deliver($event));
+            $this->pass->run(function () use ($event, $start): void {
+                $this->container->make(EngineTickedDelivery::class)->deliver($event);
+                $this->container->make(TickDelivery::class)->deliver($start);
+            });
         } catch (Throwable $failure) {
             $this->log->error('Engine pass failed', ['exception' => $failure]);
         } finally {

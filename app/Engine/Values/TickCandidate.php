@@ -19,6 +19,7 @@ final readonly class TickCandidate
         public string $stackId,
         public int $stackVersion,
         public string $frameId,
+        public int $position,
         public CarbonImmutable $enteredAt,
         public TickableState $state,
     ) {}
