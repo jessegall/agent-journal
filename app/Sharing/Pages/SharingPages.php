@@ -4,7 +4,15 @@ declare(strict_types=1);
 
 namespace App\Sharing\Pages;
 
+use App\Sharing\Http\Controllers\ApproveShareRequestController;
+use App\Sharing\Http\Controllers\CreateShareController;
+use App\Sharing\Http\Controllers\RefreshShareScopeController;
+use App\Sharing\Http\Controllers\RetryShareController;
+use App\Sharing\Http\Controllers\RevealShareLinkController;
+use App\Sharing\Http\Controllers\RevokeShareController;
 use App\Sharing\Http\Controllers\SharePreviewController;
+use App\Sharing\Readers\ShareDetailReader;
+use App\Sharing\Readers\ShareListReader;
 use App\Sharing\Readers\SharePreviewReader;
 use App\Sharing\Support\SharingOwnerCheck;
 use App\Ui\Contracts\ProvidesPages;
@@ -14,17 +22,34 @@ use App\Ui\Declarations\Page;
 use App\Ui\Enums\Icon;
 
 /**
- * The pages Core's Sharing declares, for the owner alone: the preview of sharing one record, at /sharing.
+ * The pages Core's Sharing declares, for the owner alone, under /sharing: the list of shares and proposals, one share
+ * with its reveal, retry and revoke, and the preview of sharing one record, which confirms, approves or refreshes.
  */
 final class SharingPages implements ProvidesPages
 {
     public function pages(): array
     {
         return [
+            Page::make('shares', 'Shares', Icon::Docs, ShareListReader::class, 'SharesWindow.vue')
+                ->at('')
+                ->visibleWhen(SharingOwnerCheck::class),
+            Page::make('share', 'Share', Icon::Docs, ShareDetailReader::class, 'ShareWindow.vue')
+                ->at('shares/{share}')
+                ->visibleWhen(SharingOwnerCheck::class)
+                ->actions(
+                    ActionRoute::post('shares/{share}/link', RevealShareLinkController::class, 'reveal-share-link'),
+                    ActionRoute::post('shares/{share}/retry', RetryShareController::class, 'retry-share'),
+                    ActionRoute::delete('shares/{share}', RevokeShareController::class, 'revoke-share'),
+                ),
             Page::make('share-preview', 'Share', Icon::Docs, SharePreviewReader::class, 'SharePreview.vue')
                 ->at('{reference}')
                 ->visibleWhen(SharingOwnerCheck::class)
-                ->actions(ActionRoute::post('{reference}/previews', SharePreviewController::class, 'save-share-preview')),
+                ->actions(
+                    ActionRoute::post('{reference}/previews', SharePreviewController::class, 'save-share-preview'),
+                    ActionRoute::post('{reference}/shares', CreateShareController::class, 'create-share'),
+                    ActionRoute::post('shares/{share}/approval', ApproveShareRequestController::class, 'approve-share-request'),
+                    ActionRoute::post('shares/{share}/scope', RefreshShareScopeController::class, 'refresh-share-scope'),
+                ),
         ];
     }
 

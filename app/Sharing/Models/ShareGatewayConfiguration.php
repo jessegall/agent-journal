@@ -89,6 +89,17 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     }
 
     /**
+     * The gateway key of each of these configurations, by configuration id.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, string>
+     */
+    public static function gatewayKeysOf(array $ids): array
+    {
+        return array_map(strval(...), self::query()->whereKey($ids)->readLimit(max(1, count($ids)))->pluck('gateway_key', 'id')->all());
+    }
+
+    /**
      * The enabled configuration the owner made the default.
      *
      * @throws ShareGatewayUnavailable

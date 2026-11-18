@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Sharing\Readers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Http\Data\Sharing\RootShareData;
 use App\Http\Data\Sharing\SavedSharePreviewData;
 use App\Http\Data\Sharing\ShareCandidateData;
 use App\Http\Data\Sharing\SharePreviewData;
@@ -45,6 +46,8 @@ final readonly class SharePreviewReader implements PageReader
             $candidates->root->title,
             array_map(fn (ShareLinkedCandidate $candidate) => ShareCandidateData::fromCandidate($candidate, $approved), $candidates->linked),
             $saved->map(SavedSharePreviewData::fromPreview(...))->getOrElse(null),
+            Share::liveFor($root)->map(RootShareData::fromShare(...))->getOrElse(null),
+            array_map(RootShareData::fromShare(...), Share::openProposalsFor($root)),
         );
     }
 }

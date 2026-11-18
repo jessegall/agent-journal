@@ -71,6 +71,16 @@ final class ShareMember extends Model implements ReadableModel
     }
 
     /**
+     * The members the share's current scope still approves.
+     *
+     * @return list<self>
+     */
+    public static function currentOf(Share $share): array
+    {
+        return array_values(self::query()->ofScope($share)->stillApproved()->orderBy('id')->readAll('a share scope holds at most the preview limit of members')->get()->all());
+    }
+
+    /**
      * Removes every member of the share, of every scope version, before a refreshed scope replaces them.
      */
     public static function forgetAllOf(Share $share): void

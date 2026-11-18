@@ -17,6 +17,7 @@ use App\Sharing\Exceptions\ShareGatewayUnavailable;
 use App\Sharing\Exceptions\ShareProposalUnavailable;
 use App\Sharing\Exceptions\ShareRetryRefused;
 use App\Sharing\Exceptions\ShareUnavailable;
+use App\Sharing\Support\ShareListFilters;
 use App\Sharing\Support\ShareProposalStatus;
 use App\Sharing\Support\ShareSummary;
 use App\Sharing\Support\ShareToken;
@@ -291,6 +292,44 @@ final class Share extends Model implements Numbered, ReadableModel
     }
 
     /**
+     * One page of shares and proposals, newest first, narrowed by the owner's filters; one more row than the page
+     * holds is read so the caller knows whether another page follows.
+     *
+     * @return list<self>
+     */
+    public static function listPage(ShareListFilters $filters, int $rows): array
+    {
+        $query = self::query()->orderByDesc('id');
+        $query->when($filters->state, fn (Builder $query, ShareState $state) => $query->inState($state));
+        $query->when($filters->rootType, fn (Builder $query, string $type) => $query->ofRootType($type));
+        $query->when($filters->configurationId, fn (Builder $query, string $id) => $query->servedBy($id));
+        $query->when($filters->expiresBefore, fn (Builder $query, CarbonImmutable $deadline) => $query->expiringBefore($deadline));
+        $query->when($filters->after, fn (Builder $query, string $id) => $query->olderThan($id));
+
+        return array_values($query->readLimit($rows + 1)->get()->all());
+    }
+
+    /**
+     * The share of this id, if there is one.
+     *
+     * @return Option<self>
+     */
+    public static function byId(string $id): Option
+    {
+        return Option::fromValue(self::query()->whereKey($id)->first());
+    }
+
+    /**
+     * The open proposals of the root, newest first.
+     *
+     * @return list<self>
+     */
+    public static function openProposalsFor(RecordIdentity $root): array
+    {
+        return array_values(self::query()->ofRoot($root)->proposedNow()->orderByDesc('id')->readLimit(self::MOST_PROPOSED)->get()->all());
+    }
+
+    /**
      * The share of this id granted by the owner, if there is one.
      *
      * @return Option<self>
@@ -381,6 +420,42 @@ final class Share extends Model implements Numbered, ReadableModel
     protected function ofRoot(Builder $query, RecordIdentity $root): void
     {
         $query->where('root_type', $root->type)->where('root_id', $root->id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inState(Builder $query, ShareState $state): void
+    {
+        $query->where('state', $state->value);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofRootType(Builder $query, string $type): void
+    {
+        $query->where('root_type', $type);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function expiringBefore(Builder $query, CarbonImmutable $deadline): void
+    {
+        $query->where('expires_at', '<', $deadline);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function olderThan(Builder $query, string $id): void
+    {
+        $query->where('id', '<', $id);
     }
 
     /**
