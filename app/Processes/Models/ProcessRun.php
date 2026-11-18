@@ -15,6 +15,8 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -39,6 +41,7 @@ use Illuminate\Support\Carbon;
  * @property LifecycleState $lifecycle
  * @property CaptureState $capture_state
  * @property string $stop_reason
+ * @property string $stale_reason  why the run's admission no longer holds, or empty while it does
  * @property string $event_key_hash
  * @property string $working_folder
  * @property array<string, mixed> $plan
@@ -140,6 +143,21 @@ final class ProcessRun extends Model implements ReadableModel
         return $parts->isNotEmpty() && $parts->every(fn (PartRun $part): bool => $part->lifecycle->isFinal());
     }
 
+    /**
+     * A rule, binding or policy the run was admitted under changed: an admission not yet started is refused, and a
+     * running run starts no further part; parts already started keep their records.
+     */
+    public function markStale(string $reason): void
+    {
+        $this->stale_reason = $reason;
+        $this->save();
+    }
+
+    public function isStale(): bool
+    {
+        return $this->stale_reason !== '';
+    }
+
     public function mayAnswer(): bool
     {
         return $this->mode === RunMode::Normal;
@@ -213,5 +231,20 @@ final class ProcessRun extends Model implements ReadableModel
     public function events(): HasMany
     {
         return $this->hasMany(ProcessEvent::class);
+    }
+
+    /**
+     * Runs of the project that have not ended: admissions not yet started and runs still going.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unfinishedIn(Builder $query, string $projectKey): void
+    {
+        $query->where('project_key', $projectKey)->whereIn('lifecycle', [
+            LifecycleState::Queued->value,
+            LifecycleState::Running->value,
+            LifecycleState::Draining->value,
+        ]);
     }
 }

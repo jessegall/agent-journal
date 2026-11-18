@@ -34,4 +34,10 @@ interface RunEvents
     public function lost(PartKey $part): void;
 
     public function runStopped(string $reason): void;
+
+    /**
+     * Why the part may not start any more because a rule, binding or policy it was admitted under changed, or an
+     * empty text while its admission is still current.
+     */
+    public function staleReason(PartKey $part): string;
 }

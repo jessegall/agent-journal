@@ -45,6 +45,7 @@ use App\Processes\Commands\ApproveRuleProposal;
 use App\Processes\Commands\ApproveSample;
 use App\Processes\Commands\ImportRuleProposals;
 use App\Processes\Commands\IssueEvidencePermit;
+use App\Processes\Commands\MarkRunsStale;
 use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\ProposeCommandRule;
 use App\Processes\Commands\ProposeReader;
@@ -136,6 +137,7 @@ final class CoreCommands
             RetireCommandRule::class,
             RestoreCommandRule::class,
             ApproveRuleBundle::class,
+            MarkRunsStale::class,
             CreateSkill::class, ReviseSkill::class, RestoreSkill::class, RetireSkill::class, CopySkill::class,
             RefreshSkills::class, PublishSkills::class, PrepareSkillPublication::class, ActivateSkillPublication::class, FailSkillPublication::class,
         ];

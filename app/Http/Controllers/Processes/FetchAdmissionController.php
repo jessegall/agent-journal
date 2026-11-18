@@ -17,6 +17,9 @@ final readonly class FetchAdmissionController
     public function __invoke(ProcessRun $processRun, RunnerCapability $runner): JsonResponse
     {
         abort_unless($runner->isOn(), 503, RunnerUnavailable::switchedOff()->getMessage());
+        if ($processRun->isStale() && $processRun->consumed_at === null) {
+            return new JsonResponse(['message' => $processRun->stale_reason], 409);
+        }
         $eventKey = $processRun->consumeWithEventKey();
         if ($eventKey === '') {
             return new JsonResponse(['run_id' => $processRun->id, 'already_started' => true]);

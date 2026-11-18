@@ -17,6 +17,7 @@ use App\Http\Controllers\Processes\RecordRunEventsController;
 use App\Http\Controllers\Processes\RejectProposalController;
 use App\Http\Controllers\Processes\RestoreRuleController;
 use App\Http\Controllers\Processes\RetireRuleController;
+use App\Http\Controllers\Processes\RunCurrencyController;
 use App\Http\Controllers\Processes\ReviseProposalController;
 use App\Http\Controllers\Processes\SettleSampleController;
 use App\Http\Controllers\Processes\ShowCommandRequestController;
@@ -39,6 +40,7 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
         Route::post('runs/{processRun}/chunks', RecordRunChunkController::class)->name('chunks');
         Route::post('permits/{evidencePermit}/runs', StartEvidenceRunController::class)->name('evidence');
         Route::post('runs/{processRun}/output', ReadOutputController::class)->name('output');
+        Route::post('runs/{processRun}/currency', RunCurrencyController::class)->name('currency');
         Route::post('requests/{commandRequest}/readers', ProposeReaderController::class)->name('readers');
         Route::post('requests/{commandRequest}/sample-approval', ApproveSampleController::class)
             ->name('sample-approval');

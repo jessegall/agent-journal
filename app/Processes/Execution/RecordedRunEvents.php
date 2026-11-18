@@ -112,6 +112,11 @@ final class RecordedRunEvents implements RunEvents
         $this->part($part)->lose();
     }
 
+    public function staleReason(PartKey $part): string
+    {
+        return $this->run->refresh()->stale_reason;
+    }
+
     public function runStopped(string $reason): void
     {
         if (! $this->note('run_stopped', null, ['reason' => $reason])) {
@@ -140,7 +145,11 @@ final class RecordedRunEvents implements RunEvents
 
     private function part(PartKey $part): PartRun
     {
-        return $this->parts[$part->name()] ??= PartRun::query()->where('process_run_id', $this->run->id)->where('syntax_node', $part->node)->where('attempt', $part->attempt)->firstOrFail();
+        return $this->parts[$part->name()] ??= PartRun::query()
+            ->where('process_run_id', $this->run->id)
+            ->where('syntax_node', $part->node)
+            ->where('attempt', $part->attempt)
+            ->firstOrFail();
     }
 
     /**
@@ -150,7 +159,8 @@ final class RecordedRunEvents implements RunEvents
      */
     private function note(string $type, PartKey|null $part, array $details = []): bool
     {
-        $event = ProcessEvent::record($this->run, ++$this->sequence, $type, $part === null ? $details : ['part' => $part->name(), ...$details]);
+        $recorded = $part === null ? $details : ['part' => $part->name(), ...$details];
+        $event = ProcessEvent::record($this->run, ++$this->sequence, $type, $recorded);
 
         return $event->wasRecentlyCreated && $event->sequence === $this->sequence;
     }

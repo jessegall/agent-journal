@@ -29,6 +29,7 @@ final readonly class SupervisedRunner implements ProcessRunner
         private CommandClassifier $classifier,
         private ExecutionPlanner $planner,
         private OutputPolicy $outputs,
+        private ProjectKey $projects,
     ) {}
 
     /**
@@ -43,7 +44,9 @@ final readonly class SupervisedRunner implements ProcessRunner
         $context = new ExecutionContext(ShellDialect::Bash, $run->workingFolder, $run->workingFolder);
         $tree = $this->syntax->parse($run->source, ShellDialect::Bash);
         $classification = $this->classifier->classify($tree, $context);
-        if (! hash_equals($run->sourceDigest, hash('sha256', $run->source)) || ! hash_equals($run->plan->treeDigest, $this->planner->plan($tree, $classification)->treeDigest)) {
+        $planned = $this->planner->plan($tree, $classification)->treeDigest;
+        $sameSource = hash_equals($run->sourceDigest, hash('sha256', $run->source));
+        if (! $sameSource || ! hash_equals($run->plan->treeDigest, $planned)) {
             throw RunnerUnavailable::changedAdmission();
         }
         $verdict = $this->outputs->check($classification);
@@ -53,7 +56,7 @@ final readonly class SupervisedRunner implements ProcessRunner
         $stored = ProcessRun::admit($run->actor, [
             'admission_id' => $run->admissionId,
             'mode' => $run->mode,
-            'project_key' => $context->projectKey(),
+            'project_key' => $this->projects->current(),
             'source_digest' => $run->sourceDigest,
             'dialect' => ShellDialect::Bash,
             'tree_digest' => $run->plan->treeDigest,
