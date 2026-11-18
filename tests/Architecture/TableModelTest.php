@@ -5,32 +5,44 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use Illuminate\Database\Eloquent\Model;
-use Laravel\Passkeys\Passkey;
+use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Support\Facades\Schema;
 use ReflectionClass;
 use Tests\Architecture\Support\DomainFiles;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * Every table a migration creates has a model, and code reaches it through that model (rule 25).
+ * Every table a create migration makes has a model (rule 25; rule 34 keeps every change inside the create migration),
+ * and a pivot table's model is a Pivot (rule 33), judged by the columns of the migrated test database.
  */
 final class TableModelTest extends TestCase
 {
-    /**
-     * Laravel's own storage tables, kept by the framework rather than the journal's code.
-     */
-    private const array FRAMEWORK_TABLES = ['cache', 'cache_locks', 'failed_jobs', 'job_batches', 'jobs', 'password_reset_tokens', 'sessions'];
+    use RefreshHookDatabase;
 
     /**
-     * Models a package ships for a table the journal migrates.
+     * Columns every table may carry besides the references that make it a pivot.
      */
-    private const array PACKAGE_MODELS = [Passkey::class];
+    private const array PIVOT_BOOKKEEPING_COLUMNS = ['id', 'created_at', 'updated_at', 'position'];
 
     public function test_every_migrated_table_has_a_model(): void
     {
-        $modelled = $this->modelTables();
-        $missing = array_values(array_diff($this->migratedTables(), $modelled, self::FRAMEWORK_TABLES));
+        $missing = array_values(array_diff($this->migratedTables(), array_keys($this->modelOfTable())));
 
         $this->assertSame([], $missing, 'Give each of these tables an Eloquent model (rule 25).');
+    }
+
+    public function test_every_pivot_table_has_a_pivot_model(): void
+    {
+        $notPivots = [];
+
+        foreach ($this->modelOfTable() as $table => $model) {
+            if ($this->isPivotTable($table) && ! is_subclass_of($model, Pivot::class)) {
+                $notPivots[] = "{$table} ({$model})";
+            }
+        }
+
+        $this->assertSame([], $notPivots, 'Make the model of each of these pivot tables extend Pivot or MorphPivot (rule 33).');
     }
 
     /**
@@ -39,34 +51,35 @@ final class TableModelTest extends TestCase
     private function migratedTables(): array
     {
         $tables = [];
-        $folders = [base_path('database/migrations'), ...(glob(app_path('*/Database/Migrations'), GLOB_ONLYDIR) ?: []), ...(glob(base_path('domain/*/database/migrations'), GLOB_ONLYDIR) ?: [])];
 
-        $renamed = [];
-
-        foreach (DomainFiles::in($folders) as $migration) {
-            $source = (string) file_get_contents($migration);
-            preg_match_all("/Schema::create\\('([a-z_]+)'/", $source, $created);
-            preg_match_all("/Schema::rename\\('([a-z_]+)', '([a-z_]+)'\\)/", $source, $renames, PREG_SET_ORDER);
+        foreach (DomainFiles::in([...(glob(app_path('*/Database/Migrations'), GLOB_ONLYDIR) ?: []), ...(glob(base_path('domain/*/database/migrations'), GLOB_ONLYDIR) ?: [])]) as $migration) {
+            preg_match_all("/Schema::create\\('([a-z_]+)'/", (string) file_get_contents($migration), $created);
             array_push($tables, ...$created[1]);
-
-            foreach ($renames as $rename) {
-                $renamed[$rename[1]] = $rename[2];
-            }
         }
 
-        // A table a later migration renamed is checked under the name it has now.
-        $tables = array_values(array_unique(array_map(fn (string $table) => $renamed[$table] ?? $table, $tables)));
-        sort($tables);
-
-        return $tables;
+        return array_values(array_unique($tables));
     }
 
     /**
-     * @return list<string>
+     * A table whose columns, besides its key, timestamps and an ordering column, are the references to the two records
+     * it joins: two id columns, each with its type column when that side is polymorphic.
      */
-    private function modelTables(): array
+    private function isPivotTable(string $table): bool
     {
-        $tables = array_map(fn (string $model) => (new $model)->getTable(), self::PACKAGE_MODELS);
+        $columns = array_values(array_diff(Schema::getColumnListing($table), self::PIVOT_BOOKKEEPING_COLUMNS));
+        $references = array_filter($columns, fn (string $column) => str_ends_with($column, '_id'));
+        $types = array_filter($columns, fn (string $column) => str_ends_with($column, '_type'));
+        $matchedTypes = array_filter($types, fn (string $type) => in_array(substr($type, 0, -5).'_id', $references, true));
+
+        return count($references) === 2 && count($matchedTypes) === count($types) && count($references) + count($types) === count($columns);
+    }
+
+    /**
+     * @return array<string, class-string<Model>>
+     */
+    private function modelOfTable(): array
+    {
+        $models = [];
 
         foreach (DomainFiles::in([app_path(), ...DomainFiles::domainCode()]) as $file) {
             if (! str_contains($file, '/Models/') || preg_match('/^namespace ([^;]+);/m', (string) file_get_contents($file), $namespace) !== 1) {
@@ -76,10 +89,10 @@ final class TableModelTest extends TestCase
             $class = $namespace[1].'\\'.basename($file, '.php');
 
             if (class_exists($class) && is_subclass_of($class, Model::class) && ! (new ReflectionClass($class))->isAbstract()) {
-                $tables[] = (new $class)->getTable();
+                $models[(new $class)->getTable()] = $class;
             }
         }
 
-        return array_values(array_unique($tables));
+        return $models;
     }
 }

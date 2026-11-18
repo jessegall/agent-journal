@@ -7,8 +7,10 @@ namespace App\Links\Models;
 use App\Links\Support\Linkable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphPivot;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 
@@ -23,10 +25,18 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
+#[Table('links', incrementing: true)]
 #[Fillable(['source_type', 'source_id', 'target_type', 'target_id'])]
-final class Link extends Model
+final class Link extends MorphPivot
 {
     use Linkable;
+
+    /**
+     * A pivot opens every attribute by default; this one takes only its Fillable list.
+     *
+     * @var list<string>
+     */
+    protected $guarded = ['*'];
 
     /**
      * The link between the two models, made now when there is none yet in either direction.

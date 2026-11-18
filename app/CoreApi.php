@@ -172,6 +172,7 @@ use App\Links\Support\Linkable;
 use App\Links\Support\LinkAccess;
 use App\Links\Support\LinkTypeRegistry;
 use App\Links\Support\LinkTypeRenames;
+use App\Numbers\Commands\InstallNumbers;
 use App\Queries\Support\TextSearch;
 use App\Ui\Contracts\CountReader;
 use App\Ui\Contracts\NavigationChildren;
@@ -324,6 +325,7 @@ final class CoreApi
             AgentNotAvailable::class,
             AgentRetirementDenied::class,
             RetireAgent::class,
+            InstallNumbers::class,
             AssignRecord::class,
             ReassignRecord::class,
             UnassignRecord::class,

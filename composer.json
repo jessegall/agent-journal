@@ -68,6 +68,7 @@
             "Domain\\Sequences\\Tests\\": "domain/Sequences/tests/",
             "Domain\\Tasks\\Tests\\": "domain/Tasks/tests/",
             "Tests\\Fixtures\\Modules\\Cards\\": "tests/Fixtures/Modules/Cards/src/",
+            "Tests\\Fixtures\\Modules\\Ledger\\": "tests/Fixtures/Modules/Ledger/src/",
             "Tests\\Fixtures\\Modules\\Notes\\": "tests/Fixtures/Modules/Notes/src/",
             "Tests\\": "tests/"
         }
@@ -78,6 +79,7 @@
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "@php artisan key:generate",
             "@php artisan migrate --force",
+            "@php artisan numbers:install",
             "npm install",
             "@types:generate",
             "npm run build"

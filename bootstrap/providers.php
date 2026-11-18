@@ -8,6 +8,7 @@ use App\Assignments\Providers\AssignmentsServiceProvider;
 use App\Bus\Providers\CommandBusServiceProvider;
 use App\Domains\Providers\DomainServiceProvider;
 use App\Hooks\Providers\HooksServiceProvider;
+use App\Numbers\Providers\NumbersServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\CoreServiceProvider;
 use App\Web\Providers\TypeScriptServiceProvider;
@@ -30,6 +31,7 @@ return [
     AssignmentsServiceProvider::class,
     HooksServiceProvider::class,
     CommandBusServiceProvider::class,
+    NumbersServiceProvider::class,
     ProcessesServiceProvider::class,
     TasksServiceProvider::class,
     PlansServiceProvider::class,

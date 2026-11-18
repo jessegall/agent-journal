@@ -10,6 +10,7 @@ use App\CoreCommands;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\Psr4ClassNames;
 use App\Hooks\Events\StateTypesRequested;
+use App\Numbers\Support\NumberedTypeRegistry;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Events\DiscoverEvents;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
@@ -37,7 +38,7 @@ class DomainServiceProvider extends ServiceProvider
     /**
      * Asking for the command registry here makes a command declaration the application cannot start with fail the boot.
      */
-    public function boot(DomainRegistry $registry, Dispatcher $events, AssignmentRegistration $assignments, CommandRegistry $commands): void
+    public function boot(DomainRegistry $registry, Dispatcher $events, AssignmentRegistration $assignments, NumberedTypeRegistry $numbered, CommandRegistry $commands): void
     {
         foreach ($registry->all() as $entry) {
             $this->loadMigrationsFrom($entry->migrationFolder());
@@ -45,6 +46,7 @@ class DomainServiceProvider extends ServiceProvider
 
         $events->listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $registry->registerStatesIn($event->registry, $this->app));
         $registry->registerAssignmentsIn($assignments);
+        $registry->registerNumberedModelsIn($numbered);
     }
 
     /**

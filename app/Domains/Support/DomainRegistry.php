@@ -14,6 +14,7 @@ use App\Domains\Exceptions\DomainListedTwice;
 use App\Domains\Exceptions\DomainNotFound;
 use App\Domains\Exceptions\RequiredDomainMissing;
 use App\Hooks\Contracts\StateRegistration;
+use App\Numbers\Support\NumberedTypeRegistry;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Support\UiDeclarations;
 use Illuminate\Contracts\Container\Container;
@@ -118,6 +119,16 @@ final readonly class DomainRegistry
     public function commandDeclarations(CommandOwner $core): CommandRegistry
     {
         return CommandRegistry::from([$core, ...array_map(fn (DomainEntry $entry) => $entry->commandOwner(), $this->all())]);
+    }
+
+    /**
+     * Hands the numbered models the domains declare to the registry that checks them.
+     */
+    public function registerNumberedModelsIn(NumberedTypeRegistry $registry): void
+    {
+        foreach ($this->all() as $entry) {
+            $registry->register(...$entry->numberedModels());
+        }
     }
 
     /**

@@ -11,6 +11,7 @@ use App\Assignments\Commands\UnassignRecord;
 use App\Bus\Contracts\Command;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\MiddlewareDeclaration;
+use App\Numbers\Commands\InstallNumbers;
 
 /**
  * Core's own commands and middleware, read at start-up beside the domains' (doc 19, section 6.1).
@@ -22,7 +23,7 @@ final class CoreCommands
      */
     public static function commands(): array
     {
-        return [AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class];
+        return [AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, InstallNumbers::class];
     }
 
     /**

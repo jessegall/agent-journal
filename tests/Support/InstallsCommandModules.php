@@ -10,9 +10,13 @@ use App\Bus\Support\MiddlewareDeclaration;
 use App\CoreCommands;
 use App\Domains\Support\DomainEntry;
 use App\Domains\Support\DomainRegistry;
+use App\Links\Support\LinkTypeRegistry;
+use App\Numbers\Support\NumberedTypeRegistry;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
+use Tests\Fixtures\Modules\Ledger\LedgerDomain;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Modules\Notes\Support\CommandTrail;
 
@@ -55,14 +59,44 @@ trait InstallsCommandModules
      */
     protected function installCommandRegistry(array $alsoRequired = [], MiddlewareDeclaration ...$extraNotesMiddleware): void
     {
-        /** @var list<class-string> $domains */
-        $domains = require base_path('bootstrap/domains.php');
-        $owners = array_map(fn (DomainEntry $entry) => $entry->commandOwner(), DomainRegistry::from([...$domains, CardsDomain::class, NotesDomain::class])->all());
+        $owners = array_map(fn (DomainEntry $entry) => $entry->commandOwner(), $this->domainsWith(CardsDomain::class, LedgerDomain::class, NotesDomain::class)->all());
         $owners = array_map(fn (CommandOwner $owner) => $owner->domainClass === NotesDomain::class
             ? new CommandOwner($owner->name, $owner->namespace, $owner->domainClass, $owner->commands, [...$owner->middleware, ...$extraNotesMiddleware], [...$owner->requires, ...$alsoRequired], $owner->exports)
             : $owner, $owners);
 
         $this->app->instance(CommandRegistry::class, CommandRegistry::from([CoreCommands::owner(), ...$owners]));
         $this->app->forgetScopedInstances();
+    }
+
+    /**
+     * Installs test modules beside the domains of bootstrap/domains.php, as the application would boot them: their
+     * commands, the link types of their models, and their numbered models, checked.
+     *
+     * @param  array<string, class-string<Model>>  $linkTypes
+     * @param  class-string  ...$domainClasses
+     */
+    protected function installModules(array $linkTypes, string ...$domainClasses): void
+    {
+        $this->app->instance(CommandRegistry::class, $this->domainsWith(...$domainClasses)->commandDeclarations(CoreCommands::owner()));
+        $this->app->make(LinkTypeRegistry::class)->register($linkTypes);
+        $numbered = $this->app->make(NumberedTypeRegistry::class);
+
+        foreach ($domainClasses as $domainClass) {
+            $numbered->register(...DomainEntry::fromClass($domainClass)->numberedModels());
+        }
+
+        $numbered->checkDeclarations();
+        $this->app->forgetScopedInstances();
+    }
+
+    /**
+     * @param  class-string  ...$moduleClasses
+     */
+    private function domainsWith(string ...$moduleClasses): DomainRegistry
+    {
+        /** @var list<class-string> $domains */
+        $domains = require base_path('bootstrap/domains.php');
+
+        return DomainRegistry::from([...$domains, ...$moduleClasses]);
     }
 }

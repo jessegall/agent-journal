@@ -11,11 +11,13 @@ use App\Assignments\Models\Support\SignedInScope;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\RecordIdentity;
+use App\Links\Support\Linkable;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphPivot;
 use Illuminate\Support\Carbon;
 
 /**
@@ -30,10 +32,18 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
+#[Table('assignments', incrementing: true)]
 #[Fillable(['record_type', 'record_id', 'holder_type', 'holder_id'])]
-final class AssignmentRecord extends Model
+final class AssignmentRecord extends MorphPivot
 {
-    protected $table = 'assignments';
+    use Linkable;
+
+    /**
+     * A pivot opens every attribute by default; this one takes only its Fillable list.
+     *
+     * @var list<string>
+     */
+    protected $guarded = ['*'];
 
     /**
      * @return array<string, string>

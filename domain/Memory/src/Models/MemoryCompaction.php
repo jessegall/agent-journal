@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Memory\Models;
 
 use App\Agents\Support\StackTarget;
+use App\Links\Support\Linkable;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -24,6 +25,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['agent_id', 'session_id', 'compaction_id'])]
 final class MemoryCompaction extends Model
 {
+    use Linkable;
+
     /**
      * Records the compaction the first time it is seen; answers whether this was the first time.
      */

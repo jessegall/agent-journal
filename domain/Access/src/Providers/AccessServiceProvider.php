@@ -8,6 +8,7 @@ use App\Web\Contracts\CurrentUserReader;
 use App\Web\Contracts\JournalAccessPolicy;
 use Domain\Access\Actions\CreateNewUser;
 use Domain\Access\Actions\ResetUserPassword;
+use Domain\Access\Models\Passkey;
 use Domain\Access\Readers\CurrentUserRecords;
 use Domain\Access\Support\AccessSettings;
 use Domain\Access\Support\JournalAccess;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Fortify;
+use Laravel\Passkeys\Passkeys;
 
 class AccessServiceProvider extends ServiceProvider
 {
@@ -52,6 +54,7 @@ class AccessServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
+        Passkeys::usePasskeyModel(Passkey::class);
     }
 
     /**

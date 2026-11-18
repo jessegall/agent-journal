@@ -96,8 +96,9 @@ return [
 
     'passwords' => [
         'users' => [
+            'driver' => 'cache',
             'provider' => 'users',
-            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'store' => env('AUTH_PASSWORD_RESET_STORE'),
             'expire' => 60,
             'throttle' => 60,
         ],

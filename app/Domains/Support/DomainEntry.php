@@ -16,6 +16,8 @@ use App\Domains\Contracts\ProvidesAssignees;
 use App\Domains\Exceptions\DomainRequiresItself;
 use App\Domains\Exceptions\NotADomain;
 use App\Domains\Exceptions\RequiredDomainTwice;
+use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Numbers\Support\NumberedModel;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
@@ -219,6 +221,16 @@ final readonly class DomainEntry
     public function assignables(): array
     {
         return $this->domain instanceof ProvidesAssignables ? $this->domain->assignables() : [];
+    }
+
+    /**
+     * The models this domain numbers; none when it declares no ProvidesNumberedModels.
+     *
+     * @return list<NumberedModel>
+     */
+    public function numberedModels(): array
+    {
+        return $this->domain instanceof ProvidesNumberedModels ? $this->domain->numberedModels() : [];
     }
 
     /**

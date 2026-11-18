@@ -10,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('saved_commands', function (Blueprint $table) {
+        Schema::create('command_aliases', function (Blueprint $table) {
             $table->id();
             $table->string('name', 64)->unique();
             $table->text('line');
@@ -20,6 +20,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('saved_commands');
+        Schema::dropIfExists('command_aliases');
     }
 };

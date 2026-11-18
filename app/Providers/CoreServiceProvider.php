@@ -24,7 +24,7 @@ use Illuminate\Support\Str;
  */
 final class CoreServiceProvider extends ServiceProvider
 {
-    private const array AREAS = ['Agents', 'Assignments', 'Hooks', 'Links', 'Web'];
+    private const array AREAS = ['Agents', 'Assignments', 'Hooks', 'Links', 'Numbers', 'Web'];
 
     public function register(): void
     {

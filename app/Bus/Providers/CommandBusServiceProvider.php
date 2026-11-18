@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Bus\Providers;
 
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Contracts\CommandTransaction;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\LaravelCommandBus;
 use App\Bus\Support\RunningCommand;
+use App\Bus\Support\RunningCommandTransaction;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Connection;
@@ -23,6 +25,7 @@ final class CommandBusServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->scoped(CommandTransaction::class, RunningCommandTransaction::class);
         $this->app->scoped(CommandBus::class, fn ($app): CommandBus => LaravelCommandBus::forRequest($app, $app->make(CommandRegistry::class)));
     }
 
