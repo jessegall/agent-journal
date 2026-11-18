@@ -27,6 +27,7 @@ use App\Web\Providers\WebServiceProvider;
 use Domain\Access\Providers\AccessServiceProvider;
 use Domain\Chat\Providers\ChatServiceProvider;
 use Domain\Documents\Providers\DocumentsServiceProvider;
+use Domain\Helpers\Providers\HelpersServiceProvider;
 use Domain\Memory\Providers\MemoryServiceProvider;
 use Domain\Plans\Providers\PlansServiceProvider;
 use Domain\Rules\Providers\RulesServiceProvider;
@@ -58,6 +59,7 @@ return [
     PlansServiceProvider::class,
     DocumentsServiceProvider::class,
     ChatServiceProvider::class,
+    HelpersServiceProvider::class,
     MemoryServiceProvider::class,
     RulesServiceProvider::class,
     SequencesServiceProvider::class,

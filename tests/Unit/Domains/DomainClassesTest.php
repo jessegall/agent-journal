@@ -7,6 +7,7 @@ namespace Tests\Unit\Domains;
 use App\Domains\Support\Domain;
 use Domain\Access\AccessDomain;
 use Domain\Chat\ChatDomain;
+use Domain\Helpers\HelpersDomain;
 use Domain\Memory\MemoryDomain;
 use Domain\Plans\PlansDomain;
 use Domain\Profiles\ProfilesDomain;
@@ -36,6 +37,7 @@ final class DomainClassesTest extends TestCase
         yield 'Sequences' => [SequencesDomain::class, [], []];
         yield 'Reminders' => [RemindersDomain::class, [], []];
         yield 'Access' => [AccessDomain::class, [], []];
+        yield 'Helpers' => [HelpersDomain::class, [], []];
     }
 
     /**
