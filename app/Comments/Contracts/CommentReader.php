@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Comments\Contracts;
 
 use App\Assignments\Support\Page;
-use App\Assignments\Support\RecordIdentity;
 use App\Comments\Data\CommentList;
 use App\Comments\Data\RecordCommentLocation;
 use App\Comments\Data\TextCommentLocation;
 use App\Comments\Readers\CommentRecords;
+use App\Records\Support\RecordIdentity;
 use App\Text\Support\TextSelection;
 use Illuminate\Container\Attributes\Bind;
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Readers;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Support\RecordIdentity;
 use Domain\Tasks\Api\TaskAssignmentCompletion;
 use Domain\Tasks\Contracts\TaskAssignmentReader;
 use Domain\Tasks\Enums\TaskState;

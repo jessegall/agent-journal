@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Records\Support;
 
-use App\Assignments\Support\RecordIdentity;
 use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Models\Link;
 use App\Numbers\Support\RecordReference;

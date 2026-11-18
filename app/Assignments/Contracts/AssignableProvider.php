@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Assignments\Contracts;
 
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Support\RecordIdentity;
 
 /**
  * What the owner of one record type answers for assignments: the record itself inside a command, which records the

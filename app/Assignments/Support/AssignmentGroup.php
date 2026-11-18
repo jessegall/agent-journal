@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Assignments\Support;
 
 use App\Assignments\Exceptions\AssignmentGroupTooLarge;
+use App\Records\Support\RecordIdentity;
 
 /**
  * The records one batch command covers: its root and every record under it that its owner collected, the root once

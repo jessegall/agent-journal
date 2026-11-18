@@ -8,7 +8,6 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Exceptions\AssignmentGroupTooLarge;
-use App\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentGroup;
@@ -17,7 +16,8 @@ use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
 use App\Assignments\Support\AssignmentSet;
 use App\Assignments\Support\Page;
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Exceptions\InvalidRecordIdentity;
+use App\Records\Support\RecordIdentity;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Support\TestIds;
@@ -43,7 +43,7 @@ final class AssignmentValuesTest extends TestCase
     #[DataProvider('invalidRecords')]
     public function test_a_record_identity_refuses_a_bad_type_or_id(string $type, string $id): void
     {
-        $this->expectException(InvalidAssignmentIdentity::class);
+        $this->expectException(InvalidRecordIdentity::class);
 
         new RecordIdentity($type, $id);
     }

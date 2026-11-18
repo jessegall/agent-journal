@@ -15,8 +15,8 @@ use App\Assignments\Exceptions\AssignmentProviderInvalid;
 use App\Assignments\Exceptions\AssignmentTypeRepeated;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Support\AssigneeRegistration;
-use App\Assignments\Support\RecordIdentity;
 use App\Links\Support\LinkTypeRegistry;
+use App\Records\Support\RecordIdentity;
 use Illuminate\Contracts\Container\Container;
 
 /**

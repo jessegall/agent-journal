@@ -7,7 +7,7 @@ namespace App\Http\Requests\Assignments\Concerns;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Support\AssignmentReference;
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Support\RecordIdentity;
 use Illuminate\Validation\Rule;
 
 /**

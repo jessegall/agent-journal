@@ -13,8 +13,8 @@ use App\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Support\AssignmentSet;
 use App\Assignments\Support\Page;
-use App\Assignments\Support\RecordIdentity;
 use App\Assignments\Support\RecordIds;
+use App\Records\Support\RecordIdentity;
 use Illuminate\Database\Eloquent\Builder;
 use Psr\Log\LoggerInterface;
 

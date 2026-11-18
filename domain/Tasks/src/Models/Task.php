@@ -6,7 +6,6 @@ namespace Domain\Tasks\Models;
 
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Models\Support\AssignableListing;
-use App\Assignments\Support\RecordIdentity;
 use App\Hooks\Contracts\WorkedOnStack;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
@@ -15,6 +14,7 @@ use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Records\Support\RecordIdentity;
 use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWorkState;

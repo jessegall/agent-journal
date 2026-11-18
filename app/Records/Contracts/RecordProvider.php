@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Records\Contracts;
 
-use App\Assignments\Exceptions\RecordUnavailable;
-use App\Assignments\Support\RecordIdentity;
 use App\Records\Data\RecordCard;
+use App\Records\Exceptions\RecordUnavailable;
+use App\Records\Support\RecordIdentity;
 use Illuminate\Database\Eloquent\Model;
 
 /**

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Support;
 
-use App\Assignments\Exceptions\RecordUnavailable;
 use App\Assignments\Support\AssignmentGroup;
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Exceptions\RecordUnavailable;
+use App\Records\Support\RecordIdentity;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;

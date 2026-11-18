@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Comments\Events;
 
-use App\Assignments\Support\RecordIdentity;
 use App\Contracts\Event;
+use App\Records\Support\RecordIdentity;
 use App\Ui\Contracts\UpdatesUserInterface;
 
 /**

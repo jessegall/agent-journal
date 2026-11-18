@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Records\Contracts;
 
-use App\Assignments\Exceptions\RecordUnavailable;
-use App\Assignments\Support\RecordIdentity;
 use App\Links\Exceptions\UnknownLinkType;
 use App\Numbers\Support\RecordReference;
 use App\Records\Data\RecordCard;
+use App\Records\Exceptions\RecordUnavailable;
+use App\Records\Support\RecordIdentity;
 use App\Records\Support\RecordProviders;
 use Illuminate\Container\Attributes\Bind;
 use Illuminate\Database\Eloquent\Model;

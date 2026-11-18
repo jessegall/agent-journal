@@ -6,7 +6,6 @@ namespace Tests\Feature\Comments;
 
 use App\Agents\Models\Agent;
 use App\Assignments\Support\Page;
-use App\Assignments\Support\RecordIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
@@ -15,6 +14,7 @@ use App\Comments\Data\RecordCommentLocation;
 use App\Comments\Data\RecordCommentView;
 use App\Comments\Exceptions\TargetHasNoText;
 use App\Comments\Models\Comment;
+use App\Records\Support\RecordIdentity;
 use App\Text\Values\TextRange;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Assignments\Support;
 
+use App\Records\Support\RecordIdentity;
+
 /**
  * One record whose holder actually changed, with its assignment before and after.
  */

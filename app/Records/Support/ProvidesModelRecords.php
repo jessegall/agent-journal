@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Records\Support;
 
-use App\Assignments\Exceptions\RecordUnavailable;
-use App\Assignments\Support\RecordIdentity;
 use App\Reads\Support\ReadBuilder;
 use App\Records\Data\RecordCard;
+use App\Records\Exceptions\RecordUnavailable;
 use Illuminate\Database\Eloquent\Model;
 
 /**

@@ -59,7 +59,6 @@ use App\Assignments\Exceptions\AssignmentTypeRepeated;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
-use App\Assignments\Exceptions\RecordUnavailable;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\AssigneeList;
 use App\Assignments\Support\AssigneeName;
@@ -76,7 +75,6 @@ use App\Assignments\Support\AssignmentResult;
 use App\Assignments\Support\AssignmentSet;
 use App\Assignments\Support\NumberedPage;
 use App\Assignments\Support\Page;
-use App\Assignments\Support\RecordIdentity;
 use App\Assignments\Support\RecordIds;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
@@ -245,7 +243,10 @@ use App\Records\Contracts\RecordLinker;
 use App\Records\Contracts\RecordProvider;
 use App\Records\Contracts\RecordReader;
 use App\Records\Data\RecordCard;
+use App\Records\Exceptions\InvalidRecordIdentity;
+use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\ProvidesModelRecords;
+use App\Records\Support\RecordIdentity;
 use App\Settings\Contracts\ChoiceLabel;
 use App\Settings\Contracts\GroupDeclaration;
 use App\Settings\Contracts\ProvidesSettings;
@@ -573,6 +574,7 @@ final class CoreApi
                 StackLockTimedOut::class,
                 StackTransactionRequired::class,
                 InvalidAssignmentIdentity::class,
+                InvalidRecordIdentity::class,
                 InvalidAssignmentPage::class,
                 AssignmentGroupTooLarge::class,
                 AssigneeUnavailable::class,

@@ -6,8 +6,8 @@ namespace Tests\Fixtures\Modules\Notes\Support;
 
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Contracts\AssignableProvider;
-use App\Assignments\Exceptions\RecordUnavailable;
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Exceptions\RecordUnavailable;
+use App\Records\Support\RecordIdentity;
 use Illuminate\Container\Attributes\Scoped;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 

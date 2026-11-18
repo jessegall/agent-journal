@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Assignments\Exceptions;
 
 use App\Actors\Support\ActorIdentity;
-use App\Assignments\Exceptions\Concerns\RendersRefusal;
+use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
 use Throwable;

@@ -9,7 +9,7 @@ use App\Actors\Enums\ActorType;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\SessionReader;
 use App\Agents\Support\SessionOption;
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Support\RecordIdentity;
 use Domain\Documents\Api\Events\RecordDockChanged;
 use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Exceptions\ReportMissing;

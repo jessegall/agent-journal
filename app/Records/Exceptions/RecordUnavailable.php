@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Assignments\Exceptions;
+namespace App\Records\Exceptions;
 
-use App\Assignments\Exceptions\Concerns\RendersRefusal;
-use App\Assignments\Support\RecordIdentity;
+use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
+use App\Records\Support\RecordIdentity;
 use RuntimeException;
 
 final class RecordUnavailable extends RuntimeException implements CommandRefusal

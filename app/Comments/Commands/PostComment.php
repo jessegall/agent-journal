@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Comments\Commands;
 
-use App\Assignments\Support\RecordIdentity;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
 use App\Comments\Handlers\PostCommentHandler;
+use App\Records\Support\RecordIdentity;
 
 /**
  * Leaves a comment about a whole record the actor may read. The submission key makes a retry return the first comment

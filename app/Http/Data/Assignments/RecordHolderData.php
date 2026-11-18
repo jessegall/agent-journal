@@ -6,7 +6,7 @@ namespace App\Http\Data\Assignments;
 
 use App\Assignments\Support\AssignmentData;
 use App\Assignments\Support\AssignmentHolder;
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Support\RecordIdentity;
 use PhpOption\Option;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
