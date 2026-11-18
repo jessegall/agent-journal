@@ -31,7 +31,7 @@ final class SkillMcpToolsTest extends TestCase
     use CommitsHookRows;
     use SendsMcpFrames;
 
-    private const array TABLES = ['skill_requests', 'skill_revisions', 'skills', 'number_groups', 'command_receipts', 'agents', 'agent_sessions', 'launch_credentials', 'agent_stacks'];
+    private const array TABLES = ['skill_publications', 'skill_generations', 'skill_requests', 'skill_revisions', 'skills', 'number_groups', 'command_receipts', 'agents', 'agent_sessions', 'launch_credentials', 'agent_stacks'];
 
     private TestLaunch $caller;
 

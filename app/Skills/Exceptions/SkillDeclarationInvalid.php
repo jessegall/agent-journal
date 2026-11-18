@@ -19,6 +19,14 @@ final class SkillDeclarationInvalid extends LogicException implements CodedRefus
         return new self("{$owner} declares the skill key {$key}, whose prefix it does not own.");
     }
 
+    /**
+     * A skill the catalogue could not check or render, named by its owner and key.
+     */
+    public static function inSkill(string $owner, string $key, string $reason): self
+    {
+        return new self("{$owner}'s skill {$key} is invalid: {$reason}");
+    }
+
     public static function sectionCount(string $key, int $count, int $most): self
     {
         return new self("The skill {$key} has {$count} sections; a skill has 1 to {$most}.");

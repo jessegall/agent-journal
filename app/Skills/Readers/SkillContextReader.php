@@ -65,6 +65,16 @@ final readonly class SkillContextReader
         return $this->contextOf($agent, $session);
     }
 
+    /**
+     * The context of one session, for trusted Core work such as a refresh run by the system actor.
+     *
+     * @throws SkillContextUnavailable
+     */
+    public function forSession(AgentSession $session): SkillContext
+    {
+        return $this->contextOf(Agent::query()->whereKey($session->agent_id)->firstOrFail(), $session);
+    }
+
     private function contextOf(Agent $agent, AgentSession $session): SkillContext
     {
         $program = LaunchProgram::of($session->program);

@@ -169,6 +169,16 @@ final class SkillPublication extends Model implements ReadableModel
         return $this->state === PublicationState::Pending || ($this->state === PublicationState::Preparing && ($this->lease_until === null || $this->lease_until->lessThan($now)));
     }
 
+    /**
+     * Whether the target's newest open or delivered publication already carries this selection.
+     */
+    public static function hasSelection(string $sessionId, string $target, string $selectionDigest): bool
+    {
+        $latest = self::query()->forTarget($sessionId, $target)->whereIn('state', [PublicationState::Pending->value, PublicationState::Preparing->value, PublicationState::Delivered->value])->orderByDesc('created_at')->orderByDesc('id')->first();
+
+        return $latest !== null && $latest->selection_digest === $selectionDigest;
+    }
+
     public static function lockById(string $publicationId): self
     {
         return self::query()->whereKey($publicationId)->lockForUpdate()->firstOrFail();

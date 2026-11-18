@@ -144,6 +144,16 @@ final class AgentSession extends Model implements ReadableModel
         return self::query()->where('agent_id', $agentId)->orderByDesc('created_at')->orderByDesc('id')->first();
     }
 
+    /**
+     * The sessions that may still act, oldest first, for trusted Core maintenance such as a skill refresh.
+     *
+     * @return list<self>
+     */
+    public static function runningForMaintenance(int $limit): array
+    {
+        return array_values(self::query()->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))->orderBy('created_at')->readLimit($limit)->get()->all());
+    }
+
     public static function lockedForUpdate(string $sessionId): self
     {
         return self::query()->whereKey($sessionId)->lockForUpdate()->firstOrFail();

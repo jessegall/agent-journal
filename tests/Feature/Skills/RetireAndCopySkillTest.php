@@ -32,7 +32,7 @@ final class RetireAndCopySkillTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['skill_requests', 'skill_revisions', 'skills', 'number_groups', 'command_receipts'];
+    private const array TABLES = ['skill_publications', 'skill_generations', 'skill_requests', 'skill_revisions', 'skills', 'number_groups', 'command_receipts'];
 
     public function test_retire_removes_the_skill_from_the_list_and_keeps_its_revisions(): void
     {

@@ -30,6 +30,7 @@ use App\Skills\Support\ConditionRegistry;
 use App\Skills\Support\ConditionTree;
 use App\Skills\Support\EvaluationGuard;
 use App\Skills\Support\SkillRegistry;
+use App\Skills\Support\SkillTargets;
 use App\Skills\Support\StoredSkillSource;
 use App\Skills\Values\SkillContext;
 use Illuminate\Contracts\Foundation\Application;
@@ -50,6 +51,7 @@ final class SkillsServiceProvider extends ServiceProvider
         $this->app->scoped(SkillContext::class, fn (Application $app) => $app->make(SkillContextReader::class)->current());
         $this->app->bind(SkillRenderer::class, CanonicalRenderer::class);
         $this->app->bind(SkillSource::class, StoredSkillSource::class);
+        $this->app->singleton(SkillTargets::class, fn () => new SkillTargets(storage_path('app/skills')));
         $this->app->scoped(SkillReader::class, fn (Application $app) => new CatalogueOnFirstRead(fn () => SkillCatalogue::build(
             $app->make(SkillRegistry::class),
             $app,

@@ -11,7 +11,9 @@ use App\Skills\Contracts\SkillSource;
 use App\Skills\Enums\SkillOrigin;
 use App\Skills\Exceptions\SkillConditionInvalid;
 use App\Skills\Exceptions\SkillConflict;
+use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillMissing;
+use App\Skills\Exceptions\SkillSourceInvalid;
 use App\Skills\Support\ConditionTree;
 use App\Skills\Support\SkillRegistry;
 use App\Skills\Values\SkillEntry;
@@ -34,7 +36,7 @@ final readonly class SkillCatalogue implements SkillReader
 
     /**
      * @throws SkillConflict when two owners declare one key
-     * @throws SkillConditionInvalid when a skill's condition is not a valid tree
+     * @throws SkillDeclarationInvalid when a shipped skill's condition, sections or text are invalid, naming its owner and key
      */
     public static function build(SkillRegistry $registry, Container $container, SkillRenderer $renderer, ConditionTree $conditions, SkillSource $stored): self
     {
@@ -51,7 +53,11 @@ final readonly class SkillCatalogue implements SkillReader
                     throw SkillConflict::between($key->key, $entries[$key->key]->owner, $owner->name);
                 }
 
-                $entries[$key->key] = new SkillEntry($key, $skill->name(), $owner->name, SkillOrigin::Shipped, $skill->description(), $conditions->check($skill->condition()), null, $renderer->render($skill, $owner));
+                try {
+                    $entries[$key->key] = new SkillEntry($key, $skill->name(), $owner->name, SkillOrigin::Shipped, $skill->description(), $conditions->check($skill->condition()), null, $renderer->render($skill, $owner));
+                } catch (SkillSourceInvalid|SkillConditionInvalid|SkillDeclarationInvalid $invalid) {
+                    throw SkillDeclarationInvalid::inSkill($owner->name, $key->key, $invalid->getMessage());
+                }
             }
         }
 

@@ -77,6 +77,7 @@ use App\Sharing\Commands\SaveSharePreview;
 use App\Skills\CommandMiddleware\RefuseWritesDuringEvaluation;
 use App\Skills\Commands\CopySkill;
 use App\Skills\Commands\CreateSkill;
+use App\Skills\Commands\RefreshSkills;
 use App\Skills\Commands\RestoreSkill;
 use App\Skills\Commands\RetireSkill;
 use App\Skills\Commands\ReviseSkill;
@@ -100,6 +101,7 @@ final class CoreCommands
             ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class, ReopenSharedGateways::class, PruneShareAudit::class,
             ActivateProfiles::class, RevokeProfiles::class,
             CreateSkill::class, ReviseSkill::class, RestoreSkill::class, RetireSkill::class, CopySkill::class,
+            RefreshSkills::class,
         ];
     }
 
@@ -111,7 +113,7 @@ final class CoreCommands
      */
     public static function privateCommands(): array
     {
-        return [ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class, ReopenSharedGateways::class, PruneShareAudit::class];
+        return [ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class, ReopenSharedGateways::class, PruneShareAudit::class, RefreshSkills::class];
     }
 
     /**
