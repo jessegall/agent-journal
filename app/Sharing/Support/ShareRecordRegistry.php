@@ -108,6 +108,16 @@ final class ShareRecordRegistry
     }
 
     /**
+     * The relations the type declared, as read at boot.
+     *
+     * @throws UnknownShareRecordType
+     */
+    public function relations(string $alias): ShareRelationSet
+    {
+        return $this->relationSets[$alias] ?? throw UnknownShareRecordType::forAlias($alias);
+    }
+
+    /**
      * The declared relation of this name, from the relations read at boot.
      *
      * @throws UnknownShareRecordType
@@ -115,8 +125,6 @@ final class ShareRecordRegistry
      */
     public function relation(string $alias, string $name): ShareRelation
     {
-        $relations = $this->relationSets[$alias] ?? throw UnknownShareRecordType::forAlias($alias);
-
-        return $relations->find($name)->getOrThrow(UnknownShareRelation::for($alias, $name));
+        return $this->relations($alias)->find($name)->getOrThrow(UnknownShareRelation::for($alias, $name));
     }
 }

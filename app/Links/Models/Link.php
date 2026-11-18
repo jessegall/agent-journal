@@ -92,7 +92,20 @@ final class Link extends MorphPivot implements ReadableModel
     #[Scope]
     protected function touching(Builder $query, Model $record): void
     {
-        $query->where(fn (Builder $either) => $either->withSource($record)->orWhere(fn (Builder $target) => $target->withTarget($record)));
+        $query->touchingKey($record->getMorphClass(), (string) $record->getKey());
+    }
+
+    /**
+     * Every link with the record of this link alias and id on either side.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function touchingKey(Builder $query, string $type, string $id): void
+    {
+        $query->where(fn (Builder $either) => $either
+            ->where(fn (Builder $source) => $source->where('source_type', $type)->where('source_id', $id))
+            ->orWhere(fn (Builder $target) => $target->where('target_type', $type)->where('target_id', $id)));
     }
 
     /**
@@ -102,7 +115,17 @@ final class Link extends MorphPivot implements ReadableModel
      */
     public function otherSideFrom(Model $record): array
     {
-        $isSource = $this->source_type === $record->getMorphClass() && $this->source_id === (string) $record->getKey();
+        return $this->otherSideFromKey($record->getMorphClass(), (string) $record->getKey());
+    }
+
+    /**
+     * The record on the other side of this link from the record of this link alias and id.
+     *
+     * @return array{string, string}
+     */
+    public function otherSideFromKey(string $type, string $id): array
+    {
+        $isSource = $this->source_type === $type && $this->source_id === $id;
 
         return $isSource ? [$this->target_type, $this->target_id] : [$this->source_type, $this->source_id];
     }

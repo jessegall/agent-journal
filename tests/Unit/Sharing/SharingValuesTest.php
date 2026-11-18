@@ -18,6 +18,7 @@ use App\Sharing\Support\GatewaySettings;
 use App\Sharing\Support\ShareCandidates;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\SharedContent;
+use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareRecordRegistration;
 use App\Sharing\Support\ShareRecords;
@@ -83,7 +84,7 @@ final class SharingValuesTest extends TestCase
     {
         foreach ([
             ShareRelation::class, ShareRelationSet::class, ShareRecordRegistration::class, ShareRecordCard::class,
-            ShareRecords::class, ShareCandidates::class, ShareSelection::class, ShareTargetRead::class,
+            ShareRecords::class, ShareCandidates::class, ShareLinkedCandidate::class, ShareSelection::class, ShareTargetRead::class,
             ShareRelationRead::class, ShareContentRead::class, SharedContent::class, GatewayConfiguration::class,
             GatewayOperation::class, GatewayEndpoint::class, GatewayReadiness::class, GatewayHealth::class, GatewaySettings::class, ShareSelectedTarget::class,
         ] as $class) {

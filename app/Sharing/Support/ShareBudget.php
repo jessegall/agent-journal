@@ -30,6 +30,8 @@ final class ShareBudget
 
     private int $links = 0;
 
+    private bool $running = false;
+
     private function __construct(
         public readonly int $mostQueries,
         public readonly int $mostMilliseconds,
@@ -61,7 +63,8 @@ final class ShareBudget
     }
 
     /**
-     * Runs a piece of record work and charges the queries the read meter counted for it.
+     * Runs a piece of record work and charges the queries the read meter counted for it; work run inside it on the
+     * same budget is counted once.
      *
      * @template TValue
      *
@@ -72,7 +75,18 @@ final class ShareBudget
      */
     public function run(callable $work): mixed
     {
-        $measurement = $this->meter->measure('share budget', $work);
+        if ($this->running) {
+            return $work();
+        }
+
+        $this->running = true;
+
+        try {
+            $measurement = $this->meter->measure('share budget', $work);
+        } finally {
+            $this->running = false;
+        }
+
         $this->queries += $measurement->counts->queriesRun;
 
         if ($this->queries > $this->mostQueries) {

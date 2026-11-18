@@ -281,6 +281,7 @@ use App\Sharing\Support\GatewayReadiness;
 use App\Sharing\Support\GatewaySettings;
 use App\Sharing\Support\ShareBudget;
 use App\Sharing\Support\ShareCandidates;
+use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\SharedContent;
 use App\Sharing\Support\ShareRecordCard;
@@ -568,6 +569,7 @@ final class CoreApi
                 ShareSelection::class,
                 ShareBudget::class,
                 ShareCandidates::class,
+                ShareLinkedCandidate::class,
                 ShareRecordCard::class,
                 ShareRecords::class,
                 ShareTargetRead::class,

@@ -6,9 +6,9 @@ namespace App\Sharing\Contracts;
 
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Support\ShareBudget;
-use App\Sharing\Support\ShareCandidates;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\SharedContent;
+use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareRecords;
 use App\Sharing\Support\ShareRelationRead;
 use App\Sharing\Support\ShareSelection;
@@ -16,8 +16,8 @@ use App\Sharing\Support\ShareTargetRead;
 
 /**
  * What the owner of a shareable record type answers for sharing, through its own public-disclosure queries: the
- * preview of a root, batches of linked targets, pages of owned children and published content, each charged to the
- * budget it is handed.
+ * preview of a root, batches of linked targets, pages of owned children and published content. Core runs each call
+ * inside the budget it hands over; the provider charges the bytes and records it loads.
  */
 interface ShareRecordProvider
 {
@@ -26,7 +26,10 @@ interface ShareRecordProvider
      */
     public function mayDisclose(RecordIdentity $record): bool;
 
-    public function preview(ShareSelection $selection, ShareBudget $budget): ShareCandidates;
+    /**
+     * The root's card for the owner's preview; Core adds the linked candidates it finds through links.
+     */
+    public function preview(ShareSelection $selection, ShareBudget $budget): ShareRecordCard;
 
     public function readTargets(ShareTargetRead $read, ShareBudget $budget): ShareRecords;
 

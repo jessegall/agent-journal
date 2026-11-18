@@ -24,4 +24,12 @@ final readonly class ShareRecordRegistration
         public string $providerClass,
         public array $capabilities,
     ) {}
+
+    /**
+     * @param  list<string>  $capabilities
+     */
+    public function advertisesAnyOf(array $capabilities): bool
+    {
+        return array_intersect($this->capabilities, $capabilities) !== [];
+    }
 }

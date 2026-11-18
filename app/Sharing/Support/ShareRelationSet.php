@@ -66,4 +66,16 @@ final readonly class ShareRelationSet
 
         return None::create();
     }
+
+    /**
+     * The capabilities a record must advertise to be reached through one of the linked relations.
+     *
+     * @return list<string>
+     */
+    public function linkedCapabilities(): array
+    {
+        $linked = array_filter($this->relations, fn (ShareRelation $relation) => $relation->type === ShareRelationType::Linked);
+
+        return array_values(array_unique(array_map(fn (ShareRelation $relation) => $relation->capability, $linked)));
+    }
 }
