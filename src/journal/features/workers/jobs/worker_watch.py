@@ -1,4 +1,5 @@
 import json
+import time
 
 from journal.engine.job import Job
 from journal.features.workers.support.worker_actions import WorkerActions
@@ -13,10 +14,13 @@ REVIVE_BRIEF = ("The journal restarted while you were at work, and your run stop
 # the last event of a run that ended on its own: Claude Code's result, Codex's end of its turn
 ENDING_EVENTS = {"result", "turn.completed", "turn.failed"}
 TAIL_BYTES = 65536
+# a run whose output last moved longer ago than this before the boot was not cut off by this restart: its process had been gone
+# already, and its work, if any, is long stale, so it is closed as before and never started again
+REVIVE_WINDOW_SECONDS = 30 * 60
 
 
 class WorkerWatch(Job):
-    """Every two seconds, each worker the journal found still out at boot is checked: one whose process has ended has its report filed from its files, one past its time limit is stopped, so a restart never loses a worker. A worker whose run the restart cut off, its process gone with no end in its output, is started again in its own session at the first look, so a restart never stops the work either."""
+    """Every two seconds, each worker the journal found still out at boot is checked: one whose process has ended has its report filed from its files, one past its time limit is stopped, so a restart never loses a worker. A worker whose run the restart cut off, its process gone with no end in its output and its output still moving in the half hour before the boot, is started again in its own session at the first look, so a restart never stops the work either; one whose process had been gone longer is only closed."""
 
     interval_seconds = 2.0
 
@@ -27,8 +31,12 @@ class WorkerWatch(Job):
 
     def add(self, worker: Worker) -> None:
         self.watched.append(worker)
-        if worker.pid > 0 and not self.runner.is_running(worker.pid) and not self.ended_on_its_own(worker):
+        if worker.pid > 0 and not self.runner.is_running(worker.pid) and self.was_at_work(worker) and not self.ended_on_its_own(worker):
             self.cut_off.add(worker.id)
+
+    def was_at_work(self, worker: Worker) -> bool:
+        output = self.runner.outputs(worker)[0]
+        return output.is_file() and time.time() - output.stat().st_mtime <= REVIVE_WINDOW_SECONDS
 
     def ended_on_its_own(self, worker: Worker) -> bool:
         output = self.runner.outputs(worker)[0]

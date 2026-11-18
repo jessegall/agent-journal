@@ -1960,9 +1960,15 @@ def test_a_worker_the_restart_cut_off_is_started_again_in_its_session(app: App, 
         output.write_text("\n".join(j.dumps(event) for event in events) + "\n")
         workers.save(worker.running_as(gone.pid, timing.time()), Actor.system())
     workers.save(workers.find(clocked_in.id).with_(state=WorkerState.READY), Actor.system())
+    with scope.environment(1):
+        stale = workers.save(Worker(name="Mr. Brunel", brief="the tags", model="sonnet"), Actor.system())
+    stale_output, _ = runner.outputs(stale)
+    stale_output.write_text(j.dumps({"type": "assistant"}) + "\n")
+    os.utime(stale_output, (timing.time() - 5 * 3600, timing.time() - 5 * 3600))
+    workers.save(workers.find(stale.id).running_as(gone.pid, timing.time()).with_(state=WorkerState.READY), Actor.system())
     app.container.get(WorkersSeed).run()
     app.container.get(WorkerWatch).tick(timing.time())
-    assert sorted(relaunched) == sorted([(cut.id, REVIVE_BRIEF), (clocked_in.id, REVIVE_BRIEF)]), "a run the restart cut off is started again in its own session, sent its job or clocked in on it; one that ended on its own, or never ran, is not"
+    assert sorted(relaunched) == sorted([(cut.id, REVIVE_BRIEF), (clocked_in.id, REVIVE_BRIEF)]), "a run the restart cut off is started again in its own session, sent its job or clocked in on it; one that ended on its own, never ran, or whose process had been gone for hours, is not"
     assert not workers.find(ended.id).is_running(), "a run that ended on its own has its end recorded as before"
 
 
