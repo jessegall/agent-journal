@@ -54,10 +54,10 @@ class CommitListenerRunner(RoundState):
         self.held_listeners: set[str] = set()
         self.heard_names: dict[tuple[str, str], bool] = {}
 
+    # the positions are kept across rounds: a listener claims each event against the position it read, and a claim
+    # that fails marks them stale, so the next round reads them again; a new listener comes with a rebuilt container
     def reset(self) -> None:
-        self.positions = {}
-        self.positions_stale = False
-        self.names_without_cursor = set()
+        return None
 
     def run(self) -> None:
         self.flush_exceptions()
