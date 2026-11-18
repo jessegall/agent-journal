@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Domains\Providers;
 
 use App\Bus\Support\CommandRegistry;
+use App\Contracts\DomainAvailability;
 use App\CoreApi;
 use App\CoreCommands;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\DomainSwitches;
 use App\Domains\Support\Exports as ExportsCheck;
 use App\Domains\Support\Psr4ClassNames;
+use App\Domains\Support\SettingsDomainAvailability;
 use App\Settings\Support\CoreSettings;
 use App\Settings\Support\EmptySettingsDefinition;
 use App\Settings\Support\SettingRegistry;
@@ -35,6 +37,7 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(CommandRegistry::class, fn () => $registry->commandDeclarations(CoreCommands::owner()));
         $this->app->singleton(DomainSwitches::class, fn () => $registry->domainSwitches());
         $this->app->singleton(SettingRegistry::class, fn () => $this->settingRegistry($registry, $this->app->make(DomainSwitches::class)));
+        $this->app->scoped(DomainAvailability::class, SettingsDomainAvailability::class);
 
         $classNames = Psr4ClassNames::fromComposer();
         DiscoverEvents::guessClassNamesUsing(fn (SplFileInfo $file, string $basePath) => $classNames->classOf((string) $file->getRealPath()));
