@@ -21,6 +21,7 @@ use App\Engine\Support\SystemMonotonicClock;
 use App\Engine\Support\SystemSleeper;
 use App\Engine\Support\TickCandidates;
 use App\Engine\Support\TickDelivery;
+use App\Hooks\Contracts\EngineTargetAccess;
 use App\Reads\Support\SelfMeasuredCommands;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
@@ -43,6 +44,7 @@ final class EngineServiceProvider extends ServiceProvider
         ));
         $this->app->singleton(EngineLock::class, AdvisoryEngineLock::class);
         $this->app->scoped(EngineAccess::class);
+        $this->app->bind(EngineTargetAccess::class, fn (Application $app) => $app->make(EngineAccess::class));
         $this->app->singleton(MonotonicClock::class, SystemMonotonicClock::class);
         $this->app->singleton(EngineListenerSet::class);
         $this->app->scoped(EngineTickedDelivery::class);

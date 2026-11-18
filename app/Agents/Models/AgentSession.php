@@ -112,6 +112,14 @@ final class AgentSession extends Model implements ReadableModel
         return self::query()->whereKey($sessionId)->with(['credential', 'agent'])->lockForUpdate()->firstOrFail();
     }
 
+    /**
+     * Holds the session's row shared for this transaction, so it cannot end while a change to its stack goes on.
+     */
+    public static function sharedLockFor(string $sessionId): self
+    {
+        return self::query()->whereKey($sessionId)->sharedLock()->firstOrFail();
+    }
+
     public function isActive(): bool
     {
         return $this->status->isRunning();

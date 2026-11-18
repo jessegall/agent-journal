@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Enums\ActorType;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\StackTarget;
+use App\Hooks\Contracts\EngineTargetAccess;
 use App\Hooks\Contracts\StackCleanup;
 use App\Hooks\Contracts\WorkedOnStack;
 use App\Hooks\Decisions\StateReference;
@@ -35,6 +36,7 @@ final readonly class StackCleanups implements StackCleanup
         private StackRestorer $restorer,
         private FrameLifecycle $lifecycle,
         private StateTypes $types,
+        private EngineTargetAccess $engineAccess,
     ) {}
 
     public function removeFinished(StackTarget $target): void
@@ -90,17 +92,21 @@ final readonly class StackCleanups implements StackCleanup
 
     /**
      * The target's stack, open or closed, locked once the caller may settle it: an agent any stack of its own, in
-     * whichever session its work was started, a user the stack it was authorized for. Any other actor, the engine
-     * included, or none, is refused.
+     * whichever session its work was started, a user the stack it was authorized for, the engine the stack its grant
+     * covers. Any other actor, or none, is refused.
      */
     private function lockedRowFor(StackTarget $target): AgentStackRow
     {
         $actor = $this->actors->actor();
 
+        if ($actor->actorType() === ActorType::Engine) {
+            $this->engineAccess->checkTarget($target);
+        }
+
         if (match ($actor->actorType()) {
             ActorType::Agent => $actor->actorId() !== $target->agentId,
             ActorType::User => false,
-            ActorType::Engine => true,
+            ActorType::Engine => false,
         }) {
             throw StackTargetRefused::forTarget($target->description());
         }
