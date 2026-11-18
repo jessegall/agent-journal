@@ -25,7 +25,7 @@ final class SupplyHookSettings implements Listener
             $event->settings->addHook($eventName, $program->hookCommand());
         }
 
-        foreach ($program->childToolsWithoutIdentity() as $toolName) {
+        foreach ($program->nativeChildTools() as $toolName) {
             $event->settings->denyTool($toolName);
         }
     }

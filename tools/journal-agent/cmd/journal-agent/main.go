@@ -2,6 +2,7 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -21,15 +23,40 @@ import (
 	"journal-agent/profiles"
 	"journal-agent/profiles/contracts"
 	"journal-agent/recording"
+	"journal-agent/screen"
 )
 
 // profileFor is the pinned launch profile of each program.
-var profileFor = map[string]contracts.ProgramProfile{"claude": profiles.ClaudeCode{}}
+var profileFor = map[string]contracts.ProgramProfile{"claude": profiles.ClaudeCode{}, "codex": profiles.Codex{}}
 
 // secretToggle is the key (Ctrl-]) that turns secret marking of typed input on and off; it is never forwarded.
 const secretToggle = 0x1d
 
 func main() {
+	if len(os.Args) == 3 && os.Args[1] == "capture-hook" {
+		if err := captureHook(os.Args[2]); err != nil {
+			fmt.Fprintln(os.Stderr, "journal-agent:", err)
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
+	if len(os.Args) == 3 && os.Args[1] == "annotate" {
+		if err := annotate(os.Args[2]); err != nil {
+			fmt.Fprintln(os.Stderr, "journal-agent:", err)
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
+	if len(os.Args) == 3 && os.Args[1] == "screen" {
+		if err := printScreen(os.Args[2]); err != nil {
+			fmt.Fprintln(os.Stderr, "journal-agent:", err)
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
 	if len(os.Args) < 2 || os.Args[1] != "record" {
 		fmt.Fprintln(os.Stderr, "usage: journal-agent record --program <claude|codex> --mode <process|terminal> --out <dir> -- <args>")
 		os.Exit(2)
@@ -53,6 +80,10 @@ func record(arguments []string) (int, error) {
 	useProfile := flags.Bool("use-profile", false, "launch the program through its pinned profile; the words after -- are the prompt")
 	sessionID := flags.String("session", "", "with --use-profile: the exact session ID to start, or to resume with --resume")
 	resume := flags.Bool("resume", false, "with --use-profile: resume the session given by --session")
+	folder := flags.String("folder", "", "the working folder the program starts in; an empty folder keeps project instructions out of evidence")
+	captureHooks := flags.Bool("capture-hooks", false, "with --use-profile: install a hook on every native event that appends its payload to hooks.jsonl in the recording folder")
+	var keys keyScript
+	flags.Var(&keys, "keys", "in terminal mode, keys to type after a delay, as <delay>=<keys> (Go escapes such as \\x1b or \\r work); repeat it")
 	stopAfter := flags.Duration("stop-after", 0, "end the program this long after its start, for unattended terminal recordings")
 
 	if err := flags.Parse(arguments); err != nil {
@@ -62,6 +93,11 @@ func record(arguments []string) (int, error) {
 	command := flags.Args()
 	if *program != "claude" && *program != "codex" {
 		return 2, errors.New("--program must be claude or codex")
+	}
+	if *folder != "" {
+		if err := os.Chdir(*folder); err != nil {
+			return 2, fmt.Errorf("entering the working folder %s: %w", *folder, err)
+		}
 	}
 	if *out == "" || len(command) == 0 {
 		return 2, errors.New("--out and a command after -- are required")
@@ -74,12 +110,24 @@ func record(arguments []string) (int, error) {
 		if !known {
 			return 2, fmt.Errorf("no pinned profile for %s yet", *program)
 		}
-		launched, err := profiledCommand(profile, contracts.Mode(*mode), *out, *sessionID, *resume, strings.Join(command, " "))
+		hookCommand := ""
+		if *captureHooks {
+			self, err := os.Executable()
+			if err != nil {
+				return 2, err
+			}
+			capture, err := filepath.Abs(filepath.Join(*out, "hooks.jsonl"))
+			if err != nil {
+				return 2, err
+			}
+			hookCommand = self + " capture-hook " + capture
+		}
+		launched, launch, err := profiledCommand(profile, contracts.Mode(*mode), *out, *sessionID, *resume, strings.Join(command, " "), hookCommand)
 		if err != nil {
 			return 2, err
 		}
 		command = launched
-		environment = profile.Environment(environment)
+		environment = profile.Environment(environment, launch)
 		profileName = profile.Program() + "@" + profile.Build()
 	}
 
@@ -98,7 +146,7 @@ func record(arguments []string) (int, error) {
 	case recording.ProcessMode:
 		exitCode, err = runProcess(command, environment, recorder)
 	case recording.TerminalMode:
-		exitCode, err = runTerminal(command, environment, *stopAfter, recorder)
+		exitCode, err = runTerminal(command, environment, *stopAfter, keys, recorder)
 	default:
 		return 2, errors.New("--mode must be process or terminal")
 	}
@@ -124,7 +172,7 @@ func runProcess(command []string, environment []string, recorder *recording.Reco
 
 // runTerminal runs the program in a pseudo-terminal of the person's size, in its own session, and passes the
 // person's keys and resizes through.
-func runTerminal(command []string, environment []string, stopAfter time.Duration, recorder *recording.Recorder) (int, error) {
+func runTerminal(command []string, environment []string, stopAfter time.Duration, keys keyScript, recorder *recording.Recorder) (int, error) {
 	child := exec.Command(command[0], command[1:]...)
 	child.Env = environment
 
@@ -135,7 +183,18 @@ func runTerminal(command []string, environment []string, stopAfter time.Duration
 	defer terminal.Close()
 
 	if stopAfter > 0 {
-		timer := time.AfterFunc(stopAfter, func() { child.Process.Signal(syscall.SIGTERM) })
+		timer := time.AfterFunc(stopAfter, func() {
+			recorder.Input([]byte("<SIGTERM>"), false)
+			child.Process.Signal(syscall.SIGTERM)
+		})
+		defer timer.Stop()
+	}
+
+	for _, step := range keys {
+		timer := time.AfterFunc(step.after, func() {
+			recorder.Input(step.keys, false)
+			terminal.Write(step.keys)
+		})
 		defer timer.Stop()
 	}
 
@@ -246,32 +305,175 @@ func exitCodeOf(err error) (int, error) {
 }
 
 // profiledCommand builds the launch of a program through its pinned profile: it refuses another build, writes the
-// isolated settings file into the recording folder and gives the full command line.
-func profiledCommand(profile contracts.ProgramProfile, mode contracts.Mode, out, sessionID string, resume bool, prompt string) ([]string, error) {
-	if err := profile.CheckBuild(programVersion(profile.Program())); err != nil {
-		return nil, err
-	}
+// isolated settings files into the recording folder and gives the full command line with the launch it made.
+func profiledCommand(profile contracts.ProgramProfile, mode contracts.Mode, out, sessionID string, resume bool, prompt, hookCommand string) ([]string, contracts.Launch, error) {
+	launch := contracts.Launch{Mode: mode, SessionID: sessionID, Resume: resume, Prompt: prompt, HookCommand: hookCommand}
 
-	settings, err := profile.SettingsFile()
-	if err != nil {
-		return nil, err
+	if err := profile.CheckBuild(programVersion(profile.Program())); err != nil {
+		return nil, launch, err
 	}
 
 	settingsFolder, err := filepath.Abs(filepath.Join(out, "settings"))
 	if err != nil {
-		return nil, err
+		return nil, launch, err
 	}
-	if err := os.MkdirAll(settingsFolder, 0o755); err != nil {
-		return nil, err
-	}
-	if err := os.WriteFile(filepath.Join(settingsFolder, "settings.json"), settings, 0o644); err != nil {
-		return nil, err
-	}
+	launch.SettingsFolder = settingsFolder
 
-	arguments, err := profile.Arguments(contracts.Launch{Mode: mode, SettingsFolder: settingsFolder, SessionID: sessionID, Resume: resume, Prompt: prompt})
+	files, err := profile.SettingsFiles(launch)
 	if err != nil {
-		return nil, err
+		return nil, launch, err
+	}
+	if err := os.MkdirAll(launch.SettingsFolder, 0o755); err != nil {
+		return nil, launch, err
+	}
+	for _, file := range files {
+		if err := writeSettingsFile(launch.SettingsFolder, file); err != nil {
+			return nil, launch, err
+		}
 	}
 
-	return append([]string{profile.Program()}, arguments...), nil
+	arguments, err := profile.Arguments(launch)
+	if err != nil {
+		return nil, launch, err
+	}
+
+	return append([]string{profile.Program()}, arguments...), launch, nil
+}
+
+// writeSettingsFile writes one isolated settings file, or links it when it is a login the person already holds.
+func writeSettingsFile(folder string, file contracts.SettingsFile) error {
+	path := filepath.Join(folder, file.Name)
+
+	if file.LinkTo == "" {
+		return os.WriteFile(path, file.Content, 0o644)
+	}
+
+	os.Remove(path)
+
+	return os.Symlink(file.LinkTo, path)
+}
+
+// captureHook appends one hook payload, with the time it arrived, to the capture file and answers the program with
+// an empty object, so the hook neither allows nor denies anything.
+func captureHook(capture string) error {
+	payload, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		return err
+	}
+
+	file, err := os.OpenFile(capture, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	line, err := json.Marshal(map[string]any{"at": time.Now().UTC().Format(time.RFC3339Nano), "payload": json.RawMessage(strings.TrimSpace(string(payload)))})
+	if err != nil {
+		return err
+	}
+	if _, err := file.Write(append(line, '\n')); err != nil {
+		return err
+	}
+
+	fmt.Print("{}")
+
+	return nil
+}
+
+// keyStep is keys typed into the terminal after a delay from the start.
+type keyStep struct {
+	after time.Duration
+	keys  []byte
+}
+
+// keyScript is the --keys flag: the keys an unattended terminal recording types, in order of their delays.
+type keyScript []keyStep
+
+func (script *keyScript) String() string {
+	return fmt.Sprint(len(*script), " key steps")
+}
+
+func (script *keyScript) Set(value string) error {
+	delay, keys, found := strings.Cut(value, "=")
+	if !found {
+		return errors.New("a key step is <delay>=<keys>")
+	}
+
+	after, err := time.ParseDuration(delay)
+	if err != nil {
+		return err
+	}
+
+	unquoted, err := strconv.Unquote(`"` + keys + `"`)
+	if err != nil {
+		return fmt.Errorf("the keys %q: %w", keys, err)
+	}
+
+	*script = append(*script, keyStep{after: after, keys: []byte(unquoted)})
+
+	return nil
+}
+
+// printScreen replays a terminal recording through the screen reader and prints the screen it ends on.
+func printScreen(folder string) error {
+	fixture, err := recording.Load(folder)
+	if err != nil {
+		return err
+	}
+
+	reader, err := screen.NewEmulatorReader(120, 40, screen.DefaultLimits, nil)
+	if err != nil {
+		return err
+	}
+	for _, chunk := range fixture.Output {
+		if err := reader.Feed(chunk.Bytes); err != nil {
+			return err
+		}
+	}
+
+	snapshot := reader.Snapshot()
+	for _, row := range snapshot.Rows {
+		fmt.Println(row)
+	}
+	fmt.Printf("-- cursor %d,%d visible %v, %s buffer, exit %d\n", snapshot.Cursor.Row, snapshot.Cursor.Column, snapshot.Cursor.Visible, snapshot.Buffer, fixture.ExitCode)
+
+	return nil
+}
+
+// settleTime is how long after a key a screen checkpoint is read, so the program has drawn its answer.
+const settleTime = 1500 * time.Millisecond
+
+// annotate replays a terminal recording through the screen reader and stores, after each typed input, the screen
+// it settled on as a checkpoint of the fixture: the evidence of what each key did.
+func annotate(folder string) error {
+	fixture, err := recording.Load(folder)
+	if err != nil {
+		return err
+	}
+
+	reader, err := screen.NewEmulatorReader(120, 40, screen.DefaultLimits, nil)
+	if err != nil {
+		return err
+	}
+
+	fixture.Checkpoints = nil
+	next := 0
+	for _, input := range fixture.Inputs {
+		until := input.Offset + settleTime
+		for ; next < len(fixture.Output) && fixture.Output[next].Offset <= until; next++ {
+			if err := reader.Feed(fixture.Output[next].Bytes); err != nil {
+				return err
+			}
+		}
+
+		snapshot := reader.Snapshot()
+		fixture.Checkpoints = append(fixture.Checkpoints, recording.ScreenCheckpoint{
+			Offset:       until,
+			Rows:         snapshot.Rows,
+			CursorRow:    snapshot.Cursor.Row,
+			CursorColumn: snapshot.Cursor.Column,
+		})
+	}
+
+	return fixture.Save(folder)
 }

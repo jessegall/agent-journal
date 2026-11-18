@@ -15,6 +15,7 @@ use App\Hooks\Exceptions\UnreadablePayload;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Programs\HookPayload;
 use App\Hooks\Programs\ProgramAdapters;
+use App\Hooks\Programs\ProgramReplies;
 use App\Hooks\Stack\AgentStateMachine;
 use App\Hooks\Support\StackAccess;
 use App\Http\Requests\Hooks\HookRequest;
@@ -30,6 +31,8 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class HookController
 {
+    private const string NATIVE_CHILD_REFUSAL = 'A program\'s own subagents never run here (rule 36): start a journal helper or worker instead.';
+
     public function __construct(
         private ProgramAdapters $adapters,
         private OperationDeadline $deadline,
@@ -46,6 +49,11 @@ final readonly class HookController
 
         try {
             $payload = $request->payload();
+
+            if ($payload->isFromNativeChild() || $payload->callsAnyOf($request->program()->nativeChildTools())) {
+                return new JsonResponse(HookResponse::fromProgramReply(ProgramReplies::denyTool(self::NATIVE_CHILD_REFUSAL, []))->toArray());
+            }
+
             $call = $adapter->callFor($payload, $access->hookIdentity());
             $this->mapProgramSession($payload, $access);
             $reply = $call->replyWith(fn (HookInput $input, Closure $render) => $machine->answer($input, $adapter->capabilities(), $this->deadline, $render));

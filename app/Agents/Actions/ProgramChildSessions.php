@@ -10,7 +10,8 @@ use App\Agents\Support\LaunchedAgent;
 
 /**
  * Gives a child agent its own journal session, credential and stack under its parent session, so a child's stop
- * never answers for its parent. A program's own child tool without an identity of its own stays turned off.
+ * never answers for its parent. Only the journal's helpers and workers get child sessions: a program's own native
+ * child is never started (rule 36).
  */
 final readonly class ProgramChildSessions
 {

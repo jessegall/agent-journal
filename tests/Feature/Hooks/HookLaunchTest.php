@@ -20,6 +20,7 @@ use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Contracts\ShellCommandParser;
+use App\Hooks\Enums\HookProgram;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\StackStatus;
 use App\Hooks\Exceptions\ShellParserMissing;
@@ -55,7 +56,7 @@ final class HookLaunchTest extends TestCase
         $this->assertSame(['hooks', 'permissions'], array_keys($settings));
         $this->assertSame(['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop', 'SessionEnd'], array_keys($settings['hooks']));
         $this->assertSame([['hooks' => [['type' => 'command', 'command' => 'journal-hook claude-code']]]], $settings['hooks']['Stop']);
-        $this->assertSame(['deny' => ['Agent', 'Task']], $settings['permissions']);
+        $this->assertSame(['deny' => HookProgram::ClaudeCode->nativeChildTools()], $settings['permissions']);
     }
 
     public function test_each_launch_gets_its_own_session_credential_and_stack(): void
