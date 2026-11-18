@@ -91,7 +91,7 @@ final class AgentContextTest extends TestCase
         $launch = TestLaunch::start();
         (new LaunchCredentials)->revoke($launch->session);
 
-        $this->callAs($launch)->assertUnauthorized()->assertJson(['message' => 'The launch credential was revoked.']);
+        $this->callAs($launch)->assertUnauthorized()->assertJson(['code' => 'unauthenticated']);
     }
 
     public function test_the_credential_of_an_ended_session_is_refused(): void
@@ -99,7 +99,7 @@ final class AgentContextTest extends TestCase
         $launch = TestLaunch::start();
         (new AgentSessions(new AgentLifecycle))->end($launch->session);
 
-        $this->callAs($launch)->assertUnauthorized()->assertJson(['message' => 'The session of this launch credential has ended.']);
+        $this->callAs($launch)->assertUnauthorized()->assertJson(['code' => 'unauthenticated']);
     }
 
     public function test_a_child_session_names_its_parent(): void
