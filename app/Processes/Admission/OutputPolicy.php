@@ -44,14 +44,14 @@ final readonly class OutputPolicy
     private function hiddenAround(ShellTree $tree, PartClassification $part): array
     {
         $own = $tree->node($part->node);
-        $correction = $this->withoutRedirects($tree, $own);
+        $correction = $tree->withoutRedirects($own);
         $hidden = [];
         $node = $own;
         while (true) {
             foreach ($node->redirects as $redirect) {
                 $lost = $this->lostBy($redirect, $part);
                 if ($lost !== []) {
-                    $hidden[] = new HiddenOutput($part->node, implode(' and ', $lost), $this->sourceOf($tree, $redirect->range->start, $redirect->range->end), $correction);
+                    $hidden[] = new HiddenOutput($part->node, implode(' and ', $lost), $tree->textOf($redirect->range), $correction);
                 }
             }
             if ($node->isRoot) {
@@ -88,25 +88,5 @@ final readonly class OutputPolicy
         $stages = array_values(array_filter($tree->children($pipeline->id), fn (ShellNode $child) => ! in_array($child->type, [NodeType::Comment, NodeType::Redirect], true)));
 
         return $stages !== [] && $stages[array_key_last($stages)]->id !== $stage->id;
-    }
-
-    /**
-     * The part's own source with its redirects taken out, as the command to run instead.
-     */
-    private function withoutRedirects(ShellTree $tree, ShellNode $node): string
-    {
-        $text = '';
-        $at = $node->range->start;
-        foreach ($node->redirects as $redirect) {
-            $text .= $this->sourceOf($tree, $at, $redirect->range->start);
-            $at = $redirect->range->end;
-        }
-
-        return trim((string) preg_replace('/\s+/', ' ', $text.$this->sourceOf($tree, $at, $node->range->end)));
-    }
-
-    private function sourceOf(ShellTree $tree, int $start, int $end): string
-    {
-        return substr($tree->source, $start, max(0, $end - $start));
     }
 }

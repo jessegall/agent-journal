@@ -11,7 +11,6 @@ use App\Processes\Enums\AnalysisLimit;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\CommandType;
 use App\Processes\Enums\NodeType;
-use App\Processes\Enums\ParseOutcome;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Enums\UnresolvedType;
 use App\Processes\Enums\WordSegmentType;
@@ -85,7 +84,7 @@ final readonly class TreeClassifier implements CommandClassifier
 
     private function classifyTree(ShellTree $tree, int $depth, ExecutionContext $context): Classification
     {
-        if ($tree->outcome === ParseOutcome::Invalid || $tree->outcome === ParseOutcome::LimitExceeded) {
+        if ($tree->outcome->isUnreadable()) {
             $reason = $tree->diagnostic->reason ?? 'The line could not be read.';
 
             return new Classification($tree, [new PartClassification($tree->root, [], [new UnresolvedFact(UnresolvedType::UnsupportedSyntax, $tree->root, $reason)], CommandType::Unknown)], []);

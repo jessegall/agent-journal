@@ -37,17 +37,20 @@ final readonly class Explanations
     public function explain(string $line, ShellDialect $dialect): ExplanationData
     {
         $tree = $this->syntax->parse($line, $dialect);
-        $classification = $this->classifier->classify($tree, new ExecutionContext($dialect, base_path(), base_path()));
+        $context = new ExecutionContext($dialect, base_path(), base_path());
+        $classification = $this->classifier->classify($tree, $context);
+        $nodes = array_map(fn (ShellNode $node) => $this->nodeOf($tree, $node, $classification), array_values($tree->nodes));
+        $classes = $classification->requiredClasses()->classes;
 
-        return new ExplanationData(
-            $tree->outcome->value,
-            $tree->diagnostic?->reason,
-            $tree->diagnostic?->position,
-            count($tree->executableParts()),
-            array_map(fn (ShellNode $node) => $this->nodeOf($tree, $node, $classification), array_values($tree->nodes)),
-            array_map(fn (CommandClass $class): string => $class->value, $classification->requiredClasses()->classes),
-            $classification->isKnown(),
-        );
+        return ExplanationData::from([
+            'outcome' => $tree->outcome->value,
+            'diagnostic' => $tree->diagnostic?->reason,
+            'diagnosticPosition' => $tree->diagnostic?->position,
+            'executableParts' => count($tree->executableParts()),
+            'nodes' => $nodes,
+            'requiredClasses' => array_map(fn (CommandClass $class): string => $class->value, $classes),
+            'isKnown' => $classification->isKnown(),
+        ]);
     }
 
     private function nodeOf(ShellTree $tree, ShellNode $node, Classification $classification): ExplainedNodeData

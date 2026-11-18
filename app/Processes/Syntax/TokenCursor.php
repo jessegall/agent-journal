@@ -102,9 +102,7 @@ final class TokenCursor
      */
     public function currentLiteral(): string|null
     {
-        $token = $this->current();
-
-        return $token->type === TokenType::Word ? $token->word?->literal() : null;
+        return $this->current()->literal();
     }
 
     /**
