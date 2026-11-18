@@ -125,3 +125,46 @@ def test_an_agents_row_offers_only_what_its_program_reports(app: App, monkeypatc
     assert rows["claude-1"]["context"] == 42 and rows["claude-1"]["model"] == "Opus 5.5" and rows["claude-1"]["usage"] == [{"key": "five_hour", "label": "5h", "used": 10, "resets_at": 99}]
     assert "context status" in rows["claude-1"]["capabilities"] and rows["codex-1"]["capabilities"] == ["context status"]
     assert rows["codex-1"]["context"] is None and rows["codex-1"]["model"] == "", "a context Codex never reported is unknown, never zero"
+
+
+def test_setup_writes_the_same_hook_settings_on_every_machine_and_both_forms_count_as_the_journals(tmp_path: Path, monkeypatch):
+    from journal.launcher.support.program_settings import ProgramSettings
+    from journal.providers import provider as provider_module
+    from journal.providers.claude import Claude
+    from journal.providers.codex import Codex
+    from journal.providers.provider import Provider
+    written = {}
+    for machine in ("mac", "server"):
+        root = tmp_path / machine / "project"
+        monkeypatch.setattr(provider_module, "HOOK_SCRIPT", root / ".journal" / "src" / "journal" / "hooks" / "hook.sh")
+        for provider in (Claude(), Codex()):
+            path = provider.wire_hooks(root, provider_module.HOOK_SCRIPT, provider.hook_command(root))
+            hooks = json.loads(path.read_text())["hooks"]
+            written[machine, provider.name] = hooks
+            assert str(tmp_path) not in json.dumps(hooks), "the hook command names no machine's folder"
+    assert written["mac", "claude"] == written["server", "claude"] and written["mac", "codex"] == written["server", "codex"], "two machines write the same hooks"
+    assert '"${CLAUDE_PROJECT_DIR:-.}"' in Claude().hook_command(tmp_path) and "CLAUDE_PROJECT_DIR" not in Codex().hook_command(tmp_path), "Claude starts from its project folder, Codex from where it runs"
+    old = {"hooks": [{"type": "command", "command": "test -f /data/project/.journal/src/journal/hooks/hook.sh && exec sh /data/project/.journal/src/journal/hooks/hook.sh codex /data/project; exit 0"}]}
+    new = written["server", "codex"]["Stop"][0]
+    assert Provider.journal_paths(old) and Provider.journal_paths(new), "setup replaces the journal's hooks in the old and the new form"
+    assert ProgramSettings.is_journals(old) and ProgramSettings.is_journals(new), "the launcher keeps the journal's hooks in the old and the new form"
+
+
+def test_the_hook_command_runs_the_main_checkouts_script_from_a_worktree_of_it(tmp_path: Path, monkeypatch):
+    import subprocess
+    from journal.providers import provider as provider_module
+    from journal.providers.claude import Claude
+    from journal.providers.codex import Codex
+    root = tmp_path / "project"
+    script = root / ".journal" / "src" / "journal" / "hooks" / "hook.sh"
+    script.parent.mkdir(parents=True)
+    script.write_text('echo "$1 $2"\n')
+    subprocess.run(["git", "init", "-q", str(root)], check=True)
+    subprocess.run(["git", "-C", str(root), "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "start"], check=True)
+    worktree = root / ".journal" / "worktrees" / "one"
+    subprocess.run(["git", "-C", str(root), "worktree", "add", "-q", "--detach", str(worktree)], check=True)
+    monkeypatch.setattr(provider_module, "HOOK_SCRIPT", script)
+    for folder in (root, worktree):
+        claude = subprocess.run(["sh", "-c", Claude().hook_command(root)], cwd=tmp_path, env={"PATH": "/usr/bin:/bin:/usr/local/bin", "CLAUDE_PROJECT_DIR": str(folder)}, capture_output=True, text=True)
+        codex = subprocess.run(["sh", "-c", Codex().hook_command(root)], cwd=folder, env={"PATH": "/usr/bin:/bin:/usr/local/bin"}, capture_output=True, text=True)
+        assert claude.stdout == f"claude {root.resolve()}\n" and codex.stdout == f"codex {root.resolve()}\n", f"from {folder} the hook runs for the main checkout"

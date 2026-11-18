@@ -68,6 +68,7 @@ class Claude(Provider):
     settings_file = LOCAL_SETTINGS
     foreign_settings = (SHARED_SETTINGS,)
     settings_extras = {"enableAllProjectMcpServers": True}
+    project_folder = '"${CLAUDE_PROJECT_DIR:-.}"'
     capabilities = frozenset(Capability)
     session_variable = "CLAUDE_CODE_SESSION_ID"
     inherited_markers = ("CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SHELL_PREFIX")
