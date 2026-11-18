@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Sharing\Support;
 
 use App\Sharing\Enums\ShareRelationType;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * The fixed relations of one shareable record type, read once at boot.
@@ -46,5 +49,21 @@ final readonly class ShareRelationSet
     public function with(self $other): self
     {
         return new self([...$this->relations, ...$other->relations]);
+    }
+
+    /**
+     * The relation of this name, or none when the type declares no such relation.
+     *
+     * @return Option<ShareRelation>
+     */
+    public function find(string $name): Option
+    {
+        foreach ($this->relations as $relation) {
+            if ($relation->name === $name) {
+                return Some::create($relation);
+            }
+        }
+
+        return None::create();
     }
 }

@@ -15,6 +15,7 @@ use App\Providers\AppServiceProvider;
 use App\Providers\CoreServiceProvider;
 use App\Reads\Providers\ReadsServiceProvider;
 use App\Records\Providers\RecordsServiceProvider;
+use App\Sharing\Providers\SharingServiceProvider;
 use App\Web\Providers\TypeScriptServiceProvider;
 use App\Web\Providers\WebServiceProvider;
 use Domain\Access\Providers\AccessServiceProvider;
@@ -36,6 +37,7 @@ return [
     AgentsServiceProvider::class,
     AssignmentsServiceProvider::class,
     RecordsServiceProvider::class,
+    SharingServiceProvider::class,
     CommentsServiceProvider::class,
     HooksServiceProvider::class,
     CommandBusServiceProvider::class,
