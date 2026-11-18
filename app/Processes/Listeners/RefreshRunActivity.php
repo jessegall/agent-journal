@@ -6,18 +6,22 @@ namespace App\Processes\Listeners;
 
 use App\Contracts\Listener;
 use App\Processes\Events\OutputChunkCommitted;
-use App\Processes\Events\RunActivityChanged;
-use Illuminate\Contracts\Events\Dispatcher;
+use App\Processes\Models\PartRun;
+use App\Processes\Support\RunUpdates;
 
 /**
- * A committed chunk changes its part's activity view: the pages that show the run are told to refresh it.
+ * A committed chunk changes its part's activity view: the pages that show the run get a live update, at most one a
+ * second.
  */
 final readonly class RefreshRunActivity implements Listener
 {
-    public function __construct(private Dispatcher $events) {}
+    public function __construct(private RunUpdates $updates) {}
 
     public function handle(OutputChunkCommitted $committed): void
     {
-        $this->events->dispatch(new RunActivityChanged($committed->partRunId));
+        $part = PartRun::query()->whereKey($committed->partRunId)->first();
+        if ($part !== null) {
+            $this->updates->progressed($part);
+        }
     }
 }

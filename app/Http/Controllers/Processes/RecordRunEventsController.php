@@ -12,6 +12,7 @@ use App\Processes\Enums\RunEventType;
 use App\Processes\Execution\RecordedRunEvents;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
+use App\Processes\Support\RunUpdates;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -25,6 +26,7 @@ final readonly class RecordRunEventsController
         ProcessRun $processRun,
         OutputRecorder $recorder,
         CommandBus $commands,
+        RunUpdates $updates,
     ): JsonResponse {
         abort_unless($processRun->acceptsEventKey($request->eventKey()), 403, 'This event key is not the run\'s.');
         $events = new RecordedRunEvents($processRun, $recorder);
@@ -39,6 +41,11 @@ final readonly class RecordRunEventsController
 
         foreach (PartRun::query()->endedUnassessedOf($processRun)->readLimit(100)->get() as $ended) {
             $commands->run(new AssessPartOutput($ended->id));
+        }
+        if (array_any($request->events(), fn ($event): bool => $event->type->isTerminal())) {
+            foreach ($processRun->parts()->readLimit(500)->get() as $part) {
+                $updates->settled($part);
+            }
         }
 
         return new JsonResponse(['accepted' => count($request->events())]);

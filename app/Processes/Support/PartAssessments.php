@@ -28,6 +28,7 @@ final readonly class PartAssessments
         private EvidenceValidator $validator,
         private ResultPublisher $publisher,
         private Dispatcher $events,
+        private RunUpdates $updates,
     ) {}
 
     /**
@@ -56,6 +57,7 @@ final readonly class PartAssessments
         $validation = $this->validator->validate($part, $replayed->assessment, $replayed->consumed, $pair->contract);
         $run = ProcessRun::query()->withoutGlobalScopes()->findOrFail($part->process_run_id);
         $assessment = OutputAssessment::record($run, $part, $pair->declaration, $pair->reader, $replayed, $validation);
+        $this->updates->settled($part);
         if (! $validation->isValid()) {
             $codes = array_map(fn (OutputProblem $problem): string => $problem->code->value, $validation->problems);
             $actor = [(string) $run->actor_type, (string) $run->actor_id];

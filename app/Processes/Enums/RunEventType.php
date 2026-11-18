@@ -19,4 +19,19 @@ enum RunEventType: string
     case PartLost = 'part_lost';
     case RunStopped = 'run_stopped';
     case Heartbeat = 'heartbeat';
+
+    /**
+     * Whether the event ends a part or the run, so its live update goes out at once.
+     */
+    public function isTerminal(): bool
+    {
+        return in_array($this, [
+            self::PartEnded,
+            self::PartSkipped,
+            self::PartStartFailed,
+            self::PartStopped,
+            self::PartLost,
+            self::RunStopped,
+        ], true);
+    }
 }

@@ -10,6 +10,7 @@ use App\Processes\Models\PartRun;
 use App\Processes\Models\ReaderPosition;
 use App\Processes\Readers\DeclarativeReader;
 use App\Processes\Support\PartAssessments;
+use App\Processes\Support\RunUpdates;
 use App\Processes\Support\StoredOutput;
 use App\Processes\Values\OutputProblem;
 use Throwable;
@@ -20,7 +21,11 @@ use Throwable;
  */
 final readonly class ReadPartLiveHandler implements CommandHandler
 {
-    public function __construct(private PartAssessments $assessments, private StoredOutput $output) {}
+    public function __construct(
+        private PartAssessments $assessments,
+        private StoredOutput $output,
+        private RunUpdates $updates,
+    ) {}
 
     public function handle(ReadPartLive $command): string
     {
@@ -47,6 +52,7 @@ final readonly class ReadPartLiveHandler implements CommandHandler
             return $position->interpretation->value;
         }
         $position->advance($checkpoint);
+        $this->updates->progressed($part);
         if (array_any($checkpoint->problems, fn (OutputProblem $problem): bool => $problem->code->isReaderFailure())) {
             $position->markFailed();
         }

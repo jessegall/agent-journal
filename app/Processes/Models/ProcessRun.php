@@ -41,6 +41,7 @@ use Illuminate\Support\Carbon;
  * @property LifecycleState $lifecycle
  * @property CaptureState $capture_state
  * @property string $stop_reason
+ * @property int $update_sequence  the number of the last live update sent for this run
  * @property string $stale_reason  why the run's admission no longer holds, or empty while it does
  * @property string $event_key_hash
  * @property string $working_folder
@@ -151,6 +152,16 @@ final class ProcessRun extends Model implements ReadableModel
     {
         $this->stale_reason = $reason;
         $this->save();
+    }
+
+    /**
+     * The number of the next live update of this run, one higher than the last.
+     */
+    public function nextUpdate(): int
+    {
+        $this->increment('update_sequence');
+
+        return $this->update_sequence;
     }
 
     public function isRunBy(ActorIdentity $actor): bool

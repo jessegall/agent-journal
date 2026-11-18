@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('capture_state', 16);
             $table->string('stop_reason')->default('');
             $table->string('stale_reason')->default('');
+            $table->unsignedBigInteger('update_sequence')->default(0);
             $table->string('event_key_hash', 64)->default('');
             $table->string('working_folder')->default('');
             $table->jsonb('plan')->default('{}');

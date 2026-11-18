@@ -8,7 +8,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\RunMode;
 use App\Processes\Enums\ShellDialect;
-use App\Processes\Events\RunActivityChanged;
+use App\Processes\Events\RunChanged;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Readers\ActivityProjection;
@@ -38,7 +38,7 @@ final class ActivityProjectionTest extends TestCase
         parent::setUp();
 
         Storage::fake(SpoolRecorder::DISK);
-        Event::fake([RunActivityChanged::class]);
+        Event::fake([RunChanged::class]);
         $run = ProcessRun::admit(ActorIdentity::system(), [
             'admission_id' => bin2hex(random_bytes(8)),
             'mode' => RunMode::Normal,
@@ -73,7 +73,7 @@ final class ActivityProjectionTest extends TestCase
         $this->assertGreaterThanOrEqual(0, $activity->elapsedSeconds);
         $this->assertSame(['partRunId', 'name', 'lifecycle', 'elapsedSeconds', 'bytes', 'lastActivityAt', 'latestLine'],
             array_keys(get_object_vars($activity)));
-        Event::assertDispatched(RunActivityChanged::class);
+        Event::assertDispatched(RunChanged::class);
     }
 
     public function test_a_draining_part_shows_finalizing_until_its_lifecycle_ends(): void
