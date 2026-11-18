@@ -14,6 +14,8 @@ use Illuminate\Support\Str;
  */
 final readonly class SkillOwner
 {
+    public const string STORED = 'Stored';
+
     /**
      * @param  list<class-string<Skill>>  $skills
      */
@@ -23,6 +25,14 @@ final readonly class SkillOwner
         public array $skills,
         public bool $firstParty,
     ) {}
+
+    /**
+     * The owner of the skills users store: their sections are literal, so it has no folder to read parts from.
+     */
+    public static function stored(): self
+    {
+        return new self(self::STORED, '', [], false);
+    }
 
     /**
      * The folder its Markdown parts and assets are read from.

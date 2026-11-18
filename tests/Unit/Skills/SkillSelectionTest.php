@@ -98,7 +98,7 @@ final class SkillSelectionTest extends TestCase
 
     private function entry(string $key, SkillCondition $condition): SkillEntry
     {
-        return new SkillEntry(SkillKey::from($key), $key, 'Core', SkillOrigin::Shipped, 'A skill.', $condition, new RenderedSkill(SkillKey::from($key), "# {$key}\n", hash('sha256', "# {$key}\n")));
+        return new SkillEntry(SkillKey::from($key), $key, 'Core', SkillOrigin::Shipped, 'A skill.', $condition, null, new RenderedSkill(SkillKey::from($key), "# {$key}\n", hash('sha256', "# {$key}\n")));
     }
 
     /**

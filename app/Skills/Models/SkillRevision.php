@@ -105,6 +105,23 @@ final class SkillRevision extends Model implements ReadableModel
         return self::query()->ofSkill($skill)->whereKey($skill->current_revision_id)->firstOrFail();
     }
 
+    /**
+     * The current revision of each of these skills, by skill id, in one query; a skill without one is left out.
+     *
+     * @param  list<Skill>  $skills
+     * @return array<string, self>
+     */
+    public static function currentOfEach(array $skills): array
+    {
+        $ids = array_values(array_filter(array_map(fn (Skill $skill) => $skill->current_revision_id, $skills)));
+
+        if ($ids === []) {
+            return [];
+        }
+
+        return self::query()->whereKey($ids)->readLimit(count($ids))->get()->keyBy('skill_id')->all();
+    }
+
     public static function numbered(Skill $skill, int $revision): self
     {
         return self::query()->ofSkill($skill)->where('revision', $revision)->firstOrFail();

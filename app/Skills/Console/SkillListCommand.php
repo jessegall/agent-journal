@@ -13,7 +13,8 @@ use Illuminate\Console\Command;
 use Illuminate\Contracts\Container\Container;
 
 /**
- * Lists the skill catalogue: each skill's key, name, owner, origin and digest, or why the catalogue cannot be built.
+ * Lists the skill catalogue: each skill's key, name, owner, origin, current revision of a stored skill and digest, or
+ * why the catalogue cannot be built.
  */
 final class SkillListCommand extends Command
 {
@@ -31,7 +32,7 @@ final class SkillListCommand extends Command
             return self::FAILURE;
         }
 
-        $rows = array_map(fn (SkillEntry $skill) => ['key' => $skill->key->key, 'name' => $skill->name, 'owner' => $skill->owner, 'source' => $skill->origin->value, 'digest' => $skill->rendered->digest], $skills);
+        $rows = array_map(fn (SkillEntry $skill) => ['key' => $skill->key->key, 'name' => $skill->name, 'owner' => $skill->owner, 'source' => $skill->origin->value, 'revision' => $skill->revision, 'digest' => $skill->rendered->digest], $skills);
 
         if ($this->option('json')) {
             $this->line(json_encode($rows, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
@@ -39,7 +40,7 @@ final class SkillListCommand extends Command
             return self::SUCCESS;
         }
 
-        $this->table(['Key', 'Name', 'Owner', 'Source', 'Digest'], array_map(array_values(...), $rows));
+        $this->table(['Key', 'Name', 'Owner', 'Source', 'Revision', 'Digest'], array_map(array_values(...), $rows));
 
         return self::SUCCESS;
     }

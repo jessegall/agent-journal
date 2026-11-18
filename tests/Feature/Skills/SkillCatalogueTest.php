@@ -6,6 +6,7 @@ namespace Tests\Feature\Skills;
 
 use App\Domains\Support\DomainRegistry;
 use App\Skills\Contracts\SkillReader;
+use App\Skills\Contracts\SkillSource;
 use App\Skills\CoreSkills;
 use App\Skills\Exceptions\SkillConflict;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
@@ -85,6 +86,6 @@ final class SkillCatalogueTest extends TestCase
 
     private function catalogue(SkillRegistry $registry): SkillCatalogue
     {
-        return SkillCatalogue::build($registry, $this->app, new CanonicalRenderer(new MarkdownParts()), $this->app->make(ConditionTree::class));
+        return SkillCatalogue::build($registry, $this->app, new CanonicalRenderer(new MarkdownParts()), $this->app->make(ConditionTree::class), $this->app->make(SkillSource::class));
     }
 }

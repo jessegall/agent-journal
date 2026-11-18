@@ -12,6 +12,7 @@ use App\Skills\Console\SkillPreviewCommand;
 use App\Skills\Console\SkillShowCommand;
 use App\Skills\Contracts\SkillReader;
 use App\Skills\Contracts\SkillRenderer;
+use App\Skills\Contracts\SkillSource;
 use App\Skills\CoreSkills;
 use App\Skills\Models\Skill;
 use App\Skills\Readers\SkillCatalogue;
@@ -21,6 +22,7 @@ use App\Skills\Support\ConditionRegistry;
 use App\Skills\Support\ConditionTree;
 use App\Skills\Support\EvaluationGuard;
 use App\Skills\Support\SkillRegistry;
+use App\Skills\Support\StoredSkillSource;
 use App\Skills\Values\SkillContext;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
@@ -39,7 +41,8 @@ final class SkillsServiceProvider extends ServiceProvider
         $this->app->scoped(SkillContextReader::class);
         $this->app->scoped(SkillContext::class, fn (Application $app) => $app->make(SkillContextReader::class)->current());
         $this->app->bind(SkillRenderer::class, CanonicalRenderer::class);
-        $this->app->scoped(SkillReader::class, fn (Application $app) => SkillCatalogue::build($app->make(SkillRegistry::class), $app, $app->make(SkillRenderer::class), $app->make(ConditionTree::class)));
+        $this->app->bind(SkillSource::class, StoredSkillSource::class);
+        $this->app->scoped(SkillReader::class, fn (Application $app) => SkillCatalogue::build($app->make(SkillRegistry::class), $app, $app->make(SkillRenderer::class), $app->make(ConditionTree::class), $app->make(SkillSource::class)));
     }
 
     public function boot(NumberedTypeRegistry $numbers): void

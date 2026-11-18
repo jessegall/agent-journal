@@ -9,7 +9,7 @@ use App\Skills\Enums\SkillOrigin;
 
 /**
  * One skill of the catalogue as readers see it: key, name, owner, whether it is shipped or stored, description, its
- * checked condition and rendered text.
+ * checked condition, its current revision (stored skills only; a shipped skill has none) and rendered text.
  */
 final readonly class SkillEntry
 {
@@ -20,6 +20,7 @@ final readonly class SkillEntry
         public SkillOrigin $origin,
         public string $description,
         public SkillCondition $condition,
+        public ?int $revision,
         public RenderedSkill $rendered,
     ) {}
 }
