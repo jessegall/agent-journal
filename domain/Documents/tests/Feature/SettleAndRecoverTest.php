@@ -11,6 +11,7 @@ use App\AgentRequests\Support\SignedCall;
 use App\Agents\Events\LaunchEnded;
 use App\Agents\Support\AgentContext;
 use App\Bus\Contracts\CommandBus;
+use App\Domains\Support\AvailableListener;
 use App\Text\Exceptions\ContentMissing;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Api\DraftReference;
@@ -178,9 +179,9 @@ final class SettleAndRecoverTest extends TestCase
         }
     }
 
-    public function test_the_documents_listener_hears_a_session_ending(): void
+    public function test_the_documents_listener_hears_a_session_ending_behind_its_domain_gate(): void
     {
-        $listeners = array_map(fn ($listener) => is_string($listener) ? $listener : '', $this->app->make(Dispatcher::class)->getRawListeners()[LaunchEnded::class] ?? []);
+        $listeners = array_map(fn ($listener) => $listener instanceof AvailableListener ? $listener->listener : '', $this->app->make(Dispatcher::class)->getRawListeners()[LaunchEnded::class] ?? []);
 
         $this->assertContains(CloseEndedSessionDraft::class.'@handle', $listeners);
     }

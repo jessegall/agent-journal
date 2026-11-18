@@ -366,6 +366,7 @@ use App\Settings\Values\Decimal;
 use App\Settings\Values\GroupReference;
 use App\Settings\Values\SettingReference;
 use App\Settings\Values\SettingsChange;
+use App\Sharing\Commands\SaveSharePreview;
 use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Contracts\Shareable;
@@ -755,6 +756,7 @@ final class CoreApi
                 RecordUserHeartbeat::class,
                 MarkSilentSessions::class,
                 SettleFrameTimes::class,
+                SaveSharePreview::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,

@@ -90,6 +90,7 @@ final class DomainDeclarationTest extends TestCase
         'Support/DomainRegistry.php',
         'Support/AvailableListener.php',
         'Support/DomainStateType.php',
+        'Support/DomainTickableStateType.php',
         'Support/DomainStatus.php',
         'Support/DomainSwitches.php',
         'Support/SettingsDomainAvailability.php',
