@@ -147,7 +147,7 @@ class CommitListenerRunner(RoundState):
         names = {entry.name for entry in entries}
         if not names <= self.positions.keys() | self.names_without_cursor:
             self.positions = self.cursors.positions()
-            self.names_without_cursor = names - self.positions.keys()
+            self.names_without_cursor |= names - self.positions.keys()
         return self.positions
 
     def run_entry(self, entry: ListenerEntry, urgent_entries: list[ListenerEntry], events: list[LoggedEvent]) -> bool:
