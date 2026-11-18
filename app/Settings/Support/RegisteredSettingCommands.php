@@ -16,6 +16,7 @@ use App\Settings\Commands\SetStringChoice;
 use App\Settings\Commands\SetStringSetting;
 use App\Settings\Contracts\GroupDeclaration;
 use App\Settings\Contracts\Setting;
+use App\Settings\Contracts\SettingCommands;
 use App\Settings\Declarations\BooleanSetting;
 use App\Settings\Declarations\ChoiceSetting;
 use App\Settings\Declarations\DecimalSetting;
@@ -35,7 +36,7 @@ use BackedEnum;
  * Builds the settings commands from the registered declarations, addressing each by its registered owner and key.
  * Building a command grants nothing: its handler checks who runs it, the value and the revision again.
  */
-final readonly class SettingCommands
+final readonly class RegisteredSettingCommands implements SettingCommands
 {
     public function __construct(private SettingRegistry $registry) {}
 

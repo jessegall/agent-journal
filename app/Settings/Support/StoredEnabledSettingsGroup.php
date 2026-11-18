@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Support;
 
+use App\Settings\Contracts\EnabledSettingsGroup;
 use App\Settings\Contracts\Setting;
 use App\Settings\Declarations\BooleanSetting;
 use App\Settings\Declarations\ChoiceSetting;
@@ -21,7 +22,7 @@ use BackedEnum;
  * A group that can be switched off, read while it was on: the values of its own settings, all at the one revision it
  * was read at, whatever is written later.
  */
-final readonly class EnabledSettingsGroup
+final readonly class StoredEnabledSettingsGroup implements EnabledSettingsGroup
 {
     public string $owner;
 

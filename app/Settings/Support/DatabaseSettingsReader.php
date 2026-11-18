@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Settings\Support;
 
+use App\Settings\Contracts\EnabledSettingsGroup;
 use App\Settings\Contracts\Setting;
 use App\Settings\Contracts\SettingsDefinition;
 use App\Settings\Contracts\SettingsReader;
+use App\Settings\Contracts\SettingsSnapshot;
 use App\Settings\Declarations\BooleanSetting;
 use App\Settings\Declarations\ChoiceSetting;
 use App\Settings\Declarations\DecimalSetting;
@@ -77,7 +79,7 @@ final class DatabaseSettingsReader implements SettingsReader
 
     public function snapshot(SettingsDefinition $definition): SettingsSnapshot
     {
-        return new SettingsSnapshot($this->stored($this->registry->ownerOfDefinition($definition)));
+        return new StoredSettingsSnapshot($this->stored($this->registry->ownerOfDefinition($definition)));
     }
 
     /**

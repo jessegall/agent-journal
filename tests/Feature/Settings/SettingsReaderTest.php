@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Settings;
 
 use App\Domains\Support\DomainRegistry;
+use App\Settings\Contracts\EnabledSettingsGroup;
 use App\Settings\Contracts\SettingsReader;
 use App\Settings\Declarations\IntegerSetting;
 use App\Settings\Exceptions\GroupSnapshotRequired;
@@ -19,7 +20,6 @@ use App\Settings\Storage\EncodedValue;
 use App\Settings\Support\CoreSettings;
 use App\Settings\Support\DatabaseSettingsReader;
 use App\Settings\Support\DisabledSettingsGroup;
-use App\Settings\Support\EnabledSettingsGroup;
 use App\Settings\Support\SettingRegistry;
 use App\Settings\Values\Decimal;
 use Illuminate\Support\Facades\Schema;

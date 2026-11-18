@@ -238,11 +238,14 @@ use App\Settings\Commands\SetIntegerSetting;
 use App\Settings\Commands\SetStringChoice;
 use App\Settings\Commands\SetStringSetting;
 use App\Settings\Contracts\ChoiceLabel;
+use App\Settings\Contracts\EnabledSettingsGroup;
 use App\Settings\Contracts\GroupDeclaration;
 use App\Settings\Contracts\ProvidesSettings;
 use App\Settings\Contracts\Setting;
+use App\Settings\Contracts\SettingCommands;
 use App\Settings\Contracts\SettingsDefinition;
 use App\Settings\Contracts\SettingsReader;
+use App\Settings\Contracts\SettingsSnapshot;
 use App\Settings\Declarations\BooleanSetting;
 use App\Settings\Declarations\ChoiceSetting;
 use App\Settings\Declarations\DecimalSetting;
@@ -268,9 +271,6 @@ use App\Settings\Exceptions\SettingsUnavailable;
 use App\Settings\Exceptions\SettingUnavailable;
 use App\Settings\Exceptions\SettingValueInvalid;
 use App\Settings\Support\DisabledSettingsGroup;
-use App\Settings\Support\EnabledSettingsGroup;
-use App\Settings\Support\SettingCommands;
-use App\Settings\Support\SettingsSnapshot;
 use App\Settings\Values\Choice;
 use App\Settings\Values\Decimal;
 use App\Settings\Values\GroupReference;
@@ -381,6 +381,9 @@ final class CoreApi
                 GroupDeclaration::class,
                 ChoiceLabel::class,
                 SettingsReader::class,
+                SettingCommands::class,
+                SettingsSnapshot::class,
+                EnabledSettingsGroup::class,
             )
             ->values(
                 RecordCard::class,
@@ -498,10 +501,7 @@ final class CoreApi
                 SettingReference::class,
                 GroupReference::class,
                 SettingsChange::class,
-                SettingsSnapshot::class,
-                EnabledSettingsGroup::class,
                 DisabledSettingsGroup::class,
-                SettingCommands::class,
             )
             ->commands(
                 RetireAgent::class,

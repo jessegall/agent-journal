@@ -15,12 +15,13 @@ use App\Settings\Commands\SetIntegerChoice;
 use App\Settings\Commands\SetIntegerSetting;
 use App\Settings\Commands\SetStringChoice;
 use App\Settings\Commands\SetStringSetting;
+use App\Settings\Contracts\SettingCommands;
 use App\Settings\Declarations\IntegerSetting;
 use App\Settings\Exceptions\SettingHandleUnknown;
 use App\Settings\Exceptions\SettingReferenceInvalid;
 use App\Settings\Exceptions\SettingValueInvalid;
 use App\Settings\Support\CoreSettings;
-use App\Settings\Support\SettingCommands;
+use App\Settings\Support\RegisteredSettingCommands;
 use App\Settings\Values\Decimal;
 use App\Settings\Values\GroupReference;
 use App\Settings\Values\SettingReference;
@@ -45,7 +46,7 @@ final class SettingCommandsTest extends TestCase
         parent::setUp();
 
         $registry = DomainRegistry::from([ReviewsDomain::class])->settingDeclarations(new CoreSettings);
-        $this->commands = new SettingCommands($registry);
+        $this->commands = new RegisteredSettingCommands($registry);
         $this->reviews = $registry->definition('Reviews');
     }
 

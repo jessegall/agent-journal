@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Support;
 
+use App\Settings\Contracts\EnabledSettingsGroup;
 use App\Settings\Contracts\Setting;
 use App\Settings\Declarations\BooleanSetting;
 use App\Settings\Declarations\ChoiceSetting;
@@ -79,7 +80,7 @@ final readonly class StoredSettings
             ->getOrElse($group->defaultEnabled);
 
         return $enabled
-            ? new EnabledSettingsGroup($group, $this, $this->registry)
+            ? new StoredEnabledSettingsGroup($group, $this, $this->registry)
             : new DisabledSettingsGroup($this->owner, $group->key, $this->revision);
     }
 

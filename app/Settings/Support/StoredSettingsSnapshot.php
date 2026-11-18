@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Settings\Support;
 
+use App\Settings\Contracts\EnabledSettingsGroup;
+use App\Settings\Contracts\SettingsSnapshot;
 use App\Settings\Declarations\BooleanSetting;
 use App\Settings\Declarations\ChoiceSetting;
 use App\Settings\Declarations\DecimalSetting;
@@ -21,7 +23,7 @@ use BackedEnum;
  * Every setting of one owner from one read at one revision: the plain groups' settings directly and each group that
  * can be switched off through group(). It lives no longer than the request or job that took it.
  */
-final readonly class SettingsSnapshot
+final readonly class StoredSettingsSnapshot implements SettingsSnapshot
 {
     public string $owner;
 
