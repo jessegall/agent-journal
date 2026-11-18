@@ -31,7 +31,14 @@ final readonly class AgentRequestClient
 
     public function prepare(AgentClientSettings $settings, string $path, string $body, int $issuedAt): PreparedAgentCall
     {
-        $callId = (string) Str::ulid();
+        return $this->prepareWithId($settings, $path, $body, (string) Str::ulid(), $issuedAt);
+    }
+
+    /**
+     * The same call under an id and issue time its caller keeps, so a retry reaches the journal as the same call.
+     */
+    public function prepareWithId(AgentClientSettings $settings, string $path, string $body, string $callId, int $issuedAt): PreparedAgentCall
+    {
         $signature = SignedCall::signatureFor($settings->token, 'POST', $settings->journalUrl.$path, $callId, $issuedAt, $body);
 
         return new PreparedAgentCall($settings, $path, $body, $callId, $issuedAt, $signature);
