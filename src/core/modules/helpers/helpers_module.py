@@ -3,6 +3,8 @@ from core.modules.helpers.declarations.helpers_tick_handlers import HELPERS_TICK
 from core.modules.helpers.effects.kept_report_retry_effect import KeptReportRetryEffect
 from core.modules.helpers.effects.unstarted_helper_effect import UnstartedHelperEffect
 from core.modules.helpers.states.job_work_states import JobWorkStates
+from core.modules.helpers.states.steer_states import SteerStates
+from core.modules.helpers.support.block_conditions.steers_answered import SteersAnswered
 from core.modules.helpers.effects.job_report_effect import JobReportEffect
 from core.modules.helpers.policies.start_names_model_policy import StartNamesModelPolicy
 from core.modules.helpers.models.helpers_models import HELPERS_MODELS
@@ -25,7 +27,8 @@ class HelpersModule(Module):
 
     name = "journal.core.helpers"
     policies = [StartNamesModelPolicy]
-    states = [JobWorkStates]
+    states = [JobWorkStates, SteerStates]
+    block_conditions = [SteersAnswered]
     effects = [KeptReportRetryEffect, UnstartedHelperEffect, JobReportEffect]
     seed_reason = "demo programs have no outages"
     move_reason = "version 4 had no helpers"

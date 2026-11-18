@@ -12,6 +12,8 @@ from core.modules.drivers.support.helper_job_rows import HelperJobRows
 from engine.driver.message_sender import MessageSender
 from core.modules.helpers.commands.send_helper.send_helper import SendHelper
 from core.modules.helpers.support.helper_job_source import HELPER_JOB_SOURCE
+from core.modules.helpers.models.helper_steer import HelperSteer
+from core.modules.drivers.agent_messages.agent_notice_message import AgentNoticeMessage
 from core.modules.helpers.support.helper_limits import HelperLimits
 from core.modules.helpers.support.helper_reach import HelperReach
 from core.modules.messages.support.work_source_copy import WorkSourceCopy
@@ -95,14 +97,21 @@ class SendHelperHandler(Handler[SendHelper, int]):
         if last_job.ended_at is None and not command.steer and context.actor.is_agent():
             raise Refusal(f"{AgentLabel.labelled(helper).text} is busy with a job", f'wait for its report, or journal helper send {helper.id} --steer "<text>" adds to that job')
         with self.scopes.opened(context.actor.id, context.environment_id, [ActorScope]):
-            line = self.message_sender.send_text(helper.id, command.job, HELPER_JOB_SOURCE, context, wakes_agent=True)
-        if self.continues(last_job, source):
-            self.repository.save(last_job.changed(brief=f"{last_job.brief}\n\n{command.job}", title=command.title.strip() or last_job.title), context)
-            return helper.id
-        next_job = last_job.next_job(helper.session, helper.program, helper.program_model, command.job, command.job[:SHORT_JOB_CHARACTERS], command.title.strip(), context.actor.id)
-        self.repository.save(next_job.changed(review_plan_id=command.review_plan_id, source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, source_line_id=line.id, cost_baseline=self.files.status(helper.session).cost_dollars), context)
-        self.sources.use_copy(source, source_context)
+            notice = AgentNoticeMessage.declared().agent_message(text=f"From your parent: {command.job}")
+            line = self.message_sender.send_agent_message(helper.id, notice, HELPER_JOB_SOURCE, context, wakes_agent=True)
+        job = self.added_job(helper, last_job, source, source_context, command, context, line.id)
+        # a line sent while a job is open steers it: the helper is held until it answers
+        if last_job.ended_at is None:
+            self.repository.save(HelperSteer(helper_id=helper.id, job_id=job.id, text=command.job), source_context)
         return helper.id
+
+    def added_job(self, helper: Agent, last_job: HelperJob, source: WorkSourceCopy, source_context: Context, command: SendHelper, context: Context, line_id: int) -> HelperJob:
+        if self.continues(last_job, source):
+            return self.repository.save(last_job.changed(brief=f"{last_job.brief}\n\n{command.job}", title=command.title.strip() or last_job.title), context)
+        next_job = last_job.next_job(helper.session, helper.program, helper.program_model, command.job, command.job[:SHORT_JOB_CHARACTERS], command.title.strip(), context.actor.id)
+        saved = self.repository.save(next_job.changed(review_plan_id=command.review_plan_id, source_message_id=source.message_id, source_version=source.version, source_unavailable=source.unavailable, source_line_id=line_id, cost_baseline=self.files.status(helper.session).cost_dollars), context)
+        self.sources.use_copy(source, source_context)
+        return saved
 
     def check_resume(self, helper: Agent) -> None:
         if not helper.profile:

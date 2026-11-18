@@ -1,6 +1,7 @@
 from core.modules.helpers.models.declarations.helper_grant_model_declaration import HelperGrantModelDeclaration
+from core.modules.helpers.models.declarations.helper_steer_model_declaration import HelperSteerModelDeclaration
 from core.modules.helpers.models.declarations.usage_limit_model_declaration import UsageLimitModelDeclaration
 from core.modules.helpers.models.provider_outage import ProviderOutage
 from engine.module.model_declaration import ModelDeclaration
 
-HELPERS_MODELS = [HelperGrantModelDeclaration, ModelDeclaration(ProviderOutage), UsageLimitModelDeclaration]
+HELPERS_MODELS = [HelperGrantModelDeclaration, HelperSteerModelDeclaration, ModelDeclaration(ProviderOutage), UsageLimitModelDeclaration]

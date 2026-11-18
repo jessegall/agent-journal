@@ -1389,6 +1389,11 @@
   "merger": "refused",
   "worker": "refused"
  },
+ "helper answer-steer": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
  "helper availability": {
   "helper": "allowed",
   "merger": "allowed",
@@ -1450,6 +1455,16 @@
   "worker": "refused"
  },
  "helper-profile-screen show": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "helper-steer list": {
+  "helper": "allowed",
+  "merger": "allowed",
+  "worker": "refused"
+ },
+ "helper-steer show": {
   "helper": "allowed",
   "merger": "allowed",
   "worker": "refused"

@@ -5,5 +5,7 @@ from core.modules.helpers.agent_messages.helper_program_fault_message import Hel
 from core.modules.helpers.agent_messages.helper_granted_message import HelperGrantedMessage
 from core.modules.helpers.agent_messages.lockdown_ended_message import LockdownEndedMessage
 from core.modules.helpers.agent_messages.start_model_missing_message import StartModelMissingMessage
+from core.modules.helpers.agent_messages.steer_unanswered_message import SteerUnansweredMessage
+from core.modules.helpers.agent_messages.steer_unanswered_stop_message import SteerUnansweredStopMessage
 
-HELPER_AGENT_MESSAGES = [KeptReportMessage, UnsavedReportMessage, StartModelMissingMessage, LockdownEndedMessage, HelperGrantedMessage, HelperLimitWarningMessage, HelperProgramFaultMessage]
+HELPER_AGENT_MESSAGES = [KeptReportMessage, UnsavedReportMessage, StartModelMissingMessage, LockdownEndedMessage, HelperGrantedMessage, HelperLimitWarningMessage, HelperProgramFaultMessage, SteerUnansweredMessage, SteerUnansweredStopMessage]

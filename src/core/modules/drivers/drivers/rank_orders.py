@@ -5,7 +5,7 @@ from engine.agent_machine.states.rank_order import RankOrder
 
 POLICY_RANKS = ("safety.all", "access.all", "shell.all", "drivers.policies", "messages.policies", "skills.policies", "sequences.policies",
                 "helpers.policies", "questions.policies", "plugins.policies", "triggers.policies", "tools.policies", "workers.test-lines", "workers.policies")
-INSTRUCTION_RANKS = ("skills.command", "skills.read-first", "triggers.skill", "messages.unread", "documents.open", "memories.mark")
+INSTRUCTION_RANKS = ("skills.command", "skills.read-first", "helpers.steer", "triggers.skill", "messages.unread", "documents.open", "memories.mark")
 TASK_START_RANKS = ("workers.status-first", "workers.no-task", "sequences.untaken-step", "processes.reader-request", "processes.silent-run")
 FILE_CHANGE_RANKS = ("tasks.unlogged-writes", "processes.output-title")
 STOP_RANKS = ("workers.delivered-proofs", "reminders.due")

@@ -13,6 +13,6 @@ class ReaderCommands(CommandAllowList):
 
     categories: Sequence[CommandCategory] = tuple(CommandCategory)
     groups: Sequence[str] = ("memory",)
-    lines: Sequence[str] = ("report make", "report edit", "report close", "task overview", "task log", "plan context", "output read", "output title", "output stop",
+    lines: Sequence[str] = ("helper answer-steer", "report make", "report edit", "report close", "task overview", "task log", "plan context", "output read", "output title", "output stop",
                             "refusal skip", "refusal confirm", "refusal withdraw")
     classes: Sequence[JournalLineClass] = (JournalLineClass.READS,)

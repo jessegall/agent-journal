@@ -49,7 +49,7 @@ class JobReportEffect(Effect):
         helper = self.agents.find(view.agent.agent_id)
         if helper.parent_id is None:
             return []
-        return [RecordParentReport(helper.id, helper.parent_id, self.report_text.text(event, helper), jobs[-1].work_id)]
+        return [RecordParentReport(helper.id, helper.parent_id, self.report_text.text(event, helper, jobs[-1].work_id), jobs[-1].work_id)]
 
     # no stop under an open escalation hands in (doc 1310 section 4.9, F3)
     @staticmethod
@@ -63,7 +63,7 @@ class JobReportEffect(Effect):
         helper = self.agents.find(view.agent.agent_id)
         if event is None or job is None:
             return RuleAnswer(refusal=UnsavedReportMessage.declared().agent_message().text)
-        keep = RecordUnsavedReport(job.id, self.report_text.text(event, helper))
+        keep = RecordUnsavedReport(job.id, self.report_text.text(event, helper, job.id))
         if job.report_failures == 0:
             return RuleAnswer(refusal=UnsavedReportMessage.declared().agent_message().text, commands=(keep,))
         return RuleAnswer(commands=(keep,))

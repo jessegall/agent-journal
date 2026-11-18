@@ -33,7 +33,8 @@ dispatch`, and work that writes goes to one or stays with you.
 - `journal helper send <number> "<job>"` gives a kept helper its next job. It resumes the same session after its process
   stopped. `--plan <n>` names the plan a review is for; a reviewer cannot review the same plan again.
 - `journal helper send <number> --steer "<text>"` adds to a busy helper's current job. Without `--steer`, a new job for a
-  busy helper is refused. Wait for its report when the work is separate.
+  busy helper is refused. Wait for its report when the work is separate. The helper sees the steer's text at its next
+  tool call and can do nothing else, nor report, until it answers it; its report ends with each steer and its answer.
 - `journal helper lifetimes <profile> --environment <name>` counts the profile's jobs that began a new session and
   those that resumed one, with the mean cost of a job of each. It says nothing about which to choose.
 - `journal helper stop <number>` stops its program and ends its job, keeping the agent available for reuse.
@@ -81,6 +82,9 @@ replaces the project's list. Limits written in a profile file have no effect.
   memory marks come back, so keep working as before.
 - You read, search, run journal reads and read version control. You write no file and run no program, and journal lines
   that change another agent's work are refused. Each refusal says what to do instead.
+- A steer from your parent adds to your job and holds you at once: answer it first with
+  `journal helper answer-steer <steer> "<what you change in your work>"`, then do it; `journal helper-steer show <steer>`
+  reads it again. Your report ends with each steer and your answer, so make the work you report hold what the steer asked.
 - Report by stopping: your last words are your report.
 - A long report is a document: `journal report make "<title>" --abstract "<one line>" --body - <<'EOF'`, the text, then a
   line `EOF`. Name it in your last words.
