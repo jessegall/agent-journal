@@ -28,6 +28,7 @@ from journal.features.workers.support.plan_delegation import PlanDelegation
 from journal.repositories.workers import Workers
 from journal.features.workers.support.worker_actions import WorkerActions
 from journal.features.workers.support.worker_dispatch import WorkerDispatch
+from journal.features.workers.support.queue_handoff import QueueHandoff
 from journal.engine.command_events import CommandEvents
 from journal.features.tasks.support.wait_targets import WaitTargets
 from journal.features.workers.support.worker_libraries import WorkerLibraries
@@ -59,8 +60,8 @@ class WorkerCommand(Command):
     uncut_verbs = frozenset({"merge", "check", "wait"})
     background_verbs = frozenset({"merge", "send"})
 
-    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents, tasks: Tasks, agents: Agents, events: CommandEvents, libraries: WorkerLibraries, plans: Plans, starts: StartRule, sending: WorkerDispatch, checks: MergeChecks, taking: ActiveTask, targets: WaitTargets, rebases: WorkerRebase, work_mode: WorkMode, time_source: TimeSource, delegation: PlanDelegation) -> None:
-        self.time_source, self.delegation = time_source, delegation
+    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents, tasks: Tasks, agents: Agents, events: CommandEvents, libraries: WorkerLibraries, plans: Plans, starts: StartRule, sending: WorkerDispatch, checks: MergeChecks, taking: ActiveTask, targets: WaitTargets, rebases: WorkerRebase, work_mode: WorkMode, time_source: TimeSource, delegation: PlanDelegation, handoff: QueueHandoff) -> None:
+        self.time_source, self.delegation, self.handoff = time_source, delegation, handoff
         self.targets, self.rebases = targets, rebases
         self.sending, self.checks, self.taking = sending, checks, taking
         self.tasks, self.agents, self.events, self.libraries, self.plans, self.starts = tasks, agents, events, libraries, plans, starts
@@ -145,7 +146,7 @@ class WorkerCommand(Command):
 
     def dispatch(self, args: Namespace, caller: Caller) -> int:
         self.sending.worker_profile(args.profile)
-        output = self.workers.busy_workers()
+        output = self.workers.running_workers() if self.settings.option(WorkersOptions.NEXT_AT_CLOCK_OUT) else self.workers.busy_workers()
         maximum = self.settings.integer(WorkersOptions.WORKER_LIMIT)
         if maximum and len(output) >= maximum:
             waiting = self.workers.checkable_workers()
@@ -280,6 +281,8 @@ class WorkerCommand(Command):
 
     def queue(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.find(args.n)
+        if worker.review_pending and self.settings.option(WorkersOptions.NEXT_AT_CLOCK_OUT):
+            return self.handed_off(worker, args, caller)
         self.refused_in_review(worker)
         for n in reversed(args.tasks) if args.first else args.tasks:
             self.tasks.drop_holder(self.tasks.find(n), self.taking.holder(caller), caller.actor)
@@ -287,6 +290,13 @@ class WorkerCommand(Command):
         print(f"worker {worker.id} {worker.name} queue: {', '.join(f'task {task.id}' for task in self.tasks.queue(Ref.build(worker)))}, each delegated to it; it reports once no task is left")
         if not worker.is_running() and self.tasks.holder_task(Ref.build(worker)) is None:
             print(self.actions.next_job(worker.id, caller.actor))
+        return 0
+
+    def handed_off(self, worker: Worker, args: Namespace, caller: Caller) -> int:
+        for n in args.tasks:
+            self.tasks.drop_holder(self.tasks.find(n), self.taking.holder(caller), caller.actor)
+        fresh = self.handoff.handed_off(worker, [self.tasks.find(n) for n in args.tasks], caller.actor)
+        print(f"worker {worker.id} {worker.name} is in review, so worker {fresh.id} {fresh.name} took {', '.join(f'task {n}' for n in args.tasks)} at once, in a worktree of its own; worker {worker.id} keeps its review and any send-back")
         return 0
 
     def rebase(self, args: Namespace, caller: Caller) -> int:

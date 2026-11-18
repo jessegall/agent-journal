@@ -25,7 +25,8 @@ session picks up where the last one left off.
 - **Workers and subagents.** The agent hands jobs to workers and subagents, each named, each on the model that fits the job, and
   each coding worker in its own git worktree. A worker proves each point of its task, and its work is merged only once
   each proof is checked. With the setting workers.auto_dispatch on, the journal dispatches the orchestrator's next tasks
-  itself, up to workers.auto_dispatch_most workers running.
+  itself, up to workers.auto_dispatch_most workers running; with workers.next_at_clock_out on, work queued for a worker
+  in review goes on at once with a fresh worker.
 - **Worktree launches.** `journal claude --worktree <name>` gives a launch its own git worktree and branch beside the
   others, all on one journal; a bare `--worktree` makes up a fresh name. Nothing removes a worktree but you, with
   `journal worktree remove <name>`, and a relaunch reopens the same folder and branch.

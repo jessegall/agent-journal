@@ -1378,6 +1378,7 @@ workers.test_run_lines = True
 workers.most_out = 3
 workers.auto_dispatch = False  (the user sets it)
 workers.auto_dispatch_most = 0
+workers.next_at_clock_out = False  (the user sets it)
 workers.most_subagents = 5
 workers.idle_kept = 8
 workers.worktree_step = True
