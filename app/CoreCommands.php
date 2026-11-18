@@ -82,6 +82,7 @@ use App\Skills\Commands\FailSkillPublication;
 use App\Skills\Commands\PrepareSkillPublication;
 use App\Skills\Commands\PruneSkillPublications;
 use App\Skills\Commands\PublishSkills;
+use App\Skills\Commands\RecordSkillRead;
 use App\Skills\Commands\RefreshSkills;
 use App\Skills\Commands\RestoreSkill;
 use App\Skills\Commands\RetireSkill;
@@ -114,6 +115,7 @@ final class CoreCommands
             FailSkillPublication::class,
             RetrySkillPublication::class,
             PruneSkillPublications::class,
+            RecordSkillRead::class,
         ];
     }
 
@@ -140,6 +142,7 @@ final class CoreCommands
             FailSkillPublication::class,
             RetrySkillPublication::class,
             PruneSkillPublications::class,
+            RecordSkillRead::class,
         ];
     }
 
