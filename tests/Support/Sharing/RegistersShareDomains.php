@@ -20,7 +20,11 @@ trait RegistersShareDomains
     private function registerShareDomain(string $domainClass): void
     {
         $entry = DomainEntry::fromClass($domainClass);
-        $this->app->make(ShareRecordRegistry::class)->registerFrom($entry);
-        $this->app->make(ShareGatewayRegistry::class)->registerFrom($entry);
+        foreach ($entry->shareRecords() as $registration) {
+            $this->app->make(ShareRecordRegistry::class)->register($registration);
+        }
+        foreach ($entry->shareGateways() as $key => $gatewayClass) {
+            $this->app->make(ShareGatewayRegistry::class)->register($key, $gatewayClass);
+        }
     }
 }

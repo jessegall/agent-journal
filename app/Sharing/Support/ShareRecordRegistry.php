@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Sharing\Support;
 
-use App\Domains\Support\DomainEntry;
 use App\Records\Exceptions\InvalidRecordIdentity;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Contracts\Shareable;
@@ -55,18 +54,6 @@ final class ShareRecordRegistry
         }
 
         $this->registrations[$alias] = $registration;
-    }
-
-    /**
-     * Registers every shareable record type the domain declares.
-     *
-     * @throws ShareRecordInvalid
-     */
-    public function registerFrom(DomainEntry $domain): void
-    {
-        foreach ($domain->shareRecords() as $registration) {
-            $this->register($registration);
-        }
     }
 
     /**

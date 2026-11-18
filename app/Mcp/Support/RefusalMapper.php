@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
+use App\Actors\Exceptions\UserActorRequired;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Enums\RefusalCode;
 use App\Mcp\Exceptions\McpCallFailed;
@@ -28,6 +29,7 @@ final readonly class RefusalMapper
             $failure instanceof ValidationException => new Refusal(RefusalCode::InvalidInput, $failure->getMessage()),
             $failure instanceof AuthenticationException => new Refusal(RefusalCode::Unauthenticated, $failure->getMessage()),
             $failure instanceof AuthorizationException => new Refusal(RefusalCode::Forbidden, $failure->getMessage()),
+            $failure instanceof UserActorRequired => new Refusal(RefusalCode::Forbidden, $failure->getMessage()),
             default => $this->unexpected($failure, $subject, $correlationId),
         };
     }

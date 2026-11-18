@@ -6,7 +6,7 @@ namespace App\Skills\Conditions;
 
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Values\ConditionResult;
-use App\Skills\Values\ProviderKey;
+use App\Programs\Values\ProviderKey;
 use App\Skills\Values\SkillContext;
 
 /**

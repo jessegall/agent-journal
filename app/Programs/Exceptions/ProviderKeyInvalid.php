@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Skills\Exceptions;
+namespace App\Programs\Exceptions;
 
 use InvalidArgumentException;
 

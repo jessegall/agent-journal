@@ -6,8 +6,8 @@ namespace Tests\Unit\Skills;
 
 use App\CoreApi;
 use App\Skills\Support\LaunchProgram;
-use App\Skills\Values\ProgramKey;
-use App\Skills\Values\ProviderKey;
+use App\Programs\Values\ProgramKey;
+use App\Programs\Values\ProviderKey;
 use Tests\TestCase;
 
 /**

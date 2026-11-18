@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Skills;
 
-use App\Processes\Skills\ProcessesSkill;
 use App\Skills\Contracts\Skill;
 use App\Skills\Shipped\JournalSkill;
 use App\Skills\Shipped\ProfilesSkill;
+use App\Skills\Shipped\ShellSkill;
 use App\Skills\Shipped\SkillsSkill;
 use App\Skills\Values\SkillOwner;
 
@@ -23,7 +23,7 @@ final class CoreSkills
      */
     public static function skills(): array
     {
-        return [JournalSkill::class, ProfilesSkill::class, SkillsSkill::class, ProcessesSkill::class];
+        return [JournalSkill::class, ProfilesSkill::class, SkillsSkill::class, ShellSkill::class];
     }
 
     /**

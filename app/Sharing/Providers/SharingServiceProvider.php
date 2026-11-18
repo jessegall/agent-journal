@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Sharing\Providers;
 
-use App\Domains\Support\DomainRegistry;
 use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\NumberedTypeRegistry;
 use App\Sharing\Console\ConfigureShareGatewayCommand;
@@ -42,16 +41,11 @@ final class SharingServiceProvider extends ServiceProvider
         $this->app->bind(SharePolicy::class, OwnerSharePolicy::class);
     }
 
-    public function boot(DomainRegistry $domains, ShareRecordRegistry $records, ShareGatewayRegistry $gateways, NumberedTypeRegistry $numbers): void
+    public function boot(ShareGatewayRegistry $gateways, NumberedTypeRegistry $numbers): void
     {
         $numbers->register(NumberedModel::global(Share::class));
         $gateways->register(TunlerGateway::KEY, TunlerGateway::class);
         $gateways->register(NgrokGateway::KEY, NgrokGateway::class);
-
-        foreach ($domains->all() as $entry) {
-            $records->registerFrom($entry);
-            $gateways->registerFrom($entry);
-        }
 
         $this->app->booted(fn () => $this->app->make(ShareRecordRegistry::class)->checkRelations());
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/sharing.php');

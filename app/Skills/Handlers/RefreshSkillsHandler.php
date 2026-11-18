@@ -9,13 +9,10 @@ use App\Contracts\CommandHandler;
 use App\Skills\Commands\RefreshSkills;
 use App\Skills\Contracts\SkillRenderer;
 use App\Skills\Contracts\SkillSource;
-use App\Skills\Exceptions\SkillConditionInvalid;
 use App\Skills\Exceptions\SkillConflict;
 use App\Skills\Exceptions\SkillContextUnavailable;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
-use App\Skills\Exceptions\SkillKeyInvalid;
 use App\Skills\Exceptions\SkillSelectionConflict;
-use App\Skills\Exceptions\SkillSourceInvalid;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Readers\SkillCatalogue;
@@ -49,7 +46,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
 
         try {
             $catalogue = SkillCatalogue::build($this->registry, $this->container, $this->renderer, $this->conditions, $this->stored);
-        } catch (SkillDeclarationInvalid|SkillSourceInvalid|SkillConflict|SkillConditionInvalid|SkillKeyInvalid $broken) {
+        } catch (SkillDeclarationInvalid|SkillConflict $broken) {
             $failed = SkillGeneration::failed($registrationDigest, $broken->getMessage());
 
             return new RefreshResult($failed->id, false, true, $broken->getMessage(), 0);

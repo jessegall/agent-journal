@@ -6,6 +6,8 @@ namespace App\Skills\Values;
 
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\AgentRole;
+use App\Programs\Values\ProgramKey;
+use App\Programs\Values\ProviderKey;
 
 /**
  * The facts every skill condition of one boundary reads: who acts, the agent's trusted role, its session, environment,

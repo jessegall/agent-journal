@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Processes\Skills;
+namespace App\Skills\Shipped;
 
 use App\Skills\Conditions\Conditions;
 use App\Skills\Contracts\Skill;
@@ -13,7 +13,7 @@ use App\Skills\Values\SkillSection;
 /**
  * Core's shell skill for running commands and reading their output, written in resources/skills/core/shell.md.
  */
-final class ProcessesSkill implements Skill
+final class ShellSkill implements Skill
 {
     private const string FILE = 'core/shell.md';
 

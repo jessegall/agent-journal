@@ -20,6 +20,11 @@ use App\Processes\Support\CommandRuleRegistry;
 use App\Settings\Support\CoreSettings;
 use App\Settings\Support\EmptySettingsDefinition;
 use App\Settings\Support\SettingRegistry;
+use App\Sharing\Support\ShareGatewayRegistry;
+use App\Sharing\Support\ShareRecordRegistry;
+use App\Skills\CoreSkills;
+use App\Skills\Support\ConditionRegistry;
+use App\Skills\Support\SkillRegistry;
 use Illuminate\Foundation\Events\DiscoverEvents;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -41,6 +46,8 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(CommandRegistry::class, fn () => $registry->commandDeclarations(CoreCommands::owner()));
         $this->app->singleton(McpCatalogue::class, fn (): McpCatalogue => $this->mcpCatalogue($registry));
         $this->app->singleton(CommandRuleRegistry::class, fn (): CommandRuleRegistry => $registry->commandRules(new CoreRules()->all()));
+        $this->app->singleton(SkillRegistry::class, fn (): SkillRegistry => SkillRegistry::of($registry->skillDeclarations(CoreSkills::owner())));
+        $this->app->singleton(ConditionRegistry::class, fn (): ConditionRegistry => ConditionRegistry::of($registry->skillConditionDeclarations()));
         $this->app->singleton(DomainSwitches::class, fn () => $registry->domainSwitches());
         $this->app->singleton(SettingRegistry::class, fn () => $this->settingRegistry($registry, $this->app->make(DomainSwitches::class)));
         $this->app->scoped(DomainAvailability::class, SettingsDomainAvailability::class);
@@ -53,8 +60,22 @@ class DomainServiceProvider extends ServiceProvider
      * Asking for the command and settings registries and the MCP catalogue here makes a declaration the application
      * cannot start with fail the boot.
      */
-    public function boot(DomainRegistry $registry, CommandRegistry $commands, SettingRegistry $settings, McpCatalogue $mcp): void
-    {
+    public function boot(
+        DomainRegistry $registry,
+        CommandRegistry $commands,
+        SettingRegistry $settings,
+        McpCatalogue $mcp,
+        ShareRecordRegistry $shareRecords,
+        ShareGatewayRegistry $shareGateways,
+    ): void {
+        foreach ($registry->all() as $entry) {
+            foreach ($entry->shareRecords() as $registration) {
+                $shareRecords->register($registration);
+            }
+            foreach ($entry->shareGateways() as $key => $gatewayClass) {
+                $shareGateways->register($key, $gatewayClass);
+            }
+        }
         foreach ($registry->all() as $entry) {
             $entry->boot($this->app);
         }

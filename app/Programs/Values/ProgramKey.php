@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Skills\Values;
+namespace App\Programs\Values;
 
-use App\Skills\Exceptions\ProgramKeyInvalid;
+use App\Programs\Exceptions\ProgramKeyInvalid;
 use App\Text\Support\StableKey;
 
 /**

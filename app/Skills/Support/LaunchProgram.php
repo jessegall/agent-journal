@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Skills\Support;
 
 use App\Programs\Enums\HookProgram;
-use App\Skills\Values\ProgramKey;
-use App\Skills\Values\ProviderKey;
+use App\Programs\Values\ProgramKey;
+use App\Programs\Values\ProviderKey;
 use App\Text\Support\StableKey;
 
 /**

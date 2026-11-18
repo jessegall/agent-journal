@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Programs\Enums;
 
-use App\Skills\Values\ProgramKey;
-use App\Skills\Values\ProviderKey;
+use App\Programs\Values\ProgramKey;
+use App\Programs\Values\ProviderKey;
 
 /**
  * The agent programs whose hooks the journal answers, as they appear in the hook endpoint's address.

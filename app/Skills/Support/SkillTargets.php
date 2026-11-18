@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Support;
 
-use App\Skills\Values\ProgramKey;
+use App\Programs\Values\ProgramKey;
 
 /**
  * Where the journal keeps each session's delivered skills: a protected folder it owns per session and program, which
