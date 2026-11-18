@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Actors\Support;
+namespace App\Bus\Support;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\JournalAccessPolicy;
 use App\Actors\Exceptions\ConsoleOwnerMissing;
 use App\Actors\Exceptions\ConsoleOwnerRefused;
-use App\Bus\Support\RequestKey;
+use App\Actors\Support\ActorContext;
 use Illuminate\Support\Str;
 
 /**
