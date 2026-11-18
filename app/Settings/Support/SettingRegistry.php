@@ -87,6 +87,18 @@ final readonly class SettingRegistry
     }
 
     /**
+     * The owner a registered definition belongs to, known by the exact object registered.
+     *
+     * @throws SettingHandleUnknown
+     */
+    public function ownerOfDefinition(SettingsDefinition $definition): string
+    {
+        $owner = array_search($definition, $this->definitions, true);
+
+        return is_string($owner) ? $owner : throw SettingHandleUnknown::definition($definition::class);
+    }
+
+    /**
      * @throws SettingHandleUnknown
      */
     public function ownerOf(Setting|GroupDeclaration $handle): SettingAddress

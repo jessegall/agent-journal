@@ -21,4 +21,9 @@ final class SettingHandleUnknown extends LogicException
     {
         return new self("No settings definition is registered for {$owner}.");
     }
+
+    public static function definition(string $definition): self
+    {
+        return new self("This {$definition} is not the registered one: inject the registered definition instead of constructing another.");
+    }
 }
