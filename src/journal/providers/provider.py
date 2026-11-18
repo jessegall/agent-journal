@@ -68,6 +68,8 @@ class Provider(ABC):
     prompt_flags: ClassVar[tuple[str, ...]]
     session_variable: ClassVar[str]
     user_line_key: ClassVar[str] = ""
+    # the folder a hook starts from, in shell: its git checkout's main folder is the project root the hook runs for
+    project_folder: ClassVar[str] = "."
     inherited_markers: ClassVar[tuple[str, ...]]
     question_model: ClassVar[str]
     # the words in a model's name that rank it among the program's models, fast, general or strongest
@@ -288,7 +290,9 @@ class Provider(ABC):
         return Response(409, {"error": decision.reason})
 
     def hook_command(self, root: Path) -> str:
-        return f"test -f {shlex.quote(str(HOOK_SCRIPT))} && exec {shlex.join(['sh', str(HOOK_SCRIPT), self.name, str(root)])}; exit 0"
+        script = f'"$root"/{shlex.quote(str(HOOK_SCRIPT.relative_to(root.resolve())))}' if HOOK_SCRIPT.is_relative_to(root.resolve()) else shlex.quote(str(HOOK_SCRIPT))
+        found = f"root=$(git -C {self.project_folder} rev-parse --path-format=absolute --git-common-dir 2>/dev/null) && root=$(dirname \"$root\") || root=$(cd {self.project_folder} && pwd)"
+        return f'{found}; test -f {script} && exec sh {script} {self.name} "$root"; exit 0'
 
     @abstractmethod
     def worker_settings_flags(self, path: Path) -> list[str]: ...
