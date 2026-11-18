@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Domain\Processes\Models;
 
 use App\Links\Support\Linkable;
-use App\Reads\Support\CountsLoads;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -22,8 +23,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'line'])]
-final class CommandAlias extends Model
+final class CommandAlias extends Model implements ReadableModel
 {
-    use CountsLoads;
+    use BoundedReads;
     use HasUlids, Linkable;
 }

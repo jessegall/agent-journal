@@ -26,7 +26,7 @@ final readonly class SequenceRecords
      */
     public function many(array $runIds): array
     {
-        return SequenceRun::query()->forActor()->whereKey($runIds)->limit(count($runIds))->get()->keyBy('id')->all();
+        return SequenceRun::query()->forActor()->whereKey($runIds)->readLimit(count($runIds))->get()->keyBy('id')->all();
     }
 
     /**

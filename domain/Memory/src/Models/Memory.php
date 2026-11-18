@@ -8,7 +8,8 @@ use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
-use App\Reads\Support\CountsLoads;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -28,10 +29,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['text', 'weight'])]
-final class Memory extends Model implements Numbered
+final class Memory extends Model implements Numbered, ReadableModel
 {
     use BelongsToOneAgent, HasNumber, HasUlids;
-    use CountsLoads;
+    use BoundedReads;
     use Linkable;
 
     /**

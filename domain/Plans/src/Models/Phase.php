@@ -9,7 +9,8 @@ use App\Assignments\Support\RecordIdentity;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
-use App\Reads\Support\CountsLoads;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -31,9 +32,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['title'])]
-final class Phase extends Model implements Assignable, Numbered
+final class Phase extends Model implements Assignable, Numbered, ReadableModel
 {
-    use CountsLoads;
+    use BoundedReads;
     use HasNumber, HasUlids, Linkable;
 
     /**
@@ -95,7 +96,7 @@ final class Phase extends Model implements Assignable, Numbered
      */
     public function taskIds(): array
     {
-        return array_map(strval(...), array_values(PhaseTask::query()->where('phase_id', $this->id)->orderBy('position')->pluck('task_id')->all()));
+        return array_map(strval(...), array_values(PhaseTask::query()->where('phase_id', $this->id)->readAll('every task of the phase')->orderBy('position')->pluck('task_id')->all()));
     }
 
     /**
@@ -127,6 +128,6 @@ final class Phase extends Model implements Assignable, Numbered
      */
     public function numberHolder(): Model
     {
-        return $this->plan;
+        return $this->relationLoaded('plan') ? $this->plan : $this->plan()->sole();
     }
 }

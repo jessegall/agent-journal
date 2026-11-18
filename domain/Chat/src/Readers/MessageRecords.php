@@ -31,7 +31,7 @@ final readonly class MessageRecords implements ConversationReader
      */
     public function many(array $messageIds): array
     {
-        return Message::query()->forActor()->whereKey($messageIds)->limit(count($messageIds))->get()->keyBy('id')->all();
+        return Message::query()->forActor()->whereKey($messageIds)->readLimit(count($messageIds))->get()->keyBy('id')->all();
     }
 
     /**
@@ -51,6 +51,7 @@ final readonly class MessageRecords implements ConversationReader
             ->where('agent_id', $target->agentId)
             ->where('session_id', $target->sessionId)
             ->orderBy('id')
+            ->readAll('the whole conversation, oldest first, until it is paged')
             ->get()
             ->all();
 

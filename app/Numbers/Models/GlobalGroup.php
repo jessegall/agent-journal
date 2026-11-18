@@ -6,7 +6,8 @@ namespace App\Numbers\Models;
 
 use App\Links\Support\Linkable;
 use App\Numbers\Exceptions\GlobalGroupMissing;
-use App\Reads\Support\CountsLoads;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -21,9 +22,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name'])]
-final class GlobalGroup extends Model
+final class GlobalGroup extends Model implements ReadableModel
 {
-    use CountsLoads;
+    use BoundedReads;
     use HasUlids, Linkable;
 
     public const string JOURNAL = 'journal';

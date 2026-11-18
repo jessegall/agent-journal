@@ -32,7 +32,7 @@ final class PhaseRequest extends FormRequest
         $plan = Plan::query()->find(Plan::idOfNumber($this->routeNumber('plan'))) ?? throw new NotFoundHttpException;
 
         try {
-            return $plan->phaseNumbered($this->routeNumber('phase'));
+            return $plan->phaseNumbered($this->routeNumber('phase'))->setRelation('plan', $plan);
         } catch (PhaseMissing $missing) {
             throw new NotFoundHttpException(previous: $missing);
         }

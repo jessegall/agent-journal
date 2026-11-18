@@ -11,7 +11,8 @@ use App\Assignments\Support\RecordIdentity;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
-use App\Reads\Support\CountsLoads;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Domain\Plans\Api\PlanCard;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Enums\PlanState;
@@ -40,10 +41,10 @@ use PhpOption\Option;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['title', 'type'])]
-final class Plan extends Model implements Assignable, Numbered
+final class Plan extends Model implements Assignable, Numbered, ReadableModel
 {
     use AssignableListing, HasNumber, HasUlids, Linkable;
-    use CountsLoads;
+    use BoundedReads;
 
     /**
      * The stable name links and assignments use for a plan.
@@ -128,6 +129,7 @@ final class Plan extends Model implements Assignable, Numbered
             ->where('phases.plan_id', $this->id)
             ->orderBy('phases.number')
             ->orderBy('phase_tasks.position')
+            ->readAll('assignment and progress of a plan cover every task')
             ->pluck('phase_tasks.task_id')
             ->all();
 

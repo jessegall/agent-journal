@@ -109,9 +109,9 @@ final readonly class PlanRecords implements PlanReader
      */
     private function cardsOf(EloquentCollection $plans): array
     {
-        $phases = Phase::query()->whereIn('plan_id', $plans->modelKeys())->orderBy('number')->get();
+        $phases = Phase::query()->whereIn('plan_id', $plans->modelKeys())->readAll('every phase of the listed plans')->orderBy('number')->get();
         $phasesOfPlan = $phases->groupBy('plan_id');
-        $taskIdsOfPhase = PhaseTask::query()->whereIn('phase_id', $phases->modelKeys())->orderBy('position')->get()
+        $taskIdsOfPhase = PhaseTask::query()->whereIn('phase_id', $phases->modelKeys())->readAll('plan progress counts every task of the plan')->orderBy('position')->get()
             ->groupBy('phase_id')
             ->map(fn (Collection $places) => array_map(strval(...), array_values($places->pluck('task_id')->all())));
         $progressOfPhase = array_map(self::planProgressOf(...), $this->taskCounts->progressByGroup($taskIdsOfPhase->all()));

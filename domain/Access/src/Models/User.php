@@ -7,7 +7,8 @@ namespace Domain\Access\Models;
 use App\Actors\Enums\ActorType;
 use App\Assignments\Contracts\Assignee;
 use App\Links\Support\Linkable;
-use App\Reads\Support\CountsLoads;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Domain\Access\Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -40,9 +41,9 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 #[UseFactory(UserFactory::class)]
-class User extends Authenticatable implements Assignee, MustVerifyEmail, PasskeyUser
+class User extends Authenticatable implements Assignee, MustVerifyEmail, PasskeyUser, ReadableModel
 {
-    use CountsLoads;
+    use BoundedReads;
 
     /**
      * @use HasFactory<UserFactory>

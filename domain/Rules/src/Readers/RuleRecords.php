@@ -28,7 +28,7 @@ final readonly class RuleRecords implements RuleReader
      */
     public function all(): array
     {
-        return array_values(Rule::query()->orderByDesc('id')->get()->all());
+        return array_values(Rule::query()->orderByDesc('id')->readAll('every rule, for a caller that lists them all')->get()->all());
     }
 
     public function list(RuleFilters $filters): RuleList

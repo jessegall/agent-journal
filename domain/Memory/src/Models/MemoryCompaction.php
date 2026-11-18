@@ -6,7 +6,8 @@ namespace Domain\Memory\Models;
 
 use App\Agents\Support\StackTarget;
 use App\Links\Support\Linkable;
-use App\Reads\Support\CountsLoads;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -25,9 +26,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon $updated_at
  */
 #[Fillable(['agent_id', 'session_id', 'compaction_id'])]
-final class MemoryCompaction extends Model
+final class MemoryCompaction extends Model implements ReadableModel
 {
-    use CountsLoads;
+    use BoundedReads;
     use HasUlids, Linkable;
 
     /**

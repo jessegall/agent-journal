@@ -6,7 +6,8 @@ namespace App\Numbers\Models;
 
 use App\Links\Support\Linkable;
 use App\Numbers\Exceptions\NumberLimitReached;
-use App\Reads\Support\CountsLoads;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,9 +29,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['holder_type', 'holder_id', 'record_type'])]
-final class NumberGroup extends Model
+final class NumberGroup extends Model implements ReadableModel
 {
-    use CountsLoads;
+    use BoundedReads;
     use HasUlids, Linkable;
 
     /**

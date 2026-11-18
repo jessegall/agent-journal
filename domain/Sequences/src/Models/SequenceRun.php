@@ -9,7 +9,8 @@ use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
-use App\Reads\Support\CountsLoads;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Exceptions\SequenceRunMissing;
 use Domain\Sequences\Support\SequenceWork;
@@ -35,10 +36,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'steps'])]
-final class SequenceRun extends Model implements Numbered
+final class SequenceRun extends Model implements Numbered, ReadableModel
 {
     use BelongsToOneAgent, HasNumber, HasUlids;
-    use CountsLoads;
+    use BoundedReads;
     use Linkable;
 
     /**
