@@ -648,6 +648,7 @@ class	RecordedAnswerCast
 class	RecordedSteps
 class	RecordedStepsCast
 class	RegisteredAction
+class	RegisteredCommand
 class	RegisteredMiddleware
 class	RegisteredNavigation
 class	RegisteredPage
@@ -1365,6 +1366,11 @@ method	AuthenticateAgent::__construct()
 method	AuthenticateAgent::handle()
 method	AuthenticateUser::__construct()
 method	AuthenticateUser::handle()
+method	BelongsToOneAgent::bootBelongsToOneAgent()
+method	BelongsToOneAgent::forActor()
+method	BelongsToOneAgent::ownedBy()
+method	BelongsToOneAgent::resolveRouteBinding()
+method	BelongsToOneAgent::visibleToUser()
 method	BindingRegistration::__construct()
 method	BindingRegistration::violation()
 method	BindingRules::__construct()
@@ -1478,6 +1484,7 @@ method	CommandBusServiceProvider::boot()
 method	CommandBusServiceProvider::register()
 method	CommandCall::__construct()
 method	CommandCall::actor()
+method	CommandCall::actorText()
 method	CommandCall::command()
 method	CommandCall::isExported()
 method	CommandCall::name()
@@ -1531,6 +1538,7 @@ method	CommandRegistry::needsRepeatableRead()
 method	CommandRegistry::orderedFor()
 method	CommandRegistry::ownerOf()
 method	CommandRegistry::requiredActor()
+method	CommandRegistry::requiredActorOf()
 method	CommandRegistry::takesOnly()
 method	CommandReplacedWithOtherClass::for()
 method	CommandReplacementRefused::for()
@@ -1663,7 +1671,9 @@ method	DomainEntry::assignables()
 method	DomainEntry::assignees()
 method	DomainEntry::checkedRequirements()
 method	DomainEntry::className()
+method	DomainEntry::commandMiddleware()
 method	DomainEntry::commandOwner()
+method	DomainEntry::commands()
 method	DomainEntry::declaring()
 method	DomainEntry::exportsName()
 method	DomainEntry::fromClass()
@@ -1908,6 +1918,7 @@ method	JournalAccessPolicy::allows()
 method	JudgedCall::__construct()
 method	JudgedCall::replyWith()
 method	LaravelCommandBus::__construct()
+method	LaravelCommandBus::forRequest()
 method	LaravelCommandBus::hasHandlerFor()
 method	LaravelCommandBus::run()
 method	LaunchBypass::casts()
@@ -2102,11 +2113,6 @@ method	OptionalOrMissing::optionalOrMissing()
 method	OutageReply::for()
 method	OutageReply::neutral()
 method	OutageReply::refusal()
-method	OwnedByOneAgent::bootOwnedByOneAgent()
-method	OwnedByOneAgent::forActor()
-method	OwnedByOneAgent::ownedBy()
-method	OwnedByOneAgent::resolveRouteBinding()
-method	OwnedByOneAgent::visibleToUser()
 method	OwnerSeeder::run()
 method	Page::__construct()
 method	Page::actions()
@@ -2415,7 +2421,11 @@ method	RecordedStepsCast::set()
 method	Refusal::reason()
 method	RegisteredAction::__construct()
 method	RegisteredAction::of()
+method	RegisteredCommand::__construct()
 method	RegisteredMiddleware::__construct()
+method	RegisteredMiddleware::appliesTo()
+method	RegisteredMiddleware::middlewareClass()
+method	RegisteredMiddleware::runsIn()
 method	RegisteredNavigation::__construct()
 method	RegisteredNavigation::checkedPage()
 method	RegisteredNavigation::keys()
@@ -3610,6 +3620,12 @@ property	RegisteredAction::$owner
 property	RegisteredAction::$path
 property	RegisteredAction::$routeName
 property	RegisteredAction::$uri
+property	RegisteredCommand::$actor
+property	RegisteredCommand::$exported
+property	RegisteredCommand::$handler
+property	RegisteredCommand::$middleware
+property	RegisteredCommand::$owner
+property	RegisteredCommand::$repeatableRead
 property	RegisteredMiddleware::$declaration
 property	RegisteredMiddleware::$owner
 property	RegisteredNavigation::$children
@@ -3920,10 +3936,10 @@ property	WriteAssignments::$providers
 property	WriteAssignments::$store
 property	WriteAssignments::$transaction
 trait	AssignableListing
+trait	BelongsToOneAgent
 trait	ComparesTypeAndId
 trait	Linkable
 trait	OptionalOrMissing
-trait	OwnedByOneAgent
 trait	PasswordValidationRules
 trait	ReadsAssignmentArguments
 trait	ReadsAssignmentInput

@@ -160,7 +160,7 @@ use App\Core\Hooks\Inputs\StopDetails;
 use App\Core\Hooks\Inputs\StopRequested;
 use App\Core\Hooks\Inputs\ToolFinished;
 use App\Core\Hooks\Inputs\ToolResult;
-use App\Core\Hooks\Models\Support\OwnedByOneAgent;
+use App\Core\Hooks\Models\Support\BelongsToOneAgent;
 use App\Core\Hooks\States\AgentState;
 use App\Core\Links\Exceptions\UnknownLinkType;
 use App\Core\Links\Support\Linkable;
@@ -273,7 +273,7 @@ final class CoreApi
             ReminderContribution::class,
             StateTypeRepeated::class,
             StateTypesFrozen::class,
-            OwnedByOneAgent::class,
+            BelongsToOneAgent::class,
             Linkable::class,
             LinkAccess::class,
             LinkTypeRegistry::class,

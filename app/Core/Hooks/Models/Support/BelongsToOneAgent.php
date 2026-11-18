@@ -16,9 +16,9 @@ use Illuminate\Database\Eloquent\Model;
  * work on another agent's rows reads them through the explicit ownedBy query. A user reads them through the
  * explicit visibleToUser query, which route binding uses when the actor of the request is a user.
  */
-trait OwnedByOneAgent
+trait BelongsToOneAgent
 {
-    public static function bootOwnedByOneAgent(): void
+    public static function bootBelongsToOneAgent(): void
     {
         static::addGlobalScope(new AgentScope(static fn (): AgentContext => Container::getInstance()->make(AgentContext::class)));
     }

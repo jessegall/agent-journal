@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Memory\Models;
 
-use App\Core\Hooks\Models\Support\OwnedByOneAgent;
+use App\Core\Hooks\Models\Support\BelongsToOneAgent;
 use App\Core\Links\Support\Linkable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -25,7 +25,7 @@ use Illuminate\Support\Carbon;
 final class Memory extends Model
 {
     use Linkable;
-    use OwnedByOneAgent;
+    use BelongsToOneAgent;
 
     /**
      * @return array<string, string>

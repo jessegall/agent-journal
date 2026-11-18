@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Modules\Notes\Models;
 
 use App\Core\Assignments\Contracts\Assignable;
 use App\Core\Assignments\Support\RecordIdentity;
-use App\Core\Hooks\Models\Support\OwnedByOneAgent;
+use App\Core\Hooks\Models\Support\BelongsToOneAgent;
 use App\Core\Links\Support\Linkable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -27,7 +27,7 @@ use Illuminate\Support\Carbon;
 final class Note extends Model implements Assignable
 {
     use Linkable;
-    use OwnedByOneAgent;
+    use BelongsToOneAgent;
 
     /**
      * The stable name links and assignments use for a note.

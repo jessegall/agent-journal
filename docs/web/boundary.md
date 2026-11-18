@@ -13,7 +13,7 @@ Every request has one actor, kept in `App\Core\Actors\ActorContext` for that req
 
 A user who selects an agent stays the actor; the agent is the target. Nothing forges an agent context for a user.
 
-- **User reads.** `visibleToUser` on `OwnedByOneAgent` is the only way a user lifts the agent scope, and it refuses any actor but a user. Task, Plan and Rule have no agent scope: every agent and the owner read them (rule 4, message 519).
+- **User reads.** `visibleToUser` on `BelongsToOneAgent` is the only way a user lifts the agent scope, and it refuses any actor but a user. Task, Plan and Rule have no agent scope: every agent and the owner read them (rule 4, message 519).
 - **Route binding.** An agent-scoped model binds through the actor's scope: a user's route through `visibleToUser`, an agent's through its own scope; with no actor, binding fails closed. `AuthenticateAgent` runs before `SubstituteBindings`; the user middleware will be placed there too (task 117).
 - **Stack changes for a user.** Core's `UserStack` contract (bound to `UserStacks`) puts a state on a running agent's stack for a user, in the caller's stack transaction: it locks the stack through the explicit authorized query, restores it with the target agent's own role and keeps every frame. A guessed, ended or mismatched session is refused with `StackTargetRefused`; an agent actor is refused. Agents keep `AgentStacks::push`, which only reaches their own stack.
 
