@@ -8,10 +8,12 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
+use App\Records\Support\RecordIdentity;
 use App\Sharing\Enums\ShareState;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Support\GatewaySettings;
+use App\Sharing\Support\ShareReadLimits;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
@@ -26,7 +28,8 @@ use Tests\TestCase;
 
 /**
  * The share-only listener: a valid link answers with the safe headers and no cookie; other methods, upgrades and
- * every other route are refused; a failure shows the fixed page even with debugging on.
+ * every other route are refused; reads are limited per share and invalid links in all, never holding a valid link;
+ * a failure shows the fixed page even with debugging on.
  */
 final class SharingListenerTest extends TestCase
 {
@@ -35,6 +38,8 @@ final class SharingListenerTest extends TestCase
     private const array TABLES = ['share_audits', 'share_members', 'shares', 'share_gateway_configurations', 'links', 'comments', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'number_groups'];
 
     private string $token;
+
+    private ShareGatewayConfiguration $configuration;
 
     public function createApplication(): Application
     {
@@ -48,16 +53,15 @@ final class SharingListenerTest extends TestCase
     {
         parent::setUp();
 
+        config(['sharing.rate_limit_store' => 'array']);
+
         $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(9)));
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
         $this->app->make(CurrentActorSetter::class)->clear();
         $configuration = ShareGatewayConfiguration::configure(new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []));
-        $token = ShareToken::generate();
-        $share = Share::grant(Document::query()->sole()->shareIdentity(), TestIds::of(9), $configuration, $token, CarbonImmutable::now()->addDay());
-        $share->state = ShareState::Active;
-        $share->save();
-        $this->token = $token->token;
+        $this->configuration = $configuration;
+        $this->token = $this->activeShareOf(Document::query()->sole()->shareIdentity());
     }
 
     public function test_a_valid_link_answers_with_the_safe_headers_and_no_cookie(): void
@@ -84,6 +88,33 @@ final class SharingListenerTest extends TestCase
         $this->get('/s/'.str_repeat('a', 43))->assertNotFound()->assertSee('This share is not available.');
     }
 
+    public function test_a_share_read_too_often_gets_429_while_another_share_still_reads(): void
+    {
+        $limits = $this->app->make(ShareReadLimits::class);
+        $busy = Share::query()->sole();
+        $other = $this->activeShareOf(Document::query()->sole()->shareIdentity());
+
+        foreach (range(1, 120) as $read) {
+            $limits->admitRead($busy->id);
+        }
+
+        $this->get("/s/{$this->token}")->assertStatus(429);
+        $this->get("/s/{$other}")->assertOk();
+    }
+
+    public function test_the_invalid_link_ceiling_ignores_forwarded_addresses_and_never_holds_a_valid_link(): void
+    {
+        $limits = $this->app->make(ShareReadLimits::class);
+
+        foreach (range(1, 599) as $invalid) {
+            $limits->countInvalid(null);
+        }
+
+        $this->withHeader('X-Forwarded-For', '203.0.113.7')->get('/s/'.str_repeat('a', 43))->assertNotFound();
+        $this->withHeader('X-Forwarded-For', '198.51.100.9')->get('/s/'.str_repeat('b', 43))->assertStatus(429);
+        $this->get("/s/{$this->token}")->assertOk();
+    }
+
     public function test_a_failure_shows_the_fixed_page_even_with_debugging_on(): void
     {
         config(['app.debug' => true]);
@@ -103,5 +134,15 @@ final class SharingListenerTest extends TestCase
         $response->assertStatus(503)->assertSee('This share cannot be shown right now.');
         $this->assertStringNotContainsString($this->token, (string) $response->getContent());
         $this->assertStringNotContainsString('select', (string) $response->getContent());
+    }
+
+    private function activeShareOf(RecordIdentity $root): string
+    {
+        $token = ShareToken::generate();
+        $share = Share::grant($root, TestIds::of(9), $this->configuration, $token, CarbonImmutable::now()->addDay());
+        $share->state = ShareState::Active;
+        $share->save();
+
+        return $token->token;
     }
 }

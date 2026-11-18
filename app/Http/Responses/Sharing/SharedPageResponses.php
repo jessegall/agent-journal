@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Responses\Sharing;
 
 use App\Contracts\CommandRefusal;
+use App\Sharing\Exceptions\ShareReadLimited;
 use App\Sharing\Support\SharedPage;
 use App\Text\Support\MarkdownText;
 use Illuminate\Http\Response;
@@ -27,11 +28,16 @@ final readonly class SharedPageResponses
     }
 
     /**
-     * A refusal or a denial is not available; any other failure, such as a database or audit failure, is a failure.
+     * Too many reads wait a minute, a refusal or a denial is not available, and any other failure, such as a database
+     * or audit failure, is a failure.
      */
     public static function forFailure(Throwable $failure): Response
     {
-        return $failure instanceof CommandRefusal ? self::unavailable() : new Response(View::make('sharing.failed')->render(), 503);
+        return match (true) {
+            $failure instanceof ShareReadLimited => self::refused(429),
+            $failure instanceof CommandRefusal => self::unavailable(),
+            default => new Response(View::make('sharing.failed')->render(), 503),
+        };
     }
 
     public static function refused(int $status): Response
