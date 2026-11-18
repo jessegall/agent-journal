@@ -20,6 +20,11 @@ final class AccessDomain implements Domain, ProvidesAssignees, ProvidesBootstrap
         return 'The users who sign in, how they sign in, and which of them may use the journal.';
     }
 
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class, RegisterAssignables::class];
+    }
+
     /**
      * @return list<class-string<Domain>>
      */
@@ -42,10 +47,5 @@ final class AccessDomain implements Domain, ProvidesAssignees, ProvidesBootstrap
     public function assignees(): array
     {
         return [new AssigneeRegistration(ActorType::User, UserAssignees::class)];
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class, RegisterAssignables::class];
     }
 }

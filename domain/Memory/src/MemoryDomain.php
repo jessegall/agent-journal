@@ -15,6 +15,11 @@ final class MemoryDomain implements Domain, ProvidesBootstrappers
         return 'The weighted memories each agent keeps past its context window.';
     }
 
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class];
+    }
+
     /**
      * @return list<class-string<Domain>>
      */
@@ -29,10 +34,5 @@ final class MemoryDomain implements Domain, ProvidesBootstrappers
     public function exports(): array
     {
         return [];
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class];
     }
 }

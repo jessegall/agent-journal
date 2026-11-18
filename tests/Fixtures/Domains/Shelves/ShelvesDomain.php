@@ -15,6 +15,11 @@ final class ShelvesDomain implements Domain, ProvidesBootstrappers
         return 'A fixture domain with a migration and a listener.';
     }
 
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class];
+    }
+
     public function requires(): array
     {
         return [];
@@ -26,10 +31,5 @@ final class ShelvesDomain implements Domain, ProvidesBootstrappers
     public function exports(): array
     {
         return [];
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class];
     }
 }

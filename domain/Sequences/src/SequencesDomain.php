@@ -21,6 +21,11 @@ final class SequencesDomain implements Domain, ProvidesBootstrappers, ProvidesCo
         return 'Steps an agent follows one at a time.';
     }
 
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class, RegisterStates::class];
+    }
+
     /**
      * @return list<class-string>
      */
@@ -48,10 +53,5 @@ final class SequencesDomain implements Domain, ProvidesBootstrappers, ProvidesCo
     public function states(): array
     {
         return [FollowingSequenceStateReference::TYPE_KEY => FollowingSequenceStateFactory::class];
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class, RegisterStates::class];
     }
 }

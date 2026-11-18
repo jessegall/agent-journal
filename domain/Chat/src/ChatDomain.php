@@ -45,6 +45,11 @@ final class ChatDomain implements Domain, ProvidesBootstrappers, ProvidesCommand
         return 'Messages between the user and agents; a question is a type of message.';
     }
 
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class, RegisterStates::class];
+    }
+
     /**
      * @return list<class-string>
      */
@@ -103,10 +108,5 @@ final class ChatDomain implements Domain, ProvidesBootstrappers, ProvidesCommand
     public function sections(): array
     {
         return [Section::make('agent', 'Agent', 'web.bar', SlotContextType::Session, ChosenAgentSection::class, 'ChosenAgent.vue')];
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class, RegisterStates::class];
     }
 }

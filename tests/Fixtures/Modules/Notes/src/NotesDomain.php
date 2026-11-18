@@ -57,6 +57,11 @@ final class NotesDomain implements Domain, ProvidesAssignables, ProvidesCommandM
         return 'Notes an agent writes while it works: a module outside the domain folder.';
     }
 
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class, RegisterAssignables::class, RegisterStates::class];
+    }
+
     public function requires(): array
     {
         return [CardsDomain::class, RulesDomain::class];
@@ -117,10 +122,5 @@ final class NotesDomain implements Domain, ProvidesAssignables, ProvidesCommandM
             MiddlewareDeclaration::inside(AuditNotes::class, CommandScope::ownedBy(self::class)),
             MiddlewareDeclaration::inside(AuditRules::class, CommandScope::ownedBy(RulesDomain::class)),
         ];
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class, RegisterAssignables::class, RegisterStates::class];
     }
 }

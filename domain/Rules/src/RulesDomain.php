@@ -39,6 +39,11 @@ final class RulesDomain implements Domain, ProvidesBootstrappers, ProvidesComman
         return 'The standing project rules every agent is told.';
     }
 
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class];
+    }
+
     /**
      * @return list<class-string<Domain>>
      */
@@ -92,10 +97,5 @@ final class RulesDomain implements Domain, ProvidesBootstrappers, ProvidesComman
     public function navigation(): array
     {
         return [NavigationItem::page('list', 'Rules', Icon::Rules, group: 'Agents', position: 30)];
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class];
     }
 }

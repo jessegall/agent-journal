@@ -15,6 +15,11 @@ final class ProcessesDomain implements Domain, ProvidesBootstrappers
         return 'Shell commands run through the journal, their output, command aliases and readers.';
     }
 
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class];
+    }
+
     /**
      * @return list<class-string<Domain>>
      */
@@ -29,10 +34,5 @@ final class ProcessesDomain implements Domain, ProvidesBootstrappers
     public function exports(): array
     {
         return [];
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class];
     }
 }

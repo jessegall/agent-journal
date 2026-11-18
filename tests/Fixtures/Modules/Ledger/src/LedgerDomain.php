@@ -26,6 +26,11 @@ final class LedgerDomain implements Domain, ProvidesCommands, ProvidesNumberedMo
         return 'Ledgers and their entries: numbered records for the number allocation tests.';
     }
 
+    public function bootstrappers(): array
+    {
+        return [RegisterNumberedModels::class, RegisterLedgerLinkTypes::class];
+    }
+
     public function requires(): array
     {
         return [];
@@ -47,10 +52,5 @@ final class LedgerDomain implements Domain, ProvidesCommands, ProvidesNumberedMo
     public function numberedModels(): array
     {
         return [NumberedModel::global(Ledger::class), NumberedModel::within(LedgerEntry::class, Ledger::class)];
-    }
-
-    public function bootstrappers(): array
-    {
-        return [RegisterNumberedModels::class, RegisterLedgerLinkTypes::class];
     }
 }

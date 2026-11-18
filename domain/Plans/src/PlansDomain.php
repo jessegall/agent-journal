@@ -58,6 +58,11 @@ final class PlansDomain implements Domain, ProvidesAssignables, ProvidesBootstra
         return 'A goal with phases and the tasks in each phase.';
     }
 
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class, RegisterAssignables::class];
+    }
+
     /**
      * @return list<class-string<Domain>>
      */
@@ -139,10 +144,5 @@ final class PlansDomain implements Domain, ProvidesAssignables, ProvidesBootstra
                 NavigationItem::page('closed', 'Closed', page: 'list', query: ['state' => 'closed']),
             ]),
         ];
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class, RegisterAssignables::class];
     }
 }

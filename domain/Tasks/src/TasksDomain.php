@@ -44,6 +44,11 @@ final class TasksDomain implements Domain, ProvidesAssignables, ProvidesBootstra
         return 'A task, its state, its log and what it waits on.';
     }
 
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class, RegisterAssignables::class, RegisterStates::class];
+    }
+
     /**
      * @return list<class-string>
      */
@@ -93,10 +98,5 @@ final class TasksDomain implements Domain, ProvidesAssignables, ProvidesBootstra
     public function assignables(): array
     {
         return [Task::LINK_TYPE => TaskAssignments::class];
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class, RegisterAssignables::class, RegisterStates::class];
     }
 }
