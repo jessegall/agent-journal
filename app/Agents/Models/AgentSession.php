@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
@@ -130,6 +131,14 @@ final class AgentSession extends Model implements ReadableModel
     public static function lockedForUpdate(string $sessionId): self
     {
         return self::query()->whereKey($sessionId)->lockForUpdate()->firstOrFail();
+    }
+
+    /**
+     * @return HasMany<ConversationVisit, $this>
+     */
+    public function visits(): HasMany
+    {
+        return $this->hasMany(ConversationVisit::class, 'session_id');
     }
 
     /**
