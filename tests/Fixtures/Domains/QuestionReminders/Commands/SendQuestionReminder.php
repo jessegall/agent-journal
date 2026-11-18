@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tests\Fixtures\Domains\Reminders\Commands;
+namespace Tests\Fixtures\Domains\QuestionReminders\Commands;
 
 use App\Agents\Support\StackTarget;
 use App\Bus\Attributes\AllowsEngine;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
-use Tests\Fixtures\Domains\Reminders\Handlers\SendQuestionReminderHandler;
+use Tests\Fixtures\Domains\QuestionReminders\Handlers\SendQuestionReminderHandler;
 
 /**
  * Reminds the asker of a question that is still waiting; the engine runs it from the asker's frame.

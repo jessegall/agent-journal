@@ -41,7 +41,6 @@ final readonly class AuthenticateAgent
     {
         try {
             $context = $this->contexts->fromRequest($request);
-            $this->refreshHeartbeatOf($context);
         } catch (CredentialRejected|CallSignatureInvalid $rejection) {
             return new JsonResponse(['message' => $rejection->getMessage()], Response::HTTP_UNAUTHORIZED);
         } catch (CallProtocolUnsupported $unsupported) {
@@ -52,6 +51,8 @@ final readonly class AuthenticateAgent
         $this->actors->set($context);
 
         try {
+            $this->refreshHeartbeatOf($context);
+
             return $next($request);
         } finally {
             $this->actors->clear();

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "deny": [
+      "Agent",
+      "Task",
+      "Workflow",
+      "SendMessage",
+      "ListAgents",
+      "RemoteTrigger",
+      "Skill"
+    ]
+  }
+}

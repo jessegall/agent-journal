@@ -135,7 +135,7 @@ final class DockTest extends TestCase
     private function actAsAgent(AgentSession $session): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($session->agent_id));
-        $this->app->instance(AgentContext::class, new AgentContext($session->agent_id, $session->id, 'hooks.main_ready', new SignedCall(TestIds::of(501), CarbonImmutable::now(), str_repeat('0', 64))));
+        $this->app->instance(AgentContext::class, new AgentContext($session->agent_id, $session->id, 'hooks.main_ready', new SignedCall(TestIds::of(501), CarbonImmutable::now(), str_repeat('0', 64)), null));
     }
 
     private function bus(): CommandBus

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
+use App\Actors\Contracts\ServerClock;
 use App\Agents\Actions\LaunchCredentials;
 use App\Agents\Models\AgentSession;
 use Carbon\CarbonImmutable;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedCalls;
+use Tests\Support\TestTimeServerClock;
 use Tests\TestCase;
 
 /**
@@ -37,6 +39,7 @@ final class AgentHeartbeatRouteTest extends TestCase
     {
         parent::setUp();
 
+        $this->app->instance(ServerClock::class, new TestTimeServerClock);
         Route::post(self::PING, fn () => new Response(status: Response::HTTP_NO_CONTENT))->middleware('journal.agent');
         $this->launch = TestLaunch::start();
         DB::listen(function (QueryExecuted $query): void {

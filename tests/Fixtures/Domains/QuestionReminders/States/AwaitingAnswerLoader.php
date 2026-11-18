@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Fixtures\Domains\Reminders\States;
+namespace Tests\Fixtures\Domains\QuestionReminders\States;
 
 use App\Hooks\Contracts\TickableStateLoader;
 use App\Hooks\Decisions\StateReference;
@@ -10,7 +10,8 @@ use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Exceptions\StateSubjectMissing;
-use Tests\Fixtures\Domains\Reminders\Models\Question;
+use Tests\Fixtures\Domains\QuestionReminders\Models\Question;
+use Tests\Fixtures\Domains\QuestionReminders\States\AwaitingAnswerState;
 
 /**
  * Restores the waiting questions of a batch in one read.

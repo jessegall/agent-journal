@@ -64,6 +64,7 @@ final class HookRecoveryTest extends TestCase
         $this->startedSecondsAgo($launched, 121);
         $this->heartbeats()->markSilentLaunches();
 
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id));
         $this->app->make(CommandBus::class)->run(new RecordHeartbeat($launched->session->id));
         $this->heartbeats()->markSilentLaunches();
 

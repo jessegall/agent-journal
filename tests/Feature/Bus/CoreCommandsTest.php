@@ -24,6 +24,17 @@ use App\Engine\Commands\SettleFrameTimes;
 use App\Numbers\Commands\InstallNumbers;
 use App\Records\Commands\LinkRecords;
 use App\Records\Commands\UnlinkRecords;
+use App\Settings\Commands\DisableSettingGroup;
+use App\Settings\Commands\EnableSettingGroup;
+use App\Settings\Commands\ResetSetting;
+use App\Settings\Commands\ResetSettingGroup;
+use App\Settings\Commands\SetBooleanSetting;
+use App\Settings\Commands\SetDecimalSetting;
+use App\Settings\Commands\SetIntegerChoice;
+use App\Settings\Commands\SetIntegerSetting;
+use App\Settings\Commands\SetStringChoice;
+use App\Settings\Commands\SetStringSetting;
+use App\Sharing\Commands\SaveSharePreview;
 use App\Web\Commands\RecordUserHeartbeat;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
 
@@ -33,12 +44,12 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
  */
 final class CoreCommandsTest extends CommandBusTestCase
 {
-    public function test_core_lists_its_seventeen_commands_and_exports_them(): void
+    public function test_core_lists_its_twenty_eight_commands_and_exports_them(): void
     {
         $this->installCommandModules();
         $registry = $this->app->make(CommandRegistry::class);
 
-        $this->assertSame([AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, SettleFrameTimes::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class, SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class], CoreCommands::commands());
+        $this->assertSame([AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, SettleFrameTimes::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class, SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class, SetStringSetting::class, SetBooleanSetting::class, SetIntegerSetting::class, SetDecimalSetting::class, SetStringChoice::class, SetIntegerChoice::class, ResetSetting::class, EnableSettingGroup::class, DisableSettingGroup::class, ResetSettingGroup::class, SaveSharePreview::class], CoreCommands::commands());
 
         foreach (CoreCommands::commands() as $command) {
             $this->assertTrue($registry->has($command));

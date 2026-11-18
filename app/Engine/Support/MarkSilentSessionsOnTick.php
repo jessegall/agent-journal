@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Engine\Listeners;
+namespace App\Engine\Support;
 
 use App\Bus\Contracts\CommandBus;
 use App\Engine\Commands\MarkSilentSessions;

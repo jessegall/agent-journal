@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "deny": [
+      "Agent",
+      "Task",
+      "Workflow",
+      "SendMessage",
+      "ListAgents",
+      "RemoteTrigger",
+      "Skill",
+      "Bash(claude:*)",
+      "Bash(codex:*)",
+      "Bash(*claude -p*)",
+      "Bash(*codex exec*)"
+    ]
+  }
+}

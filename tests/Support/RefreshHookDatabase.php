@@ -36,6 +36,11 @@ trait RefreshHookDatabase
         }
 
         $this->beginLaravelDatabaseTransaction();
+
+        // The wrapper stands in for a bus transaction, so a command a request runs (such as a heartbeat) may join it.
+        $connection = $this->app->make(DatabaseManager::class)->connection();
+        $connection->statement("SET LOCAL lock_timeout = '5000ms'");
+        $connection->statement("SET LOCAL statement_timeout = '30000ms'");
     }
 
     /**
