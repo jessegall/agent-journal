@@ -24,6 +24,7 @@ from journal.providers.claude import Claude
 from journal.providers.codex import Codex
 from journal.repositories.command_outputs import CommandOutputs
 from journal.features.shell.support.output_files import OutputFiles
+from journal.features.shell.support.restart_queue import RestartQueue
 from journal.features.shell.support.shell_runner import ShellRunner
 from journal.features.shell.support.chain_worker import ChainWorker
 from journal.features.shell.support.shell_record import ShellRecord
@@ -614,6 +615,11 @@ class AgentSteps:
 
     def plugin_source(self) -> str:
         return f"file://{self.app.config.root / PLUGIN_SOURCE_FOLDER}"
+
+    def user_restarts_the_journal(self) -> StepResult:
+        with self.app.container.get(Scope).environment(1):
+            self.app.container.get(RestartQueue).restart(1, "")
+        return self.observed("the user restarts the journal while a run goes", None, None)
 
     def journal_starts_again(self) -> StepResult:
         runtime = self.app.runtime()
