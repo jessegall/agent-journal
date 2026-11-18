@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Web\Events;
+namespace App\Web\Support;
 
 use App\Actors\Contracts\Actor;
 use App\Web\Contracts\JournalAccessPolicy;

@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\CommandBus;
 use App\Web\Events\PageChanged;
-use App\Web\Events\UserChannel;
+use App\Web\Support\UserChannel;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Rules\Commands\ApproveRule;

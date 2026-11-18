@@ -7,6 +7,7 @@ namespace App\Assignments\Events;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Support\AssignmentChange;
+use App\Contracts\Event;
 use DateTimeImmutable;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 
@@ -15,7 +16,7 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
  * record whose holder changed. A command that changed nothing raises none. Delivery is not guaranteed and nothing is
  * kept to replay it.
  */
-final readonly class AssignmentsChanged implements ShouldDispatchAfterCommit
+final readonly class AssignmentsChanged implements Event, ShouldDispatchAfterCommit
 {
     /**
      * @param  list<AssignmentChange>  $changes

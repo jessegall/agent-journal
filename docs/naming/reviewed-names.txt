@@ -1033,6 +1033,7 @@ interface	CurrentActor
 interface	CurrentActorSetter
 interface	CurrentUserReader
 interface	Domain
+interface	Event
 interface	HookAnswerer
 interface	HookInput
 interface	JournalAccessPolicy

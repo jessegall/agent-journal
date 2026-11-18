@@ -2,6 +2,8 @@
 
 A public event is a fact a domain publishes for anyone to hear: it lives in the owner's `Api/Events` folder and is on the owner's export list. Every other event stays private to its owner. Core's two extension requests are the other type of public event: they ask listeners to contribute, at once, inside the work that raised them.
 
+Every event, public or private, Core's, a domain's or a module's, implements Core's marker interface `App\Contracts\Event`; `EventMarkerTest` fails on a class in an `Events` folder that does not.
+
 ## Facts, raised after the outermost commit
 
 Each fact implements `ShouldDispatchAfterCommit`, so a listener hears it only once the transaction that made the change has committed, the outermost one when transactions nest. A rolled-back change raises nothing. Each carries plain values: ids, and Core values such as `StackTarget` or `ActorContext`.

@@ -111,6 +111,7 @@ use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Contracts\CommandRefusal;
+use App\Contracts\Event;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\Answer;
 use App\Hooks\Contracts\HookAnswerer;
@@ -348,6 +349,7 @@ final class CoreApi
             CommandBus::class,
             CommandMiddleware::class,
             CommandRefusal::class,
+            Event::class,
             ProvidesCommands::class,
             ProvidesCommandMiddleware::class,
             HandledBy::class,

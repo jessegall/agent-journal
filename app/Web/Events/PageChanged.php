@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Web\Events;
 
+use App\Contracts\Event;
+use App\Web\Support\UserChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
@@ -12,7 +14,7 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
  * Tells each allowed user's browser that what the pages show changed, so it reloads what it shows. It carries no
  * data: the browser reads the change through its own authorized request.
  */
-final readonly class PageChanged implements ShouldBroadcast, ShouldDispatchAfterCommit
+final readonly class PageChanged implements Event, ShouldBroadcast, ShouldDispatchAfterCommit
 {
     public const string NAME = 'page.changed';
 
