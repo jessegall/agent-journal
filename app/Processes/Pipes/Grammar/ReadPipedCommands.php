@@ -18,7 +18,7 @@ use App\Processes\Values\SourceRange;
 /**
  * pipeline := [!] command ((| | |&) command)*.
  */
-final readonly class ReadPipeline implements Pipe
+final readonly class ReadPipedCommands implements Pipe
 {
     public function __construct(private Pipelines $pipelines) {}
 
