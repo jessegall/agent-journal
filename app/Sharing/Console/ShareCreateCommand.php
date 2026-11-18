@@ -24,7 +24,7 @@ final class ShareCreateCommand extends Command
     public function handle(ConsoleOwner $owner, CommandBus $commands): int
     {
         $owner->actAsOwner();
-        $key = $owner->keyWrite($this->option('request-key') === null ? null : (string) $this->option('request-key'));
+        $key = $owner->useRequestKey($this->option('request-key') === null ? null : (string) $this->option('request-key'));
         $preview = SharePreview::of((string) $this->argument('preview'));
         $minutes = $this->option('minutes') === null ? ShareDuration::STANDARD_MINUTES : (int) $this->option('minutes');
         $summary = $commands->run(new CreateShare($preview->id, $preview->checksum, $minutes, $key));

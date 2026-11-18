@@ -21,7 +21,7 @@ final class ShareRevokeCommand extends Command
     public function handle(ConsoleOwner $owner, CommandBus $commands): int
     {
         $owner->actAsOwner();
-        $key = $owner->keyWrite($this->option('request-key') === null ? null : (string) $this->option('request-key'));
+        $key = $owner->useRequestKey($this->option('request-key') === null ? null : (string) $this->option('request-key'));
         $summary = $commands->run(new RevokeShare((string) $this->argument('share'), $key));
 
         $this->line("Share {$summary->number} is {$summary->state->value}.");

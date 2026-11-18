@@ -63,7 +63,7 @@ final readonly class ConfigureShareGatewayHandler implements CommandHandler
         }
 
         ShareAudit::recordForInstallation(ShareAuditType::GatewayChanged, ActorIdentity::of($owner), 'configured');
-        $this->events->dispatch($configuration->changeFact());
+        $this->events->dispatch($configuration->changedEvent());
 
         return $configuration->toConfiguration();
     }

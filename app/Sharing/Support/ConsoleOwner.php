@@ -45,7 +45,7 @@ final readonly class ConsoleOwner
     /**
      * Keys this command's write under the given key, or a new one; returns the key.
      */
-    public function keyWrite(string|null $requestKey): string
+    public function useRequestKey(string|null $requestKey): string
     {
         $key = $requestKey ?? (string) Str::ulid();
         $this->key->set($key);

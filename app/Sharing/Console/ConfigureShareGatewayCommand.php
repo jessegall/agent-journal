@@ -30,7 +30,7 @@ final class ConfigureShareGatewayCommand extends Command
             $secrets->store($reference, (string) $this->secret("Enter the secret {$reference}"));
         }
 
-        $key = $owner->keyWrite($this->option('request-key') === null ? null : (string) $this->option('request-key'));
+        $key = $owner->useRequestKey($this->option('request-key') === null ? null : (string) $this->option('request-key'));
         $configuration = $commands->run(new ConfigureShareGateway(
             (string) $this->argument('gateway'),
             (string) $this->option('program-version'),
