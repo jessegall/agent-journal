@@ -14,11 +14,13 @@ use App\Comments\Contracts\CommentReader;
 use App\Comments\Data\RecordCommentLocation;
 use App\Comments\Data\RecordCommentView;
 use App\Comments\Models\Comment;
+use App\Records\Contracts\RecordReader;
 use App\Text\Contracts\TextReader;
 use App\Text\Exceptions\TargetHasNoText;
 use App\Text\Values\TextRange;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\CommitsHookRows;
@@ -137,6 +139,20 @@ final class WholeRecordCommentTest extends TestCase
             ->getJson('/text/version?target='.urlencode("note {$this->note->number}"))
             ->assertForbidden()
             ->assertJsonPath('message', 'A notes.note has no text to read or point at; a comment on it is about the whole record.');
+    }
+
+    public function test_comment_cards_come_in_one_batch_and_hide_comments_on_unreadable_records(): void
+    {
+        $ids = array_map(fn (int $index) => $this->app->make(CommandBus::class)->run(new PostComment($this->target(), "Comment {$index}.", (string) Str::uuid())), range(1, 3));
+        $wanted = [...array_map(fn (string $id) => new RecordIdentity(Comment::LINK_TYPE, $id), $ids), new RecordIdentity(Comment::LINK_TYPE, strtolower((string) Str::ulid()))];
+
+        DB::enableQueryLog();
+        $cards = $this->app->make(RecordReader::class)->visibleCards($wanted);
+        $queries = count(DB::getQueryLog());
+
+        $this->assertSame(array_fill(0, 3, "comment on note {$this->note->number}"), array_map(fn ($card) => $card->label, $cards));
+        $this->assertSame('Comment 1.', $cards[0]->abstract);
+        $this->assertLessThanOrEqual(4, $queries);
     }
 
     private function target(): RecordIdentity
