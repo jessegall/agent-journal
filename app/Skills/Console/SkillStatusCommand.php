@@ -6,7 +6,7 @@ namespace App\Skills\Console;
 
 use App\Skills\Exceptions\SkillPreviewRefused;
 use App\Skills\Exceptions\SkillSessionHidden;
-use App\Skills\Readers\SkillStatusReader;
+use App\Skills\Readers\Support\SkillStatusReader;
 use App\Skills\Support\SkillAuthoring;
 use App\Skills\Values\GenerationStatus;
 use App\Skills\Values\PublicationStatus;

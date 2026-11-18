@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Models;
 
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Skills\Enums\ReadEvidence;
@@ -26,7 +27,9 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['session_id', 'context_epoch', 'skill_key', 'content_digest', 'evidence', 'read_at'])]
 final class SkillReceipt extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids;
+    use BoundedReads, HasUlids, Linkable;
+
+    public const string LINK_TYPE = 'core.skill-receipt';
 
     public const string CREATED_AT = 'read_at';
 

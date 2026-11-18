@@ -22,7 +22,7 @@ use App\Hooks\Support\ContextReminders;
 use App\Skills\Listeners\AdmitLaunchSkills;
 use App\Skills\Listeners\RecordProvenSkillReads;
 use App\Skills\Listeners\RefreshSessionSkills;
-use App\Skills\Readers\SkillStatusReader;
+use App\Skills\Readers\Support\SkillStatusReader;
 use App\Skills\Support\SkillPublishing;
 use App\Skills\Support\SkillTargets;
 use App\Skills\Values\SessionSkillStatus;

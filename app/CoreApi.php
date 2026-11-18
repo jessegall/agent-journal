@@ -131,6 +131,9 @@ use App\Agents\Support\ExitReceipt;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\HostCapacity;
+use App\Agents\Support\LaunchFile;
+use App\Agents\Support\LaunchFolder;
+use App\Agents\Support\LaunchGrant;
 use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\LaunchRecordDetails;
 use App\Agents\Support\LaunchRequest;
@@ -1191,6 +1194,9 @@ final class CoreApi
                 RuntimeStatus::class,
                 EnrolledHost::class,
                 OpenedRuntime::class,
+                LaunchGrant::class,
+                LaunchFolder::class,
+                LaunchFile::class,
                 DriverType::class,
                 DriverReceipt::class,
                 ClaimedRequests::class,

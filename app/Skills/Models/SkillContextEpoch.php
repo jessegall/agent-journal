@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Models;
 
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -24,7 +25,9 @@ use Illuminate\Support\Carbon;
 #[Fillable(['session_id', 'epoch'])]
 final class SkillContextEpoch extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids;
+    use BoundedReads, HasUlids, Linkable;
+
+    public const string LINK_TYPE = 'core.skill-context-epoch';
 
     /**
      * @return array<string, string>

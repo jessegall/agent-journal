@@ -15,7 +15,7 @@ use App\Skills\Enums\PublicationState;
 use App\Skills\Exceptions\SkillSessionHidden;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
-use App\Skills\Readers\SkillStatusReader;
+use App\Skills\Readers\Support\SkillStatusReader;
 use App\Skills\Support\HostSkillPublisher;
 use App\Skills\Support\SkillPublishing;
 use App\Skills\Support\SkillTargets;
