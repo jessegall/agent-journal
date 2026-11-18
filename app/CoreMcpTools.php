@@ -6,7 +6,10 @@ namespace App;
 
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Resources\JournalResource;
+use App\Mcp\Resources\OverviewResource;
+use App\Mcp\Tools\CapabilitiesReadTool;
 use App\Mcp\Tools\JournalTool;
+use App\Mcp\Tools\OverviewReadTool;
 
 /**
  * Core's own MCP tools and resources, added to the catalogue before the domains'.
@@ -18,7 +21,7 @@ final class CoreMcpTools
      */
     public static function tools(): array
     {
-        return [];
+        return [OverviewReadTool::class, CapabilitiesReadTool::class];
     }
 
     /**
@@ -26,7 +29,7 @@ final class CoreMcpTools
      */
     public static function resources(): array
     {
-        return [];
+        return [OverviewResource::class];
     }
 
     public static function registerIn(McpRegistration $registration): void

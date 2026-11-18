@@ -11,6 +11,7 @@ use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesLinkRecords;
+use App\Domains\Contracts\ProvidesMcpTools;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
@@ -38,13 +39,14 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Mcp\HeldTasksOverview;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Readers\TaskAssignments;
 use Domain\Tasks\Readers\TaskRecords;
 use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 
-final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesNumberedModels, ProvidesStates
+final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNumberedModels, ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -116,5 +118,20 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function numberedModels(): array
     {
         return [NumberedModel::global(Task::class)];
+    }
+
+    public function mcpTools(): array
+    {
+        return [];
+    }
+
+    public function mcpResources(): array
+    {
+        return [];
+    }
+
+    public function overviewContributions(): array
+    {
+        return [HeldTasksOverview::class];
     }
 }

@@ -38,4 +38,9 @@ final class LedgerDomain extends Domain implements ProvidesMcpTools
     {
         return [];
     }
+
+    public function overviewContributions(): array
+    {
+        return [];
+    }
 }

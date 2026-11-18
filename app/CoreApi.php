@@ -237,7 +237,9 @@ use App\Links\Support\Linkable;
 use App\Links\Support\LinkAccess;
 use App\Links\Support\LinkTypeRegistry;
 use App\Mcp\Contracts\CodedRefusal;
+use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Data\NextAction;
+use App\Mcp\Data\OverviewSection;
 use App\Mcp\Data\ToolResult as McpToolResult;
 use App\Mcp\Enums\RefusalCode;
 use App\Mcp\Resources\JournalResource;
@@ -547,11 +549,13 @@ final class CoreApi
                 ProvidesShareGateways::class,
                 SharePolicy::class,
                 CodedRefusal::class,
+                OverviewContribution::class,
             )
             ->values(
                 RefusalCode::class,
                 McpToolResult::class,
                 NextAction::class,
+                OverviewSection::class,
                 ToolArguments::class,
                 McpCall::class,
                 RecordCard::class,

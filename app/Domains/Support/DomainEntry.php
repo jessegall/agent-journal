@@ -269,7 +269,7 @@ final readonly class DomainEntry
     }
 
     /**
-     * Adds this domain's MCP tools and resources to the registration; none without ProvidesMcpTools.
+     * Adds this domain's MCP tools, resources and overview sections to the registration; none without ProvidesMcpTools.
      */
     public function registerMcpToolsIn(McpRegistration $registration): void
     {
@@ -283,6 +283,10 @@ final readonly class DomainEntry
 
         foreach ($this->domain->mcpResources() as $resource) {
             $registration->registerResource($resource);
+        }
+
+        foreach ($this->domain->overviewContributions() as $contribution) {
+            $registration->registerOverviewContribution($contribution);
         }
     }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Support;
 
 use App\Mcp\Contracts\McpRegistration;
+use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Exceptions\McpBudgetExceeded;
 use App\Mcp\Exceptions\McpClassInvalid;
 use App\Mcp\Exceptions\McpResourceUriTaken;
@@ -16,9 +17,9 @@ use Laravel\Mcp\Server\Attributes\Name;
 use ReflectionClass;
 
 /**
- * Every MCP tool and resource class Core and the domains offer, checked as each is added: one class per tool name
- * and resource URI, snake_case tool names, and the main profile's discovery budget. It holds class names and their
- * sizes only, never a tool built to answer a call.
+ * Every MCP tool, resource and overview contribution class Core and the domains offer, checked as each is added: one
+ * class per tool name and resource URI, snake_case tool names, and the main profile's discovery budget. It holds class
+ * names and their sizes only, never a tool built to answer a call.
  */
 final class McpCatalogue implements McpRegistration
 {
@@ -39,6 +40,11 @@ final class McpCatalogue implements McpRegistration
      * @var array<string, class-string<JournalResource>>
      */
     private array $resources = [];
+
+    /**
+     * @var list<class-string<OverviewContribution>>
+     */
+    private array $overviewContributions = [];
 
     private int $toolBytes = 0;
 
@@ -92,6 +98,18 @@ final class McpCatalogue implements McpRegistration
     }
 
     /**
+     * @throws McpClassInvalid
+     */
+    public function registerOverviewContribution(string $className): void
+    {
+        if (! is_subclass_of($className, OverviewContribution::class)) {
+            throw McpClassInvalid::for($className, OverviewContribution::class);
+        }
+
+        $this->overviewContributions[] = $className;
+    }
+
+    /**
      * @return list<class-string<JournalTool>>
      */
     public function toolClasses(): array
@@ -105,6 +123,24 @@ final class McpCatalogue implements McpRegistration
     public function resourceClasses(): array
     {
         return array_values($this->resources);
+    }
+
+    /**
+     * The names of every tool in the catalogue, in the order they were added.
+     *
+     * @return list<string>
+     */
+    public function toolNames(): array
+    {
+        return array_keys($this->tools);
+    }
+
+    /**
+     * @return list<class-string<OverviewContribution>>
+     */
+    public function overviewContributionClasses(): array
+    {
+        return $this->overviewContributions;
     }
 
     /**

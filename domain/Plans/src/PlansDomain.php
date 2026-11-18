@@ -11,6 +11,7 @@ use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesLinkRecords;
+use App\Domains\Contracts\ProvidesMcpTools;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
@@ -47,6 +48,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Http\Controllers\StartPlanController;
+use Domain\Plans\Mcp\HeldPlansOverview;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Readers\OpenPlansCount;
@@ -63,7 +65,7 @@ use Domain\Plans\Support\PlanAssignmentProvider;
 use Domain\Plans\Support\PlanRecords;
 use Domain\Tasks\TasksDomain;
 
-final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesStates
+final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -172,5 +174,20 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function states(): array
     {
         return [WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateFactory::class];
+    }
+
+    public function mcpTools(): array
+    {
+        return [];
+    }
+
+    public function mcpResources(): array
+    {
+        return [];
+    }
+
+    public function overviewContributions(): array
+    {
+        return [HeldPlansOverview::class];
     }
 }

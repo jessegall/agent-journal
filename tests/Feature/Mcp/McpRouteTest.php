@@ -93,10 +93,10 @@ final class McpRouteTest extends TestCase
         $this->sendMcp($this->launch, 'prompts/list')->assertOk()->assertJsonPath('result.prompts', []);
     }
 
-    public function test_tools_and_resources_start_empty(): void
+    public function test_tools_and_resources_list_core_orientation_first(): void
     {
-        $this->sendMcp($this->launch, 'tools/list')->assertOk()->assertJsonPath('result.tools', []);
-        $this->sendMcp($this->launch, 'resources/list')->assertOk()->assertJsonPath('result.resources', []);
+        $this->assertSame(['overview_read', 'capabilities_read'], array_slice(array_column($this->sendMcp($this->launch, 'tools/list')->assertOk()->json('result.tools'), 'name'), 0, 2));
+        $this->sendMcp($this->launch, 'resources/list')->assertOk()->assertJsonPath('result.resources.0.uri', 'journal://v1/overview');
     }
 
     public function test_a_per_request_2026_07_28_request_with_its_mcp_headers_is_served(): void
