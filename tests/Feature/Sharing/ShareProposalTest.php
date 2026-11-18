@@ -56,6 +56,8 @@ final class ShareProposalTest extends TestCase
 
     private const array TABLES = ['command_receipts', 'share_audits', 'share_members', 'share_gateway_operations', 'shares', 'share_previews', 'share_gateway_configurations', 'share_installations', 'users', 'links', 'comments', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'number_groups', 'launch_credentials', 'agent_sessions', 'agents'];
 
+    private const int BULK_NUMBERS = 1_000_000;
+
     private User $owner;
 
     private RecordIdentity $root;
@@ -173,7 +175,8 @@ final class ShareProposalTest extends TestCase
     }
 
     /**
-     * Open proposals of the root in one insert after the first, numbered after it, so the limit is reached quickly.
+     * Open proposals of the root in one insert after the first, numbered far above the group's counter so later
+     * numbered proposals never collide with them, so the limit is reached quickly.
      */
     private function proposeMany(int $count): void
     {
@@ -185,7 +188,7 @@ final class ShareProposalTest extends TestCase
             $rows[] = [
                 'id' => Str::lower((string) Str::ulid()),
                 'number_group_id' => $first->number_group_id,
-                'number' => $first->number + $index,
+                'number' => self::BULK_NUMBERS + $index,
                 'state' => ShareState::Proposed->value,
                 'root_type' => $this->root->type,
                 'root_id' => $this->root->id,
