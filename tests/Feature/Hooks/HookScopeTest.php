@@ -21,6 +21,8 @@ use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
 use App\Hooks\Storage\RecordedAnswer;
 use App\Hooks\Storage\RecordedSteps;
+use App\Hooks\Ticks\TickingTypes;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
@@ -135,8 +137,8 @@ final class HookScopeTest extends TestCase
     private function storeFor(StackTarget $target): void
     {
         (new AgentStackRow)->startFor($target, new FrameRecords([
-            new FrameRecord('ready', new StateReference('hooks.main_ready', NoSubject::None), true, 1),
-        ]));
+            new FrameRecord('ready', new StateReference('hooks.main_ready', NoSubject::None), true, 1, CarbonImmutable::now()),
+        ]), new TickingTypes([]));
         (new HookCall)->recordFor(
             new HookIdentity($target->agentId, $target->sessionId, 'hook-1', str_repeat('a', 64)),
             RecordedAnswer::of(AnswerType::Allow, '{}'),

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Providers;
 
+use App\Actors\Contracts\ActiveActorRegistration;
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Enums\ActorType;
 use App\Web\Contracts\CurrentUserReader;
@@ -15,6 +16,7 @@ use Domain\Access\Models\User;
 use Domain\Access\Readers\CurrentUserRecords;
 use Domain\Access\Support\AccessSettings;
 use Domain\Access\Support\JournalAccess;
+use Domain\Access\Support\PresentUserCounter;
 use Domain\Access\Support\UserActors;
 use Domain\Access\Support\UserAssignees;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -45,9 +47,10 @@ class AccessServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(ActorProviderRegistration $actors): void
+    public function boot(ActorProviderRegistration $actors, ActiveActorRegistration $presentActors): void
     {
         $actors->register(ActorType::User, UserActors::class);
+        $presentActors->register(PresentUserCounter::class);
         $this->configureActions();
         $this->configureRateLimiting();
     }

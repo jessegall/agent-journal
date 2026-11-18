@@ -47,7 +47,7 @@ final readonly class AgentStack
         $walk = new HookWalk($input->methodName(), $this, $walkFrames[0]);
 
         foreach ($walkFrames as $frame) {
-            if ($frame->isFinished()) {
+            if ($frame->isFinished() || ! $frame->isEnabled()) {
                 continue;
             }
 
@@ -65,9 +65,9 @@ final readonly class AgentStack
     }
 
     /**
-     * The stack with a state put on top, or this stack when it already holds a state for the same reference. This is
-     * the admission point every push passes through (StatePush, and later the engine's stack): doc 39's conditional
-     * states decline a disabled state here.
+     * The stack with a state put on top, or this stack when it already holds a state for the same reference or the
+     * state is a conditional state that is switched off. Every push passes through here, so a declined push stores
+     * nothing.
      */
     public function withStateOnTop(StateReference $reference): self
     {
@@ -77,7 +77,17 @@ final readonly class AgentStack
             }
         }
 
-        return new self([...$this->frames, $this->factory->frameFor($reference)], $this->factory);
+        if (! $this->factory->isEnabled($reference)) {
+            return $this;
+        }
+
+        $frame = $this->factory->frameFor($reference);
+
+        if (! $frame->isEnabled()) {
+            return $this;
+        }
+
+        return new self([...$this->frames, $frame], $this->factory);
     }
 
     /**
@@ -96,14 +106,15 @@ final readonly class AgentStack
     }
 
     /**
-     * The stack without every frame whose state reports its work done, wherever it sits.
+     * The stack without every frame whose state reports its work done or is switched off, wherever it sits; a switched-
+     * off frame is only left out, its work is not finished.
      */
-    public function withoutFinishedFrames(): self
+    public function withoutInactiveFrames(): self
     {
         $stack = $this;
 
         foreach ($this->frames as $frame) {
-            if ($frame->isFinished()) {
+            if ($frame->isFinished() || ! $frame->isEnabled()) {
                 $stack = $stack->withoutFrame($frame);
             }
         }
@@ -167,7 +178,7 @@ final readonly class AgentStack
     public function records(): FrameRecords
     {
         return new FrameRecords(array_map(
-            fn (Frame $frame) => new FrameRecord($frame->id, $frame->reference, $frame->isBottom(), $frame->schemaVersion),
+            fn (Frame $frame) => new FrameRecord($frame->id, $frame->reference, $frame->isBottom(), $frame->schemaVersion, $frame->enteredAt),
             $this->frames,
         ));
     }

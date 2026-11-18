@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Middleware\Agents;
 
 use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Support\PresenceWindow;
+use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Exceptions\CallProtocolUnsupported;
 use App\Agents\Exceptions\CallSignatureInvalid;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\AgentContextFactory;
+use App\Bus\Contracts\CommandBus;
+use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\JsonResponse;
@@ -17,8 +21,8 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Authenticates an agent request by its launch credential and signed call, and makes its agent context and its actor
- * the ones for this request.
+ * Authenticates an agent request by its launch credential and signed call, refreshes its session's heartbeat when the
+ * stored one is stale, and makes its agent context and its actor the ones for this request.
  */
 final readonly class AuthenticateAgent
 {
@@ -26,6 +30,8 @@ final readonly class AuthenticateAgent
         private AgentContextFactory $contexts,
         private Container $container,
         private CurrentActorSetter $actors,
+        private CommandBus $commands,
+        private PresenceWindow $presence,
     ) {}
 
     /**
@@ -35,6 +41,7 @@ final readonly class AuthenticateAgent
     {
         try {
             $context = $this->contexts->fromRequest($request);
+            $this->refreshHeartbeatOf($context);
         } catch (CredentialRejected|CallSignatureInvalid $rejection) {
             return new JsonResponse(['message' => $rejection->getMessage()], Response::HTTP_UNAUTHORIZED);
         } catch (CallProtocolUnsupported $unsupported) {
@@ -49,5 +56,17 @@ final readonly class AuthenticateAgent
         } finally {
             $this->actors->clear();
         }
+    }
+
+    /**
+     * An authenticated call is a sign of life: it records a beat when the stored one is older than the refresh window.
+     */
+    private function refreshHeartbeatOf(AgentContext $context): void
+    {
+        if (! $context->heartbeatOlderThan(CarbonImmutable::now()->subSeconds($this->presence->signedCallRefreshSeconds))) {
+            return;
+        }
+
+        $this->commands->run(new RecordHeartbeat($context->sessionId));
     }
 }

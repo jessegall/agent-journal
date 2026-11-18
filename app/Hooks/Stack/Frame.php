@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace App\Hooks\Stack;
 
 use App\Agents\Support\StackTarget;
+use App\Hooks\Contracts\ConditionalState;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
 use App\Hooks\Storage\FrameRecord;
+use Carbon\CarbonImmutable;
 
 /**
- * One state on a stack, with the frame id it is stored under and the reference it was built from.
+ * One state on a stack, with the frame id it is stored under, the reference it was built from and the time it entered
+ * the stack, which never changes while the frame lives.
  */
 final readonly class Frame
 {
@@ -21,13 +24,18 @@ final readonly class Frame
         public string $id,
         public StateReference $reference,
         public AgentState $state,
+        public CarbonImmutable $enteredAt,
         private bool $bottom = false,
         public int $schemaVersion = 1,
+        private bool $typeEnabled = true,
     ) {}
 
-    public static function restored(FrameRecord $record, AgentState $state): self
+    /**
+     * The frame of a stored record, with whether its state type runs now as the restore found it.
+     */
+    public static function restored(FrameRecord $record, AgentState $state, bool $typeEnabled = true): self
     {
-        return new self($record->id, $record->reference, $state, $record->isBottom, $record->schemaVersion);
+        return new self($record->id, $record->reference, $state, $record->enteredAt, $record->isBottom, $record->schemaVersion, $typeEnabled);
     }
 
     public function isBottom(): bool
@@ -48,6 +56,15 @@ final readonly class Frame
     public function isFinished(): bool
     {
         return $this->state->isFinished();
+    }
+
+    /**
+     * Whether the state may run now: not while its state type is switched off, and otherwise always, unless it is a
+     * conditional state that answers it is switched off.
+     */
+    public function isEnabled(): bool
+    {
+        return $this->typeEnabled && (! $this->state instanceof ConditionalState || $this->state->isEnabled());
     }
 
     public function enter(StackTarget $target): void

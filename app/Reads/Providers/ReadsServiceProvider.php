@@ -10,6 +10,7 @@ use App\Reads\Exceptions\ReadLimitInvalid;
 use App\Reads\Exceptions\ReadPolicyMissing;
 use App\Reads\Support\ReadLog;
 use App\Reads\Support\ScopedReadMeter;
+use App\Reads\Support\SelfMeasuredCommands;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Container\Container;
@@ -27,7 +28,8 @@ use Illuminate\Support\ServiceProvider;
 
 /**
  * Counts every query on every connection, the open one and each opened later, into the read meter of the request,
- * job or command running it. The meter is resolved at each call, never captured.
+ * job or command running it. The meter is resolved at each call, never captured. A command that measures its own units
+ * of work, such as engine:tick, keeps no measurement of its own open.
  */
 final class ReadsServiceProvider extends ServiceProvider
 {
@@ -35,9 +37,10 @@ final class ReadsServiceProvider extends ServiceProvider
     {
         $this->app->scoped(ScopedReadMeter::class);
         $this->app->alias(ScopedReadMeter::class, ReadMeter::class);
+        $this->app->singleton(SelfMeasuredCommands::class);
     }
 
-    public function boot(DatabaseManager $databases, Dispatcher $events, Repository $config): void
+    public function boot(DatabaseManager $databases, Dispatcher $events, Repository $config, SelfMeasuredCommands $selfMeasured): void
     {
         $defaultLimit = (int) $config->get('reads.default_limit');
         $pageMax = (int) $config->get('reads.page_max');
@@ -60,8 +63,8 @@ final class ReadsServiceProvider extends ServiceProvider
 
         $events->listen(ConnectionEstablished::class, static fn (ConnectionEstablished $event) => self::countQueriesOn($event->connection));
         $events->listen(QueryExecuted::class, static fn () => ScopedReadMeter::ofCurrentScope()->recordCompletedQuery());
-        $events->listen(CommandStarting::class, static fn () => ScopedReadMeter::ofCurrentScope()->begin());
-        $events->listen(CommandFinished::class, static fn (CommandFinished $finished) => self::endEntry("artisan {$finished->command}"));
+        $events->listen(CommandStarting::class, static fn (CommandStarting $starting) => $selfMeasured->has($starting->command) ? null : ScopedReadMeter::ofCurrentScope()->begin());
+        $events->listen(CommandFinished::class, static fn (CommandFinished $finished) => $selfMeasured->has($finished->command) ? null : self::endEntry("artisan {$finished->command}"));
         $events->listen(JobProcessing::class, static fn () => ScopedReadMeter::ofCurrentScope()->begin());
         $events->listen(JobProcessed::class, static fn (JobProcessed $processed) => self::endEntry("job {$processed->job->resolveName()}"));
         $events->listen(JobFailed::class, static fn (JobFailed $failed) => self::endEntry("job {$failed->job->resolveName()}"));

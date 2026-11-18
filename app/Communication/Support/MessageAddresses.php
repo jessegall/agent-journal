@@ -39,7 +39,7 @@ final readonly class MessageAddresses implements MessageAddressReader
         return match ($actor->type) {
             ActorType::Agent => $this->agentAddress($actor, $sessionId),
             ActorType::User => $sessionId === null ? MessageAddress::forUser($actor) : throw ActorUnavailable::forIdentity($actor),
-            ActorType::System => throw ActorUnavailable::forIdentity($actor),
+            ActorType::System, ActorType::Engine => throw ActorUnavailable::forIdentity($actor),
         };
     }
 
@@ -56,6 +56,7 @@ final readonly class MessageAddresses implements MessageAddressReader
             ActorType::Agent => MessageAddress::forAgent($identity, $this->session->sessionId()),
             ActorType::User => MessageAddress::forUser($identity),
             ActorType::System => MessageAddress::forSystem(),
+            ActorType::Engine => throw ActorCannotSend::forIdentity($identity),
         };
     }
 

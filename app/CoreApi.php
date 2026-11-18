@@ -27,6 +27,7 @@ use App\Actors\Support\CurrentUser;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Exceptions\AgentRequestFailed;
 use App\AgentRequests\Support\AgentReply;
+use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Contracts\AgentReader;
 use App\Agents\Contracts\CurrentSession;
@@ -157,11 +158,15 @@ use App\Contracts\CommandHandler;
 use App\Contracts\CommandRefusal;
 use App\Contracts\Event;
 use App\Contracts\Listener;
+use App\Engine\Commands\MarkSilentSessions;
+use App\Engine\Commands\SettleFrameTimes;
+use App\Engine\Events\EngineTicked;
 use App\Exports\Exceptions\MalformedExports;
 use App\Exports\Support\ExportBuilder;
 use App\Exports\Support\Exports;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\Answer;
+use App\Hooks\Contracts\ConditionalState;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Contracts\HookAnswerer;
 use App\Hooks\Contracts\HookInput;
@@ -271,11 +276,47 @@ use App\Records\Exceptions\InvalidRecordIdentity;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\ProvidesModelRecords;
 use App\Records\Support\RecordIdentity;
+use App\Settings\Commands\DisableSettingGroup;
+use App\Settings\Commands\EnableSettingGroup;
+use App\Settings\Commands\ResetSetting;
+use App\Settings\Commands\ResetSettingGroup;
+use App\Settings\Commands\SetBooleanSetting;
+use App\Settings\Commands\SetDecimalSetting;
+use App\Settings\Commands\SetIntegerChoice;
+use App\Settings\Commands\SetIntegerSetting;
+use App\Settings\Commands\SetStringChoice;
+use App\Settings\Commands\SetStringSetting;
 use App\Settings\Contracts\ChoiceLabel;
+use App\Settings\Contracts\EnabledSettingsGroup;
 use App\Settings\Contracts\GroupDeclaration;
 use App\Settings\Contracts\ProvidesSettings;
 use App\Settings\Contracts\Setting;
+use App\Settings\Contracts\SettingCommands;
+use App\Settings\Contracts\SettingsAccessPolicy;
+use App\Settings\Contracts\SettingsCatalogue;
 use App\Settings\Contracts\SettingsDefinition;
+use App\Settings\Contracts\SettingsReader;
+use App\Settings\Contracts\SettingsSnapshot;
+use App\Settings\Data\BooleanValueData;
+use App\Settings\Data\DecimalConstraintsData;
+use App\Settings\Data\DecimalValueData;
+use App\Settings\Data\IntegerChoiceConstraintsData;
+use App\Settings\Data\IntegerChoiceOptionData;
+use App\Settings\Data\IntegerChoiceValueData;
+use App\Settings\Data\IntegerConstraintsData;
+use App\Settings\Data\IntegerValueData;
+use App\Settings\Data\InvalidValueData;
+use App\Settings\Data\PlainGroupAvailabilityData;
+use App\Settings\Data\SettingData;
+use App\Settings\Data\SettingGroupData;
+use App\Settings\Data\SettingIdentityData;
+use App\Settings\Data\SettingsCatalogueData;
+use App\Settings\Data\StringChoiceConstraintsData;
+use App\Settings\Data\StringChoiceOptionData;
+use App\Settings\Data\StringChoiceValueData;
+use App\Settings\Data\StringConstraintsData;
+use App\Settings\Data\StringValueData;
+use App\Settings\Data\ToggleGroupAvailabilityData;
 use App\Settings\Declarations\BooleanSetting;
 use App\Settings\Declarations\ChoiceSetting;
 use App\Settings\Declarations\DecimalSetting;
@@ -284,12 +325,34 @@ use App\Settings\Declarations\IntegerSetting;
 use App\Settings\Declarations\SettingGroup;
 use App\Settings\Declarations\StringSetting;
 use App\Settings\Declarations\ToggleGroup;
+use App\Settings\Enums\GroupAvailability;
+use App\Settings\Enums\SettingAvailability;
+use App\Settings\Enums\SettingSource;
+use App\Settings\Enums\SettingsOutcome;
+use App\Settings\Enums\SettingTarget;
 use App\Settings\Enums\SettingType;
+use App\Settings\Events\SettingsChanged;
 use App\Settings\Exceptions\DecimalInvalid;
+use App\Settings\Exceptions\GroupSnapshotRequired;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
+use App\Settings\Exceptions\SettingDisabled;
 use App\Settings\Exceptions\SettingHandleUnknown;
+use App\Settings\Exceptions\SettingReferenceInvalid;
+use App\Settings\Exceptions\SettingsAccessDenied;
+use App\Settings\Exceptions\SettingsConflict;
+use App\Settings\Exceptions\SettingsDocumentInvalid;
+use App\Settings\Exceptions\SettingsOwnerUnknown;
+use App\Settings\Exceptions\SettingStorageInvalid;
+use App\Settings\Exceptions\SettingsUnavailable;
+use App\Settings\Exceptions\SettingUnavailable;
+use App\Settings\Exceptions\SettingValueInvalid;
+use App\Settings\Support\CurrentSettingsReader;
+use App\Settings\Support\DisabledSettingsGroup;
 use App\Settings\Values\Choice;
 use App\Settings\Values\Decimal;
+use App\Settings\Values\GroupReference;
+use App\Settings\Values\SettingReference;
+use App\Settings\Values\SettingsChange;
 use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Contracts\Shareable;
@@ -367,6 +430,7 @@ use App\Ui\Enums\Icon;
 use App\Ui\Enums\PageDestination;
 use App\Ui\Enums\PageSkeleton;
 use App\Ui\Enums\SlotContextType;
+use App\Web\Commands\RecordUserHeartbeat;
 use App\Web\Contracts\CurrentUserReader;
 use App\Web\Contracts\JournalAccessPolicy;
 
@@ -381,7 +445,7 @@ final class CoreApi
     public static function exports(): Exports
     {
         return Exports::make()
-            ->events(LinksRemoved::class, CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class)
+            ->events(LinksRemoved::class, CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, EngineTicked::class, SettingsChanged::class)
             ->contracts(
                 RecordProvider::class,
                 RecordReader::class,
@@ -419,6 +483,7 @@ final class CoreApi
                 HookAnswerer::class,
                 HookInput::class,
                 StateRegistration::class,
+                ConditionalState::class,
                 ReminderContribution::class,
                 Assignee::class,
                 Assignable::class,
@@ -464,6 +529,12 @@ final class CoreApi
                 ProvidesShareRecords::class,
                 ProvidesShareGateways::class,
                 SharePolicy::class,
+                SettingsReader::class,
+                SettingCommands::class,
+                SettingsSnapshot::class,
+                EnabledSettingsGroup::class,
+                SettingsCatalogue::class,
+                SettingsAccessPolicy::class,
             )
             ->values(
                 RecordCard::class,
@@ -620,6 +691,36 @@ final class CoreApi
                 GatewayReadiness::class,
                 GatewayHealth::class,
                 ShareRelationType::class,
+                SettingSource::class,
+                CurrentSettingsReader::class,
+                SettingTarget::class,
+                GroupAvailability::class,
+                SettingAvailability::class,
+                SettingsCatalogueData::class,
+                SettingGroupData::class,
+                SettingData::class,
+                SettingIdentityData::class,
+                PlainGroupAvailabilityData::class,
+                ToggleGroupAvailabilityData::class,
+                StringConstraintsData::class,
+                IntegerConstraintsData::class,
+                DecimalConstraintsData::class,
+                StringChoiceConstraintsData::class,
+                IntegerChoiceConstraintsData::class,
+                StringChoiceOptionData::class,
+                IntegerChoiceOptionData::class,
+                StringValueData::class,
+                BooleanValueData::class,
+                IntegerValueData::class,
+                DecimalValueData::class,
+                StringChoiceValueData::class,
+                IntegerChoiceValueData::class,
+                InvalidValueData::class,
+                SettingsOutcome::class,
+                SettingReference::class,
+                GroupReference::class,
+                SettingsChange::class,
+                DisabledSettingsGroup::class,
             )
             ->commands(
                 PostComment::class,
@@ -629,14 +730,39 @@ final class CoreApi
                 AnswerMessage::class,
                 DismissMessage::class,
                 RetireAgent::class,
+                RecordHeartbeat::class,
+                RecordUserHeartbeat::class,
+                MarkSilentSessions::class,
+                SettleFrameTimes::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,
                 AssignRecord::class,
                 ReassignRecord::class,
                 UnassignRecord::class,
+                SetStringSetting::class,
+                SetBooleanSetting::class,
+                SetIntegerSetting::class,
+                SetDecimalSetting::class,
+                SetStringChoice::class,
+                SetIntegerChoice::class,
+                ResetSetting::class,
+                EnableSettingGroup::class,
+                DisableSettingGroup::class,
+                ResetSettingGroup::class,
             )
             ->exceptions(
+                SettingUnavailable::class,
+                SettingDisabled::class,
+                GroupSnapshotRequired::class,
+                SettingValueInvalid::class,
+                SettingStorageInvalid::class,
+                SettingsDocumentInvalid::class,
+                SettingsConflict::class,
+                SettingsAccessDenied::class,
+                SettingsUnavailable::class,
+                SettingReferenceInvalid::class,
+                SettingsOwnerUnknown::class,
                 ContentMissing::class,
                 ContentTooLarge::class,
                 MarkdownInvalid::class,

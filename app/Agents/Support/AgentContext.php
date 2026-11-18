@@ -8,9 +8,10 @@ use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Models\AgentSession;
+use Carbon\CarbonImmutable;
 
 /**
- * Who is calling in this request: the agent, its journal session and role, and the signed call. It lives for one request only.
+ * Who is calling in this request: the agent, its journal session and role, the signed call and the session's last beat. It lives for one request only.
  */
 final readonly class AgentContext implements Actor
 {
@@ -19,6 +20,7 @@ final readonly class AgentContext implements Actor
         public string $sessionId,
         public string $role,
         public SignedCall $call,
+        public CarbonImmutable|null $lastHeartbeatAt,
     ) {}
 
     /**
@@ -26,7 +28,15 @@ final readonly class AgentContext implements Actor
      */
     public static function ofSession(AgentSession $session, SignedCall $call): self
     {
-        return new self($session->agent_id, $session->id, $session->agent->role, $call);
+        return new self($session->agent_id, $session->id, $session->agent->role, $call, $session->last_heartbeat_at);
+    }
+
+    /**
+     * Whether the session's stored beat, read when the call was authenticated, is missing or older than the cutoff.
+     */
+    public function heartbeatOlderThan(CarbonImmutable $cutoff): bool
+    {
+        return $this->lastHeartbeatAt === null || $this->lastHeartbeatAt->lessThan($cutoff);
     }
 
     public function actorType(): ActorType

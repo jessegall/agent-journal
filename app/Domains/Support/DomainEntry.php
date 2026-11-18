@@ -54,6 +54,7 @@ final readonly class DomainEntry
         public array $requires,
         public Exports $exports,
         private SettingsDefinition $settings,
+        private bool $switchable,
     ) {}
 
     /**
@@ -84,6 +85,7 @@ final readonly class DomainEntry
             requires: self::checkedRequirements($name, $className, $domain->requires()),
             exports: ExportsCheck::check($name, $namespace, $domain->exports()),
             settings: $domain instanceof ProvidesSettings ? $domain->settings() : new EmptySettingsDefinition,
+            switchable: $domain->canDisable(),
         );
     }
 
@@ -98,6 +100,14 @@ final readonly class DomainEntry
     public function className(): string
     {
         return $this->domain::class;
+    }
+
+    /**
+     * Whether the owner may switch this domain off, as its Domain class declared once.
+     */
+    public function canDisable(): bool
+    {
+        return $this->switchable;
     }
 
     /**

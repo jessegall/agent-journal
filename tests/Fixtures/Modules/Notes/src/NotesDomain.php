@@ -4,26 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
-use Tests\Fixtures\Modules\Notes\Models\NotePage;
-use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
-use Tests\Fixtures\Modules\Notes\Links\NotePageLinkRecords;
-use Tests\Fixtures\Modules\Notes\Links\NoteSnapshotLinkRecords;
-use App\Domains\Concerns\HasLinkRecords;
-use App\Domains\Concerns\HasNumberedModels;
-use App\Domains\Contracts\ProvidesLinkRecords;
-use App\Numbers\Contracts\ProvidesNumberedModels;
-use App\Numbers\Support\NumberedModel;
-use Tests\Fixtures\Modules\Notes\Links\NoteLinkRecords;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Domains\Concerns\HasAssignables;
+use App\Domains\Concerns\HasLinkRecords;
+use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesAssignables;
+use App\Domains\Contracts\ProvidesLinkRecords;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
+use App\Numbers\Contracts\ProvidesNumberedModels;
+use App\Numbers\Support\NumberedModel;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Contracts\ProvidesSections;
@@ -42,6 +37,8 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordWriteNote;
 use Tests\Fixtures\Modules\Notes\Commands\ClearNotes;
 use Tests\Fixtures\Modules\Notes\Commands\CopyNote;
+use Tests\Fixtures\Modules\Notes\Commands\EngineCopyNote;
+use Tests\Fixtures\Modules\Notes\Commands\EngineNote;
 use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote;
 use Tests\Fixtures\Modules\Notes\Commands\OpenTransactionNote;
 use Tests\Fixtures\Modules\Notes\Commands\PinNote;
@@ -50,7 +47,12 @@ use Tests\Fixtures\Modules\Notes\Commands\SystemNote;
 use Tests\Fixtures\Modules\Notes\Commands\UserNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
 use Tests\Fixtures\Modules\Notes\Contracts\NoteReader;
+use Tests\Fixtures\Modules\Notes\Links\NoteLinkRecords;
+use Tests\Fixtures\Modules\Notes\Links\NotePageLinkRecords;
+use Tests\Fixtures\Modules\Notes\Links\NoteSnapshotLinkRecords;
 use Tests\Fixtures\Modules\Notes\Models\Note;
+use Tests\Fixtures\Modules\Notes\Models\NotePage;
+use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
 use Tests\Fixtures\Modules\Notes\Readers\CollectionChildren;
 use Tests\Fixtures\Modules\Notes\Readers\CollectionWindowReader;
 use Tests\Fixtures\Modules\Notes\Readers\NoteSectionReader;
@@ -60,7 +62,7 @@ use Tests\Fixtures\Modules\Notes\Support\NoteAssignments;
 /**
  * A module installed outside the domain folder, registered beside the domains only in the architecture fixtures.
  */
-final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesCommandMiddleware, ProvidesCommands, ProvidesLinkRecords, ProvidesNumberedModels, ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesStates
+final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesCommandMiddleware, ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -129,7 +131,7 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
 
     public function commands(): array
     {
-        return [WriteNote::class, PinNote::class, CopyNote::class, RefuseNote::class, IgnoreFailedNote::class, OpenTransactionNote::class, UserNote::class, SystemNote::class, ClearNotes::class];
+        return [WriteNote::class, PinNote::class, CopyNote::class, RefuseNote::class, IgnoreFailedNote::class, OpenTransactionNote::class, UserNote::class, SystemNote::class, ClearNotes::class, EngineNote::class, EngineCopyNote::class];
     }
 
     public function commandMiddleware(): array

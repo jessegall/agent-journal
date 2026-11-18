@@ -8,12 +8,14 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Enums\ActorType;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\StackTarget;
+use App\Hooks\Contracts\EngineTargetAccess;
 use App\Hooks\Contracts\StackCleanup;
 use App\Hooks\Contracts\WorkedOnStack;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Lifecycle\FrameLifecycle;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\StackRestorer;
+use App\Hooks\Stack\StateTypes;
 use App\Hooks\Support\StackTransaction;
 use Closure;
 
@@ -33,6 +35,8 @@ final readonly class StackCleanups implements StackCleanup
         private CurrentActor $actors,
         private StackRestorer $restorer,
         private FrameLifecycle $lifecycle,
+        private StateTypes $types,
+        private EngineTargetAccess $engineAccess,
     ) {}
 
     public function removeFinished(StackTarget $target): void
@@ -46,14 +50,14 @@ final readonly class StackCleanups implements StackCleanup
         }
 
         $before = $this->restorer->restore($row->frames, $row->frames->role());
-        $after = $before->withoutFinishedFrames();
+        $after = $before->withoutInactiveFrames();
 
         if ($after->frameIds() === $before->frameIds()) {
             return;
         }
 
         $this->lifecycle->settle($target, $before, $after);
-        $row->saveFrames($after->records());
+        $row->saveFrames($after->records(), $this->types->ticking());
     }
 
     public function endWork(WorkedOnStack $record, Closure $change): void
@@ -88,17 +92,22 @@ final readonly class StackCleanups implements StackCleanup
 
     /**
      * The target's stack, open or closed, locked once the caller may settle it: an agent any stack of its own, in
-     * whichever session its work was started, a user the stack it was authorized for. The system, any other actor, or
-     * none, is refused.
+     * whichever session its work was started, a user the stack it was authorized for, the engine the stack its grant
+     * covers. The system, any other actor, or none, is refused.
      */
     private function lockedRowFor(StackTarget $target): AgentStackRow
     {
         $actor = $this->actors->actor();
 
+        if ($actor->actorType() === ActorType::Engine) {
+            $this->engineAccess->checkTarget($target);
+        }
+
         if (match ($actor->actorType()) {
             ActorType::Agent => $actor->actorId() !== $target->agentId,
             ActorType::User => false,
             ActorType::System => true,
+            ActorType::Engine => false,
         }) {
             throw StackTargetRefused::forTarget($target->description());
         }

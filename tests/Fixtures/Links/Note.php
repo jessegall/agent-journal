@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Links;
 
-use App\Reads\Support\BoundedReads;
-use App\Reads\Contracts\ReadableModel;
 use App\Links\Support\Linkable;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -22,7 +22,6 @@ use Illuminate\Database\Eloquent\Model;
 final class Note extends Model implements ReadableModel
 {
     use BoundedReads;
-
     use HasUlids, Linkable;
 
     protected static function booted(): void

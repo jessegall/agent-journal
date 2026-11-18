@@ -12,6 +12,7 @@ use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use ReflectionClass;
 use ReflectionProperty;
@@ -80,8 +81,8 @@ final class StateTypeLifecycleTest extends TestCase
         $this->assertTrue($registry->has('notes.reading'));
 
         $stack = $this->app->make(StackRestorer::class)->restore(new FrameRecords([
-            new FrameRecord('ready', new StateReference('hooks.main_ready', NoSubject::None), true, 1),
-            new FrameRecord('note-1', new StateReference('notes.reading', NoSubject::None), false, 1),
+            new FrameRecord('ready', new StateReference('hooks.main_ready', NoSubject::None), true, 1, CarbonImmutable::now()),
+            new FrameRecord('note-1', new StateReference('notes.reading', NoSubject::None), false, 1, CarbonImmutable::now()),
         ]), ReadyStateType::MainAgent);
 
         $this->assertSame(['ready', 'note-1'], $stack->frameIds());

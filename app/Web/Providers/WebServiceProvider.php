@@ -10,6 +10,7 @@ use App\Contracts\CommandRefusal;
 use App\Domains\Support\DomainRegistry;
 use App\Http\Middleware\Web\CheckPageVisibility;
 use App\Links\Support\LinkTypeRegistry;
+use App\Settings\Contracts\SettingsAccessPolicy;
 use App\Ui\Support\UiDeclarations;
 use App\Web\Console\GenerateUiManifest;
 use App\Web\Contracts\CurrentUserReader;
@@ -17,6 +18,7 @@ use App\Web\Models\Layout;
 use App\Web\Models\Support\CurrentUserScope;
 use App\Web\Pages\WebPages;
 use App\Web\Routes\DeclaredRoutes;
+use App\Web\Support\OwnerSettingsAccess;
 use App\Web\Support\UiComponentFinder;
 use App\Web\Support\UserChannel;
 use Illuminate\Broadcasting\BroadcastManager;
@@ -42,6 +44,7 @@ final class WebServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(SettingsAccessPolicy::class, OwnerSettingsAccess::class);
         $this->app->singleton(UiDeclarations::class, fn ($app) => $app->make(DomainRegistry::class)->uiDeclarations(new WebPages()->declarations()));
         // Inertia's page check reads the declared components, and today's pages through its usual finder.
         $this->app->bind('inertia.view-finder', fn ($app) => new UiComponentFinder(

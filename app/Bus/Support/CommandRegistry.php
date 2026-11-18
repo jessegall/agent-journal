@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Bus\Support;
 
 use App\Actors\Enums\ActorType;
+use App\Bus\Attributes\AllowsEngine;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresActor;
@@ -82,6 +83,7 @@ final readonly class CommandRegistry
                 exported: $owner->exportsCommand($command),
                 repeatableRead: $reflection->getAttributes(RepeatableRead::class) !== [],
                 actor: self::requiredActorOf($reflection),
+                allowsEngine: $reflection->getAttributes(AllowsEngine::class) !== [],
                 middleware: self::orderedFor($command, $owner, $middleware, $owners),
             );
         }
@@ -122,6 +124,14 @@ final readonly class CommandRegistry
         return array_map(fn (RegisteredCommand $entry) => $entry->handler, $this->commands);
     }
 
+    /**
+     * @return class-string
+     */
+    public function handlerOf(string $command): string
+    {
+        return $this->entry($command)->handler;
+    }
+
     public function ownerOf(string $command): string
     {
         return $this->entry($command)->owner;
@@ -142,6 +152,11 @@ final readonly class CommandRegistry
         return $this->entry($command)->actor;
     }
 
+    public function allowsEngine(string $command): bool
+    {
+        return $this->entry($command)->allowsEngine;
+    }
+
     /**
      * The module middleware a command passes, in order: by stage, then owner order, then declaration order.
      *
@@ -160,7 +175,7 @@ final readonly class CommandRegistry
     /**
      * The actor type a command's RequiresActor names, or null when any actor may run it.
      *
-     * @param  ReflectionClass<object>  $command
+     * @param  ReflectionClass<*>  $command
      */
     private static function requiredActorOf(ReflectionClass $command): ActorType|null
     {
@@ -195,10 +210,16 @@ final readonly class CommandRegistry
             throw CommandDeclarationInvalid::for($command, 'queueing a command is not supported yet; take ShouldQueue off');
         }
 
-        foreach ([RepeatableRead::class, RequiresActor::class] as $attribute) {
+        foreach ([RepeatableRead::class, RequiresActor::class, AllowsEngine::class] as $attribute) {
             if (count($reflection->getAttributes($attribute)) > 1) {
                 throw CommandDeclarationInvalid::for($command, 'it repeats '.class_basename($attribute));
             }
+        }
+
+        $requiredActor = self::requiredActorOf($reflection);
+
+        if ($reflection->getAttributes(AllowsEngine::class) !== [] && $requiredActor !== null && $requiredActor !== ActorType::Engine) {
+            throw CommandDeclarationInvalid::engineWithOtherActor($command, $requiredActor->value);
         }
 
         $problem = self::grammarFor($owner, $owners)->problemWithProperties($command);

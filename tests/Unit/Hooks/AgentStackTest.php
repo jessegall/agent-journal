@@ -27,6 +27,7 @@ use App\Hooks\Stack\HookAnswer;
 use App\Hooks\States\AgentState;
 use App\Hooks\States\ReadyState;
 use App\Hooks\Storage\WalkStep;
+use Carbon\CarbonImmutable;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\States\FollowingSequenceState;
 use Domain\Sequences\Support\SequenceWork;
@@ -37,6 +38,7 @@ use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ScriptedState;
+use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\TestCase;
 
 final class AgentStackTest extends TestCase
@@ -48,12 +50,12 @@ final class AgentStackTest extends TestCase
 
         $this->assertSame(['message-95 deny keep'], $this->stepsOf($both->answer($stop)));
 
-        $answered = $this->exampleStack(TaskWorkState::Active, MessageWorkState::Answered)->withoutFinishedFrames();
+        $answered = $this->exampleStack(TaskWorkState::Active, MessageWorkState::Answered)->withoutInactiveFrames();
 
         $this->assertSame(['ready', 'task-42'], $answered->frameIds());
         $this->assertSame(['task-42 deny keep'], $this->stepsOf($answered->answer($stop)));
 
-        $done = $this->exampleStack(TaskWorkState::Finished, MessageWorkState::Answered)->withoutFinishedFrames();
+        $done = $this->exampleStack(TaskWorkState::Finished, MessageWorkState::Answered)->withoutInactiveFrames();
         $answer = $done->answer($stop);
 
         $this->assertSame(AnswerType::Allow, $answer->decision->answerType());
@@ -76,7 +78,7 @@ final class AgentStackTest extends TestCase
         ]);
         $stack = new AgentStack([
             $this->ready(),
-            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active))),
+            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active)), CarbonImmutable::now()),
         ], $factory);
 
         $stack = $stack->withStateOnTop($this->reference('sequences.following', '8'));
@@ -146,11 +148,11 @@ final class AgentStackTest extends TestCase
 
     public function test_a_finished_bottom_state_is_refused_at_cleanup(): void
     {
-        $stack = $this->stack(new Frame('ready', $this->reference('ready'), new ScriptedState(Decision::allow(), finished: true), bottom: true));
+        $stack = $this->stack(new Frame('ready', $this->reference('ready'), new ScriptedState(Decision::allow(), finished: true), CarbonImmutable::now(), bottom: true));
 
         $this->expectException(BottomStateCannotFinish::class);
 
-        $stack->withoutFinishedFrames();
+        $stack->withoutInactiveFrames();
     }
 
     public function test_a_bottom_state_that_delegates_fails_with_the_steps_it_took(): void
@@ -163,7 +165,7 @@ final class AgentStackTest extends TestCase
             }
         };
         $stack = $this->stack(
-            new Frame('ready', $this->reference('ready'), $delegatingBottom, bottom: true),
+            new Frame('ready', $this->reference('ready'), $delegatingBottom, CarbonImmutable::now(), bottom: true),
             $this->frame('top', ScriptedState::delegating()),
         );
 
@@ -265,7 +267,7 @@ final class AgentStackTest extends TestCase
     {
         $stack = $this->exampleStack(TaskWorkState::Finished, MessageWorkState::Unanswered);
 
-        $this->assertSame(['ready', 'message-95'], $stack->withoutFinishedFrames()->frameIds());
+        $this->assertSame(['ready', 'message-95'], $stack->withoutInactiveFrames()->frameIds());
         $this->assertSame(['ready', 'task-42', 'message-95'], $stack->frameIds());
     }
 
@@ -289,12 +291,38 @@ final class AgentStackTest extends TestCase
         $this->assertSame($step->toArray(), $copy->toArray());
     }
 
+    public function test_a_switched_off_top_frame_is_not_asked_and_the_frames_beneath_answer(): void
+    {
+        $switchedOff = new SwitchableState(false);
+        $stack = $this->stack(
+            $this->ready(),
+            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active))),
+            $this->frame('review', $switchedOff),
+        );
+
+        $this->assertSame(['task-42 deny keep'], $this->stepsOf($stack->answer($this->stop())));
+        $this->assertSame(['ready', 'task-42', 'review'], $stack->frameIds());
+    }
+
+    public function test_switched_off_frames_anywhere_are_left_out_like_finished_ones_and_a_switched_on_one_stays(): void
+    {
+        $stack = $this->stack(
+            $this->ready(),
+            $this->frame('review', new SwitchableState(false)),
+            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active))),
+            $this->frame('notes', new SwitchableState(true)),
+            new Frame('message-95', $this->reference('chat.answering', '95'), new AnsweringMessageState(new MessageWork(95, MessageWorkState::Answered))),
+        );
+
+        $this->assertSame(['ready', 'task-42', 'notes'], $stack->withoutInactiveFrames()->frameIds());
+    }
+
     private function exampleStack(TaskWorkState $taskState, MessageWorkState $messageState): AgentStack
     {
         return $this->stack(
             $this->ready(),
-            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, $taskState))),
-            new Frame('message-95', $this->reference('communication.answering', '95'), new AnsweringMessageState(new MessageWork(95, $messageState))),
+            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, $taskState)), CarbonImmutable::now()),
+            new Frame('message-95', $this->reference('communication.answering', '95'), new AnsweringMessageState(new MessageWork(95, $messageState)), CarbonImmutable::now()),
         );
     }
 
@@ -305,12 +333,12 @@ final class AgentStackTest extends TestCase
 
     private function ready(): Frame
     {
-        return new Frame('ready', $this->reference('ready'), new ReadyState, bottom: true);
+        return new Frame('ready', $this->reference('ready'), new ReadyState, CarbonImmutable::now(), bottom: true);
     }
 
     private function frame(string $id, AgentState $state): Frame
     {
-        return new Frame($id, $this->reference($id), $state);
+        return new Frame($id, $this->reference($id), $state, CarbonImmutable::now());
     }
 
     private function reference(string $typeKey, string|null $subjectId = null): StateReference

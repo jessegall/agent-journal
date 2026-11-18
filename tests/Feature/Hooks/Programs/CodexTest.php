@@ -20,6 +20,7 @@ use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\Frame;
 use App\Hooks\Stack\HookAnswer;
+use Carbon\CarbonImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ScriptedState;
@@ -99,7 +100,7 @@ final class CodexTest extends TestCase
     {
         $capabilities = $this->adapter()->capabilities();
         $stackBefore = new AgentStack([], new InMemoryStateFactory);
-        $stackAfter = new AgentStack([new Frame('guide', new StateReference('guide', NoSubject::None), ScriptedState::delegating())], new InMemoryStateFactory);
+        $stackAfter = new AgentStack([new Frame('guide', new StateReference('guide', NoSubject::None), ScriptedState::delegating(), CarbonImmutable::now())], new InMemoryStateFactory);
         $rewrite = new HookAnswer(Decision::rewrite('journal run tests'), [], [], $stackAfter);
 
         $settled = $capabilities->rewrites->finalAnswer($rewrite, $stackBefore);

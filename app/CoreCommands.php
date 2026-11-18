@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Commands\RetireAgent;
 use App\Assignments\Commands\AssignRecord;
 use App\Assignments\Commands\ReassignRecord;
@@ -17,10 +18,23 @@ use App\Communication\Commands\AnswerMessage;
 use App\Communication\Commands\DismissMessage;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Commands\SendMessage;
+use App\Engine\Commands\MarkSilentSessions;
+use App\Engine\Commands\SettleFrameTimes;
 use App\Numbers\Commands\InstallNumbers;
 use App\Records\Commands\LinkRecords;
 use App\Records\Commands\UnlinkRecords;
+use App\Settings\Commands\DisableSettingGroup;
+use App\Settings\Commands\EnableSettingGroup;
+use App\Settings\Commands\ResetSetting;
+use App\Settings\Commands\ResetSettingGroup;
+use App\Settings\Commands\SetBooleanSetting;
+use App\Settings\Commands\SetDecimalSetting;
+use App\Settings\Commands\SetIntegerChoice;
+use App\Settings\Commands\SetIntegerSetting;
+use App\Settings\Commands\SetStringChoice;
+use App\Settings\Commands\SetStringSetting;
 use App\Sharing\Commands\SaveSharePreview;
+use App\Web\Commands\RecordUserHeartbeat;
 
 /**
  * Core's own commands and middleware, read at start-up beside the domains' (doc 19, section 6.1).
@@ -32,7 +46,12 @@ final class CoreCommands
      */
     public static function commands(): array
     {
-        return [AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class, SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class, SaveSharePreview::class];
+        return [
+            AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, SettleFrameTimes::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class,
+            SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class,
+            SetStringSetting::class, SetBooleanSetting::class, SetIntegerSetting::class, SetDecimalSetting::class, SetStringChoice::class, SetIntegerChoice::class, ResetSetting::class, EnableSettingGroup::class, DisableSettingGroup::class, ResetSettingGroup::class,
+            SaveSharePreview::class,
+        ];
     }
 
     /**

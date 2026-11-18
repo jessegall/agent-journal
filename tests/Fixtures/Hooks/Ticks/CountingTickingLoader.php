@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Fixtures\Hooks\Ticks;
+
+use App\Hooks\Contracts\TickableStateLoader;
+use App\Hooks\Decisions\StateReference;
+use App\Hooks\Decisions\StateReferences;
+use App\Hooks\Decisions\StateSet;
+use App\Hooks\Decisions\SubjectReference;
+use App\Hooks\States\AgentState;
+
+/**
+ * A ticking state type that keeps the size of every batch it was asked to restore; subjects a test names are done.
+ */
+final class CountingTickingLoader implements TickableStateLoader
+{
+    /**
+     * @var list<int>
+     */
+    public array $batchSizes = [];
+
+    /**
+     * @var list<string>
+     */
+    public array $finished = [];
+
+    public function statesFor(StateReferences $references): StateSet
+    {
+        $this->batchSizes[] = count($references->all);
+
+        return StateSet::build($references, fn (StateReference $reference): AgentState => new TickingState(
+            $reference->subject instanceof SubjectReference && in_array($reference->subject->id, $this->finished, true),
+        ));
+    }
+
+    public function schemaVersion(): int
+    {
+        return 1;
+    }
+}

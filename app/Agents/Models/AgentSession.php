@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
+use App\Actors\Support\PresenceWindow;
 use App\Agents\Enums\SessionStatus;
+use App\Agents\Exceptions\CredentialRejected;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -102,7 +105,23 @@ final class AgentSession extends Model implements ReadableModel
     }
 
     /**
-     * Whether a message may still be addressed to this session: it is running or waiting, not ended or timed out.
+     * Locks the session's row, with its credential and agent, so a heartbeat waits for an end or a retirement.
+     */
+    public static function lockedForHeartbeat(string $sessionId): self
+    {
+        return self::query()->whereKey($sessionId)->with(['credential', 'agent'])->lockForUpdate()->firstOrFail();
+    }
+
+    /**
+     * Holds the session's row shared for this transaction, so it cannot end while a change to its stack goes on.
+     */
+    public static function sharedLockFor(string $sessionId): self
+    {
+        return self::query()->whereKey($sessionId)->sharedLock()->firstOrFail();
+    }
+
+    /**
+     * Whether a message may still be addressed to this session: it is running or waiting, not ended.
      * Delivery and wake ask the same question.
      */
     public function canReceiveMessages(): bool
@@ -116,6 +135,30 @@ final class AgentSession extends Model implements ReadableModel
     }
 
     /**
+     * Refuses a session that may no longer act: no credential, a revoked one, an ended session or a retired agent.
+     *
+     * @throws CredentialRejected
+     */
+    public function requireUsable(): void
+    {
+        if ($this->credential === null) {
+            throw CredentialRejected::unknown();
+        }
+
+        if ($this->credential->isRevoked()) {
+            throw CredentialRejected::revoked();
+        }
+
+        if (! $this->isActive()) {
+            throw CredentialRejected::sessionEnded();
+        }
+
+        if ($this->agent->isRetired()) {
+            throw CredentialRejected::agentRetired();
+        }
+    }
+
+    /**
      * A sign of life from the host: a silent session is active again.
      */
     public function recordHeartbeatAt(CarbonImmutable $time): void
@@ -126,27 +169,19 @@ final class AgentSession extends Model implements ReadableModel
         $this->save();
     }
 
-    public function markSilentAt(CarbonImmutable $time): void
-    {
-        $this->status = SessionStatus::Silent;
-        $this->silent_since = $time;
-        $this->save();
-    }
-
-    public function markTimedOutAt(CarbonImmutable $time, string $evidence): void
-    {
-        $this->status = SessionStatus::TimedOut;
-        $this->ended_at = $time;
-        $this->end_evidence = $evidence;
-        $this->save();
-    }
-
     /**
-     * The moment the session last showed life: its last heartbeat, or its start.
+     * The running sessions present at the observation time: a beat whose window is strictly later, an unrevoked
+     * credential and an agent that is not retired.
+     *
+     * @param  Builder<self>  $query
      */
-    public function lastSeenAt(): CarbonImmutable
+    #[Scope]
+    protected function present(Builder $query, CarbonImmutable $observedAt, PresenceWindow $window): void
     {
-        return $this->last_heartbeat_at ?? CarbonImmutable::instance($this->created_at ?? CarbonImmutable::now());
+        $query->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))
+            ->where('last_heartbeat_at', '>', $observedAt->subSeconds($window->presenceSeconds))
+            ->whereHas('credential', fn (Builder $credential) => $credential->whereNull('revoked_at'))
+            ->whereHas('agent', fn (Builder $agent) => $agent->whereNull('retired_at'));
     }
 
     /**

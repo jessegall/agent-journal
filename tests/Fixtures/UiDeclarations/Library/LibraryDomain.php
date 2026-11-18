@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Library;
 
+use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
@@ -13,7 +14,6 @@ use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
-use App\Domains\Support\Domain;
 
 /**
  * A fixture domain with a list page, a record page offering a slot, an action and nested navigation.

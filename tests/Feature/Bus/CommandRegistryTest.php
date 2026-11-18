@@ -30,6 +30,7 @@ use Tests\Fixtures\Bus\Shop\CommandMiddleware\NotMiddleware;
 use Tests\Fixtures\Bus\Shop\Commands\AddItem;
 use Tests\Fixtures\Bus\Shop\Commands\ArrayResultItem;
 use Tests\Fixtures\Bus\Shop\Commands\ClosureItem;
+use Tests\Fixtures\Bus\Shop\Commands\EngineUserItem;
 use Tests\Fixtures\Bus\Shop\Commands\LooseItem;
 use Tests\Fixtures\Bus\Shop\Commands\NoHandlerItem;
 use Tests\Fixtures\Bus\Shop\Commands\QueuedItem;
@@ -65,6 +66,7 @@ final class CommandRegistryTest extends TestCase
         $this->assertTrue($registry->needsRepeatableRead(AddItem::class));
         $this->assertSame(ActorType::User, $registry->requiredActor(AddItem::class));
         $this->assertNull($registry->requiredActor(RemoveItem::class));
+        $this->assertFalse($registry->allowsEngine(AddItem::class));
         $this->assertSame([LogShop::class, Fence::class, CheckStock::class], array_map(fn (RegisteredMiddleware $entry) => $entry->declaration->middleware, $registry->middlewareFor(AddItem::class)));
     }
 
@@ -103,6 +105,11 @@ final class CommandRegistryTest extends TestCase
     public function test_a_command_that_is_not_final_readonly_is_refused(): void
     {
         $this->refusedWith(CommandDeclarationInvalid::class, 'final readonly', [$this->shop([LooseItem::class])]);
+    }
+
+    public function test_a_command_that_allows_the_engine_and_requires_a_user_is_refused(): void
+    {
+        $this->refusedWith(CommandDeclarationInvalid::class, 'allows the engine but requires a user actor', [$this->shop([EngineUserItem::class])]);
     }
 
     public function test_a_queued_command_is_refused(): void

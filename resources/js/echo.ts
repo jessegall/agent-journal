@@ -100,7 +100,10 @@ async function signInToChannel(
     return (await response.json()) as { auth: string };
 }
 
-function xsrfToken(): string {
+/**
+ * The session's current XSRF token, read from its cookie at the moment of the call.
+ */
+export function xsrfToken(): string {
     const cookie = document.cookie
         .split('; ')
         .find((part) => part.startsWith('XSRF-TOKEN='));

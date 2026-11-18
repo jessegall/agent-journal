@@ -18,12 +18,14 @@ use App\Hooks\Stack\StateTypes;
 use App\Hooks\States\MainAgentReadyState;
 use App\Hooks\States\ReadOnlyHelperReadyState;
 use App\Hooks\States\Support\StateTypeRegistry;
+use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\States\WorkingOnTaskState;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\InMemoryTaskLoader;
 use Tests\Fixtures\Hooks\TestFailure;
+use Tests\Support\FixedServerClock;
 
 final class StateLoaderTest extends TestCase
 {
@@ -125,7 +127,7 @@ final class StateLoaderTest extends TestCase
         $tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active]);
         $events = new Dispatcher;
         $events->listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('tasks.working', $tasks));
-        $factory = new RegisteredStateFactory(new StateTypes($events));
+        $factory = new RegisteredStateFactory(new StateTypes($events), new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00')));
         $reference = new StateReference('tasks.working', new SubjectReference('42', 1));
 
         $first = $factory->frameFor($reference);

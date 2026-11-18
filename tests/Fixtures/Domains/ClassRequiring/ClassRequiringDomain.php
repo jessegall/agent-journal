@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\ClassRequiring;
 
-use App\Exports\Support\Exports;
 use App\Domains\Support\Domain;
+use App\Exports\Support\Exports;
 use Tests\Fixtures\Domains\Tasks\TaskList;
 
 final class ClassRequiringDomain extends Domain

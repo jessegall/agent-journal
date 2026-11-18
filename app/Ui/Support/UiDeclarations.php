@@ -148,6 +148,18 @@ final readonly class UiDeclarations
     }
 
     /**
+     * The domain that declares the page or section with the given full key.
+     */
+    public function ownerOf(string $key): DomainUi
+    {
+        if (array_key_exists($key, $this->sections)) {
+            return $this->sections[$key]->owner;
+        }
+
+        return $this->page($key)->owner;
+    }
+
+    /**
      * The checks an actor must pass to see the page or section with the given full key, in the order they run.
      *
      * @return list<class-string<VisibilityCheck>>

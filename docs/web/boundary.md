@@ -99,6 +99,10 @@ Settings are split in `.env.example`:
 
 The Redis queue now pushes a job only after the transaction it was queued in commits (`after_commit` in `config/queue.php`), so rolled-back work never broadcasts; the domain events already dispatch after commit. Checked end to end: a broadcast queued from the app ran in the `queue` container and reached a browser subscribed through the forwarded port. pusher-js reconnects by itself when the server comes back.
 
+## The engine ticker (plan 25)
+
+A fourth service from the same image, code, environment and database as `queue` runs the engine: `ticker` (`php artisan engine:tick`, `restart: unless-stopped`, no health check, since it listens on no port). It takes the engine's PostgreSQL advisory lock on its own pinned connection (`engine` in `config/database.php`) and runs one pass a second; a second ticker waits for the lock without running passes. In development the override mounts the working copy, but the process keeps the code it loaded: after a code change run `docker compose -p agent-journal-6 restart ticker`; no file watcher does it. A production deploy restarts `ticker` together with `app` and `queue`. Nothing else runs periodic engine work: neither an Octane worker timer nor `schedule:work` duplicates it. Compose's restart policy brings back a ticker that exited (a lost lock connection or the watchdog's alarm); a ticker that hangs without exiting is ended by its alarm, not by a health check.
+
 ## Live page changes (task 115)
 
 Each producer raises its own fact after commit and knows nothing of the browser: Plans' `PlanStarted` and the new `PlanProgressChanged`, which Plans raises (`RaisePlanProgressChanged`) when it hears `TaskStarted`, `TaskFinished`, `TaskBlocked` or `TaskCancelled` for a task in one of its phases; Chat's `MessageSent`, `MessageAnswered` and `MessageDismissed`; Rules' `RuleApproved`, `RuleDenied` and `RuleRemoved`. Tasks gains `TaskFinished`, `TaskBlocked` and `TaskCancelled`, raised by the new `ChangeTaskState` action; the model methods alone still raise nothing. Web needs no Tasks edge.

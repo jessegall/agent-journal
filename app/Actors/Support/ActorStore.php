@@ -35,7 +35,7 @@ final class ActorStore implements CurrentActor, CurrentActorSetter
         return $this->actor !== null && $this->actor->type->isSignedIn();
     }
 
-    public function isSystem(): bool
+    public function isJournalActor(): bool
     {
         return $this->actor !== null && ! $this->actor->type->isSignedIn();
     }

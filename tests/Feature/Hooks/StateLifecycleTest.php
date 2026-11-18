@@ -6,6 +6,7 @@ namespace Tests\Feature\Hooks;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\DatabaseClock;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\AgentContext;
@@ -55,7 +56,7 @@ final class StateLifecycleTest extends TestCase
 
         DB::table('agent_stacks')->truncate();
         $this->target = new StackTarget(TestIds::of(1), TestIds::of(10));
-        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64))));
+        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(1)));
         $this->log = new LifecycleLog;
         $this->tasks = new RecordingStateLoader($this->log);
@@ -108,6 +109,33 @@ final class StateLifecycleTest extends TestCase
         } catch (RuntimeException) {
             $this->assertSame(['A'], $this->storedSubjects());
         }
+    }
+
+    public function test_a_frame_keeps_its_entry_time_through_a_repeated_push_a_cover_a_resume_and_a_restore(): void
+    {
+        $this->push('A');
+        $entered = $this->storedEntryTimes();
+
+        $this->push('A');
+        $this->push('B');
+        $this->tasks->finished = ['B'];
+        $this->transaction()->run(fn () => $this->cleanup()->removeFinished($this->target));
+
+        $this->assertEquals(['A' => $entered['A']], $this->storedEntryTimes());
+        $row = AgentStackRow::query()->forTarget($this->target)->sole();
+        $restored = $this->app->make(StackRestorer::class)->restore($row->frames, ReadyStateType::MainAgent)->frames();
+        $this->assertEquals($entered['A'], $restored[1]->enteredAt);
+        $this->assertEquals($row->frames->all()[0]->enteredAt, $restored[0]->enteredAt);
+    }
+
+    public function test_a_new_frame_enters_at_the_server_time_of_its_push(): void
+    {
+        $before = $this->app->make(DatabaseClock::class)->now();
+        $this->push('A');
+        $after = $this->app->make(DatabaseClock::class)->now();
+
+        $entered = $this->storedEntryTimes()['A'];
+        $this->assertTrue($entered->betweenIncluded($before, $after));
     }
 
     public function test_cleanup_exits_finished_frames_and_resumes_the_frame_back_on_top(): void
@@ -185,7 +213,7 @@ final class StateLifecycleTest extends TestCase
         $this->assertCount(2, $restorer->restore($row->frames, ReadyStateType::MainAgent)->frames());
 
         $records = $row->frames->all();
-        $tooMany = new FrameRecords([$records[0], ...array_map(fn (int $number) => new FrameRecord("frame-{$number}", $this->task((string) $number), false, 1), range(1, 100))]);
+        $tooMany = new FrameRecords([$records[0], ...array_map(fn (int $number) => new FrameRecord("frame-{$number}", $this->task((string) $number), false, 1, CarbonImmutable::now()), range(1, 100))]);
 
         $this->expectException(StackTooDeep::class);
 
@@ -231,6 +259,19 @@ final class StateLifecycleTest extends TestCase
     private function cleanup(): StackCleanup
     {
         return $this->app->make(StackCleanup::class);
+    }
+
+    /**
+     * @return array<string, CarbonImmutable>
+     */
+    private function storedEntryTimes(): array
+    {
+        $frames = array_slice(AgentStackRow::query()->forTarget($this->target)->sole()->frames->all(), 1);
+
+        return array_combine(
+            array_map(fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : '', $frames),
+            array_map(fn (FrameRecord $frame) => $frame->enteredAt, $frames),
+        );
     }
 
     private function transaction(): StackTransaction

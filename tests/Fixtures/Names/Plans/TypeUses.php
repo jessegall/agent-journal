@@ -10,7 +10,7 @@ use Tests\Fixtures\Names\Chat\Notifier;
 
 final class TypeUses
 {
-    public ?Message $last = null;
+    public Message|null $last = null;
 
     public function keep(Message $message): Message|Notifier
     {

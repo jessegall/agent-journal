@@ -13,4 +13,9 @@ use App\Hooks\Stack\Frame;
 interface StateFactory
 {
     public function frameFor(StateReference $reference): Frame;
+
+    /**
+     * Whether the reference's state type runs now; an unknown type is an error. Asked before any subject is read.
+     */
+    public function isEnabled(StateReference $reference): bool;
 }

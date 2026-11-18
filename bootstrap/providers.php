@@ -10,12 +10,14 @@ use App\Comments\Providers\CommentsServiceProvider;
 use App\Communication\Providers\CommunicationServiceProvider;
 use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Providers\DomainServiceProvider;
+use App\Engine\Providers\EngineServiceProvider;
 use App\Hooks\Providers\HooksServiceProvider;
 use App\Numbers\Providers\NumbersServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\CoreServiceProvider;
 use App\Reads\Providers\ReadsServiceProvider;
 use App\Records\Providers\RecordsServiceProvider;
+use App\Settings\Providers\SettingsServiceProvider;
 use App\Sharing\Providers\SharingServiceProvider;
 use App\Text\Providers\TextServiceProvider;
 use App\Web\Providers\TypeScriptServiceProvider;
@@ -45,8 +47,10 @@ return [
     TextServiceProvider::class,
     HooksServiceProvider::class,
     CommandBusServiceProvider::class,
+    EngineServiceProvider::class,
     ReadsServiceProvider::class,
     NumbersServiceProvider::class,
+    SettingsServiceProvider::class,
     ProcessesServiceProvider::class,
     TasksServiceProvider::class,
     PlansServiceProvider::class,

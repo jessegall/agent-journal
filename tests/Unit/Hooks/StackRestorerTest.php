@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use App\Hooks\Contracts\ConditionalStateType;
+use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Decisions\StateReferences;
+use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\NoSubject;
@@ -17,13 +21,20 @@ use App\Hooks\Exceptions\StateTypeUnknown;
 use App\Hooks\Stack\RegisteredStateFactory;
 use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Stack\StateTypes;
+use App\Hooks\States\AgentState;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
+use Carbon\CarbonImmutable;
+use Closure;
 use Domain\Tasks\Enums\TaskWorkState;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
+use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryTaskLoader;
+use Tests\Support\FixedServerClock;
+use Tests\Fixtures\Hooks\ScriptedState;
+use Tests\Fixtures\Hooks\SwitchableState;
 
 final class StackRestorerTest extends TestCase
 {
@@ -69,7 +80,7 @@ final class StackRestorerTest extends TestCase
         );
 
         $this->assertSame(['ready', 'task-42', 'task-43'], $stack->frameIds());
-        $this->assertSame(['ready', 'task-43'], $stack->withoutFinishedFrames()->frameIds());
+        $this->assertSame(['ready', 'task-43'], $stack->withoutInactiveFrames()->frameIds());
     }
 
     public function test_the_bottom_state_follows_the_agent_role(): void
@@ -114,7 +125,7 @@ final class StackRestorerTest extends TestCase
         $this->expectException(StateTypeUnknown::class);
 
         $this->restorer->restore(
-            $this->records($this->bottom(), new FrameRecord('note-1', new StateReference('notes.reading', NoSubject::None), false, 1)),
+            $this->records($this->bottom(), new FrameRecord('note-1', new StateReference('notes.reading', NoSubject::None), false, 1, CarbonImmutable::now())),
             ReadyStateType::MainAgent,
         );
     }
@@ -135,13 +146,76 @@ final class StackRestorerTest extends TestCase
         $this->restorer->restore($this->records($this->bottom(), $this->task('task-99', 99)), ReadyStateType::MainAgent);
     }
 
+    public function test_a_switched_off_frame_is_restored_and_validated_and_left_out_only_on_request(): void
+    {
+        $events = new Dispatcher;
+        $events->listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
+            $event->registry->register('tasks.working', $this->tasks);
+            $event->registry->register('test.switched_off', new ClosureStateLoader(fn () => new SwitchableState(false)));
+        });
+        $types = new StateTypes($events);
+        $restorer = new StackRestorer($types, new RegisteredStateFactory($types));
+        $switchedOff = new FrameRecord('review', new StateReference('test.switched_off', NoSubject::None), false, 1);
+
+        $stack = $restorer->restore($this->records($this->bottom(), $this->task('task-42', 42), $switchedOff), ReadyStateType::MainAgent);
+
+        $this->assertSame(['ready', 'task-42', 'review'], $stack->frameIds());
+        $this->assertSame(['ready', 'task-42'], $stack->withoutInactiveFrames()->frameIds());
+
+        $this->expectException(StateSchemaUnknown::class);
+
+        $restorer->restore($this->records($this->bottom(), new FrameRecord('review', new StateReference('test.switched_off', NoSubject::None), false, 2)), ReadyStateType::MainAgent);
+    }
+
+    public function test_a_frame_of_a_switched_off_type_is_restored_reports_off_and_leaves_on_request(): void
+    {
+        $loaded = 0;
+        $switchedOffType = new class(function () use (&$loaded) {
+            $loaded++;
+
+            return ScriptedState::delegating();
+        }) implements ConditionalStateType, StateLoader
+        {
+
+            public function __construct(private readonly Closure $make) {}
+
+            public function statesFor(StateReferences $references): StateSet
+            {
+                return StateSet::build($references, fn (): AgentState => ($this->make)());
+            }
+
+            public function schemaVersion(): int
+            {
+                return 1;
+            }
+
+            public function isEnabled(): bool
+            {
+                return false;
+            }
+        };
+        $events = new Dispatcher;
+        $events->listen(StateTypesRequested::class, function (StateTypesRequested $event) use ($switchedOffType): void {
+            $event->registry->register('tasks.working', $this->tasks);
+            $event->registry->register('plans.working', $switchedOffType);
+        });
+        $types = new StateTypes($events);
+        $restorer = new StackRestorer($types, new RegisteredStateFactory($types));
+
+        $stack = $restorer->restore($this->records($this->bottom(), new FrameRecord('plan-7', new StateReference('plans.working', NoSubject::None), false, 1)), ReadyStateType::MainAgent);
+
+        $this->assertSame(1, $loaded);
+        $this->assertSame([true, false], array_map(fn ($frame) => $frame->isEnabled(), $stack->frames()));
+        $this->assertSame(['ready'], $stack->withoutInactiveFrames()->frameIds());
+    }
+
     private function restorerWith(InMemoryTaskLoader $tasks): StackRestorer
     {
         $events = new Dispatcher;
         $events->listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('tasks.working', $tasks));
         $types = new StateTypes($events);
 
-        return new StackRestorer($types, new RegisteredStateFactory($types));
+        return new StackRestorer($types, new RegisteredStateFactory($types, new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00'))));
     }
 
     private function records(FrameRecord ...$records): FrameRecords
@@ -151,11 +225,11 @@ final class StackRestorerTest extends TestCase
 
     private function bottom(string $typeKey = 'hooks.main_ready', string $id = 'ready'): FrameRecord
     {
-        return new FrameRecord($id, new StateReference($typeKey, NoSubject::None), true, 1);
+        return new FrameRecord($id, new StateReference($typeKey, NoSubject::None), true, 1, CarbonImmutable::now());
     }
 
     private function task(string $id, int $number): FrameRecord
     {
-        return new FrameRecord($id, new StateReference('tasks.working', new SubjectReference((string) $number, 1)), false, 1);
+        return new FrameRecord($id, new StateReference('tasks.working', new SubjectReference((string) $number, 1)), false, 1, CarbonImmutable::now());
     }
 }

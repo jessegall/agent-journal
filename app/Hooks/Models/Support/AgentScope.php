@@ -12,8 +12,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 
 /**
- * Limits a model to the rows of the current request's agent, in any of its sessions; the system acting sees none. It
- * asks for the context on every query, so a worker that serves many requests never keeps an earlier request's agent.
+ * Limits a model to the rows of the current request's agent, in any of its sessions; the system or the engine
+ * acting sees none. It asks for the context on every query, so a worker that serves many requests never keeps an
+ * earlier request's agent.
  *
  * @implements Scope<Model>
  */
@@ -30,7 +31,7 @@ final readonly class AgentScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-        if (($this->actors)()->isSystem()) {
+        if (($this->actors)()->isJournalActor()) {
             $builder->whereKey([]);
 
             return;

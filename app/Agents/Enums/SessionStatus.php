@@ -6,18 +6,14 @@ namespace App\Agents\Enums;
 
 /**
  * Where a launched session stands: active while it sends heartbeats, silent when they stop for a while (it still
- * counts as running), timed out when the silence lasts past the second limit, and ended when its program ended.
+ * counts as running, only absent), and ended when its program ended or its agent retired.
  */
 enum SessionStatus: string
 {
     case Active = 'active';
     case Silent = 'silent';
-    case TimedOut = 'timed_out';
     case Ended = 'ended';
 
-    /**
-     * Whether the session may still act: active, or silent for a while.
-     */
     /**
      * The statuses of a session that is still running.
      *
@@ -28,11 +24,14 @@ enum SessionStatus: string
         return array_values(array_filter(self::cases(), fn (self $status) => $status->isRunning()));
     }
 
+    /**
+     * Whether the session may still act: active, or silent for a while.
+     */
     public function isRunning(): bool
     {
         return match ($this) {
             self::Active, self::Silent => true,
-            self::TimedOut, self::Ended => false,
+            self::Ended => false,
         };
     }
 }

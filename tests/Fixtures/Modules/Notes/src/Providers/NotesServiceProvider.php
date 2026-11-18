@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Providers;
 
-use Tests\Fixtures\Modules\Notes\Models\NotePage;
-use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
 use App\Links\Support\LinkTypeRegistry;
 use Illuminate\Support\ServiceProvider;
 use Tests\Fixtures\Modules\Notes\Contracts\NoteReader;
 use Tests\Fixtures\Modules\Notes\Models\Note;
+use Tests\Fixtures\Modules\Notes\Models\NotePage;
+use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
 use Tests\Fixtures\Modules\Notes\NoteRecords;
 
 /**

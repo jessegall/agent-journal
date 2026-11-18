@@ -14,7 +14,7 @@ final class UsesAllowed
     /**
      * @return Collection<int, Task|Plan>
      */
-    public function allowed(?DomainRegistry $registry): Collection
+    public function allowed(DomainRegistry|null $registry): Collection
     {
         if ($registry === null) {
             throw new Exception('no registry');

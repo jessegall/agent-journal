@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Declarations\Good;
 
-use App\Exports\Support\Exports;
 use App\Domains\Support\Domain;
+use App\Exports\Support\Exports;
 
 final class GoodDomain extends Domain
 {
