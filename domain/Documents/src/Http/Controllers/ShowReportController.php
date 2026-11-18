@@ -12,6 +12,6 @@ final readonly class ShowReportController
 {
     public function __invoke(ShowRecordRequest $request, ReportReader $reports): JsonResponse
     {
-        return new JsonResponse($reports->show($request->number()));
+        return new JsonResponse($reports->read($request->number(), $request->selection()));
     }
 }

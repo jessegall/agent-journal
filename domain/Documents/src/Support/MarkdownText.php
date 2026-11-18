@@ -21,6 +21,8 @@ final readonly class MarkdownText
 
     public const int TITLE_CHARACTERS = 200;
 
+    public const int COMMENT_BYTES = 16_384;
+
     public const int ABSTRACT_CHARACTERS = 500;
 
     /**
@@ -48,6 +50,28 @@ final readonly class MarkdownText
         }
 
         return new self($text, self::outlineOf($text));
+    }
+
+    /**
+     * A comment's text: not empty, and at most COMMENT_BYTES long.
+     *
+     * @throws MarkdownInvalid|ContentMissing|ContentTooLarge
+     */
+    public static function comment(string $text): string
+    {
+        if (! mb_check_encoding($text, 'UTF-8')) {
+            throw MarkdownInvalid::encoding();
+        }
+
+        if (trim($text) === '') {
+            throw ContentMissing::field('comment');
+        }
+
+        if (strlen($text) > self::COMMENT_BYTES) {
+            throw ContentTooLarge::field('comment', self::COMMENT_BYTES.' bytes');
+        }
+
+        return str_replace(["\r\n", "\r"], "\n", $text);
     }
 
     /**
@@ -106,6 +130,65 @@ final readonly class MarkdownText
     public function outline(): array
     {
         return array_map(fn (Section $section) => "{$section->number} {$section->heading}", $this->sections);
+    }
+
+    /**
+     * Each section as its number, heading and line span, in order.
+     *
+     * @return list<string>
+     */
+    public function outlineWithLines(): array
+    {
+        return array_map(fn (Section $section) => "{$section->number} {$section->heading} (lines {$section->firstLine}-{$section->lastLine})", $this->sections);
+    }
+
+    /**
+     * The selected lines, cut at TextPart's bound unless the whole is asked for; bullets and word matches keep their
+     * line numbers.
+     *
+     * @throws SectionMissing
+     */
+    public function part(TextSelection $selection): TextPart
+    {
+        $all = explode("\n", $this->text);
+        $section = $selection->section === null ? null : $this->sectionBy($selection->section);
+        $first = $section->firstLine ?? $selection->firstLine ?? 1;
+        $last = min(count($all), $section->lastLine ?? $selection->lastLine ?? count($all));
+        $numbered = [];
+
+        for ($number = $first; $number <= $last; $number++) {
+            $line = $all[$number - 1];
+            $kept = (! $selection->bullets || preg_match('/^\s*([-*+]|\d+[.)])\s/', $line) === 1)
+                && ($selection->words === null || mb_stripos($line, $selection->words) !== false);
+
+            if ($kept) {
+                $numbered[$number] = $selection->bullets || $selection->words !== null ? "{$number}: {$line}" : $line;
+            }
+        }
+
+        return self::bounded($numbered, $first, $last, $selection->all);
+    }
+
+    /**
+     * @param  array<int, string>  $numbered
+     */
+    private static function bounded(array $numbered, int $first, int $last, bool $all): TextPart
+    {
+        $taken = [];
+        $bytes = 0;
+
+        foreach ($numbered as $number => $line) {
+            $full = ! $all && (count($taken) >= TextPart::LINES || $bytes + strlen($line) + 1 > TextPart::BYTES);
+
+            if ($full) {
+                return new TextPart(implode("\n", $taken), $first, $number - 1, $number);
+            }
+
+            $taken[] = $line;
+            $bytes += strlen($line) + 1;
+        }
+
+        return new TextPart(implode("\n", $taken), $first, $last, null);
     }
 
     /**
@@ -185,8 +268,16 @@ final readonly class MarkdownText
      */
     public function toSafeHtml(): string
     {
+        return self::safeHtmlOf($this->text);
+    }
+
+    /**
+     * HTML for any Markdown text, such as a comment, made safe the same way as a body.
+     */
+    public static function safeHtmlOf(string $text): string
+    {
         $converter = new CommonMarkConverter(['html_input' => 'escape', 'allow_unsafe_links' => false]);
-        $html = (string) $converter->convert($this->text);
+        $html = (string) $converter->convert($text);
         $html = (string) preg_replace('/<img src="([^"]*)" alt="([^"]*)"[^>]*>/', '<a href="$1" rel="noopener noreferrer">$2</a>', $html);
 
         return (string) preg_replace('/<a href="/', '<a rel="noopener noreferrer" href="', $html);

@@ -22,5 +22,6 @@ final class DocumentList extends Data
         public readonly array $rows,
         public readonly int $page,
         public readonly bool $hasNextPage,
+        public readonly string|null $next,
     ) {}
 }

@@ -17,5 +17,6 @@ final class LibraryData extends Data
         public readonly DocumentList $documents,
         public readonly ReportList $reports,
         public readonly string $sharingNotice,
+        public readonly string $query,
     ) {}
 }

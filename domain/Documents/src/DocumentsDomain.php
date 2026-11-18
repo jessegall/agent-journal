@@ -26,9 +26,12 @@ use Domain\Documents\Api\Events\DocumentCreated;
 use Domain\Documents\Api\Events\DocumentDraftSaved;
 use Domain\Documents\Api\Events\DocumentOpened;
 use Domain\Documents\Api\Events\DocumentPublished;
+use Domain\Documents\Api\Events\RecordCommented;
 use Domain\Documents\Api\Events\ReportFiled;
 use Domain\Documents\Commands\ChangeDocumentDetails;
 use Domain\Documents\Commands\CloseDocument;
+use Domain\Documents\Commands\CommentDocument;
+use Domain\Documents\Commands\CommentReport;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
 use Domain\Documents\Commands\OpenDocument;
@@ -38,6 +41,7 @@ use Domain\Documents\Commands\ReplaceDocumentText;
 use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Contracts\DraftReader;
 use Domain\Documents\Contracts\ReportReader;
+use Domain\Documents\Data\CommentCard;
 use Domain\Documents\Data\DocumentCard;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\DocumentList;
@@ -46,15 +50,18 @@ use Domain\Documents\Data\DocumentView;
 use Domain\Documents\Data\DraftState;
 use Domain\Documents\Data\DraftView;
 use Domain\Documents\Data\RecordPageData;
+use Domain\Documents\Data\RecordText;
 use Domain\Documents\Data\ReportCard;
 use Domain\Documents\Data\ReportList;
 use Domain\Documents\Data\ReportView;
 use Domain\Documents\Data\RevisionCard;
+use Domain\Documents\Data\RevisionPageData;
 use Domain\Documents\Data\RevisionView;
 use Domain\Documents\Enums\AttentionFilter;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Enums\CloseCause;
 use Domain\Documents\Enums\EditingState;
+use Domain\Documents\Exceptions\AnchorMismatch;
 use Domain\Documents\Exceptions\ContentMissing;
 use Domain\Documents\Exceptions\ContentTooLarge;
 use Domain\Documents\Exceptions\DocumentMissing;
@@ -64,8 +71,11 @@ use Domain\Documents\Exceptions\DraftMissing;
 use Domain\Documents\Exceptions\MarkdownInvalid;
 use Domain\Documents\Exceptions\ReportMissing;
 use Domain\Documents\Exceptions\SectionMissing;
+use Domain\Documents\Exceptions\StaleRead;
 use Domain\Documents\Exceptions\TextMatchInvalid;
 use Domain\Documents\Http\Controllers\CloseDraftPageController;
+use Domain\Documents\Http\Controllers\CommentDocumentPageController;
+use Domain\Documents\Http\Controllers\CommentReportPageController;
 use Domain\Documents\Http\Controllers\CreateDocumentPageController;
 use Domain\Documents\Http\Controllers\CreateReportPageController;
 use Domain\Documents\Http\Controllers\OpenDocumentPageController;
@@ -76,6 +86,9 @@ use Domain\Documents\Models\Report;
 use Domain\Documents\Readers\DocumentWindowReader;
 use Domain\Documents\Readers\LibraryWindowReader;
 use Domain\Documents\Readers\ReportWindowReader;
+use Domain\Documents\Readers\RevisionWindowReader;
+use Domain\Documents\Support\CommentAnchor;
+use Domain\Documents\Support\TextSelection;
 
 final class DocumentsDomain extends Domain implements ProvidesCommands, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages
 {
@@ -94,11 +107,11 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
     public function exports(): Exports
     {
         return Exports::make()
-            ->events(DocumentCreated::class, ReportFiled::class, DocumentOpened::class, DocumentDraftSaved::class, DocumentClosed::class, DocumentPublished::class)
+            ->events(DocumentCreated::class, ReportFiled::class, DocumentOpened::class, DocumentDraftSaved::class, DocumentClosed::class, DocumentPublished::class, RecordCommented::class)
             ->contracts(DraftReader::class, DocumentReader::class, ReportReader::class)
-            ->values(EditingState::class, DraftState::class, DocumentPageData::class, RecordPageData::class, DraftView::class, RevisionCard::class, RevisionView::class, DraftReference::class, DraftTarget::class, CloseResult::class, CloseCause::class, CreatedRecord::class, AttentionState::class, AttentionFilter::class, DocumentFilters::class, DocumentCard::class, DocumentView::class, DocumentList::class, ReportCard::class, ReportView::class, ReportList::class)
-            ->commands(CreateDocument::class, CreateReport::class, OpenDocument::class, ReplaceDocumentBody::class, ReplaceDocumentSection::class, ReplaceDocumentText::class, ChangeDocumentDetails::class, CloseDocument::class)
-            ->exceptions(DraftMissing::class, SectionMissing::class, TextMatchInvalid::class, DraftHeld::class, DraftConflict::class, ContentMissing::class, ContentTooLarge::class, MarkdownInvalid::class, DocumentMissing::class, ReportMissing::class)
+            ->values(CommentCard::class, RevisionPageData::class, RecordText::class, TextSelection::class, CommentAnchor::class, EditingState::class, DraftState::class, DocumentPageData::class, RecordPageData::class, DraftView::class, RevisionCard::class, RevisionView::class, DraftReference::class, DraftTarget::class, CloseResult::class, CloseCause::class, CreatedRecord::class, AttentionState::class, AttentionFilter::class, DocumentFilters::class, DocumentCard::class, DocumentView::class, DocumentList::class, ReportCard::class, ReportView::class, ReportList::class)
+            ->commands(CreateDocument::class, CreateReport::class, OpenDocument::class, ReplaceDocumentBody::class, ReplaceDocumentSection::class, ReplaceDocumentText::class, ChangeDocumentDetails::class, CloseDocument::class, CommentDocument::class, CommentReport::class)
+            ->exceptions(StaleRead::class, AnchorMismatch::class, DraftMissing::class, SectionMissing::class, TextMatchInvalid::class, DraftHeld::class, DraftConflict::class, ContentMissing::class, ContentTooLarge::class, MarkdownInvalid::class, DocumentMissing::class, ReportMissing::class)
             ->build();
     }
 
@@ -109,7 +122,7 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
 
     public function commands(): array
     {
-        return [CreateDocument::class, CreateReport::class, OpenDocument::class, ReplaceDocumentBody::class, ReplaceDocumentSection::class, ReplaceDocumentText::class, ChangeDocumentDetails::class, CloseDocument::class];
+        return [CreateDocument::class, CreateReport::class, OpenDocument::class, ReplaceDocumentBody::class, ReplaceDocumentSection::class, ReplaceDocumentText::class, ChangeDocumentDetails::class, CloseDocument::class, CommentDocument::class, CommentReport::class];
     }
 
     public function pages(): array
@@ -128,10 +141,16 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
                     ActionRoute::post('docs/{document}/open', OpenDocumentPageController::class, 'open-document'),
                     ActionRoute::post('docs/{document}/save', SaveDraftPageController::class, 'save-draft'),
                     ActionRoute::post('docs/{document}/close', CloseDraftPageController::class, 'close-draft'),
+                    ActionRoute::post('docs/{document}/comments', CommentDocumentPageController::class, 'comment-document'),
                 )
                 ->slots(Slot::record('inspector', 'document')),
-            Page::make('report', 'Report', Icon::Docs, ReportWindowReader::class, 'RecordWindow.vue')
-                ->at('reports/{report}'),
+            Page::make('revision', 'Revision', Icon::Docs, RevisionWindowReader::class, 'RevisionWindow.vue')
+                ->at('docs/{document}/revisions/{revision}'),
+            Page::make('report', 'Report', Icon::Docs, ReportWindowReader::class, 'ReportWindow.vue')
+                ->at('reports/{report}')
+                ->actions(
+                    ActionRoute::post('reports/{report}/comments', CommentReportPageController::class, 'comment-report'),
+                ),
         ];
     }
 

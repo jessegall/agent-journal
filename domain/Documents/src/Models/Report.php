@@ -17,6 +17,7 @@ use Domain\Documents\Data\ReportView;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Models\Concerns\CreatedWithAttention;
+use Domain\Documents\Models\Concerns\SearchesText;
 use Domain\Documents\Support\MarkdownText;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -43,7 +44,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['title', 'abstract', 'body', 'creator_type', 'creator_id', 'origin_agent_id', 'origin_session_id', 'filed_at'])]
 final class Report extends Model implements Numbered, ReadableModel
 {
-    use BoundedReads, CreatedWithAttention, HasNumber, HasUlids, Linkable;
+    use BoundedReads, CreatedWithAttention, HasNumber, HasUlids, Linkable, SearchesText;
 
     public const string LINK_TYPE = 'documents.report';
 
@@ -79,6 +80,22 @@ final class Report extends Model implements Numbered, ReadableModel
     public function card(): ReportCard
     {
         return new ReportCard($this->id, (string) $this->number, $this->title, $this->abstract, $this->attention);
+    }
+
+    /**
+     * The report as a search found it: its card with a snippet around the words.
+     */
+    public function hit(string $words): ReportCard
+    {
+        return ReportCard::from([
+            'id' => $this->id,
+            'number' => (string) $this->number,
+            'title' => $this->title,
+            'abstract' => $this->abstract,
+            'attention' => $this->attention,
+            'snippet' => $this->snippetFor($words),
+            'foundIn' => 'report',
+        ]);
     }
 
     public function view(): ReportView

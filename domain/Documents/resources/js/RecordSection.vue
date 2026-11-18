@@ -23,6 +23,9 @@ defineProps<{
                 <span>{{ row.title }}</span>
                 <span class="text-text-3">{{ row.abstract }}</span>
             </a>
+            <template v-if="row.snippet">
+                <p class="text-small text-text-3">{{ row.foundIn }}: {{ row.snippet }}</p>
+            </template>
         </template>
         <CreateRecordForm :action="`/documents/${path}`" :label="createLabel" />
     </section>

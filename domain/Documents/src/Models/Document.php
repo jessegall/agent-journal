@@ -88,6 +88,34 @@ final class Document extends Model implements Numbered, ReadableModel
         return new DocumentCard($this->id, (string) $this->number, $revision->title, $revision->abstract, $this->attention);
     }
 
+    /**
+     * The document as a search found it: its card with a snippet of the revision that holds the words.
+     */
+    public function hit(string $words, DocumentRevision $found): DocumentCard
+    {
+        $revision = $this->currentRevisionOrFail();
+
+        return DocumentCard::from([
+            'id' => $this->id,
+            'number' => (string) $this->number,
+            'title' => $revision->title,
+            'abstract' => $revision->abstract,
+            'attention' => $this->attention,
+            'snippet' => $found->snippetFor($words),
+            'foundIn' => "revision {$found->number}",
+        ]);
+    }
+
+    /**
+     * The newest revision a search loaded into the relation it searched.
+     */
+    public function foundRevision(string $relation): DocumentRevision
+    {
+        $found = $relation === 'revisions' ? $this->revisions->sortByDesc('number')->first() : $this->currentRevision;
+
+        return $found ?? $this->currentRevisionOrFail();
+    }
+
     public function view(): DocumentView
     {
         $revision = $this->currentRevisionOrFail();
