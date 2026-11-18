@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Handlers;
 
+use App\Contracts\CommandHandler;
 use App\Settings\Commands\SetDecimalSetting;
 use App\Settings\Declarations\DecimalSetting;
 use App\Settings\Enums\SettingType;
@@ -15,7 +16,7 @@ use App\Settings\Values\SettingsChange;
 /**
  * Stores an exact decimal setting's value after checking who asks, what it names and the value.
  */
-final readonly class SetDecimalSettingHandler
+final readonly class SetDecimalSettingHandler implements CommandHandler
 {
     public function __construct(private SettingTargets $targets, private SettingCodec $codec, private SettingsWriter $writer) {}
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Handlers;
 
+use App\Contracts\CommandHandler;
 use App\Settings\Commands\SetBooleanSetting;
 use App\Settings\Declarations\BooleanSetting;
 use App\Settings\Enums\SettingType;
@@ -15,7 +16,7 @@ use App\Settings\Values\SettingsChange;
 /**
  * Stores an on-or-off setting's value after checking who asks and what it names.
  */
-final readonly class SetBooleanSettingHandler
+final readonly class SetBooleanSettingHandler implements CommandHandler
 {
     public function __construct(private SettingTargets $targets, private SettingCodec $codec, private SettingsWriter $writer) {}
 

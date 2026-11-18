@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Handlers;
 
+use App\Contracts\CommandHandler;
 use App\Settings\Commands\SetStringSetting;
 use App\Settings\Declarations\StringSetting;
 use App\Settings\Enums\SettingType;
@@ -15,7 +16,7 @@ use App\Settings\Values\SettingsChange;
 /**
  * Stores a text setting's value after checking who asks, what it names and the value.
  */
-final readonly class SetStringSettingHandler
+final readonly class SetStringSettingHandler implements CommandHandler
 {
     public function __construct(private SettingTargets $targets, private SettingCodec $codec, private SettingsWriter $writer) {}
 

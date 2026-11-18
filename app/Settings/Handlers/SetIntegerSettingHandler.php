@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Handlers;
 
+use App\Contracts\CommandHandler;
 use App\Settings\Commands\SetIntegerSetting;
 use App\Settings\Declarations\IntegerSetting;
 use App\Settings\Enums\SettingType;
@@ -15,7 +16,7 @@ use App\Settings\Values\SettingsChange;
 /**
  * Stores a whole-number setting's value after checking who asks, what it names and the value.
  */
-final readonly class SetIntegerSettingHandler
+final readonly class SetIntegerSettingHandler implements CommandHandler
 {
     public function __construct(private SettingTargets $targets, private SettingCodec $codec, private SettingsWriter $writer) {}
 

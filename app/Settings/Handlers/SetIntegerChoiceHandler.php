@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Handlers;
 
+use App\Contracts\CommandHandler;
 use App\Settings\Commands\SetIntegerChoice;
 use App\Settings\Declarations\ChoiceSetting;
 use App\Settings\Declarations\EnumSetting;
@@ -17,7 +18,7 @@ use App\Settings\Values\SettingsChange;
 /**
  * Stores the chosen whole-number option of a choice or int-backed enum setting after checking who asks, what it names and that the option is one of its own.
  */
-final readonly class SetIntegerChoiceHandler
+final readonly class SetIntegerChoiceHandler implements CommandHandler
 {
     public function __construct(private SettingTargets $targets, private SettingCodec $codec, private SettingsWriter $writer) {}
 
