@@ -12,6 +12,7 @@ use App\Domains\Exceptions\DomainCycle;
 use App\Domains\Exceptions\DomainListedTwice;
 use App\Domains\Exceptions\DomainNotFound;
 use App\Domains\Exceptions\RequiredDomainMissing;
+use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Support\CoreSettings;
 use App\Settings\Support\SettingRegistry;
@@ -112,6 +113,25 @@ final readonly class DomainRegistry
      * Every owner's settings, Core's first under its reserved name and then the domains in bootstrap/domains.php
      * order, checked together; start-up stops at the first wrong declaration.
      */
+    /**
+     * One Core switch per domain that can be switched off, keyed domain_<name>, on by default and holding no
+     * settings; a name that makes an invalid key fails like any declaration.
+     *
+     * @throws SettingDeclarationInvalid
+     */
+    public function domainSwitches(): DomainSwitches
+    {
+        $groups = [];
+
+        foreach ($this->all() as $entry) {
+            if ($entry->canDisable()) {
+                $groups[$entry->name] = ToggleGroup::make('domain_'.strtolower($entry->name), $entry->name, true, []);
+            }
+        }
+
+        return new DomainSwitches($groups);
+    }
+
     public function settingDeclarations(CoreSettings $core): SettingRegistry
     {
         $definitions = [SettingRegistry::CORE => $core];
