@@ -51,6 +51,19 @@ final readonly class SessionRecords implements SessionReader
     }
 
     /**
+     * The agent's session that may receive a message, locked so a session ending at the same time waits for the send;
+     * only the validated row, no stack or records.
+     *
+     * @throws StackTargetRefused
+     */
+    public function lockEligibleSessionOf(string $agentId, string $sessionId): AgentSession
+    {
+        $session = AgentSession::query()->whereKey($sessionId)->where('agent_id', $agentId)->lockForUpdate()->first();
+
+        return $session !== null && $session->canReceiveMessages() ? $session : throw StackTargetRefused::forTarget("session {$sessionId}");
+    }
+
+    /**
      * @return ReadBuilder<AgentSession>
      */
     private function visibleSessions(): ReadBuilder

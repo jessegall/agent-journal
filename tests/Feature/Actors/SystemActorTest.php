@@ -1,0 +1,66 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Actors;
+
+use App\Actors\Contracts\ReceivesMessages;
+use App\Actors\Contracts\SendsMessages;
+use App\Actors\Enums\ActorType;
+use App\Actors\Exceptions\InvalidActorText;
+use App\Actors\Exceptions\SystemActorRequired;
+use App\Actors\Exceptions\UserActorRequired;
+use App\Actors\Support\ActorIdentity;
+use App\Actors\Support\ActorStore;
+use App\Actors\Support\SystemActor;
+use App\Agents\Models\Agent;
+use Domain\Access\Models\User;
+use RuntimeException;
+use Tests\TestCase;
+
+/**
+ * The journal itself is an actor that only sends, that text from outside can never name, and that only trusted Core
+ * code acts as, for exactly the work it runs.
+ */
+final class SystemActorTest extends TestCase
+{
+    public function test_users_and_agents_send_and_receive_and_the_system_only_sends(): void
+    {
+        $this->assertInstanceOf(SendsMessages::class, new Agent);
+        $this->assertInstanceOf(ReceivesMessages::class, new Agent);
+        $this->assertInstanceOf(SendsMessages::class, new User);
+        $this->assertInstanceOf(ReceivesMessages::class, new User);
+        $this->assertInstanceOf(SendsMessages::class, new SystemActor);
+        $this->assertNotInstanceOf(ReceivesMessages::class, new SystemActor);
+    }
+
+    public function test_text_from_outside_never_names_the_system(): void
+    {
+        $this->assertTrue(ActorIdentity::system()->isSameAs(ActorIdentity::of(new SystemActor)));
+        $this->expectException(InvalidActorText::class);
+
+        ActorIdentity::fromText('system:1');
+    }
+
+    public function test_acting_as_the_system_lasts_only_for_its_work_even_when_it_throws(): void
+    {
+        $store = $this->app->make(ActorStore::class);
+        $store->set((new User)->forceFill(['id' => '01jd8x0g9m3qz6v4k2t7r5w1ce']));
+
+        $inside = $store->actAsSystem(fn () => $store->actor()->actorType());
+
+        try {
+            $store->actAsSystem(fn () => throw new RuntimeException('failed'));
+        } catch (RuntimeException) {
+        }
+
+        $this->assertSame(ActorType::System, $inside);
+        $this->assertSame(ActorType::User, $store->actor()->actorType());
+    }
+
+    public function test_each_required_actor_type_has_its_own_refusal(): void
+    {
+        $this->assertInstanceOf(SystemActorRequired::class, ActorType::System->refusalFor(ActorType::User));
+        $this->assertInstanceOf(UserActorRequired::class, ActorType::User->refusalFor(ActorType::System));
+    }
+}

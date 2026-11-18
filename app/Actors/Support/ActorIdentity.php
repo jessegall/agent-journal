@@ -27,6 +27,14 @@ final readonly class ActorIdentity
     }
 
     /**
+     * The journal itself, for trusted Core code; text from outside never names it.
+     */
+    public static function system(): self
+    {
+        return self::of(new SystemActor);
+    }
+
+    /**
      * An actor written as type:id, such as agent:01jd8x0g9m3qz6v4k2t7r5w1ce, as a command line takes it.
      *
      * @throws InvalidActorText

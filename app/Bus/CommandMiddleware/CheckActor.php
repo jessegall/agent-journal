@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus\CommandMiddleware;
 
-use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorContextMissing;
-use App\Actors\Exceptions\AgentActorRequired;
-use App\Actors\Exceptions\UserActorRequired;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandRegistry;
@@ -27,7 +24,7 @@ final readonly class CheckActor implements CommandMiddleware
         $required = $this->registry->requiredActor($call->name());
 
         if ($required !== null && $actor->type !== $required) {
-            throw $required === ActorType::User ? UserActorRequired::forActor($actor->type->value) : AgentActorRequired::forActor($actor->type->value);
+            throw $required->refusalFor($actor->type);
         }
 
         return $next($call);
