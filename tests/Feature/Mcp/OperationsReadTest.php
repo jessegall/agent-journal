@@ -21,6 +21,7 @@ use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
+use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * operations_read and journal://v1/operations/{request_key}: the caller's write under a key, with its outcomes page
@@ -60,6 +61,7 @@ final class OperationsReadTest extends TestCase
         $this->assertSame([], $result['next_actions']);
     }
 
+    #[TimeLimit(3, 'It writes a thousand command outcomes and follows every continuation page over them.')]
     public function test_a_1000_outcome_cascade_is_read_whole_by_following_continuations(): void
     {
         $this->receipt($this->launch->session->id, new CascadeResult('plans.plan 1', array_map(fn (int $number): array => ['record' => "tasks.task {$number}", 'changed' => true], range(1, 1000))));
