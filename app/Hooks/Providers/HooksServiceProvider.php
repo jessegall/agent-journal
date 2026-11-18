@@ -12,7 +12,6 @@ use App\Contracts\LaunchTransaction;
 use App\Hooks\Console\PruneHookHistoryCommand;
 use App\Hooks\Console\RelayHookCommand;
 use App\Hooks\Contracts\StateFactory;
-use App\Hooks\Inputs\MissingShellParser;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Models\Support\AgentSessionScope;
@@ -23,7 +22,6 @@ use App\Hooks\Support\ContextBudget;
 use App\Hooks\Support\HookRetryWindow;
 use App\Hooks\Support\RetentionPeriods;
 use App\Hooks\Support\StackTransaction;
-use App\Processes\Contracts\ShellCommandParser;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -44,7 +42,6 @@ final class HooksServiceProvider extends ServiceProvider
             $this->app->make('config')->integer('hooks.hook_call_days'),
             $this->app->make('config')->integer('hooks.closed_stack_days'),
         ));
-        $this->app->bindIf(ShellCommandParser::class, MissingShellParser::class);
         $this->app->scoped(StateFactory::class, RegisteredStateFactory::class);
         $this->app->singleton(OperationDeadline::class, fn () => new OperationDeadline($this->app->make('config')->integer('hooks.operation_deadline_milliseconds')));
         $this->app->singleton(ContextBudget::class, fn () => new ContextBudget($this->app->make('config')->integer('hooks.context_budget_characters')));

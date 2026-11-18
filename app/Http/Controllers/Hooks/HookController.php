@@ -12,7 +12,6 @@ use App\Bus\Support\OperationDeadline;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Exceptions\HookDigestChanged;
 use App\Hooks\Exceptions\HookIdentityExpired;
-use App\Hooks\Exceptions\ShellParserMissing;
 use App\Hooks\Exceptions\UnreadablePayload;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Programs\ProgramAdapters;
@@ -67,7 +66,7 @@ final readonly class HookController
             return $this->failure($refused->getMessage(), Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (HookIdentityExpired|HookDigestChanged|StaleProcessGeneration|ConversationIncompatible $conflict) {
             return $this->failure($conflict->getMessage(), Response::HTTP_CONFLICT);
-        } catch (ShellParserMissing|StackLockTimedOut $unavailable) {
+        } catch (StackLockTimedOut $unavailable) {
             return $this->failure($unavailable->getMessage(), Response::HTTP_SERVICE_UNAVAILABLE);
         }
 

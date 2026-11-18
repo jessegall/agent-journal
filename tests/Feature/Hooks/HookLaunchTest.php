@@ -21,10 +21,8 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\StackStatus;
-use App\Hooks\Exceptions\ShellParserMissing;
 use App\Hooks\Exceptions\UnknownReadyState;
 use App\Hooks\Inputs\HookIdentity;
-use App\Hooks\Inputs\MissingShellParser;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Models\AgentStackRow;
@@ -33,7 +31,6 @@ use App\Hooks\Programs\ProgramReplies;
 use App\Hooks\Stack\AgentStateMachine;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Storage\FrameRecord;
-use App\Processes\Contracts\ShellCommandParser;
 use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Closure;
@@ -86,18 +83,6 @@ final class HookLaunchTest extends TestCase
         } catch (UnknownReadyState) {
             $this->assertSame(0, AgentSession::query()->count());
             $this->assertSame(0, DB::table('agent_stacks')->count());
-        }
-    }
-
-    public function test_a_launch_without_a_command_parser_is_refused_and_keeps_nothing(): void
-    {
-        $this->app->instance(ShellCommandParser::class, new MissingShellParser());
-
-        try {
-            $this->launch('hooks.main_ready');
-            $this->fail('A launch without a command parser went through.');
-        } catch (ShellParserMissing) {
-            $this->assertSame(0, AgentSession::query()->count());
         }
     }
 

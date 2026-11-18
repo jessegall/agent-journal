@@ -65,6 +65,7 @@ use App\Processes\Support\OpenTiming;
 use App\Processes\Support\ProgramClassifiers;
 use App\Processes\Support\ProjectReceipts;
 use App\Processes\Support\ProjectRules;
+use App\Processes\Support\RequiredServices;
 use App\Processes\Support\ReceiptPublisher;
 use App\Processes\Support\ShellParser;
 use App\Processes\Support\SpoolRecorder;
@@ -109,6 +110,7 @@ final class ProcessesServiceProvider extends ServiceProvider
 
     public function boot(LinkTypeRegistry $links): void
     {
+        RequiredServices::check($this->app);
         $this->callAfterResolving(
             Schedule::class,
             fn (Schedule $schedule) => $schedule->command('process:reconcile')->everyMinute(),
