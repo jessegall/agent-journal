@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Bus\CommandMiddleware;
 
 use App\Actors\Exceptions\ActorContextMissing;
-use App\Bus\Contracts\CallerSession;
+use App\Bus\Contracts\AnswersFromReceipt;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Enums\RefusalCode;
-use App\Bus\Exceptions\RefusalReplayed;
-use App\Bus\Exceptions\RequestKeyConflict;
 use App\Bus\Models\CommandReceipt;
 use App\Bus\Support\CommandCall;
+use App\Bus\Support\CommandRegistry;
+use App\Bus\Support\ReceiptCallers;
 use App\Bus\Support\RequestKey;
 use App\Contracts\CommandRefusal;
 use Closure;
@@ -25,7 +25,7 @@ use Throwable;
  */
 final readonly class RecordRefusalReceipt implements CommandMiddleware
 {
-    public function __construct(private RequestKey $key, private CallerSession $session) {}
+    public function __construct(private RequestKey $key, private ReceiptCallers $callers, private CommandRegistry $registry) {}
 
     public function handle(CommandCall $call, Closure $next): mixed
     {
@@ -37,7 +37,8 @@ final readonly class RecordRefusalReceipt implements CommandMiddleware
             } catch (Throwable $failure) {
                 if ($key !== null && $this->isFirstRefusal($failure)) {
                     $code = $failure instanceof CodedRefusal ? $failure->refusalCode() : RefusalCode::StateBlocked;
-                    CommandReceipt::recordRefusal($this->session->sessionId(), $key, $call->command(), $call->actor() ?? throw ActorContextMissing::forRequest(), $code, $failure->getMessage());
+                    $caller = $this->callers->of($call->actor() ?? throw ActorContextMissing::forRequest());
+                    CommandReceipt::recordRefusal($caller, $key, $call->command(), $this->registry->retentionOf($call->name()), $code, $failure->getMessage());
                 }
 
                 throw $failure;
@@ -46,10 +47,10 @@ final readonly class RecordRefusalReceipt implements CommandMiddleware
     }
 
     /**
-     * A refusal the write got now, not one replayed from its receipt or a clash of its key, which already has one.
+     * A refusal the write got now, not one its key's receipt gave, which already has one.
      */
     private function isFirstRefusal(Throwable $failure): bool
     {
-        return $failure instanceof CommandRefusal && ! $failure instanceof RefusalReplayed && ! $failure instanceof RequestKeyConflict;
+        return $failure instanceof CommandRefusal && ! $failure instanceof AnswersFromReceipt;
     }
 }

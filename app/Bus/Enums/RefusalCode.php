@@ -16,6 +16,7 @@ enum RefusalCode: string
     case StateBlocked = 'state_blocked';
     case Conflict = 'conflict';
     case RequestKeyConflict = 'request_key_conflict';
+    case RequestKeyExpired = 'request_key_expired';
     case StaleContinuation = 'stale_continuation';
     case Busy = 'busy';
     case Unavailable = 'unavailable';

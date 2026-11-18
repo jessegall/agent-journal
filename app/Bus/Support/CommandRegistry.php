@@ -9,6 +9,7 @@ use App\Bus\Attributes\AllowsEngine;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresActor;
+use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Enums\CommandScopeType;
@@ -84,6 +85,8 @@ final readonly class CommandRegistry
                 repeatableRead: $reflection->getAttributes(RepeatableRead::class) !== [],
                 actor: self::requiredActorOf($reflection),
                 allowsEngine: $reflection->getAttributes(AllowsEngine::class) !== [],
+                requiresRequestKey: $reflection->getAttributes(RequiresRequestKey::class) !== [],
+                retention: self::declaredRetentionOf($reflection),
                 middleware: self::orderedFor($command, $owner, $middleware, $owners),
             );
         }
@@ -157,6 +160,16 @@ final readonly class CommandRegistry
         return $this->entry($command)->allowsEngine;
     }
 
+    public function requiresRequestKey(string $command): bool
+    {
+        return $this->entry($command)->requiresRequestKey;
+    }
+
+    public function retentionOf(string $command): ReceiptRetention
+    {
+        return $this->entry($command)->retention;
+    }
+
     /**
      * The module middleware a command passes, in order: by stage, then owner order, then declaration order.
      *
@@ -185,6 +198,18 @@ final readonly class CommandRegistry
     }
 
     /**
+     * The retention a command's RequiresRequestKey declares, or the standard one.
+     *
+     * @param  ReflectionClass<*>  $command
+     */
+    private static function declaredRetentionOf(ReflectionClass $command): ReceiptRetention
+    {
+        $attribute = $command->getAttributes(RequiresRequestKey::class)[0] ?? null;
+
+        return $attribute === null ? ReceiptRetention::standard() : ReceiptRetention::declaredBy($command->getName(), $attribute->newInstance());
+    }
+
+    /**
      * Checks one command against the grammar and returns the handler it names, which the caller checks next.
      *
      * @param  list<CommandOwner>  $owners
@@ -210,7 +235,7 @@ final readonly class CommandRegistry
             throw CommandDeclarationInvalid::for($command, 'queueing a command is not supported yet; take ShouldQueue off');
         }
 
-        foreach ([RepeatableRead::class, RequiresActor::class, AllowsEngine::class] as $attribute) {
+        foreach ([RepeatableRead::class, RequiresActor::class, AllowsEngine::class, RequiresRequestKey::class] as $attribute) {
             if (count($reflection->getAttributes($attribute)) > 1) {
                 throw CommandDeclarationInvalid::for($command, 'it repeats '.class_basename($attribute));
             }

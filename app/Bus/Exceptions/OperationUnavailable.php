@@ -12,7 +12,7 @@ use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * No write of the calling session under this request key: never made, rolled back, pruned or another session's.
+ * No write of the caller under this request key: never made, rolled back, pruned or another caller's.
  */
 final class OperationUnavailable extends RuntimeException implements CodedRefusal, CommandRefusal
 {
