@@ -6,6 +6,7 @@ namespace Tests\Feature\Domains;
 
 use App\Domains\Exceptions\NotADomain;
 use App\Domains\Exceptions\RequiredDomainMissing;
+use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Providers\DomainServiceProvider;
 use App\Domains\Support\DomainRegistry;
 use Illuminate\Contracts\Foundation\Application;
@@ -57,7 +58,7 @@ final class DomainServiceProviderTest extends TestCase
     {
         $this->registerDomains([ShelvesDomain::class]);
 
-        $events = (new EventServiceProvider($this->app))->discoverEvents();
+        $events = (new DomainEventServiceProvider($this->app))->discoverEvents();
 
         $this->assertSame([CountShelvedBook::class.'@handle'], $events[BookShelved::class]);
     }
@@ -66,7 +67,7 @@ final class DomainServiceProviderTest extends TestCase
     {
         $this->registerDomains([ShelvesDomain::class, BooksDomain::class]);
 
-        $paths = collect($this->discoveryPathsProperty()->getValue())->all();
+        $paths = (new DomainEventServiceProvider($this->app))->discoverEventsWithin();
         $folders = $this->app->make(DomainRegistry::class)->listenerFolders();
 
         $this->assertSame($folders, array_values(array_intersect($paths, $folders)));

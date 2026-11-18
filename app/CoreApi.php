@@ -434,4 +434,14 @@ final class CoreApi
             )
             ->build();
     }
+
+    /**
+     * The Listeners folder of each Core area that has one, for the checked listener provider to discover.
+     *
+     * @return list<string>
+     */
+    public static function listenerFolders(): array
+    {
+        return glob(__DIR__.'/*/Listeners', GLOB_ONLYDIR) ?: [];
+    }
 }

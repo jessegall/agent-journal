@@ -48,11 +48,11 @@ final class PageChangeTest extends TestCase
         Event::fake([PageChanged::class]);
     }
 
-    public function test_a_new_modules_fact_changes_the_page_once_without_any_change_to_web(): void
+    public function test_a_page_fact_no_owner_exports_changes_no_page(): void
     {
         event(new ShelfMoved);
 
-        Event::assertDispatchedTimes(PageChanged::class, 1);
+        Event::assertNotDispatched(PageChanged::class);
     }
 
     public function test_a_finished_task_of_a_plan_moves_the_plan_and_changes_the_page(): void

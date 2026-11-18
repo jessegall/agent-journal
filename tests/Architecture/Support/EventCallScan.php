@@ -11,6 +11,7 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
+use PhpParser\Node\Stmt\Property;
 use PhpParser\NodeFinder;
 use PhpParser\PrettyPrinter\Standard;
 use Tests\Support\ScanCache\FileScan;
@@ -24,7 +25,7 @@ final readonly class EventCallScan implements FileScan
 {
     public function key(): string
     {
-        return 'event-calls-1';
+        return 'event-calls-2';
     }
 
     public function findingsIn(ParsedFile $file): array
@@ -41,7 +42,7 @@ final readonly class EventCallScan implements FileScan
 
     private const array HELPERS = ['event', 'broadcast'];
 
-    private const array RECEIVER_METHODS = ['listen' => false, 'dispatch' => true, 'until' => true];
+    private const array RECEIVER_METHODS = ['listen' => false, 'subscribe' => false, 'dispatch' => true, 'until' => true];
 
     /**
      * @return list<EventCall>
@@ -77,7 +78,38 @@ final readonly class EventCallScan implements FileScan
             $calls[] = self::eventCall($file, $call, "->{$method}()", self::RECEIVER_METHODS[$method], takesOnlyEvents: $method === 'listen');
         }
 
-        return $calls;
+        return [...$calls, ...self::declaredRegistrations($file)];
+    }
+
+    /**
+     * An event subscriber class, and a provider's listen or subscribe property that is not empty: both register
+     * listeners by hand.
+     *
+     * @return list<EventCall>
+     */
+    private static function declaredRegistrations(ParsedFile $file): array
+    {
+        $registrations = [];
+        $finder = new NodeFinder;
+
+        foreach ($finder->findInstanceOf($file->statements, ClassMethod::class) as $method) {
+            $type = ($method->params[0] ?? null)?->type;
+
+            if ($method->name->toLowerString() === 'subscribe' && $type instanceof Name && str_ends_with($type->toString(), 'Dispatcher')) {
+                $registrations[] = new EventCall($file->path, $method->getStartLine(), 'subscribe(Dispatcher)', false, false, EventArgument::Other, 'an event subscriber');
+            }
+        }
+
+        foreach ($finder->findInstanceOf($file->statements, Property::class) as $property) {
+            $name = $property->props[0]->name->toString();
+            $default = $property->props[0]->default;
+
+            if (in_array($name, ['listen', 'subscribe'], true) && $default instanceof Expr\Array_ && $default->items !== []) {
+                $registrations[] = new EventCall($file->path, $property->getStartLine(), "\${$name}", false, false, EventArgument::Other, "a {$name} property");
+            }
+        }
+
+        return $registrations;
     }
 
     private static function isEventFacadeCall(Expr\StaticCall $call): bool

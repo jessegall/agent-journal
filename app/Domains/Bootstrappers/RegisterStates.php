@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Domains\Bootstrappers;
 
+use App\CoreApi;
 use App\Domains\Contracts\DomainBootstrapper;
+use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Support\DomainEntry;
 use App\Hooks\Events\StateTypesRequested;
 use Illuminate\Contracts\Container\Container;
@@ -19,6 +21,10 @@ final readonly class RegisterStates implements DomainBootstrapper
 
     public function __invoke(DomainEntry $domain): void
     {
+        if (! CoreApi::exports()->hasEvent(StateTypesRequested::class)) {
+            throw InvalidListener::privateEvent(self::class, '__invoke', StateTypesRequested::class, 'Core');
+        }
+
         $this->events->listen(StateTypesRequested::class, function (StateTypesRequested $event) use ($domain): void {
             foreach ($domain->states() as $typeKey => $factory) {
                 $event->registry->register($typeKey, $this->container->make($factory));

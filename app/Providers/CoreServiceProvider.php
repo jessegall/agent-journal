@@ -12,7 +12,6 @@ use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\HookCall;
 use App\Links\Models\Link;
 use App\Links\Support\LinkTypeRegistry;
-use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -22,14 +21,6 @@ use Illuminate\Support\ServiceProvider;
 final class CoreServiceProvider extends ServiceProvider
 {
     private const array AREAS = ['Agents', 'Assignments', 'Hooks', 'Links', 'Numbers', 'Web'];
-
-    public function register(): void
-    {
-        EventServiceProvider::addEventDiscoveryPaths(array_values(array_filter(
-            array_map(fn (string $area) => dirname(__DIR__)."/{$area}/Listeners", self::AREAS),
-            is_dir(...),
-        )));
-    }
 
     public function boot(LinkTypeRegistry $links): void
     {

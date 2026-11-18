@@ -13,6 +13,7 @@ use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\EventCallScan;
 use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\Violation;
+use Tests\Fixtures\Boundary\EventCalls\Plans\Events\PlanStarted;
 use Tests\Fixtures\Boundary\EventCalls\Plans\PlansDomain;
 use Tests\Fixtures\Boundary\EventCalls\Tasks\TasksDomain;
 use Tests\Support\ScanCache\ScanCache;
@@ -39,8 +40,16 @@ final class DomainEventCallTest extends TestCase
             '19 names the event task.closed by a string; name its event class instead',
             '20 names the event task.closed by a string; name its event class instead',
         ]];
-        yield 'an action raising its own events by class' => ['Plans/Actions/ClassEvents.php', []];
+        yield 'an action raising its own events by class' => ['Plans/Actions/ClassEvents.php', [
+            '16 registers a listener for '.PlanStarted::class.' by hand; write a concrete typed listener in a Listeners folder',
+        ]];
         yield 'a listener hearing an event by class' => ['Plans/Listeners/QuietListener.php', []];
+        yield 'listeners registered by hand' => ['Plans/Providers/RegistersByHand.php', [
+            '16 registers a listener for '.PlanStarted::class.' by hand; write a concrete typed listener in a Listeners folder',
+            '17 names the event plans.* by a string; name its event class instead',
+            '17 registers a listener for plans.* by hand; write a concrete typed listener in a Listeners folder',
+            '22 registers a listener for an event subscriber by hand; write a concrete typed listener in a Listeners folder',
+        ]];
     }
 
     /**

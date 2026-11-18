@@ -11,13 +11,12 @@ use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\Exports as ExportsCheck;
 use App\Domains\Support\Psr4ClassNames;
 use Illuminate\Foundation\Events\DiscoverEvents;
-use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use SplFileInfo;
 
 /**
- * Registers the domains of bootstrap/domains.php, their registry and listener folders, and boots each domain by running
+ * Registers the domains of bootstrap/domains.php and their registry, and boots each domain by running
  * the bootstrappers it lists.
  */
 class DomainServiceProvider extends ServiceProvider
@@ -29,8 +28,6 @@ class DomainServiceProvider extends ServiceProvider
 
         $this->app->instance(DomainRegistry::class, $registry);
         $this->app->singleton(CommandRegistry::class, fn () => $registry->commandDeclarations(CoreCommands::owner()));
-
-        EventServiceProvider::addEventDiscoveryPaths($registry->listenerFolders());
 
         $classNames = Psr4ClassNames::fromComposer();
         DiscoverEvents::guessClassNamesUsing(fn (SplFileInfo $file, string $basePath) => $classNames->classOf((string) $file->getRealPath()));

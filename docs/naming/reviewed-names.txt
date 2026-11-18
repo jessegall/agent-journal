@@ -190,6 +190,7 @@ case	ViolationType::EventOutsideListener
 case	ViolationType::FileOutsideDomains
 case	ViolationType::FillableNotListed
 case	ViolationType::KeyNotUlid
+case	ViolationType::ListenerRegisteredByHand
 case	ViolationType::MigrationNameTwice
 case	ViolationType::MisnamedDomainClass
 case	ViolationType::ModelNotLinkable
@@ -437,6 +438,7 @@ class	Domain
 class	DomainCycle
 class	DomainDeclarationError
 class	DomainEntry
+class	DomainEventServiceProvider
 class	DomainFiles
 class	DomainListedTwice
 class	DomainNotFound
@@ -510,6 +512,7 @@ class	InvalidAssignmentPage
 class	InvalidBottomState
 class	InvalidExports
 class	InvalidHookAnswer
+class	InvalidListener
 class	InvalidNavigationDeclaration
 class	InvalidObservationAnswer
 class	InvalidPageDeclaration
@@ -548,6 +551,7 @@ class	Link
 class	LinkAccess
 class	LinkTypeRegistry
 class	LinkTypeRepeated
+class	ListenerPolicy
 class	LoadMigrations
 class	LockingNumberAllocator
 class	LogCommand
@@ -974,6 +978,7 @@ constant	Exports::CORE_SUPPORT
 constant	FailedWindow::MESSAGE
 constant	FollowingSequenceStateReference::TYPE_KEY
 constant	GlobalGroup::JOURNAL
+constant	ListenerPolicy::CORE
 constant	LoginPage::COMPONENT
 constant	ModelConventions::OPENING_CALLS
 constant	NumberGroup::LAST_NUMBER_LIMIT
@@ -1514,6 +1519,7 @@ method	BoundaryChecker::domainHolding()
 method	BoundaryChecker::domainOwning()
 method	BoundaryChecker::eventCallViolations()
 method	BoundaryChecker::eventViolations()
+method	BoundaryChecker::isCheckedRegistrationSite()
 method	BoundaryChecker::isCoreEvent()
 method	BoundaryChecker::isDeclared()
 method	BoundaryChecker::isDomainName()
@@ -1704,11 +1710,11 @@ method	ConversationReader::conversationWith()
 method	ConversationRequest::chosenSession()
 method	ConversationRequest::rules()
 method	CoreApi::exports()
+method	CoreApi::listenerFolders()
 method	CoreCommands::commands()
 method	CoreCommands::middleware()
 method	CoreCommands::owner()
 method	CoreServiceProvider::boot()
-method	CoreServiceProvider::register()
 method	CountReader::count()
 method	CreateNewUser::__construct()
 method	CreateNewUser::create()
@@ -1829,6 +1835,12 @@ method	DomainEntry::requiresDomain()
 method	DomainEntry::scriptFolder()
 method	DomainEntry::states()
 method	DomainEntry::ui()
+method	DomainEventServiceProvider::coreListenerFolders()
+method	DomainEventServiceProvider::discoverEvents()
+method	DomainEventServiceProvider::discoverEventsWithin()
+method	DomainEventServiceProvider::getEvents()
+method	DomainEventServiceProvider::policy()
+method	DomainEventServiceProvider::shouldDiscoverEvents()
 method	DomainFiles::allIn()
 method	DomainFiles::domainCode()
 method	DomainFiles::in()
@@ -1867,7 +1879,9 @@ method	EventCall::isEventNamedByString()
 method	EventCall::raisesClassEvent()
 method	EventCall::raisesClassEventOf()
 method	EventCall::raisesReceivedEvent()
+method	EventCall::registersListenerByHand()
 method	EventCallScan::argumentType()
+method	EventCallScan::declaredRegistrations()
 method	EventCallScan::eventCall()
 method	EventCallScan::eventText()
 method	EventCallScan::findingsIn()
@@ -2080,6 +2094,12 @@ method	InvalidExports::outsideOwner()
 method	InvalidExports::supportOutsideCore()
 method	InvalidExports::unknownSupport()
 method	InvalidHookAnswer::for()
+method	InvalidListener::cacheMissing()
+method	InvalidListener::notAConcreteEvent()
+method	InvalidListener::notRequired()
+method	InvalidListener::privateEvent()
+method	InvalidListener::staleCache()
+method	InvalidListener::unknownOwner()
 method	InvalidNavigationDeclaration::nothingToOpen()
 method	InvalidNavigationDeclaration::pageMissing()
 method	InvalidNavigationDeclaration::rootOnlyOnChild()
@@ -2179,6 +2199,14 @@ method	Linkable::isLinkedTo()
 method	Linkable::linkTo()
 method	Linkable::links()
 method	Linkable::unlinkFrom()
+method	ListenerPolicy::__construct()
+method	ListenerPolicy::check()
+method	ListenerPolicy::checkPair()
+method	ListenerPolicy::eventDomain()
+method	ListenerPolicy::expand()
+method	ListenerPolicy::exportedEvents()
+method	ListenerPolicy::firstParameterAccepts()
+method	ListenerPolicy::listenerDomain()
 method	LoadMigrations::__construct()
 method	LoadMigrations::__invoke()
 method	LockingNumberAllocator::__construct()
@@ -3696,6 +3724,9 @@ property	LayoutsController::$redirect
 property	LayoutsController::$users
 property	Link::$guarded
 property	LinkAccess::$model
+property	ListenerPolicy::$coreExports
+property	ListenerPolicy::$coreListenerFolders
+property	ListenerPolicy::$registry
 property	LoadMigrations::$app
 property	LockingNumberAllocator::$outsideCommands
 property	LockingNumberAllocator::$transaction

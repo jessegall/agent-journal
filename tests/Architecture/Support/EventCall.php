@@ -33,6 +33,25 @@ final readonly class EventCall
     }
 
     /**
+     * A listener registered by hand instead of through a typed listener in a Listeners folder: an event class of the
+     * project, a wildcard, a subscriber or a provider property. Framework lifecycle strings such as 'eloquent.booted: X'
+     * and framework events are not the project's, so they pass.
+     */
+    public function registersListenerByHand(ProjectRoots $roots): bool
+    {
+        if ($this->raises) {
+            return false;
+        }
+
+        return match ($this->argument) {
+            EventArgument::ClassName => $roots->startsWithProjectNamespace($this->event),
+            EventArgument::String => str_contains($this->event, '*'),
+            EventArgument::Other => in_array($this->call, ['subscribe(Dispatcher)', '$listen', '$subscribe'], true) || str_ends_with($this->call, 'subscribe()'),
+            default => false,
+        };
+    }
+
+    /**
      * A listener passing the event it received to a raise, such as event($event) in handle(TaskClosed $event).
      */
     public function raisesReceivedEvent(): bool
@@ -41,16 +60,16 @@ final readonly class EventCall
     }
 
     /**
-     * A raise of an event of that domain named by its class, such as Event::dispatch(TaskClosed::class).
-     */
-    /**
-     * Whether this call raises, by its class, an event whose name matches the pattern.
+     * Whether this call raises an event named by its class, such as Event::dispatch(TaskClosed::class).
      */
     public function raisesClassEvent(): bool
     {
         return $this->raises && $this->argument === EventArgument::ClassName;
     }
 
+    /**
+     * A raise of an event of that domain named by its class.
+     */
     public function raisesClassEventOf(DomainEntry $owner): bool
     {
         return $this->raises && $this->argument === EventArgument::ClassName && $owner->ownsEvent($this->event);

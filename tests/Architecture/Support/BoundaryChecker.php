@@ -140,6 +140,10 @@ final readonly class BoundaryChecker
                 $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $this->domainOwning($call->event)->name, ViolationType::ReRaisedEvent);
             }
 
+            if ($call->registersListenerByHand($this->roots) && ! self::isCheckedRegistrationSite($call->file)) {
+                $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $userName, ViolationType::ListenerRegisteredByHand);
+            }
+
             if ($userName !== self::SHARED_PLACE && $call->raisesClassEvent() && $this->isCoreEvent($call->event)) {
                 $violations[] = new Violation($call->file, $call->line, $call->event, $userName, 'Core', ViolationType::ReRaisedEvent);
             }
@@ -225,6 +229,15 @@ final readonly class BoundaryChecker
         $name = ltrim($name, '\\');
 
         return stripos($name, 'App\\') === 0 && stripos($name, 'App\\Domains\\') !== 0 && self::isDeclared($name) && ! $this->coreExports->has($name);
+    }
+
+    /**
+     * The one place outside a Listeners folder that registers a listener: each domain's state types answer Core's
+     * StateTypesRequested through the RegisterStates bootstrapper.
+     */
+    private static function isCheckedRegistrationSite(string $file): bool
+    {
+        return str_ends_with($file, 'app/Domains/Bootstrappers/RegisterStates.php');
     }
 
     /**

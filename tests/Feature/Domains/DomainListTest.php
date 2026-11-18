@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domains;
 
+use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Support\DomainEntry;
 use App\Domains\Support\DomainRegistry;
 use Domain\Tasks\TasksDomain;
-use Illuminate\Foundation\Support\Providers\EventServiceProvider;
-use ReflectionProperty;
 use Tests\TestCase;
 
 final class DomainListTest extends TestCase
@@ -29,7 +28,7 @@ final class DomainListTest extends TestCase
     public function test_listeners_are_discovered_only_in_the_domain_and_core_listener_folders(): void
     {
         $registry = $this->app->make(DomainRegistry::class);
-        $paths = collect((new ReflectionProperty(EventServiceProvider::class, 'eventDiscoveryPaths'))->getValue())->all();
+        $paths = (new DomainEventServiceProvider($this->app))->discoverEventsWithin();
 
         foreach ($registry->listenerFolders() as $folder) {
             $this->assertContains($folder, $paths);

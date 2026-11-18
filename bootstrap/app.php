@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
+    // Listeners are registered once, by App\Domains\Providers\DomainEventServiceProvider, through its checks.
+    ->withEvents(discover: false)
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: AuthenticateAgent::class);
         $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: AuthenticateUser::class);

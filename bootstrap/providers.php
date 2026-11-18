@@ -6,6 +6,7 @@ use App\Actors\Providers\ActorsServiceProvider;
 use App\Agents\Providers\AgentsServiceProvider;
 use App\Assignments\Providers\AssignmentsServiceProvider;
 use App\Bus\Providers\CommandBusServiceProvider;
+use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Providers\DomainServiceProvider;
 use App\Hooks\Providers\HooksServiceProvider;
 use App\Numbers\Providers\NumbersServiceProvider;
@@ -25,6 +26,7 @@ use Domain\Tasks\Providers\TasksServiceProvider;
 return [
     AppServiceProvider::class,
     DomainServiceProvider::class,
+    DomainEventServiceProvider::class,
     CoreServiceProvider::class,
     ActorsServiceProvider::class,
     AgentsServiceProvider::class,

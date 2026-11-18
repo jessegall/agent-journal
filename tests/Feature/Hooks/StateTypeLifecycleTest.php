@@ -58,7 +58,6 @@ final class StateTypeLifecycleTest extends TestCase
         $this->artisan('event:cache')->assertSuccessful();
         $this->assertFileExists($this->eventCachePath);
 
-        $this->discoveryPaths()->setValue(null, $this->discoveryPathsBefore);
         $this->refreshApplication();
 
         $this->assertTrue($this->app->eventsAreCached());
