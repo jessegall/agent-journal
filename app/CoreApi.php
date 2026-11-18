@@ -401,7 +401,6 @@ use App\Settings\Values\Decimal;
 use App\Settings\Values\GroupReference;
 use App\Settings\Values\SettingReference;
 use App\Settings\Values\SettingsChange;
-use App\Sharing\Commands\ReadShare;
 use App\Sharing\Commands\SaveSharePreview;
 use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ProvidesShareRecords;
@@ -424,6 +423,8 @@ use App\Sharing\Support\SavedSharePreview;
 use App\Sharing\Support\ShareCandidates;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\SharedContent;
+use App\Sharing\Support\SharedPage;
+use App\Sharing\Support\SharedPageItem;
 use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareRecordRegistration;
@@ -754,6 +755,8 @@ final class CoreApi
                 GatewayReadiness::class,
                 GatewayHealth::class,
                 ShareRelationType::class,
+                SharedPage::class,
+                SharedPageItem::class,
                 PublicComment::class,
                 PublicCommentPage::class,
                 SettingSource::class,
@@ -832,7 +835,6 @@ final class CoreApi
                 MarkSilentSessions::class,
                 SettleFrameTimes::class,
                 SaveSharePreview::class,
-                ReadShare::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,

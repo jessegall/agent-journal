@@ -73,6 +73,17 @@ final class CoreCommands
     }
 
     /**
+     * Core's commands that stay private: registered for Core's own runtime, such as the system's public share read,
+     * and never exported to a domain or module.
+     *
+     * @return list<class-string<Command<mixed>>>
+     */
+    public static function privateCommands(): array
+    {
+        return [ReadShare::class];
+    }
+
+    /**
      * @return list<MiddlewareDeclaration>
      */
     public static function middleware(): array
@@ -81,7 +92,8 @@ final class CoreCommands
     }
 
     /**
-     * Core as an owner of commands: the commands on CoreApi's commands list are exported to the domains.
+     * Core as an owner of commands: the commands on CoreApi's commands list are exported to the domains; the private
+     * ones are not.
      */
     public static function owner(): CommandOwner
     {

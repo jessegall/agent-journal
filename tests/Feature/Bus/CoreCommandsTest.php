@@ -56,8 +56,8 @@ use App\Web\Commands\RecordUserHeartbeat;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
 
 /**
- * Core's own commands (doc 19, phase 5): a module uses them without declaring Core, and a scope owned by Core covers
- * exactly them.
+ * Core's own commands (doc 19, phase 5): a module uses them without declaring Core, every one but Core's private
+ * runtime commands is exported, and a scope owned by Core covers exactly them.
  */
 final class CoreCommandsTest extends CommandBusTestCase
 {
@@ -70,8 +70,10 @@ final class CoreCommandsTest extends CommandBusTestCase
 
         foreach (CoreCommands::commands() as $command) {
             $this->assertTrue($registry->has($command));
-            $this->assertTrue($registry->isExported($command));
+            $this->assertSame(! in_array($command, CoreCommands::privateCommands(), true), $registry->isExported($command), $command);
         }
+
+        $this->assertSame([ReadShare::class], CoreCommands::privateCommands());
     }
 
     public function test_a_scope_owned_by_core_covers_exactly_cores_commands(): void
