@@ -557,6 +557,25 @@ use App\Sharing\Support\ShareSelectedTarget;
 use App\Sharing\Support\ShareSelection;
 use App\Sharing\Support\ShareSummary;
 use App\Sharing\Support\ShareTargetRead;
+use App\Skills\Conditions\Conditions;
+use App\Skills\Conditions\Everyone;
+use App\Skills\Contracts\ProvidesSkillConditions;
+use App\Skills\Contracts\ProvidesSkills;
+use App\Skills\Contracts\Skill;
+use App\Skills\Contracts\SkillCondition;
+use App\Skills\Contracts\SkillReader;
+use App\Skills\Enums\ConditionOutcome;
+use App\Skills\Exceptions\SkillDeclarationInvalid;
+use App\Skills\Exceptions\SkillKeyInvalid;
+use App\Skills\Values\ConditionResult;
+use App\Skills\Values\LaunchProfile;
+use App\Skills\Values\MarkdownPart;
+use App\Skills\Values\RenderedSkill;
+use App\Skills\Values\SkillConditionRegistration;
+use App\Skills\Values\SkillContext;
+use App\Skills\Values\SkillEntry;
+use App\Skills\Values\SkillKey;
+use App\Skills\Values\SkillSection;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextReader;
 use App\Text\Data\TextSections;
@@ -731,6 +750,11 @@ final class CoreApi
                 OperationReader::class,
                 OverviewContribution::class,
                 ProfileReader::class,
+                ProvidesSkills::class,
+                Skill::class,
+                SkillCondition::class,
+                ProvidesSkillConditions::class,
+                SkillReader::class,
             )
             ->values(
                 RefusalCode::class,
@@ -1011,6 +1035,18 @@ final class CoreApi
                 ProfileDefinition::class,
                 ProfileActivation::class,
                 ActivatedProfile::class,
+                SkillKey::class,
+                SkillSection::class,
+                MarkdownPart::class,
+                SkillContext::class,
+                LaunchProfile::class,
+                ConditionResult::class,
+                ConditionOutcome::class,
+                SkillConditionRegistration::class,
+                SkillEntry::class,
+                RenderedSkill::class,
+                Conditions::class,
+                Everyone::class,
             )
             ->commands(
                 ActivateProfiles::class,
@@ -1192,6 +1228,8 @@ final class CoreApi
                 ProfileKeyInvalid::class,
                 ProfileMissing::class,
                 ProfileRetired::class,
+                SkillDeclarationInvalid::class,
+                SkillKeyInvalid::class,
             )
             ->support(
                 BelongsToOneActor::class,
