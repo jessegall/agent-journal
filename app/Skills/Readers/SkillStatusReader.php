@@ -7,6 +7,7 @@ namespace App\Skills\Readers;
 use App\Actors\Contracts\CurrentActor;
 use App\Agents\Models\AgentSession;
 use App\Skills\Models\SkillGeneration;
+use App\Skills\Exceptions\SkillSessionHidden;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Values\SkillStatus;
 
@@ -28,16 +29,22 @@ final readonly class SkillStatusReader
     }
 
     /**
-     * The status of one session; a session the actor may not see shows no publication.
+     * The status of one session the actor may see.
+     *
+     * @throws SkillSessionHidden for a session the actor may not see or that has no publication, naming nothing
      */
     public function statusOfSession(string $sessionId): SkillStatus
     {
-        $publications = array_filter(
+        $publications = array_values(array_filter(
             $this->visiblePublications(),
             fn (SkillPublication $publication) => $publication->session_id === $sessionId,
-        );
+        ));
 
-        return $this->statusOf(array_values($publications));
+        if ($publications === []) {
+            throw SkillSessionHidden::create();
+        }
+
+        return $this->statusOf($publications);
     }
 
     /**

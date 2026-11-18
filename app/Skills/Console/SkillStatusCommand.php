@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Skills\Console;
 
 use App\Skills\Exceptions\SkillPreviewRefused;
+use App\Skills\Exceptions\SkillSessionHidden;
 use App\Skills\Readers\SkillStatusReader;
 use App\Skills\Support\SkillAuthoring;
 use App\Skills\Values\GenerationStatus;
@@ -37,7 +38,14 @@ final class SkillStatusCommand extends Command
 
         $reader = $container->make(SkillStatusReader::class);
         $session = $this->option('session');
-        $status = is_string($session) ? $reader->statusOfSession($session) : $reader->status();
+
+        try {
+            $status = is_string($session) ? $reader->statusOfSession($session) : $reader->status();
+        } catch (SkillSessionHidden $hidden) {
+            $this->error($hidden->getMessage());
+
+            return self::FAILURE;
+        }
 
         if ($this->option('json')) {
             $this->line(json_encode($status->toArray(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));

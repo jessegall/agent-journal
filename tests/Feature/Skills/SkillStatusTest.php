@@ -12,6 +12,7 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Enums\PublicationState;
+use App\Skills\Exceptions\SkillSessionHidden;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Readers\SkillStatusReader;
@@ -102,11 +103,18 @@ final class SkillStatusTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId));
 
         $status = $this->app->make(SkillStatusReader::class)->status();
-        $hidden = $this->app->make(SkillStatusReader::class)->statusOfSession($other->session_id);
 
         $this->assertCount(1, $status->publications);
         $this->assertSame($own->id, $status->publications[0]->publicationId);
-        $this->assertSame([], $hidden->publications);
+
+        try {
+            $this->app->make(SkillStatusReader::class)->statusOfSession($other->session_id);
+            $this->fail('Another session\'s status was shown to the agent.');
+        } catch (SkillSessionHidden $hidden) {
+            $this->assertSame('No skill delivery was found for that session.', $hidden->getMessage());
+            $this->assertStringNotContainsString($other->session_id, $hidden->getMessage());
+            $this->assertStringNotContainsString($other->target, $hidden->getMessage());
+        }
     }
 
     private function launchSession(string $name, AgentRole $role): AgentSession
