@@ -8,6 +8,7 @@ use App\Agents\Support\StackTarget;
 use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Links\Support\Linkable;
 use Domain\Sequences\Enums\SequenceRunState;
+use Domain\Sequences\Exceptions\SequenceRunMissing;
 use Domain\Sequences\Support\SequenceWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -50,6 +51,15 @@ final class SequenceRun extends Model
             'agent_id' => 'integer',
             'session_id' => 'integer',
         ];
+    }
+
+    /**
+     * The run read under its row lock, among those the actor may see, for a change that must happen once.
+     */
+    public static function lockedById(int $id): self
+    {
+        // A run belongs to no agent until it is started, so its start may also take a run nobody follows yet.
+        return self::lockedForActorOrUnheld($id) ?? throw SequenceRunMissing::forId($id);
     }
 
     public function startFor(StackTarget $target): void

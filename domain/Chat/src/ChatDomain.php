@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat;
 
+use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Contracts\Domain;
 use App\Domains\Contracts\ProvidesStates;
 use App\Ui\Contracts\ProvidesNavigation;
@@ -21,8 +22,11 @@ use Domain\Chat\Api\Events\MessageAnswered;
 use Domain\Chat\Api\Events\MessageDismissed;
 use Domain\Chat\Api\Events\MessageSent;
 use Domain\Chat\Api\MessageView;
+use Domain\Chat\Commands\AnswerMessage;
+use Domain\Chat\Commands\DismissMessage;
+use Domain\Chat\Commands\RequireMessageAnswer;
+use Domain\Chat\Commands\SendMessage;
 use Domain\Chat\Contracts\ConversationReader;
-use Domain\Chat\Contracts\MessageSender;
 use Domain\Chat\Enums\MessageState;
 use Domain\Chat\Exceptions\MessageBodyEmpty;
 use Domain\Chat\Http\Controllers\SendMessageController;
@@ -31,11 +35,19 @@ use Domain\Chat\Readers\ChosenAgentSection;
 use Domain\Chat\States\Support\AnsweringMessageStateFactory;
 use Domain\Chat\States\Support\AnsweringMessageStateReference;
 
-final class ChatDomain implements Domain, ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesStates
+final class ChatDomain implements Domain, ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesStates
 {
     public function description(): string
     {
         return 'Messages between the user and agents; a question is a type of message.';
+    }
+
+    /**
+     * @return list<class-string>
+     */
+    public function commands(): array
+    {
+        return [AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class, SendMessage::class];
     }
 
     /**
@@ -56,7 +68,7 @@ final class ChatDomain implements Domain, ProvidesNavigation, ProvidesPages, Pro
             MessageAnswered::class,
             MessageDismissed::class,
             ConversationReader::class,
-            MessageSender::class,
+            SendMessage::class,
             Conversation::class,
             MessageView::class,
             MessageState::class,

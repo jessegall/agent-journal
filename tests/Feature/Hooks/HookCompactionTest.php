@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Bus\Contracts\CommandBus;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
@@ -15,9 +16,9 @@ use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Support\OperationDeadline;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
-use Domain\Sequences\Actions\StartSequence;
+use Domain\Sequences\Commands\StartSequence;
 use Domain\Sequences\Models\SequenceRun;
-use Domain\Tasks\Actions\StartTask;
+use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\DB;
@@ -37,9 +38,9 @@ final class HookCompactionTest extends TestCase
         parent::setUp();
 
         $this->task = Task::query()->create(['title' => 'Write the walk']);
-        $this->app->make(StartTask::class)->start($this->task, $this->target);
+        $this->app->make(CommandBus::class)->run(new StartTask($this->task->id, $this->target->sessionId));
         $this->run = SequenceRun::query()->create(['name' => 'Close a task', 'steps' => ['Read the brief.', 'Run the phase tests.']]);
-        $this->app->make(StartSequence::class)->start($this->run, $this->target);
+        $this->app->make(CommandBus::class)->run(new StartSequence($this->run->id, $this->target->sessionId));
 
         $this->remember('Use plain words.', 2);
         $this->remember('Question 10 is still open.', 1);

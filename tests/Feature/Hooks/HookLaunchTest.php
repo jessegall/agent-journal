@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Actions\ProgramChildSessions;
@@ -15,6 +17,7 @@ use App\Agents\Support\AgentContext;
 use App\Agents\Support\CredentialLookup;
 use App\Agents\Support\LaunchedAgent;
 use App\Agents\Support\StackTarget;
+use App\Bus\Contracts\CommandBus;
 use App\Hooks\Contracts\ShellCommandParser;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\StackStatus;
@@ -33,7 +36,7 @@ use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Support\OperationDeadline;
 use Carbon\CarbonImmutable;
 use Closure;
-use Domain\Tasks\Actions\StartTask;
+use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\CommitsHookRows;
@@ -122,7 +125,7 @@ final class HookLaunchTest extends TestCase
     {
         $parent = $this->launch('hooks.main_ready');
         $task = Task::query()->create(['title' => 'Write the walk']);
-        $this->as($parent, fn () => $this->app->make(StartTask::class)->start($task, $this->targetOf($parent)));
+        $this->as($parent, fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id, $parent->session->id)));
         $childAgent = Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.read_only_helper_ready']);
 
         $child = $this->app->make(ProgramChildSessions::class)->open($parent->session, $childAgent, 'claude-code');
@@ -186,6 +189,7 @@ final class HookLaunchTest extends TestCase
             $launched->session->agent->role,
             new SignedCall($callId, CarbonImmutable::now(), hash('sha256', $callId)),
         ));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id));
 
         try {
             return $work();

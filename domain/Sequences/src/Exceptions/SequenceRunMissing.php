@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Exceptions;
 
+use App\Contracts\CommandRefusal;
 use RuntimeException;
 
-final class SequenceRunMissing extends RuntimeException
+final class SequenceRunMissing extends RuntimeException implements CommandRefusal
 {
     public static function forId(int $runId): self
     {

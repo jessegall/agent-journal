@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
+use App\Agents\Models\Agent;
+use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Actions\AgentStacks;
@@ -32,6 +36,7 @@ use App\Hooks\Support\StackTransaction;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskWorkState;
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Hooks\ClosureStateType;
 use Tests\Fixtures\Hooks\InMemoryTaskType;
 use Tests\Fixtures\Hooks\ListedCommandParser;
@@ -61,7 +66,7 @@ trait CommittedHookStack
     protected function setUpCommittedHookStack(): void
     {
         $this->emptyTables(...self::committedTables());
-        $this->target = new StackTarget(1, 10);
+        $this->target = $this->launchedTarget();
         $this->tasks = new InMemoryTaskType([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
         $this->app->instance(ShellCommandParser::class, new ListedCommandParser);
         $tasks = $this->tasks;
@@ -75,6 +80,27 @@ trait CommittedHookStack
         });
         $this->callAs('call-1');
         $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target, ReadyStateType::MainAgent));
+    }
+
+    /**
+     * Agent 1 with its active session 10, as rows, so a command that resolves the session finds it; the id sequences
+     * go on after them.
+     */
+    private function launchedTarget(): StackTarget
+    {
+        $agent = new Agent(['name' => 'Hook agent', 'role' => 'hooks.main_ready']);
+        $agent->id = 1;
+        $agent->save();
+        $session = new AgentSession(['program' => 'claude-code', 'program_session_id' => 'hook-session']);
+        $session->id = 10;
+        $session->agent_id = $agent->id;
+        $session->save();
+
+        $database = $this->app->make(ConnectionInterface::class);
+        $database->statement("SELECT setval(pg_get_serial_sequence('agents', 'id'), 1)");
+        $database->statement("SELECT setval(pg_get_serial_sequence('agent_sessions', 'id'), 10)");
+
+        return new StackTarget($agent->id, $session->id);
     }
 
     protected function tearDownCommittedHookStack(): void
@@ -95,6 +121,7 @@ trait CommittedHookStack
     protected function callAs(string $callId, string|null $inputDigest = null): void
     {
         $this->app->instance(AgentContext::class, new AgentContext(1, 10, 'hooks.main_ready', new SignedCall($callId, CarbonImmutable::now(), $inputDigest ?? self::inputDigest())));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(1));
     }
 
     protected function pushState(StateReference $state): void

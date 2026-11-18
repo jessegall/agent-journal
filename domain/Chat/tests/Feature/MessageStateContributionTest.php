@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Tests\Feature;
 
+use App\Bus\Contracts\CommandBus;
 use App\Hooks\Exceptions\StackAlreadyClosed;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Storage\FrameRecord;
 use Carbon\CarbonImmutable;
-use Domain\Chat\Actions\RequireMessageAnswer;
+use Domain\Chat\Commands\RequireMessageAnswer;
 use Domain\Chat\Enums\MessageState;
 use Domain\Chat\Models\Message;
 use Domain\Chat\Tests\TestCase;
-use Domain\Tasks\Actions\StartTask;
+use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Models\Task;
 use Tests\Support\CommittedHookStack;
 
@@ -24,7 +25,7 @@ final class MessageStateContributionTest extends TestCase
     {
         $message = Message::query()->create(['body' => 'Which database?']);
 
-        $this->app->make(RequireMessageAnswer::class)->require($message, $this->target);
+        $this->app->make(CommandBus::class)->run(new RequireMessageAnswer($message->id, $this->target->sessionId));
 
         $this->assertSame(MessageState::WaitingForAnswer, $message->fresh()?->state);
         $this->assertSame(['hooks.main_ready', 'chat.answering'], $this->storedTypeKeys());
@@ -36,7 +37,7 @@ final class MessageStateContributionTest extends TestCase
         AgentStackRow::query()->sole()->closeAt(CarbonImmutable::now());
 
         try {
-            $this->app->make(RequireMessageAnswer::class)->require($message, $this->target);
+            $this->app->make(CommandBus::class)->run(new RequireMessageAnswer($message->id, $this->target->sessionId));
             $this->fail('The request went through without its push.');
         } catch (StackAlreadyClosed) {
             $this->assertSame(MessageState::Sent, $message->fresh()?->state);
@@ -46,9 +47,9 @@ final class MessageStateContributionTest extends TestCase
     public function test_an_answered_message_leaves_on_the_next_hook_and_the_task_below_still_holds_the_stop(): void
     {
         $task = Task::query()->create(['title' => 'Write the walk']);
-        $this->app->make(StartTask::class)->start($task, $this->target);
+        $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
         $message = Message::query()->create(['body' => 'Which database?']);
-        $this->app->make(RequireMessageAnswer::class)->require($message, $this->target);
+        $this->app->make(CommandBus::class)->run(new RequireMessageAnswer($message->id, $this->target->sessionId));
 
         $whileWaiting = $this->answerStop('call-1');
         $message->markAnswered();
@@ -62,7 +63,7 @@ final class MessageStateContributionTest extends TestCase
     public function test_a_dismissed_message_also_leaves_on_the_next_hook(): void
     {
         $message = Message::query()->create(['body' => 'Which database?']);
-        $this->app->make(RequireMessageAnswer::class)->require($message, $this->target);
+        $this->app->make(CommandBus::class)->run(new RequireMessageAnswer($message->id, $this->target->sessionId));
 
         $message->dismiss();
 

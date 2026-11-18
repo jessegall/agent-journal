@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\StackTarget;
+use App\Bus\Contracts\CommandBus;
 use App\Hooks\Actions\LaunchStacks;
 use App\Hooks\Contracts\ShellCommandParser;
 use App\Hooks\Enums\CommandEffect;
@@ -21,7 +24,7 @@ use App\Hooks\Inputs\ShellCommand;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Support\StackTransaction;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Actions\StartTask;
+use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Models\Task;
 use Illuminate\Http\Response;
 use Illuminate\Testing\TestResponse;
@@ -56,7 +59,7 @@ final class HookEndpointTest extends TestCase
     public function test_a_started_task_holds_the_stop_through_the_endpoint(): void
     {
         $task = Task::query()->create(['title' => 'Write the walk']);
-        $this->asLaunchedAgent(fn () => $this->app->make(StartTask::class)->start($task, $this->target()));
+        $this->asLaunchedAgent(fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->launch->session->id)));
 
         $stdout = $this->hook('claude-code', $this->stopBody())->assertOk()->json('stdout');
 
@@ -173,6 +176,7 @@ final class HookEndpointTest extends TestCase
             'hooks.main_ready',
             new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup')),
         ));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->launch->agent->id));
         $work();
         $this->app->forgetScopedInstances();
     }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchHeartbeats;
 use App\Agents\Actions\LaunchSessions;
@@ -14,11 +16,12 @@ use App\Agents\Support\AgentContext;
 use App\Agents\Support\CredentialLookup;
 use App\Agents\Support\LaunchedAgent;
 use App\Agents\Support\StackTarget;
+use App\Bus\Contracts\CommandBus;
 use App\Hooks\Enums\StackStatus;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Storage\FrameRecord;
 use Carbon\CarbonImmutable;
-use Domain\Tasks\Actions\StartTask;
+use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\DB;
@@ -123,7 +126,8 @@ final class HookRecoveryTest extends TestCase
     {
         $task = Task::query()->create(['title' => 'Write the walk']);
         $this->app->instance(AgentContext::class, new AgentContext($launched->session->agent_id, $launched->session->id, 'hooks.main_ready', new SignedCall('setup', CarbonImmutable::now(), hash('sha256', 'setup'))));
-        $this->app->make(StartTask::class)->start($task, new StackTarget($launched->session->agent_id, $launched->session->id));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id));
+        $this->app->make(CommandBus::class)->run(new StartTask($task->id, $launched->session->id));
         $this->app->forgetScopedInstances();
 
         return $task;

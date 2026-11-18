@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Bus\CommandMiddleware;
 
 use App\Bus\Contracts\CommandMiddleware;
-use App\Bus\Contracts\CommandRefusal;
 use App\Bus\Support\CommandCall;
+use App\Contracts\CommandRefusal;
 use Closure;
 use Psr\Log\LoggerInterface;
 use Throwable;

@@ -11,6 +11,7 @@ use App\Assignments\Support\RecordIdentity;
 use App\Links\Support\Linkable;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWorkState;
+use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Support\TaskWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -55,6 +56,14 @@ final class Task extends Model implements Assignable
             'agent_id' => 'integer',
             'session_id' => 'integer',
         ];
+    }
+
+    /**
+     * The task read under its row lock, for a change that must happen once.
+     */
+    public static function lockedById(int $id): self
+    {
+        return self::query()->whereKey($id)->lockForUpdate()->first() ?? throw TaskMissing::forId($id);
     }
 
     /**

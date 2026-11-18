@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks;
 
+use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Contracts\Domain;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesStates;
@@ -15,6 +16,10 @@ use Domain\Tasks\Api\TaskCard;
 use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Api\TaskList;
 use Domain\Tasks\Api\TaskProgress;
+use Domain\Tasks\Commands\BlockTask;
+use Domain\Tasks\Commands\CancelTask;
+use Domain\Tasks\Commands\FinishTask;
+use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Contracts\AssignedTaskReader;
 use Domain\Tasks\Contracts\TaskAssignmentReader;
 use Domain\Tasks\Contracts\TaskProgressCounter;
@@ -28,11 +33,19 @@ use Domain\Tasks\Readers\TaskAssignments;
 use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 
-final class TasksDomain implements Domain, ProvidesAssignables, ProvidesStates
+final class TasksDomain implements Domain, ProvidesAssignables, ProvidesCommands, ProvidesStates
 {
     public function description(): string
     {
         return 'A task, its state, its log and what it waits on.';
+    }
+
+    /**
+     * @return list<class-string>
+     */
+    public function commands(): array
+    {
+        return [BlockTask::class, CancelTask::class, FinishTask::class, StartTask::class];
     }
 
     /**

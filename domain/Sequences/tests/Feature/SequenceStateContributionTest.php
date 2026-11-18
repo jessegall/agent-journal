@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Tests\Feature;
 
+use App\Bus\Contracts\CommandBus;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Exceptions\StackAlreadyClosed;
 use App\Hooks\Inputs\CompactionDetails;
@@ -15,7 +16,7 @@ use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Support\OperationDeadline;
 use Carbon\CarbonImmutable;
-use Domain\Sequences\Actions\StartSequence;
+use Domain\Sequences\Commands\StartSequence;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Tests\TestCase;
@@ -29,7 +30,7 @@ final class SequenceStateContributionTest extends TestCase
     {
         $run = $this->newRun();
 
-        $this->app->make(StartSequence::class)->start($run, $this->target);
+        $this->app->make(CommandBus::class)->run(new StartSequence($run->id, $this->target->sessionId));
 
         $this->assertSame([SequenceRunState::Running, 1, 1, 10], [$run->fresh()?->state, $run->fresh()?->current_step, $run->fresh()?->agent_id, $run->fresh()?->session_id]);
         $this->assertSame(['hooks.main_ready', 'sequences.following'], $this->storedTypeKeys());
@@ -41,7 +42,7 @@ final class SequenceStateContributionTest extends TestCase
         AgentStackRow::query()->sole()->closeAt(CarbonImmutable::now());
 
         try {
-            $this->app->make(StartSequence::class)->start($run, $this->target);
+            $this->app->make(CommandBus::class)->run(new StartSequence($run->id, $this->target->sessionId));
             $this->fail('The start went through without its push.');
         } catch (StackAlreadyClosed) {
             $this->assertNull($run->fresh()?->agent_id);
@@ -51,7 +52,7 @@ final class SequenceStateContributionTest extends TestCase
     public function test_each_hook_reads_the_current_step_fresh(): void
     {
         $run = $this->newRun();
-        $this->app->make(StartSequence::class)->start($run, $this->target);
+        $this->app->make(CommandBus::class)->run(new StartSequence($run->id, $this->target->sessionId));
 
         $onFirstStep = $this->answerStop('call-1');
         $run->advance();
@@ -64,7 +65,7 @@ final class SequenceStateContributionTest extends TestCase
     public function test_a_compaction_repeats_the_step_without_advancing_the_run(): void
     {
         $run = $this->newRun();
-        $this->app->make(StartSequence::class)->start($run, $this->target);
+        $this->app->make(CommandBus::class)->run(new StartSequence($run->id, $this->target->sessionId));
 
         $context = json_decode($this->answerCompaction('call-1'), true, flags: JSON_THROW_ON_ERROR);
 
@@ -75,7 +76,7 @@ final class SequenceStateContributionTest extends TestCase
     public function test_a_finished_or_cancelled_run_leaves_on_the_next_hook(): void
     {
         $finished = $this->newRun();
-        $this->app->make(StartSequence::class)->start($finished, $this->target);
+        $this->app->make(CommandBus::class)->run(new StartSequence($finished->id, $this->target->sessionId));
         $finished->advance();
         $finished->advance();
 
@@ -83,7 +84,7 @@ final class SequenceStateContributionTest extends TestCase
         $this->assertSame('{}', $this->answerStop('call-1'));
 
         $cancelled = $this->newRun();
-        $this->app->make(StartSequence::class)->start($cancelled, $this->target);
+        $this->app->make(CommandBus::class)->run(new StartSequence($cancelled->id, $this->target->sessionId));
         $cancelled->cancel();
 
         $this->assertSame('{}', $this->answerStop('call-2'));

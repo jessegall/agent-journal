@@ -65,6 +65,16 @@ trait BelongsToOneAgent
     }
 
     /**
+     * The row locked for a change that must happen once, among the actor's own rows or the rows no agent holds yet,
+     * such as a message nobody was asked to answer or a run nobody follows; null when the actor may not have it.
+     */
+    public static function lockedForActorOrUnheld(int $id): static|null
+    {
+        return static::query()->forActor()->whereKey($id)->lockForUpdate()->first()
+            ?? static::query()->withoutGlobalScope(AgentScope::class)->whereNull('agent_id')->whereKey($id)->lockForUpdate()->first();
+    }
+
+    /**
      * Route binding reads through the actor's own scope: a user's route binds through visibleToUser, an agent's
      * through its own agent scope, and a request with no actor fails before any row is read.
      *

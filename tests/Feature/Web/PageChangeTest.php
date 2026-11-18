@@ -6,14 +6,16 @@ namespace Tests\Feature\Web;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Bus\Contracts\CommandBus;
 use App\Web\Events\PageChanged;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
-use Domain\Tasks\Actions\ChangeTaskState;
 use Domain\Tasks\Api\Events\TaskFinished;
+use Domain\Tasks\Commands\CancelTask;
+use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\Event;
@@ -63,7 +65,7 @@ final class PageChangeTest extends TestCase
             $progress[] = $changed->planId;
         });
 
-        $this->app->make(ChangeTaskState::class)->finish($task);
+        $this->app->make(CommandBus::class)->run(new FinishTask($task->id));
 
         $this->assertSame([$plan->id], $progress);
         Event::assertDispatchedTimes(PageChanged::class, 1);
@@ -71,7 +73,7 @@ final class PageChangeTest extends TestCase
 
     public function test_a_task_outside_every_plan_changes_no_page(): void
     {
-        $this->app->make(ChangeTaskState::class)->cancel(Task::query()->create(['title' => 'Loose task']));
+        $this->app->make(CommandBus::class)->run(new CancelTask(Task::query()->create(['title' => 'Loose task'])->id));
 
         Event::assertNotDispatched(PageChanged::class);
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus\Exceptions;
 
-use App\Bus\Contracts\CommandRefusal;
+use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**

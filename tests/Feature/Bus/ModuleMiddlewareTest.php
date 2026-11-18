@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use App\Agents\Actions\LaunchSessions;
+use App\Agents\Exceptions\StackTargetRefused;
+use App\Agents\Models\Agent;
+use App\Agents\Models\AgentSession;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandRefused;
 use App\Bus\Exceptions\CommandReplacementRefused;
@@ -13,6 +17,8 @@ use App\Bus\Exceptions\MiddlewareSkippedCommand;
 use App\Bus\Exceptions\MiddlewareSwallowedFailure;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
+use Domain\Chat\Commands\SendMessage;
+use Domain\Chat\Models\Message;
 use Domain\Plans\Commands\StartPlan;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
@@ -20,6 +26,8 @@ use Domain\Plans\Models\Plan;
 use Domain\Rules\Commands\ApproveRule;
 use Domain\Rules\Exceptions\RuleNotProposed;
 use Domain\Rules\Models\Rule;
+use Domain\Tasks\Commands\FinishTask;
+use Domain\Tasks\Models\Task;
 use Illuminate\Database\ConnectionInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck;
@@ -28,8 +36,11 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\ChangesResult;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\LimitPlanStarts;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefusesAll;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\ReplacesCardsCommand;
+use Tests\Fixtures\Modules\Notes\CommandMiddleware\ReplacesTasksCommand;
+use Tests\Fixtures\Modules\Notes\CommandMiddleware\SendsToUnknownSession;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\SkipsCommand;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\SwallowsFailure;
+use Tests\Fixtures\Modules\Notes\CommandMiddleware\TrimMessages;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\UppercasesText;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
@@ -46,6 +57,10 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         // The Rules commands commit for real here, so their rows go too.
         Rule::query()->delete();
         Plan::query()->delete();
+        Task::query()->delete();
+        Message::query()->withoutGlobalScopes()->delete();
+        AgentSession::query()->delete();
+        Agent::query()->delete();
 
         parent::tearDown();
     }
@@ -139,6 +154,11 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         }
     }
 
+    private function launchedSession(): AgentSession
+    {
+        return $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Reader', 'role' => 'hooks.main_ready']), 'claude-code')->session;
+    }
+
     public function test_notes_limits_plan_starts_and_nothing_is_written(): void
     {
         $trail = $this->installCommandModulesRequiring(['Plans'], MiddlewareDeclaration::around(LimitPlanStarts::class, CommandScope::command(StartPlan::class)));
@@ -154,6 +174,41 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
 
         $this->app->make(CommandBus::class)->run(new WriteNote('not a plan start'));
         $this->assertSame(1, count(array_keys($trail->steps, 'notes limits plan starts', true)));
+    }
+
+    public function test_the_send_handler_gets_the_trimmed_body(): void
+    {
+        $this->installCommandModulesRequiring(['Chat'], MiddlewareDeclaration::around(TrimMessages::class, CommandScope::command(SendMessage::class)));
+        $session = $this->launchedSession();
+        $this->startUserRequestAs(1);
+
+        $this->app->make(CommandBus::class)->run(new SendMessage("  Trim me  \n", $session->id));
+
+        $this->assertSame('Trim me', Message::query()->ownedBy($session->agent_id)->sole()->body);
+    }
+
+    public function test_a_message_pointed_at_an_unseen_session_is_refused_and_leaves_no_message(): void
+    {
+        $this->installCommandModulesRequiring(['Chat'], MiddlewareDeclaration::around(SendsToUnknownSession::class, CommandScope::command(SendMessage::class)));
+        $session = $this->launchedSession();
+        $this->startUserRequestAs(1);
+
+        try {
+            $this->app->make(CommandBus::class)->run(new SendMessage('Hello', $session->id));
+            $this->fail('A message reached a session nobody may see.');
+        } catch (StackTargetRefused) {
+            $this->assertSame(0, Message::query()->ownedBy($session->agent_id)->count());
+        }
+    }
+
+    public function test_a_middleware_may_not_replace_tasks_private_finish(): void
+    {
+        $this->installCommandModules(MiddlewareDeclaration::around(ReplacesTasksCommand::class, CommandScope::all()));
+        $this->startUserRequestAs(1);
+
+        $this->expectException(CommandReplacementRefused::class);
+
+        $this->app->make(CommandBus::class)->run(new FinishTask(Task::query()->create(['title' => 'Kept'])->id));
     }
 
     public function test_a_middleware_may_not_replace_another_owners_private_command(): void

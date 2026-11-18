@@ -18,7 +18,7 @@ final class CommandBypassTest extends TestCase
     /**
      * The folders judged: Core's bus and the test modules now; each later phase adds the owner it moves.
      */
-    public const array CHECKED = ['app/Bus', 'domain/Plans/src', 'domain/Rules/src', 'tests/Fixtures/Modules'];
+    public const array CHECKED = ['app/Bus', 'domain/Chat/src', 'domain/Plans/src', 'domain/Rules/src', 'domain/Sequences/src', 'domain/Tasks/src', 'tests/Fixtures/Modules'];
 
     /**
      * Calls that reach Laravel's shared bus around the CommandBus.

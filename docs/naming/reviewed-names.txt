@@ -255,6 +255,8 @@ class	AgentState
 class	AgentStateMachine
 class	AgentsServiceProvider
 class	AmbiguousDomainRoot
+class	AnswerMessage
+class	AnswerMessageHandler
 class	AnsweringMessageState
 class	AnsweringMessageStateFactory
 class	AnsweringMessageStateReference
@@ -324,6 +326,8 @@ class	AuthenticateUser
 class	BindingRegistration
 class	BindingRules
 class	BlockBody
+class	BlockTask
+class	BlockTaskHandler
 class	BottomStateCannotFinish
 class	BottomStateDelegated
 class	BoundaryChecker
@@ -334,7 +338,8 @@ class	BypassReport
 class	BypassReportController
 class	CallScan
 class	CallSignatureInvalid
-class	ChangeTaskState
+class	CancelTask
+class	CancelTaskHandler
 class	ChatData
 class	ChatDomain
 class	ChatServiceProvider
@@ -346,7 +351,6 @@ class	ChosenAgentData
 class	ChosenAgentSection
 class	ClaudeCodeAdapter
 class	CloseLaunchStack
-class	CloseMessage
 class	CodexAdapter
 class	CommandAlias
 class	CommandAliases
@@ -409,6 +413,8 @@ class	DeniedWindow
 class	DenyRule
 class	DenyRuleController
 class	DenyRuleHandler
+class	DismissMessage
+class	DismissMessageHandler
 class	DocblockScan
 class	DocblockTagInvalid
 class	DocblockTypeCollector
@@ -435,6 +441,8 @@ class	FileChanges
 class	FileEditRequested
 class	FileOutsideAutoload
 class	FileOutsideEveryDomain
+class	FinishTask
+class	FinishTaskHandler
 class	FloatSize
 class	FollowingSequenceState
 class	FollowingSequenceStateFactory
@@ -671,6 +679,7 @@ class	RepeatableRead
 class	RepeatedCommandRewrite
 class	ReplayFound
 class	RequireMessageAnswer
+class	RequireMessageAnswerHandler
 class	RequiredDomainMissing
 class	RequiredDomainTwice
 class	RequiresActor
@@ -710,6 +719,7 @@ class	Section
 class	SendAgentRequests
 class	SendMessage
 class	SendMessageController
+class	SendMessageHandler
 class	SequenceRecords
 class	SequenceRun
 class	SequenceRunMissing
@@ -758,7 +768,9 @@ class	StartPlanData
 class	StartPlanHandler
 class	StartPlanRequest
 class	StartSequence
+class	StartSequenceHandler
 class	StartTask
+class	StartTaskHandler
 class	StateBelowTopPushed
 class	StateReference
 class	StateSchemaUnknown
@@ -1019,7 +1031,6 @@ interface	HookAnswerer
 interface	HookInput
 interface	JournalAccessPolicy
 interface	LaunchTransaction
-interface	MessageSender
 interface	NavigationChildren
 interface	PageOption
 interface	PageReader
@@ -1200,6 +1211,9 @@ method	AgentsServiceProvider::boot()
 method	AgentsServiceProvider::register()
 method	AmbiguousDomainRoot::between()
 method	Answer::type()
+method	AnswerMessage::__construct()
+method	AnswerMessageHandler::__construct()
+method	AnswerMessageHandler::handle()
 method	AnswerType::fitsAShellCommand()
 method	AnswerType::fitsAStop()
 method	AnswerType::fitsAnAction()
@@ -1382,6 +1396,7 @@ method	AuthenticateUser::__construct()
 method	AuthenticateUser::handle()
 method	BelongsToOneAgent::bootBelongsToOneAgent()
 method	BelongsToOneAgent::forActor()
+method	BelongsToOneAgent::lockedForActorOrUnheld()
 method	BelongsToOneAgent::ownedBy()
 method	BelongsToOneAgent::resolveRouteBinding()
 method	BelongsToOneAgent::visibleToUser()
@@ -1404,6 +1419,9 @@ method	BindingRules::registrations()
 method	BindingRules::violations()
 method	BindingRules::violationsOf()
 method	BlockBody::__construct()
+method	BlockTask::__construct()
+method	BlockTaskHandler::__construct()
+method	BlockTaskHandler::handle()
 method	BottomStateCannotFinish::for()
 method	BottomStateDelegated::__construct()
 method	BottomStateDelegated::for()
@@ -1439,11 +1457,11 @@ method	CallFailure::isOutage()
 method	CallScan::of()
 method	CallSignatureInvalid::mismatched()
 method	CallSignatureInvalid::missing()
-method	ChangeTaskState::__construct()
-method	ChangeTaskState::block()
-method	ChangeTaskState::cancel()
-method	ChangeTaskState::finish()
+method	CancelTask::__construct()
+method	CancelTaskHandler::__construct()
+method	CancelTaskHandler::handle()
 method	ChatData::__construct()
+method	ChatDomain::commands()
 method	ChatDomain::description()
 method	ChatDomain::exports()
 method	ChatDomain::navigation()
@@ -1477,9 +1495,6 @@ method	ClaudeCodeTool::fileOperation()
 method	ClaudeCodeTool::named()
 method	CloseLaunchStack::__construct()
 method	CloseLaunchStack::handle()
-method	CloseMessage::__construct()
-method	CloseMessage::answer()
-method	CloseMessage::dismiss()
 method	CodexAdapter::__construct()
 method	CodexAdapter::callFor()
 method	CodexAdapter::capabilities()
@@ -1667,6 +1682,9 @@ method	DenyRule::__construct()
 method	DenyRuleController::__invoke()
 method	DenyRuleHandler::__construct()
 method	DenyRuleHandler::handle()
+method	DismissMessage::__construct()
+method	DismissMessageHandler::__construct()
+method	DismissMessageHandler::handle()
 method	DocblockScan::__construct()
 method	DocblockScan::enterNode()
 method	DocblockScan::of()
@@ -1768,6 +1786,9 @@ method	FileOperation::fromPatchAction()
 method	FileOutsideAutoload::for()
 method	FileOutsideAutoload::missingClass()
 method	FileOutsideEveryDomain::for()
+method	FinishTask::__construct()
+method	FinishTaskHandler::__construct()
+method	FinishTaskHandler::handle()
 method	FloatSize::__construct()
 method	FloatSize::of()
 method	FloatSize::standard()
@@ -2027,6 +2048,7 @@ method	MemoryDomain::requires()
 method	MemoryServiceProvider::boot()
 method	Message::casts()
 method	Message::dismiss()
+method	Message::lockedById()
 method	Message::markAnswered()
 method	Message::requireAnswerFrom()
 method	Message::work()
@@ -2041,7 +2063,6 @@ method	MessageNeedsAnswer::__construct()
 method	MessageRecords::addressedTo()
 method	MessageRecords::conversationWith()
 method	MessageRecords::get()
-method	MessageSender::send()
 method	MessageSent::__construct()
 method	MessageView::__construct()
 method	MessageWork::__construct()
@@ -2479,7 +2500,8 @@ method	RendersRefusal::status()
 method	RepeatedCommandRewrite::for()
 method	ReplayFound::answeredBefore()
 method	RequireMessageAnswer::__construct()
-method	RequireMessageAnswer::require()
+method	RequireMessageAnswerHandler::__construct()
+method	RequireMessageAnswerHandler::handle()
 method	RequiredDomainMissing::for()
 method	RequiredDomainTwice::for()
 method	RequiresActor::__construct()
@@ -2575,9 +2597,9 @@ method	SectionReader::read()
 method	SendAgentRequests::__construct()
 method	SendAgentRequests::send()
 method	SendMessage::__construct()
-method	SendMessage::send()
-method	SendMessageController::__construct()
 method	SendMessageController::__invoke()
+method	SendMessageHandler::__construct()
+method	SendMessageHandler::handle()
 method	SendsPlanWorkCommands::sendCascade()
 method	SendsSignedCalls::sendAndPrint()
 method	SequenceRecords::followedBy()
@@ -2585,6 +2607,7 @@ method	SequenceRecords::get()
 method	SequenceRun::advance()
 method	SequenceRun::cancel()
 method	SequenceRun::casts()
+method	SequenceRun::lockedById()
 method	SequenceRun::startFor()
 method	SequenceRun::work()
 method	SequenceRunMissing::forId()
@@ -2593,6 +2616,7 @@ method	SequenceStarted::__construct()
 method	SequenceWork::__construct()
 method	SequenceWork::currentInstruction()
 method	SequenceWork::needsWork()
+method	SequencesDomain::commands()
 method	SequencesDomain::description()
 method	SequencesDomain::exports()
 method	SequencesDomain::requires()
@@ -2709,9 +2733,11 @@ method	StartPlanHandler::handle()
 method	StartPlanRequest::planId()
 method	StartPlanRequest::rules()
 method	StartSequence::__construct()
-method	StartSequence::start()
+method	StartSequenceHandler::__construct()
+method	StartSequenceHandler::handle()
 method	StartTask::__construct()
-method	StartTask::start()
+method	StartTaskHandler::__construct()
+method	StartTaskHandler::handle()
 method	StateBelowTopPushed::for()
 method	StateFactory::frameFor()
 method	StateReference::__construct()
@@ -2788,6 +2814,7 @@ method	Task::block()
 method	Task::cancel()
 method	Task::casts()
 method	Task::finish()
+method	Task::lockedById()
 method	Task::startFor()
 method	Task::workFor()
 method	TaskAlreadyInAPhase::forTask()
@@ -2831,6 +2858,7 @@ method	TaskWork::needsWork()
 method	TaskWork::unfinishedReason()
 method	TaskWorkState::needsWork()
 method	TasksDomain::assignables()
+method	TasksDomain::commands()
 method	TasksDomain::description()
 method	TasksDomain::exports()
 method	TasksDomain::requires()
@@ -3028,6 +3056,8 @@ property	AgentStateMachine::$compaction
 property	AgentStateMachine::$restorer
 property	AgentStateMachine::$rewrite
 property	AgentStateMachine::$transaction
+property	AnswerMessage::$messageId
+property	AnswerMessageHandler::$events
 property	AnsweringMessageState::$message
 property	AnsweringMessageStateFactory::$messages
 property	ApproveRule::$ruleId
@@ -3136,6 +3166,8 @@ property	BindingRules::$files
 property	BindingRules::$owners
 property	BlockBody::$decision
 property	BlockBody::$reason
+property	BlockTask::$taskId
+property	BlockTaskHandler::$events
 property	BottomStateDelegated::$visitedFrames
 property	BoundaryChecker::$coreExports
 property	BoundaryChecker::$entries
@@ -3145,8 +3177,8 @@ property	BroadcastPageChange::$events
 property	BypassLog::$path
 property	BypassReport::$bypasses
 property	BypassReportController::$bypasses
-property	ChangeTaskState::$database
-property	ChangeTaskState::$events
+property	CancelTask::$taskId
+property	CancelTaskHandler::$events
 property	ChatData::$conversation
 property	ChatData::$sessions
 property	ChatWindowReader::$messages
@@ -3164,8 +3196,6 @@ property	ChosenAgentData::$label
 property	ChosenAgentSection::$sessions
 property	ClaudeCodeAdapter::$parser
 property	CloseLaunchStack::$stacks
-property	CloseMessage::$database
-property	CloseMessage::$events
 property	CodexAdapter::$parser
 property	CommandCall::$actor
 property	CommandCall::$command
@@ -3230,6 +3260,8 @@ property	Denied::$reason
 property	DeniedWindow::$state
 property	DenyRule::$ruleId
 property	DenyRuleHandler::$events
+property	DismissMessage::$messageId
+property	DismissMessageHandler::$events
 property	DocblockScan::$file
 property	DocblockScan::$lexer
 property	DocblockScan::$parser
@@ -3268,6 +3300,8 @@ property	FileChange::$path
 property	FileChanges::$changes
 property	FileEditRequested::$changes
 property	FileEditRequested::$hook
+property	FinishTask::$taskId
+property	FinishTaskHandler::$events
 property	FloatSize::$height
 property	FloatSize::$width
 property	FollowingSequenceState::$sequence
@@ -3688,8 +3722,10 @@ property	RelaySettings::$timeoutSeconds
 property	RelaySettings::$token
 property	RemoveRule::$ruleId
 property	RemoveRuleHandler::$events
-property	RequireMessageAnswer::$events
-property	RequireMessageAnswer::$transaction
+property	RequireMessageAnswer::$messageId
+property	RequireMessageAnswer::$sessionId
+property	RequireMessageAnswerHandler::$events
+property	RequireMessageAnswerHandler::$sessions
 property	RequiresActor::$type
 property	ResetUserPassword::$validation
 property	RetentionPeriods::$batchSize
@@ -3763,12 +3799,11 @@ property	Section::$title
 property	Section::$visibility
 property	SendAgentRequests::$client
 property	SendAgentRequests::$settings
-property	SendMessage::$events
-property	SendMessage::$stacks
-property	SendMessage::$transaction
-property	SendMessageController::$redirect
-property	SendMessageController::$sendMessage
-property	SendMessageController::$sessions
+property	SendMessage::$body
+property	SendMessage::$sessionId
+property	SendMessageHandler::$events
+property	SendMessageHandler::$sessions
+property	SendMessageHandler::$stacks
 property	SequenceRun::$attributes
 property	SequenceStarted::$runId
 property	SequenceStarted::$target
@@ -3833,10 +3868,14 @@ property	StartPlan::$planId
 property	StartPlanData::$planId
 property	StartPlanHandler::$actors
 property	StartPlanHandler::$events
-property	StartSequence::$events
-property	StartSequence::$transaction
-property	StartTask::$events
-property	StartTask::$transaction
+property	StartSequence::$sequenceRunId
+property	StartSequence::$sessionId
+property	StartSequenceHandler::$events
+property	StartSequenceHandler::$sessions
+property	StartTask::$sessionId
+property	StartTask::$taskId
+property	StartTaskHandler::$events
+property	StartTaskHandler::$sessions
 property	StateReference::$subject
 property	StateReference::$typeKey
 property	StateTypeRegistry::$isFrozen

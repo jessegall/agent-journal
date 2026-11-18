@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Exceptions;
 
+use App\Contracts\CommandRefusal;
 use InvalidArgumentException;
 
-final class MessageBodyEmpty extends InvalidArgumentException
+final class MessageBodyEmpty extends InvalidArgumentException implements CommandRefusal
 {
     public static function forSend(): self
     {

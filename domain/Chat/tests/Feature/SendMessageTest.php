@@ -10,14 +10,16 @@ use App\Agents\Actions\LaunchSessions;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Support\StackTarget;
+use App\Bus\Contracts\CommandBus;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Storage\FrameRecord;
-use Domain\Chat\Actions\CloseMessage;
-use Domain\Chat\Actions\SendMessage;
 use Domain\Chat\Api\Events\MessageAnswered;
 use Domain\Chat\Api\Events\MessageDismissed;
 use Domain\Chat\Api\Events\MessageSent;
 use Domain\Chat\Api\MessageView;
+use Domain\Chat\Commands\AnswerMessage;
+use Domain\Chat\Commands\DismissMessage;
+use Domain\Chat\Commands\SendMessage;
 use Domain\Chat\Enums\MessageState;
 use Domain\Chat\Exceptions\MessageBodyEmpty;
 use Domain\Chat\Models\Message;
@@ -52,7 +54,7 @@ final class SendMessageTest extends TestCase
     {
         $body = "Please check:\n    - the indented line\n\nthen answer.";
 
-        $this->app->make(SendMessage::class)->send($body, $this->target);
+        $this->send($body, $this->target->sessionId);
 
         $stored = Message::query()->ownedBy($this->target->agentId)->sole();
         $this->assertSame([$body, MessageState::WaitingForAnswer, $this->target->sessionId], [$stored->body, $stored->state, $stored->session_id]);
@@ -63,7 +65,7 @@ final class SendMessageTest extends TestCase
     public function test_a_guessed_target_is_refused_and_leaves_no_message(): void
     {
         try {
-            $this->app->make(SendMessage::class)->send('Hello', new StackTarget($this->target->agentId, $this->target->sessionId + 100));
+            $this->send('Hello', $this->target->sessionId + 100);
             $this->fail('A guessed target took a message.');
         } catch (StackTargetRefused) {
             $this->assertSame(0, Message::query()->ownedBy($this->target->agentId)->count());
@@ -75,13 +77,13 @@ final class SendMessageTest extends TestCase
     {
         $this->expectException(MessageBodyEmpty::class);
 
-        $this->app->make(SendMessage::class)->send("  \n\t ", $this->target);
+        $this->send("  \n\t ", $this->target->sessionId);
     }
 
     public function test_the_user_reads_the_conversation_with_that_session_only(): void
     {
-        $this->app->make(SendMessage::class)->send('First', $this->target);
-        $this->app->make(SendMessage::class)->send('Second', $this->target);
+        $this->send('First', $this->target->sessionId);
+        $this->send('Second', $this->target->sessionId);
 
         $conversation = $this->app->make(MessageRecords::class)->conversationWith($this->target);
 
@@ -91,16 +93,19 @@ final class SendMessageTest extends TestCase
 
     public function test_answering_and_dismissing_raise_their_facts(): void
     {
-        $this->app->make(SendMessage::class)->send('Answer me', $this->target);
-        $this->app->make(SendMessage::class)->send('Never mind', $this->target);
+        $this->send('Answer me', $this->target->sessionId);
+        $this->send('Never mind', $this->target->sessionId);
         [$answered, $dismissed] = Message::query()->ownedBy($this->target->agentId)->orderBy('id')->get()->all();
-        $close = $this->app->make(CloseMessage::class);
-
-        $close->answer($answered);
-        $close->dismiss($dismissed);
+        $this->app->make(CommandBus::class)->run(new AnswerMessage($answered->id));
+        $this->app->make(CommandBus::class)->run(new DismissMessage($dismissed->id));
 
         Event::assertDispatched(MessageAnswered::class, fn (MessageAnswered $event) => $event->messageId === $answered->id);
         Event::assertDispatched(MessageDismissed::class, fn (MessageDismissed $event) => $event->messageId === $dismissed->id);
+    }
+
+    private function send(string $body, int $sessionId): void
+    {
+        $this->app->make(CommandBus::class)->run(new SendMessage($body, $sessionId));
     }
 
     /**

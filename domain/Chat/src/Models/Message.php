@@ -9,6 +9,7 @@ use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Links\Support\Linkable;
 use Domain\Chat\Enums\MessageState;
 use Domain\Chat\Enums\MessageWorkState;
+use Domain\Chat\Exceptions\MessageMissing;
 use Domain\Chat\Support\MessageWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -47,6 +48,15 @@ final class Message extends Model
             'agent_id' => 'integer',
             'session_id' => 'integer',
         ];
+    }
+
+    /**
+     * The message read under its row lock, among those the actor may see, for a change that must happen once.
+     */
+    public static function lockedById(int $id): self
+    {
+        // A message belongs to no agent until one is asked to answer it.
+        return self::lockedForActorOrUnheld($id) ?? throw MessageMissing::forId($id);
     }
 
     public function requireAnswerFrom(StackTarget $target): void
