@@ -9,7 +9,10 @@ use App\Core\Bus\Support\CommandRegistry;
 use App\Core\Bus\Support\LaravelCommandBus;
 use App\Core\Bus\Support\RunningCommand;
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -23,9 +26,19 @@ final class CommandBusServiceProvider extends ServiceProvider
         $this->app->scoped(CommandBus::class, fn ($app): CommandBus => LaravelCommandBus::forRequest($app, $app->make(CommandRegistry::class)));
     }
 
-    public function boot(DatabaseManager $databases): void
+    /**
+     * Guards the connection already open and every connection opened later, such as one made again after a purge or
+     * a reconnect.
+     */
+    public function boot(DatabaseManager $databases, Dispatcher $events): void
+    {
+        self::guard($databases->connection());
+        $events->listen(ConnectionEstablished::class, static fn (ConnectionEstablished $event) => self::guard($event->connection));
+    }
+
+    private static function guard(Connection $connection): void
     {
         // Resolved on each call, never captured: under Octane each request has its own RunningCommand.
-        $databases->connection()->beforeStartingTransaction(static fn () => Container::getInstance()->make(RunningCommand::class)->refuseExplicitTransaction());
+        $connection->beforeStartingTransaction(static fn () => Container::getInstance()->make(RunningCommand::class)->refuseExplicitTransaction());
     }
 }
