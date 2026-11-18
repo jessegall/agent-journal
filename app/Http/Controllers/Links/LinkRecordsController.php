@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Links;
+
+use App\Bus\Contracts\CommandBus;
+use App\Http\Requests\Links\LinkRecordsRequest;
+use App\Records\Commands\LinkRecords;
+use App\Records\Contracts\RecordReader;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Routing\Redirector;
+
+final readonly class LinkRecordsController
+{
+    public function __invoke(LinkRecordsRequest $request, CommandBus $commands, RecordReader $records, Redirector $redirect): JsonResponse|RedirectResponse
+    {
+        $commands->run(new LinkRecords($request->source($records), $request->target($records)));
+
+        if (! $request->expectsJson()) {
+            return $redirect->back(303);
+        }
+
+        return new JsonResponse(['source' => $request->sourceReference(), 'target' => $request->targetReference()]);
+    }
+}

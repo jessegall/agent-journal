@@ -13,6 +13,7 @@ use App\Bus\Support\MiddlewareDeclaration;
 use App\Contracts\Event;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesAssignees;
+use App\Domains\Contracts\ProvidesLinkRecords;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Exceptions\DomainRequiresItself;
 use App\Domains\Exceptions\NotADomain;
@@ -21,6 +22,7 @@ use App\Domains\Support\Exports as ExportsCheck;
 use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
+use App\Records\Contracts\RecordProvider;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
@@ -223,6 +225,16 @@ final readonly class DomainEntry
     public function declaring(array $pages = [], array $navigation = [], array $sections = []): DomainUi
     {
         return DomainUi::declaring($this->name, $this->namespace, $this->scriptFolder(), $pages, $navigation, $sections);
+    }
+
+    /**
+     * The record types this domain lets Core read and link, each with its provider; none without ProvidesLinkRecords.
+     *
+     * @return array<string, class-string<RecordProvider>>
+     */
+    public function linkRecords(): array
+    {
+        return $this->domain instanceof ProvidesLinkRecords ? $this->domain->linkRecords() : [];
     }
 
     /**

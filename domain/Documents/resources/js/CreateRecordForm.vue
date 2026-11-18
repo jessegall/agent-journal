@@ -9,10 +9,10 @@ import { formSendingHooks } from '@kit/usePageChanges';
  */
 const props = defineProps<{ action: string; label: string }>();
 
-const form = useForm({ title: '', abstract: '', body: '' });
+const form = useForm({ title: '', abstract: '', body: '', about: '' });
 
 function submit(): void {
-    form.post(props.action, {
+    form.transform((fields) => ({ ...fields, about: fields.about.split(',').map((reference) => reference.trim()).filter((reference) => reference !== '') })).post(props.action, {
         preserveScroll: true,
         onSuccess: () => form.reset(),
         ...formSendingHooks(),
@@ -25,6 +25,7 @@ function submit(): void {
         <input v-model="form.title" class="input" placeholder="Title" />
         <input v-model="form.abstract" class="input" placeholder="One line saying what it is" />
         <textarea v-model="form.body" class="input" rows="6" placeholder="Markdown text" />
+        <input v-model="form.about" class="input" placeholder="What it is about, such as task 12, plan 3" />
         <Button type="submit" variant="primary" :pending="form.processing">{{ label }}</Button>
         <FormErrors :errors="form.errors" />
     </form>

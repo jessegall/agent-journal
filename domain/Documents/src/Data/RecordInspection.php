@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Data;
 
+use App\Records\Data\RecordCard;
 use Domain\Documents\Enums\AttentionState;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -19,6 +20,7 @@ final class RecordInspection extends Data
     /**
      * @param  list<SettlementCard>  $settlements
      * @param  list<CloseCard>  $closes
+     * @param  list<RecordCard>  $links
      */
     public function __construct(
         public readonly string $label,
@@ -28,5 +30,7 @@ final class RecordInspection extends Data
         public readonly array $settlements,
         #[DataCollectionOf(CloseCard::class)]
         public readonly array $closes,
+        #[DataCollectionOf(RecordCard::class)]
+        public readonly array $links,
     ) {}
 }

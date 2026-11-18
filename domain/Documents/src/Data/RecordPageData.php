@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Data;
 
+use App\Records\Data\RecordCard;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Support\MarkdownText;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
@@ -20,6 +21,7 @@ final class RecordPageData extends Data
     /**
      * @param  list<CommentCard>  $comments
      * @param  list<SettlementCard>  $settlements
+     * @param  list<RecordCard>  $links
      */
     public function __construct(
         public readonly string $label,
@@ -32,14 +34,17 @@ final class RecordPageData extends Data
         public readonly AttentionState $attention,
         #[DataCollectionOf(SettlementCard::class)]
         public readonly array $settlements,
+        #[DataCollectionOf(RecordCard::class)]
+        public readonly array $links,
         public readonly string|Optional $revision = new Optional,
     ) {}
 
     /**
      * @param  list<CommentCard>  $comments
      * @param  list<SettlementCard>  $settlements
+     * @param  list<RecordCard>  $links
      */
-    public static function fromDocumentView(DocumentView $document, array $comments, array $settlements): self
+    public static function fromDocumentView(DocumentView $document, array $comments, array $settlements, array $links): self
     {
         return self::from([
             'label' => "doc {$document->number}",
@@ -50,6 +55,7 @@ final class RecordPageData extends Data
             'comments' => $comments,
             'attention' => $document->attention,
             'settlements' => $settlements,
+            'links' => $links,
             'revision' => $document->revision,
         ]);
     }
@@ -57,8 +63,9 @@ final class RecordPageData extends Data
     /**
      * @param  list<CommentCard>  $comments
      * @param  list<SettlementCard>  $settlements
+     * @param  list<RecordCard>  $links
      */
-    public static function fromReportView(ReportView $report, array $comments, array $settlements): self
+    public static function fromReportView(ReportView $report, array $comments, array $settlements, array $links): self
     {
         return self::from([
             'label' => "report {$report->number}",
@@ -69,6 +76,7 @@ final class RecordPageData extends Data
             'comments' => $comments,
             'attention' => $report->attention,
             'settlements' => $settlements,
+            'links' => $links,
         ]);
     }
 }

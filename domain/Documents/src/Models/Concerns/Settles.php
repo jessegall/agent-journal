@@ -23,9 +23,7 @@ trait Settles
      */
     public function settle(Actor $actor, string $reason, int|null $revisionNumber): bool
     {
-        $isCreator = $actor->actorType() === ActorType::User || ($this->creator_type === ActorType::Agent && $this->creator_id === $actor->actorId());
-
-        if (! $isCreator) {
+        if (! $this->allowsChangesBy($actor)) {
             throw SettlementDenied::notCreator();
         }
 
@@ -44,6 +42,14 @@ trait Settles
         $this->save();
 
         return true;
+    }
+
+    /**
+     * A user may change any record; an agent only the records it created.
+     */
+    public function allowsChangesBy(Actor $actor): bool
+    {
+        return $actor->actorType() === ActorType::User || ($this->creator_type === ActorType::Agent && $this->creator_id === $actor->actorId());
     }
 
     /**

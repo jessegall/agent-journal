@@ -2,6 +2,7 @@
 import { router } from '@inertiajs/vue3';
 import type { DocumentPageData } from '@generated/types/documents';
 import CommentsPanel from './CommentsPanel.vue';
+import LinksPanel from './LinksPanel.vue';
 import DraftEditor from './DraftEditor.vue';
 import RecordStatus from './RecordStatus.vue';
 import RecoverForm from './RecoverForm.vue';
@@ -50,6 +51,7 @@ function open(): void {
                 </a>
             </template>
         </section>
+        <LinksPanel :source="data.record.label" :links="data.record.links" />
         <CommentsPanel
             :comments="data.record.comments"
             :action="`/documents/docs/${data.number}/comments`"

@@ -32,6 +32,10 @@ trait PrintsInspection
             $this->line("  settled {$settlement->settledAt} by {$settlement->actorType} {$settlement->actorId}: {$settlement->reason}");
         }
 
+        foreach ($inspection->links as $link) {
+            $this->line("  linked to {$link->label}: {$link->title}");
+        }
+
         foreach ($inspection->closes as $close) {
             $this->line("  draft closed {$close->closedAt} ({$close->cause}), revision {$close->baseRevision} to {$close->resultRevision}".($close->reason === null ? '' : ": {$close->reason}"));
         }

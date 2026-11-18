@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Contracts;
 
+use App\Records\Data\RecordCard;
 use Domain\Documents\Data\CommentCard;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\DocumentList;
@@ -67,4 +68,11 @@ interface DocumentReader
      * @throws DocumentMissing
      */
     public function inspect(int $number): RecordInspection;
+
+    /**
+     * The records linked to this one that the actor may see.
+     *
+     * @return list<RecordCard>
+     */
+    public function links(int $number): array;
 }

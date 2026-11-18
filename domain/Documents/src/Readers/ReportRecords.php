@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Readers;
 
+use App\Records\Contracts\RecordReader;
 use Domain\Documents\Contracts\ReportReader;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\RecordInspection;
@@ -25,6 +26,8 @@ use Illuminate\Database\Eloquent\Builder;
 #[Scoped]
 final readonly class ReportRecords implements ReportReader
 {
+    public function __construct(private RecordReader $records) {}
+
     public function list(DocumentFilters $filters): ReportList
     {
         $size = $filters->pageSize()->rows;
@@ -76,6 +79,14 @@ final readonly class ReportRecords implements ReportReader
             'editing' => ['state' => EditingState::Free],
             'settlements' => $report->settlements(),
             'closes' => [],
+            'links' => $this->records->linkedCards($report),
         ]);
+    }
+
+    public function links(int $number): array
+    {
+        $report = Report::query()->sharedPublished()->where('number', $number)->first() ?? throw ReportMissing::numbered($number);
+
+        return $this->records->linkedCards($report);
     }
 }

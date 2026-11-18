@@ -13,6 +13,7 @@ use App\Numbers\Providers\NumbersServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\CoreServiceProvider;
 use App\Reads\Providers\ReadsServiceProvider;
+use App\Records\Providers\RecordsServiceProvider;
 use App\Web\Providers\TypeScriptServiceProvider;
 use App\Web\Providers\WebServiceProvider;
 use Domain\Access\Providers\AccessServiceProvider;
@@ -33,6 +34,7 @@ return [
     ActorsServiceProvider::class,
     AgentsServiceProvider::class,
     AssignmentsServiceProvider::class,
+    RecordsServiceProvider::class,
     HooksServiceProvider::class,
     CommandBusServiceProvider::class,
     ReadsServiceProvider::class,

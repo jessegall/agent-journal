@@ -116,11 +116,35 @@ final readonly class CommandGrammar
     }
 
     /**
-     * The class a docblock names, read in the declaring class's namespace when it is written short.
+     * The class a docblock names: a full name as written, a short one through the file's imports, else in the
+     * declaring class's namespace, as PHP itself would read it.
      */
     private function classNamed(string $item, ReflectionProperty $property): string
     {
-        return str_contains($item, '\\') ? $item : $property->getDeclaringClass()->getNamespaceName().'\\'.$item;
+        if (str_contains($item, '\\')) {
+            return $item;
+        }
+
+        $class = $property->getDeclaringClass();
+
+        return self::importsOf((string) $class->getFileName())[$item] ?? $class->getNamespaceName().'\\'.$item;
+    }
+
+    /**
+     * The classes a file imports, by the short name or alias they are used under.
+     *
+     * @return array<string, string>
+     */
+    private static function importsOf(string $file): array
+    {
+        preg_match_all('/^use\s+([A-Za-z0-9_\\\\]+)(?:\s+as\s+([A-Za-z0-9_]+))?;/m', (string) file_get_contents($file), $imports, PREG_SET_ORDER);
+        $byName = [];
+
+        foreach ($imports as $import) {
+            $byName[$import[2] ?? substr((string) strrchr('\\'.$import[1], '\\'), 1)] = $import[1];
+        }
+
+        return $byName;
     }
 
     /**

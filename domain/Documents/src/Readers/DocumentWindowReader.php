@@ -24,7 +24,7 @@ final readonly class DocumentWindowReader implements PageReader
 
         return DocumentPageData::from([
             'number' => (string) $number,
-            'record' => RecordPageData::fromDocumentView($this->documents->show($number), $this->documents->comments($number, 1), $this->documents->inspect($number)->settlements),
+            'record' => RecordPageData::fromDocumentView($this->documents->show($number), $this->documents->comments($number, 1), $this->documents->inspect($number)->settlements, $this->documents->links($number)),
             'editing' => $this->drafts->stateOf($number),
             'revisions' => $this->documents->revisions($number, 1),
         ]);

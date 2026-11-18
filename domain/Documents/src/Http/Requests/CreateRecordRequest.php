@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Http\Requests;
 
+use App\Assignments\Support\RecordIdentity;
+use App\Numbers\Support\RecordReference;
+use App\Records\Contracts\RecordReader;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -21,6 +24,8 @@ final class CreateRecordRequest extends FormRequest
             'title' => ['required', 'string'],
             'abstract' => ['required', 'string'],
             'body' => ['required', 'string'],
+            'about' => ['nullable', 'array'],
+            'about.*' => ['string', 'max:64'],
         ];
     }
 
@@ -32,6 +37,16 @@ final class CreateRecordRequest extends FormRequest
     public function abstract(): string
     {
         return $this->string('abstract')->toString();
+    }
+
+    /**
+     * The records the new one is about, named as people name them, such as task 12.
+     *
+     * @return list<RecordIdentity>
+     */
+    public function about(RecordReader $records): array
+    {
+        return array_values(array_map(fn (string $reference) => $records->identify(RecordReference::parse(trim($reference))), array_filter((array) $this->input('about', []), is_string(...))));
     }
 
     public function body(): string

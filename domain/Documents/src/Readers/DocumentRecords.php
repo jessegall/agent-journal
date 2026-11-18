@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Readers;
 
+use App\Records\Contracts\RecordReader;
 use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Contracts\DraftReader;
 use Domain\Documents\Data\DocumentFilters;
@@ -29,7 +30,7 @@ use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 #[Scoped]
 final readonly class DocumentRecords implements DocumentReader
 {
-    public function __construct(private DraftReader $drafts) {}
+    public function __construct(private DraftReader $drafts, private RecordReader $records) {}
 
     public function list(DocumentFilters $filters): DocumentList
     {
@@ -119,6 +120,14 @@ final readonly class DocumentRecords implements DocumentReader
             'editing' => $this->drafts->stateOf($number),
             'settlements' => $document->settlements(),
             'closes' => $document->closes(),
+            'links' => $this->records->linkedCards($document),
         ]);
+    }
+
+    public function links(int $number): array
+    {
+        $document = Document::query()->sharedPublished()->where('number', $number)->first() ?? throw DocumentMissing::numbered($number);
+
+        return $this->records->linkedCards($document);
     }
 }

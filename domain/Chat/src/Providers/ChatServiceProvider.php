@@ -20,7 +20,7 @@ final class ChatServiceProvider extends ServiceProvider
     public function boot(LinkTypeRegistry $links, ExceptionHandler $exceptions): void
     {
         $links->register([
-            'chat.message' => Message::class,
+            Message::LINK_TYPE => Message::class,
         ]);
 
         // A session that can no longer take a message is a form error on the composer, not a failure.

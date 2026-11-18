@@ -13,7 +13,7 @@ final class ReportMakeCommand extends Command
 {
     use ReadsRecordBody, SendsRecordCalls;
 
-    protected $signature = 'report:make {title} {--abstract= : One line saying what it is} {--body= : The text, or - to read it from standard input} {--file= : A local file holding the text}';
+    protected $signature = 'report:make {title} {--abstract= : One line saying what it is} {--body= : The text, or - to read it from standard input} {--file= : A local file holding the text} {--about=* : A record it is about, such as "task 12"; up to 50}';
 
     protected $description = 'File a new report; it is shared with every agent and user of this journal';
 
@@ -27,7 +27,7 @@ final class ReportMakeCommand extends Command
             return self::FAILURE;
         }
 
-        $reply = $this->sendSigned($journal, '/agent/reports/make', ['title' => (string) $this->argument('title'), 'abstract' => (string) $this->option('abstract'), 'body' => $body]);
+        $reply = $this->sendSigned($journal, '/agent/reports/make', ['title' => (string) $this->argument('title'), 'abstract' => (string) $this->option('abstract'), 'body' => $body, 'about' => $this->option('about')]);
 
         if ($reply === null) {
             $this->line('The outcome is uncertain: run report:list to see whether it was filed.');

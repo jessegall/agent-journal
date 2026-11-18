@@ -6,8 +6,10 @@ namespace Domain\Plans;
 
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasAssignables;
+use App\Domains\Concerns\HasLinkRecords;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Contracts\ProvidesAssignables;
+use App\Domains\Contracts\ProvidesLinkRecords;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
@@ -52,12 +54,14 @@ use Domain\Plans\Readers\PlanWindowReader;
 use Domain\Plans\Readers\WaitingPlansCount;
 use Domain\Plans\Readers\WaitingPlansSection;
 use Domain\Plans\Support\PhaseAssignmentProvider;
+use Domain\Plans\Support\PhaseRecords;
 use Domain\Plans\Support\PlanAssignmentProvider;
+use Domain\Plans\Support\PlanRecords;
 use Domain\Tasks\TasksDomain;
 
-final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections
+final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections
 {
-    use HasAssignables, HasNumberedModels;
+    use HasAssignables, HasLinkRecords, HasNumberedModels;
 
     public function description(): string
     {
@@ -103,6 +107,14 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
         return [
             Plan::LINK_TYPE => PlanAssignmentProvider::class,
             Phase::LINK_TYPE => PhaseAssignmentProvider::class,
+        ];
+    }
+
+    public function linkRecords(): array
+    {
+        return [
+            Plan::LINK_TYPE => PlanRecords::class,
+            Phase::LINK_TYPE => PhaseRecords::class,
         ];
     }
 

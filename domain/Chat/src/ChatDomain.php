@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Domain\Chat;
 
 use App\Bus\Contracts\ProvidesCommands;
+use App\Domains\Concerns\HasLinkRecords;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
+use App\Domains\Contracts\ProvidesLinkRecords;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
@@ -35,15 +37,16 @@ use Domain\Chat\Contracts\ConversationReader;
 use Domain\Chat\Enums\MessageState;
 use Domain\Chat\Exceptions\MessageBodyEmpty;
 use Domain\Chat\Http\Controllers\SendMessageController;
+use Domain\Chat\Links\MessageLinkRecords;
 use Domain\Chat\Models\Message;
 use Domain\Chat\Readers\ChatWindowReader;
 use Domain\Chat\Readers\ChosenAgentSection;
 use Domain\Chat\States\Support\AnsweringMessageStateFactory;
 use Domain\Chat\States\Support\AnsweringMessageStateReference;
 
-final class ChatDomain extends Domain implements ProvidesCommands, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesStates
+final class ChatDomain extends Domain implements ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesStates
 {
-    use HasNumberedModels, HasStates;
+    use HasLinkRecords, HasNumberedModels, HasStates;
 
     public function description(): string
     {
@@ -101,6 +104,11 @@ final class ChatDomain extends Domain implements ProvidesCommands, ProvidesNavig
     public function sections(): array
     {
         return [Section::make('agent', 'Agent', 'web.bar', SlotContextType::Session, ChosenAgentSection::class, 'ChosenAgent.vue')];
+    }
+
+    public function linkRecords(): array
+    {
+        return [Message::LINK_TYPE => MessageLinkRecords::class];
     }
 
     public function numberedModels(): array

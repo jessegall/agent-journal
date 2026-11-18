@@ -99,6 +99,7 @@ use App\Bus\Exceptions\CommandReplacementRefused;
 use App\Bus\Exceptions\CommandResultChanged;
 use App\Bus\Exceptions\CommandRetryExhausted;
 use App\Bus\Exceptions\CommandTransactionMismatch;
+use App\Bus\Exceptions\CommandTransactionMissing;
 use App\Bus\Exceptions\ContinuationCalledTwice;
 use App\Bus\Exceptions\ExplicitTransactionInCommand;
 use App\Bus\Exceptions\HandlerInOtherOwner;
@@ -211,6 +212,13 @@ use App\Reads\Values\PageSize;
 use App\Reads\Values\ReadCounts;
 use App\Reads\Values\ReadOrder;
 use App\Reads\Values\RelationRead;
+use App\Records\Commands\LinkRecords;
+use App\Records\Commands\UnlinkRecords;
+use App\Records\Contracts\RecordLinker;
+use App\Records\Contracts\RecordProvider;
+use App\Records\Contracts\RecordReader;
+use App\Records\Data\RecordCard;
+use App\Records\Support\ProvidesModelRecords;
 use App\Ui\Contracts\CountReader;
 use App\Ui\Contracts\NavigationChildren;
 use App\Ui\Contracts\PageOption;
@@ -251,6 +259,9 @@ final class CoreApi
         return Exports::make()
             ->events(ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class)
             ->contracts(
+                RecordProvider::class,
+                RecordReader::class,
+                RecordLinker::class,
                 CurrentSession::class,
                 ReadableModel::class,
                 ReadMeter::class,
@@ -304,6 +315,7 @@ final class CoreApi
                 VisibilityCheck::class,
             )
             ->values(
+                RecordCard::class,
                 StateReferences::class,
                 StateSet::class,
                 ReadMode::class,
@@ -405,11 +417,14 @@ final class CoreApi
             ->commands(
                 RetireAgent::class,
                 InstallNumbers::class,
+                LinkRecords::class,
+                UnlinkRecords::class,
                 AssignRecord::class,
                 ReassignRecord::class,
                 UnassignRecord::class,
             )
             ->exceptions(
+                CommandTransactionMissing::class,
                 AgentContextMissing::class,
                 ReadPolicyMissing::class,
                 QueryInValueRead::class,
@@ -484,6 +499,7 @@ final class CoreApi
                 Linkable::class,
                 LinkAccess::class,
                 LinkTypeRegistry::class,
+                ProvidesModelRecords::class,
                 HasNumber::class,
                 AssignableListing::class,
                 TextSearch::class,

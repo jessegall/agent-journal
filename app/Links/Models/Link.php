@@ -85,6 +85,29 @@ final class Link extends MorphPivot implements ReadableModel
     }
 
     /**
+     * Every link with this record on either side.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function touching(Builder $query, Model $record): void
+    {
+        $query->where(fn (Builder $either) => $either->withSource($record)->orWhere(fn (Builder $target) => $target->withTarget($record)));
+    }
+
+    /**
+     * The record on the other side of this link from the one given, by its link alias and id.
+     *
+     * @return array{string, string}
+     */
+    public function otherSideFrom(Model $record): array
+    {
+        $isSource = $this->source_type === $record->getMorphClass() && $this->source_id === (string) $record->getKey();
+
+        return $isSource ? [$this->target_type, $this->target_id] : [$this->source_type, $this->source_id];
+    }
+
+    /**
      * @param  Builder<self>  $query
      */
     #[Scope]

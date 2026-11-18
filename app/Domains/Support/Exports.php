@@ -31,6 +31,7 @@ final class Exports
         'App\Http\Requests\Web\Concerns\ReadsRouteNumber',
         'App\Links\Support\LinkAccess',
         'App\Links\Support\LinkTypeRegistry',
+        'App\Records\Support\ProvidesModelRecords',
         'App\Queries\Support\TextSearch',
         'App\Numbers\Support\HasNumber',
         'App\Reads\Support\CountsLoads',

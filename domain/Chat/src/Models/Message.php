@@ -41,6 +41,8 @@ final class Message extends Model implements Numbered, ReadableModel
     use BoundedReads;
     use Linkable;
 
+    public const string LINK_TYPE = 'chat.message';
+
     /**
      * @var array<string, mixed>
      */
@@ -63,6 +65,14 @@ final class Message extends Model implements Numbered, ReadableModel
     {
         // A message belongs to no agent until one is asked to answer it.
         return self::lockedForActorOrUnheld($id) ?? throw MessageMissing::forId($id);
+    }
+
+    /**
+     * The message's first line, the only text a link card shows of it.
+     */
+    public function firstLine(): string
+    {
+        return mb_strimwidth(strtok($this->body, "\n") ?: '', 0, 80, '…');
     }
 
     public function requireAnswerFrom(StackTarget $target): void

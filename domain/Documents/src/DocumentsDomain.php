@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Domain\Documents;
 
 use App\Bus\Contracts\ProvidesCommands;
+use App\Domains\Concerns\HasLinkRecords;
 use App\Domains\Concerns\HasNumberedModels;
+use App\Domains\Contracts\ProvidesLinkRecords;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
@@ -91,6 +93,8 @@ use Domain\Documents\Http\Controllers\RecoverDocumentPageController;
 use Domain\Documents\Http\Controllers\SaveDraftPageController;
 use Domain\Documents\Http\Controllers\SettleDocumentPageController;
 use Domain\Documents\Http\Controllers\SettleReportPageController;
+use Domain\Documents\Links\DocumentLinkRecords;
+use Domain\Documents\Links\ReportLinkRecords;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;
@@ -101,9 +105,9 @@ use Domain\Documents\Readers\RevisionWindowReader;
 use Domain\Documents\Support\CommentAnchor;
 use Domain\Documents\Support\TextSelection;
 
-final class DocumentsDomain extends Domain implements ProvidesCommands, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages
+final class DocumentsDomain extends Domain implements ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages
 {
-    use HasNumberedModels;
+    use HasLinkRecords, HasNumberedModels;
 
     public function description(): string
     {
@@ -129,6 +133,11 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
     public function numberedModels(): array
     {
         return [NumberedModel::global(Document::class), NumberedModel::within(DocumentRevision::class, Document::class), NumberedModel::global(Report::class)];
+    }
+
+    public function linkRecords(): array
+    {
+        return [Document::LINK_TYPE => DocumentLinkRecords::class, Report::LINK_TYPE => ReportLinkRecords::class];
     }
 
     public function commands(): array

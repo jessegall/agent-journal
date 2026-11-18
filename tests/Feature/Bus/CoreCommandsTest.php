@@ -13,6 +13,8 @@ use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\CoreCommands;
 use App\Numbers\Commands\InstallNumbers;
+use App\Records\Commands\LinkRecords;
+use App\Records\Commands\UnlinkRecords;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
 
 /**
@@ -21,12 +23,12 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
  */
 final class CoreCommandsTest extends CommandBusTestCase
 {
-    public function test_core_lists_its_five_commands_and_exports_them(): void
+    public function test_core_lists_its_seven_commands_and_exports_them(): void
     {
         $this->installCommandModules();
         $registry = $this->app->make(CommandRegistry::class);
 
-        $this->assertSame([AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, InstallNumbers::class], CoreCommands::commands());
+        $this->assertSame([AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class], CoreCommands::commands());
 
         foreach (CoreCommands::commands() as $command) {
             $this->assertTrue($registry->has($command));

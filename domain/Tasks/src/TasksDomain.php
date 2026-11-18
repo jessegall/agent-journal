@@ -6,9 +6,11 @@ namespace Domain\Tasks;
 
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasAssignables;
+use App\Domains\Concerns\HasLinkRecords;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesAssignables;
+use App\Domains\Contracts\ProvidesLinkRecords;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
@@ -38,12 +40,13 @@ use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Readers\TaskAssignments;
+use Domain\Tasks\Readers\TaskRecords;
 use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 
-final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesNumberedModels, ProvidesStates
+final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesNumberedModels, ProvidesStates
 {
-    use HasAssignables, HasNumberedModels, HasStates;
+    use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
     public function description(): string
     {
@@ -103,6 +106,11 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function assignables(): array
     {
         return [Task::LINK_TYPE => TaskAssignments::class];
+    }
+
+    public function linkRecords(): array
+    {
+        return [Task::LINK_TYPE => TaskRecords::class];
     }
 
     public function numberedModels(): array
