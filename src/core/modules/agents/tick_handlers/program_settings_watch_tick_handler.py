@@ -6,7 +6,7 @@ from engine.ticker.tick_interval import TickInterval
 class ProgramSettingsWatchTickHandler(TickHandler):
     """The tick handler of ProgramSettingsWatch."""
 
-    interval = TickInterval(seconds=2)
+    interval = TickInterval(seconds=30)
     handler = ProgramSettingsWatch()
     name = "program settings watch"
     starts_immediately = True
