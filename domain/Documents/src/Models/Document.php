@@ -107,6 +107,24 @@ final class Document extends Model implements Numbered, ReadableModel
     }
 
     /**
+     * The document of this number, locked for the transaction: the one lock every writer of a document takes first.
+     *
+     * @throws DocumentMissing
+     */
+    public static function lockedForEditing(int $number): self
+    {
+        return self::query()->with('currentRevision')->where('number', $number)->lockForUpdate()->first() ?? throw DocumentMissing::numbered($number);
+    }
+
+    /**
+     * @return HasOne<DocumentDraft, $this>
+     */
+    public function draft(): HasOne
+    {
+        return $this->hasOne(DocumentDraft::class);
+    }
+
+    /**
      * @return HasMany<DocumentRevision, $this>
      */
     public function revisions(): HasMany
@@ -136,9 +154,9 @@ final class Document extends Model implements Numbered, ReadableModel
     }
 
     /**
-     * The loaded current revision; every published document has one from the moment it is created.
+     * The current revision; every published document has one from the moment it is created.
      */
-    private function currentRevisionOrFail(): DocumentRevision
+    public function currentRevisionOrFail(): DocumentRevision
     {
         return $this->currentRevision ?? throw DocumentMissing::numbered($this->number);
     }

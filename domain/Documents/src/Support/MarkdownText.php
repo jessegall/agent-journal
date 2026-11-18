@@ -94,8 +94,28 @@ final readonly class MarkdownText
         return match (count($named)) {
             0 => throw SectionMissing::named($heading),
             1 => $named[0],
-            default => throw SectionMissing::ambiguous($heading, count($named)),
+            default => throw SectionMissing::ambiguous($heading, array_map(fn (Section $section) => $section->number, $named)),
         };
+    }
+
+    /**
+     * Each section as its number and heading, in order.
+     *
+     * @return list<string>
+     */
+    public function outline(): array
+    {
+        return array_map(fn (Section $section) => "{$section->number} {$section->heading}", $this->sections);
+    }
+
+    /**
+     * The section a caller names, by its number or by its exact heading.
+     *
+     * @throws SectionMissing
+     */
+    public function sectionBy(string $numberOrHeading): Section
+    {
+        return ctype_digit($numberOrHeading) ? $this->section((int) $numberOrHeading) : $this->sectionNamed($numberOrHeading);
     }
 
     /**
@@ -119,9 +139,21 @@ final readonly class MarkdownText
             throw SectionMissing::levelChanged($number);
         }
 
-        array_splice($lines, $section->firstLine - 1, $section->lastLine - $section->firstLine + 1, $replacement);
+        $replaced = array_slice($lines, $section->firstLine - 1, $section->lastLine - $section->firstLine + 1);
+        $blankLinesAfter = count($replaced) - count(self::withoutTrailingBlankLines($replaced));
+        array_splice($lines, $section->firstLine - 1, count($replaced), [...$replacement, ...array_fill(0, $blankLinesAfter, '')]);
 
         return self::body(implode("\n", $lines));
+    }
+
+    /**
+     * The text with the section named by its number or exact heading replaced.
+     *
+     * @throws SectionMissing|MarkdownInvalid|ContentMissing|ContentTooLarge
+     */
+    public function withNamedSectionReplaced(string $numberOrHeading, string $text): self
+    {
+        return $this->withSectionReplaced($this->sectionBy($numberOrHeading)->number, $text);
     }
 
     /**
@@ -180,6 +212,21 @@ final readonly class MarkdownText
         }
 
         return $value;
+    }
+
+    /**
+     * The lines without the blank lines that end them, which separate a section from the next or end the text.
+     *
+     * @param  list<string>  $lines
+     * @return list<string>
+     */
+    private static function withoutTrailingBlankLines(array $lines): array
+    {
+        while ($lines !== [] && trim($lines[array_key_last($lines)]) === '') {
+            array_pop($lines);
+        }
+
+        return $lines;
     }
 
     /**

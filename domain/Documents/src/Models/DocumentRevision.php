@@ -11,6 +11,8 @@ use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use Domain\Documents\Data\RevisionCard;
+use Domain\Documents\Data\RevisionView;
 use Domain\Documents\Exceptions\RecordImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -56,6 +58,35 @@ final class DocumentRevision extends Model implements Numbered, ReadableModel
         self::updating(function (self $revision): void {
             throw RecordImmutable::for('revision');
         });
+    }
+
+    public function card(): RevisionCard
+    {
+        return RevisionCard::from([
+            'number' => (string) $this->number,
+            'title' => $this->title,
+            'authorType' => $this->author_type->value,
+            'authorId' => $this->author_id,
+            'closedAt' => (string) $this->closed_at?->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * The revision with its text, marked historical when the document has a later one.
+     */
+    public function view(Document $document): RevisionView
+    {
+        return RevisionView::from([
+            'documentNumber' => (string) $document->number,
+            'number' => (string) $this->number,
+            'title' => $this->title,
+            'abstract' => $this->abstract,
+            'body' => $this->body,
+            'authorType' => $this->author_type->value,
+            'authorId' => $this->author_id,
+            'closedAt' => (string) $this->closed_at?->toIso8601String(),
+            'historical' => $document->currentRevisionOrFail()->number !== $this->number,
+        ]);
     }
 
     /**

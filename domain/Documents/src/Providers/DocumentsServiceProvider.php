@@ -5,13 +5,20 @@ declare(strict_types=1);
 namespace Domain\Documents\Providers;
 
 use App\Links\Support\LinkTypeRegistry;
+use Domain\Documents\Console\DocCloseCommand;
+use Domain\Documents\Console\DocEditCommand;
 use Domain\Documents\Console\DocListCommand;
 use Domain\Documents\Console\DocMakeCommand;
+use Domain\Documents\Console\DocOpenCommand;
+use Domain\Documents\Console\DocRevisionCommand;
+use Domain\Documents\Console\DocRevisionsCommand;
 use Domain\Documents\Console\DocShowCommand;
 use Domain\Documents\Console\ReportListCommand;
 use Domain\Documents\Console\ReportMakeCommand;
 use Domain\Documents\Console\ReportShowCommand;
 use Domain\Documents\Models\Document;
+use Domain\Documents\Models\DocumentClose;
+use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;
 use Illuminate\Support\ServiceProvider;
@@ -27,9 +34,11 @@ final class DocumentsServiceProvider extends ServiceProvider
             Document::LINK_TYPE => Document::class,
             DocumentRevision::LINK_TYPE => DocumentRevision::class,
             Report::LINK_TYPE => Report::class,
+            DocumentDraft::LINK_TYPE => DocumentDraft::class,
+            DocumentClose::LINK_TYPE => DocumentClose::class,
         ]);
 
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
-        $this->commands([DocMakeCommand::class, DocListCommand::class, DocShowCommand::class, ReportMakeCommand::class, ReportListCommand::class, ReportShowCommand::class]);
+        $this->commands([DocMakeCommand::class, DocListCommand::class, DocShowCommand::class, DocOpenCommand::class, DocEditCommand::class, DocCloseCommand::class, DocRevisionsCommand::class, DocRevisionCommand::class, ReportMakeCommand::class, ReportListCommand::class, ReportShowCommand::class]);
     }
 }

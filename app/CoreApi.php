@@ -20,7 +20,9 @@ use App\AgentRequests\Exceptions\AgentRequestFailed;
 use App\AgentRequests\Support\AgentReply;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Contracts\AgentReader;
+use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\SessionReader;
+use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Exceptions\AgentRetirementDenied;
 use App\Agents\Exceptions\StackTargetRefused;
@@ -248,6 +250,7 @@ final class CoreApi
         return Exports::make()
             ->events(ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class)
             ->contracts(
+                CurrentSession::class,
                 ReadableModel::class,
                 ReadMeter::class,
                 Actor::class,
@@ -406,6 +409,7 @@ final class CoreApi
                 UnassignRecord::class,
             )
             ->exceptions(
+                AgentContextMissing::class,
                 ReadPolicyMissing::class,
                 QueryInValueRead::class,
                 LazyLoadRefused::class,

@@ -8,8 +8,10 @@ use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\DocumentList;
 use Domain\Documents\Data\DocumentView;
+use Domain\Documents\Data\RevisionView;
 use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Models\Document;
+use Domain\Documents\Models\DocumentRevision;
 use Illuminate\Container\Attributes\Scoped;
 
 /**
@@ -32,6 +34,22 @@ final readonly class DocumentRecords implements DocumentReader
             'page' => $filters->page,
             'hasNextPage' => $documents->count() > $size,
         ]);
+    }
+
+    public function revisions(int $documentNumber, int $page): array
+    {
+        $document = Document::query()->sharedPublished()->where('number', $documentNumber)->first() ?? throw DocumentMissing::numbered($documentNumber);
+
+        return array_values($document->revisions()->whereNotNull('closed_at')->orderBy('number')->forPage($page, 50)->get()
+            ->map(fn (DocumentRevision $revision) => $revision->card())->all());
+    }
+
+    public function revision(int $documentNumber, int $revisionNumber): RevisionView
+    {
+        $document = Document::query()->sharedPublished()->with('currentRevision')->where('number', $documentNumber)->first() ?? throw DocumentMissing::numbered($documentNumber);
+        $revision = $document->revisions()->whereNotNull('closed_at')->where('number', $revisionNumber)->first() ?? throw DocumentMissing::numbered($documentNumber);
+
+        return $revision->view($document);
     }
 
     public function show(int $number): DocumentView
