@@ -18,6 +18,7 @@ use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Exceptions\DomainRequiresItself;
 use App\Domains\Exceptions\NotADomain;
 use App\Domains\Exceptions\RequiredDomainTwice;
+use App\Domains\Exceptions\SkillDeclarationRefused;
 use App\Domains\Support\Exports as ExportsCheck;
 use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpRegistration;
@@ -31,6 +32,9 @@ use App\Records\Contracts\RecordProvider;
 use App\Settings\Contracts\ProvidesSettings;
 use App\Settings\Contracts\SettingsDefinition;
 use App\Settings\Support\EmptySettingsDefinition;
+use App\Skills\Contracts\ProvidesSkills;
+use App\Skills\Contracts\Skill;
+use App\Skills\Values\SkillOwner;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
@@ -46,6 +50,7 @@ final readonly class DomainEntry
 {
     /**
      * @param  list<class-string<Domain>>  $requires
+     * @param  list<class-string<Skill>>  $skills
      */
     private function __construct(
         public string $name,
@@ -56,6 +61,7 @@ final readonly class DomainEntry
         public Exports $exports,
         private SettingsDefinition $settings,
         private bool $switchable,
+        private array $skills,
     ) {}
 
     /**
@@ -87,6 +93,7 @@ final readonly class DomainEntry
             exports: ExportsCheck::check($name, $namespace, $domain->exports()),
             settings: $domain instanceof ProvidesSettings ? $domain->settings() : new EmptySettingsDefinition(),
             switchable: $domain->canDisable(),
+            skills: $domain instanceof ProvidesSkills ? self::checkedSkills($name, $namespace, $domain->skills()) : [],
         );
     }
 
@@ -225,6 +232,49 @@ final readonly class DomainEntry
         }
 
         return $seen;
+    }
+
+    /**
+     * Refuses a declared skill class that is missing, does not implement Skill or lies outside the domain's namespace.
+     *
+     * @param  list<class-string<Skill>>  $skills
+     * @return list<class-string<Skill>>
+     */
+    private static function checkedSkills(string $name, string $namespace, array $skills): array
+    {
+        foreach ($skills as $class) {
+            if (! class_exists($class)) {
+                throw SkillDeclarationRefused::for($name, $class, 'no such class exists');
+            }
+
+            if (! is_subclass_of($class, Skill::class)) {
+                throw SkillDeclarationRefused::for($name, $class, 'it does not implement App\\Skills\\Contracts\\Skill');
+            }
+
+            if (stripos(ltrim($class, '\\'), $namespace.'\\') !== 0) {
+                throw SkillDeclarationRefused::for($name, $class, 'it lies outside the domain\'s own package');
+            }
+        }
+
+        return $skills;
+    }
+
+    /**
+     * The skill classes this domain declares, checked when it was registered; none without ProvidesSkills.
+     *
+     * @return list<class-string<Skill>>
+     */
+    public function skills(): array
+    {
+        return $this->skills;
+    }
+
+    /**
+     * This domain as a supplier of skills: its name, its package folder and the skill classes it declares.
+     */
+    public function skillOwner(): SkillOwner
+    {
+        return new SkillOwner($this->name, $this->isPackage() ? dirname($this->folder) : $this->folder, $this->skills);
     }
 
     /**

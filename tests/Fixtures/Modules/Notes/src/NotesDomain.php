@@ -25,6 +25,7 @@ use App\Processes\Values\ArgumentGrammar;
 use App\Processes\Values\CommandClassSet;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\ProgramSpellings;
+use App\Skills\Contracts\ProvidesSkills;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Contracts\ProvidesSections;
@@ -64,12 +65,13 @@ use Tests\Fixtures\Modules\Notes\Readers\CollectionChildren;
 use Tests\Fixtures\Modules\Notes\Readers\CollectionWindowReader;
 use Tests\Fixtures\Modules\Notes\Readers\NoteSectionReader;
 use Tests\Fixtures\Modules\Notes\Readers\NotesWindowReader;
+use Tests\Fixtures\Modules\Notes\Skills\NotesSkill;
 use Tests\Fixtures\Modules\Notes\Support\NoteAssignments;
 
 /**
  * A module installed outside the domain folder, registered beside the domains only in the architecture fixtures.
  */
-final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesCommandMiddleware, ProvidesCommandRules, ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesStates
+final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesCommandMiddleware, ProvidesCommandRules, ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesSkills, ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -139,6 +141,11 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function commands(): array
     {
         return [WriteNote::class, PinNote::class, CopyNote::class, RefuseNote::class, IgnoreFailedNote::class, OpenTransactionNote::class, UserNote::class, SystemNote::class, ClearNotes::class, EngineNote::class, EngineCopyNote::class, KeepNote::class];
+    }
+
+    public function skills(): array
+    {
+        return [NotesSkill::class];
     }
 
     public function commandMiddleware(): array
