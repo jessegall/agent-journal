@@ -16,7 +16,7 @@ BLOCKED_RUNS_REASON = "every old running run of the agent is checked for the sil
 
 class BlockedRuns:
     """Finds the run of an agent that printed nothing for the hang time since its last output or the
-    last time the agent read it; an agent whose session ended is held by nothing. The processor time
+    last time the agent read it; a run still waiting in the queue and an agent whose session ended are held by nothing. The processor time
     is told from the file the hang watch keeps in the run's folder."""
 
     def __init__(self, processes: ProcessQuery, folder: OutputFolder, settings: ProcessSettings, silences: RunSilences, rows: EventRows, request_values: RequestValues,
@@ -34,6 +34,9 @@ class BlockedRuns:
             return None
         limit = self.settings.integer(ProcessSetting.HANG_SECONDS)
         for process in self.processes.agent(agent_id).running().minimum_age(timestamp, limit).every_row(BLOCKED_RUNS_REASON):
+            # a run waiting in the queue for a spot has not started, so its silence says nothing
+            if process.queued_at is not None:
+                continue
             seconds = self.silent_seconds(process, timestamp)
             if seconds >= limit:
                 return BlockedRun(process, seconds, self.processor(process, timestamp, seconds))

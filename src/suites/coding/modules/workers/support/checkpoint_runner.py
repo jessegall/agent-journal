@@ -22,7 +22,6 @@ from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.support.phase_test_deferrals import PhaseTestDeferrals
 from suites.coding.modules.workers.support.worker_settings import AFFECTED_TESTS_COMMAND, PROJECT_TEST_COMMAND
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-from suites.coding.modules.workers.support.checkpoint_listing import CheckpointListing
 from suites.coding.modules.workers.support.worker_test_start import WorkerTestStart
 
 COMMITTED_PROOFS_REASON = "a checkpoint runs the tests of every committed proof of its tasks"
@@ -30,14 +29,14 @@ COMMITTED_PROOFS_REASON = "a checkpoint runs the tests of every committed proof 
 class CheckpointRunner(CheckpointRuns):
     """Starts the tests of a reached checkpoint in the background runner proof tests use, in the checkout
     CheckpointFolders names, made whenever a proof or a test is to run: each committed proof of the window by
-    its own command, the checkpoint's own test, with the test paths a merger deferred left out or added, and
+    its own command, the checkpoint's own test once as its command is written, with the test paths a merger deferred left out or added, and
     the selected run over the files the window changed. An early run starts only the committed proofs. A reach
     whose tests were started is not started again. With no owner the own test and the selected run are not
     run. A run with no test passes at once, as the core's runs do."""
 
     def __init__(self, proofs: ProofQuery, repository: Repository, bus: Bus, git: WorktreeGit, environments: EnvironmentRows, settings: SettingValues, rows: EventRows,
-                 results: CheckpointResults, deferrals: PhaseTestDeferrals, folders: CheckpointFolders, starts: WorkerRunStarts, listing: CheckpointListing) -> None:
-        self.results, self.deferrals, self.folders, self.starts, self.listing = results, deferrals, folders, starts, listing
+                 results: CheckpointResults, deferrals: PhaseTestDeferrals, folders: CheckpointFolders, starts: WorkerRunStarts) -> None:
+        self.results, self.deferrals, self.folders, self.starts = results, deferrals, folders, starts
         super().__init__(repository, bus)
         self.proofs, self.git = proofs, git
         self.environments, self.settings, self.rows = environments, settings, rows
@@ -83,10 +82,10 @@ class CheckpointRunner(CheckpointRuns):
         for test in tests:
             self.start_test(test, folder, context)
 
-    def phase_test(self, reach: CheckpointReach, owner_id: int, phase_command: str) -> CheckpointTest:
-        listing = self.listing.command(phase_command)
-        state = AffectedTestState.LISTING if listing else AffectedTestState.TESTING
-        return CheckpointTest(reach_id=reach.id, owner_agent_id=owner_id, picker_command=listing, test_command=phase_command, state=state, process_id=0)
+    # the checkpoint's own test runs once, as its command is written, never split into parts that each repeat its setup
+    @staticmethod
+    def phase_test(reach: CheckpointReach, owner_id: int, phase_command: str) -> CheckpointTest:
+        return CheckpointTest(reach_id=reach.id, owner_agent_id=owner_id, picker_command="", test_command=phase_command, state=AffectedTestState.TESTING, process_id=0)
 
     def start_test(self, test: CheckpointTest, folder: str, context: Context) -> None:
         start = WorkerTestStart.started_as_full_run(test.owner_agent_id, test.picker_command or test.test_command, folder)
