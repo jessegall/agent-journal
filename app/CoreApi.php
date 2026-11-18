@@ -37,6 +37,7 @@ use App\Agents\Commands\ChangeAgentEffort;
 use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ClaimDriverRequests;
 use App\Agents\Commands\ClaimLaunchGrant;
+use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\InterruptAgent;
@@ -88,6 +89,7 @@ use App\Agents\Exceptions\AccessPolicyInvalid;
 use App\Agents\Exceptions\AccountContainerUnsupported;
 use App\Agents\Exceptions\AgentBusy;
 use App\Agents\Exceptions\AgentContextMissing;
+use App\Agents\Exceptions\AgentNameRequired;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Exceptions\AgentRetirementDenied;
 use App\Agents\Exceptions\DefaultUnavailable;
@@ -1037,6 +1039,7 @@ final class CoreApi
                 DismissMessage::class,
                 RetireAgent::class,
                 LaunchAgent::class,
+                CreateAgent::class,
                 RecordHeartbeat::class,
                 RecordUserHeartbeat::class,
                 EnrollHost::class,
@@ -1198,6 +1201,7 @@ final class CoreApi
                 ProgramUnsupported::class,
                 LaunchRequestConflict::class,
                 AgentBusy::class,
+                AgentNameRequired::class,
                 LaunchRecordMissing::class,
                 UnknownAccessType::class,
                 UnknownResourceArea::class,
