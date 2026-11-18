@@ -6,7 +6,9 @@ namespace App\Processes\Models;
 
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
+use App\Processes\Casts\StoredValuesCast;
 use App\Processes\Exceptions\EvidencePermitRefused;
+use App\Processes\Values\CommandRule;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -37,10 +39,26 @@ use Illuminate\Support\Carbon;
  * @property string|null $request_id
  * @property CarbonImmutable|null $consumed_at
  * @property string|null $process_run_id
+ * @property string|null $command_request_id
+ * @property list<CommandRule> $candidate_rules  the proposed rules the line is classified with, for a request's sample
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['project_key', 'working_folder', 'source_line', 'source_digest', 'classification_digest', 'approved_classes', 'runner_type', 'runner_id', 'byte_cap', 'seconds_cap', 'expires_at'])]
+#[Fillable([
+    'project_key',
+    'working_folder',
+    'source_line',
+    'source_digest',
+    'classification_digest',
+    'approved_classes',
+    'runner_type',
+    'runner_id',
+    'byte_cap',
+    'seconds_cap',
+    'expires_at',
+    'command_request_id',
+    'candidate_rules',
+])]
 final class EvidencePermit extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -51,7 +69,14 @@ final class EvidencePermit extends Model implements ReadableModel
      */
     protected function casts(): array
     {
-        return ['approved_classes' => 'array', 'byte_cap' => 'integer', 'seconds_cap' => 'integer', 'expires_at' => 'immutable_datetime', 'consumed_at' => 'immutable_datetime'];
+        return [
+            'approved_classes' => 'array',
+            'byte_cap' => 'integer',
+            'seconds_cap' => 'integer',
+            'expires_at' => 'immutable_datetime',
+            'consumed_at' => 'immutable_datetime',
+            'candidate_rules' => StoredValuesCast::class.':'.CommandRule::class,
+        ];
     }
 
     /**
@@ -96,6 +121,15 @@ final class EvidencePermit extends Model implements ReadableModel
     {
         $this->expires_at = CarbonImmutable::now();
         $this->save();
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function sampling(Builder $query, CommandRequest $request): void
+    {
+        $query->where('command_request_id', $request->id)->whereNotNull('process_run_id');
     }
 
     /**

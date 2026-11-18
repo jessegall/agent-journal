@@ -11,6 +11,8 @@ use App\Processes\Console\OutputReadCommand;
 use App\Processes\Console\ProcessExportCommand;
 use App\Processes\Console\ProcessShowCommand;
 use App\Processes\Console\ReaderProposeCommand;
+use App\Processes\Console\ReaderSampleApproveCommand;
+use App\Processes\Console\ReaderSampleRunCommand;
 use App\Processes\Console\RunProcessCommand;
 use App\Processes\Contracts\AliasReader;
 use App\Processes\Contracts\CommandClassifier;
@@ -91,6 +93,8 @@ final class ProcessesServiceProvider extends ServiceProvider
             ProcessShowCommand::class,
             ProcessExportCommand::class,
             ReaderProposeCommand::class,
+            ReaderSampleApproveCommand::class,
+            ReaderSampleRunCommand::class,
         ]);
     }
 }

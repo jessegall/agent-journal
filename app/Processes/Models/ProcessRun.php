@@ -49,7 +49,19 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['admission_id', 'mode', 'project_key', 'source_digest', 'dialect', 'tree_digest', 'registry_revision', 'policy_revision', 'event_key_hash', 'working_folder', 'plan'])]
+#[Fillable([
+    'admission_id',
+    'mode',
+    'project_key',
+    'source_digest',
+    'dialect',
+    'tree_digest',
+    'registry_revision',
+    'policy_revision',
+    'event_key_hash',
+    'working_folder',
+    'plan',
+])]
 final class ProcessRun extends Model implements ReadableModel
 {
     use BelongsToOneActor, HasUlids;
@@ -82,7 +94,16 @@ final class ProcessRun extends Model implements ReadableModel
     /**
      * Admits a run for an actor; the admission id is single-use, so a second admission with it fails on its key.
      *
-     * @param  array{admission_id: string, mode: RunMode, project_key: string, source_digest: string, dialect: ShellDialect, tree_digest: string, registry_revision: string, policy_revision: string}  $admission
+     * @param  array{
+     *     admission_id: string,
+     *     mode: RunMode,
+     *     project_key: string,
+     *     source_digest: string,
+     *     dialect: ShellDialect,
+     *     tree_digest: string,
+     *     registry_revision: string,
+     *     policy_revision: string,
+     * }  $admission
      */
     public static function admit(ActorIdentity $actor, array $admission): self
     {
@@ -96,13 +117,37 @@ final class ProcessRun extends Model implements ReadableModel
     /**
      * Whether its result may answer the agent: an evidence run never gets a result receipt.
      */
+    /**
+     * Whether every part ended on its own and its output was captured complete, as a sample must to be evidence.
+     */
+    public function hasCompleteEvidence(): bool
+    {
+        $parts = $this->parts()->readLimit(500)->get();
+
+        return $parts->isNotEmpty() && $parts->every(
+            fn (PartRun $part): bool => $part->lifecycle === LifecycleState::Ended
+                && $part->capture_state === CaptureState::Complete,
+        );
+    }
+
+    /**
+     * Whether every part of the run has reached a final state, so its evidence can be judged.
+     */
+    public function hasEnded(): bool
+    {
+        $parts = $this->parts()->readLimit(500)->get();
+
+        return $parts->isNotEmpty() && $parts->every(fn (PartRun $part): bool => $part->lifecycle->isFinal());
+    }
+
     public function mayAnswer(): bool
     {
         return $this->mode === RunMode::Normal;
     }
 
     /**
-     * Consumes the admission and returns the run's new event key, shown only this once; a consumed admission returns ''.
+     * Consumes the admission and returns the run's new event key, shown only this once; a consumed admission
+     * returns ''.
      */
     public function consumeWithEventKey(): string
     {
@@ -138,7 +183,10 @@ final class ProcessRun extends Model implements ReadableModel
      */
     public function isSuspect(int $quietSeconds = 15): bool
     {
-        return $this->lifecycle === LifecycleState::Running && ($this->heartbeat_at ?? $this->started_at)?->lessThan(CarbonImmutable::now()->subSeconds($quietSeconds)) === true;
+        $lastSign = $this->heartbeat_at ?? $this->started_at;
+
+        return $this->lifecycle === LifecycleState::Running
+            && $lastSign?->lessThan(CarbonImmutable::now()->subSeconds($quietSeconds)) === true;
     }
 
     /**

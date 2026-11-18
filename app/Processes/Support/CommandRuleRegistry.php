@@ -55,6 +55,16 @@ final readonly class CommandRuleRegistry
     }
 
     /**
+     * This registry with one more rule, checked as every rule is: a proposed rule that overlaps an active one fails.
+     *
+     * @throws CommandRuleConflict
+     */
+    public function withCandidate(CommandRule $rule): self
+    {
+        return self::from([...array_merge(...array_values($this->active)), ...$this->held, $rule]);
+    }
+
+    /**
      * The one active rule that accepts the words after the program, or why none does.
      *
      * @param  list<Word>  $words

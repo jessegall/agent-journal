@@ -82,6 +82,20 @@ final readonly class TreeClassifier implements CommandClassifier
         return $this->classifyTree($tree, 0, $context);
     }
 
+    public function withCandidate(CommandRule $rule): self
+    {
+        return new self(
+            $this->rules->withCandidate($rule),
+            $this->names,
+            $this->redirects,
+            $this->wrappers,
+            $this->syntax,
+            $this->programClassifiers,
+            $this->scripts,
+            $this->aliases,
+        );
+    }
+
     private function classifyTree(ShellTree $tree, int $depth, ExecutionContext $context): Classification
     {
         if ($tree->outcome->isUnreadable()) {

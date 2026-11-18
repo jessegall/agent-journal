@@ -38,7 +38,9 @@ final readonly class OpenCommandRequestHandler implements CommandHandler
             'operation' => $command->operation,
             'binding_digest' => $command->bindingDigest,
             'source_digest' => hash('sha256', $command->line),
-            'source_excerpt' => mb_substr((string) preg_replace('/[\x00-\x1F\x7F]/', ' ', $command->line), 0, CommandRequest::EXCERPT_LENGTH),
+            'source_excerpt' => CommandRequest::excerptOf($command->line),
+            'source_line' => $command->line,
+            'working_folder' => $command->workingFolder,
             'hold_reason' => $command->reason,
             'state' => RequestState::CollectingDeclaration,
         ])->id;

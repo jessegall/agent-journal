@@ -13,6 +13,8 @@ use App\Processes\Enums\ProposalState;
 use App\Processes\Enums\RequestHoldReason;
 use App\Processes\Enums\RequestState;
 use App\Processes\Exceptions\RequestTransitionRefused;
+use App\Processes\Values\ExitBranch;
+use App\Processes\Values\ExitPolicy;
 use App\Processes\Values\NextStep;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -37,6 +39,8 @@ use Illuminate\Support\Carbon;
  * @property string $binding_digest
  * @property string $source_digest
  * @property string $source_excerpt
+ * @property string $source_line
+ * @property string $working_folder
  * @property RequestHoldReason $hold_reason
  * @property RequestState $state
  * @property Carbon|null $created_at
@@ -50,6 +54,8 @@ use Illuminate\Support\Carbon;
     'binding_digest',
     'source_digest',
     'source_excerpt',
+    'source_line',
+    'working_folder',
     'hold_reason',
     'state',
 ])]
@@ -68,6 +74,14 @@ final class CommandRequest extends Model implements ReadableModel
         return ['hold_reason' => RequestHoldReason::class, 'state' => RequestState::class];
     }
 
+    /**
+     * The line as a request shows it: control bytes as spaces, cut to the excerpt length.
+     */
+    public static function excerptOf(string $line): string
+    {
+        return mb_substr((string) preg_replace('/[\x00-\x1F\x7F]/', ' ', $line), 0, self::EXCERPT_LENGTH);
+    }
+
     public function nextStep(): NextStep
     {
         return $this->state->nextStep($this->id, $this->operation);
@@ -79,8 +93,7 @@ final class CommandRequest extends Model implements ReadableModel
      */
     public function hasReadEvidence(ProcessRun $run): bool
     {
-        $opener = new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
-        $reads = EvidenceRead::query()->ofRunReadBy($run, $opener)->readLimit(1_000)->get();
+        $reads = EvidenceRead::query()->ofRunReadBy($run, $this->opener())->readLimit(1_000)->get();
         if (! $reads->contains(fn (EvidenceRead $read): bool => $read->source === EvidenceSource::Envelope)) {
             return false;
         }
@@ -91,6 +104,34 @@ final class CommandRequest extends Model implements ReadableModel
                 fn (EvidenceRead $read): bool => $read->part_run_id === $part->id
                     && $read->source === EvidenceSource::of($stream),
             ),
+        ));
+    }
+
+    public function opener(): ActorIdentity
+    {
+        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
+    }
+
+    /**
+     * The exit branches of the contract that no complete sample of this request ended with yet (story 185).
+     *
+     * @return list<ExitBranch>
+     */
+    public function unsampledBranches(ExitPolicy $exits): array
+    {
+        $runs = EvidencePermit::query()->sampling($this)->readLimit(100)->pluck('process_run_id')->all();
+        $statuses = PartRun::query()
+            ->whereIn('process_run_id', $runs)
+            ->where('operation', $this->operation)
+            ->readLimit(500)
+            ->get()
+            ->filter(fn (PartRun $part): bool => $part->end()->hasStatus())
+            ->map(fn (PartRun $part): int => $part->end_code)
+            ->all();
+
+        return array_values(array_filter(
+            $exits->branches,
+            fn (ExitBranch $branch): bool => ! in_array($branch->status, $statuses, true),
         ));
     }
 
@@ -134,13 +175,13 @@ final class CommandRequest extends Model implements ReadableModel
     }
 
     /**
-     * The sample run ended without usable evidence; the owner's approval of one sample still stands.
+     * The sample run ended without usable evidence; another sample needs the owner's explicit approval again.
      *
      * @throws RequestTransitionRefused
      */
     public function retrySample(): void
     {
-        $this->moveTo(RequestState::ReadyForSample);
+        $this->moveTo(RequestState::AwaitingSampleApproval);
     }
 
     /**

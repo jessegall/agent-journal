@@ -26,6 +26,8 @@ return new class extends Migration
             $table->string('request_id', 64)->nullable()->unique();
             $table->timestampTz('consumed_at')->nullable();
             $table->foreignUlid('process_run_id')->nullable()->constrained('process_runs')->nullOnDelete();
+            $table->foreignUlid('command_request_id')->nullable()->constrained('command_requests')->cascadeOnDelete();
+            $table->jsonb('candidate_rules');
             $table->timestampsTz();
 
             $table->index(['project_key', 'runner_type', 'runner_id']);

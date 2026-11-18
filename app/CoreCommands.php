@@ -40,6 +40,7 @@ use App\Communication\Commands\SendMessage;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Numbers\Commands\InstallNumbers;
+use App\Processes\Commands\ApproveSample;
 use App\Processes\Commands\ImportRuleProposals;
 use App\Processes\Commands\IssueEvidencePermit;
 use App\Processes\Commands\OpenCommandRequest;
@@ -48,6 +49,8 @@ use App\Processes\Commands\ProposeReader;
 use App\Processes\Commands\RecordEvidenceReads;
 use App\Processes\Commands\ReviseRuleProposal;
 use App\Processes\Commands\RevokeCommandPermissions;
+use App\Processes\Commands\SettleSample;
+use App\Processes\Commands\StartSample;
 use App\Processes\Commands\WithdrawCommandRequest;
 use App\Processes\Commands\WithdrawRuleProposal;
 use App\Profiles\Commands\ActivateProfiles;
@@ -116,6 +119,9 @@ final class CoreCommands
             ImportRuleProposals::class,
             ProposeReader::class,
             RecordEvidenceReads::class,
+            ApproveSample::class,
+            StartSample::class,
+            SettleSample::class,
             CreateSkill::class, ReviseSkill::class, RestoreSkill::class, RetireSkill::class, CopySkill::class,
             RefreshSkills::class, PublishSkills::class, PrepareSkillPublication::class, ActivateSkillPublication::class, FailSkillPublication::class,
         ];

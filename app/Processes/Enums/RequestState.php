@@ -59,7 +59,7 @@ enum RequestState: string
             self::CollectingDeclaration => [self::AwaitingSampleApproval],
             self::AwaitingSampleApproval => [self::ReadyForSample, self::CollectingDeclaration],
             self::ReadyForSample => [self::CapturingSample],
-            self::CapturingSample => [self::AwaitingProof, self::ReadyForSample],
+            self::CapturingSample => [self::AwaitingProof, self::AwaitingSampleApproval],
             self::AwaitingProof => [self::AwaitingApproval, self::CollectingDeclaration],
             self::AwaitingApproval => [self::Active, self::CollectingDeclaration],
             self::Active, self::Rejected, self::Withdrawn => [],
