@@ -3,6 +3,8 @@ import json
 import re
 import shlex
 
+from journal.engine.clock import Clock
+from journal.features.workers.jobs.auto_dispatch import AutoDispatch
 from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.repositories.scope import Scope
 from journal.repositories.workers import Workers
@@ -15,7 +17,7 @@ from tests.stories.builder.step_result import StepResult
 
 
 class WorkerSteps:
-    """What a worker does in a story and how the agent sends one: dispatched on a task of its own, its clock-in, a proof of a point and its clock-out, each run as the worker it is, and a command it only tries, which may be refused."""
+    """What a worker does in a story and how the agent sends one: dispatched on a task of its own, its clock-in, a proof of a point and its clock-out, each run as the worker it is, a command it only tries, which may be refused, and the journal's own dispatch of the next tasks."""
 
     def agent_dispatches_worker(self, agent: StoryAgent, name: str, task: int) -> int:
         self.agent_runs(agent, f"worker dispatch '{name}' --task {task} --changes 'the files of its task' --profile journal-medior --model sonnet --tests 'Scoped tests'")
@@ -30,6 +32,11 @@ class WorkerSteps:
         self.agent_runs(agent, f"worker dispatch '{name}' --plan {plan} --changes 'the files of its tasks' --profile journal-medior --model sonnet --tests 'Scoped tests'")
         self.last_step.expect_command_passed()
         return self.newest("workers")
+
+    def journal_dispatches_the_next_tasks(self) -> StepResult:
+        self.app.container.get(AutoDispatch).tick(self.app.container.get(Clock).held_at)
+        self.app.runtime().deferred.drain()
+        return self.observed("the journal dispatches the next tasks", None, None)
 
     def agent_clocks_in(self, agent: StoryAgent) -> StepResult:
         return self.agent_runs_cleanly(agent, "clock-in")

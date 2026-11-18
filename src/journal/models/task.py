@@ -46,6 +46,7 @@ class Task(Scoped, Commentable):
     driver_agent: str = ""
     delegated: bool = False
     priority_set: bool = False
+    manual: bool = False
     tool_uses: int = 0
 
     def creation_events(self) -> tuple[TaskOpened, ...]:
@@ -101,6 +102,12 @@ class Task(Scoped, Commentable):
 
     def priority_confirmed(self) -> "Task":
         return self.with_(priority_set=True)
+
+    def kept_by_hand(self) -> "Task":
+        return self.with_(manual=True)
+
+    def left_to_the_journal(self) -> "Task":
+        return self.with_(manual=False)
 
     def delegate(self, time: datetime) -> "Task":
         event = TaskDelegated(environment_id=self.environment_id, time=time.timestamp(), task_id=self.row_id, title=self.title, brief=self.brief)
