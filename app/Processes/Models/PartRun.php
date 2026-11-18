@@ -168,8 +168,16 @@ final class PartRun extends Model implements ReadableModel
         $this->finishAs(LifecycleState::Stopped);
     }
 
+    /**
+     * The supervisor went silent past its replay window: the part ends without a status, its capture incomplete and
+     * its bytes kept. Silence is never a success.
+     */
     public function lose(): void
     {
+        $this->end_type = PartEndType::Unavailable;
+        $this->end_code = 0;
+        $this->end_reason = 'exit_unavailable: the supervisor stopped reporting';
+        $this->capture_state = CaptureState::Incomplete;
         $this->finishAs(LifecycleState::Lost);
     }
 

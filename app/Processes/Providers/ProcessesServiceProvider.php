@@ -20,6 +20,7 @@ use App\Processes\Console\CommandTypeWithdrawCommand;
 use App\Processes\Console\ExplainCommandTypeCommand;
 use App\Processes\Console\OutputReadCommand;
 use App\Processes\Console\ProcessExportCommand;
+use App\Processes\Console\ProcessReconcileCommand;
 use App\Processes\Console\ProcessShowCommand;
 use App\Processes\Console\ReaderProposeCommand;
 use App\Processes\Console\ReaderProveCommand;
@@ -67,6 +68,7 @@ use App\Processes\Support\ShellParser;
 use App\Processes\Support\SpoolRecorder;
 use App\Processes\Support\SupervisedRunner;
 use App\Processes\Syntax\TreeParser;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
@@ -105,6 +107,10 @@ final class ProcessesServiceProvider extends ServiceProvider
 
     public function boot(LinkTypeRegistry $links): void
     {
+        $this->callAfterResolving(
+            Schedule::class,
+            fn (Schedule $schedule) => $schedule->command('process:reconcile')->everyMinute(),
+        );
         $links->register([
             'processes.command-alias' => CommandAlias::class,
             'processes.process-run' => ProcessRun::class,
@@ -142,6 +148,7 @@ final class ProcessesServiceProvider extends ServiceProvider
             ProcessExportCommand::class,
             ReaderProposeCommand::class,
             ReaderProveCommand::class,
+            ProcessReconcileCommand::class,
             ReaderSampleApproveCommand::class,
             ReaderSampleRunCommand::class,
         ]);

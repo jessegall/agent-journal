@@ -53,9 +53,11 @@ use App\Processes\Commands\ProposeCommandRule;
 use App\Processes\Commands\ProposeReader;
 use App\Processes\Commands\ProveReader;
 use App\Processes\Commands\ReadPartLive;
+use App\Processes\Commands\ReconcileLostRuns;
 use App\Processes\Commands\RecordEvidenceReads;
 use App\Processes\Commands\RejectRuleProposal;
 use App\Processes\Commands\ReplayAssessment;
+use App\Processes\Commands\RetryProcessRun;
 use App\Processes\Commands\RestoreCommandRule;
 use App\Processes\Commands\RetireCommandRule;
 use App\Processes\Commands\ReviseRuleProposal;
@@ -64,6 +66,7 @@ use App\Processes\Commands\SaveCommandRule;
 use App\Processes\Commands\SettleSample;
 use App\Processes\Commands\StartSample;
 use App\Processes\Commands\StopProcessRun;
+use App\Processes\Commands\StopSurvivors;
 use App\Processes\Commands\WithdrawCommandRequest;
 use App\Processes\Commands\WithdrawRuleProposal;
 use App\Profiles\Commands\ActivateProfiles;
@@ -147,6 +150,9 @@ final class CoreCommands
             ReadPartLive::class,
             ReplayAssessment::class,
             StopProcessRun::class,
+            ReconcileLostRuns::class,
+            StopSurvivors::class,
+            RetryProcessRun::class,
             CreateSkill::class, ReviseSkill::class, RestoreSkill::class, RetireSkill::class, CopySkill::class,
             RefreshSkills::class, PublishSkills::class, PrepareSkillPublication::class, ActivateSkillPublication::class, FailSkillPublication::class,
         ];

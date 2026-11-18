@@ -226,6 +226,15 @@ final class ProcessRun extends Model implements ReadableModel
     /**
      * Records that the run was stopped and why; a stopped run never ends with a pass.
      */
+    /**
+     * Nothing more will be heard from the run's supervisor; its unfinished parts were marked lost.
+     */
+    public function markLost(): void
+    {
+        $this->lifecycle = LifecycleState::Lost;
+        $this->save();
+    }
+
     public function markStopped(string $reason): void
     {
         $this->lifecycle = LifecycleState::Stopped;
@@ -262,5 +271,19 @@ final class ProcessRun extends Model implements ReadableModel
             LifecycleState::Running->value,
             LifecycleState::Draining->value,
         ]);
+    }
+
+    /**
+     * Running runs whose supervisor has been silent longer than the replay window.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function silentSince(Builder $query, CarbonImmutable $moment): void
+    {
+        $query->where('lifecycle', LifecycleState::Running->value)
+            ->where(fn (Builder $silent) => $silent
+                ->where('heartbeat_at', '<', $moment)
+                ->orWhere(fn (Builder $never) => $never->whereNull('heartbeat_at')->where('started_at', '<', $moment)));
     }
 }
