@@ -4,18 +4,22 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support\Concerns;
 
+use App\Comments\Support\PublicComment;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Support\ShareBudget;
+use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareRecords;
 use App\Sharing\Support\ShareRelationRead;
 use App\Sharing\Support\ShareSelection;
 use App\Sharing\Support\ShareTargetRead;
+use Domain\Documents\Models\Document;
 
 /**
- * For the share provider of one Documents record type: the root's card for a preview and the cards of a batch of
- * linked targets, read only among the published records of that type; any other target is ineligible.
+ * For the share provider of one Documents record type: the root's card for a preview, the cards of a batch of
+ * linked targets, read only among the published records of that type, and the parent's live comments a page at a
+ * time; any other target is ineligible.
  */
 trait SharesPublishedRecords
 {
@@ -36,9 +40,27 @@ trait SharesPublishedRecords
         return new ShareRecords($cards, $ineligible, null);
     }
 
+    /**
+     * A page of the parent's comments, live: an excerpt of each, and its quote only while the exact quoted text is
+     * still in the parent's published body.
+     */
     public function readRelated(ShareRelationRead $read, ShareBudget $budget): ShareRecords
     {
-        return new ShareRecords([], [], null);
+        if ($read->relation !== Document::SHARED_COMMENTS) {
+            return new ShareRecords([], [], null);
+        }
+
+        $page = $this->comments->pageOf($read->parent, $read->limit, $read->continuation);
+        $quoted = array_filter($page->comments, fn (PublicComment $comment) => $comment->quote !== null);
+        $body = $quoted === [] ? '' : $this->content(new ShareContentRead($read->parent), $budget)->body;
+        $cards = [];
+
+        foreach ($page->comments as $comment) {
+            $budget->chargeMetadata(strlen($comment->excerpt));
+            $cards[] = new ShareRecordCard($comment->comment, "Comment of {$comment->writtenAt}", '1', $comment->excerpt, self::quoteIn($body, $comment->quote));
+        }
+
+        return new ShareRecords($cards, [], $page->next);
     }
 
     /**
@@ -57,6 +79,18 @@ trait SharesPublishedRecords
         }
 
         return $cards;
+    }
+
+    /**
+     * The quote while its exact text is in the body, the fixed label once it is not, none for a whole-record comment.
+     */
+    private static function quoteIn(string $body, string|null $quote): string|null
+    {
+        if ($quote === null) {
+            return null;
+        }
+
+        return str_contains($body, $quote) ? $quote : ShareRecordCard::QUOTE_NOT_IN_VERSION;
     }
 
     /**

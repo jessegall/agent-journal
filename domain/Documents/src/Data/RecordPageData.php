@@ -38,6 +38,7 @@ final class RecordPageData extends Data
         public readonly array $links,
         #[DataCollectionOf(DockSession::class)]
         public readonly array $sessions,
+        public readonly bool $publiclyShared,
         public readonly string|Optional $revision = new Optional,
     ) {}
 
@@ -46,7 +47,7 @@ final class RecordPageData extends Data
      * @param  list<RecordCard>  $links
      * @param  list<DockSession>  $sessions
      */
-    public static function fromDocumentView(DocumentView $document, CommentList $comments, array $settlements, array $links, array $sessions): self
+    public static function fromDocumentView(DocumentView $document, CommentList $comments, array $settlements, array $links, array $sessions, bool $publiclyShared): self
     {
         return self::from([
             'label' => "doc {$document->number}",
@@ -59,6 +60,7 @@ final class RecordPageData extends Data
             'settlements' => $settlements,
             'links' => $links,
             'sessions' => $sessions,
+            'publiclyShared' => $publiclyShared,
             'revision' => $document->revision,
         ]);
     }
@@ -68,7 +70,7 @@ final class RecordPageData extends Data
      * @param  list<RecordCard>  $links
      * @param  list<DockSession>  $sessions
      */
-    public static function fromReportView(ReportView $report, CommentList $comments, array $settlements, array $links, array $sessions): self
+    public static function fromReportView(ReportView $report, CommentList $comments, array $settlements, array $links, array $sessions, bool $publiclyShared): self
     {
         return self::from([
             'label' => "report {$report->number}",
@@ -81,6 +83,7 @@ final class RecordPageData extends Data
             'settlements' => $settlements,
             'links' => $links,
             'sessions' => $sessions,
+            'publiclyShared' => $publiclyShared,
         ]);
     }
 }

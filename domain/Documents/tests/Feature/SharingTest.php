@@ -13,11 +13,14 @@ use App\Records\Support\RecordIdentity;
 use App\Sharing\Enums\ShareRelationType;
 use App\Sharing\Support\ShareBudget;
 use App\Sharing\Support\ShareContentRead;
+use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareRecordRegistration;
+use App\Sharing\Support\ShareRelationRead;
 use App\Sharing\Support\ShareSelection;
 use App\Sharing\Support\ShareTargetRead;
 use App\Text\Exceptions\ContentTooLarge;
 use App\Text\Support\MarkdownText;
+use Carbon\CarbonImmutable;
 use Domain\Documents\Api\DraftTarget;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
@@ -30,6 +33,7 @@ use Domain\Documents\Support\DocumentShareProvider;
 use Domain\Documents\Support\ReportShareProvider;
 use Domain\Documents\Tests\TestCase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -116,6 +120,62 @@ final class SharingTest extends TestCase
         $this->assertEquals([$missing, $this->report->shareIdentity()], $page->ineligible);
         $this->assertFalse($documents->mayDisclose($missing));
         $this->assertThrows(fn () => $documents->preview(new ShareSelection($missing, []), $this->budget()), RecordUnavailable::class);
+    }
+
+    public function test_a_parent_with_1001_comments_pages_through_all_of_them(): void
+    {
+        $this->insertComments(array_map(fn (int $number) => ["Comment {$number}", null], range(1, 1001)));
+        $documents = $this->app->make(DocumentShareProvider::class);
+        $seen = [];
+        $continuation = null;
+
+        do {
+            $page = $documents->readRelated(new ShareRelationRead($this->document->shareIdentity(), 'comments', 100, $continuation), $this->budget());
+            array_push($seen, ...array_map(fn (ShareRecordCard $card) => $card->record->id, $page->eligible));
+            $continuation = $page->continuation;
+        } while ($continuation !== null);
+
+        $this->assertCount(1001, array_unique($seen));
+    }
+
+    public function test_a_quote_no_longer_in_the_published_body_shows_the_label(): void
+    {
+        $this->insertComments([['Agreed', 'Ship it.'], ['Why?', 'Ship it slowly.'], ['Overall fine', null]]);
+
+        $page = $this->app->make(DocumentShareProvider::class)->readRelated(new ShareRelationRead($this->document->shareIdentity(), 'comments', 50, null), $this->budget());
+
+        $this->assertSame(['Ship it.', ShareRecordCard::QUOTE_NOT_IN_VERSION, null], array_map(fn (ShareRecordCard $card) => $card->quote, $page->eligible));
+        $this->assertSame(['Agreed', 'Why?', 'Overall fine'], array_map(fn (ShareRecordCard $card) => $card->excerpt, $page->eligible));
+    }
+
+    /**
+     * Comments on the document, a second apart in the given order, each a body with the quote it makes.
+     *
+     * @param  list<array{string, string|null}>  $comments
+     */
+    private function insertComments(array $comments): void
+    {
+        $now = CarbonImmutable::now();
+        $rows = [];
+
+        foreach ($comments as $position => [$body, $quote]) {
+            $rows[] = [
+                'id' => strtolower((string) Str::ulid()),
+                'target_type' => Document::LINK_TYPE,
+                'target_id' => $this->document->id,
+                'author_type' => 'user',
+                'author_id' => TestIds::of(1),
+                'body' => $body,
+                'quote' => $quote,
+                'submission_key' => "key-{$position}",
+                'submission_hash' => str_repeat('a', 64),
+                'created_at' => $now->addSeconds($position),
+            ];
+        }
+
+        foreach (array_chunk($rows, 500) as $chunk) {
+            DB::table('comments')->insert($chunk);
+        }
     }
 
     private function budget(): ShareBudget

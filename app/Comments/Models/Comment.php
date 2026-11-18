@@ -191,6 +191,45 @@ final class Comment extends Model implements ReadableModel, Shareable
      *
      * @param  Builder<self>  $query
      */
+    /**
+     * The comments on one record, oldest first by written time and then id.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function publiclyOrderedOn(Builder $query, string $type, string $id): void
+    {
+        $query->where('target_type', $type)->where('target_id', $id)->orderBy('created_at')->orderBy('id');
+    }
+
+    /**
+     * The comments written after this position, by written time and then id.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function writtenAfter(Builder $query, CarbonImmutable $writtenAt, string $id): void
+    {
+        $query->where(fn (Builder $later) => $later
+            ->where('created_at', '>', $writtenAt)
+            ->orWhere(fn (Builder $same) => $same->where('created_at', $writtenAt)->where('id', '>', $id)));
+    }
+
+    /**
+     * The columns a public page shows: the id, written time and quote, and the body cut to its first characters by
+     * the database, so a long body is never loaded.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function excerpts(Builder $query, int $characters): void
+    {
+        $query->select(['id', 'created_at', 'quote'])->selectRaw('left(body, ?) as excerpt', [$characters]);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
     #[Scope]
     protected function submittedAs(Builder $query, ActorIdentity $author, string|null $sessionId, string $key): void
     {

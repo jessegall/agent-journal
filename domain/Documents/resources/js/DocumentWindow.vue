@@ -56,6 +56,7 @@ function open(): void {
         </section>
         <DockToSession type="doc" :number="data.number" :sessions="data.record.sessions" />
         <LinksPanel :source="data.record.label" :links="data.record.links" />
+        <p v-if="data.record.publiclyShared" class="text-text-3">This document is shared publicly: a comment you leave here will be public.</p>
         <CommentsPanel :comments="data.record.comments" :target="data.record.label" :version="data.record.revision" />
     </div>
 </template>

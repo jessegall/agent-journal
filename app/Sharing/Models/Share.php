@@ -55,6 +55,11 @@ final class Share extends Model implements ReadableModel
     public const string LINK_TYPE = 'core.share';
 
     /**
+     * The most live, unexpired shares an installation holds at once.
+     */
+    public const int MOST_LIVE = 100;
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -110,6 +115,17 @@ final class Share extends Model implements ReadableModel
     public static function liveFor(RecordIdentity $root): Option
     {
         return Option::fromValue(self::query()->ofRoot($root)->liveNow()->orderByDesc('id')->first());
+    }
+
+    /**
+     * The current scope version of each of these shares that is live and unexpired, by share id.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, int>
+     */
+    public static function liveScopeVersions(array $ids): array
+    {
+        return self::query()->whereKey($ids)->liveNow()->readLimit(count($ids))->pluck('scope_version', 'id')->map(fn (mixed $version) => (int) $version)->all();
     }
 
     public function root(): RecordIdentity

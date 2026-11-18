@@ -125,6 +125,7 @@ use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
 use App\Comments\Contracts\Commentable;
 use App\Comments\Contracts\CommentReader;
+use App\Comments\Contracts\PublicCommentReader;
 use App\Comments\Data\CommentDetails;
 use App\Comments\Data\CommentList;
 use App\Comments\Data\RecordCommentLocation;
@@ -138,6 +139,8 @@ use App\Comments\Exceptions\CommentUnavailable;
 use App\Comments\Exceptions\SubmissionKeyConflict;
 use App\Comments\Exceptions\TargetNotCommentable;
 use App\Comments\Support\HasComments;
+use App\Comments\Support\PublicComment;
+use App\Comments\Support\PublicCommentPage;
 use App\Communication\Commands\AnswerMessage;
 use App\Communication\Commands\DismissMessage;
 use App\Communication\Commands\RequireMessageAnswer;
@@ -359,6 +362,7 @@ use App\Sharing\Contracts\Shareable;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Contracts\ShareRecordProvider;
+use App\Sharing\Contracts\ShareStatusReader;
 use App\Sharing\Enums\ShareRelationType;
 use App\Sharing\Exceptions\SharingNotAllowed;
 use App\Sharing\Support\GatewayConfiguration;
@@ -529,6 +533,8 @@ final class CoreApi
                 ProvidesShareRecords::class,
                 ProvidesShareGateways::class,
                 SharePolicy::class,
+                ShareStatusReader::class,
+                PublicCommentReader::class,
                 SettingsReader::class,
                 SettingCommands::class,
                 SettingsSnapshot::class,
@@ -691,6 +697,8 @@ final class CoreApi
                 GatewayReadiness::class,
                 GatewayHealth::class,
                 ShareRelationType::class,
+                PublicComment::class,
+                PublicCommentPage::class,
                 SettingSource::class,
                 CurrentSettingsReader::class,
                 SettingTarget::class,

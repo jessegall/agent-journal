@@ -10,6 +10,7 @@ use App\Comments\Contracts\CommentReader;
 use App\Numbers\Support\RecordReference;
 use App\Reads\Values\PageSize;
 use App\Records\Contracts\RecordReader;
+use App\Sharing\Contracts\ShareStatusReader;
 use App\Ui\Contracts\PageReader;
 use Domain\Documents\Contracts\ReportReader;
 use Domain\Documents\Data\DockSession;
@@ -21,12 +22,13 @@ use Domain\Documents\Http\Requests\RecordPageRequest;
  */
 final readonly class ReportWindowReader implements PageReader
 {
-    public function __construct(private RecordPageRequest $request, private ReportReader $reports, private SessionReader $sessions, private CommentReader $comments, private RecordReader $records) {}
+    public function __construct(private RecordPageRequest $request, private ReportReader $reports, private SessionReader $sessions, private CommentReader $comments, private RecordReader $records, private ShareStatusReader $shares) {}
 
     public function read(): RecordPageData
     {
         $number = $this->request->reportNumber();
+        $identity = $this->records->identify(RecordReference::of('report', $number));
 
-        return RecordPageData::fromReportView($this->reports->show($number), $this->comments->list($this->records->identify(RecordReference::of('report', $number)), new Page(null, PageSize::from(null)->rows)), $this->reports->inspect($number)->settlements, $this->reports->links($number), array_map(DockSession::fromSessionOption(...), $this->sessions->active()));
+        return RecordPageData::fromReportView($this->reports->show($number), $this->comments->list($identity, new Page(null, PageSize::from(null)->rows)), $this->reports->inspect($number)->settlements, $this->reports->links($number), array_map(DockSession::fromSessionOption(...), $this->sessions->active()), $this->shares->isPubliclyShared($identity));
     }
 }

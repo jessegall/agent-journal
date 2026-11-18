@@ -90,6 +90,17 @@ final class ShareMember extends Model implements ReadableModel
         return array_values(array_map(strval(...), self::query()->ofScope($share)->stillApproved()->readAll('a share scope holds at most the preview limit of members')->pluck('link_id')->all()));
     }
 
+    /**
+     * Whether a live, unexpired share approves the record in its current scope.
+     */
+    public static function isApprovedInLiveShare(RecordIdentity $record): bool
+    {
+        $members = self::query()->targeting($record)->stillApproved()->readLimit(Share::MOST_LIVE)->get(['share_id', 'scope_version']);
+        $scopeOfShare = Share::liveScopeVersions(array_values(array_unique($members->pluck('share_id')->all())));
+
+        return $members->contains(fn (self $member) => ($scopeOfShare[$member->share_id] ?? null) === $member->scope_version);
+    }
+
     public function target(): RecordIdentity
     {
         return new RecordIdentity($this->target_type, $this->target_id);
@@ -103,6 +114,15 @@ final class ShareMember extends Model implements ReadableModel
     protected function onLinks(Builder $query, array $linkIds): void
     {
         $query->whereIn('link_id', $linkIds);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function targeting(Builder $query, RecordIdentity $record): void
+    {
+        $query->where('target_type', $record->type)->where('target_id', $record->id);
     }
 
     /**
