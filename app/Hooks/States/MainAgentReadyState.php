@@ -8,7 +8,8 @@ use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\ShellCommandRequested;
 
 /**
- * The bottom state of a main agent: a test run or a build must run through a command alias, and a line the parser could not read fully is never taken as safe.
+ * The bottom state of a main agent: a test or build runs only through its approved proven reader, and a line the
+ * parser could not read fully is never taken as safe.
  */
 class MainAgentReadyState extends ReadyState
 {
@@ -19,7 +20,8 @@ class MainAgentReadyState extends ReadyState
         }
 
         if ($input->command->needsAlias()) {
-            return Decision::deny('Save this test or build as a named command, then run it through journal run.');
+            return Decision::deny('A test or build runs only with its approved proven reader: run journal command-type'
+                .' explain on the line to see the request that holds it and its next step.');
         }
 
         return parent::onShellCommand($input);
