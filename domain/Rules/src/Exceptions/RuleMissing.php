@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Exceptions;
 
+use App\Bus\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
  * No rule has the id asked for; the message is safe to show.
  */
-final class RuleMissing extends RuntimeException
+final class RuleMissing extends RuntimeException implements CommandRefusal
 {
     public static function withId(int $ruleId): self
     {

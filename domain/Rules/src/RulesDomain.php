@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules;
 
+use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Contracts\Domain;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
@@ -17,8 +18,11 @@ use Domain\Rules\Api\Events\RuleRemoved;
 use Domain\Rules\Api\RuleFilters;
 use Domain\Rules\Api\RuleList;
 use Domain\Rules\Api\RuleView;
+use Domain\Rules\Commands\ApproveRule;
+use Domain\Rules\Commands\DenyRule;
+use Domain\Rules\Commands\ProposeRule;
+use Domain\Rules\Commands\RemoveRule;
 use Domain\Rules\Contracts\RuleReader;
-use Domain\Rules\Contracts\RuleReviewer;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Exceptions\RuleNotProposed;
@@ -26,7 +30,7 @@ use Domain\Rules\Http\Controllers\ApproveRuleController;
 use Domain\Rules\Http\Controllers\DenyRuleController;
 use Domain\Rules\Readers\RulesWindowReader;
 
-final class RulesDomain implements Domain, ProvidesNavigation, ProvidesPages
+final class RulesDomain implements Domain, ProvidesCommands, ProvidesNavigation, ProvidesPages
 {
     public function description(): string
     {
@@ -51,7 +55,8 @@ final class RulesDomain implements Domain, ProvidesNavigation, ProvidesPages
             RuleDenied::class,
             RuleRemoved::class,
             RuleReader::class,
-            RuleReviewer::class,
+            ApproveRule::class,
+            DenyRule::class,
             RuleFilters::class,
             RuleList::class,
             RuleView::class,
@@ -59,6 +64,14 @@ final class RulesDomain implements Domain, ProvidesNavigation, ProvidesPages
             RuleMissing::class,
             RuleNotProposed::class,
         ];
+    }
+
+    /**
+     * @return list<class-string>
+     */
+    public function commands(): array
+    {
+        return [ApproveRule::class, DenyRule::class, ProposeRule::class, RemoveRule::class];
     }
 
     public function pages(): array

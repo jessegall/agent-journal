@@ -258,7 +258,9 @@ class	AnsweringMessageState
 class	AnsweringMessageStateFactory
 class	AnsweringMessageStateReference
 class	AppServiceProvider
+class	ApproveRule
 class	ApproveRuleController
+class	ApproveRuleHandler
 class	AreaCycles
 class	AssignPlanWorkCommand
 class	AssignPlanWorkController
@@ -402,7 +404,9 @@ class	DeclaredRouteKey
 class	DeclaredRoutes
 class	Denied
 class	DeniedWindow
+class	DenyRule
 class	DenyRuleController
+class	DenyRuleHandler
 class	DocblockScan
 class	DocblockTagInvalid
 class	DocblockTypeCollector
@@ -615,6 +619,7 @@ class	ProjectRoots
 class	PromptDetails
 class	PromptSubmitted
 class	ProposeRule
+class	ProposeRuleHandler
 class	PruneHookHistory
 class	PruneHookHistoryCommand
 class	PrunedHistory
@@ -660,6 +665,7 @@ class	RelayHookCommand
 class	RelaySettings
 class	RemindersDomain
 class	RemoveRule
+class	RemoveRuleHandler
 class	RepeatableRead
 class	RepeatedCommandRewrite
 class	ReplayFound
@@ -674,7 +680,6 @@ class	RetireAgent
 class	RetireAgentCommand
 class	RetireAgentController
 class	RetireAgentRequest
-class	ReviewRule
 class	ReviewRuleRequest
 class	Rewritten
 class	RouteId
@@ -1031,7 +1036,6 @@ interface	ProvidesStates
 interface	Refusal
 interface	ReminderContribution
 interface	RuleReader
-interface	RuleReviewer
 interface	SectionReader
 interface	SessionReader
 interface	ShellCommandParser
@@ -1211,7 +1215,10 @@ method	AnsweringMessageStateReference::forMessage()
 method	AppServiceProvider::boot()
 method	AppServiceProvider::configureDefaults()
 method	AppServiceProvider::register()
+method	ApproveRule::__construct()
 method	ApproveRuleController::__invoke()
+method	ApproveRuleHandler::__construct()
+method	ApproveRuleHandler::handle()
 method	AreaCycles::__construct()
 method	AreaCycles::areaOf()
 method	AreaCycles::areaOfFile()
@@ -1655,7 +1662,10 @@ method	Denied::reason()
 method	Denied::type()
 method	DeniedWindow::__construct()
 method	DeniedWindow::make()
+method	DenyRule::__construct()
 method	DenyRuleController::__invoke()
+method	DenyRuleHandler::__construct()
+method	DenyRuleHandler::handle()
 method	DocblockScan::__construct()
 method	DocblockScan::enterNode()
 method	DocblockScan::of()
@@ -2310,7 +2320,8 @@ method	PromptSubmitted::accepts()
 method	PromptSubmitted::answerBy()
 method	PromptSubmitted::identity()
 method	PromptSubmitted::methodName()
-method	ProposeRule::propose()
+method	ProposeRule::__construct()
+method	ProposeRuleHandler::handle()
 method	ProvidesAssignables::assignables()
 method	ProvidesAssignees::assignees()
 method	ProvidesCommandMiddleware::commandMiddleware()
@@ -2464,7 +2475,8 @@ method	RemindersDomain::description()
 method	RemindersDomain::exports()
 method	RemindersDomain::requires()
 method	RemoveRule::__construct()
-method	RemoveRule::remove()
+method	RemoveRuleHandler::__construct()
+method	RemoveRuleHandler::handle()
 method	RendersRefusal::render()
 method	RendersRefusal::status()
 method	RepeatedCommandRewrite::for()
@@ -2487,9 +2499,6 @@ method	RetireAgentCommand::handle()
 method	RetireAgentController::__invoke()
 method	RetireAgentRequest::agentId()
 method	RetireAgentRequest::rules()
-method	ReviewRule::__construct()
-method	ReviewRule::approve()
-method	ReviewRule::deny()
 method	ReviewRuleRequest::ruleId()
 method	ReviewRuleRequest::rules()
 method	RewriteSupport::finalAnswer()
@@ -2535,11 +2544,10 @@ method	RuleRecords::all()
 method	RuleRecords::list()
 method	RuleRecords::viewOf()
 method	RuleRemoved::__construct()
-method	RuleReviewer::approve()
-method	RuleReviewer::deny()
 method	RuleRowData::__construct()
 method	RuleRowData::fromRuleView()
 method	RuleView::__construct()
+method	RulesDomain::commands()
 method	RulesDomain::description()
 method	RulesDomain::exports()
 method	RulesDomain::navigation()
@@ -3024,6 +3032,8 @@ property	AgentStateMachine::$rewrite
 property	AgentStateMachine::$transaction
 property	AnsweringMessageState::$message
 property	AnsweringMessageStateFactory::$messages
+property	ApproveRule::$ruleId
+property	ApproveRuleHandler::$events
 property	AreaCycles::$edges
 property	AssignPlanWorkCommand::$description
 property	AssignPlanWorkCommand::$signature
@@ -3218,6 +3228,8 @@ property	DeclarationRules::$roots
 property	DeclaredRoutes::$declarations
 property	Denied::$reason
 property	DeniedWindow::$state
+property	DenyRule::$ruleId
+property	DenyRuleHandler::$events
 property	DocblockScan::$file
 property	DocblockScan::$lexer
 property	DocblockScan::$parser
@@ -3574,6 +3586,7 @@ property	PromptDetails::$promptId
 property	PromptDetails::$text
 property	PromptSubmitted::$hook
 property	PromptSubmitted::$prompt
+property	ProposeRule::$text
 property	PruneHookHistory::$periods
 property	PruneHookHistory::$retryWindow
 property	PruneHookHistoryCommand::$description
@@ -3668,8 +3681,8 @@ property	RelaySettings::$journalUrl
 property	RelaySettings::$role
 property	RelaySettings::$timeoutSeconds
 property	RelaySettings::$token
-property	RemoveRule::$database
-property	RemoveRule::$events
+property	RemoveRule::$ruleId
+property	RemoveRuleHandler::$events
 property	RequireMessageAnswer::$events
 property	RequireMessageAnswer::$transaction
 property	RequiresActor::$type
@@ -3686,9 +3699,6 @@ property	RetireAgent::$sessions
 property	RetireAgent::$store
 property	RetireAgentCommand::$description
 property	RetireAgentCommand::$signature
-property	ReviewRule::$actors
-property	ReviewRule::$database
-property	ReviewRule::$events
 property	Rewritten::$line
 property	RoutePath::$parameters
 property	RoutePath::$path

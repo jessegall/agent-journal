@@ -33,7 +33,7 @@ final class DomainClassesTest extends TestCase
         yield 'Profiles' => [ProfilesDomain::class, [], []];
         yield 'Chat' => [ChatDomain::class, [], ['MessageSent', 'MessageAnswered', 'MessageDismissed', 'ConversationReader', 'MessageSender', 'Conversation', 'MessageView', 'MessageState', 'MessageBodyEmpty']];
         yield 'Memory' => [MemoryDomain::class, [], []];
-        yield 'Rules' => [RulesDomain::class, [], ['RuleApproved', 'RuleDenied', 'RuleRemoved', 'RuleReader', 'RuleReviewer', 'RuleFilters', 'RuleList', 'RuleView', 'RuleState', 'RuleMissing', 'RuleNotProposed']];
+        yield 'Rules' => [RulesDomain::class, [], ['RuleApproved', 'RuleDenied', 'RuleRemoved', 'RuleReader', 'ApproveRule', 'DenyRule', 'RuleFilters', 'RuleList', 'RuleView', 'RuleState', 'RuleMissing', 'RuleNotProposed']];
         yield 'Sequences' => [SequencesDomain::class, [], []];
         yield 'Reminders' => [RemindersDomain::class, [], []];
         yield 'Processes' => [ProcessesDomain::class, [], []];

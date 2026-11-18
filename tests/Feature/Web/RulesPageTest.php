@@ -6,11 +6,10 @@ namespace Tests\Feature\Web;
 
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Rules\Actions\ProposeRule;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Models\Rule;
 use Inertia\Testing\AssertableInertia;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
 /**
@@ -18,7 +17,12 @@ use Tests\TestCase;
  */
 final class RulesPageTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
+
+    /**
+     * The bus commits the Rules commands for real, so these tables are emptied around each test.
+     */
+    private const array TABLES = ['rules', 'users'];
 
     private User $owner;
 
@@ -33,7 +37,7 @@ final class RulesPageTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->active = Rule::query()->create(['text' => 'Write all code in plain English.']);
-        $this->proposed = $this->app->make(ProposeRule::class)->propose("Every phase ends with its tests.\n  - run them once");
+        $this->proposed = Rule::proposed("Every phase ends with its tests.\n  - run them once");
     }
 
     public function test_a_guest_is_sent_to_sign_in(): void

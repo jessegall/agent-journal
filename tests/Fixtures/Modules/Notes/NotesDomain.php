@@ -8,6 +8,9 @@ use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
+use App\Domains\Contracts\Domain;
+use App\Domains\Contracts\ProvidesAssignables;
+use App\Domains\Contracts\ProvidesStates;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Contracts\ProvidesSections;
@@ -17,12 +20,11 @@ use App\Ui\Declarations\Section;
 use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
-use App\Domains\Contracts\Domain;
-use App\Domains\Contracts\ProvidesAssignables;
-use App\Domains\Contracts\ProvidesStates;
+use Domain\Rules\RulesDomain;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\Api\NoteValue;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\AuditNotes;
+use Tests\Fixtures\Modules\Notes\CommandMiddleware\AuditRules;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordWriteNote;
 use Tests\Fixtures\Modules\Notes\Commands\ClearNotes;
@@ -53,7 +55,7 @@ final class NotesDomain implements Domain, ProvidesAssignables, ProvidesCommandM
 
     public function requires(): array
     {
-        return [CardsDomain::class];
+        return [CardsDomain::class, RulesDomain::class];
     }
 
     /**
@@ -109,6 +111,7 @@ final class NotesDomain implements Domain, ProvidesAssignables, ProvidesCommandM
             MiddlewareDeclaration::around(RecordAll::class, CommandScope::all()),
             MiddlewareDeclaration::around(RecordWriteNote::class, CommandScope::command(WriteNote::class)),
             MiddlewareDeclaration::inside(AuditNotes::class, CommandScope::ownedBy(self::class)),
+            MiddlewareDeclaration::inside(AuditRules::class, CommandScope::ownedBy(RulesDomain::class)),
         ];
     }
 }

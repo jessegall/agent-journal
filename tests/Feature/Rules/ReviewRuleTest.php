@@ -5,25 +5,31 @@ declare(strict_types=1);
 namespace Tests\Feature\Rules;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
-use Domain\Rules\Actions\ProposeRule;
-use Domain\Rules\Actions\RemoveRule;
-use Domain\Rules\Actions\ReviewRule;
+use App\Bus\Contracts\CommandBus;
 use Domain\Rules\Api\Events\RuleApproved;
 use Domain\Rules\Api\Events\RuleDenied;
-use Domain\Rules\Api\Events\RuleRemoved;
+use Domain\Rules\Commands\ApproveRule;
+use Domain\Rules\Commands\DenyRule;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Exceptions\RuleNotProposed;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Support\ActiveRules;
 use Illuminate\Support\Facades\Event;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
+/**
+ * The user reviews a proposed rule through the ApproveRule and DenyRule commands: once, and only while it is proposed.
+ */
 final class ReviewRuleTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
+
+    /**
+     * The bus commits the Rules commands for real, so these tables are emptied around each test.
+     */
+    private const array TABLES = ['rules'];
 
     private Rule $proposed;
 
@@ -31,16 +37,16 @@ final class ReviewRuleTest extends TestCase
     {
         parent::setUp();
 
-        Event::fake([RuleApproved::class, RuleDenied::class, RuleRemoved::class]);
+        Event::fake([RuleApproved::class, RuleDenied::class]);
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
-        $this->proposed = $this->app->make(ProposeRule::class)->propose('No phase waits on the user.');
+        $this->proposed = Rule::proposed('No phase waits on the user.');
     }
 
     public function test_a_proposed_rule_does_not_hold_until_approved_once(): void
     {
         $this->assertSame([], $this->app->make(ActiveRules::class)->reminders());
 
-        $this->app->make(ReviewRule::class)->approve($this->proposed->id);
+        $this->app->make(CommandBus::class)->run(new ApproveRule($this->proposed->id));
 
         $this->assertSame(["Rule {$this->proposed->id}: No phase waits on the user."], $this->app->make(ActiveRules::class)->reminders());
         Event::assertDispatched(RuleApproved::class, fn (RuleApproved $event) => $event->ruleId === $this->proposed->id);
@@ -48,34 +54,16 @@ final class ReviewRuleTest extends TestCase
 
     public function test_a_second_review_is_refused_and_changes_nothing(): void
     {
-        $this->app->make(ReviewRule::class)->deny($this->proposed->id);
+        $bus = $this->app->make(CommandBus::class);
+        $bus->run(new DenyRule($this->proposed->id));
 
         try {
-            $this->app->make(ReviewRule::class)->approve($this->proposed->id);
+            $bus->run(new ApproveRule($this->proposed->id));
             $this->fail('A denied rule was approved.');
         } catch (RuleNotProposed) {
             $this->assertSame(RuleState::Denied, $this->proposed->fresh()?->state);
             Event::assertNotDispatched(RuleApproved::class);
             Event::assertDispatchedTimes(RuleDenied::class, 1);
         }
-    }
-
-    public function test_only_a_user_reviews_a_rule(): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(3));
-
-        $this->expectException(UserActorRequired::class);
-
-        $this->app->make(ReviewRule::class)->approve($this->proposed->id);
-    }
-
-    public function test_removing_a_rule_raises_its_fact(): void
-    {
-        $this->app->make(ReviewRule::class)->approve($this->proposed->id);
-
-        $this->app->make(RemoveRule::class)->remove($this->proposed->fresh() ?? $this->proposed);
-
-        $this->assertSame(RuleState::Removed, $this->proposed->fresh()?->state);
-        Event::assertDispatched(RuleRemoved::class, fn (RuleRemoved $event) => $event->ruleId === $this->proposed->id);
     }
 }

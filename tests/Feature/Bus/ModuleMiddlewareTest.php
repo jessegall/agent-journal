@@ -13,6 +13,10 @@ use App\Bus\Exceptions\MiddlewareSkippedCommand;
 use App\Bus\Exceptions\MiddlewareSwallowedFailure;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
+use Domain\Rules\Commands\ApproveRule;
+use Domain\Rules\Exceptions\RuleNotProposed;
+use Domain\Rules\Models\Rule;
+use Illuminate\Database\ConnectionInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\CallsNextTwice;
@@ -32,6 +36,14 @@ use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
  */
 final class ModuleMiddlewareTest extends CommandBusTestCase
 {
+    protected function tearDown(): void
+    {
+        // The Rules commands commit for real here, so their rows go too.
+        Rule::query()->delete();
+
+        parent::tearDown();
+    }
+
     public function test_module_middleware_runs_by_stage_then_owner_then_declaration(): void
     {
         $trail = $this->installCommandModules();
@@ -91,6 +103,33 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
             $this->fail('The swallowed failure was let through.');
         } catch (MiddlewareSwallowedFailure $failure) {
             $this->assertInstanceOf(CommandRefused::class, $failure->getPrevious());
+        }
+    }
+
+    public function test_notes_audits_the_rules_commands_and_not_its_own_writes(): void
+    {
+        $trail = $this->installCommandModules();
+        $this->startUserRequestAs(1);
+        $bus = $this->app->make(CommandBus::class);
+
+        $bus->run(new ApproveRule(Rule::proposed('Every phase ends with its tests.')->id));
+        $bus->run(new WriteNote('not a rules command'));
+
+        $this->assertSame(1, $this->app->make(ConnectionInterface::class)->table('module_command_rows')->where('text', 'audit ApproveRule')->count());
+        $this->assertSame(1, count(array_keys($trail->steps, 'notes audits rules', true)));
+    }
+
+    public function test_the_audit_row_rolls_back_with_a_refused_rules_command(): void
+    {
+        $this->installCommandModules();
+        $this->startUserRequestAs(1);
+        $settled = Rule::query()->create(['text' => 'Already active.']);
+
+        try {
+            $this->app->make(CommandBus::class)->run(new ApproveRule($settled->id));
+            $this->fail('A settled rule was approved.');
+        } catch (RuleNotProposed) {
+            $this->assertSame(0, $this->app->make(ConnectionInterface::class)->table('module_command_rows')->where('text', 'audit ApproveRule')->count());
         }
     }
 

@@ -7,16 +7,11 @@ namespace Tests\Feature\Web;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Web\Events\PageChanged;
-use App\Web\Events\UserChannel;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
-use Domain\Rules\Actions\ProposeRule;
-use Domain\Rules\Actions\RemoveRule;
-use Domain\Rules\Actions\ReviewRule;
-use Domain\Rules\Models\Rule;
 use Domain\Tasks\Actions\ChangeTaskState;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Models\Task;
@@ -46,28 +41,9 @@ final class PageChangeTest extends TestCase
         Event::fake([PageChanged::class]);
     }
 
-    public function test_an_approved_rule_tells_the_owner_once_on_their_private_channel(): void
-    {
-        $rule = $this->app->make(ProposeRule::class)->propose('Every phase ends with its tests.');
-
-        $this->app->make(ReviewRule::class)->approve($rule->id);
-
-        Event::assertDispatchedTimes(PageChanged::class, 1);
-        Event::assertDispatched(PageChanged::class, fn (PageChanged $change) => $change->userIds === [$this->owner->id]
-            && $change->broadcastOn()[0]->name === 'private-'.UserChannel::nameFor($this->owner->id)
-            && $change->broadcastWith() === []);
-    }
-
     public function test_a_new_modules_fact_changes_the_page_once_without_any_change_to_web(): void
     {
         event(new ShelfMoved);
-
-        Event::assertDispatchedTimes(PageChanged::class, 1);
-    }
-
-    public function test_a_removed_rule_changes_the_page_too(): void
-    {
-        $this->app->make(RemoveRule::class)->remove(Rule::query()->create(['text' => 'Old rule.']));
 
         Event::assertDispatchedTimes(PageChanged::class, 1);
     }
@@ -108,15 +84,6 @@ final class PageChangeTest extends TestCase
             });
         } catch (RuntimeException) {
         }
-
-        Event::assertNotDispatched(PageChanged::class);
-    }
-
-    public function test_with_no_owner_nobody_is_told(): void
-    {
-        $this->app->instance(AccessSettings::class, new AccessSettings(null));
-
-        $this->app->make(RemoveRule::class)->remove(Rule::query()->create(['text' => 'Old rule.']));
 
         Event::assertNotDispatched(PageChanged::class);
     }

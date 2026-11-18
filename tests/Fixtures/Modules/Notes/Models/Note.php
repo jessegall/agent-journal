@@ -26,8 +26,8 @@ use Illuminate\Support\Carbon;
 #[Table('module_notes')]
 final class Note extends Model implements Assignable
 {
-    use Linkable;
     use BelongsToOneAgent;
+    use Linkable;
 
     /**
      * The stable name links and assignments use for a note.
