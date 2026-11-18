@@ -25,7 +25,7 @@ final readonly class StartSequenceHandler implements CommandHandler
     {
         $target = $this->sessions->requireActive($command->sessionId);
 
-        SequenceRun::lockedById($command->sequenceRunId)->startFor($target);
+        SequenceRun::lockedById($command->sequenceRunId)->startFor($target->actorIdentity());
         $this->events->dispatch(new SequenceStarted($command->sequenceRunId, $target));
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Support;
 
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Support\StackTarget;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Models\MemoryCompaction;
@@ -18,20 +19,20 @@ final readonly class AgentMemories
      */
     public function lowerWeightsOnce(StackTarget $target, string $compactionId): void
     {
-        if (! MemoryCompaction::recordOnce($target, $compactionId)) {
+        if (! MemoryCompaction::recordOnce($target->actorIdentity(), $compactionId)) {
             return;
         }
 
-        Memory::query()->ownedBy($target->agentId)->decrement('weight');
-        Memory::query()->ownedBy($target->agentId)->where('weight', '<=', 0)->delete();
+        Memory::query()->ownedBy($target->actorIdentity())->decrement('weight');
+        Memory::query()->ownedBy($target->actorIdentity())->where('weight', '<=', 0)->delete();
     }
 
     /**
      * @return list<string>
      */
-    public function remindersFor(string $agentId): array
+    public function remindersFor(ActorIdentity $actor): array
     {
-        $texts = Memory::query()->ownedBy($agentId)->orderByDesc('weight')->orderBy('id')->readAll('every memory of the agent is a reminder')->pluck('text')->all();
+        $texts = Memory::query()->ownedBy($actor)->orderByDesc('weight')->orderBy('id')->readAll('every memory of the agent is a reminder')->pluck('text')->all();
 
         return array_values(array_map(fn (string $text) => "Memory: {$text}", $texts));
     }

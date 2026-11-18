@@ -12,6 +12,7 @@ use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Exceptions\AgentActorRequired;
 use App\Actors\Exceptions\InvalidActorText;
 use App\Actors\Exceptions\UserActorRequired;
+use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\CurrentUser;
@@ -615,6 +616,7 @@ final class CoreApi
                 NestedCommandFailureIgnored::class,
             )
             ->support(
+                BelongsToOneActor::class,
                 HasComments::class,
                 BoundedReads::class,
                 ReadBuilder::class,

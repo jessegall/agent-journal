@@ -6,6 +6,7 @@ namespace Domain\Chat\Models;
 
 use App\Agents\Support\StackTarget;
 use App\Hooks\Contracts\WorkedOnStack;
+use App\Hooks\Decisions\StateReference;
 use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
@@ -15,14 +16,12 @@ use App\Reads\Support\BoundedReads;
 use Domain\Chat\Enums\MessageState;
 use Domain\Chat\Enums\MessageWorkState;
 use Domain\Chat\Exceptions\MessageMissing;
+use Domain\Chat\States\Support\AnsweringMessageStateReference;
 use Domain\Chat\Support\MessageWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
-use PhpOption\None;
-use PhpOption\Option;
-use PhpOption\Some;
 
 /**
  * One message. When it needs an agent's answer, the agent and session that owe it are set by asking for the answer.
@@ -88,11 +87,11 @@ final class Message extends Model implements Numbered, ReadableModel, WorkedOnSt
     }
 
     /**
-     * The recipient stack the question is answered on; none for a message sent to no session.
+     * The state a frame holds while the question is answered.
      */
-    public function workTarget(): Option
+    public function workState(): StateReference
     {
-        return $this->agent_id === null || $this->session_id === null ? None::create() : new Some(new StackTarget($this->agent_id, $this->session_id));
+        return AnsweringMessageStateReference::forMessage($this);
     }
 
     public function markAnswered(): void

@@ -18,13 +18,10 @@ return new class extends Migration
             $table->string('title');
             $table->string('state', 16)->default('open');
             $table->unsignedInteger('run_number')->default(0);
-            $table->ulid('agent_id')->nullable();
-            $table->ulid('session_id')->nullable();
             $table->timestampsTz();
 
             $table->unique(['number_group_id', 'number']);
 
-            $table->index(['agent_id', 'session_id']);
         });
 
         DB::statement('ALTER TABLE tasks ADD CONSTRAINT tasks_number_positive CHECK (number > 0)');

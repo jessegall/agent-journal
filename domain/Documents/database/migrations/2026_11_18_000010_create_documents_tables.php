@@ -17,8 +17,6 @@ return new class extends Migration
             $table->unsignedBigInteger('number');
             $table->string('creator_type', 16);
             $table->ulid('creator_id');
-            $table->ulid('origin_agent_id')->nullable();
-            $table->ulid('origin_session_id')->nullable();
             $table->string('attention', 16)->default('active');
             $table->ulid('current_revision_id')->nullable()->index();
             $table->timestampsTz();
@@ -53,8 +51,6 @@ return new class extends Migration
             $table->longText('body');
             $table->string('creator_type', 16);
             $table->ulid('creator_id');
-            $table->ulid('origin_agent_id')->nullable();
-            $table->ulid('origin_session_id')->nullable();
             $table->timestampTz('filed_at');
             $table->string('attention', 16)->default('active');
             $table->timestampsTz();
