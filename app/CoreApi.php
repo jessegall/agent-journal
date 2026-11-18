@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Actors\Commands\RecordUserHeartbeat;
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
@@ -467,6 +468,7 @@ final class CoreApi
             ->commands(
                 RetireAgent::class,
                 RecordHeartbeat::class,
+                RecordUserHeartbeat::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,
