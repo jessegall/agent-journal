@@ -21,6 +21,9 @@ use Domain\Tasks\Database\Factories\TaskFactory;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Exceptions\TaskRestartRefused;
+use Domain\Tasks\Exceptions\TaskRunNotYours;
+use Domain\Tasks\Exceptions\TaskRunTaken;
 use Domain\Tasks\Exceptions\TaskTextTooLong;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 use Domain\Tasks\Support\TaskLimits;
@@ -152,11 +155,23 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
     }
 
     /**
-     * Starts a new run owned by the session; a task already started by that session keeps its run.
+     * Starts a new run owned by the session; a task already started by that session keeps its run. An ended task is not
+     * started again, and another session's run is not taken.
+     *
+     * @throws TaskRestartRefused
+     * @throws TaskRunTaken
      */
     public function startRun(string $sessionId): void
     {
-        if ($this->state !== TaskState::Started || $this->run_session_id !== $sessionId) {
+        if ($this->state->hasEnded()) {
+            throw TaskRestartRefused::forTask($this->number, $this->state->value);
+        }
+
+        if ($this->state === TaskState::Started && $this->run_session_id !== $sessionId) {
+            throw TaskRunTaken::forTask($this->number);
+        }
+
+        if ($this->state !== TaskState::Started) {
             $this->run_number++;
         }
 
@@ -196,6 +211,19 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
         $this->state = TaskState::Cancelled;
         $this->cancel_reason = $reason;
         $this->save();
+    }
+
+    /**
+     * Refuses a run number that is not the task's current run, or a session that does not own it; a caller without a
+     * session (the user) names the run only.
+     *
+     * @throws TaskRunNotYours
+     */
+    public function requireRun(int $runNumber, string|null $sessionId): void
+    {
+        if ($runNumber !== $this->run_number || ($sessionId !== null && $this->run_session_id !== $sessionId)) {
+            throw TaskRunNotYours::forRun($this->number, $runNumber);
+        }
     }
 
     public function isRunOwnedBy(string $sessionId): bool

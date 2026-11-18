@@ -51,9 +51,9 @@ final class TaskCommandsTest extends TestCase
         $bus = $this->app->make(CommandBus::class);
         [$finished, $blocked, $cancelled] = [$this->task('Finish'), $this->task('Block'), $this->task('Cancel')];
 
-        $bus->run(new FinishTask($finished->id));
-        $bus->run(new BlockTask($blocked->id));
-        $bus->run(new CancelTask($cancelled->id));
+        $bus->run(new FinishTask($finished->id, 0, 'Done.'));
+        $bus->run(new BlockTask($blocked->id, 0, 'Waits.'));
+        $bus->run(new CancelTask($cancelled->id, 'Dropped.'));
 
         $this->assertSame([TaskState::Finished, TaskState::Blocked, TaskState::Cancelled], [$finished->fresh()?->state, $blocked->fresh()?->state, $cancelled->fresh()?->state]);
         Event::assertDispatchedTimes(TaskFinished::class, 1);
@@ -66,7 +66,7 @@ final class TaskCommandsTest extends TestCase
         $this->expectExceptionObject(TaskMissing::forId(TestIds::of(999999)));
 
         try {
-            $this->app->make(CommandBus::class)->run(new FinishTask(TestIds::of(999999)));
+            $this->app->make(CommandBus::class)->run(new FinishTask(TestIds::of(999999), 0, 'Done.'));
         } finally {
             Event::assertNotDispatched(TaskFinished::class);
         }

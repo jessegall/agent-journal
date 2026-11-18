@@ -65,7 +65,7 @@ final class PageChangeTest extends TestCase
             $progress[] = $changed->planId;
         });
 
-        $this->app->make(CommandBus::class)->run(new FinishTask($task->id));
+        $this->app->make(CommandBus::class)->run(new FinishTask($task->id, 0, 'Done.'));
 
         $this->assertSame([$plan->id], $progress);
         Event::assertDispatchedTimes(PageChanged::class, 1);
@@ -73,7 +73,7 @@ final class PageChangeTest extends TestCase
 
     public function test_a_task_outside_every_plan_changes_no_page(): void
     {
-        $this->app->make(CommandBus::class)->run(new CancelTask(Task::factory()->create(['title' => 'Loose task'])->id));
+        $this->app->make(CommandBus::class)->run(new CancelTask(Task::factory()->create(['title' => 'Loose task'])->id, 'Dropped.'));
 
         Event::assertNotDispatched(PageChanged::class);
     }

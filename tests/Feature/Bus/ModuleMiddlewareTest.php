@@ -215,7 +215,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
 
         $this->expectException(CommandReplacementRefused::class);
 
-        $this->app->make(CommandBus::class)->run(new FinishTask(Task::factory()->create(['title' => 'Kept'])->id));
+        $this->app->make(CommandBus::class)->run(new FinishTask(Task::factory()->create(['title' => 'Kept'])->id, 0, 'Done.'));
     }
 
     public function test_a_refusal_after_retirement_leaves_the_agent_unretired_with_its_assignments(): void

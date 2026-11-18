@@ -16,6 +16,7 @@ use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Contracts\AssignedTaskReader;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Exceptions\TaskRunNotYours;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommittedHookStack;
@@ -76,11 +77,11 @@ final class TaskStateContributionTest extends TestCase
         $this->assertSame([], $this->taskFrames());
     }
 
-    public function test_a_new_run_after_a_finished_one_gets_its_own_frame(): void
+    public function test_a_new_run_after_a_blocked_one_gets_its_own_frame(): void
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
-        $task->finish();
+        $task->block();
 
         $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
 
@@ -98,7 +99,7 @@ final class TaskStateContributionTest extends TestCase
 
         $this->assertSame($second->number, $tasks->currentForCaller()->get()->number);
 
-        $this->app->make(CommandBus::class)->run(new FinishTask($second->id));
+        $this->app->make(CommandBus::class)->run(new FinishTask($second->id, 1, 'Fixed.'));
 
         $this->assertSame(["tasks.working {$first->id} 1"], $this->taskFrames());
         $this->assertSame($first->number, $tasks->currentForCaller()->get()->number);
@@ -112,20 +113,20 @@ final class TaskStateContributionTest extends TestCase
         $this->app->make(CommandBus::class)->run(new StartTask($blocked->id, $this->target->sessionId));
         $this->app->make(CommandBus::class)->run(new StartTask($cancelled->id, $this->target->sessionId));
 
-        $this->app->make(CommandBus::class)->run(new CancelTask($cancelled->id));
-        $this->app->make(CommandBus::class)->run(new BlockTask($blocked->id));
+        $this->app->make(CommandBus::class)->run(new CancelTask($cancelled->id, 'Dropped.'));
+        $this->app->make(CommandBus::class)->run(new BlockTask($blocked->id, 1, 'Waits for review.'));
 
         $this->assertSame([], $this->taskFrames());
         $this->assertTrue($this->app->make(AssignedTaskReader::class)->currentForCaller()->isEmpty());
     }
 
-    public function test_finishing_a_task_never_started_leaves_the_stack_alone(): void
+    public function test_an_agent_finishing_a_task_it_never_started_is_refused_and_leaves_the_stack_alone(): void
     {
         $started = Task::factory()->create(['title' => 'Write the walk']);
         $neverStarted = Task::factory()->create(['title' => 'Someday']);
         $this->app->make(CommandBus::class)->run(new StartTask($started->id, $this->target->sessionId));
 
-        $this->app->make(CommandBus::class)->run(new FinishTask($neverStarted->id));
+        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new FinishTask($neverStarted->id, 0, 'Done.')), TaskRunNotYours::class);
 
         $this->assertSame(["tasks.working {$started->id} 1"], $this->taskFrames());
     }

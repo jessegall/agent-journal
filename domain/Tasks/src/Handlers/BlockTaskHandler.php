@@ -8,22 +8,29 @@ use App\Contracts\CommandHandler;
 use App\Hooks\Contracts\StackCleanup;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Commands\BlockTask;
+use Domain\Tasks\Exceptions\TaskRunNotYours;
+use Domain\Tasks\Exceptions\TaskTextTooLong;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Support\TaskCaller;
 use Illuminate\Contracts\Events\Dispatcher;
 
-/**
- * Blocks the task under its row lock and tells listeners once the change has committed.
- */
 final readonly class BlockTaskHandler implements CommandHandler
 {
     public function __construct(
         private Dispatcher $events,
         private StackCleanup $cleanup,
+        private TaskCaller $caller,
     ) {}
 
+    /**
+     * @throws TaskRunNotYours
+     * @throws TaskTextTooLong
+     */
     public function handle(BlockTask $command): void
     {
-        $this->cleanup->endWork(Task::lockedById($command->taskId), fn (Task $task) => $task->block());
+        $task = Task::lockedById($command->taskId);
+        $task->requireRun($command->runNumber, $this->caller->sessionId());
+        $this->cleanup->endWork($task, fn (Task $task) => $task->blockRun($command->reason));
         $this->events->dispatch(new TaskBlocked($command->taskId));
     }
 }

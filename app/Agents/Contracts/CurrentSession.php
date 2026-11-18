@@ -18,4 +18,11 @@ interface CurrentSession
      * @throws AgentContextMissing when no agent calls in this request
      */
     public function sessionId(): string;
+
+    /**
+     * Whether the calling agent is a main agent, as opposed to a helper.
+     *
+     * @throws AgentContextMissing when no agent calls in this request
+     */
+    public function isMainAgent(): bool;
 }
