@@ -5,6 +5,9 @@ from engine.enums.command_category import CommandCategory
 from engine.testing.stories.story import Story
 from engine.testing.stories.story_fixture import StoryFixture
 from core.modules.processes.commands.store_end_decisions.store_end_decisions import StoreEndDecisions
+from core.modules.processes.models.enums.reading_phase import ReadingPhase
+from core.modules.processes.support.reading.recorded_decisions import RecordedDecisions
+from core.modules.processes.support.run_visibility import RunVisibility
 from tests.stories.core.modules.processes.support.process_samples import end_run, start_process
 from tests.stories.core.modules.processes.support.reading_case_samples import STARTED, case_of
 from tests.stories.core.support.coding_fixtures import BuilderStarted
@@ -20,7 +23,8 @@ def ended_builds(story, count: int) -> None:
     for _ in range(count):
         process = start_process(story, BUILD, category=CommandCategory.BUILD)
         end_run(story, process, BUILD_OUTPUT, exit_code=1)
-        story.container.get(Bus).run(StoreEndDecisions(process.id), story.agent, environment_id=1)
+        decided = story.container.get(RecordedDecisions).decided(process, story.container.get(RunVisibility).shown_parts(process), ReadingPhase.END)
+        story.container.get(Bus).run(StoreEndDecisions(process.id, decided), story.agent, environment_id=1)
 
 
 class TwoEndedBuilds(StoryFixture):
