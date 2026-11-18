@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Gateways\Support;
 
+use App\Sharing\Enums\GatewayAddressCheck;
 use App\Sharing\Exceptions\GatewayOpenFailed;
 use App\Sharing\Support\GatewayEndpoint;
 use App\Sharing\Support\GatewayOperation;

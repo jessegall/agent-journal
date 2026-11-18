@@ -10,6 +10,7 @@ use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Providers\DomainServiceProvider;
 use App\Domains\Support\DomainRegistry;
 use App\Sharing\Events\ShareActivated;
+use App\Web\Listeners\BroadcastPageChange;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
@@ -71,7 +72,7 @@ final class DomainServiceProviderTest extends TestCase
 
         $events = new DomainEventServiceProvider($this->app)->discoverEvents();
 
-        $this->assertSame([CountActivatedShare::class.'@handle'], $events[ShareActivated::class]);
+        $this->assertEqualsCanonicalizing([CountActivatedShare::class.'@handle', BroadcastPageChange::class.'@handle'], $events[ShareActivated::class]);
     }
 
     public function test_the_discovery_paths_are_the_domain_listener_folders(): void

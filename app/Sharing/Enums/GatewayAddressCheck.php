@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Sharing\Gateways\Support;
+namespace App\Sharing\Enums;
 
 /**
  * What a gateway sees of its starting program's address on one look: its own configured address, another address,

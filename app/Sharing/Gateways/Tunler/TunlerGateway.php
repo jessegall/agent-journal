@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Sharing\Gateways\Tunler;
 
 use App\Sharing\Contracts\ShareGateway;
+use App\Sharing\Enums\GatewayAddressCheck;
 use App\Sharing\Exceptions\GatewayOpenFailed;
 use App\Sharing\Gateways\Support\ChallengeProbe;
-use App\Sharing\Gateways\Support\GatewayAddressCheck;
 use App\Sharing\Gateways\Support\GatewayChildren;
 use App\Sharing\Gateways\Support\GatewayLaunches;
 use App\Sharing\Gateways\Support\PublicOriginCheck;
