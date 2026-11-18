@@ -13,6 +13,9 @@ use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
+use App\Sharing\Contracts\Shareable;
+use App\Sharing\Support\ShareRecordCard;
+use App\Sharing\Support\ShareRelationSet;
 use Domain\Plans\Api\PlanCard;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Enums\PlanState;
@@ -40,7 +43,7 @@ use PhpOption\Option;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['title', 'type'])]
-final class Plan extends Model implements Assignable, Numbered, ReadableModel
+final class Plan extends Model implements Assignable, Numbered, ReadableModel, Shareable
 {
     use AssignableListing, HasNumber, HasUlids, Linkable;
     use BoundedReads;
@@ -174,6 +177,35 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel
 
     public function assignmentIdentity(): RecordIdentity
     {
+        return $this->shareIdentity();
+    }
+
+    public function shareIdentity(): RecordIdentity
+    {
         return new RecordIdentity(self::LINK_TYPE, $this->id);
+    }
+
+    /**
+     * A plan is shared as a summary root; the documents and reports linked to it are the owner's to select.
+     */
+    public static function shareRelations(): ShareRelationSet
+    {
+        return ShareRelationSet::linked('records', 'share-linked-record');
+    }
+
+    /**
+     * The plan's safe card for a share: its title. A plan keeps no revisions, so its published version is always 1.
+     */
+    public function shareCard(): ShareRecordCard
+    {
+        return new ShareRecordCard($this->shareIdentity(), $this->title, '1');
+    }
+
+    /**
+     * The summary a share shows of the plan: its title and its state, never its phases or tasks.
+     */
+    public function shareSummary(): string
+    {
+        return "# {$this->title}\n\nThis plan is {$this->state->value}.\n";
     }
 }
