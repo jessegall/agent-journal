@@ -28,6 +28,7 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
@@ -103,7 +104,7 @@ final class TaskDetailsReaderTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->clear();
 
-        return $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => $name, 'role' => 'hooks.main_ready']), 'claude-code')->session;
+        return $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => $name, 'role' => 'hooks.main_ready']), TestSelections::of('claude-code'), TestSelections::requestId())->session;
     }
 
     private function actAs(AgentSession $session): void

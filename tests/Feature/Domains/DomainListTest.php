@@ -17,12 +17,14 @@ final class DomainListTest extends TestCase
         $registry = $this->app->make(DomainRegistry::class);
 
         $this->assertSame(
-            ['Tasks', 'Plans', 'Documents', 'Chat', 'Memory', 'Rules', 'Sequences', 'Reminders', 'Access'],
+            ['Tasks', 'Plans', 'Documents', 'Chat', 'Memory', 'Rules', 'Sequences', 'Reminders', 'Access', 'Helpers'],
             array_map(fn (DomainEntry $entry) => $entry->name, $registry->all()),
         );
         $this->assertStringEndsWith('/domain/Plans/src', $registry->get('Plans')->folder);
         $this->assertSame([TasksDomain::class], $registry->get('Plans')->requires);
         $this->assertSame([], $registry->get('Tasks')->requires);
+        $this->assertSame([], $registry->get('Helpers')->requires);
+        $this->assertStringEndsWith('/domain/Helpers/src', $registry->get('Helpers')->folder);
     }
 
     public function test_listeners_are_discovered_only_in_the_domain_and_core_listener_folders(): void

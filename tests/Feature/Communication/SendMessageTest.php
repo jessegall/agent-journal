@@ -25,6 +25,7 @@ use App\Communication\Readers\MessageRecords;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Storage\FrameRecord;
 use Illuminate\Support\Facades\Event;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -46,7 +47,7 @@ final class SendMessageTest extends TestCase
 
         Event::fake([MessageSent::class, MessageAnswered::class, MessageDismissed::class]);
         $agent = Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']);
-        $session = $this->app->make(LaunchSessions::class)->launch($agent, 'claude-code')->session;
+        $session = $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())->session;
         $this->target = new StackTarget($session->agent_id, $session->id);
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
     }

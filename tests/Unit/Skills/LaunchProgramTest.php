@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Skills;
 
 use App\CoreApi;
-use App\Hooks\Enums\HookProgram;
+use App\Programs\Enums\HookProgram;
 use App\Skills\Support\LaunchProgram;
 use App\Skills\Values\ProgramKey;
 use App\Skills\Values\ProviderKey;

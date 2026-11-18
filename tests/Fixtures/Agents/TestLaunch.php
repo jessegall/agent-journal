@@ -25,7 +25,7 @@ final readonly class TestLaunch
     public static function start(string $role = 'hooks.main_ready'): self
     {
         $agent = Agent::query()->create(['name' => 'Test agent', 'role' => $role]);
-        $session = new AgentSessions(new AgentLifecycle())->start($agent);
+        $session = new AgentSessions(new AgentLifecycle())->start($agent, TestSelections::of(), TestSelections::requestId());
 
         return new self($agent, $session, new LaunchCredentials()->issue($session));
     }

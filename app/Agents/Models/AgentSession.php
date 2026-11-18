@@ -5,9 +5,16 @@ declare(strict_types=1);
 namespace App\Agents\Models;
 
 use App\Actors\Support\PresenceWindow;
+use App\Agents\Enums\ModelSelectionType;
+use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Exceptions\CredentialRejected;
+use App\Agents\Exceptions\SessionSelectionFixed;
+use App\Agents\Support\ModelSelection;
+use App\Agents\Support\SelectedProgram;
+use App\Agents\Support\SelectionSource;
 use App\Links\Support\Linkable;
+use App\Programs\Enums\HookProgram;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -17,6 +24,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
@@ -27,7 +35,14 @@ use Illuminate\Support\Carbon;
  * @property string $agent_id
  * @property string|null $parent_session_id
  * @property string|null $program
- * @property string|null $program_session_id
+ * @property string|null $current_conversation_id
+ * @property string $model
+ * @property ModelSelectionType $requested_model_type
+ * @property string|null $requested_model
+ * @property ProgramSourceType $program_source
+ * @property string|null $profile_key
+ * @property int|null $profile_revision
+ * @property string $launch_request_id
  * @property SessionStatus $status
  * @property CarbonImmutable|null $ended_at
  * @property CarbonImmutable|null $last_heartbeat_at
@@ -39,7 +54,7 @@ use Illuminate\Support\Carbon;
  * @property-read Agent $agent
  * @property-read LaunchCredential|null $credential
  */
-#[Fillable(['program', 'program_session_id', 'discovered_at'])]
+#[Fillable(['program', 'current_conversation_id', 'discovered_at', 'model', 'requested_model_type', 'requested_model', 'program_source', 'profile_key', 'profile_revision', 'launch_request_id'])]
 final class AgentSession extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -56,27 +71,82 @@ final class AgentSession extends Model implements ReadableModel
             'last_heartbeat_at' => 'immutable_datetime',
             'silent_since' => 'immutable_datetime',
             'discovered_at' => 'immutable_datetime',
+            'requested_model_type' => ModelSelectionType::class,
+            'program_source' => ProgramSourceType::class,
+            'profile_revision' => 'integer',
         ];
     }
 
-    public function startFor(Agent $agent, self|null $parent): void
+    /**
+     * Starts the session of one launch with the program and model it runs and the request that launched it.
+     *
+     * @throws SessionSelectionFixed
+     */
+    public function startFor(Agent $agent, self|null $parent, SelectedProgram $selection, string $requestId): void
     {
         $this->agent_id = $agent->id;
         $this->parent_session_id = $parent?->id;
         $this->status = SessionStatus::Active;
+        $this->useSelection($selection, $requestId);
+    }
+
+    /**
+     * Records the selection and the launch request once; a session never changes the program or model it ran.
+     *
+     * @throws SessionSelectionFixed
+     */
+    public function useSelection(SelectedProgram $selection, string $requestId): void
+    {
+        if ($this->getAttribute('model') !== null) {
+            throw SessionSelectionFixed::forSession($this->id);
+        }
+
+        $this->program = $selection->program->value;
+        $this->model = $selection->model;
+        $this->requested_model_type = $selection->requested->type;
+        $this->requested_model = $selection->requested->model;
+        $this->program_source = $selection->source->programSource;
+        $this->profile_key = $selection->source->profileKey;
+        $this->profile_revision = $selection->source->profileRevision;
+        $this->launch_request_id = $requestId;
         $this->save();
     }
 
-    public function useProgram(string $program): void
+    /**
+     * The selection this session was launched with, rebuilt from its row.
+     */
+    public function selection(): SelectedProgram
     {
-        $this->program = $program;
+        $requested = $this->requested_model_type === ModelSelectionType::Named ? ModelSelection::named((string) $this->requested_model) : ModelSelection::profileDefault();
+
+        return new SelectedProgram(HookProgram::from((string) $this->program), $this->model, $requested, new SelectionSource($this->program_source, $this->profile_key, $this->profile_revision));
+    }
+
+    public function enterConversation(ProgramConversation $conversation): void
+    {
+        $this->current_conversation_id = $conversation->id;
         $this->save();
     }
 
-    public function mapProgramSession(string $programSessionId): void
+    public static function lockedForUpdate(string $sessionId): self
     {
-        $this->program_session_id = $programSessionId;
-        $this->save();
+        return self::query()->whereKey($sessionId)->lockForUpdate()->firstOrFail();
+    }
+
+    /**
+     * @return HasMany<ConversationVisit, $this>
+     */
+    public function visits(): HasMany
+    {
+        return $this->hasMany(ConversationVisit::class, 'session_id');
+    }
+
+    /**
+     * @return BelongsTo<ProgramConversation, $this>
+     */
+    public function currentConversation(): BelongsTo
+    {
+        return $this->belongsTo(ProgramConversation::class, 'current_conversation_id');
     }
 
     public function endAt(CarbonImmutable $time): void
@@ -195,6 +265,15 @@ final class AgentSession extends Model implements ReadableModel
      *
      * @param  Builder<self>  $query
      */
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function runningFor(Builder $query, string $agentId): void
+    {
+        $query->where('agent_id', $agentId)->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()));
+    }
+
     #[Scope]
     protected function present(Builder $query, CarbonImmutable $observedAt, PresenceWindow $window): void
     {

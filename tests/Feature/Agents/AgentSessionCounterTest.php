@@ -14,6 +14,7 @@ use App\Agents\Support\AgentSessionCounter;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -57,7 +58,7 @@ final class AgentSessionCounterTest extends TestCase
 
     public function test_a_session_that_never_beat_is_absent(): void
     {
-        $this->app->make(LaunchSessions::class)->launch($this->agent, 'claude-code');
+        $this->app->make(LaunchSessions::class)->launch($this->agent, TestSelections::of('claude-code'), TestSelections::requestId());
 
         $this->assertSame(0, $this->countAt('2026-11-18 12:01:00'));
     }
@@ -106,7 +107,7 @@ final class AgentSessionCounterTest extends TestCase
 
     private function beatingSession(): AgentSession
     {
-        $session = $this->app->make(LaunchSessions::class)->launch($this->agent, 'claude-code')->session;
+        $session = $this->app->make(LaunchSessions::class)->launch($this->agent, TestSelections::of('claude-code'), TestSelections::requestId())->session;
         $session->recordHeartbeatAt($this->beat);
 
         return $session;

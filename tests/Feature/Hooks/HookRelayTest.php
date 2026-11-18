@@ -4,16 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\AgentRequests\Support\SignedCall;
 use App\Agents\Models\LaunchBypass;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Actions\LaunchStacks;
-use App\Hooks\Enums\HookProgram;
+use App\Hooks\Enums\CallFailure;
 use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Programs\OutageReply;
 use App\Hooks\Programs\ProgramReply;
+use App\Hooks\Relay\CallbackEnvelope;
 use App\Hooks\Relay\HookRelay;
 use App\Hooks\Relay\RelaySettings;
 use App\Hooks\Support\StackTransaction;
+use App\Programs\Enums\HookProgram;
+use Carbon\CarbonImmutable;
+use GuzzleHttp\Promise\PromiseInterface;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -55,6 +61,9 @@ final class HookRelayTest extends TestCase
         if (is_file($this->bypassLog)) {
             unlink($this->bypassLog);
         }
+
+        array_map(unlink(...), glob($this->bypassLog.'.pending/*.json') ?: []);
+        CarbonImmutable::setTestNow();
 
         parent::tearDown();
     }
@@ -122,6 +131,63 @@ final class HookRelayTest extends TestCase
         $this->assertSame(1, DB::table('hook_calls')->count());
     }
 
+    public function test_a_lost_reply_is_sent_again_as_the_same_call_and_gets_the_recorded_answer(): void
+    {
+        $sent = [];
+        Http::fake(function (Request $request) use (&$sent) {
+            $sent[] = [$request->header(SignedCall::ID_HEADER)[0], $request->header(SignedCall::ISSUED_AT_HEADER)[0], hash('sha256', $request->body())];
+            $response = $this->forward($request);
+
+            if (count($sent) === 1) {
+                throw new ConnectionException('The reply was lost.');
+            }
+
+            return $response;
+        });
+
+        $reply = $this->relay(self::STOP);
+
+        $this->assertCount(2, $sent);
+        $this->assertSame($sent[0], $sent[1]);
+        $this->assertSame(['{}', 0], [$reply->stdout, $reply->exitCode]);
+        $this->assertSame(1, DB::table('hook_calls')->count());
+        $this->assertSame([], glob($this->bypassLog.'.pending/*.json') ?: []);
+    }
+
+    public function test_a_retry_past_the_deadline_is_not_sent_and_the_deadline_is_never_extended(): void
+    {
+        $sent = 0;
+        Http::fake(function () use (&$sent) {
+            $sent++;
+            CarbonImmutable::setTestNow(CarbonImmutable::now()->addSeconds(CallbackEnvelope::DEADLINE_SECONDS + 1));
+
+            throw new ConnectionException('The journal did not answer.');
+        });
+
+        $reply = $this->relay(self::STOP);
+
+        $this->assertSame(1, $sent);
+        $this->assertEquals(OutageReply::for(CallFailure::Unreachable, ReadyStateType::MainAgent, 'Stop'), $reply);
+        $this->assertCount(1, glob($this->bypassLog.'.pending/*.json') ?: []);
+    }
+
+    public function test_two_callbacks_with_the_same_text_get_two_envelopes(): void
+    {
+        $ids = [];
+        Http::fake(function (Request $request) use (&$ids) {
+            $ids[] = $request->header(SignedCall::ID_HEADER)[0];
+
+            return $this->forward($request);
+        });
+
+        $this->relay(self::STOP);
+        $this->relay(self::STOP);
+
+        $this->assertCount(2, array_unique($ids));
+        $this->assertSame(2, DB::table('hook_calls')->count());
+        $this->assertSame([], glob($this->bypassLog.'.pending/*.json') ?: []);
+    }
+
     private function relay(string $payload, ReadyStateType $role = ReadyStateType::MainAgent, string|null $token = null): ProgramReply
     {
         $settings = new RelaySettings('http://journal.test', $token ?? $this->launch->token, $role, $this->bypassLog);
@@ -138,16 +204,22 @@ final class HookRelayTest extends TestCase
             if ($this->journalIsDown) {
                 throw JournalUnreachable::now();
             }
-            $server = [];
-            foreach ($request->headers() as $name => $values) {
-                $server['HTTP_'.strtoupper(str_replace('-', '_', $name))] = $values[0];
-            }
-            $server['CONTENT_TYPE'] = 'application/json';
-            $this->app->forgetScopedInstances();
 
-            $response = $this->call('POST', (string) parse_url($request->url(), PHP_URL_PATH), server: $server, content: $request->body());
-
-            return Http::response((string) $response->getContent(), $response->getStatusCode());
+            return $this->forward($request);
         });
+    }
+
+    private function forward(Request $request): PromiseInterface
+    {
+        $server = [];
+        foreach ($request->headers() as $name => $values) {
+            $server['HTTP_'.strtoupper(str_replace('-', '_', $name))] = $values[0];
+        }
+        $server['CONTENT_TYPE'] = 'application/json';
+        $this->app->forgetScopedInstances();
+
+        $response = $this->call('POST', (string) parse_url($request->url(), PHP_URL_PATH), server: $server, content: $request->body());
+
+        return Http::response((string) $response->getContent(), $response->getStatusCode());
     }
 }

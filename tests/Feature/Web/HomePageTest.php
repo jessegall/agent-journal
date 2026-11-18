@@ -15,6 +15,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Rules\Models\Rule;
 use Inertia\Testing\AssertableInertia;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -39,7 +40,7 @@ final class HomePageTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $agent = Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']);
-        $this->session = $this->app->make(LaunchSessions::class)->launch($agent, 'claude-code')->session;
+        $this->session = $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())->session;
         Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
     }
 

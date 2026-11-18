@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Hooks;
 
-use App\Agents\Actions\LaunchSessions;
+use App\Agents\Exceptions\ConversationIncompatible;
 use App\Agents\Exceptions\StaleProcessGeneration;
 use App\Agents\Support\NativeTurns;
 use App\Bus\Exceptions\StackLockTimedOut;
@@ -15,7 +15,6 @@ use App\Hooks\Exceptions\HookIdentityExpired;
 use App\Hooks\Exceptions\ShellParserMissing;
 use App\Hooks\Exceptions\UnreadablePayload;
 use App\Hooks\Exceptions\UnsupportedHook;
-use App\Hooks\Programs\HookPayload;
 use App\Hooks\Programs\ProgramAdapters;
 use App\Hooks\Programs\ProgramReplies;
 use App\Hooks\Stack\AgentStateMachine;
@@ -38,7 +37,6 @@ final readonly class HookController
     public function __construct(
         private ProgramAdapters $adapters,
         private OperationDeadline $deadline,
-        private LaunchSessions $sessions,
         private NativeTurns $turns,
     ) {}
 
@@ -64,28 +62,16 @@ final readonly class HookController
             }
 
             $call = $adapter->callFor($payload, $access->hookIdentity());
-            $this->mapProgramSession($payload, $access);
             $reply = $call->replyWith(fn (HookInput $input, Closure $render) => $machine->answer($input, $adapter->capabilities(), $this->deadline, $render));
         } catch (UnsupportedHook|UnreadablePayload $refused) {
             return $this->failure($refused->getMessage(), Response::HTTP_UNPROCESSABLE_ENTITY);
-        } catch (HookIdentityExpired|HookDigestChanged|StaleProcessGeneration $conflict) {
+        } catch (HookIdentityExpired|HookDigestChanged|StaleProcessGeneration|ConversationIncompatible $conflict) {
             return $this->failure($conflict->getMessage(), Response::HTTP_CONFLICT);
         } catch (ShellParserMissing|StackLockTimedOut $unavailable) {
             return $this->failure($unavailable->getMessage(), Response::HTTP_SERVICE_UNAVAILABLE);
         }
 
         return new JsonResponse(HookResponse::fromProgramReply($reply)->toArray());
-    }
-
-    /**
-     * A session start, also after a clear, a resume or a compaction, records the program's own session id on the
-     * same journal session.
-     */
-    private function mapProgramSession(HookPayload $payload, StackAccess $access): void
-    {
-        if ($payload->isSessionStart()) {
-            $this->sessions->mapProgramSessionFor($access->target()->sessionId, $payload->sessionId);
-        }
     }
 
     private function failure(string $message, int $status): JsonResponse

@@ -129,7 +129,7 @@ final class ConditionTreeTest extends TestCase
 
     private function tree(): ConditionTree
     {
-        return new ConditionTree();
+        return $this->app->make(ConditionTree::class);
     }
 
     private function reviewerOn(string $program, ?string $provider = 'openai'): SkillContext

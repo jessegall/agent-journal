@@ -15,7 +15,14 @@ return new class extends Migration
             $table->ulid('agent_id')->index();
             $table->ulid('parent_session_id')->nullable()->index();
             $table->string('program', 32)->nullable();
-            $table->string('program_session_id')->nullable();
+            $table->string('model', 128);
+            $table->string('requested_model_type', 16);
+            $table->string('requested_model', 128)->nullable();
+            $table->string('program_source', 16);
+            $table->string('profile_key', 128)->nullable();
+            $table->unsignedInteger('profile_revision')->nullable();
+            $table->ulid('launch_request_id')->index();
+            $table->ulid('current_conversation_id')->nullable();
             $table->string('status', 16)->default('active');
             $table->timestampTz('ended_at')->nullable();
             $table->timestampTz('last_heartbeat_at')->nullable();
@@ -24,7 +31,6 @@ return new class extends Migration
             $table->timestampTz('discovered_at')->nullable();
             $table->timestampsTz();
 
-            $table->unique(['program', 'program_session_id']);
             $table->index(['status', 'last_heartbeat_at']);
         });
     }

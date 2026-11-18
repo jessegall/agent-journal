@@ -9,6 +9,7 @@ use App\Agents\Exceptions\LaunchRefused;
 use App\Agents\Lifecycle\AgentLifecycle;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
+use App\Agents\Support\SelectedProgram;
 use Carbon\CarbonImmutable;
 
 /**
@@ -23,7 +24,7 @@ final readonly class AgentSessions
     /**
      * @throws LaunchRefused
      */
-    public function start(Agent $agent, AgentSession|null $parent = null): AgentSession
+    public function start(Agent $agent, SelectedProgram $selection, string $requestId, AgentSession|null $parent = null): AgentSession
     {
         try {
             $this->lifecycle->lockShared($agent->id);
@@ -32,7 +33,7 @@ final readonly class AgentSessions
         }
 
         $session = new AgentSession();
-        $session->startFor($agent, $parent);
+        $session->startFor($agent, $parent, $selection, $requestId);
 
         return $session;
     }

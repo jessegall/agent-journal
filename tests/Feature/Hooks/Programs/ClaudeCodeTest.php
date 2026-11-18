@@ -141,6 +141,12 @@ final class ClaudeCodeTest extends TestCase
         return ($call->render)(new HookAnswer($decision, $context, [], new AgentStack([], new InMemoryStateFactory())));
     }
 
+    public function test_the_host_starts_the_program_on_the_selected_model_and_no_actual_model_is_reported(): void
+    {
+        $this->assertSame(['--model', 'claude-opus-5-5'], $this->adapter()->modelArguments('claude-opus-5-5'));
+        $this->assertFalse($this->adapter()->capabilities()->reportsActualModel);
+    }
+
     private function adapter(): ClaudeCodeAdapter
     {
         return $this->app->make(ClaudeCodeAdapter::class);

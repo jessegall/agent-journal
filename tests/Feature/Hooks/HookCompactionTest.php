@@ -9,6 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Enums\RewriteSupport;
+use App\Hooks\Events\ContextStarted;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\HookIdentity;
@@ -23,7 +24,7 @@ use Domain\Sequences\Models\SequenceRun;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -57,40 +58,27 @@ final class HookCompactionTest extends TestCase
 
         $this->assertContains('Rule '.Rule::query()->where('text', 'No phase waits on the user.')->value('id').': No phase waits on the user.', $context);
         $this->assertContains('Memory: Use plain words.', $context);
-        $this->assertNotContains('Memory: Question 10 is still open.', $context);
+        $this->assertContains('Memory: Question 10 is still open.', $context);
         $this->assertSame([], array_values(array_filter($context, fn (string $line) => str_contains($line, 'An old rule.'))));
         $this->assertContains("Sequence run {$this->run->number} is on step 1: Read the brief.", $context);
     }
 
-    public function test_a_repeated_callback_fades_the_memories_once_and_gets_the_same_reply(): void
+    public function test_a_repeated_callback_gets_the_same_reply_and_keeps_every_memory_weight(): void
     {
         $first = $this->compact('call-1');
         $retry = $this->compact('call-1');
 
         $this->assertSame($first, $retry);
-        $this->assertSame([1], Memory::query()->pluck('weight')->all());
+        $this->assertEqualsCanonicalizing([2, 1], Memory::query()->pluck('weight')->all());
         $this->assertSame(1, HookCall::query()->count());
-        $this->assertSame(1, DB::table('memory_compactions')->count());
     }
 
-    public function test_a_second_compaction_fades_the_memories_again(): void
+    public function test_a_second_compaction_keeps_the_memories(): void
     {
         $this->compact('call-1');
         $this->compact('call-2');
 
-        $this->assertSame(0, Memory::query()->count());
-    }
-
-    public function test_a_duplicate_found_under_the_lock_rolls_its_reaction_back(): void
-    {
-        $this->compact('call-1');
-        DB::table('memory_compactions')->delete();
-        $this->remember('Added after the first compaction.', 3);
-
-        $this->compact('call-1');
-
-        $this->assertSame(3, Memory::query()->where('text', 'Added after the first compaction.')->value('weight'));
-        $this->assertSame(0, DB::table('memory_compactions')->count());
+        $this->assertEqualsCanonicalizing([2, 1], Memory::query()->pluck('weight')->all());
     }
 
     public function test_a_compaction_finishes_no_work(): void
@@ -100,6 +88,19 @@ final class HookCompactionTest extends TestCase
         $this->assertSame(TaskState::Started, $this->task->fresh()?->state);
         $this->assertSame(1, $this->run->fresh()?->current_step);
         $this->assertSame(['hooks.main_ready', 'tasks.working', 'sequences.following'], $this->storedTypeKeys());
+    }
+
+    public function test_a_replayed_compaction_runs_no_reminder_listener(): void
+    {
+        $this->compact('call-1');
+        $heard = 0;
+        Event::listen(ContextStarted::class, function () use (&$heard): void {
+            $heard++;
+        });
+
+        $this->compact('call-1');
+
+        $this->assertSame(0, $heard);
     }
 
     /**

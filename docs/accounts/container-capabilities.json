@@ -1,0 +1,164 @@
+{
+    "rows": [
+        {
+            "capability": "account-transport",
+            "program": "claude-code",
+            "program_version": "2.1.323",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unverified",
+            "evidence": "docs/accounts/launch-handshake.md#claude-code-in-a-required-container",
+            "reason": "Claude Code signs in to a claude.ai subscription only through its own account store (Keychain or .credentials.json); its gateway command runs an enterprise auth gateway that is not shown to carry a claude.ai subscription for a credential-free container client, and setup-token would put a long-lived secret in the container."
+        },
+        {
+            "capability": "account-transport",
+            "program": "codex",
+            "program_version": "0.165.0",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unsupported",
+            "evidence": "docs/accounts/launch-handshake.md#codex-in-a-required-container",
+            "reason": "Codex signs in to a managed ChatGPT account only through auth.json in its CODEX_HOME (or a keyring), which the program refreshes itself; its app-server, remote-control and exec-server commands keep the agent and its login on the host and run only tools elsewhere, which doc 14 section 61 does not accept, and an API key or access token would put a credential in the container or switch to API billing."
+        },
+        {
+            "capability": "account-transport",
+            "program": "claude-code",
+            "program_version": "2.1.323",
+            "account_mode": "subscription",
+            "execution_mode": "protected_host",
+            "status": "unverified",
+            "evidence": "docs/accounts/launch-handshake.md#the-protected-host",
+            "reason": "No host starts programs yet (task 258); the pinned build ran on the host only for the hook capture of task 89, not as a journal launch with a doc 15 account."
+        },
+        {
+            "capability": "account-transport",
+            "program": "codex",
+            "program_version": "0.165.0",
+            "account_mode": "subscription",
+            "execution_mode": "protected_host",
+            "status": "unverified",
+            "evidence": "docs/accounts/launch-handshake.md#the-protected-host",
+            "reason": "No host starts programs yet (task 258); the pinned build ran on the host only for the hook capture of task 89, not as a journal launch with a doc 15 account."
+        },
+        {
+            "capability": "callback-separation",
+            "program": "claude-code",
+            "program_version": "2.1.323",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unverified",
+            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
+            "reason": "Claude Code runs hook commands as its own child processes and talks to MCP servers on their own channel, but no container run has shown that a model-run tool cannot reach the hook relay's channel and send it a callback."
+        },
+        {
+            "capability": "callback-separation",
+            "program": "codex",
+            "program_version": "0.165.0",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unverified",
+            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
+            "reason": "Codex runs hook commands as its own child processes and talks to MCP servers on their own channel, but no container run has shown that a model-run tool cannot reach the hook relay's channel and send it a callback."
+        },
+        {
+            "capability": "relay-protection",
+            "program": "claude-code",
+            "program_version": "2.1.323",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unverified",
+            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
+            "reason": "Hook commands run as the same user as the model's Bash tool, so the relay material is readable by model-run descendants unless a separate user or Claude Code's sandbox keeps it out; neither has been run and checked in a container."
+        },
+        {
+            "capability": "relay-protection",
+            "program": "codex",
+            "program_version": "0.165.0",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unverified",
+            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
+            "reason": "Hook commands run as the same user as the model's shell, so the relay material is readable by model-run descendants unless a separate user or Codex's own sandbox keeps it out; neither has been run and checked in a container."
+        },
+        {
+            "capability": "process-tracking",
+            "program": "claude-code",
+            "program_version": "2.1.323",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unverified",
+            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
+            "reason": "No container run has shown that every model-run descendant, background shells included, stays in one process group the host can see and end."
+        },
+        {
+            "capability": "process-tracking",
+            "program": "codex",
+            "program_version": "0.165.0",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unverified",
+            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
+            "reason": "No container run has shown that every model-run descendant, background shells included, stays in one process group the host can see and end."
+        },
+        {
+            "capability": "completion-fence",
+            "program": "claude-code",
+            "program_version": "2.1.323",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unverified",
+            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
+            "reason": "No host exists yet (task 258) to close new action admission and keep it closed through completion, or to bump a workspace generation before a changing tool; the hook endpoint's refusals alone have not been run against a fenced session."
+        },
+        {
+            "capability": "completion-fence",
+            "program": "codex",
+            "program_version": "0.165.0",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unverified",
+            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
+            "reason": "No host exists yet (task 258) to close new action admission and keep it closed through completion, or to bump a workspace generation before a changing tool; the hook endpoint's refusals alone have not been run against a fenced session."
+        },
+        {
+            "capability": "stop-deadline",
+            "program": "claude-code",
+            "program_version": "2.1.323",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unverified",
+            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
+            "reason": "The task 89 capture saw stop_hook_active on Stop but never blocked a stop or ran past a hook timeout, so the Stop deadline and the continuation cap of 2.1.323 are not measured."
+        },
+        {
+            "capability": "stop-deadline",
+            "program": "codex",
+            "program_version": "0.165.0",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unverified",
+            "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
+            "reason": "The task 89 capture saw stop_hook_active on Stop but never blocked a stop or ran past a hook timeout, so the Stop deadline and the continuation cap of 0.165.0 are not measured; only SessionEnd's 1 second default (3 at most) is known."
+        },
+        {
+            "capability": "container-runtime",
+            "program": "claude-code",
+            "program_version": "2.1.323",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unverified",
+            "evidence": "docs/accounts/launch-handshake.md#the-protected-host",
+            "reason": "No protected host runs Docker for the journal yet (task 258), so no container runtime, rootless mode or kernel control has been checked on this host."
+        },
+        {
+            "capability": "container-runtime",
+            "program": "codex",
+            "program_version": "0.165.0",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unverified",
+            "evidence": "docs/accounts/launch-handshake.md#the-protected-host",
+            "reason": "No protected host runs Docker for the journal yet (task 258), so no container runtime, rootless mode or kernel control has been checked on this host."
+        }
+    ]
+}

@@ -43,6 +43,7 @@ final class MemorySkill implements Skill
             SkillSection::text('purpose', 'Purpose', 'Memories keep what matters beyond your context window.'),
             SkillSection::markdown('what-a-memory-is', 'What a memory is', MarkdownPart::heading(self::FILE, ['Memory', 'What a memory is'])),
             SkillSection::markdown('weights', 'Weights', MarkdownPart::heading(self::FILE, ['Memory', 'Weights'])),
+            SkillSection::markdown('keeping-memories', 'Keeping memories', MarkdownPart::heading(self::FILE, ['Memory', 'Keeping memories'])),
             SkillSection::markdown('numbers', 'Numbers', MarkdownPart::heading(self::FILE, ['Memory', 'Numbers'])),
         ];
     }

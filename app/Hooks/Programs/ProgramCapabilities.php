@@ -17,12 +17,14 @@ final readonly class ProgramCapabilities
 {
     /**
      * @param  list<string>  $hookMethods  the hook methods this adapter maps, such as onShellCommand and onStop
+     * @param  bool  $reportsActualModel  whether the program tells which model actually ran; no pinned build does
      */
     public function __construct(
         public string $program,
         public string $schemaContract,
         public array $hookMethods,
         public RewriteSupport $rewrites,
+        public bool $reportsActualModel = false,
     ) {}
 
     /**

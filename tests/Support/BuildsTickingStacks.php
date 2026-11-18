@@ -15,6 +15,7 @@ use App\Hooks\Stack\StateTypes;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
 use Carbon\CarbonImmutable;
+use Tests\Fixtures\Agents\TestSelections;
 
 /**
  * Stacks of running sessions written straight to the database, with a bottom frame, a frame of a type that does not
@@ -29,7 +30,7 @@ trait BuildsTickingStacks
     {
         $agent = Agent::query()->create(['name' => 'Ticking agent', 'role' => 'hooks.main_ready']);
         $session = new AgentSession();
-        $session->startFor($agent, null);
+        $session->startFor($agent, null, TestSelections::of(), TestSelections::requestId());
         $records = [
             new FrameRecord("{$session->id}-ready", new StateReference('hooks.main_ready', NoSubject::None), true, 1, $enteredAt),
             new FrameRecord("{$session->id}-plain", new StateReference($plainType, NoSubject::None), false, 1, $enteredAt),

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Support;
 
-use App\Hooks\Enums\HookProgram;
+use App\Programs\Enums\HookProgram;
 use App\Skills\Values\ProgramKey;
 use App\Skills\Values\ProviderKey;
 use App\Text\Support\StableKey;

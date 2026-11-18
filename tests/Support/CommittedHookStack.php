@@ -36,6 +36,7 @@ use App\Processes\Enums\ShellDialect;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskWorkState;
 use Illuminate\Contracts\Events\Dispatcher;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\InMemoryTaskLoader;
 use Tests\Fixtures\Hooks\ListedCommandParser;
@@ -90,7 +91,7 @@ trait CommittedHookStack
         $agent = Agent::query()->find(TestIds::of(1)) ?? new Agent(['name' => 'Hook agent', 'role' => 'hooks.main_ready']);
         $agent->id = TestIds::of(1);
         $agent->save();
-        $session = AgentSession::query()->find(TestIds::of(10)) ?? new AgentSession(['program' => 'claude-code', 'program_session_id' => 'hook-session']);
+        $session = AgentSession::query()->find(TestIds::of(10)) ?? new AgentSession(TestSelections::sessionColumns());
         $session->id = TestIds::of(10);
         $session->agent_id = $agent->id;
         $session->save();
@@ -170,7 +171,7 @@ trait CommittedHookStack
      */
     private static function committedTables(): array
     {
-        return ['agent_stacks', 'hook_calls', 'links', 'tasks', 'messages', 'sequence_runs', 'memories', 'memory_compactions', 'rules', 'users', 'agents', 'agent_sessions', 'launch_credentials', 'launch_bypasses', 'command_aliases'];
+        return ['agent_stacks', 'hook_calls', 'links', 'tasks', 'messages', 'sequence_runs', 'memories', 'rules', 'users', 'agents', 'agent_sessions', 'launch_credentials', 'launch_bypasses', 'command_aliases', 'program_conversations', 'conversation_visits'];
     }
 
     private function hookIdentity(): HookIdentity

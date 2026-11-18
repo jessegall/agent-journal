@@ -20,5 +20,6 @@ final class MainRuntimeRequestData extends Data
         public readonly string $program,
         public readonly string $programBuild,
         public readonly string $profile,
+        public readonly string|null $model = null,
     ) {}
 }

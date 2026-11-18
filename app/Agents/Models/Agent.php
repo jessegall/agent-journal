@@ -43,6 +43,11 @@ final class Agent extends Model implements Assignee, ReadableModel, ReceivesMess
         return ['retired_at' => 'datetime'];
     }
 
+    public static function named(string $name, AgentRole $role): self
+    {
+        return self::query()->create(['name' => $name, 'role' => $role->value]);
+    }
+
     public function actorType(): ActorType
     {
         return ActorType::Agent;

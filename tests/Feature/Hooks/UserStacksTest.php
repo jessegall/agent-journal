@@ -22,6 +22,7 @@ use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Support\StackTransaction;
 use Illuminate\Support\Facades\Event;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
@@ -122,7 +123,7 @@ final class UserStacksTest extends TestCase
     {
         $agent = Agent::query()->create(['name' => 'Test agent', 'role' => 'hooks.main_ready']);
 
-        return $this->app->make(LaunchSessions::class)->launch($agent, 'claude-code');
+        return $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId());
     }
 
     private function targetOf(LaunchedAgent $launched): StackTarget

@@ -5,28 +5,13 @@ declare(strict_types=1);
 namespace Domain\Memory\Support;
 
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Support\StackTarget;
 use Domain\Memory\Models\Memory;
-use Domain\Memory\Models\MemoryCompaction;
 
 /**
- * The named operations on an agent's memories: fading them once per compaction, and the reminders they give.
+ * The named reads of an agent's memories: the reminders they give, heaviest first.
  */
 final readonly class AgentMemories
 {
-    /**
-     * Lowers every memory of the agent by one for this compaction, once: a repeated compaction id changes nothing.
-     */
-    public function lowerWeightsOnce(StackTarget $target, string $compactionId): void
-    {
-        if (! MemoryCompaction::recordOnce($target->actorIdentity(), $compactionId)) {
-            return;
-        }
-
-        Memory::query()->ownedBy($target->actorIdentity())->decrement('weight');
-        Memory::query()->ownedBy($target->actorIdentity())->where('weight', '<=', 0)->delete();
-    }
-
     /**
      * @return list<string>
      */

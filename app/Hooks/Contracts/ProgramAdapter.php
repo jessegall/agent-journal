@@ -19,6 +19,13 @@ interface ProgramAdapter
     public function capabilities(): ProgramCapabilities;
 
     /**
+     * The arguments that start this program on the selected model.
+     *
+     * @return list<string>
+     */
+    public function modelArguments(string $model): array;
+
+    /**
      * Reads one native hook payload into a call the journal answers or lets through, refusing what it does not map.
      */
     public function callFor(HookPayload $payload, HookIdentity $hook): ProgramCall;

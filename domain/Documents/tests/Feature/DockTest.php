@@ -29,6 +29,7 @@ use Domain\Documents\Data\DockData;
 use Domain\Documents\Models\RecordDock;
 use Domain\Documents\Readers\DocumentDockReader;
 use Domain\Documents\Tests\TestCase;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
@@ -54,8 +55,8 @@ final class DockTest extends TestCase
         parent::setUp();
 
         $launch = $this->app->make(LaunchSessions::class);
-        $this->builderSession = $launch->launch(Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']), 'claude-code')->session;
-        $this->reviewerSession = $launch->launch(Agent::query()->create(['name' => 'Reviewer', 'role' => 'hooks.main_ready']), 'claude-code')->session;
+        $this->builderSession = $launch->launch(Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']), TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        $this->reviewerSession = $launch->launch(Agent::query()->create(['name' => 'Reviewer', 'role' => 'hooks.main_ready']), TestSelections::of('claude-code'), TestSelections::requestId())->session;
     }
 
     public function test_an_agents_new_report_docks_once_in_its_own_session_and_a_users_creation_docks_nothing(): void
