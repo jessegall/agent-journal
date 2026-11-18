@@ -6,6 +6,10 @@ namespace App\Skills\Support;
 
 use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Exceptions\SkillPublicationFailed;
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
 
 /**
  * Writes skills on the host, and only inside the journal's protected skills root: staged folders under generations,
@@ -64,6 +68,36 @@ final readonly class HostSkillPublisher implements SkillPublisher
         }
     }
 
+    public function clear(string $stagingFolder, array $files): void
+    {
+        $folder = $this->insideRoot($stagingFolder);
+
+        if (! is_dir($folder) || is_link($folder)) {
+            return;
+        }
+
+        $entries = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($folder, FilesystemIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST,
+        );
+        $paths = iterator_to_array($entries, false);
+
+        foreach ($paths as $entry) {
+            $this->checkStaged($folder, $entry, $files);
+        }
+
+        foreach ($paths as $entry) {
+            $this->remove($entry);
+        }
+
+        rmdir($folder);
+        $generation = dirname($folder);
+
+        if (dirname($generation) === $this->targets->generationsFolder() && $this->isEmptyFolder($generation)) {
+            rmdir($generation);
+        }
+    }
+
     public function activeFolder(string $target): ?string
     {
         $target = $this->insideRoot($target);
@@ -89,6 +123,48 @@ final readonly class HostSkillPublisher implements SkillPublisher
         if (! str_starts_with($points, $this->targets->generationsFolder().'/')) {
             throw SkillPublicationFailed::collision($target);
         }
+    }
+
+    /**
+     * Refuses an entry of a staged folder that the journal did not write there with these bytes: an unknown file, a
+     * changed one, or a link.
+     *
+     * @param  array<string, string>  $files
+     */
+    private function checkStaged(string $folder, SplFileInfo $entry, array $files): void
+    {
+        $relative = substr($entry->getPathname(), strlen($folder) + 1);
+
+        if ($entry->isLink()) {
+            throw SkillPublicationFailed::changedFile($entry->getPathname());
+        }
+
+        if ($entry->isDir()) {
+            return;
+        }
+
+        $staged = array_key_exists($relative, $files)
+            && hash_file('sha256', $entry->getPathname()) === hash('sha256', $files[$relative]);
+
+        if (! $staged) {
+            throw SkillPublicationFailed::changedFile($entry->getPathname());
+        }
+    }
+
+    private function remove(SplFileInfo $entry): void
+    {
+        if ($entry->isDir()) {
+            rmdir($entry->getPathname());
+
+            return;
+        }
+
+        unlink($entry->getPathname());
+    }
+
+    private function isEmptyFolder(string $folder): bool
+    {
+        return is_dir($folder) && ! is_link($folder) && (new FilesystemIterator($folder))->valid() === false;
     }
 
     /**

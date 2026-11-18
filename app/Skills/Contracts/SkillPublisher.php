@@ -29,6 +29,16 @@ interface SkillPublisher
     public function activate(string $target, string $stagingFolder): void;
 
     /**
+     * Removes a staged folder that holds exactly these files with these bytes, or a part of them; a folder with any
+     * other or changed file is kept whole. A folder that is not there is already clear.
+     *
+     * @param  array<string, string>  $files  bytes by path relative to the staging folder
+     *
+     * @throws SkillPublicationFailed when the folder holds a file the journal did not stage there
+     */
+    public function clear(string $stagingFolder, array $files): void;
+
+    /**
      * The staged folder the target points at now, or null when the journal has not published there.
      */
     public function activeFolder(string $target): ?string;

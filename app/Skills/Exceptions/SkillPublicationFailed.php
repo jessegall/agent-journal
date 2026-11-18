@@ -35,6 +35,11 @@ final class SkillPublicationFailed extends RuntimeException implements CodedRefu
         return new self("The path {$path} leaves the protected skills root; nothing was written there.");
     }
 
+    public static function changedFile(string $path): self
+    {
+        return new self("The staged file {$path} was changed or added by hand; its folder is kept.");
+    }
+
     public static function write(string $reason): self
     {
         return new self("The skills could not be written: {$reason}");
