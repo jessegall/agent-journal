@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Models;
 
 use App\Agents\Enums\SessionStatus;
+use App\Agents\Exceptions\CredentialRejected;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -101,9 +102,41 @@ final class AgentSession extends Model implements ReadableModel
             ->update(['status' => SessionStatus::Silent->value, 'silent_since' => $now]);
     }
 
+    /**
+     * Locks the session's row, with its credential and agent, so a heartbeat waits for an end or a retirement.
+     */
+    public static function lockedForHeartbeat(string $sessionId): self
+    {
+        return self::query()->whereKey($sessionId)->with(['credential', 'agent'])->lockForUpdate()->firstOrFail();
+    }
+
     public function isActive(): bool
     {
         return $this->status->isRunning();
+    }
+
+    /**
+     * Refuses a session that may no longer act: no credential, a revoked one, an ended session or a retired agent.
+     *
+     * @throws CredentialRejected
+     */
+    public function requireUsable(): void
+    {
+        if ($this->credential === null) {
+            throw CredentialRejected::unknown();
+        }
+
+        if ($this->credential->isRevoked()) {
+            throw CredentialRejected::revoked();
+        }
+
+        if (! $this->isActive()) {
+            throw CredentialRejected::sessionEnded();
+        }
+
+        if ($this->agent->isRetired()) {
+            throw CredentialRejected::agentRetired();
+        }
     }
 
     /**
@@ -115,29 +148,6 @@ final class AgentSession extends Model implements ReadableModel
         $this->silent_since = null;
         $this->status = $this->status === SessionStatus::Silent ? SessionStatus::Active : $this->status;
         $this->save();
-    }
-
-    public function markSilentAt(CarbonImmutable $time): void
-    {
-        $this->status = SessionStatus::Silent;
-        $this->silent_since = $time;
-        $this->save();
-    }
-
-    public function markTimedOutAt(CarbonImmutable $time, string $evidence): void
-    {
-        $this->status = SessionStatus::TimedOut;
-        $this->ended_at = $time;
-        $this->end_evidence = $evidence;
-        $this->save();
-    }
-
-    /**
-     * The moment the session last showed life: its last heartbeat, or its start.
-     */
-    public function lastSeenAt(): CarbonImmutable
-    {
-        return $this->last_heartbeat_at ?? CarbonImmutable::instance($this->created_at ?? CarbonImmutable::now());
     }
 
     /**

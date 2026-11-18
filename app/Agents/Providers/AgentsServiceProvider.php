@@ -14,7 +14,6 @@ use App\Agents\Readers\AgentAuthorityRecords;
 use App\Agents\Support\AgentAssignees;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\DatabaseLaunchTransaction;
-use App\Agents\Support\LaunchTimeouts;
 use App\Assignments\Contracts\AgentAuthority;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Support\AssigneeRegistration;
@@ -35,10 +34,6 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bindIf(LaunchTransaction::class, DatabaseLaunchTransaction::class);
         $this->app->bind(AgentClientSettings::class, fn () => AgentClientSettings::fromEnvironment(array_filter(getenv(), is_string(...))));
         $this->app->bind(AgentRequestSender::class, SendAgentRequests::class);
-        $this->app->singleton(LaunchTimeouts::class, fn () => new LaunchTimeouts(
-            $this->app->make('config')->integer('agents.silent_after_seconds'),
-            $this->app->make('config')->integer('agents.timed_out_after_seconds'),
-        ));
     }
 
     public function boot(AssignmentRegistration $assignments): void

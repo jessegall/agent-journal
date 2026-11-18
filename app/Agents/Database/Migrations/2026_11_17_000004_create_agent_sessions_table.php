@@ -24,6 +24,7 @@ return new class extends Migration
             $table->timestampsTz();
 
             $table->unique(['program', 'program_session_id']);
+            $table->index(['status', 'last_heartbeat_at']);
         });
     }
 

@@ -76,12 +76,13 @@ final readonly class RetireAgentHandler implements CommandHandler
     {
         $sessions = AgentSession::query()->where('agent_id', $target->id)->with('credential')->readAll('every session of the retiring agent ends')->get();
 
+        // The session row before its credential, the order every other ending and a heartbeat take.
         foreach ($sessions->filter(fn (AgentSession $session) => $session->isActive()) as $session) {
+            $this->sessions->end($session);
+
             if ($session->credential !== null) {
                 $this->credentials->revoke($session);
             }
-
-            $this->sessions->end($session);
         }
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Commands\RetireAgent;
 use App\Assignments\Commands\AssignRecord;
 use App\Assignments\Commands\ReassignRecord;
@@ -23,12 +24,12 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
  */
 final class CoreCommandsTest extends CommandBusTestCase
 {
-    public function test_core_lists_its_seven_commands_and_exports_them(): void
+    public function test_core_lists_its_eight_commands_and_exports_them(): void
     {
         $this->installCommandModules();
         $registry = $this->app->make(CommandRegistry::class);
 
-        $this->assertSame([AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class], CoreCommands::commands());
+        $this->assertSame([AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, RecordHeartbeat::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class], CoreCommands::commands());
 
         foreach (CoreCommands::commands() as $command) {
             $this->assertTrue($registry->has($command));

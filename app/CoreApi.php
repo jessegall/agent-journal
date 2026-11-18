@@ -18,6 +18,7 @@ use App\Actors\Support\CurrentUser;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Exceptions\AgentRequestFailed;
 use App\AgentRequests\Support\AgentReply;
+use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Contracts\AgentReader;
 use App\Agents\Contracts\CurrentSession;
@@ -465,6 +466,7 @@ final class CoreApi
             )
             ->commands(
                 RetireAgent::class,
+                RecordHeartbeat::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,

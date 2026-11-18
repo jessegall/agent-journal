@@ -6,9 +6,11 @@ namespace Tests\Feature\Hooks;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\DatabaseClock;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchHeartbeats;
 use App\Agents\Actions\LaunchSessions;
+use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Models\Agent;
@@ -34,59 +36,54 @@ final class HookRecoveryTest extends TestCase
 
     private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'tasks', 'links'];
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        CarbonImmutable::setTestNow('2026-11-17 08:00:00');
-    }
-
-    protected function tearDown(): void
-    {
-        CarbonImmutable::setTestNow();
-
-        parent::tearDown();
-    }
-
     public function test_silence_first_makes_the_session_silent_and_keeps_the_launch_working(): void
     {
         $launched = $this->launch();
 
-        $this->wait(121);
+        $this->startedSecondsAgo($launched, 121);
         $this->heartbeats()->markSilentLaunches();
 
-        $this->assertSame(SessionStatus::Silent, $launched->session->fresh()?->status);
+        $this->assertSame(SessionStatus::Silent, $launched->session->refresh()->status);
         $this->assertSame(StackStatus::Active, $this->stackOf($launched)->status);
         $this->assertSame($launched->session->id, $this->app->make(CredentialLookup::class)->sessionFor($launched->token)->id);
+    }
+
+    public function test_a_session_inside_its_presence_window_stays_active(): void
+    {
+        $launched = $this->launch();
+
+        $this->startedSecondsAgo($launched, 100);
+        $this->heartbeats()->markSilentLaunches();
+
+        $this->assertSame(SessionStatus::Active, $launched->session->refresh()->status);
     }
 
     public function test_a_heartbeat_makes_a_silent_session_active_again(): void
     {
         $launched = $this->launch();
-        $this->wait(121);
+        $this->startedSecondsAgo($launched, 121);
         $this->heartbeats()->markSilentLaunches();
 
-        $this->heartbeats()->recordHeartbeat($launched->session);
-        $this->wait(900);
+        $this->app->make(CommandBus::class)->run(new RecordHeartbeat($launched->session->id));
         $this->heartbeats()->markSilentLaunches();
 
-        $this->assertSame(SessionStatus::Silent, $launched->session->fresh()?->status);
-        $this->assertNull($launched->session->fresh()?->end_evidence);
+        $this->assertSame(SessionStatus::Active, $launched->session->refresh()->status);
+        $this->assertNull($launched->session->refresh()->end_evidence);
     }
 
-    public function test_a_long_silence_times_the_session_out_without_an_end_hook_and_keeps_the_obligations(): void
+    public function test_a_long_silence_never_ends_the_session_and_keeps_the_credential_and_the_stack(): void
     {
         $launched = $this->launch();
         $task = $this->startTask($launched);
 
-        $this->wait(121);
+        $this->startedSecondsAgo($launched, 17 * 60);
         $this->heartbeats()->markSilentLaunches();
-        $this->wait(901);
         $this->heartbeats()->markSilentLaunches();
 
-        $this->assertSame(SessionStatus::TimedOut, $launched->session->fresh()?->status);
-        $this->assertStringStartsWith('silent since', (string) $launched->session->fresh()?->end_evidence);
-        $this->assertSame(StackStatus::Closed, $this->stackOf($launched)->status);
+        $this->assertSame(SessionStatus::Silent, $launched->session->refresh()->status);
+        $this->assertNull($launched->session->refresh()->end_evidence);
+        $this->assertSame($launched->session->id, $this->app->make(CredentialLookup::class)->sessionFor($launched->token)->id);
+        $this->assertSame(StackStatus::Active, $this->stackOf($launched)->status);
         $this->assertSame(['hooks.main_ready', 'tasks.working'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($launched)->frames->all()));
         $this->assertSame(TaskState::Started, $task->fresh()?->state);
         $this->assertSame(0, DB::table('hook_calls')->count());
@@ -98,8 +95,8 @@ final class HookRecoveryTest extends TestCase
 
         $this->heartbeats()->markExited($launched->session, 'exit code 137');
 
-        $this->assertSame(SessionStatus::Ended, $launched->session->fresh()?->status);
-        $this->assertSame('host reported exit: exit code 137', $launched->session->fresh()?->end_evidence);
+        $this->assertSame(SessionStatus::Ended, $launched->session->refresh()->status);
+        $this->assertSame('host reported exit: exit code 137', $launched->session->refresh()->end_evidence);
         $this->assertSame(StackStatus::Closed, $this->stackOf($launched)->status);
         $this->expectException(CredentialRejected::class);
         $this->app->make(CredentialLookup::class)->sessionFor($launched->token);
@@ -143,8 +140,8 @@ final class HookRecoveryTest extends TestCase
         return $this->app->make(LaunchHeartbeats::class);
     }
 
-    private function wait(int $seconds): void
+    private function startedSecondsAgo(LaunchedAgent $launched, int $seconds): void
     {
-        CarbonImmutable::setTestNow(CarbonImmutable::now()->addSeconds($seconds));
+        DB::table('agent_sessions')->where('id', $launched->session->id)->update(['created_at' => $this->app->make(DatabaseClock::class)->now()->subSeconds($seconds)]);
     }
 }
