@@ -26,7 +26,9 @@ func (unreadable ScreenUnreadable) Error() string {
 
 func (limits Limits) checkChunk(size int) error {
 	if size > limits.MaxChunkBytes {
-		return ScreenUnreadable{Reason: fmt.Sprintf("a chunk of %d bytes is over the %d byte limit", size, limits.MaxChunkBytes)}
+		reason := fmt.Sprintf("a chunk of %d bytes is over the %d byte limit", size, limits.MaxChunkBytes)
+
+		return ScreenUnreadable{Reason: reason}
 	}
 
 	return nil
@@ -34,7 +36,9 @@ func (limits Limits) checkChunk(size int) error {
 
 func (limits Limits) checkSize(columns, rows int) error {
 	if columns < 1 || rows < 1 || columns > limits.MaxColumns || rows > limits.MaxRows {
-		return ScreenUnreadable{Reason: fmt.Sprintf("a size of %dx%d is outside 1x1 to %dx%d", columns, rows, limits.MaxColumns, limits.MaxRows)}
+		reason := fmt.Sprintf("a size of %dx%d is outside 1x1 to %dx%d", columns, rows, limits.MaxColumns, limits.MaxRows)
+
+		return ScreenUnreadable{Reason: reason}
 	}
 
 	return nil
