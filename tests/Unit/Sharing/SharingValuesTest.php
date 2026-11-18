@@ -14,6 +14,7 @@ use App\Sharing\Support\GatewayEndpoint;
 use App\Sharing\Support\GatewayHealth;
 use App\Sharing\Support\GatewayOperation;
 use App\Sharing\Support\GatewayReadiness;
+use App\Sharing\Support\GatewaySettings;
 use App\Sharing\Support\ShareBudget;
 use App\Sharing\Support\ShareCandidates;
 use App\Sharing\Support\ShareContentRead;
@@ -24,6 +25,7 @@ use App\Sharing\Support\ShareRecords;
 use App\Sharing\Support\ShareRelation;
 use App\Sharing\Support\ShareRelationRead;
 use App\Sharing\Support\ShareRelationSet;
+use App\Sharing\Support\ShareSelectedTarget;
 use App\Sharing\Support\ShareSelection;
 use App\Sharing\Support\ShareTargetRead;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -84,7 +86,7 @@ final class SharingValuesTest extends TestCase
             ShareRelation::class, ShareRelationSet::class, ShareRecordRegistration::class, ShareRecordCard::class,
             ShareRecords::class, ShareCandidates::class, ShareSelection::class, ShareBudget::class, ShareTargetRead::class,
             ShareRelationRead::class, ShareContentRead::class, SharedContent::class, GatewayConfiguration::class,
-            GatewayOperation::class, GatewayEndpoint::class, GatewayReadiness::class, GatewayHealth::class,
+            GatewayOperation::class, GatewayEndpoint::class, GatewayReadiness::class, GatewayHealth::class, GatewaySettings::class, ShareSelectedTarget::class,
         ] as $class) {
             yield class_basename($class) => [$class];
         }
