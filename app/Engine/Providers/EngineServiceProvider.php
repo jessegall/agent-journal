@@ -8,14 +8,16 @@ use App\Engine\Contracts\EngineLock;
 use App\Engine\Contracts\MonotonicClock;
 use App\Engine\Support\AdvisoryEngineLock;
 use App\Engine\Support\EngineAccess;
+use App\Engine\Support\EngineListenerSet;
 use App\Engine\Support\EngineSettings;
+use App\Engine\Support\EngineTickedDelivery;
 use App\Engine\Support\SystemMonotonicClock;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
 /**
  * The engine's settings, read once from config/engine.php, its one lock for the life of the process, and what it may
- * address in the current operation.
+ * address in the current operation; areas add their engine listeners to EngineListenerSet.
  */
 final class EngineServiceProvider extends ServiceProvider
 {
@@ -32,5 +34,7 @@ final class EngineServiceProvider extends ServiceProvider
         $this->app->singleton(EngineLock::class, AdvisoryEngineLock::class);
         $this->app->scoped(EngineAccess::class);
         $this->app->singleton(MonotonicClock::class, SystemMonotonicClock::class);
+        $this->app->singleton(EngineListenerSet::class);
+        $this->app->scoped(EngineTickedDelivery::class);
     }
 }

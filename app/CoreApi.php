@@ -137,6 +137,7 @@ use App\Contracts\CommandHandler;
 use App\Contracts\CommandRefusal;
 use App\Contracts\Event;
 use App\Contracts\Listener;
+use App\Engine\Events\EngineTicked;
 use App\Exports\Exceptions\MalformedExports;
 use App\Exports\Support\ExportBuilder;
 use App\Exports\Support\Exports;
@@ -323,7 +324,7 @@ final class CoreApi
     public static function exports(): Exports
     {
         return Exports::make()
-            ->events(CommentPosted::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class)
+            ->events(CommentPosted::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, EngineTicked::class)
             ->contracts(
                 RecordProvider::class,
                 RecordReader::class,
