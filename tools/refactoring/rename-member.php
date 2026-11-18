@@ -65,7 +65,7 @@ final class DeclaringTypeMarker extends NodeVisitorAbstract
     }
 }
 
-const SEARCHED = ['app', 'tests', 'routes', 'bootstrap', 'config', 'database'];
+const SEARCHED = ['app', 'domain', 'tests', 'routes', 'bootstrap', 'config', 'database'];
 const SKIPPED = ['vendor', 'node_modules'];
 
 $arguments = array_slice($argv, 1);

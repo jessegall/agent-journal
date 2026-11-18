@@ -17,7 +17,7 @@ declare(strict_types=1);
  * starting with # are ignored.
  *
  * Give the new name alone to rename in place, or a fully written name (`App\\...` or `Tests\\...`) to move it
- * as well; `App\\` lives in app/ and `Tests\\` in tests/. `--namespace=` moves every class
+ * as well; each root namespace lives in the folder composer.json's PSR-4 section gives it. `--namespace=` moves every class
  * declared under one namespace into another, and `--dry-run` reports without writing.
  *
  * `--replace` is the other operation: the destination ALREADY EXISTS, so nothing is relocated —
@@ -34,11 +34,7 @@ const ROOT = __DIR__.'/../..';
  * prefix is added to them. Each root namespace maps to its folder, as composer.json's PSR-4 section says.
  */
 const PACKAGE = '';
-const SOURCE_NAMESPACE = 'App\\';
-const SOURCE_FOLDER = 'app';
-const TEST_NAMESPACE = 'Tests\\';
-const TEST_FOLDER = 'tests';
-const SEARCHED = ['app', 'tests', 'routes', 'bootstrap', 'config', 'database'];
+const SEARCHED = ['app', 'domain', 'tests', 'routes', 'bootstrap', 'config', 'database'];
 const SKIPPED = ['__DEPRECATED', '__deprecated', 'vendor', 'node_modules'];
 
 $arguments = array_slice($argv, 1);
@@ -922,17 +918,35 @@ function destination(string $from, string $qualified): string
         return dirname($from).'/'.basename(str_replace('\\', '/', $qualified)).'.php';
     }
 
-    if (str_starts_with($qualified, TEST_NAMESPACE)) {
-        return ROOT.'/'.TEST_FOLDER.'/'.str_replace('\\', '/', substr($qualified, strlen(TEST_NAMESPACE))).'.php';
+    foreach (roots() as $namespace => $folder) {
+        if (str_starts_with($qualified, $namespace)) {
+            return ROOT.'/'.$folder.'/'.str_replace('\\', '/', substr($qualified, strlen($namespace))).'.php';
+        }
     }
 
-    if (str_starts_with($qualified, SOURCE_NAMESPACE)) {
-        return ROOT.'/'.SOURCE_FOLDER.'/'.str_replace('\\', '/', substr($qualified, strlen(SOURCE_NAMESPACE))).'.php';
-    }
-
-    fwrite(STDERR, "{$qualified} is under neither App\\ nor Tests\\, so it has no folder.\n");
+    fwrite(STDERR, "{$qualified} is under no PSR-4 root of composer.json, so it has no folder.\n");
 
     exit(2);
+}
+
+/**
+ * The PSR-4 roots of composer.json, namespace to folder, the longest folder first so a nested root wins.
+ *
+ * @return array<string, string>
+ */
+function roots(): array
+{
+    static $roots = null;
+
+    if ($roots !== null) {
+        return $roots;
+    }
+
+    $composer = json_decode((string) file_get_contents(ROOT.'/composer.json'), true, flags: JSON_THROW_ON_ERROR);
+    $roots = array_map(static fn (string $folder): string => rtrim($folder, '/'), [...$composer['autoload']['psr-4'], ...$composer['autoload-dev']['psr-4']]);
+    uasort($roots, static fn (string $one, string $other): int => strlen($other) <=> strlen($one));
+
+    return $roots;
 }
 
 /**
@@ -976,11 +990,14 @@ function deleted(string $file): void
 function namespaceOf(string $file): string
 {
     $path = relative($file);
-    $inTests = str_starts_with($path, TEST_FOLDER.'/');
-    $root = $inTests ? TEST_NAMESPACE : SOURCE_NAMESPACE;
-    $path = substr($path, strlen(($inTests ? TEST_FOLDER : SOURCE_FOLDER).'/'));
 
-    return rtrim($root.str_replace('/', '\\', dirname($path)), '\\.');
+    foreach (roots() as $namespace => $folder) {
+        if (str_starts_with($path, $folder.'/')) {
+            return rtrim($namespace.str_replace('/', '\\', dirname(substr($path, strlen($folder) + 1))), '\\.');
+        }
+    }
+
+    throw new RuntimeException(sprintf('[%s] lies under no PSR-4 root of composer.json.', $path));
 }
 
 /**
