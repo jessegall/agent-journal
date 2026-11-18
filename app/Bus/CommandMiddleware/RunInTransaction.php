@@ -10,6 +10,7 @@ use App\Bus\Exceptions\CommandTransactionMismatch;
 use App\Bus\Exceptions\NestedCommandFailureIgnored;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\CommandCall;
+use App\Bus\Support\CommandStops;
 use App\Bus\Support\OperationDeadline;
 use App\Bus\Support\RunningCommand;
 use App\Reads\Support\ScopedReadMeter;
@@ -39,6 +40,7 @@ final readonly class RunInTransaction implements CommandMiddleware
         private ConnectionInterface $database,
         private OperationDeadline $deadline,
         private RunningCommand $running,
+        private CommandStops $stops,
     ) {}
 
     public function handle(CommandCall $call, Closure $next): mixed
@@ -50,11 +52,22 @@ final readonly class RunInTransaction implements CommandMiddleware
         }
 
         for ($attempt = 1; ; $attempt++) {
+            $deadline = $this->stops->limit($this->deadline);
+
+            if ($deadline->hasRunOut()) {
+                throw StackLockTimedOut::spent(-$deadline->milliseconds);
+            }
+
             try {
-                return $attempt === 1 ? $this->attempt($call, $next) : ScopedReadMeter::ofCurrentScope()->withinSchedule('transaction retry', fn () => $this->attempt($call, $next));
+                return $attempt === 1
+                    ? $this->attempt($call, $next, $deadline)
+                    : ScopedReadMeter::ofCurrentScope()->withinSchedule(
+                        'transaction retry',
+                        fn () => $this->attempt($call, $next, $deadline),
+                    );
             } catch (QueryException $failure) {
                 if (in_array($failure->getCode(), self::TIMED_OUT_CODES, true)) {
-                    throw StackLockTimedOut::after($this->deadline->milliseconds, $failure);
+                    throw StackLockTimedOut::after($deadline->milliseconds, $failure);
                 }
 
                 if (! in_array($failure->getCode(), self::RETRIED_CODES, true)) {
@@ -68,15 +81,18 @@ final readonly class RunInTransaction implements CommandMiddleware
         }
     }
 
-    private function attempt(CommandCall $call, Closure $next): mixed
+    /**
+     * One attempt, its lock and statement limits set from the time this attempt has.
+     */
+    private function attempt(CommandCall $call, Closure $next, OperationDeadline $deadline): mixed
     {
         $isolation = $call->needsRepeatableRead() ? self::REPEATABLE_READ : self::READ_COMMITTED;
         $this->database->beginTransaction();
 
         try {
             $this->database->statement('SET TRANSACTION ISOLATION LEVEL '.strtoupper($isolation));
-            $this->database->statement("SET LOCAL lock_timeout = '{$this->deadline->lockMilliseconds()}ms'");
-            $this->database->statement("SET LOCAL statement_timeout = '{$this->deadline->milliseconds}ms'");
+            $this->database->statement("SET LOCAL lock_timeout = '{$deadline->lockMilliseconds()}ms'");
+            $this->database->statement("SET LOCAL statement_timeout = '{$deadline->milliseconds}ms'");
             $result = $this->running->running($call, $isolation, fn () => $next($call));
             $failed = $this->running->failedJoinedCommand();
 
@@ -102,14 +118,26 @@ final readonly class RunInTransaction implements CommandMiddleware
         $needed = $call->needsRepeatableRead() ? self::REPEATABLE_READ : self::READ_COMMITTED;
         $open = $this->running->isolation() ?? (string) $this->database->scalar('SHOW transaction_isolation');
 
-        if (! $this->running->isRunning() && $this->database->scalar("SELECT current_setting('lock_timeout')") === '0') {
-            throw CommandTransactionMismatch::for($call->name(), 'the open transaction has no lock and statement limits; open it through the bus or the stack transaction');
+        if (! $this->running->isRunning() && $this->openTransactionHasNoLimits()) {
+            throw CommandTransactionMismatch::for(
+                $call->name(),
+                'the open transaction has no lock and statement limits; '
+                .'open it through the bus or the stack transaction',
+            );
         }
 
         if ($open !== $needed) {
             $outer = $this->running->name() ?? 'code outside the bus';
 
-            throw CommandTransactionMismatch::for($call->name(), "it needs {$needed} and the transaction {$outer} opened is {$open}");
+            throw CommandTransactionMismatch::for(
+                $call->name(),
+                "it needs {$needed} and the transaction {$outer} opened is {$open}",
+            );
         }
+    }
+
+    private function openTransactionHasNoLimits(): bool
+    {
+        return $this->database->scalar("SELECT current_setting('lock_timeout')") === '0';
     }
 }

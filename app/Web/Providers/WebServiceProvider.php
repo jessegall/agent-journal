@@ -6,6 +6,7 @@ namespace App\Web\Providers;
 
 use App\Actors\Exceptions\AgentActorRequired;
 use App\Actors\Exceptions\UserActorRequired;
+use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Contracts\CommandRefusal;
 use App\CorePages;
 use App\Domains\Support\DomainRegistry;
@@ -18,6 +19,7 @@ use App\Web\Contracts\CurrentUserReader;
 use App\Web\Models\Layout;
 use App\Web\Models\Support\CurrentUserScope;
 use App\Web\Routes\DeclaredRoutes;
+use App\Web\Support\OwnerAutoAssignmentAccess;
 use App\Web\Support\OwnerSettingsAccess;
 use App\Web\Support\UiComponentFinder;
 use App\Web\Support\UserChannel;
@@ -45,6 +47,7 @@ final class WebServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(SettingsAccessPolicy::class, OwnerSettingsAccess::class);
+        $this->app->bind(AutoAssignmentAccess::class, OwnerAutoAssignmentAccess::class);
         $this->app->singleton(UiDeclarations::class, fn ($app) => $app->make(DomainRegistry::class)->uiDeclarations(...CorePages::declarations()));
         // Inertia's page check reads the declared components, and today's pages through its usual finder.
         $this->app->bind('inertia.view-finder', fn ($app) => new UiComponentFinder(

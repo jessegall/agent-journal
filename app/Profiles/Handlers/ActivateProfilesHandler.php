@@ -8,24 +8,67 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Contracts\ProfileReader;
+use App\Profiles\Enums\ProfileChangeType;
+use App\Profiles\Exceptions\ProfilePolicyRefused;
 use App\Profiles\Models\Profile;
+use App\Profiles\Support\PolicyResolver;
+use App\Profiles\Support\ProposedProfile;
 use App\Profiles\Values\ActivatedProfile;
 use App\Profiles\Values\ProfileActivation;
 use App\Profiles\Values\ProfileDefinition;
 
+/**
+ * Resolves and checks the whole proposal before writing anything, then appends one revision per profile, every one
+ * carrying the hash of the proposal it came from, and answers how each differs from the revision that was active.
+ */
 final readonly class ActivateProfilesHandler implements CommandHandler
 {
     public function __construct(
         private CurrentActor $actors,
+        private PolicyResolver $resolver,
+        private ProfileReader $profiles,
     ) {}
 
+    /**
+     * @throws ProfilePolicyRefused
+     */
     public function handle(ActivateProfiles $command): ProfileActivation
     {
+        $proposal = $command->proposal;
+        $hash = hash('sha256', json_encode($proposal, JSON_THROW_ON_ERROR));
+        $keys = array_map(fn (ProposedProfile $profile) => $profile->key->key, $proposal->profiles);
+
+        foreach (array_diff_assoc($keys, array_unique($keys)) as $index => $repeated) {
+            throw ProfilePolicyRefused::repeatedKey($proposal->profiles[$index]->key);
+        }
+
+        $definitions = array_map(
+            fn (ProposedProfile $profile) => $this->resolver->resolve($proposal, $profile, $hash),
+            $proposal->profiles,
+        );
+        $changes = array_map($this->changeOf(...), $definitions);
         $author = ActorIdentity::of($this->actors->actor());
 
         return new ProfileActivation(array_map(
-            fn (ProfileDefinition $definition) => new ActivatedProfile($definition->key, Profile::activate($definition, $author)->revision),
-            $command->profiles,
-        ));
+            fn (ProfileDefinition $definition, ProfileChangeType $change) => new ActivatedProfile(
+                $definition->key,
+                Profile::activate($definition, $author)->revision,
+                $change,
+            ),
+            $definitions,
+            $changes,
+        ), $hash);
+    }
+
+    private function changeOf(ProfileDefinition $definition): ProfileChangeType
+    {
+        if (! $this->profiles->has($definition->key)) {
+            return ProfileChangeType::Added;
+        }
+
+        return $definition->differsFrom($this->profiles->snapshotFor($definition->key))
+            ? ProfileChangeType::Changed
+            : ProfileChangeType::Unchanged;
     }
 }

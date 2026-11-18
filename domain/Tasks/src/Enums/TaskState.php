@@ -35,4 +35,14 @@ enum TaskState: string
     {
         return $this === self::Finished || $this === self::Cancelled;
     }
+
+    /**
+     * The states whose work is not over: every state that has not ended.
+     *
+     * @return list<self>
+     */
+    public static function unfinished(): array
+    {
+        return array_values(array_filter(self::cases(), fn (self $state) => ! $state->hasEnded()));
+    }
 }

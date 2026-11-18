@@ -11,6 +11,7 @@ use App\Agents\Commands\ClaimLaunchGrant;
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
+use App\Agents\Commands\FenceProfileRevision;
 use App\Agents\Commands\InterruptAgent;
 use App\Agents\Commands\LaunchAgent;
 use App\Agents\Commands\OpenAgentRuntime;
@@ -26,6 +27,9 @@ use App\Agents\Commands\RunKeyScript;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\ConfigureAutoAssignment;
+use App\Assignments\Commands\DisableAutoAssignment;
+use App\Assignments\Commands\EnableAutoAssignment;
 use App\Assignments\Commands\ReassignRecord;
 use App\Assignments\Commands\UnassignRecord;
 use App\Bus\Contracts\Command;
@@ -102,11 +106,69 @@ final class CoreCommands
     public static function commands(): array
     {
         return [
-            AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, LaunchAgent::class, CreateAgent::class, EnrollHost::class, OpenAgentRuntime::class, DeliverAgent::class, WakeAgent::class, ChangeAgentModel::class, ChangeAgentEffort::class, InterruptAgent::class, StopAgent::class, RunKeyScript::class, ClaimDriverRequests::class, ClaimLaunchGrant::class, ReportRuntimeActivity::class, ReportRequestProgress::class, ReportDriverTurn::class, ReportRuntimeHeartbeat::class, ReportRuntimeExit::class, OpenHostMainRuntime::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, SettleFrameTimes::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class,
+            AssignRecord::class, ReassignRecord::class, UnassignRecord::class,
+            EnableAutoAssignment::class, ConfigureAutoAssignment::class, DisableAutoAssignment::class,
+            RetireAgent::class,
+            FenceProfileRevision::class,
+            LaunchAgent::class,
+            CreateAgent::class,
+            EnrollHost::class,
+            OpenAgentRuntime::class,
+            DeliverAgent::class,
+            WakeAgent::class,
+            ChangeAgentModel::class,
+            ChangeAgentEffort::class,
+            InterruptAgent::class,
+            StopAgent::class,
+            RunKeyScript::class,
+            ClaimDriverRequests::class,
+            ClaimLaunchGrant::class,
+            ReportRuntimeActivity::class,
+            ReportRequestProgress::class,
+            ReportDriverTurn::class,
+            ReportRuntimeHeartbeat::class,
+            ReportRuntimeExit::class,
+            OpenHostMainRuntime::class,
+            RecordHeartbeat::class,
+            RecordUserHeartbeat::class,
+            MarkSilentSessions::class,
+            SettleFrameTimes::class,
+            InstallNumbers::class,
+            LinkRecords::class,
+            UnlinkRecords::class,
+            PostComment::class,
+            PostTextComment::class,
             SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class,
-            SetStringSetting::class, SetBooleanSetting::class, SetIntegerSetting::class, SetDecimalSetting::class, SetStringChoice::class, SetIntegerChoice::class, ResetSetting::class, EnableSettingGroup::class, DisableSettingGroup::class, ResetSettingGroup::class,
-            SaveSharePreview::class, CreateShare::class, RequestShare::class, ApproveShareRequest::class, RevokeShare::class, RevokeCommandPermissions::class, IssueEvidencePermit::class, OpenCommandRequest::class, WithdrawCommandRequest::class, RefreshShareScope::class, RetryShare::class, ConfigureShareGateway::class, DisableShareGateway::class,
-            ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class, ReopenSharedGateways::class, PruneShareAudit::class,
+            SetStringSetting::class,
+            SetBooleanSetting::class,
+            SetIntegerSetting::class,
+            SetDecimalSetting::class,
+            SetStringChoice::class,
+            SetIntegerChoice::class,
+            ResetSetting::class,
+            EnableSettingGroup::class,
+            DisableSettingGroup::class,
+            ResetSettingGroup::class,
+            SaveSharePreview::class,
+            CreateShare::class,
+            RequestShare::class,
+            ApproveShareRequest::class,
+            RevokeShare::class,
+            RevokeCommandPermissions::class,
+            IssueEvidencePermit::class,
+            OpenCommandRequest::class,
+            WithdrawCommandRequest::class,
+            RefreshShareScope::class,
+            RetryShare::class,
+            ConfigureShareGateway::class,
+            DisableShareGateway::class,
+            ReadShare::class,
+            ExpireShares::class,
+            ClaimGatewayOperation::class,
+            RecordGatewayOutcome::class,
+            RecordGatewayHealth::class,
+            ReopenSharedGateways::class,
+            PruneShareAudit::class,
             ActivateProfiles::class, RevokeProfiles::class,
             CreateSkill::class, ReviseSkill::class, RestoreSkill::class, RetireSkill::class, CopySkill::class,
             RefreshSkills::class,
@@ -121,8 +183,8 @@ final class CoreCommands
     }
 
     /**
-     * Core's commands that stay private: registered for Core's own runtime, such as the system's public share read, share expiry and the gateway supervisor's claims and reports,
-     * and never exported to a domain or module.
+     * Core's commands that stay private: registered for Core's own runtime, such as the system's public share read,
+     * share expiry and the gateway supervisor's claims and reports, and never exported to a domain or module.
      *
      * @return list<class-string<Command<mixed>>>
      */
@@ -144,6 +206,7 @@ final class CoreCommands
             RetrySkillPublication::class,
             PruneSkillPublications::class,
             RecordSkillRead::class,
+            FenceProfileRevision::class,
         ];
     }
 

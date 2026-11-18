@@ -156,25 +156,39 @@ use App\Agents\Values\ScriptProgress;
 use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
 use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\ConfigureAutoAssignment;
+use App\Assignments\Commands\DisableAutoAssignment;
+use App\Assignments\Commands\EnableAutoAssignment;
 use App\Assignments\Commands\ReassignRecord;
 use App\Assignments\Commands\UnassignRecord;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Contracts\AssignableProvider;
+use App\Assignments\Contracts\AssignedWorkProvider;
+use App\Assignments\Contracts\AssignedWorkReader;
 use App\Assignments\Contracts\Assignee;
 use App\Assignments\Contracts\AssigneeProvider;
 use App\Assignments\Contracts\AssigneeReader;
+use App\Assignments\Contracts\AssignmentPool;
+use App\Assignments\Contracts\AssignmentPoolFactory;
+use App\Assignments\Contracts\AssignmentQuery;
 use App\Assignments\Contracts\AssignmentReader;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
+use App\Assignments\Contracts\AutoAssigner;
+use App\Assignments\Contracts\ProvidesAutoAssignments;
 use App\Assignments\Contracts\RecordVisibility;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Enums\AssignmentReason;
+use App\Assignments\Enums\PoolInputType;
+use App\Assignments\Enums\PoolMembersType;
 use App\Assignments\Events\AssignmentsChanged;
 use App\Assignments\Exceptions\AssigneeTypeRepeated;
 use App\Assignments\Exceptions\AssigneeUnavailable;
 use App\Assignments\Exceptions\AssignmentConflict;
 use App\Assignments\Exceptions\AssignmentDenied;
+use App\Assignments\Exceptions\AssignmentPoolTooLarge;
+use App\Assignments\Exceptions\AssignmentPoolUnavailable;
 use App\Assignments\Exceptions\AssignmentGroupTooLarge;
 use App\Assignments\Exceptions\AssignmentProviderInvalid;
 use App\Assignments\Exceptions\AssignmentRetryExhausted;
@@ -184,6 +198,7 @@ use App\Assignments\Exceptions\AssignmentTypeRepeated;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
+use App\Assignments\Exceptions\InvalidRecordIds;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\AssigneeList;
 use App\Assignments\Support\AssigneeName;
@@ -198,8 +213,14 @@ use App\Assignments\Support\AssignmentOutcome;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
 use App\Assignments\Support\AssignmentSet;
+use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\NumberedPage;
+use App\Assignments\Support\OrderedRecordIds;
 use App\Assignments\Support\Page;
+use App\Assignments\Support\PoolDefinition;
+use App\Assignments\Support\PoolDescription;
+use App\Assignments\Support\PoolMembers;
+use App\Assignments\Support\PoolReference;
 use App\Assignments\Support\RecordIds;
 use App\Bus\Attributes\AllowsEngine;
 use App\Bus\Attributes\HandledBy;
@@ -469,14 +490,30 @@ use App\Processes\Values\WordSegment;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Profiles\Contracts\ProfileReader;
+use App\Profiles\Enums\PolicyOriginType;
+use App\Profiles\Enums\ProfileChangeType;
 use App\Profiles\Enums\ProfileType;
+use App\Profiles\Events\ProfileRevisionRevoked;
+use App\Profiles\Exceptions\ProfileFieldUnknown;
 use App\Profiles\Exceptions\ProfileKeyInvalid;
 use App\Profiles\Exceptions\ProfileMissing;
+use App\Profiles\Exceptions\ProfilePolicyRefused;
+use App\Profiles\Exceptions\ProfileProposalRefused;
 use App\Profiles\Exceptions\ProfileRetired;
+use App\Profiles\Exceptions\ProfileRevisionUnreadable;
+use App\Profiles\Support\ClassRule;
+use App\Profiles\Support\OperationRule;
+use App\Profiles\Support\PolicyOverride;
+use App\Profiles\Support\ProfileProposal;
+use App\Profiles\Support\ProposedProfile;
+use App\Profiles\Support\TypeOverride;
 use App\Profiles\Values\ActivatedProfile;
+use App\Profiles\Values\FieldOrigin;
 use App\Profiles\Values\ProfileActivation;
 use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
+use App\Profiles\Values\ProfileLaunchPolicy;
+use App\Profiles\Values\ProfileProvenance;
 use App\Profiles\Values\ProfileSnapshot;
 use App\Programs\Enums\HookProgram;
 use App\Programs\Exceptions\ProgramKeyInvalid;
@@ -763,7 +800,29 @@ final class CoreApi
     public static function exports(): Exports
     {
         return Exports::make()
-            ->events(LinksRemoved::class, CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextStarted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, LaunchAccepted::class, EngineTicked::class, SettingsChanged::class, ShareRequested::class, ShareCreated::class, ShareActivated::class, ShareFailed::class, ShareScopeChanged::class, ShareRevoked::class, ShareExpired::class, ShareGatewayChanged::class)
+            ->events(
+                LinksRemoved::class,
+                CommentPosted::class,
+                MessageSent::class,
+                MessageAnswered::class,
+                MessageDismissed::class,
+                ContextStarted::class,
+                StateTypesRequested::class,
+                AssignmentsChanged::class,
+                LaunchEnded::class,
+                ProfileRevisionRevoked::class,
+                LaunchAccepted::class,
+                EngineTicked::class,
+                SettingsChanged::class,
+                ShareRequested::class,
+                ShareCreated::class,
+                ShareActivated::class,
+                ShareFailed::class,
+                ShareScopeChanged::class,
+                ShareRevoked::class,
+                ShareExpired::class,
+                ShareGatewayChanged::class,
+            )
             ->contracts(
                 RecordProvider::class,
                 RecordReader::class,
@@ -834,6 +893,13 @@ final class CoreApi
                 AssigneeReader::class,
                 AssignmentWriter::class,
                 AssignmentTransaction::class,
+                AutoAssigner::class,
+                AssignmentPool::class,
+                AssignmentPoolFactory::class,
+                AssignedWorkReader::class,
+                AssignedWorkProvider::class,
+                AssignmentQuery::class,
+                ProvidesAutoAssignments::class,
                 CurrentUserReader::class,
                 Command::class,
                 CommandBus::class,
@@ -1085,6 +1151,14 @@ final class CoreApi
                 AssignmentChange::class,
                 Page::class,
                 RecordIds::class,
+                OrderedRecordIds::class,
+                PoolReference::class,
+                PoolMembers::class,
+                PoolMembersType::class,
+                PoolDefinition::class,
+                PoolDescription::class,
+                PoolInputType::class,
+                AutoAssignerDefinition::class,
                 AssigneeList::class,
                 AssigneeName::class,
                 AssignmentReason::class,
@@ -1216,6 +1290,17 @@ final class CoreApi
                 ProfileKey::class,
                 ProfileType::class,
                 ProfileSnapshot::class,
+                ProfileLaunchPolicy::class,
+                ProfileProvenance::class,
+                ProfileProposal::class,
+                ProposedProfile::class,
+                PolicyOverride::class,
+                TypeOverride::class,
+                ClassRule::class,
+                OperationRule::class,
+                ProfileChangeType::class,
+                FieldOrigin::class,
+                PolicyOriginType::class,
                 ProfileDefinition::class,
                 ProfileActivation::class,
                 ActivatedProfile::class,
@@ -1305,6 +1390,9 @@ final class CoreApi
                 LinkRecords::class,
                 UnlinkRecords::class,
                 AssignRecord::class,
+                EnableAutoAssignment::class,
+                ConfigureAutoAssignment::class,
+                DisableAutoAssignment::class,
                 ReassignRecord::class,
                 UnassignRecord::class,
                 SetStringSetting::class,
@@ -1387,6 +1475,9 @@ final class CoreApi
                 InvalidRecordIdentity::class,
                 SharingNotAllowed::class,
                 InvalidAssignmentPage::class,
+                InvalidRecordIds::class,
+                AssignmentPoolUnavailable::class,
+                AssignmentPoolTooLarge::class,
                 AssignmentGroupTooLarge::class,
                 AssigneeUnavailable::class,
                 RecordUnavailable::class,
@@ -1464,6 +1555,10 @@ final class CoreApi
                 ProfileKeyInvalid::class,
                 ProfileMissing::class,
                 ProfileRetired::class,
+                ProfileRevisionUnreadable::class,
+                ProfileFieldUnknown::class,
+                ProfileProposalRefused::class,
+                ProfilePolicyRefused::class,
                 SkillDeclarationInvalid::class,
                 SkillKeyInvalid::class,
                 ProgramKeyInvalid::class,

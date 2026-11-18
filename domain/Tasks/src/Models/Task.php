@@ -9,8 +9,11 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Support\AgentLabel;
 use App\Assignments\Contracts\Assignable;
+use App\Assignments\Enums\PoolMembersType;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\AssignmentHolder;
+use App\Assignments\Support\OrderedRecordIds;
+use App\Assignments\Support\PoolMembers;
 use App\Hooks\Contracts\WorkedOnStack;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
@@ -22,11 +25,14 @@ use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
 use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Api\TaskExecution;
+use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Database\Factories\TaskFactory;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWorkState;
+use Domain\Tasks\Exceptions\CandidateLimitInvalid;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Exceptions\TaskNotOpenForAssignment;
 use Domain\Tasks\Exceptions\TaskRestartRefused;
 use Domain\Tasks\Exceptions\TaskRunNotYours;
 use Domain\Tasks\Exceptions\TaskRunTaken;
@@ -35,10 +41,13 @@ use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 use Domain\Tasks\Support\TaskLimits;
 use Domain\Tasks\Support\TaskWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Carbon;
 use PhpOption\None;
 use PhpOption\Option;
@@ -66,7 +75,19 @@ use PhpOption\Some;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['title', 'brief', 'creator_type', 'creator_id', 'revision', 'run_number', 'run_actor_type', 'run_actor_id', 'result_note', 'block_reason', 'cancel_reason'])]
+#[Fillable([
+    'title',
+    'brief',
+    'creator_type',
+    'creator_id',
+    'revision',
+    'run_number',
+    'run_actor_type',
+    'run_actor_id',
+    'result_note',
+    'block_reason',
+    'cancel_reason',
+])]
 #[UseFactory(TaskFactory::class)]
 final class Task extends Model implements Assignable, Numbered, ReadableModel, WorkedOnStack
 {
@@ -80,7 +101,7 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
     /**
      * The stable name links and assignments use for a task.
      */
-    public const string LINK_TYPE = 'tasks.task';
+    public const string LINK_TYPE = TaskType::VALUE;
 
     /**
      * @var array<string, mixed>
@@ -120,6 +141,70 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
     public static function lockedById(string $id): self
     {
         return self::query()->whereKey($id)->lockForUpdate()->first() ?? throw TaskMissing::forId($id);
+    }
+
+    /**
+     * At most limit open tasks of the pool's members that nobody holds: every open task by id, or the listed ones in
+     * their listed order. The filtering happens in the query, before its limit.
+     *
+     * @throws CandidateLimitInvalid
+     */
+    public static function candidates(PoolMembers $members, QueryBuilder $assignedIds, int $limit): OrderedRecordIds
+    {
+        if ($limit < 1 || $limit > OrderedRecordIds::LARGEST) {
+            throw CandidateLimitInvalid::for($limit, OrderedRecordIds::LARGEST);
+        }
+
+        if ($members->type === PoolMembersType::Ordered && $members->ids->ids === []) {
+            return new OrderedRecordIds([]);
+        }
+
+        $query = self::query()->where('state', TaskState::Open)->whereNotIn('id', $assignedIds);
+        $ordered = match ($members->type) {
+            PoolMembersType::All => $query->orderBy('id'),
+            PoolMembersType::Ordered => $query->whereIn('id', $members->ids->ids)->inListedOrder($members->ids),
+        };
+
+        return new OrderedRecordIds(array_values($ordered->readLimit($limit)->pluck('id')->all()));
+    }
+
+    /**
+     * @throws TaskNotOpenForAssignment
+     */
+    public function requireOpenForAssignment(): void
+    {
+        if ($this->state !== TaskState::Open) {
+            throw TaskNotOpenForAssignment::forTask($this->number, $this->state->value);
+        }
+    }
+
+    /**
+     * Tasks whose work is not over: open, started or blocked.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unfinished(Builder $query): void
+    {
+        $query->whereIn('state', TaskState::unfinished());
+    }
+
+    /**
+     * Orders by each id's place in the list, with the ids passed as bindings.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inListedOrder(Builder $query, OrderedRecordIds $ids): void
+    {
+        $cases = implode(' ', array_fill(0, count($ids->ids), 'when ? then cast(? as integer)'));
+        $bindings = [];
+
+        foreach ($ids->ids as $position => $id) {
+            array_push($bindings, $id, $position);
+        }
+
+        $query->orderByRaw("case id {$cases} end", $bindings);
     }
 
     /**
@@ -261,7 +346,13 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
 
         $label = $labels[$this->run_actor_id] ?? null;
 
-        return new TaskExecution($this->run_actor_type, $this->run_actor_id, $label?->name, $this->run_number, $this->state->workState());
+        return new TaskExecution(
+            $this->run_actor_type,
+            $this->run_actor_id,
+            $label?->name,
+            $this->run_number,
+            $this->state->workState(),
+        );
     }
 
     public function isRunOwnedBy(ActorIdentity $actor): bool

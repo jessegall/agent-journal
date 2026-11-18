@@ -18,7 +18,17 @@ final class UnsupportedHook extends LogicException
 
     public static function forTool(string $program, string $toolName): self
     {
-        return new self("The {$program} adapter does not know the tool {$toolName}, so the call is refused rather than let through.");
+        return new self(
+            "The {$program} adapter does not know the tool {$toolName}, "
+            .'so the call is refused rather than let through.',
+        );
+    }
+
+    public static function forResource(string $program, string $toolName): self
+    {
+        return new self(
+            "The {$program} call {$toolName} names a server or address other than the journal's, so it is refused.",
+        );
     }
 
     public static function forValue(string $program, string $field, string $value): self

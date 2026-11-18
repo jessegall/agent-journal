@@ -23,6 +23,10 @@ enum ClaudeCodeTool: string
     case WebFetch = 'WebFetch';
     case WebSearch = 'WebSearch';
     case TodoWrite = 'TodoWrite';
+    case ToolSearch = 'ToolSearch';
+    case ListMcpResources = 'ListMcpResourcesTool';
+    case ReadMcpResource = 'ReadMcpResourceTool';
+    case ReadMcpResourceDirectory = 'ReadMcpResourceDirTool';
 
     public static function named(string $toolName): self
     {
@@ -33,7 +37,7 @@ enum ClaudeCodeTool: string
     {
         return match ($this) {
             self::Edit, self::MultiEdit, self::Write, self::NotebookEdit => true,
-            self::Bash, self::Read, self::Glob, self::Grep, self::LS, self::WebFetch, self::WebSearch, self::TodoWrite => false,
+            default => false,
         };
     }
 
@@ -41,7 +45,29 @@ enum ClaudeCodeTool: string
     {
         return match ($this) {
             self::Write => FileOperation::Create,
-            self::Edit, self::MultiEdit, self::NotebookEdit, self::Bash, self::Read, self::Glob, self::Grep, self::LS, self::WebFetch, self::WebSearch, self::TodoWrite => FileOperation::Edit,
+            default => FileOperation::Edit,
+        };
+    }
+
+    /**
+     * Whether the tool finds or reads MCP tools and resources, which the launch limits to the journal's server.
+     */
+    public function discoversJournalTools(): bool
+    {
+        return match ($this) {
+            self::ToolSearch, self::ListMcpResources, self::ReadMcpResource, self::ReadMcpResourceDirectory => true,
+            default => false,
+        };
+    }
+
+    /**
+     * Whether the tool names an MCP server or resource address the journal must check.
+     */
+    public function readsResources(): bool
+    {
+        return match ($this) {
+            self::ListMcpResources, self::ReadMcpResource, self::ReadMcpResourceDirectory => true,
+            default => false,
         };
     }
 }

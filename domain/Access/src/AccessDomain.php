@@ -12,6 +12,7 @@ use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Skills\Contracts\ProvidesSkills;
 use Domain\Access\Skills\AccessSkill;
+use Domain\Access\Support\UserActivity;
 use Domain\Access\Support\UserAssignees;
 
 final class AccessDomain extends Domain implements ProvidesAssignees, ProvidesSkills
@@ -50,7 +51,7 @@ final class AccessDomain extends Domain implements ProvidesAssignees, ProvidesSk
      */
     public function assignees(): array
     {
-        return [new AssigneeRegistration(ActorType::User, UserAssignees::class)];
+        return [new AssigneeRegistration(ActorType::User, UserAssignees::class, UserActivity::class)];
     }
 
     public function skills(): array

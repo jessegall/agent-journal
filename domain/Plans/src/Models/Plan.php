@@ -7,7 +7,10 @@ namespace Domain\Plans\Models;
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
 use App\Assignments\Contracts\Assignable;
+use App\Assignments\Exceptions\AssignmentPoolTooLarge;
+use App\Assignments\Exceptions\AssignmentPoolUnavailable;
 use App\Assignments\Models\Support\AssignableListing;
+use App\Assignments\Support\OrderedRecordIds;
 use App\Assignments\Support\AssignmentHolder;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
@@ -163,7 +166,8 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
      */
     public function phaseNumbered(int $number): Phase
     {
-        return $this->phases()->where('number', $number)->first() ?? throw PhaseMissing::numbered($this->number, $number);
+        return $this->phases()->where('number', $number)->first()
+            ?? throw PhaseMissing::numbered($this->number, $number);
     }
 
     /**
@@ -194,13 +198,38 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
     public function taskIds(): array
     {
         $taskIds = PhaseTask::query()
-            ->join('phases', 'phases.id', '=', 'phase_tasks.phase_id')
-            ->where('phases.plan_id', $this->id)
-            ->orderBy('phases.number')
-            ->orderBy('phase_tasks.position')
+            ->inPlanOrder($this->id)
             ->readAll('assignment and progress of a plan cover every task')
             ->pluck('phase_tasks.task_id')
             ->all();
+
+        return array_map(strval(...), array_values($taskIds));
+    }
+
+    /**
+     * The tasks auto-assignment may give out from this plan, phase by phase, in order: only while it is started, and
+     * never a first part of a plan larger than one pool may list.
+     *
+     * @return list<string>
+     *
+     * @throws AssignmentPoolUnavailable
+     * @throws AssignmentPoolTooLarge
+     */
+    public function poolTaskIds(): array
+    {
+        if ($this->state !== PlanState::Started) {
+            throw AssignmentPoolUnavailable::inState("Plan {$this->number}", $this->state->value);
+        }
+
+        $taskIds = PhaseTask::query()
+            ->inPlanOrder($this->id)
+            ->readLimit(OrderedRecordIds::LARGEST + 1)
+            ->pluck('phase_tasks.task_id')
+            ->all();
+
+        if (count($taskIds) > OrderedRecordIds::LARGEST) {
+            throw AssignmentPoolTooLarge::holding("Plan {$this->number}", OrderedRecordIds::LARGEST);
+        }
 
         return array_map(strval(...), array_values($taskIds));
     }
@@ -215,11 +244,26 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
      */
     public function card(array $progressOfPhase, Option $holder, bool $focused): PlanCard
     {
-        $progress = array_reduce($progressOfPhase, fn (PlanProgress $sum, PlanProgress $phase) => $sum->plus($phase), PlanProgress::none());
+        $progress = array_reduce(
+            $progressOfPhase,
+            fn (PlanProgress $sum, PlanProgress $phase) => $sum->plus($phase),
+            PlanProgress::none(),
+        );
         $unfinished = array_keys(array_filter($progressOfPhase, fn (PlanProgress $phase) => ! $phase->isComplete()));
         $currentPhase = $unfinished[0] ?? array_key_last($progressOfPhase);
 
-        return new PlanCard($this->id, $this->number, $this->title, $this->type, $this->state, $this->state->canStart(), $focused, $progress, $currentPhase, $holder);
+        return new PlanCard(
+            $this->id,
+            $this->number,
+            $this->title,
+            $this->type,
+            $this->state,
+            $this->state->canStart(),
+            $focused,
+            $progress,
+            $currentPhase,
+            $holder,
+        );
     }
 
     /**
@@ -231,7 +275,9 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
     #[Scope]
     protected function listOrder(Builder $query, Option $focusedPlanId): void
     {
-        $focusedPlanId->forAll(fn (string $id) => $query->orderByRaw('case when "plans"."id" = ? then 0 else 1 end', [$id]));
+        $focusedPlanId->forAll(
+            fn (string $id) => $query->orderByRaw('case when "plans"."id" = ? then 0 else 1 end', [$id]),
+        );
         $query->orderByDesc('id');
     }
 

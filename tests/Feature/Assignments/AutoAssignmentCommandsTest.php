@@ -1,0 +1,158 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Assignments;
+
+use App\Actors\Support\ActorIdentity;
+use App\Assignments\Commands\ConfigureAutoAssignment;
+use App\Assignments\Commands\DisableAutoAssignment;
+use App\Assignments\Commands\EnableAutoAssignment;
+use App\Assignments\Contracts\AutoAssignmentReader;
+use App\Assignments\Exceptions\AutoAssignmentDenied;
+use App\Assignments\Exceptions\AutoAssignmentPoolUnknown;
+use App\Assignments\Exceptions\InvalidRecordIds;
+use App\Assignments\Support\AutoAssignmentChange;
+use App\Assignments\Support\AutoAssignmentFact;
+use App\Assignments\Support\AutoAssignmentInput;
+use App\Assignments\Support\AutoAssignmentKey;
+use App\Assignments\Support\PoolReference;
+use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandBus;
+use Domain\Access\Models\User;
+use Domain\Access\Support\AccessSettings;
+use Domain\Tasks\Api\TaskType;
+use Domain\Tasks\Assignments\OpenTaskPoolFactory;
+use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Models\Task;
+use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Support\CommitsHookRows;
+use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
+use Tests\TestCase;
+
+/**
+ * Enabling, configuring and disabling an auto-assignment through the bus: the owner sets an agent's pool and size, an
+ * agent may not set its own, and a pool no domain offers or a reference its factory refuses leaves the fact as it
+ * was.
+ */
+final class AutoAssignmentCommandsTest extends TestCase
+{
+    use CommitsHookRows;
+    use StartsAgentRequests;
+
+    private const array TABLES = [
+        'users',
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'tasks',
+        'auto_assignments',
+        'command_receipts',
+    ];
+
+    private User $owner;
+
+    private TestLaunch $worker;
+
+    private AutoAssignmentKey $key;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->owner = User::factory()->create();
+        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
+        $this->worker = TestLaunch::start('hooks.writing_helper_ready');
+        $this->key = new AutoAssignmentKey(ActorIdentity::of($this->worker->agent), TaskType::VALUE);
+        $this->startUserRequestAs($this->owner->id);
+    }
+
+    public function test_the_owner_enables_a_named_pool_for_an_agent(): void
+    {
+        [$first, $second, $third] = array_map(fn () => Task::factory()->create()->id, range(1, 3));
+        $pool = new PoolReference('tasks.named', null, [$third, $first, $second]);
+
+        $change = $this->runCommand(new EnableAutoAssignment(new AutoAssignmentInput($this->key, $pool, 3), 0));
+
+        $this->assertEquals(new AutoAssignmentChange(true, 1), $change);
+        $fact = $this->fact();
+        $this->assertSame([$third, $first, $second], $fact->pool->recordIds);
+        $this->assertSame(3, $fact->size);
+        $this->assertSame(1, $fact->revision);
+
+        $this->runCommand(new DisableAutoAssignment($this->key, 1));
+
+        $this->assertFalse($this->fact()->enabled);
+    }
+
+    public function test_an_agent_enabling_itself_is_refused_and_nothing_is_stored(): void
+    {
+        $this->startRequestAs($this->worker->agent->id, $this->worker->session->id);
+
+        $this->assertThrows(
+            fn () => $this->runCommand(
+                new EnableAutoAssignment(new AutoAssignmentInput($this->key, self::open(), 1), 0),
+            ),
+            AutoAssignmentDenied::class,
+        );
+        $this->assertTrue($this->reader()->forActor($this->key)->isEmpty());
+    }
+
+    public function test_a_pool_that_is_not_offered_or_not_valid_leaves_the_fact_as_it_was(): void
+    {
+        $this->runCommand(new EnableAutoAssignment(new AutoAssignmentInput($this->key, self::open(), 2), 0));
+        $class = new PoolReference(OpenTaskPoolFactory::class, null, []);
+
+        $this->assertThrows(
+            fn () => $this->runCommand(new ConfigureAutoAssignment(new AutoAssignmentInput($this->key, $class, 4), 1)),
+            AutoAssignmentPoolUnknown::class,
+        );
+        $this->assertThrows(
+            fn () => $this->runCommand(new ConfigureAutoAssignment(
+                new AutoAssignmentInput($this->key, new PoolReference('plans.unknown', null, []), 4),
+                1,
+            )),
+            AutoAssignmentPoolUnknown::class,
+        );
+        $this->assertThrows(
+            fn () => new PoolReference('tasks.named', null, array_map(TestIds::of(...), range(1, 1001))),
+            InvalidRecordIds::class,
+        );
+        $this->assertThrows(
+            fn () => $this->runCommand(new ConfigureAutoAssignment(
+                new AutoAssignmentInput($this->key, new PoolReference('tasks.named', null, [TestIds::of(99)]), 4),
+                1,
+            )),
+            TaskMissing::class,
+        );
+
+        $fact = $this->fact();
+        $this->assertTrue($fact->pool->isSameAs(self::open()));
+        $this->assertSame(2, $fact->size);
+        $this->assertSame(1, $fact->revision);
+    }
+
+    /**
+     * @param  Command<AutoAssignmentChange>  $command
+     */
+    private function runCommand(Command $command): AutoAssignmentChange
+    {
+        return $this->app->make(CommandBus::class)->run($command);
+    }
+
+    private function reader(): AutoAssignmentReader
+    {
+        return $this->app->make(AutoAssignmentReader::class);
+    }
+
+    private function fact(): AutoAssignmentFact
+    {
+        return $this->reader()->forActor($this->key)->get();
+    }
+
+    private static function open(): PoolReference
+    {
+        return new PoolReference('tasks.open', null, []);
+    }
+}

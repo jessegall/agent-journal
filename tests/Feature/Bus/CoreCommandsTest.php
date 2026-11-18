@@ -11,6 +11,7 @@ use App\Agents\Commands\ClaimLaunchGrant;
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
+use App\Agents\Commands\FenceProfileRevision;
 use App\Agents\Commands\InterruptAgent;
 use App\Agents\Commands\LaunchAgent;
 use App\Agents\Commands\OpenAgentRuntime;
@@ -26,6 +27,9 @@ use App\Agents\Commands\RunKeyScript;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\ConfigureAutoAssignment;
+use App\Assignments\Commands\DisableAutoAssignment;
+use App\Assignments\Commands\EnableAutoAssignment;
 use App\Assignments\Commands\ReassignRecord;
 use App\Assignments\Commands\UnassignRecord;
 use App\Bus\Support\CommandRegistry;
@@ -102,14 +106,117 @@ final class CoreCommandsTest extends CommandBusTestCase
         $this->installCommandModules();
         $registry = $this->app->make(CommandRegistry::class);
 
-        $this->assertSame([AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, LaunchAgent::class, CreateAgent::class, EnrollHost::class, OpenAgentRuntime::class, DeliverAgent::class, WakeAgent::class, ChangeAgentModel::class, ChangeAgentEffort::class, InterruptAgent::class, StopAgent::class, RunKeyScript::class, ClaimDriverRequests::class, ClaimLaunchGrant::class, ReportRuntimeActivity::class, ReportRequestProgress::class, ReportDriverTurn::class, ReportRuntimeHeartbeat::class, ReportRuntimeExit::class, OpenHostMainRuntime::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, SettleFrameTimes::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class, SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class, SetStringSetting::class, SetBooleanSetting::class, SetIntegerSetting::class, SetDecimalSetting::class, SetStringChoice::class, SetIntegerChoice::class, ResetSetting::class, EnableSettingGroup::class, DisableSettingGroup::class, ResetSettingGroup::class, SaveSharePreview::class, CreateShare::class, RequestShare::class, ApproveShareRequest::class, RevokeShare::class, RevokeCommandPermissions::class, IssueEvidencePermit::class, OpenCommandRequest::class, WithdrawCommandRequest::class, RefreshShareScope::class, RetryShare::class, ConfigureShareGateway::class, DisableShareGateway::class, ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class, ReopenSharedGateways::class, PruneShareAudit::class, ActivateProfiles::class, RevokeProfiles::class, CreateSkill::class, ReviseSkill::class, RestoreSkill::class, RetireSkill::class, CopySkill::class, RefreshSkills::class, PublishSkills::class, PrepareSkillPublication::class, ActivateSkillPublication::class, FailSkillPublication::class, RetrySkillPublication::class, PruneSkillPublications::class, RecordSkillRead::class], CoreCommands::commands());
+        $this->assertSame([
+            AssignRecord::class,
+            ReassignRecord::class,
+            UnassignRecord::class,
+            EnableAutoAssignment::class,
+            ConfigureAutoAssignment::class,
+            DisableAutoAssignment::class,
+            RetireAgent::class,
+            FenceProfileRevision::class,
+            LaunchAgent::class,
+            CreateAgent::class,
+            EnrollHost::class,
+            OpenAgentRuntime::class,
+            DeliverAgent::class,
+            WakeAgent::class,
+            ChangeAgentModel::class,
+            ChangeAgentEffort::class,
+            InterruptAgent::class,
+            StopAgent::class,
+            RunKeyScript::class,
+            ClaimDriverRequests::class,
+            ClaimLaunchGrant::class,
+            ReportRuntimeActivity::class,
+            ReportRequestProgress::class,
+            ReportDriverTurn::class,
+            ReportRuntimeHeartbeat::class,
+            ReportRuntimeExit::class,
+            OpenHostMainRuntime::class,
+            RecordHeartbeat::class,
+            RecordUserHeartbeat::class,
+            MarkSilentSessions::class,
+            SettleFrameTimes::class,
+            InstallNumbers::class,
+            LinkRecords::class,
+            UnlinkRecords::class,
+            PostComment::class,
+            PostTextComment::class,
+            SendMessage::class,
+            AnswerMessage::class,
+            DismissMessage::class,
+            RequireMessageAnswer::class,
+            SetStringSetting::class,
+            SetBooleanSetting::class,
+            SetIntegerSetting::class,
+            SetDecimalSetting::class,
+            SetStringChoice::class,
+            SetIntegerChoice::class,
+            ResetSetting::class,
+            EnableSettingGroup::class,
+            DisableSettingGroup::class,
+            ResetSettingGroup::class,
+            SaveSharePreview::class,
+            CreateShare::class,
+            RequestShare::class,
+            ApproveShareRequest::class,
+            RevokeShare::class,
+            RevokeCommandPermissions::class,
+            IssueEvidencePermit::class,
+            OpenCommandRequest::class,
+            WithdrawCommandRequest::class,
+            RefreshShareScope::class,
+            RetryShare::class,
+            ConfigureShareGateway::class,
+            DisableShareGateway::class,
+            ReadShare::class,
+            ExpireShares::class,
+            ClaimGatewayOperation::class,
+            RecordGatewayOutcome::class,
+            RecordGatewayHealth::class,
+            ReopenSharedGateways::class,
+            PruneShareAudit::class,
+            ActivateProfiles::class,
+            RevokeProfiles::class,
+            CreateSkill::class,
+            ReviseSkill::class,
+            RestoreSkill::class,
+            RetireSkill::class,
+            CopySkill::class,
+            RefreshSkills::class,
+            PublishSkills::class,
+            PrepareSkillPublication::class,
+            ActivateSkillPublication::class,
+            FailSkillPublication::class,
+            RetrySkillPublication::class,
+            PruneSkillPublications::class,
+            RecordSkillRead::class,
+        ], CoreCommands::commands());
 
         foreach (CoreCommands::commands() as $command) {
             $this->assertTrue($registry->has($command));
             $this->assertSame(! in_array($command, CoreCommands::privateCommands(), true), $registry->isExported($command), $command);
         }
 
-        $this->assertSame([ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class, ReopenSharedGateways::class, PruneShareAudit::class, RefreshSkills::class, PublishSkills::class, PrepareSkillPublication::class, ActivateSkillPublication::class, FailSkillPublication::class, RetrySkillPublication::class, PruneSkillPublications::class, RecordSkillRead::class], CoreCommands::privateCommands());
+        $this->assertSame([
+            ReadShare::class,
+            ExpireShares::class,
+            ClaimGatewayOperation::class,
+            RecordGatewayOutcome::class,
+            RecordGatewayHealth::class,
+            ReopenSharedGateways::class,
+            PruneShareAudit::class,
+            RefreshSkills::class,
+            PublishSkills::class,
+            PrepareSkillPublication::class,
+            ActivateSkillPublication::class,
+            FailSkillPublication::class,
+            RetrySkillPublication::class,
+            PruneSkillPublications::class,
+            RecordSkillRead::class,
+            FenceProfileRevision::class,
+        ], CoreCommands::privateCommands());
     }
 
     public function test_a_scope_owned_by_core_covers_exactly_cores_commands(): void

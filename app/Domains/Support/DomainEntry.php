@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Domains\Support;
 
 use App\Assignments\Contracts\AssignableProvider;
+use App\Assignments\Contracts\ProvidesAutoAssignments;
+use App\Assignments\Support\AutoAssignerDefinition;
+use App\Assignments\Support\PoolDefinition;
 use App\Assignments\Support\AssigneeRegistration;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
@@ -191,6 +194,16 @@ final readonly class DomainEntry
     }
 
     /**
+     * The names of the domains this domain requires.
+     *
+     * @return list<string>
+     */
+    public function requiredNames(): array
+    {
+        return array_map(self::nameOf(...), $this->requires);
+    }
+
+    /**
      * Where the domain's JavaScript, TypeScript and Vue files sit: resources/js beside src in a package, as a Laravel
      * project keeps them, or Resources/js in a flat test module's folder.
      */
@@ -374,6 +387,26 @@ final readonly class DomainEntry
     public function assignables(): array
     {
         return $this->domain instanceof ProvidesAssignables ? $this->domain->assignables() : [];
+    }
+
+    /**
+     * The auto-assigners this domain declares for its record types; none without ProvidesAutoAssignments.
+     *
+     * @return list<AutoAssignerDefinition>
+     */
+    public function autoAssigners(): array
+    {
+        return $this->domain instanceof ProvidesAutoAssignments ? $this->domain->autoAssigners() : [];
+    }
+
+    /**
+     * The pools this domain declares for auto-assignment to draw from; none without ProvidesAutoAssignments.
+     *
+     * @return list<PoolDefinition>
+     */
+    public function assignmentPools(): array
+    {
+        return $this->domain instanceof ProvidesAutoAssignments ? $this->domain->assignmentPools() : [];
     }
 
     /**
