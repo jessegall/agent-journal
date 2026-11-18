@@ -83,7 +83,7 @@ final class McpRouteTest extends TestCase
         $route = Route::getRoutes()->getByName('mcp.journal');
 
         $this->assertSame(['POST'], $route->methods());
-        $this->assertSame(['journal.agent', 'App\Http\Middleware\Mcp\LimitMcpMessage', 'throttle:journal-mcp'], array_slice($route->middleware(), -3));
+        $this->assertSame(['journal.agent', 'App\Http\Middleware\Mcp\LimitMcpMessage', 'App\Http\Middleware\Mcp\SetCallDeadline', 'throttle:journal-mcp'], array_slice($route->middleware(), -4));
         $this->assertContains('Laravel\Mcp\Server\Middleware\ValidateOrigin', $route->middleware());
         $this->assertContains('Laravel\Mcp\Server\Middleware\ValidateMcpHeaders', $route->middleware());
     }
