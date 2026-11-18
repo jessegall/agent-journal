@@ -32,6 +32,7 @@ final readonly class NavigationRecords
         private Container $container,
         private UrlGenerator $urls,
         private LoggerInterface $log,
+        private UiOwnerAvailability $owners,
     ) {}
 
     public function tree(Request $request): NavigationData
@@ -104,7 +105,10 @@ final readonly class NavigationRecords
 
     private function isVisible(RegisteredNavigation $item): bool
     {
-        return $this->visibility->allow(array_filter([$item->item->visibility])) && ($item->page === null || $this->visibility->allow($item->page->visibilityChecks()));
+        return $this->owners->isAvailable($item->owner)
+            && ($item->page === null || $this->owners->isAvailable($item->page->owner))
+            && $this->visibility->allow(array_filter([$item->item->visibility]))
+            && ($item->page === null || $this->visibility->allow($item->page->visibilityChecks()));
     }
 
     /**
