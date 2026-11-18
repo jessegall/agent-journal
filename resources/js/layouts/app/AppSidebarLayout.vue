@@ -4,14 +4,16 @@ import { computed } from 'vue';
 import AppSidebar from '@/components/shell/AppSidebar.vue';
 import AppTopbar from '@/components/shell/AppTopbar.vue';
 import { useLiveConnection } from '@/composables/useLiveConnection';
+import { usePresenceHeartbeat } from '@/composables/usePresenceHeartbeat';
 
 /**
  * The persistent shell every signed-in page sits in: it stays mounted across visits, only the page inside changes, and
- * it holds the tab's one live connection.
+ * it holds the tab's one live connection and its one presence heartbeat.
  */
 const page = usePage();
 
 useLiveConnection();
+usePresenceHeartbeat();
 const title = computed(() => page.component);
 </script>
 
