@@ -32,6 +32,7 @@ use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * Task readers show who holds a task apart from who works on its run, read the runs of a whole page in one batch, and
@@ -72,6 +73,7 @@ final class TaskDetailsReaderTest extends TestCase
         $this->assertNull($this->app->make(TaskDetailsReader::class)->details($task->id, TaskView::Summary)->brief);
     }
 
+    #[TimeLimit(3, 'It creates twenty tasks, each with its own session and run, before the read.')]
     public function test_a_page_of_20_cards_reads_its_runs_in_one_query(): void
     {
         $runner = $this->launch('Runner');
