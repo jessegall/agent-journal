@@ -1,6 +1,7 @@
 package screen
 
 import (
+	"errors"
 	"hash/fnv"
 	"io"
 	"strings"
@@ -11,21 +12,22 @@ import (
 )
 
 // EmulatorReader reads the screen through the charmbracelet vt emulator, which keeps partial escape and UTF-8
-// sequences across feeds and gives wide and combined characters their real cell widths. Regions are named row ranges
-// whose text is hashed after each feed; a region's generation goes up when its text changes.
+// sequences across feeds and gives wide and combined characters their real cell widths. Each region is found anew
+// after every feed and its text hashed; its generation goes up only when its text changes, so a spinner redrawn
+// beside a menu, or a region drawn a row lower, leaves the region's generation as it was.
 type EmulatorReader struct {
 	terminal      *vt.Emulator
 	limits        Limits
 	cursorVisible bool
-	regions       map[string][2]int
+	regions       []contracts.Region
 	hashes        map[string]uint64
 	generations   map[string]uint64
 }
 
 var _ contracts.ScreenReader = (*EmulatorReader)(nil)
 
-// NewEmulatorReader starts an empty screen of the given size with the named regions, each a [first, last) row range.
-func NewEmulatorReader(columns, rows int, limits Limits, regions map[string][2]int) (*EmulatorReader, error) {
+// NewEmulatorReader starts an empty screen of the given size that counts the generations of the regions.
+func NewEmulatorReader(columns, rows int, limits Limits, regions []contracts.Region) (*EmulatorReader, error) {
 	if err := limits.checkSize(columns, rows); err != nil {
 		return nil, err
 	}
@@ -39,6 +41,7 @@ func NewEmulatorReader(columns, rows int, limits Limits, regions map[string][2]i
 		generations:   map[string]uint64{},
 	}
 	reader.terminal.SetCallbacks(vt.Callbacks{CursorVisibility: func(visible bool) { reader.cursorVisible = visible }})
+	reader.terminal.SetScrollbackSize(limits.MaxScrollbackLines)
 
 	// The emulator answers terminal queries on its own pipe; the reader never sends them on, but must drain them.
 	go io.Copy(io.Discard, reader.terminal)
@@ -109,17 +112,48 @@ func (reader *EmulatorReader) Generation(region string) uint64 {
 	return reader.generations[region]
 }
 
-// countGenerations raises the generation of each region whose text changed since the last count.
+// Follow feeds every chunk the program writes into the reader until the source ends, calling afterChunk once each
+// chunk is read, so a live terminal is read as it is drawn. The source's end is not an error.
+func (reader *EmulatorReader) Follow(source io.Reader, afterChunk func()) error {
+	chunk := make([]byte, min(followChunkBytes, reader.limits.MaxChunkBytes))
+
+	for {
+		count, err := source.Read(chunk)
+		if count > 0 {
+			if feedErr := reader.Feed(chunk[:count]); feedErr != nil {
+				return feedErr
+			}
+			afterChunk()
+		}
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+	}
+}
+
+// followChunkBytes is how much Follow reads from the program at most in one go.
+const followChunkBytes = 32 << 10
+
+// countGenerations raises the generation of each region whose text changed since the last count; a region that is
+// not drawn counts as its own text, so it changes when it appears or goes.
 func (reader *EmulatorReader) countGenerations() {
 	snapshot := reader.Snapshot()
 
-	for name, bounds := range reader.regions {
+	for _, region := range reader.regions {
 		hash := fnv.New64a()
-		for row := bounds[0]; row < bounds[1] && row < len(snapshot.Rows); row++ {
-			hash.Write([]byte(snapshot.Rows[row]))
-			hash.Write([]byte{'\n'})
+		if rows, found := region.Rows(snapshot); found {
+			for row := rows.First; row < rows.Last && row < len(snapshot.Rows); row++ {
+				hash.Write([]byte(snapshot.Rows[row]))
+				hash.Write([]byte{'\n'})
+			}
+		} else {
+			hash.Write([]byte{0})
 		}
 
+		name := region.Name()
 		if sum := hash.Sum64(); sum != reader.hashes[name] {
 			reader.hashes[name] = sum
 			reader.generations[name]++

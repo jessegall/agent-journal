@@ -1,18 +1,29 @@
 package screen
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"journal-agent/recording"
 	"journal-agent/screen/contracts"
 )
 
+// topRow is the first row of the screen, a region that never moves, for the generation tests.
+type topRow struct{}
+
+func (topRow) Name() string { return "top" }
+
+func (topRow) Rows(snapshot contracts.Snapshot) (contracts.RowRange, bool) {
+	return contracts.RowRange{First: 0, Last: 1}, len(snapshot.Rows) > 0
+}
+
 func newReader(t *testing.T, columns, rows int) *EmulatorReader {
 	t.Helper()
-	reader, err := NewEmulatorReader(columns, rows, DefaultLimits, map[string][2]int{"top": {0, 1}})
+	reader, err := NewEmulatorReader(columns, rows, DefaultLimits, []contracts.Region{topRow{}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -127,11 +138,44 @@ func TestWideAndCombiningCharacters(t *testing.T) {
 }
 
 func TestAChunkOverTheLimitIsUnreadable(t *testing.T) {
-	reader, _ := NewEmulatorReader(20, 5, Limits{MaxChunkBytes: 4, MaxColumns: 100, MaxRows: 100}, nil)
+	limits := Limits{MaxChunkBytes: 4, MaxColumns: 100, MaxRows: 100, MaxScrollbackLines: 10}
+	reader, _ := NewEmulatorReader(20, 5, limits, nil)
 
 	if err := reader.Feed([]byte("12345")); err == nil {
 		t.Fatal("a chunk over the limit was read")
 	} else if _, isUnreadable := err.(ScreenUnreadable); !isUnreadable {
 		t.Fatalf("got %T", err)
+	}
+}
+
+func TestTheScrollbackKeepsOnlyItsLimitOfLines(t *testing.T) {
+	limits := DefaultLimits
+	limits.MaxScrollbackLines = 100
+	reader, err := NewEmulatorReader(40, 5, limits, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for line := range 5000 {
+		if err := reader.Feed([]byte(fmt.Sprintf("line %d\r\n", line))); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if kept := reader.terminal.Scrollback().Len(); kept > 100 {
+		t.Fatalf("the scrollback keeps %d lines, over its limit of 100", kept)
+	}
+}
+
+func TestFollowFeedsEveryChunkOfALiveSource(t *testing.T) {
+	reader := newReader(t, 20, 3)
+	chunks := 0
+
+	if err := reader.Follow(strings.NewReader("line one\r\nline two"), func() { chunks++ }); err != nil {
+		t.Fatal(err)
+	}
+
+	if chunks == 0 || reader.Snapshot().Rows[1] != "line two" {
+		t.Fatalf("after %d chunks the screen reads %q", chunks, reader.Snapshot().Rows)
 	}
 }
