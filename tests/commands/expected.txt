@@ -1636,6 +1636,7 @@ briefing.stopped_unoriented  [briefing]  you stopped without running `journal en
 briefing.the_laws_apply  [briefing]  the laws L1 to L10 in AGENTS.md apply to you
 briefing.waiting_for_you  [briefing]  waiting for you: {{rows|cap=600}}. see `journal task list`, `journal message unread`, `journal question list`
 briefing.you_took_over  [briefing]  you took over from an agent last seen {{time}}. the chat above is history: do not answer or follow it
+checks.check_could_not_run  [checks]  check {{n}} could not run. {{tail|cap=800}}
 checks.check_failed  [checks]  check {{n}} failed. {{tail|cap=800}}
 checks.check_still_failing  [checks]  check {{n}} still failing. {{tail|cap=800}}
 client_errors.logged  [client_errors]  the viewer logged {{errors|cap=51}}. read them with `journal developer client-errors`
@@ -1760,7 +1761,7 @@ shell.draft_a_reader  [shell]  no reader reads {{part}} yet. fill in `{{command|
 shell.drop_alias_time_limit  [shell]  alias {{name|cap=17}} needs no time limit: `journal alias edit {{name|cap=17}} --line "{{line|cap=26}}"`
 shell.drop_line_time_limit  [shell]  remove the time limit wrapper from {{command}}; it needs none here
 shell.folder_change_refused  [shell]  do not `cd {{target|cap=25}}`: use `( cd {{target|cap=25}} && … )` or pass the folder, such as `git -C`
-shell.give_each_run_its_own_title  [shell]  `{{first_line|cap=28}}` and `{{second_line|cap=28}}` share a title: give each a `--label "<words>"`
+shell.give_each_run_its_own_title  [shell]  `{{first_line|cap=28}}` and `{{second_line|cap=28}}` share a title. `journal output watch {{n}} --title "<words>"`
 shell.give_the_reader_a_topic  [shell]  {{command|cap=25}} ran with {{count}} different arguments. give reader {{reader|cap=25}} a `--topic` for them
 shell.journal_command_piped_into_a_filter  [shell]  do not pipe journal {{command|cap=38}} into {{filter}}. run it alone and read its whole answer
 shell.journal_command_runs_alone  [shell]  run journal commands alone, not mixed with other commands
@@ -1847,6 +1848,7 @@ workers.builder_clear_oldest  [workers]  the worker queue has been high for {{mi
 workers.builder_take_in_first  [workers]  on average {{count}} workers were active at once this hour. merge worker {{n}} next, then hand out the next task
 workers.builder_write_next  [workers]  you wrote {{share}} of the code this hour. write task {{n}} yourself
 workers.check_blocked_tasks  [workers]  tasks {{tasks|cap=15}} are blocked. free what you can: `journal task unblock <n>`
+workers.clock_out_due  [workers]  you have not clocked out of task {{task}}. `journal clock-out "<report>"`, or `journal stuck "<why>"`
 workers.clocked_out_work_waits  [workers]  {{workers|cap=16}} clocked out. check each point with `journal worker check <n> <point>`, then `journal worker merge <n>`
 workers.could_it_be_reused  [workers]  if worker {{n}} can do this, run `journal worker send {{n}} "<job>"`; if not, repeat the command with `--why "<why>"`
 workers.delegate_the_task  [workers]  you orchestrate but do {{name|cap=38}} yourself. give it to a worker with journal worker dispatch
@@ -1908,7 +1910,7 @@ workers.worker_uses_much_memory  [workers]  worker {{n}} uses {{megabytes}} MB, 
 workers.worker_waits_for_the_usage_limit  [workers]  worker {{n}} stopped at the usage limit; it resumes by itself at {{at}}
 workers.workers_only_edit  [workers]  a worker only reads, searches and edits, not {{command|cap=24}}. queue tests and builds with the journal
 workers.worktree_being_rebased  [workers]  the journal is rebasing your worktree; writes wait until it is done. wait a moment, then write again
-288 nudges
+290 nudges
 
 $ agent: journal worker list
 exit 0

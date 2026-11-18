@@ -17,7 +17,7 @@ RUN_LIMIT_SECONDS = 600
 
 @dataclass(frozen=True)
 class Check(Model):
-    """A script that passes or fails about the project, run by hand or every so many minutes, and when its failure was last reported to the agent; a run force stopped neither passes nor fails. How its runs went is each machine's own and never travels through the team."""
+    """A script that passes, fails or could not run about the project, run by hand or every so many minutes, and when its failure was last reported to the agent; a run force stopped neither passes nor fails. How its runs went is each machine's own and never travels through the team."""
 
     text_fields: ClassVar[tuple[str, ...]] = ("title", "brief", "command")
     local_fields: ClassVar[tuple[str, ...]] = ("last_passed", "last_output", "last_run_at", "last_duration", "last_report", "progress", "last_fault", "failure_reported_at", "last_stopped")
@@ -61,12 +61,14 @@ class Check(Model):
     def verdict(self) -> str:
         if self.last_stopped:
             return "stopped"
+        if self.last_fault:
+            return "could not run"
         return {True: "passed", False: "failed", None: "not run"}[self.last_passed]
 
     def completed(self, passed: bool, output: str, time: datetime, elapsed: float, report: CheckReport | None, fault: str, run_start: float) -> "Check":
-        executed = CheckCompleted(environment_id=0, time=time.timestamp(), check_id=self.row_id, title=self.title, passed=passed, output=output, prior_failure=self.last_passed is False, wait_target=self.wait_target, failure_reported_at=self.failure_reported_at)
+        executed = CheckCompleted(environment_id=0, time=time.timestamp(), check_id=self.row_id, title=self.title, passed=passed, fault=fault, output=output, prior_failure=self.last_passed is False and not self.last_fault, prior_fault=self.cannot_run(), wait_target=self.wait_target, failure_reported_at=self.failure_reported_at)
         recorded = self.with_(last_passed=passed, last_stopped=False, last_output=output, last_run_at=time, last_duration=elapsed, last_report=report, progress=None, last_fault=fault).with_event(executed).with_event(self.run_changed(time.timestamp(), run_start))
-        if not passed:
+        if not passed and not fault:
             recorded = recorded.with_event(CheckFailed(environment_id=0, time=time.timestamp(), check_id=self.row_id))
         if self.wait_target and passed and not self.is_resolved():
             return recorded.with_event(RowResolved(environment_id=0, time=time.timestamp(), ref=f"{self.table()}:{self.id}", outcome=recorded.outcome()))
