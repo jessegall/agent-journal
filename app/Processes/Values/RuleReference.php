@@ -29,6 +29,11 @@ final readonly class RuleReference implements StoredValue
         return new self(RuleScope::fromArray($fields['scope']), $fields['id'], $fields['revision']);
     }
 
+    public function label(): string
+    {
+        return "{$this->scope->name()} {$this->id}@{$this->revision}";
+    }
+
     public function names(CommandRule $rule): bool
     {
         return $rule->scope->isSameOwner($this->scope)

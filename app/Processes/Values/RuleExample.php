@@ -45,6 +45,16 @@ final readonly class RuleExample implements StoredValue
         );
     }
 
+    /**
+     * The example as a reviewer reads it: must match with its classes, or must not match.
+     */
+    public function label(): string
+    {
+        return $this->isPositive()
+            ? "matches {$this->line} as ".implode(', ', $this->classes->toArray())
+            : "does not match {$this->line}";
+    }
+
     public function isPositive(): bool
     {
         return $this->type === ExampleType::Positive;
