@@ -17,6 +17,7 @@ use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Support\LinkTypeRegistry;
 use App\Records\Exceptions\InvalidRecordIdentity;
 use Domain\Access\Models\User;
+use Domain\Access\Support\UserActivity;
 use Domain\Plans\Models\Plan;
 use Tests\TestCase;
 
@@ -60,12 +61,20 @@ final class AssignmentRegistryTest extends TestCase
         );
         // A module's descriptor is read at runtime, so a wrong class must be refused even though the types forbid it.
         $this->assertThrows(
-            fn () => $this->registry->registerRecord('tests.record', self::class, 'Tests'), // @phpstan-ignore argument.type
+            fn () => $this->registry->registerRecord(
+                'tests.record',
+                self::class, // @phpstan-ignore argument.type
+                'Tests',
+            ),
             AssignmentProviderInvalid::class,
         );
         $this->assertThrows(
             fn () => $this->registry->registerAssignees(
-                new AssigneeRegistration(ActorType::User, self::class), // @phpstan-ignore argument.type
+                new AssigneeRegistration(
+                    ActorType::User,
+                    self::class, // @phpstan-ignore argument.type
+                    UserActivity::class,
+                ),
             ),
             AssignmentProviderInvalid::class,
         );
@@ -75,12 +84,16 @@ final class AssignmentRegistryTest extends TestCase
     {
         $provider = $this->createStub(AssigneeProvider::class);
         $this->app->instance($provider::class, $provider);
-        $this->registry->registerAssignees(new AssigneeRegistration(ActorType::User, $provider::class));
+        $this->registry->registerAssignees(
+            new AssigneeRegistration(ActorType::User, $provider::class, UserActivity::class),
+        );
 
         $this->assertSame($provider, $this->registry->assigneeProvider(ActorType::User));
         $this->expectException(AssigneeTypeRepeated::class);
 
-        $this->registry->registerAssignees(new AssigneeRegistration(ActorType::User, $provider::class));
+        $this->registry->registerAssignees(
+            new AssigneeRegistration(ActorType::User, $provider::class, UserActivity::class),
+        );
     }
 
     public function test_an_undeclared_type_or_type_is_unavailable(): void

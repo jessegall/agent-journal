@@ -29,6 +29,14 @@ interface AssignmentProviders
     public function assigneeProvider(ActorType $type): AssigneeProvider;
 
     /**
+     * Whether actors of the type may take work automatically now, as their owner answers it.
+     *
+     * @throws AssignmentTypeUnavailable
+     * @throws AssignmentProviderInvalid
+     */
+    public function activity(ActorType $type): AutoAssignmentActivity;
+
+    /**
      * @throws AssignmentTypeUnavailable
      * @throws AssignmentProviderInvalid
      */

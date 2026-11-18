@@ -13,6 +13,7 @@ use App\Assignments\Contracts\AssignmentPoolFactory;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Contracts\AutoAssigner;
+use App\Assignments\Contracts\AutoAssignmentActivity;
 use App\Assignments\Exceptions\AssigneeTypeRepeated;
 use App\Assignments\Exceptions\AssignmentProviderInvalid;
 use App\Assignments\Exceptions\AssignmentTypeRepeated;
@@ -68,6 +69,11 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      * @var array<string, class-string<AssigneeProvider>>
      */
     private array $assigneeProviders = [];
+
+    /**
+     * @var array<string, class-string<AutoAssignmentActivity>>
+     */
+    private array $activities = [];
 
     public function __construct(private readonly Container $container) {}
 
@@ -181,7 +187,12 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
             throw AssignmentProviderInvalid::forAssignees($registration->type, $registration->providerClass);
         }
 
+        if (! is_subclass_of($registration->activityClass, AutoAssignmentActivity::class)) {
+            throw AssignmentProviderInvalid::forActivity($registration->type, $registration->activityClass);
+        }
+
         $this->assigneeProviders[$type] = $registration->providerClass;
+        $this->activities[$type] = $registration->activityClass;
     }
 
     /**
@@ -205,6 +216,17 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
             ?? throw AssignmentTypeUnavailable::forActorType($type);
 
         return $this->build($providerClass, AssigneeProvider::class);
+    }
+
+    /**
+     * @throws AssignmentTypeUnavailable
+     * @throws AssignmentProviderInvalid
+     */
+    public function activity(ActorType $type): AutoAssignmentActivity
+    {
+        $activityClass = $this->activities[$type->value] ?? throw AssignmentTypeUnavailable::forActorType($type);
+
+        return $this->build($activityClass, AutoAssignmentActivity::class);
     }
 
     /**

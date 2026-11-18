@@ -21,6 +21,13 @@ final class AssignmentProviderInvalid extends LogicException
         );
     }
 
+    public static function forActivity(ActorType $type, string $activityClass): self
+    {
+        return new self(
+            "The activity {$activityClass} of actor type {$type->value} does not implement AutoAssignmentActivity.",
+        );
+    }
+
     public static function forAutoAssigner(string $type, string $assignerClass): self
     {
         return new self("The auto-assigner {$assignerClass} of record type {$type} does not implement AutoAssigner.");

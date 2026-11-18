@@ -26,6 +26,7 @@ use App\Agents\Readers\LaunchRecords;
 use App\Agents\Readers\ProgramConversationRecords;
 use App\Agents\Readers\RecordedHostCapabilities;
 use App\Agents\Readers\VerifiedHelperImages;
+use App\Agents\Support\AgentActivity;
 use App\Agents\Support\AgentActors;
 use App\Agents\Support\AgentAssignees;
 use App\Agents\Support\AgentContext;
@@ -78,7 +79,9 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agents.php');
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/host.php');
         $this->commands([RetireAgentCommand::class, EnrollHostCommand::class]);
-        $assignments->registerAssignees(new AssigneeRegistration(ActorType::Agent, AgentAssignees::class));
+        $assignments->registerAssignees(
+            new AssigneeRegistration(ActorType::Agent, AgentAssignees::class, AgentActivity::class),
+        );
         $presentActors->register(AgentSessionCounter::class);
     }
 }
