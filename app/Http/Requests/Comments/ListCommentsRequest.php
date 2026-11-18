@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Http\Requests\Comments;
 
 use App\Assignments\Support\Page;
+use App\Http\Requests\RecordTargetRequest;
 use App\Reads\Values\PageSize;
 
 /**
  * A page of one record's comments, after a comment id when reading on.
  */
-final class ListCommentsRequest extends CommentTargetRequest
+final class ListCommentsRequest extends RecordTargetRequest
 {
     /**
      * @return array<string, list<string>>

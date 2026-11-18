@@ -13,12 +13,12 @@ use App\Comments\Commands\PostTextComment;
 use App\Comments\Contracts\CommentReader;
 use App\Comments\Data\RecordCommentLocation;
 use App\Comments\Data\RecordCommentView;
-use App\Comments\Exceptions\TargetHasNoText;
 use App\Comments\Models\Comment;
+use App\Text\Contracts\TextReader;
+use App\Text\Exceptions\TargetHasNoText;
 use App\Text\Values\TextRange;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\CommitsHookRows;
@@ -46,9 +46,7 @@ final class WholeRecordCommentTest extends TestCase
     {
         parent::setUp();
 
-        foreach (glob(base_path('tests/Fixtures/Modules/Notes/database/migrations/*.php')) ?: [] as $migration) {
-            (require $migration)->up();
-        }
+        $this->createNotesTables();
 
         $this->installNotesModule();
         $this->owner = User::factory()->create();
@@ -61,7 +59,7 @@ final class WholeRecordCommentTest extends TestCase
 
     protected function tearDown(): void
     {
-        Schema::dropIfExists('module_notes');
+        $this->dropNotesTables();
 
         parent::tearDown();
     }
@@ -103,6 +101,20 @@ final class WholeRecordCommentTest extends TestCase
             ->assertJsonPath('items.0.comment.body', 'Over the wire.');
     }
 
+    public function test_a_mixed_or_partial_place_is_refused_with_nothing_stored(): void
+    {
+        $note = "note {$this->note->number}";
+
+        $this->actingAs($this->owner)
+            ->postJson('/comments/post', ['target' => $note, 'body' => 'Mixed.', 'submission_key' => (string) Str::uuid(), 'version' => '1', 'section' => 3, 'quote' => 'x', 'first_line' => 1, 'last_line' => 1, 'start_offset' => 0, 'end_offset' => 1])
+            ->assertUnprocessable();
+        $this->actingAs($this->owner)
+            ->postJson('/comments/post', ['target' => $note, 'body' => 'No version.', 'submission_key' => (string) Str::uuid(), 'first_line' => 12, 'last_line' => 16])
+            ->assertUnprocessable();
+
+        $this->assertSame(0, Comment::query()->count());
+    }
+
     public function test_an_author_field_is_refused(): void
     {
         $this->actingAs($this->owner)
@@ -110,6 +122,21 @@ final class WholeRecordCommentTest extends TestCase
             ->assertUnprocessable();
 
         $this->assertSame(0, Comment::query()->count());
+    }
+
+    public function test_a_record_without_text_has_no_text_to_read(): void
+    {
+        $this->expectException(TargetHasNoText::class);
+
+        $this->app->make(TextReader::class)->version($this->target());
+    }
+
+    public function test_the_text_routes_refuse_a_record_without_text(): void
+    {
+        $this->actingAs($this->owner)
+            ->getJson('/text/version?target='.urlencode("note {$this->note->number}"))
+            ->assertForbidden()
+            ->assertJsonPath('message', 'A notes.note has no text to read or point at; a comment on it is about the whole record.');
     }
 
     private function target(): RecordIdentity

@@ -129,7 +129,6 @@ use App\Comments\Enums\WholeRecord;
 use App\Comments\Events\CommentPosted;
 use App\Comments\Exceptions\CommentUnavailable;
 use App\Comments\Exceptions\SubmissionKeyConflict;
-use App\Comments\Exceptions\TargetHasNoText;
 use App\Comments\Exceptions\TargetNotCommentable;
 use App\Comments\Support\HasComments;
 use App\Contracts\CommandHandler;
@@ -266,6 +265,9 @@ use App\Settings\Exceptions\SettingHandleUnknown;
 use App\Settings\Values\Choice;
 use App\Settings\Values\Decimal;
 use App\Text\Contracts\TextContent;
+use App\Text\Contracts\TextReader;
+use App\Text\Data\TextSections;
+use App\Text\Data\TextVersionInfo;
 use App\Text\Enums\TextAnchorType;
 use App\Text\Exceptions\AnchorMismatch;
 use App\Text\Exceptions\ContentMissing;
@@ -274,7 +276,10 @@ use App\Text\Exceptions\IncompleteTextAnchor;
 use App\Text\Exceptions\InvalidTextRange;
 use App\Text\Exceptions\MarkdownInvalid;
 use App\Text\Exceptions\SectionMissing;
+use App\Text\Exceptions\TargetHasNoText;
+use App\Text\Exceptions\TextLineTooLong;
 use App\Text\Exceptions\TextMatchInvalid;
+use App\Text\Exceptions\TextSelectionRefused;
 use App\Text\Exceptions\TextVersionUnavailable;
 use App\Text\Support\MarkdownText;
 use App\Text\Support\Section as TextSection;
@@ -346,6 +351,7 @@ final class CoreApi
                 CurrentState::class,
                 WorkedOnStack::class,
                 TextContent::class,
+                TextReader::class,
                 Commentable::class,
                 CommentReader::class,
                 ShellCommandParser::class,
@@ -415,6 +421,8 @@ final class CoreApi
                 LifecycleContext::class,
                 TextSection::class,
                 TextPart::class,
+                TextVersionInfo::class,
+                TextSections::class,
                 TextSelection::class,
                 MarkdownText::class,
                 TextReading::class,
@@ -542,6 +550,8 @@ final class CoreApi
                 InvalidTextRange::class,
                 TextVersionUnavailable::class,
                 IncompleteTextAnchor::class,
+                TextLineTooLong::class,
+                TextSelectionRefused::class,
                 TargetNotCommentable::class,
                 TargetHasNoText::class,
                 SubmissionKeyConflict::class,
