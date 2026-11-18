@@ -415,7 +415,6 @@ use App\Sharing\Support\GatewayHealth;
 use App\Sharing\Support\GatewayOperation;
 use App\Sharing\Support\GatewayReadiness;
 use App\Sharing\Support\GatewaySettings;
-use App\Sharing\Support\SavedSharePreview;
 use App\Sharing\Support\ShareCandidates;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\SharedContent;
