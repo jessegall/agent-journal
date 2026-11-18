@@ -139,10 +139,11 @@ class ReaderJudge:
         counted = [int(number) for number in SUMMARY_COUNT.findall(summary)]
         if count > 0 and counted:
             checks[f"--summary names {max(counted)} tests but --count found {count}"] = max(counted) <= count
-        step_progress = bool(reader.step_pattern)
-        if category is not CommandCategory.CHECK and COUNTED.search(text) and not step_progress:
+        # a reader with no progress pattern is saved: its run shows no progress, never a refusal
+        checks_progress = bool(reader.progress_pattern) and not reader.step_pattern
+        if category is not CommandCategory.CHECK and COUNTED.search(text) and checks_progress:
             checks["--progress found nothing"] = self.run.progress(reader, text, -1) >= 0
-        if category is CommandCategory.TEST_RUN and max(total, count) >= WIDTH_LINE_COUNT and not step_progress:
+        if category is CommandCategory.TEST_RUN and max(total, count) >= WIDTH_LINE_COUNT and checks_progress:
             early_text = "\n".join(text.splitlines()[:-LAST_LINES])
             checks["--progress found only at the end"] = self.run.progress(reader, early_text, -1) >= 0
         return tuple(miss for miss, valid in checks.items() if not valid)

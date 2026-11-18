@@ -1,6 +1,5 @@
 from engine.actor.actor import Actor
 from engine.command.bus import Bus
-from engine.command.context import Context
 from engine.agent.agent_role_reader import AgentRoleReader
 from engine.driver.hook_event import HookEvent
 from engine.request.request_values import RequestValues
@@ -8,21 +7,16 @@ from core.modules.drivers.support.minute_tick import MinuteTick
 from core.modules.processes.support.reading.reader_help_block import ReaderHelpBlock
 from core.modules.processes.support.reading.reader_request_answer import ReaderRequestAnswer
 from engine.driver.block_agent import BlockAgent
-from engine.driver.conditions.time_reached import TimeReached
 from engine.driver.interval import Interval
 from engine.enums.actor_type import ActorType
 from engine.enums.agent_role import AgentRole
 from engine.enums.hook_event_name import HookEventName
 from engine.time.clock import Clock
-from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
 from core.modules.processes.commands.send_reader_request_notice.send_reader_request_notice import SendReaderRequestNotice
-from core.modules.processes.models.process import Process
-from core.modules.processes.models.process_part import ProcessPart
 from core.modules.processes.models.reader_request import ReaderRequest
 from core.modules.processes.queries.reader_request_query import ReaderRequestQuery
 from core.modules.processes.support.block_conditions.reader_request_completed import ReaderRequestCompleted
 from core.modules.processes.support.process_agent_messages import READER_REQUEST_COUNTDOWN, READER_REQUEST_SPAN
-from core.modules.processes.agent_messages.reader_block_message import ReaderBlockMessage
 from core.modules.processes.agent_messages.reader_request_refusal_message import ReaderRequestRefusalMessage
 from core.modules.processes.support.reader_block_keys import ReaderBlockKeys
 from core.modules.processes.support.reader_request_notices import ReaderRequestNotices
@@ -30,23 +24,14 @@ from core.modules.processes.support.reader_request_text import ReaderRequestText
 from core.modules.processes.support.reader_save_attempts import ReaderSaveAttempts
 from core.modules.processes.support.reader_writers import ReaderWriters
 
-
 class ReaderRequestBlocks:
-    """The blocks of a reader request: the agent that must have the reader is held until the request is completed
-    or expires, and the main agent is asked to help after failed saves."""
+    """What a reader request says at an agent's hooks: the agent that must have the reader is told of it, never
+    held, and the main agent is asked to help after failed saves or once it expires."""
 
     def __init__(self, requests: ReaderRequestQuery, request_text: ReaderRequestText, notices: ReaderRequestNotices, writers: ReaderWriters, attempts: ReaderSaveAttempts,
                  bus: Bus, clock: Clock, roles: AgentRoleReader, minute_tick: MinuteTick, request_values: RequestValues) -> None:
         self.requests, self.request_text, self.notices, self.writers, self.attempts = requests, request_text, notices, writers, attempts
         self.bus, self.clock, self.roles, self.minute_tick, self.request_values = bus, clock, roles, minute_tick, request_values
-
-    def request_block(self, process: Process, part: ProcessPart, context: Context) -> None:
-        request = self.requests.find(part.reader_request_id)
-        if request.completed_at is not None or request.expires_at <= self.clock.timestamp():
-            return
-        agent_message = ReaderBlockMessage.declared().agent_message(output=part.process_id, request=request.id)
-        ends = AnyCondition(ReaderRequestCompleted(request.id), TimeReached(request.expires_at.text))
-        self.bus.dispatch(BlockAgent(process.session_agent_id, ReaderBlockKeys.keyed(agent_message, request.id), ends), context)
 
     # what the reader requests say at one hook of the agent, read once a hook; the minute step reads the tick it replaces
     def answer(self, event: HookEvent | None, agent_id: int) -> ReaderRequestAnswer:

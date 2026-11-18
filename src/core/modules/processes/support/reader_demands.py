@@ -1,6 +1,5 @@
 from core.modules.processes.support.part_spec import PartSpec
 from core.modules.processes.models.reader import Reader
-from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.conditions.reader_sample_scope import ReaderSampleScope
 from core.modules.processes.support.reader_judge import ReaderJudge
 
@@ -8,15 +7,15 @@ ASKING_FLAGS = frozenset(("--help", "-h", "--version", "-V", "--collect-only", "
 
 
 class ReaderDemands:
-    """Decides whether one command needs a proper reader."""
+    """Decides whether one command needs a proper reader: only a test run or a build does."""
 
-    def __init__(self, judge: ReaderJudge, processes: ProcessQuery) -> None:
-        self.judge, self.processes = judge, processes
+    def __init__(self, judge: ReaderJudge) -> None:
+        self.judge = judge
 
     def requires_reader(self, part: PartSpec) -> bool:
         if not part.category.is_watched or self.is_help_request(part.command or part.text):
             return False
-        return part.category.is_long_running or self.processes.has_moved_run([part.text])
+        return part.category.is_long_running
 
     @staticmethod
     def is_help_request(command: str) -> bool:
