@@ -54,7 +54,8 @@ final class Profile extends Model implements ReadableModel
      */
     public static function activate(ProfileDefinition $definition, ActorIdentity $author): ProfileRevision
     {
-        $profile = self::query()->withKey($definition->key)->lockForUpdate()->first() ?? new self(['key' => $definition->key->key]);
+        $profile = self::query()->withKey($definition->key)->lockForUpdate()->first()
+            ?? new self(['key' => $definition->key->key]);
         $profile->label = $definition->label;
         $profile->retired_at = null;
         $profile->save();

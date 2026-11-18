@@ -37,7 +37,17 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $author_id
  * @property CarbonImmutable $created_at
  */
-#[Fillable(['profile_id', 'revision', 'type', 'instructions', 'model', 'skill_allowlist', 'required_skills', 'author_type', 'author_id'])]
+#[Fillable([
+    'profile_id',
+    'revision',
+    'type',
+    'instructions',
+    'model',
+    'skill_allowlist',
+    'required_skills',
+    'author_type',
+    'author_id',
+])]
 final class ProfileRevision extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
