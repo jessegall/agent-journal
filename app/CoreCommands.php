@@ -80,10 +80,12 @@ use App\Skills\Commands\CopySkill;
 use App\Skills\Commands\CreateSkill;
 use App\Skills\Commands\FailSkillPublication;
 use App\Skills\Commands\PrepareSkillPublication;
+use App\Skills\Commands\PruneSkillPublications;
 use App\Skills\Commands\PublishSkills;
 use App\Skills\Commands\RefreshSkills;
 use App\Skills\Commands\RestoreSkill;
 use App\Skills\Commands\RetireSkill;
+use App\Skills\Commands\RetrySkillPublication;
 use App\Skills\Commands\ReviseSkill;
 use App\Web\Commands\RecordUserHeartbeat;
 
@@ -105,7 +107,13 @@ final class CoreCommands
             ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class, ReopenSharedGateways::class, PruneShareAudit::class,
             ActivateProfiles::class, RevokeProfiles::class,
             CreateSkill::class, ReviseSkill::class, RestoreSkill::class, RetireSkill::class, CopySkill::class,
-            RefreshSkills::class, PublishSkills::class, PrepareSkillPublication::class, ActivateSkillPublication::class, FailSkillPublication::class,
+            RefreshSkills::class,
+            PublishSkills::class,
+            PrepareSkillPublication::class,
+            ActivateSkillPublication::class,
+            FailSkillPublication::class,
+            RetrySkillPublication::class,
+            PruneSkillPublications::class,
         ];
     }
 
@@ -117,7 +125,22 @@ final class CoreCommands
      */
     public static function privateCommands(): array
     {
-        return [ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class, ReopenSharedGateways::class, PruneShareAudit::class, RefreshSkills::class, PublishSkills::class, PrepareSkillPublication::class, ActivateSkillPublication::class, FailSkillPublication::class];
+        return [
+            ReadShare::class,
+            ExpireShares::class,
+            ClaimGatewayOperation::class,
+            RecordGatewayOutcome::class,
+            RecordGatewayHealth::class,
+            ReopenSharedGateways::class,
+            PruneShareAudit::class,
+            RefreshSkills::class,
+            PublishSkills::class,
+            PrepareSkillPublication::class,
+            ActivateSkillPublication::class,
+            FailSkillPublication::class,
+            RetrySkillPublication::class,
+            PruneSkillPublications::class,
+        ];
     }
 
     /**

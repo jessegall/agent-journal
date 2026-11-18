@@ -30,6 +30,9 @@ FROM dunglas/frankenphp:1-php8.5 AS app
 
 RUN install-php-extensions pcntl pdo_pgsql redis intl zip bcmath opcache
 
+# git for the journal-check executable and its tests, which build temporary repositories
+RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
+
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Node runs in the same image as PHP: the Wayfinder Vite plugin calls php artisan while building.

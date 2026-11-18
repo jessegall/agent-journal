@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SharePreviewData } from '@/types/generated';
+import type { SharePreviewData } from '@generated/types/sharing';
 import Button from '@kit/Button';
 
 /**

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ShareDetailData, ShareLinkData } from '@/types/generated';
-import { xsrfToken } from '@/echo';
+import type { ShareDetailData, ShareLinkData } from '@generated/types/sharing';
+import { xsrfToken } from '@kit/xsrfToken';
 import { router } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import PageHeader from '@kit/PageHeader';

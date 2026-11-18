@@ -10,11 +10,16 @@ use App\Bus\Contracts\CommandBus;
 use App\Skills\Commands\ActivateSkillPublication;
 use App\Skills\Commands\FailSkillPublication;
 use App\Skills\Commands\PrepareSkillPublication;
+use App\Skills\Commands\PruneSkillPublications;
 use App\Skills\Commands\PublishSkills;
+use App\Skills\Commands\RefreshSkills;
+use App\Skills\Commands\RetrySkillPublication;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Exceptions\SkillPublicationFailed;
 use App\Skills\Exceptions\SkillPublicationStale;
 use App\Skills\Models\SkillPublication;
+use App\Skills\Values\PrunedPublications;
+use App\Skills\Values\RefreshResult;
 
 /**
  * The supervisor's side of publishing, as the journal itself: it claims each committed open publication and runs its
@@ -29,6 +34,29 @@ final readonly class SkillPublishing
         private CommandBus $commands,
         private ActorStore $actors,
     ) {}
+
+    /**
+     * Checks and renders the catalogue as the journal; the publications it asks for wait for publishOpen.
+     */
+    public function refresh(): RefreshResult
+    {
+        return $this->asSystem(new RefreshSkills());
+    }
+
+    /**
+     * Puts a failed publication back in the queue and publishes it at once.
+     */
+    public function retry(string $publicationId, string $holder): PublicationState
+    {
+        $this->asSystem(new RetrySkillPublication($publicationId));
+
+        return $this->publish($publicationId, $holder);
+    }
+
+    public function prune(): PrunedPublications
+    {
+        return $this->asSystem(new PruneSkillPublications());
+    }
 
     /**
      * Publishes every committed open publication, oldest first; answers each one's outcome by publication id.

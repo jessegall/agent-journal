@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ShareDetailData } from '@/types/generated';
+import type { ShareDetailData } from '@generated/types/sharing';
 
 /**
  * The state of the gateway serving a share: offline, without an endpoint, or its endpoint's last health.

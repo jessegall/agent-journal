@@ -6,9 +6,9 @@ namespace App\Skills\Conditions;
 
 use App\Profiles\Enums\ProfileType;
 use App\Profiles\Values\ProfileKey;
-use App\Skills\Contracts\SkillCondition;
 use App\Programs\Values\ProgramKey;
 use App\Programs\Values\ProviderKey;
+use App\Skills\Contracts\SkillCondition;
 use Spatie\LaravelData\Data;
 
 /**

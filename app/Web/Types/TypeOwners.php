@@ -30,9 +30,11 @@ final readonly class TypeOwners
             $owners[$entry->namespace.'\\'] = Str::kebab($entry->name);
         }
 
-        // Core's own pages, such as Web's, own their types under their key rather than Core's.
+        // Core's own pages, such as Web's, own their types under their key rather than Core's, and so do the HTTP data
+        // classes of that area, which Core keeps in app/Http/Data/<Area>.
         foreach ($declarations->owners() as $owner) {
             $owners[$owner->namespace.'\\'] = $owner->key;
+            $owners[$coreRoot.'Http\\Data\\'.class_basename($owner->namespace).'\\'] = $owner->key;
         }
 
         uksort($owners, fn (string $one, string $other) => strlen($other) <=> strlen($one));

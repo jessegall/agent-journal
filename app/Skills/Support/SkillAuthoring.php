@@ -16,13 +16,13 @@ use App\Skills\Exceptions\SkillPreviewRefused;
 use App\Skills\Models\Skill;
 use App\Skills\Models\SkillRevision;
 use App\Skills\Values\SectionDraft;
+use App\Skills\Values\SkillDraft;
 use App\Skills\Values\SkillKey;
 use App\Skills\Values\SkillRevisionResult;
+use App\Skills\Values\SkillSection;
 use App\Text\Support\MarkdownText;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Str;
-use App\Skills\Values\SkillDraft;
-use App\Skills\Values\SkillSection;
 
 /**
  * What every skill authoring entry point shares, on the command line and over MCP: acting as the journal owner on

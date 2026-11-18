@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ShareDetailData } from '@/types/generated';
+import type { ShareDetailData } from '@generated/types/sharing';
 
 /**
  * A share's audit, a page at a time: public reads set apart from the steps of its life, and what pruning removed.

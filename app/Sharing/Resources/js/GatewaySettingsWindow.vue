@@ -2,7 +2,7 @@
 import type {
     GatewayRevisionData,
     GatewaySettingsData,
-} from '@/types/generated';
+} from '@generated/types/sharing';
 import { router, useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import FormErrors from '@kit/FormErrors';

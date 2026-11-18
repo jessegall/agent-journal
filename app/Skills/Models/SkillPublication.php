@@ -7,17 +7,18 @@ namespace App\Skills\Models;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Models\AgentSession;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Exceptions\SkillPublicationFailed;
+use App\Skills\Exceptions\SkillPublicationMissing;
 use App\Skills\Exceptions\SkillPublicationStale;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use App\Links\Support\Linkable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -64,9 +65,7 @@ use Illuminate\Support\Carbon;
 ])]
 final class SkillPublication extends Model implements ReadableModel
 {
-    use Linkable;
-
-    use BoundedReads, HasUlids;
+    use BoundedReads, HasUlids, Linkable;
 
     /**
      * @return array<string, string>
@@ -178,10 +177,20 @@ final class SkillPublication extends Model implements ReadableModel
     }
 
     /**
-     * A failed publication waits again for a worker, with the same immutable generation.
+     * A failed publication waits again for a worker, with the same immutable generation; once the target has a newer
+     * publication, only a refresh makes a new one.
      */
     public function retry(): void
     {
+        $newer = self::query()
+            ->forTarget($this->session_id, $this->target)
+            ->where('created_at', '>', $this->created_at)
+            ->exists();
+
+        if ($newer) {
+            throw SkillPublicationFailed::newerExists($this->id);
+        }
+
         $this->moveTo(PublicationState::Pending);
         $this->error = null;
         $this->open_key = self::openKeyOf($this->session_id, $this->target);
@@ -243,9 +252,63 @@ final class SkillPublication extends Model implements ReadableModel
         return $latest !== null && $latest->selection_digest === $selectionDigest;
     }
 
+    /**
+     * @throws SkillPublicationMissing
+     */
     public static function lockById(string $publicationId): self
     {
-        return self::query()->whereKey($publicationId)->lockForUpdate()->firstOrFail();
+        return self::query()->whereKey($publicationId)->lockForUpdate()->first()
+            ?? throw SkillPublicationMissing::for($publicationId);
+    }
+
+    /**
+     * Every publication no worker will touch again and not yet retired, newest first, for the daily prune.
+     *
+     * @return list<self>
+     */
+    public static function settled(int $limit): array
+    {
+        $settled = self::query()
+            ->whereIn('state', [
+                PublicationState::Delivered->value,
+                PublicationState::Failed->value,
+                PublicationState::Superseded->value,
+            ])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->readLimit($limit)
+            ->get();
+
+        return array_values($settled->all());
+    }
+
+    /**
+     * Whether it was ever delivered whole: only then does it hold a manifest.
+     */
+    public function wasDelivered(): bool
+    {
+        return $this->manifest !== null;
+    }
+
+    /**
+     * Whether a failed publication may still be retried by hand.
+     */
+    public function awaitsRetry(CarbonImmutable $retentionStart): bool
+    {
+        return $this->state === PublicationState::Failed && ! $this->endedBefore($retentionStart);
+    }
+
+    public function endedBefore(CarbonImmutable $moment): bool
+    {
+        return $this->updated_at !== null && $this->updated_at->lessThan($moment);
+    }
+
+    /**
+     * The one name of its session's target, so publications of one target are counted together.
+     */
+    public function targetName(): string
+    {
+        return self::openKeyOf($this->session_id, $this->target);
     }
 
     /**

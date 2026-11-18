@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Skills\Conditions;
 
+use App\Programs\Values\ProgramKey;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Values\ConditionResult;
-use App\Programs\Values\ProgramKey;
 use App\Skills\Values\SkillContext;
 
 /**

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Unit\Skills;
 
 use App\CoreApi;
-use App\Skills\Support\LaunchProgram;
 use App\Programs\Values\ProgramKey;
 use App\Programs\Values\ProviderKey;
+use App\Skills\Support\LaunchProgram;
 use Tests\TestCase;
 
 /**
