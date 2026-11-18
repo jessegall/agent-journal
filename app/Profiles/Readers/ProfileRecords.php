@@ -27,6 +27,11 @@ final readonly class ProfileRecords implements ProfileReader
         return ProfileRevision::currentOf($profile)->snapshot($key);
     }
 
+    public function snapshotAt(ProfileKey $key, int $revision): ProfileSnapshot
+    {
+        return ProfileRevision::numbered(Profile::byKey($key), $revision)->snapshot($key);
+    }
+
     public function has(ProfileKey $key): bool
     {
         return Profile::hasCurrent($key);

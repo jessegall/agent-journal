@@ -63,6 +63,14 @@ final class Agent extends Model implements Assignee, ReadableModel, ReceivesMess
         return $this->role === AgentRole::MainAgent->value;
     }
 
+    /**
+     * The role the agent was registered with.
+     */
+    public function agentRole(): AgentRole
+    {
+        return AgentRole::from($this->role);
+    }
+
     public function isRetired(): bool
     {
         return $this->retired_at !== null;
