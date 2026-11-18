@@ -6,9 +6,9 @@ namespace Domain\Rules;
 
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasNumberedModels;
-use App\Domains\Contracts\ProvidesMcpTools;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
+use App\Mcp\Contracts\ProvidesMcpTools;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
 use App\Ui\Contracts\ProvidesNavigation;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Resources;
 
+use App\Mcp\Contracts\McpCall;
 use App\Mcp\Exceptions\ResourceMimeTypeRefused;
-use App\Mcp\Support\McpCall;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Resource;

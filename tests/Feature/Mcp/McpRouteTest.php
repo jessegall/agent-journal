@@ -9,6 +9,7 @@ use Laravel\Mcp\Server\Registrar;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -117,6 +118,7 @@ final class McpRouteTest extends TestCase
         $this->sendMcp($this->launch, 'server/discover', ['_meta' => $meta])->assertStatus(400);
     }
 
+    #[TimeLimit(seconds: 10, reason: 'It sends 121 signed calls through the whole MCP route to reach the limit.')]
     public function test_the_121st_call_of_a_session_in_a_minute_gets_429_with_retry_after_seconds(): void
     {
         for ($call = 0; $call < 120; $call++) {

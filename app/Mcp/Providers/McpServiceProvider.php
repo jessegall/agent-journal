@@ -6,7 +6,11 @@ namespace App\Mcp\Providers;
 
 use App\Agents\Support\AgentContext;
 use App\Mcp\Console\RelayCommand;
+use App\Mcp\Contracts\McpCall;
+use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Models\RetainedPage;
+use App\Mcp\Support\LoggedMcpCall;
+use App\Mcp\Support\RetainedNumberedPages;
 use Illuminate\Cache\RateLimiter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Console\Scheduling\Schedule;
@@ -21,6 +25,12 @@ use Illuminate\Support\ServiceProvider;
 final class McpServiceProvider extends ServiceProvider
 {
     private const int CALLS_PER_MINUTE = 120;
+
+    public function register(): void
+    {
+        $this->app->bind(McpCall::class, LoggedMcpCall::class);
+        $this->app->bind(NumberedPages::class, RetainedNumberedPages::class);
+    }
 
     public function boot(RateLimiter $limiter): void
     {

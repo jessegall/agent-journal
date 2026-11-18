@@ -18,6 +18,6 @@ final readonly class ReplacesTasksCommand implements CommandMiddleware
         // It knows the private command only by its name, as a module that may not import it would.
         $class = $call->name();
 
-        return $next(str_ends_with($class, '\\FinishTask') ? $call->replacedBy(new $class('01jd8x0g9m3qz6v4k2t7r00000')) : $call);
+        return $next(str_ends_with($class, '\\FinishTask') ? $call->replacedBy(new $class('01jd8x0g9m3qz6v4k2t7r00000', 0, 'Replaced.')) : $call);
     }
 }

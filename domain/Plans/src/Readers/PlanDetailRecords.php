@@ -14,18 +14,16 @@ use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
-use Domain\Tasks\Contracts\TaskReader;
 
 /**
- * Reads one plan with the progress PlanRecords computes for every plan list, and one phase with its tasks' states from
- * Tasks; progress counts tasks by their own state, never assignment rows.
+ * Reads one plan with the progress PlanRecords computes for every plan list, and one phase with its task references;
+ * progress counts tasks by their own state, never assignment rows.
  */
 final readonly class PlanDetailRecords implements PlanDetailsReader
 {
     public function __construct(
         private CurrentActor $actors,
         private PlanRecords $records,
-        private TaskReader $tasks,
     ) {}
 
     public function plan(string $planId, PlanView $view, int $taskOffset = 0): PlanDetails
@@ -60,7 +58,7 @@ final readonly class PlanDetailRecords implements PlanDetailsReader
         $this->actors->actor();
         $phase = Phase::query()->find($phaseId) ?? throw PhaseMissing::withId($phaseId);
 
-        return new PhaseDetails($phase->id, $phase->plan_id, $phase->number, $phase->title, $phase->revision, $this->tasks->summaries($phase->taskIds()));
+        return new PhaseDetails($phase->id, $phase->plan_id, $phase->number, $phase->title, $phase->revision, $phase->taskIds());
     }
 
     /**

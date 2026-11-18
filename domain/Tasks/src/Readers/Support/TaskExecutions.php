@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Tasks\Readers;
+namespace Domain\Tasks\Readers\Support;
 
 use App\Actors\Enums\ActorType;
 use App\Agents\Contracts\AgentReader;

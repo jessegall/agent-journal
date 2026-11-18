@@ -1,0 +1,896 @@
+There were 6 errors:
+
+1) Domain\Tasks\Tests\Feature\TaskDetailsReaderTest::test_a_page_of_20_cards_reads_its_runs_in_one_query
+Tests\Support\TimeLimits\TestTimedOut: Domain\Tasks\Tests\Feature\TaskDetailsReaderTest::test_a_page_of_20_cards_reads_its_runs_in_one_query ran longer than its 1 second limit; make it faster, or give it #[TimeLimit] with a reason.
+
+/app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestTimedOut.php:16
+/app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestAlarm.php:34
+/app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestAlarm.php:65
+/app/.journal/worktrees/main/worker-157/app/Reads/Support/ReadSite.php:27
+/app/.journal/worktrees/main/worker-157/app/Reads/Support/ScopedReadMeter.php:155
+/app/.journal/worktrees/main/worker-157/app/Reads/Support/ScopedReadMeter.php:141
+/app/.journal/worktrees/main/worker-157/app/Reads/Providers/ReadsServiceProvider.php:81
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:809
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:433
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:3640
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:3624
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:951
+/app/.journal/worktrees/main/worker-157/app/Reads/Support/ReadBuilder.php:104
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:933
+/app/.journal/worktrees/main/worker-157/domain/Tasks/src/Readers/Support/TaskRecords.php:28
+/app/.journal/worktrees/main/worker-157/domain/Tasks/src/States/Support/WorkingOnTaskStateFactory.php:26
+/app/.journal/worktrees/main/worker-157/app/Domains/Support/DomainStateType.php:27
+/app/.journal/worktrees/main/worker-157/app/Hooks/Stack/StackRestorer.php:43
+/app/.journal/worktrees/main/worker-157/app/Hooks/Stack/StatePush.php:29
+/app/.journal/worktrees/main/worker-157/app/Hooks/Actions/AgentStacks.php:34
+/app/.journal/worktrees/main/worker-157/domain/Tasks/src/Listeners/PushTaskState.php:25
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Events/Dispatcher.php:518
+/app/.journal/worktrees/main/worker-157/app/Domains/Support/AvailableListener.php:30
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Events/Dispatcher.php:498
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Events/Dispatcher.php:328
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Events/Dispatcher.php:308
+/app/.journal/worktrees/main/worker-157/domain/Tasks/src/Handlers/StartTaskHandler.php:38
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/DeferredCommandHandler.php:26
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php:130
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:180
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:51
+/app/.journal/worktrees/main/worker-157/app/Bus/CommandMiddleware/RecordReceipt.php:30
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:79
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:42
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/CommandMiddleware/RunInTransaction.php:80
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/RunningCommand.php:40
+/app/.journal/worktrees/main/worker-157/app/Bus/CommandMiddleware/RunInTransaction.php:80
+/app/.journal/worktrees/main/worker-157/app/Bus/CommandMiddleware/RunInTransaction.php:54
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:79
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:46
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:45
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/CommandMiddleware/RecordRefusalReceipt.php:36
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/RequestKey.php:59
+/app/.journal/worktrees/main/worker-157/app/Bus/CommandMiddleware/RecordRefusalReceipt.php:32
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/CommandMiddleware/AdmitStack.php:23
+/app/.journal/worktrees/main/worker-157/app/Hooks/Stack/AdvisoryStackAdmission.php:56
+/app/.journal/worktrees/main/worker-157/app/Hooks/Stack/AdvisoryStackAdmission.php:79
+/app/.journal/worktrees/main/worker-157/app/Bus/CommandMiddleware/AdmitStack.php:23
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/CommandMiddleware/CheckActor.php:42
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/CommandMiddleware/LogCommand.php:29
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:79
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:51
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:137
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php:140
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php:108
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/LaravelCommandBus.php:44
+/app/.journal/worktrees/main/worker-157/domain/Tasks/tests/Feature/TaskDetailsReaderTest.php:80
+
+2) Tests\Feature\Assignments\AssignedListsTest::test_only_directly_held_tasks_are_listed_by_id_finished_ones_included
+ErrorException: Undefined property: PhpOption\Some::$name
+
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php:267
+/app/.journal/worktrees/main/worker-157/tests/Feature/Assignments/AssignedListsTest.php:82
+
+3) Domain\Plans\Tests\Feature\PlanDetailsReaderTest::test_a_plan_with_120_tasks_pages_them_50_at_a_time
+Illuminate\Database\QueryException: Domain\Plans\Tests\Feature\PlanDetailsReaderTest::test_a_plan_with_120_tasks_pages_them_50_at_a_time ran longer than its 1 second limit; make it faster, or give it #[TimeLimit] with a reason. (Connection: pgsql, Host: postgres, Port: 5432, Database: journal_hooks_test_test_3, SQL: update "number_groups" set "last_number" = 46, "updated_at" = 2026-11-18 14:42:40 where "id" = 01m7qhr6v5h4vhm50rpg8chd0x)
+
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:820
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:621
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:573
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4391
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1329
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1551
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1433
+/app/.journal/worktrees/main/worker-157/app/Numbers/Models/NumberGroup.php:65
+/app/.journal/worktrees/main/worker-157/app/Numbers/Support/LockingNumberAllocator.php:38
+/app/.journal/worktrees/main/worker-157/app/Numbers/Observers/NumberObserver.php:20
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Events/Dispatcher.php:518
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Events/Dispatcher.php:328
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Events/Dispatcher.php:308
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Events/Dispatcher.php:268
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Concerns/HasEvents.php:224
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1621
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1440
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Factories/Factory.php:383
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Collections/Traits/EnumeratesValues.php:275
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Factories/Factory.php:378
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Factories/Factory.php:338
+/app/.journal/worktrees/main/worker-157/domain/Plans/tests/Feature/PlanDetailsReaderTest.php:62
+
+Caused by
+Tests\Support\TimeLimits\TestTimedOut: Domain\Plans\Tests\Feature\PlanDetailsReaderTest::test_a_plan_with_120_tasks_pages_them_50_at_a_time ran longer than its 1 second limit; make it faster, or give it #[TimeLimit] with a reason.
+
+/app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestTimedOut.php:16
+/app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestAlarm.php:34
+/app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestAlarm.php:65
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:633
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:853
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:820
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:621
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:573
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4391
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1329
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1551
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1433
+/app/.journal/worktrees/main/worker-157/app/Numbers/Models/NumberGroup.php:65
+/app/.journal/worktrees/main/worker-157/app/Numbers/Support/LockingNumberAllocator.php:38
+/app/.journal/worktrees/main/worker-157/app/Numbers/Observers/NumberObserver.php:20
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Events/Dispatcher.php:518
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Events/Dispatcher.php:328
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Events/Dispatcher.php:308
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Events/Dispatcher.php:268
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Concerns/HasEvents.php:224
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1621
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1440
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Factories/Factory.php:383
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Collections/Traits/EnumeratesValues.php:275
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Factories/Factory.php:378
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Factories/Factory.php:338
+/app/.journal/worktrees/main/worker-157/domain/Plans/tests/Feature/PlanDetailsReaderTest.php:62
+
+4) Tests\Feature\Assignments\AssignedListCommandsTest::test_the_launcher_turns_subject_and_verb_into_the_command_and_needs_the_launch_settings
+Tests\Support\TimeLimits\TestTimedOut: Tests\Feature\Assignments\AssignedListCommandsTest::test_the_launcher_turns_subject_and_verb_into_the_command_and_needs_the_launch_settings ran longer than its 1 second limit; make it faster, or give it #[TimeLimit] with a reason.
+
+/app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestTimedOut.php:16
+/app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestAlarm.php:34
+/app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestAlarm.php:65
+/app/.journal/worktrees/main/worker-157/vendor/symfony/process/Pipes/AbstractPipes.php:214
+/app/.journal/worktrees/main/worker-157/vendor/symfony/process/Pipes/UnixPipes.php:100
+/app/.journal/worktrees/main/worker-157/vendor/symfony/process/Process.php:1471
+/app/.journal/worktrees/main/worker-157/vendor/symfony/process/Process.php:495
+/app/.journal/worktrees/main/worker-157/vendor/symfony/process/Process.php:267
+/app/.journal/worktrees/main/worker-157/tests/Feature/Assignments/AssignedListCommandsTest.php:94
+
+5) Tests\Feature\Settings\SettingsCommandsTest::test_each_changing_command_announces_one_change_after_commit_and_no_other_command_announces_any
+Illuminate\Database\QueryException: Tests\Feature\Settings\SettingsCommandsTest::test_each_changing_command_announces_one_change_after_commit_and_no_other_command_announces_any ran longer than its 1 second limit; make it faster, or give it #[TimeLimit] with a reason. (Connection: pgsql, Host: postgres, Port: 5432, Database: journal_hooks_test_test_5, SQL: truncate "settings_records" restart identity cascade)
+
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:820
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:597
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4607
+/app/.journal/worktrees/main/worker-157/tests/Support/RefreshHookDatabase.php:61
+/app/.journal/worktrees/main/worker-157/tests/Support/CommitsHookRows.php:30
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:266
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:335
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:130
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:101
+/app/.journal/worktrees/main/worker-157/tests/TestCase.php:41
+
+Caused by
+Tests\Support\TimeLimits\TestTimedOut: Tests\Feature\Settings\SettingsCommandsTest::test_each_changing_command_announces_one_change_after_commit_and_no_other_command_announces_any ran longer than its 1 second limit; make it faster, or give it #[TimeLimit] with a reason.
+
+/app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestTimedOut.php:16
+/app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestAlarm.php:34
+/app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestAlarm.php:65
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:608
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:853
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:820
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:597
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4607
+/app/.journal/worktrees/main/worker-157/tests/Support/RefreshHookDatabase.php:61
+/app/.journal/worktrees/main/worker-157/tests/Support/CommitsHookRows.php:30
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:266
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:335
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/InteractsWithTestCaseLifecycle.php:130
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Testing/TestCase.php:101
+/app/.journal/worktrees/main/worker-157/tests/TestCase.php:41
+
+6) Tests\Feature\Engine\TickCandidatesTest::test_three_passes_of_one_hundred_visit_250_frames_over_30_stacks_once_in_order
+Illuminate\Database\QueryException: Tests\Feature\Engine\TickCandidatesTest::test_three_passes_of_one_hundred_visit_250_frames_over_30_stacks_once_in_order ran longer than its 1 second limit; make it faster, or give it #[TimeLimit] with a reason. (Connection: pgsql, Host: postgres, Port: 5432, Database: journal_hooks_test_test_6, SQL: insert into "agents" ("name", "role", "id", "updated_at", "created_at") values (Ticking agent, hooks.main_ready, 01m7qhq5cm8vxjazn2ca6g3tnv, 2026-11-18 14:42:04, 2026-11-18 14:42:04))
+
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:864
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:820
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:597
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:561
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4231
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:2362
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1649
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1440
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1282
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Support/helpers.php:393
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1281
+/app/.journal/worktrees/main/worker-157/tests/Support/BuildsTickingStacks.php:30
+/app/.journal/worktrees/main/worker-157/tests/Feature/Engine/TickCandidatesTest.php:122
+/app/.journal/worktrees/main/worker-157/tests/Feature/Engine/TickCandidatesTest.php:63
+
+Caused by
+Tests\Support\TimeLimits\TestTimedOut: Tests\Feature\Engine\TickCandidatesTest::test_three_passes_of_one_hundred_visit_250_frames_over_30_stacks_once_in_order ran longer than its 1 second limit; make it faster, or give it #[TimeLimit] with a reason.
+
+/app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestTimedOut.php:16
+/app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestAlarm.php:34
+/app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestAlarm.php:65
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:608
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:853
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:820
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:597
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Connection.php:561
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php:4231
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:2362
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1649
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php:1440
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1282
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Support/helpers.php:393
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php:1281
+/app/.journal/worktrees/main/worker-157/tests/Support/BuildsTickingStacks.php:30
+/app/.journal/worktrees/main/worker-157/tests/Feature/Engine/TickCandidatesTest.php:122
+/app/.journal/worktrees/main/worker-157/tests/Feature/Engine/TickCandidatesTest.php:63
+
+--
+
+There were 12 failures:
+
+1) Tests\Feature\Agents\HookIdentityTest::test_a_call_without_its_identity_headers_is_refused
+Unable to find JSON: 
+
+[{
+    "message": "The call carries no X-Journal-Call-Signature header."
+}]
+
+within response JSON:
+
+[{
+    "code": "unauthenticated",
+    "message": "The call could not be authenticated with this launch credential."
+}].
+
+
+Failed asserting that an array has the subset Array &0 [
+    'message' => 'The call carries no X-Journal-Call-Signature header.',
+].
+--- Expected
++++ Actual
+@@ @@
+ array (
+   'code' => 'unauthenticated',
+-  'message' => 'The call carries no X-Journal-Call-Signature header.',
++  'message' => 'The call could not be authenticated with this launch credential.',
+ )
+
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Testing/Constraints/ArraySubset.php:80
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Testing/Assert.php:36
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Testing/AssertableJsonString.php:334
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:859
+/app/.journal/worktrees/main/worker-157/tests/Feature/Agents/HookIdentityTest.php:147
+
+2) Tests\Architecture\PublicContractTest::test_every_export_is_publishable_and_shows_nothing_private
+Domain boundary violations (8):
+  app/Bus/Contracts/OperationReader.php:19 shows App\Bus\Exceptions\OperationUnavailable at OperationReader::operation(), but it is private to Core; export it or keep it out of the public signature
+  app/Bus/Support/RequestKey.php:16 exports App\Bus\Support\RequestKey, which is a class with hidden or changeable state, such as a service, under values; an owner publishes only interfaces, enums, immutable values and its own exceptions
+  app/Mcp/Support/ToolArguments.php:16 exports App\Mcp\Support\ToolArguments, which is a class with hidden or changeable state, such as a service, under values; an owner publishes only interfaces, enums, immutable values and its own exceptions
+  app/Mcp/Support/McpCall.php:19 exports App\Mcp\Support\McpCall, which is a class with hidden or changeable state, such as a service, under values; an owner publishes only interfaces, enums, immutable values and its own exceptions
+  app/Mcp/Support/NumberedPages.php:18 exports App\Mcp\Support\NumberedPages, which is a class with hidden or changeable state, such as a service, under values; an owner publishes only interfaces, enums, immutable values and its own exceptions
+  app/Mcp/Resources/JournalResource.php:21 shows App\Mcp\Exceptions\ResourceMimeTypeRefused at JournalResource::mimeType(), but it is private to Core; export it or keep it out of the public signature
+  domain/Plans/src/Contracts/PlanDetailsReader.php:28 shows Domain\Plans\Exceptions\PhaseMissing at PlanDetailsReader::phase(), but it is private to Plans; export it or keep it out of the public signature
+  domain/Plans/src/Api/PhaseDetails.php:15 shows Domain\Tasks\Api\TaskSummary at PhaseDetails::__construct(), but it is private to Tasks; export it or keep it out of the public signature
+Is the dependency right (add it to the Domain class, with the user's yes), or is the code in the wrong domain?
+Failed asserting that two arrays are identical.
+--- Expected
++++ Actual
+@@ @@
+-Array &0 []
++Array &0 [
++    0 => Tests\Architecture\Support\Violation Object #19085 (
++        'file' => '/app/.journal/worktrees/main/worker-157/app/Bus/Contracts/OperationReader.php',
++        'line' => 19,
++        'used' => 'App\Bus\Exceptions\OperationUnavailable',
++        'usingDomain' => 'Core',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #23035 (PrivateTypeInSignature, 'private-type-in-signature'),
++        'detail' => 'OperationReader::operation()',
++    ),
++    1 => Tests\Architecture\Support\Violation Object #9671 (
++        'file' => '/app/.journal/worktrees/main/worker-157/app/Bus/Support/RequestKey.php',
++        'line' => 16,
++        'used' => 'App\Bus\Support\RequestKey',
++        'usingDomain' => 'Core',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #21622 (DisallowedCategory, 'disallowed-category'),
++        'detail' => 'a class with hidden or changeable state, such as a service, under values',
++    ),
++    2 => Tests\Architecture\Support\Violation Object #16234 (
++        'file' => '/app/.journal/worktrees/main/worker-157/app/Mcp/Support/ToolArguments.php',
++        'line' => 16,
++        'used' => 'App\Mcp\Support\ToolArguments',
++        'usingDomain' => 'Core',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #21622 (DisallowedCategory, 'disallowed-category'),
++        'detail' => 'a class with hidden or changeable state, such as a service, under values',
++    ),
++    3 => Tests\Architecture\Support\Violation Object #15393 (
++        'file' => '/app/.journal/worktrees/main/worker-157/app/Mcp/Support/McpCall.php',
++        'line' => 19,
++        'used' => 'App\Mcp\Support\McpCall',
++        'usingDomain' => 'Core',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #21622 (DisallowedCategory, 'disallowed-category'),
++        'detail' => 'a class with hidden or changeable state, such as a service, under values',
++    ),
++    4 => Tests\Architecture\Support\Violation Object #8951 (
++        'file' => '/app/.journal/worktrees/main/worker-157/app/Mcp/Support/NumberedPages.php',
++        'line' => 18,
++        'used' => 'App\Mcp\Support\NumberedPages',
++        'usingDomain' => 'Core',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #21622 (DisallowedCategory, 'disallowed-category'),
++        'detail' => 'a class with hidden or changeable state, such as a service, under values',
++    ),
++    5 => Tests\Architecture\Support\Violation Object #25688 (
++        'file' => '/app/.journal/worktrees/main/worker-157/app/Mcp/Resources/JournalResource.php',
++        'line' => 21,
++        'used' => 'App\Mcp\Exceptions\ResourceMimeTypeRefused',
++        'usingDomain' => 'Core',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #23035 (PrivateTypeInSignature, 'private-type-in-signature'),
++        'detail' => 'JournalResource::mimeType()',
++    ),
++    6 => Tests\Architecture\Support\Violation Object #25045 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Plans/src/Contracts/PlanDetailsReader.php',
++        'line' => 28,
++        'used' => 'Domain\Plans\Exceptions\PhaseMissing',
++        'usingDomain' => 'Plans',
++        'owner' => 'Plans',
++        'type' => Tests\Architecture\Support\ViolationType Enum #23035 (PrivateTypeInSignature, 'private-type-in-signature'),
++        'detail' => 'PlanDetailsReader::phase()',
++    ),
++    7 => Tests\Architecture\Support\Violation Object #28509 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Plans/src/Api/PhaseDetails.php',
++        'line' => 15,
++        'used' => 'Domain\Tasks\Api\TaskSummary',
++        'usingDomain' => 'Plans',
++        'owner' => 'Tasks',
++        'type' => Tests\Architecture\Support\ViolationType Enum #23035 (PrivateTypeInSignature, 'private-type-in-signature'),
++        'detail' => 'PhaseDetails::__construct()',
++    ),
++]
+
+/app/.journal/worktrees/main/worker-157/tests/Architecture/PublicContractTest.php:32
+
+3) Tests\Unit\Domains\DomainClassesTest::test_each_domain_describes_itself_requires_only_what_was_approved_and_exports_its_listed_types@Tasks with data ('Domain\Tasks\TasksDomain', [], ['TaskStarted', 'TaskFinished', 'TaskBlocked', 'TaskCancelled', 'TaskProgressCounter', 'TaskProgress', 'TaskReader', 'TaskSummary', 'TaskMissing'], ...10 more elements)
+Failed asserting that two arrays are equal.
+--- Expected
++++ Actual
+@@ @@
+     'TaskBlocked'
+     'TaskCancelled'
+     'TaskCard'
++    'TaskDetails'
++    'TaskDetailsReader'
++    'TaskExecution'
+     'TaskFilters'
+     'TaskFinished'
+     'TaskList'
++    'TaskListReader'
+     'TaskMissing'
+     'TaskProgress'
+     'TaskProgressCounter'
+@@ @@
+     'TaskStarted'
+     'TaskState'
+     'TaskSummary'
++    'TaskView'
+     'TaskWorkState'
+ )
+
+/app/.journal/worktrees/main/worker-157/tests/Unit/Domains/DomainClassesTest.php:53
+
+4) Tests\Unit\Domains\DomainClassesTest::test_each_domain_describes_itself_requires_only_what_was_approved_and_exports_its_listed_types@Plans with data ('Domain\Plans\PlansDomain', ['Domain\Tasks\TasksDomain'], ['PlanStarted', 'PlanProgressChanged', 'PlanReader', 'StartPlan', 'AssignPlanWork', 'ReassignPlanWork', 'UnassignPlanWork', 'PlanMissing'], ...12 more elements)
+Failed asserting that two arrays are equal.
+--- Expected
++++ Actual
+@@ @@
+     'AssignPlanWork'
+     'AssignedPlanFilters'
+     'AssignedPlanList'
++    'PhaseDetails'
++    'PlanCancelled'
+     'PlanCard'
++    'PlanDetails'
++    'PlanDetailsReader'
+     'PlanFilters'
++    'PlanFinished'
+     'PlanList'
+     'PlanMissing'
++    'PlanPhaseTasks'
+     'PlanProgress'
+     'PlanProgressChanged'
+     'PlanReader'
+@@ @@
+     'PlanStarted'
+     'PlanState'
+     'PlanType'
++    'PlanView'
+     'ReassignPlanWork'
+     'StartDenied'
+     'StartPlan'
+     'UnassignPlanWork'
+ )
+
+/app/.journal/worktrees/main/worker-157/tests/Unit/Domains/DomainClassesTest.php:53
+
+5) Tests\Unit\Domains\DomainClassesTest::test_each_domain_describes_itself_requires_only_what_was_approved_and_exports_its_listed_types@Rules with data ('Domain\Rules\RulesDomain', [], ['RuleApproved', 'RuleDenied', 'RuleRemoved', 'RuleReader', 'ApproveRule', 'DenyRule', 'RuleFilters', 'RuleList', 'RuleView'], ...5 more elements)
+Failed asserting that two arrays are equal.
+--- Expected
++++ Actual
+@@ @@
+     'DenyRule'
+     'RuleApproved'
+     'RuleDenied'
++    'RuleDetails'
++    'RuleDetailsReader'
+     'RuleFilters'
+     'RuleList'
+     'RuleMissing'
+
+/app/.journal/worktrees/main/worker-157/tests/Unit/Domains/DomainClassesTest.php:53
+
+6) Tests\Feature\Bus\ModuleMiddlewareTest::test_a_middleware_may_not_replace_tasks_private_finish
+Failed asserting that exception of type "ArgumentCountError" matches expected exception "App\Bus\Exceptions\CommandReplacementRefused". Message was: "Too few arguments to function Domain\Tasks\Commands\FinishTask::__construct(), 1 passed in /app/.journal/worktrees/main/worker-157/tests/Fixtures/Modules/Notes/src/CommandMiddleware/ReplacesTasksCommand.php on line 21 and exactly 3 expected" at
+/app/.journal/worktrees/main/worker-157/domain/Tasks/src/Commands/FinishTask.php:21
+/app/.journal/worktrees/main/worker-157/tests/Fixtures/Modules/Notes/src/CommandMiddleware/ReplacesTasksCommand.php:21
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareStep.php:38
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareStep.php:47
+/app/.journal/worktrees/main/worker-157/tests/Fixtures/Modules/Notes/src/CommandMiddleware/RecordAll.php:23
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareStep.php:38
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareStep.php:47
+/app/.journal/worktrees/main/worker-157/tests/Fixtures/Modules/Cards/src/CommandMiddleware/RecordCards.php:23
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareStep.php:38
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:79
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:46
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:45
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/CommandMiddleware/RecordRefusalReceipt.php:36
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/RequestKey.php:59
+/app/.journal/worktrees/main/worker-157/app/Bus/CommandMiddleware/RecordRefusalReceipt.php:32
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/CommandMiddleware/AdmitStack.php:23
+/app/.journal/worktrees/main/worker-157/app/Hooks/Stack/AdvisoryStackAdmission.php:70
+/app/.journal/worktrees/main/worker-157/app/Bus/CommandMiddleware/AdmitStack.php:23
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/CommandMiddleware/CheckActor.php:42
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/CommandMiddleware/LogCommand.php:29
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:75
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:79
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/MiddlewareRunner.php:51
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:137
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php:140
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php:108
+/app/.journal/worktrees/main/worker-157/app/Bus/Support/LaravelCommandBus.php:44
+/app/.journal/worktrees/main/worker-157/tests/Feature/Bus/ModuleMiddlewareTest.php:219
+.
+
+7) Tests\Architecture\DomainBoundaryTest::test_no_domain_crosses_its_boundary
+Domain boundary violations (16):
+  domain/Plans/src/Exceptions/PhaseRevisionChanged.php:9 uses App\Bus\Exceptions\Concerns\RendersRefusal, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists
+  domain/Plans/src/Exceptions/PhaseRevisionChanged.php:19 uses App\Bus\Exceptions\Concerns\RendersRefusal, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists
+  domain/Plans/src/Exceptions/PlanHasUnfinishedTasks.php:9 uses App\Bus\Exceptions\Concerns\RendersRefusal, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists
+  domain/Plans/src/Exceptions/PlanHasUnfinishedTasks.php:19 uses App\Bus\Exceptions\Concerns\RendersRefusal, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists
+  domain/Plans/src/Exceptions/PlanRevisionChanged.php:9 uses App\Bus\Exceptions\Concerns\RendersRefusal, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists
+  domain/Plans/src/Exceptions/PlanRevisionChanged.php:19 uses App\Bus\Exceptions\Concerns\RendersRefusal, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists
+  domain/Tasks/src/Exceptions/TaskCancelRefused.php:9 uses App\Bus\Exceptions\Concerns\RendersRefusal, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists
+  domain/Tasks/src/Exceptions/TaskCancelRefused.php:19 uses App\Bus\Exceptions\Concerns\RendersRefusal, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists
+  domain/Tasks/src/Exceptions/TaskRestartRefused.php:9 uses App\Bus\Exceptions\Concerns\RendersRefusal, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists
+  domain/Tasks/src/Exceptions/TaskRestartRefused.php:19 uses App\Bus\Exceptions\Concerns\RendersRefusal, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists
+  domain/Tasks/src/Exceptions/TaskRevisionChanged.php:9 uses App\Bus\Exceptions\Concerns\RendersRefusal, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists
+  domain/Tasks/src/Exceptions/TaskRevisionChanged.php:19 uses App\Bus\Exceptions\Concerns\RendersRefusal, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists
+  domain/Tasks/src/Exceptions/TaskRunNotYours.php:9 uses App\Bus\Exceptions\Concerns\RendersRefusal, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists
+  domain/Tasks/src/Exceptions/TaskRunNotYours.php:19 uses App\Bus\Exceptions\Concerns\RendersRefusal, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists
+  domain/Tasks/src/Exceptions/TaskRunTaken.php:9 uses App\Bus\Exceptions\Concerns\RendersRefusal, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists
+  domain/Tasks/src/Exceptions/TaskRunTaken.php:19 uses App\Bus\Exceptions\Concerns\RendersRefusal, which is private to Core; list it in CoreApi if it is meant to be public, or use what CoreApi lists
+Is the dependency right (add it to the Domain class, with the user's yes), or is the code in the wrong domain?
+Failed asserting that two arrays are identical.
+--- Expected
++++ Actual
+@@ @@
+-Array &0 []
++Array &0 [
++    0 => Tests\Architecture\Support\Violation Object #51069 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Plans/src/Exceptions/PhaseRevisionChanged.php',
++        'line' => 9,
++        'used' => 'App\Bus\Exceptions\Concerns\RendersRefusal',
++        'usingDomain' => 'Plans',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #54217 (PrivateCoreType, 'private-core-type'),
++        'detail' => '',
++    ),
++    1 => Tests\Architecture\Support\Violation Object #59699 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Plans/src/Exceptions/PhaseRevisionChanged.php',
++        'line' => 19,
++        'used' => 'App\Bus\Exceptions\Concerns\RendersRefusal',
++        'usingDomain' => 'Plans',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #54217 (PrivateCoreType, 'private-core-type'),
++        'detail' => '',
++    ),
++    2 => Tests\Architecture\Support\Violation Object #34639 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Plans/src/Exceptions/PlanHasUnfinishedTasks.php',
++        'line' => 9,
++        'used' => 'App\Bus\Exceptions\Concerns\RendersRefusal',
++        'usingDomain' => 'Plans',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #54217 (PrivateCoreType, 'private-core-type'),
++        'detail' => '',
++    ),
++    3 => Tests\Architecture\Support\Violation Object #32652 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Plans/src/Exceptions/PlanHasUnfinishedTasks.php',
++        'line' => 19,
++        'used' => 'App\Bus\Exceptions\Concerns\RendersRefusal',
++        'usingDomain' => 'Plans',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #54217 (PrivateCoreType, 'private-core-type'),
++        'detail' => '',
++    ),
++    4 => Tests\Architecture\Support\Violation Object #32362 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Plans/src/Exceptions/PlanRevisionChanged.php',
++        'line' => 9,
++        'used' => 'App\Bus\Exceptions\Concerns\RendersRefusal',
++        'usingDomain' => 'Plans',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #54217 (PrivateCoreType, 'private-core-type'),
++        'detail' => '',
++    ),
++    5 => Tests\Architecture\Support\Violation Object #31942 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Plans/src/Exceptions/PlanRevisionChanged.php',
++        'line' => 19,
++        'used' => 'App\Bus\Exceptions\Concerns\RendersRefusal',
++        'usingDomain' => 'Plans',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #54217 (PrivateCoreType, 'private-core-type'),
++        'detail' => '',
++    ),
++    6 => Tests\Architecture\Support\Violation Object #15069 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Tasks/src/Exceptions/TaskCancelRefused.php',
++        'line' => 9,
++        'used' => 'App\Bus\Exceptions\Concerns\RendersRefusal',
++        'usingDomain' => 'Tasks',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #54217 (PrivateCoreType, 'private-core-type'),
++        'detail' => '',
++    ),
++    7 => Tests\Architecture\Support\Violation Object #15470 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Tasks/src/Exceptions/TaskCancelRefused.php',
++        'line' => 19,
++        'used' => 'App\Bus\Exceptions\Concerns\RendersRefusal',
++        'usingDomain' => 'Tasks',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #54217 (PrivateCoreType, 'private-core-type'),
++        'detail' => '',
++    ),
++    8 => Tests\Architecture\Support\Violation Object #37419 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Tasks/src/Exceptions/TaskRestartRefused.php',
++        'line' => 9,
++        'used' => 'App\Bus\Exceptions\Concerns\RendersRefusal',
++        'usingDomain' => 'Tasks',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #54217 (PrivateCoreType, 'private-core-type'),
++        'detail' => '',
++    ),
++    9 => Tests\Architecture\Support\Violation Object #54115 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Tasks/src/Exceptions/TaskRestartRefused.php',
++        'line' => 19,
++        'used' => 'App\Bus\Exceptions\Concerns\RendersRefusal',
++        'usingDomain' => 'Tasks',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #54217 (PrivateCoreType, 'private-core-type'),
++        'detail' => '',
++    ),
++    10 => Tests\Architecture\Support\Violation Object #39034 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Tasks/src/Exceptions/TaskRevisionChanged.php',
++        'line' => 9,
++        'used' => 'App\Bus\Exceptions\Concerns\RendersRefusal',
++        'usingDomain' => 'Tasks',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #54217 (PrivateCoreType, 'private-core-type'),
++        'detail' => '',
++    ),
++    11 => Tests\Architecture\Support\Violation Object #55469 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Tasks/src/Exceptions/TaskRevisionChanged.php',
++        'line' => 19,
++        'used' => 'App\Bus\Exceptions\Concerns\RendersRefusal',
++        'usingDomain' => 'Tasks',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #54217 (PrivateCoreType, 'private-core-type'),
++        'detail' => '',
++    ),
++    12 => Tests\Architecture\Support\Violation Object #61092 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Tasks/src/Exceptions/TaskRunNotYours.php',
++        'line' => 9,
++        'used' => 'App\Bus\Exceptions\Concerns\RendersRefusal',
++        'usingDomain' => 'Tasks',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #54217 (PrivateCoreType, 'private-core-type'),
++        'detail' => '',
++    ),
++    13 => Tests\Architecture\Support\Violation Object #31832 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Tasks/src/Exceptions/TaskRunNotYours.php',
++        'line' => 19,
++        'used' => 'App\Bus\Exceptions\Concerns\RendersRefusal',
++        'usingDomain' => 'Tasks',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #54217 (PrivateCoreType, 'private-core-type'),
++        'detail' => '',
++    ),
++    14 => Tests\Architecture\Support\Violation Object #32974 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Tasks/src/Exceptions/TaskRunTaken.php',
++        'line' => 9,
++        'used' => 'App\Bus\Exceptions\Concerns\RendersRefusal',
++        'usingDomain' => 'Tasks',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #54217 (PrivateCoreType, 'private-core-type'),
++        'detail' => '',
++    ),
++    15 => Tests\Architecture\Support\Violation Object #32365 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Tasks/src/Exceptions/TaskRunTaken.php',
++        'line' => 19,
++        'used' => 'App\Bus\Exceptions\Concerns\RendersRefusal',
++        'usingDomain' => 'Tasks',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #54217 (PrivateCoreType, 'private-core-type'),
++        'detail' => '',
++    ),
++]
+
+/app/.journal/worktrees/main/worker-157/tests/Architecture/DomainBoundaryTest.php:39
+
+8) Tests\Feature\Mcp\McpRouteTest::test_the_121st_call_of_a_session_in_a_minute_gets_429_with_retry_after_seconds
+Expected response status code [200] but received 500.
+Failed asserting that 500 is identical to 200.
+
+The following exception occurred during the last request:
+
+Tests\Support\TimeLimits\TestTimedOut: Tests\Feature\Mcp\McpRouteTest::test_the_121st_call_of_a_session_in_a_minute_gets_429_with_retry_after_seconds ran longer than its 1 second limit; make it faster, or give it #[TimeLimit] with a reason. in /app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestTimedOut.php:16
+Stack trace:
+#0 /app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestAlarm.php(34): Tests\Support\TimeLimits\TestTimedOut::after('Tests\\Feature\\M...', 1)
+#1 /app/.journal/worktrees/main/worker-157/tests/Support/TimeLimits/TestAlarm.php(65): Tests\Support\TimeLimits\TestAlarm::{closure:Tests\Support\TimeLimits\TestAlarm::armForTest():34}()
+#2 [internal function]: Tests\Support\TimeLimits\TestAlarm::{closure:Tests\Support\TimeLimits\TestAlarm::arm():65}(14, Array)
+#3 /app/.journal/worktrees/main/worker-157/vendor/symfony/http-foundation/HeaderUtils.php(53): preg_match_all('\n            /\n...', '', Array, 2)
+#4 /app/.journal/worktrees/main/worker-157/vendor/symfony/http-foundation/HeaderBag.php(269): Symfony\Component\HttpFoundation\HeaderUtils::split('', ',=')
+#5 /app/.journal/worktrees/main/worker-157/vendor/symfony/http-foundation/HeaderBag.php(151): Symfony\Component\HttpFoundation\HeaderBag->parseCacheControl('')
+#6 /app/.journal/worktrees/main/worker-157/vendor/symfony/http-foundation/ResponseHeaderBag.php(118): Symfony\Component\HttpFoundation\HeaderBag->set('cache-control', '', true)
+#7 /app/.journal/worktrees/main/worker-157/vendor/symfony/http-foundation/ResponseHeaderBag.php(36): Symfony\Component\HttpFoundation\ResponseHeaderBag->set('Cache-Control', '')
+#8 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Http/Response.php(33): Symfony\Component\HttpFoundation\ResponseHeaderBag->__construct(Array)
+#9 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Routing/ResponseFactory.php(61): Illuminate\Http\Response->__construct('{"jsonrpc":"2.0...', 200, Array)
+#10 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/helpers.php(856): Illuminate\Routing\ResponseFactory->make('{"jsonrpc":"2.0...', 200, Array)
+#11 /app/.journal/worktrees/main/worker-157/vendor/laravel/mcp/src/Server/Transport/HttpTransport.php(68): response('{"jsonrpc":"2.0...', 200, Array)
+#12 /app/.journal/worktrees/main/worker-157/vendor/laravel/mcp/src/Server/Registrar.php(241): Laravel\Mcp\Server\Transport\HttpTransport->run()
+#13 /app/.journal/worktrees/main/worker-157/vendor/laravel/mcp/src/Server/Registrar.php(52): Laravel\Mcp\Server\Registrar::startServer('App\\Mcp\\Servers...', Object(Closure))
+#14 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Routing/CallableDispatcher.php(39): Laravel\Mcp\Server\Registrar::{closure:Laravel\Mcp\Server\Registrar::web():52}()
+#15 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Routing/Route.php(254): Illuminate\Routing\CallableDispatcher->dispatch(Object(Illuminate\Routing\Route), Object(Closure))
+#16 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Routing/Route.php(219): Illuminate\Routing\Route->runCallable()
+#17 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Routing/Router.php(835): Illuminate\Routing\Route->run()
+#18 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Routing\Router->{closure:Illuminate\Routing\Router::runRouteWithinStack():834}(Object(Illuminate\Http\Request))
+#19 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Routing/Middleware/ThrottleRequests.php(168): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}(Object(Illuminate\Http\Request))
+#20 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Routing/Middleware/ThrottleRequests.php(129): Illuminate\Routing\Middleware\ThrottleRequests->handleRequest(Object(Illuminate\Http\Request), Object(Closure), Array)
+#21 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Routing/Middleware/ThrottleRequests.php(90): Illuminate\Routing\Middleware\ThrottleRequests->handleRequestUsingNamedLimiter(Object(Illuminate\Http\Request), Object(Closure), 'journal-mcp', Object(Closure))
+#22 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Routing\Middleware\ThrottleRequests->handle(Object(Illuminate\Http\Request), Object(Closure), 'journal-mcp')
+#23 /app/.journal/worktrees/main/worker-157/app/Http/Middleware/Mcp/SetCallDeadline.php(51): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#24 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\Mcp\SetCallDeadline->handle(Object(Illuminate\Http\Request), Object(Closure))
+#25 /app/.journal/worktrees/main/worker-157/app/Http/Middleware/Mcp/LimitMcpMessage.php(38): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#26 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\Mcp\LimitMcpMessage->handle(Object(Illuminate\Http\Request), Object(Closure))
+#27 /app/.journal/worktrees/main/worker-157/app/Http/Middleware/Agents/ReadRequestKey.php(31): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#28 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\Agents\ReadRequestKey->handle(Object(Illuminate\Http\Request), Object(Closure))
+#29 /app/.journal/worktrees/main/worker-157/app/Http/Middleware/Agents/AuthenticateAgent.php(62): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#30 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\Agents\AuthenticateAgent->handle(Object(Illuminate\Http\Request), Object(Closure))
+#31 /app/.journal/worktrees/main/worker-157/vendor/laravel/mcp/src/Server/Middleware/AddWwwAuthenticateHeader.php(21): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#32 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Laravel\Mcp\Server\Middleware\AddWwwAuthenticateHeader->handle(Object(Illuminate\Http\Request), Object(Closure))
+#33 /app/.journal/worktrees/main/worker-157/vendor/laravel/mcp/src/Server/Middleware/ValidateMcpHeaders.php(39): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#34 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Laravel\Mcp\Server\Middleware\ValidateMcpHeaders->handle(Object(Illuminate\Http\Request), Object(Closure))
+#35 /app/.journal/worktrees/main/worker-157/vendor/laravel/mcp/src/Server/Middleware/ReorderJsonAccept.php(26): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#36 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Laravel\Mcp\Server\Middleware\ReorderJsonAccept->handle(Object(Illuminate\Http\Request), Object(Closure))
+#37 /app/.journal/worktrees/main/worker-157/vendor/laravel/mcp/src/Server/Middleware/ValidateOrigin.php(25): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#38 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Laravel\Mcp\Server\Middleware\ValidateOrigin->handle(Object(Illuminate\Http\Request), Object(Closure))
+#39 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#40 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Routing/Router.php(834): Illuminate\Pipeline\Pipeline->then(Object(Closure))
+#41 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Routing/Router.php(813): Illuminate\Routing\Router->runRouteWithinStack(Object(Illuminate\Routing\Route), Object(Illuminate\Http\Request))
+#42 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Routing/Router.php(777): Illuminate\Routing\Router->runRoute(Object(Illuminate\Http\Request), Object(Illuminate\Routing\Route))
+#43 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Routing/Router.php(766): Illuminate\Routing\Router->dispatchToRoute(Object(Illuminate\Http\Request))
+#44 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\Routing\Router->dispatch(Object(Illuminate\Http\Request))
+#45 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate\Foundation\Http\Kernel->{closure:Illuminate\Foundation\Http\Kernel::dispatchToRouter():197}(Object(Illuminate\Http\Request))
+#46 /app/.journal/worktrees/main/worker-157/vendor/laravel/mcp/src/Server/Middleware/AddAuthorizationFramingHeaders.php(18): Illuminate\Pipeline\Pipeline->{closure:Illuminate\Pipeline\Pipeline::prepareDestination():178}(Object(Illuminate\Http\Request))
+#47 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Laravel\Mcp\Server\Middleware\AddAuthorizationFramingHeaders->handle(Object(Illuminate\Http\Request), Object(Closure))
+#48 /app/.journal/worktrees/main/worker-157/vendor/laravel/mcp/src/Server/Middleware/AddWwwAuthenticateHeader.php(21): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#49 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Laravel\Mcp\Server\Middleware\AddWwwAuthenticateHeader->handle(Object(Illuminate\Http\Request), Object(Closure))
+#50 /app/.journal/worktrees/main/worker-157/vendor/inertiajs/inertia-laravel/src/Middleware/EnsureGetOnRedirect.php(19): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#51 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Inertia\Middleware\EnsureGetOnRedirect->handle(Object(Illuminate\Http\Request), Object(Closure))
+#52 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(38): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#53 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle(Object(Illuminate\Http\Request), Object(Closure))
+#54 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull->handle(Object(Illuminate\Http\Request), Object(Closure))
+#55 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(38): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#56 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(51): Illuminate\Foundation\Http\Middleware\TransformsRequest->handle(Object(Illuminate\Http\Request), Object(Closure))
+#57 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\TrimStrings->handle(Object(Illuminate\Http\Request), Object(Closure))
+#58 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php(27): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#59 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePostSize->handle(Object(Illuminate\Http\Request), Object(Closure))
+#60 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(110): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#61 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance->handle(Object(Illuminate\Http\Request), Object(Closure))
+#62 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(61): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#63 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\HandleCors->handle(Object(Illuminate\Http\Request), Object(Closure))
+#64 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(58): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#65 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\TrustProxies->handle(Object(Illuminate\Http\Request), Object(Closure))
+#66 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php(22): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#67 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks->handle(Object(Illuminate\Http\Request), Object(Closure))
+#68 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php(28): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#69 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Illuminate\Http\Middleware\ValidatePathEncoding->handle(Object(Illuminate\Http\Request), Object(Closure))
+#70 /app/.journal/worktrees/main/worker-157/app/Http/Middleware/MeasureReads.php(23): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#71 /app/.journal/worktrees/main/worker-157/app/Reads/Support/ScopedReadMeter.php(54): App\Http\Middleware\MeasureReads->{closure:App\Http\Middleware\MeasureReads::handle():23}()
+#72 /app/.journal/worktrees/main/worker-157/app/Http/Middleware/MeasureReads.php(23): App\Reads\Support\ScopedReadMeter->measure('POST /agent/mcp...', Object(Closure))
+#73 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): App\Http\Middleware\MeasureReads->handle(Object(Illuminate\Http\Request), Object(Closure))
+#74 /app/.journal/worktrees/main/worker-157/vendor/inertiajs/inertia-laravel/src/Middleware/EnsureDeferredCallbacksRun.php(21): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#75 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(219): Inertia\Middleware\EnsureDeferredCallbacksRun->handle(Object(Illuminate\Http\Request), Object(Closure))
+#76 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate\Pipeline\Pipeline->{closure:{closure:Illuminate\Pipeline\Pipeline::carry():194}:195}(Object(Illuminate\Http\Request))
+#77 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\Pipeline\Pipeline->then(Object(Closure))
+#78 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\Foundation\Http\Kernel->sendRequestThroughRouter(Object(Illuminate\Http\Request))
+#79 /app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Foundation/Testing/Concerns/MakesHttpRequests.php(638): Illuminate\Foundation\Http\Kernel->handle(Object(Illuminate\Http\Request))
+#80 /app/.journal/worktrees/main/worker-157/tests/Support/SendsMcpFrames.php(35): Illuminate\Foundation\Testing\TestCase->call('POST', '/agent/mcp/v1', Array, Array, Array, Array, '{"jsonrpc":"2.0...')
+#81 /app/.journal/worktrees/main/worker-157/tests/Support/SendsMcpFrames.php(23): Tests\Feature\Mcp\McpRouteTest->sendMcpBody(Object(Tests\Fixtures\Agents\TestLaunch), '{"jsonrpc":"2.0...', Array, NULL)
+#82 /app/.journal/worktrees/main/worker-157/tests/Feature/Mcp/McpRouteTest.php(123): Tests\Feature\Mcp\McpRouteTest->sendMcp(Object(Tests\Fixtures\Agents\TestLaunch), 'ping')
+#83 /app/.journal/worktrees/main/worker-157/vendor/phpunit/phpunit/src/Framework/TestCase.php(1346): Tests\Feature\Mcp\McpRouteTest->test_the_121st_call_of_a_session_in_a_minute_gets_429_with_retry_after_seconds()
+#84 /app/.journal/worktrees/main/worker-157/vendor/phpunit/phpunit/src/Framework/TestCase.php(1383): PHPUnit\Framework\TestCase->invokeTestMethod('test_the_121st_...', Array)
+#85 /app/.journal/worktrees/main/worker-157/vendor/phpunit/phpunit/src/Framework/TestCase.php(521): PHPUnit\Framework\TestCase->runTest()
+#86 /app/.journal/worktrees/main/worker-157/vendor/phpunit/phpunit/src/Framework/TestRunner/TestRunner.php(98): PHPUnit\Framework\TestCase->runBare()
+#87 /app/.journal/worktrees/main/worker-157/vendor/phpunit/phpunit/src/Framework/TestCase.php(361): PHPUnit\Framework\TestRunner->run(Object(Tests\Feature\Mcp\McpRouteTest))
+#88 /app/.journal/worktrees/main/worker-157/vendor/phpunit/phpunit/src/Framework/TestSuite.php(379): PHPUnit\Framework\TestCase->run()
+#89 /app/.journal/worktrees/main/worker-157/vendor/brianium/paratest/src/WrapperRunner/ApplicationForWrapperWorker.php(124): PHPUnit\Framework\TestSuite->run()
+#90 /app/.journal/worktrees/main/worker-157/vendor/brianium/paratest/bin/phpunit-wrapper.php(73): ParaTest\WrapperRunner\ApplicationForWrapperWorker->runTest('tests/Feature/M...')
+#91 /app/.journal/worktrees/main/worker-157/vendor/brianium/paratest/bin/phpunit-wrapper.php(78): {closure:/app/.journal/worktrees/main/worker-157/vendor/brianium/paratest/bin/phpunit-wrapper.php:8}()
+#92 {main}
+
+----------------------------------------------------------------------------------
+
+Tests\Feature\Mcp\McpRouteTest::test_the_121st_call_of_a_session_in_a_minute_gets_429_with_retry_after_seconds ran longer than its 1 second limit; make it faster, or give it #[TimeLimit] with a reason.
+
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Testing/TestResponseAssert.php:46
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:183
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Testing/Concerns/AssertsStatusCodes.php:16
+/app/.journal/worktrees/main/worker-157/tests/Feature/Mcp/McpRouteTest.php:123
+
+9) Tests\Architecture\FolderLayoutTest::test_every_type_folder_holds_only_its_own_type
+domain/Tasks/src/Readers/TaskExecutions.php is not a reader (it implements a contract); move it to Readers/Support
+Failed asserting that two arrays are identical.
+--- Expected
++++ Actual
+@@ @@
+-Array &0 []
++Array &0 [
++    0 => 'domain/Tasks/src/Readers/TaskExecutions.php is not a reader (it implements a contract); move it to Readers/Support',
++]
+
+/app/.journal/worktrees/main/worker-157/tests/Architecture/FolderLayoutTest.php:114
+
+10) Tests\Feature\Mcp\OperationsReadTest::test_a_1000_outcome_cascade_is_read_whole_by_following_continuations
+Failed asserting that true is identical to false.
+
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Testing/AssertableJsonString.php:258
+/app/.journal/worktrees/main/worker-157/vendor/laravel/framework/src/Illuminate/Testing/TestResponse.php:882
+/app/.journal/worktrees/main/worker-157/tests/Feature/Mcp/OperationsReadTest.php:69
+
+11) Tests\Architecture\DomainDeclarationTest::test_the_real_app_declares_everything_where_it_belongs
+Domain boundary violations (1):
+  app/Domains/Contracts/ProvidesMcpTools.php:1 is not one of the fixed files of App\Domains; the shared foundation holds only Domain, DomainEntry, DomainRegistry, DomainServiceProvider, the listener class reader and the named start-up exceptions
+Is the dependency right (add it to the Domain class, with the user's yes), or is the code in the wrong domain?
+Failed asserting that two arrays are identical.
+--- Expected
++++ Actual
+@@ @@
+-Array &0 []
++Array &0 [
++    0 => Tests\Architecture\Support\Violation Object #15346 (
++        'file' => '/app/.journal/worktrees/main/worker-157/app/Domains/Contracts/ProvidesMcpTools.php',
++        'line' => 1,
++        'used' => '/app/.journal/worktrees/main/worker-157/app/Domains/Contracts/ProvidesMcpTools.php',
++        'usingDomain' => 'App\Domain',
++        'owner' => 'App\Domain',
++        'type' => Tests\Architecture\Support\ViolationType Enum #20905 (SharedPlaceFile, 'shared-place-file'),
++        'detail' => '',
++    ),
++]
+
+/app/.journal/worktrees/main/worker-157/tests/Architecture/DomainDeclarationTest.php:144
+
+12) Tests\Architecture\RegisteredModuleTest::test_the_module_passes_every_boundary_check
+Domain boundary violations (8):
+  app/Bus/Contracts/OperationReader.php:19 shows App\Bus\Exceptions\OperationUnavailable at OperationReader::operation(), but it is private to Core; export it or keep it out of the public signature
+  app/Bus/Support/RequestKey.php:16 exports App\Bus\Support\RequestKey, which is a class with hidden or changeable state, such as a service, under values; an owner publishes only interfaces, enums, immutable values and its own exceptions
+  app/Mcp/Support/ToolArguments.php:16 exports App\Mcp\Support\ToolArguments, which is a class with hidden or changeable state, such as a service, under values; an owner publishes only interfaces, enums, immutable values and its own exceptions
+  app/Mcp/Support/McpCall.php:19 exports App\Mcp\Support\McpCall, which is a class with hidden or changeable state, such as a service, under values; an owner publishes only interfaces, enums, immutable values and its own exceptions
+  app/Mcp/Support/NumberedPages.php:18 exports App\Mcp\Support\NumberedPages, which is a class with hidden or changeable state, such as a service, under values; an owner publishes only interfaces, enums, immutable values and its own exceptions
+  app/Mcp/Resources/JournalResource.php:21 shows App\Mcp\Exceptions\ResourceMimeTypeRefused at JournalResource::mimeType(), but it is private to Core; export it or keep it out of the public signature
+  domain/Plans/src/Contracts/PlanDetailsReader.php:28 shows Domain\Plans\Exceptions\PhaseMissing at PlanDetailsReader::phase(), but it is private to Plans; export it or keep it out of the public signature
+  domain/Plans/src/Api/PhaseDetails.php:15 shows Domain\Tasks\Api\TaskSummary at PhaseDetails::__construct(), but it is private to Tasks; export it or keep it out of the public signature
+Is the dependency right (add it to the Domain class, with the user's yes), or is the code in the wrong domain?
+Failed asserting that two arrays are identical.
+--- Expected
++++ Actual
+@@ @@
+-Array &0 []
++Array &0 [
++    0 => Tests\Architecture\Support\Violation Object #35071 (
++        'file' => '/app/.journal/worktrees/main/worker-157/app/Bus/Contracts/OperationReader.php',
++        'line' => 19,
++        'used' => 'App\Bus\Exceptions\OperationUnavailable',
++        'usingDomain' => 'Core',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #14565 (PrivateTypeInSignature, 'private-type-in-signature'),
++        'detail' => 'OperationReader::operation()',
++    ),
++    1 => Tests\Architecture\Support\Violation Object #34053 (
++        'file' => '/app/.journal/worktrees/main/worker-157/app/Bus/Support/RequestKey.php',
++        'line' => 16,
++        'used' => 'App\Bus\Support\RequestKey',
++        'usingDomain' => 'Core',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #14849 (DisallowedCategory, 'disallowed-category'),
++        'detail' => 'a class with hidden or changeable state, such as a service, under values',
++    ),
++    2 => Tests\Architecture\Support\Violation Object #34054 (
++        'file' => '/app/.journal/worktrees/main/worker-157/app/Mcp/Support/ToolArguments.php',
++        'line' => 16,
++        'used' => 'App\Mcp\Support\ToolArguments',
++        'usingDomain' => 'Core',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #14849 (DisallowedCategory, 'disallowed-category'),
++        'detail' => 'a class with hidden or changeable state, such as a service, under values',
++    ),
++    3 => Tests\Architecture\Support\Violation Object #35373 (
++        'file' => '/app/.journal/worktrees/main/worker-157/app/Mcp/Support/McpCall.php',
++        'line' => 19,
++        'used' => 'App\Mcp\Support\McpCall',
++        'usingDomain' => 'Core',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #14849 (DisallowedCategory, 'disallowed-category'),
++        'detail' => 'a class with hidden or changeable state, such as a service, under values',
++    ),
++    4 => Tests\Architecture\Support\Violation Object #38137 (
++        'file' => '/app/.journal/worktrees/main/worker-157/app/Mcp/Support/NumberedPages.php',
++        'line' => 18,
++        'used' => 'App\Mcp\Support\NumberedPages',
++        'usingDomain' => 'Core',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #14849 (DisallowedCategory, 'disallowed-category'),
++        'detail' => 'a class with hidden or changeable state, such as a service, under values',
++    ),
++    5 => Tests\Architecture\Support\Violation Object #31764 (
++        'file' => '/app/.journal/worktrees/main/worker-157/app/Mcp/Resources/JournalResource.php',
++        'line' => 21,
++        'used' => 'App\Mcp\Exceptions\ResourceMimeTypeRefused',
++        'usingDomain' => 'Core',
++        'owner' => 'Core',
++        'type' => Tests\Architecture\Support\ViolationType Enum #14565 (PrivateTypeInSignature, 'private-type-in-signature'),
++        'detail' => 'JournalResource::mimeType()',
++    ),
++    6 => Tests\Architecture\Support\Violation Object #34350 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Plans/src/Contracts/PlanDetailsReader.php',
++        'line' => 28,
++        'used' => 'Domain\Plans\Exceptions\PhaseMissing',
++        'usingDomain' => 'Plans',
++        'owner' => 'Plans',
++        'type' => Tests\Architecture\Support\ViolationType Enum #14565 (PrivateTypeInSignature, 'private-type-in-signature'),
++        'detail' => 'PlanDetailsReader::phase()',
++    ),
++    7 => Tests\Architecture\Support\Violation Object #31741 (
++        'file' => '/app/.journal/worktrees/main/worker-157/domain/Plans/src/Api/PhaseDetails.php',
++        'line' => 15,
++        'used' => 'Domain\Tasks\Api\TaskSummary',
++        'usingDomain' => 'Plans',
++        'owner' => 'Tasks',
++        'type' => Tests\Architecture\Support\ViolationType Enum #14565 (PrivateTypeInSignature, 'private-type-in-signature'),
++        'detail' => 'PhaseDetails::__construct()',
++    ),
++]
+
+/app/.journal/worktrees/main/worker-157/tests/Architecture/RegisteredModuleTest.php:67
+
+[37;41mERRORS![0m
+[37;41mTests: 1643[0m[37;41m, Assertions: 4816[0m[37;41m, Errors: 6[0m[37;41m, Failures: 12[0m[37;41m.[0m
+Script @php artisan test --parallel --recreate-databases handling the test:run-inside event returned with error code 2

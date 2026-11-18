@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace App\Domains\Contracts;
+namespace App\Mcp\Contracts;
 
-use App\Mcp\Contracts\OverviewContribution;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Tools\JournalTool;
 
