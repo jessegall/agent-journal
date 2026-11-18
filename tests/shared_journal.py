@@ -13,7 +13,7 @@ DATABASE_SUFFIXES = ("", "-wal", "-shm")
 
 
 class SharedJournal:
-    """One booted journal for the tests of a module, put back after each test as it stood at boot: its rows and their numbering, the files under its root and its secret values, the services built since and what the services built at boot remember."""
+    """One booted journal for the tests of a module, put back after each test as it stood at boot: its rows and their numbering, the files and links under its root and its secret values, the services built since and what the services built at boot remember."""
 
     def __init__(self, app: App) -> None:
         self.app = app
@@ -24,7 +24,8 @@ class SharedJournal:
             live.backup(self.rows)
         self.secrets = str(app.container.get(SecretValues).path)
         self.folders, files = self.tree()
-        kept = [path for path in files if not self.is_database(path)] + ([self.secrets] if os.path.isfile(self.secrets) else [])
+        self.links = {path: os.readlink(path) for path in (*self.folders, *files) if os.path.islink(path)}
+        kept = [path for path in files if not self.is_database(path) and path not in self.links] + ([self.secrets] if os.path.isfile(self.secrets) else [])
         self.files = {path: Path(path).read_bytes() for path in kept}
         self.stamps = {path: self.stamp(path) for path in kept}
         self.instances = dict(app.container._instances)
@@ -62,7 +63,7 @@ class SharedJournal:
     def put_back_files(self) -> None:
         folders, files = self.tree()
         for path in files:
-            if path not in self.files and not self.is_database(path):
+            if path not in self.files and path not in self.links and not self.is_database(path):
                 os.unlink(path)
         for path in sorted(folders - self.folders, reverse=True):
             if os.path.islink(path):
@@ -71,11 +72,23 @@ class SharedJournal:
                 shutil.rmtree(path)
         if self.secrets not in self.files and os.path.isfile(self.secrets):
             os.unlink(self.secrets)
+        for path, target in self.links.items():
+            if not os.path.islink(path) or os.readlink(path) != target:
+                self.removed(path)
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                os.symlink(target, path)
         for path, content in self.files.items():
             if self.stamp(path) != self.stamps[path]:
                 os.makedirs(os.path.dirname(path), exist_ok=True)
                 Path(path).write_bytes(content)
                 self.stamps[path] = self.stamp(path)
+
+    @staticmethod
+    def removed(path: str) -> None:
+        if os.path.islink(path) or os.path.isfile(path):
+            os.unlink(path)
+        elif os.path.isdir(path):
+            shutil.rmtree(path)
 
     @staticmethod
     def stamp(path: str) -> tuple:
