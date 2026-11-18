@@ -55,7 +55,7 @@ final readonly class AccessPolicy
             }
 
             foreach ($grant->accessTypes as $access) {
-                if ($role === AgentRole::ReadOnlyHelper && $grant->area->holdsWorkspaceFiles() && $access->changesFiles()) {
+                if ($role === AgentRole::ReadOnlyHelper && $grant->area->hasWorkspaceFiles() && $access->changesFiles()) {
                     throw AccessPolicyInvalid::aboveCeiling($role, $access, $grant->area);
                 }
             }

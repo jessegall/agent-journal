@@ -4,9 +4,19 @@ declare(strict_types=1);
 
 namespace App\Settings\Support;
 
+use App\Settings\Contracts\CatalogueConstraints;
+use App\Settings\Contracts\CatalogueValue;
+use App\Settings\Data\IntegerChoiceConstraintsData;
+use App\Settings\Data\IntegerChoiceOptionData;
+use App\Settings\Data\IntegerChoiceValueData;
+use App\Settings\Data\StringChoiceConstraintsData;
+use App\Settings\Data\StringChoiceOptionData;
+use App\Settings\Data\StringChoiceValueData;
 use App\Settings\Declarations\IntegerSetting;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Values\Choice;
+use App\Settings\Values\Decimal;
+use BackedEnum;
 
 /**
  * The options of a choice setting in declaration order, checked once: not empty, at most MOST options, every value of
@@ -78,5 +88,29 @@ final readonly class ChoiceOptions
         }
 
         return false;
+    }
+
+    /**
+     * A choice value as the catalogue shows it: a whole-number choice or a text choice.
+     */
+    public static function valueData(string|bool|int|Decimal|BackedEnum $value): CatalogueValue
+    {
+        return is_int($value)
+            ? IntegerChoiceValueData::from(['value' => $value])
+            : StringChoiceValueData::from(['value' => $value]);
+    }
+
+    /**
+     * The options as the catalogue shows them, each with its value and label.
+     *
+     * @param  list<Choice<string|int>>  $options
+     */
+    public static function constraintsData(array $options): CatalogueConstraints
+    {
+        $shown = array_map(fn (Choice $option) => ['value' => $option->value, 'label' => $option->label], $options);
+
+        return is_int($options[0]->value)
+            ? IntegerChoiceConstraintsData::from(['options' => IntegerChoiceOptionData::collect($shown)])
+            : StringChoiceConstraintsData::from(['options' => StringChoiceOptionData::collect($shown)]);
     }
 }

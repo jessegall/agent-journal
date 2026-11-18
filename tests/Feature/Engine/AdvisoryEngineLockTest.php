@@ -50,12 +50,12 @@ final class AdvisoryEngineLockTest extends TestCase
 
         $lock->acquire();
 
-        $this->assertTrue($lock->owns());
+        $this->assertTrue($lock->isHeld());
         $this->assertFalse($this->rivalTakesTheLock());
 
         $lock->release();
 
-        $this->assertFalse($lock->owns());
+        $this->assertFalse($lock->isHeld());
         $this->assertTrue($this->rivalTakesTheLock());
     }
 
@@ -68,7 +68,7 @@ final class AdvisoryEngineLockTest extends TestCase
 
         $this->rival()->statement('select pg_terminate_backend(?)', [$enginePid]);
 
-        $this->assertFalse($lock->owns());
+        $this->assertFalse($lock->isHeld());
         $this->assertTrue($this->rivalTakesTheLock());
         $this->expectException(EngineConnectionLost::class);
         $engine->scalar('select 1');

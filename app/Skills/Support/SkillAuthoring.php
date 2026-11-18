@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\JournalAccessPolicy;
 use App\Actors\Support\ActorContext;
 use App\Skills\Contracts\SkillReader;
+use App\Skills\Data\SkillWriteReceipt;
 use App\Skills\Enums\SkillOrigin;
 use App\Skills\Exceptions\ShippedSkillReadOnly;
 use App\Skills\Exceptions\SkillConditionInvalid;
@@ -126,10 +127,11 @@ final readonly class SkillAuthoring
             return $conditions;
         }
 
-        $children = [
-            ...($mainAgent ? [['type' => 'main-agent', 'version' => 1]] : []),
-            ...array_map(fn (string $type, array $values) => ['type' => $type, 'version' => 1, 'keys' => array_values(array_unique($values))], array_keys($named), array_values($named)),
-        ];
+        $children = $mainAgent ? [['type' => 'main-agent', 'version' => 1]] : [];
+
+        foreach ($named as $type => $values) {
+            $children[] = ['type' => $type, 'version' => 1, 'keys' => array_values(array_unique($values))];
+        }
 
         return $children === [] ? '' : json_encode(['type' => 'all', 'version' => 1, 'children' => $children], JSON_THROW_ON_ERROR);
     }
@@ -158,15 +160,14 @@ final readonly class SkillAuthoring
     {
         $skill = Skill::query()->whereKey($result->skillId)->firstOrFail();
 
-        return [
-            'request_id' => $requestId,
-            'skill_id' => $result->skillId,
+        return SkillWriteReceipt::from([
+            'requestId' => $requestId,
+            'skillId' => $result->skillId,
             'number' => $result->number,
             'key' => $skill->key,
             'revision' => $result->revision,
-            'publication' => 'pending',
             'status' => $this->statusLines($skill),
-        ];
+        ])->toArray();
     }
 
     /**

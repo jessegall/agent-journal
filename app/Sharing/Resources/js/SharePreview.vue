@@ -44,7 +44,7 @@ const confirm = useForm({ previewId: '', previewChecksum: '', minutes: 10080 });
 function confirmTo(url: string): void {
     const saved = props.data.savedPreview;
 
-    if (saved === null) {
+    if (saved === undefined) {
         return;
     }
 
@@ -102,7 +102,7 @@ function confirmTo(url: string): void {
         </template>
         <template v-if="data.savedPreview">
             <section class="flex flex-col gap-2" aria-label="Confirm">
-                <template v-if="data.liveShare === null">
+                <template v-if="data.liveShare === undefined">
                     <label class="flex items-center gap-2">
                         <span>Share for</span>
                         <select v-model.number="minutes">
@@ -118,7 +118,7 @@ function confirmTo(url: string): void {
                     </label>
                 </template>
                 <div class="flex flex-wrap gap-2">
-                    <template v-if="data.liveShare === null">
+                    <template v-if="data.liveShare === undefined">
                         <Button
                             type="button"
                             :disabled="confirm.processing"

@@ -101,7 +101,7 @@ final class SettingsReaderTest extends TestCase
         $this->assertSame(7, $enabled->integer($this->reviews->retryLimit));
         $this->assertTrue($enabled->boolean($this->reviews->notifyOwner));
         $this->assertSame('0.50', $enabled->decimal($this->reviews->weight)->text);
-        $this->assertSame('short', $enabled->stringChoice($this->reviews->summaryStyle));
+        $this->assertSame('short', $enabled->choice($this->reviews->summaryStyle));
         $this->assertSame(ReviewMode::Quick, $enabled->enum($this->reviews->reviewMode));
         $this->assertSame(ReviewLevel::FirstPass, $enabled->enum($this->reviews->reviewLevel));
 
@@ -141,7 +141,7 @@ final class SettingsReaderTest extends TestCase
         $counts = $this->readCounts(function () use ($reader): void {
             $snapshot = $reader->snapshot($this->reviews);
             $this->assertSame('Weekly reviews', $snapshot->string($this->reviews->title));
-            $this->assertSame(0, $snapshot->integerChoice($this->reviews->priority));
+            $this->assertSame(0, $snapshot->choice($this->reviews->priority));
             $review = $snapshot->group($this->reviews->review);
             $this->assertInstanceOf(EnabledSettingsGroup::class, $review);
             $this->assertSame(3, $review->integer($this->reviews->retryLimit));

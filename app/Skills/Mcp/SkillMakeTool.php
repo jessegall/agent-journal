@@ -46,6 +46,6 @@ final class SkillMakeTool extends JournalWriteTool
         $key = $arguments->text('key');
         $draft = new SkillDraft($arguments->optionalText('name') ?? $key, $arguments->text('description'), $this->authoring->sectionsOf($arguments->text('body')), $this->authoring->conditionOf($arguments->optionalText('conditions'), [], false));
 
-        return new ToolResult('ok', $this->authoring->receipt($this->commands->run(new CreateSkill($key, $requestId, $draft)), $requestId), []);
+        return ToolResult::ok($this->authoring->receipt($this->commands->run(new CreateSkill($key, $requestId, $draft)), $requestId), []);
     }
 }

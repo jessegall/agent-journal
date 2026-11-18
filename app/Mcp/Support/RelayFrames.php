@@ -131,7 +131,7 @@ final class RelayFrames
      */
     private function refuse(Frame $frame, RefusalCode $code, string $message, array $data = []): void
     {
-        if (! $frame->expectsAnswer()) {
+        if (! $frame->isRequest()) {
             $this->diagnose("A {$frame->method()} message was not delivered: {$message}");
 
             return;

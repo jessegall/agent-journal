@@ -48,10 +48,12 @@ final readonly class RetainedPages
         $offsets = [];
 
         foreach ($references as $index => $reference) {
-            if (array_key_exists($reference, $found)) {
-                $entries[$reference] = $found[$reference];
-                $offsets[$reference] = $offset + $index;
+            if (! array_key_exists($reference, $found)) {
+                continue;
             }
+
+            $entries[$reference] = $found[$reference];
+            $offsets[$reference] = $offset + $index;
         }
 
         return new RetainedEntries($entries, $offsets, count($references) - count($entries));

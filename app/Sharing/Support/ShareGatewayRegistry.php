@@ -70,6 +70,21 @@ final class ShareGatewayRegistry
     }
 
     /**
+     * Why the revision's gateway is not ready; none for a disabled revision or one whose gateway is not registered,
+     * since neither is asked.
+     *
+     * @return list<string>
+     */
+    public function readinessProblemsOf(ShareGatewayConfiguration $configuration): array
+    {
+        if ($configuration->isDisabled() || ! $this->has($configuration->gateway_key)) {
+            return [];
+        }
+
+        return $this->readinessOf($configuration)->problems;
+    }
+
+    /**
      * The gateway that carries out the claimed operation.
      *
      * @throws UnknownShareGateway

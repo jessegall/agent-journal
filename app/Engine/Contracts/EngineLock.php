@@ -17,7 +17,7 @@ interface EngineLock
     /**
      * Whether this process still owns the lock on the session it acquired it on.
      */
-    public function owns(): bool;
+    public function isHeld(): bool;
 
     public function release(): void;
 }

@@ -12,6 +12,7 @@ use App\Numbers\Support\HasNumber;
 use App\Queries\Support\TextSearch;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use Domain\Rules\Api\RuleDetails;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Exceptions\RuleNotProposed;
@@ -131,5 +132,22 @@ final class Rule extends Model implements Numbered, ReadableModel
     protected function active(Builder $query): void
     {
         $query->where('state', RuleState::Active->value);
+    }
+
+    /**
+     * The rule as a read shows it, with the number of the rule it replaces, if any.
+     */
+    public function details(int|null $replacedNumber): RuleDetails
+    {
+        return new RuleDetails(
+            $this->id,
+            $this->number,
+            $this->text,
+            $this->state,
+            $this->reason,
+            $this->proposer_type,
+            $this->proposer_id,
+            $replacedNumber,
+        );
     }
 }

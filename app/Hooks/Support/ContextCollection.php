@@ -8,8 +8,6 @@ use App\Agents\Support\StackTarget;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Events\ContextStarted;
-use App\Hooks\Inputs\ContextCompacted;
-use App\Hooks\Inputs\SessionStarted;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
@@ -28,16 +26,16 @@ final readonly class ContextCollection
      */
     public function collectReminders(StackTarget $target, HookInput $input): array
     {
-        $type = match (true) {
-            $input instanceof SessionStarted => ContextStartType::fromSource($input->start->source),
-            $input instanceof ContextCompacted => ContextStartType::Compact,
-            default => null,
-        };
+        return $input->contextStart()
+            ->map(fn (ContextStartType $type) => $this->remindersOn($target, $input, $type))
+            ->getOrElse([]);
+    }
 
-        if ($type === null) {
-            return [];
-        }
-
+    /**
+     * @return list<string>
+     */
+    private function remindersOn(StackTarget $target, HookInput $input, ContextStartType $type): array
+    {
         $reminders = new ContextReminders($this->budget);
         $this->events->dispatch(new ContextStarted($target, $input->identity()->hookId, $type, $reminders));
 

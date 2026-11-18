@@ -14,6 +14,11 @@ use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 interface AssignmentProviders
 {
     /**
+     * Whether a provider answers for this record type.
+     */
+    public function hasRecordProvider(string $type): bool;
+
+    /**
      * @throws AssignmentTypeUnavailable
      */
     public function recordProvider(string $type): AssignableProvider;

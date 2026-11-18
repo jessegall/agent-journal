@@ -31,8 +31,10 @@ final readonly class SkillPreview
      */
     public function audience(SkillEntry $skill): array
     {
-        $agents = Agent::query()->orderBy('name')->readLimit(self::MOST_AGENTS)->get()->all();
-        $rows = array_values(array_filter(array_map(fn (Agent $agent) => $this->rowFor($skill, $agent), $agents)));
+        $agents = $this->contexts->visible(array_values(
+            Agent::query()->orderBy('name')->readLimit(self::MOST_AGENTS)->get()->all(),
+        ));
+        $rows = array_map(fn (Agent $agent) => $this->rowFor($skill, $agent), $agents);
 
         return [
             'key' => $skill->key->key,
@@ -77,16 +79,14 @@ final readonly class SkillPreview
     }
 
     /**
-     * One agent's answer, or null for an agent the actor may not see.
+     * One visible agent's answer.
      *
-     * @return array{agent: string, name: string, outcome: string, reason: string}|null
+     * @return array{agent: string, name: string, outcome: string, reason: string}
      */
-    private function rowFor(SkillEntry $skill, Agent $agent): array|null
+    private function rowFor(SkillEntry $skill, Agent $agent): array
     {
         try {
             $result = $skill->condition->evaluate($this->contexts->forAgent($agent));
-        } catch (SkillAgentHidden) {
-            return null;
         } catch (SkillContextUnavailable $unavailable) {
             return ['agent' => $agent->id, 'name' => $agent->name, 'outcome' => 'unavailable', 'reason' => $unavailable->getMessage()];
         }

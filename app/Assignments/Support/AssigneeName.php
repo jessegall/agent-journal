@@ -15,4 +15,14 @@ final readonly class AssigneeName
         public ActorIdentity $actor,
         public string $name,
     ) {}
+
+    /**
+     * The assignee as a tool lists it: its actor type, its id and its name.
+     *
+     * @return array{type: string, id: string, name: string}
+     */
+    public function listing(): array
+    {
+        return ['type' => $this->actor->type->value, 'id' => $this->actor->id, 'name' => $this->name];
+    }
 }

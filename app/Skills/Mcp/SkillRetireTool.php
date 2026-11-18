@@ -42,6 +42,6 @@ final class SkillRetireTool extends JournalWriteTool
         $skill = $this->authoring->stored($arguments->text('skill'));
         $result = $this->commands->run(new RetireSkill($skill->id, $arguments->positiveInteger('expected_revision'), $requestId));
 
-        return new ToolResult('ok', $this->authoring->receipt($result, $requestId), []);
+        return ToolResult::ok($this->authoring->receipt($result, $requestId), []);
     }
 }

@@ -56,6 +56,7 @@ use App\Agents\Commands\RetireAgent;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\AgentReader;
+use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
@@ -522,6 +523,8 @@ use App\Settings\Commands\SetIntegerChoice;
 use App\Settings\Commands\SetIntegerSetting;
 use App\Settings\Commands\SetStringChoice;
 use App\Settings\Commands\SetStringSetting;
+use App\Settings\Contracts\CatalogueConstraints;
+use App\Settings\Contracts\CatalogueValue;
 use App\Settings\Contracts\ChoiceLabel;
 use App\Settings\Contracts\EnabledSettingsGroup;
 use App\Settings\Contracts\GroupDeclaration;
@@ -762,6 +765,7 @@ final class CoreApi
                 RecordReader::class,
                 RecordLinker::class,
                 CurrentSession::class,
+                ConversationVisits::class,
                 ReadableModel::class,
                 ReadMeter::class,
                 Actor::class,
@@ -851,6 +855,8 @@ final class CoreApi
                 VisibilityCheck::class,
                 ProvidesSettings::class,
                 Setting::class,
+                CatalogueValue::class,
+                CatalogueConstraints::class,
                 SettingsDefinition::class,
                 GroupDeclaration::class,
                 ChoiceLabel::class,

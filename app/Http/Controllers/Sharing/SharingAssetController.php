@@ -14,12 +14,14 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final readonly class SharingAssetController
 {
-    public function __invoke(string $file, SharingAssets $assets): Response
+    public function __invoke(string $file, SharingAssets $assets, SharedPageResponses $responses): Response
     {
         if (! $assets->lists($file)) {
-            return SharedPageResponses::refused(404);
+            return $responses->refused(404);
         }
 
-        return new BinaryFileResponse($assets->path($file), 200, ['Content-Type' => str_ends_with($file, '.css') ? 'text/css' : 'application/octet-stream']);
+        $type = str_ends_with($file, '.css') ? 'text/css' : 'application/octet-stream';
+
+        return new BinaryFileResponse($assets->path($file), 200, ['Content-Type' => $type]);
     }
 }

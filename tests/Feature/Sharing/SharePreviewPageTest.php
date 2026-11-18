@@ -68,7 +68,8 @@ final class SharePreviewPageTest extends TestCase
             ->where('page.data.candidates.0.id', $this->document->id)
             ->where('page.data.candidates.0.title', 'Design')
             ->where('page.data.candidates.0.shared', false)
-            ->where('page.data.savedPreview', null));
+            ->missing('page.data.savedPreview')
+            ->missing('page.data.liveShare'));
     }
 
     public function test_saving_the_preview_keeps_the_selected_document(): void

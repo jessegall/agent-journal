@@ -29,7 +29,7 @@ final class AdvisoryEngineLock implements EngineLock
         $this->ownerBackendId = (int) $connection->scalar('select pg_backend_pid()');
     }
 
-    public function owns(): bool
+    public function isHeld(): bool
     {
         if ($this->ownerBackendId === null) {
             return false;

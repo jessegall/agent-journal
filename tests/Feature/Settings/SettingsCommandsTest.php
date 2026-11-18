@@ -230,7 +230,7 @@ final class SettingsCommandsTest extends TestCase
 
         $review = $this->reviewGroup();
         $this->assertSame(4, $review->integer($this->reviews->retryLimit));
-        $this->assertSame('long', $review->stringChoice($this->reviews->summaryStyle));
+        $this->assertSame('long', $review->choice($this->reviews->summaryStyle));
     }
 
     public function test_resetting_an_invalid_switch_makes_the_group_follow_its_default_with_its_settings_intact(): void

@@ -32,7 +32,9 @@ enum RefusalCode: string
     {
         return match ($this) {
             self::Busy, self::Unavailable, self::DeadlineExpired => true,
-            default => false,
+            self::InvalidInput, self::Unauthenticated, self::Forbidden, self::RecordUnavailable, self::StateBlocked,
+            self::Conflict, self::RequestKeyConflict, self::RequestKeyExpired, self::StaleContinuation,
+            self::Cancelled, self::OutcomeUnknown, self::UnsupportedVersion => false,
         };
     }
 }

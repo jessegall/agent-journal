@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Values;
 
+use App\Profiles\Enums\ProfileType;
 use App\Profiles\Values\ProfileSnapshot;
 
 /**
@@ -28,5 +29,29 @@ final readonly class LaunchProfile
     public function isProfileFree(): bool
     {
         return $this->snapshot === null;
+    }
+
+    /**
+     * @param  list<ProfileType>  $types
+     */
+    public function hasTypeIn(array $types): bool
+    {
+        return $this->snapshot !== null && in_array($this->snapshot->type, $types, true);
+    }
+
+    /**
+     * @param  list<string>  $keys
+     */
+    public function hasKeyIn(array $keys): bool
+    {
+        return $this->snapshot !== null && in_array($this->snapshot->key->key, $keys, true);
+    }
+
+    /**
+     * The profile's key and revision, such as reviewer@3, or null for a session launched without one.
+     */
+    public function revisionText(): string|null
+    {
+        return $this->snapshot === null ? null : $this->snapshot->key->key.'@'.$this->snapshot->revision;
     }
 }

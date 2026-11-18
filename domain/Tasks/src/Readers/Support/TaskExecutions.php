@@ -27,6 +27,6 @@ final readonly class TaskExecutions
     {
         $labels = $this->agents->labelsFor(array_values(array_unique(array_filter($tasks->filter(fn (Task $task): bool => $task->run_actor_type === ActorType::Agent)->pluck('run_actor_id')->all(), is_string(...)))));
 
-        return $tasks->mapWithKeys(fn (Task $task): array => [$task->id => $task->executionWith($labels)])->all();
+        return $tasks->mapWithKeys(fn (Task $task) => [$task->id => $task->executionWith($labels)])->all();
     }
 }

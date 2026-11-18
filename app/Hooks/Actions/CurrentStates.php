@@ -28,7 +28,7 @@ final readonly class CurrentStates implements CurrentState
 
     public function top(StackTarget $target): Option
     {
-        return $this->highestUnfinished($target, fn (Frame $frame): bool => true);
+        return $this->highestUnfinished($target, fn (Frame $frame) => true);
     }
 
     /**

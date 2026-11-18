@@ -71,7 +71,7 @@ final class EngineLoop
                     return self::STOPPED;
                 }
 
-                if (! $this->lock->owns()) {
+                if (! $this->lock->isHeld()) {
                     $this->log->error('Engine lost its lock and stops');
 
                     return self::LOCK_LOST;

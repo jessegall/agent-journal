@@ -63,22 +63,16 @@ interface SettingsSnapshot
     public function decimal(DecimalSetting $setting): Decimal;
 
     /**
-     * @param  ChoiceSetting<string>  $setting
+     * @template TValue of string|int
+     *
+     * @param  ChoiceSetting<TValue>  $setting
+     * @return TValue
      *
      * @throws SettingUnavailable
      * @throws GroupSnapshotRequired
      * @throws SettingStorageInvalid
      */
-    public function stringChoice(ChoiceSetting $setting): string;
-
-    /**
-     * @param  ChoiceSetting<int>  $setting
-     *
-     * @throws SettingUnavailable
-     * @throws GroupSnapshotRequired
-     * @throws SettingStorageInvalid
-     */
-    public function integerChoice(ChoiceSetting $setting): int;
+    public function choice(ChoiceSetting $setting): string|int;
 
     /**
      * @template TEnum of BackedEnum

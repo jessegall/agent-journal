@@ -21,7 +21,9 @@ final class SkillSectionsCast implements CastsAttributes
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): array
     {
-        /** @var list<array{key: string, heading: string, markdown: string}> $rows */
+        /**
+         * @var list<array{key: string, heading: string, markdown: string}> $rows
+         */
         $rows = json_decode((string) $value, true, flags: JSON_THROW_ON_ERROR);
 
         return array_map(fn (array $row) => SkillSection::text($row['key'], $row['heading'], $row['markdown']), $rows);

@@ -19,6 +19,26 @@ final readonly class ShareLinkedCandidate
     ) {}
 
     /**
+     * Whether the candidate's record is one of these ids.
+     *
+     * @param  list<string>  $recordIds
+     */
+    public function isAmong(array $recordIds): bool
+    {
+        return in_array($this->card->record->id, $recordIds, true);
+    }
+
+    /**
+     * Whether the candidate's link is one of these approved links.
+     *
+     * @param  list<string>  $approvedLinkIds
+     */
+    public function isApprovedAmong(array $approvedLinkIds): bool
+    {
+        return in_array($this->linkId, $approvedLinkIds, true);
+    }
+
+    /**
      * This candidate as the owner selected it: the record, its link and its published version.
      */
     public function toSelectedTarget(): ShareSelectedTarget

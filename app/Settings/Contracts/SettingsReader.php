@@ -30,14 +30,12 @@ interface SettingsReader
     public function decimal(DecimalSetting $setting): Decimal;
 
     /**
-     * @param  ChoiceSetting<string>  $setting
+     * @template TValue of string|int
+     *
+     * @param  ChoiceSetting<TValue>  $setting
+     * @return TValue
      */
-    public function stringChoice(ChoiceSetting $setting): string;
-
-    /**
-     * @param  ChoiceSetting<int>  $setting
-     */
-    public function integerChoice(ChoiceSetting $setting): int;
+    public function choice(ChoiceSetting $setting): string|int;
 
     /**
      * @template TEnum of BackedEnum

@@ -26,8 +26,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A skill a user stored: its immutable key, its owner, the environment it is visible in (null for the whole
- * installation), its current revision and whether it is retired. Its text lives in its revisions.
+ * A skill a user stored: its fixed key, its owner, the environment it is visible in (null for the whole installation),
+ * its current revision and when it was retired. Its text is in its revisions.
  *
  * @property string $id
  * @property string $number_group_id

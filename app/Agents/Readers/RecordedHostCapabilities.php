@@ -13,6 +13,7 @@ use App\Agents\Exceptions\CapabilityMatrixInvalid;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Programs\Enums\HookProgram;
+use BackedEnum;
 use JsonException;
 
 /**
@@ -61,12 +62,12 @@ final readonly class RecordedHostCapabilities implements HostCapabilities
         foreach ($matrix['rows'] as $number => $row) {
             $rows[] = new HostCapability(
                 new HostCapabilityQuery(
-                    HostCapabilityType::tryFrom($this->field($row, $number, 'capability')) ?? throw CapabilityMatrixInvalid::row($this->matrixPath, $number, 'capability'),
-                    HookProgram::tryFrom($this->field($row, $number, 'program')) ?? throw CapabilityMatrixInvalid::row($this->matrixPath, $number, 'program'),
-                    AccountModeType::tryFrom($this->field($row, $number, 'account_mode')) ?? throw CapabilityMatrixInvalid::row($this->matrixPath, $number, 'account_mode'),
-                    ExecutionModeType::tryFrom($this->field($row, $number, 'execution_mode')) ?? throw CapabilityMatrixInvalid::row($this->matrixPath, $number, 'execution_mode'),
+                    $this->caseField($row, $number, 'capability', HostCapabilityType::class),
+                    $this->caseField($row, $number, 'program', HookProgram::class),
+                    $this->caseField($row, $number, 'account_mode', AccountModeType::class),
+                    $this->caseField($row, $number, 'execution_mode', ExecutionModeType::class),
                 ),
-                CapabilityStatusType::tryFrom($this->field($row, $number, 'status')) ?? throw CapabilityMatrixInvalid::row($this->matrixPath, $number, 'status'),
+                $this->caseField($row, $number, 'status', CapabilityStatusType::class),
                 $this->field($row, $number, 'evidence'),
                 $this->field($row, $number, 'reason'),
             );
@@ -87,5 +88,22 @@ final readonly class RecordedHostCapabilities implements HostCapabilities
         }
 
         return $row[$name];
+    }
+
+    /**
+     * The field as a case of its enum.
+     *
+     * @template TEnum of BackedEnum
+     *
+     * @param  array<string, mixed>  $row
+     * @param  class-string<TEnum>  $enum
+     * @return TEnum
+     *
+     * @throws CapabilityMatrixInvalid
+     */
+    private function caseField(array $row, int $number, string $name, string $enum): BackedEnum
+    {
+        return $enum::tryFrom($this->field($row, $number, $name))
+            ?? throw CapabilityMatrixInvalid::row($this->matrixPath, $number, $name);
     }
 }

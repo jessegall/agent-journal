@@ -43,7 +43,7 @@ final class AssignmentReadTool extends JournalReadTool
         $holders = $this->assignees->holdersOfRecords([$record]);
         $this->records->requireReadable($record);
 
-        return new ToolResult('ok', [
+        return ToolResult::ok([
             'record_type' => $record->type,
             'record_id' => $record->id,
             'holder' => $holders->forRecord($record)->map(fn (AssignmentHolder $holder): array => AssignmentData::ofHolder($holder)->toArray())->getOrElse(null),

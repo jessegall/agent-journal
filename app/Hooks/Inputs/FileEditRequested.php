@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Hooks\Inputs;
 
+use App\Agents\Contracts\ConversationVisits;
 use App\Hooks\Contracts\HookAnswerer;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Enums\AnswerType;
+use Carbon\CarbonImmutable;
+use PhpOption\None;
+use PhpOption\Option;
 
 final readonly class FileEditRequested implements HookInput
 {
@@ -35,4 +39,11 @@ final readonly class FileEditRequested implements HookInput
     {
         return $state->onFileEdit($this);
     }
+
+    public function contextStart(): Option
+    {
+        return None::create();
+    }
+
+    public function recordVisit(ConversationVisits $visits, string $sessionId, CarbonImmutable $at): void {}
 }
