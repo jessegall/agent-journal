@@ -14,6 +14,8 @@ use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
+use App\Sharing\Contracts\Shareable;
+use App\Sharing\Support\ShareRelationSet;
 use App\Text\Exceptions\IncompleteTextAnchor;
 use App\Text\Support\MarkdownText;
 use App\Text\Values\TextAnchor;
@@ -49,7 +51,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property CarbonImmutable|null $created_at
  */
 #[Fillable(['body', 'submission_key', 'submission_hash'])]
-final class Comment extends Model implements ReadableModel
+final class Comment extends Model implements ReadableModel, Shareable
 {
     use BoundedReads, HasUlids, Linkable;
 
@@ -71,6 +73,19 @@ final class Comment extends Model implements ReadableModel
             'end_offset' => 'integer',
             'created_at' => 'immutable_datetime',
         ];
+    }
+
+    public function shareIdentity(): RecordIdentity
+    {
+        return new RecordIdentity(self::LINK_TYPE, $this->id);
+    }
+
+    /**
+     * A comment reaches no other record; it is shared only through its parent.
+     */
+    public static function shareRelations(): ShareRelationSet
+    {
+        return ShareRelationSet::none();
     }
 
     /**

@@ -14,6 +14,7 @@ use App\Reads\Support\BoundedReads;
 use Domain\Documents\Data\RevisionCard;
 use Domain\Documents\Data\RevisionView;
 use Domain\Documents\Exceptions\RecordImmutable;
+use Domain\Documents\Models\Concerns\MeasuresBody;
 use Domain\Documents\Models\Concerns\SearchesText;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -39,7 +40,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['document_id', 'title', 'abstract', 'body', 'author_type', 'author_id', 'closed_at'])]
 final class DocumentRevision extends Model implements Numbered, ReadableModel
 {
-    use BoundedReads, HasNumber, HasUlids, Linkable, SearchesText;
+    use BoundedReads, HasNumber, HasUlids, Linkable, MeasuresBody, SearchesText;
 
     public const string LINK_TYPE = 'documents.revision';
 
