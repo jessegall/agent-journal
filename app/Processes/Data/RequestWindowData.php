@@ -15,7 +15,7 @@ use Spatie\LaravelData\Data;
 final class RequestWindowData extends Data
 {
     /**
-     * @param  list<string>  $owed
+     * @param  list<string>  $steps
      * @param  list<ProposalData>  $proposals
      * @param  list<SampleData>  $samples
      * @param  list<ReaderProofData>  $readers
@@ -23,7 +23,7 @@ final class RequestWindowData extends Data
      */
     public function __construct(
         public readonly RequestRowData $request,
-        public readonly array $owed,
+        public readonly array $steps,
         #[DataCollectionOf(ProposalData::class)]
         public readonly array $proposals,
         #[DataCollectionOf(SampleData::class)]

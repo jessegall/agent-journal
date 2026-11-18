@@ -118,7 +118,7 @@ final class TreeDraft
         }
     }
 
-    public function uncountExecutablePart(): void
+    public function undoExecutablePartCount(): void
     {
         $this->executableParts--;
     }

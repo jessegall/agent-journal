@@ -27,6 +27,6 @@ final readonly class UnsupportedKeywordReader implements CommandReader
         $keyword = UnsupportedKeyword::at($reading->cursor());
         $reason = "The shell construct '{$keyword->value}' is not supported.";
 
-        return $this->unsupported->skip($reading->context, $reason, $keyword->terminator());
+        return $this->unsupported->skip($reading->context, $reason, $keyword->closingKeyword());
     }
 }

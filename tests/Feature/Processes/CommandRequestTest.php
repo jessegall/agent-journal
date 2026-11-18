@@ -54,7 +54,7 @@ final class CommandRequestTest extends TestCase
 
         $request = CommandRequest::query()->findOrFail($first);
         $this->assertSame(RequestState::Withdrawn, $request->state);
-        $this->assertSame([], $request->nextStep()->obligations);
+        $this->assertSame([], $request->nextStep()->steps);
         $this->assertNotSame($first, $this->open('agent-1', '/projects/acme'));
     }
 

@@ -112,7 +112,7 @@ final readonly class SimpleCommandReader implements CommandReader
      */
     private function giveWayToArrayAssignment(GrammarContext $context, SimpleCommandParts $parts): int
     {
-        $context->draft->uncountExecutablePart();
+        $context->draft->undoExecutablePartCount();
         $context->draft->remove($parts->node);
 
         return $this->unsupported->skip($context, 'An array assignment is not supported.', null);

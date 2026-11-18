@@ -11,7 +11,7 @@ use App\Processes\Support\ProjectKey;
 use Illuminate\Http\JsonResponse;
 
 /**
- * Shows a command request of the project as stored: its state, what is owed, the exact next command, and its
+ * Shows a command request of the project as stored: its state, the steps it still requires, the exact next command, and its
  * proposals and readers, the same after a restart.
  */
 final readonly class ShowCommandRequestController
@@ -28,7 +28,7 @@ final readonly class ShowCommandRequestController
             'operation' => $request->operation,
             'line' => $request->source_excerpt,
             'state' => $request->state->value,
-            'owed' => $next->obligations,
+            'steps' => $next->steps,
             'next' => $next->command,
             'proposals' => $proposals->map(fn (RuleProposal $proposal): array => [
                 'proposal_id' => $proposal->id,

@@ -27,7 +27,7 @@ final readonly class ProposalChecks
             throw RuleProposalRefused::outsideProject($rule->id);
         }
         if (! $rule->hasContract() && ($heldForReader || $this->rules->coversAsCheck($rule))) {
-            throw RuleProposalRefused::checkRelabelled($rule->operation());
+            throw RuleProposalRefused::checkRenamed($rule->operation());
         }
     }
 }

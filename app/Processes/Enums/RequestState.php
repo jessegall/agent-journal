@@ -71,13 +71,13 @@ enum RequestState: string
      */
     public function nextStep(string $requestId, string $operation): NextStep
     {
-        return new NextStep($this, $this->obligations(), $this->nextCommand($requestId, $operation));
+        return new NextStep($this, $this->steps(), $this->nextCommand($requestId, $operation));
     }
 
     /**
      * @return list<string>
      */
-    private function obligations(): array
+    private function steps(): array
     {
         return match ($this) {
             self::CollectingDeclaration => ['a proposed classification and a bounded reader'],

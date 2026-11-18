@@ -276,13 +276,13 @@ final readonly class ArgumentGrammar
             return $first;
         }
 
-        return $this->clusterOf(substr($text, 1));
+        return $this->combinedFlagsOf(substr($text, 1));
     }
 
     /**
      * @return list<OptionGrammar>
      */
-    private function clusterOf(string $letters): array
+    private function combinedFlagsOf(string $letters): array
     {
         $options = [];
         foreach (str_split($letters) as $position => $letter) {

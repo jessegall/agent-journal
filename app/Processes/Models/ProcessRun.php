@@ -215,7 +215,7 @@ final class ProcessRun extends Model implements ReadableModel
     /**
      * Whether the host has gone quiet: no heartbeat for longer than the suspect limit while the run is running.
      */
-    public function isSuspect(int $quietSeconds = 15): bool
+    public function hasMissedHeartbeats(int $quietSeconds = 15): bool
     {
         $lastSign = $this->heartbeat_at ?? $this->started_at;
 

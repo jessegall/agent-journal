@@ -12,11 +12,11 @@ use App\Processes\Enums\RequestState;
 final readonly class NextStep
 {
     /**
-     * @param  list<string>  $obligations
+     * @param  list<string>  $steps
      */
     public function __construct(
         public RequestState $state,
-        public array $obligations,
+        public array $steps,
         public string $command,
     ) {}
 }

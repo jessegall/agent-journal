@@ -46,7 +46,7 @@ final readonly class RequestWindowReader implements PageReader
 
         return new RequestWindowData(
             RequestRowData::fromRequest($request),
-            $request->nextStep()->obligations,
+            $request->nextStep()->steps,
             array_values(
                 $proposals->map(fn (RuleProposal $proposal): ProposalData => $this->proposalOf($proposal, $active))->all(),
             ),

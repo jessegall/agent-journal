@@ -19,7 +19,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class RunUpdates
 {
-    private const int QUIET_SECONDS = 1;
+    private const int UPDATE_INTERVAL_SECONDS = 1;
 
     public function __construct(private Dispatcher $events, private Repository $cache) {}
 
@@ -28,7 +28,7 @@ final readonly class RunUpdates
      */
     public function progressed(PartRun $part): void
     {
-        if ($this->cache->add("process-run-update:{$part->process_run_id}", true, self::QUIET_SECONDS)) {
+        if ($this->cache->add("process-run-update:{$part->process_run_id}", true, self::UPDATE_INTERVAL_SECONDS)) {
             $this->send($part);
         }
     }

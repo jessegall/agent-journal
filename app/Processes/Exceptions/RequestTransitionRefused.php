@@ -17,7 +17,7 @@ final class RequestTransitionRefused extends RuntimeException
         return new self("A request that is {$state->value} cannot become {$next->value}: {$owed}");
     }
 
-    public static function notTheOriginator(): self
+    public static function notTheRequester(): self
     {
         return new self('Only the actor who opened the request, or a user, may withdraw it.');
     }

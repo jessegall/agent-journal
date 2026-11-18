@@ -47,7 +47,7 @@ enum UnsupportedKeyword: string
     /**
      * The word that closes the construct, or null for coproc, which runs one command and has none.
      */
-    public function terminator(): string|null
+    public function closingKeyword(): string|null
     {
         return match ($this) {
             self::If => 'fi',
@@ -66,7 +66,7 @@ enum UnsupportedKeyword: string
     {
         $keywords = [];
         foreach (self::cases() as $keyword) {
-            if ($keyword->terminator() === $terminator) {
+            if ($keyword->closingKeyword() === $terminator) {
                 $keywords[] = $keyword->value;
             }
         }

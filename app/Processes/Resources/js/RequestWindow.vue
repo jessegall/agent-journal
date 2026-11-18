@@ -6,7 +6,7 @@ import { computed } from 'vue';
 import ReviewRequestForm from './ReviewRequestForm.vue';
 
 /**
- * One command request for its owner: where it stands and what is owed, every proposal revision with its effects
+ * One command request for its owner: where it stands and the steps it still requires, every proposal revision with its effects
  * against the active rule, the samples with their runs, the readers with their proofs, and the review actions.
  */
 defineProps<{ data: RequestWindowData }>();
@@ -26,8 +26,8 @@ const refusal = computed(() => page.props.errors.review ?? '');
         <section aria-label="Where the request stands">
             <p><code>{{ data.request.line }}</code></p>
             <p>State: {{ data.request.state }} (held because {{ data.request.holdReason }})</p>
-            <template v-if="data.owed.length > 0">
-                <p>Owed: {{ data.owed.join('; ') }}</p>
+            <template v-if="data.steps.length > 0">
+                <p>Still required: {{ data.steps.join('; ') }}</p>
             </template>
             <p>Next: <code>{{ data.request.next }}</code></p>
             <p>Active revision of this rule: {{ data.activeRevision === 0 ? 'none' : data.activeRevision }}</p>

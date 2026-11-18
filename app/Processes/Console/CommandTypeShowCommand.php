@@ -11,7 +11,7 @@ use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**
- * Shows a command request: its state, what is owed, the next allowed command, its proposals and readers.
+ * Shows a command request: its state, the steps it still requires, the next allowed command, its proposals and readers.
  */
 #[JournalRoute(JournalRouteType::Read)]
 final class CommandTypeShowCommand extends Command

@@ -54,7 +54,7 @@ final class RuleProposalRefused extends RuntimeException implements CommandRefus
         );
     }
 
-    public static function checkRelabelled(string $operation): self
+    public static function checkRenamed(string $operation): self
     {
         return new self(
             "{$operation} is known as a test, check or build, so it is declared with its contract and proven reader.",
