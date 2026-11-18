@@ -17,6 +17,7 @@ use App\Providers\AppServiceProvider;
 use App\Providers\CoreServiceProvider;
 use App\Reads\Providers\ReadsServiceProvider;
 use App\Records\Providers\RecordsServiceProvider;
+use App\Settings\Providers\SettingsServiceProvider;
 use App\Text\Providers\TextServiceProvider;
 use App\Web\Providers\TypeScriptServiceProvider;
 use App\Web\Providers\WebServiceProvider;
@@ -47,6 +48,7 @@ return [
     EngineServiceProvider::class,
     ReadsServiceProvider::class,
     NumbersServiceProvider::class,
+    SettingsServiceProvider::class,
     ProcessesServiceProvider::class,
     TasksServiceProvider::class,
     PlansServiceProvider::class,

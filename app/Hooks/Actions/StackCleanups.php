@@ -50,7 +50,7 @@ final readonly class StackCleanups implements StackCleanup
         }
 
         $before = $this->restorer->restore($row->frames, $row->frames->role());
-        $after = $before->withoutFinishedFrames();
+        $after = $before->withoutInactiveFrames();
 
         if ($after->frameIds() === $before->frameIds()) {
             return;

@@ -51,6 +51,14 @@ abstract class Domain
     abstract public function requires(): array;
 
     /**
+     * Whether the owner may switch this domain off; a domain the journal cannot run without answers false.
+     */
+    public function canDisable(): bool
+    {
+        return true;
+    }
+
+    /**
      * The domain's public surface, sorted into events, contracts, values, commands and exceptions, each name written out
      * one by one. Empty exports are a domain nothing outside may use; there is no wildcard.
      */

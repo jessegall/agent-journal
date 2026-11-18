@@ -27,7 +27,7 @@ final readonly class StatePush
     {
         $this->lifecycle->refuseChangeDuringCallbacks($target);
         $before = $this->restorer->restore($row->frames, $role);
-        $after = $before->withoutFinishedFrames()->withStateOnTop($reference);
+        $after = $before->withoutInactiveFrames()->withStateOnTop($reference);
 
         if ($after->frameIds() === $before->frameIds()) {
             return;

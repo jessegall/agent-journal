@@ -124,6 +124,14 @@ final readonly class CommandRegistry
         return array_map(fn (RegisteredCommand $entry) => $entry->handler, $this->commands);
     }
 
+    /**
+     * @return class-string
+     */
+    public function handlerOf(string $command): string
+    {
+        return $this->entry($command)->handler;
+    }
+
     public function ownerOf(string $command): string
     {
         return $this->entry($command)->owner;

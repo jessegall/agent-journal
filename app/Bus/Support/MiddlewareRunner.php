@@ -8,6 +8,8 @@ use App\Actors\Contracts\CurrentActor;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Enums\MiddlewareStage;
+use App\Bus\Exceptions\DomainDisabled;
+use App\Contracts\DomainAvailability;
 use Closure;
 use Illuminate\Contracts\Container\Container;
 
@@ -35,11 +37,13 @@ final readonly class MiddlewareRunner
 
         try {
             $name = $command::class;
-            $call = CommandCall::of($command, $this->registry->ownerOf($name), $this->registry->isExported($name), $this->registry->needsRepeatableRead($name), $this->actors->hasActor() ? $this->actors->actor() : null);
+            $owner = $this->registry->ownerOf($name);
+            $call = CommandCall::of($command, $owner, $this->registry->isExported($name), $this->registry->needsRepeatableRead($name), $this->actors->hasActor() ? $this->actors->actor() : null);
             $inside = fn (CommandCall $current, Closure $handler) => $this->through([...$this->core(CommandFrame::INSIDE), ...$this->module($name, MiddlewareStage::InsideTransaction)], $current, $handler);
             $steps = [
                 ...$this->core(CommandFrame::FIRST),
-                ...$this->module($name, MiddlewareStage::BeforeTransaction),
+                fn (CommandCall $current, Closure $next) => $this->isAvailable($owner) ? $next($current) : throw DomainDisabled::for($owner, $name),
+                fn (CommandCall $current, Closure $next) => $this->through($this->module($name, MiddlewareStage::BeforeTransaction), $current, $next),
                 $this->container->make(CommandFrame::TRANSACTION),
                 $inside,
             ];
@@ -48,6 +52,14 @@ final readonly class MiddlewareRunner
         } finally {
             $this->nesting->leave();
         }
+    }
+
+    /**
+     * Whether the owner's commands and middleware run now; Core's always do. Asked of the current request's availability.
+     */
+    private function isAvailable(string $owner): bool
+    {
+        return $owner === CommandOwner::CORE || $this->container->make(DomainAvailability::class)->isEnabled($owner);
     }
 
     /**
@@ -77,11 +89,13 @@ final readonly class MiddlewareRunner
     }
 
     /**
+     * The module middleware of the stage, built only now and only for owners that are available; Core's always runs.
+     *
      * @return list<MiddlewareStep>
      */
     private function module(string $command, MiddlewareStage $stage): array
     {
-        $entries = array_filter($this->registry->middlewareFor($command), fn (RegisteredMiddleware $entry) => $entry->runsIn($stage));
+        $entries = array_filter($this->registry->middlewareFor($command), fn (RegisteredMiddleware $entry) => $entry->runsIn($stage) && $this->isAvailable($entry->owner));
 
         return array_values(array_map(fn (RegisteredMiddleware $entry) => new MiddlewareStep($this->container->make($entry->middlewareClass()), $entry), $entries));
     }

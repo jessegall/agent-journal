@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack;
 
+use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Enums\ReadyStateType;
@@ -38,6 +39,7 @@ final readonly class StackRestorer
             $type = $this->types->registry()->get($typeKey);
 
             foreach (array_chunk($positions, StateReferences::MAXIMUM) as $batch) {
+                $typeEnabled = ! $type instanceof ConditionalStateType || $type->isEnabled();
                 $states = $type->statesFor(new StateReferences(array_map(fn (int $position) => $all[$position]->reference, $batch)));
 
                 foreach ($batch as $index => $position) {
@@ -47,7 +49,7 @@ final readonly class StackRestorer
                         throw StateSchemaUnknown::for($record->description(), $type->schemaVersion());
                     }
 
-                    $frames[$position] = Frame::restored($record, $states->stateAt($index));
+                    $frames[$position] = Frame::restored($record, $states->stateAt($index), $typeEnabled);
                 }
             }
         }

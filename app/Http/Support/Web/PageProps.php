@@ -10,6 +10,7 @@ use App\Ui\Declarations\RegisteredSection;
 use App\Ui\Enums\PageDestination;
 use App\Ui\Support\UiDeclarations;
 use App\Web\Support\ReaderRequests;
+use App\Web\Support\UiOwnerAvailability;
 use App\Web\Support\WindowResults;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
@@ -29,6 +30,7 @@ final readonly class PageProps
         private ReaderRequests $readers,
         private SlotContexts $contexts,
         private ResponseFactory $inertia,
+        private UiOwnerAvailability $owners,
     ) {}
 
     /**
@@ -60,7 +62,7 @@ final readonly class PageProps
         $props = [];
 
         foreach ($this->declarations->pages() as $page) {
-            if ($page->page->opensIn === PageDestination::Page) {
+            if ($page->page->opensIn === PageDestination::Page && $this->owners->isAvailable($page->owner)) {
                 $props[$page->propName] = $this->inertia->optional(fn () => $this->pageResult($page, $request, $request->windowQuery($page->key)));
             }
         }
@@ -83,7 +85,7 @@ final readonly class PageProps
      */
     private function inspectorResult(DeclaredPageRequest $request): Data|null
     {
-        $page = $this->declarations->pageOrNone($request->inspectedPage())->filter(fn (RegisteredPage $found) => $found->page->opensIn === PageDestination::Inspector);
+        $page = $this->declarations->pageOrNone($request->inspectedPage())->filter(fn (RegisteredPage $found) => $found->page->opensIn === PageDestination::Inspector && $this->owners->isAvailable($found->owner));
 
         if ($page->isEmpty()) {
             return null;
@@ -113,6 +115,6 @@ final readonly class PageProps
      */
     private function sectionsOf(RegisteredPage $page): array
     {
-        return array_values(array_filter($this->declarations->sections(), fn (RegisteredSection $section) => $section->host->key === $page->key));
+        return array_values(array_filter($this->declarations->sections(), fn (RegisteredSection $section) => $section->host->key === $page->key && $this->owners->isAvailable($section->owner)));
     }
 }

@@ -38,6 +38,7 @@ use PHPUnit\Framework\Attributes\DataProviderExternal;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ScriptedState;
+use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\TestCase;
 
 final class AgentStackTest extends TestCase
@@ -49,12 +50,12 @@ final class AgentStackTest extends TestCase
 
         $this->assertSame(['message-95 deny keep'], $this->stepsOf($both->answer($stop)));
 
-        $answered = $this->exampleStack(TaskWorkState::Active, MessageWorkState::Answered)->withoutFinishedFrames();
+        $answered = $this->exampleStack(TaskWorkState::Active, MessageWorkState::Answered)->withoutInactiveFrames();
 
         $this->assertSame(['ready', 'task-42'], $answered->frameIds());
         $this->assertSame(['task-42 deny keep'], $this->stepsOf($answered->answer($stop)));
 
-        $done = $this->exampleStack(TaskWorkState::Finished, MessageWorkState::Answered)->withoutFinishedFrames();
+        $done = $this->exampleStack(TaskWorkState::Finished, MessageWorkState::Answered)->withoutInactiveFrames();
         $answer = $done->answer($stop);
 
         $this->assertSame(AnswerType::Allow, $answer->decision->answerType());
@@ -151,7 +152,7 @@ final class AgentStackTest extends TestCase
 
         $this->expectException(BottomStateCannotFinish::class);
 
-        $stack->withoutFinishedFrames();
+        $stack->withoutInactiveFrames();
     }
 
     public function test_a_bottom_state_that_delegates_fails_with_the_steps_it_took(): void
@@ -266,7 +267,7 @@ final class AgentStackTest extends TestCase
     {
         $stack = $this->exampleStack(TaskWorkState::Finished, MessageWorkState::Unanswered);
 
-        $this->assertSame(['ready', 'message-95'], $stack->withoutFinishedFrames()->frameIds());
+        $this->assertSame(['ready', 'message-95'], $stack->withoutInactiveFrames()->frameIds());
         $this->assertSame(['ready', 'task-42', 'message-95'], $stack->frameIds());
     }
 
@@ -288,6 +289,32 @@ final class AgentStackTest extends TestCase
         $this->assertSame(AnswerType::Deny, $copy->answer);
         $this->assertSame(TransitionType::Push, $copy->transition);
         $this->assertSame($step->toArray(), $copy->toArray());
+    }
+
+    public function test_a_switched_off_top_frame_is_not_asked_and_the_frames_beneath_answer(): void
+    {
+        $switchedOff = new SwitchableState(false);
+        $stack = $this->stack(
+            $this->ready(),
+            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active))),
+            $this->frame('review', $switchedOff),
+        );
+
+        $this->assertSame(['task-42 deny keep'], $this->stepsOf($stack->answer($this->stop())));
+        $this->assertSame(['ready', 'task-42', 'review'], $stack->frameIds());
+    }
+
+    public function test_switched_off_frames_anywhere_are_left_out_like_finished_ones_and_a_switched_on_one_stays(): void
+    {
+        $stack = $this->stack(
+            $this->ready(),
+            $this->frame('review', new SwitchableState(false)),
+            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active))),
+            $this->frame('notes', new SwitchableState(true)),
+            new Frame('message-95', $this->reference('chat.answering', '95'), new AnsweringMessageState(new MessageWork(95, MessageWorkState::Answered))),
+        );
+
+        $this->assertSame(['ready', 'task-42', 'notes'], $stack->withoutInactiveFrames()->frameIds());
     }
 
     private function exampleStack(TaskWorkState $taskState, MessageWorkState $messageState): AgentStack

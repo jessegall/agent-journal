@@ -29,6 +29,14 @@ final class AccessDomain extends Domain implements ProvidesAssignees
         return [];
     }
 
+    /**
+     * Signing in and the owner policy are needed to switch anything back on, so Access is always on.
+     */
+    public function canDisable(): bool
+    {
+        return false;
+    }
+
     public function exports(): Exports
     {
         return Exports::make()
