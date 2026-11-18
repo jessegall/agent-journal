@@ -100,6 +100,17 @@ final readonly class CommandRuleRegistry
     }
 
     /**
+     * The digest of every active rule, which an admission records so a later change of the rules is seen.
+     */
+    public function revision(): string
+    {
+        $digests = array_map(fn (CommandRule $rule): string => $rule->digest(), $this->activeRules());
+        sort($digests);
+
+        return hash('sha256', implode("\n", $digests));
+    }
+
+    /**
      * Every rule an owner declares, active or waiting for review.
      *
      * @return list<CommandRule>

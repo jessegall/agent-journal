@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Providers;
 
 use App\Links\Support\LinkTypeRegistry;
+use App\Processes\Admission\LineAdmission;
 use App\Processes\Classification\TreeClassifier;
 use App\Processes\Console\CommandTypeApproveCommand;
 use App\Processes\Console\CommandTypeImportCommand;
@@ -32,6 +33,7 @@ use App\Processes\Contracts\OutputRecorder;
 use App\Processes\Contracts\ProcessRunner;
 use App\Processes\Contracts\ResultPublisher;
 use App\Processes\Contracts\ResultReceipts;
+use App\Processes\Contracts\ShellAdmission;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Contracts\VerificationTiming;
@@ -82,6 +84,7 @@ final class ProcessesServiceProvider extends ServiceProvider
         $this->app->scoped(CommandClassifier::class, TreeClassifier::class);
         $this->app->scoped(CommandRuleReader::class, ProjectRules::class);
         $this->app->scoped(ActiveRules::class);
+        $this->app->scoped(ShellAdmission::class, LineAdmission::class);
         $this->app->scoped(VerificationTiming::class, OpenTiming::class);
         $this->app->scoped(ResultPublisher::class, ReceiptPublisher::class);
         $this->app->scoped(ResultReceipts::class, ProjectReceipts::class);
