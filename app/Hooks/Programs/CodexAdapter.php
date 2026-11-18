@@ -6,11 +6,9 @@ namespace App\Hooks\Programs;
 
 use App\Hooks\Contracts\ProgramAdapter;
 use App\Hooks\Contracts\ProgramCall;
-use App\Processes\Contracts\ShellCommandParser;
 use App\Hooks\Enums\CodexTool;
 use App\Hooks\Enums\FileOperation;
 use App\Hooks\Enums\RewriteSupport;
-use App\Processes\Enums\ShellDialect;
 use App\Hooks\Exceptions\UnreadablePayload;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Inputs\FileChange;
@@ -29,6 +27,8 @@ use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
 use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Stack\HookAnswer;
+use App\Processes\Contracts\ShellCommandParser;
+use App\Processes\Enums\ShellDialect;
 
 /**
  * Reads Codex's hook payloads into the journal's inputs and renders its answers as Codex replies. Codex takes a

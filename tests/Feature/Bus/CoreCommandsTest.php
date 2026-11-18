@@ -4,8 +4,24 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use App\Agents\Commands\ChangeAgentEffort;
+use App\Agents\Commands\ChangeAgentModel;
+use App\Agents\Commands\ClaimDriverRequests;
+use App\Agents\Commands\ClaimLaunchGrant;
+use App\Agents\Commands\DeliverAgent;
+use App\Agents\Commands\EnrollHost;
+use App\Agents\Commands\InterruptAgent;
+use App\Agents\Commands\OpenAgentRuntime;
+use App\Agents\Commands\OpenHostMainRuntime;
 use App\Agents\Commands\RecordHeartbeat;
+use App\Agents\Commands\ReportDriverTurn;
+use App\Agents\Commands\ReportRequestProgress;
+use App\Agents\Commands\ReportRuntimeActivity;
+use App\Agents\Commands\ReportRuntimeExit;
+use App\Agents\Commands\ReportRuntimeHeartbeat;
 use App\Agents\Commands\RetireAgent;
+use App\Agents\Commands\StopAgent;
+use App\Agents\Commands\WakeAgent;
 use App\Assignments\Commands\AssignRecord;
 use App\Assignments\Commands\ReassignRecord;
 use App\Assignments\Commands\UnassignRecord;
@@ -37,22 +53,6 @@ use App\Settings\Commands\SetStringSetting;
 use App\Sharing\Commands\SaveSharePreview;
 use App\Web\Commands\RecordUserHeartbeat;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
-use App\Agents\Commands\EnrollHost;
-use App\Agents\Commands\OpenAgentRuntime;
-use App\Agents\Commands\DeliverAgent;
-use App\Agents\Commands\WakeAgent;
-use App\Agents\Commands\ChangeAgentModel;
-use App\Agents\Commands\ChangeAgentEffort;
-use App\Agents\Commands\InterruptAgent;
-use App\Agents\Commands\StopAgent;
-use App\Agents\Commands\ClaimDriverRequests;
-use App\Agents\Commands\ClaimLaunchGrant;
-use App\Agents\Commands\ReportRuntimeActivity;
-use App\Agents\Commands\ReportRequestProgress;
-use App\Agents\Commands\ReportDriverTurn;
-use App\Agents\Commands\ReportRuntimeHeartbeat;
-use App\Agents\Commands\ReportRuntimeExit;
-use App\Agents\Commands\OpenHostMainRuntime;
 
 /**
  * Core's own commands (doc 19, phase 5): a module uses them without declaring Core, and a scope owned by Core covers

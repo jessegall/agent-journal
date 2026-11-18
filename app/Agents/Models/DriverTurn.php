@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
+use App\Links\Support\Linkable;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Links\Support\Linkable;
-use App\Reads\Support\BoundedReads;
-use App\Reads\Contracts\ReadableModel;
 
 /**
  * One native turn of a runtime's program: keyed by its process generation and the program's own prompt id
@@ -31,8 +31,8 @@ use App\Reads\Contracts\ReadableModel;
 final class DriverTurn extends Model implements ReadableModel
 {
     use BoundedReads;
-    use Linkable;
     use HasUlids;
+    use Linkable;
 
     /**
      * @return array<string, string>

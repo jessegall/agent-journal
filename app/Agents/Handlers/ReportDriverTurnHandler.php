@@ -10,8 +10,8 @@ use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Exceptions\HostReportRefused;
 use App\Agents\Models\DriverTurn;
 use App\Agents\Support\HostRuntimes;
-use Carbon\CarbonImmutable;
 use App\Contracts\CommandHandler;
+use Carbon\CarbonImmutable;
 
 final readonly class ReportDriverTurnHandler implements CommandHandler
 {
