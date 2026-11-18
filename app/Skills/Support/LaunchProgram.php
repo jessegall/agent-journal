@@ -16,14 +16,14 @@ use App\Text\Support\StableKey;
 final readonly class LaunchProgram
 {
     private function __construct(
-        public ?ProgramKey $program,
-        public ?ProviderKey $provider,
+        public ProgramKey|null $program,
+        public ProviderKey|null $provider,
     ) {}
 
     /**
      * @param  string|null  $program  the program the session recorded at launch
      */
-    public static function of(?string $program): self
+    public static function of(string|null $program): self
     {
         $registered = $program === null ? null : HookProgram::tryFrom($program);
 

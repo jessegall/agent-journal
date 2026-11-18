@@ -21,6 +21,7 @@ use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Skills\Guide\GuideSkill;
 use Tests\Fixtures\Skills\Guide\RenamedGuideSkill;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -29,6 +30,8 @@ use Tests\TestCase;
  */
 final class SkillCatalogueTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_the_catalogue_lists_a_registered_module_skill_with_its_owner(): void
     {
         /** @var list<string> $domainClasses */

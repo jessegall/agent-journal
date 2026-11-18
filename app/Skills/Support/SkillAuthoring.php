@@ -106,7 +106,7 @@ final readonly class SkillAuthoring
      *
      * @throws SkillConditionInvalid
      */
-    public function conditionOf(?string $conditions, array $audience, bool $mainAgent): string
+    public function conditionOf(string|null $conditions, array $audience, bool $mainAgent): string
     {
         $named = array_filter($audience, fn (array $values) => $values !== []);
 

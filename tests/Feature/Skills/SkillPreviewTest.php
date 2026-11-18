@@ -89,7 +89,7 @@ final class SkillPreviewTest extends TestCase
         return [Agent::query()->count(), AgentSession::query()->count(), Profile::query()->count(), ProfileRevision::query()->count()];
     }
 
-    private function launch(string $name, AgentRole $role, ?int $profileRevision): Agent
+    private function launch(string $name, AgentRole $role, int|null $profileRevision): Agent
     {
         $agent = Agent::named($name, $role);
         $session = new AgentSession([...TestSelections::sessionColumns(), 'profile_key' => $profileRevision === null ? null : 'journal-reviewer', 'profile_revision' => $profileRevision]);

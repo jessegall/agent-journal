@@ -7,8 +7,8 @@ namespace Tests\Feature\Skills;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
-use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\Command;
+use App\Bus\Contracts\CommandBus;
 use App\Skills\Commands\CreateSkill;
 use App\Skills\Commands\RestoreSkill;
 use App\Skills\Commands\ReviseSkill;
@@ -47,8 +47,8 @@ final class StoredSkillCommandsTest extends TestCase
 
     public function test_create_gives_revision_1_and_revise_gives_2_keeping_1_readable(): void
     {
-        $created = $this->run(new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
-        $revised = $this->run(new ReviseSkill($created->skillId, 1, 'revise-1', $this->draft('Second.')));
+        $created = $this->runCommand(new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
+        $revised = $this->runCommand(new ReviseSkill($created->skillId, 1, 'revise-1', $this->draft('Second.')));
 
         $this->assertSame(1, $created->revision);
         $this->assertSame(2, $revised->revision);
@@ -58,16 +58,16 @@ final class StoredSkillCommandsTest extends TestCase
 
     public function test_a_revise_against_an_old_revision_is_refused_naming_the_latest(): void
     {
-        $created = $this->run(new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
-        $this->run(new ReviseSkill($created->skillId, 1, 'revise-1', $this->draft('Second.')));
+        $created = $this->runCommand(new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
+        $this->runCommand(new ReviseSkill($created->skillId, 1, 'revise-1', $this->draft('Second.')));
 
         $this->assertRefused(SkillRevisionConflict::class, new ReviseSkill($created->skillId, 1, 'revise-2', $this->draft('Third.')), 'is at revision 2 now');
     }
 
     public function test_a_repeated_request_id_returns_the_same_result_and_other_content_under_it_is_refused(): void
     {
-        $first = $this->run(new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
-        $again = $this->run(new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
+        $first = $this->runCommand(new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
+        $again = $this->runCommand(new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
 
         $this->assertEquals($first, $again);
         $this->assertSame(1, Skill::query()->count());
@@ -77,9 +77,9 @@ final class StoredSkillCommandsTest extends TestCase
 
     public function test_restore_appends_the_old_content_as_a_new_revision(): void
     {
-        $created = $this->run(new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
-        $this->run(new ReviseSkill($created->skillId, 1, 'revise-1', $this->draft('Second.')));
-        $restored = $this->run(new RestoreSkill($created->skillId, 1, 2, 'restore-1'));
+        $created = $this->runCommand(new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
+        $this->runCommand(new ReviseSkill($created->skillId, 1, 'revise-1', $this->draft('Second.')));
+        $restored = $this->runCommand(new RestoreSkill($created->skillId, 1, 2, 'restore-1'));
         $skill = Skill::query()->whereKey($created->skillId)->firstOrFail();
 
         $this->assertSame(3, $restored->revision);
@@ -107,8 +107,8 @@ final class StoredSkillCommandsTest extends TestCase
     {
         Event::fake([SkillsChanged::class]);
 
-        $this->run(new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
-        $this->run(new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
+        $this->runCommand(new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
+        $this->runCommand(new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
 
         Event::assertDispatchedTimes(SkillsChanged::class, 1);
     }
@@ -121,7 +121,7 @@ final class StoredSkillCommandsTest extends TestCase
     /**
      * @param  Command<SkillRevisionResult>  $command
      */
-    private function run(Command $command): SkillRevisionResult
+    private function runCommand(Command $command): SkillRevisionResult
     {
         return $this->app->make(CommandBus::class)->run($command);
     }
@@ -133,7 +133,7 @@ final class StoredSkillCommandsTest extends TestCase
     private function assertRefused(string $refusal, Command $command, string $message = ''): void
     {
         try {
-            $this->run($command);
+            $this->runCommand($command);
         } catch (Throwable $failure) {
             $this->assertInstanceOf($refusal, $failure);
             $this->assertStringContainsString($message, $failure->getMessage());

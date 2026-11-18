@@ -42,7 +42,7 @@ final class PolicyValuesTest extends TestCase
     public function test_a_writing_helper_stack_restores_its_own_bottom(): void
     {
         $key = AgentRole::WritingHelper->value;
-        $registry = (new StateTypes(new Dispatcher()))->registry();
+        $registry = new StateTypes(new Dispatcher())->registry();
 
         $state = $registry->get($key)->statesFor(new StateReferences([new StateReference($key, NoSubject::None)]))->stateAt(0);
 

@@ -139,7 +139,7 @@ final class AgentSession extends Model implements ReadableModel
     /**
      * The agent's most recent session, or null when it never launched.
      */
-    public static function latestOf(string $agentId): ?self
+    public static function latestOf(string $agentId): self|null
     {
         return self::query()->where('agent_id', $agentId)->orderByDesc('created_at')->orderByDesc('id')->first();
     }
@@ -290,6 +290,9 @@ final class AgentSession extends Model implements ReadableModel
         $query->where('agent_id', $agentId)->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()));
     }
 
+    /**
+     * @param  Builder<self>  $query
+     */
     #[Scope]
     protected function present(Builder $query, CarbonImmutable $observedAt, PresenceWindow $window): void
     {

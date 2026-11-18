@@ -36,7 +36,7 @@ final readonly class ConditionResult
      *
      * @param  list<self>  $results
      */
-    public static function firstWith(ConditionOutcome $outcome, array $results): ?self
+    public static function firstWith(ConditionOutcome $outcome, array $results): self|null
     {
         foreach ($results as $result) {
             if ($result->outcome === $outcome) {

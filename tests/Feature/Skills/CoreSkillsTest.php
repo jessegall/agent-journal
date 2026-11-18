@@ -7,6 +7,7 @@ namespace Tests\Feature\Skills;
 use App\Skills\Contracts\SkillReader;
 use App\Skills\Values\SkillKey;
 use Illuminate\Support\Facades\Artisan;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -14,6 +15,8 @@ use Tests\TestCase;
  */
 final class CoreSkillsTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_the_core_skills_are_listed_with_owner_core(): void
     {
         Artisan::call('skill:list', ['--json' => true]);

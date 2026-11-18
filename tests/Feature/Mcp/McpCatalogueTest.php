@@ -20,6 +20,7 @@ use Tests\Fixtures\Domains\Ledger\Mcp\KebabLedgerTool;
 use Tests\Fixtures\Domains\Ledger\Mcp\LedgerReadTool;
 use Tests\Fixtures\Domains\Ledger\Mcp\SecondLedgerReadTool;
 use Tests\Fixtures\Mcp\FixtureServer;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -27,6 +28,8 @@ use Tests\TestCase;
  */
 final class McpCatalogueTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();

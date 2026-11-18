@@ -81,7 +81,7 @@ final readonly class SelectedProgram
         $model = $requested->model;
 
         if ($model === null) {
-            return $profile?->defaultModel ?? throw DefaultUnavailable::forLaunch();
+            return $profile->defaultModel ?? throw DefaultUnavailable::forLaunch();
         }
 
         if ($profile !== null && ! $profile->allows($model)) {

@@ -45,8 +45,8 @@ use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Section;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Str;
-use Spatie\LaravelData\Data;
 use ReflectionClass;
+use Spatie\LaravelData\Data;
 
 /**
  * One registered domain: its name, namespace and folder, read from its Domain class.

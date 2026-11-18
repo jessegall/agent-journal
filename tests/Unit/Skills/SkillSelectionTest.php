@@ -105,7 +105,7 @@ final class SkillSelectionTest extends TestCase
      * @param  list<string>|null  $allowlist
      * @param  list<string>  $required
      */
-    private function helper(?array $allowlist, array $required): SkillContext
+    private function helper(array|null $allowlist, array $required): SkillContext
     {
         $snapshot = ProfileSnapshot::from(['key' => ProfileKey::from('journal-reviewer'), 'revision' => 1, 'type' => ProfileType::ReadOnlyHelper, 'instructions' => 'Review.', 'model' => 'opus', 'skillAllowlist' => $allowlist, 'requiredSkills' => $required]);
 

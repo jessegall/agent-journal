@@ -12,7 +12,7 @@ use App\Profiles\Values\ProfileSnapshot;
 final readonly class LaunchProfile
 {
     private function __construct(
-        public ?ProfileSnapshot $snapshot,
+        public ProfileSnapshot|null $snapshot,
     ) {}
 
     public static function of(ProfileSnapshot $snapshot): self

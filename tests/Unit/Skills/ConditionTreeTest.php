@@ -132,7 +132,7 @@ final class ConditionTreeTest extends TestCase
         return $this->app->make(ConditionTree::class);
     }
 
-    private function reviewerOn(string $program, ?string $provider = 'openai'): SkillContext
+    private function reviewerOn(string $program, string|null $provider = 'openai'): SkillContext
     {
         $snapshot = ProfileSnapshot::from(['key' => ProfileKey::from('journal-reviewer'), 'revision' => 1, 'type' => ProfileType::ReadOnlyHelper, 'instructions' => 'Review.', 'model' => 'opus', 'skillAllowlist' => null, 'requiredSkills' => []]);
 

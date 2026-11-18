@@ -13,7 +13,7 @@ use Illuminate\Console\Command;
  */
 trait ReadsAudienceOptions
 {
-    private function conditionsOption(): ?string
+    private function conditionsOption(): string|null
     {
         return $this->option('conditions') === null ? null : (string) $this->option('conditions');
     }
@@ -26,10 +26,10 @@ trait ReadsAudienceOptions
     private function audience(): array
     {
         return [
-            'profiles' => array_map(strval(...), (array) $this->option('profile')),
-            'agent-types' => array_map(strval(...), (array) $this->option('type')),
-            'programs' => array_map(strval(...), (array) $this->option('program')),
-            'providers' => array_map(strval(...), (array) $this->option('provider')),
+            'profiles' => array_values(array_map(strval(...), (array) $this->option('profile'))),
+            'agent-types' => array_values(array_map(strval(...), (array) $this->option('type'))),
+            'programs' => array_values(array_map(strval(...), (array) $this->option('program'))),
+            'providers' => array_values(array_map(strval(...), (array) $this->option('provider'))),
         ];
     }
 

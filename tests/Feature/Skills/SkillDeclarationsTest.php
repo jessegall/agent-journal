@@ -29,9 +29,9 @@ final class SkillDeclarationsTest extends TestCase
 
         $this->assertSame('Core', $owners[0]->name);
         $this->assertSame(base_path(), $owners[0]->sourceRoot);
-        $tasks = array_values(array_filter($owners, fn (SkillOwner $owner) => $owner->name === 'Tasks'))[0];
-        $this->assertSame(base_path('domain/Tasks'), $tasks->sourceRoot);
-        $this->assertSame([], $tasks->skills);
+        $documents = array_values(array_filter($owners, fn (SkillOwner $owner) => $owner->name === 'Documents'))[0];
+        $this->assertSame(base_path('domain/Documents'), $documents->sourceRoot);
+        $this->assertSame([], $documents->skills);
     }
 
     public function test_a_registered_module_contributes_its_skill_under_its_own_name(): void

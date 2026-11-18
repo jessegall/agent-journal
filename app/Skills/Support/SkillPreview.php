@@ -70,7 +70,7 @@ final readonly class SkillPreview
      *
      * @return array{agent: string, name: string, outcome: string, reason: string}|null
      */
-    private function rowFor(SkillEntry $skill, Agent $agent): ?array
+    private function rowFor(SkillEntry $skill, Agent $agent): array|null
     {
         try {
             $result = $skill->condition->evaluate($this->contexts->forAgent($agent));

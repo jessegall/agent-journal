@@ -73,14 +73,14 @@ final class SkillRevision extends Model implements ReadableModel
 
     protected static function booted(): void
     {
-        static::updating(fn (self $revision) => throw SkillRevisionImmutable::for($revision->id));
+        self::updating(fn (self $revision) => throw SkillRevisionImmutable::for($revision->id));
     }
 
     /**
      * Appends the draft as the skill's next revision, numbered after every earlier one; the caller holds the skill's
      * lock, so two revisions never take one number.
      */
-    public static function appendTo(Skill $skill, SkillDraft $draft, SkillCondition $condition, ActorIdentity $author, ?string $sourceKey, ?string $sourceDigest): self
+    public static function appendTo(Skill $skill, SkillDraft $draft, SkillCondition $condition, ActorIdentity $author, string|null $sourceKey, string|null $sourceDigest): self
     {
         $latest = self::query()->ofSkill($skill)->max('revision');
 
@@ -153,7 +153,7 @@ final class SkillRevision extends Model implements ReadableModel
         return new SkillDraft(
             $this->name,
             $this->description,
-            array_map(fn (SkillSection $section) => new SectionDraft($section->key, $section->heading, (string) $section->content), $this->sections),
+            array_map(fn (SkillSection $section) => new SectionDraft($section->key, $section->heading, $section->storedText()), $this->sections),
             json_encode($this->condition, JSON_THROW_ON_ERROR),
         );
     }

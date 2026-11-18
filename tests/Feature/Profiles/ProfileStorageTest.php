@@ -121,7 +121,7 @@ final class ProfileStorageTest extends TestCase
     /**
      * @param  list<string>|null  $allowlist
      */
-    private function reviewer(string $instructions, ?array $allowlist): ProfileDefinition
+    private function reviewer(string $instructions, array|null $allowlist): ProfileDefinition
     {
         return new ProfileDefinition(ProfileKey::from('journal-reviewer'), 'Reviewer', ProfileType::ReadOnlyHelper, $instructions, 'opus', $allowlist, []);
     }

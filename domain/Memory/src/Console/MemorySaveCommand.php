@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
+use App\AgentRequests\Console\Concerns\SendsSignedWrites;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
@@ -17,7 +17,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class MemorySaveCommand extends Command
 {
-    use SendsSignedCalls;
+    use SendsSignedWrites;
 
     protected $signature = 'memory:save {text : What to do and when} {--weight=5 : 1 to 10} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 

@@ -22,6 +22,7 @@ use App\Skills\Contracts\SkillRenderer;
 use App\Skills\Contracts\SkillSource;
 use App\Skills\CoreSkills;
 use App\Skills\Models\Skill;
+use App\Skills\Readers\CatalogueOnFirstRead;
 use App\Skills\Readers\SkillCatalogue;
 use App\Skills\Readers\SkillContextReader;
 use App\Skills\Support\CanonicalRenderer;
@@ -49,7 +50,13 @@ final class SkillsServiceProvider extends ServiceProvider
         $this->app->scoped(SkillContext::class, fn (Application $app) => $app->make(SkillContextReader::class)->current());
         $this->app->bind(SkillRenderer::class, CanonicalRenderer::class);
         $this->app->bind(SkillSource::class, StoredSkillSource::class);
-        $this->app->scoped(SkillReader::class, fn (Application $app) => SkillCatalogue::build($app->make(SkillRegistry::class), $app, $app->make(SkillRenderer::class), $app->make(ConditionTree::class), $app->make(SkillSource::class)));
+        $this->app->scoped(SkillReader::class, fn (Application $app) => new CatalogueOnFirstRead(fn () => SkillCatalogue::build(
+            $app->make(SkillRegistry::class),
+            $app,
+            $app->make(SkillRenderer::class),
+            $app->make(ConditionTree::class),
+            $app->make(SkillSource::class),
+        )));
     }
 
     public function boot(NumberedTypeRegistry $numbers): void

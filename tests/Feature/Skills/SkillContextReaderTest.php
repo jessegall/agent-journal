@@ -121,7 +121,7 @@ final class SkillContextReaderTest extends TestCase
     /**
      * @return array{Agent, AgentSession}
      */
-    private function launch(AgentRole $role, ?int $profileRevision): array
+    private function launch(AgentRole $role, int|null $profileRevision): array
     {
         $agent = Agent::named('Agent '.TestSelections::requestId(), $role);
         $session = new AgentSession([...TestSelections::sessionColumns(), 'profile_key' => $profileRevision === null ? null : 'journal-reviewer', 'profile_revision' => $profileRevision]);

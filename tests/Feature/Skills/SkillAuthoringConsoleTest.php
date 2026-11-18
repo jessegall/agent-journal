@@ -48,8 +48,9 @@ final class SkillAuthoringConsoleTest extends TestCase
             ->assertSuccessful();
 
         Artisan::call('skill:revision', ['number' => $number, 'revision' => 3]);
-        $this->assertStringContainsString('Read the notes first.', Artisan::output());
-        $this->assertStringContainsString('"keys":["journal-reviewer"]', Artisan::output());
+        $revision = Artisan::output();
+        $this->assertStringContainsString('Read the notes first.', $revision);
+        $this->assertStringContainsString('"keys":["journal-reviewer"]', $revision);
     }
 
     public function test_a_stale_edit_prints_the_conflict_with_the_latest_revision(): void

@@ -8,6 +8,7 @@ use App\Skills\Contracts\SkillReader;
 use App\Skills\Values\SkillKey;
 use Domain\Plans\Tests\TestCase;
 use Illuminate\Support\Facades\Artisan;
+use Tests\Support\RefreshHookDatabase;
 
 /**
  * Plans supplies the journal-plans skill through ProvidesSkills: a written section, then two heading subtrees of
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\Artisan;
  */
 final class PlanSkillTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_journal_plans_is_owned_by_plans_and_shows_its_sections_in_order(): void
     {
         Artisan::call('skill:list', ['--json' => true]);

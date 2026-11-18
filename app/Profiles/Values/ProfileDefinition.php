@@ -22,7 +22,7 @@ final readonly class ProfileDefinition
         public ProfileType $type,
         public string $instructions,
         public string $model,
-        public ?array $skillAllowlist,
+        public array|null $skillAllowlist,
         public array $requiredSkills,
     ) {}
 }

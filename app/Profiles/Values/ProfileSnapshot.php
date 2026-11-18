@@ -23,7 +23,7 @@ final class ProfileSnapshot extends Data
         public readonly ProfileType $type,
         public readonly string $instructions,
         public readonly string $model,
-        public readonly ?array $skillAllowlist,
+        public readonly array|null $skillAllowlist,
         public readonly array $requiredSkills,
     ) {}
 }

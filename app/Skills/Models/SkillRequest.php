@@ -47,7 +47,7 @@ final class SkillRequest extends Model implements ReadableModel
     /**
      * The actor's earlier write under this request id, or null when it sent none.
      */
-    public static function earlier(ActorIdentity $actor, string $requestId): ?self
+    public static function earlier(ActorIdentity $actor, string $requestId): self|null
     {
         return self::query()->sentBy($actor)->where('request_id', $requestId)->first();
     }

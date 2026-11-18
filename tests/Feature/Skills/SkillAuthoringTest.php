@@ -15,6 +15,7 @@ use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Skills\Guide\GuideSkill;
 use Tests\Fixtures\Skills\Guide\RenamedGuideSkill;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -23,6 +24,8 @@ use Tests\TestCase;
  */
 final class SkillAuthoringTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_the_list_names_the_module_skill_and_every_shipped_skill(): void
     {
         $this->useOwners(...$this->installedOwners());

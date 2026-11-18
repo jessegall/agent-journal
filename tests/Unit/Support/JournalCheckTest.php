@@ -27,7 +27,7 @@ final class JournalCheckTest extends TestCase
 
     protected function tearDown(): void
     {
-        (new Process(['rm', '-rf', $this->repository]))->run();
+        new Process(['rm', '-rf', $this->repository])->run();
 
         parent::tearDown();
     }

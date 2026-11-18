@@ -38,7 +38,7 @@ final class ProfileShowCommand extends Command
     /**
      * @param  list<string>|null  $allowlist
      */
-    private function allowlist(?array $allowlist): string
+    private function allowlist(array|null $allowlist): string
     {
         return match (true) {
             $allowlist === null => 'absent, every applicable skill',

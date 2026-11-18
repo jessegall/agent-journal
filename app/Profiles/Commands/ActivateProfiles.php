@@ -9,8 +9,8 @@ use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 use App\Profiles\Handlers\ActivateProfilesHandler;
-use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileActivation;
+use App\Profiles\Values\ProfileDefinition;
 
 /**
  * The owner activates profiles: each definition becomes its profile's next immutable revision, under the identity its

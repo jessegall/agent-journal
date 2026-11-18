@@ -8,6 +8,7 @@ use App\Skills\Contracts\SkillReader;
 use App\Skills\Values\SkillKey;
 use Illuminate\Support\Facades\Artisan;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -16,6 +17,8 @@ use Tests\TestCase;
  */
 final class DomainSkillsTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     /**
      * @return iterable<string, array{string, string, string}>
      */

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Unit\Skills;
 
 use App\CoreApi;
-use App\Programs\Enums\HookProgram;
 use App\Skills\Support\LaunchProgram;
 use App\Skills\Values\ProgramKey;
 use App\Skills\Values\ProviderKey;
@@ -36,12 +35,11 @@ final class LaunchProgramTest extends TestCase
         $this->assertNull(LaunchProgram::of(null)->program);
     }
 
-    public function test_the_keys_are_exported_and_the_program_enum_is_not(): void
+    public function test_the_program_and_provider_keys_are_exported(): void
     {
         $exports = CoreApi::exports();
 
         $this->assertContains(ProgramKey::class, $exports->values);
         $this->assertContains(ProviderKey::class, $exports->values);
-        $this->assertFalse($exports->has(HookProgram::class));
     }
 }

@@ -28,6 +28,14 @@ final readonly class SkillSection
     }
 
     /**
+     * The section as stored: its inline Markdown, or the reference of the part it is taken from.
+     */
+    public function storedText(): string
+    {
+        return is_string($this->content) ? $this->content : $this->content->selector();
+    }
+
+    /**
      * The section's Markdown: as written, or read from its part in the owner's folder.
      */
     public function body(MarkdownParts $parts, SkillOwner $owner): string

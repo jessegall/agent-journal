@@ -14,12 +14,8 @@ final readonly class ConditionRegistry
 {
     /**
      * @param  array<string, SkillConditionRegistration>  $registrations
-     * @param  array<string, string>  $owners  each key's owner name
      */
-    private function __construct(
-        private array $registrations,
-        private array $owners,
-    ) {}
+    private function __construct(private array $registrations) {}
 
     /**
      * @param  array<string, list<SkillConditionRegistration>>  $byOwner  each owner's registrations, by owner name
@@ -42,7 +38,7 @@ final readonly class ConditionRegistry
             }
         }
 
-        return new self($registrations, $owners);
+        return new self($registrations);
     }
 
     public function has(string $key): bool

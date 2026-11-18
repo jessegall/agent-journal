@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
+use App\AgentRequests\Support\SignedCall;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Support\AgentContext;
-use App\AgentRequests\Support\SignedCall;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\SessionStartSource;
@@ -14,8 +14,8 @@ use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\SessionStartDetails;
 use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Programs\ProgramCapabilities;
-use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Programs\ProgramReply;
+use App\Hooks\Stack\HookAnswer;
 use App\Mcp\Support\McpInstructions;
 use Carbon\CarbonImmutable;
 use Tests\Support\CommittedHookStack;

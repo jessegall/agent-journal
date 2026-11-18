@@ -63,7 +63,7 @@ final class ProfileRevision extends Model implements ReadableModel
 
     protected static function booted(): void
     {
-        static::updating(fn (self $revision) => throw ProfileRevisionImmutable::for($revision->id));
+        self::updating(fn (self $revision) => throw ProfileRevisionImmutable::for($revision->id));
     }
 
     /**

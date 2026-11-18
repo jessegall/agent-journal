@@ -20,7 +20,7 @@ final readonly class SkillContext
         public string $sessionId,
         public string $environment,
         public LaunchProfile $profile,
-        public ?ProgramKey $program,
-        public ?ProviderKey $provider,
+        public ProgramKey|null $program,
+        public ProviderKey|null $provider,
     ) {}
 }

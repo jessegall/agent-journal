@@ -20,7 +20,7 @@ final readonly class SkillEntry
         public SkillOrigin $origin,
         public string $description,
         public SkillCondition $condition,
-        public ?int $revision,
+        public int|null $revision,
         public RenderedSkill $rendered,
     ) {}
 
