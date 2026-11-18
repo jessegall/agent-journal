@@ -55,6 +55,32 @@ final class CommandRequest extends Model implements ReadableModel
         return ['hold_reason' => RequestHoldReason::class, 'state' => RequestState::class];
     }
 
+    /**
+     * A request one actor opens to run a command line, held while its declaration is collected.
+     */
+    public static function open(
+        string $projectKey,
+        ActorIdentity $actor,
+        string $operation,
+        string $bindingDigest,
+        string $line,
+        RequestHoldReason $reason,
+    ): self {
+        $excerpt = mb_substr((string) preg_replace('/[\x00-\x1F\x7F]/', ' ', $line), 0, self::EXCERPT_LENGTH);
+
+        return self::query()->create([
+            'project_key' => $projectKey,
+            'actor_type' => $actor->type->value,
+            'actor_id' => $actor->id,
+            'operation' => $operation,
+            'binding_digest' => $bindingDigest,
+            'source_digest' => hash('sha256', $line),
+            'source_excerpt' => $excerpt,
+            'hold_reason' => $reason,
+            'state' => RequestState::CollectingDeclaration,
+        ]);
+    }
+
     public function nextStep(): NextStep
     {
         return $this->state->nextStep($this->id, $this->operation);

@@ -17,7 +17,6 @@ use App\Processes\Models\EvidencePermit;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Values\Classification;
 use App\Processes\Values\ExecutionContext;
-use Carbon\CarbonImmutable;
 
 /**
  * Issues evidence permits for known command lines and turns a used permit into an evidence-only run (doc 21 revision
@@ -51,19 +50,16 @@ final readonly class EvidenceRuns
             }
         }
 
-        return EvidencePermit::query()->create([
-            'project_key' => ExecutionContext::inFolder($workingFolder)->projectKey(),
-            'working_folder' => $workingFolder,
-            'source_line' => $line,
-            'source_digest' => hash('sha256', $line),
-            'classification_digest' => $this->digestOf($classification),
-            'approved_classes' => array_map(fn ($class) => $class->value, $classification->requiredClasses()->classes),
-            'runner_type' => $runner->type->value,
-            'runner_id' => $runner->id,
-            'byte_cap' => $byteCap,
-            'seconds_cap' => $secondsCap,
-            'expires_at' => CarbonImmutable::now()->addMinutes($minutesValid),
-        ]);
+        return EvidencePermit::issue(
+            $workingFolder,
+            $line,
+            $classification,
+            $this->digestOf($classification),
+            $runner,
+            $byteCap,
+            $secondsCap,
+            $minutesValid,
+        );
     }
 
     /**

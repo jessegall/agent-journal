@@ -62,6 +62,14 @@ final class Message extends Model implements Numbered, ReadableModel, WorkedOnSt
     }
 
     /**
+     * A new message with its body, before anyone is asked to answer it.
+     */
+    public static function write(string $body): self
+    {
+        return self::query()->create(['body' => $body]);
+    }
+
+    /**
      * The message read under its row lock, among those the actor may see, for a change that must happen once.
      */
     public static function lockedById(string $id): self

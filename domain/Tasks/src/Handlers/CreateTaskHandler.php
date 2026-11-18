@@ -23,11 +23,6 @@ final readonly class CreateTaskHandler implements CommandHandler
         TaskLimits::check($command->title, $command->brief);
         $creator = $this->actors->actor();
 
-        return Task::query()->create([
-            'title' => $command->title,
-            'brief' => $command->brief,
-            'creator_type' => $creator->type,
-            'creator_id' => $creator->id,
-        ])->id;
+        return Task::file($command->title, $command->brief, $creator)->id;
     }
 }

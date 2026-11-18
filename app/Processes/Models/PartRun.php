@@ -10,6 +10,7 @@ use App\Processes\Enums\LifecycleState;
 use App\Processes\Enums\PartEndType;
 use App\Processes\Exceptions\PartTransitionRefused;
 use App\Processes\Values\PartEnd;
+use App\Processes\Values\PartKey;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -77,6 +78,20 @@ final class PartRun extends Model implements ReadableModel
             'capture_state' => CaptureState::class,
             'stream_offsets' => 'array',
         ];
+    }
+
+    /**
+     * The run of one part of a process run, queued and not yet started.
+     */
+    public static function queue(ProcessRun $run, PartKey $part): self
+    {
+        return self::query()->create([
+            'process_run_id' => $run->id,
+            'syntax_node' => $part->node,
+            'part_id' => $part->partId(),
+            'attempt' => $part->attempt,
+            'operation' => $part->operation,
+        ]);
     }
 
     public function end(): PartEnd

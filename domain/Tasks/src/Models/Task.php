@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
+use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Support\AgentLabel;
@@ -98,6 +99,19 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
             'revision' => 'integer',
             'run_number' => 'integer',
         ];
+    }
+
+    /**
+     * A new open task an actor files, with its title and brief.
+     */
+    public static function file(string $title, string $brief, Actor $creator): self
+    {
+        return self::query()->create([
+            'title' => $title,
+            'brief' => $brief,
+            'creator_type' => $creator->actorType(),
+            'creator_id' => $creator->actorId(),
+        ]);
     }
 
     /**
