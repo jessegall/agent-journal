@@ -15,6 +15,11 @@ final class SettingValueInvalid extends RuntimeException
 {
     public static function for(string $owner, string $key, SettingType $expected): self
     {
-        return new self("The value for the setting {$key} of {$owner} is not a {$expected->value} it accepts.");
+        return new self("The value for the setting {$key} of {$owner} is not a {$expected->value} value it accepts.");
+    }
+
+    public static function notToggleGroup(string $owner, string $key): self
+    {
+        return new self("The settings group {$key} of {$owner} cannot be switched on or off.");
     }
 }

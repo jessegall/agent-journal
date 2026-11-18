@@ -10,6 +10,7 @@ use App\Settings\Contracts\SettingsDefinition;
 use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Exceptions\SettingHandleUnknown;
+use App\Settings\Exceptions\SettingUnavailable;
 
 /**
  * Every owner's settings definition, checked once at start-up and never changed. A setting or group resolves to its
@@ -117,6 +118,40 @@ final readonly class SettingRegistry
     }
 
     /**
+     * The registered setting an address names, for a command that carries only the address.
+     *
+     * @throws SettingUnavailable
+     */
+    public function settingAt(string $owner, string $key): Setting
+    {
+        foreach ($this->groupsOf($owner) as $group) {
+            foreach ($group->settings() as $setting) {
+                if ($setting->key() === $key) {
+                    return $setting;
+                }
+            }
+        }
+
+        throw SettingUnavailable::for($owner, $key);
+    }
+
+    /**
+     * The registered group an address names, for a command that carries only the address.
+     *
+     * @throws SettingUnavailable
+     */
+    public function groupAt(string $owner, string $key): GroupDeclaration
+    {
+        foreach ($this->groupsOf($owner) as $group) {
+            if ($group->key() === $key) {
+                return $group;
+            }
+        }
+
+        throw SettingUnavailable::for($owner, $key);
+    }
+
+    /**
      * Whether a registered setting sits in a group that can be switched off, so it is read through its group.
      *
      * @throws SettingHandleUnknown
@@ -124,6 +159,16 @@ final readonly class SettingRegistry
     public function isInToggleGroup(Setting $setting): bool
     {
         return $this->groupOf($setting) instanceof ToggleGroup;
+    }
+
+    /**
+     * The groups of an owner, none for a name no definition is registered under.
+     *
+     * @return list<GroupDeclaration>
+     */
+    private function groupsOf(string $owner): array
+    {
+        return array_key_exists($owner, $this->definitions) ? $this->definitions[$owner]->groups() : [];
     }
 
     /**

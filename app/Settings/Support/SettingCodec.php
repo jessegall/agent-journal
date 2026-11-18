@@ -88,6 +88,18 @@ final readonly class SettingCodec
     }
 
     /**
+     * Stores a backing value a command carries for an enum setting, which must be exactly one of its cases' values.
+     *
+     * @param  EnumSetting<BackedEnum>  $setting
+     *
+     * @throws SettingValueInvalid
+     */
+    public function encodeEnumValue(string $owner, EnumSetting $setting, string|int $value): EncodedValue
+    {
+        return $setting->accepts($value) ? EncodedValue::of($value) : throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
+    }
+
+    /**
      * The native value of a stored override, of the type its declaration holds.
      *
      * @throws SettingStorageInvalid

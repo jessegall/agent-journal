@@ -222,11 +222,22 @@ use App\Records\Contracts\RecordProvider;
 use App\Records\Contracts\RecordReader;
 use App\Records\Data\RecordCard;
 use App\Records\Support\ProvidesModelRecords;
+use App\Settings\Commands\DisableSettingGroup;
+use App\Settings\Commands\EnableSettingGroup;
+use App\Settings\Commands\ResetSetting;
+use App\Settings\Commands\ResetSettingGroup;
+use App\Settings\Commands\SetBooleanSetting;
+use App\Settings\Commands\SetDecimalSetting;
+use App\Settings\Commands\SetIntegerChoice;
+use App\Settings\Commands\SetIntegerSetting;
+use App\Settings\Commands\SetStringChoice;
+use App\Settings\Commands\SetStringSetting;
 use App\Settings\Contracts\ChoiceLabel;
 use App\Settings\Contracts\GroupDeclaration;
 use App\Settings\Contracts\ProvidesSettings;
 use App\Settings\Contracts\Setting;
 use App\Settings\Contracts\SettingsDefinition;
+use App\Settings\Contracts\SettingsReader;
 use App\Settings\Declarations\BooleanSetting;
 use App\Settings\Declarations\ChoiceSetting;
 use App\Settings\Declarations\DecimalSetting;
@@ -235,12 +246,31 @@ use App\Settings\Declarations\IntegerSetting;
 use App\Settings\Declarations\SettingGroup;
 use App\Settings\Declarations\StringSetting;
 use App\Settings\Declarations\ToggleGroup;
+use App\Settings\Enums\SettingSource;
+use App\Settings\Enums\SettingsOutcome;
 use App\Settings\Enums\SettingType;
 use App\Settings\Exceptions\DecimalInvalid;
+use App\Settings\Exceptions\GroupSnapshotRequired;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
+use App\Settings\Exceptions\SettingDisabled;
 use App\Settings\Exceptions\SettingHandleUnknown;
+use App\Settings\Exceptions\SettingReferenceInvalid;
+use App\Settings\Exceptions\SettingsAccessDenied;
+use App\Settings\Exceptions\SettingsConflict;
+use App\Settings\Exceptions\SettingsDocumentInvalid;
+use App\Settings\Exceptions\SettingStorageInvalid;
+use App\Settings\Exceptions\SettingsUnavailable;
+use App\Settings\Exceptions\SettingUnavailable;
+use App\Settings\Exceptions\SettingValueInvalid;
+use App\Settings\Support\DisabledSettingsGroup;
+use App\Settings\Support\EnabledSettingsGroup;
+use App\Settings\Support\SettingCommands;
+use App\Settings\Support\SettingsSnapshot;
 use App\Settings\Values\Choice;
 use App\Settings\Values\Decimal;
+use App\Settings\Values\GroupReference;
+use App\Settings\Values\SettingReference;
+use App\Settings\Values\SettingsChange;
 use App\Ui\Contracts\CountReader;
 use App\Ui\Contracts\NavigationChildren;
 use App\Ui\Contracts\PageOption;
@@ -340,6 +370,7 @@ final class CoreApi
                 SettingsDefinition::class,
                 GroupDeclaration::class,
                 ChoiceLabel::class,
+                SettingsReader::class,
             )
             ->values(
                 RecordCard::class,
@@ -452,6 +483,14 @@ final class CoreApi
                 EnumSetting::class,
                 Choice::class,
                 SettingType::class,
+                SettingSource::class,
+                SettingsOutcome::class,
+                SettingReference::class,
+                GroupReference::class,
+                SettingsChange::class,
+                SettingsSnapshot::class,
+                EnabledSettingsGroup::class,
+                DisabledSettingsGroup::class,
             )
             ->commands(
                 RetireAgent::class,
@@ -461,8 +500,28 @@ final class CoreApi
                 AssignRecord::class,
                 ReassignRecord::class,
                 UnassignRecord::class,
+                SetStringSetting::class,
+                SetBooleanSetting::class,
+                SetIntegerSetting::class,
+                SetDecimalSetting::class,
+                SetStringChoice::class,
+                SetIntegerChoice::class,
+                ResetSetting::class,
+                EnableSettingGroup::class,
+                DisableSettingGroup::class,
+                ResetSettingGroup::class,
             )
             ->exceptions(
+                SettingUnavailable::class,
+                SettingDisabled::class,
+                GroupSnapshotRequired::class,
+                SettingValueInvalid::class,
+                SettingStorageInvalid::class,
+                SettingsDocumentInvalid::class,
+                SettingsConflict::class,
+                SettingsAccessDenied::class,
+                SettingsUnavailable::class,
+                SettingReferenceInvalid::class,
                 SettingDeclarationInvalid::class,
                 SettingHandleUnknown::class,
                 DecimalInvalid::class,
@@ -533,6 +592,7 @@ final class CoreApi
                 NestedCommandFailureIgnored::class,
             )
             ->support(
+                SettingCommands::class,
                 BoundedReads::class,
                 ReadBuilder::class,
                 CountsLoads::class,
