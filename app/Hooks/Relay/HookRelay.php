@@ -7,10 +7,10 @@ namespace App\Hooks\Relay;
 use App\AgentRequests\Support\AgentRequestClient;
 use App\Agents\Support\LoggedBypass;
 use App\Hooks\Enums\CallFailure;
-use App\Hooks\Enums\HookProgram;
 use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Programs\OutageReply;
 use App\Hooks\Programs\ProgramReply;
+use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
 

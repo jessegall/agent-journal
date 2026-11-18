@@ -6,7 +6,7 @@ namespace App\Agents\Support;
 
 use App\Agents\Enums\AccountModeType;
 use App\Agents\Enums\ExecutionModeType;
-use App\Hooks\Enums\HookProgram;
+use App\Programs\Enums\HookProgram;
 
 /**
  * One combination a launch would need: a program, how its account signs in and where it runs.

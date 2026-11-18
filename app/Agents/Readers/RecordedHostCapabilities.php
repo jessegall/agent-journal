@@ -11,7 +11,7 @@ use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Exceptions\CapabilityMatrixInvalid;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
-use App\Hooks\Enums\HookProgram;
+use App\Programs\Enums\HookProgram;
 use JsonException;
 
 /**

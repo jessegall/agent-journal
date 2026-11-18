@@ -61,6 +61,7 @@ use App\Agents\Contracts\SessionReader;
 use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
+use App\Agents\Enums\AccessRuleType;
 use App\Agents\Enums\AccountModeType;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\CapabilityStatusType;
@@ -76,22 +77,28 @@ use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Events\LaunchEnded;
+use App\Agents\Exceptions\AccessPolicyInvalid;
 use App\Agents\Exceptions\AccountContainerUnsupported;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Exceptions\AgentRetirementDenied;
 use App\Agents\Exceptions\DefaultUnavailable;
+use App\Agents\Exceptions\ExecutionBudgetInvalid;
+use App\Agents\Exceptions\ExecutionPolicyInvalid;
 use App\Agents\Exceptions\ModelRequired;
 use App\Agents\Exceptions\ModelUnavailable;
 use App\Agents\Exceptions\ProgramConflict;
 use App\Agents\Exceptions\ProgramRequired;
 use App\Agents\Exceptions\ProgramUnsupported;
 use App\Agents\Exceptions\StackTargetRefused;
+use App\Agents\Exceptions\StopConditionsInvalid;
 use App\Agents\Support\AgentLabel;
 use App\Agents\Support\ClaimedRequest;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\EnrolledHost;
+use App\Agents\Support\ExecutionBudgets;
+use App\Agents\Support\ExecutionPolicy;
 use App\Agents\Support\ExecutionReceipt;
 use App\Agents\Support\ExecutionReference;
 use App\Agents\Support\ExitReceipt;
@@ -105,6 +112,14 @@ use App\Agents\Support\SelectedProgram;
 use App\Agents\Support\SelectionSource;
 use App\Agents\Support\SessionOption;
 use App\Agents\Support\StackTarget;
+use App\Agents\Values\AccessDecision;
+use App\Agents\Values\AccessPolicy;
+use App\Agents\Values\ClassGrant;
+use App\Agents\Values\Operation as PolicyOperation;
+use App\Agents\Values\OperationGrant;
+use App\Agents\Values\ResourceRequest;
+use App\Agents\Values\StopCondition;
+use App\Agents\Values\StopConditions;
 use App\Assignments\Commands\AssignRecord;
 use App\Assignments\Commands\ReassignRecord;
 use App\Assignments\Commands\UnassignRecord;
@@ -267,7 +282,6 @@ use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\FileOperation;
-use App\Hooks\Enums\HookProgram;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\SessionEndReason;
 use App\Hooks\Enums\SessionStartSource;
@@ -334,6 +348,10 @@ use App\Numbers\Exceptions\InvalidRecordReference;
 use App\Numbers\Support\HasNumber;
 use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\RecordReference;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
+use App\Operations\Exceptions\UnknownAccessType;
+use App\Operations\Exceptions\UnknownResourceArea;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Enums\CommandEffect;
 use App\Processes\Enums\CommandType;
@@ -342,6 +360,7 @@ use App\Processes\Enums\PartJoin;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Values\CommandPart;
 use App\Processes\Values\ShellCommand;
+use App\Programs\Enums\HookProgram;
 use App\Queries\Support\TextSearch;
 use App\Reads\Attributes\ReadBudget;
 use App\Reads\Contracts\ReadableModel;
@@ -685,6 +704,19 @@ final class CoreApi
                 ModelSelectionType::class,
                 ProgramSourceType::class,
                 LaunchRefusalType::class,
+                AccessType::class,
+                ResourceAreaType::class,
+                AccessRuleType::class,
+                ResourceRequest::class,
+                PolicyOperation::class,
+                OperationGrant::class,
+                ClassGrant::class,
+                AccessDecision::class,
+                AccessPolicy::class,
+                StopCondition::class,
+                StopConditions::class,
+                ExecutionBudgets::class,
+                ExecutionPolicy::class,
                 ToolArguments::class,
                 RecordCard::class,
                 StateReferences::class,
@@ -1056,6 +1088,12 @@ final class CoreApi
                 ProgramRequired::class,
                 ProgramConflict::class,
                 ProgramUnsupported::class,
+                UnknownAccessType::class,
+                UnknownResourceArea::class,
+                AccessPolicyInvalid::class,
+                StopConditionsInvalid::class,
+                ExecutionPolicyInvalid::class,
+                ExecutionBudgetInvalid::class,
                 ToolArgumentInvalid::class,
                 ToolArgumentUnknown::class,
                 ContinuationInvalid::class,

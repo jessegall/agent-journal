@@ -16,7 +16,7 @@ use App\Agents\Exceptions\ProgramUnsupported;
 use App\Agents\Support\ModelSelection;
 use App\Agents\Support\ProfileDefaults;
 use App\Agents\Support\SelectedProgram;
-use App\Hooks\Enums\HookProgram;
+use App\Programs\Enums\HookProgram;
 use Tests\TestCase;
 
 /**

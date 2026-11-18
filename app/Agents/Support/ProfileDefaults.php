@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
-use App\Hooks\Enums\HookProgram;
+use App\Programs\Enums\HookProgram;
 
 /**
  * What a profile decides about a launch, as plain values from its owner: its program (pinned or open), its default

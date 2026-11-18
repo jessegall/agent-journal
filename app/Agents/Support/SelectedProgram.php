@@ -11,7 +11,7 @@ use App\Agents\Exceptions\ModelUnavailable;
 use App\Agents\Exceptions\ProgramConflict;
 use App\Agents\Exceptions\ProgramRequired;
 use App\Agents\Exceptions\ProgramUnsupported;
-use App\Hooks\Enums\HookProgram;
+use App\Programs\Enums\HookProgram;
 
 /**
  * The program and concrete model a launch runs, the model selection it asked for and where the program came from.
