@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Models;
 
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorContext;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
@@ -29,10 +31,15 @@ use Illuminate\Support\Carbon;
  * @property int $number
  * @property string $text
  * @property RuleState $state
+ * @property string|null $reason
+ * @property string|null $replaces_rule_id
+ * @property ActorType|null $proposer_type
+ * @property string|null $proposer_id
+ * @property string|null $proposer_session_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['text'])]
+#[Fillable(['text', 'reason', 'replaces_rule_id', 'proposer_type', 'proposer_id', 'proposer_session_id'])]
 final class Rule extends Model implements Numbered, ReadableModel
 {
     use BoundedReads;
@@ -48,12 +55,23 @@ final class Rule extends Model implements Numbered, ReadableModel
      */
     protected function casts(): array
     {
-        return ['state' => RuleState::class];
+        return ['state' => RuleState::class, 'proposer_type' => ActorType::class];
     }
 
-    public static function proposed(string $text): self
+    /**
+     * A rule proposed with its reason, the rule it would replace if any, and who proposed it; it holds only once the
+     * user approves it.
+     */
+    public static function proposed(string $text, string $reason, string|null $replacesRuleId, ActorContext $proposer, string|null $proposerSessionId): self
     {
-        $rule = new self(['text' => $text]);
+        $rule = new self([
+            'text' => $text,
+            'reason' => $reason,
+            'replaces_rule_id' => $replacesRuleId,
+            'proposer_type' => $proposer->type,
+            'proposer_id' => $proposer->id,
+            'proposer_session_id' => $proposerSessionId,
+        ]);
         $rule->state = RuleState::Proposed;
         $rule->save();
 

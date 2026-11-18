@@ -16,5 +16,9 @@ use Domain\Rules\Handlers\ProposeRuleHandler;
 #[HandledBy(ProposeRuleHandler::class)]
 final readonly class ProposeRule implements Command
 {
-    public function __construct(public string $text) {}
+    public function __construct(
+        public string $text,
+        public string $reason,
+        public string|null $replacesRuleId = null,
+    ) {}
 }

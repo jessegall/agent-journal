@@ -6,6 +6,7 @@ namespace Domain\Rules;
 
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasNumberedModels;
+use App\Domains\Contracts\ProvidesMcpTools;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
@@ -19,6 +20,7 @@ use App\Ui\Enums\Icon;
 use Domain\Rules\Api\Events\RuleApproved;
 use Domain\Rules\Api\Events\RuleDenied;
 use Domain\Rules\Api\Events\RuleRemoved;
+use Domain\Rules\Api\RuleDetails;
 use Domain\Rules\Api\RuleFilters;
 use Domain\Rules\Api\RuleList;
 use Domain\Rules\Api\RuleView;
@@ -26,16 +28,18 @@ use Domain\Rules\Commands\ApproveRule;
 use Domain\Rules\Commands\DenyRule;
 use Domain\Rules\Commands\ProposeRule;
 use Domain\Rules\Commands\RemoveRule;
+use Domain\Rules\Contracts\RuleDetailsReader;
 use Domain\Rules\Contracts\RuleReader;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Exceptions\RuleNotProposed;
 use Domain\Rules\Http\Controllers\ApproveRuleController;
 use Domain\Rules\Http\Controllers\DenyRuleController;
+use Domain\Rules\Mcp\ActiveRulesOverview;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Readers\RulesWindowReader;
 
-final class RulesDomain extends Domain implements ProvidesCommands, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages
+final class RulesDomain extends Domain implements ProvidesCommands, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages
 {
     use HasNumberedModels;
 
@@ -56,9 +60,10 @@ final class RulesDomain extends Domain implements ProvidesCommands, ProvidesNavi
     {
         return Exports::make()
             ->events(RuleApproved::class, RuleDenied::class, RuleRemoved::class)
-            ->contracts(RuleReader::class)
+            ->contracts(RuleReader::class, RuleDetailsReader::class)
             ->values(
                 RuleFilters::class,
+                RuleDetails::class,
                 RuleList::class,
                 RuleView::class,
                 RuleState::class,
@@ -97,5 +102,20 @@ final class RulesDomain extends Domain implements ProvidesCommands, ProvidesNavi
     public function numberedModels(): array
     {
         return [NumberedModel::global(Rule::class)];
+    }
+
+    public function mcpTools(): array
+    {
+        return [];
+    }
+
+    public function mcpResources(): array
+    {
+        return [];
+    }
+
+    public function overviewContributions(): array
+    {
+        return [ActiveRulesOverview::class];
     }
 }
