@@ -128,6 +128,41 @@ final class LaunchSkillsTest extends TestCase
 
     public function test_a_required_skill_outside_the_selection_refuses_the_launch_with_its_key(): void
     {
+        $this->activateReviewer(['journal-plans']);
+        $session = $this->sessionRow(Agent::named('Reviewer', AgentRole::ReadOnlyHelper), 'claude-code', 1);
+
+        $this->expectException(SkillSelectionConflict::class);
+        $this->expectExceptionMessage('journal-plans');
+
+        $this->started($session);
+    }
+
+    public function test_two_sessions_in_one_work_folder_keep_their_own_sets_and_never_a_union(): void
+    {
+        $this->activateReviewer([]);
+        $main = $this->sessionRow(Agent::named('Main', AgentRole::MainAgent), 'claude-code', null);
+        $reviewer = $this->sessionRow(Agent::named('Reviewer', AgentRole::ReadOnlyHelper), 'claude-code', 1);
+
+        $this->started($main);
+        $this->started($reviewer);
+
+        $mainSet = SkillPublication::latestOfSession($main->id);
+        $reviewerSet = SkillPublication::latestOfSession($reviewer->id);
+        $this->assertNotNull($mainSet);
+        $this->assertNotNull($reviewerSet);
+        $this->assertNotSame($mainSet->target, $reviewerSet->target);
+        $this->assertNotSame($mainSet->selection_digest, $reviewerSet->selection_digest);
+        $this->assertContains('journal-plans', $mainSet->skill_keys);
+        $this->assertNotContains('journal-plans', $reviewerSet->skill_keys);
+        $this->assertSame(PublicationState::Delivered, $mainSet->state);
+        $this->assertSame(PublicationState::Delivered, $reviewerSet->state);
+    }
+
+    /**
+     * @param  list<string>  $requiredSkills
+     */
+    private function activateReviewer(array $requiredSkills): void
+    {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'));
         $this->app->make(CommandBus::class)->run(new ActivateProfiles([new ProfileDefinition(
             ProfileKey::from('journal-reviewer'),
@@ -136,14 +171,8 @@ final class LaunchSkillsTest extends TestCase
             'Review.',
             'opus',
             null,
-            ['journal-plans'],
+            $requiredSkills,
         )]));
-        $session = $this->sessionRow(Agent::named('Reviewer', AgentRole::ReadOnlyHelper), 'claude-code', 1);
-
-        $this->expectException(SkillSelectionConflict::class);
-        $this->expectExceptionMessage('journal-plans');
-
-        $this->started($session);
     }
 
     /**

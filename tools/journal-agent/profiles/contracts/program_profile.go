@@ -21,6 +21,9 @@ type Launch struct {
 	HookCommand string
 	Model       string
 	Effort      string
+	// WorkFolder is the folder the program works in, when the host knows it; a profile reads which of its own
+	// discovery roots that folder holds.
+	WorkFolder string
 }
 
 // SettingsFile is one file of the isolated settings folder: its name and content, or, for a login the person

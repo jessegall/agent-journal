@@ -126,6 +126,7 @@ func (driver *ProcessDriver) startTurn(request contracts.RequestIdentity, prompt
 		HookCommand:    driver.runtime.HookCommand,
 		Model:          driver.model,
 		Effort:         driver.effort,
+		WorkFolder:     driver.runtime.WorkingFolder,
 	}
 	command, err := driver.command(launch)
 	if err != nil {

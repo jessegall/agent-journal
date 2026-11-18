@@ -204,7 +204,13 @@ func openMainRuntime(stateFolder, agentID, folder, program, hookCommand string) 
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
-	launch := contracts.Launch{Mode: contracts.TerminalMode, SettingsFolder: filepath.Join(stateFolder, "runtimes", opened.RuntimeID), SessionID: conversationID, HookCommand: hookCommand}
+	launch := contracts.Launch{
+		Mode:           contracts.TerminalMode,
+		SettingsFolder: filepath.Join(stateFolder, "runtimes", opened.RuntimeID),
+		SessionID:      conversationID,
+		HookCommand:    hookCommand,
+		WorkFolder:     absolute,
+	}
 	if err := writeSettings(profile, launch); err != nil {
 		return host.AttachRequest{}, err
 	}
