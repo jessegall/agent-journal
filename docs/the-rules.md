@@ -70,7 +70,6 @@ One row per line the journal may say: the feature, the nudge key, its words with
 | laws | laws.name_a_profile | the dispatch names no profile of this project: {{asked}} | LawsConduct.on_tool_starting_laws |
 | laws | laws.bind_the_job | the dispatch binds the agent to no concrete job | LawsConduct.on_tool_starting_laws |
 | laws | laws.cap_the_output | that result was {{lines}} lines, and every line stays in the context | LawsConduct.on_tool_finished_laws |
-| mcp | mcp.sign_in_to_the_server | sign in to {{title}} | McpInstalling.login |
 | memory | memory.decide_at_the_mark | context {{percent}}% full: decide what to keep from it | MemoryConduct.on_anything_memory_threshold |
 | memory | memory.write_held_until_decided | writes wait until you decide what to keep from the context | MemoryConduct.on_tool_starting_memory |
 | memory | memory.stopped_at_mark | you stopped while the journal awaits a decision at the context mark, {{percent}}% full | MemoryConduct.on_stop_memory |

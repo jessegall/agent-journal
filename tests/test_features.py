@@ -605,6 +605,30 @@ def test_wispr_flow_is_among_the_suggested_mcp_services():
     assert suggested["wispr-flow"].url == "https://api.wisprflow.ai/connect/mcp" and suggested["wispr-flow"].auth == "oauth"
 
 
+def test_a_sign_in_takes_only_the_address_on_this_machine_its_program_waits_on():
+    from journal.features.mcp.support.callback_address import CallbackAddress
+    from journal.support.rejection import Rejection
+    waiting = CallbackAddress.of("https://mcp.sentry.dev/oauth/authorize?state=s&redirect_uri=http%3A%2F%2Flocalhost%3A56271%2Fcallback")
+    assert waiting == CallbackAddress(56271, "/callback")
+    assert waiting.target(" http://localhost:56271/callback?code=c1&state=s&iss=https%3A%2F%2Fmcp.sentry.dev ") == "/callback?code=c1&state=s&iss=https%3A%2F%2Fmcp.sentry.dev"
+    assert waiting.target("http://127.0.0.1:56271/callback?code=c1") == "/callback?code=c1", "the programs listen on 127.0.0.1 whichever name the address uses"
+    refused = ["https://localhost:56271/callback?code=c1", "http://sign-in.test:56271/callback?code=c1", "http://169.254.169.254:56271/callback?code=c1", "http://user:pw@localhost:56271/callback?code=c1",
+               "http://localhost:6443/callback?code=c1", "http://localhost/callback?code=c1", "http://localhost:56271/admin?code=c1", "http://localhost:56271/callback", "http://localhost:56271/callback?code=c1\r\nHost: x", "http://localhost:99999/callback?code=c1", ""]
+    for pasted in refused:
+        with pytest.raises(Rejection) as refusal:
+            waiting.target(pasted)
+        assert "c1" not in str(refusal.value), "a refusal never repeats the pasted address"
+    with pytest.raises(Rejection):
+        CallbackAddress.of("https://mcp.sentry.dev/oauth/authorize?redirect_uri=https%3A%2F%2Fsign-in.test%2Fcallback")
+
+
+def test_a_server_the_agent_program_set_up_itself_offers_sign_in_when_it_needs_one():
+    from journal.http.controllers.mcp import McpController
+    from journal.features.mcp.support.server_catalogue import ServerCatalogue
+    assert McpController.known_row(ServerCatalogue("sentry", "https://mcp.sentry.dev/mcp", "needs_auth", "Needs authentication")).auth == "oauth"
+    assert McpController.known_row(ServerCatalogue("playwright", "npx @playwright/mcp", "connected", "")).auth == "none"
+
+
 def test_codex_words_for_the_user_are_read_from_its_transcript(monkeypatch, tmp_path):
     import json as j
     from journal.providers.codex import Codex
@@ -865,10 +889,6 @@ def test_an_integration_is_a_suggested_mcp_server_installed_and_removed_with_the
     assert {s["name"]: s["installed"] for s in page["suggested"] if s["name"] in ("github", "playwright", "slack")} == {"github": True, "playwright": True, "slack": False}
     assert post("/journal/mcp/github/remove", {}) == {"removed": "github"} and j.loads((tmp_path / "keys.json").read_text()) == {}
     assert app.console().run(["mcp", "list"], USER).text.startswith("linear")
-    post("/journal/mcp/install", {"name": "linear"})
-    transmitted.clear()
-    assert post("/journal/mcp/linear/sign-in", {})["asked"] == "linear"
-    assert transmitted[-1]["verb"] == "type" and "mcp__linear__authenticate" in transmitted[-1]["line"], "the agent is asked to sign in through the server's own tool"
 
 
 def test_commands_run_at_the_same_moment_keep_their_own_output(app: App):

@@ -3,7 +3,7 @@ import re
 import shlex
 import uuid
 import json
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 from dataclasses import replace
 
 from journal.features.library.support.library_account import LIBRARIES_FOLDER, LibraryAccount
@@ -157,6 +157,10 @@ class UserSteps:
     def user_opens_in(self, environment: str, route: str) -> StepResult:
         self.viewer_status, self.viewer_answer = get_answer(self.app, route, {"X-Journal-Env": environment})
         return self.observed(f"user opens {route} in {environment}", None, None)
+
+    def sign_in_page_return(self) -> str:
+        """Where the sign-in page the viewer was last given sends the user's browser back to."""
+        return parse_qs(urlsplit(self.viewer_answer["url"]).query)["redirect_uri"][0]
 
     def user_presses(self, path: str, body: dict) -> StepResult:
         self.viewer_status, self.viewer_answer = posted(self.app, path, body, MAIN)

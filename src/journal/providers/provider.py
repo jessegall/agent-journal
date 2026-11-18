@@ -221,6 +221,10 @@ class Provider(ABC):
     @abstractmethod
     def mcp_remove_commands(self, name: str) -> list[list[str]]: ...
 
+    def mcp_login_command(self, name: str) -> list[str]:
+        """The program's own sign-in to a server: it prints the sign-in page instead of opening a browser and waits for the browser on a port of this machine."""
+        return [self.program, "mcp", "login", name, "--no-browser"]
+
     def copy_session(self, source: Path, target: Path, session: str) -> bool:
         return self.transcript(target, session) is not None or self.transcript(source, session) is not None
 

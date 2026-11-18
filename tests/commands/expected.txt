@@ -1669,7 +1669,6 @@ laws.bind_the_job  [laws]  the dispatch has no concrete job. give it a descripti
 laws.cap_the_output  [laws]  that result was {{lines}} lines. cap output with grep, head or tail
 laws.name_a_profile  [laws]  the dispatch has no profile of this project: {{asked}}. use one of: {{profiles|cap=200}}
 laws.name_the_model  [laws]  name a model in the dispatch: the least expensive one that reliably fits the work
-mcp.sign_in_to_the_server  [mcp]  sign in to {{server}}: `mcp__{{name|cap=23}}__authenticate`, then `complete_authentication`; tell the user
 memory.check_stale_memory  [memory]  memories {{stale|cap=25}} are {{stale_after}}+ days old. remove what is no longer true: `journal memory remove <numbers>`
 memory.decide_at_the_mark  [memory]  writes wait at {{percent}}%: keep, raise or correct {{count}} memories, never lower one; or `journal memory skip "<why>"`
 memory.does_the_rule_apply_project_wide  [memory]  if rule {{n}} does not apply to the whole project, delete it and record a fact or a reminder instead

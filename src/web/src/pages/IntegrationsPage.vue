@@ -4,7 +4,6 @@ import {computed, onUnmounted, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {usePoll} from "../composables/poll.js";
 import {ago} from "../format/time.js";
-import {agentOnline} from "../composables/leadAgent.js";
 import Btn from "../kit/Btn.vue";
 import TextInput from "../kit/TextInput.vue";
 import SkeletonLine from "../kit/SkeletonLine.vue";
@@ -15,7 +14,8 @@ import IntegrationSuggestion from "./IntegrationSuggestion.vue";
 const servers = ref([]);
 const suggested = ref([]);
 const restartPending = ref([]);
-const signingIn = ref("");
+// the sign-in the journal runs for one server: its name, the page the user approves on, and the address pasted back
+const signingIn = ref({name: "", page: "", returned: ""});
 const loaded = ref(false);
 const notice = ref("");
 const {busy, act: run} = useNamedAct(notice);
@@ -79,24 +79,34 @@ const saveKey = (s) =>
         keys.value[s.name] = "";
     });
 const signIn = (s) =>
-    act(s.name, async () => {
-        await api.mcpSignIn(s.name);
-        signingIn.value = s.name;
+    run(s.name, async () => {
+        const got = await api.mcpSignIn(s.name);
+        signingIn.value = {name: s.name, page: got.url, returned: ""};
     });
+const finishSignIn = (s) =>
+    act(s.name, async () => {
+        await api.mcpSignInReturn(s.name, signingIn.value.returned.trim());
+        signingIn.value = {name: "", page: "", returned: ""};
+    });
+// while a sign-in waits, the page reads the servers again, so one finished in the browser by itself shows as connected
+const SIGN_IN_READ_EVERY = 5000;
+const SIGN_IN_READS = 180;
 let signInPolling = 0;
-let checks = 0;
-watch(signingIn, (name) => {
-    clearInterval(signInPolling);
-    checks = 0;
-    if (!name) return;
-    signInPolling = setInterval(async () => {
-        const got = await api.mcpCheck();
-        servers.value = got.servers;
-        const server = got.servers.find((s) => s.name === name);
-        checks += 1;
-        if (!server || server.state === "connected" || checks >= 18) signingIn.value = "";
-    }, 10000);
-});
+let reads = 0;
+watch(
+    () => signingIn.value.name,
+    (name) => {
+        clearInterval(signInPolling);
+        reads = 0;
+        if (!name) return;
+        signInPolling = setInterval(async () => {
+            await reload();
+            reads += 1;
+            const server = servers.value.find((s) => s.name === name);
+            if (server?.state === "connected" || reads >= SIGN_IN_READS) signingIn.value = {name: "", page: "", returned: ""};
+        }, SIGN_IN_READ_EVERY);
+    },
+);
 onUnmounted(() => clearInterval(signInPolling));
 
 </script>
@@ -151,11 +161,12 @@ onUnmounted(() => clearInterval(signInPolling));
                         v-model:key-value="keys[s.name]"
                         :server="s"
                         :busy="busy === s.name"
-                        :signing-in="signingIn === s.name"
-                        :agent-online="agentOnline"
+                        v-model:return-address="signingIn.returned"
+                        :sign-in-page="signingIn.name === s.name ? signingIn.page : ''"
                         @remove="remove(s)"
                         @save-key="saveKey(s)"
                         @sign-in="signIn(s)"
+                        @finish-sign-in="finishSignIn(s)"
                     />
                 </template>
             </ul>

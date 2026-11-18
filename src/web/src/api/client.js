@@ -753,7 +753,11 @@ export class ApiClient {
     }
 
     mcpSignIn(name) {
-        return this.post(`/mcp/${encoded(name)}/sign-in`, {});
+        return this.post(`/mcp/${encoded(name)}/sign-in`, {}, LONG_WAIT_MS);
+    }
+
+    mcpSignInReturn(name, url) {
+        return this.post(`/mcp/${encoded(name)}/callback`, {url}, LONG_WAIT_MS);
     }
 
     mcpAdd(server) {

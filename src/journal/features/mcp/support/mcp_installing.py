@@ -3,7 +3,6 @@ from journal.features.mcp.support.health import Health
 from journal.support.pending_restarts import PendingRestarts
 from journal.support.keys import Keys
 from journal.features.mcp.support.provider_config import ProviderConfig
-from journal.engine.nudger import Nudger
 from journal.support.actor import Actor
 from journal.models.mcp_server import McpServer
 from journal.support.rejection import Rejection
@@ -13,15 +12,14 @@ from journal.features.mcp.support.restart_readiness import RestartReadiness
 from journal.repositories.mcp_servers import McpServers
 from journal.supervisor_link import SupervisorLink
 from journal.models.agent import Agent
-from journal.features.mcp.mcp_nudges import McpNudges
 
 
 class McpInstalling:
     """The one way a server is added, keyed, removed or checked: the row, the configuration the agents read, and, for an added or removed server, a restart of each agent running once it is idle, so it applies as soon as it can."""
 
-    def __init__(self, servers: McpServers, config_files: ProviderConfig, keys: Keys, health: Health, agents: Agents, providers: Providers, supervisor: SupervisorLink, idle: RestartReadiness, pending: PendingRestarts, nudger: Nudger) -> None:
+    def __init__(self, servers: McpServers, config_files: ProviderConfig, keys: Keys, health: Health, agents: Agents, providers: Providers, supervisor: SupervisorLink, idle: RestartReadiness, pending: PendingRestarts) -> None:
         self.servers, self.config_files, self.keys, self.health = servers, config_files, keys, health
-        self.agents, self.providers, self.supervisor, self.idle, self.pending, self.nudger = agents, providers, supervisor, idle, pending, nudger
+        self.agents, self.providers, self.supervisor, self.idle, self.pending = agents, providers, supervisor, idle, pending
 
     def add(self, server: McpServer, actor: Actor) -> McpServer:
         saved = self.servers.save(server, actor)
@@ -70,14 +68,6 @@ class McpInstalling:
         if existing is None:
             return server.unchecked(self.unchecked_state(server))
         return server.checked(existing.state, existing.text)
-
-    def login(self, server: McpServer) -> bool:
-        for agent in self.running():
-            line = self.nudger.deliver(agent, McpNudges.SERVER_LOGIN.create(name=server.name, server=server.title))
-            if line:
-                self.supervisor.type(agent.environment_id, line)
-                return True
-        return False
 
     def running(self) -> list[Agent]:
         newest = {agent.environment_id: agent for agent in sorted(self.agents.active_main_agents(), key=lambda item: item.update_time)}
