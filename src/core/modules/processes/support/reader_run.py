@@ -7,6 +7,8 @@ from core.modules.processes.models.reader import Reader
 
 SCRIPT_SECONDS = 30
 STAGE_VARIABLE = "JOURNAL_OUTPUT_STAGE"
+# a summary is printed at the end of a run: only this many last lines are searched for it, from the bottom up
+SUMMARY_LINES = 1000
 
 
 class ReaderRun:
@@ -56,10 +58,9 @@ class ReaderRun:
         if not reader.summary_pattern:
             return ""
         pattern = re.compile(reader.summary_pattern)
-        hits = [hit for line in text.splitlines() if (hit := pattern.search(line))]
-        if not hits:
+        last = next((hit for line in reversed(text.splitlines()[-SUMMARY_LINES:]) if (hit := pattern.search(line))), None)
+        if last is None:
             return ""
-        last = hits[-1]
         return " ".join(last.string[start:end] for start, end in self.outer_spans(last)) if last.groups() else last.group(0)
 
     @staticmethod
