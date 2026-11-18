@@ -10,6 +10,7 @@ use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 use App\Sharing\Enums\GatewayOutcome;
 use App\Sharing\Handlers\RecordGatewayOutcomeHandler;
+use App\Sharing\Support\GatewayOperation;
 
 /**
  * The sharing supervisor's run reports what became of an operation it claimed, under the same endpoint version and
@@ -28,4 +29,12 @@ final readonly class RecordGatewayOutcome implements Command
         public string $leaseToken,
         public GatewayOutcome $outcome,
     ) {}
+
+    /**
+     * What became of the claimed operation, reported under the run, endpoint version and lease it was claimed with.
+     */
+    public static function of(GatewayOperation $operation, GatewayOutcome $outcome): self
+    {
+        return new self($operation->runId, $operation->operationId, $operation->endpointVersion, $operation->leaseToken, $outcome);
+    }
 }

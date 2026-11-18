@@ -49,13 +49,8 @@ final class SharingServiceProvider extends ServiceProvider
         $gateways->register(NgrokGateway::KEY, NgrokGateway::class);
 
         foreach ($domains->all() as $entry) {
-            if ($entry->domain instanceof ProvidesShareRecords) {
-                $records->registerFrom($entry->domain);
-            }
-
-            if ($entry->domain instanceof ProvidesShareGateways) {
-                $gateways->registerFrom($entry->domain);
-            }
+            $records->registerFrom($entry);
+            $gateways->registerFrom($entry);
         }
 
         $this->app->booted(fn () => $this->app->make(ShareRecordRegistry::class)->checkRelations());

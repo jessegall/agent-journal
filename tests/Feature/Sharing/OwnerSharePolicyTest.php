@@ -9,22 +9,19 @@ use App\Actors\Contracts\JournalAccessPolicy;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Domains\Support\Domain;
 use App\Records\Support\RecordIdentity;
-use App\Sharing\Contracts\ProvidesShareGateways;
-use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Exceptions\SharingNotAllowed;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Support\GatewaySettings;
 use App\Sharing\Support\OwnerSharePolicy;
-use App\Sharing\Support\ShareGatewayRegistry;
 use App\Sharing\Support\ShareRecordRegistry;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Tests\Fixtures\Domains\Pamphlets\PamphletsDomain;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -34,7 +31,7 @@ use Tests\TestCase;
  */
 final class OwnerSharePolicyTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use RefreshHookDatabase, RegistersShareDomains;
 
     private string $ownerId;
 
@@ -93,7 +90,7 @@ final class OwnerSharePolicyTest extends TestCase
 
     public function test_disclosure_is_the_record_providers_answer(): void
     {
-        $this->registerShareDomain(new PamphletsDomain());
+        $this->registerShareDomain(PamphletsDomain::class);
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
         $policy = $this->app->make(SharePolicy::class);
 
@@ -104,19 +101,5 @@ final class OwnerSharePolicyTest extends TestCase
     private function configuration(): ShareGatewayConfiguration
     {
         return ShareGatewayConfiguration::configure(new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []));
-    }
-
-    /**
-     * Registers a fixture domain's share records and gateways as the sharing provider does at boot.
-     */
-    private function registerShareDomain(Domain $domain): void
-    {
-        if ($domain instanceof ProvidesShareRecords) {
-            $this->app->make(ShareRecordRegistry::class)->registerFrom($domain);
-        }
-
-        if ($domain instanceof ProvidesShareGateways) {
-            $this->app->make(ShareGatewayRegistry::class)->registerFrom($domain);
-        }
     }
 }

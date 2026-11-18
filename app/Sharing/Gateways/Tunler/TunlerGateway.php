@@ -87,7 +87,7 @@ final readonly class TunlerGateway implements ShareGateway
      */
     public function open(GatewayOperation $operation): GatewayEndpoint
     {
-        $settings = $operation->configuration->settings;
+        $settings = $operation->settings();
 
         if ($this->subdomain === null || $this->subdomain === '') {
             throw GatewayOpenFailed::notReady(self::KEY);

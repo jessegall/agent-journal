@@ -38,6 +38,7 @@ use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\Sharing\FakeShareGateway;
+use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -49,7 +50,7 @@ use Tests\TestCase;
  */
 final class CreateShareTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use RefreshHookDatabase, RegistersShareDomains;
     use StartsAgentRequests;
 
     private const string KEY = '01JD8X0G9M3QZ6V4K2CREATE01';
@@ -62,7 +63,7 @@ final class CreateShareTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(ShareRecordRegistry::class)->registerFrom(new BindersDomain());
+        $this->registerShareDomain(BindersDomain::class);
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
         $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
         $this->app->instance(BinderPublications::class, new BinderPublications());

@@ -28,6 +28,7 @@ use Tests\Fixtures\Domains\Binders\BinderPublications;
 use Tests\Fixtures\Domains\Binders\BindersDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
+use Tests\Support\Sharing\RegistersShareDomains;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -40,14 +41,14 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 10, reason: 'It waits out an installation lock held on a second PostgreSQL connection.')]
 final class CreateShareRaceTest extends TestCase
 {
-    use CommitsHookRows;
+    use CommitsHookRows, RegistersShareDomains;
     use StartsAgentRequests;
 
     private const array TABLES = ['command_receipts', 'share_audits', 'share_members', 'share_gateway_operations', 'shares', 'share_previews', 'share_gateway_endpoints', 'share_gateway_configurations', 'share_installations'];
 
     public function test_two_creations_for_the_last_slot_on_two_configurations_admit_one(): void
     {
-        $this->app->make(ShareRecordRegistry::class)->registerFrom(new BindersDomain());
+        $this->registerShareDomain(BindersDomain::class);
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
         $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
         $this->app->instance(BinderPublications::class, new BinderPublications());

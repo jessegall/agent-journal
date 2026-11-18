@@ -38,7 +38,9 @@ final readonly class ShareReadLimits
      */
     public function admitRead(string $shareId): void
     {
-        $this->hitWithin("share-read:{$shareId}", self::READS_OF_A_SHARE, ShareReadLimited::forShare(...));
+        if (! $this->admits("share-read:{$shareId}", self::READS_OF_A_SHARE)) {
+            throw ShareReadLimited::forShare();
+        }
     }
 
     /**
@@ -48,24 +50,25 @@ final readonly class ShareReadLimits
      */
     public function countInvalid(string|null $source): void
     {
-        $this->hitWithin('share-invalid:all', self::INVALID_IN_ALL, ShareReadLimited::forInvalidLinks(...));
+        $admitted = $this->admits('share-invalid:all', self::INVALID_IN_ALL)
+            && ($source === null || $this->admits('share-invalid:'.hash('sha256', $source), self::INVALID_FROM_ONE_SOURCE));
 
-        if ($source !== null) {
-            $this->hitWithin('share-invalid:'.hash('sha256', $source), self::INVALID_FROM_ONE_SOURCE, ShareReadLimited::forInvalidLinks(...));
+        if (! $admitted) {
+            throw ShareReadLimited::forInvalidLinks();
         }
     }
 
     /**
-     * @param  callable(): ShareReadLimited  $refusal
-     *
-     * @throws ShareReadLimited
+     * Counts one hit on the key when it is still under its most for this minute, and says whether it was.
      */
-    private function hitWithin(string $key, int $most, callable $refusal): void
+    private function admits(string $key, int $most): bool
     {
         if ($this->limiter->tooManyAttempts($key, $most)) {
-            throw $refusal();
+            return false;
         }
 
         $this->limiter->hit($key, self::WINDOW_SECONDS);
+
+        return true;
     }
 }

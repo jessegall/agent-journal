@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Sharing\Support;
 
-use App\Sharing\Contracts\ProvidesShareGateways;
+use App\Domains\Support\DomainEntry;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Exceptions\ShareGatewayInvalid;
 use App\Sharing\Exceptions\UnknownShareGateway;
 use App\Sharing\Models\ShareGatewayConfiguration;
+use App\Sharing\Models\ShareGatewayEndpoint;
 use Illuminate\Contracts\Container\Container;
 
 /**
@@ -47,7 +48,7 @@ final class ShareGatewayRegistry
      *
      * @throws ShareGatewayInvalid
      */
-    public function registerFrom(ProvidesShareGateways $domain): void
+    public function registerFrom(DomainEntry $domain): void
     {
         foreach ($domain->shareGateways() as $key => $gatewayClass) {
             $this->register($key, $gatewayClass);
@@ -79,6 +80,26 @@ final class ShareGatewayRegistry
     public function readinessOf(ShareGatewayConfiguration $configuration): GatewayReadiness
     {
         return $this->get($configuration->gateway_key)->readiness($configuration->toConfiguration());
+    }
+
+    /**
+     * The gateway that carries out the claimed operation.
+     *
+     * @throws UnknownShareGateway
+     */
+    public function forOperation(GatewayOperation $operation): ShareGateway
+    {
+        return $this->get($operation->settings()->gatewayKey);
+    }
+
+    /**
+     * Whether the open endpoint still answers, asked of the gateway that opened it.
+     *
+     * @throws UnknownShareGateway
+     */
+    public function healthOf(ShareGatewayEndpoint $endpoint): GatewayHealth
+    {
+        return $this->get($endpoint->gatewayKey())->health($endpoint->toGatewayEndpoint());
     }
 
     /**

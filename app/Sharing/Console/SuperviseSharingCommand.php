@@ -7,6 +7,7 @@ namespace App\Sharing\Console;
 use App\Processes\Execution\SpawnedProcess;
 use App\Sharing\Exceptions\GatewayRunStale;
 use App\Sharing\Support\SharingSupervisor;
+use App\Sharing\Support\SupervisorTimer;
 use Illuminate\Console\Command;
 use Illuminate\Container\Attributes\Config;
 
@@ -27,14 +28,13 @@ final class SuperviseSharingCommand extends Command
 
     private bool $stopping = false;
 
-    /**
-     * @param  array{health_seconds: int, expiry_seconds: int, audit_prune_seconds: int}  $timers
-     */
     public function handle(
         SharingSupervisor $supervisor,
         #[Config('sharing.listener.host')] string $host,
         #[Config('sharing.listener.port')] int $port,
-        #[Config('sharing.timers')] array $timers,
+        #[Config('sharing.timers.health_seconds')] int $healthSeconds,
+        #[Config('sharing.timers.expiry_seconds')] int $expirySeconds,
+        #[Config('sharing.timers.audit_prune_seconds')] int $auditPruneSeconds,
     ): int {
         $listener = SpawnedProcess::start([PHP_BINARY, '-q', '-S', "{$host}:{$port}", base_path('bootstrap/sharing-server.php')], [0 => ['file', '/dev/null', 'r'], 1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']], base_path(), $this->listenerEnvironment());
 
@@ -49,13 +49,21 @@ final class SuperviseSharingCommand extends Command
         pcntl_signal(SIGINT, fn () => $this->stopping = true);
         $supervisor->begin();
         $this->info("Sharing supervisor run {$supervisor->runId} on {$host}:{$port}.");
-        $due = ['health' => 0, 'expiry' => 0, 'prune' => 0];
+        $timers = [
+            new SupervisorTimer($healthSeconds, $supervisor->checkHealth(...)),
+            new SupervisorTimer($expirySeconds, $supervisor->expire(...)),
+            new SupervisorTimer($auditPruneSeconds, $supervisor->pruneAudit(...)),
+        ];
         $healthy = true;
 
         while (! $this->stopping && $healthy) {
             $healthy = ! $listener->hasEnded() && $this->workAll($supervisor);
             $now = time();
-            $due = $this->runTimers($supervisor, $timers, $due, $now);
+
+            foreach ($timers as $timer) {
+                $timer->runIfDue($now);
+            }
+
             sleep(1);
         }
 
@@ -81,33 +89,6 @@ final class SuperviseSharingCommand extends Command
         }
 
         return true;
-    }
-
-    /**
-     * Runs each timer whose time came and answers when each runs next.
-     *
-     * @param  array{health_seconds: int, expiry_seconds: int, audit_prune_seconds: int}  $timers
-     * @param  array{health: int, expiry: int, prune: int}  $due
-     * @return array{health: int, expiry: int, prune: int}
-     */
-    private function runTimers(SharingSupervisor $supervisor, array $timers, array $due, int $now): array
-    {
-        if ($now >= $due['health']) {
-            $supervisor->checkHealth();
-            $due['health'] = $now + $timers['health_seconds'];
-        }
-
-        if ($now >= $due['expiry']) {
-            $supervisor->expire();
-            $due['expiry'] = $now + $timers['expiry_seconds'];
-        }
-
-        if ($now >= $due['prune']) {
-            $supervisor->pruneAudit();
-            $due['prune'] = $now + $timers['audit_prune_seconds'];
-        }
-
-        return $due;
     }
 
     /**

@@ -18,4 +18,9 @@ final readonly class GatewayOperation
         public int $leaseEndsAt,
         public GatewayConfiguration $configuration,
     ) {}
+
+    public function settings(): GatewaySettings
+    {
+        return $this->configuration->settings;
+    }
 }
