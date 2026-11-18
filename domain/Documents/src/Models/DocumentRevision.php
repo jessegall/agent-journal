@@ -1,0 +1,96 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Documents\Models;
+
+use App\Actors\Contracts\Actor;
+use App\Actors\Enums\ActorType;
+use App\Links\Support\Linkable;
+use App\Numbers\Contracts\Numbered;
+use App\Numbers\Support\HasNumber;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
+use Domain\Documents\Exceptions\RecordImmutable;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
+
+/**
+ * One revision of a document, numbered within it: revision 1, 2, 3. A closed revision never changes.
+ *
+ * @property string $id
+ * @property string $document_id
+ * @property int $number
+ * @property string $title
+ * @property string $abstract
+ * @property string $body
+ * @property ActorType $author_type
+ * @property string $author_id
+ * @property string|null $session_id
+ * @property Carbon|null $closed_at
+ */
+#[Fillable(['document_id', 'title', 'abstract', 'body', 'author_type', 'author_id', 'session_id', 'closed_at'])]
+final class DocumentRevision extends Model implements Numbered, ReadableModel
+{
+    use BoundedReads, HasNumber, HasUlids, Linkable;
+
+    public const string LINK_TYPE = 'documents.revision';
+
+    protected function casts(): array
+    {
+        return [
+            'author_type' => ActorType::class,
+            'closed_at' => 'immutable_datetime',
+            'created_at' => 'immutable_datetime',
+            'updated_at' => 'immutable_datetime',
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        self::updating(function (self $revision): void {
+            throw RecordImmutable::for('revision');
+        });
+    }
+
+    /**
+     * @return BelongsTo<Document, $this>
+     */
+    public function document(): BelongsTo
+    {
+        return $this->belongsTo(Document::class);
+    }
+
+    /**
+     * A revision is numbered within its document.
+     */
+    public function numberHolder(): Model
+    {
+        return $this->relationLoaded('document') ? $this->document : $this->document()->sole();
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ownedBy(Builder $query, Actor $actor): void
+    {
+        $query->where('author_type', $actor->actorType()->value)->where('author_id', $actor->actorId());
+    }
+
+    /**
+     * The closed revisions, which every signed-in actor may read.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function sharedPublished(Builder $query): void
+    {
+        $query->whereNotNull('closed_at');
+    }
+}

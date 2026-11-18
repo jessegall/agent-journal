@@ -17,6 +17,7 @@ use App\Web\Providers\TypeScriptServiceProvider;
 use App\Web\Providers\WebServiceProvider;
 use Domain\Access\Providers\AccessServiceProvider;
 use Domain\Chat\Providers\ChatServiceProvider;
+use Domain\Documents\Providers\DocumentsServiceProvider;
 use Domain\Memory\Providers\MemoryServiceProvider;
 use Domain\Plans\Providers\PlansServiceProvider;
 use Domain\Processes\Providers\ProcessesServiceProvider;
@@ -39,6 +40,7 @@ return [
     ProcessesServiceProvider::class,
     TasksServiceProvider::class,
     PlansServiceProvider::class,
+    DocumentsServiceProvider::class,
     ChatServiceProvider::class,
     MemoryServiceProvider::class,
     RulesServiceProvider::class,

@@ -1,0 +1,145 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Documents\Models;
+
+use App\Actors\Contracts\Actor;
+use App\Actors\Enums\ActorType;
+use App\Links\Support\Linkable;
+use App\Numbers\Contracts\Numbered;
+use App\Numbers\Support\HasNumber;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
+use Carbon\CarbonImmutable;
+use Domain\Documents\Data\DocumentCard;
+use Domain\Documents\Data\DocumentView;
+use Domain\Documents\Enums\AttentionState;
+use Domain\Documents\Exceptions\DocumentMissing;
+use Domain\Documents\Models\Concerns\CreatedWithAttention;
+use Domain\Documents\Support\MarkdownText;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
+
+/**
+ * A document: lasting knowledge kept as numbered revisions. It keeps no copy of its text; its current text is its
+ * highest revision.
+ *
+ * @property string $id
+ * @property int $number
+ * @property ActorType $creator_type
+ * @property string $creator_id
+ * @property string|null $origin_agent_id
+ * @property string|null $origin_session_id
+ * @property AttentionState $attention
+ * @property Carbon|null $created_at
+ */
+#[Fillable(['creator_type', 'creator_id', 'origin_agent_id', 'origin_session_id'])]
+final class Document extends Model implements Numbered, ReadableModel
+{
+    use BoundedReads, CreatedWithAttention, HasNumber, HasUlids, Linkable;
+
+    public const string LINK_TYPE = 'documents.document';
+
+    protected $attributes = ['attention' => 'active'];
+
+    protected function casts(): array
+    {
+        return [
+            'creator_type' => ActorType::class,
+            'attention' => AttentionState::class,
+            'created_at' => 'immutable_datetime',
+            'updated_at' => 'immutable_datetime',
+        ];
+    }
+
+    /**
+     * A new document with the given text as its closed revision 1.
+     */
+    public static function publish(string $title, string $abstract, MarkdownText $body, Actor $author): self
+    {
+        $document = self::query()->create([
+            'creator_type' => $author->actorType(),
+            'creator_id' => $author->actorId(),
+            'origin_agent_id' => $author->actorType() === ActorType::Agent ? $author->actorId() : null,
+        ]);
+        $document->revisions()->create([
+            'title' => $title,
+            'abstract' => $abstract,
+            'body' => $body->text,
+            'author_type' => $author->actorType(),
+            'author_id' => $author->actorId(),
+            'closed_at' => CarbonImmutable::now(),
+        ]);
+
+        return $document;
+    }
+
+    public function card(): DocumentCard
+    {
+        $revision = $this->currentRevisionOrFail();
+
+        return new DocumentCard($this->id, (string) $this->number, $revision->title, $revision->abstract, $this->attention);
+    }
+
+    public function view(): DocumentView
+    {
+        $revision = $this->currentRevisionOrFail();
+
+        return new DocumentView(
+            $this->id,
+            (string) $this->number,
+            $revision->title,
+            $revision->abstract,
+            $revision->body,
+            (string) $revision->number,
+            $this->creator_type->value,
+            $this->creator_id,
+            $this->attention,
+            (string) $this->created_at?->toIso8601String(),
+        );
+    }
+
+    /**
+     * @return HasMany<DocumentRevision, $this>
+     */
+    public function revisions(): HasMany
+    {
+        return $this->hasMany(DocumentRevision::class);
+    }
+
+    /**
+     * The revision with the highest number: the document's text as it is now.
+     *
+     * @return HasOne<DocumentRevision, $this>
+     */
+    public function currentRevision(): HasOne
+    {
+        return $this->hasOne(DocumentRevision::class)->ofMany('number', 'max');
+    }
+
+    /**
+     * Every document: documents are published to every signed-in actor.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function sharedPublished(Builder $query): void
+    {
+        $query->whereHas('revisions', fn (Builder $revisions) => $revisions->whereNotNull('closed_at'));
+    }
+
+    /**
+     * The loaded current revision; every published document has one from the moment it is created.
+     */
+    private function currentRevisionOrFail(): DocumentRevision
+    {
+        return $this->currentRevision ?? throw DocumentMissing::numbered($this->number);
+    }
+}
