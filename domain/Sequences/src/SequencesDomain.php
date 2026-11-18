@@ -12,12 +12,14 @@ use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
+use App\Skills\Contracts\ProvidesSkills;
 use Domain\Sequences\Commands\StartSequence;
 use Domain\Sequences\Models\SequenceRun;
+use Domain\Sequences\Skills\SequencesSkill;
 use Domain\Sequences\States\Support\FollowingSequenceStateFactory;
 use Domain\Sequences\States\Support\FollowingSequenceStateReference;
 
-final class SequencesDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels, ProvidesStates
+final class SequencesDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels, ProvidesSkills, ProvidesStates
 {
     use HasNumberedModels, HasStates;
 
@@ -56,5 +58,10 @@ final class SequencesDomain extends Domain implements ProvidesCommands, Provides
     public function numberedModels(): array
     {
         return [NumberedModel::global(SequenceRun::class)];
+    }
+
+    public function skills(): array
+    {
+        return [SequencesSkill::class];
     }
 }

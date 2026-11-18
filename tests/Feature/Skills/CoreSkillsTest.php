@@ -10,18 +10,18 @@ use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
 /**
- * Core ships the journal, journal-profiles and journal-skills skills, written in resources/skills/core.
+ * Core ships the journal, journal-profiles, journal-skills and journal-shell skills, written in resources/skills/core.
  */
 final class CoreSkillsTest extends TestCase
 {
-    public function test_the_three_core_skills_are_listed_with_owner_core(): void
+    public function test_the_core_skills_are_listed_with_owner_core(): void
     {
         Artisan::call('skill:list', ['--json' => true]);
         $listed = json_decode(Artisan::output(), true, flags: JSON_THROW_ON_ERROR);
         $core = array_values(array_filter($listed, fn (array $skill) => $skill['owner'] === 'Core'));
 
-        $this->assertSame(['journal', 'journal-profiles', 'journal-skills'], array_column($core, 'key'));
-        $this->assertSame(['shipped', 'shipped', 'shipped'], array_column($core, 'source'));
+        $this->assertSame(['journal', 'journal-profiles', 'journal-skills', 'journal-shell'], array_column($core, 'key'));
+        $this->assertSame(['shipped', 'shipped', 'shipped', 'shipped'], array_column($core, 'source'));
     }
 
     public function test_show_prints_the_rendered_journal_skills_text(): void

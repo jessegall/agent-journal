@@ -11,7 +11,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
- * Tasks, Chat, Memory and Rules each supply their own skill under its version 5 key.
+ * Tasks, Chat, Memory, Rules, Sequences, Reminders and Access each supply their own skill under its version 5 key;
+ * Processes is Core, so Core supplies journal-shell.
  */
 final class DomainSkillsTest extends TestCase
 {
@@ -24,6 +25,10 @@ final class DomainSkillsTest extends TestCase
         yield 'Chat' => ['journal-messages', 'Chat', '## Answering'];
         yield 'Memory' => ['journal-memory', 'Memory', '## Weights'];
         yield 'Rules' => ['journal-rules', 'Rules', '## Reading rules'];
+        yield 'Sequences' => ['journal-sequences', 'Sequences', '## Following a run'];
+        yield 'Reminders' => ['journal-reminders', 'Reminders', '## In this version'];
+        yield 'Processes' => ['journal-shell', 'Core', '## Reading output'];
+        yield 'Access' => ['journal-access', 'Access', '## Agents'];
     }
 
     #[DataProvider('domainSkills')]

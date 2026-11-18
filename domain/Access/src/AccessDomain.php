@@ -10,9 +10,11 @@ use App\Domains\Concerns\HasAssignables;
 use App\Domains\Contracts\ProvidesAssignees;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
+use App\Skills\Contracts\ProvidesSkills;
+use Domain\Access\Skills\AccessSkill;
 use Domain\Access\Support\UserAssignees;
 
-final class AccessDomain extends Domain implements ProvidesAssignees
+final class AccessDomain extends Domain implements ProvidesAssignees, ProvidesSkills
 {
     use HasAssignables;
 
@@ -49,5 +51,10 @@ final class AccessDomain extends Domain implements ProvidesAssignees
     public function assignees(): array
     {
         return [new AssigneeRegistration(ActorType::User, UserAssignees::class)];
+    }
+
+    public function skills(): array
+    {
+        return [AccessSkill::class];
     }
 }
