@@ -428,6 +428,7 @@ use App\Settings\Values\GroupReference;
 use App\Settings\Values\SettingReference;
 use App\Settings\Values\SettingsChange;
 use App\Sharing\Commands\ApproveShareRequest;
+use App\Sharing\Commands\ConfigureShareGateway;
 use App\Sharing\Commands\CreateShare;
 use App\Sharing\Commands\RefreshShareScope;
 use App\Sharing\Commands\RequestShare;
@@ -895,6 +896,7 @@ final class CoreApi
                 RevokeShare::class,
                 RefreshShareScope::class,
                 RetryShare::class,
+                ConfigureShareGateway::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,

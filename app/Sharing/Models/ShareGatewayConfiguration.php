@@ -69,6 +69,30 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     }
 
     /**
+     * The gateway's next settings revision, numbered after every earlier one; earlier revisions stay for the shares
+     * that pin them. Called under the installation lock, so two revisions never take one number.
+     */
+    public static function revise(GatewaySettings $settings): self
+    {
+        $latest = self::query()->forGateway($settings->gatewayKey)->max('configuration_version');
+        $configuration = self::configure($settings);
+        $configuration->configuration_version = (is_numeric($latest) ? (int) $latest : 0) + 1;
+        $configuration->save();
+
+        return $configuration;
+    }
+
+    /**
+     * Makes this revision the one new shares use when the owner names none; no other stays the default.
+     */
+    public function makeDefault(): void
+    {
+        self::query()->markedDefault()->whereKeyNot($this->id)->update(['is_default' => false]);
+        $this->is_default = true;
+        $this->save();
+    }
+
+    /**
      * The enabled configuration of this id.
      *
      * @throws ShareGatewayUnavailable
@@ -146,6 +170,15 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     protected function enabled(Builder $query): void
     {
         $query->whereNull('disabled_at');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forGateway(Builder $query, string $gatewayKey): void
+    {
+        $query->where('gateway_key', $gatewayKey);
     }
 
     /**
