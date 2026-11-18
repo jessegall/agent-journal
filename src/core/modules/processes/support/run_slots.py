@@ -111,10 +111,13 @@ class RunSlots:
         started = self.queries.query(Process).all_environments(SLOT_RUNS_REASON).matching(Among("state", RUNNING_STATES)).matching(IsNull("queued_at")).filter(is_queue_run=True).every_row(SLOT_RUNS_REASON)
         counted = [process for process in started if not self.folder.is_count_claimed(process.id) and self.folder.count_status(process.id) is not None]
         agents = self.rows.required_index(Agent, [process.session_agent_id for process in counted])
+        # every count is claimed before any is recorded: recording can stop a run, and the stop grants slots again
+        # inside this grant, which must find no count left to claim, or each stop nests one grant deeper
+        for process in counted:
+            self.folder.mark_count_claimed(process.id)
         for process in counted:
             with self.scopes.opened(None, process.environment_id):
                 self.record_count(process, agents[process.session_agent_id], context)
-            self.folder.mark_count_claimed(process.id)
 
     def record_count(self, process: Process, agent: Agent, context: Context) -> None:
         status = self.folder.count_status(process.id)
