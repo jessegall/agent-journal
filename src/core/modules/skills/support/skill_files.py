@@ -87,8 +87,10 @@ class SkillFiles:
         return changed
 
     def place(self, project: Path) -> tuple[str, ...]:
+        is_permitted = self.projects.permitted(project)
         for skill in self.catalogue.skills():
-            self.write(project, skill)
+            if is_permitted(skill.folder) and FileAccess.is_file(Path(skill.path)):
+                self.publish(project, skill, SkillContents.read(Path(skill.path)).text, True)
         return self.providers.skill_folders()
 
     def clear(self, declared: Sequence[SkillEntry]) -> list[str]:

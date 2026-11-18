@@ -200,7 +200,9 @@ def main(argv: list[str]) -> int:
         code_version.check()
         code_fingerprint.refreshed(finder.modules())
 
-    ticker.register(TickHandler(TickInterval(seconds=CODE_CHECK_SECONDS), check_code, "code check"))
+    # an installed version's folder never changes, since an update installs a new one: only a source checkout is watched
+    if (home.folder / "versions").resolve() not in Path(__file__).resolve().parents:
+        ticker.register(TickHandler(TickInterval(seconds=CODE_CHECK_SECONDS), check_code, "code check"))
     ticker.register(TickHandler(TickInterval(seconds=CHECK_PERIOD_SECONDS), lambda container: container.get(PeriodicChecks).run(), "checks"))
     if not viewer.closed_doors.closes_service(ClosedService.TUNNEL):
         ticker.register(TickHandler(TickInterval(seconds=TUNNEL_CHECK_SECONDS), lambda container: tunnel.follow(viewer.port), "tunnel", starts_immediately=True))
