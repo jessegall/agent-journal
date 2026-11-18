@@ -28,7 +28,7 @@ class Checks(Feature):
     conduct = (ChecksConduct,)
 
     options = (ChecksOptions.REPEAT,)
-    nudges = (ChecksNudges.CHECK_FAILED, ChecksNudges.CHECK_FAILURE_REPEAT)
+    nudges = (ChecksNudges.CHECK_FAILED, ChecksNudges.CHECK_FAILURE_REPEAT, ChecksNudges.CHECK_COULD_NOT_RUN)
 
     skill = Skill("checks", 'Write and run scripts that pass or fail about the project; load it when a check is created, run or fails', """
 # Checks
@@ -38,6 +38,8 @@ the next pass clears it.
 
 - `journal check create "<title>" --command "<shell>" --every <minutes> --brief "<what it checks and what a failure means>"`;
   `--every 0` runs by hand only.
+- Exit 0 passes and any other code fails, save exit 2: the check could not run (a missing tool or right), reported once
+  and apart from a failure.
 - `journal check run <n>` runs it now and prints the tail on failure. `journal check list` shows how each last went.
 - `journal check stop <n>` force stops a running check: its command ends at once, and the run is recorded as stopped,
   neither passed nor failed, so nothing is reported and it can be run again.

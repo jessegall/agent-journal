@@ -20,7 +20,7 @@ from journal.support.process_check import ProcessCheck
 from journal.repositories.checks import Checks
 from journal.support.time_source import TimeSource
 
-FAULTS = {126: "the command cannot be run", 127: "the command is not there"}
+FAULTS = {2: "it exited 2: it could not run", 126: "the command cannot be run", 127: "the command is not there"}
 OUTPUT_CHARACTERS = 4000
 INTERVAL_SECONDS = 1.0
 

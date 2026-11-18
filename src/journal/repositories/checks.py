@@ -13,7 +13,7 @@ class Checks(Repository[Check]):
         return self.newest(self.listed_query())
 
     def verdicts(self) -> list[Check]:
-        return self.newest(self.listed_query().with_columns("title", "last_passed", "last_stopped"))
+        return self.newest(self.listed_query().with_columns("title", "last_passed", "last_stopped", "last_fault"))
 
     def listed_query(self) -> Query:
         return self.query().filter(wait_target=False, is_retired=False)

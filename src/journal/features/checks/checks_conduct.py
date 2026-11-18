@@ -9,11 +9,13 @@ from journal.features.checks.checks_options import ChecksOptions
 
 
 class ChecksConduct(Conduct):
-    """The checks feature's conduct in every state: a check that starts failing is reported to the agent with the end of what it printed, and one still failing only once the set minutes have passed since it was last reported; one a task waits on is left to the wait, and nothing is reported while the agent waits, stuck included."""
+    """The checks feature's conduct in every state: a check that could not run is reported once, apart from a failure; a check that starts failing is reported to the agent with the end of what it printed, and one still failing only once the set minutes have passed since it was last reported; one a task waits on is left to the wait, and nothing is reported while the agent waits, stuck included."""
 
     def on_check_completed(self, event: CheckCompleted, settings: Settings) -> Transition:
         if event.passed or event.wait_target or self.is_waiting():
             return self.none()
+        if event.fault:
+            return self.none() if event.prior_fault else self.none(ChecksNudges.CHECK_COULD_NOT_RUN.create(n=event.check_id, tail=CheckOutput.summary(event.output)))
         if not event.prior_failure:
             return self.none(ChecksNudges.CHECK_FAILED.create(n=event.check_id, title=event.title, tail=CheckOutput.summary(event.output)))
         minutes = settings.decimal(ChecksOptions.REPEAT)
