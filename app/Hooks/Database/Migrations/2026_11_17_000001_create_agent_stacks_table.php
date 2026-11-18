@@ -17,12 +17,14 @@ return new class extends Migration
             $table->unsignedBigInteger('version')->default(1);
             $table->jsonb('frames');
             $table->string('status', 16)->default('active');
+            $table->boolean('has_ticking_frames')->default(false);
             $table->timestampTz('closed_at')->nullable();
             $table->timestampTz('held_at')->nullable();
             $table->timestampsTz();
 
             $table->unique(['agent_id', 'session_id']);
             $table->index(['status', 'closed_at']);
+            $table->index(['status', 'has_ticking_frames']);
         });
     }
 

@@ -10,6 +10,7 @@ use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Models\AgentStackRow;
+use App\Hooks\Stack\StateTypes;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
 use App\Hooks\Support\StackTransaction;
@@ -25,6 +26,7 @@ final readonly class LaunchStacks
     public function __construct(
         private StackTransaction $transaction,
         private ServerClock $clock,
+        private StateTypes $types,
     ) {}
 
     /**
@@ -36,7 +38,7 @@ final readonly class LaunchStacks
 
         AgentStackRow::insertIfMissing($target, new FrameRecords([
             new FrameRecord((string) Str::ulid(), new StateReference($role->value, NoSubject::None), true, $role->schemaVersion(), $this->clock->now()),
-        ]));
+        ]), $this->types->ticking());
 
         AgentStackRow::lockAuthorizedFor($target)->frames->checkBottomFor($role);
     }

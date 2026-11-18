@@ -20,6 +20,7 @@ final readonly class StatePush
     public function __construct(
         private StackRestorer $restorer,
         private FrameLifecycle $lifecycle,
+        private StateTypes $types,
     ) {}
 
     public function push(StackTarget $target, AgentStackRow $row, ReadyStateType $role, StateReference $reference): void
@@ -33,6 +34,6 @@ final readonly class StatePush
         }
 
         $this->lifecycle->settle($target, $before, $after);
-        $row->saveFrames($after->records());
+        $row->saveFrames($after->records(), $this->types->ticking());
     }
 }

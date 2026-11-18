@@ -6,6 +6,7 @@ namespace App\Hooks\Storage;
 
 use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Exceptions\InvalidBottomState;
+use App\Hooks\Ticks\TickingTypes;
 
 /**
  * The frames of one stack as they are stored, bottom first.
@@ -23,6 +24,20 @@ final readonly class FrameRecords
     public function all(): array
     {
         return $this->records;
+    }
+
+    /**
+     * Whether a frame of a ticking state type is among these frames.
+     */
+    public function holdTicking(TickingTypes $ticking): bool
+    {
+        foreach ($this->records as $record) {
+            if ($ticking->contains($record->reference->typeKey)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -7,6 +7,7 @@ namespace App\Hooks\Stack;
 use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\States\Support\StateTypeRegistry;
+use App\Hooks\Ticks\TickingTypes;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**
@@ -21,6 +22,11 @@ final class StateTypes
     public function registry(): StateTypeRegistry
     {
         return $this->registry ??= $this->build();
+    }
+
+    public function ticking(): TickingTypes
+    {
+        return new TickingTypes($this->registry()->tickingTypeKeys());
     }
 
     private function build(): StateTypeRegistry

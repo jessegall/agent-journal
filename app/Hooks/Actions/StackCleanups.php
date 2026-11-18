@@ -14,6 +14,7 @@ use App\Hooks\Decisions\StateReference;
 use App\Hooks\Lifecycle\FrameLifecycle;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\StackRestorer;
+use App\Hooks\Stack\StateTypes;
 use App\Hooks\Support\StackTransaction;
 use Closure;
 
@@ -33,6 +34,7 @@ final readonly class StackCleanups implements StackCleanup
         private CurrentActor $actors,
         private StackRestorer $restorer,
         private FrameLifecycle $lifecycle,
+        private StateTypes $types,
     ) {}
 
     public function removeFinished(StackTarget $target): void
@@ -53,7 +55,7 @@ final readonly class StackCleanups implements StackCleanup
         }
 
         $this->lifecycle->settle($target, $before, $after);
-        $row->saveFrames($after->records());
+        $row->saveFrames($after->records(), $this->types->ticking());
     }
 
     public function endWork(WorkedOnStack $record, Closure $change): void
