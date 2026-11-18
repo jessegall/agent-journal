@@ -11,9 +11,9 @@ use App\Processes\Enums\TokenType;
 use App\Processes\Exceptions\ShellGrammarStopped;
 use App\Processes\Pipelines\ReadListPipeline;
 use App\Processes\Pipelines\ReadRedirectPipeline;
-use App\Processes\Stages\Grammar\CompoundReading;
-use App\Processes\Stages\Grammar\ListRead;
-use App\Processes\Stages\Grammar\NodeRead;
+use App\Processes\Values\Grammar\CompoundReading;
+use App\Processes\Values\Grammar\ListRead;
+use App\Processes\Values\Grammar\NodeRead;
 use App\Processes\Values\Redirect;
 use App\Processes\Values\SourceRange;
 

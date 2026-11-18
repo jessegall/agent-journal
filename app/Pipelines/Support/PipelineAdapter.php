@@ -8,10 +8,10 @@ use App\Pipelines\Contracts\Pipe;
 use App\Pipelines\Contracts\PipelineDefinition;
 
 /**
- * A pipe that runs another pipeline: it turns its own stage into the inner pipeline's first stage, runs that pipeline,
- * and turns the inner result and its own stage into the stage it hands on. Neither pipeline names the other's stages.
+ * A pipe that runs another pipeline: it turns its own input into the inner pipeline's input, runs that pipeline, and
+ * turns the inner output and its own input into the output it hands on. Neither pipeline names the other's values.
  *
- * @template TStage of object
+ * @template TInput of object
  * @template TResult of object
  */
 abstract readonly class PipelineAdapter implements Pipe
@@ -29,21 +29,23 @@ abstract readonly class PipelineAdapter implements Pipe
     abstract protected function produces(): string;
 
     /**
-     * @param  TStage  $stage
+     * @param  TInput  $input
      */
-    abstract protected function into(object $stage): object;
+    abstract protected function into(object $input): object;
 
     /**
      * @param  TResult  $result
-     * @param  TStage  $stage
+     * @param  TInput  $input
      */
-    abstract protected function back(object $result, object $stage): object;
+    abstract protected function back(object $result, object $input): object;
 
     /**
-     * @param  TStage  $stage
+     * @param  TInput  $input
      */
-    public function handle(object $stage): object
+    public function handle(object $input): object
     {
-        return $this->back($this->pipelines->run($this->definition(), $this->into($stage), $this->produces()), $stage);
+        $result = $this->pipelines->run($this->definition(), $this->into($input), $this->produces());
+
+        return $this->back($result, $input);
     }
 }

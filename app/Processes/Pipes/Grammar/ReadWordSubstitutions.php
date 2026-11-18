@@ -9,8 +9,8 @@ use App\Pipelines\Support\Pipelines;
 use App\Processes\Enums\WordPlace;
 use App\Processes\Exceptions\ShellGrammarStopped;
 use App\Processes\Pipelines\ReadSubstitutionsPipeline;
-use App\Processes\Stages\Grammar\SubstitutionsRead;
-use App\Processes\Stages\Grammar\WordReading;
+use App\Processes\Values\Grammar\SubstitutionsRead;
+use App\Processes\Values\Grammar\WordReading;
 
 /**
  * The substitutions of an argument or assignment are read as children of its command.

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Pipes;
 
 use App\Pipelines\Contracts\Pipe;
-use App\Processes\Stages\ReadSource;
+use App\Processes\Values\Lines\ReadSource;
 use App\Processes\Values\ShellTree;
 
 /**

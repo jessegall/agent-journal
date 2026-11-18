@@ -58,7 +58,7 @@ final readonly class OutputPolicy
                 return $hidden;
             }
             $parent = $tree->node($node->parent);
-            if ($parent->type === NodeType::Pipeline && $this->isBeforeTheLastStage($tree, $parent, $node)) {
+            if ($parent->type === NodeType::Pipeline && $this->isBeforeTheLastCommand($tree, $parent, $node)) {
                 $hidden[] = new HiddenOutput($part->node, 'output and exit status', 'the pipe', $correction);
             }
             $node = $parent;
@@ -83,10 +83,10 @@ final readonly class OutputPolicy
         return $merged && $needsApart ? ["{$stream} kept apart"] : [];
     }
 
-    private function isBeforeTheLastStage(ShellTree $tree, ShellNode $pipeline, ShellNode $stage): bool
+    private function isBeforeTheLastCommand(ShellTree $tree, ShellNode $pipeline, ShellNode $command): bool
     {
-        $stages = array_values(array_filter($tree->children($pipeline->id), fn (ShellNode $child) => ! in_array($child->type, [NodeType::Comment, NodeType::Redirect], true)));
+        $commands = array_values(array_filter($tree->children($pipeline->id), fn (ShellNode $child) => ! in_array($child->type, [NodeType::Comment, NodeType::Redirect], true)));
 
-        return $stages !== [] && $stages[array_key_last($stages)]->id !== $stage->id;
+        return $commands !== [] && $commands[array_key_last($commands)]->id !== $command->id;
     }
 }

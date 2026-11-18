@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Processes\Stages\Grammar;
+namespace App\Processes\Values\Grammar;
 
 /**
  * A word's substitutions read into their owner.

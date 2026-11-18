@@ -7,7 +7,7 @@ namespace App\Processes\Pipes;
 use App\Pipelines\Contracts\Pipe;
 use App\Processes\Enums\AnalysisLimit;
 use App\Processes\Exceptions\ShellGrammarStopped;
-use App\Processes\Stages\ShellSource;
+use App\Processes\Values\Lines\ShellSource;
 
 /**
  * Stops a source nested deeper than the analysis allows, before anything of it is read.

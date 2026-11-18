@@ -8,8 +8,8 @@ use App\Processes\Contracts\StopSignal;
 use App\Processes\Enums\OutputStream;
 
 /**
- * Moves bytes between the concurrent stages of a pipeline (doc 21 revision 6, section 53): each stage's output is
- * handed to the callback, which records it, before it is forwarded to the next stage; at most 1 MiB waits per stage,
+ * Moves bytes between the concurrent commands of a pipeline (doc 21 revision 6, section 53): each stage's output is
+ * handed to the callback, which records it, before it is forwarded to the next command; at most 1 MiB waits per stage,
  * then the producer is no longer read. When a consumer ends, its producer's pipe is closed, so the producer gets
  * SIGPIPE on its next write as it would in a shell.
  */
@@ -18,17 +18,17 @@ final class PipelinePump
     private const int WAITING_BYTES = 1_048_576;
 
     /**
-     * @param  list<SpawnedProcess>  $stages
-     * @param  callable(int, OutputStream, string): void  $onOutput  stage index, stream, bytes
+     * @param  list<SpawnedProcess>  $commands
+     * @param  callable(int, OutputStream, string): void  $onOutput  command index, stream, bytes
      */
-    public function run(array $stages, callable $onOutput, StopSignal $stop): void
+    public function run(array $commands, callable $onOutput, StopSignal $stop): void
     {
         pcntl_signal(SIGPIPE, SIG_IGN);
-        $last = count($stages) - 1;
+        $last = count($commands) - 1;
         $readers = [];
         $inputs = [];
-        foreach ($stages as $index => $stage) {
-            foreach ($stage->openPipes() as $descriptor => $pipe) {
+        foreach ($commands as $index => $command) {
+            foreach ($command->openPipes() as $descriptor => $pipe) {
                 stream_set_blocking($pipe, false);
                 if ($descriptor === 0) {
                     $inputs[$index] = $pipe;
@@ -38,7 +38,7 @@ final class PipelinePump
                 $readers["{$index}:{$descriptor}"] = $pipe;
             }
         }
-        $waiting = array_fill(0, count($stages), '');
+        $waiting = array_fill(0, count($commands), '');
         while ($readers !== [] && ! $stop->isRequested()) {
             $read = array_values(array_filter($readers, fn ($pipe, string $key) => ! str_ends_with($key, ':1') || strlen($waiting[(int) $key]) < self::WAITING_BYTES, ARRAY_FILTER_USE_BOTH));
             $write = array_values(array_filter($inputs, fn ($pipe, int $index) => $waiting[$index - 1] !== '', ARRAY_FILTER_USE_BOTH));
@@ -59,7 +59,7 @@ final class PipelinePump
                 }
             }
             foreach ($inputs as $index => $input) {
-                $consumerEnded = $stages[$index]->hasEnded();
+                $consumerEnded = $commands[$index]->hasEnded();
                 if ($waiting[$index - 1] !== '' && ! $consumerEnded) {
                     $written = @fwrite($input, $waiting[$index - 1]);
                     $waiting[$index - 1] = $written === false ? '' : substr($waiting[$index - 1], $written);

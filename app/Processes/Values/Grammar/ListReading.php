@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Processes\Stages\Grammar;
+namespace App\Processes\Values\Grammar;
 
 use App\Processes\Enums\TokenType;
-use App\Processes\Stages\Grammar\Concerns\UsesGrammarContext;
+use App\Processes\Values\Grammar\Concerns\UsesGrammarContext;
 
 /**
  * A list to read into a parent node: and-or chains split by ; & and newlines, up to a closing token or the end.

@@ -22,7 +22,7 @@ use App\Processes\Values\PlanWord;
 /**
  * Runs an execution plan step by step (doc 21 revision 6, section 53): control flow decides which parts run, builtins
  * run in the shell context, every external part is spawned from its argv in its own process group with its own record
- * and its own end, pipeline stages run at the same time, and background parts are waited for before the run ends.
+ * and its own end, the commands of a pipeline run at the same time, and background parts are waited for before the run ends.
  * A part that does not run because of an earlier result is recorded as skipped, never left out.
  */
 final readonly class Supervisor
@@ -127,29 +127,29 @@ final readonly class Supervisor
     }
 
     /**
-     * All stages start at once and the supervisor moves the bytes between them; each stage keeps its own end, and the
-     * pipeline's status is chosen from them by pipefail without being written into any stage.
+     * All commands start at once and the supervisor moves the bytes between them; each command keeps its own end, and the
+     * pipeline's status is chosen from them by pipefail without being written into any command.
      */
     private function pipeline(PlanStep $step, ExecutionContext $context, RunState $state): StepOutcome
     {
-        $stages = [];
-        foreach ($step->children as $index => $stage) {
-            if ($stage->type !== StepType::Command || $stage->children !== []) {
-                throw SupervisorRefused::stepNotRun($stage->type);
+        $commands = [];
+        foreach ($step->children as $index => $command) {
+            if ($command->type !== StepType::Command || $command->children !== []) {
+                throw SupervisorRefused::stepNotRun($command->type);
             }
-            $part = $this->queued($stage, $state);
-            $process = $this->spawn($part, $stage, [], $context, $state, $index > 0 ? ['pipe', 'r'] : ['file', '/dev/null', 'r']);
+            $part = $this->queued($command, $state);
+            $process = $this->spawn($part, $command, [], $context, $state, $index > 0 ? ['pipe', 'r'] : ['file', '/dev/null', 'r']);
             if (is_string($process)) {
                 return new StepOutcome(127, $context);
             }
-            $stages[] = [$part, $process];
+            $commands[] = [$part, $process];
         }
         $stdout = '';
-        new PipelinePump()->run(array_column($stages, 1), function (int $index, OutputStream $stream, string $bytes) use ($stages, $state, &$stdout): void {
-            $state->events->output($stages[$index][0], $stream, $bytes);
-            $stdout .= $index === array_key_last($stages) && $stream === OutputStream::Stdout && strlen($stdout) < self::KEPT_OUTPUT_BYTES ? $bytes : '';
+        new PipelinePump()->run(array_column($commands, 1), function (int $index, OutputStream $stream, string $bytes) use ($commands, $state, &$stdout): void {
+            $state->events->output($commands[$index][0], $stream, $bytes);
+            $stdout .= $index === array_key_last($commands) && $stream === OutputStream::Stdout && strlen($stdout) < self::KEPT_OUTPUT_BYTES ? $bytes : '';
         }, $state->stop);
-        $statuses = array_map(fn (array $stage) => $this->finishExternal($stage[0], $stage[1], $state), $stages);
+        $statuses = array_map(fn (array $command) => $this->finishExternal($command[0], $command[1], $state), $commands);
         $failed = array_values(array_filter($statuses, fn (int $status) => $status !== 0));
 
         return new StepOutcome((int) ($context->pipefail && $failed !== [] ? array_last($failed) : array_last($statuses)), $context, $stdout);

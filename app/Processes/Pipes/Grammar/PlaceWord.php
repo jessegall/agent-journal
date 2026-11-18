@@ -7,7 +7,7 @@ namespace App\Processes\Pipes\Grammar;
 use App\Pipelines\Contracts\Pipe;
 use App\Processes\Enums\NodeType;
 use App\Processes\Enums\WordPlace;
-use App\Processes\Stages\Grammar\WordReading;
+use App\Processes\Values\Grammar\WordReading;
 
 /**
  * A word before the first argument that starts as NAME= becomes an Assignment node of the command; any other word is

@@ -11,10 +11,10 @@ use App\Processes\Enums\ParseOutcome;
 use App\Processes\Enums\WordSegmentType;
 use App\Processes\Exceptions\ShellGrammarStopped;
 use App\Processes\Pipelines\AnalyseLinePipeline;
-use App\Processes\Stages\Grammar\SubstitutionsRead;
-use App\Processes\Stages\Grammar\SubstitutionsReading;
-use App\Processes\Stages\ReadSource;
 use App\Processes\Syntax\ShellLexer;
+use App\Processes\Values\Grammar\SubstitutionsRead;
+use App\Processes\Values\Grammar\SubstitutionsReading;
+use App\Processes\Values\Lines\ReadSource;
 use App\Processes\Values\WordSegment;
 
 /**

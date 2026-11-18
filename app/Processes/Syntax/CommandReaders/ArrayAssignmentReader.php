@@ -6,9 +6,9 @@ namespace App\Processes\Syntax\CommandReaders;
 
 use App\Processes\Contracts\CommandReader;
 use App\Processes\Enums\TokenType;
-use App\Processes\Stages\Grammar\CommandReading;
 use App\Processes\Syntax\TokenCursor;
 use App\Processes\Syntax\UnsupportedConstructs;
+use App\Processes\Values\Grammar\CommandReading;
 
 /**
  * name=( ... ) is not supported: read past it as one Unsupported node.

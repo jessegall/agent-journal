@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Processes\Stages;
+namespace App\Processes\Values\Lines;
 
 use App\Processes\Enums\ShellDialect;
 
 /**
- * The first stage of a shell analysis: the line as the agent wrote it, in its dialect.
+ * The input of a shell analysis: the line as the agent wrote it, in its dialect.
  */
 final readonly class ShellLine
 {

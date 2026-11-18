@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Processes\Stages\Grammar;
+namespace App\Processes\Values\Grammar;
 
 use App\Processes\Enums\WordPlace;
 use App\Processes\Values\Redirect;

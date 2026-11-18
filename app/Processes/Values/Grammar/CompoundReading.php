@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Processes\Stages\Grammar;
+namespace App\Processes\Values\Grammar;
 
 use App\Processes\Enums\NodeType;
 use App\Processes\Enums\TokenType;
-use App\Processes\Stages\Grammar\Concerns\UsesGrammarContext;
 use App\Processes\Syntax\TokenCursor;
+use App\Processes\Values\Grammar\Concerns\UsesGrammarContext;
 
 /**
  * A subshell or group to read: its list up to the closing token, then its trailing redirects.

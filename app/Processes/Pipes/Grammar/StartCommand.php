@@ -7,8 +7,8 @@ namespace App\Processes\Pipes\Grammar;
 use App\Pipelines\Contracts\Pipe;
 use App\Processes\Enums\TokenType;
 use App\Processes\Exceptions\ShellGrammarStopped;
-use App\Processes\Stages\Grammar\CommandReading;
 use App\Processes\Syntax\TokenCursor;
+use App\Processes\Values\Grammar\CommandReading;
 
 /**
  * Checks the time budget before a command, refuses a missing one, and steps past 'time' before a subshell or group.
