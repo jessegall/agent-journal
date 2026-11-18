@@ -1065,11 +1065,13 @@ class	StartTask
 class	StartTaskHandler
 class	StateBelowTopPushed
 class	StateReference
+class	StateReferenceFactory
 class	StateReferences
 class	StateReferencesInvalid
 class	StateSchemaUnknown
 class	StateSet
 class	StateSubjectMissing
+class	StateTypeMissing
 class	StateTypeRegistry
 class	StateTypeRepeated
 class	StateTypeUnknown
@@ -1272,6 +1274,7 @@ constant	SignedCall::PROTOCOL_HEADER
 constant	SignedCall::SIGNATURE_HEADER
 constant	StackTransaction::LOCK_NOT_AVAILABLE
 constant	StackTransaction::QUERY_CANCELED
+constant	StateReferenceFactory::TYPE_KEY
 constant	StateReferences::MAXIMUM
 constant	StoredFrames::CURRENT_VERSION
 constant	TableChecker::ROOT_MIGRATIONS
@@ -3900,6 +3903,7 @@ method	StateBelowTopPushed::for()
 method	StateFactory::frameFor()
 method	StateReference::__construct()
 method	StateReference::isSameAs()
+method	StateReferenceFactory::about()
 method	StateReferences::__construct()
 method	StateReferences::subjectIds()
 method	StateReferencesInvalid::tooMany()
@@ -3911,6 +3915,7 @@ method	StateSet::stateAt()
 method	StateSubjectMissing::for()
 method	StateType::schemaVersion()
 method	StateType::statesFor()
+method	StateTypeMissing::forClass()
 method	StateTypeRegistry::freeze()
 method	StateTypeRegistry::get()
 method	StateTypeRegistry::has()

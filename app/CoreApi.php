@@ -132,6 +132,7 @@ use App\Hooks\Contracts\StateType;
 use App\Hooks\Contracts\UserStack;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Decisions\StateReferenceFactory;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
@@ -152,6 +153,7 @@ use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Exceptions\StackTransactionRequired;
 use App\Hooks\Exceptions\StateReferencesInvalid;
 use App\Hooks\Exceptions\StateSubjectMissing;
+use App\Hooks\Exceptions\StateTypeMissing;
 use App\Hooks\Exceptions\StateTypeRepeated;
 use App\Hooks\Exceptions\StateTypesFrozen;
 use App\Hooks\Inputs\CommandPart;
@@ -430,6 +432,7 @@ final class CoreApi
                 QueryInValueRead::class,
                 LazyLoadRefused::class,
                 StateReferencesInvalid::class,
+                StateTypeMissing::class,
                 ReadLimitInvalid::class,
                 ReadLimitTooLarge::class,
                 ReadReasonMissing::class,
@@ -499,6 +502,7 @@ final class CoreApi
                 Linkable::class,
                 LinkAccess::class,
                 LinkTypeRegistry::class,
+                StateReferenceFactory::class,
                 ProvidesModelRecords::class,
                 HasNumber::class,
                 AssignableListing::class,

@@ -27,6 +27,7 @@ final class Exports
         'App\Hooks\States\AgentState',
         'App\Hooks\Models\Support\BelongsToOneAgent',
         'App\Links\Support\Linkable',
+        'App\Hooks\Decisions\StateReferenceFactory',
         'App\Assignments\Models\Support\AssignableListing',
         'App\Http\Requests\Web\Concerns\ReadsRouteNumber',
         'App\Links\Support\LinkAccess',
