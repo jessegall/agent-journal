@@ -68,7 +68,7 @@ final readonly class RunSnapshotReader
             $assessment === null ? '' : $assessment->id,
             $assessment === null ? '' : $assessment->outcome->value,
             $codes,
-            $receipt->isDefined() ? $receipt->get()->id : '',
+            $receipt->isDefined() ? $receipt->get()->receiptId : '',
         );
     }
 }

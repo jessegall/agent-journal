@@ -74,7 +74,7 @@ final readonly class ReadOutputController
         }
         $receipt = $this->receipts->forPart($part->id);
         if ($receipt->isDefined()) {
-            return "result {$receipt->get()->outcome->value}, receipt {$receipt->get()->id}";
+            return "result {$receipt->get()->outcome->value}, receipt {$receipt->get()->receiptId}";
         }
         $assessment = OutputAssessment::query()->where('part_run_id', $part->id)->latest('created_at')->first();
         if ($assessment === null) {

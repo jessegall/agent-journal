@@ -6,6 +6,7 @@ namespace App\Processes\Models;
 
 use App\Links\Support\Linkable;
 use App\Processes\Enums\AssessmentOutcome;
+use App\Processes\Values\PublishedResult;
 use App\Processes\Values\VerifiedOutput;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -101,6 +102,16 @@ final class ResultReceipt extends Model implements ReadableModel
     public function operation(): string
     {
         return PartRun::query()->whereKey($this->part_run_id)->value('operation');
+    }
+
+    /**
+     * This receipt as another domain reads it.
+     */
+    public function published(): PublishedResult
+    {
+        $publishedAt = $this->published_at->toImmutable();
+
+        return new PublishedResult($this->id, $this->process_run_id, $this->operation(), $this->outcome, $publishedAt);
     }
 
     public function isCurrent(): bool

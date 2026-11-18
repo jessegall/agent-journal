@@ -433,7 +433,6 @@ use App\Processes\Exceptions\CommandRuleConflict;
 use App\Processes\Exceptions\CommandRuleInvalid;
 use App\Processes\Exceptions\ShellNodeMissing;
 use App\Processes\Exceptions\VerificationContractInvalid;
-use App\Processes\Models\ResultReceipt;
 use App\Processes\Values\ArgumentGrammar;
 use App\Processes\Values\ClassFact;
 use App\Processes\Values\Classification;
@@ -455,6 +454,7 @@ use App\Processes\Values\PartClassification;
 use App\Processes\Values\ProgramIdentity;
 use App\Processes\Values\ProgramSpellings;
 use App\Processes\Values\ProgressPolicy;
+use App\Processes\Values\PublishedResult;
 use App\Processes\Values\ReaderReference;
 use App\Processes\Values\Redirect;
 use App\Processes\Values\RuleOrigin;
@@ -818,6 +818,8 @@ final class CoreApi
                 ProvidesCommandRules::class,
                 ProgramClassifier::class,
                 FactOrigin::class,
+                ResultReceipts::class,
+                VerificationTiming::class,
                 HookAnswerer::class,
                 HookInput::class,
                 StateRegistration::class,
@@ -1015,10 +1017,8 @@ final class CoreApi
                 JournalRouteType::class,
                 CommandRule::class,
                 RuleScope::class,
-                ResultReceipts::class,
-                VerificationTiming::class,
                 TimingVerdict::class,
-                ResultReceipt::class,
+                PublishedResult::class,
                 AssessmentOutcome::class,
                 ScopeType::class,
                 ProgramSpellings::class,

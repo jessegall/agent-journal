@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Models;
 
 use App\Actors\Support\ActorIdentity;
-use App\Processes\Models\ResultReceipt;
+use App\Processes\Values\PublishedResult;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -49,10 +49,10 @@ final class PhaseCheck extends Model implements ReadableModel
     /**
      * The phase relies on this receipt's result; recording the same receipt again changes nothing.
      */
-    public static function record(Phase $phase, ResultReceipt $receipt, ActorIdentity $recorder): self
+    public static function record(Phase $phase, PublishedResult $receipt, ActorIdentity $recorder): self
     {
-        return self::query()->firstOrCreate(['phase_id' => $phase->id, 'receipt_id' => $receipt->id], [
-            'operation' => $receipt->operation(),
+        return self::query()->firstOrCreate(['phase_id' => $phase->id, 'receipt_id' => $receipt->receiptId], [
+            'operation' => $receipt->operation,
             'outcome' => $receipt->outcome->value,
             'actor_type' => $recorder->type->value,
             'actor_id' => $recorder->id,

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Contracts;
 
-use App\Processes\Models\ResultReceipt;
+use App\Processes\Values\PublishedResult;
 use PhpOption\Option;
 
 /**
@@ -14,12 +14,12 @@ use PhpOption\Option;
 interface ResultReceipts
 {
     /**
-     * @return Option<ResultReceipt>
+     * @return Option<PublishedResult>
      */
     public function find(string $receiptId): Option;
 
     /**
-     * @return Option<ResultReceipt>
+     * @return Option<PublishedResult>
      */
     public function forPart(string $partRunId): Option;
 }

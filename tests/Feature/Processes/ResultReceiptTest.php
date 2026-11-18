@@ -48,7 +48,7 @@ final class ResultReceiptTest extends TestCase
         $receipt = ResultReceipt::query()->findOrFail($receiptId);
         $this->assertSame(AssessmentOutcome::Passed, $receipt->outcome);
         $this->assertSame($part->id, $receipt->part_run_id);
-        $this->assertSame($receiptId, $this->app->make(ResultReceipts::class)->forPart($part->id)->get()->id);
+        $this->assertSame($receiptId, $this->app->make(ResultReceipts::class)->forPart($part->id)->get()->receiptId);
     }
 
     public function test_unrecognized_bytes_give_no_receipt_and_the_invalid_evidence_is_told(): void
