@@ -72,7 +72,7 @@ trait ReadsAutoAssignmentInput
     /**
      * The input with every named record turned into its id; a name that reads as no record is refused here.
      */
-    public function input(RecordReader $records): AutoAssignmentInput
+    public function autoAssignmentInput(RecordReader $records): AutoAssignmentInput
     {
         $ids = array_map(
             fn (string $name) => $records->identify(RecordReference::parse($name))->id,

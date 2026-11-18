@@ -27,11 +27,11 @@ final class ChangeAutoAssignmentRequest extends FormRequest
 
     public function enableCommand(RecordReader $records): EnableAutoAssignment
     {
-        return new EnableAutoAssignment($this->input($records), $this->expectedRevision());
+        return new EnableAutoAssignment($this->autoAssignmentInput($records), $this->expectedRevision());
     }
 
     public function configureCommand(RecordReader $records): ConfigureAutoAssignment
     {
-        return new ConfigureAutoAssignment($this->input($records), $this->expectedRevision());
+        return new ConfigureAutoAssignment($this->autoAssignmentInput($records), $this->expectedRevision());
     }
 }
