@@ -15,12 +15,15 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
             $table->unsignedBigInteger('number');
-            $table->ulid('agent_id')->index();
+            $table->string('actor_type', 16);
+            $table->string('actor_id');
             $table->text('text');
             $table->unsignedSmallInteger('weight');
             $table->timestampsTz();
 
             $table->unique(['number_group_id', 'number']);
+
+            $table->index(['actor_type', 'actor_id']);
         });
 
         DB::statement('ALTER TABLE memories ADD CONSTRAINT memories_number_positive CHECK (number > 0)');

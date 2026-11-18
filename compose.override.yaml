@@ -48,6 +48,13 @@ services:
             - .:/app
             - /app/node_modules
 
+    ticker:
+        # engine:tick keeps its code loaded for the life of the process: after a code change run
+        # docker compose restart ticker. No file watcher restarts it.
+        volumes:
+            - .:/app
+            - /app/node_modules
+
     postgres:
         ports:
             - '127.0.0.1:${FORWARD_DB_PORT:-54702}:5432'

@@ -12,12 +12,12 @@ return new class extends Migration
     {
         Schema::create('memory_compactions', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->ulid('agent_id');
-            $table->ulid('session_id');
-            $table->string('compaction_id', 128);
+            $table->string('actor_type', 16);
+            $table->string('actor_id');
+            $table->string('compaction_key', 128);
             $table->timestampsTz();
 
-            $table->unique(['agent_id', 'session_id', 'compaction_id']);
+            $table->unique(['actor_type', 'actor_id', 'compaction_key']);
         });
     }
 

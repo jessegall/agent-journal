@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
+
 /**
  * The agent and journal session one stack belongs to.
  */
@@ -17,6 +20,14 @@ final readonly class StackTarget
     public function isSameAs(self $other): bool
     {
         return $this->agentId === $other->agentId && $this->sessionId === $other->sessionId;
+    }
+
+    /**
+     * The agent the stack belongs to, as an actor.
+     */
+    public function actorIdentity(): ActorIdentity
+    {
+        return new ActorIdentity(ActorType::Agent, $this->agentId);
     }
 
     /**

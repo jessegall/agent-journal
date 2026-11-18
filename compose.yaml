@@ -44,6 +44,22 @@ services:
             redis:
                 condition: service_healthy
 
+    # Runs the engine: one pass a second while it owns the engine's advisory lock, on its own pinned database session.
+    ticker:
+        restart: unless-stopped
+        build:
+            context: .
+            dockerfile: .docker/app/Dockerfile
+        command: ['php', 'artisan', 'engine:tick']
+        # The ticker listens on no port; the image's web server check does not apply.
+        healthcheck:
+            disable: true
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+
     postgres:
         restart: unless-stopped
         image: postgres:18-alpine

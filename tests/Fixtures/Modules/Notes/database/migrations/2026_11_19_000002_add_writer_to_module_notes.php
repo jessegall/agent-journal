@@ -11,14 +11,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('module_notes', function (Blueprint $table) {
-            $table->ulid('agent_id')->index();
+            $table->string('actor_type', 16);
+            $table->string('actor_id');
+
+            $table->index(['actor_type', 'actor_id']);
         });
     }
 
     public function down(): void
     {
         Schema::table('module_notes', function (Blueprint $table) {
-            $table->dropColumn('agent_id');
+            $table->dropColumn(['actor_type', 'actor_id']);
         });
     }
 };

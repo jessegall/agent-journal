@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Exceptions\UserActorRequired;
-use App\Agents\Exceptions\AgentContextMissing;
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Support\StackTarget;
 use Domain\Chat\Exceptions\MessageMissing;
 use Domain\Chat\Models\Message;
@@ -36,9 +37,9 @@ final class AgentVisibilityTest extends TestCase
         $this->giveWorkTo(1, 11);
         $this->giveWorkTo(2, 20);
         Message::query()->create(['body' => 'Not addressed yet']);
-        (new Memory(['text' => 'Kept by agent 1', 'weight' => 3]))->saveFor(TestIds::of(1));
-        (new Memory(['text' => 'Kept by agent 2', 'weight' => 3]))->saveFor(TestIds::of(2));
-        Task::query()->create(['title' => 'Write the walk'])->startFor(new StackTarget(TestIds::of(1), TestIds::of(10)));
+        (new Memory(['text' => 'Kept by agent 1', 'weight' => 3]))->saveFor(new ActorIdentity(ActorType::Agent, TestIds::of(1)));
+        (new Memory(['text' => 'Kept by agent 2', 'weight' => 3]))->saveFor(new ActorIdentity(ActorType::Agent, TestIds::of(2)));
+        Task::query()->create(['title' => 'Write the walk'])->start();
         Rule::query()->create(['text' => 'No phase waits on the user.']);
     }
 
@@ -47,14 +48,14 @@ final class AgentVisibilityTest extends TestCase
         $this->startRequestAs(TestIds::of(1), TestIds::of(10));
 
         $this->assertSame(['For agent 1', 'For agent 1'], Message::query()->orderBy('id')->pluck('body')->all());
-        $this->assertSame([TestIds::of(10), TestIds::of(11)], SequenceRun::query()->orderBy('id')->pluck('session_id')->all());
+        $this->assertSame(['Run of agent 1', 'Run of agent 1'], SequenceRun::query()->orderBy('id')->pluck('name')->all());
         $this->assertSame(['Kept by agent 1'], Memory::query()->pluck('text')->all());
 
         $this->app->forgetScopedInstances();
         $this->startRequestAs(TestIds::of(2), TestIds::of(20));
 
         $this->assertSame(['For agent 2'], Message::query()->pluck('body')->all());
-        $this->assertSame([TestIds::of(20)], SequenceRun::query()->pluck('session_id')->all());
+        $this->assertSame(['Run of agent 2'], SequenceRun::query()->pluck('name')->all());
         $this->assertSame(['Kept by agent 2'], Memory::query()->pluck('text')->all());
     }
 
@@ -81,10 +82,10 @@ final class AgentVisibilityTest extends TestCase
         $agentOne = new StackTarget(TestIds::of(1), TestIds::of(10));
 
         $message = $this->app->make(MessageRecords::class)->addressedTo($agentOne, $this->idOf(Message::query()->ownedBy(TestIds::of(1))));
-        $run = $this->app->make(SequenceRecords::class)->followedBy($agentOne, $this->idOf(SequenceRun::query()->ownedBy(TestIds::of(1))));
+        $run = $this->app->make(SequenceRecords::class)->followedBy($agentOne, $this->idOf(SequenceRun::query()->ownedBy(new ActorIdentity(ActorType::Agent, TestIds::of(1)))));
 
-        $this->assertSame([TestIds::of(1), TestIds::of(1)], [$message->agent_id, $run->agent_id]);
-        $this->assertSame(['Kept by agent 1'], Memory::query()->ownedBy(TestIds::of(1))->pluck('text')->all());
+        $this->assertSame([TestIds::of(1), TestIds::of(1)], [$message->agent_id, $run->actor_id]);
+        $this->assertSame(['Kept by agent 1'], Memory::query()->ownedBy(new ActorIdentity(ActorType::Agent, TestIds::of(1)))->pluck('text')->all());
     }
 
     public function test_every_agent_reads_every_task_and_rule(): void
@@ -101,7 +102,7 @@ final class AgentVisibilityTest extends TestCase
         Memory::query()->get();
         $this->app->forgetScopedInstances();
 
-        $this->expectException(AgentContextMissing::class);
+        $this->expectException(ActorContextMissing::class);
 
         Memory::query()->get();
     }
@@ -160,7 +161,7 @@ final class AgentVisibilityTest extends TestCase
     {
         $target = new StackTarget(TestIds::of($agent), TestIds::of($session));
         Message::query()->create(['body' => "For agent {$agent}"])->requireAnswerFrom($target);
-        SequenceRun::query()->create(['name' => "Run of agent {$agent}", 'steps' => ['Read the brief.']])->startFor($target);
+        SequenceRun::query()->create(['name' => "Run of agent {$agent}", 'steps' => ['Read the brief.']])->startFor($target->actorIdentity());
     }
 
     /**

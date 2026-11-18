@@ -10,6 +10,7 @@ use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Contracts\StackCleanup;
 use App\Hooks\Contracts\WorkedOnStack;
+use App\Hooks\Decisions\StateReference;
 use App\Hooks\Lifecycle\FrameLifecycle;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Stack\StackRestorer;
@@ -22,6 +23,11 @@ use Closure;
  */
 final readonly class StackCleanups implements StackCleanup
 {
+    /**
+     * The most stacks one record's work is settled on at once; a record is worked on by a handful of sessions at most.
+     */
+    private const int STACKS_PER_RECORD = 50;
+
     public function __construct(
         private StackTransaction $transaction,
         private CurrentActor $actors,
@@ -52,9 +58,32 @@ final readonly class StackCleanups implements StackCleanup
 
     public function endWork(WorkedOnStack $record, Closure $change): void
     {
-        $target = $record->workTarget();
+        $holding = $this->stacksHolding($record->workState());
         $change($record);
-        $target->forAll(fn (StackTarget $stack) => $this->removeFinished($stack));
+
+        foreach ($holding as $target) {
+            $this->removeFinished($target);
+        }
+    }
+
+    /**
+     * The stacks the actor may settle whose frames hold the state, in agent then session order: an agent its own,
+     * a user any.
+     *
+     * @return list<StackTarget>
+     */
+    private function stacksHolding(StateReference $state): array
+    {
+        $actor = $this->actors->actor();
+        $rows = AgentStackRow::query()
+            ->holdingState($state)
+            ->when($actor->actorType() === ActorType::Agent, fn ($query) => $query->where('agent_id', $actor->actorId()))
+            ->orderBy('agent_id')
+            ->orderBy('session_id')
+            ->readLimit(self::STACKS_PER_RECORD)
+            ->get();
+
+        return array_values($rows->map(fn (AgentStackRow $row) => new StackTarget($row->agent_id, $row->session_id))->all());
     }
 
     /**
