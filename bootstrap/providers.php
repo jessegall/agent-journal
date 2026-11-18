@@ -14,6 +14,7 @@ use App\Providers\AppServiceProvider;
 use App\Providers\CoreServiceProvider;
 use App\Reads\Providers\ReadsServiceProvider;
 use App\Records\Providers\RecordsServiceProvider;
+use App\Settings\Providers\SettingsServiceProvider;
 use App\Web\Providers\TypeScriptServiceProvider;
 use App\Web\Providers\WebServiceProvider;
 use Domain\Access\Providers\AccessServiceProvider;
@@ -39,6 +40,7 @@ return [
     CommandBusServiceProvider::class,
     ReadsServiceProvider::class,
     NumbersServiceProvider::class,
+    SettingsServiceProvider::class,
     ProcessesServiceProvider::class,
     TasksServiceProvider::class,
     PlansServiceProvider::class,
