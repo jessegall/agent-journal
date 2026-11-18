@@ -113,8 +113,10 @@ use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
+use App\Contracts\CommandHandler;
 use App\Contracts\CommandRefusal;
 use App\Contracts\Event;
+use App\Contracts\Listener;
 use App\Exports\Exceptions\MalformedExports;
 use App\Exports\Support\ExportBuilder;
 use App\Exports\Support\Exports;
@@ -328,6 +330,8 @@ final class CoreApi
                 CommandMiddleware::class,
                 CommandRefusal::class,
                 Event::class,
+                Listener::class,
+                CommandHandler::class,
                 ProvidesCommands::class,
                 ProvidesCommandMiddleware::class,
                 JournalAccessPolicy::class,

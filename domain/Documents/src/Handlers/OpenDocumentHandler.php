@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Handlers;
 
+use App\Contracts\CommandHandler;
 use Domain\Documents\Api\DraftReference;
 use Domain\Documents\Api\Events\DocumentOpened;
 use Domain\Documents\Commands\OpenDocument;
@@ -14,7 +15,7 @@ use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
 use Illuminate\Contracts\Events\Dispatcher;
 
-final readonly class OpenDocumentHandler
+final readonly class OpenDocumentHandler implements CommandHandler
 {
     public function __construct(private EditorContext $editors, private Dispatcher $events) {}
 

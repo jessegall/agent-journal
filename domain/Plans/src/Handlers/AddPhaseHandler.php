@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Handlers;
 
+use App\Contracts\CommandHandler;
 use Domain\Plans\Commands\AddPhase;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Models\Plan;
@@ -11,7 +12,7 @@ use Domain\Plans\Models\Plan;
 /**
  * Adds the phase under the plan's row lock, so two phases added at once get two numbers.
  */
-final readonly class AddPhaseHandler
+final readonly class AddPhaseHandler implements CommandHandler
 {
     public function handle(AddPhase $command): string
     {

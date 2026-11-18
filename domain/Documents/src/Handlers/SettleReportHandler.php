@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Contracts\CommandHandler;
 use Domain\Documents\Api\Events\RecordSettled;
 use Domain\Documents\Commands\SettleReport;
 use Domain\Documents\Exceptions\ReportMissing;
@@ -12,7 +13,7 @@ use Domain\Documents\Models\Report;
 use Domain\Documents\Support\MarkdownText;
 use Illuminate\Contracts\Events\Dispatcher;
 
-final readonly class SettleReportHandler
+final readonly class SettleReportHandler implements CommandHandler
 {
     public function __construct(private CurrentActor $actors, private Dispatcher $events) {}
 

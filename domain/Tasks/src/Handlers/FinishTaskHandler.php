@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Handlers;
 
+use App\Contracts\CommandHandler;
 use App\Hooks\Contracts\StackCleanup;
 use Domain\Tasks\Api\Events\TaskFinished;
 use Domain\Tasks\Commands\FinishTask;
@@ -13,7 +14,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 /**
  * Finishes the task under its row lock and tells listeners once the change has committed.
  */
-final readonly class FinishTaskHandler
+final readonly class FinishTaskHandler implements CommandHandler
 {
     public function __construct(
         private Dispatcher $events,

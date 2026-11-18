@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Ledger\Handlers;
 
+use App\Contracts\CommandHandler;
 use Tests\Fixtures\Modules\Ledger\Commands\OpenLedger;
 use Tests\Fixtures\Modules\Ledger\Models\Ledger;
 
-final readonly class OpenLedgerHandler
+final readonly class OpenLedgerHandler implements CommandHandler
 {
     public function handle(OpenLedger $command): string
     {

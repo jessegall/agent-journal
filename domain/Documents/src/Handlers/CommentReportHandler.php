@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Contracts\CommandHandler;
 use Domain\Documents\Api\Events\RecordCommented;
 use Domain\Documents\Commands\CommentReport;
 use Domain\Documents\Exceptions\ReportMissing;
@@ -13,7 +14,7 @@ use Domain\Documents\Models\Report;
 use Domain\Documents\Support\MarkdownText;
 use Illuminate\Contracts\Events\Dispatcher;
 
-final readonly class CommentReportHandler
+final readonly class CommentReportHandler implements CommandHandler
 {
     public function __construct(private CurrentActor $actors, private Dispatcher $events) {}
 

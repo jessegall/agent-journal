@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Modules\Notes\Handlers;
 
 use App\Bus\Exceptions\CommandRefused;
+use App\Contracts\CommandHandler;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
 
-final class RefuseNoteHandler
+final class RefuseNoteHandler implements CommandHandler
 {
     public function __construct(private readonly ConnectionInterface $database) {}
 

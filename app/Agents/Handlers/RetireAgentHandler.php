@@ -18,13 +18,14 @@ use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Storage\AssignmentStore;
 use App\Assignments\Support\AssignmentFacts;
 use App\Assignments\Support\AssignmentResult;
+use App\Contracts\CommandHandler;
 use Carbon\CarbonImmutable;
 
 /**
  * Retires an agent for good: it ends its sessions and releases its assignments, under the agent's exclusive lifecycle lock,
  * inside the command's transaction.
  */
-final readonly class RetireAgentHandler
+final readonly class RetireAgentHandler implements CommandHandler
 {
     public function __construct(
         private CurrentActor $actors,

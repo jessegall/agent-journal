@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Listeners;
 
+use App\Contracts\Listener;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Models\Phase;
 use Domain\Tasks\Api\Events\TaskBlocked;
@@ -16,7 +17,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  * Hears the Tasks facts and tells that the progress of the plan holding that task moved; a task sits in one phase at
  * most, so one plan at most hears of it.
  */
-final readonly class RaisePlanProgressChanged
+final readonly class RaisePlanProgressChanged implements Listener
 {
     public function __construct(private Dispatcher $events) {}
 

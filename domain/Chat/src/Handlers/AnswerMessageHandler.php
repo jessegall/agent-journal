@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Handlers;
 
+use App\Contracts\CommandHandler;
 use App\Hooks\Contracts\StackCleanup;
 use Domain\Chat\Api\Events\MessageAnswered;
 use Domain\Chat\Commands\AnswerMessage;
@@ -13,7 +14,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 /**
  * Marks the message answered under its row lock and tells listeners once that has committed.
  */
-final readonly class AnswerMessageHandler
+final readonly class AnswerMessageHandler implements CommandHandler
 {
     public function __construct(
         private Dispatcher $events,

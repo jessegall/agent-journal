@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Web\Listeners;
 
+use App\Contracts\Listener;
 use App\Ui\Contracts\UpdatesUserInterface;
 use App\Web\Contracts\JournalAccessPolicy;
 use App\Web\Events\PageChanged;
@@ -13,7 +14,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  * Turns each committed fact that changes what a page shows into one page change for the users Access allows. The
  * producers raise their facts after commit and know nothing of the browser.
  */
-final readonly class BroadcastPageChange
+final readonly class BroadcastPageChange implements Listener
 {
     public function __construct(
         private JournalAccessPolicy $access,
