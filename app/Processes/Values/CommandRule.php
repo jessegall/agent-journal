@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Processes\Values;
 
+use App\Processes\Declarations\VerificationContract;
 use App\Processes\Enums\CommandType;
 use App\Processes\Enums\OutputRequirement;
 use App\Processes\Enums\ScopeType;
+use App\Processes\Enums\ToolType;
 use App\Processes\Exceptions\CommandRuleInvalid;
 
 /**
@@ -19,6 +21,7 @@ final readonly class CommandRule
     /**
      * @param  list<string>  $subcommands
      * @param  list<RuleReference>  $replaces  the one rule revision this rule replaces, or none
+     * @param  list<VerificationContract>  $contracts  exactly one for a check or build, none otherwise
      */
     private function __construct(
         public string $id,
@@ -32,6 +35,7 @@ final readonly class CommandRule
         public ExecutableBinding $binding,
         public int $revision,
         public array $replaces,
+        public array $contracts = [],
     ) {}
 
     /**
@@ -52,18 +56,54 @@ final readonly class CommandRule
         if (preg_match('/^[a-z0-9-]+(\.[a-z0-9-]+)+$/', $id) !== 1) {
             throw CommandRuleInvalid::id($id);
         }
+        if ($purpose->outputRequirement() === OutputRequirement::Full) {
+            throw CommandRuleInvalid::contractMissing($id);
+        }
 
-        return new self($id, RuleScope::core(), $program, $subcommands, $arguments, $classes, $purpose, $purpose->outputRequirement(), ExecutableBinding::builtin($program->family, ['/usr/bin', '/bin', '/usr/local/bin']), 1, []);
+        return new self($id, RuleScope::core(), $program, $subcommands, $arguments, $classes, $purpose, $purpose->outputRequirement(), self::usualBinding($program), 1, []);
+    }
+
+    /**
+     * A Core test, check or build rule at revision 1, with the one contract its runs are judged by.
+     *
+     * @param  list<string>  $subcommands
+     *
+     * @throws CommandRuleInvalid
+     */
+    public static function forCheck(
+        string $id,
+        ProgramSpellings $program,
+        array $subcommands,
+        ArgumentGrammar $arguments,
+        CommandClassSet $classes,
+        CommandType $purpose,
+        ToolType $tool,
+    ): self {
+        if (preg_match('/^[a-z0-9-]+(\.[a-z0-9-]+)+$/', $id) !== 1) {
+            throw CommandRuleInvalid::id($id);
+        }
+        if ($purpose->outputRequirement() !== OutputRequirement::Full) {
+            throw CommandRuleInvalid::contractWithoutCheck($id);
+        }
+        $binding = self::usualBinding($program);
+        $contract = VerificationContract::unproven(implode(' ', [$program->family, ...$subcommands]), $tool, $binding);
+
+        return new self($id, RuleScope::core(), $program, $subcommands, $arguments, $classes, $purpose, OutputRequirement::Full, $binding, 1, [], [$contract]);
+    }
+
+    private static function usualBinding(ProgramSpellings $program): ExecutableBinding
+    {
+        return ExecutableBinding::builtin($program->family, ['/usr/bin', '/bin', '/usr/local/bin']);
     }
 
     public function ownedBy(RuleScope $scope, int $revision): self
     {
-        return new self($this->id, $scope, $this->program, $this->subcommands, $this->arguments, $this->classes, $this->purpose, $this->outputRequirement, $this->binding, $revision, $this->replaces);
+        return new self($this->id, $scope, $this->program, $this->subcommands, $this->arguments, $this->classes, $this->purpose, $this->outputRequirement, $this->binding, $revision, $this->replaces, $this->contracts);
     }
 
     public function boundTo(ExecutableBinding $binding): self
     {
-        return new self($this->id, $this->scope, $this->program, $this->subcommands, $this->arguments, $this->classes, $this->purpose, $this->outputRequirement, $binding, $this->revision, $this->replaces);
+        return new self($this->id, $this->scope, $this->program, $this->subcommands, $this->arguments, $this->classes, $this->purpose, $this->outputRequirement, $binding, $this->revision, $this->replaces, $this->contracts);
     }
 
     /**
@@ -75,7 +115,7 @@ final readonly class CommandRule
             throw CommandRuleInvalid::replacementOutsideProject($this->id);
         }
 
-        return new self($this->id, $this->scope, $this->program, $this->subcommands, $this->arguments, $this->classes, $this->purpose, $this->outputRequirement, $this->binding, $this->revision, [$replaced]);
+        return new self($this->id, $this->scope, $this->program, $this->subcommands, $this->arguments, $this->classes, $this->purpose, $this->outputRequirement, $this->binding, $this->revision, [$replaced], $this->contracts);
     }
 
     public function reference(): RuleReference

@@ -7,12 +7,15 @@ namespace Domain\Plans\Console;
 use App\Actors\Exceptions\InvalidActorText;
 use App\Actors\Support\ActorIdentity;
 use App\AgentRequests\Contracts\AgentRequestSender;
+use App\Processes\Attributes\JournalRoute;
+use App\Processes\Enums\JournalRouteType;
 use Domain\Plans\Console\Concerns\SendsPlanWorkCommands;
 use Illuminate\Console\Command;
 
 /**
  * Give a plan or phase and all its unfinished work to one holder, over a signed call as the agent of the launch.
  */
+#[JournalRoute(JournalRouteType::Write)]
 final class AssignPlanWorkCommand extends Command
 {
     use SendsPlanWorkCommands;

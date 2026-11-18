@@ -78,4 +78,19 @@ final readonly class Classification
     {
         return ! $this->isKnown() || array_any($this->parts, fn (PartClassification $part): bool => $part->purpose->needsAlias());
     }
+
+    /**
+     * The classification as plain data, as the shell corpus freezes it: whether it is known, the classes it needs and,
+     * per part, its program, purpose, unresolved reasons and contract tools.
+     *
+     * @return array{known: bool, classes: list<string>, parts: list<array{program: string|null, purpose: string, unresolved: list<string>, tools: list<string>}>}
+     */
+    public function summary(): array
+    {
+        return [
+            'known' => $this->isKnown(),
+            'classes' => array_map(fn (CommandClass $class): string => $class->value, $this->requiredClasses()->classes),
+            'parts' => array_map(fn (PartClassification $part): array => $part->summary(), $this->parts),
+        ];
+    }
 }

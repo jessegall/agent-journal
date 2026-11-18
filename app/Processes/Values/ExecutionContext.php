@@ -17,6 +17,7 @@ final readonly class ExecutionContext
      * @param  array<string, string>  $environment  the trusted environment variables
      * @param  array<string, string>  $programs  program name => resolved executable path
      * @param  list<string>  $positional  $1, $2 ... in order
+     * @param  list<string>  $aliases  the ids of the saved aliases whose bodies this command runs inside, outermost first
      */
     public function __construct(
         public ShellDialect $dialect,
@@ -25,11 +26,20 @@ final readonly class ExecutionContext
         public array $environment = [],
         public array $programs = [],
         public array $positional = [],
+        public array $aliases = [],
     ) {}
+
+    /**
+     * The key that scopes a project's saved aliases: a digest of its root folder.
+     */
+    public function projectKey(): string
+    {
+        return hash('sha256', realpath($this->projectRoot) ?: $this->projectRoot);
+    }
 
     public function withWorkingFolder(string $workingFolder): self
     {
-        return new self($this->dialect, $workingFolder, $this->projectRoot, $this->environment, $this->programs, $this->positional);
+        return new self($this->dialect, $workingFolder, $this->projectRoot, $this->environment, $this->programs, $this->positional, $this->aliases);
     }
 
     /**
@@ -37,7 +47,7 @@ final readonly class ExecutionContext
      */
     public function withEnvironment(array $environment): self
     {
-        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $environment, $this->programs, $this->positional);
+        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $environment, $this->programs, $this->positional, $this->aliases);
     }
 
     /**
@@ -45,7 +55,7 @@ final readonly class ExecutionContext
      */
     public function withPrograms(array $programs): self
     {
-        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $programs, $this->positional);
+        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $programs, $this->positional, $this->aliases);
     }
 
     /**
@@ -53,6 +63,16 @@ final readonly class ExecutionContext
      */
     public function withPositional(array $positional): self
     {
-        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $this->programs, $positional);
+        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $this->programs, $positional, $this->aliases);
+    }
+
+    /**
+     * The context inside a saved alias's body: its arguments become $1, $2 ... and its id joins the chain.
+     *
+     * @param  list<string>  $arguments
+     */
+    public function insideAlias(string $aliasId, array $arguments): self
+    {
+        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $this->programs, $arguments, [...$this->aliases, $aliasId]);
     }
 }

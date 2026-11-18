@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Domain\Documents\Console;
 
 use App\AgentRequests\Contracts\AgentRequestSender;
+use App\Processes\Attributes\JournalRoute;
+use App\Processes\Enums\JournalRouteType;
 use Domain\Documents\Console\Concerns\SendsRecordCalls;
 use Domain\Documents\Console\Support\DraftTokens;
 use Illuminate\Console\Command;
 
+#[JournalRoute(JournalRouteType::Write)]
 final class DocOpenCommand extends Command
 {
     use SendsRecordCalls;

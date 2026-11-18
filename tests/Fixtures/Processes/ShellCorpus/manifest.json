@@ -61,9 +61,10 @@
         "reference"
     ],
     "fixtures": {
-        "cases.jsonl": "2936698eb810dccda0dbbf8f1b7a95b970543d3ab77f9618103953ea35b4e01b",
+        "cases.jsonl": "ecc950d97805da4662eef4f7834e20e75160656ca04424e956f564f9dff31f56",
         "shapes.json": "a2f43dcc6ca23fe10eb93f7c732c2040e517f2576ef2b6410c4611c4c50a7be8",
-        "decisions.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        "decisions.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "class-decisions.jsonl": "58699758ca23b3047650380b1973feee94023c027d5fec49ede993dcbf9b615e"
     },
     "expectations": {
         "evidence": "mvdan.cc/sh/v3 v3.14.1 through tools/shell-oracle",

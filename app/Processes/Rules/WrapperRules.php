@@ -11,8 +11,8 @@ use App\Processes\Values\OptionGrammar;
 use App\Processes\Values\WrapperRule;
 
 /**
- * Core's wrappers (doc 21 revision 3, section 8): programs whose child command is classified as its own command.
- * Any option not listed here makes the whole part unknown.
+ * Core's wrappers (doc 21 revision 3, section 8): programs whose child command is classified as its own command, each
+ * with the options it accepts before that command.
  */
 final readonly class WrapperRules
 {

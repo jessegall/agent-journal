@@ -28,7 +28,7 @@ final readonly class RedirectFacts
      */
     public function factsOf(ShellNode $node): array
     {
-        return array_merge(...array_map(fn (Redirect $redirect): array => $this->factsOfRedirect($node, $redirect), $node->redirects));
+        return array_merge(...array_map(fn (Redirect $redirect) => $this->factsOfRedirect($node, $redirect), $node->redirects));
     }
 
     /**
@@ -62,7 +62,7 @@ final readonly class RedirectFacts
             return [new ClassFact(CommandClass::Network, $node->id, new SyntaxOrigin('redirect'), "The redirect to {$endpoint} opens a network connection.")];
         }
 
-        return array_map(fn (CommandClass $class): ClassFact => new ClassFact($class, $node->id, new SyntaxOrigin('redirect'), "The {$redirect->type->value} redirect uses {$endpoint}."), $this->classesOf($redirect->type));
+        return array_map(fn (CommandClass $class) => new ClassFact($class, $node->id, new SyntaxOrigin('redirect'), "The {$redirect->type->value} redirect uses {$endpoint}."), $this->classesOf($redirect->type));
     }
 
     /**

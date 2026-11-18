@@ -9,11 +9,14 @@ use App\Actors\Support\ActorIdentity;
 use App\AgentRequests\Console\Concerns\SendsSignedCalls;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\Assignments\Console\Concerns\ReadsAssignmentArguments;
+use App\Processes\Attributes\JournalRoute;
+use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**
  * Give one record to a holder, over a signed call as the agent of the launch.
  */
+#[JournalRoute(JournalRouteType::Write)]
 final class AssignRecordCommand extends Command
 {
     use ReadsAssignmentArguments;

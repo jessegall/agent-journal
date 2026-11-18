@@ -6,13 +6,16 @@ namespace App\Processes\Console;
 
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Exceptions\AgentRequestFailed;
+use App\Processes\Attributes\JournalRoute;
 use App\Processes\Data\ExplainedNodeData;
 use App\Processes\Data\ExplanationData;
+use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**
  * Shows how the journal reads a shell line, as a tree of its parts and redirects, without running or opening anything.
  */
+#[JournalRoute(JournalRouteType::Read)]
 final class ExplainCommandTypeCommand extends Command
 {
     protected $signature = 'command-type:explain {--line= : The shell line to explain} {--dialect=bash : bash, sh or zsh} {--json : Print the answer as JSON}';

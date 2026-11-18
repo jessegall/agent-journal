@@ -7,7 +7,7 @@ namespace App\Processes\Contracts;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\PartClassification;
 use App\Processes\Values\ProgramIdentity;
-use App\Processes\Values\ShellNode;
+use App\Processes\Values\Word;
 
 /**
  * The trusted extension seam for a program too complex for a declarative rule, such as an interpreter: it classifies
@@ -17,5 +17,8 @@ interface ProgramClassifier
 {
     public function classifies(ProgramIdentity $program): bool;
 
-    public function classify(ShellNode $part, ProgramIdentity $program, ExecutionContext $context): PartClassification;
+    /**
+     * @param  list<Word>  $words  the command's words, the program first
+     */
+    public function classify(array $words, int $node, ProgramIdentity $program, ExecutionContext $context): PartClassification;
 }

@@ -8,11 +8,14 @@ use App\Actors\Exceptions\InvalidActorText;
 use App\AgentRequests\Console\Concerns\SendsSignedCalls;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\Assignments\Console\Concerns\ReadsAssignmentArguments;
+use App\Processes\Attributes\JournalRoute;
+use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**
  * Show who holds one record and its assignment reference, over a signed call as the agent of the launch.
  */
+#[JournalRoute(JournalRouteType::Read)]
 final class ShowAssignmentCommand extends Command
 {
     use ReadsAssignmentArguments;

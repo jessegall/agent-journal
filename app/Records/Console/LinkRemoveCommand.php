@@ -6,8 +6,11 @@ namespace App\Records\Console;
 
 use App\AgentRequests\Console\Concerns\SendsSignedCalls;
 use App\AgentRequests\Contracts\AgentRequestSender;
+use App\Processes\Attributes\JournalRoute;
+use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
+#[JournalRoute(JournalRouteType::Write)]
 final class LinkRemoveCommand extends Command
 {
     use SendsSignedCalls;

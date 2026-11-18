@@ -20,6 +20,7 @@ use App\Processes\Enums\PartJoin;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Models\CommandAlias;
 use App\Processes\Support\ShellParser;
+use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\ShellCommand;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\RefreshHookDatabase;
@@ -34,7 +35,7 @@ final class CommandFactsTest extends TestCase
     {
         parent::setUp();
 
-        CommandAlias::query()->create(['name' => 'tests', 'line' => 'php artisan test']);
+        CommandAlias::record(new ExecutionContext(ShellDialect::Bash, base_path(), base_path())->projectKey(), 'tests', 'php artisan test');
     }
 
     /**

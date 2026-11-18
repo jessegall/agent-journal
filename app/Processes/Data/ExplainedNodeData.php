@@ -16,6 +16,7 @@ final class ExplainedNodeData extends Data
      * @param  list<string>  $classes  the classes this node carries itself, as values such as read
      * @param  list<string>  $provenance  where each of those classes comes from, such as rule:core.cat@1
      * @param  list<string>  $unresolved  why something about this node could not be placed
+     * @param  list<string>  $contract  the contract a test, check or build part is judged by, as readable lines
      */
     public function __construct(
         public readonly int $id,
@@ -28,5 +29,7 @@ final class ExplainedNodeData extends Data
         public readonly array $classes = [],
         public readonly array $provenance = [],
         public readonly array $unresolved = [],
+        public readonly string $purpose = '',
+        public readonly array $contract = [],
     ) {}
 }
