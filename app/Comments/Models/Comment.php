@@ -13,6 +13,7 @@ use App\Comments\Exceptions\CommentImmutable;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Records\Support\RecordIdentity;
 use App\Text\Exceptions\IncompleteTextAnchor;
 use App\Text\Support\MarkdownText;
 use App\Text\Values\TextAnchor;
@@ -131,6 +132,24 @@ final class Comment extends Model implements ReadableModel
         } catch (IncompleteTextAnchor $broken) {
             throw CommentAnchorCorrupt::for($this->id, $broken->getMessage());
         }
+    }
+
+    /**
+     * The record the comment is on.
+     */
+    public function target(): RecordIdentity
+    {
+        return new RecordIdentity($this->target_type, $this->target_id);
+    }
+
+    /**
+     * What the comment is about, in a few words: the whole record, or the version and lines of its text.
+     */
+    public function placeLabel(): string
+    {
+        $subject = $this->subject();
+
+        return $subject instanceof TextAnchor ? "on {$subject->versionLabel}, lines {$subject->firstLine}-{$subject->lastLine}" : 'on the whole record';
     }
 
     /**

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import type { DocumentPageData } from '@generated/types/documents';
-import CommentsPanel from './CommentsPanel.vue';
+import CommentsPanel from '@kit/CommentsPanel';
 import LinksPanel from './LinksPanel.vue';
 import DockToSession from './DockToSession.vue';
 import DraftEditor from './DraftEditor.vue';
