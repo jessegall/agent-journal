@@ -6,6 +6,8 @@ namespace Domain\Plans\Models;
 
 use App\Actors\Enums\ActorType;
 use App\Assignments\Contracts\Assignable;
+use App\Assignments\Exceptions\AssignmentPoolTooLarge;
+use App\Assignments\Exceptions\AssignmentPoolUnavailable;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\OrderedRecordIds;
 use App\Assignments\Support\AssignmentHolder;
@@ -24,7 +26,6 @@ use Domain\Plans\Database\Factories\PlanFactory;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\PhaseMissing;
-use Domain\Plans\Exceptions\PlanPoolUnavailable;
 use Domain\Plans\Exceptions\StartDenied;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -194,12 +195,13 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
      *
      * @return list<string>
      *
-     * @throws PlanPoolUnavailable
+     * @throws AssignmentPoolUnavailable
+     * @throws AssignmentPoolTooLarge
      */
     public function poolTaskIds(): array
     {
         if ($this->state !== PlanState::Started) {
-            throw PlanPoolUnavailable::notStarted($this->number, $this->state);
+            throw AssignmentPoolUnavailable::inState("Plan {$this->number}", $this->state->value);
         }
 
         $taskIds = PhaseTask::query()
@@ -209,7 +211,7 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
             ->all();
 
         if (count($taskIds) > OrderedRecordIds::LARGEST) {
-            throw PlanPoolUnavailable::tooLarge($this->number, OrderedRecordIds::LARGEST);
+            throw AssignmentPoolTooLarge::holding("Plan {$this->number}", OrderedRecordIds::LARGEST);
         }
 
         return array_map(strval(...), array_values($taskIds));

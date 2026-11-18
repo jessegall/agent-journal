@@ -8,6 +8,8 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Enums\PoolInputType;
+use App\Assignments\Exceptions\AssignmentPoolTooLarge;
+use App\Assignments\Exceptions\AssignmentPoolUnavailable;
 use App\Assignments\Support\PoolDefinition;
 use App\Assignments\Support\PoolMembers;
 use App\Assignments\Support\PoolReference;
@@ -16,7 +18,6 @@ use Domain\Plans\Assignments\PlanTaskPoolFactory;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\PlanPoolRefused;
-use Domain\Plans\Exceptions\PlanPoolUnavailable;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Api\TaskType;
@@ -86,7 +87,7 @@ final class PlanTaskPoolTest extends TestCase
 
             $this->assertThrows(
                 fn () => $this->open($factory, $plan),
-                PlanPoolUnavailable::class,
+                AssignmentPoolUnavailable::class,
                 "is {$state->value}",
             );
         }
@@ -97,8 +98,8 @@ final class PlanTaskPoolTest extends TestCase
         $plan = Plan::factory()->create(['state' => PlanState::Started]);
         $plan->addPhase('Build')->addTasks(array_map(fn () => (string) Str::ulid(), range(1, 1001)));
 
-        $this->expectException(PlanPoolUnavailable::class);
-        $this->expectExceptionMessage('more than 1000 tasks');
+        $this->expectException(AssignmentPoolTooLarge::class);
+        $this->expectExceptionMessage('more than 1000 records');
 
         $this->open($this->app->make(PlanTaskPoolFactory::class), $plan);
     }

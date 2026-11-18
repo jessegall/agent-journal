@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Assignments\Storage;
 
+use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
+use App\Assignments\Actions\AutoAssignmentStatuses;
 use App\Assignments\Contracts\AssignmentTransaction;
+use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Assignments\Contracts\AutoAssignmentReader;
 use App\Assignments\Contracts\AutoAssignmentWriter;
 use App\Assignments\Exceptions\AutoAssignmentMissing;
@@ -15,6 +18,7 @@ use App\Assignments\Support\AutoAssignmentChange;
 use App\Assignments\Support\AutoAssignmentInput;
 use App\Assignments\Support\AutoAssignmentKey;
 use App\Assignments\Support\AutoAssignmentPage;
+use App\Assignments\Support\AutoAssignmentStatus;
 use App\Assignments\Support\Page;
 use PhpOption\Option;
 
@@ -24,12 +28,29 @@ use PhpOption\Option;
  */
 final readonly class DatabaseAutoAssignments implements AutoAssignmentReader, AutoAssignmentWriter
 {
-    public function __construct(private AssignmentTransaction $transaction) {}
+    public function __construct(
+        private AssignmentTransaction $transaction,
+        private CurrentActor $actors,
+        private AutoAssignmentAccess $access,
+        private AutoAssignmentStatuses $statuses,
+    ) {}
 
     public function forActor(AutoAssignmentKey $key): Option
     {
         return Option::fromValue(AutoAssignment::query()->forKey($key)->first())
             ->map(fn (AutoAssignment $row) => $row->toFact());
+    }
+
+    public function status(AutoAssignmentKey $key): AutoAssignmentStatus
+    {
+        $this->access->requireRead($this->actors->actor(), $key->actor);
+        $row = AutoAssignment::query()->forKey($key)->first();
+
+        if ($row === null) {
+            return AutoAssignmentStatus::never();
+        }
+
+        return $this->statuses->of($row);
     }
 
     public function enabled(Page $page): AutoAssignmentPage

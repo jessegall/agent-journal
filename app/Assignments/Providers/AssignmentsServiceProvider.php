@@ -14,6 +14,7 @@ use App\Assignments\Contracts\AssigneeReader;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AssignmentQuery;
 use App\Assignments\Contracts\AssignmentReader;
+use App\Assignments\Contracts\AssignmentRoom;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
@@ -30,6 +31,7 @@ use App\Assignments\Storage\DatabaseAssignmentQuery;
 use App\Assignments\Storage\DatabaseAssignmentTransaction;
 use App\Assignments\Storage\DatabaseAutoAssignments;
 use App\Assignments\Support\DenyAllAutoAssignmentAccess;
+use App\Assignments\Support\SizeAssignmentRoom;
 use App\Links\Support\LinkTypeRegistry;
 use Illuminate\Support\ServiceProvider;
 
@@ -54,6 +56,7 @@ final class AssignmentsServiceProvider extends ServiceProvider
         $this->app->scoped(AssignmentQuery::class, DatabaseAssignmentQuery::class);
         $this->app->scoped(AssignedWorkReader::class, RegisteredAssignedWork::class);
         $this->app->scoped(AutoAssignmentReader::class, DatabaseAutoAssignments::class);
+        $this->app->scoped(AssignmentRoom::class, SizeAssignmentRoom::class);
         $this->app->scoped(AutoAssignmentWriter::class, DatabaseAutoAssignments::class);
     }
 

@@ -182,6 +182,8 @@ use App\Assignments\Exceptions\AssigneeTypeRepeated;
 use App\Assignments\Exceptions\AssigneeUnavailable;
 use App\Assignments\Exceptions\AssignmentConflict;
 use App\Assignments\Exceptions\AssignmentDenied;
+use App\Assignments\Exceptions\AssignmentPoolTooLarge;
+use App\Assignments\Exceptions\AssignmentPoolUnavailable;
 use App\Assignments\Exceptions\AssignmentGroupTooLarge;
 use App\Assignments\Exceptions\AssignmentProviderInvalid;
 use App\Assignments\Exceptions\AssignmentRetryExhausted;
@@ -1432,6 +1434,8 @@ final class CoreApi
                 SharingNotAllowed::class,
                 InvalidAssignmentPage::class,
                 InvalidRecordIds::class,
+                AssignmentPoolUnavailable::class,
+                AssignmentPoolTooLarge::class,
                 AssignmentGroupTooLarge::class,
                 AssigneeUnavailable::class,
                 RecordUnavailable::class,

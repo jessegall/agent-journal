@@ -8,13 +8,14 @@ use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentPool;
 use App\Assignments\Contracts\AssignmentPoolFactory;
 use App\Assignments\Enums\PoolInputType;
+use App\Assignments\Exceptions\AssignmentPoolTooLarge;
+use App\Assignments\Exceptions\AssignmentPoolUnavailable;
 use App\Assignments\Support\PoolDescription;
 use App\Assignments\Support\PoolMembers;
 use App\Assignments\Support\PoolReference;
 use App\Records\Support\RecordIdentity;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\PlanPoolRefused;
-use Domain\Plans\Exceptions\PlanPoolUnavailable;
 use Domain\Plans\Models\Plan;
 use Illuminate\Container\Attributes\Scoped;
 
@@ -29,7 +30,8 @@ final readonly class PlanTaskPoolFactory implements AssignmentPoolFactory
     /**
      * @throws PlanPoolRefused
      * @throws PlanMissing
-     * @throws PlanPoolUnavailable
+     * @throws AssignmentPoolUnavailable
+     * @throws AssignmentPoolTooLarge
      */
     public function open(PoolReference $pool, ActorIdentity $assignee): AssignmentPool
     {
