@@ -17,6 +17,8 @@ class HelperType:
     label: ClassVar[str]
     access: ClassVar[Access] = Access.READ
     separate_folder: ClassVar[bool] = False
+    # a writing type that works in the project's own checkout, as the main agent does, in the main agent's place
+    stands_in_for_main: ClassVar[bool] = False
     default_profile: ClassVar[str] = ""
     start_line: ClassVar[str] = ""
     roster: ClassVar[type[AgentRoster] | None] = None

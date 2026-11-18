@@ -119,6 +119,6 @@ class HelperTypeCheck:
         unregistered = [base for base in declaration.bases() if base not in book.entries]
         if unregistered:
             return [f"{name}: extends {unregistered[0]}, which no module registers"]
-        if book.is_helper(declaration.key) and declaration.access is Access.WRITING and not declaration.separate_folder:
-            return [f"{name}: a writing helper needs its own folder"]
+        if book.is_helper(declaration.key) and declaration.access is Access.WRITING and not declaration.separate_folder and not declaration.stands_in_for_main:
+            return [f"{name}: a writing helper needs its own folder, unless it stands in for the main agent"]
         return []

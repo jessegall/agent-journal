@@ -17,6 +17,7 @@ class Supervisor(Helper):
     key = "supervisor"
     label = "Supervisor"
     access = Access.WRITING
+    stands_in_for_main = True
     line = "Does whatever the main agent does: writes, sends and merges workers, answers their questions."
     behaviours = replace(Helper.behaviours, dispatches=True)
     commands = EVERY_COMMAND
