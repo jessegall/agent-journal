@@ -45,6 +45,7 @@ final class UserStacksTest extends TestCase
         parent::setUp();
 
         DomainEntry::fromClass(NotesDomain::class)->boot($this->app);
+        Event::listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('test.switched_off', new ClosureStateLoader(fn () => new SwitchableState(false))));
         $this->target = $this->targetOf($this->launch());
     }
 
@@ -59,7 +60,6 @@ final class UserStacksTest extends TestCase
 
     public function test_a_user_push_of_a_switched_off_conditional_state_stores_nothing(): void
     {
-        Event::listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('test.switched_off', new ClosureStateLoader(fn () => new SwitchableState(false))));
         $this->actAs(ActorContext::forUser(TestIds::of(7)));
 
         $this->app->make(StackTransaction::class)->run(

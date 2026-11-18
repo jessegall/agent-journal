@@ -25,7 +25,8 @@ use Tests\Fixtures\Domains\QuestionReminders\Models\Question;
 use Tests\Fixtures\Domains\QuestionReminders\QuestionRemindersDomain;
 use Tests\Fixtures\Domains\QuestionReminders\States\AwaitingAnswerLoader;
 use Tests\Fixtures\Domains\QuestionReminders\Support\RouteHeartbeatSource;
-use Tests\Fixtures\Hooks\Ticks\UnreadLoader;
+use Tests\Fixtures\Hooks\ClosureStateLoader;
+use Tests\Fixtures\Hooks\ScriptedState;
 use Tests\Support\BuildsTickingStacks;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\FakeMonotonicClock;
@@ -68,7 +69,7 @@ final class DueWorkOnTickTest extends TestCase
             $table->timestampTz('reminded_at', 6)->nullable();
             $table->timestampsTz();
         });
-        Event::listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('test.plain', new UnreadLoader));
+        Event::listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('test.plain', new ClosureStateLoader(fn () => ScriptedState::delegating())));
         $this->bootModules(QuestionRemindersDomain::class);
         $this->asked = CarbonImmutable::parse('2026-11-18 12:00:00');
         $this->clock = new FakeMonotonicClock;

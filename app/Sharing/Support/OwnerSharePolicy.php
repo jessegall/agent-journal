@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Sharing\Support;
 
 use App\Actors\Contracts\Actor;
+use App\Actors\Contracts\JournalAccessPolicy;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Exceptions\SharingNotAllowed;
 use App\Sharing\Exceptions\UnknownShareRecordType;
 use App\Sharing\Models\Share;
-use App\Web\Contracts\JournalAccessPolicy;
 
 /**
  * Sharing's authority: the current configured owner, as Core's journal access policy names them, manages every

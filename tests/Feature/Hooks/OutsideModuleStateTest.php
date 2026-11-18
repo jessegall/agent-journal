@@ -21,11 +21,19 @@ final class OutsideModuleStateTest extends TestCase
 
     public function test_a_module_outside_the_domains_registers_and_pushes_its_own_state(): void
     {
-        DomainEntry::fromClass(NotesDomain::class)->boot($this->app);
-
         $this->pushState(new StateReference('notes.writing', NoSubject::None));
 
         $this->assertSame(['hooks.main_ready', 'notes.writing'], $this->storedTypeKeys());
         $this->assertSame('{"decision":"block","reason":"Finish the note first."}', $this->answerStop('call-2'));
+    }
+
+    /**
+     * The module boots with the application, before the launch builds the state registry once.
+     */
+    protected function refreshApplication(): void
+    {
+        parent::refreshApplication();
+
+        DomainEntry::fromClass(NotesDomain::class)->boot($this->app);
     }
 }

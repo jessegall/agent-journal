@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Engine\Models;
 
 use App\Engine\Values\FrameSettlement;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -30,6 +31,7 @@ final class EngineFrameTime extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     /**
      * @return array<string, string>
@@ -59,7 +61,8 @@ final class EngineFrameTime extends Model implements ReadableModel
     }
 
     /**
-     * Writes every settlement in one statement, moving a frame's existing checkpoint to its new time.
+     * Writes every settlement in one statement, moving a frame's existing checkpoint to its new time. The time is bound
+     * as its microsecond text, since an upsert skips the casts and a bound date keeps only whole seconds.
      *
      * @param  list<FrameSettlement>  $settlements
      */
@@ -70,7 +73,7 @@ final class EngineFrameTime extends Model implements ReadableModel
                 'id' => (string) Str::ulid(),
                 'frame_id' => $settlement->frameId,
                 'stack_id' => $settlement->stackId,
-                'settled_at' => $settlement->settledAt(),
+                'settled_at' => $settlement->settledAt,
             ], $settlements),
             ['frame_id'],
             ['stack_id', 'settled_at'],
