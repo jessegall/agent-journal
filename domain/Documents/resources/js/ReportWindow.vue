@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { RecordPageData } from '@generated/types/documents';
 import CommentsPanel from '@kit/CommentsPanel';
+import ShareButton from '@kit/ShareButton';
 import DockToSession from './DockToSession.vue';
 import LinksPanel from './LinksPanel.vue';
 import RecordStatus from './RecordStatus.vue';
@@ -17,9 +18,11 @@ const number = props.data.label.replace('report ', '');
 <template>
     <div class="flex flex-col gap-4">
         <RecordWindow :data="data" />
+        <ShareButton :reference="data.label" />
         <RecordStatus :data="data" editing="free" :settle-action="`/documents/reports/${number}/settle`" />
         <DockToSession type="report" :number="number" :sessions="data.sessions" />
         <LinksPanel :source="data.label" :links="data.links" />
+        <p v-if="data.publiclyShared" class="text-text-3">This report is shared publicly: a comment you leave here will be public.</p>
         <CommentsPanel :comments="data.comments" :target="data.label" version="1" />
     </div>
 </template>

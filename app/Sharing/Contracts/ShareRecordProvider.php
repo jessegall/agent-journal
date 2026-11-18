@@ -28,11 +28,11 @@ interface ShareRecordProvider
     /**
      * The root's card for the owner's preview; Core adds the linked candidates it finds through links.
      */
-    public function preview(ShareSelection $selection, ShareCharges $budget): ShareRecordCard;
+    public function preview(ShareSelection $selection, ShareBudget $budget): ShareRecordCard;
 
-    public function readTargets(ShareTargetRead $read, ShareCharges $budget): ShareRecords;
+    public function readTargets(ShareTargetRead $read, ShareBudget $budget): ShareRecords;
 
-    public function readRelated(ShareRelationRead $read, ShareCharges $budget): ShareRecords;
+    public function readRelated(ShareRelationRead $read, ShareBudget $budget): ShareRecords;
 
-    public function content(ShareContentRead $read, ShareCharges $budget): SharedContent;
+    public function content(ShareContentRead $read, ShareBudget $budget): SharedContent;
 }

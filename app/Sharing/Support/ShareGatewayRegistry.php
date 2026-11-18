@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Support;
 
+use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Exceptions\ShareGatewayInvalid;
 use App\Sharing\Exceptions\UnknownShareGateway;
@@ -38,6 +39,18 @@ final class ShareGatewayRegistry
         }
 
         $this->gatewayClasses[$key] = $gatewayClass;
+    }
+
+    /**
+     * Registers every gateway the domain brings.
+     *
+     * @throws ShareGatewayInvalid
+     */
+    public function registerFrom(ProvidesShareGateways $domain): void
+    {
+        foreach ($domain->shareGateways() as $key => $gatewayClass) {
+            $this->register($key, $gatewayClass);
+        }
     }
 
     public function has(string $key): bool

@@ -14,6 +14,11 @@ use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 
+// The share-only listener runs this same entry with JOURNAL_LISTENER=sharing in its own process; no request picks it.
+if (($_SERVER['JOURNAL_LISTENER'] ?? getenv('JOURNAL_LISTENER')) === 'sharing') {
+    return require __DIR__.'/sharing.php';
+}
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',

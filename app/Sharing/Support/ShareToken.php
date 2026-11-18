@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Sharing\Support;
 
 /**
- * The bearer token of one share: 256 random bits as hexadecimal text, and the SHA-256 digest a share is found by.
+ * The bearer token of one share: 256 random bits as 43 characters of URL-safe base64, and the SHA-256 digest a share
+ * is found by.
  */
 final readonly class ShareToken
 {
     private const int RANDOM_BYTES = 32;
+
+    private const string SHAPE = '/^[A-Za-z0-9_-]{43}$/';
 
     public function __construct(
         public string $token,
@@ -18,7 +21,7 @@ final readonly class ShareToken
 
     public static function generate(): self
     {
-        $token = bin2hex(random_bytes(self::RANDOM_BYTES));
+        $token = rtrim(strtr(base64_encode(random_bytes(self::RANDOM_BYTES)), '+/', '-_'), '=');
 
         return new self($token, self::digestOf($token));
     }
@@ -26,5 +29,13 @@ final readonly class ShareToken
     public static function digestOf(string $token): string
     {
         return hash('sha256', $token);
+    }
+
+    /**
+     * Whether the text has the shape of a token at all, checked before anything is read.
+     */
+    public static function hasShape(string $text): bool
+    {
+        return preg_match(self::SHAPE, $text) === 1;
     }
 }

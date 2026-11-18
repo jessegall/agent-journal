@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Binders;
 
-use App\Domains\Concerns\HasShareRecords;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Sharing\Contracts\ProvidesShareRecords;
@@ -12,8 +11,6 @@ use App\Sharing\Support\ShareRecordRegistration;
 
 final class BindersDomain extends Domain implements ProvidesShareRecords
 {
-    use HasShareRecords;
-
     public function description(): string
     {
         return 'A fixture domain whose binders link to sheets, cards and tabs, three shareable types, and to memos, which are not linkable for sharing.';

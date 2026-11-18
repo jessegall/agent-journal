@@ -7,8 +7,6 @@ namespace App\Domains\Support;
 use App\Domains\Bootstrappers\LoadMigrations;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Concerns\HasNumberedModels;
-use App\Domains\Concerns\HasShareGateways;
-use App\Domains\Concerns\HasShareRecords;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\DomainBootstrapper;
 use App\Domains\Contracts\ProvidesAssignables;
@@ -17,8 +15,6 @@ use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Exceptions\CapabilityWithoutTrait;
 use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
-use App\Sharing\Contracts\ProvidesShareGateways;
-use App\Sharing\Contracts\ProvidesShareRecords;
 
 /**
  * One domain of the application: what it owns, the domains it may use, and the steps its boot runs. Every domain loads
@@ -35,8 +31,6 @@ abstract class Domain
         ProvidesAssignees::class => HasAssignables::class,
         ProvidesStates::class => HasStates::class,
         ProvidesNumberedModels::class => HasNumberedModels::class,
-        ProvidesShareRecords::class => HasShareRecords::class,
-        ProvidesShareGateways::class => HasShareGateways::class,
     ];
 
     abstract public function description(): string;

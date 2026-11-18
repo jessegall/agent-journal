@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Flyers;
 
-use App\Domains\Concerns\HasShareRecords;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Sharing\Contracts\ProvidesShareRecords;
@@ -16,8 +15,6 @@ use Tests\Fixtures\Domains\Pamphlets\PamphletShareProvider;
  */
 final class FlyersDomain extends Domain implements ProvidesShareRecords
 {
-    use HasShareRecords;
-
     public function description(): string
     {
         return 'A fixture domain whose shareable record names an unknown capability.';

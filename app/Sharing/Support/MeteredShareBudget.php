@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Sharing\Support;
 
 use App\Reads\Contracts\ReadMeter;
-use App\Sharing\Contracts\ShareCharges;
+use App\Sharing\Contracts\ShareBudget;
 use App\Sharing\Exceptions\ShareBudgetExceeded;
 use Carbon\CarbonImmutable;
 
@@ -13,9 +13,9 @@ use Carbon\CarbonImmutable;
  * The work one preview or public read may still do: queries counted through the read meter, time from its start,
  * loaded text and safe metadata counted apart within one loaded-bytes limit, rendered output, records, links and
  * relation hops. Every provider call of that preview or read is charged to the same budget, which lives for that one
- * preview or read only.
+ * preview or read only. Core builds it; providers see only the ShareBudget contract.
  */
-final class ShareBudget implements ShareCharges
+final class MeteredShareBudget implements ShareBudget
 {
     private const int MEBIBYTE = 1_048_576;
 

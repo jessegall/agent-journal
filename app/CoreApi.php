@@ -165,6 +165,7 @@ use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
 use App\Comments\Contracts\Commentable;
 use App\Comments\Contracts\CommentReader;
+use App\Comments\Contracts\PublicCommentReader;
 use App\Comments\Data\CommentDetails;
 use App\Comments\Data\CommentList;
 use App\Comments\Data\RecordCommentLocation;
@@ -178,6 +179,8 @@ use App\Comments\Exceptions\CommentUnavailable;
 use App\Comments\Exceptions\SubmissionKeyConflict;
 use App\Comments\Exceptions\TargetNotCommentable;
 use App\Comments\Support\HasComments;
+use App\Comments\Support\PublicComment;
+use App\Comments\Support\PublicCommentPage;
 use App\Communication\Commands\AnswerMessage;
 use App\Communication\Commands\DismissMessage;
 use App\Communication\Commands\RequireMessageAnswer;
@@ -402,10 +405,11 @@ use App\Sharing\Commands\SaveSharePreview;
 use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Contracts\Shareable;
-use App\Sharing\Contracts\ShareCharges;
+use App\Sharing\Contracts\ShareBudget;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Contracts\ShareRecordProvider;
+use App\Sharing\Contracts\ShareStatusReader;
 use App\Sharing\Enums\ShareRelationType;
 use App\Sharing\Exceptions\ShareBudgetExceeded;
 use App\Sharing\Exceptions\SharingNotAllowed;
@@ -576,19 +580,21 @@ final class CoreApi
                 SettingsDefinition::class,
                 GroupDeclaration::class,
                 ChoiceLabel::class,
+                Shareable::class,
+                ShareRecordProvider::class,
+                ShareBudget::class,
+                ShareGateway::class,
+                ProvidesShareRecords::class,
+                ProvidesShareGateways::class,
+                SharePolicy::class,
+                ShareStatusReader::class,
+                PublicCommentReader::class,
                 SettingsReader::class,
                 SettingCommands::class,
                 SettingsSnapshot::class,
                 EnabledSettingsGroup::class,
                 SettingsCatalogue::class,
                 SettingsAccessPolicy::class,
-                Shareable::class,
-                ShareRecordProvider::class,
-                ShareCharges::class,
-                ShareGateway::class,
-                ProvidesShareRecords::class,
-                ProvidesShareGateways::class,
-                SharePolicy::class,
             )
             ->values(
                 RecordCard::class,
@@ -727,6 +733,28 @@ final class CoreApi
                 EnumSetting::class,
                 Choice::class,
                 SettingType::class,
+                ShareRelationSet::class,
+                ShareRelation::class,
+                ShareRecordRegistration::class,
+                ShareSelection::class,
+                ShareCandidates::class,
+                ShareLinkedCandidate::class,
+                ShareRecordCard::class,
+                ShareRecords::class,
+                ShareTargetRead::class,
+                ShareRelationRead::class,
+                ShareContentRead::class,
+                SharedContent::class,
+                ShareSelectedTarget::class,
+                GatewayConfiguration::class,
+                GatewaySettings::class,
+                GatewayOperation::class,
+                GatewayEndpoint::class,
+                GatewayReadiness::class,
+                GatewayHealth::class,
+                ShareRelationType::class,
+                PublicComment::class,
+                PublicCommentPage::class,
                 SettingSource::class,
                 CurrentSettingsReader::class,
                 SettingTarget::class,
@@ -772,27 +800,7 @@ final class CoreApi
                 RuntimeSetting::class,
                 DriverRequestStatus::class,
                 DisabledSettingsGroup::class,
-                ShareRelationSet::class,
-                ShareRelation::class,
-                ShareRecordRegistration::class,
-                ShareSelection::class,
-                ShareCandidates::class,
                 SavedSharePreview::class,
-                ShareLinkedCandidate::class,
-                ShareRecordCard::class,
-                ShareRecords::class,
-                ShareTargetRead::class,
-                ShareRelationRead::class,
-                ShareContentRead::class,
-                SharedContent::class,
-                ShareSelectedTarget::class,
-                GatewayConfiguration::class,
-                GatewaySettings::class,
-                GatewayOperation::class,
-                GatewayEndpoint::class,
-                GatewayReadiness::class,
-                GatewayHealth::class,
-                ShareRelationType::class,
             )
             ->commands(
                 PostComment::class,

@@ -33,7 +33,7 @@ enum ActorType: string
 
     /**
      * Whether an actor of this type signed in, as a user or an agent, and so may read ordinary content; the system
-     * reads only through named queries.
+     * and the engine read only through named queries.
      */
     public function isSignedIn(): bool
     {

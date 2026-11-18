@@ -11,6 +11,7 @@ use App\Sharing\Casts\GatewaySettingsCast;
 use App\Sharing\Exceptions\ShareGatewayUnavailable;
 use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewaySettings;
+use App\Sharing\Support\SourceAddressRule;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -85,6 +86,15 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     public static function usableDefault(): self
     {
         return self::query()->enabled()->markedDefault()->first() ?? throw ShareGatewayUnavailable::noDefault();
+    }
+
+    /**
+     * How this gateway's forwarded requests name the visitor: none until a gateway's fixture proves the header it
+     * overwrites.
+     */
+    public function sourceAddressRule(): SourceAddressRule
+    {
+        return SourceAddressRule::none();
     }
 
     public function toConfiguration(): GatewayConfiguration

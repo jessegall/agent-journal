@@ -12,6 +12,8 @@ use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
+use App\Sharing\Contracts\ProvidesShareRecords;
+use App\Sharing\Support\ShareRecordRegistration;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Contracts\ProvidesSections;
@@ -104,10 +106,14 @@ use Domain\Documents\Readers\DocumentWindowReader;
 use Domain\Documents\Readers\LibraryWindowReader;
 use Domain\Documents\Readers\ReportWindowReader;
 use Domain\Documents\Readers\RevisionWindowReader;
+use Domain\Documents\Support\DocumentShareProvider;
+use Domain\Documents\Support\ReportShareProvider;
 
-final class DocumentsDomain extends Domain implements ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections
+final class DocumentsDomain extends Domain implements ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesShareRecords
 {
     use HasLinkRecords, HasNumberedModels;
+
+    private const string SHARE_LINKED_RECORD = 'share-linked-record';
 
     public function description(): string
     {
@@ -138,6 +144,17 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
     public function linkRecords(): array
     {
         return [Document::LINK_TYPE => DocumentLinkRecords::class, Report::LINK_TYPE => ReportLinkRecords::class];
+    }
+
+    /**
+     * Closed documents and filed reports may be shared, as roots or as linked records the owner selects.
+     */
+    public function shareRecords(): array
+    {
+        return [
+            new ShareRecordRegistration(Document::LINK_TYPE, Document::class, DocumentShareProvider::class, [self::SHARE_LINKED_RECORD]),
+            new ShareRecordRegistration(Report::LINK_TYPE, Report::class, ReportShareProvider::class, [self::SHARE_LINKED_RECORD]),
+        ];
     }
 
     public function commands(): array

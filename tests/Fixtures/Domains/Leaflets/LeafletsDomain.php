@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Leaflets;
 
-use App\Domains\Concerns\HasShareRecords;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Sharing\Contracts\ProvidesShareRecords;
@@ -17,8 +16,6 @@ use Tests\Fixtures\Domains\Pamphlets\PamphletShareProvider;
  */
 final class LeafletsDomain extends Domain implements ProvidesShareRecords
 {
-    use HasShareRecords;
-
     public function description(): string
     {
         return 'A fixture domain that registers a shareable alias another domain already registered.';

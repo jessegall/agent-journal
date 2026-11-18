@@ -5,20 +5,23 @@ declare(strict_types=1);
 namespace Tests\Feature\Sharing;
 
 use App\Bus\Contracts\CommandBus;
-use App\Domains\Support\DomainEntry;
+use App\Domains\Support\Domain;
 use App\Links\Models\Link;
 use App\Reads\Contracts\ReadMeter;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\SaveSharePreview;
+use App\Sharing\Contracts\ProvidesShareGateways;
+use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Exceptions\ShareGatewayUnavailable;
 use App\Sharing\Exceptions\SharePreviewRefused;
 use App\Sharing\Exceptions\SharingNotAllowed;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\SharePreview;
 use App\Sharing\Support\GatewaySettings;
+use App\Sharing\Support\MeteredShareBudget;
 use App\Sharing\Support\SavedSharePreview;
-use App\Sharing\Support\ShareBudget;
 use App\Sharing\Support\ShareCandidates;
+use App\Sharing\Support\ShareGatewayRegistry;
 use App\Sharing\Support\ShareRecordRegistry;
 use App\Sharing\Support\ShareScope;
 use App\Sharing\Support\ShareSelectedTarget;
@@ -49,7 +52,7 @@ final class SaveSharePreviewTest extends TestCase
     {
         parent::setUp();
 
-        DomainEntry::fromClass(BindersDomain::class)->boot($this->app);
+        $this->registerShareDomain(new BindersDomain);
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
         $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
         $this->publications = new BinderPublications;
@@ -125,6 +128,20 @@ final class SaveSharePreviewTest extends TestCase
 
     private function current(): ShareCandidates
     {
-        return $this->app->make(ShareScope::class)->discover($this->root, ShareBudget::forPreview($this->app->make(ReadMeter::class)));
+        return $this->app->make(ShareScope::class)->discover($this->root, MeteredShareBudget::forPreview($this->app->make(ReadMeter::class)));
+    }
+
+    /**
+     * Registers a fixture domain's share records and gateways as the sharing provider does at boot.
+     */
+    private function registerShareDomain(Domain $domain): void
+    {
+        if ($domain instanceof ProvidesShareRecords) {
+            $this->app->make(ShareRecordRegistry::class)->registerFrom($domain);
+        }
+
+        if ($domain instanceof ProvidesShareGateways) {
+            $this->app->make(ShareGatewayRegistry::class)->registerFrom($domain);
+        }
     }
 }

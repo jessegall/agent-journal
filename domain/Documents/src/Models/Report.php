@@ -13,6 +13,8 @@ use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Sharing\Contracts\Shareable;
+use App\Sharing\Support\ShareRecordCard;
 use App\Text\Contracts\TextContent;
 use App\Text\Exceptions\TextVersionUnavailable;
 use App\Text\Support\MarkdownText;
@@ -24,8 +26,10 @@ use Domain\Documents\Data\ReportView;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Models\Concerns\CreatedWithAttention;
+use Domain\Documents\Models\Concerns\MeasuresBody;
 use Domain\Documents\Models\Concerns\SearchesText;
 use Domain\Documents\Models\Concerns\Settles;
+use Domain\Documents\Models\Concerns\SharedWithComments;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -47,9 +51,9 @@ use Illuminate\Support\Carbon;
  * @property AttentionState $attention
  */
 #[Fillable(['title', 'abstract', 'body', 'creator_type', 'creator_id', 'filed_at'])]
-final class Report extends Model implements Commentable, Numbered, ReadableModel, TextContent
+final class Report extends Model implements Commentable, Numbered, ReadableModel, Shareable, TextContent
 {
-    use BoundedReads, CreatedWithAttention, HasComments, HasNumber, HasUlids, Linkable, SearchesText, Settles;
+    use BoundedReads, CreatedWithAttention, HasComments, HasNumber, HasUlids, Linkable, MeasuresBody, SearchesText, Settles, SharedWithComments;
 
     public const string LINK_TYPE = 'documents.report';
 
@@ -129,6 +133,14 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
                 throw RecordImmutable::for('report');
             }
         });
+    }
+
+    /**
+     * The report's safe card for a share; a filed report never changes, so its published version is always 1.
+     */
+    public function shareCard(): ShareRecordCard
+    {
+        return new ShareRecordCard($this->shareIdentity(), $this->title, '1');
     }
 
     /**

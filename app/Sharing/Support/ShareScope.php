@@ -31,7 +31,7 @@ final readonly class ShareScope
      * @throws RecordUnavailable when the root is missing or may not be disclosed
      * @throws ShareScopeTooLarge when finding the candidates would pass the budget
      */
-    public function discover(RecordIdentity $root, ShareBudget $budget): ShareCandidates
+    public function discover(RecordIdentity $root, MeteredShareBudget $budget): ShareCandidates
     {
         $provider = $this->records->provider($root->type);
 
@@ -55,7 +55,7 @@ final readonly class ShareScope
      *
      * @throws ShareBudgetExceeded
      */
-    private function linkedFrom(RecordIdentity $root, ShareBudget $budget): array
+    private function linkedFrom(RecordIdentity $root, MeteredShareBudget $budget): array
     {
         $found = [];
         $seen = [$this->key($root)];
@@ -96,7 +96,7 @@ final readonly class ShareScope
      *
      * @throws ShareBudgetExceeded
      */
-    private function candidatesOf(RecordIdentity $source, array $capabilities, ShareBudget $budget, array $seen): array
+    private function candidatesOf(RecordIdentity $source, array $capabilities, MeteredShareBudget $budget, array $seen): array
     {
         $links = $budget->run(fn () => Link::query()->touchingKey($source->type, $source->id)->orderBy('id')->readLimit($budget->mostLinks + 1)->get());
         $budget->chargeLinks($links->count());
@@ -137,7 +137,7 @@ final readonly class ShareScope
      *
      * @throws ShareBudgetExceeded
      */
-    private function eligibleCards(RecordIdentity $source, string $type, array $targets, ShareBudget $budget): array
+    private function eligibleCards(RecordIdentity $source, string $type, array $targets, MeteredShareBudget $budget): array
     {
         $provider = $this->records->provider($type);
         $cards = [];

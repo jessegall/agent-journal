@@ -6,6 +6,7 @@ namespace App\Sharing\Support;
 
 use App\Records\Exceptions\InvalidRecordIdentity;
 use App\Records\Support\RecordIdentity;
+use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Contracts\Shareable;
 use App\Sharing\Contracts\ShareRecordProvider;
 use App\Sharing\Exceptions\ShareRecordInvalid;
@@ -54,6 +55,18 @@ final class ShareRecordRegistry
         }
 
         $this->registrations[$alias] = $registration;
+    }
+
+    /**
+     * Registers every shareable record type the domain declares.
+     *
+     * @throws ShareRecordInvalid
+     */
+    public function registerFrom(ProvidesShareRecords $domain): void
+    {
+        foreach ($domain->shareRecords() as $registration) {
+            $this->register($registration);
+        }
     }
 
     /**

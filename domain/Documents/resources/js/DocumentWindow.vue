@@ -9,6 +9,7 @@ import RecordStatus from './RecordStatus.vue';
 import RecoverForm from './RecoverForm.vue';
 import RecordWindow from './RecordWindow.vue';
 import Button from '@kit/Button';
+import ShareButton from '@kit/ShareButton';
 import SwitchCase from '@kit/SwitchCase';
 import { formSendingHooks } from '@kit/usePageChanges';
 
@@ -25,6 +26,7 @@ function open(): void {
 <template>
     <div class="flex flex-col gap-4">
         <RecordWindow :data="data.record" />
+        <ShareButton :reference="data.record.label" />
         <RecordStatus :data="data.record" :editing="data.editing.state === 'free' ? 'free' : `held by ${data.editing.holder ?? 'you'}`" :settle-action="`/documents/docs/${data.number}/settle`" />
         <SwitchCase :value="data.editing.state">
             <template #yours>
@@ -54,6 +56,7 @@ function open(): void {
         </section>
         <DockToSession type="doc" :number="data.number" :sessions="data.record.sessions" />
         <LinksPanel :source="data.record.label" :links="data.record.links" />
+        <p v-if="data.record.publiclyShared" class="text-text-3">This document is shared publicly: a comment you leave here will be public.</p>
         <CommentsPanel :comments="data.record.comments" :target="data.record.label" :version="data.record.revision" />
     </div>
 </template>
