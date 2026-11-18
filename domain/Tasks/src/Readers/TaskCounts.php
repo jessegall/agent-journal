@@ -67,6 +67,7 @@ final readonly class TaskCounts implements TaskProgressCounter
             started: $count[TaskState::Started->value],
             blocked: $count[TaskState::Blocked->value],
             total: array_sum($count),
+            cancelled: $count[TaskState::Cancelled->value],
         );
     }
 }

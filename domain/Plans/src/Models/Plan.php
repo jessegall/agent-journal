@@ -99,6 +99,28 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
     }
 
     /**
+     * Ends the plan as done, with the note of what it achieved.
+     */
+    public function finish(string $note): void
+    {
+        $this->state = PlanState::Done;
+        $this->finish_note = $note;
+        $this->revision++;
+        $this->save();
+    }
+
+    /**
+     * Ends the plan as cancelled with its reason; its tasks and their assignments stay as they are.
+     */
+    public function cancel(string $reason): void
+    {
+        $this->state = PlanState::Cancelled;
+        $this->cancel_reason = $reason;
+        $this->revision++;
+        $this->save();
+    }
+
+    /**
      * Starts the plan; true when it changed, false when it was already started. Any other state refuses.
      */
     public function startOnce(): bool

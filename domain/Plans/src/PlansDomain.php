@@ -31,6 +31,8 @@ use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
 use Domain\Plans\Api\AssignedPlanFilters;
 use Domain\Plans\Api\AssignedPlanList;
+use Domain\Plans\Api\Events\PlanCancelled;
+use Domain\Plans\Api\Events\PlanFinished;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Plans\Api\PlanCard;
@@ -40,8 +42,10 @@ use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Api\PlanSelection;
 use Domain\Plans\Commands\AddPhase;
 use Domain\Plans\Commands\AddPhaseTasks;
+use Domain\Plans\Commands\CancelPlan;
 use Domain\Plans\Commands\CreatePlan;
 use Domain\Plans\Commands\EditPlan;
+use Domain\Plans\Commands\FinishPlan;
 use Domain\Plans\Commands\AssignPlanWork;
 use Domain\Plans\Commands\ReassignPlanWork;
 use Domain\Plans\Commands\StartPlan;
@@ -92,7 +96,7 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function exports(): Exports
     {
         return Exports::make()
-            ->events(PlanStarted::class, PlanProgressChanged::class)
+            ->events(PlanStarted::class, PlanFinished::class, PlanCancelled::class, PlanProgressChanged::class)
             ->contracts(PlanReader::class)
             ->values(
                 PlanFilters::class,
@@ -144,7 +148,7 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
      */
     public function commands(): array
     {
-        return [StartPlan::class, CreatePlan::class, EditPlan::class, AddPhase::class, AddPhaseTasks::class, AssignPlanWork::class, ReassignPlanWork::class, UnassignPlanWork::class];
+        return [StartPlan::class, CreatePlan::class, EditPlan::class, FinishPlan::class, CancelPlan::class, AddPhase::class, AddPhaseTasks::class, AssignPlanWork::class, ReassignPlanWork::class, UnassignPlanWork::class];
     }
 
     public function pages(): array

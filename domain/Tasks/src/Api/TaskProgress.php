@@ -14,6 +14,7 @@ final readonly class TaskProgress
         public int $started,
         public int $blocked,
         public int $total,
+        public int $cancelled = 0,
     ) {}
 
     public static function none(): self
@@ -23,7 +24,15 @@ final readonly class TaskProgress
 
     public function plus(self $other): self
     {
-        return new self($this->done + $other->done, $this->started + $other->started, $this->blocked + $other->blocked, $this->total + $other->total);
+        return new self($this->done + $other->done, $this->started + $other->started, $this->blocked + $other->blocked, $this->total + $other->total, $this->cancelled + $other->cancelled);
+    }
+
+    /**
+     * How many tasks still need work: neither finished nor cancelled.
+     */
+    public function unfinished(): int
+    {
+        return $this->total - $this->done - $this->cancelled;
     }
 
     public function isComplete(): bool
