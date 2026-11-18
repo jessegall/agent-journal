@@ -17,4 +17,12 @@ final readonly class ShareLinkedCandidate
         public RecordIdentity $source,
         public string $linkId,
     ) {}
+
+    /**
+     * This candidate as the owner selected it: the record, its link and its published version.
+     */
+    public function toSelectedTarget(): ShareSelectedTarget
+    {
+        return new ShareSelectedTarget($this->card->record, $this->linkId, $this->card->publicationVersion);
+    }
 }

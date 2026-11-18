@@ -17,4 +17,28 @@ final readonly class ShareCandidates
         public ShareRecordCard $root,
         public array $linked,
     ) {}
+
+    /**
+     * The linked candidates with these record ids, as selected targets; an id that is no current candidate is left out.
+     *
+     * @param  list<string>  $recordIds
+     * @return list<ShareSelectedTarget>
+     */
+    public function selection(array $recordIds): array
+    {
+        $chosen = array_filter($this->linked, fn (ShareLinkedCandidate $candidate) => in_array($candidate->card->record->id, $recordIds, true));
+
+        return array_values(array_map(fn (ShareLinkedCandidate $candidate) => $candidate->toSelectedTarget(), $chosen));
+    }
+
+    /**
+     * The linked candidates whose link the share does not approve yet, for the owner to see as not shared yet.
+     *
+     * @param  list<string>  $approvedLinkIds
+     * @return list<ShareLinkedCandidate>
+     */
+    public function notSharedYet(array $approvedLinkIds): array
+    {
+        return array_values(array_filter($this->linked, fn (ShareLinkedCandidate $candidate) => ! in_array($candidate->linkId, $approvedLinkIds, true)));
+    }
 }

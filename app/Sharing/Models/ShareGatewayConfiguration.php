@@ -8,10 +8,13 @@ use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Sharing\Casts\GatewaySettingsCast;
+use App\Sharing\Exceptions\ShareGatewayUnavailable;
 use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewaySettings;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -64,8 +67,46 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
         return $configuration;
     }
 
+    /**
+     * The enabled configuration of this id.
+     *
+     * @throws ShareGatewayUnavailable
+     */
+    public static function usable(string $configurationId): self
+    {
+        return self::query()->enabled()->whereKey($configurationId)->first() ?? throw ShareGatewayUnavailable::forConfiguration($configurationId);
+    }
+
+    /**
+     * The enabled configuration the owner made the default.
+     *
+     * @throws ShareGatewayUnavailable
+     */
+    public static function usableDefault(): self
+    {
+        return self::query()->enabled()->markedDefault()->first() ?? throw ShareGatewayUnavailable::noDefault();
+    }
+
     public function toConfiguration(): GatewayConfiguration
     {
         return new GatewayConfiguration($this->id, $this->configuration_version, $this->settings);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function enabled(Builder $query): void
+    {
+        $query->whereNull('disabled_at');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function markedDefault(Builder $query): void
+    {
+        $query->where('is_default', true);
     }
 }

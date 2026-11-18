@@ -17,13 +17,16 @@ use App\Sharing\Support\ShareTargetRead;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Reads every batch of binder pages with one query; the record with the ineligible id is never disclosable.
+ * Reads every batch of binder pages with one query, at the versions BinderPublications names; the record with the
+ * ineligible id is never disclosable.
  */
 final class BinderShareProvider implements ShareRecordProvider
 {
     public const string INELIGIBLE_ID = '01jd8x0g9m3qz6v4k200000999';
 
     public const string HIDDEN_ROOT_ID = '01jd8x0g9m3qz6v4k200000998';
+
+    public function __construct(private readonly BinderPublications $publications) {}
 
     public function mayDisclose(RecordIdentity $record): bool
     {
@@ -56,6 +59,6 @@ final class BinderShareProvider implements ShareRecordProvider
 
     private function card(RecordIdentity $record): ShareRecordCard
     {
-        return new ShareRecordCard($record, "Page {$record->id}", '1');
+        return new ShareRecordCard($record, "Page {$record->id}", $this->publications->versionOf($record->id));
     }
 }

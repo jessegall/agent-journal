@@ -11,6 +11,8 @@ use App\Records\Support\RecordIdentity;
 use App\Sharing\Support\ShareSelectedTarget;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -67,8 +69,57 @@ final class ShareMember extends Model implements ReadableModel
         return $member;
     }
 
+    /**
+     * Ends the approval of every member that rested on one of these links; a link made again has a new id, so only a
+     * refreshed scope approves it.
+     *
+     * @param  list<string>  $linkIds
+     */
+    public static function invalidateForLinks(array $linkIds, CarbonImmutable $at): void
+    {
+        self::query()->onLinks($linkIds)->stillApproved()->update(['invalidated_at' => $at]);
+    }
+
+    /**
+     * The links the share's current scope still approves.
+     *
+     * @return list<string>
+     */
+    public static function approvedLinkIdsOf(Share $share): array
+    {
+        return array_values(array_map(strval(...), self::query()->ofScope($share)->stillApproved()->readAll('a share scope holds at most the preview limit of members')->pluck('link_id')->all()));
+    }
+
     public function target(): RecordIdentity
     {
         return new RecordIdentity($this->target_type, $this->target_id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @param  list<string>  $linkIds
+     */
+    #[Scope]
+    protected function onLinks(Builder $query, array $linkIds): void
+    {
+        $query->whereIn('link_id', $linkIds);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function stillApproved(Builder $query): void
+    {
+        $query->whereNull('invalidated_at');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofScope(Builder $query, Share $share): void
+    {
+        $query->where('share_id', $share->id)->where('scope_version', $share->scope_version);
     }
 }

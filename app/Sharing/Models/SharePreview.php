@@ -9,6 +9,8 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Casts\SelectedTargetsCast;
+use App\Sharing\Exceptions\SharePreviewRefused;
+use App\Sharing\Support\ShareCandidates;
 use App\Sharing\Support\ShareSelectedTarget;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -80,6 +82,41 @@ final class SharePreview extends Model implements ReadableModel
     public function root(): RecordIdentity
     {
         return new RecordIdentity($this->root_type, $this->root_id);
+    }
+
+    /**
+     * Uses the preview once for its owner, after checking it still shows what the owner confirmed: the same selected
+     * links and publication versions among the current candidates, under the same configuration version.
+     *
+     * @return list<ShareSelectedTarget>
+     *
+     * @throws SharePreviewRefused
+     */
+    public function consumeFor(string $ownerUserId, string $checksum, ShareCandidates $current): array
+    {
+        if ($this->owner_user_id !== $ownerUserId) {
+            throw SharePreviewRefused::foreign($this->id);
+        }
+
+        if ($this->consumed_at !== null) {
+            throw SharePreviewRefused::consumed($this->id);
+        }
+
+        if (! $this->expires_at->isFuture()) {
+            throw SharePreviewRefused::expired($this->id);
+        }
+
+        $selection = $current->selection(array_map(fn (ShareSelectedTarget $target) => $target->record->id, $this->selection));
+        $configuration = ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id);
+
+        if ($checksum !== $this->checksum || self::checksumOf($ownerUserId, $this->root(), $selection, $configuration) !== $this->checksum) {
+            throw SharePreviewRefused::changed($this->id);
+        }
+
+        $this->consumed_at = CarbonImmutable::now();
+        $this->save();
+
+        return $selection;
     }
 
     /**

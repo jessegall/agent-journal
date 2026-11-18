@@ -225,6 +225,7 @@ use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Hooks\States\AgentState;
 use App\Http\Data\Assignments\RecordHolderData;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
+use App\Links\Events\LinksRemoved;
 use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Support\Linkable;
 use App\Links\Support\LinkAccess;
@@ -305,9 +306,9 @@ use App\Sharing\Support\GatewayReadiness;
 use App\Sharing\Support\GatewaySettings;
 use App\Sharing\Support\ShareBudget;
 use App\Sharing\Support\ShareCandidates;
-use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\SharedContent;
+use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareRecordRegistration;
 use App\Sharing\Support\ShareRecords;
@@ -380,7 +381,7 @@ final class CoreApi
     public static function exports(): Exports
     {
         return Exports::make()
-            ->events(CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class)
+            ->events(LinksRemoved::class, CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class)
             ->contracts(
                 RecordProvider::class,
                 RecordReader::class,
