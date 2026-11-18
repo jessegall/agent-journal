@@ -15,14 +15,4 @@ final readonly class AgentClientSettings
         public string $token,
         public int $timeoutSeconds = 10,
     ) {}
-
-    /**
-     * @param  array<string, string>  $environment
-     */
-    public static function fromEnvironment(array $environment): self
-    {
-        $launch = new LaunchEnvironment($environment);
-
-        return new self(rtrim($launch->value('JOURNAL_URL'), '/'), $launch->value('JOURNAL_LAUNCH_TOKEN'));
-    }
 }

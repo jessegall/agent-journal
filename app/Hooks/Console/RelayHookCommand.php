@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Console;
 
+use App\AgentRequests\Contracts\LaunchCredentialSource;
 use App\Hooks\Enums\HookProgram;
 use App\Hooks\Relay\HookRelay;
 use App\Hooks\Relay\RelaySettings;
@@ -18,9 +19,9 @@ final class RelayHookCommand extends Command
 
     protected $description = 'Pass one native hook call to the journal and print its reply';
 
-    public function handle(HookRelay $relay): int
+    public function handle(HookRelay $relay, LaunchCredentialSource $credentials): int
     {
-        $settings = RelaySettings::fromEnvironment(array_filter(getenv(), 'is_string'));
+        $settings = RelaySettings::forLaunch($credentials->forThisLaunch(), array_filter(getenv(), 'is_string'));
         $reply = $relay->relay(HookProgram::from((string) $this->argument('program')), (string) stream_get_contents(STDIN), $settings);
 
         $this->output->write($reply->stdout);
