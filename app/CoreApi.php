@@ -155,16 +155,25 @@ use App\Assignments\Commands\ReassignRecord;
 use App\Assignments\Commands\UnassignRecord;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Contracts\AssignableProvider;
+use App\Assignments\Contracts\AssignedWorkProvider;
+use App\Assignments\Contracts\AssignedWorkReader;
 use App\Assignments\Contracts\Assignee;
 use App\Assignments\Contracts\AssigneeProvider;
 use App\Assignments\Contracts\AssigneeReader;
+use App\Assignments\Contracts\AssignmentPool;
+use App\Assignments\Contracts\AssignmentPoolFactory;
+use App\Assignments\Contracts\AssignmentQuery;
 use App\Assignments\Contracts\AssignmentReader;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
+use App\Assignments\Contracts\AutoAssigner;
+use App\Assignments\Contracts\ProvidesAutoAssignments;
 use App\Assignments\Contracts\RecordVisibility;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Enums\AssignmentReason;
+use App\Assignments\Enums\PoolInputType;
+use App\Assignments\Enums\PoolMembersType;
 use App\Assignments\Events\AssignmentsChanged;
 use App\Assignments\Exceptions\AssigneeTypeRepeated;
 use App\Assignments\Exceptions\AssigneeUnavailable;
@@ -179,6 +188,7 @@ use App\Assignments\Exceptions\AssignmentTypeRepeated;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
+use App\Assignments\Exceptions\InvalidRecordIds;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\AssigneeList;
 use App\Assignments\Support\AssigneeName;
@@ -193,8 +203,14 @@ use App\Assignments\Support\AssignmentOutcome;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
 use App\Assignments\Support\AssignmentSet;
+use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\NumberedPage;
+use App\Assignments\Support\OrderedRecordIds;
 use App\Assignments\Support\Page;
+use App\Assignments\Support\PoolDefinition;
+use App\Assignments\Support\PoolDescription;
+use App\Assignments\Support\PoolMembers;
+use App\Assignments\Support\PoolReference;
 use App\Assignments\Support\RecordIds;
 use App\Bus\Attributes\AllowsEngine;
 use App\Bus\Attributes\HandledBy;
@@ -825,6 +841,13 @@ final class CoreApi
                 AssigneeReader::class,
                 AssignmentWriter::class,
                 AssignmentTransaction::class,
+                AutoAssigner::class,
+                AssignmentPool::class,
+                AssignmentPoolFactory::class,
+                AssignedWorkReader::class,
+                AssignedWorkProvider::class,
+                AssignmentQuery::class,
+                ProvidesAutoAssignments::class,
                 CurrentUserReader::class,
                 Command::class,
                 CommandBus::class,
@@ -1074,6 +1097,14 @@ final class CoreApi
                 AssignmentChange::class,
                 Page::class,
                 RecordIds::class,
+                OrderedRecordIds::class,
+                PoolReference::class,
+                PoolMembers::class,
+                PoolMembersType::class,
+                PoolDefinition::class,
+                PoolDescription::class,
+                PoolInputType::class,
+                AutoAssignerDefinition::class,
                 AssigneeList::class,
                 AssigneeName::class,
                 AssignmentReason::class,
@@ -1373,6 +1404,7 @@ final class CoreApi
                 InvalidRecordIdentity::class,
                 SharingNotAllowed::class,
                 InvalidAssignmentPage::class,
+                InvalidRecordIds::class,
                 AssignmentGroupTooLarge::class,
                 AssigneeUnavailable::class,
                 RecordUnavailable::class,
