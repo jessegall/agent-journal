@@ -24,11 +24,15 @@ final readonly class Frame
         public AgentState $state,
         private bool $bottom = false,
         public int $schemaVersion = 1,
+        private bool $typeEnabled = true,
     ) {}
 
-    public static function restored(FrameRecord $record, AgentState $state): self
+    /**
+     * The frame of a stored record, with whether its state type runs now as the restore found it.
+     */
+    public static function restored(FrameRecord $record, AgentState $state, bool $typeEnabled = true): self
     {
-        return new self($record->id, $record->reference, $state, $record->isBottom, $record->schemaVersion);
+        return new self($record->id, $record->reference, $state, $record->isBottom, $record->schemaVersion, $typeEnabled);
     }
 
     public function isBottom(): bool
@@ -52,11 +56,12 @@ final readonly class Frame
     }
 
     /**
-     * Whether the state may run now: always, unless it is a conditional state that answers it is switched off.
+     * Whether the state may run now: not while its state type is switched off, and otherwise always, unless it is a
+     * conditional state that answers it is switched off.
      */
     public function isEnabled(): bool
     {
-        return ! $this->state instanceof ConditionalState || $this->state->isEnabled();
+        return $this->typeEnabled && (! $this->state instanceof ConditionalState || $this->state->isEnabled());
     }
 
     public function enter(StackTarget $target): void

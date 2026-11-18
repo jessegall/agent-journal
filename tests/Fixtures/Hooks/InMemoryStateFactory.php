@@ -28,4 +28,9 @@ final class InMemoryStateFactory implements StateFactory
 
         return new Frame("pushed-{$this->pushedCount}", $reference, ($this->types[$reference->typeKey])($reference));
     }
+
+    public function isEnabled(StateReference $reference): bool
+    {
+        return true;
+    }
 }

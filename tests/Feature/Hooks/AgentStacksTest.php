@@ -27,6 +27,9 @@ use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
 use App\Hooks\Storage\StoredFrames;
 use App\Hooks\Support\StackTransaction;
+use App\Settings\Models\SettingsRecord;
+use App\Settings\Storage\EncodedToggle;
+use App\Settings\Storage\EncodedValue;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskWorkState;
 use Illuminate\Database\Connection;
@@ -195,6 +198,18 @@ final class AgentStacksTest extends TestCase
         $this->transaction()->run(fn () => $this->stacks()->push($this->target, $this->task(42)));
 
         $this->assertSame(['hooks.main_ready', 'test.tasks'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
+    }
+
+    public function test_a_push_of_a_switched_off_domains_state_is_declined_without_reading_its_subject(): void
+    {
+        SettingsRecord::insertIfAbsent('Core');
+        $core = SettingsRecord::sharedRuntimeForOwner('Core')->get();
+        $core->revise($core->document->withToggle(new EncodedToggle('domain_plans', EncodedValue::of(false))));
+        $this->createStack();
+
+        $this->transaction()->run(fn () => $this->stacks()->push($this->target, new StateReference('plans.working', new SubjectReference(TestIds::of(999), 1))));
+
+        $this->assertSame(['hooks.main_ready'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
     }
 
     public function test_a_push_onto_another_agents_stack_is_refused(): void

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack;
 
+use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
@@ -21,5 +22,12 @@ final readonly class RegisteredStateFactory implements StateFactory
         $type = $this->types->registry()->get($reference->typeKey);
 
         return new Frame((string) Str::ulid(), $reference, $type->statesFor(new StateReferences([$reference]))->stateAt(0), schemaVersion: $type->schemaVersion());
+    }
+
+    public function isEnabled(StateReference $reference): bool
+    {
+        $type = $this->types->registry()->get($reference->typeKey);
+
+        return ! $type instanceof ConditionalStateType || $type->isEnabled();
     }
 }

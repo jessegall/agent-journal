@@ -77,6 +77,10 @@ final readonly class AgentStack
             }
         }
 
+        if (! $this->factory->isEnabled($reference)) {
+            return $this;
+        }
+
         $frame = $this->factory->frameFor($reference);
 
         if (! $frame->isEnabled()) {
