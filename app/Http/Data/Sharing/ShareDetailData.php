@@ -11,7 +11,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One share as its owner manages it: state, root, gateway, deadline and approved members, and which of reveal, retry
- * and revoke apply now. Its address is never part of it; the reveal action answers with it alone.
+ * and revoke apply now, with a page of its audit and its gateway's runtime state. Its address is never part of it; the
+ * reveal action answers with it alone.
  */
 #[TypeScript]
 final class ShareDetailData extends Data
@@ -33,5 +34,7 @@ final class ShareDetailData extends Data
         public readonly bool $mayReveal,
         public readonly bool $mayRetry,
         public readonly bool $mayRevoke,
+        public readonly ShareAuditData $audit,
+        public readonly ShareRuntimeData $runtime,
     ) {}
 }

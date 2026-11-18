@@ -8,7 +8,7 @@ use App\Http\Requests\Sharing\Concerns\ReadsShareId;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * The share the owner's detail page or reveal action names.
+ * The share the owner's detail page or reveal action names, and the audit page the detail shows.
  */
 final class ShareRequest extends FormRequest
 {
@@ -19,6 +19,14 @@ final class ShareRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [];
+        return ['auditAfter' => ['nullable', 'string', 'ulid']];
+    }
+
+    /**
+     * The audit row the shown audit page starts after, or none for the newest.
+     */
+    public function auditAfter(): string|null
+    {
+        return $this->filled('auditAfter') ? $this->string('auditAfter')->toString() : null;
     }
 }
