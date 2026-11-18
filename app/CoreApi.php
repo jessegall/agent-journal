@@ -427,6 +427,7 @@ use App\Settings\Values\Decimal;
 use App\Settings\Values\GroupReference;
 use App\Settings\Values\SettingReference;
 use App\Settings\Values\SettingsChange;
+use App\Sharing\Commands\CreateShare;
 use App\Sharing\Commands\SaveSharePreview;
 use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ProvidesShareRecords;
@@ -437,6 +438,7 @@ use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Contracts\ShareRecordProvider;
 use App\Sharing\Contracts\ShareStatusReader;
 use App\Sharing\Enums\ShareRelationType;
+use App\Sharing\Enums\ShareState;
 use App\Sharing\Exceptions\ShareBudgetExceeded;
 use App\Sharing\Exceptions\SharingNotAllowed;
 use App\Sharing\Support\GatewayConfiguration;
@@ -460,6 +462,7 @@ use App\Sharing\Support\ShareRelationRead;
 use App\Sharing\Support\ShareRelationSet;
 use App\Sharing\Support\ShareSelectedTarget;
 use App\Sharing\Support\ShareSelection;
+use App\Sharing\Support\ShareSummary;
 use App\Sharing\Support\ShareTargetRead;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextReader;
@@ -847,6 +850,8 @@ final class CoreApi
                 DriverRequestStatus::class,
                 DisabledSettingsGroup::class,
                 SavedSharePreview::class,
+                ShareSummary::class,
+                ShareState::class,
             )
             ->commands(
                 PostComment::class,
@@ -877,6 +882,7 @@ final class CoreApi
                 MarkSilentSessions::class,
                 SettleFrameTimes::class,
                 SaveSharePreview::class,
+                CreateShare::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,

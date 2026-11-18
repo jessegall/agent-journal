@@ -57,13 +57,15 @@ final class SharingModelsTest extends TestCase
     {
         $configuration = $this->configuration();
         $endpoint = ShareGatewayEndpoint::openFor($configuration, 1, 'run-1');
-        $operation = ShareGatewayOperation::request($endpoint, GatewayOperationType::Open);
+        $operation = ShareGatewayOperation::request($configuration, GatewayOperationType::Open);
 
         $this->assertEquals($configuration->settings, ShareGatewayConfiguration::query()->findOrFail($configuration->id)->settings);
         $this->assertSame('press', $configuration->toConfiguration()->settings->gatewayKey);
         $this->assertSame('https://share.example.test', $endpoint->public_origin);
         $this->assertSame(GatewayEndpointState::Opening, $endpoint->fresh()?->state);
         $this->assertSame(GatewayOperationType::Open, $operation->fresh()?->type);
+        $this->assertSame($configuration->configuration_version, $operation->configuration_version);
+        $this->assertNull($operation->share_gateway_endpoint_id);
     }
 
     public function test_a_preview_keeps_its_selection_and_a_checksum_over_it(): void

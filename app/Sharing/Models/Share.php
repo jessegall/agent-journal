@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Sharing\Models;
 
 use App\Links\Support\Linkable;
+use App\Numbers\Contracts\Numbered;
+use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Enums\ShareState;
+use App\Sharing\Support\ShareSummary;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -18,6 +21,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use PhpOption\None;
 use PhpOption\Option;
 
 /**
@@ -26,6 +30,8 @@ use PhpOption\Option;
  * its deadline. Neither token column is ever serialized.
  *
  * @property string $id
+ * @property string $number_group_id
+ * @property int $number
  * @property ShareState $state
  * @property string $root_type
  * @property string $root_id
@@ -48,9 +54,9 @@ use PhpOption\Option;
  */
 #[Fillable(['state', 'root_type', 'root_id', 'owner_user_id', 'configuration_version', 'scope_version', 'expires_at', 'terminal_at'])]
 #[Hidden(['token_digest', 'token_ciphertext'])]
-final class Share extends Model implements ReadableModel
+final class Share extends Model implements Numbered, ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BoundedReads, HasNumber, HasUlids, Linkable;
 
     public const string LINK_TYPE = 'core.share';
 
@@ -58,6 +64,11 @@ final class Share extends Model implements ReadableModel
      * The most live, unexpired shares an installation holds at once.
      */
     public const int MOST_LIVE = 100;
+
+    /**
+     * The scope version of a grant's first approved member list; a proposal has none yet, at 0.
+     */
+    public const int FIRST_SCOPE_VERSION = 1;
 
     /**
      * @return array<string, string>
@@ -92,12 +103,14 @@ final class Share extends Model implements ReadableModel
     }
 
     /**
-     * The owner's grant to share the root under a gateway configuration with a new token, waiting for its gateway.
+     * The owner's grant to share the root under a gateway configuration with a new token, at its first scope version,
+     * waiting for its gateway.
      */
     public static function grant(RecordIdentity $root, string $ownerUserId, ShareGatewayConfiguration $configuration, ShareToken $token, CarbonImmutable $expiresAt): self
     {
         $share = self::forRoot($root, ShareState::Pending, $expiresAt);
         $share->owner_user_id = $ownerUserId;
+        $share->scope_version = self::FIRST_SCOPE_VERSION;
         $share->share_gateway_configuration_id = $configuration->id;
         $share->configuration_version = $configuration->configuration_version;
         $share->token_digest = $token->digest;
@@ -129,6 +142,25 @@ final class Share extends Model implements ReadableModel
     }
 
     /**
+     * How many live, unexpired shares the installation holds now, whatever their state column has caught up with;
+     * counted under the installation lock.
+     */
+    public static function liveCount(): int
+    {
+        return self::query()->liveNow()->count();
+    }
+
+    /**
+     * The share of this id granted by the owner, if there is one.
+     *
+     * @return Option<self>
+     */
+    public static function grantedBy(string $ownerUserId, string $id): Option
+    {
+        return Option::fromValue(self::query()->whereKey($id)->grantedByOwner($ownerUserId)->first());
+    }
+
+    /**
      * The share a token digest opens, with only its id, state, scope version and deadline: the one query the public
      * bridge runs, as the system, before any read.
      *
@@ -157,6 +189,28 @@ final class Share extends Model implements ReadableModel
         return $this->state === ShareState::Active && $this->expires_at->isFuture();
     }
 
+    /**
+     * The public address of the share while it is active and unexpired; nothing for a proposal or an ended share.
+     *
+     * @return Option<string>
+     */
+    public function ownerUrl(): Option
+    {
+        if (! $this->isReadableNow() || $this->token_ciphertext === null || $this->share_gateway_configuration_id === null) {
+            return None::create();
+        }
+
+        return Option::fromValue(ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->shareUrl($this->token_ciphertext));
+    }
+
+    /**
+     * What the owner learns of the share: its id, number and state, never its token.
+     */
+    public function summary(): ShareSummary
+    {
+        return new ShareSummary($this->id, $this->number, $this->state);
+    }
+
     public function root(): RecordIdentity
     {
         return new RecordIdentity($this->root_type, $this->root_id);
@@ -179,6 +233,15 @@ final class Share extends Model implements ReadableModel
     protected function ofRoot(Builder $query, RecordIdentity $root): void
     {
         $query->where('root_type', $root->type)->where('root_id', $root->id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function grantedByOwner(Builder $query, string $ownerUserId): void
+    {
+        $query->where('owner_user_id', $ownerUserId);
     }
 
     /**

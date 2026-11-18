@@ -12,6 +12,8 @@ return new class extends Migration
     {
         Schema::create('shares', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->foreignUlid('number_group_id')->constrained('number_groups')->restrictOnDelete();
+            $table->unsignedBigInteger('number');
             $table->string('state');
             $table->string('root_type');
             $table->string('root_id');
@@ -31,6 +33,7 @@ return new class extends Migration
             $table->timestampTz('last_pruned_at')->nullable();
             $table->timestampsTz();
 
+            $table->unique(['number_group_id', 'number']);
             $table->index(['state', 'expires_at']);
         });
     }

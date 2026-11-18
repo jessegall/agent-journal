@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Sharing\Support;
 
+use App\Records\Support\RecordIdentity;
+use App\Sharing\Exceptions\SharePreviewRefused;
+
 /**
  * What the owner may choose from before sharing: the root's card and the linked records that may be published with
  * it, each disclosable now.
@@ -40,5 +43,21 @@ final readonly class ShareCandidates
     public function notSharedYet(array $approvedLinkIds): array
     {
         return array_values(array_filter($this->linked, fn (ShareLinkedCandidate $candidate) => ! in_array($candidate->linkId, $approvedLinkIds, true)));
+    }
+
+    /**
+     * The record the selected target is linked from, among these candidates.
+     *
+     * @throws SharePreviewRefused
+     */
+    public function sourceOf(ShareSelectedTarget $target): RecordIdentity
+    {
+        foreach ($this->linked as $candidate) {
+            if ($candidate->linkId === $target->linkId) {
+                return $candidate->source;
+            }
+        }
+
+        throw SharePreviewRefused::targetGone($target->linkId);
     }
 }

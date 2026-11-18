@@ -15,11 +15,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One request to open or close an endpoint, claimed by a supervisor run under a lease and finished with an outcome
- * code; the program itself runs outside every transaction.
+ * One request to open or close the endpoint of a gateway configuration version, claimed by a supervisor run under a
+ * lease, bound to the endpoint it opened or closes, and finished with an outcome code; the program itself runs outside
+ * every transaction.
  *
  * @property string $id
- * @property string $share_gateway_endpoint_id
+ * @property string $share_gateway_configuration_id
+ * @property int $configuration_version
+ * @property string|null $share_gateway_endpoint_id
  * @property GatewayOperationType $type
  * @property string|null $run_id
  * @property string|null $lease_token
@@ -42,17 +45,19 @@ final class ShareGatewayOperation extends Model implements ReadableModel
     {
         return [
             'type' => GatewayOperationType::class,
+            'configuration_version' => 'integer',
             'lease_ends_at' => 'immutable_datetime',
         ];
     }
 
     /**
-     * An unclaimed request to open or close the endpoint.
+     * An unclaimed request to open or close the endpoint of the configuration at its current version.
      */
-    public static function request(ShareGatewayEndpoint $endpoint, GatewayOperationType $type): self
+    public static function request(ShareGatewayConfiguration $configuration, GatewayOperationType $type): self
     {
         $operation = new self;
-        $operation->share_gateway_endpoint_id = $endpoint->id;
+        $operation->share_gateway_configuration_id = $configuration->id;
+        $operation->configuration_version = $configuration->configuration_version;
         $operation->type = $type;
         $operation->save();
 

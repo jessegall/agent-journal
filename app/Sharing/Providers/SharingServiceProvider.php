@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Sharing\Providers;
 
 use App\Domains\Support\DomainRegistry;
+use App\Numbers\Support\NumberedModel;
+use App\Numbers\Support\NumberedTypeRegistry;
 use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Gateways\Ngrok\NgrokGateway;
 use App\Sharing\Gateways\Tunler\TunlerGateway;
+use App\Sharing\Models\Share;
 use App\Sharing\Support\OwnerSharePolicy;
 use App\Sharing\Support\ShareGatewayRegistry;
 use App\Sharing\Support\ShareRecordRegistry;
@@ -30,8 +33,9 @@ final class SharingServiceProvider extends ServiceProvider
         $this->app->bind(SharePolicy::class, OwnerSharePolicy::class);
     }
 
-    public function boot(DomainRegistry $domains, ShareRecordRegistry $records, ShareGatewayRegistry $gateways): void
+    public function boot(DomainRegistry $domains, ShareRecordRegistry $records, ShareGatewayRegistry $gateways, NumberedTypeRegistry $numbers): void
     {
+        $numbers->register(NumberedModel::global(Share::class));
         $gateways->register(TunlerGateway::KEY, TunlerGateway::class);
         $gateways->register(NgrokGateway::KEY, NgrokGateway::class);
 

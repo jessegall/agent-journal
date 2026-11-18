@@ -79,6 +79,16 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     }
 
     /**
+     * The enabled configuration of this id, locked until the transaction ends.
+     *
+     * @throws ShareGatewayUnavailable
+     */
+    public static function lockUsable(string $configurationId): self
+    {
+        return self::query()->enabled()->whereKey($configurationId)->lockForUpdate()->first() ?? throw ShareGatewayUnavailable::forConfiguration($configurationId);
+    }
+
+    /**
      * The enabled configuration the owner made the default.
      *
      * @throws ShareGatewayUnavailable
@@ -95,6 +105,14 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     public function sourceAddressRule(): SourceAddressRule
     {
         return SourceAddressRule::none();
+    }
+
+    /**
+     * The public address a share's token opens under this configuration.
+     */
+    public function shareUrl(string $token): string
+    {
+        return rtrim($this->settings->publicOrigin, '/').'/s/'.$token;
     }
 
     public function toConfiguration(): GatewayConfiguration
