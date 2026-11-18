@@ -6,8 +6,8 @@ namespace Domain\Chat\Readers;
 
 use App\Agents\Contracts\SessionReader;
 use App\Agents\Support\SessionOption;
+use App\Communication\Contracts\ConversationReader;
 use App\Ui\Contracts\PageReader;
-use Domain\Chat\Contracts\ConversationReader;
 use Domain\Chat\Data\ChatData;
 use Domain\Chat\Data\ConversationData;
 use Domain\Chat\Http\Requests\ConversationRequest;

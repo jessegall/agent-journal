@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use Domain\Chat\Api\Conversation;
+use App\Communication\Data\Conversation;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;

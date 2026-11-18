@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use Domain\Chat\Commands\SendMessage;
+use App\Communication\Commands\SendMessage;
 use Domain\Chat\Data\MessageInput;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;

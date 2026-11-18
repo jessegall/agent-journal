@@ -23,12 +23,12 @@ final class TableCheckerTest extends TestCase
     public function test_queries_pass_on_own_tables_and_fail_on_every_other_owners_even_a_required_one(): void
     {
         $this->assertSame([
-            '21 uses table messages of Chat; only Chat reads, joins, keys or changes its tables, so use what Chat exports',
+            '21 uses table messages of Core; only Core reads, joins, keys or changes its tables, so use what Core exports',
             '22 uses table users, which no domain owns',
             '23 uses table links of Core; only Core reads, joins, keys or changes its tables, so use what Core exports',
             '24 names a table with $name; write the table name out',
             '25 names a table with self::TABLE; write the table name out',
-            '27 uses table messages of Chat; only Chat reads, joins, keys or changes its tables, so use what Chat exports',
+            '27 uses table messages of Core; only Core reads, joins, keys or changes its tables, so use what Core exports',
             '20 uses table tasks of Tasks; only Tasks reads, joins, keys or changes its tables, so use what Tasks exports',
         ], $this->violationLines('Plans/Queries.php'));
     }
@@ -56,7 +56,7 @@ final class TableCheckerTest extends TestCase
         $files = [$this->folder('Plans/Models/Plan.php'), $this->folder('Plans/Models/StrayMessage.php')];
 
         $this->assertSame(
-            ['13 has model table messages, which Chat owns'],
+            ['13 has model table messages, which Core owns'],
             $this->lines($this->checker()->violations(ModelTables::in($files))),
         );
     }
