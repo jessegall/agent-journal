@@ -65,9 +65,9 @@ final readonly class AgentStack
     }
 
     /**
-     * The stack with a state put on top, or this stack when it already holds a state for the same reference. This is
-     * the admission point every push passes through (StatePush, and later the engine's stack): doc 39's conditional
-     * states decline a disabled state here.
+     * The stack with a state put on top, or this stack when it already holds a state for the same reference or the
+     * state is a conditional state that is switched off. Every push passes through here, so a declined push stores
+     * nothing.
      */
     public function withStateOnTop(StateReference $reference): self
     {
@@ -77,7 +77,13 @@ final readonly class AgentStack
             }
         }
 
-        return new self([...$this->frames, $this->factory->frameFor($reference)], $this->factory);
+        $frame = $this->factory->frameFor($reference);
+
+        if (! $frame->isEnabled()) {
+            return $this;
+        }
+
+        return new self([...$this->frames, $frame], $this->factory);
     }
 
     /**

@@ -122,6 +122,7 @@ use App\Exports\Support\ExportBuilder;
 use App\Exports\Support\Exports;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\Answer;
+use App\Hooks\Contracts\ConditionalState;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Contracts\HookAnswerer;
 use App\Hooks\Contracts\HookInput;
@@ -368,6 +369,7 @@ final class CoreApi
                 HookAnswerer::class,
                 HookInput::class,
                 StateRegistration::class,
+                ConditionalState::class,
                 ReminderContribution::class,
                 Assignee::class,
                 Assignable::class,

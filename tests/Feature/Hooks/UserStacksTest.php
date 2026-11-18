@@ -16,10 +16,14 @@ use App\Domains\Support\DomainEntry;
 use App\Hooks\Actions\UserStacks;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\NoSubject;
+use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Exceptions\StackTransactionRequired;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Support\StackTransaction;
+use Illuminate\Support\Facades\Event;
+use Tests\Fixtures\Hooks\ClosureStateLoader;
+use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
@@ -51,6 +55,18 @@ final class UserStacksTest extends TestCase
         $this->pushInTransaction($this->target);
 
         $this->assertSame(['hooks.main_ready', 'notes.writing'], $this->storedTypeKeys());
+    }
+
+    public function test_a_user_push_of_a_switched_off_conditional_state_stores_nothing(): void
+    {
+        Event::listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('test.switched_off', new ClosureStateLoader(fn () => new SwitchableState(false))));
+        $this->actAs(ActorContext::forUser(TestIds::of(7)));
+
+        $this->app->make(StackTransaction::class)->run(
+            fn () => $this->app->make(UserStacks::class)->push($this->target, new StateReference('test.switched_off', NoSubject::None)),
+        );
+
+        $this->assertSame(['hooks.main_ready'], $this->storedTypeKeys());
     }
 
     public function test_an_agent_cannot_use_the_user_path(): void

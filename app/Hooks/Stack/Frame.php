@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Stack;
 
 use App\Agents\Support\StackTarget;
+use App\Hooks\Contracts\ConditionalState;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
@@ -48,6 +49,14 @@ final readonly class Frame
     public function isFinished(): bool
     {
         return $this->state->isFinished();
+    }
+
+    /**
+     * Whether the state may run now: always, unless it is a conditional state that answers it is switched off.
+     */
+    public function isEnabled(): bool
+    {
+        return ! $this->state instanceof ConditionalState || $this->state->isEnabled();
     }
 
     public function enter(StackTarget $target): void

@@ -35,7 +35,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\InMemoryTaskLoader;
+use Tests\Fixtures\Hooks\SwitchableState;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -161,6 +163,21 @@ final class AgentStacksTest extends TestCase
         $this->transaction()->run(fn () => $this->stacks()->push($this->target, $this->task(42)));
 
         $this->assertSame([null, '42', '43'], array_map(fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : null, $this->storedFrames()));
+    }
+
+    public function test_a_switched_off_conditional_state_is_declined_and_a_switched_on_one_is_pushed(): void
+    {
+        Event::listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
+            $event->registry->register('test.switched_off', new ClosureStateLoader(fn () => new SwitchableState(false)));
+            $event->registry->register('test.switched_on', new ClosureStateLoader(fn () => new SwitchableState(true)));
+        });
+        $this->createStack();
+
+        $this->transaction()->run(fn () => $this->stacks()->push($this->target, new StateReference('test.switched_off', NoSubject::None)));
+        $this->assertSame(['hooks.main_ready'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
+
+        $this->transaction()->run(fn () => $this->stacks()->push($this->target, new StateReference('test.switched_on', NoSubject::None)));
+        $this->assertSame(['hooks.main_ready', 'test.switched_on'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->storedFrames()));
     }
 
     public function test_a_push_onto_another_agents_stack_is_refused(): void
