@@ -82,10 +82,12 @@ const keptWorkers = (place, rows) => {
 // store with `take`. An on-demand poller (`demand`) has no interval: it reads once when asked, pausing the poller it names
 // in `pauses` for the length of its own read, so the two never pull at the same time. Any poller may declare `least`, the milliseconds
 // between two reads of one run; an on-demand one that does not reads at most once a second.
-// the newest agents, listed as plain rows and then read whole by their ids, since an index carries no row's details
+// the newest agents, listed as plain rows and then read whole by their ids, since an index carries no row's details; each
+// environment's live main agent is always read too, so workers and reviewers started after it never push it out of view
 async function wholeAgents(client, limit) {
     const page = await client.list("agents", {limit});
-    const ids = page.rows.map((row) => row.id);
+    const leads = (store.live || []).map((live) => live.agent?.id).filter(Boolean);
+    const ids = [...new Set([...page.rows.map((row) => row.id), ...leads])];
     return ids.length ? client.list("agents", {ids}) : page;
 }
 
