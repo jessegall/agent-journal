@@ -87,8 +87,8 @@ final readonly class ReadShareHandler implements CommandHandler
     }
 
     /**
-     * Every step is a linked record the current scope approves over a link that still exists; children are read
-     * through their parent's page, never by path.
+     * Every step is a linked record the current scope approves over a link that still exists, and that its provider
+     * may still disclose now; children are read through their parent's page, never by path.
      */
     private function followsApprovedSteps(Share $share, RecordIdentity $root, ShareReadPath $path): bool
     {
@@ -98,6 +98,10 @@ final readonly class ReadShareHandler implements CommandHandler
             $relation = $this->records->relation($from->type, $hop->relation);
 
             if ($relation->type !== ShareRelationType::Linked || ! ShareMember::approvesOverLiveLink($share, $from, $hop->target)) {
+                return false;
+            }
+
+            if (! $this->records->provider($hop->target->type)->mayDisclose($hop->target)) {
                 return false;
             }
 
