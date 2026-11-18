@@ -91,6 +91,7 @@ final class DomainDeclarationTest extends TestCase
         'Support/Exports.php',
         'Support/Psr4ClassNames.php',
         'Exceptions/FileOutsideAutoload.php',
+        'Exceptions/AlwaysOnDomainRequiresSwitchable.php',
         'Exceptions/AmbiguousDomainRoot.php',
         'Exceptions/DomainCycle.php',
         'Exceptions/CapabilityWithoutTrait.php',

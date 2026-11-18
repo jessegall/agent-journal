@@ -6,6 +6,7 @@ namespace App\Domains\Support;
 
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\CommandRegistry;
+use App\Domains\Exceptions\AlwaysOnDomainRequiresSwitchable;
 use App\Domains\Exceptions\AmbiguousDomainRoot;
 use App\Domains\Exceptions\DomainCycle;
 use App\Domains\Exceptions\DomainListedTwice;
@@ -62,6 +63,10 @@ final readonly class DomainRegistry
 
         foreach ($entries as $entry) {
             self::refuseCycleFrom($entries, $entry, []);
+        }
+
+        foreach ($entries as $entry) {
+            self::refuseAlwaysOnRequiringSwitchable($entries, $entry);
         }
 
         return new self($entries);
@@ -146,6 +151,28 @@ final readonly class DomainRegistry
 
         foreach ($entry->requires as $requiredClass) {
             self::refuseCycleFrom($entries, $entries[DomainEntry::nameOf($requiredClass)], [...$path, $entry->name]);
+        }
+    }
+
+    /**
+     * A domain that can never be switched off may require only domains that cannot be either.
+     *
+     * @param  array<string, DomainEntry>  $entries
+     *
+     * @throws AlwaysOnDomainRequiresSwitchable
+     */
+    private static function refuseAlwaysOnRequiringSwitchable(array $entries, DomainEntry $entry): void
+    {
+        if ($entry->canDisable()) {
+            return;
+        }
+
+        foreach ($entry->requires as $requiredClass) {
+            $required = $entries[DomainEntry::nameOf($requiredClass)];
+
+            if ($required->canDisable()) {
+                throw AlwaysOnDomainRequiresSwitchable::for($entry->name, $required->name);
+            }
         }
     }
 }
