@@ -29,6 +29,7 @@ use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Commands\CancelTask;
 use Domain\Tasks\Commands\CreateTask;
+use Domain\Tasks\Commands\EditTask;
 use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Contracts\AssignedTaskReader;
@@ -61,7 +62,7 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesC
      */
     public function commands(): array
     {
-        return [BlockTask::class, CancelTask::class, CreateTask::class, FinishTask::class, StartTask::class];
+        return [BlockTask::class, CancelTask::class, CreateTask::class, EditTask::class, FinishTask::class, StartTask::class];
     }
 
     /**

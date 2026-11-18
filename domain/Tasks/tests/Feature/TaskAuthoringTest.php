@@ -9,13 +9,17 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\CommandBus;
 use Domain\Tasks\Commands\CreateTask;
+use Domain\Tasks\Commands\EditTask;
 use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Exceptions\TaskRevisionChanged;
 use Domain\Tasks\Exceptions\TaskTextTooLong;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Support\TaskLimits;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\Schema;
+use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\SendsSignedCalls;
 use Tests\Support\TestIds;
 
 /**
@@ -25,8 +29,9 @@ use Tests\Support\TestIds;
 final class TaskAuthoringTest extends TestCase
 {
     use CommitsHookRows;
+    use SendsSignedCalls;
 
-    private const array TABLES = ['tasks'];
+    private const array TABLES = ['tasks', 'agents', 'agent_sessions', 'launch_credentials', 'agent_stacks'];
 
     private const string SESSION = '01jd8x0g9m3qz6v4k2session1';
 
@@ -89,5 +94,41 @@ final class TaskAuthoringTest extends TestCase
         $this->assertThrows(fn () => $task->finishRun(str_repeat('a', TaskLimits::NOTE_CHARACTERS + 1)), TaskTextTooLong::class);
         $task->describe(str_repeat('é', TaskLimits::TITLE_CHARACTERS), 'Brief');
         $this->assertSame(2, $task->fresh()?->revision);
+    }
+
+    public function test_an_agent_creates_one_open_task_as_itself_and_its_session(): void
+    {
+        $launch = TestLaunch::start();
+
+        $taskId = $this->signed($launch, '/agent/tasks/create', ['title' => 'From the agent', 'brief' => 'What it asks.'])->assertCreated()->json('taskId');
+
+        $task = Task::query()->findOrFail($taskId);
+        $this->assertSame([ActorType::Agent, $launch->agent->id, $launch->session->id, TaskState::Open], [$task->creator_type, $task->creator_id, $task->creator_session_id, $task->state]);
+        $this->assertSame(1, Task::query()->count());
+    }
+
+    public function test_a_stale_revision_is_a_conflict_and_the_newer_text_stays(): void
+    {
+        $launch = TestLaunch::start();
+        $task = Task::factory()->create(['title' => 'First', 'brief' => 'First brief']);
+        $task->describe('Second', 'Second brief');
+
+        $this->signed($launch, '/agent/tasks/edit', ['taskId' => $task->id, 'expectedRevision' => 1, 'title' => 'Stale'])->assertConflict();
+
+        $this->assertSame(['Second', 2], [$task->fresh()?->title, $task->fresh()?->revision]);
+    }
+
+    public function test_the_agent_route_and_the_bus_give_the_same_edit(): void
+    {
+        $launch = TestLaunch::start();
+        $task = Task::factory()->create(['title' => 'First', 'brief' => 'First brief']);
+
+        $this->signed($launch, '/agent/tasks/edit', ['taskId' => $task->id, 'expectedRevision' => 1, 'brief' => 'Route brief'])->assertOk()->assertJson(['taskId' => $task->id, 'revision' => 2]);
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
+        $revision = $this->app->make(CommandBus::class)->run(new EditTask($task->id, 2, brief: 'Bus brief'));
+
+        $this->assertSame(3, $revision);
+        $this->assertSame(['First', 'Bus brief'], [$task->fresh()?->title, $task->fresh()?->brief]);
+        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new EditTask($task->id, 2, title: 'Late')), TaskRevisionChanged::class);
     }
 }
