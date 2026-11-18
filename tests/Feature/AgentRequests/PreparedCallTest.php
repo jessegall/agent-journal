@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\AgentRequests;
 
-use App\AgentRequests\Exceptions\AgentCallUnsent;
+use App\AgentRequests\Exceptions\CallDeadlinePassed;
+use App\AgentRequests\Exceptions\JournalUnreachable;
 use App\AgentRequests\Exceptions\LaunchCredentialRefused;
 use App\AgentRequests\Exceptions\LaunchSettingMissing;
 use App\AgentRequests\Support\AgentClientSettings;
@@ -67,8 +68,8 @@ final class PreparedCallTest extends TestCase
         $client = $this->app->make(AgentRequestClient::class);
         $call = $client->prepare($this->settings(), '/agent/mcp/v1', self::BODY, CarbonImmutable::now()->getTimestamp());
 
-        $this->assertThrows(fn () => $client->sendPrepared($call, [], CarbonImmutable::now()->addSeconds(20)), AgentCallUnsent::class, 'did not answer');
-        $this->assertThrows(fn () => $client->sendPrepared($call, [], CarbonImmutable::now()->subSecond()), AgentCallUnsent::class, 'deadline');
+        $this->assertThrows(fn () => $client->sendPrepared($call, [], CarbonImmutable::now()->addSeconds(20)), JournalUnreachable::class, 'did not answer');
+        $this->assertThrows(fn () => $client->sendPrepared($call, [], CarbonImmutable::now()->subSecond()), CallDeadlinePassed::class, 'deadline');
     }
 
     public function test_post_signs_the_same_envelope_as_before(): void

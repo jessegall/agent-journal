@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Providers;
 
 use App\Agents\Support\AgentContext;
+use App\Mcp\Console\RelayCommand;
 use App\Mcp\Models\RetainedPage;
 use Illuminate\Cache\RateLimiter;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -24,6 +25,7 @@ final class McpServiceProvider extends ServiceProvider
     public function boot(RateLimiter $limiter): void
     {
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/mcp.php');
+        $this->commands([RelayCommand::class]);
         $this->callAfterResolving(Schedule::class, fn (Schedule $schedule) => $schedule->command('model:prune', ['--model' => [RetainedPage::class]])->daily());
 
         $limiter->for('journal-mcp', fn (Request $request): Limit => Limit::perMinute(self::CALLS_PER_MINUTE)

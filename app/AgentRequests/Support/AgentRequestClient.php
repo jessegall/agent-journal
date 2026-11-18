@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\AgentRequests\Support;
 
-use App\AgentRequests\Exceptions\AgentCallUnsent;
+use App\AgentRequests\Exceptions\CallDeadlinePassed;
+use App\AgentRequests\Exceptions\JournalUnreachable;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory;
@@ -42,20 +43,21 @@ final readonly class AgentRequestClient
      *
      * @param  array<string, string>  $headers
      *
-     * @throws AgentCallUnsent
+     * @throws CallDeadlinePassed
+     * @throws JournalUnreachable
      */
     public function sendPrepared(PreparedAgentCall $call, array $headers, CarbonImmutable $deadline): AgentCallReply
     {
         $secondsLeft = CarbonImmutable::now()->diffInMilliseconds($deadline, false) / 1000;
 
         if ($secondsLeft <= 0) {
-            throw AgentCallUnsent::deadlinePassed($call->callId);
+            throw CallDeadlinePassed::for($call->callId);
         }
 
         try {
             $response = $this->request($call, $secondsLeft)->withHeaders($headers)->post($call->url());
         } catch (ConnectionException $unreachable) {
-            throw AgentCallUnsent::unreachable($call->settings->journalUrl, $unreachable);
+            throw JournalUnreachable::at($call->settings->journalUrl, $unreachable);
         }
 
         return new AgentCallReply($response->status(), $response->headers(), $response->body());
