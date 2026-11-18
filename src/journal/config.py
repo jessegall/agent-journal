@@ -46,6 +46,9 @@ class Config:
 
     @classmethod
     def rooted(cls, root: Path) -> "Config":
-        if "JOURNAL_PORT" in os.environ:
-            return cls(root.resolve(), int(os.environ["JOURNAL_PORT"]), span=1)
+        # an orchestrator may set JOURNAL_PORT for a service named journal (Kubernetes: tcp://10.43.195.65:80), so only a
+        # port number is taken from it
+        port = os.environ.get("JOURNAL_PORT", "")
+        if port.isdigit():
+            return cls(root.resolve(), int(port), span=1)
         return cls(root.resolve())

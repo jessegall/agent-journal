@@ -249,7 +249,9 @@ class Launch:
         if folder != self.root:
             Menu(self.root, self.package / "journal.sh").journal("environment", "branch", choice.environment, worktree.branch)
             self.provider.worktree_hooks(self.root, folder, HOOK_SCRIPT, self.provider.hook_command(self.root))
-            self.provider.folder_trusted(self.root, folder)
+        # the launch folder is trusted before the program starts, the project's own folder too, so on a fresh volume no
+        # trust question waits for an Enter nobody presses
+        self.provider.folder_trusted(self.root, folder)
         journal = {"name": "journal", "command": self.journal_command(), "folder": str(self.root), "env": environ, "log": str(self.runtime / "server.log"), "health": {**JOURNAL_HEALTH, **self.health_numbers(), "port_file": str(self.runtime.parent / "port")}, "boot": self.boot_watch()}
         return {
             "launch": launch,

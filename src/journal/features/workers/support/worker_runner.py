@@ -62,6 +62,7 @@ class WorkerRunner:
 
     def start(self, worker: Worker, actor: Actor) -> None:
         provider, token = self.providers.lookup(worker.provider), AgentToken.random()
+        provider.folder_trusted(self.config.root, self.branch.place(worker))
         worker = self.workers.save(worker.with_(session=provider.worker_session(worker.resume), token_hash=token.digest()), actor)
         command = [*provider.worker_command(self.instructed(worker), worker.model, worker.resume, worker.session), *provider.worker_settings_flags(self.hook_settings(worker))]
         threading.Thread(target=self.run_scoped, args=(worker, command, actor, token), name=f"worker-{worker.id}", daemon=True).start()
