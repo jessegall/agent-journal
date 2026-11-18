@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Sharing\Handlers;
 
 use App\Contracts\CommandHandler;
+use App\Sharing\Actions\GatewayRuns;
 use App\Sharing\Commands\ClaimGatewayOperation;
 use App\Sharing\Enums\GatewayEndpointState;
 use App\Sharing\Enums\GatewayOperationType;
@@ -12,7 +13,6 @@ use App\Sharing\Enums\GatewayOutcome;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\ShareGatewayEndpoint;
 use App\Sharing\Models\ShareGatewayOperation;
-use App\Sharing\Models\ShareInstallation;
 use App\Sharing\Support\ClaimedGatewayOperation;
 
 /**
@@ -23,12 +23,11 @@ use App\Sharing\Support\ClaimedGatewayOperation;
  */
 final readonly class ClaimGatewayOperationHandler implements CommandHandler
 {
+    public function __construct(private GatewayRuns $runs) {}
+
     public function handle(ClaimGatewayOperation $command): ClaimedGatewayOperation|null
     {
-        if (ShareInstallation::lockForAdmission()->holdFor($command->runId)) {
-            ShareGatewayEndpoint::stopAllButRun($command->runId);
-            ShareGatewayOperation::releaseAllButRun($command->runId);
-        }
+        $this->runs->hold($command->runId);
 
         $operationId = $command->operationId ?? ShareGatewayOperation::nextClaimable()->getOrElse(null);
 

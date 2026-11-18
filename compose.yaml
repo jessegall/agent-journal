@@ -4,6 +4,7 @@ services:
         build:
             context: .
             dockerfile: .docker/app/Dockerfile
+            target: app
         ports:
             - '127.0.0.1:${APP_PORT:-54700}:8000'
         depends_on:
@@ -18,6 +19,7 @@ services:
         build:
             context: .
             dockerfile: .docker/app/Dockerfile
+            target: app
         command: ['php', 'artisan', 'reverb:start', '--host=0.0.0.0', '--port=8080']
         healthcheck:
             test: ['CMD', 'php', '-r', 'exit(@fsockopen("127.0.0.1", 8080) ? 0 : 1);']
@@ -34,6 +36,7 @@ services:
         build:
             context: .
             dockerfile: .docker/app/Dockerfile
+            target: app
         command: ['php', 'artisan', 'queue:work', '--tries=3', '--backoff=5']
         # A worker listens on no port; the image's web server check does not apply.
         healthcheck:
@@ -50,10 +53,34 @@ services:
         build:
             context: .
             dockerfile: .docker/app/Dockerfile
+            target: app
         command: ['php', 'artisan', 'engine:tick']
         # The ticker listens on no port; the image's web server check does not apply.
         healthcheck:
             disable: true
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+
+    # The share service: the sharing supervisor with the share-only listener and the gateway programs. It publishes no
+    # port; Tunler or ngrok forward to the listener on loopback. Its configuration and credential store live on a private
+    # volume; no home folder or personal gateway settings are mounted.
+    share:
+        restart: unless-stopped
+        build:
+            context: .
+            dockerfile: .docker/app/Dockerfile
+            target: share
+        volumes:
+            - sharing-data:/app/storage/sharing
+        healthcheck:
+            test: ['CMD', 'php', 'artisan', 'sharing:health']
+            interval: 15s
+            timeout: 10s
+            retries: 3
+            start_period: 30s
         depends_on:
             postgres:
                 condition: service_healthy
@@ -93,3 +120,4 @@ services:
 volumes:
     postgres-data:
     redis-data:
+    sharing-data:

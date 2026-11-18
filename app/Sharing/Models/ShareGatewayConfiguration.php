@@ -178,7 +178,7 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     /**
      * The event that tells this revision was configured or disabled.
      */
-    public function changeFact(): ShareGatewayChanged
+    public function changedEvent(): ShareGatewayChanged
     {
         return new ShareGatewayChanged($this->id, $this->configuration_version, $this->isDisabled(), CarbonImmutable::now());
     }

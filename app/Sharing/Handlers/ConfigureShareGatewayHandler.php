@@ -52,7 +52,7 @@ final readonly class ConfigureShareGatewayHandler implements CommandHandler
         ShareInstallation::lockForAdmission();
         $configuration = ShareGatewayConfiguration::configure($settings);
 
-        if ($command->makeDefault) {
+        if ($command->makesDefault) {
             $readiness = $gateway->readiness($configuration->toConfiguration());
 
             if (! $readiness->isReady()) {
@@ -63,7 +63,7 @@ final readonly class ConfigureShareGatewayHandler implements CommandHandler
         }
 
         ShareAudit::recordForInstallation(ShareAuditType::GatewayChanged, ActorIdentity::of($owner), 'configured');
-        $this->events->dispatch($configuration->changeFact());
+        $this->events->dispatch($configuration->changedEvent());
 
         return $configuration->toConfiguration();
     }

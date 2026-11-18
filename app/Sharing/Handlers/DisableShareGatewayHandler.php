@@ -51,7 +51,7 @@ final readonly class DisableShareGatewayHandler implements CommandHandler
 
         $configuration->disable();
         ShareAudit::recordForInstallation(ShareAuditType::GatewayChanged, ActorIdentity::of($owner), 'disabled');
-        $this->events->dispatch($configuration->changeFact());
+        $this->events->dispatch($configuration->changedEvent());
 
         return $configuration->toConfiguration();
     }

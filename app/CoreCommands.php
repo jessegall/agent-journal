@@ -59,10 +59,12 @@ use App\Sharing\Commands\ConfigureShareGateway;
 use App\Sharing\Commands\CreateShare;
 use App\Sharing\Commands\DisableShareGateway;
 use App\Sharing\Commands\ExpireShares;
+use App\Sharing\Commands\PruneShareAudit;
 use App\Sharing\Commands\ReadShare;
 use App\Sharing\Commands\RecordGatewayHealth;
 use App\Sharing\Commands\RecordGatewayOutcome;
 use App\Sharing\Commands\RefreshShareScope;
+use App\Sharing\Commands\ReopenSharedGateways;
 use App\Sharing\Commands\RequestShare;
 use App\Sharing\Commands\RetryShare;
 use App\Sharing\Commands\RevokeShare;
@@ -84,7 +86,7 @@ final class CoreCommands
             SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class,
             SetStringSetting::class, SetBooleanSetting::class, SetIntegerSetting::class, SetDecimalSetting::class, SetStringChoice::class, SetIntegerChoice::class, ResetSetting::class, EnableSettingGroup::class, DisableSettingGroup::class, ResetSettingGroup::class,
             SaveSharePreview::class, CreateShare::class, RequestShare::class, ApproveShareRequest::class, RevokeShare::class, RevokeCommandPermissions::class, IssueEvidencePermit::class, RefreshShareScope::class, RetryShare::class, ConfigureShareGateway::class, DisableShareGateway::class,
-            ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class,
+            ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class, ReopenSharedGateways::class, PruneShareAudit::class,
         ];
     }
 
@@ -96,7 +98,7 @@ final class CoreCommands
      */
     public static function privateCommands(): array
     {
-        return [ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class];
+        return [ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class, ReopenSharedGateways::class, PruneShareAudit::class];
     }
 
     /**

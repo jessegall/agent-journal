@@ -107,6 +107,14 @@ final class ShareGatewayOperation extends Model implements ReadableModel
     }
 
     /**
+     * Whether an open of the configuration's endpoint waits or runs without an outcome yet.
+     */
+    public static function hasUnfinishedOpenFor(ShareGatewayConfiguration $configuration): bool
+    {
+        return self::query()->unfinished()->ofConfiguration($configuration->id)->ofType(GatewayOperationType::Open)->exists();
+    }
+
+    /**
      * The operation of this id, read without a lock to learn which configuration to lock first.
      *
      * @throws GatewayLeaseRefused

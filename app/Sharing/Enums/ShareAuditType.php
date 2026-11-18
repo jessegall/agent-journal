@@ -33,4 +33,14 @@ enum ShareAuditType: string
             self::Revoked, self::Expired, self::GatewayChanged, self::AuditPruned => false,
         };
     }
+
+    /**
+     * The types that record one public read.
+     *
+     * @return list<self>
+     */
+    public static function readTypes(): array
+    {
+        return array_values(array_filter(self::cases(), fn (self $type) => $type->isRead()));
+    }
 }
