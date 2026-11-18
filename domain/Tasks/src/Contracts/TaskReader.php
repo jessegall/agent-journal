@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Contracts;
 
+use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Readers\VisibleTasks;
 use Illuminate\Container\Attributes\Bind;
@@ -28,4 +29,14 @@ interface TaskReader
      * @throws TaskMissing
      */
     public function requireAllVisible(array $taskIds): void;
+
+    /**
+     * The number and title of each task, in the order of the ids.
+     *
+     * @param  list<string>  $taskIds
+     * @return list<TaskSummary>
+     *
+     * @throws TaskMissing
+     */
+    public function summaries(array $taskIds): array;
 }

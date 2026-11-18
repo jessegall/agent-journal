@@ -21,6 +21,7 @@ use Domain\Tasks\Api\TaskCard;
 use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Api\TaskList;
 use Domain\Tasks\Api\TaskProgress;
+use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Commands\BlockTask;
 use Domain\Tasks\Commands\CancelTask;
 use Domain\Tasks\Commands\CreateTask;
@@ -77,6 +78,7 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesC
             TaskProgressCounter::class,
             TaskProgress::class,
             TaskReader::class,
+            TaskSummary::class,
             TaskMissing::class,
             TaskAssignmentReader::class,
             TaskAssignmentCompletion::class,

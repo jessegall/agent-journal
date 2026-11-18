@@ -14,12 +14,25 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\NodeFinder;
 use PhpParser\PrettyPrinter\Standard;
+use Tests\Support\ScanCache\FileScan;
 
 /**
  * Every table a file names, knowing per Laravel method which argument is a table, a subquery or an alias.
+ *
+ * @implements FileScan<TableUse>
  */
-final class TableScan
+final readonly class TableScan implements FileScan
 {
+    public function key(): string
+    {
+        return 'table-uses-1';
+    }
+
+    public function findingsIn(ParsedFile $file): array
+    {
+        return self::of($file);
+    }
+
     private const string DB = 'Illuminate\\Support\\Facades\\DB';
 
     private const string SCHEMA = 'Illuminate\\Support\\Facades\\Schema';

@@ -45,6 +45,7 @@ use Domain\Plans\Http\Controllers\StartPlanController;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Readers\OpenPlansCount;
+use Domain\Plans\Readers\PhaseWindowReader;
 use Domain\Plans\Readers\PlansWindowReader;
 use Domain\Plans\Readers\PlanWindowReader;
 use Domain\Plans\Readers\WaitingPlansCount;
@@ -124,6 +125,8 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
                 ->at('{plan}')
                 ->inInspector()
                 ->slots(Slot::record('inspector', 'plan')),
+            Page::make('phase', 'Phase', Icon::Plan, PhaseWindowReader::class, 'PhaseWindow.vue')
+                ->at('{plan}/phases/{phase}'),
         ];
     }
 

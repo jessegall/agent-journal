@@ -8,9 +8,7 @@ use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use PhpParser\Node\Name;
-use PhpParser\Node\Stmt\TraitUse;
-use PhpParser\NodeFinder;
+use Tests\Support\ScanCache\ScanCache;
 
 /**
  * A test reaches its database only through Tests\Support\RefreshHookDatabase, never through one of Laravel's database
@@ -34,9 +32,10 @@ final class TestDatabaseTraits
      */
     public static function offendersIn(array $folders, array $skipped): array
     {
+        $traitsByFile = ScanCache::findingsByFile(new TraitsUsed, DomainFiles::in($folders));
         $offenders = array_filter(
-            DomainFiles::in($folders),
-            fn (string $path) => ! self::isSkipped($path, $skipped) && self::usesLaravelDatabaseTrait($path),
+            array_keys($traitsByFile),
+            fn (string $path) => ! self::isSkipped($path, $skipped) && array_intersect($traitsByFile[$path], self::LARAVEL_DATABASE_TRAITS) !== [],
         );
 
         return array_values($offenders);
@@ -49,21 +48,6 @@ final class TestDatabaseTraits
     {
         foreach ($skipped as $skippedPath) {
             if ($path === $skippedPath || str_starts_with($path, rtrim($skippedPath, '/').'/')) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static function usesLaravelDatabaseTrait(string $path): bool
-    {
-        $traitUses = (new NodeFinder)->findInstanceOf(ParsedFile::fromPath($path)->statements, TraitUse::class);
-
-        foreach ($traitUses as $traitUse) {
-            $names = array_map(fn (Name $trait) => $trait->toString(), $traitUse->traits);
-
-            if (array_intersect($names, self::LARAVEL_DATABASE_TRAITS) !== []) {
                 return true;
             }
         }

@@ -9,12 +9,11 @@ use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresActor;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\RegisteredMiddleware;
-use PhpParser\Node\Stmt\ClassLike;
-use PhpParser\NodeFinder;
 use ReflectionClass;
 use Tests\Architecture\Support\DomainFiles;
-use Tests\Architecture\Support\ParsedFile;
+use Tests\Architecture\Support\TypesDeclared;
 use Tests\Support\InstallsCommandModules;
+use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 use Throwable;
@@ -115,13 +114,11 @@ final class CommandFolderTest extends TestCase
     {
         $classes = [];
 
-        foreach (DomainFiles::in([app_path(), base_path('tests/Fixtures/Modules')]) as $file) {
-            foreach ((new NodeFinder)->findInstanceOf(ParsedFile::fromPath($file)->statements, ClassLike::class) as $declaration) {
-                $name = $declaration->namespacedName?->toString();
+        foreach (ScanCache::findings(new TypesDeclared, DomainFiles::in([app_path(), base_path('tests/Fixtures/Modules')])) as $declaration) {
+            $name = $declaration['name'];
 
-                if ($name !== null && (class_exists($name) || interface_exists($name) || enum_exists($name))) {
-                    $classes[] = $name;
-                }
+            if (class_exists($name) || interface_exists($name) || enum_exists($name)) {
+                $classes[] = $name;
             }
         }
 

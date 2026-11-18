@@ -11,6 +11,7 @@ use App\Assignments\Support\RecordIdentity;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
+use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\Exceptions\TaskMissing;
@@ -100,6 +101,14 @@ final class Task extends Model implements Assignable, Numbered
     {
         $this->state = TaskState::Cancelled;
         $this->save();
+    }
+
+    /**
+     * The task as a list shows it: its number and title.
+     */
+    public function summary(): TaskSummary
+    {
+        return new TaskSummary($this->number, $this->title);
     }
 
     /**

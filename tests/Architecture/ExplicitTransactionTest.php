@@ -6,7 +6,7 @@ namespace Tests\Architecture;
 
 use Tests\Architecture\Support\CallScan;
 use Tests\Architecture\Support\DomainFiles;
-use Tests\Architecture\Support\ParsedFile;
+use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -51,7 +51,7 @@ final class ExplicitTransactionTest extends TestCase
     {
         $found = [];
 
-        foreach (DomainFiles::in(array_map(base_path(...), $folders)) as $path) {
+        foreach (ScanCache::findingsByFile(new CallScan, DomainFiles::in(array_map(base_path(...), $folders))) as $path => $calls) {
             $file = substr($path, strlen(base_path()) + 1);
 
             if (in_array($file, self::ALLOWED, true)) {
@@ -60,7 +60,7 @@ final class ExplicitTransactionTest extends TestCase
 
             $code = (string) file_get_contents($path);
 
-            foreach (CallScan::of(ParsedFile::fromPath($path)) as $call) {
+            foreach ($calls as $call) {
                 if (in_array($call['method'], self::TRANSACTION_CALLS, true)) {
                     $found[] = "{$file}:{$call['line']} calls {$call['method']}";
                 }

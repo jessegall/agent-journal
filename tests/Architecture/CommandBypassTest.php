@@ -6,7 +6,7 @@ namespace Tests\Architecture;
 
 use Tests\Architecture\Support\CallScan;
 use Tests\Architecture\Support\DomainFiles;
-use Tests\Architecture\Support\ParsedFile;
+use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -50,14 +50,14 @@ final class CommandBypassTest extends TestCase
     {
         $found = [];
 
-        foreach (DomainFiles::in(array_map(base_path(...), $folders)) as $path) {
+        foreach (ScanCache::findingsByFile(new CallScan, DomainFiles::in(array_map(base_path(...), $folders))) as $path => $calls) {
             $file = substr($path, strlen(base_path()) + 1);
 
             if ($file === self::BUS) {
                 continue;
             }
 
-            foreach (CallScan::of(ParsedFile::fromPath($path)) as $call) {
+            foreach ($calls as $call) {
                 $viaFacade = $call['class'] !== null && str_ends_with($call['class'], 'Bus');
 
                 // map is also a collection method, so only the Bus facade's map counts.

@@ -43,7 +43,7 @@ final class ScanCache
         $byFile = [];
 
         foreach ($paths as $path) {
-            $hash = sha1((string) file_get_contents($path));
+            $hash = sha1($path."\0".file_get_contents($path));
 
             if (! isset($stored[$hash])) {
                 self::$parsedFiles++;

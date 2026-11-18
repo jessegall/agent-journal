@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
+use Tests\Support\ScanCache\ScanCache;
+
 /**
  * Judges table use: each table belongs to the domain or Core whose migrations create it, and only that owner reads,
  * joins, keys or changes it; another owner asks it through what it exports.
@@ -145,13 +147,11 @@ final readonly class TableChecker
     {
         $violations = [];
 
-        foreach (DomainFiles::in([$this->rootMigrationFolder]) as $file) {
-            foreach (TableScan::of(ParsedFile::fromPath($file)) as $use) {
-                $owner = $this->owners[$use->table] ?? null;
+        foreach (ScanCache::findings(new TableScan, DomainFiles::in([$this->rootMigrationFolder])) as $use) {
+            $owner = $this->owners[$use->table] ?? null;
 
-                if ($owner !== null && $use->type === TableType::Change) {
-                    $violations[] = new Violation($file, $use->line, $use->table, self::ROOT_MIGRATIONS, $owner->name, ViolationType::RootMigrationChangesDomainTable);
-                }
+            if ($owner !== null && $use->type === TableType::Change) {
+                $violations[] = new Violation($use->file, $use->line, $use->table, self::ROOT_MIGRATIONS, $owner->name, ViolationType::RootMigrationChangesDomainTable);
             }
         }
 
@@ -166,11 +166,9 @@ final readonly class TableChecker
     {
         $creations = [];
 
-        foreach (DomainFiles::in($folders) as $file) {
-            foreach (TableScan::of(ParsedFile::fromPath($file)) as $use) {
-                if ($use->type === TableType::Create) {
-                    $creations[] = $use;
-                }
+        foreach (ScanCache::findings(new TableScan, DomainFiles::in($folders)) as $use) {
+            if ($use->type === TableType::Create) {
+                $creations[] = $use;
             }
         }
 

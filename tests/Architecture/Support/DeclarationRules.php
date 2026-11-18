@@ -6,10 +6,8 @@ namespace Tests\Architecture\Support;
 
 use App\Domains\Support\Domain;
 use App\Domains\Support\DomainEntry;
-use PhpParser\Node\Stmt\Class_;
-use PhpParser\Node\Stmt\Namespace_;
-use PhpParser\NodeFinder;
 use ReflectionClass;
+use Tests\Support\ScanCache\ScanCache;
 
 /**
  * The rules about where code is declared: Domain class names, the files outside domains, namespaces, the shared place.
@@ -34,16 +32,14 @@ final readonly class DeclarationRules
     {
         $violations = [];
 
-        foreach ($files as $path) {
-            foreach ((new NodeFinder)->findInstanceOf(ParsedFile::fromPath($path)->statements, Class_::class) as $class) {
-                $name = $class->namespacedName?->toString();
-
-                if ($name === null || ! is_subclass_of($name, Domain::class) || (new ReflectionClass($name))->isAbstract()) {
+        foreach (ScanCache::findingsByFile(new ClassesDeclared, $files) as $path => $classes) {
+            foreach ($classes as $name) {
+                if (! is_subclass_of($name, Domain::class) || ($reflection = new ReflectionClass($name))->isAbstract()) {
                     continue;
                 }
 
                 if (preg_match('/^'.preg_quote($root, '/').'\\\\(\w+)\\\\\1Domain$/', $name) !== 1) {
-                    $violations[] = new Violation($path, $class->getStartLine(), $name, 'none', 'none', ViolationType::MisnamedDomainClass);
+                    $violations[] = new Violation($path, (int) $reflection->getStartLine(), $name, 'none', 'none', ViolationType::MisnamedDomainClass);
                 }
             }
         }
@@ -111,12 +107,12 @@ final readonly class DeclarationRules
         $violations = [];
 
         foreach ($this->entries as $entry) {
-            foreach (DomainFiles::in([$entry->folder]) as $path) {
-                foreach ((new NodeFinder)->findInstanceOf(ParsedFile::fromPath($path)->statements, Namespace_::class) as $namespace) {
-                    $name = $namespace->name?->toString() ?? 'the global namespace';
+            foreach (ScanCache::findingsByFile(new NamespacesDeclared, DomainFiles::in([$entry->folder])) as $path => $namespaces) {
+                foreach ($namespaces as $namespace) {
+                    $name = $namespace['name'] === '' ? 'the global namespace' : $namespace['name'];
 
                     if (! $entry->ownsName($name.'\\')) {
-                        $violations[] = new Violation($path, $namespace->getStartLine(), $name, $entry->name, $entry->namespace, ViolationType::NamespaceOutsideDomain);
+                        $violations[] = new Violation($path, $namespace['line'], $name, $entry->name, $entry->namespace, ViolationType::NamespaceOutsideDomain);
                     }
                 }
             }

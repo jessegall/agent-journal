@@ -8,14 +8,9 @@ use App\Links\Support\Linkable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
-use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\Expr\NullsafeMethodCall;
-use PhpParser\Node\Expr\StaticCall;
-use PhpParser\Node\Identifier;
-use PhpParser\Node\Stmt\Class_;
-use PhpParser\NodeFinder;
 use ReflectionClass;
 use ReflectionProperty;
+use Tests\Support\ScanCache\ScanCache;
 
 /**
  * Rule 6 for every model of a domain: an explicit #[Fillable] list, nothing else, and never an open model.
@@ -52,17 +47,10 @@ final class ModelConventions
     {
         $violations = [];
 
-        foreach ($files as $path) {
-            $statements = ParsedFile::fromPath($path)->statements;
-            $calls = [
-                ...(new NodeFinder)->findInstanceOf($statements, MethodCall::class),
-                ...(new NodeFinder)->findInstanceOf($statements, NullsafeMethodCall::class),
-                ...(new NodeFinder)->findInstanceOf($statements, StaticCall::class),
-            ];
-
+        foreach (ScanCache::findingsByFile(new CallScan, $files) as $path => $calls) {
             foreach ($calls as $call) {
-                if ($call->name instanceof Identifier && in_array($call->name->toLowerString(), self::OPENING_CALLS, true)) {
-                    $violations[] = new Violation($path, $call->getStartLine(), $call->name->toString().'()', 'none', 'none', ViolationType::OpeningModelCall);
+                if (in_array(strtolower($call['method']), self::OPENING_CALLS, true)) {
+                    $violations[] = new Violation($path, $call['line'], $call['method'].'()', 'none', 'none', ViolationType::OpeningModelCall);
                 }
             }
         }
@@ -127,12 +115,10 @@ final class ModelConventions
     {
         $models = [];
 
-        foreach ($files as $path) {
-            foreach ((new NodeFinder)->findInstanceOf(ParsedFile::fromPath($path)->statements, Class_::class) as $class) {
-                $name = $class->namespacedName?->toString();
-
-                if ($name !== null && is_subclass_of($name, Model::class) && ! (new ReflectionClass($name))->isAbstract()) {
-                    $models[$path][$class->getStartLine()] = $name;
+        foreach (ScanCache::findingsByFile(new ClassesDeclared, $files) as $path => $classes) {
+            foreach ($classes as $name) {
+                if (is_subclass_of($name, Model::class) && ! ($reflection = new ReflectionClass($name))->isAbstract()) {
+                    $models[$path][(int) $reflection->getStartLine()] = $name;
                 }
             }
         }

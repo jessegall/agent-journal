@@ -15,6 +15,7 @@ use Domain\Plans\Api\PlanCard;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\StartDenied;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -81,6 +82,16 @@ final class Plan extends Model implements Assignable, Numbered
         $this->save();
 
         return true;
+    }
+
+    /**
+     * The phase with this number within the plan; a phase of another plan never answers.
+     *
+     * @throws PhaseMissing
+     */
+    public function phaseNumbered(int $number): Phase
+    {
+        return $this->phases()->where('number', $number)->first() ?? throw PhaseMissing::numbered($this->number, $number);
     }
 
     /**

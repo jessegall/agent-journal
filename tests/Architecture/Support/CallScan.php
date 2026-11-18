@@ -7,13 +7,26 @@ namespace Tests\Architecture\Support;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\NodeFinder;
+use Tests\Support\ScanCache\FileScan;
 
 /**
  * The method and static calls of a file, each with its line, the method name and, for a static call or a call on a
  * named class, the class it names.
+ *
+ * @implements FileScan<array{line: int, method: string, class: string|null}>
  */
-final class CallScan
+final readonly class CallScan implements FileScan
 {
+    public function key(): string
+    {
+        return 'calls-1';
+    }
+
+    public function findingsIn(ParsedFile $file): array
+    {
+        return self::of($file);
+    }
+
     /**
      * @return list<array{line: int, method: string, class: string|null}>
      */

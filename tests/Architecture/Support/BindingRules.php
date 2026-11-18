@@ -16,6 +16,7 @@ use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\NodeFinder;
 use ReflectionClass;
 use ReflectionNamedType;
+use Tests\Support\ScanCache\ScanCache;
 
 /**
  * Judges the container bindings the code states: a #[Bind] target and a provider's class-string binding implement
@@ -158,12 +159,21 @@ final readonly class BindingRules
     {
         $registrations = [];
 
-        foreach ($this->files as $file) {
-            $parsed = ParsedFile::fromPath($file);
-            array_push($registrations, ...self::attributeRegistrations($parsed), ...self::providerRegistrations($parsed));
+        foreach (ScanCache::findings(new BindingRegistrationScan, $this->files) as $registration) {
+            $registrations[] = $registration;
         }
 
         return $registrations;
+    }
+
+    /**
+     * The bindings one file registers, through an attribute or a provider call.
+     *
+     * @return list<BindingRegistration>
+     */
+    public static function registrationsIn(ParsedFile $file): array
+    {
+        return [...self::attributeRegistrations($file), ...self::providerRegistrations($file)];
     }
 
     /**
@@ -264,9 +274,7 @@ final readonly class BindingRules
 
     private static function namespaceOf(string $file): string
     {
-        $namespace = (new NodeFinder)->findFirstInstanceOf(ParsedFile::fromPath($file)->statements, Node\Stmt\Namespace_::class);
-
-        return $namespace?->name?->toString() ?? '';
+        return ScanCache::findings(new NamespacesDeclared, [$file])[0]['name'] ?? '';
     }
 
     /**

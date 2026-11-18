@@ -17,7 +17,7 @@ defineProps<{
     <template v-if="reader">
         <Reader :title="reader.card.title">
             <template #meta>
-                <span class="font-mono tabular-nums">{{ reader.card.id }}</span>
+                <span class="tabular-nums">Plan {{ reader.card.number }}</span>
                 <span :class="stateLook[reader.card.state].tone">{{
                     stateLook[reader.card.state].label
                 }}</span>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Readers;
 
 use App\Actors\Contracts\CurrentActor;
+use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Contracts\TaskReader;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
@@ -36,5 +37,17 @@ final readonly class VisibleTasks implements TaskReader
         if ($missing !== []) {
             throw TaskMissing::forId($missing[0]);
         }
+    }
+
+    /**
+     * @param  list<string>  $taskIds
+     * @return list<TaskSummary>
+     */
+    public function summaries(array $taskIds): array
+    {
+        $this->requireAllVisible($taskIds);
+        $tasks = Task::query()->whereKey($taskIds)->get()->keyBy('id');
+
+        return array_map(fn (string $taskId) => $tasks[$taskId]->summary(), $taskIds);
     }
 }

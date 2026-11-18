@@ -13,12 +13,25 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\NodeFinder;
 use PhpParser\PrettyPrinter\Standard;
+use Tests\Support\ScanCache\FileScan;
 
 /**
  * Every call of a file that raises or hears an event, with the type of event it passes.
+ *
+ * @implements FileScan<EventCall>
  */
-final class EventCallScan
+final readonly class EventCallScan implements FileScan
 {
+    public function key(): string
+    {
+        return 'event-calls-1';
+    }
+
+    public function findingsIn(ParsedFile $file): array
+    {
+        return self::of($file);
+    }
+
     private const array EVENT_FACADES = ['Illuminate\\Support\\Facades\\Event', 'Event'];
 
     /**

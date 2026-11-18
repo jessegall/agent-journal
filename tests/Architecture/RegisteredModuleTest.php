@@ -13,7 +13,6 @@ use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ModelTables;
 use Tests\Architecture\Support\NameType;
 use Tests\Architecture\Support\NameUse;
-use Tests\Architecture\Support\ParsedFile;
 use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\PublicContracts;
 use Tests\Architecture\Support\PublicOwner;
@@ -29,6 +28,7 @@ use Tests\Fixtures\Modules\Notes\Contracts\NoteReader;
 use Tests\Fixtures\Modules\Notes\NoteRecords;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
+use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -55,11 +55,7 @@ final class RegisteredModuleTest extends TestCase
     {
         $roots = $this->roots();
         $files = DomainFiles::in([$this->registry()->get('Notes')->folder]);
-        $tableUses = ModelTables::in($files);
-
-        foreach ($files as $file) {
-            array_push($tableUses, ...TableScan::of(ParsedFile::fromPath($file)));
-        }
+        $tableUses = [...ModelTables::in($files), ...ScanCache::findings(new TableScan, $files)];
 
         $violations = [
             ...$this->boundaryChecker()->violations(DomainFiles::usesIn($files, $roots)),

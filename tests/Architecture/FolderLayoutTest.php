@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use PhpParser\Node\Stmt\ClassLike;
-use PhpParser\Node\Stmt\Enum_;
-use PhpParser\NodeFinder;
 use ReflectionClass;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\FolderType;
-use Tests\Architecture\Support\ParsedFile;
+use Tests\Architecture\Support\TypesDeclared;
+use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -80,10 +78,10 @@ final class FolderLayoutTest extends TestCase
     {
         $misplaced = [];
 
-        foreach (DomainFiles::in([app_path(), ...DomainFiles::domainCode()]) as $file) {
-            $enums = (new NodeFinder)->findInstanceOf(ParsedFile::fromPath($file)->statements, Enum_::class);
+        foreach (ScanCache::findingsByFile(new TypesDeclared, DomainFiles::in([app_path(), ...DomainFiles::domainCode()])) as $file => $types) {
+            $declaresEnum = array_any($types, fn (array $type) => $type['enum']);
 
-            if ($enums !== [] && basename(dirname($file)) !== 'Enums') {
+            if ($declaresEnum && basename(dirname($file)) !== 'Enums') {
                 $misplaced[] = substr($file, strlen(base_path()) + 1);
             }
         }
@@ -95,17 +93,17 @@ final class FolderLayoutTest extends TestCase
     {
         $misfits = [];
 
-        foreach (DomainFiles::in([app_path(), ...DomainFiles::domainCode()]) as $file) {
+        foreach (ScanCache::findingsByFile(new TypesDeclared, DomainFiles::in([app_path(), ...DomainFiles::domainCode()])) as $file => $declarations) {
             $type = FolderType::ofFolder(dirname($file));
 
             if ($type === null) {
                 continue;
             }
 
-            foreach ((new NodeFinder)->findInstanceOf(ParsedFile::fromPath($file)->statements, ClassLike::class) as $declaration) {
-                /** @var class-string|null $name */
-                $name = $declaration->namespacedName?->toString();
-                $misfit = $name === null ? null : $type->requirementNotMetBy(new ReflectionClass($name));
+            foreach ($declarations as $declaration) {
+                /** @var class-string $name */
+                $name = $declaration['name'];
+                $misfit = $type->requirementNotMetBy(new ReflectionClass($name));
 
                 if ($misfit !== null) {
                     $misfits[] = substr($file, strlen(base_path()) + 1)." is not {$misfit}; move it to ".basename(dirname($file)).'/Support';

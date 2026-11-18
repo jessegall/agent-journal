@@ -11,11 +11,11 @@ use Tests\Architecture\Support\BoundaryChecker;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\EventCallScan;
-use Tests\Architecture\Support\ParsedFile;
 use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\Violation;
 use Tests\Fixtures\Boundary\EventCalls\Plans\PlansDomain;
 use Tests\Fixtures\Boundary\EventCalls\Tasks\TasksDomain;
+use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -80,11 +80,7 @@ final class DomainEventCallTest extends TestCase
     {
         $registry = $this->app->make(DomainRegistry::class);
         $folders = [app_path(), ...DomainFiles::domainCode()];
-        $calls = [];
-
-        foreach (DomainFiles::in($folders) as $file) {
-            array_push($calls, ...EventCallScan::of(ParsedFile::fromPath($file)));
-        }
+        $calls = ScanCache::findings(new EventCallScan, DomainFiles::in($folders));
 
         $violations = $this->checker($registry)->eventCallViolations($calls);
 
@@ -101,7 +97,7 @@ final class DomainEventCallTest extends TestCase
 
         return array_map(
             fn (Violation $violation) => "{$violation->line} {$violation->reason()}",
-            $this->checker($registry)->eventCallViolations(EventCallScan::of(ParsedFile::fromPath($file))),
+            $this->checker($registry)->eventCallViolations(ScanCache::findings(new EventCallScan, [$file])),
         );
     }
 

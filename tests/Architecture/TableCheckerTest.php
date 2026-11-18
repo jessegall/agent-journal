@@ -56,7 +56,7 @@ final class TableCheckerTest extends TestCase
         $files = [$this->folder('Plans/Models/Plan.php'), $this->folder('Plans/Models/StrayMessage.php')];
 
         $this->assertSame(
-            ['11 has model table messages, which Chat owns'],
+            ['13 has model table messages, which Chat owns'],
             $this->lines($this->checker()->violations(ModelTables::in($files))),
         );
     }

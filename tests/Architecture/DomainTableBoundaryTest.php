@@ -9,7 +9,6 @@ use App\Domains\Support\DomainRegistry;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ModelTables;
-use Tests\Architecture\Support\ParsedFile;
 use Tests\Architecture\Support\RawRowAccess;
 use Tests\Architecture\Support\TableChecker;
 use Tests\Architecture\Support\TableOwner;
@@ -33,11 +32,7 @@ final class DomainTableBoundaryTest extends TestCase
         $owners = [TableOwner::core(app_path()), ...array_map(TableOwner::fromDomain(...), $registry->all())];
         $checker = TableChecker::for($owners, database_path('migrations'));
         $files = DomainFiles::in([app_path(), ...array_map(fn (DomainEntry $entry) => $entry->folder, $registry->all())]);
-        $uses = ModelTables::in($files);
-
-        foreach ($files as $file) {
-            array_push($uses, ...TableScan::of(ParsedFile::fromPath($file)));
-        }
+        $uses = [...ModelTables::in($files), ...ScanCache::findings(new TableScan, $files)];
 
         $violations = [...$checker->violations($uses), ...$checker->migrationViolations()];
 

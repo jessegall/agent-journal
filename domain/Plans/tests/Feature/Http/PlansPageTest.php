@@ -122,6 +122,22 @@ final class PlansPageTest extends TestCase
             ->reloadOnly('inspector', fn (AssertableInertia $reload) => $reload->where('inspector.data.card.title', 'Build the release page')));
     }
 
+    public function test_a_phase_has_its_own_page_within_its_plan(): void
+    {
+        $task = Task::query()->where('title', 'List the plans')->firstOrFail();
+
+        $this->actingAs($this->owner)->get("/plans/{$this->release->number}/phases/1")->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('plans/PhaseWindow')
+            ->where('page.data.planNumber', (string) $this->release->number)
+            ->where('page.data.number', '1')
+            ->where('page.data.title', 'Read')
+            ->where('page.data.tasks.0.number', (string) $task->number)
+            ->where('page.data.tasks.0.title', 'List the plans'));
+
+        $this->actingAs($this->owner)->get("/plans/{$this->paused->number}/phases/1")->assertNotFound();
+        $this->actingAs($this->owner)->get("/plans/{$this->release->number}/phases/2")->assertNotFound();
+    }
+
     public function test_a_plan_that_cannot_be_read_is_not_found(): void
     {
         $this->actingAs($this->owner)->get('/plans/'.TestIds::of(999999))->assertNotFound();
