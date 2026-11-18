@@ -566,10 +566,15 @@ use App\Skills\Contracts\SkillCondition;
 use App\Skills\Contracts\SkillReader;
 use App\Skills\Enums\ConditionOutcome;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
+use App\Skills\Exceptions\ProgramKeyInvalid;
+use App\Skills\Exceptions\ProviderKeyInvalid;
+use App\Skills\Exceptions\SkillConditionInvalid;
 use App\Skills\Exceptions\SkillKeyInvalid;
 use App\Skills\Values\ConditionResult;
 use App\Skills\Values\LaunchProfile;
 use App\Skills\Values\MarkdownPart;
+use App\Skills\Values\ProgramKey;
+use App\Skills\Values\ProviderKey;
 use App\Skills\Values\RenderedSkill;
 use App\Skills\Values\SkillConditionRegistration;
 use App\Skills\Values\SkillContext;
@@ -1036,6 +1041,8 @@ final class CoreApi
                 ProfileActivation::class,
                 ActivatedProfile::class,
                 SkillKey::class,
+                ProgramKey::class,
+                ProviderKey::class,
                 SkillSection::class,
                 MarkdownPart::class,
                 SkillContext::class,
@@ -1230,6 +1237,9 @@ final class CoreApi
                 ProfileRetired::class,
                 SkillDeclarationInvalid::class,
                 SkillKeyInvalid::class,
+                ProgramKeyInvalid::class,
+                ProviderKeyInvalid::class,
+                SkillConditionInvalid::class,
             )
             ->support(
                 BelongsToOneActor::class,

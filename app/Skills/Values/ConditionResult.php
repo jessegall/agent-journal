@@ -31,6 +31,22 @@ final readonly class ConditionResult
         return new self(ConditionOutcome::Unavailable, $reason);
     }
 
+    /**
+     * The first of these results with this outcome, or null when none has it.
+     *
+     * @param  list<self>  $results
+     */
+    public static function firstWith(ConditionOutcome $outcome, array $results): ?self
+    {
+        foreach ($results as $result) {
+            if ($result->outcome === $outcome) {
+                return $result;
+            }
+        }
+
+        return null;
+    }
+
     public function isMatch(): bool
     {
         return $this->outcome === ConditionOutcome::Match;

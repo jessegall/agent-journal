@@ -22,6 +22,8 @@ use App\Skills\Enums\ConditionOutcome;
 use App\Skills\Exceptions\SkillKeyInvalid;
 use App\Skills\Values\LaunchProfile;
 use App\Skills\Values\MarkdownPart;
+use App\Skills\Values\ProgramKey;
+use App\Skills\Values\ProviderKey;
 use App\Skills\Values\SkillContext;
 use App\Skills\Values\SkillKey;
 use App\Skills\Values\SkillSection;
@@ -67,7 +69,7 @@ final class SkillContractsTest extends TestCase
     {
         $part = MarkdownPart::heading('plans.md', ['Failure', 'Retry']);
         $section = SkillSection::markdown('phases', 'Working a phase', $part);
-        $context = new SkillContext(new ActorIdentity(ActorType::Agent, TestIds::of(3)), AgentRole::ReadOnlyHelper, TestIds::of(4), 'main', LaunchProfile::profileFree());
+        $context = new SkillContext(new ActorIdentity(ActorType::Agent, TestIds::of(3)), AgentRole::ReadOnlyHelper, TestIds::of(4), 'main', LaunchProfile::profileFree(), ProgramKey::from('codex'), ProviderKey::from('openai'));
 
         $this->assertSame('plans.md > Failure > Retry', $part->selector());
         $this->assertTrue(MarkdownPart::body('plans.md')->isWholeBody());
