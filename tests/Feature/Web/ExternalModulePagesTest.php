@@ -12,7 +12,6 @@ use App\Web\Routes\DeclaredRoutes;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Routing\Router;
-use Illuminate\Support\Facades\Schema;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\Models\Note;
@@ -37,9 +36,7 @@ final class ExternalModulePagesTest extends TestCase
     {
         parent::setUp();
 
-        foreach (glob(base_path('tests/Fixtures/Modules/Notes/database/migrations/*.php')) ?: [] as $migration) {
-            (require $migration)->up();
-        }
+        $this->createNotesTables();
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
@@ -47,7 +44,7 @@ final class ExternalModulePagesTest extends TestCase
 
     protected function tearDown(): void
     {
-        Schema::dropIfExists('module_notes');
+        $this->dropNotesTables();
 
         parent::tearDown();
     }

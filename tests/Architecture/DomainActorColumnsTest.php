@@ -24,10 +24,6 @@ final class DomainActorColumnsTest extends TestCase
     private const array BEING_REMOVED = [
         'messages.agent_id' => 'plan 16: messages between actors (doc 27)',
         'messages.session_id' => 'plan 16: messages between actors (doc 27)',
-        'document_revisions.session_id' => 'task 947: Documents editing through stack frames',
-        'document_drafts.session_id' => 'task 947',
-        'document_closes.session_id' => 'task 947',
-        'record_docks.session_id' => 'task 947',
     ];
 
     /**

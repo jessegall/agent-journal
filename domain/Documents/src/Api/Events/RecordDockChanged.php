@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Api\Events;
 
+use App\Actors\Support\ActorIdentity;
 use App\Contracts\Event;
 use App\Ui\Contracts\UpdatesUserInterface;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
@@ -13,5 +14,5 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
  */
 final readonly class RecordDockChanged implements Event, ShouldDispatchAfterCommit, UpdatesUserInterface
 {
-    public function __construct(public string $sessionId, public string $recordType, public string $recordId) {}
+    public function __construct(public ActorIdentity $recipient, public string $recordType, public string $recordId) {}
 }

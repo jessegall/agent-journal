@@ -31,7 +31,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $reason
  * @property CarbonImmutable|null $closed_at
  */
-#[Fillable(['token', 'document_id', 'base_revision_number', 'result_revision_number', 'author_type', 'author_id', 'session_id', 'cause', 'closer_type', 'closer_id', 'reason', 'published', 'closed_at'])]
+#[Fillable(['token', 'document_id', 'base_revision_number', 'result_revision_number', 'author_type', 'author_id', 'cause', 'closer_type', 'closer_id', 'reason', 'published', 'closed_at'])]
 final class DocumentClose extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
@@ -60,7 +60,6 @@ final class DocumentClose extends Model implements ReadableModel
             'result_revision_number' => $resultNumber,
             'author_type' => $draft->author_type,
             'author_id' => $draft->author_id,
-            'session_id' => $draft->session_id,
             'cause' => $cause,
             'closer_type' => $closer?->actorType(),
             'closer_id' => $closer?->actorId(),

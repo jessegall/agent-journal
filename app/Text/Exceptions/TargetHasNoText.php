@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Comments\Exceptions;
+namespace App\Text\Exceptions;
 
 use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
- * A text comment on a record whose text cannot be read in versions.
+ * A record whose text cannot be read in versions: it has no text to read or to point a comment at.
  */
 final class TargetHasNoText extends RuntimeException implements CommandRefusal
 {
     public static function for(string $type): self
     {
-        return new self("A {$type} has no text to point at; leave a comment on the whole record instead.");
+        return new self("A {$type} has no text to read or point at; a comment on it is about the whole record.");
     }
 }

@@ -34,7 +34,6 @@ return new class extends Migration
             $table->longText('body');
             $table->string('author_type', 16);
             $table->ulid('author_id');
-            $table->ulid('session_id')->nullable();
             $table->timestampTz('closed_at')->nullable();
             $table->timestampsTz();
 

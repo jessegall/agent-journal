@@ -54,6 +54,6 @@ function open(): void {
         </section>
         <DockToSession type="doc" :number="data.number" :sessions="data.record.sessions" />
         <LinksPanel :source="data.record.label" :links="data.record.links" />
-        <CommentsPanel :comments="data.record.comments" :target="data.record.label" :body="data.record.body" :version="data.record.revision" />
+        <CommentsPanel :comments="data.record.comments" :target="data.record.label" :version="data.record.revision" />
     </div>
 </template>
