@@ -7,6 +7,12 @@ namespace App\Sharing\Providers;
 use App\Domains\Support\DomainRegistry;
 use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\NumberedTypeRegistry;
+use App\Sharing\Console\RequestShareCommand;
+use App\Sharing\Console\ShareCreateCommand;
+use App\Sharing\Console\ShareListCommand;
+use App\Sharing\Console\ShareRevokeCommand;
+use App\Sharing\Console\ShareStatusCommand;
+use App\Sharing\Console\ShareUrlCommand;
 use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Contracts\SharePolicy;
@@ -50,5 +56,10 @@ final class SharingServiceProvider extends ServiceProvider
         }
 
         $this->app->booted(fn () => $this->app->make(ShareRecordRegistry::class)->checkRelations());
+        $this->loadRoutesFrom(dirname(__DIR__).'/Routes/sharing.php');
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([RequestShareCommand::class, ShareStatusCommand::class, ShareListCommand::class, ShareCreateCommand::class, ShareRevokeCommand::class, ShareUrlCommand::class]);
+        }
     }
 }
