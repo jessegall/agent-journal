@@ -31,6 +31,7 @@ class WorkerHooks:
         if not worker.session:
             worker = self.workers.save(worker.with_(session=hook.session).with_event(WorkerSessionBound(environment_id=worker.environment_id)), Actor.system())
         agent = self.agents.worker_agent(hook.session, environment.row_id, hook.provider)
+        print("PROBE bind", hook.session, agent.state, worker.state)
         if agent.state != Void.name:
             return agent
         # only a worker that clocked in is put to work: one still before its clock-in rests on its floor's rules
