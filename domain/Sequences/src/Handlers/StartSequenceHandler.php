@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Handlers;
 
 use App\Agents\Contracts\SessionReader;
+use App\Contracts\CommandHandler;
 use Domain\Sequences\Commands\StartSequence;
 use Domain\Sequences\Events\SequenceStarted;
 use Domain\Sequences\Models\SequenceRun;
@@ -13,7 +14,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 /**
  * Resolves the session after every middleware, then starts the run for it under the run's row lock.
  */
-final readonly class StartSequenceHandler
+final readonly class StartSequenceHandler implements CommandHandler
 {
     public function __construct(
         private SessionReader $sessions,

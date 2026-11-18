@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Records\Handlers;
 
+use App\Contracts\CommandHandler;
 use App\Records\Commands\LinkRecords;
 use App\Records\Contracts\RecordLinker;
 
-final readonly class LinkRecordsHandler
+final readonly class LinkRecordsHandler implements CommandHandler
 {
     public function __construct(private RecordLinker $links) {}
 

@@ -1425,6 +1425,7 @@ interface	AssignmentWriter
 interface	ChoiceLabel
 interface	Command
 interface	CommandBus
+interface	CommandHandler
 interface	CommandMiddleware
 interface	CommandRefusal
 interface	CommandTransaction
@@ -1445,6 +1446,7 @@ interface	HookAnswerer
 interface	HookInput
 interface	JournalAccessPolicy
 interface	LaunchTransaction
+interface	Listener
 interface	NavigationChildren
 interface	NumberAllocator
 interface	Numbered

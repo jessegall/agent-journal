@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Handlers;
 
+use App\Contracts\CommandHandler;
 use Domain\Memory\Commands\RememberForAgent;
 use Domain\Memory\Models\Memory;
 
-final readonly class RememberForAgentHandler
+final readonly class RememberForAgentHandler implements CommandHandler
 {
     public function handle(RememberForAgent $command): string
     {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Listeners;
 
+use App\Contracts\Listener;
 use App\Hooks\Contracts\AgentStack;
 use Domain\Sequences\Events\SequenceStarted;
 use Domain\Sequences\Readers\Support\SequenceRecords;
@@ -12,7 +13,7 @@ use Domain\Sequences\States\Support\FollowingSequenceStateReference;
 /**
  * Puts the started run on the agent's stack in the same transaction as the start.
  */
-final readonly class PushSequenceState
+final readonly class PushSequenceState implements Listener
 {
     public function __construct(
         private SequenceRecords $runs,

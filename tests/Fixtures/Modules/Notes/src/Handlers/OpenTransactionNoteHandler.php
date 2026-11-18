@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Handlers;
 
+use App\Contracts\CommandHandler;
 use Illuminate\Database\ConnectionInterface;
 use Tests\Fixtures\Modules\Notes\Commands\OpenTransactionNote;
 
-final class OpenTransactionNoteHandler
+final class OpenTransactionNoteHandler implements CommandHandler
 {
     public function __construct(private readonly ConnectionInterface $database) {}
 

@@ -7,6 +7,7 @@ namespace Domain\Plans\Handlers;
 use App\Actors\Contracts\CurrentActor;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Support\StackTarget;
+use App\Contracts\CommandHandler;
 use App\Hooks\Contracts\AgentStack;
 use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Plans\Commands\StartPlan;
@@ -20,7 +21,7 @@ use Illuminate\Contracts\Events\Dispatcher;
  * plan's working frame on its stack in the same transaction, so its current plan is read from the stack; a user's start
  * changes no stack. PlanStarted is raised only when the plan changed.
  */
-final readonly class StartPlanHandler
+final readonly class StartPlanHandler implements CommandHandler
 {
     public function __construct(
         private CurrentActor $actors,

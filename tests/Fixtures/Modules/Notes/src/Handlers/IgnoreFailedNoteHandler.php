@@ -6,10 +6,11 @@ namespace Tests\Fixtures\Modules\Notes\Handlers;
 
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandRefused;
+use App\Contracts\CommandHandler;
 use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
 
-final class IgnoreFailedNoteHandler
+final class IgnoreFailedNoteHandler implements CommandHandler
 {
     public function __construct(private readonly CommandBus $bus) {}
 

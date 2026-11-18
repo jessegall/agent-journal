@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Hooks\Listeners;
 
 use App\Agents\Events\LaunchSettingsRequested;
+use App\Contracts\Listener;
 use App\Hooks\Enums\HookProgram;
 
 /**
  * Adds the journal's hooks for a program it supports to the launch's isolated settings, and turns off its child tools without identity.
  */
-final class SupplyHookSettings
+final class SupplyHookSettings implements Listener
 {
     public function handle(LaunchSettingsRequested $event): void
     {

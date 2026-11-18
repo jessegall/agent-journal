@@ -6,6 +6,7 @@ namespace App\Hooks\Listeners;
 
 use App\Agents\Events\LaunchStarted;
 use App\Agents\Support\StackTarget;
+use App\Contracts\Listener;
 use App\Hooks\Actions\LaunchStacks;
 use App\Hooks\Contracts\ShellCommandParser;
 use App\Hooks\Enums\ReadyStateType;
@@ -16,7 +17,7 @@ use App\Hooks\Inputs\MissingShellParser;
  * Opens the launched agent's stack with the bottom state of its role, in the launch transaction. A launch with an
  * unknown role, or with no parser to read its shell commands, is refused before the program starts.
  */
-final readonly class OpenLaunchStack
+final readonly class OpenLaunchStack implements Listener
 {
     public function __construct(
         private LaunchStacks $stacks,

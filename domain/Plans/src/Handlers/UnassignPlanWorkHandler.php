@@ -6,13 +6,14 @@ namespace Domain\Plans\Handlers;
 
 use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Support\AssignmentResult;
+use App\Contracts\CommandHandler;
 use Domain\Plans\Commands\UnassignPlanWork;
 use Domain\Plans\Support\PlanAssignmentGroup;
 
 /**
  * Runs Core's releasing cascade with the plan's group; a stale expected holder is refused by the writer.
  */
-final readonly class UnassignPlanWorkHandler
+final readonly class UnassignPlanWorkHandler implements CommandHandler
 {
     public function __construct(
         private AssignmentWriter $writer,

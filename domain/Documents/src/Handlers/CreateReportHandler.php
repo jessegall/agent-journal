@@ -6,6 +6,7 @@ namespace Domain\Documents\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Assignments\Support\RecordIdentity;
+use App\Contracts\CommandHandler;
 use App\Records\Contracts\RecordLinker;
 use Domain\Documents\Api\CreatedRecord;
 use Domain\Documents\Api\Events\ReportFiled;
@@ -16,7 +17,7 @@ use Domain\Documents\Support\LinkLimit;
 use Domain\Documents\Support\MarkdownText;
 use Illuminate\Contracts\Events\Dispatcher;
 
-final readonly class CreateReportHandler
+final readonly class CreateReportHandler implements CommandHandler
 {
     public function __construct(
         private CurrentActor $actors,

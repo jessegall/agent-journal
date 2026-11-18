@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace Domain\Documents\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Contracts\CommandHandler;
 use Domain\Documents\Api\CloseResult;
 use Domain\Documents\Commands\RecoverDocument;
 use Domain\Documents\Support\DraftClosing;
 
-final readonly class RecoverDocumentHandler
+final readonly class RecoverDocumentHandler implements CommandHandler
 {
     public function __construct(private DraftClosing $drafts, private CurrentActor $actors) {}
 

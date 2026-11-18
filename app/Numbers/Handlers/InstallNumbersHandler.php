@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Numbers\Handlers;
 
+use App\Contracts\CommandHandler;
 use App\Numbers\Commands\InstallNumbers;
 use App\Numbers\Models\GlobalGroup;
 
 /**
  * Creates the journal's global number group unless it exists.
  */
-final readonly class InstallNumbersHandler
+final readonly class InstallNumbersHandler implements CommandHandler
 {
     public function handle(InstallNumbers $command): void
     {

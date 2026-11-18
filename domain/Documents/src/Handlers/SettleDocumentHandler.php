@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Contracts\CommandHandler;
 use Domain\Documents\Api\Events\RecordSettled;
 use Domain\Documents\Commands\SettleDocument;
 use Domain\Documents\Exceptions\SettlementDenied;
@@ -14,7 +15,7 @@ use Domain\Documents\Models\DocumentDraft;
 use Domain\Documents\Support\MarkdownText;
 use Illuminate\Contracts\Events\Dispatcher;
 
-final readonly class SettleDocumentHandler
+final readonly class SettleDocumentHandler implements CommandHandler
 {
     public function __construct(private CurrentActor $actors, private Dispatcher $events) {}
 

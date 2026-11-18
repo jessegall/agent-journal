@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Handlers;
 
 use App\Agents\Contracts\SessionReader;
+use App\Contracts\CommandHandler;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Models\Task;
@@ -13,7 +14,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 /**
  * Resolves the session after every middleware, then starts the task for it under the task's row lock.
  */
-final readonly class StartTaskHandler
+final readonly class StartTaskHandler implements CommandHandler
 {
     public function __construct(
         private SessionReader $sessions,

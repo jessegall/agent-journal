@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Modules\Notes\Handlers;
 
 use App\Bus\Contracts\CommandBus;
+use App\Contracts\CommandHandler;
 use Tests\Fixtures\Modules\Notes\Commands\CopyNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
 
-final class CopyNoteHandler
+final class CopyNoteHandler implements CommandHandler
 {
     public function __construct(private readonly CommandBus $bus) {}
 
