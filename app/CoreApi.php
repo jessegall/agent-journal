@@ -265,6 +265,33 @@ use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Exceptions\SettingHandleUnknown;
 use App\Settings\Values\Choice;
 use App\Settings\Values\Decimal;
+use App\Sharing\Contracts\ProvidesShareGateways;
+use App\Sharing\Contracts\ProvidesShareRecords;
+use App\Sharing\Contracts\Shareable;
+use App\Sharing\Contracts\ShareGateway;
+use App\Sharing\Contracts\SharePolicy;
+use App\Sharing\Contracts\ShareRecordProvider;
+use App\Sharing\Enums\ShareRelationType;
+use App\Sharing\Exceptions\SharingNotAllowed;
+use App\Sharing\Support\GatewayConfiguration;
+use App\Sharing\Support\GatewayEndpoint;
+use App\Sharing\Support\GatewayHealth;
+use App\Sharing\Support\GatewayOperation;
+use App\Sharing\Support\GatewayReadiness;
+use App\Sharing\Support\GatewaySettings;
+use App\Sharing\Support\ShareBudget;
+use App\Sharing\Support\ShareCandidates;
+use App\Sharing\Support\ShareContentRead;
+use App\Sharing\Support\SharedContent;
+use App\Sharing\Support\ShareRecordCard;
+use App\Sharing\Support\ShareRecordRegistration;
+use App\Sharing\Support\ShareRecords;
+use App\Sharing\Support\ShareRelation;
+use App\Sharing\Support\ShareRelationRead;
+use App\Sharing\Support\ShareRelationSet;
+use App\Sharing\Support\ShareSelectedTarget;
+use App\Sharing\Support\ShareSelection;
+use App\Sharing\Support\ShareTargetRead;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextReader;
 use App\Text\Data\TextSections;
@@ -398,6 +425,12 @@ final class CoreApi
                 SettingsDefinition::class,
                 GroupDeclaration::class,
                 ChoiceLabel::class,
+                Shareable::class,
+                ShareRecordProvider::class,
+                ShareGateway::class,
+                ProvidesShareRecords::class,
+                ProvidesShareGateways::class,
+                SharePolicy::class,
             )
             ->values(
                 RecordCard::class,
@@ -529,6 +562,26 @@ final class CoreApi
                 EnumSetting::class,
                 Choice::class,
                 SettingType::class,
+                ShareRelationSet::class,
+                ShareRelation::class,
+                ShareRecordRegistration::class,
+                ShareSelection::class,
+                ShareBudget::class,
+                ShareCandidates::class,
+                ShareRecordCard::class,
+                ShareRecords::class,
+                ShareTargetRead::class,
+                ShareRelationRead::class,
+                ShareContentRead::class,
+                SharedContent::class,
+                ShareSelectedTarget::class,
+                GatewayConfiguration::class,
+                GatewaySettings::class,
+                GatewayOperation::class,
+                GatewayEndpoint::class,
+                GatewayReadiness::class,
+                GatewayHealth::class,
+                ShareRelationType::class,
             )
             ->commands(
                 PostComment::class,
@@ -585,6 +638,7 @@ final class CoreApi
                 StackTransactionRequired::class,
                 InvalidAssignmentIdentity::class,
                 InvalidRecordIdentity::class,
+                SharingNotAllowed::class,
                 InvalidAssignmentPage::class,
                 AssignmentGroupTooLarge::class,
                 AssigneeUnavailable::class,
