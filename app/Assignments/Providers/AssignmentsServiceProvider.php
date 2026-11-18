@@ -17,6 +17,7 @@ use App\Assignments\Contracts\AssignmentReader;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
+use App\Assignments\Contracts\AutoAssignmentAccess;
 use App\Assignments\Contracts\AutoAssignmentReader;
 use App\Assignments\Contracts\AutoAssignmentWriter;
 use App\Assignments\Contracts\RecordVisibility;
@@ -28,6 +29,7 @@ use App\Assignments\Registry\AssignmentRegistry;
 use App\Assignments\Storage\DatabaseAssignmentQuery;
 use App\Assignments\Storage\DatabaseAssignmentTransaction;
 use App\Assignments\Storage\DatabaseAutoAssignments;
+use App\Assignments\Support\DenyAllAutoAssignmentAccess;
 use App\Links\Support\LinkTypeRegistry;
 use Illuminate\Support\ServiceProvider;
 
@@ -41,6 +43,7 @@ final class AssignmentsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(AssignmentRegistry::class);
+        $this->app->bindIf(AutoAssignmentAccess::class, DenyAllAutoAssignmentAccess::class);
         $this->app->bind(AssignmentRegistration::class, AssignmentRegistry::class);
         $this->app->bind(AssignmentProviders::class, AssignmentRegistry::class);
         $this->app->bind(AssignmentTransaction::class, DatabaseAssignmentTransaction::class);
