@@ -24,6 +24,7 @@ import (
 	"journal-agent/drivers"
 	"journal-agent/host"
 	"journal-agent/profiles/contracts"
+	"journal-agent/screen"
 )
 
 // defaultStateFolder is the host's private folder unless --state names another.
@@ -74,7 +75,7 @@ func serve(arguments []string) error {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	socket := &host.AttachSocket{Folder: *stateFolder, Start: startTerminal}
+	socket := &host.AttachSocket{Folder: *stateFolder, Start: startTerminal, Layout: layoutOf}
 	listener, err := socket.Listen()
 	if err != nil {
 		return err
@@ -258,4 +259,17 @@ func newConversationID() (string, error) {
 	random[6] = random[6]&0x0f | 0x40
 	random[8] = random[8]&0x3f | 0x80
 	return fmt.Sprintf("%x-%x-%x-%x-%x", random[0:4], random[4:6], random[6:8], random[8:10], random[10:16]), nil
+}
+
+// layoutOf is the screen layout of the program an attach request starts, from the profile of its program name.
+func layoutOf(request host.AttachRequest) (screen.Layout, error) {
+	if len(request.Command) == 0 {
+		return screen.Layout{}, errors.New("an attach request names no program")
+	}
+	profile, known := profileFor[filepath.Base(request.Command[0])]
+	if !known {
+		return screen.Layout{}, fmt.Errorf("no profile for the program %q", request.Command[0])
+	}
+
+	return profile.Screens(), nil
 }
