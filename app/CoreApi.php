@@ -309,6 +309,8 @@ use App\Numbers\Support\HasNumber;
 use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\RecordReference;
 use App\Processes\Attributes\JournalRoute;
+use App\Processes\Commands\IssueEvidencePermit;
+use App\Processes\Commands\RevokeCommandPermissions;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\FactOrigin;
 use App\Processes\Contracts\ProgramClassifier;
@@ -349,6 +351,7 @@ use App\Processes\Values\Classification;
 use App\Processes\Values\CommandClassSet;
 use App\Processes\Values\CommandOperation;
 use App\Processes\Values\CommandPart;
+use App\Processes\Values\CommandPattern;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\EmptyRunPolicy;
 use App\Processes\Values\ExecutableBinding;
@@ -802,6 +805,7 @@ final class CoreApi
                 BindingType::class,
                 RuleReference::class,
                 ProgramIdentity::class,
+                CommandPattern::class,
                 VerificationContract::class,
                 ToolType::class,
                 OutputEncoding::class,
@@ -1022,6 +1026,8 @@ final class CoreApi
                 RequestShare::class,
                 ApproveShareRequest::class,
                 RevokeShare::class,
+                RevokeCommandPermissions::class,
+                IssueEvidencePermit::class,
                 RefreshShareScope::class,
                 RetryShare::class,
                 ConfigureShareGateway::class,

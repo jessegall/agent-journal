@@ -49,7 +49,7 @@ final readonly class SharingAssets
             }
         }
 
-        return array_values($files);
+        return $files;
     }
 
     /**

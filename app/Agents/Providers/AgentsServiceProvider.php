@@ -22,11 +22,13 @@ use App\Agents\Support\AgentContext;
 use App\Agents\Support\AgentSessionCounter;
 use App\Agents\Support\DatabaseLaunchTransaction;
 use App\Agents\Support\RequestSession;
+use App\Agents\Support\RolePermissionReader;
 use App\Assignments\Contracts\AgentAuthority;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Support\AssigneeRegistration;
 use App\Bus\Contracts\CallerSession;
 use App\Contracts\LaunchTransaction;
+use App\Processes\Contracts\CommandPermissionReader;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -37,6 +39,7 @@ final class AgentsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->scoped(CommandPermissionReader::class, RolePermissionReader::class);
         $this->app->scoped(AgentContext::class, fn () => throw AgentContextMissing::forRequest());
         $this->app->scoped(AgentAssignees::class);
         $this->app->bind(AgentAuthority::class, AgentAuthorityRecords::class);

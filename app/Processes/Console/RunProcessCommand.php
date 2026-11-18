@@ -32,13 +32,19 @@ final class RunProcessCommand extends Command
      */
     private const array SECRET_VARIABLES = ['JOURNAL_LAUNCH_TOKEN', 'JOURNAL_EVENT_KEY'];
 
-    protected $signature = 'process:run {--admission= : The admitted run to start}';
+    protected $signature = 'process:run {--admission= : The admitted run to start} {--permit= : An evidence permit to run its exact command line once} {--request-id= : The id this use of the permit goes under}';
 
     protected $description = 'Run an admitted command line under the supervisor and print the start of its output';
 
     public function handle(AgentRequestSender $journal, Supervisor $supervisor): int
     {
-        $admission = $journal->send('/agent/processes/admissions/'.$this->admissionId(), [])->body;
+        $admissionId = $this->admissionId($journal);
+        if ($admissionId === '') {
+            $this->error('An evidence permit is required: a project owner issues one for the exact command line.');
+
+            return self::FAILURE;
+        }
+        $admission = $journal->send('/agent/processes/admissions/'.$admissionId, [])->body;
         if ($admission['already_started'] === true) {
             $this->line("Run {$admission['run_id']} already started; nothing was started again.");
 
@@ -60,8 +66,15 @@ final class RunProcessCommand extends Command
         return $outcome->status;
     }
 
-    private function admissionId(): string
+    /**
+     * The admission to run: the one named, or the evidence run a permit starts for this request id.
+     */
+    private function admissionId(AgentRequestSender $journal): string
     {
+        if ($this->option('permit') !== null) {
+            return (string) $journal->send('/agent/processes/permits/'.$this->option('permit').'/runs', ['request_id' => (string) $this->option('request-id')])->body['run_id'];
+        }
+
         return (string) $this->option('admission');
     }
 

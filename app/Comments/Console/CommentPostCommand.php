@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Comments\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
+use App\AgentRequests\Console\Concerns\SendsSignedWrites;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 #[JournalRoute(JournalRouteType::Write)]
 final class CommentPostCommand extends Command
 {
-    use SendsSignedCalls;
+    use SendsSignedWrites;
 
     /**
      * The flags that name a place in the text, with the request field each fills.
