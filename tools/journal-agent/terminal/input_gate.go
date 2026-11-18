@@ -101,6 +101,28 @@ func (gate *InputGate) Submit(line *TypedLine, enterRetries int) (Delivery, erro
 	return DeliveryUncertain, nil
 }
 
+// Keys sends a driver's keys, such as a menu move, unless the person holds the input: a person's key since the
+// last driver write pauses the driver until a person's Enter or explicit choice hands the input back.
+func (gate *InputGate) Keys(keys string) error {
+	gate.mutex.Lock()
+	defer gate.mutex.Unlock()
+
+	if gate.owner == HumanInput {
+		return ErrPersonTyping
+	}
+	_, err := io.WriteString(gate.program, keys)
+
+	return err
+}
+
+// Owner is who holds the input now.
+func (gate *InputGate) Owner() Owner {
+	gate.mutex.Lock()
+	defer gate.mutex.Unlock()
+
+	return gate.owner
+}
+
 // Draft is the person's unsent text and since when it waits; found is false while the composer is not theirs.
 func (gate *InputGate) Draft() (draft Draft, found bool) {
 	gate.mutex.Lock()

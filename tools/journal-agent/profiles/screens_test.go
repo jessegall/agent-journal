@@ -56,7 +56,8 @@ func has(readings []screen.Classification, kind screen.Kind, menu string) bool {
 func TestClaudeCodeRecordingsReadAsTheirMenuAndPrompt(t *testing.T) {
 	layout := ClaudeCode{}.Screens()
 
-	if trust := readings(t, "claude-code/2.1.323/screens/folder-trust", layout); !has(trust, screen.MenuShown, "folder-trust") {
+	trust := readings(t, "claude-code/2.1.323/screens/folder-trust", layout)
+	if !has(trust, screen.MenuShown, "folder-trust") {
 		t.Fatalf("the folder-trust recording read as %+v", trust)
 	}
 

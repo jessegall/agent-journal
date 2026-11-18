@@ -27,4 +27,6 @@ var (
 	ErrComposerHeld = errors.New("the composer holds text or changed since it was read: the driver line waits")
 	// ErrLineInvalidated refuses to submit a driver line the person typed over; their keys went through instead.
 	ErrLineInvalidated = errors.New("the person typed while the driver line was pending: it is not submitted")
+	// ErrPersonTyping refuses driver keys while the person holds the input.
+	ErrPersonTyping = errors.New("the person holds the input: driver keys wait")
 )

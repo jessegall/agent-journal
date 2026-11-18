@@ -126,6 +126,13 @@ func (classifier *Classifier) composerIsEmptyWithCursor(snapshot contracts.Snaps
 		cursor.Column == classifier.layout.EmptyCursorColumn
 }
 
+// Forget drops what the classifier saw, so every region must hold still again from now before it counts as stable:
+// a resumed driver acts only on a screen it read afresh.
+func (classifier *Classifier) Forget() {
+	classifier.seen = map[string]uint64{}
+	classifier.since = map[string]time.Time{}
+}
+
 // heldFor is whether the region's generation has not changed for at least the interval.
 func (classifier *Classifier) heldFor(region string, now time.Time, interval time.Duration) bool {
 	generation := classifier.reader.Generation(region)
