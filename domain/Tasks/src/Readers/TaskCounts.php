@@ -26,7 +26,7 @@ final readonly class TaskCounts implements TaskProgressCounter
     public function progressOf(array $taskIds): TaskProgress
     {
         $this->actors->actor();
-        $states = Task::query()->whereKey($taskIds)->pluck('state')->countBy(fn (TaskState $state) => $state->value);
+        $states = Task::query()->whereKey($taskIds)->readLimit(count($taskIds))->pluck('state')->countBy(fn (TaskState $state) => $state->value);
 
         return self::progressOfStates($states->all());
     }
@@ -42,7 +42,8 @@ final readonly class TaskCounts implements TaskProgressCounter
     public function progressByGroup(array $taskIdGroups): array
     {
         $this->actors->actor();
-        $stateOfTask = Task::query()->whereKey(array_merge(...array_values($taskIdGroups)))->pluck('state', 'id')->all();
+        $allTaskIds = array_merge(...array_values($taskIdGroups));
+        $stateOfTask = Task::query()->whereKey($allTaskIds)->readLimit(count($allTaskIds))->pluck('state', 'id')->all();
 
         return array_map(
             fn (array $taskIds) => self::progressOfStates(array_count_values(array_map(

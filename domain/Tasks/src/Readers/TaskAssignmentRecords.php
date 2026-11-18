@@ -59,7 +59,7 @@ final readonly class TaskAssignmentRecords implements TaskAssignmentReader
     {
         $this->actors->actor();
         $wanted = array_values(array_unique($taskIds));
-        $states = Task::query()->whereKey($wanted)->orderBy('id')->pluck('state', 'id')->all();
+        $states = Task::query()->whereKey($wanted)->readLimit(count($wanted))->orderBy('id')->pluck('state', 'id')->all();
 
         foreach ($wanted as $taskId) {
             if (! array_key_exists($taskId, $states)) {

@@ -73,7 +73,7 @@ final readonly class RetireAgentHandler
 
     private function endSessionsOf(Agent $target): void
     {
-        $sessions = AgentSession::query()->where('agent_id', $target->id)->with('credential')->get();
+        $sessions = AgentSession::query()->where('agent_id', $target->id)->with('credential')->readAll('every session of the retiring agent ends')->get();
 
         foreach ($sessions->filter(fn (AgentSession $session) => $session->isActive()) as $session) {
             if ($session->credential !== null) {

@@ -11,7 +11,8 @@ use App\Assignments\Support\RecordIdentity;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
-use App\Reads\Support\CountsLoads;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWorkState;
@@ -38,10 +39,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['title'])]
-final class Task extends Model implements Assignable, Numbered
+final class Task extends Model implements Assignable, Numbered, ReadableModel
 {
     use AssignableListing, HasNumber, HasUlids, Linkable;
-    use CountsLoads;
+    use BoundedReads;
 
     /**
      * The stable name links and assignments use for a task.

@@ -183,11 +183,25 @@ use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\RecordReference;
 use App\Queries\Support\TextSearch;
 use App\Reads\Attributes\ReadBudget;
+use App\Reads\Contracts\ReadableModel;
 use App\Reads\Contracts\ReadMeter;
+use App\Reads\Enums\ReadMode;
+use App\Reads\Exceptions\ModelReadAllRefused;
+use App\Reads\Exceptions\ReadLimitExceeded;
+use App\Reads\Exceptions\ReadLimitInvalid;
+use App\Reads\Exceptions\ReadLimitTooLarge;
+use App\Reads\Exceptions\ReadReasonMissing;
+use App\Reads\Exceptions\ReadShapeUnsupported;
+use App\Reads\Exceptions\RelationReadUndeclared;
+use App\Reads\Support\BoundedReads;
 use App\Reads\Support\CountsLoads;
 use App\Reads\Support\CountsPivotLoads;
+use App\Reads\Support\ReadBuilder;
 use App\Reads\Values\Measurement;
+use App\Reads\Values\PageSize;
 use App\Reads\Values\ReadCounts;
+use App\Reads\Values\ReadOrder;
+use App\Reads\Values\RelationRead;
 use App\Ui\Contracts\CountReader;
 use App\Ui\Contracts\NavigationChildren;
 use App\Ui\Contracts\PageOption;
@@ -228,6 +242,7 @@ final class CoreApi
         return Exports::make()
             ->events(ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class)
             ->contracts(
+                ReadableModel::class,
                 ReadMeter::class,
                 Actor::class,
                 CurrentActor::class,
@@ -279,6 +294,10 @@ final class CoreApi
                 VisibilityCheck::class,
             )
             ->values(
+                ReadMode::class,
+                ReadOrder::class,
+                PageSize::class,
+                RelationRead::class,
                 ReadBudget::class,
                 ReadCounts::class,
                 Measurement::class,
@@ -379,6 +398,13 @@ final class CoreApi
                 UnassignRecord::class,
             )
             ->exceptions(
+                ReadLimitInvalid::class,
+                ReadLimitTooLarge::class,
+                ReadReasonMissing::class,
+                ModelReadAllRefused::class,
+                ReadShapeUnsupported::class,
+                ReadLimitExceeded::class,
+                RelationReadUndeclared::class,
                 ActorContextMissing::class,
                 UserActorRequired::class,
                 StateTypeRepeated::class,
@@ -432,6 +458,8 @@ final class CoreApi
                 NestedCommandFailureIgnored::class,
             )
             ->support(
+                BoundedReads::class,
+                ReadBuilder::class,
                 CountsLoads::class,
                 CountsPivotLoads::class,
                 AgentState::class,

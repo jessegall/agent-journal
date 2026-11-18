@@ -35,6 +35,8 @@ final class Exports
         'App\Numbers\Support\HasNumber',
         'App\Reads\Support\CountsLoads',
         'App\Reads\Support\CountsPivotLoads',
+        'App\Reads\Support\BoundedReads',
+        'App\Reads\Support\ReadBuilder',
     ];
 
     /**

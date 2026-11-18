@@ -6,7 +6,8 @@ namespace App\Agents\Models;
 
 use App\Agents\Enums\SessionStatus;
 use App\Links\Support\Linkable;
-use App\Reads\Support\CountsLoads;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -35,9 +36,9 @@ use Illuminate\Support\Carbon;
  * @property-read LaunchCredential|null $credential
  */
 #[Fillable(['program', 'program_session_id'])]
-final class AgentSession extends Model
+final class AgentSession extends Model implements ReadableModel
 {
-    use CountsLoads;
+    use BoundedReads;
     use HasUlids, Linkable;
 
     /**

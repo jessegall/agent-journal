@@ -10,7 +10,7 @@ use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\SessionOption;
 use App\Agents\Support\StackTarget;
-use Illuminate\Database\Eloquent\Builder;
+use App\Reads\Support\ReadBuilder;
 
 /**
  * Reads the running sessions for the actor of this request, by the session's own activity rule: the user sees every
@@ -25,7 +25,7 @@ final readonly class SessionRecords implements SessionReader
      */
     public function active(): array
     {
-        return array_values($this->visibleSessions()->with('agent')->orderBy('id')->get()
+        return array_values($this->visibleSessions()->with('agent')->orderBy('id')->readAll('the session choices, until task 663 pages them')->get()
             ->filter(fn (AgentSession $session) => $session->isActive())
             ->map(fn (AgentSession $session) => self::optionOf($session))
             ->all());
@@ -43,9 +43,9 @@ final readonly class SessionRecords implements SessionReader
     }
 
     /**
-     * @return Builder<AgentSession>
+     * @return ReadBuilder<AgentSession>
      */
-    private function visibleSessions(): Builder
+    private function visibleSessions(): ReadBuilder
     {
         $actor = $this->actors->actor();
         $query = AgentSession::query();

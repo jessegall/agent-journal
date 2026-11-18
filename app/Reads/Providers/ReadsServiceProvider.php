@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Reads\Providers;
 
 use App\Reads\Contracts\ReadMeter;
+use App\Reads\Exceptions\ReadLimitInvalid;
 use App\Reads\Support\ReadLog;
 use App\Reads\Support\ScopedReadMeter;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
@@ -32,8 +34,15 @@ final class ReadsServiceProvider extends ServiceProvider
         $this->app->alias(ScopedReadMeter::class, ReadMeter::class);
     }
 
-    public function boot(DatabaseManager $databases, Dispatcher $events): void
+    public function boot(DatabaseManager $databases, Dispatcher $events, Repository $config): void
     {
+        $defaultLimit = (int) $config->get('reads.default_limit');
+        $pageMax = (int) $config->get('reads.page_max');
+
+        if ($defaultLimit < 1 || $defaultLimit > $pageMax) {
+            throw ReadLimitInvalid::configured($defaultLimit, $pageMax);
+        }
+
         foreach ($databases->getConnections() as $connection) {
             self::countQueriesOn($connection);
         }

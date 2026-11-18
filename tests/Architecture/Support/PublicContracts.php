@@ -6,6 +6,7 @@ namespace Tests\Architecture\Support;
 
 use App\Exports\Support\Exports;
 use App\Links\Support\LinkAccess;
+use App\Reads\Support\ReadBuilder;
 use Illuminate\Database\Eloquent\Model;
 use PhpParser\Node;
 use PhpParser\Node\Name;
@@ -26,7 +27,7 @@ final readonly class PublicContracts
     /**
      * Core's one Eloquent adapter: it holds the model whose links it reads and hands back the caller's own query.
      */
-    private const array CORE_ELOQUENT_ADAPTERS = [LinkAccess::class];
+    private const array CORE_ELOQUENT_ADAPTERS = [LinkAccess::class, ReadBuilder::class];
 
     /**
      * @param  list<PublicOwner>  $owners

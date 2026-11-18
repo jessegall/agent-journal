@@ -31,7 +31,7 @@ final readonly class VisibleTasks implements TaskReader
     {
         $this->actors->actor();
         $wanted = array_values(array_unique($taskIds));
-        $found = array_map(strval(...), Task::query()->whereKey($wanted)->pluck('id')->all());
+        $found = array_map(strval(...), Task::query()->whereKey($wanted)->readLimit(count($wanted))->pluck('id')->all());
         $missing = array_values(array_diff($wanted, $found));
 
         if ($missing !== []) {
@@ -46,7 +46,7 @@ final readonly class VisibleTasks implements TaskReader
     public function summaries(array $taskIds): array
     {
         $this->requireAllVisible($taskIds);
-        $tasks = Task::query()->whereKey($taskIds)->get()->keyBy('id');
+        $tasks = Task::query()->whereKey($taskIds)->readLimit(count($taskIds))->get()->keyBy('id');
 
         return array_map(fn (string $taskId) => $tasks[$taskId]->summary(), $taskIds);
     }

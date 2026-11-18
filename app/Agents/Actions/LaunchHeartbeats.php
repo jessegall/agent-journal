@@ -40,6 +40,7 @@ final readonly class LaunchHeartbeats
         $overdue = AgentSession::query()->with('credential')
             ->where('status', SessionStatus::Silent->value)
             ->where('silent_since', '<=', $now->subSeconds($this->timeouts->timedOutAfterSeconds))
+            ->readAll('every overdue session times out')
             ->get();
 
         foreach ($overdue as $session) {
