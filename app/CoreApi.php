@@ -30,6 +30,7 @@ use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\CurrentUser;
+use App\AgentRequests\Console\Concerns\SendsSignedCalls;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Exceptions\AgentRequestFailed;
 use App\AgentRequests\Support\AgentReply;
@@ -1274,6 +1275,7 @@ final class CoreApi
                 JournalReadTool::class,
                 JournalResource::class,
                 RendersRefusal::class,
+                SendsSignedCalls::class,
             )
             ->build();
     }
