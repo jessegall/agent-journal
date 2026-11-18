@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Console;
 
-use App\Sharing\Support\ConsoleOwner;
+use App\Actors\Support\ConsoleOwner;
 use App\Sharing\Support\ShareLinkReader;
 use Illuminate\Console\Command;
 
