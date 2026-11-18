@@ -45,13 +45,13 @@ final class AssignedPlansTool extends JournalReadTool
         return $this->pages->answer(
             $this->name(),
             $arguments,
-            fn (ToolArguments $first): array => [
+            fn (ToolArguments $first) => [
                 'search' => $first->textOr('search', ''),
                 'states' => $first->enumValues('states', PlanState::class),
                 'page' => $first->positiveIntegerOr('page', 1),
                 'per_page' => $first->positiveIntegerOr('per_page', 20, NumberedPage::LARGEST_SIZE),
             ],
-            fn (array $filters): ListedPage => $this->page(new AssignedPlanFilters(
+            fn (array $filters) => $this->page(new AssignedPlanFilters(
                 search: $filters['search'],
                 states: array_values(array_map(PlanState::from(...), $filters['states'])),
                 page: new NumberedPage($filters['page'], $filters['per_page']),

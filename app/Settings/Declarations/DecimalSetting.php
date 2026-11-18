@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace App\Settings\Declarations;
 
+use App\Settings\Contracts\CatalogueConstraints;
+use App\Settings\Contracts\CatalogueValue;
 use App\Settings\Contracts\Setting;
+use App\Settings\Data\DecimalConstraintsData;
+use App\Settings\Data\DecimalValueData;
 use App\Settings\Enums\SettingType;
 use App\Settings\Exceptions\DecimalInvalid;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Support\SettingKey;
 use App\Settings\Values\Decimal;
+use BackedEnum;
+use Spatie\LaravelData\Optional;
 
 /**
  * An exact decimal setting with a fixed number of digits and fractional digits, and optional bounds. A value with
@@ -95,5 +101,27 @@ final readonly class DecimalSetting implements Setting
         }
 
         return $value;
+    }
+
+    public function defaultValue(): Decimal
+    {
+        return $this->default;
+    }
+
+    public function catalogueValue(string|bool|int|Decimal|BackedEnum $value): CatalogueValue
+    {
+        return DecimalValueData::from(['value' => $value instanceof Decimal ? $value->text : $value]);
+    }
+
+    public function catalogueConstraints(): CatalogueConstraints|Optional
+    {
+        $limits = [
+            'precision' => $this->precision,
+            'scale' => $this->scale,
+            'minimum' => $this->minimum?->text,
+            'maximum' => $this->maximum?->text,
+        ];
+
+        return DecimalConstraintsData::from(array_filter($limits, fn (int|string|null $limit) => $limit !== null));
     }
 }

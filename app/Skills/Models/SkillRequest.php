@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\Skills\Models;
 
 use App\Actors\Enums\ActorType;
+use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -33,7 +32,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['actor_type', 'actor_id', 'request_id', 'input_digest', 'skill_id', 'skill_revision_id'])]
 final class SkillRequest extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids;
+    use BoundedReads, HasActorColumns, HasUlids;
     use Linkable;
 
     /**
@@ -51,7 +50,7 @@ final class SkillRequest extends Model implements ReadableModel
      */
     public static function earlier(ActorIdentity $actor, string $requestId): self|null
     {
-        return self::query()->sentBy($actor)->where('request_id', $requestId)->first();
+        return self::query()->byActor($actor)->where('request_id', $requestId)->first();
     }
 
     public static function record(ActorIdentity $actor, string $requestId, string $inputDigest, SkillRevision $revision): self
@@ -69,16 +68,5 @@ final class SkillRequest extends Model implements ReadableModel
     public function sentWith(string $inputDigest): bool
     {
         return hash_equals($this->input_digest, $inputDigest);
-    }
-
-    /**
-     * Requests the actor sent; nobody reads another actor's requests.
-     *
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function sentBy(Builder $query, ActorIdentity $actor): void
-    {
-        $query->where('actor_type', $actor->type->value)->where('actor_id', $actor->id);
     }
 }

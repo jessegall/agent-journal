@@ -30,15 +30,18 @@ final readonly class LaunchRequest
      */
     public function digest(): string
     {
+        $requested = $this->selection->requested;
+        $source = $this->selection->source;
+
         return hash('sha256', json_encode([
             $this->agentId,
             $this->selection->program->value,
             $this->selection->model,
-            $this->selection->requested->type->value,
-            $this->selection->requested->model,
-            $this->selection->source->programSource->value,
-            $this->selection->source->profileKey,
-            $this->selection->source->profileRevision,
+            $requested->type->value,
+            $requested->model,
+            $source->programSource->value,
+            $source->profileKey,
+            $source->profileRevision,
             $this->origin->value,
             $this->ownerReference,
             $this->contextReference,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Data;
 
+use App\Settings\Contracts\CatalogueConstraints;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
@@ -14,7 +15,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * not declared.
  */
 #[TypeScript]
-final class DecimalConstraintsData extends Data
+final class DecimalConstraintsData extends Data implements CatalogueConstraints
 {
     public function __construct(
         public readonly int $precision,

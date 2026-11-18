@@ -183,7 +183,7 @@ final class CommandReceipt extends Model implements ReadableModel
             throw RefusalReplayed::of(RefusalCode::from((string) $this->refusal_code), (string) $this->refusal_message);
         }
 
-        return unserialize(base64_decode((string) ($this->result['php'] ?? '')));
+        return unserialize(base64_decode((string) $this->result['php']));
     }
 
     public function toOperation(): Operation

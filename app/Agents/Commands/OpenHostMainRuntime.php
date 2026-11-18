@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Commands;
 
 use App\Actors\Enums\ActorType;
+use App\Agents\Enums\DriverType;
 use App\Agents\Handlers\OpenHostMainRuntimeHandler;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Attributes\HandledBy;
@@ -30,4 +31,21 @@ final readonly class OpenHostMainRuntime implements Command
         public string $profile,
         public string|null $model,
     ) {}
+
+    /**
+     * The same opening as an OpenAgentRuntime of a terminal runtime on the host.
+     */
+    public function asAgentRuntime(): OpenAgentRuntime
+    {
+        return new OpenAgentRuntime(
+            $this->agentId,
+            $this->hostId,
+            $this->folder,
+            $this->program,
+            $this->programBuild,
+            $this->profile,
+            DriverType::Terminal,
+            $this->model,
+        );
+    }
 }

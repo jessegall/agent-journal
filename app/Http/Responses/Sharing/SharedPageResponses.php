@@ -8,8 +8,8 @@ use App\Contracts\CommandRefusal;
 use App\Sharing\Exceptions\ShareReadLimited;
 use App\Sharing\Support\SharedPage;
 use App\Text\Support\MarkdownText;
+use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\View;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
@@ -19,38 +19,47 @@ use Throwable;
  */
 final readonly class SharedPageResponses
 {
-    public function __construct(private SharingAssets $assets) {}
+    public function __construct(
+        private SharingAssets $assets,
+        private Factory $views,
+    ) {}
 
     public function page(SharedPage $page): Response
     {
         if (! $page->allowed) {
-            return self::unavailable();
+            return $this->unavailable();
         }
 
-        return new Response(View::make('sharing.page', ['page' => $page, 'bodyHtml' => MarkdownText::publicHtmlOf($page->body), 'stylesheet' => $this->assets->stylesheet()])->render(), 200);
+        $view = $this->views->make('sharing.page', [
+            'page' => $page,
+            'bodyHtml' => MarkdownText::publicHtmlOf($page->body),
+            'stylesheet' => $this->assets->stylesheet(),
+        ]);
+
+        return new Response($view->render(), 200);
     }
 
     /**
      * Too many reads wait a minute, a refusal or a denial is not available, and any other failure, such as a database
      * or audit failure, is a failure.
      */
-    public static function forFailure(Throwable $failure): Response
+    public function forFailure(Throwable $failure): Response
     {
         return match (true) {
-            $failure instanceof ShareReadLimited => self::refused(429),
-            $failure instanceof HttpExceptionInterface => self::refused($failure->getStatusCode()),
-            $failure instanceof CommandRefusal => self::unavailable(),
-            default => new Response(View::make('sharing.failed')->render(), 503),
+            $failure instanceof ShareReadLimited => $this->refused(429),
+            $failure instanceof HttpExceptionInterface => $this->refused($failure->getStatusCode()),
+            $failure instanceof CommandRefusal => $this->unavailable(),
+            default => new Response($this->views->make('sharing.failed')->render(), 503),
         };
     }
 
-    public static function refused(int $status): Response
+    public function refused(int $status): Response
     {
-        return new Response(View::make('sharing.unavailable')->render(), $status);
+        return new Response($this->views->make('sharing.unavailable')->render(), $status);
     }
 
-    private static function unavailable(): Response
+    private function unavailable(): Response
     {
-        return self::refused(404);
+        return $this->refused(404);
     }
 }

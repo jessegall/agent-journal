@@ -37,6 +37,6 @@ final class SkillShowTool extends JournalReadTool
     {
         $skill = $this->skills->find(SkillKey::from($arguments->text('key')));
 
-        return new ToolResult('ok', ['key' => $skill->key->key, 'owner' => $skill->owner, 'source' => $skill->origin->value, 'digest' => $skill->rendered->digest, 'markdown' => $skill->rendered->markdown], []);
+        return ToolResult::ok(['key' => $skill->key->key, 'owner' => $skill->owner, 'source' => $skill->origin->value, 'digest' => $skill->rendered->digest, 'markdown' => $skill->rendered->markdown], []);
     }
 }

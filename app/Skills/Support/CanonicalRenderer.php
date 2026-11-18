@@ -37,13 +37,23 @@ final readonly class CanonicalRenderer implements SkillRenderer
         $this->checkSections($key, $sections);
         $this->checkDescription($key, $skill->description());
 
-        $blocks = ['---', rtrim(Yaml::dump(['name' => $key->key, 'description' => $skill->description()]), "\n"), '---', '', '# '.$skill->name()];
+        $frontMatter = rtrim(Yaml::dump(['name' => $key->key, 'description' => $skill->description()]), "\n");
+        $body = implode('', array_map(fn (SkillSection $section) => <<<SECTION
 
-        foreach ($sections as $section) {
-            array_push($blocks, '', '## '.$section->heading, '', $this->bodyOf($section, $owner));
-        }
 
-        $markdown = rtrim(str_replace(["\r\n", "\r"], "\n", implode("\n", $blocks)), "\n")."\n";
+            ## {$section->heading}
+
+            {$this->bodyOf($section, $owner)}
+            SECTION, $sections));
+        $page = <<<MARKDOWN
+            ---
+            {$frontMatter}
+            ---
+
+            # {$skill->name()}{$body}
+            MARKDOWN;
+
+        $markdown = rtrim(str_replace(["\r\n", "\r"], "\n", $page), "\n")."\n";
 
         if (! mb_check_encoding($markdown, 'UTF-8')) {
             throw SkillDeclarationInvalid::encoding($key->key);

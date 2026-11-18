@@ -193,6 +193,34 @@ final class Share extends Model implements Numbered, ReadableModel
     }
 
     /**
+     * The key of the gateway the share is served under; none for a proposal, which has no gateway yet.
+     */
+    public function gatewayKey(): string|null
+    {
+        if ($this->share_gateway_configuration_id === null) {
+            return null;
+        }
+
+        return ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->gateway_key;
+    }
+
+    /**
+     * The newest endpoint still running for the share's gateway configuration; none for a proposal.
+     *
+     * @return Option<ShareGatewayEndpoint>
+     */
+    public function newestRunningEndpoint(): Option
+    {
+        if ($this->share_gateway_configuration_id === null) {
+            return None::create();
+        }
+
+        return ShareGatewayEndpoint::newestRunningOf(
+            ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id),
+        );
+    }
+
+    /**
      * The enabled gateway configuration the owner's grant is served under.
      *
      * @throws ShareGatewayUnavailable when the share is a proposal or its configuration was disabled

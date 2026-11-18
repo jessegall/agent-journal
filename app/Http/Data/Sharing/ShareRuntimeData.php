@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Sharing;
 
+use App\Sharing\Models\Share;
+use App\Sharing\Models\ShareGatewayEndpoint;
+use App\Sharing\Models\ShareInstallation;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -20,4 +23,20 @@ final class ShareRuntimeData extends Data
         public readonly string|null $lastHealthAt,
         public readonly bool $isHealthy,
     ) {}
+
+    /**
+     * The sharing service's hold on the gateways and the newest endpoint serving the share's configuration.
+     */
+    public static function fromShare(Share $share): self
+    {
+        $endpoint = $share->newestRunningEndpoint();
+
+        return new self(
+            ! ShareInstallation::hasLiveRun(),
+            $endpoint->map(fn (ShareGatewayEndpoint $running) => $running->endpoint_version)->getOrElse(null),
+            $endpoint->map(fn (ShareGatewayEndpoint $running) => $running->last_health_at?->toIso8601String())
+                ->getOrElse(null),
+            $endpoint->map(fn (ShareGatewayEndpoint $running) => $running->isHealthy())->getOrElse(false),
+        );
+    }
 }

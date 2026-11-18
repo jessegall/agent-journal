@@ -23,17 +23,17 @@ final class JournalServer extends Server
 {
     public const string PATH = '/agent/mcp/v1';
 
-    protected array $capabilities = [
-        self::CAPABILITY_TOOLS => ['listChanged' => false],
-        self::CAPABILITY_RESOURCES => ['listChanged' => false],
-    ];
-
     /**
      * Twenty tool definitions keep one tools/list page under 16 KiB, so a client may not ask for more.
      */
     public int $maxPaginationLength = 20;
 
     public int $defaultPaginationLength = 20;
+
+    protected array $capabilities = [
+        self::CAPABILITY_TOOLS => ['listChanged' => false],
+        self::CAPABILITY_RESOURCES => ['listChanged' => false],
+    ];
 
     public function __construct(Transport $transport, private readonly McpCatalogue $catalogue)
     {

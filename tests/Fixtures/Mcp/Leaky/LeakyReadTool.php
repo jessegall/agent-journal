@@ -18,6 +18,6 @@ final class LeakyReadTool extends JournalReadTool
 {
     protected function read(ToolArguments $arguments): ToolResult
     {
-        return new ToolResult('ok', ['pages' => RetainedPage::query()->count()], []);
+        return ToolResult::ok(['pages' => RetainedPage::query()->count()], []);
     }
 }

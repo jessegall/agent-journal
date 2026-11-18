@@ -8,8 +8,6 @@ use App\Agents\Actions\RecordConversationVisit;
 use App\Agents\Exceptions\ConversationIncompatible;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Contracts\HookInput;
-use App\Hooks\Inputs\ContextCompacted;
-use App\Hooks\Inputs\SessionStarted;
 use Carbon\CarbonImmutable;
 
 /**
@@ -26,12 +24,6 @@ final readonly class SessionStartStep
      */
     public function run(HookInput $input, StackTarget $target): void
     {
-        if ($input instanceof SessionStarted) {
-            $this->visits->entered($target->sessionId, $input->start->vendorSessionId, $input->identity()->hookId, CarbonImmutable::now());
-        }
-
-        if ($input instanceof ContextCompacted) {
-            $this->visits->compacted($target->sessionId, $input->identity()->hookId, CarbonImmutable::now());
-        }
+        $input->recordVisit($this->visits, $target->sessionId, CarbonImmutable::now());
     }
 }

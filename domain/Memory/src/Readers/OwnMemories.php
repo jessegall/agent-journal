@@ -25,7 +25,7 @@ final readonly class OwnMemories implements MemoryReader
         $query = Memory::query()->ownedBy($owner);
         $total = $query->clone()->count();
         $cards = $query->orderByDesc('weight')->orderBy('id')->forPage($page, self::PER_PAGE)->readLimit(self::PER_PAGE)->get()
-            ->map(fn (Memory $memory): MemoryCard => self::cardOf($memory))
+            ->map(fn (Memory $memory) => self::cardOf($memory))
             ->all();
 
         return new MemoryPage(array_values($cards), $page, self::PER_PAGE, $total);

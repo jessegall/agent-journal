@@ -67,7 +67,7 @@ final readonly class AgentRequestClient
             throw JournalUnreachable::at($call->settings->journalUrl, $unreachable);
         }
 
-        return new AgentCallReply($response->status(), $response->headers(), $response->body());
+        return AgentCallReply::of($response);
     }
 
     private function request(PreparedAgentCall $call, int|float $timeoutSeconds): PendingRequest

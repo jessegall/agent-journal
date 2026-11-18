@@ -17,4 +17,12 @@ final readonly class SelectedFrame
         public FrameRecord $record,
         public int $position = 0,
     ) {}
+
+    /**
+     * The key of the state type the frame holds.
+     */
+    public function typeKey(): string
+    {
+        return $this->record->reference->typeKey;
+    }
 }

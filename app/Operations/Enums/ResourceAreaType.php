@@ -31,7 +31,7 @@ enum ResourceAreaType: string
     /**
      * Whether this area holds the files of the helper's own checkout, which a read-only helper never changes.
      */
-    public function holdsWorkspaceFiles(): bool
+    public function hasWorkspaceFiles(): bool
     {
         return $this === self::Workspace || $this === self::Scratch;
     }

@@ -30,12 +30,14 @@ final class ShareListRequest extends FormRequest
 
     public function filters(): ShareFiltersData
     {
-        return new ShareFiltersData(
-            $this->enum('state', ShareState::class),
-            $this->filled('rootType') ? $this->string('rootType')->toString() : null,
-            $this->filled('gateway') ? $this->string('gateway')->toString() : null,
-            $this->filled('expiresBefore') ? $this->string('expiresBefore')->toString() : null,
-            $this->filled('after') ? $this->string('after')->toString() : null,
-        );
+        $filters = [
+            'rootType' => $this->filled('rootType') ? $this->string('rootType')->toString() : null,
+            'gateway' => $this->filled('gateway') ? $this->string('gateway')->toString() : null,
+            'expiresBefore' => $this->filled('expiresBefore') ? $this->string('expiresBefore')->toString() : null,
+            'after' => $this->filled('after') ? $this->string('after')->toString() : null,
+        ];
+        $state = $this->enum('state', ShareState::class);
+
+        return ShareFiltersData::from($state === null ? $filters : [...$filters, 'state' => $state]);
     }
 }

@@ -19,6 +19,7 @@ use App\Sharing\Support\MeteredShareBudget;
 use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareScope;
 use App\Ui\Contracts\PageReader;
+use Spatie\LaravelData\Optional;
 
 /**
  * The owner's share preview page: the root's candidates found now, each marked shared when the root's live share
@@ -41,13 +42,16 @@ final readonly class SharePreviewReader implements PageReader
         $approved = Share::liveFor($root)->map(fn (Share $share) => ShareMember::approvedLinkIdsOf($share))->getOrElse([]);
         $saved = SharePreview::openFor($this->actors->actor()->actorId(), $root);
 
-        return new SharePreviewData(
-            $this->request->rootReference(),
-            $candidates->root->title,
-            array_map(fn (ShareLinkedCandidate $candidate) => ShareCandidateData::fromCandidate($candidate, $approved), $candidates->linked),
-            $saved->map(SavedSharePreviewData::fromPreview(...))->getOrElse(null),
-            Share::liveFor($root)->map(RootShareData::fromShare(...))->getOrElse(null),
-            array_map(RootShareData::fromShare(...), Share::openProposalsFor($root)),
-        );
+        return SharePreviewData::from([
+            'rootReference' => $this->request->rootReference(),
+            'rootTitle' => $candidates->root->title,
+            'candidates' => array_map(
+                fn (ShareLinkedCandidate $candidate) => ShareCandidateData::fromCandidate($candidate, $approved),
+                $candidates->linked,
+            ),
+            'savedPreview' => $saved->map(SavedSharePreviewData::fromPreview(...))->getOrElse(Optional::create()),
+            'liveShare' => Share::liveFor($root)->map(RootShareData::fromShare(...))->getOrElse(Optional::create()),
+            'openProposals' => array_map(RootShareData::fromShare(...), Share::openProposalsFor($root)),
+        ]);
     }
 }

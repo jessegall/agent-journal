@@ -9,6 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Support\AgentLabel;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Models\Support\AssignableListing;
+use App\Assignments\Support\AssignmentHolder;
 use App\Hooks\Contracts\WorkedOnStack;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
@@ -18,6 +19,7 @@ use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
+use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Database\Factories\TaskFactory;
@@ -292,5 +294,27 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
     public function assignmentIdentity(): RecordIdentity
     {
         return new RecordIdentity(self::LINK_TYPE, $this->id);
+    }
+
+    /**
+     * The task as a read shows it; its long texts only when the read asks for them.
+     *
+     * @param  Option<AssignmentHolder>  $holder
+     */
+    public function details(Option $holder, TaskExecution|null $execution, bool $withText): TaskDetails
+    {
+        return new TaskDetails(
+            $this->id,
+            $this->number,
+            $this->title,
+            $this->state,
+            $this->revision,
+            $holder,
+            $execution,
+            $withText ? $this->brief : null,
+            $withText ? $this->result_note : null,
+            $withText ? $this->block_reason : null,
+            $withText ? $this->cancel_reason : null,
+        );
     }
 }

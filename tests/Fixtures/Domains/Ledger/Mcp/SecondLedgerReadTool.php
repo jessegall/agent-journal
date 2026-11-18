@@ -21,6 +21,6 @@ final class SecondLedgerReadTool extends JournalReadTool
 {
     protected function read(ToolArguments $arguments): ToolResult
     {
-        return new ToolResult('ok', [], []);
+        return ToolResult::ok([], []);
     }
 }

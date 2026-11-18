@@ -138,6 +138,26 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     }
 
     /**
+     * Whether the newest running endpoint of this revision answers; null while none runs.
+     */
+    public function endpointHealth(): bool|null
+    {
+        return ShareGatewayEndpoint::newestRunningOf($this)
+            ->map(fn (ShareGatewayEndpoint $endpoint) => $endpoint->isHealthy())
+            ->getOrElse(null);
+    }
+
+    /**
+     * The shares this revision's gateway serves that have not ended, which disabling it would revoke.
+     *
+     * @return list<Share>
+     */
+    public function unendedShares(): array
+    {
+        return Share::unendedOf($this->id);
+    }
+
+    /**
      * The gateway key of each of these configurations, by configuration id.
      *
      * @param  list<string>  $ids

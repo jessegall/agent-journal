@@ -30,6 +30,10 @@ final readonly class HeldTasksOverview implements OverviewContribution
         $held = $this->tasks->assignedToCaller(new TaskFilters(states: $states, page: new NumberedPage(1, 1)))->total;
         $stateNames = array_map(fn (TaskState $state): string => $state->value, $states);
 
-        return new OverviewSection('Tasks you hold', ['held' => $held], new NextAction('tasks_assigned', ['states' => $stateNames]));
+        return OverviewSection::from([
+            'title' => 'Tasks you hold',
+            'counts' => ['held' => $held],
+            'nextAction' => new NextAction('tasks_assigned', ['states' => $stateNames]),
+        ]);
     }
 }

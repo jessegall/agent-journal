@@ -38,8 +38,8 @@ final class FixtureReadTool extends JournalReadTool
         return match ($arguments->text('answer')) {
             'refused' => throw FixtureRecordUnavailable::for($number),
             'broken' => throw FixtureReaderBroke::withSecret(),
-            'large' => new ToolResult('ok', ['body' => str_repeat('a', 20 * 1024)], []),
-            default => new ToolResult('ok', ['number' => $number], [new NextAction('fixture_read', ['number' => $number + 1, 'answer' => 'record'])]),
+            'large' => ToolResult::ok(['body' => str_repeat('a', 20 * 1024)], []),
+            default => ToolResult::ok(['number' => $number], [new NextAction('fixture_read', ['number' => $number + 1, 'answer' => 'record'])]),
         };
     }
 }

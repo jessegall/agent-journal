@@ -21,4 +21,12 @@ final class Section extends Data
         public readonly int $firstLine,
         public readonly int $lastLine,
     ) {}
+
+    /**
+     * The text before the first heading: section 1, with no heading of its own.
+     */
+    public static function preamble(int $lastLine): self
+    {
+        return new self(1, 0, '', 1, $lastLine);
+    }
 }

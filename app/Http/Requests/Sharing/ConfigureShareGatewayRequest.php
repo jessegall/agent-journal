@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Requests\Sharing;
 
 use App\Http\Requests\Sharing\Concerns\ReadsIdempotencyKey;
+use App\Sharing\Commands\ConfigureShareGateway;
 use App\Sharing\Gateways\Support\GatewaySecrets;
+use App\Sharing\Gateways\Support\TypedSecret;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -35,6 +37,23 @@ final class ConfigureShareGatewayRequest extends FormRequest
         ];
     }
 
+    /**
+     * The gateway's next settings revision, naming its secrets but never carrying them.
+     */
+    public function command(): ConfigureShareGateway
+    {
+        return new ConfigureShareGateway(
+            $this->gatewayKey(),
+            $this->executableVersion(),
+            $this->providerHost(),
+            $this->publicOrigin(),
+            $this->listenerPort(),
+            $this->secretReferences(),
+            $this->shouldMakeDefault(),
+            $this->requestKey(),
+        );
+    }
+
     public function gatewayKey(): string
     {
         return $this->string('gatewayKey')->toString();
@@ -60,7 +79,7 @@ final class ConfigureShareGatewayRequest extends FormRequest
         return $this->integer('listenerPort');
     }
 
-    public function makesDefault(): bool
+    public function shouldMakeDefault(): bool
     {
         return $this->boolean('makeDefault');
     }
@@ -72,7 +91,7 @@ final class ConfigureShareGatewayRequest extends FormRequest
      */
     public function secretReferences(): array
     {
-        return array_map(fn (array $secret) => $secret['name'], $this->secretEntries());
+        return array_map(fn (TypedSecret $secret) => $secret->name, $this->typedSecrets());
     }
 
     /**
@@ -80,26 +99,24 @@ final class ConfigureShareGatewayRequest extends FormRequest
      */
     public function storeTypedSecrets(GatewaySecrets $secrets): void
     {
-        foreach ($this->secretEntries() as $secret) {
-            if ($secret['value'] !== '') {
-                $secrets->store($secret['name'], $secret['value']);
-            }
+        foreach ($this->typedSecrets() as $secret) {
+            $secret->storeIn($secrets);
         }
     }
 
     /**
      * The validated secret fields, each a name and the typed value or an empty one.
      *
-     * @return list<array{name: string, value: string}>
+     * @return list<TypedSecret>
      */
-    private function secretEntries(): array
+    private function typedSecrets(): array
     {
-        $entries = [];
-
-        foreach (array_keys($this->array('secrets')) as $index) {
-            $entries[] = ['name' => $this->string("secrets.{$index}.name")->toString(), 'value' => $this->string("secrets.{$index}.value")->toString()];
-        }
-
-        return $entries;
+        return array_map(
+            fn (int|string $index) => new TypedSecret(
+                $this->string("secrets.{$index}.name")->toString(),
+                $this->string("secrets.{$index}.value")->toString(),
+            ),
+            array_keys($this->array('secrets')),
+        );
     }
 }

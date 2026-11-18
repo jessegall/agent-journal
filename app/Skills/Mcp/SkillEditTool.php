@@ -55,6 +55,6 @@ final class SkillEditTool extends JournalWriteTool
             $conditions === null ? $current->condition : $this->authoring->conditionOf($conditions, [], false),
         );
 
-        return new ToolResult('ok', $this->authoring->receipt($this->commands->run(new ReviseSkill($skill->id, $arguments->positiveInteger('expected_revision'), $requestId, $draft)), $requestId), []);
+        return ToolResult::ok($this->authoring->receipt($this->commands->run(new ReviseSkill($skill->id, $arguments->positiveInteger('expected_revision'), $requestId, $draft)), $requestId), []);
     }
 }

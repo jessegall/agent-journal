@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Actions;
 
+use App\Agents\Contracts\ConversationVisits;
 use App\Agents\Exceptions\ConversationIncompatible;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\ConversationVisit;
@@ -16,7 +17,7 @@ use Carbon\CarbonImmutable;
  * lock on the session row it finds or binds the conversation, appends the session's next visit once per event and
  * makes it the session's current one.
  */
-final readonly class RecordConversationVisit
+final readonly class RecordConversationVisit implements ConversationVisits
 {
     /**
      * The one settings store of a host until accounts name their own (plan 8 task 241).

@@ -40,7 +40,7 @@ final class McpServiceProvider extends ServiceProvider
 
         $limiter->for('journal-mcp', fn (Request $request): Limit => Limit::perMinute(self::CALLS_PER_MINUTE)
             ->by($this->app->make(AgentContext::class)->sessionId)
-            ->response(fn (Request $request, array $headers): JsonResponse => new JsonResponse(
+            ->response(fn (Request $request, array $headers) => new JsonResponse(
                 ['message' => 'Too many calls.', 'retry_after_seconds' => (int) ($headers['Retry-After'] ?? 0)],
                 JsonResponse::HTTP_TOO_MANY_REQUESTS,
                 $headers,

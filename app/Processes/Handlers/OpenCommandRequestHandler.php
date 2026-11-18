@@ -22,7 +22,7 @@ final readonly class OpenCommandRequestHandler implements CommandHandler
         $projectKey = ExecutionContext::inFolder($command->workingFolder)->projectKey();
         $open = CommandRequest::query()
             ->ofProject($projectKey)
-            ->openedBy($actor)
+            ->byActor($actor)
             ->forOperation($command->operation, $command->bindingDigest)
             ->stillOpen()
             ->lockForUpdate()

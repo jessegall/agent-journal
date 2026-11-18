@@ -13,6 +13,7 @@ use Domain\Plans\Enums\PlanView;
 use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Models\Phase;
+use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
 
 /**
@@ -32,25 +33,8 @@ final readonly class PlanDetailRecords implements PlanDetailsReader
         $plan = Plan::query()->find($planId) ?? throw PlanMissing::withId($planId);
         $card = $this->records->cardOf($plan);
         [$phases, $nextTaskOffset] = $this->phaseWindow($plan, $taskOffset);
-        $text = $view->includesText();
 
-        return new PlanDetails(
-            $plan->id,
-            $plan->number,
-            $plan->title,
-            $plan->type,
-            $plan->state,
-            $plan->revision,
-            $plan->creator_type,
-            $plan->creator_id,
-            $card->progress,
-            $card->currentPhase,
-            $phases,
-            $nextTaskOffset,
-            $text ? $plan->brief : null,
-            $text ? $plan->finish_note : null,
-            $text ? $plan->cancel_reason : null,
-        );
+        return $plan->details($card, $phases, $nextTaskOffset, $view->includesText());
     }
 
     public function phase(string $phaseId): PhaseDetails
@@ -58,7 +42,7 @@ final readonly class PlanDetailRecords implements PlanDetailsReader
         $this->actors->actor();
         $phase = Phase::query()->find($phaseId) ?? throw PhaseMissing::withId($phaseId);
 
-        return new PhaseDetails($phase->id, $phase->plan_id, $phase->number, $phase->title, $phase->revision, $phase->taskIds());
+        return $phase->details();
     }
 
     /**
@@ -73,11 +57,13 @@ final readonly class PlanDetailRecords implements PlanDetailsReader
         $position = 0;
         $end = $taskOffset + self::TASKS_PER_READ;
 
-        foreach ($plan->phases()->readAll('a plan read lists every phase')->get() as $phase) {
-            $taskIds = $phase->taskIds();
+        $planPhases = $plan->phases()->readAll('a plan read lists every phase')->get();
+        $taskIdsByPhase = PhaseTask::taskIdsByPhase(array_values(array_map(strval(...), $planPhases->modelKeys())));
+
+        foreach ($planPhases as $phase) {
+            $taskIds = $taskIdsByPhase[$phase->id];
             $from = max($position, $taskOffset);
-            $window = array_slice($taskIds, $from - $position, max(0, $end - $from));
-            $phases[] = new PlanPhaseTasks($phase->id, $phase->number, $phase->title, $phase->revision, $window);
+            $phases[] = $phase->withTasks(array_slice($taskIds, $from - $position, max(0, $end - $from)));
             $position += count($taskIds);
         }
 

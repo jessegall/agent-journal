@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Data;
 
+use App\Settings\Contracts\CatalogueConstraints;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
@@ -13,7 +14,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * The whole-number options of a choice setting, in declaration order.
  */
 #[TypeScript]
-final class IntegerChoiceConstraintsData extends Data
+final class IntegerChoiceConstraintsData extends Data implements CatalogueConstraints
 {
     /**
      * @param  list<IntegerChoiceOptionData>  $options

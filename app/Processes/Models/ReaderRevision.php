@@ -36,6 +36,14 @@ final class ReaderRevision extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['definition' => 'array'];
+    }
+
     public static function write(string $operation, string $contractLabel, ReaderDefinition $definition, ActorIdentity $author): self
     {
         return self::query()->create([
@@ -53,14 +61,6 @@ final class ReaderRevision extends Model implements ReadableModel
     public function readerDefinition(): ReaderDefinition
     {
         return ReaderDefinition::fromArray($this->definition);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return ['definition' => 'array'];
     }
 
     protected static function booted(): void

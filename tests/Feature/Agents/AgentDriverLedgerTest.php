@@ -46,6 +46,7 @@ use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
+use Spatie\LaravelData\Optional;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -227,7 +228,7 @@ final class AgentDriverLedgerTest extends TestCase
         $status = $this->app->make(RuntimeReader::class)->forSession($opened->sessionId);
 
         $this->assertSame('low', $status->effort->requested);
-        $this->assertNull($status->effort->observed);
+        $this->assertInstanceOf(Optional::class, $status->effort->observed);
         $this->assertTrue($status->isStale);
     }
 

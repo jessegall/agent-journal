@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Bus\CommandMiddleware;
 
-use App\Actors\Exceptions\ActorContextMissing;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Exceptions\RequestKeyConflict;
 use App\Bus\Exceptions\RequestKeyMissing;
@@ -37,7 +36,7 @@ final readonly class RecordReceipt implements CommandMiddleware
             return $next($call);
         }
 
-        $caller = $this->callers->of($call->actor() ?? throw ActorContextMissing::forRequest());
+        $caller = $this->callers->of($call->actor());
         $receipt = CommandReceipt::lockedFor($caller, $call->name(), $key);
 
         if ($receipt !== null && ! $receipt->isExpired() && ! $receipt->isFor($call->command())) {

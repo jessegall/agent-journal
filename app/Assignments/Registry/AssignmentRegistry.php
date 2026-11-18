@@ -76,6 +76,11 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
         $this->assigneeProviders[$type] = $registration->providerClass;
     }
 
+    public function hasRecordProvider(string $type): bool
+    {
+        return isset($this->recordProviders[$type]);
+    }
+
     /**
      * @throws AssignmentTypeUnavailable
      */

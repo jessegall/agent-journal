@@ -32,7 +32,7 @@ final readonly class OperationsReader
         try {
             $operation = $this->operations->operation($requestKey);
         } catch (OperationUnavailable) {
-            return new ToolResult('ok', ['request_key' => $requestKey, 'state' => self::UNKNOWN], []);
+            return ToolResult::ok(['request_key' => $requestKey, 'state' => self::UNKNOWN], []);
         }
 
         return $this->page($operation, $offset);
@@ -45,7 +45,7 @@ final readonly class OperationsReader
         unset($result['outcomes']);
         $next = $offset + self::OUTCOMES_PER_PAGE;
 
-        return new ToolResult('ok', [
+        return ToolResult::ok([
             'request_key' => $operation->requestKey,
             'command' => $operation->command,
             'state' => $operation->state->value,

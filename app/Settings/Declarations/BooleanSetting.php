@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace App\Settings\Declarations;
 
+use App\Settings\Contracts\CatalogueConstraints;
+use App\Settings\Contracts\CatalogueValue;
 use App\Settings\Contracts\Setting;
+use App\Settings\Data\BooleanValueData;
 use App\Settings\Enums\SettingType;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Support\SettingKey;
+use App\Settings\Values\Decimal;
+use BackedEnum;
+use Spatie\LaravelData\Optional;
 
 /**
  * A setting that is on or off.
@@ -39,5 +45,20 @@ final readonly class BooleanSetting implements Setting
     public function type(): SettingType
     {
         return SettingType::Boolean;
+    }
+
+    public function defaultValue(): bool
+    {
+        return $this->default;
+    }
+
+    public function catalogueValue(string|bool|int|Decimal|BackedEnum $value): CatalogueValue
+    {
+        return BooleanValueData::from(['value' => $value]);
+    }
+
+    public function catalogueConstraints(): CatalogueConstraints|Optional
+    {
+        return Optional::create();
     }
 }

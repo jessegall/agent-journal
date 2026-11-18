@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Support;
 
 use App\Agents\Support\AgentContext;
+use App\Mcp\Data\ContinuationPayload;
 use App\Mcp\Exceptions\ContinuationInvalid;
 use App\Mcp\Exceptions\ContinuationStale;
 use Carbon\CarbonImmutable;
@@ -24,7 +25,7 @@ final readonly class Continuations
 
     public function issue(Continuation $continuation): string
     {
-        $payload = self::encode(json_encode([
+        $payload = self::encode(ContinuationPayload::from([
             'agent' => $this->agent->agentId,
             'session' => $this->agent->sessionId,
             'expires' => CarbonImmutable::now()->addMinutes(self::LIFETIME_MINUTES)->getTimestamp(),
@@ -35,7 +36,7 @@ final readonly class Continuations
             'character_offset' => $continuation->characterOffset,
             'revision' => $continuation->revision,
             'retained_page' => $continuation->retainedPageId,
-        ], JSON_THROW_ON_ERROR));
+        ])->toJson(JSON_THROW_ON_ERROR));
 
         return $payload.'.'.$this->signatureOf($payload);
     }
@@ -60,29 +61,27 @@ final readonly class Continuations
 
         $fields = $this->fieldsOf($parts[0]);
 
-        if ($fields['agent'] !== $this->agent->agentId || $fields['session'] !== $this->agent->sessionId) {
+        if ($fields->agent !== $this->agent->agentId || $fields->session !== $this->agent->sessionId) {
             throw ContinuationInvalid::foreign();
         }
 
-        if ($fields['tool'] !== $tool || $fields['selector'] !== $selector) {
+        if ($fields->tool !== $tool || $fields->selector !== $selector) {
             throw ContinuationInvalid::otherRead($tool, $selector);
         }
 
-        if ($fields['expires'] < CarbonImmutable::now()->getTimestamp()) {
+        if ($fields->expires < CarbonImmutable::now()->getTimestamp()) {
             throw ContinuationStale::expired();
         }
 
-        return new Continuation($fields['tool'], $fields['selector'], $fields['filters'], $fields['offset'], $fields['character_offset'], $fields['revision'], $fields['retained_page']);
+        return $fields->continuation();
     }
 
     /**
      * The fields of a payload whose signature matched, so the journal wrote them itself.
-     *
-     * @return array{agent: string, session: string, expires: int, tool: string, selector: string, filters: array<string, mixed>, offset: int, character_offset: int, revision: int|null, retained_page: string|null}
      */
-    private function fieldsOf(string $payload): array
+    private function fieldsOf(string $payload): ContinuationPayload
     {
-        return json_decode(self::decode($payload), true, 16, JSON_THROW_ON_ERROR);
+        return ContinuationPayload::from(json_decode(self::decode($payload), true, 16, JSON_THROW_ON_ERROR));
     }
 
     private function signatureOf(string $payload): string

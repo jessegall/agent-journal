@@ -24,7 +24,7 @@ final readonly class CapabilitiesReader
 
     public function read(): ToolResult
     {
-        return new ToolResult('ok', [
+        return ToolResult::ok([
             'contract_version' => self::CONTRACT_VERSION,
             'server_build' => $this->config->string('app.version', 'unknown'),
             'protocol_version' => $this->request->header(self::PROTOCOL_HEADER),
