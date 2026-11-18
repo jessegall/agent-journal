@@ -5,13 +5,16 @@ import FoldSign from "../kit/FoldSign.vue";
 import MarkIcon from "../kit/MarkIcon.vue";
 import {DOCK_MOTION_MS} from "../kit/dockMotion.js";
 import ChatDock from "./ChatDock.vue";
+import RowChip from "./RowChip.vue";
 import RunChip from "./RunChip.vue";
+import {isRun} from "../domain/docks.js";
 import {useMeasuredHeight} from "../composables/measuredHeight.js";
 
-// The runs docked above the chat: each its own card, and once they are `grouped`, one compact row with a chip per run, the cards shrinking
-// into it and growing back out of it with the dock's height easing along. A click on the row's title opens every run's card, and a click
-// on a chip opens that run's card, folds the others and keeps it
-const props = defineProps({runs: {type: Array, required: true}, grouped: Boolean, folded: Boolean});
+// The runs docked above the chat, or the rows docked from their inspectors such as reports: each its own card, and once they are
+// `grouped`, one compact row with a chip per card, the cards shrinking into it and growing back out of it with the dock's height easing
+// along. A click on the row's title opens every card, and a click on a chip opens that card, folds the others and keeps it. `noun` names
+// what the row holds: runs, reports, or docked for rows of several tables
+const props = defineProps({runs: {type: Array, required: true}, grouped: Boolean, folded: Boolean, noun: {type: String, default: "runs"}});
 const open = ref(false);
 const chosen = ref(0);
 // the row stands for runs that are docked: with none left, there is nothing to fold
@@ -42,16 +45,17 @@ const foldedRun = (message) => props.folded || Boolean(chosen.value && chosen.va
     <div :class="['dock-group', {folding}]" :style="height === null ? null : {height: `${height}px`}">
         <div ref="content">
             <Transition :name="row ? 'runs-fold' : 'runs-unfold'" mode="out-in" @before-leave="folding = true" @after-enter="folding = false">
-                <ChatDockCard v-if="row" key="row" :label="`${runs.length} runs`" kind="dock-group-row">
+                <ChatDockCard v-if="row" key="row" :label="`${runs.length} ${noun}`" kind="dock-group-row">
                     <template #head>
-                        <button type="button" class="dock-group-toggle" aria-expanded="false" title="Show each run as its own card" @click="toggle">
+                        <button type="button" class="dock-group-toggle" aria-expanded="false" title="Show each one as its own card" @click="toggle">
                             <MarkIcon name="runs" />
-                            {{ runs.length }} runs
+                            {{ runs.length }} {{ noun }}
                             <FoldSign />
                         </button>
                         <span class="dock-group-chips">
                             <template v-for="run in runs" :key="run.id">
-                                <RunChip :message="run" @click="choose(run)" />
+                                <RunChip v-if="isRun(run)" :message="run" @click="choose(run)" />
+                                <RowChip v-else :message="run" @click="choose(run)" />
                             </template>
                         </span>
                     </template>
@@ -59,8 +63,8 @@ const foldedRun = (message) => props.folded || Boolean(chosen.value && chosen.va
                 <div v-else key="cards" class="dock-group-cards">
                     <template v-if="grouped">
                         <div class="dock-group-head">
-                            <button type="button" class="dock-group-toggle" aria-expanded="true" title="Fold the runs into one line" @click="toggle">
-                                {{ runs.length }} runs
+                            <button type="button" class="dock-group-toggle" aria-expanded="true" :title="`Fold the ${noun} into one line`" @click="toggle">
+                                {{ runs.length }} {{ noun }}
                                 <FoldSign open />
                             </button>
                         </div>

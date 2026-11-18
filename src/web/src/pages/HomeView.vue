@@ -105,7 +105,7 @@ const feedKey = computed(() => (agent.value ? `${agent.value.id}:${agent.value.s
     margin: 0 calc(-1 * var(--home-gutter));
 }
 
-.home-view:is(.waiting, .question, .suggestion, .todos) {
+.home-view:is(.waiting, .questions, .question, .suggestion, .todos) {
     overflow-y: auto;
 }
 </style>
