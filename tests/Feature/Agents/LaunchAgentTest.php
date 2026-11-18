@@ -97,6 +97,15 @@ final class LaunchAgentTest extends TestCase
         Event::assertDispatched(LaunchAccepted::class, fn (LaunchAccepted $accepted): bool => $accepted->sessionId === $receipt->sessionId);
     }
 
+    public function test_a_codex_launch_receipt_carries_its_model_flag_and_no_actual_model(): void
+    {
+        $request = new LaunchRequest(TestSelections::requestId(), $this->agent->id, TestSelections::of('codex'), LaunchOriginType::MainLaunch, null, null, ConversationModeType::New, null);
+
+        $receipt = $this->launch($request);
+
+        $this->assertSame([['--model', TestSelections::MODEL], LaunchReceipt::ACTUAL_MODEL_NOT_REPORTED], [$receipt->programArguments, $receipt->actualModel]);
+    }
+
     private function request(): LaunchRequest
     {
         return new LaunchRequest(TestSelections::requestId(), $this->agent->id, TestSelections::of(), LaunchOriginType::MainLaunch, null, null, ConversationModeType::New, null);

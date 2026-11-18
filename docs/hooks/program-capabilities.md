@@ -99,6 +99,8 @@ A program that exits or is killed without an end hook is handled by `LaunchHeart
 | Native permissions | a neutral reply keeps the user's approval prompt, from the documentation |
 | Model-visible channel | `additionalContext` on SessionStart, UserPromptSubmit, PreToolUse and PostToolUse; the reason on a block, from the documentation |
 | Exit, timeout and stop cap | not verified: the capture never blocked a stop or ran past a timeout |
+| Model selection | `--model <model>`, from `claude --help` of 2.1.323 (2026-11-18); the host starts the program with it |
+| Actual model | not reported: no hook payload names the model a turn ran on, so receipts say actual model not reported by this adapter |
 | Captured fixtures | `tests/Fixtures/Hooks/ClaudeCode/hooks.json`, captured 2026-11-17, redacted |
 
 ## Codex
@@ -128,6 +130,8 @@ A program that exits or is killed without an end hook is handled by `LaunchHeart
 | Native permissions | a neutral reply omits `permissionDecision`, from the documentation |
 | Model-visible channel | not verified |
 | Exit, timeout and stop cap | not verified: the capture never blocked a stop or ran past a timeout; SessionEnd hooks run for 1 second unless they say more, 3 at most |
+| Model selection | `-m, --model <MODEL>`, from `codex --help` of 0.165.0 (2026-11-18); the host starts the program with `--model` |
+| Actual model | not reported: SessionStart carries the `model` the session started with, but no turn reports the model it ran on, so receipts say actual model not reported by this adapter |
 | Captured fixtures | `tests/Fixtures/Hooks/Codex/hooks.json`, captured 2026-11-17, redacted |
 
 ## Container capabilities

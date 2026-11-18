@@ -45,7 +45,8 @@ enum HookProgram: string
     }
 
     /**
-     * The arguments that start this program on the selected model.
+     * The arguments that start this program on the selected model: Claude Code 2.1.323 and codex-cli 0.165.0 both take
+     * --model (docs/hooks/program-capabilities.md).
      *
      * @return list<string>
      */

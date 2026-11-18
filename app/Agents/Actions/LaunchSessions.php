@@ -79,7 +79,7 @@ final readonly class LaunchSessions
 
         $this->events->dispatch(new LaunchStarted($agent->id, $session->id, $agent->role));
 
-        return new LaunchedAgent($session, $token, $settings->content(), $runtime, $firstRequest);
+        return new LaunchedAgent($session, $token, $settings->content(), $selection->program->modelArguments($selection->model), $runtime, $firstRequest);
     }
 
     /**

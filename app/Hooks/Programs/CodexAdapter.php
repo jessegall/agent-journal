@@ -29,6 +29,7 @@ use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Stack\HookAnswer;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Enums\ShellDialect;
+use App\Programs\Enums\HookProgram;
 
 /**
  * Reads Codex's hook payloads into the journal's inputs and renders its answers as Codex replies. Codex takes a
@@ -50,6 +51,11 @@ final readonly class CodexAdapter implements ProgramAdapter
             ['onSessionStart', 'onPrompt', 'onShellCommand', 'onFileEdit', 'onStop', 'onToolFinished', 'onSessionEnd'],
             RewriteSupport::NeedsApproval,
         );
+    }
+
+    public function modelArguments(string $model): array
+    {
+        return HookProgram::Codex->modelArguments($model);
     }
 
     public function callFor(HookPayload $payload, HookIdentity $hook): ProgramCall
