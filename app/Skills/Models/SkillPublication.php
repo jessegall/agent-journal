@@ -14,6 +14,7 @@ use App\Skills\Enums\PublicationState;
 use App\Skills\Exceptions\SkillPublicationFailed;
 use App\Skills\Exceptions\SkillPublicationMissing;
 use App\Skills\Exceptions\SkillPublicationStale;
+use App\Skills\Values\PublicationIntent;
 use App\Skills\Values\PublicationStatus;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -96,28 +97,57 @@ final class SkillPublication extends Model implements ReadableModel
         SkillGeneration $generation,
         string $selectionDigest,
         array $skillKeys,
-    ): self
+    ): self {
+        return self::intendMany($generation, [
+            new PublicationIntent($sessionId, $program, $target, $selectionDigest, $skillKeys),
+        ])[0];
+    }
+
+    /**
+     * Records each intent, reading the open and delivered publications of all their targets in two queries; an open
+     * intent for one of those targets is superseded, so each target has one open intent.
+     *
+     * @param  list<PublicationIntent>  $intents
+     * @return list<self>
+     */
+    public static function intendMany(SkillGeneration $generation, array $intents): array
     {
-        $openKey = self::openKeyOf($sessionId, $target);
-        $earlier = self::query()->where('open_key', $openKey)->lockForUpdate()->first();
-        $earlier?->supersede();
+        $openKeys = array_map(
+            fn (PublicationIntent $intent) => self::openKeyOf($intent->sessionId, $intent->target),
+            $intents,
+        );
+        $limit = max(1, count($intents));
+        $open = self::query()
+            ->whereIn('open_key', $openKeys)
+            ->lockForUpdate()
+            ->readLimit($limit)
+            ->get()
+            ->keyBy('open_key');
         $delivered = self::query()
-            ->forTarget($sessionId, $target)
+            ->whereIn('session_id', array_map(fn (PublicationIntent $intent) => $intent->sessionId, $intents))
             ->inState(PublicationState::Delivered)
             ->orderByDesc('created_at')
-            ->first();
+            ->readLimit($limit)
+            ->get()
+            ->unique(fn (self $publication) => self::openKeyOf($publication->session_id, $publication->target))
+            ->keyBy(fn (self $publication) => self::openKeyOf($publication->session_id, $publication->target));
 
-        return self::query()->create([
-            'session_id' => $sessionId,
-            'program' => $program,
-            'target' => $target,
-            'generation_id' => $generation->id,
-            'selection_digest' => $selectionDigest,
-            'skill_keys' => $skillKeys,
-            'expected_previous_generation_id' => $delivered?->generation_id,
-            'state' => PublicationState::Pending,
-            'open_key' => $openKey,
-        ]);
+        return array_map(function (PublicationIntent $intent) use ($generation, $open, $delivered): self {
+            $openKey = self::openKeyOf($intent->sessionId, $intent->target);
+            $open->get($openKey)?->supersede();
+
+            return self::query()->create([
+                'session_id' => $intent->sessionId,
+                'program' => $intent->program,
+                'target' => $intent->target,
+                'generation_id' => $generation->id,
+                'selection_digest' => $intent->selectionDigest,
+                'skill_keys' => $intent->skillKeys,
+                'expected_previous_generation_id' => $delivered->get($openKey)?->generation_id,
+                'state' => PublicationState::Pending,
+                'open_key' => $openKey,
+            ]);
+        }, $intents);
     }
 
     /**
@@ -235,12 +265,15 @@ final class SkillPublication extends Model implements ReadableModel
     }
 
     /**
-     * Whether the target's newest open or delivered publication already carries this selection.
+     * The selection digest of each session's newest open or delivered publication, by session id, in one query.
+     *
+     * @param  list<string>  $sessionIds
+     * @return array<string, string>
      */
-    public static function hasSelection(string $sessionId, string $target, string $selectionDigest): bool
+    public static function currentSelectionsOf(array $sessionIds): array
     {
-        $latest = self::query()
-            ->forTarget($sessionId, $target)
+        $publications = self::query()
+            ->whereIn('session_id', $sessionIds)
             ->whereIn('state', [
                 PublicationState::Pending->value,
                 PublicationState::Preparing->value,
@@ -248,9 +281,13 @@ final class SkillPublication extends Model implements ReadableModel
             ])
             ->orderByDesc('created_at')
             ->orderByDesc('id')
-            ->first();
+            ->readLimit(max(1, 2 * count($sessionIds)))
+            ->get()
+            ->unique('session_id');
 
-        return $latest !== null && $latest->selection_digest === $selectionDigest;
+        return $publications->mapWithKeys(fn (self $publication) => [
+            $publication->session_id => $publication->selection_digest,
+        ])->all();
     }
 
     /**

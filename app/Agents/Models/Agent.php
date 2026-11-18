@@ -48,6 +48,19 @@ final class Agent extends Model implements Assignee, ReadableModel, ReceivesMess
         return self::query()->create(['name' => $name, 'role' => $role->value]);
     }
 
+    /**
+     * These agents by id, in one query, for trusted Core work over many sessions.
+     *
+     * @param  list<string>  $agentIds
+     * @return array<string, self>
+     */
+    public static function byIds(array $agentIds): array
+    {
+        $agents = self::query()->whereKey($agentIds)->readLimit(max(1, count($agentIds)))->get();
+
+        return $agents->keyBy('id')->all();
+    }
+
     public function actorType(): ActorType
     {
         return ActorType::Agent;

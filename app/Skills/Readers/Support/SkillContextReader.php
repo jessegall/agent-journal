@@ -88,6 +88,31 @@ final readonly class SkillContextReader
         return $this->contextOf(Agent::query()->whereKey($session->agent_id)->firstOrFail(), $session);
     }
 
+    /**
+     * The context of each of these sessions, by session id, reading their agents in one query, for trusted Core work
+     * such as a refresh; a session whose context is unavailable, such as a helper launched without a profile, is
+     * left out, as it gets no selection of its own.
+     *
+     * @param  list<AgentSession>  $sessions
+     * @return array<string, SkillContext>
+     */
+    public function forSessions(array $sessions): array
+    {
+        $agentIds = array_map(fn (AgentSession $session) => $session->agent_id, $sessions);
+        $agents = Agent::byIds(array_values(array_unique($agentIds)));
+        $contexts = [];
+
+        foreach ($sessions as $session) {
+            try {
+                $contexts[$session->id] = $this->contextOf($agents[$session->agent_id], $session);
+            } catch (SkillContextUnavailable) {
+                continue;
+            }
+        }
+
+        return $contexts;
+    }
+
     private function contextOf(Agent $agent, AgentSession $session): SkillContext
     {
         $program = LaunchProgram::of($session->program);
@@ -109,9 +134,24 @@ final readonly class SkillContextReader
     private function profileOf(Agent $agent, AgentSession $session): LaunchProfile
     {
         if ($session->profile_key === null || $session->profile_revision === null) {
-            return $agent->agentRole() === AgentRole::MainAgent ? LaunchProfile::profileFree() : throw SkillContextUnavailable::profileRequired($agent->id);
+            return $this->profileFreeFor($agent);
         }
 
-        return LaunchProfile::of($this->profiles->snapshotAt(ProfileKey::from($session->profile_key), $session->profile_revision));
+        return LaunchProfile::of($this->profiles->snapshotAt(
+            ProfileKey::from($session->profile_key),
+            $session->profile_revision,
+        ));
+    }
+
+    /**
+     * @throws SkillContextUnavailable when a helper was launched without a profile
+     */
+    private function profileFreeFor(Agent $agent): LaunchProfile
+    {
+        if ($agent->agentRole() !== AgentRole::MainAgent) {
+            throw SkillContextUnavailable::profileRequired($agent->id);
+        }
+
+        return LaunchProfile::profileFree();
     }
 }
