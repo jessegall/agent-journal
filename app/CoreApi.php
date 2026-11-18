@@ -93,10 +93,12 @@ use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandMiddleware;
+use App\Bus\Contracts\OperationReader;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Enums\CommandScopeType;
 use App\Bus\Enums\MiddlewareStage;
+use App\Bus\Enums\ReceiptState;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
 use App\Bus\Exceptions\CommandHandlerMissing;
@@ -124,6 +126,8 @@ use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
+use App\Bus\Support\Operation;
+use App\Bus\Support\RequestKey;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
 use App\Comments\Contracts\Commentable;
@@ -551,10 +555,14 @@ final class CoreApi
                 ProvidesShareGateways::class,
                 SharePolicy::class,
                 CodedRefusal::class,
+                OperationReader::class,
                 OverviewContribution::class,
             )
             ->values(
                 RefusalCode::class,
+                ReceiptState::class,
+                Operation::class,
+                RequestKey::class,
                 McpToolResult::class,
                 NextAction::class,
                 OverviewSection::class,

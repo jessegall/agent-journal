@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus\Providers;
 
+use App\Bus\Console\PruneReceiptsCommand;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\CommandTransaction;
 use App\Bus\Support\CommandRegistry;
@@ -35,6 +36,7 @@ final class CommandBusServiceProvider extends ServiceProvider
      */
     public function boot(DatabaseManager $databases, Dispatcher $events): void
     {
+        $this->commands([PruneReceiptsCommand::class]);
         self::refuseExplicitTransactionsOn($databases->connection());
         $events->listen(ConnectionEstablished::class, static fn (ConnectionEstablished $event) => self::refuseExplicitTransactionsOn($event->connection));
     }

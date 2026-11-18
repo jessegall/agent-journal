@@ -20,9 +20,11 @@ use App\Agents\Support\AgentAssignees;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\AgentSessionCounter;
 use App\Agents\Support\DatabaseLaunchTransaction;
+use App\Agents\Support\RequestSession;
 use App\Assignments\Contracts\AgentAuthority;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Support\AssigneeRegistration;
+use App\Bus\Contracts\CallerSession;
 use App\Contracts\LaunchTransaction;
 use Illuminate\Support\ServiceProvider;
 
@@ -41,6 +43,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(LaunchCredentialSource::class, fn () => new EnvironmentCredentialSource(array_filter(getenv(), is_string(...))));
         $this->app->bind(AgentClientSettings::class, fn ($app) => $app->make(LaunchCredentialSource::class)->forThisLaunch());
         $this->app->bind(AgentRequestSender::class, SendAgentRequests::class);
+        $this->app->bind(CallerSession::class, RequestSession::class);
     }
 
     public function boot(AssignmentRegistration $assignments, ActorProviderRegistration $actors, ActiveActorCounterRegistry $presentActors): void
