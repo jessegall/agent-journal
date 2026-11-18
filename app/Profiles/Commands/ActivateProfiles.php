@@ -9,12 +9,12 @@ use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 use App\Profiles\Handlers\ActivateProfilesHandler;
+use App\Profiles\Support\ProfileProposal;
 use App\Profiles\Values\ProfileActivation;
-use App\Profiles\Values\ProfileDefinition;
 
 /**
- * The owner activates profiles: each definition becomes its profile's next immutable revision, under the identity its
- * key already has, and reaches only launches that start after it.
+ * The owner activates a proposal: every profile in it is resolved and checked, and only when all pass does each
+ * become its profile's next immutable revision, reaching only launches that start after it.
  *
  * @implements Command<ProfileActivation>
  */
@@ -22,10 +22,7 @@ use App\Profiles\Values\ProfileDefinition;
 #[RequiresActor(ActorType::User)]
 final readonly class ActivateProfiles implements Command
 {
-    /**
-     * @param  list<ProfileDefinition>  $profiles
-     */
     public function __construct(
-        public array $profiles,
+        public ProfileProposal $proposal,
     ) {}
 }

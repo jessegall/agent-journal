@@ -17,13 +17,14 @@ use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Enums\ProfileType;
 use App\Profiles\Exceptions\ProfileMissing;
 use App\Profiles\Exceptions\ProfileRevisionUnreadable;
-use App\Profiles\Values\ProfileDefinition;
+use App\Profiles\Values\ProfileActivation;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileLaunchPolicy;
 use App\Programs\Enums\HookProgram;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -62,7 +63,7 @@ final class ProfileReaderTest extends TestCase
 
     public function test_a_reader_profile_maps_to_the_read_only_helper_role(): void
     {
-        $this->activate('journal-reviewer', ProfileType::ReadOnlyHelper);
+        $activation = $this->activate('journal-reviewer', ProfileType::ReadOnlyHelper);
 
         $snapshot = $this->reader()->snapshotFor(ProfileKey::from('journal-reviewer'));
 
@@ -73,7 +74,7 @@ final class ProfileReaderTest extends TestCase
         $this->assertSame(['opus', 'sonnet'], $snapshot->launch->allowedModels);
         $this->assertSame([], $snapshot->launch->stopConditions->conditions);
         $this->assertSame(ExecutionModeType::RequiredContainer, $snapshot->launch->execution->mode);
-        $this->assertSame(hash('sha256', 'journal-reviewer'), $snapshot->launch->provenance->configurationHash);
+        $this->assertSame($activation->configurationHash, $snapshot->launch->provenance->configurationHash);
         $this->assertSame(PolicyOriginType::GlobalDefault, $snapshot->launch->provenance->originOf('access'));
     }
 
@@ -140,13 +141,11 @@ final class ProfileReaderTest extends TestCase
         $this->reader()->snapshotFor(ProfileKey::from('journal-reviewer'));
     }
 
-    private function activate(string $key, ProfileType $type): void
+    private function activate(string $key, ProfileType $type): ProfileActivation
     {
-        $hash = hash('sha256', $key);
-        $launch = ProfileLaunchPolicy::defaultsFor($type, HookProgram::Codex, false, ['opus', 'sonnet'], $hash);
-        $definition = new ProfileDefinition(ProfileKey::from($key), $key, $type, 'Work.', 'opus', null, [], $launch);
+        $proposal = TestProposals::of(TestProposals::profile($key, $type));
 
-        $this->app->make(CommandBus::class)->run(new ActivateProfiles([$definition]));
+        return $this->app->make(CommandBus::class)->run(new ActivateProfiles($proposal));
     }
 
     private function reader(): ProfileReader

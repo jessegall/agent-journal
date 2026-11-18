@@ -490,12 +490,22 @@ use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Profiles\Contracts\ProfileReader;
 use App\Profiles\Enums\PolicyOriginType;
+use App\Profiles\Enums\ProfileChangeType;
 use App\Profiles\Enums\ProfileType;
+use App\Profiles\Events\ProfileRevisionRevoked;
 use App\Profiles\Exceptions\ProfileFieldUnknown;
 use App\Profiles\Exceptions\ProfileKeyInvalid;
 use App\Profiles\Exceptions\ProfileMissing;
+use App\Profiles\Exceptions\ProfilePolicyRefused;
+use App\Profiles\Exceptions\ProfileProposalRefused;
 use App\Profiles\Exceptions\ProfileRetired;
 use App\Profiles\Exceptions\ProfileRevisionUnreadable;
+use App\Profiles\Support\ClassRule;
+use App\Profiles\Support\OperationRule;
+use App\Profiles\Support\PolicyOverride;
+use App\Profiles\Support\ProfileProposal;
+use App\Profiles\Support\ProposedProfile;
+use App\Profiles\Support\TypeOverride;
 use App\Profiles\Values\ActivatedProfile;
 use App\Profiles\Values\FieldOrigin;
 use App\Profiles\Values\ProfileActivation;
@@ -799,6 +809,7 @@ final class CoreApi
                 StateTypesRequested::class,
                 AssignmentsChanged::class,
                 LaunchEnded::class,
+                ProfileRevisionRevoked::class,
                 LaunchAccepted::class,
                 EngineTicked::class,
                 SettingsChanged::class,
@@ -1279,6 +1290,13 @@ final class CoreApi
                 ProfileSnapshot::class,
                 ProfileLaunchPolicy::class,
                 ProfileProvenance::class,
+                ProfileProposal::class,
+                ProposedProfile::class,
+                PolicyOverride::class,
+                TypeOverride::class,
+                ClassRule::class,
+                OperationRule::class,
+                ProfileChangeType::class,
                 FieldOrigin::class,
                 PolicyOriginType::class,
                 ProfileDefinition::class,
@@ -1537,6 +1555,8 @@ final class CoreApi
                 ProfileRetired::class,
                 ProfileRevisionUnreadable::class,
                 ProfileFieldUnknown::class,
+                ProfileProposalRefused::class,
+                ProfilePolicyRefused::class,
                 SkillDeclarationInvalid::class,
                 SkillKeyInvalid::class,
                 ProgramKeyInvalid::class,

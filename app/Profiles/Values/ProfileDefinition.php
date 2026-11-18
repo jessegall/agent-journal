@@ -26,4 +26,26 @@ final readonly class ProfileDefinition
         public array $requiredSkills,
         public ProfileLaunchPolicy $launch,
     ) {}
+
+    /**
+     * Whether this definition configures the profile differently from the revision it would follow; the hash and
+     * origins of its provenance do not count.
+     */
+    public function differsFrom(ProfileSnapshot $active): bool
+    {
+        $mine = $this->launch;
+        $theirs = $active->launch;
+
+        return $this->type !== $active->type
+            || $this->instructions !== $active->instructions
+            || $this->model !== $active->model
+            || $this->skillAllowlist !== $active->skillAllowlist
+            || $this->requiredSkills !== $active->requiredSkills
+            || $mine->program !== $theirs->program
+            || $mine->programPinned !== $theirs->programPinned
+            || $mine->allowedModels !== $theirs->allowedModels
+            || $mine->access != $theirs->access
+            || $mine->stopConditions != $theirs->stopConditions
+            || $mine->execution != $theirs->execution;
+    }
 }

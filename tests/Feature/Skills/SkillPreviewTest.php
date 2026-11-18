@@ -15,12 +15,10 @@ use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Enums\ProfileType;
 use App\Profiles\Models\Profile;
 use App\Profiles\Models\ProfileRevision;
-use App\Profiles\Values\ProfileDefinition;
-use App\Profiles\Values\ProfileKey;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Artisan;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Fixtures\Profiles\TestLaunchPolicies;
+use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -45,16 +43,9 @@ final class SkillPreviewTest extends TestCase
 
         $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(7)));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
-        $this->app->make(CommandBus::class)->run(new ActivateProfiles([new ProfileDefinition(
-            ProfileKey::from('journal-reviewer'),
-            'Reviewer',
-            ProfileType::ReadOnlyHelper,
-            'Review.',
-            'opus',
-            null,
-            [],
-            TestLaunchPolicies::for(ProfileType::ReadOnlyHelper),
-        )]));
+        $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
+            TestProposals::profile('journal-reviewer', ProfileType::ReadOnlyHelper, 'Review.'),
+        )));
         $this->main = $this->launch('Main', AgentRole::MainAgent, null);
         $this->reviewer = $this->launch('Reviewer', AgentRole::ReadOnlyHelper, 1);
     }

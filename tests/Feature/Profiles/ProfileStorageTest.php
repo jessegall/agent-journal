@@ -16,10 +16,10 @@ use App\Profiles\Exceptions\ProfileRetired;
 use App\Profiles\Exceptions\ProfileRevisionImmutable;
 use App\Profiles\Models\Profile;
 use App\Profiles\Models\ProfileRevision;
+use App\Profiles\Support\ProposedProfile;
 use App\Profiles\Values\ProfileActivation;
-use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
-use Tests\Fixtures\Profiles\TestLaunchPolicies;
+use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -78,7 +78,9 @@ final class ProfileStorageTest extends TestCase
         $id = Profile::byKey(ProfileKey::from('journal-reviewer'))->id;
         $reader = $this->app->make(ProfileReader::class);
 
-        $this->assertSame(1, $this->app->make(CommandBus::class)->run(new RevokeProfiles([ProfileKey::from('journal-reviewer')])));
+        $revoke = new RevokeProfiles([ProfileKey::from('journal-reviewer')]);
+
+        $this->assertSame(1, $this->app->make(CommandBus::class)->run($revoke));
         $this->assertFalse($reader->has(ProfileKey::from('journal-reviewer')));
 
         try {
@@ -105,18 +107,14 @@ final class ProfileStorageTest extends TestCase
     public function test_the_console_lists_and_shows_a_profile_with_its_skill_lists(): void
     {
         $this->activate($this->reviewer('Review the change.', null));
-        $this->activate(new ProfileDefinition(
-            ProfileKey::from('journal-quiet'),
-            'Quiet',
-            ProfileType::WritingHelper,
-            'Write.',
-            'sonnet',
-            [],
-            ['journal'],
-            TestLaunchPolicies::for(ProfileType::WritingHelper),
-        ));
+        $this->activate(
+            TestProposals::profile('journal-quiet', ProfileType::WritingHelper, 'Write.', 'sonnet', [], ['journal']),
+        );
 
-        $this->artisan('profile:list')->expectsOutputToContain('journal-reviewer')->expectsOutputToContain('journal-quiet')->assertSuccessful();
+        $this->artisan('profile:list')
+            ->expectsOutputToContain('journal-reviewer')
+            ->expectsOutputToContain('journal-quiet')
+            ->assertSuccessful();
         $this->artisan('profile:show', ['key' => 'journal-reviewer'])
             ->expectsOutputToContain('Type: read_only_helper')
             ->expectsOutputToContain('Skill allowlist: absent, every applicable skill')
@@ -131,22 +129,19 @@ final class ProfileStorageTest extends TestCase
     /**
      * @param  list<string>|null  $allowlist
      */
-    private function reviewer(string $instructions, array|null $allowlist): ProfileDefinition
+    private function reviewer(string $instructions, array|null $allowlist): ProposedProfile
     {
-        return new ProfileDefinition(
-            ProfileKey::from('journal-reviewer'),
-            'Reviewer',
+        return TestProposals::profile(
+            'journal-reviewer',
             ProfileType::ReadOnlyHelper,
             $instructions,
             'opus',
             $allowlist,
-            [],
-            TestLaunchPolicies::for(ProfileType::ReadOnlyHelper),
         );
     }
 
-    private function activate(ProfileDefinition $definition): ProfileActivation
+    private function activate(ProposedProfile $profile): ProfileActivation
     {
-        return $this->app->make(CommandBus::class)->run(new ActivateProfiles([$definition]));
+        return $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of($profile)));
     }
 }

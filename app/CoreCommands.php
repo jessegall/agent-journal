@@ -11,6 +11,7 @@ use App\Agents\Commands\ClaimLaunchGrant;
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
+use App\Agents\Commands\FenceProfileRevision;
 use App\Agents\Commands\InterruptAgent;
 use App\Agents\Commands\LaunchAgent;
 use App\Agents\Commands\OpenAgentRuntime;
@@ -195,6 +196,7 @@ final class CoreCommands
             PrepareSkillPublication::class,
             ActivateSkillPublication::class,
             FailSkillPublication::class,
+            FenceProfileRevision::class,
         ];
     }
 

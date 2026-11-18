@@ -13,8 +13,6 @@ use App\Agents\Models\AgentSession;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Enums\ProfileType;
-use App\Profiles\Values\ProfileDefinition;
-use App\Profiles\Values\ProfileKey;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Enums\ConditionOutcome;
 use App\Skills\Exceptions\SkillAgentHidden;
@@ -22,7 +20,7 @@ use App\Skills\Exceptions\SkillContextUnavailable;
 use App\Skills\Readers\Support\SkillContextReader;
 use App\Skills\Values\SkillContext;
 use Tests\Fixtures\Agents\TestSelections;
-use Tests\Fixtures\Profiles\TestLaunchPolicies;
+use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
@@ -116,16 +114,9 @@ final class SkillContextReaderTest extends TestCase
     private function activateReviewer(string $instructions): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
-        $this->app->make(CommandBus::class)->run(new ActivateProfiles([new ProfileDefinition(
-            ProfileKey::from('journal-reviewer'),
-            'Reviewer',
-            ProfileType::ReadOnlyHelper,
-            $instructions,
-            'opus',
-            null,
-            [],
-            TestLaunchPolicies::for(ProfileType::ReadOnlyHelper),
-        )]));
+        $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
+            TestProposals::profile('journal-reviewer', ProfileType::ReadOnlyHelper, $instructions),
+        )));
     }
 
     /**

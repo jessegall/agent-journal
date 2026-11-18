@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Profiles\Values;
 
 /**
- * What one activation appended: each profile it reached, in the order it was given.
+ * What one activation appended: each profile it reached, in the order it was given, and the hash of the configuration
+ * every revision it appended carries.
  */
 final readonly class ProfileActivation
 {
@@ -14,5 +15,6 @@ final readonly class ProfileActivation
      */
     public function __construct(
         public array $profiles,
+        public string $configurationHash,
     ) {}
 }
