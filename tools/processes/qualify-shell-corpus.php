@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 /*
  * The full-corpus qualification of version 6's shell syntax (doc 21 revision 3, sections 35 and 36). It reads every
- * private corpus source in corpus/ (git-ignored), deduplicates the lines by source and dialect, splits them into
+ * private corpus source in ../shell-corpus-private (outside the project), deduplicates the lines by source and dialect, splits them into
  * deterministic chunks, and for each chunk compares version 6's reading (tools/processes/analyse-shell-lines.php, run
  * in the app container) with the independent reference (tools/shell-oracle, mvdan.cc/sh). A cursor tied to the input
  * hash lets a killed run resume after its last complete chunk. Private details (sources of differing lines) stay in
- * corpus/qualification; the public report holds counts, hashes, elapsed time and opaque ids only. Without the corpus
+ * ../shell-corpus-private/qualification; the public report holds counts, hashes, elapsed time and opaque ids only. Without the corpus
  * or the oracle it reports qualification not run and exits nonzero, never a pass.
  *
  *   php tools/processes/qualify-shell-corpus.php
@@ -17,7 +17,7 @@ declare(strict_types=1);
 ini_set('memory_limit', '6G');
 
 const ROOT = __DIR__.'/../..';
-const CORPUS = ROOT.'/corpus';
+const CORPUS = ROOT.'/../shell-corpus-private';
 const WORK = CORPUS.'/qualification';
 const ORACLE = ROOT.'/tools/shell-oracle/bin/shell-oracle';
 const CHUNK_LINES = 50_000;
@@ -26,7 +26,7 @@ const DECISIONS = __DIR__.'/shell-corpus-decisions.json';
 
 $started = microtime(true);
 if (! is_dir(CORPUS) || ! is_executable(ORACLE)) {
-    notRun(is_dir(CORPUS) ? 'the reference oracle is not built (go -C tools/shell-oracle build -o bin/shell-oracle .)' : 'the private corpus folder corpus/ is missing');
+    notRun(is_dir(CORPUS) ? 'the reference oracle is not built (go -C tools/shell-oracle build -o bin/shell-oracle .)' : 'the private corpus folder ../shell-corpus-private is missing');
 }
 if (! is_dir(WORK) && ! mkdir(WORK, 0o700, true)) {
     notRun('the qualification folder cannot be created');
