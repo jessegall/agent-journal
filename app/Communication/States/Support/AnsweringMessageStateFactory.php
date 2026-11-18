@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Communication\States\Support;
 
+use App\Communication\Readers\MessageRecords;
+use App\Communication\States\AnsweringMessageState;
 use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
@@ -11,8 +13,6 @@ use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\States\AgentState;
-use App\Communication\Readers\MessageRecords;
-use App\Communication\States\AnsweringMessageState;
 
 /**
  * Builds the answering-message state from the message as it is now; it keeps no message between calls.

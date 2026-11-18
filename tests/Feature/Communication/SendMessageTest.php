@@ -11,23 +11,23 @@ use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\CommandBus;
-use App\Hooks\Models\AgentStackRow;
-use App\Hooks\Storage\FrameRecord;
-use App\Communication\Events\MessageAnswered;
-use App\Communication\Events\MessageDismissed;
-use App\Communication\Events\MessageSent;
-use App\Communication\Data\MessageView;
 use App\Communication\Commands\AnswerMessage;
 use App\Communication\Commands\DismissMessage;
 use App\Communication\Commands\SendMessage;
+use App\Communication\Data\MessageView;
 use App\Communication\Enums\MessageState;
+use App\Communication\Events\MessageAnswered;
+use App\Communication\Events\MessageDismissed;
+use App\Communication\Events\MessageSent;
 use App\Communication\Exceptions\MessageBodyEmpty;
 use App\Communication\Models\Message;
 use App\Communication\Readers\MessageRecords;
-use Tests\TestCase;
+use App\Hooks\Models\AgentStackRow;
+use App\Hooks\Storage\FrameRecord;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\TestCase;
 
 /**
  * The owner sends a message to a running agent's session with no agent context; it lands as the agent's own would.

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Communication\Handlers;
 
+use App\Communication\Commands\DismissMessage;
+use App\Communication\Events\MessageDismissed;
+use App\Communication\Models\Message;
 use App\Contracts\CommandHandler;
 use App\Hooks\Contracts\StackCleanup;
-use App\Communication\Events\MessageDismissed;
-use App\Communication\Commands\DismissMessage;
-use App\Communication\Models\Message;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Communication\Handlers;
 
 use App\Agents\Contracts\SessionReader;
-use App\Contracts\CommandHandler;
-use App\Hooks\Contracts\UserStack;
-use App\Communication\Events\MessageSent;
 use App\Communication\Commands\SendMessage;
+use App\Communication\Events\MessageSent;
 use App\Communication\Exceptions\MessageBodyEmpty;
 use App\Communication\Models\Message;
 use App\Communication\States\Support\AnsweringMessageStateReference;
+use App\Contracts\CommandHandler;
+use App\Hooks\Contracts\UserStack;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Communication\Readers;
 
 use App\Agents\Support\StackTarget;
+use App\Communication\Contracts\ConversationReader;
 use App\Communication\Data\Conversation;
 use App\Communication\Data\MessageView;
-use App\Communication\Contracts\ConversationReader;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Models\Message;
 use Illuminate\Container\Attributes\Scoped;

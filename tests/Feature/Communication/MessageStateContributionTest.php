@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Tests\Feature\Communication;
 
 use App\Bus\Contracts\CommandBus;
+use App\Communication\Commands\RequireMessageAnswer;
+use App\Communication\Enums\MessageState;
+use App\Communication\Models\Message;
 use App\Hooks\Exceptions\StackAlreadyClosed;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Storage\FrameRecord;
 use Carbon\CarbonImmutable;
-use App\Communication\Commands\RequireMessageAnswer;
-use App\Communication\Enums\MessageState;
-use App\Communication\Models\Message;
-use Tests\TestCase;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Models\Task;
 use Tests\Support\CommittedHookStack;
+use Tests\TestCase;
 
 final class MessageStateContributionTest extends TestCase
 {

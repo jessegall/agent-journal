@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Communication\Handlers;
 
 use App\Agents\Contracts\SessionReader;
-use App\Contracts\CommandHandler;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Events\MessageNeedsAnswer;
 use App\Communication\Models\Message;
+use App\Contracts\CommandHandler;
 use Illuminate\Contracts\Events\Dispatcher;
 
 /**

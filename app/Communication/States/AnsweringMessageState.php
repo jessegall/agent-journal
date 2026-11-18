@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Communication\States;
 
+use App\Communication\Support\MessageWork;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\States\AgentState;
-use App\Communication\Support\MessageWork;
 
 /**
  * A message waits on the agent: it hears about it at start, may not stop, and may not change files until it answers.

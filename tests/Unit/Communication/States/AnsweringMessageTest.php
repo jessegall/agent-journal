@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Communication\States;
 
+use App\Communication\Enums\MessageWorkState;
+use App\Communication\States\AnsweringMessageState;
+use App\Communication\Support\MessageWork;
 use App\Hooks\Decisions\Denied;
 use App\Hooks\Enums\CommandEffect;
 use App\Hooks\Enums\CommandType;
@@ -20,9 +23,6 @@ use App\Hooks\Inputs\ShellCommand;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
-use App\Communication\Enums\MessageWorkState;
-use App\Communication\States\AnsweringMessageState;
-use App\Communication\Support\MessageWork;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;
