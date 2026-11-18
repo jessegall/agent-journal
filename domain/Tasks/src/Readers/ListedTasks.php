@@ -6,7 +6,6 @@ namespace Domain\Tasks\Readers;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Assignments\Contracts\AssigneeReader;
-use App\Assignments\Contracts\AssignmentReader;
 use Domain\Tasks\Api\TaskCard;
 use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Api\TaskList;
@@ -22,7 +21,6 @@ final readonly class ListedTasks implements TaskListReader
 {
     public function __construct(
         private CurrentActor $actors,
-        private AssignmentReader $assignments,
         private AssigneeReader $assignees,
         private TaskExecutions $executions,
     ) {}
@@ -33,7 +31,7 @@ final readonly class ListedTasks implements TaskListReader
         $matching = Task::query()->matching($filters->search)->inStates($filters->states);
         $total = $matching->clone()->count();
         $tasks = $matching->orderBy('id')->forPage($filters->page->number, $filters->page->size)->get();
-        $holders = $this->assignees->holdersOf($this->assignments->assignmentsFor(array_values($tasks->map(fn (Task $task) => $task->assignmentIdentity())->all())));
+        $holders = $this->assignees->holdersOfRecords(array_values($tasks->map(fn (Task $task) => $task->assignmentIdentity())->all()));
         $executions = $this->executions->of($tasks);
 
         return new TaskList(

@@ -8,6 +8,7 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssigneeReader;
 use App\Assignments\Contracts\AssignmentProviders;
+use App\Assignments\Contracts\AssignmentReader;
 use App\Assignments\Support\AssigneeList;
 use App\Assignments\Support\AssigneeName;
 use App\Assignments\Support\Assignment;
@@ -15,13 +16,14 @@ use App\Assignments\Support\AssignmentHolder;
 use App\Assignments\Support\AssignmentHolders;
 use App\Assignments\Support\AssignmentSet;
 use App\Assignments\Support\Page;
+use App\Records\Support\RecordIdentity;
 
 /**
  * Reads actors' names and eligible actors through the owner of each actor type, one call per type.
  */
 final readonly class AssigneeRecords implements AssigneeReader
 {
-    public function __construct(private AssignmentProviders $providers) {}
+    public function __construct(private AssignmentProviders $providers, private AssignmentReader $assignments) {}
 
     /**
      * @param  list<ActorIdentity>  $actors
@@ -41,6 +43,14 @@ final readonly class AssigneeRecords implements AssigneeReader
     public function eligible(ActorType $type, Page $page): AssigneeList
     {
         return $this->providers->assigneeProvider($type)->eligible($page);
+    }
+
+    /**
+     * @param  list<RecordIdentity>  $records
+     */
+    public function holdersOfRecords(array $records): AssignmentHolders
+    {
+        return $this->holdersOf($this->assignments->assignmentsFor($records));
     }
 
     public function holdersOf(AssignmentSet $assignments): AssignmentHolders
