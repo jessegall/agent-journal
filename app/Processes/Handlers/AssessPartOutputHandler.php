@@ -7,8 +7,6 @@ namespace App\Processes\Handlers;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\AssessPartOutput;
 use App\Processes\Contracts\ResultPublisher;
-use App\Processes\Enums\InterpretationState;
-use App\Processes\Enums\ProblemCode;
 use App\Processes\Events\EvidenceInvalid;
 use App\Processes\Models\OutputAssessment;
 use App\Processes\Models\PartRun;
@@ -46,20 +44,8 @@ final readonly class AssessPartOutputHandler implements CommandHandler
         $reader = ReaderRevision::query()->findOrFail($declaration->reader_approvals[0]->readerRevisionId);
         $replayed = $this->replays->replay($reader, $contract, $part);
         $validation = $this->validator->validate($part, $replayed->assessment, $replayed->consumed, $contract);
-        $previous = OutputAssessment::query()->where('part_run_id', $part->id)->latest('created_at')->first();
         $run = ProcessRun::query()->withoutGlobalScopes()->findOrFail($part->process_run_id);
-        $assessment = OutputAssessment::query()->create([
-            'project_key' => $run->project_key,
-            'part_run_id' => $part->id,
-            'reader_revision_id' => $reader->id,
-            'rule_revision_id' => $declaration->id,
-            'interpretation' => $this->interpretationOf($validation->problems),
-            'outcome' => $validation->outcome,
-            'problems' => $validation->problems,
-            'counts' => $replayed->assessment->counts,
-            'final_offsets' => $replayed->consumed->offsets,
-            'replaces_assessment_id' => $previous?->id,
-        ]);
+        $assessment = OutputAssessment::record($run, $part, $declaration, $reader, $replayed, $validation);
         if (! $validation->isValid()) {
             $codes = array_map(fn (OutputProblem $problem): string => $problem->code->value, $validation->problems);
             $actor = [(string) $run->actor_type, (string) $run->actor_id];
@@ -69,19 +55,5 @@ final readonly class AssessPartOutputHandler implements CommandHandler
         }
 
         return $this->publisher->publish($this->validator->verify($assessment))->id;
-    }
-
-    /**
-     * @param  list<OutputProblem>  $problems
-     */
-    private function interpretationOf(array $problems): InterpretationState
-    {
-        if ($problems === []) {
-            return InterpretationState::Valid;
-        }
-
-        return array_any($problems, fn (OutputProblem $problem): bool => $problem->code === ProblemCode::ReaderFailed)
-            ? InterpretationState::ReaderFailed
-            : InterpretationState::Invalid;
     }
 }

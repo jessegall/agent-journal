@@ -26,19 +26,7 @@ final readonly class ReceiptPublisher implements ResultPublisher
             ->where('part_run_id', $checked->part->id)
             ->lockForUpdate()
             ->first();
-        $receipt = ResultReceipt::query()->create([
-            'project_key' => $checked->run->project_key,
-            'process_run_id' => $checked->run->id,
-            'part_run_id' => $checked->part->id,
-            'attempt' => $checked->part->attempt,
-            'work_fingerprint' => $checked->run->tree_digest,
-            'rule_revision_id' => $checked->declaration->id,
-            'reader_revision_id' => $stored->reader_revision_id,
-            'exit_policy_digest' => $this->exitPolicyDigest($checked),
-            'manifest_digest' => $checked->manifestDigest,
-            'output_assessment_id' => $stored->id,
-            'outcome' => $stored->outcome,
-        ]);
+        $receipt = ResultReceipt::publish($checked, $this->exitPolicyDigest($checked));
         $earlier?->supersedeBy($receipt);
 
         return $receipt;

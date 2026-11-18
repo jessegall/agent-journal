@@ -397,6 +397,7 @@ use App\Processes\Contracts\ProgramClassifier;
 use App\Processes\Contracts\ProvidesCommandRules;
 use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Contracts\ShellCommandParser;
+use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Declarations\VerificationContract;
 use App\Processes\Enums\AssessmentOutcome;
 use App\Processes\Enums\BindingType;
@@ -461,6 +462,7 @@ use App\Processes\Values\ShellNode;
 use App\Processes\Values\ShellTree;
 use App\Processes\Values\SourceRange;
 use App\Processes\Values\SyntaxOrigin;
+use App\Processes\Values\TimingVerdict;
 use App\Processes\Values\TreeDiagnostic;
 use App\Processes\Values\UnresolvedFact;
 use App\Processes\Values\Word;
@@ -1011,6 +1013,8 @@ final class CoreApi
                 CommandRule::class,
                 RuleScope::class,
                 ResultReceipts::class,
+                VerificationTiming::class,
+                TimingVerdict::class,
                 ResultReceipt::class,
                 AssessmentOutcome::class,
                 ScopeType::class,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Providers;
 
 use App\Links\Support\LinkTypeRegistry;
+use App\Processes\Contracts\VerificationTiming;
 use Domain\Plans\Console\AssignedPlansCommand;
 use Domain\Plans\Console\AssignPlanWorkCommand;
 use Domain\Plans\Console\ReassignPlanWorkCommand;
@@ -17,6 +18,7 @@ use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Readers\PlanDetailRecords;
 use Domain\Plans\Readers\PlanRecords;
+use Domain\Plans\Support\PhaseTiming;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Routing\Redirector;
@@ -32,18 +34,29 @@ final class PlansServiceProvider extends ServiceProvider
     {
         $this->app->scoped(PlanReader::class, PlanRecords::class);
         $this->app->scoped(PlanDetailsReader::class, PlanDetailRecords::class);
+        $this->app->scoped(VerificationTiming::class, PhaseTiming::class);
     }
 
     public function boot(LinkTypeRegistry $links, ExceptionHandler $exceptions): void
     {
         // A missing plan is not found; a refused start is a form error on the start button.
         if ($exceptions instanceof Handler) {
-            $exceptions->map(PlanMissing::class, fn (PlanMissing $missing) => new NotFoundHttpException(previous: $missing));
-            $exceptions->renderable(fn (StartDenied $denied) => $this->app->make(Redirector::class)->back(303)->withErrors(['start' => $denied->getMessage()]));
+            $exceptions->map(
+                PlanMissing::class,
+                fn (PlanMissing $missing) => new NotFoundHttpException(previous: $missing),
+            );
+            $exceptions->renderable(fn (StartDenied $denied) => $this->app->make(Redirector::class)
+                ->back(303)
+                ->withErrors(['start' => $denied->getMessage()]));
         }
 
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
-        $this->commands([AssignedPlansCommand::class, AssignPlanWorkCommand::class, ReassignPlanWorkCommand::class, UnassignPlanWorkCommand::class]);
+        $this->commands([
+            AssignedPlansCommand::class,
+            AssignPlanWorkCommand::class,
+            ReassignPlanWorkCommand::class,
+            UnassignPlanWorkCommand::class,
+        ]);
         $links->register([
             Plan::LINK_TYPE => Plan::class,
             Phase::LINK_TYPE => Phase::class,

@@ -6,6 +6,7 @@ namespace App\Processes\Models;
 
 use App\Links\Support\Linkable;
 use App\Processes\Enums\AssessmentOutcome;
+use App\Processes\Values\VerifiedOutput;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -63,6 +64,26 @@ final class ResultReceipt extends Model implements ReadableModel
     protected function casts(): array
     {
         return ['attempt' => 'integer', 'outcome' => AssessmentOutcome::class, 'published_at' => 'datetime'];
+    }
+
+    /**
+     * The receipt of a verified output, bound to its run, part, revisions, manifest and assessment.
+     */
+    public static function publish(VerifiedOutput $verified, string $exitPolicyDigest): self
+    {
+        return self::query()->create([
+            'project_key' => $verified->run->project_key,
+            'process_run_id' => $verified->run->id,
+            'part_run_id' => $verified->part->id,
+            'attempt' => $verified->part->attempt,
+            'work_fingerprint' => $verified->run->tree_digest,
+            'rule_revision_id' => $verified->declaration->id,
+            'reader_revision_id' => $verified->assessment->reader_revision_id,
+            'exit_policy_digest' => $exitPolicyDigest,
+            'manifest_digest' => $verified->manifestDigest,
+            'output_assessment_id' => $verified->assessment->id,
+            'outcome' => $verified->assessment->outcome,
+        ]);
     }
 
     /**

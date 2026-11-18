@@ -8,6 +8,7 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
+use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Enums\EvidenceSource;
 use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\ProposalState;
@@ -73,6 +74,26 @@ final class CommandRequest extends Model implements ReadableModel
     protected function casts(): array
     {
         return ['hold_reason' => RequestHoldReason::class, 'state' => RequestState::class];
+    }
+
+    /**
+     * A new request holding the actor's command line in the project, collecting its declaration first.
+     */
+    public static function open(string $projectKey, ActorIdentity $actor, OpenCommandRequest $command): self
+    {
+        return self::query()->create([
+            'project_key' => $projectKey,
+            'actor_type' => $actor->type->value,
+            'actor_id' => $actor->id,
+            'operation' => $command->operation,
+            'binding_digest' => $command->bindingDigest,
+            'source_digest' => hash('sha256', $command->line),
+            'source_excerpt' => self::excerptOf($command->line),
+            'source_line' => $command->line,
+            'working_folder' => $command->workingFolder,
+            'hold_reason' => $command->reason,
+            'state' => RequestState::CollectingDeclaration,
+        ]);
     }
 
     /**

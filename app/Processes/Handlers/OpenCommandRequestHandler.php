@@ -8,7 +8,6 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\OpenCommandRequest;
-use App\Processes\Enums\RequestState;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Support\ProjectKey;
 
@@ -31,18 +30,6 @@ final readonly class OpenCommandRequestHandler implements CommandHandler
             return $open->id;
         }
 
-        return CommandRequest::query()->create([
-            'project_key' => $projectKey,
-            'actor_type' => $actor->type->value,
-            'actor_id' => $actor->id,
-            'operation' => $command->operation,
-            'binding_digest' => $command->bindingDigest,
-            'source_digest' => hash('sha256', $command->line),
-            'source_excerpt' => CommandRequest::excerptOf($command->line),
-            'source_line' => $command->line,
-            'working_folder' => $command->workingFolder,
-            'hold_reason' => $command->reason,
-            'state' => RequestState::CollectingDeclaration,
-        ])->id;
+        return CommandRequest::open($projectKey, $actor, $command)->id;
     }
 }

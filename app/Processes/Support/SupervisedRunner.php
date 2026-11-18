@@ -8,13 +8,17 @@ use App\Processes\Admission\OutputPolicy;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\ProcessRunner;
 use App\Processes\Contracts\ShellSyntax;
+use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Exceptions\OutputHiddenRefused;
+use App\Processes\Exceptions\PhaseTimingRefused;
 use App\Processes\Exceptions\RunnerUnavailable;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Values\AdmittedRun;
+use App\Processes\Values\Classification;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\RunReceipt;
+use App\Processes\Values\TimingVerdict;
 
 /**
  * Starts an admitted run (doc 21 revision 6, sections 53 and 55): it refuses while the host capability is off,
@@ -30,6 +34,7 @@ final readonly class SupervisedRunner implements ProcessRunner
         private ExecutionPlanner $planner,
         private OutputPolicy $outputs,
         private ProjectKey $projects,
+        private VerificationTiming $timing,
     ) {}
 
     /**
@@ -49,6 +54,7 @@ final readonly class SupervisedRunner implements ProcessRunner
         if (! $sameSource || ! hash_equals($run->plan->treeDigest, $planned)) {
             throw RunnerUnavailable::changedAdmission();
         }
+        $this->checkTiming($classification);
         $verdict = $this->outputs->check($classification);
         if (! $verdict->isAllowed()) {
             throw OutputHiddenRefused::by($verdict);
@@ -67,5 +73,16 @@ final readonly class SupervisedRunner implements ProcessRunner
         ]);
 
         return new RunReceipt($stored->id, 0, $stored->lifecycle);
+    }
+
+    /**
+     * @throws PhaseTimingRefused
+     */
+    private function checkTiming(Classification $classification): void
+    {
+        $timing = $classification->hasVerification() ? $this->timing->forCaller() : TimingVerdict::allowed();
+        if (! $timing->isAllowed()) {
+            throw PhaseTimingRefused::by($timing);
+        }
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Values;
 
 use App\Processes\Enums\CommandClass;
+use App\Processes\Enums\CommandType;
 
 /**
  * The classification of one shell tree (doc 21 revision 6, section 26): every executable part with its facts, and the
@@ -36,7 +37,9 @@ final readonly class Classification
      */
     public function facts(): array
     {
-        return [...array_merge(...array_map(fn (PartClassification $part): array => $part->facts, $this->parts)), ...$this->syntaxFacts];
+        $partFacts = array_merge(...array_map(fn (PartClassification $part): array => $part->facts, $this->parts));
+
+        return [...$partFacts, ...$this->syntaxFacts];
     }
 
     /**
@@ -47,6 +50,17 @@ final readonly class Classification
     public function factsFor(CommandClass $class): array
     {
         return array_values(array_filter($this->facts(), fn (ClassFact $fact): bool => $fact->class === $class));
+    }
+
+    /**
+     * Whether a part is a test or check, which waits for the end of its plan phase.
+     */
+    public function hasVerification(): bool
+    {
+        return array_any(
+            $this->parts,
+            fn (PartClassification $part): bool => $part->purpose === CommandType::Verification,
+        );
     }
 
     public function isKnown(): bool
@@ -67,7 +81,10 @@ final readonly class Classification
      */
     public function mayChangeFiles(): bool
     {
-        return ! $this->isKnown() || array_any($this->requiredClasses()->classes, fn (CommandClass $class): bool => $class->isFileChange());
+        return ! $this->isKnown() || array_any(
+            $this->requiredClasses()->classes,
+            fn (CommandClass $class): bool => $class->isFileChange(),
+        );
     }
 
     /**
@@ -76,20 +93,27 @@ final readonly class Classification
      */
     public function needsAlias(): bool
     {
-        return ! $this->isKnown() || array_any($this->parts, fn (PartClassification $part): bool => $part->purpose->needsAlias());
+        return ! $this->isKnown() || array_any(
+            $this->parts,
+            fn (PartClassification $part): bool => $part->purpose->needsAlias(),
+        );
     }
 
     /**
      * The classification as plain data, as the shell corpus freezes it: whether it is known, the classes it needs and,
      * per part, its program, purpose, unresolved reasons and contract tools.
      *
-     * @return array{known: bool, classes: list<string>, parts: list<array{program: string|null, purpose: string, unresolved: list<string>, tools: list<string>}>}
+     * @return array{
+     *     known: bool,
+     *     classes: list<string>,
+     *     parts: list<array{program: string|null, purpose: string, unresolved: list<string>, tools: list<string>}>,
+     * }
      */
     public function summary(): array
     {
         return [
             'known' => $this->isKnown(),
-            'classes' => array_map(fn (CommandClass $class): string => $class->value, $this->requiredClasses()->classes),
+            'classes' => $this->requiredClasses()->toArray(),
             'parts' => array_map(fn (PartClassification $part): array => $part->summary(), $this->parts),
         ];
     }

@@ -34,6 +34,7 @@ use App\Processes\Contracts\ResultPublisher;
 use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Contracts\ShellSyntax;
+use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Models\ClassificationRule;
 use App\Processes\Models\CommandAlias;
 use App\Processes\Models\CommandRequest;
@@ -55,6 +56,7 @@ use App\Processes\Support\ActiveRules;
 use App\Processes\Support\CommandAliases;
 use App\Processes\Support\CommandRuleRegistry;
 use App\Processes\Support\JournalRoutes;
+use App\Processes\Support\OpenTiming;
 use App\Processes\Support\ProgramClassifiers;
 use App\Processes\Support\ProjectReceipts;
 use App\Processes\Support\ProjectRules;
@@ -80,6 +82,7 @@ final class ProcessesServiceProvider extends ServiceProvider
         $this->app->scoped(CommandClassifier::class, TreeClassifier::class);
         $this->app->scoped(CommandRuleReader::class, ProjectRules::class);
         $this->app->scoped(ActiveRules::class);
+        $this->app->scoped(VerificationTiming::class, OpenTiming::class);
         $this->app->scoped(ResultPublisher::class, ReceiptPublisher::class);
         $this->app->scoped(ResultReceipts::class, ProjectReceipts::class);
         $this->app->when(TreeClassifier::class)

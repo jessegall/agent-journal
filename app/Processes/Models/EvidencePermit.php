@@ -9,6 +9,8 @@ use App\Links\Support\Linkable;
 use App\Processes\Casts\StoredValuesCast;
 use App\Processes\Exceptions\EvidencePermitRefused;
 use App\Processes\Values\CommandRule;
+use App\Processes\Values\PermittedLine;
+use App\Processes\Values\PermitLimits;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -80,6 +82,36 @@ final class EvidencePermit extends Model implements ReadableModel
     }
 
     /**
+     * The owner's permit to run one exact line once under the runner's actor, within the limits.
+     */
+    public static function issue(
+        string $projectKey,
+        PermittedLine $line,
+        ActorIdentity $runner,
+        PermitLimits $limits,
+    ): self {
+        $fields = self::fieldsOf($projectKey, $line, $runner, $limits);
+
+        return self::query()->create([...$fields, 'candidate_rules' => []]);
+    }
+
+    /**
+     * The permit for one sample of a request's line, classified with the declaration the owner approved for sampling.
+     */
+    public static function forRequest(
+        CommandRequest $request,
+        PermittedLine $line,
+        CommandRule $proposed,
+        PermitLimits $limits,
+    ): self {
+        return self::query()->create([
+            ...self::fieldsOf($request->project_key, $line, $request->opener(), $limits),
+            'command_request_id' => $request->id,
+            'candidate_rules' => [$proposed],
+        ]);
+    }
+
+    /**
      * Checks that this actor may use the permit now for this request; the same request id again is allowed and the
      * caller returns the run it already started.
      *
@@ -139,5 +171,29 @@ final class EvidencePermit extends Model implements ReadableModel
     protected function ofProject(Builder $query, string $projectKey): void
     {
         $query->where('project_key', $projectKey);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function fieldsOf(
+        string $projectKey,
+        PermittedLine $line,
+        ActorIdentity $runner,
+        PermitLimits $limits,
+    ): array {
+        return [
+            'project_key' => $projectKey,
+            'working_folder' => $line->workingFolder,
+            'source_line' => $line->line,
+            'source_digest' => hash('sha256', $line->line),
+            'classification_digest' => $line->classificationDigest,
+            'approved_classes' => $line->approvedClasses,
+            'runner_type' => $runner->type->value,
+            'runner_id' => $runner->id,
+            'byte_cap' => $limits->byteCap,
+            'seconds_cap' => $limits->secondsCap,
+            'expires_at' => CarbonImmutable::now()->addMinutes($limits->minutesValid),
+        ];
     }
 }

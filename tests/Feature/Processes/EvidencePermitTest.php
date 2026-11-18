@@ -13,6 +13,7 @@ use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Support\EvidenceRuns;
 use App\Processes\Support\SpoolRecorder;
+use App\Processes\Values\PermitLimits;
 use Illuminate\Support\Facades\Storage;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\RefreshHookDatabase;
@@ -51,8 +52,9 @@ final class EvidencePermitTest extends TestCase
     {
         $permit = $this->permit();
 
-        $this->artisan('process:run', ['--permit' => $permit->id, '--request-id' => 'first'])->expectsOutputToContain('notes.txt')->assertExitCode(0);
-        $this->artisan('process:run', ['--permit' => $permit->id, '--request-id' => 'first'])->expectsOutputToContain('already started')->assertExitCode(0);
+        $options = ['--permit' => $permit->id, '--request-id' => 'first'];
+        $this->artisan('process:run', $options)->expectsOutputToContain('notes.txt')->assertExitCode(0);
+        $this->artisan('process:run', $options)->expectsOutputToContain('already started')->assertExitCode(0);
 
         $run = ProcessRun::query()->withoutGlobalScopes()->findOrFail($permit->refresh()->process_run_id);
         $this->assertSame(RunMode::Evidence, $run->mode);
@@ -70,17 +72,24 @@ final class EvidencePermitTest extends TestCase
         $expired = $this->permit();
         $expired->expire();
         $this->assertRefused(fn () => $evidence->start($expired, $this->agent(), 'first'));
-        $this->assertRefused(fn () => $evidence->start($this->permit(), new ActorIdentity(ActorType::Agent, 'another-agent'), 'first'));
+        $stranger = new ActorIdentity(ActorType::Agent, 'another-agent');
+        $this->assertRefused(fn () => $evidence->start($this->permit(), $stranger, 'first'));
     }
 
     public function test_an_unknown_line_gets_no_permit(): void
     {
-        $this->assertRefused(fn () => $this->app->make(EvidenceRuns::class)->issue('python3 tool.py', $this->folder, $this->agent(), 1_000, 60, 60));
+        $evidence = $this->app->make(EvidenceRuns::class);
+
+        $limits = new PermitLimits(1_000, 60, 60);
+
+        $this->assertRefused(fn () => $evidence->issue('python3 tool.py', $this->folder, $this->agent(), $limits));
     }
 
     private function permit(): EvidencePermit
     {
-        return $this->app->make(EvidenceRuns::class)->issue('ls project', $this->folder, $this->agent(), 1_000_000, 60, 60);
+        $limits = new PermitLimits(1_000_000, 60, 60);
+
+        return $this->app->make(EvidenceRuns::class)->issue('ls project', $this->folder, $this->agent(), $limits);
     }
 
     private function agent(): ActorIdentity

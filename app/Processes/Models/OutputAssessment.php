@@ -8,8 +8,11 @@ use App\Links\Support\Linkable;
 use App\Processes\Casts\StoredValuesCast;
 use App\Processes\Enums\AssessmentOutcome;
 use App\Processes\Enums\InterpretationState;
+use App\Processes\Enums\ProblemCode;
 use App\Processes\Exceptions\RevisionImmutable;
 use App\Processes\Values\OutputProblem;
+use App\Processes\Values\OutputValidation;
+use App\Processes\Values\ReplayedOutput;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -70,6 +73,34 @@ final class OutputAssessment extends Model implements ReadableModel
         ];
     }
 
+    /**
+     * The next assessment of a part: what the approved reader made of it and what the validator found, linked to the
+     * assessment it replaces.
+     */
+    public static function record(
+        ProcessRun $run,
+        PartRun $part,
+        RuleRevision $declaration,
+        ReaderRevision $reader,
+        ReplayedOutput $replayed,
+        OutputValidation $validation,
+    ): self {
+        $previous = self::query()->where('part_run_id', $part->id)->latest('created_at')->first();
+
+        return self::query()->create([
+            'project_key' => $run->project_key,
+            'part_run_id' => $part->id,
+            'reader_revision_id' => $reader->id,
+            'rule_revision_id' => $declaration->id,
+            'interpretation' => self::interpretationOf($validation->problems),
+            'outcome' => $validation->outcome,
+            'problems' => $validation->problems,
+            'counts' => $replayed->assessment->counts,
+            'final_offsets' => $replayed->consumed->offsets,
+            'replaces_assessment_id' => $previous?->id,
+        ]);
+    }
+
     public function isValid(): bool
     {
         return $this->interpretation === InterpretationState::Valid && $this->problems === [];
@@ -87,5 +118,19 @@ final class OutputAssessment extends Model implements ReadableModel
     protected function ofProject(Builder $query, string $projectKey): void
     {
         $query->where('project_key', $projectKey);
+    }
+
+    /**
+     * @param  list<OutputProblem>  $problems
+     */
+    private static function interpretationOf(array $problems): InterpretationState
+    {
+        if ($problems === []) {
+            return InterpretationState::Valid;
+        }
+
+        return array_any($problems, fn (OutputProblem $problem): bool => $problem->code === ProblemCode::ReaderFailed)
+            ? InterpretationState::ReaderFailed
+            : InterpretationState::Invalid;
     }
 }
