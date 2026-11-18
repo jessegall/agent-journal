@@ -41,4 +41,13 @@ return [
         'host' => '127.0.0.1',
         'port' => (int) env('SHARING_LISTENER_PORT', 8090),
     ],
+
+    /*
+     * How often the sharing supervisor checks the gateways' health, expires shares and prunes the audit, in seconds.
+     */
+    'timers' => [
+        'health_seconds' => 15,
+        'expiry_seconds' => 60,
+        'audit_prune_seconds' => 86_400,
+    ],
 ];

@@ -23,7 +23,8 @@
         "league/commonmark": "^2.10",
         "phpoption/phpoption": "^1.10",
         "spatie/laravel-data": "^4.23",
-        "spatie/laravel-typescript-transformer": "^3.0"
+        "spatie/laravel-typescript-transformer": "^3.0",
+        "symfony/yaml": "^8.1"
     },
     "require-dev": {
         "brianium/paratest": "^7.20",

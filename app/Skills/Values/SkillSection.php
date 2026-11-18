@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Skills\Values;
 
+use App\Skills\Support\MarkdownParts;
+
 /**
  * One section of a skill: a stable key, its heading, and its Markdown written inline or taken from a Markdown part.
  */
@@ -23,5 +25,13 @@ final readonly class SkillSection
     public static function markdown(string $key, string $heading, MarkdownPart $part): self
     {
         return new self($key, $heading, $part);
+    }
+
+    /**
+     * The section's Markdown: as written, or read from its part in the owner's folder.
+     */
+    public function body(MarkdownParts $parts, SkillOwner $owner): string
+    {
+        return $this->content instanceof MarkdownPart ? $parts->read($this->content, $owner) : $this->content;
     }
 }

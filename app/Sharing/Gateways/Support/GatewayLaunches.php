@@ -49,9 +49,9 @@ final readonly class GatewayLaunches
             throw $seen === GatewayAddressCheck::Unexpected ? GatewayOpenFailed::unexpectedAddress($gatewayKey) : GatewayOpenFailed::noAddressInTime($gatewayKey, self::CONNECT_SECONDS);
         }
 
-        $reference = "{$operation->runId}:{$operation->endpointVersion}";
-        $this->children->keep($reference, $child);
+        $endpoint = GatewayEndpoint::forOperation($operation);
+        $this->children->keep($endpoint->processReference, $child);
 
-        return new GatewayEndpoint($operation->runId, $operation->endpointVersion, $operation->configuration->settings->publicOrigin, $reference);
+        return $endpoint;
     }
 }

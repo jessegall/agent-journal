@@ -41,6 +41,16 @@ final class ShareAudit extends Model implements ReadableModel
     public const null UPDATED_AT = null;
 
     /**
+     * How long a public read's row is kept.
+     */
+    private const int READ_DAYS = 30;
+
+    /**
+     * How long a step of a share's life is kept after the share ended.
+     */
+    private const int LIFECYCLE_DAYS = 365;
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -87,6 +97,35 @@ final class ShareAudit extends Model implements ReadableModel
         $query->when($after, fn (Builder $query, string $id) => $query->olderThan($id));
 
         return array_values($query->readLimit($rows + 1)->get()->all());
+    }
+
+    /**
+     * The audit rows past their retention, oldest first and locked, at most the given number: a public read after 30
+     * days, a step of a share's life 365 days after the share ended. The installation's own rows are kept.
+     *
+     * @return list<self>
+     */
+    public static function lockPastRetention(CarbonImmutable $now, int $most): array
+    {
+        $reads = array_map(fn (ShareAuditType $type) => $type->value, ShareAuditType::readTypes());
+        $endedLongAgo = Share::endedBefore($now->subDays(self::LIFECYCLE_DAYS));
+
+        return array_values(self::query()
+            ->whereNotNull('share_id')
+            ->where(fn (Builder $query) => $query
+                ->where(fn (Builder $reads_) => $reads_->whereIn('type', $reads)->where('created_at', '<', $now->subDays(self::READ_DAYS)))
+                ->orWhere(fn (Builder $lifecycle) => $lifecycle->whereNotIn('type', $reads)->whereIn('share_id', $endedLongAgo)))
+            ->orderBy('id')->lockForUpdate()->readLimit($most)->get()->all());
+    }
+
+    /**
+     * Removes these rows for good.
+     *
+     * @param  list<string>  $ids
+     */
+    public static function removeAll(array $ids): void
+    {
+        self::query()->whereKey($ids)->delete();
     }
 
     /**

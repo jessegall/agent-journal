@@ -34,7 +34,7 @@ final readonly class ConfigureShareGateway implements Command
         public string $publicOrigin,
         public int $listenerPort,
         public array $secretReferences,
-        public bool $makeDefault,
+        public bool $makesDefault,
         public string $requestKey,
     ) {}
 }

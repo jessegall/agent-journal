@@ -9,6 +9,7 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Sharing\Enums\GatewayEndpointState;
 use App\Sharing\Exceptions\GatewayLeaseRefused;
+use App\Sharing\Support\GatewayEndpoint;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -98,6 +99,32 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
     public static function newestRunningOf(ShareGatewayConfiguration $configuration): Option
     {
         return Option::fromValue(self::query()->ofConfiguration($configuration->id)->stillRunning()->orderByDesc('endpoint_version')->first());
+    }
+
+    /**
+     * The run's open endpoints, whose health its supervisor checks.
+     *
+     * @return list<self>
+     */
+    public static function openOfRun(string $runId): array
+    {
+        return array_values(self::query()->ofRun($runId)->where('state', GatewayEndpointState::Open->value)->orderBy('id')->readLimit(Share::MOST_LIVE)->get()->all());
+    }
+
+    /**
+     * The key of the gateway this endpoint's configuration uses.
+     */
+    public function gatewayKey(): string
+    {
+        return ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->gateway_key;
+    }
+
+    /**
+     * The endpoint as its gateway knows it: run, version, public origin and the reference its program is kept under.
+     */
+    public function toGatewayEndpoint(): GatewayEndpoint
+    {
+        return new GatewayEndpoint($this->run_id, $this->endpoint_version, $this->public_origin, GatewayEndpoint::referenceOf($this->run_id, $this->endpoint_version));
     }
 
     /**
