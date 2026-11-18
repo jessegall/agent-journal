@@ -23,6 +23,7 @@ use App\Hooks\Storage\RecordedSteps;
 use App\Hooks\Support\HookRetryWindow;
 use App\Hooks\Support\RetentionPeriods;
 use App\Hooks\Support\StackAccess;
+use App\Hooks\Ticks\TickingTypes;
 use App\Links\Models\Link;
 use Carbon\CarbonImmutable;
 use Tests\Support\RefreshHookDatabase;
@@ -139,7 +140,7 @@ final class HookRetentionTest extends TestCase
     private function stack(StackTarget $target): AgentStackRow
     {
         $row = new AgentStackRow;
-        $row->startFor($target, new FrameRecords([new FrameRecord('ready', new StateReference('hooks.main_ready', NoSubject::None), true, 1, CarbonImmutable::now())]));
+        $row->startFor($target, new FrameRecords([new FrameRecord('ready', new StateReference('hooks.main_ready', NoSubject::None), true, 1, CarbonImmutable::now())]), new TickingTypes([]));
 
         return $row;
     }

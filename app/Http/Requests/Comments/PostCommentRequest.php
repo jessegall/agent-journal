@@ -6,6 +6,7 @@ namespace App\Http\Requests\Comments;
 
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
+use App\Http\Requests\RecordTargetRequest;
 use App\Records\Contracts\RecordReader;
 use App\Text\Enums\TextAnchorType;
 use App\Text\Values\TextRange;
@@ -16,7 +17,7 @@ use Illuminate\Validation\Validator;
  * points at. No anchor field means the whole record; a mixed or partial set is refused, and no author or session is
  * ever taken from the request.
  */
-final class PostCommentRequest extends CommentTargetRequest
+final class PostCommentRequest extends RecordTargetRequest
 {
     private const array ANCHOR_FIELDS = ['version', 'section', 'first_line', 'last_line', 'quote', 'start_offset', 'end_offset'];
 

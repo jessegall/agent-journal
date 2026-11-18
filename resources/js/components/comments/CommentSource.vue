@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import type { TextCommentLocation } from '@kit/CoreTypes';
-import Button from '@kit/Button';
+import type { TextCommentLocation } from '@/generated/types/core';
 
 /**
  * The source lines a text comment points at, from the version it was left on, numbered as in the whole text, with
  * the exact bytes of the quote marked.
  */
 const props = defineProps<{ location: TextCommentLocation }>();
-
-defineEmits<{ close: [] }>();
 
 type LinePiece = { text: string; marked: boolean };
 
@@ -58,10 +55,7 @@ const lines = computed<{ number: number; pieces: LinePiece[] }[]>(() => {
 
 <template>
     <section class="flex flex-col gap-2">
-        <div class="flex items-center gap-2">
-            <p class="text-small text-text-3">Version {{ location.anchor.versionLabel }}, lines {{ location.anchor.firstLine }}–{{ location.anchor.lastLine }}</p>
-            <Button @click="$emit('close')">Close</Button>
-        </div>
+        <p class="text-small text-text-3">Version {{ location.anchor.versionLabel }}, lines {{ location.anchor.firstLine }}–{{ location.anchor.lastLine }}</p>
         <pre class="font-mono text-small overflow-x-auto"><template v-for="line in lines" :key="line.number"><span class="text-text-3 tabular-nums">{{ String(line.number).padStart(4, ' ') }}  </span><template v-for="(piece, at) in line.pieces" :key="at"><template v-if="piece.marked"><mark>{{ piece.text }}</mark></template><template v-else>{{ piece.text }}</template></template>
 </template></pre>
     </section>

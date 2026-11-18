@@ -47,7 +47,11 @@ use Tests\Fixtures\Modules\Notes\Commands\UserNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
 use Tests\Fixtures\Modules\Notes\Contracts\NoteReader;
 use Tests\Fixtures\Modules\Notes\Links\NoteLinkRecords;
+use Tests\Fixtures\Modules\Notes\Links\NotePageLinkRecords;
+use Tests\Fixtures\Modules\Notes\Links\NoteSnapshotLinkRecords;
 use Tests\Fixtures\Modules\Notes\Models\Note;
+use Tests\Fixtures\Modules\Notes\Models\NotePage;
+use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
 use Tests\Fixtures\Modules\Notes\Readers\CollectionChildren;
 use Tests\Fixtures\Modules\Notes\Readers\CollectionWindowReader;
 use Tests\Fixtures\Modules\Notes\Readers\NoteSectionReader;
@@ -82,12 +86,12 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
 
     public function numberedModels(): array
     {
-        return [NumberedModel::global(Note::class)];
+        return [NumberedModel::global(Note::class), NumberedModel::global(NotePage::class), NumberedModel::global(NoteSnapshot::class)];
     }
 
     public function linkRecords(): array
     {
-        return [Note::LINK_TYPE => NoteLinkRecords::class];
+        return [Note::LINK_TYPE => NoteLinkRecords::class, NotePage::LINK_TYPE => NotePageLinkRecords::class, NoteSnapshot::LINK_TYPE => NoteSnapshotLinkRecords::class];
     }
 
     public function states(): array

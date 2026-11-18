@@ -1,84 +1,77 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
-import type { CommentList, TextCommentLocation } from '@kit/CoreTypes';
-import { location, post as postRoute } from '@kit/CommentRoutes';
+import type { CommentList, Section, TextSections } from '@kit/CoreTypes';
+import { post as postRoute } from '@kit/CommentRoutes';
+import CommentLocation from '@kit/CommentLocation';
+import { describeRange, renderedLineRange, sections, subjectFields, type CommentSubject, type TextRangeChoice } from '@kit/TextComments';
 import Button from '@kit/Button';
 import FormErrors from '@kit/FormErrors';
+import SourcePane from '@kit/SourcePane';
 import SwitchCase from '@kit/SwitchCase';
 import { formSendingHooks } from '@kit/usePageChanges';
 import CommentEntry from './CommentEntry.vue';
 import CommentPlace from './CommentPlace.vue';
-import CommentSource from './CommentSource.vue';
 
 /**
  * The comments on a record, oldest first, and the form that posts one. A comment is about the whole record unless the
- * reader chooses text in the record's source, which is sent with its version, lines and exact byte offsets.
+ * reader chooses a place in the text: a section, the lines of selected paragraphs, or an exact quote confirmed in the
+ * source. Only a record with text (a version) offers those choices.
  */
 const props = defineProps<{
     comments: CommentList;
     target: string;
-    body: string;
     version?: string;
 }>();
 
-const form = useForm({
-    target: props.target,
-    body: '',
-    submission_key: crypto.randomUUID(),
-    version: '',
-    first_line: null as number | null,
-    last_line: null as number | null,
-    quote: '',
-    start_offset: null as number | null,
-    end_offset: null as number | null,
-});
+const form = useForm({ target: props.target, body: '', submission_key: crypto.randomUUID() });
+const subject = ref<CommentSubject>({ type: 'record' });
+const sourceWindow = ref<{ firstLine: number; lastLine: number } | null>(null);
+const sectionList = ref<Section[]>([]);
+const openedId = ref<string | null>(null);
 
-const choosing = ref(false);
-const source = ref<HTMLTextAreaElement | null>(null);
-const opened = ref<TextCommentLocation | null>(null);
-const bytes = new TextEncoder();
-
-/**
- * Turns the characters selected in the source into the line span and the UTF-8 byte offsets within it.
- */
-function takeSelection(): void {
-    const area = source.value;
-
-    if (area === null || props.version === undefined || area.selectionEnd <= area.selectionStart) {
-        return;
-    }
-
-    const start = area.selectionStart;
-    const end = area.selectionEnd;
-    const firstLineStart = props.body.lastIndexOf('\n', start - 1) + 1;
-    const firstLine = props.body.slice(0, start).split('\n').length;
-    const quote = props.body.slice(start, end);
-    const startOffset = bytes.encode(props.body.slice(firstLineStart, start)).length;
-
-    form.version = props.version;
-    form.first_line = firstLine;
-    form.last_line = firstLine + quote.split('\n').length - 1;
-    form.quote = quote;
-    form.start_offset = startOffset;
-    form.end_offset = startOffset + bytes.encode(quote).length;
-    choosing.value = false;
+function choose(range: TextRangeChoice): void {
+    subject.value = { type: 'text', range };
+    sourceWindow.value = null;
 }
 
 function aboutWholeRecord(): void {
-    form.reset('version', 'first_line', 'last_line', 'quote', 'start_offset', 'end_offset');
+    subject.value = { type: 'record' };
+}
+
+/**
+ * The lines of the paragraphs selected on the page, as a lines place; rendered text never gives a quote.
+ */
+function takeRenderedLines(): void {
+    const lines = renderedLineRange(window.getSelection());
+
+    if (lines !== null && props.version !== undefined) {
+        choose({ type: 'lines', version: props.version, ...lines });
+    }
+}
+
+/**
+ * Opens the source of the selected paragraphs, where the reader picks and confirms an exact quote.
+ */
+function openSource(): void {
+    sourceWindow.value = renderedLineRange(window.getSelection()) ?? { firstLine: 1, lastLine: 40 };
+}
+
+async function loadSections(): Promise<void> {
+    const reply = await fetch(sections.url({ query: { target: props.target, version: props.version ?? '', per_page: 100 } }), { headers: { Accept: 'application/json' } });
+
+    sectionList.value = reply.ok ? ((await reply.json()) as TextSections).items : [];
 }
 
 function post(): void {
     const sending = formSendingHooks();
 
-    form.transform((fields) =>
-        fields.quote === '' ? { target: fields.target, body: fields.body, submission_key: fields.submission_key } : fields,
-    ).post(postRoute.url(), {
+    form.transform((fields) => ({ ...fields, ...subjectFields(subject.value) })).post(postRoute.url(), {
         preserveScroll: true,
         onSuccess: () => {
-            form.reset();
+            form.reset('body');
             form.submission_key = crypto.randomUUID();
+            subject.value = { type: 'record' };
         },
         onStart: sending.onStart,
         onFinish: () => {
@@ -91,12 +84,8 @@ function post(): void {
     });
 }
 
-async function open(commentId: string): Promise<void> {
-    const reply = await fetch(location.url({ query: { target: props.target, comment: commentId } }), {
-        headers: { Accept: 'application/json' },
-    });
-
-    opened.value = reply.ok ? ((await reply.json()) as TextCommentLocation) : null;
+function open(commentId: string): void {
+    openedId.value = commentId;
 }
 </script>
 
@@ -107,41 +96,54 @@ async function open(commentId: string): Promise<void> {
             <CommentEntry :comment="item.comment">
                 <SwitchCase :value="item.type">
                     <template #record>
-                        <p class="text-small text-text-3">On the whole record</p>
+                        <button type="button" class="text-small text-left underline" @click="open(item.comment.id)">On the whole record: open record</button>
                     </template>
                     <template #text>
                         <template v-if="item.type === 'text'">
-                            <CommentPlace :anchor="item.anchor" @open="open(item.comment.id)" />
+                            <CommentPlace :anchor="item.anchor" :current-version="version" @open="open(item.comment.id)" />
                         </template>
                     </template>
                 </SwitchCase>
             </CommentEntry>
         </template>
-        <template v-if="opened">
-            <CommentSource :location="opened" @close="opened = null" />
+        <template v-if="openedId">
+            <CommentLocation :target="target" :comment-id="openedId" @close="openedId = null" />
         </template>
         <form class="flex flex-col gap-2" @submit.prevent="post">
-            <template v-if="form.quote">
-                <p class="text-small text-text-3">On version {{ form.version }}, lines {{ form.first_line }}–{{ form.last_line }}: “{{ form.quote }}”</p>
-            </template>
-            <template v-if="choosing">
-                <textarea ref="source" class="input font-mono" rows="10" readonly :value="body" />
+            <p class="text-small text-text-3" aria-live="polite">
+                <SwitchCase :value="subject.type">
+                    <template #record>About the whole record</template>
+                    <template #text>
+                        <template v-if="subject.type === 'text'">About {{ describeRange(subject.range) }}</template>
+                    </template>
+                </SwitchCase>
+            </p>
+            <template v-if="sourceWindow && version">
+                <SourcePane :target="target" :version="version" :first-line="sourceWindow.firstLine" :last-line="sourceWindow.lastLine" @choose="choose" @close="sourceWindow = null" />
             </template>
             <textarea v-model="form.body" class="input" rows="3" placeholder="Write a comment" />
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2">
                 <template v-if="version">
-                    <template v-if="choosing">
-                        <Button @click="takeSelection">Use the selected text</Button>
-                    </template>
-                    <template v-else>
-                        <Button @click="choosing = true">Choose text</Button>
-                    </template>
-                    <template v-if="form.quote">
+                    <Button @click="takeRenderedLines">Comment on the selected paragraphs</Button>
+                    <Button @click="openSource">Choose exact text in the source</Button>
+                    <Button @click="loadSections">Comment on a section</Button>
+                    <template v-if="subject.type === 'text'">
                         <Button @click="aboutWholeRecord">About the whole record</Button>
                     </template>
                 </template>
                 <Button type="submit" variant="primary" :pending="form.processing" :disabled="form.processing">Post comment</Button>
             </div>
+            <template v-if="sectionList.length > 0 && version">
+                <ul class="flex flex-col gap-1">
+                    <template v-for="section in sectionList" :key="section.number">
+                        <li>
+                            <Button @click="choose({ type: 'section', version, section: section.number }); sectionList = []">
+                                {{ section.number }}. {{ section.heading || 'Before the first heading' }}
+                            </Button>
+                        </li>
+                    </template>
+                </ul>
+            </template>
             <FormErrors :errors="form.errors" />
         </form>
     </section>
