@@ -64,7 +64,7 @@ final class HookInputs
             'file edit' => new FileEditRequested($hook, new FileChanges([new FileChange('app/Domains/Contracts/Domain.php', FileOperation::Edit)])),
             'stop' => new StopRequested($hook, new StopDetails('turn-1', false)),
             'compaction' => new ContextCompacted($hook, new CompactionDetails('compaction-1')),
-            'tool finished' => new ToolFinished($hook, new ToolResult('Bash', ToolOutcome::Succeeded)),
+            'tool finished' => new ToolFinished($hook, new ToolResult('Bash', ToolOutcome::Succeeded, ['command' => 'ls'])),
             'session end' => new SessionEnded($hook, new SessionEndDetails(SessionEndReason::Exit)),
         ];
     }

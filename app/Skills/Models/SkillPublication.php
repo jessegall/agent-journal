@@ -360,6 +360,19 @@ final class SkillPublication extends Model implements ReadableModel
     }
 
     /**
+     * The session's first publication: the set its program was launched with, which a program that loads skills only
+     * at a new session keeps.
+     */
+    public static function firstOfSession(string $sessionId): self
+    {
+        return self::query()
+            ->where('session_id', $sessionId)
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->firstOrFail();
+    }
+
+    /**
      * The session's newest publication, or null when none was asked for it.
      */
     public static function latestOfSession(string $sessionId): self|null

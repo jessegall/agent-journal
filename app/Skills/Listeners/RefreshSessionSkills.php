@@ -79,7 +79,9 @@ final readonly class RefreshSessionSkills implements Listener
             $this->events->dispatch(new SessionSkillsIntended($publication->id));
         }
 
-        if ($latest !== null && $publication->isNot($latest) && $this->reloadsAtNewSession($program)) {
+        $launched = SkillPublication::firstOfSession($session->id);
+
+        if ($launched->selection_digest !== $selected->digest && $this->reloadsAtNewSession($program)) {
             $event->reminders->add($this->newSessionNotice($program, $selected), true);
         }
     }

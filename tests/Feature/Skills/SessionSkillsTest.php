@@ -78,7 +78,7 @@ final class SessionSkillsTest extends TestCase
         $session = $this->launchedMainAgent();
         $this->assertNotContains('user-probe', $this->latestKeys($session));
 
-        $this->artisan('skill:make', ['key' => 'user-probe', '--body' => "# Probe\n\nProbe text.\n", '--main-agent' => true])
+        $this->artisan('skill:make', ['key' => 'user-probe', '--description' => 'A probe skill', '--body' => "# Probe\n\nProbe text.\n", '--main-agent' => true])
             ->assertSuccessful();
         $reminders = $this->boundary($session);
 
@@ -98,7 +98,7 @@ final class SessionSkillsTest extends TestCase
         $this->boundary($session);
         $this->assertSame([], $this->stack->pushed);
 
-        $this->artisan('skill:make', ['key' => 'user-probe', '--body' => "# Probe\n\nProbe text.\n"])->assertSuccessful();
+        $this->artisan('skill:make', ['key' => 'user-probe', '--description' => 'A probe skill', '--body' => "# Probe\n\nProbe text.\n"])->assertSuccessful();
         $this->boundary($session);
 
         $this->assertCount(1, $this->stack->pushed);
@@ -119,8 +119,12 @@ final class SessionSkillsTest extends TestCase
         return $session;
     }
 
+    /**
+     * A boundary is a hook call of its own, so it starts a new request scope with a fresh catalogue.
+     */
     private function boundary(AgentSession $session): ContextReminders
     {
+        $this->app->forgetScopedInstances();
         $reminders = $this->app->make(ContextReminders::class);
         $this->app->make(RefreshSessionSkills::class)->handle(new ContextStarted(
             new StackTarget($session->agent_id, $session->id),
