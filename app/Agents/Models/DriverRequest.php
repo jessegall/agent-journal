@@ -12,6 +12,7 @@ use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Support\ClaimedRequest;
 use App\Agents\Support\DriverReceipt;
+use App\Agents\Values\ScriptProgress;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -46,10 +47,27 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $script_id
  * @property int|null $script_version
  * @property int|null $script_step
+ * @property array<string, string>|null $script_parameters
+ * @property int|null $script_generation
+ * @property string|null $script_evidence
  * @property HoldReason $hold_reason
  * @property int $row_version
  */
-#[Fillable(['agent_runtime_id', 'sequence', 'operation', 'idempotency_key', 'payload_digest', 'message', 'model', 'effort', 'expected_timing', 'expected_observed_at'])]
+#[Fillable([
+    'agent_runtime_id',
+    'sequence',
+    'operation',
+    'idempotency_key',
+    'payload_digest',
+    'message',
+    'model',
+    'effort',
+    'expected_timing',
+    'expected_observed_at',
+    'script_id',
+    'script_version',
+    'script_parameters',
+])]
 final class DriverRequest extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -62,6 +80,7 @@ final class DriverRequest extends Model implements ReadableModel
     protected function casts(): array
     {
         return [
+            'script_parameters' => 'array',
             'operation' => DriverOperation::class,
             'progress' => RequestProgress::class,
             'outcome' => RequestOutcome::class,
@@ -84,6 +103,18 @@ final class DriverRequest extends Model implements ReadableModel
     {
         $this->moveTo(RequestProgress::Accepted);
         $this->hold_reason = HoldReason::None;
+        $this->save();
+    }
+
+    /**
+     * Records where the host's key script run stands: the step it confirmed, the screen generation it matched and
+     * what it saw, never a key it typed.
+     */
+    public function recordScriptProgress(ScriptProgress $progress): void
+    {
+        $this->script_step = $progress->step;
+        $this->script_generation = $progress->generation;
+        $this->script_evidence = mb_substr($progress->evidence, 0, 500);
         $this->save();
     }
 

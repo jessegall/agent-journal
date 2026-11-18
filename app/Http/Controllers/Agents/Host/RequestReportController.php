@@ -17,7 +17,15 @@ final readonly class RequestReportController
 {
     public function __invoke(RequestProgressReportData $report, HostContext $host, CommandBus $commands): Response
     {
-        $commands->run(new ReportRequestProgress($host->hostId, $report->requestId, $report->attempt, $report->progress, $report->actualBinding, $report->outcome));
+        $commands->run(new ReportRequestProgress(
+            $host->hostId,
+            $report->requestId,
+            $report->attempt,
+            $report->progress,
+            $report->actualBinding,
+            $report->outcome,
+            $report->scriptProgress(),
+        ));
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

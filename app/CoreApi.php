@@ -53,6 +53,7 @@ use App\Agents\Commands\ReportRuntimeActivity;
 use App\Agents\Commands\ReportRuntimeExit;
 use App\Agents\Commands\ReportRuntimeHeartbeat;
 use App\Agents\Commands\RetireAgent;
+use App\Agents\Commands\RunKeyScript;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\AgentReader;
@@ -149,6 +150,8 @@ use App\Agents\Values\ClassGrant;
 use App\Agents\Values\Operation as PolicyOperation;
 use App\Agents\Values\OperationGrant;
 use App\Agents\Values\ResourceRequest;
+use App\Agents\Values\ScriptParameter;
+use App\Agents\Values\ScriptProgress;
 use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
 use App\Assignments\Commands\AssignRecord;
@@ -1209,6 +1212,8 @@ final class CoreApi
                 ExpectedTiming::class,
                 DriverOperation::class,
                 RuntimeSetting::class,
+                ScriptProgress::class,
+                ScriptParameter::class,
                 DriverRequestStatus::class,
                 DisabledSettingsGroup::class,
                 SavedSharePreview::class,
@@ -1275,6 +1280,7 @@ final class CoreApi
                 EnrollHost::class,
                 OpenAgentRuntime::class,
                 DeliverAgent::class,
+                RunKeyScript::class,
                 WakeAgent::class,
                 ChangeAgentModel::class,
                 ChangeAgentEffort::class,

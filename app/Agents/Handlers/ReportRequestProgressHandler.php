@@ -32,5 +32,9 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
             RequestProgress::Failed, RequestProgress::Unavailable => $request->fail($command->outcome ?? RequestOutcome::Refused),
             RequestProgress::Accepted, RequestProgress::Staged, RequestProgress::Superseded, RequestProgress::Cancelled => $request->hold($request->hold_reason),
         };
+
+        if ($command->script !== null) {
+            $request->recordScriptProgress($command->script);
+        }
     }
 }

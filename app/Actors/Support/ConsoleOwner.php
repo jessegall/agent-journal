@@ -2,18 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Sharing\Support;
+namespace App\Actors\Support;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Contracts\JournalAccessPolicy;
-use App\Actors\Support\ActorContext;
+use App\Actors\Exceptions\ConsoleOwnerMissing;
+use App\Actors\Exceptions\ConsoleOwnerRefused;
 use App\Bus\Support\RequestKey;
-use App\Sharing\Exceptions\SharingNotAllowed;
-use App\Sharing\Exceptions\SharingOwnerMissing;
 use Illuminate\Support\Str;
 
 /**
- * Lets an owner command on the command line act as the journal's configured owner, once the access policy admits that
+ * Lets an owner command on the command line act as the journal's configured owner user, once the access policy admits that
  * user, and keys its write so a retry with the same key answers from the receipt.
  */
 final readonly class ConsoleOwner
@@ -25,16 +24,16 @@ final readonly class ConsoleOwner
     ) {}
 
     /**
-     * @throws SharingOwnerMissing
-     * @throws SharingNotAllowed
+     * @throws ConsoleOwnerMissing
+     * @throws ConsoleOwnerRefused
      */
     public function actAsOwner(): ActorContext
     {
-        $ownerId = $this->access->allowedUserIds()[0] ?? throw SharingOwnerMissing::forConsole();
+        $ownerId = $this->access->allowedUserIds()[0] ?? throw ConsoleOwnerMissing::forConsole();
         $owner = ActorContext::forUser($ownerId);
 
         if (! $this->access->allows($owner)) {
-            throw SharingNotAllowed::forActor($owner);
+            throw ConsoleOwnerRefused::forActor($owner);
         }
 
         $this->actors->set($owner);

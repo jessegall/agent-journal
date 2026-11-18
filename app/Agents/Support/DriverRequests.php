@@ -21,7 +21,7 @@ use App\Agents\Models\DriverRequest;
 final readonly class DriverRequests
 {
     /**
-     * @param  array<string, string|null>  $payload  message, model or effort, the typed columns of the request
+     * @param  array<string, mixed>  $payload  the typed columns of the request: its message, model, effort or script
      */
     public function append(StackTarget $target, DriverOperation $operation, string $idempotencyKey, array $payload): DriverRequest
     {
