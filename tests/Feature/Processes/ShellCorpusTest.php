@@ -12,6 +12,7 @@ use App\Processes\Enums\ShellDialect;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\ShellNode;
 use Tests\Fixtures\Processes\NoAliases;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -64,6 +65,7 @@ final class ShellCorpusTest extends TestCase
         $this->assertSame([], array_slice($differences, 0, self::SHOWN_DIFFERENCES), count($differences).' cases differ from their frozen expectation');
     }
 
+    #[TimeLimit(15, 'It classifies all 1,591 complete corpus cases with the real classifier.')]
     public function test_every_complete_case_classifies_as_its_frozen_expectation(): void
     {
         $this->app->instance(AliasReader::class, new NoAliases());

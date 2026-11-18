@@ -32,7 +32,7 @@ final readonly class PublicComments implements PublicCommentReader
         $last = $shown->last();
 
         return new PublicCommentPage(
-            array_values($shown->map(fn (Comment $comment) => new PublicComment($comment->shareIdentity(), (string) $comment->created_at?->toIso8601String('microsecond'), (string) $comment->getAttribute('excerpt'), $comment->quote))->all()),
+            array_values($shown->map(fn (Comment $comment) => new PublicComment($comment->shareIdentity(), (string) $comment->created_at?->toIso8601String(), (string) $comment->getAttribute('excerpt'), $comment->quote))->all()),
             $rows->count() > $size && $last !== null ? $last->created_at?->format('Y-m-d\\TH:i:s.uP').'|'.$last->id : null,
         );
     }

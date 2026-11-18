@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Records\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
+use App\AgentRequests\Console\Concerns\SendsSignedWrites;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
@@ -13,7 +13,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class LinkAddCommand extends Command
 {
-    use SendsSignedCalls;
+    use SendsSignedWrites;
 
     protected $signature = 'link:add {source : Such as "doc 12"} {target : Such as "task 7"} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 

@@ -6,7 +6,7 @@ namespace App\Assignments\Console;
 
 use App\Actors\Exceptions\InvalidActorText;
 use App\Actors\Support\ActorIdentity;
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
+use App\AgentRequests\Console\Concerns\SendsSignedWrites;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\Assignments\Console\Concerns\ReadsAssignmentArguments;
 use App\Processes\Attributes\JournalRoute;
@@ -20,7 +20,7 @@ use Illuminate\Console\Command;
 final class UnassignRecordCommand extends Command
 {
     use ReadsAssignmentArguments;
-    use SendsSignedCalls;
+    use SendsSignedWrites;
 
     protected $signature = 'assignment:unassign {type} {id} {--assignment= : The assignment row id it has now} {--holder= : Its holder now as type:id} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 

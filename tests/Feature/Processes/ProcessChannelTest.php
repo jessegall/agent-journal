@@ -46,6 +46,7 @@ final class ProcessChannelTest extends TestCase
         parent::setUp();
 
         Storage::fake(SpoolRecorder::DISK);
+        config(['processes.runner' => true]);
         $this->launch = TestLaunch::start();
         $this->runCommandsAs($this->launch->token);
         $this->folder = sys_get_temp_dir().'/channel-'.bin2hex(random_bytes(4));
