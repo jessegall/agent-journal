@@ -72,6 +72,41 @@ use App\Core\Assignments\Support\NumberedPage;
 use App\Core\Assignments\Support\Page;
 use App\Core\Assignments\Support\RecordIdentity;
 use App\Core\Assignments\Support\RecordIds;
+use App\Core\Bus\Attributes\HandledBy;
+use App\Core\Bus\Attributes\RepeatableRead;
+use App\Core\Bus\Attributes\RequiresActor;
+use App\Core\Bus\Contracts\Command;
+use App\Core\Bus\Contracts\CommandBus;
+use App\Core\Bus\Contracts\CommandMiddleware;
+use App\Core\Bus\Contracts\CommandRefusal;
+use App\Core\Bus\Contracts\ProvidesCommandMiddleware;
+use App\Core\Bus\Contracts\ProvidesCommands;
+use App\Core\Bus\Enums\CommandScopeType;
+use App\Core\Bus\Enums\MiddlewareStage;
+use App\Core\Bus\Exceptions\CommandDeclarationInvalid;
+use App\Core\Bus\Exceptions\CommandHandlerMissing;
+use App\Core\Bus\Exceptions\CommandHandlerTwice;
+use App\Core\Bus\Exceptions\CommandListedTwice;
+use App\Core\Bus\Exceptions\CommandNestingTooDeep;
+use App\Core\Bus\Exceptions\CommandNotRegistered;
+use App\Core\Bus\Exceptions\CommandRefused;
+use App\Core\Bus\Exceptions\CommandReplacedWithOtherClass;
+use App\Core\Bus\Exceptions\CommandReplacementRefused;
+use App\Core\Bus\Exceptions\CommandResultChanged;
+use App\Core\Bus\Exceptions\CommandRetryExhausted;
+use App\Core\Bus\Exceptions\CommandTransactionMismatch;
+use App\Core\Bus\Exceptions\ContinuationCalledTwice;
+use App\Core\Bus\Exceptions\ExplicitTransactionInCommand;
+use App\Core\Bus\Exceptions\HandlerInOtherOwner;
+use App\Core\Bus\Exceptions\HandlerServesTwoCommands;
+use App\Core\Bus\Exceptions\MiddlewareDeclarationInvalid;
+use App\Core\Bus\Exceptions\MiddlewareListedTwice;
+use App\Core\Bus\Exceptions\MiddlewareSkippedCommand;
+use App\Core\Bus\Exceptions\MiddlewareSwallowedFailure;
+use App\Core\Bus\Exceptions\NestedCommandFailureIgnored;
+use App\Core\Bus\Support\CommandCall;
+use App\Core\Bus\Support\CommandScope;
+use App\Core\Bus\Support\MiddlewareDeclaration;
 use App\Core\Hooks\Contracts\AgentStack;
 use App\Core\Hooks\Contracts\Answer;
 use App\Core\Hooks\Contracts\HookAnswerer;
@@ -133,7 +168,6 @@ use App\Core\Links\Support\LinkAccess;
 use App\Core\Links\Support\LinkTypeRegistry;
 use App\Core\Links\Support\LinkTypeRenames;
 use App\Core\Queries\Support\TextSearch;
-use App\Core\Ui\Contracts\UpdatesUserInterface;
 use App\Core\Ui\Contracts\CountReader;
 use App\Core\Ui\Contracts\NavigationChildren;
 use App\Core\Ui\Contracts\PageOption;
@@ -142,6 +176,7 @@ use App\Core\Ui\Contracts\ProvidesNavigation;
 use App\Core\Ui\Contracts\ProvidesPages;
 use App\Core\Ui\Contracts\ProvidesSections;
 use App\Core\Ui\Contracts\SectionReader;
+use App\Core\Ui\Contracts\UpdatesUserInterface;
 use App\Core\Ui\Contracts\VisibilityCheck;
 use App\Core\Ui\Declarations\ActionRoute;
 use App\Core\Ui\Declarations\ChoiceOption;
@@ -303,6 +338,41 @@ final class CoreApi
             AssigneeTypeRepeated::class,
             AssignmentTypeRepeated::class,
             CurrentUserReader::class,
+            Command::class,
+            CommandBus::class,
+            CommandMiddleware::class,
+            CommandRefusal::class,
+            ProvidesCommands::class,
+            ProvidesCommandMiddleware::class,
+            HandledBy::class,
+            RepeatableRead::class,
+            RequiresActor::class,
+            MiddlewareStage::class,
+            CommandScopeType::class,
+            CommandScope::class,
+            MiddlewareDeclaration::class,
+            CommandCall::class,
+            CommandDeclarationInvalid::class,
+            CommandHandlerMissing::class,
+            CommandHandlerTwice::class,
+            CommandListedTwice::class,
+            CommandNestingTooDeep::class,
+            CommandNotRegistered::class,
+            CommandRefused::class,
+            CommandReplacedWithOtherClass::class,
+            CommandReplacementRefused::class,
+            CommandResultChanged::class,
+            CommandRetryExhausted::class,
+            CommandTransactionMismatch::class,
+            ContinuationCalledTwice::class,
+            ExplicitTransactionInCommand::class,
+            HandlerInOtherOwner::class,
+            HandlerServesTwoCommands::class,
+            MiddlewareDeclarationInvalid::class,
+            MiddlewareListedTwice::class,
+            MiddlewareSkippedCommand::class,
+            MiddlewareSwallowedFailure::class,
+            NestedCommandFailureIgnored::class,
             TextSearch::class,
             ReadsRouteId::class,
             JournalAccessPolicy::class,

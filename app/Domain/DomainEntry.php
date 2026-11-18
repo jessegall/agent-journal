@@ -6,6 +6,10 @@ namespace App\Domain;
 
 use App\Core\Assignments\Contracts\AssignableProvider;
 use App\Core\Assignments\Support\AssigneeRegistration;
+use App\Core\Bus\Contracts\ProvidesCommandMiddleware;
+use App\Core\Bus\Contracts\ProvidesCommands;
+use App\Core\Bus\Support\CommandOwner;
+use App\Core\Bus\Support\MiddlewareDeclaration;
 use App\Core\Ui\Declarations\DomainUi;
 use App\Core\Ui\Declarations\NavigationItem;
 use App\Core\Ui\Declarations\Page;
@@ -206,5 +210,38 @@ final readonly class DomainEntry
     public function assignees(): array
     {
         return $this->domain instanceof ProvidesAssignees ? $this->domain->assignees() : [];
+    }
+
+    /**
+     * This domain as an owner of commands: the commands and middleware it declares, the owners it requires and what it
+     * exports. A domain that declares neither capability owns no commands.
+     */
+    public function commandOwner(): CommandOwner
+    {
+        return new CommandOwner(
+            name: $this->name,
+            namespace: $this->namespace,
+            domainClass: $this->className(),
+            commands: $this->commands(),
+            middleware: $this->commandMiddleware(),
+            requires: array_map(self::nameOf(...), $this->requires),
+            exports: $this->exports,
+        );
+    }
+
+    /**
+     * @return list<class-string>
+     */
+    private function commands(): array
+    {
+        return $this->domain instanceof ProvidesCommands ? $this->domain->commands() : [];
+    }
+
+    /**
+     * @return list<MiddlewareDeclaration>
+     */
+    private function commandMiddleware(): array
+    {
+        return $this->domain instanceof ProvidesCommandMiddleware ? $this->domain->commandMiddleware() : [];
     }
 }

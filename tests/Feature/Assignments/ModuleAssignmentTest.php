@@ -18,6 +18,7 @@ use App\Domain\Access\Models\User;
 use App\Domain\Access\Support\AccessSettings;
 use App\Domain\DomainRegistry;
 use Illuminate\Support\Facades\Schema;
+use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
@@ -116,7 +117,7 @@ final class ModuleAssignmentTest extends TestCase
     private function installNotes(): void
     {
         $this->app->register(NotesServiceProvider::class);
-        DomainRegistry::from([NotesDomain::class])->registerAssignmentsIn($this->app->make(AssignmentRegistration::class));
+        DomainRegistry::from([CardsDomain::class, NotesDomain::class])->registerAssignmentsIn($this->app->make(AssignmentRegistration::class));
     }
 
     /**

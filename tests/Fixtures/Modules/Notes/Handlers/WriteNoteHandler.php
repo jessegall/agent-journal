@@ -1,0 +1,18 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Fixtures\Modules\Notes\Handlers;
+
+use Illuminate\Database\ConnectionInterface;
+use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+
+final class WriteNoteHandler
+{
+    public function __construct(private readonly ConnectionInterface $database) {}
+
+    public function handle(WriteNote $command): int
+    {
+        return (int) $this->database->table('module_command_rows')->insertGetId(['text' => $command->text]);
+    }
+}

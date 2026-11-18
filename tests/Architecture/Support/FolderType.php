@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
+use App\Core\Bus\Contracts\Command;
+use App\Core\Bus\Contracts\CommandMiddleware as CommandMiddlewareContract;
 use App\Core\Hooks\States\AgentState;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
@@ -25,6 +27,9 @@ enum FolderType: string
     case Exceptions = 'Exceptions';
     case Listeners = 'Listeners';
     case Providers = 'Providers';
+    case Commands = 'Commands';
+    case Handlers = 'Handlers';
+    case CommandMiddleware = 'CommandMiddleware';
 
     public static function ofFolder(string $folder): self|null
     {
@@ -48,6 +53,9 @@ enum FolderType: string
             self::Exceptions => $class->isSubclassOf(Throwable::class),
             self::Listeners => $class->hasMethod('handle'),
             self::Providers => $class->isSubclassOf(ServiceProvider::class),
+            self::Commands => $class->isFinal() && $class->isReadOnly() && $class->implementsInterface(Command::class),
+            self::Handlers => $class->isFinal() && $class->hasMethod('handle') && $class->getMethod('handle')->isPublic(),
+            self::CommandMiddleware => $class->implementsInterface(CommandMiddlewareContract::class),
         };
 
         return $fits ? null : $this->requirement();
@@ -65,6 +73,9 @@ enum FolderType: string
             self::Exceptions => 'an exception',
             self::Listeners => 'a listener (it has a handle method)',
             self::Providers => 'a service provider',
+            self::Commands => 'a command (a final readonly class implementing Command)',
+            self::Handlers => 'a handler (a final class with a public handle method)',
+            self::CommandMiddleware => 'a command middleware (it implements CommandMiddleware)',
         };
     }
 }

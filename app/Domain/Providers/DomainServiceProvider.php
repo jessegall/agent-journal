@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Domain\Providers;
 
 use App\Core\Assignments\Contracts\AssignmentRegistration;
+use App\Core\Bus\Support\CommandRegistry;
+use App\Core\CoreCommands;
 use App\Core\Hooks\Events\StateTypesRequested;
 use App\Domain\DomainRegistry;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -21,11 +23,15 @@ class DomainServiceProvider extends ServiceProvider
         $registry = DomainRegistry::from($this->domainClasses());
 
         $this->app->instance(DomainRegistry::class, $registry);
+        $this->app->singleton(CommandRegistry::class, fn () => $registry->commandDeclarations(CoreCommands::owner()));
 
         EventServiceProvider::addEventDiscoveryPaths($registry->listenerFolders());
     }
 
-    public function boot(DomainRegistry $registry, Dispatcher $events, AssignmentRegistration $assignments): void
+    /**
+     * Asking for the command registry here makes a command declaration the application cannot start with fail the boot.
+     */
+    public function boot(DomainRegistry $registry, Dispatcher $events, AssignmentRegistration $assignments, CommandRegistry $commands): void
     {
         foreach ($registry->all() as $entry) {
             $this->loadMigrationsFrom($entry->migrationFolder());

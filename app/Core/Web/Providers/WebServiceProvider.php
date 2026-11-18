@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Core\Web\Providers;
 
+use App\Core\Actors\Exceptions\AgentActorRequired;
+use App\Core\Actors\Exceptions\UserActorRequired;
+use App\Core\Bus\Exceptions\CommandRefused;
 use App\Core\Links\Support\LinkTypeRegistry;
 use App\Core\Ui\Support\UiDeclarations;
 use App\Core\Web\Console\GenerateUiManifest;
@@ -18,7 +21,12 @@ use App\Core\Web\Support\UiComponentFinder;
 use App\Domain\DomainRegistry;
 use Illuminate\Broadcasting\BroadcastManager;
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Foundation\Exceptions\Handler;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\FileViewFinder;
@@ -43,9 +51,10 @@ final class WebServiceProvider extends ServiceProvider
     /**
      * Asking for the declared routes here makes a declaration the application cannot start with fail the boot.
      */
-    public function boot(BroadcastManager $broadcast, LinkTypeRegistry $links, Dispatcher $events, Router $router, DeclaredRoutes $declaredRoutes): void
+    public function boot(BroadcastManager $broadcast, LinkTypeRegistry $links, Dispatcher $events, Router $router, DeclaredRoutes $declaredRoutes, ExceptionHandler $exceptions): void
     {
         $links->register(['web.layout' => Layout::class]);
+        $this->renderRefusals($exceptions);
         $scope = new CurrentUserScope(static fn () => Container::getInstance()->make(CurrentUserReader::class));
         $events->listen('eloquent.booted: '.Layout::class, fn () => Layout::addGlobalScope($scope));
 
@@ -62,5 +71,20 @@ final class WebServiceProvider extends ServiceProvider
         // The channel sign-in runs behind the same session, sign-in and user checks as every page.
         $broadcast->routes(['middleware' => ['web', 'auth', 'journal.user']]);
         $broadcast->channel(UserChannel::PATTERN, UserChannel::class);
+    }
+
+    /**
+     * A refused command is a form error on a web page and a 403 with its message on an agent route; so is a command
+     * run by the wrong type of actor. The text names no class and holds no trace.
+     */
+    private function renderRefusals(ExceptionHandler $exceptions): void
+    {
+        if (! $exceptions instanceof Handler) {
+            return;
+        }
+
+        $exceptions->renderable(fn (CommandRefused|UserActorRequired|AgentActorRequired $refusal, Request $request) => $request->expectsJson()
+            ? new JsonResponse(['message' => $refusal->getMessage()], 403)
+            : $this->app->make(Redirector::class)->back(303)->withErrors(['command' => $refusal->getMessage()]));
     }
 }

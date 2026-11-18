@@ -14,6 +14,7 @@ use App\Domain\DomainRegistry;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Testing\AssertableInertia;
+use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Support\RefreshHookDatabase;
@@ -83,7 +84,7 @@ final class ExternalModulePagesTest extends TestCase
     {
         /** @var list<class-string> $domainClasses */
         $domainClasses = require base_path('bootstrap/domains.php');
-        $declarations = DomainRegistry::from([...$domainClasses, NotesDomain::class])->uiDeclarations(new WebPages()->declarations());
+        $declarations = DomainRegistry::from([...$domainClasses, CardsDomain::class, NotesDomain::class])->uiDeclarations(new WebPages()->declarations());
         $this->app->instance(UiDeclarations::class, $declarations);
         $router = $this->app->make(Router::class);
         new DeclaredRoutes($declarations)->register($router);

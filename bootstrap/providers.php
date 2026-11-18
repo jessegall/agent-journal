@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Core\Actors\Providers\ActorsServiceProvider;
 use App\Core\Agents\Providers\AgentsServiceProvider;
 use App\Core\Assignments\Providers\AssignmentsServiceProvider;
+use App\Core\Bus\Providers\CommandBusServiceProvider;
 use App\Core\Hooks\Providers\HooksServiceProvider;
 use App\Core\Providers\CoreServiceProvider;
 use App\Core\Web\Providers\TypeScriptServiceProvider;
@@ -28,6 +29,7 @@ return [
     AgentsServiceProvider::class,
     AssignmentsServiceProvider::class,
     HooksServiceProvider::class,
+    CommandBusServiceProvider::class,
     ProcessesServiceProvider::class,
     TasksServiceProvider::class,
     PlansServiceProvider::class,

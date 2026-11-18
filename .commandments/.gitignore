@@ -1,0 +1,11 @@
+# code-commandments generated state; only the detectors in custom/ stay tracked.
+# The config and the cache are read at the project root; no checkout carries a copy.
+# Add your own exceptions underneath — they are preserved across a sync.
+*
+!.gitignore
+!custom/
+!custom/**
+
+# code-commandments: the detectors in custom/ stay tracked whatever the lines above say.
+!custom/
+!custom/**

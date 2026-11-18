@@ -23,6 +23,7 @@ use Tests\Architecture\Support\TableScan;
 use Tests\Architecture\Support\TableType;
 use Tests\Architecture\Support\TableUse;
 use Tests\Architecture\Support\Violation;
+use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\Api\NoteValue;
 use Tests\Fixtures\Modules\Notes\Contracts\NoteReader;
 use Tests\Fixtures\Modules\Notes\NoteRecords;
@@ -97,7 +98,7 @@ final class RegisteredModuleTest extends TestCase
         /** @var list<string> $domainClasses */
         $domainClasses = require base_path('bootstrap/domains.php');
 
-        return DomainRegistry::from([...$domainClasses, NotesDomain::class]);
+        return DomainRegistry::from([...$domainClasses, CardsDomain::class, NotesDomain::class]);
     }
 
     private function roots(): ProjectRoots

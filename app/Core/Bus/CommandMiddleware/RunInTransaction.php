@@ -1,0 +1,114 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Core\Bus\CommandMiddleware;
+
+use App\Core\Bus\Contracts\CommandMiddleware;
+use App\Core\Bus\Exceptions\CommandRetryExhausted;
+use App\Core\Bus\Exceptions\CommandTransactionMismatch;
+use App\Core\Bus\Exceptions\NestedCommandFailureIgnored;
+use App\Core\Bus\Support\CommandCall;
+use App\Core\Bus\Support\RunningCommand;
+use App\Core\Hooks\Exceptions\StackLockTimedOut;
+use App\Core\Hooks\Support\OperationDeadline;
+use Closure;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\QueryException;
+use Throwable;
+
+/**
+ * The one place a command transaction starts (doc 19, sections 6.5 and 6.6). With none open it begins one in the
+ * command's isolation with lock and statement limits, and reruns the whole attempt on a serialization failure or a
+ * deadlock, three attempts at most; with one open it joins it after checking the isolation, with no savepoint.
+ */
+final readonly class RunInTransaction implements CommandMiddleware
+{
+    private const int ATTEMPTS = 3;
+
+    private const array RETRIED_CODES = ['40001', '40P01'];
+
+    private const array TIMED_OUT_CODES = ['55P03', '57014'];
+
+    private const string READ_COMMITTED = 'read committed';
+
+    private const string REPEATABLE_READ = 'repeatable read';
+
+    public function __construct(
+        private ConnectionInterface $database,
+        private OperationDeadline $deadline,
+        private RunningCommand $running,
+    ) {}
+
+    public function handle(CommandCall $call, Closure $next): mixed
+    {
+        if ($this->database->transactionLevel() > 0) {
+            $this->requireJoinable($call);
+
+            return $this->running->joined($call, fn () => $next($call));
+        }
+
+        for ($attempt = 1; ; $attempt++) {
+            try {
+                return $this->attempt($call, $next);
+            } catch (QueryException $failure) {
+                if (in_array($failure->getCode(), self::TIMED_OUT_CODES, true)) {
+                    throw StackLockTimedOut::after($this->deadline->milliseconds, $failure);
+                }
+
+                if (! in_array($failure->getCode(), self::RETRIED_CODES, true)) {
+                    throw $failure;
+                }
+
+                if ($attempt === self::ATTEMPTS || $this->deadline->hasRunOut()) {
+                    throw CommandRetryExhausted::for($call->name(), $attempt);
+                }
+            }
+        }
+    }
+
+    private function attempt(CommandCall $call, Closure $next): mixed
+    {
+        $isolation = $call->needsRepeatableRead() ? self::REPEATABLE_READ : self::READ_COMMITTED;
+        $this->database->beginTransaction();
+
+        try {
+            $this->database->statement('SET TRANSACTION ISOLATION LEVEL '.strtoupper($isolation));
+            $this->database->statement("SET LOCAL lock_timeout = '{$this->deadline->lockMilliseconds()}ms'");
+            $this->database->statement("SET LOCAL statement_timeout = '{$this->deadline->milliseconds}ms'");
+            $result = $this->running->running($call, $isolation, fn () => $next($call));
+            $failed = $this->running->failedJoinedCommand();
+
+            if ($failed !== null) {
+                throw NestedCommandFailureIgnored::for($call->name(), $failed);
+            }
+
+            $this->database->commit();
+
+            return $result;
+        } catch (Throwable $failure) {
+            $this->database->rollBack();
+
+            throw $failure;
+        }
+    }
+
+    /**
+     * A command joins only a transaction of its own isolation that has its lock and statement limits (table 6.6).
+     */
+    private function requireJoinable(CommandCall $call): void
+    {
+        $needed = $call->needsRepeatableRead() ? self::REPEATABLE_READ : self::READ_COMMITTED;
+        $open = $this->running->isolation() ?? (string) $this->database->scalar('SHOW transaction_isolation');
+
+        if (! $this->running->isRunning() && $this->database->scalar("SELECT current_setting('lock_timeout')") === '0') {
+            throw CommandTransactionMismatch::for($call->name(), 'the open transaction has no lock and statement limits; open it through the bus or the stack transaction');
+        }
+
+        if ($open !== $needed) {
+            $outer = $this->running->name() ?? 'code outside the bus';
+
+            throw CommandTransactionMismatch::for($call->name(), "it needs {$needed} and the transaction {$outer} opened is {$open}");
+        }
+    }
+}

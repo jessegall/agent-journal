@@ -17,6 +17,12 @@ final readonly class AreaCycles
     private const array FOUNDATION_FOLDERS = ['Contracts', 'Exceptions', 'Providers'];
 
     /**
+     * Core's root lists name every area they compose (CoreApi's exports, Core's commands); they are composition, like
+     * bootstrap/domains.php, not a dependency of Core on its areas.
+     */
+    private const string CORE_ROOT = 'Core';
+
+    /**
      * @param  array<string, array<string, string>>  $edges  for each area, the areas it names with one example use
      */
     private function __construct(private array $edges) {}
@@ -30,6 +36,10 @@ final readonly class AreaCycles
 
         foreach (DomainFiles::in([$appFolder.'/Core', $appFolder.'/Domain']) as $path) {
             $user = self::areaOfFile($path, $appFolder);
+
+            if ($user === self::CORE_ROOT) {
+                continue;
+            }
 
             foreach (NameScan::of(ParsedFile::fromPath($path)) as $use) {
                 $used = self::areaOfName($use->name);
