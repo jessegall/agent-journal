@@ -27,7 +27,7 @@ from journal.features.workers.workers_options import WorkersOptions
 from journal.features.workers.workers_part import WorkersPart
 
 class OrchestratorConduct(Conduct):
-    """The orchestrator's conduct, brought by its mode state to every state above it: a stop is refused while work this agent sent out waits clocked out, naming each worker, but for one it awaits, the worker itself or a run in its worktree, and once, with journal worker wait, while its workers are only still out; a stop carries the status of every started plan, names a started plan that has not moved while another moves, and a run of the whole suite that failed after merges; the tick asks for the priorities at a phase start and every so many minutes, names the blocked tasks standing still and a started plan with many open tasks and no order; a release is refused unless the orchestrator may release, a full set of places names the oldest work to check, a wait written in words is named; a queued task that unblocks others is named, and a single task dispatched or sent while others of its plan wait to be handed out is named once with the queue that takes them; and a merged worker whose model did not fit its work, or that spent much on work of a settled shape, is named."""
+    """The orchestrator's conduct, brought by its mode state to every state above it: a stop is refused while work this agent sent out waits clocked out, naming each worker, but for one it awaits, the worker itself or a run in its worktree, and once, with journal worker wait, while its workers are only still out; a stop carries the status of every started plan, names a started plan that has not moved while another moves, and a run of the whole suite that failed after merges; the tick asks for the priorities at a phase start and every so many minutes, names the blocked tasks standing still and a started plan with many open tasks and no order; a release is refused unless the orchestrator may release, a full set of places names the oldest work to check, unless only running workers take a place, a wait written in words is named; a queued task that unblocks others is named, and a single task dispatched or sent while others of its plan wait to be handed out is named once with the queue that takes them; and a merged worker whose model did not fit its work, or that spent much on work of a settled shape, is named."""
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         return Transition.merged(self, [check(self, event, settings) for check in (release_check, open_work_check, text_wait_check, queue_check)])
@@ -149,6 +149,8 @@ def release_check(state: BaseState, event: ToolStarting, settings: Settings) -> 
 
 
 def open_work_check(state: BaseState, event: ToolStarting, settings: Settings) -> Transition:
+    if settings.value(WorkersOptions.NEXT_AT_CLOCK_OUT):
+        return state.none()
     workers = event.data.part(WorkersPart)
     if is_full((*workers.dispatched_workers, *workers.ready_work), settings.integer(WorkersOptions.WORKER_LIMIT)):
         if not workers.ready_work:
