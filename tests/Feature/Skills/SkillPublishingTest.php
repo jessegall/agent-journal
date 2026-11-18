@@ -61,10 +61,12 @@ final class SkillPublishingTest extends TestCase
 
         $target = $this->target();
         $this->assertTrue(is_link($target));
-        $this->assertSame("# Journal\n\nFirst text.\n", File::get("{$target}/journal/SKILL.md"));
+        $this->assertSame("# Journal\n\nFirst text.\n", File::get("{$target}/skills/journal/SKILL.md"));
         $manifest = json_decode(File::get("{$target}/manifest.json"), true, flags: JSON_THROW_ON_ERROR);
-        $this->assertSame(hash('sha256', "# Journal\n\nFirst text.\n"), $manifest['files']['journal/SKILL.md']);
+        $this->assertSame(hash('sha256', "# Journal\n\nFirst text.\n"), $manifest['files']['skills/journal/SKILL.md']);
         $this->assertSame(PublicationState::Delivered, $publication->refresh()->state);
+        $plugin = json_decode(File::get("{$target}/.claude-plugin/plugin.json"), true, flags: JSON_THROW_ON_ERROR);
+        $this->assertSame('journal-session-skills', $plugin['name']);
     }
 
     public function test_a_failed_write_keeps_the_previous_pointer_and_records_failed(): void

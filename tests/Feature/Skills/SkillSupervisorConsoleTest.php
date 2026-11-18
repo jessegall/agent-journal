@@ -8,6 +8,7 @@ use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
+use App\Skills\Programs\ProgramSkillAdapters;
 use App\Skills\Support\HostSkillPublisher;
 use App\Skills\Support\PublicationFiles;
 use App\Skills\Support\SkillPublishing;
@@ -86,7 +87,7 @@ final class SkillSupervisorConsoleTest extends TestCase
             ->assertSuccessful();
 
         $this->assertSame(PublicationState::Delivered, $publication->refresh()->state);
-        $this->assertSame("# Journal\n\nFirst text.\n", File::get("{$this->target()}/journal/SKILL.md"));
+        $this->assertSame("# Journal\n\nFirst text.\n", File::get("{$this->target()}/skills/journal/SKILL.md"));
     }
 
     public function test_retry_of_an_unknown_publication_is_refused(): void
@@ -114,7 +115,7 @@ final class SkillSupervisorConsoleTest extends TestCase
         $edited = $this->delivered('Second text.');
         $previous = $this->delivered('Third text.');
         $current = $this->delivered('Fourth text.');
-        File::put("{$this->stagingFolder($edited)}/journal/SKILL.md", 'Edited by hand.');
+        File::put("{$this->stagingFolder($edited)}/skills/journal/SKILL.md", 'Edited by hand.');
 
         $this->artisan('skill:prune')
             ->expectsOutputToContain('was changed or added by hand')
@@ -122,10 +123,10 @@ final class SkillSupervisorConsoleTest extends TestCase
 
         $this->assertDirectoryDoesNotExist($this->stagingFolder($oldest));
         $this->assertDirectoryDoesNotExist(dirname($this->stagingFolder($oldest)));
-        $this->assertSame('Edited by hand.', File::get("{$this->stagingFolder($edited)}/journal/SKILL.md"));
+        $this->assertSame('Edited by hand.', File::get("{$this->stagingFolder($edited)}/skills/journal/SKILL.md"));
         $this->assertDirectoryExists($this->stagingFolder($previous));
         $this->assertDirectoryExists($this->stagingFolder($current));
-        $this->assertSame("# Journal\n\nFourth text.\n", File::get("{$this->target()}/journal/SKILL.md"));
+        $this->assertSame("# Journal\n\nFourth text.\n", File::get("{$this->target()}/skills/journal/SKILL.md"));
         $this->assertSame(PublicationState::Superseded, $oldest->refresh()->state);
 
         $this->travel(31)->days();
@@ -175,7 +176,11 @@ final class SkillSupervisorConsoleTest extends TestCase
 
     private function stagingFolder(SkillPublication $publication): string
     {
-        return PublicationFiles::of($publication, $this->app->make(SkillTargets::class))->stagingFolder;
+        return PublicationFiles::of(
+            $publication,
+            $this->app->make(SkillTargets::class),
+            $this->app->make(ProgramSkillAdapters::class),
+        )->stagingFolder;
     }
 
     private function target(): string

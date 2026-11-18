@@ -1,0 +1,70 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Skills\Programs;
+
+use App\Programs\Enums\HookProgram;
+use App\Skills\Contracts\ProgramSkills;
+use App\Skills\Enums\SkillReload;
+use App\Skills\Support\SkillTargets;
+use App\Skills\Values\LaunchSkillSet;
+use App\Skills\Values\PublishedSkill;
+use App\Skills\Values\SkillDelivery;
+use App\Skills\Values\SkillKey;
+
+/**
+ * Claude Code 2.1.323 finds a session's skills in a plugin folder passed with --plugin-dir, the only route that works
+ * with the journal's empty setting sources (report 171). It lists them at start only.
+ */
+final readonly class ClaudeCodeSkills implements ProgramSkills
+{
+    public const string PLUGIN_NAME = 'journal-session-skills';
+
+    private const string SKILL_TOOL = 'Skill';
+
+    public function __construct(
+        private SkillTargets $targets,
+    ) {}
+
+    public function skillFile(SkillKey $key): string
+    {
+        return "skills/{$key->key}/SKILL.md";
+    }
+
+    public function supportFiles(): array
+    {
+        $plugin = [
+            'name' => self::PLUGIN_NAME,
+            'version' => '1.0.0',
+            'description' => 'The skills the journal selected for this session.',
+        ];
+
+        return ['.claude-plugin/plugin.json' => json_encode($plugin, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT)."\n"];
+    }
+
+    public function delivery(LaunchSkillSet $skills): SkillDelivery
+    {
+        $target = $this->targets->targetFor($skills->sessionId, HookProgram::ClaudeCode->programKey());
+
+        return new SkillDelivery($target, ['--plugin-dir', $target], []);
+    }
+
+    /**
+     * The journal denies Claude's Skill tool as a route to another agent; without it the model is not told about the
+     * plugin's skills, so it is pointed at the file to read.
+     */
+    public function instruction(PublishedSkill $skill): string
+    {
+        if (in_array(self::SKILL_TOOL, HookProgram::ClaudeCode->nativeChildTools(), true)) {
+            return "Read the skill {$skill->key->key} with the Read tool at {$skill->path} before work it covers.";
+        }
+
+        return 'Use the Skill tool with '.self::PLUGIN_NAME.":{$skill->key->key} before work it covers.";
+    }
+
+    public function reloadMode(): SkillReload
+    {
+        return SkillReload::NewSession;
+    }
+}

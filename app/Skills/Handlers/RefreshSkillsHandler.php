@@ -15,6 +15,7 @@ use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillSelectionConflict;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
+use App\Skills\Programs\ProgramSkillAdapters;
 use App\Skills\Readers\SkillCatalogue;
 use App\Skills\Readers\Support\SkillContextReader;
 use App\Skills\Support\ConditionTree;
@@ -38,6 +39,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
         private SkillContextReader $contexts,
         private SkillSelection $selection,
         private SkillTargets $targets,
+        private ProgramSkillAdapters $adapters,
     ) {}
 
     public function handle(RefreshSkills $command): RefreshResult
@@ -45,7 +47,13 @@ final readonly class RefreshSkillsHandler implements CommandHandler
         $registrationDigest = $this->registry->digest();
 
         try {
-            $catalogue = SkillCatalogue::build($this->registry, $this->container, $this->renderer, $this->conditions, $this->stored);
+            $catalogue = SkillCatalogue::build(
+                $this->registry,
+                $this->container,
+                $this->renderer,
+                $this->conditions,
+                $this->stored,
+            );
         } catch (SkillDeclarationInvalid|SkillConflict $broken) {
             $failed = SkillGeneration::failed($registrationDigest, $broken->getMessage());
 
@@ -56,7 +64,9 @@ final readonly class RefreshSkillsHandler implements CommandHandler
         $catalogueDigest = $this->digestOf($entries);
         $previous = SkillGeneration::latestReady();
         $reused = $previous !== null && $previous->catalogue_digest === $catalogueDigest;
-        $generation = $reused ? $previous : SkillGeneration::ready($catalogueDigest, $registrationDigest, $this->generationEntries($entries));
+        $generation = $reused
+            ? $previous
+            : SkillGeneration::ready($catalogueDigest, $registrationDigest, $this->generationEntries($entries));
 
         return new RefreshResult($generation->id, $reused, false, '', $this->intendPublications($generation, $entries));
     }
@@ -78,7 +88,7 @@ final readonly class RefreshSkillsHandler implements CommandHandler
                 continue;
             }
 
-            if ($context->program === null) {
+            if ($context->program === null || ! $this->adapters->supports($context->program)) {
                 continue;
             }
 
@@ -88,7 +98,14 @@ final readonly class RefreshSkillsHandler implements CommandHandler
                 continue;
             }
 
-            SkillPublication::intend($session->id, $context->program->key, $target, $generation, $selected->digest, $selected->selectedKeys());
+            SkillPublication::intend(
+                $session->id,
+                $context->program->key,
+                $target,
+                $generation,
+                $selected->digest,
+                $selected->selectedKeys(),
+            );
             $intended++;
         }
 
@@ -100,7 +117,15 @@ final readonly class RefreshSkillsHandler implements CommandHandler
      */
     private function digestOf(array $entries): string
     {
-        return hash('sha256', (string) json_encode(array_map(fn (SkillEntry $entry) => [$entry->key->key, $entry->owner, $entry->revision, $entry->rendered->digest, $entry->condition->toArray()], $entries), JSON_THROW_ON_ERROR));
+        $identities = array_map(fn (SkillEntry $entry) => [
+            $entry->key->key,
+            $entry->owner,
+            $entry->revision,
+            $entry->rendered->digest,
+            $entry->condition->toArray(),
+        ], $entries);
+
+        return hash('sha256', json_encode($identities, JSON_THROW_ON_ERROR));
     }
 
     /**
@@ -109,6 +134,12 @@ final readonly class RefreshSkillsHandler implements CommandHandler
      */
     private function generationEntries(array $entries): array
     {
-        return array_map(fn (SkillEntry $entry) => ['key' => $entry->key->key, 'owner' => $entry->owner, 'revision' => $entry->revision, 'markdown' => $entry->rendered->markdown, 'digest' => $entry->rendered->digest], $entries);
+        return array_map(fn (SkillEntry $entry) => [
+            'key' => $entry->key->key,
+            'owner' => $entry->owner,
+            'revision' => $entry->revision,
+            'markdown' => $entry->rendered->markdown,
+            'digest' => $entry->rendered->digest,
+        ], $entries);
     }
 }

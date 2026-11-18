@@ -9,6 +9,7 @@ use App\Skills\Commands\PrepareSkillPublication;
 use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Exceptions\SkillPublicationStale;
 use App\Skills\Models\SkillPublication;
+use App\Skills\Programs\ProgramSkillAdapters;
 use App\Skills\Support\PublicationFiles;
 use App\Skills\Support\SkillTargets;
 use App\Skills\Values\PreparationProgress;
@@ -20,6 +21,7 @@ final readonly class PrepareSkillPublicationHandler implements CommandHandler
     public function __construct(
         private SkillPublisher $publisher,
         private SkillTargets $targets,
+        private ProgramSkillAdapters $adapters,
     ) {}
 
     public function handle(PrepareSkillPublication $command): PreparationProgress
@@ -30,7 +32,7 @@ final readonly class PrepareSkillPublicationHandler implements CommandHandler
             throw SkillPublicationStale::for($command->fence, $publication->fencing_version);
         }
 
-        $files = PublicationFiles::of($publication, $this->targets);
+        $files = PublicationFiles::of($publication, $this->targets, $this->adapters);
         $batch = $files->batchAfter($publication->progress, self::MOST_FILES);
         $this->publisher->stage($files->stagingFolder, $batch);
         $staged = $publication->progress + count($batch);
