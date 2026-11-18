@@ -32,11 +32,11 @@ final class CommandBusServiceProvider extends ServiceProvider
      */
     public function boot(DatabaseManager $databases, Dispatcher $events): void
     {
-        self::guard($databases->connection());
-        $events->listen(ConnectionEstablished::class, static fn (ConnectionEstablished $event) => self::guard($event->connection));
+        self::refuseExplicitTransactionsOn($databases->connection());
+        $events->listen(ConnectionEstablished::class, static fn (ConnectionEstablished $event) => self::refuseExplicitTransactionsOn($event->connection));
     }
 
-    private static function guard(Connection $connection): void
+    private static function refuseExplicitTransactionsOn(Connection $connection): void
     {
         // Resolved on each call, never captured: under Octane each request has its own RunningCommand.
         $connection->beforeStartingTransaction(static fn () => Container::getInstance()->make(RunningCommand::class)->refuseExplicitTransaction());
