@@ -401,6 +401,7 @@ use App\Settings\Values\Decimal;
 use App\Settings\Values\GroupReference;
 use App\Settings\Values\SettingReference;
 use App\Settings\Values\SettingsChange;
+use App\Sharing\Commands\ReadShare;
 use App\Sharing\Commands\SaveSharePreview;
 use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ProvidesShareRecords;
@@ -831,6 +832,7 @@ final class CoreApi
                 MarkSilentSessions::class,
                 SettleFrameTimes::class,
                 SaveSharePreview::class,
+                ReadShare::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,
