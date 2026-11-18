@@ -6,9 +6,9 @@ namespace Domain\Access\Providers;
 
 use App\Actors\Contracts\ActiveActorRegistration;
 use App\Actors\Contracts\ActorProviderRegistration;
+use App\Actors\Contracts\JournalAccessPolicy;
 use App\Actors\Enums\ActorType;
 use App\Web\Contracts\CurrentUserReader;
-use App\Web\Contracts\JournalAccessPolicy;
 use Domain\Access\Actions\CreateNewUser;
 use Domain\Access\Actions\ResetUserPassword;
 use Domain\Access\Models\Passkey;
@@ -26,6 +26,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Fortify;
 use Laravel\Passkeys\Passkeys;
+use ReflectionClass;
 
 class AccessServiceProvider extends ServiceProvider
 {
@@ -36,11 +37,11 @@ class AccessServiceProvider extends ServiceProvider
     {
         $this->app->bind(CurrentUserReader::class, CurrentUserRecords::class);
         $this->app->bind(JournalAccessPolicy::class, JournalAccess::class);
-        $this->app->singleton(AccessSettings::class, function (): AccessSettings {
+        // The owner's row is read on the first use of the settings, never while a service that holds them is built.
+        $this->app->singleton(AccessSettings::class, fn (): AccessSettings => (new ReflectionClass(AccessSettings::class))->newLazyGhost(function (AccessSettings $settings): void {
             $ownerEmail = $this->app->make('config')->get('access.owner_email');
-
-            return new AccessSettings(is_string($ownerEmail) ? User::ownerIdFor($ownerEmail) : null);
-        });
+            $settings->__construct(is_string($ownerEmail) ? User::ownerIdFor($ownerEmail) : null);
+        }));
         $this->app->scoped(UserAssignees::class);
     }
 

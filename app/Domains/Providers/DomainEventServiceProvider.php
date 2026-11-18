@@ -6,6 +6,7 @@ namespace App\Domains\Providers;
 
 use App\CoreApi;
 use App\Domains\Exceptions\InvalidListener;
+use App\Domains\Support\AvailableListener;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\ListenerPolicy;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
@@ -35,14 +36,17 @@ final class DomainEventServiceProvider extends EventServiceProvider
     }
 
     /**
-     * @return array<string, list<string>>
+     * The checked map as the dispatcher registers it, from discovery or the cache alike, with each domain listener
+     * gated by its domain's availability.
+     *
+     * @return array<string, list<string|AvailableListener>>
      *
      * @throws InvalidListener
      */
     public function getEvents(): array
     {
         if (! $this->app->eventsAreCached()) {
-            return parent::getEvents();
+            return $this->policy()->gated(parent::getEvents());
         }
 
         $cache = require $this->app->getCachedEventsPath();
@@ -51,7 +55,7 @@ final class DomainEventServiceProvider extends EventServiceProvider
             throw InvalidListener::cacheMissing(self::class);
         }
 
-        return $this->policy()->check($cache[self::class]);
+        return $this->policy()->gated($this->policy()->check($cache[self::class]));
     }
 
     /**

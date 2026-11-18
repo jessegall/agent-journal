@@ -19,12 +19,14 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * A plan is shared as a summary root: it previews with its title, its linked document is a candidate read through the
  * Documents provider, and no phase or task appears in anything a provider returns.
  */
+#[TimeLimit(seconds: 5, reason: 'It commits a document through the bus and empties twelve tables around each test.')]
 final class PlanSharingTest extends TestCase
 {
     use CommitsHookRows;

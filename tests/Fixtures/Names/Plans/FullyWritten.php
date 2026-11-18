@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Names\Plans;
 
-use Tests\Fixtures\Names\Chat\Message;
-
 final class FullyWritten
 {
-    public function message(): Message
+    public function message(): \Tests\Fixtures\Names\Chat\Message
     {
-        return new Message;
+        return new \Tests\Fixtures\Names\Chat\Message;
     }
 }

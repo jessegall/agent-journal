@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Engine\Contracts;
 
-use App\Contracts\Listener;
 use App\Engine\Events\EngineTicked;
 
 /**
  * Periodic work on each engine pass: small bounded reads and its own AllowsEngine commands, inside the one maintenance
- * scope it declares.
+ * scope it declares. The engine calls it each pass; it is not an event listener and sits in no Listeners folder.
  */
-interface EngineListener extends Listener
+interface EngineListener
 {
     /**
      * The maintenance capability its commands check, such as launches.silence.

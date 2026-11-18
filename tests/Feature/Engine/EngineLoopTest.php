@@ -91,8 +91,8 @@ final class EngineLoopTest extends TestCase
 
     public function test_a_lost_lock_ends_the_engine_with_a_failing_exit_code_before_the_next_pass(): void
     {
-        $listener = $this->stopAfter(5);
         $this->app->instance(Sleeper::class, new TerminatingSleeper($this->clock, $this->databases, $this->app->make(EngineSettings::class)->connection));
+        $listener = $this->stopAfter(5);
 
         $exitCode = $this->app->make(EngineLoop::class)->run();
 

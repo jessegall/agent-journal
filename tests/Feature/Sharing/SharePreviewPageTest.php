@@ -19,12 +19,14 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * The owner's share preview page: a plan's page offers Share to the owner, the preview lists the plan's linked
  * document with the provider notice beside it, and saving selects it; anyone else gets neither.
  */
+#[TimeLimit(seconds: 5, reason: 'It commits a document through the bus and renders pages, and empties thirteen tables around each test.')]
 final class SharePreviewPageTest extends TestCase
 {
     use CommitsHookRows;

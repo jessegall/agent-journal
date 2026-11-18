@@ -24,6 +24,7 @@ use Illuminate\Foundation\Application;
 use RuntimeException;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -31,6 +32,7 @@ use Tests\TestCase;
  * every other route are refused; reads are limited per share and invalid links in all, never holding a valid link;
  * a failure shows the fixed page even with debugging on.
  */
+#[TimeLimit(seconds: 5, reason: 'It boots the share-only application, commits real reads and empties twelve tables around each test.')]
 final class SharingListenerTest extends TestCase
 {
     use CommitsHookRows;

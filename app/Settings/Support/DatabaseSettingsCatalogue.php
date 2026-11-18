@@ -37,6 +37,7 @@ use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Enums\GroupAvailability;
 use App\Settings\Enums\SettingAvailability;
 use App\Settings\Enums\SettingSource;
+use App\Settings\Exceptions\SettingHandleUnknown;
 use App\Settings\Exceptions\SettingsOwnerUnknown;
 use App\Settings\Exceptions\SettingStorageInvalid;
 use App\Settings\Models\SettingsRecord;
@@ -153,6 +154,7 @@ final readonly class DatabaseSettingsCatalogue implements SettingsCatalogue
             $setting instanceof DecimalSetting,
             $setting instanceof ChoiceSetting,
             $setting instanceof EnumSetting => $setting->default,
+            default => throw SettingHandleUnknown::for($setting::class, $setting->key()),
         };
     }
 

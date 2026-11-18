@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Access\Support;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\JournalAccessPolicy;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\Assignee;
@@ -13,7 +14,6 @@ use App\Assignments\Exceptions\AssigneeUnavailable;
 use App\Assignments\Support\AssigneeList;
 use App\Assignments\Support\AssigneeName;
 use App\Assignments\Support\Page;
-use App\Web\Contracts\JournalAccessPolicy;
 use Domain\Access\Models\User;
 
 /**

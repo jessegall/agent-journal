@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Access\Support;
 
 use App\Actors\Contracts\ActiveActorCounter;
+use App\Actors\Contracts\JournalAccessPolicy;
 use App\Actors\Contracts\UserPresences;
 use App\Actors\Enums\ActorType;
-use App\Web\Contracts\JournalAccessPolicy;
 use Carbon\CarbonImmutable;
 
 /**

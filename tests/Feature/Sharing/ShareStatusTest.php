@@ -23,12 +23,14 @@ use Domain\Documents\Models\Document;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * Whether a record is public now: the root of a live, unexpired share or an approved member of its current scope; the
  * document page reminds the owner that a comment there will be public only then.
  */
+#[TimeLimit(seconds: 5, reason: 'It commits a document through the bus and renders a page, and empties twelve tables around each test.')]
 final class ShareStatusTest extends TestCase
 {
     use CommitsHookRows;

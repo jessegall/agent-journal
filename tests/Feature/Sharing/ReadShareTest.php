@@ -31,6 +31,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 use Throwable;
 
@@ -39,6 +40,7 @@ use Throwable;
  * the read; an expired share, a lapsed grant or an unapproved step is denied and audited without content; a read
  * nested in another transaction is refused before anything is read.
  */
+#[TimeLimit(seconds: 5, reason: 'It commits real bus reads and empties fourteen tables around each test.')]
 final class ReadShareTest extends TestCase
 {
     use CommitsHookRows;
