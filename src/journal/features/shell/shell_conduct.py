@@ -225,7 +225,11 @@ def background_check(state: BaseState, event: Ticked, settings: Settings) -> Tra
 
 
 def shared_title_tips(runs: tuple[TitledRun, ...]) -> list[Nudge]:
-    return [ShellNudges.SHARED_TITLE.create(n=run.id, card_title=run.title, first_line=first.line, second_line=run.line) for i, run in enumerate(runs) for first in runs[:i] if first.clashes(run)]
+    return [ShellNudges.SHARED_TITLE.create(n=renamed.id, card_title=renamed.title, first_line=first.line, second_line=run.line) for i, run in enumerate(runs) for first in runs[:i] if first.clashes(run) and (renamed := retitled_run(first, run))]
+
+
+def retitled_run(first: TitledRun, second: TitledRun) -> TitledRun | None:
+    return next((run for run in (second, first) if run.is_running), None)
 
 
 def run_title_check(state: BaseState, event: AgentEvent, settings: Settings) -> Transition:
