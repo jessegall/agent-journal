@@ -66,6 +66,8 @@ class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
             manager.import_hooks(type(provider), Path(command.folder))
         for provider in self.providers.all():
             self.sync.prepare(provider.name)
+            # each program trusts the new worktree before it starts there, so no trust question stops the worker
+            provider.folder_trusted(Path(command.folder))
         self.timing.stamp("prepare_hooks")
         skill_files = self.skills.place(Path(command.folder))
         self.timing.stamp("prepare_skills")
