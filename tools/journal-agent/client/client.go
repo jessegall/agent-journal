@@ -1,0 +1,210 @@
+// Package client speaks the journal's host protocol: signed calls to claim requests, take launch grants and report.
+package client
+
+import (
+	"bytes"
+	"context"
+	"crypto/rand"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"strconv"
+	"time"
+)
+
+// Enrollment is what agents:host-enroll handed a host: where the journal is, which host it is and its secret.
+type Enrollment struct {
+	JournalURL string `json:"journal_url"`
+	HostID     string `json:"host_id"`
+	Secret     string `json:"secret"`
+}
+
+// ClaimedRequest mirrors App\Agents\Support\ClaimedRequest.
+type ClaimedRequest struct {
+	RuntimeID string  `json:"runtimeId"`
+	RequestID string  `json:"requestId"`
+	Sequence  int     `json:"sequence"`
+	Attempt   int     `json:"attempt"`
+	Operation string  `json:"operation"`
+	Message   *string `json:"message"`
+	Model     *string `json:"model"`
+	Effort    *string `json:"effort"`
+}
+
+// RequestReport mirrors App\Http\Data\Agents\RequestProgressReportData.
+type RequestReport struct {
+	RequestID     string  `json:"request_id"`
+	Attempt       int     `json:"attempt"`
+	Progress      string  `json:"progress"`
+	ActualBinding *string `json:"actual_binding"`
+	Outcome       *string `json:"outcome"`
+}
+
+// ActivityReport mirrors App\Http\Data\Agents\RuntimeActivityReportData.
+type ActivityReport struct {
+	RuntimeID         string `json:"runtime_id"`
+	Activity          string `json:"activity"`
+	Hold              string `json:"hold"`
+	ProcessGeneration int    `json:"process_generation"`
+}
+
+// TurnReport mirrors App\Http\Data\Agents\DriverTurnReportData.
+type TurnReport struct {
+	RuntimeID         string  `json:"runtime_id"`
+	ProcessGeneration int     `json:"process_generation"`
+	NativePromptID    string  `json:"native_prompt_id"`
+	Finished          bool    `json:"finished"`
+	Model             *string `json:"model"`
+	Effort            *string `json:"effort"`
+	Outcome           *string `json:"outcome"`
+}
+
+// LivenessReport mirrors App\Http\Data\Agents\RuntimeLivenessReportData.
+type LivenessReport struct {
+	RuntimeID         string `json:"runtime_id"`
+	ProcessGeneration int    `json:"process_generation"`
+	Evidence          string `json:"evidence"`
+}
+
+// ErrRefused is returned when the journal refuses a call outright (4xx): a retry would be refused again.
+var ErrRefused = errors.New("the journal refused the call")
+
+// ErrAlreadyGranted is returned when a runtime's launch credential was handed out before.
+var ErrAlreadyGranted = errors.New("this launch was already granted")
+
+// Client makes signed calls for one enrolled host. It never logs its secret.
+type Client struct {
+	enrollment Enrollment
+	http       *http.Client
+	now        func() time.Time
+}
+
+// New returns a client for the enrollment.
+func New(enrollment Enrollment) *Client {
+	return &Client{enrollment: enrollment, http: &http.Client{Timeout: 30 * time.Second}, now: time.Now}
+}
+
+// Claim long-polls for up to waitSeconds and returns at most limit requests of this host's runtimes.
+func (client *Client) Claim(ctx context.Context, limit, waitSeconds int) ([]ClaimedRequest, error) {
+	var answer struct {
+		Requests []ClaimedRequest `json:"requests"`
+	}
+	target := "/host/claim?limit=" + strconv.Itoa(limit) + "&wait=" + strconv.Itoa(waitSeconds)
+	return answer.Requests, client.call(ctx, target, nil, &answer)
+}
+
+// LaunchGrant takes a runtime's launch credential, which the journal hands out once.
+func (client *Client) LaunchGrant(ctx context.Context, runtimeID string) (string, error) {
+	var answer struct {
+		Token string `json:"token"`
+	}
+	return answer.Token, client.call(ctx, "/host/runtimes/"+runtimeID+"/launch", nil, &answer)
+}
+
+// ReportRequest, ReportActivity, ReportTurn, ReportHeartbeat and ReportExit send one typed report each.
+func (client *Client) ReportRequest(ctx context.Context, report RequestReport) error {
+	return client.call(ctx, "/host/reports/request", report, nil)
+}
+
+func (client *Client) ReportActivity(ctx context.Context, report ActivityReport) error {
+	return client.call(ctx, "/host/reports/activity", report, nil)
+}
+
+func (client *Client) ReportTurn(ctx context.Context, report TurnReport) error {
+	return client.call(ctx, "/host/reports/turn", report, nil)
+}
+
+func (client *Client) ReportHeartbeat(ctx context.Context, report LivenessReport) error {
+	return client.call(ctx, "/host/reports/heartbeat", report, nil)
+}
+
+func (client *Client) ReportExit(ctx context.Context, report LivenessReport) error {
+	return client.call(ctx, "/host/reports/exit", report, nil)
+}
+
+func (client *Client) call(ctx context.Context, target string, body any, answer any) error {
+	content := []byte("{}")
+	if body != nil {
+		encoded, err := json.Marshal(body)
+		if err != nil {
+			return err
+		}
+		content = encoded
+	}
+	callID, err := newCallID()
+	if err != nil {
+		return err
+	}
+	issuedAt := client.now().Unix()
+	signed, err := signature(client.enrollment.Secret, http.MethodPost, target, callID, issuedAt, content)
+	if err != nil {
+		return err
+	}
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, client.enrollment.JournalURL+target, bytes.NewReader(content))
+	if err != nil {
+		return err
+	}
+	request.Header.Set("Authorization", "Bearer "+client.enrollment.Secret)
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Accept", "application/json")
+	request.Header.Set(callIDHeader, callID)
+	request.Header.Set(issuedAtHeader, strconv.FormatInt(issuedAt, 10))
+	request.Header.Set(signatureHeader, signed)
+	request.Header.Set(protocolHeader, protocolVersion)
+
+	response, err := client.http.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	if response.StatusCode == http.StatusGone {
+		return ErrAlreadyGranted
+	}
+	if response.StatusCode >= 300 {
+		message, _ := io.ReadAll(io.LimitReader(response.Body, 512))
+		failure := fmt.Errorf("the journal answered %d to %s: %s", response.StatusCode, target, message)
+		if response.StatusCode >= 400 && response.StatusCode < 500 {
+			return errors.Join(ErrRefused, failure)
+		}
+		return failure
+	}
+	if answer == nil {
+		return nil
+	}
+	return json.NewDecoder(response.Body).Decode(answer)
+}
+
+func newCallID() (string, error) {
+	random := make([]byte, 16)
+	if _, err := rand.Read(random); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(random), nil
+}
+
+// MainRuntimeRequest mirrors App\Http\Data\Agents\MainRuntimeRequestData.
+type MainRuntimeRequest struct {
+	AgentID      string `json:"agent_id"`
+	Folder       string `json:"folder"`
+	Program      string `json:"program"`
+	ProgramBuild string `json:"program_build"`
+	Profile      string `json:"profile"`
+}
+
+// OpenedRuntime is the session and runtime the journal opened.
+type OpenedRuntime struct {
+	SessionID string `json:"session_id"`
+	RuntimeID string `json:"runtime_id"`
+}
+
+// OpenMainRuntime asks the journal to open an agent's main runtime as a terminal on this host.
+func (client *Client) OpenMainRuntime(ctx context.Context, request MainRuntimeRequest) (OpenedRuntime, error) {
+	var opened OpenedRuntime
+	return opened, client.call(ctx, "/host/runtimes", request, &opened)
+}
+
+// JournalURL is where the journal answers, for the programs this host starts.
+func (client *Client) JournalURL() string { return client.enrollment.JournalURL }

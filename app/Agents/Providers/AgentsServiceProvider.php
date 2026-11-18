@@ -44,6 +44,7 @@ final class AgentsServiceProvider extends ServiceProvider
     {
         $actors->register(ActorType::Agent, AgentActors::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agents.php');
+        $this->loadRoutesFrom(dirname(__DIR__).'/Routes/host.php');
         $this->commands([RetireAgentCommand::class]);
         $assignments->registerAssignees(new AssigneeRegistration(ActorType::Agent, AgentAssignees::class));
         $presentActors->register(AgentSessionCounter::class);

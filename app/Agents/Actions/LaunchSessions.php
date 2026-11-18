@@ -12,6 +12,7 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\IsolatedHookSettings;
 use App\Agents\Support\LaunchedAgent;
+use App\Agents\Support\RuntimeIntent;
 use App\Contracts\LaunchTransaction;
 use Illuminate\Contracts\Events\Dispatcher;
 
@@ -25,10 +26,15 @@ final readonly class LaunchSessions
         private LaunchTransaction $transaction,
         private AgentSessions $sessions,
         private LaunchCredentials $credentials,
+        private AgentRuntimes $runtimes,
         private Dispatcher $events,
     ) {}
 
-    public function launch(Agent $agent, string $program, AgentSession|null $parent = null): LaunchedAgent
+    /**
+     * Starts a session with its credential, and, with a runtime intent, its runtime in Starting and the first delivery,
+     * all in one launch transaction (doc 40, section 11).
+     */
+    public function launch(Agent $agent, string $program, AgentSession|null $parent = null, RuntimeIntent|null $intent = null): LaunchedAgent
     {
         $settings = new IsolatedHookSettings;
         $this->events->dispatch(new LaunchSettingsRequested($program, $settings));
@@ -37,14 +43,15 @@ final readonly class LaunchSessions
             throw LaunchRefused::withoutHooks($program);
         }
 
-        return $this->transaction->run(function () use ($agent, $program, $parent, $settings): LaunchedAgent {
+        return $this->transaction->run(function () use ($agent, $program, $parent, $settings, $intent): LaunchedAgent {
             $session = $this->sessions->start($agent, $parent);
             $session->useProgram($program);
             $token = $this->credentials->issue($session);
+            [$runtime, $firstRequest] = $intent === null ? [null, null] : $this->runtimes->open($session, $intent, $token);
 
             $this->events->dispatch(new LaunchStarted($agent->id, $session->id, $agent->role));
 
-            return new LaunchedAgent($session, $token, $settings->content());
+            return new LaunchedAgent($session, $token, $settings->content(), $runtime, $firstRequest);
         });
     }
 

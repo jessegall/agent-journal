@@ -1,0 +1,40 @@
+package host
+
+import (
+	"fmt"
+
+	"journal-agent/drivers/contracts"
+)
+
+// LaunchGrant is what the journal hands a host for one runtime: which driver and profile, and its credential.
+type LaunchGrant struct {
+	RuntimeID  string
+	DriverType string
+	Profile    string
+	Credential string
+}
+
+// DriverConstructor opens the driver of one runtime from its grant.
+type DriverConstructor func(grant LaunchGrant) (contracts.AgentDriver, error)
+
+// RuntimeFactory picks a runtime's driver once, when the runtime opens; the process and terminal drivers register here.
+type RuntimeFactory struct{ constructors map[string]DriverConstructor }
+
+// NewRuntimeFactory returns a factory with no drivers yet.
+func NewRuntimeFactory() *RuntimeFactory {
+	return &RuntimeFactory{constructors: map[string]DriverConstructor{}}
+}
+
+// Register makes a driver type available.
+func (factory *RuntimeFactory) Register(driverType string, constructor DriverConstructor) {
+	factory.constructors[driverType] = constructor
+}
+
+// Open builds the driver the grant names.
+func (factory *RuntimeFactory) Open(grant LaunchGrant) (contracts.AgentDriver, error) {
+	constructor, found := factory.constructors[grant.DriverType]
+	if !found {
+		return nil, fmt.Errorf("no driver of type %q is registered", grant.DriverType)
+	}
+	return constructor(grant)
+}

@@ -70,6 +70,10 @@ func (profile ClaudeCode) Arguments(launch contracts.Launch) ([]string, error) {
 	}
 	arguments = append(arguments, claudeCodeDelegationTools...)
 
+	if launch.Model != "" {
+		arguments = append(arguments, "--model", launch.Model)
+	}
+
 	if launch.Resume {
 		arguments = append(arguments, "--resume", launch.SessionID)
 	} else {
@@ -109,6 +113,10 @@ func (ClaudeCode) SettingsFiles(launch contracts.Launch) ([]contracts.SettingsFi
 			"allow": claudeCodeAllowedWithoutAsking,
 			"deny":  append(slices.Clone(claudeCodeDelegationTools), claudeCodeNestedPrograms...),
 		},
+	}
+
+	if launch.Effort != "" {
+		settings["effortLevel"] = launch.Effort
 	}
 
 	if launch.HookCommand != "" {

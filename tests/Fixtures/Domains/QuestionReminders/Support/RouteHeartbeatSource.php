@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\QuestionReminders\Support;
 
-use App\Agents\Contracts\AgentHeartbeatSource;
 use Closure;
 
 /**
- * A stand-in for the agent driver while it does not exist: it sends a quiet agent's beats to the heartbeat route
- * through the sender it is given, which signs them as the agent's launch.
+ * Sends a quiet agent's own beats to the agent heartbeat route through the sender it is given, which signs them as
+ * the agent's launch.
  */
-final readonly class RouteHeartbeatSource implements AgentHeartbeatSource
+final readonly class RouteHeartbeatSource
 {
     public const string ROUTE = '/agent/heartbeat';
 

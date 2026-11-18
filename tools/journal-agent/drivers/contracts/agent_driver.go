@@ -1,0 +1,92 @@
+// Package contracts holds the one interface every agent driver implements: the six operations the journal asks of a
+// running program, each carrying the identity of the request and attempt it answers.
+package contracts
+
+import "context"
+
+// RequestIdentity names the accepted request and the attempt a driver works on, so a late result of an older attempt
+// can never overwrite a newer one.
+type RequestIdentity struct {
+	RuntimeID string
+	RequestID string
+	Sequence  int
+	Attempt   int
+}
+
+// Delivery is content to hand the program as a new prompt.
+type Delivery struct {
+	Request RequestIdentity
+	Message string
+}
+
+// WakeRequest asks an idle program to look for waiting work.
+type WakeRequest struct{ Request RequestIdentity }
+
+// ModelChange asks the program to use another model.
+type ModelChange struct {
+	Request RequestIdentity
+	Model   string
+}
+
+// EffortChange asks the program to use another reasoning effort.
+type EffortChange struct {
+	Request RequestIdentity
+	Effort  string
+}
+
+// InterruptRequest asks the program to stop its current turn.
+type InterruptRequest struct{ Request RequestIdentity }
+
+// StopRequest asks the program to end.
+type StopRequest struct{ Request RequestIdentity }
+
+// Progress is how far a request got, in the journal's words (doc 40, section 21).
+type Progress string
+
+const (
+	ProgressStaged            Progress = "staged"
+	ProgressApplying          Progress = "applying"
+	ProgressApplied           Progress = "applied"
+	ProgressDeliveryUncertain Progress = "delivery_uncertain"
+	ProgressFailed            Progress = "failed"
+	ProgressUnavailable       Progress = "unavailable"
+)
+
+// Outcome is how an applied or failed request ended.
+type Outcome string
+
+const (
+	OutcomeConfirmed Outcome = "confirmed"
+	OutcomeRefused   Outcome = "refused"
+	OutcomeTimedOut  Outcome = "timed_out"
+)
+
+// Hold is why a runtime waits on something other than the journal.
+type Hold string
+
+const (
+	HoldNone           Hold = "none"
+	HoldInterrupted    Hold = "interrupted"
+	HoldNeedsAttention Hold = "needs_attention"
+)
+
+// OperationResult is what a driver reports for one attempt: its progress, the binding it actually used, how it ended
+// and why the runtime is held, if it is.
+type OperationResult struct {
+	Request       RequestIdentity
+	Progress      Progress
+	ActualBinding string
+	Outcome       Outcome
+	Hold          Hold
+}
+
+// AgentDriver carries out the six operations on one running program. Starting a program is the driver factory's job,
+// never a seventh operation.
+type AgentDriver interface {
+	Deliver(ctx context.Context, delivery Delivery) (OperationResult, error)
+	Wake(ctx context.Context, wake WakeRequest) (OperationResult, error)
+	ChangeModel(ctx context.Context, change ModelChange) (OperationResult, error)
+	ChangeEffort(ctx context.Context, change EffortChange) (OperationResult, error)
+	Interrupt(ctx context.Context, interrupt InterruptRequest) (OperationResult, error)
+	Stop(ctx context.Context, stop StopRequest) (OperationResult, error)
+}

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Hooks;
 
+use App\Agents\Support\NativeTurns;
+use App\Agents\Exceptions\StaleProcessGeneration;
 use App\Agents\Actions\LaunchSessions;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
@@ -37,6 +39,7 @@ final readonly class HookController
         private ProgramAdapters $adapters,
         private OperationDeadline $deadline,
         private LaunchSessions $sessions,
+        private NativeTurns $turns,
     ) {}
 
     /**
@@ -54,12 +57,18 @@ final readonly class HookController
                 return new JsonResponse(HookResponse::fromProgramReply(ProgramReplies::denyTool(self::NATIVE_CHILD_REFUSAL, []))->toArray());
             }
 
+            $this->turns->checkGeneration($access->target()->sessionId, $request->processGeneration());
+
+            if ($payload->hookEventName === 'UserPromptSubmit') {
+                $this->turns->recordPrompt($access->target()->sessionId, $request->processGeneration(), $payload->nativePromptId());
+            }
+
             $call = $adapter->callFor($payload, $access->hookIdentity());
             $this->mapProgramSession($payload, $access);
             $reply = $call->replyWith(fn (HookInput $input, Closure $render) => $machine->answer($input, $adapter->capabilities(), $this->deadline, $render));
         } catch (UnsupportedHook|UnreadablePayload $refused) {
             return $this->failure($refused->getMessage(), Response::HTTP_UNPROCESSABLE_ENTITY);
-        } catch (HookIdentityExpired|HookDigestChanged $conflict) {
+        } catch (HookIdentityExpired|HookDigestChanged|StaleProcessGeneration $conflict) {
             return $this->failure($conflict->getMessage(), Response::HTTP_CONFLICT);
         } catch (ShellParserMissing|StackLockTimedOut $unavailable) {
             return $this->failure($unavailable->getMessage(), Response::HTTP_SERVICE_UNAVAILABLE);

@@ -31,8 +31,9 @@ final class BindingRulesTest extends TestCase
 {
     /**
      * The files that may name the actor store or set the actor: the store, its two contracts, Core's list,
-     * the two middleware that authenticate a request, the engine pass that signs the engine in, the provider that
-     * reads the actor and the public share bridge, which acts as the system around its one read.
+     * the two middleware that authenticate a request, the host middleware and the host enrollment command, the engine
+     * pass that signs the engine in, the provider that reads the actor and the public share bridge, which acts as the
+     * system around its one read.
      */
     private const array ACTOR_SITES = [
         'app/Actors/Support/ActorStore.php',
@@ -42,6 +43,8 @@ final class BindingRulesTest extends TestCase
         'app/CoreApi.php',
         'app/Http/Middleware/Agents/AuthenticateAgent.php',
         'app/Http/Controllers/Sharing/ReadShareController.php',
+        'app/Http/Middleware/Agents/AuthenticateHost.php',
+        'app/Agents/Console/EnrollHostCommand.php',
         'domain/Access/Http/Middleware/AuthenticateUser.php',
         'app/Engine/Support/EnginePass.php',
     ];
@@ -55,6 +58,7 @@ final class BindingRulesTest extends TestCase
         'app/Assignments/Registry/AssignmentRegistry.php',
         'app/Assignments/Providers/AssignmentsServiceProvider.php',
         'app/Agents/Providers/AgentsServiceProvider.php',
+        'app/CoreApi.php',
         'app/Domains/Bootstrappers/RegisterAssignables.php',
     ];
 
