@@ -9,6 +9,7 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Skills\Enums\GenerationState;
 use App\Skills\Exceptions\SkillGenerationImmutable;
+use App\Skills\Values\GenerationStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -86,6 +87,11 @@ final class SkillGeneration extends Model implements ReadableModel
     public static function latest(): self|null
     {
         return self::query()->orderByDesc('created_at')->orderByDesc('id')->first();
+    }
+
+    public function status(): GenerationStatus
+    {
+        return new GenerationStatus($this->id, $this->state, $this->catalogue_digest, $this->error_reason);
     }
 
     public function retire(): void

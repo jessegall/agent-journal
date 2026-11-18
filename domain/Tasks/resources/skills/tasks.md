@@ -14,4 +14,4 @@ You see only tasks you may read; a task outside your reach answers as not found.
 
 ## Starting, blocking and finishing
 
-Starting a task makes it the work in hand. Blocking it records the reason it waits and ends its work on every stack until it is unblocked. Finishing or cancelling it ends it for good; a finished task is not started again.
+Starting a task makes it the work in hand. Blocking it records the reason it waits and ends its work on every stack until it is unblocked. A wait is a block the journal can see, never only words in a log line. Finishing or cancelling it ends it for good; a finished task is not started again.

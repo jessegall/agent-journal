@@ -10,4 +10,4 @@ A message is sent, waiting for an answer, answered or dismissed. A message that 
 
 ## Answering
 
-Answer every message that waits for an answer, in the conversation it came from. An empty message is refused, and only an actor allowed to write in a conversation can send to it.
+Answer every message that waits for an answer, in the conversation it came from, at once and before the work it led to. Write a record's type with its number, such as task 7, and say in the chat only what the user needs to know. An empty message is refused, and only an actor allowed to write in a conversation can send to it.

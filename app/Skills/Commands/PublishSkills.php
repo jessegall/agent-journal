@@ -12,7 +12,8 @@ use App\Skills\Handlers\PublishSkillsHandler;
 use App\Skills\Values\PublicationClaim;
 
 /**
- * The journal claims one open publication for a worker under a new fencing version and a lease; the steps that stage and activate it run as their own commands.
+ * The journal claims one open publication for a worker under a new fencing version and a lease; the steps that stage
+ * and activate it run as their own commands.
  *
  * @implements Command<PublicationClaim>
  */

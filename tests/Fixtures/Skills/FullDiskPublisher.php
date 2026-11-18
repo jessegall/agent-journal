@@ -24,6 +24,11 @@ final readonly class FullDiskPublisher implements SkillPublisher
         $this->host->activate($target, $stagingFolder);
     }
 
+    public function clear(string $stagingFolder, array $files): void
+    {
+        $this->host->clear($stagingFolder, $files);
+    }
+
     public function activeFolder(string $target): ?string
     {
         return $this->host->activeFolder($target);

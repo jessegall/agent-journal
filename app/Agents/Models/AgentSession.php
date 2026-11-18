@@ -29,7 +29,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
- * One launch of an agent: one journal session, its parent session for a child, and the program's own session once verified.
+ * One launch of an agent: one journal session, its parent session for a child, and the program's own session once
+ * verified.
  *
  * @property string $id
  * @property string $agent_id
@@ -43,6 +44,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $profile_key
  * @property int|null $profile_revision
  * @property string $launch_request_id
+ * @property string|null $skill_generation_id
  * @property SessionStatus $status
  * @property CarbonImmutable|null $ended_at
  * @property CarbonImmutable|null $last_heartbeat_at
@@ -54,7 +56,19 @@ use Illuminate\Support\Carbon;
  * @property-read Agent $agent
  * @property-read LaunchCredential|null $credential
  */
-#[Fillable(['program', 'current_conversation_id', 'discovered_at', 'model', 'requested_model_type', 'requested_model', 'program_source', 'profile_key', 'profile_revision', 'launch_request_id'])]
+#[Fillable([
+    'program',
+    'current_conversation_id',
+    'discovered_at',
+    'model',
+    'requested_model_type',
+    'requested_model',
+    'program_source',
+    'profile_key',
+    'profile_revision',
+    'launch_request_id',
+    'skill_generation_id',
+])]
 final class AgentSession extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -117,9 +131,25 @@ final class AgentSession extends Model implements ReadableModel
      */
     public function selection(): SelectedProgram
     {
-        $requested = $this->requested_model_type === ModelSelectionType::Named ? ModelSelection::named((string) $this->requested_model) : ModelSelection::profileDefault();
+        $requested = $this->requested_model_type === ModelSelectionType::Named
+            ? ModelSelection::named((string) $this->requested_model)
+            : ModelSelection::profileDefault();
 
-        return new SelectedProgram(HookProgram::from((string) $this->program), $this->model, $requested, new SelectionSource($this->program_source, $this->profile_key, $this->profile_revision));
+        return new SelectedProgram(
+            HookProgram::from((string) $this->program),
+            $this->model,
+            $requested,
+            new SelectionSource($this->program_source, $this->profile_key, $this->profile_revision),
+        );
+    }
+
+    /**
+     * Records the skill generation the session's program was spawned with.
+     */
+    public function recordSkillGeneration(string $generationId): void
+    {
+        $this->skill_generation_id = $generationId;
+        $this->save();
     }
 
     public function enterConversation(ProgramConversation $conversation): void
@@ -145,13 +175,36 @@ final class AgentSession extends Model implements ReadableModel
     }
 
     /**
+     * The ids of the agent's own sessions, newest first.
+     *
+     * @return list<string>
+     */
+    public static function idsOfAgent(string $agentId, int $limit): array
+    {
+        $ids = self::query()
+            ->where('agent_id', $agentId)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->readLimit($limit)
+            ->pluck('id');
+
+        return array_values(array_map(strval(...), $ids->all()));
+    }
+
+    /**
      * The sessions that may still act, oldest first, for trusted Core maintenance such as a skill refresh.
      *
      * @return list<self>
      */
     public static function runningForMaintenance(int $limit): array
     {
-        return array_values(self::query()->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))->orderBy('created_at')->readLimit($limit)->get()->all());
+        $running = self::query()
+            ->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))
+            ->orderBy('created_at')
+            ->readLimit($limit)
+            ->get();
+
+        return array_values($running->all());
     }
 
     public static function lockedForUpdate(string $sessionId): self
@@ -198,7 +251,9 @@ final class AgentSession extends Model implements ReadableModel
     {
         self::query()->where('status', SessionStatus::Active->value)
             ->where(fn (Builder $silent) => $silent->where('last_heartbeat_at', '<=', $cutoff)
-                ->orWhere(fn (Builder $neverBeat) => $neverBeat->whereNull('last_heartbeat_at')->where('created_at', '<=', $cutoff)))
+                ->orWhere(fn (Builder $neverBeat) => $neverBeat
+                    ->whereNull('last_heartbeat_at')
+                    ->where('created_at', '<=', $cutoff)))
             ->update(['status' => SessionStatus::Silent->value, 'silent_since' => $now]);
     }
 
@@ -293,7 +348,8 @@ final class AgentSession extends Model implements ReadableModel
     #[Scope]
     protected function runningFor(Builder $query, string $agentId): void
     {
-        $query->where('agent_id', $agentId)->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()));
+        $query->where('agent_id', $agentId)
+            ->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()));
     }
 
     /**

@@ -96,12 +96,31 @@ func (client *Client) Claim(ctx context.Context, limit, waitSeconds int) ([]Clai
 	return answer.Requests, client.call(ctx, target, nil, &answer)
 }
 
-// LaunchGrant takes a runtime's launch credential, which the journal hands out once.
-func (client *Client) LaunchGrant(ctx context.Context, runtimeID string) (string, error) {
-	var answer struct {
-		Token string `json:"token"`
-	}
-	return answer.Token, client.call(ctx, "/host/runtimes/"+runtimeID+"/launch", nil, &answer)
+// LaunchFile is one file the host writes in a launch folder.
+type LaunchFile struct {
+	Path    string `json:"path"`
+	Content string `json:"content"`
+}
+
+// LaunchFolder is a folder the host writes inside the launch's settings folder before it spawns the program, with the
+// arguments that come right before the folder's absolute path.
+type LaunchFolder struct {
+	Name      string       `json:"name"`
+	Files     []LaunchFile `json:"files"`
+	Arguments []string     `json:"arguments"`
+}
+
+// Grant is a runtime's launch credential and the folders its launch needs, which the journal hands out once.
+type Grant struct {
+	Token   string         `json:"token"`
+	Folders []LaunchFolder `json:"folders"`
+}
+
+// LaunchGrant takes a runtime's grant; the journal refuses it while what the launch needs, such as its skills, is not
+// ready.
+func (client *Client) LaunchGrant(ctx context.Context, runtimeID string) (Grant, error) {
+	var answer Grant
+	return answer, client.call(ctx, "/host/runtimes/"+runtimeID+"/launch", nil, &answer)
 }
 
 // ReportRequest, ReportActivity, ReportTurn, ReportHeartbeat and ReportExit send one typed report each.

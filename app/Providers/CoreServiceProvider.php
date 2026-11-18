@@ -44,7 +44,25 @@ use Illuminate\Support\ServiceProvider;
  */
 final class CoreServiceProvider extends ServiceProvider
 {
-    private const array AREAS = ['Actors', 'Agents', 'Assignments', 'Bus', 'Comments', 'Communication', 'Engine', 'Hooks', 'Links', 'Mcp', 'Numbers', 'Processes', 'Profiles', 'Settings', 'Sharing', 'Skills', 'Web'];
+    private const array AREAS = [
+        'Actors',
+        'Agents',
+        'Assignments',
+        'Bus',
+        'Comments',
+        'Communication',
+        'Engine',
+        'Hooks',
+        'Links',
+        'Mcp',
+        'Numbers',
+        'Processes',
+        'Profiles',
+        'Settings',
+        'Sharing',
+        'Skills',
+        'Web',
+    ];
 
     public function boot(LinkTypeRegistry $links): void
     {

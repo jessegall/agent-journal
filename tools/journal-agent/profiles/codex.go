@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -72,12 +73,50 @@ func (Codex) Arguments(launch contracts.Launch) ([]string, error) {
 	for _, feature := range codexAgentFeatures {
 		arguments = append(arguments, "-c", "features."+feature+"=false")
 	}
+	if foreignSkills := foreignSkillsSwitchedOff(launch.WorkFolder); foreignSkills != "" {
+		arguments = append(arguments, "-c", foreignSkills)
+	}
 
 	if launch.Prompt != "" {
 		arguments = append(arguments, launch.Prompt)
 	}
 
 	return arguments, nil
+}
+
+// foreignSkillsSwitchedOff is the setting that turns off every skill the journal did not select which codex-cli 0.165.0
+// would still offer whatever CODEX_HOME is (report 171): the person's own ~/.agents/skills and the work folder's
+// .agents/skills. Each is reported with its path and left unchanged; empty when there is none.
+func foreignSkillsSwitchedOff(workFolder string) string {
+	folders := []string{}
+	if home, err := os.UserHomeDir(); err == nil {
+		folders = append(folders, filepath.Join(home, ".agents", "skills"))
+	}
+	if workFolder != "" {
+		folders = append(folders, filepath.Join(workFolder, ".agents", "skills"))
+	}
+	return skillsSwitchedOff(folders...)
+}
+
+// skillsSwitchedOff lists each SKILL.md under the folders as a disabled skills.config entry.
+func skillsSwitchedOff(folders ...string) string {
+	entries := []string{}
+	for _, folder := range folders {
+		files, err := filepath.Glob(filepath.Join(folder, "*", "SKILL.md"))
+		if err != nil {
+			continue
+		}
+		for _, file := range files {
+			log.Printf("codex would offer %s, which the journal did not select: it is switched off for this launch "+
+				"and left unchanged; move it out of .agents/skills to keep it off for good", file)
+			path, _ := json.Marshal(file)
+			entries = append(entries, "{path="+string(path)+", enabled=false}")
+		}
+	}
+	if len(entries) == 0 {
+		return ""
+	}
+	return "skills.config=[" + strings.Join(entries, ", ") + "]"
 }
 
 // Environment points Codex at the isolated home and drops inherited Codex variables; the login is a link in the isolated home,

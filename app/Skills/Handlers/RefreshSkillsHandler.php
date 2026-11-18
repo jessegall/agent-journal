@@ -6,21 +6,23 @@ namespace App\Skills\Handlers;
 
 use App\Agents\Models\AgentSession;
 use App\Contracts\CommandHandler;
+use App\Reads\Attributes\ReadBudget;
 use App\Skills\Commands\RefreshSkills;
 use App\Skills\Contracts\SkillRenderer;
 use App\Skills\Contracts\SkillSource;
 use App\Skills\Exceptions\SkillConflict;
-use App\Skills\Exceptions\SkillContextUnavailable;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillSelectionConflict;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
+use App\Skills\Programs\ProgramSkillAdapters;
 use App\Skills\Readers\SkillCatalogue;
 use App\Skills\Readers\Support\SkillContextReader;
 use App\Skills\Support\ConditionTree;
 use App\Skills\Support\SkillRegistry;
 use App\Skills\Support\SkillSelection;
 use App\Skills\Support\SkillTargets;
+use App\Skills\Values\PublicationIntent;
 use App\Skills\Values\RefreshResult;
 use App\Skills\Values\SkillEntry;
 use Illuminate\Contracts\Container\Container;
@@ -38,14 +40,28 @@ final readonly class RefreshSkillsHandler implements CommandHandler
         private SkillContextReader $contexts,
         private SkillSelection $selection,
         private SkillTargets $targets,
+        private ProgramSkillAdapters $adapters,
     ) {}
 
+    #[ReadBudget(
+        queries: 11,
+        models: 3_501,
+        formula: 'queries: a constant 11 (stored skills in one batch of up to 1,000, sessions in one of up to 500); '
+            .'models: 2 per stored skill (skill, revision) + 3 per running session (session, agent, newest '
+            .'publication) + the newest generation',
+    )]
     public function handle(RefreshSkills $command): RefreshResult
     {
         $registrationDigest = $this->registry->digest();
 
         try {
-            $catalogue = SkillCatalogue::build($this->registry, $this->container, $this->renderer, $this->conditions, $this->stored);
+            $catalogue = SkillCatalogue::build(
+                $this->registry,
+                $this->container,
+                $this->renderer,
+                $this->conditions,
+                $this->stored,
+            );
         } catch (SkillDeclarationInvalid|SkillConflict $broken) {
             $failed = SkillGeneration::failed($registrationDigest, $broken->getMessage());
 
@@ -56,7 +72,9 @@ final readonly class RefreshSkillsHandler implements CommandHandler
         $catalogueDigest = $this->digestOf($entries);
         $previous = SkillGeneration::latestReady();
         $reused = $previous !== null && $previous->catalogue_digest === $catalogueDigest;
-        $generation = $reused ? $previous : SkillGeneration::ready($catalogueDigest, $registrationDigest, $this->generationEntries($entries));
+        $generation = $reused
+            ? $previous
+            : SkillGeneration::ready($catalogueDigest, $registrationDigest, $this->generationEntries($entries));
 
         return new RefreshResult($generation->id, $reused, false, '', $this->intendPublications($generation, $entries));
     }
@@ -68,31 +86,35 @@ final readonly class RefreshSkillsHandler implements CommandHandler
      */
     private function intendPublications(SkillGeneration $generation, array $entries): int
     {
-        $intended = 0;
+        $intents = [];
+        $contexts = $this->contexts->forSessions(AgentSession::runningForMaintenance(self::MOST_SESSIONS));
+        $current = SkillPublication::currentSelectionsOf(array_keys($contexts));
 
-        foreach (AgentSession::runningForMaintenance(self::MOST_SESSIONS) as $session) {
+        foreach ($contexts as $sessionId => $context) {
+            if ($context->program === null || ! $this->adapters->supports($context->program)) {
+                continue;
+            }
+
             try {
-                $context = $this->contexts->forSession($session);
                 $selected = $this->selection->select($entries, $context);
-            } catch (SkillContextUnavailable|SkillSelectionConflict) {
+            } catch (SkillSelectionConflict) {
                 continue;
             }
 
-            if ($context->program === null) {
+            if (($current[$sessionId] ?? null) === $selected->digest) {
                 continue;
             }
 
-            $target = $this->targets->targetFor($session->id, $context->program);
-
-            if (SkillPublication::hasSelection($session->id, $target, $selected->digest)) {
-                continue;
-            }
-
-            SkillPublication::intend($session->id, $context->program->key, $target, $generation, $selected->digest, $selected->selectedKeys());
-            $intended++;
+            $intents[] = new PublicationIntent(
+                $sessionId,
+                $context->program->key,
+                $this->targets->targetFor($sessionId, $context->program),
+                $selected->digest,
+                $selected->selectedKeys(),
+            );
         }
 
-        return $intended;
+        return count(SkillPublication::intendMany($generation, $intents));
     }
 
     /**
@@ -100,7 +122,15 @@ final readonly class RefreshSkillsHandler implements CommandHandler
      */
     private function digestOf(array $entries): string
     {
-        return hash('sha256', (string) json_encode(array_map(fn (SkillEntry $entry) => [$entry->key->key, $entry->owner, $entry->revision, $entry->rendered->digest, $entry->condition->toArray()], $entries), JSON_THROW_ON_ERROR));
+        $identities = array_map(fn (SkillEntry $entry) => [
+            $entry->key->key,
+            $entry->owner,
+            $entry->revision,
+            $entry->rendered->digest,
+            $entry->condition->toArray(),
+        ], $entries);
+
+        return hash('sha256', json_encode($identities, JSON_THROW_ON_ERROR));
     }
 
     /**
@@ -109,6 +139,12 @@ final readonly class RefreshSkillsHandler implements CommandHandler
      */
     private function generationEntries(array $entries): array
     {
-        return array_map(fn (SkillEntry $entry) => ['key' => $entry->key->key, 'owner' => $entry->owner, 'revision' => $entry->revision, 'markdown' => $entry->rendered->markdown, 'digest' => $entry->rendered->digest], $entries);
+        return array_map(fn (SkillEntry $entry) => [
+            'key' => $entry->key->key,
+            'owner' => $entry->owner,
+            'revision' => $entry->revision,
+            'markdown' => $entry->rendered->markdown,
+            'digest' => $entry->rendered->digest,
+        ], $entries);
     }
 }

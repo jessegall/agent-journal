@@ -18,6 +18,7 @@ use App\Hooks\Programs\ProgramCapabilities;
 use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Storage\RecordedSteps;
 use App\Hooks\Support\ContextCollection;
+use App\Hooks\Support\FinishedToolCalls;
 use App\Hooks\Support\StackAccess;
 use App\Hooks\Support\StackTransaction;
 use Closure;
@@ -40,6 +41,7 @@ final readonly class AgentStateMachine
         private FrameLifecycle $lifecycle,
         private StateTypes $types,
         private SessionStartStep $sessionStart,
+        private FinishedToolCalls $toolCalls,
     ) {}
 
     /**
@@ -70,6 +72,7 @@ final readonly class AgentStateMachine
                 $reminders = $this->remindersFor($input);
 
                 $this->sessionStart->run($input, $this->access->target());
+                $this->toolCalls->announce($this->access->target(), $input);
 
                 $this->lifecycle->refuseChangeDuringCallbacks($this->access->target());
                 $stackBefore = $this->restorer->restore($row->frames, $this->access->role());

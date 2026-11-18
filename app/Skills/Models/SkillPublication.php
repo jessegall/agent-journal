@@ -12,7 +12,10 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Exceptions\SkillPublicationFailed;
+use App\Skills\Exceptions\SkillPublicationMissing;
 use App\Skills\Exceptions\SkillPublicationStale;
+use App\Skills\Values\PublicationIntent;
+use App\Skills\Values\PublicationStatus;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -45,11 +48,26 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['session_id', 'program', 'target', 'generation_id', 'selection_digest', 'skill_keys', 'expected_previous_generation_id', 'fencing_version', 'lease_holder', 'lease_until', 'progress', 'state', 'open_key', 'manifest', 'error'])]
+#[Fillable([
+    'session_id',
+    'program',
+    'target',
+    'generation_id',
+    'selection_digest',
+    'skill_keys',
+    'expected_previous_generation_id',
+    'fencing_version',
+    'lease_holder',
+    'lease_until',
+    'progress',
+    'state',
+    'open_key',
+    'manifest',
+    'error',
+])]
 final class SkillPublication extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids;
-    use Linkable;
+    use BoundedReads, HasUlids, Linkable;
 
     /**
      * @return array<string, string>
@@ -72,24 +90,64 @@ final class SkillPublication extends Model implements ReadableModel
      *
      * @param  list<string>  $skillKeys  the keys of the selected skills, in the generation's order
      */
-    public static function intend(string $sessionId, string $program, string $target, SkillGeneration $generation, string $selectionDigest, array $skillKeys): self
-    {
-        $openKey = self::openKeyOf($sessionId, $target);
-        $earlier = self::query()->where('open_key', $openKey)->lockForUpdate()->first();
-        $earlier?->supersede();
-        $delivered = self::query()->forTarget($sessionId, $target)->inState(PublicationState::Delivered)->orderByDesc('created_at')->first();
+    public static function intend(
+        string $sessionId,
+        string $program,
+        string $target,
+        SkillGeneration $generation,
+        string $selectionDigest,
+        array $skillKeys,
+    ): self {
+        return self::intendMany($generation, [
+            new PublicationIntent($sessionId, $program, $target, $selectionDigest, $skillKeys),
+        ])[0];
+    }
 
-        return self::query()->create([
-            'session_id' => $sessionId,
-            'program' => $program,
-            'target' => $target,
-            'generation_id' => $generation->id,
-            'selection_digest' => $selectionDigest,
-            'skill_keys' => $skillKeys,
-            'expected_previous_generation_id' => $delivered?->generation_id,
-            'state' => PublicationState::Pending,
-            'open_key' => $openKey,
-        ]);
+    /**
+     * Records each intent, reading the open and delivered publications of all their targets in two queries; an open
+     * intent for one of those targets is superseded, so each target has one open intent.
+     *
+     * @param  list<PublicationIntent>  $intents
+     * @return list<self>
+     */
+    public static function intendMany(SkillGeneration $generation, array $intents): array
+    {
+        $openKeys = array_map(
+            fn (PublicationIntent $intent) => self::openKeyOf($intent->sessionId, $intent->target),
+            $intents,
+        );
+        $limit = max(1, count($intents));
+        $open = self::query()
+            ->whereIn('open_key', $openKeys)
+            ->lockForUpdate()
+            ->readLimit($limit)
+            ->get()
+            ->keyBy('open_key');
+        $delivered = self::query()
+            ->whereIn('session_id', array_map(fn (PublicationIntent $intent) => $intent->sessionId, $intents))
+            ->inState(PublicationState::Delivered)
+            ->orderByDesc('created_at')
+            ->readLimit($limit)
+            ->get()
+            ->unique(fn (self $publication) => self::openKeyOf($publication->session_id, $publication->target))
+            ->keyBy(fn (self $publication) => self::openKeyOf($publication->session_id, $publication->target));
+
+        return array_map(function (PublicationIntent $intent) use ($generation, $open, $delivered): self {
+            $openKey = self::openKeyOf($intent->sessionId, $intent->target);
+            $open->get($openKey)?->supersede();
+
+            return self::query()->create([
+                'session_id' => $intent->sessionId,
+                'program' => $intent->program,
+                'target' => $intent->target,
+                'generation_id' => $generation->id,
+                'selection_digest' => $intent->selectionDigest,
+                'skill_keys' => $intent->skillKeys,
+                'expected_previous_generation_id' => $delivered->get($openKey)?->generation_id,
+                'state' => PublicationState::Pending,
+                'open_key' => $openKey,
+            ]);
+        }, $intents);
     }
 
     /**
@@ -130,7 +188,13 @@ final class SkillPublication extends Model implements ReadableModel
         $this->lease_holder = null;
         $this->lease_until = null;
         $this->save();
-        self::query()->forTarget($this->session_id, $this->target)->inState(PublicationState::Delivered)->whereKeyNot($this->id)->readAll('a target keeps a handful of delivered publications')->get()->each(fn (self $older) => $older->supersede());
+        self::query()
+            ->forTarget($this->session_id, $this->target)
+            ->inState(PublicationState::Delivered)
+            ->whereKeyNot($this->id)
+            ->readAll('a target keeps a handful of delivered publications')
+            ->get()
+            ->each(fn (self $older) => $older->supersede());
     }
 
     public function fail(string $reason): void
@@ -144,10 +208,20 @@ final class SkillPublication extends Model implements ReadableModel
     }
 
     /**
-     * A failed publication waits again for a worker, with the same immutable generation.
+     * A failed publication waits again for a worker, with the same immutable generation; once the target has a newer
+     * publication, only a refresh makes a new one.
      */
     public function retry(): void
     {
+        $newer = self::query()
+            ->forTarget($this->session_id, $this->target)
+            ->where('created_at', '>', $this->created_at)
+            ->exists();
+
+        if ($newer) {
+            throw SkillPublicationFailed::newerExists($this->id);
+        }
+
         $this->moveTo(PublicationState::Pending);
         $this->error = null;
         $this->open_key = self::openKeyOf($this->session_id, $this->target);
@@ -167,6 +241,14 @@ final class SkillPublication extends Model implements ReadableModel
         $this->save();
     }
 
+    /**
+     * The immutable generation this publication delivers.
+     */
+    public function generation(): SkillGeneration
+    {
+        return SkillGeneration::query()->whereKey($this->generation_id)->firstOrFail();
+    }
+
     public function isHeldBy(int $fence): bool
     {
         return $this->fencing_version === $fence;
@@ -174,22 +256,97 @@ final class SkillPublication extends Model implements ReadableModel
 
     public function isClaimable(CarbonImmutable $now): bool
     {
-        return $this->state === PublicationState::Pending || ($this->state === PublicationState::Preparing && ($this->lease_until === null || $this->lease_until->lessThan($now)));
+        if ($this->state === PublicationState::Pending) {
+            return true;
+        }
+
+        return $this->state === PublicationState::Preparing
+            && ($this->lease_until === null || $this->lease_until->lessThan($now));
     }
 
     /**
-     * Whether the target's newest open or delivered publication already carries this selection.
+     * The selection digest of each session's newest open or delivered publication, by session id, in one query.
+     *
+     * @param  list<string>  $sessionIds
+     * @return array<string, string>
      */
-    public static function hasSelection(string $sessionId, string $target, string $selectionDigest): bool
+    public static function currentSelectionsOf(array $sessionIds): array
     {
-        $latest = self::query()->forTarget($sessionId, $target)->whereIn('state', [PublicationState::Pending->value, PublicationState::Preparing->value, PublicationState::Delivered->value])->orderByDesc('created_at')->orderByDesc('id')->first();
+        $publications = self::query()
+            ->whereIn('session_id', $sessionIds)
+            ->whereIn('state', [
+                PublicationState::Pending->value,
+                PublicationState::Preparing->value,
+                PublicationState::Delivered->value,
+            ])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->readLimit(max(1, 2 * count($sessionIds)))
+            ->get()
+            ->unique('session_id');
 
-        return $latest !== null && $latest->selection_digest === $selectionDigest;
+        return $publications->mapWithKeys(fn (self $publication) => [
+            $publication->session_id => $publication->selection_digest,
+        ])->all();
     }
 
+    /**
+     * @throws SkillPublicationMissing
+     */
     public static function lockById(string $publicationId): self
     {
-        return self::query()->whereKey($publicationId)->lockForUpdate()->firstOrFail();
+        return self::query()->whereKey($publicationId)->lockForUpdate()->first()
+            ?? throw SkillPublicationMissing::for($publicationId);
+    }
+
+    /**
+     * Every publication no worker will touch again and not yet retired, newest first, for the daily prune.
+     *
+     * @return list<self>
+     */
+    public static function settled(int $limit): array
+    {
+        $settled = self::query()
+            ->whereIn('state', [
+                PublicationState::Delivered->value,
+                PublicationState::Failed->value,
+                PublicationState::Superseded->value,
+            ])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->readLimit($limit)
+            ->get();
+
+        return array_values($settled->all());
+    }
+
+    /**
+     * Whether it was ever delivered whole: only then does it hold a manifest.
+     */
+    public function wasDelivered(): bool
+    {
+        return $this->manifest !== null;
+    }
+
+    /**
+     * Whether a failed publication may still be retried by hand.
+     */
+    public function awaitsRetry(CarbonImmutable $retentionStart): bool
+    {
+        return $this->state === PublicationState::Failed && ! $this->endedBefore($retentionStart);
+    }
+
+    public function endedBefore(CarbonImmutable $moment): bool
+    {
+        return $this->updated_at !== null && $this->updated_at->lessThan($moment);
+    }
+
+    /**
+     * The one name of its session's target, so publications of one target are counted together.
+     */
+    public function targetName(): string
+    {
+        return self::openKeyOf($this->session_id, $this->target);
     }
 
     /**
@@ -199,7 +356,13 @@ final class SkillPublication extends Model implements ReadableModel
      */
     public static function open(int $limit): array
     {
-        return array_values(self::query()->whereIn('state', [PublicationState::Pending->value, PublicationState::Preparing->value])->orderBy('created_at')->readLimit($limit)->get()->all());
+        $open = self::query()
+            ->whereIn('state', [PublicationState::Pending->value, PublicationState::Preparing->value])
+            ->orderBy('created_at')
+            ->readLimit($limit)
+            ->get();
+
+        return array_values($open->all());
     }
 
     /**
@@ -210,7 +373,94 @@ final class SkillPublication extends Model implements ReadableModel
      */
     public static function latestOfSessions(array $sessionIds, int $limit): array
     {
-        return array_values(self::query()->whereIn('session_id', $sessionIds)->orderByDesc('created_at')->readLimit($limit)->get()->unique('session_id')->values()->all());
+        $latest = self::query()
+            ->whereIn('session_id', $sessionIds)
+            ->orderByDesc('created_at')
+            ->readLimit($limit)
+            ->get()
+            ->unique('session_id');
+
+        return array_values($latest->all());
+    }
+
+    /**
+     * Where each of these publications stands, by id; an id that names none is left out.
+     *
+     * @param  list<string>  $publicationIds
+     * @return array<string, PublicationState>
+     */
+    public static function statesOf(array $publicationIds): array
+    {
+        $publications = self::query()->whereKey($publicationIds)->readLimit(max(1, count($publicationIds)))->get();
+
+        return $publications->mapWithKeys(fn (self $publication) => [$publication->id => $publication->state])->all();
+    }
+
+    /**
+     * The session's first publication: the set its program was launched with, which a program that loads skills only
+     * at a new session keeps.
+     */
+    public static function firstOfSession(string $sessionId): self
+    {
+        return self::query()
+            ->where('session_id', $sessionId)
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->firstOrFail();
+    }
+
+    /**
+     * The session's newest delivered publication, or null when none was delivered yet.
+     */
+    public static function latestDeliveredOfSession(string $sessionId): self|null
+    {
+        return self::query()
+            ->where('session_id', $sessionId)
+            ->inState(PublicationState::Delivered)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    /**
+     * The session's newest publication, or null when none was asked for it.
+     */
+    public static function latestOfSession(string $sessionId): self|null
+    {
+        return self::query()
+            ->where('session_id', $sessionId)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    /**
+     * The newest publication of every session, for a user's status.
+     *
+     * @return list<self>
+     */
+    public static function latestOfEverySession(int $limit): array
+    {
+        $latest = self::query()
+            ->orderByDesc('created_at')
+            ->readLimit($limit)
+            ->get()
+            ->unique('session_id');
+
+        return array_values($latest->all());
+    }
+
+    public function status(): PublicationStatus
+    {
+        return new PublicationStatus(
+            $this->id,
+            $this->session_id,
+            $this->state,
+            $this->generation_id,
+            $this->selection_digest,
+            $this->target,
+            $this->error,
+        );
     }
 
     /**
@@ -218,7 +468,11 @@ final class SkillPublication extends Model implements ReadableModel
      */
     public function isReadableBy(ActorIdentity $actor): bool
     {
-        return $actor->type === ActorType::User || AgentSession::query()->whereKey($this->session_id)->where('agent_id', $actor->id)->exists();
+        if ($actor->type === ActorType::User) {
+            return true;
+        }
+
+        return AgentSession::query()->whereKey($this->session_id)->where('agent_id', $actor->id)->exists();
     }
 
     /**
