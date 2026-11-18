@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
+use Tests\Support\ScanCache\ScanCache;
+
 /**
  * Cycles between areas: each Core area (App\Agents, App\Hooks), each domain (Domain\Plans) and the
  * domain foundation is one unit, and no group of units may reach each other. Type folders inside one area (Contracts,
@@ -40,14 +42,16 @@ final readonly class AreaCycles
     {
         $edges = [];
 
-        foreach (DomainFiles::in([$appFolder, ...glob("{$domainFolder}/*/src", GLOB_ONLYDIR) ?: []]) as $path) {
+        $namesOfFile = ScanCache::findingsByFile(new NamesUsed, DomainFiles::in([$appFolder, ...glob("{$domainFolder}/*/src", GLOB_ONLYDIR) ?: []]));
+
+        foreach ($namesOfFile as $path => $names) {
             $user = self::areaOfFile($path, $appFolder, $domainFolder);
 
             if (in_array($user, [self::CORE_ROOT, self::ENTRY_AREA], true)) {
                 continue;
             }
 
-            foreach (NameScan::of(ParsedFile::fromPath($path)) as $use) {
+            foreach ($names as $use) {
                 $used = self::areaOfName($use->name);
 
                 if ($used !== null && $used !== $user && ! isset($edges[$user][$used])) {

@@ -7,6 +7,7 @@ namespace Tests\Architecture\Support;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
+use Tests\Support\ScanCache\ScanCache;
 
 /**
  * The PHP files of a set of folders, and every name they use.
@@ -70,13 +71,6 @@ final class DomainFiles
      */
     public static function usesIn(array $files, ProjectRoots $roots): array
     {
-        $uses = [];
-
-        foreach ($files as $path) {
-            $file = ParsedFile::fromPath($path);
-            array_push($uses, ...NameScan::of($file), ...DocblockScan::of($file), ...StringScan::of($file, $roots));
-        }
-
-        return $uses;
+        return ScanCache::findings(new NamesUsedAnywhere($roots), $files);
     }
 }

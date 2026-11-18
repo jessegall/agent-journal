@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
-use PhpParser\Node\Stmt\Class_;
-use PhpParser\NodeFinder;
+use Tests\Support\ScanCache\ScanCache;
 use Throwable;
 
 /**
@@ -21,29 +20,10 @@ final class ExceptionPlacement
      */
     public static function misplacedIn(array $folders): array
     {
-        $misplaced = [];
-
-        foreach (DomainFiles::in($folders) as $path) {
-            if (basename(dirname($path)) === 'Exceptions') {
-                continue;
-            }
-
-            array_push($misplaced, ...self::exceptionsDeclaredIn($path));
-        }
-
+        $paths = array_values(array_filter(DomainFiles::in($folders), fn (string $path) => basename(dirname($path)) !== 'Exceptions'));
+        $misplaced = array_values(array_filter(ScanCache::findings(new ClassesDeclared, $paths), fn (string $name) => is_subclass_of($name, Throwable::class)));
         sort($misplaced);
 
         return $misplaced;
-    }
-
-    /**
-     * @return list<string>
-     */
-    private static function exceptionsDeclaredIn(string $path): array
-    {
-        $classes = (new NodeFinder)->findInstanceOf(ParsedFile::fromPath($path)->statements, Class_::class);
-        $names = array_map(fn (Class_ $class) => $class->namespacedName?->toString() ?? '', $classes);
-
-        return array_values(array_filter($names, fn (string $name) => $name !== '' && is_subclass_of($name, Throwable::class)));
     }
 }
