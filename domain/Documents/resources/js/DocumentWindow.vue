@@ -3,6 +3,8 @@ import { router } from '@inertiajs/vue3';
 import type { DocumentPageData } from '@generated/types/documents';
 import CommentsPanel from './CommentsPanel.vue';
 import DraftEditor from './DraftEditor.vue';
+import RecordStatus from './RecordStatus.vue';
+import RecoverForm from './RecoverForm.vue';
 import RecordWindow from './RecordWindow.vue';
 import Button from '@kit/Button';
 import SwitchCase from '@kit/SwitchCase';
@@ -21,12 +23,18 @@ function open(): void {
 <template>
     <div class="flex flex-col gap-4">
         <RecordWindow :data="data.record" />
+        <RecordStatus :data="data.record" :editing="data.editing.state === 'free' ? 'free' : `held by ${data.editing.holder ?? 'you'}`" :settle-action="`/documents/docs/${data.number}/settle`" />
         <SwitchCase :value="data.editing.state">
             <template #yours>
                 <DraftEditor :number="data.number" :draft="data.editing.draft!" />
             </template>
             <template #held>
-                <p class="text-text-3">{{ data.editing.holder }} is editing this document.</p>
+                <template v-if="data.editing.held">
+                    <RecoverForm :number="data.number" :holder="data.editing.holder ?? ''" :held="data.editing.held" />
+                </template>
+                <template v-else>
+                    <p class="text-text-3">{{ data.editing.holder }} is editing this document.</p>
+                </template>
             </template>
             <template #free>
                 <Button variant="primary" @click="open">Edit</Button>

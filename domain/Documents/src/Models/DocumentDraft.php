@@ -18,9 +18,12 @@ use Domain\Documents\Support\DraftText;
 use Domain\Documents\Support\Editor;
 use Domain\Documents\Support\MarkdownText;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -38,6 +41,7 @@ use Illuminate\Support\Str;
  * @property string $title
  * @property string $abstract
  * @property string $body
+ * @property Carbon|null $updated_at
  */
 #[Fillable(['document_id', 'token', 'author_type', 'author_id', 'session_id', 'base_revision_number', 'title', 'abstract', 'body', 'opened_at'])]
 final class DocumentDraft extends Model implements ReadableModel
@@ -75,6 +79,17 @@ final class DocumentDraft extends Model implements ReadableModel
             'body' => $base->body,
             'opened_at' => CarbonImmutable::now(),
         ]);
+    }
+
+    /**
+     * The drafts an agent holds in one session, which close when that session ends.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function heldBySession(Builder $query, string $agentId, string $sessionId): void
+    {
+        $query->where('author_type', ActorType::Agent->value)->where('author_id', $agentId)->where('session_id', $sessionId);
     }
 
     /**
@@ -129,6 +144,7 @@ final class DocumentDraft extends Model implements ReadableModel
             'title' => $this->title,
             'abstract' => $this->abstract,
             'body' => $this->body,
+            'savedAt' => (string) $this->updated_at?->toIso8601String(),
         ]);
     }
 
@@ -167,6 +183,10 @@ final class DocumentDraft extends Model implements ReadableModel
             'closed_at' => CarbonImmutable::now(),
         ])->number : $base->number;
         $close = DocumentClose::record($this, $resultNumber, $cause, $closer, $reason, $published);
+
+        if ($published) {
+            $document->reactivate();
+        }
         $this->delete();
 
         return $close;

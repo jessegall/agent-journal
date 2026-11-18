@@ -8,6 +8,7 @@ use Domain\Documents\Data\CommentCard;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\DocumentList;
 use Domain\Documents\Data\DocumentView;
+use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Data\RecordText;
 use Domain\Documents\Data\RevisionCard;
 use Domain\Documents\Data\RevisionView;
@@ -61,4 +62,9 @@ interface DocumentReader
      * @throws DocumentMissing
      */
     public function comments(int $number, int $page): array;
+
+    /**
+     * @throws DocumentMissing
+     */
+    public function inspect(int $number): RecordInspection;
 }

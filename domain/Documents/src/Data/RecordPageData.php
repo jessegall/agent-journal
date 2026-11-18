@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Data;
 
+use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Support\MarkdownText;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -18,6 +19,7 @@ final class RecordPageData extends Data
 {
     /**
      * @param  list<CommentCard>  $comments
+     * @param  list<SettlementCard>  $settlements
      */
     public function __construct(
         public readonly string $label,
@@ -27,13 +29,17 @@ final class RecordPageData extends Data
         public readonly string $bodyHtml,
         #[DataCollectionOf(CommentCard::class)]
         public readonly array $comments,
+        public readonly AttentionState $attention,
+        #[DataCollectionOf(SettlementCard::class)]
+        public readonly array $settlements,
         public readonly string|Optional $revision = new Optional,
     ) {}
 
     /**
      * @param  list<CommentCard>  $comments
+     * @param  list<SettlementCard>  $settlements
      */
-    public static function fromDocumentView(DocumentView $document, array $comments): self
+    public static function fromDocumentView(DocumentView $document, array $comments, array $settlements): self
     {
         return self::from([
             'label' => "doc {$document->number}",
@@ -42,14 +48,17 @@ final class RecordPageData extends Data
             'body' => $document->body,
             'bodyHtml' => MarkdownText::body($document->body)->toSafeHtml(),
             'comments' => $comments,
+            'attention' => $document->attention,
+            'settlements' => $settlements,
             'revision' => $document->revision,
         ]);
     }
 
     /**
      * @param  list<CommentCard>  $comments
+     * @param  list<SettlementCard>  $settlements
      */
-    public static function fromReportView(ReportView $report, array $comments): self
+    public static function fromReportView(ReportView $report, array $comments, array $settlements): self
     {
         return self::from([
             'label' => "report {$report->number}",
@@ -58,6 +67,8 @@ final class RecordPageData extends Data
             'body' => $report->body,
             'bodyHtml' => MarkdownText::body($report->body)->toSafeHtml(),
             'comments' => $comments,
+            'attention' => $report->attention,
+            'settlements' => $settlements,
         ]);
     }
 }

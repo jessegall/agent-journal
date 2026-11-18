@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Domain\Documents\Readers;
 
 use Domain\Documents\Contracts\DocumentReader;
+use Domain\Documents\Contracts\DraftReader;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\DocumentList;
 use Domain\Documents\Data\DocumentView;
+use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Data\RecordText;
 use Domain\Documents\Data\RevisionView;
 use Domain\Documents\Exceptions\DocumentMissing;
@@ -27,6 +29,8 @@ use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 #[Scoped]
 final readonly class DocumentRecords implements DocumentReader
 {
+    public function __construct(private DraftReader $drafts) {}
+
     public function list(DocumentFilters $filters): DocumentList
     {
         $size = $filters->pageSize()->rows;
@@ -103,5 +107,18 @@ final readonly class DocumentRecords implements DocumentReader
     private static function closedMatching(Builder|HasOneOrMany $revisions, string $words): void
     {
         $revisions->whereNotNull('closed_at')->matchingText($words);
+    }
+
+    public function inspect(int $number): RecordInspection
+    {
+        $document = Document::query()->sharedPublished()->where('number', $number)->first() ?? throw DocumentMissing::numbered($number);
+
+        return RecordInspection::from([
+            'label' => "doc {$number}",
+            'attention' => $document->attention,
+            'editing' => $this->drafts->stateOf($number),
+            'settlements' => $document->settlements(),
+            'closes' => $document->closes(),
+        ]);
     }
 }

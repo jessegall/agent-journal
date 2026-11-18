@@ -12,11 +12,13 @@ use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
+use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Data\DocumentCard;
 use Domain\Documents\Data\DocumentView;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Models\Concerns\CreatedWithAttention;
+use Domain\Documents\Models\Concerns\Settles;
 use Domain\Documents\Support\MarkdownText;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -43,7 +45,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['creator_type', 'creator_id', 'origin_agent_id', 'origin_session_id'])]
 final class Document extends Model implements Numbered, ReadableModel
 {
-    use BoundedReads, CreatedWithAttention, HasNumber, HasUlids, Linkable;
+    use BoundedReads, CreatedWithAttention, HasNumber, HasUlids, Linkable, Settles;
 
     public const string LINK_TYPE = 'documents.document';
 
@@ -79,6 +81,28 @@ final class Document extends Model implements Numbered, ReadableModel
         ]);
 
         return $document;
+    }
+
+    /**
+     * A settled document asks for attention again once a changed revision is published; its settlements stay.
+     */
+    public function reactivate(): void
+    {
+        if ($this->attention === AttentionState::Settled) {
+            $this->attention = AttentionState::Active;
+            $this->save();
+        }
+    }
+
+    /**
+     * How the document's drafts ended, newest first.
+     *
+     * @return list<CloseCard>
+     */
+    public function closes(): array
+    {
+        return array_values(DocumentClose::query()->where('document_id', $this->id)->orderByDesc('closed_at')->orderByDesc('id')->get()
+            ->map(fn (DocumentClose $close) => $close->card())->all());
     }
 
     public function card(): DocumentCard
@@ -142,6 +166,14 @@ final class Document extends Model implements Numbered, ReadableModel
     public static function lockedForEditing(int $number): self
     {
         return self::query()->with('currentRevision')->where('number', $number)->lockForUpdate()->first() ?? throw DocumentMissing::numbered($number);
+    }
+
+    /**
+     * The close already recorded for a draft token of this document, which a repeated close answers with.
+     */
+    public function closeOf(string $token): DocumentClose|null
+    {
+        return DocumentClose::query()->where('document_id', $this->id)->where('token', $token)->first();
     }
 
     /**

@@ -1,0 +1,23 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Documents\Console;
+
+use App\AgentRequests\Contracts\AgentRequestSender;
+use Domain\Documents\Console\Concerns\PrintsInspection;
+use Illuminate\Console\Command;
+
+final class DocInspectCommand extends Command
+{
+    use PrintsInspection;
+
+    protected $signature = 'doc:inspect {number}';
+
+    protected $description = 'Show whether a document is being edited, whether it asks for attention, and its history';
+
+    public function handle(AgentRequestSender $journal): int
+    {
+        return $this->showInspection($journal, '/agent/docs/inspect');
+    }
+}

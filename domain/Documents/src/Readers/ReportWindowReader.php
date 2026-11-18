@@ -20,6 +20,6 @@ final readonly class ReportWindowReader implements PageReader
     {
         $number = $this->request->reportNumber();
 
-        return RecordPageData::fromReportView($this->reports->show($number), $this->reports->comments($number, 1));
+        return RecordPageData::fromReportView($this->reports->show($number), $this->reports->comments($number, 1), $this->reports->inspect($number)->settlements);
     }
 }

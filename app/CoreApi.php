@@ -22,6 +22,7 @@ use App\Agents\Commands\RetireAgent;
 use App\Agents\Contracts\AgentReader;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\SessionReader;
+use App\Agents\Events\LaunchEnded;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Exceptions\AgentRetirementDenied;
@@ -248,7 +249,7 @@ final class CoreApi
     public static function exports(): Exports
     {
         return Exports::make()
-            ->events(ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class)
+            ->events(ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class)
             ->contracts(
                 CurrentSession::class,
                 ReadableModel::class,

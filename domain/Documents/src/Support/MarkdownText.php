@@ -23,6 +23,8 @@ final readonly class MarkdownText
 
     public const int COMMENT_BYTES = 16_384;
 
+    public const int SETTLEMENT_REASON_CHARACTERS = 2000;
+
     public const int ABSTRACT_CHARACTERS = 500;
 
     /**
@@ -72,6 +74,24 @@ final readonly class MarkdownText
         }
 
         return str_replace(["\r\n", "\r"], "\n", $text);
+    }
+
+    /**
+     * Why a record is settled: not only whitespace, and at most SETTLEMENT_REASON_CHARACTERS long.
+     *
+     * @throws ContentMissing|ContentTooLarge
+     */
+    public static function settlementReason(string $reason): string
+    {
+        if (trim($reason) === '') {
+            throw ContentMissing::field('reason');
+        }
+
+        if (mb_strlen($reason) > self::SETTLEMENT_REASON_CHARACTERS) {
+            throw ContentTooLarge::field('reason', self::SETTLEMENT_REASON_CHARACTERS.' characters');
+        }
+
+        return trim($reason);
     }
 
     /**

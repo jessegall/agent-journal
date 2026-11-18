@@ -21,5 +21,6 @@ final class DraftView extends Data
         public readonly string $title,
         public readonly string $abstract,
         public readonly string $body,
+        public readonly string $savedAt,
     ) {}
 }

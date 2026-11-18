@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { RecordPageData } from '@generated/types/documents';
 import CommentsPanel from './CommentsPanel.vue';
+import RecordStatus from './RecordStatus.vue';
 import RecordWindow from './RecordWindow.vue';
 
 /**
@@ -14,6 +15,7 @@ const number = props.data.label.replace('report ', '');
 <template>
     <div class="flex flex-col gap-4">
         <RecordWindow :data="data" />
+        <RecordStatus :data="data" editing="free" :settle-action="`/documents/reports/${number}/settle`" />
         <CommentsPanel :comments="data.comments" :action="`/documents/reports/${number}/comments`" :body="data.body" />
     </div>
 </template>

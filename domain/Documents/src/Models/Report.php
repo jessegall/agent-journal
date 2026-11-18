@@ -18,6 +18,7 @@ use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Exceptions\RecordImmutable;
 use Domain\Documents\Models\Concerns\CreatedWithAttention;
 use Domain\Documents\Models\Concerns\SearchesText;
+use Domain\Documents\Models\Concerns\Settles;
 use Domain\Documents\Support\MarkdownText;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -44,7 +45,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['title', 'abstract', 'body', 'creator_type', 'creator_id', 'origin_agent_id', 'origin_session_id', 'filed_at'])]
 final class Report extends Model implements Numbered, ReadableModel
 {
-    use BoundedReads, CreatedWithAttention, HasNumber, HasUlids, Linkable, SearchesText;
+    use BoundedReads, CreatedWithAttention, HasNumber, HasUlids, Linkable, SearchesText, Settles;
 
     public const string LINK_TYPE = 'documents.report';
 

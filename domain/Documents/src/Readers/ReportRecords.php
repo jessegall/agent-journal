@@ -6,9 +6,11 @@ namespace Domain\Documents\Readers;
 
 use Domain\Documents\Contracts\ReportReader;
 use Domain\Documents\Data\DocumentFilters;
+use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Data\RecordText;
 use Domain\Documents\Data\ReportList;
 use Domain\Documents\Data\ReportView;
+use Domain\Documents\Enums\EditingState;
 use Domain\Documents\Exceptions\ReportMissing;
 use Domain\Documents\Models\RecordComment;
 use Domain\Documents\Models\Report;
@@ -62,5 +64,18 @@ final readonly class ReportRecords implements ReportReader
 
         return array_values(RecordComment::query()->onRecord(Report::LINK_TYPE, $record->id)->forPage(max(1, $page), 50)->get()
             ->map(fn (RecordComment $comment) => $comment->card())->all());
+    }
+
+    public function inspect(int $number): RecordInspection
+    {
+        $report = Report::query()->sharedPublished()->where('number', $number)->first() ?? throw ReportMissing::numbered($number);
+
+        return RecordInspection::from([
+            'label' => "report {$number}",
+            'attention' => $report->attention,
+            'editing' => ['state' => EditingState::Free],
+            'settlements' => $report->settlements(),
+            'closes' => [],
+        ]);
     }
 }

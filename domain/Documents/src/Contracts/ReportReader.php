@@ -6,6 +6,7 @@ namespace Domain\Documents\Contracts;
 
 use Domain\Documents\Data\CommentCard;
 use Domain\Documents\Data\DocumentFilters;
+use Domain\Documents\Data\RecordInspection;
 use Domain\Documents\Data\RecordText;
 use Domain\Documents\Data\ReportList;
 use Domain\Documents\Data\ReportView;
@@ -43,4 +44,9 @@ interface ReportReader
      * @throws ReportMissing
      */
     public function comments(int $number, int $page): array;
+
+    /**
+     * @throws ReportMissing
+     */
+    public function inspect(int $number): RecordInspection;
 }

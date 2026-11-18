@@ -27,6 +27,7 @@ final class DraftPageRequest extends FormRequest
             'title' => ['sometimes', 'string'],
             'abstract' => ['sometimes', 'string'],
             'body' => ['sometimes', 'string'],
+            'reason' => ['sometimes', 'string'],
         ];
     }
 
@@ -48,6 +49,11 @@ final class DraftPageRequest extends FormRequest
     public function abstract(): string
     {
         return $this->string('abstract')->toString();
+    }
+
+    public function reason(): string
+    {
+        return $this->string('reason')->toString();
     }
 
     public function body(): string
