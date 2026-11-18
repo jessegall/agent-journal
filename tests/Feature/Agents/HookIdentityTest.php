@@ -58,7 +58,7 @@ final class HookIdentityTest extends TestCase
     {
         $launch = TestLaunch::start();
 
-        $this->send($launch, $launch->serverHeaders(self::BODY, 'call-7', $this->now()))->assertOk()->assertExactJson([
+        $this->send($launch, $launch->serverHeaders(self::BODY, 'call-7', $this->now(), target: '/testing/hook-identity'))->assertOk()->assertExactJson([
             'agent' => $launch->agent->id,
             'session' => $launch->session->id,
             'hook' => 'call-7',
@@ -72,21 +72,21 @@ final class HookIdentityTest extends TestCase
         $launch = TestLaunch::start();
         $issuedAt = $this->now() - 299;
 
-        $this->send($launch, $launch->serverHeaders(self::BODY, 'call-7', $issuedAt))->assertOk()->assertJson(['hook' => 'call-7']);
+        $this->send($launch, $launch->serverHeaders(self::BODY, 'call-7', $issuedAt, target: '/testing/hook-identity'))->assertOk()->assertJson(['hook' => 'call-7']);
     }
 
     public function test_a_call_issued_before_the_window_is_refused(): void
     {
         $launch = TestLaunch::start();
 
-        $this->send($launch, $launch->serverHeaders(self::BODY, 'call-7', $this->now() - 301))->assertStatus(409);
+        $this->send($launch, $launch->serverHeaders(self::BODY, 'call-7', $this->now() - 301, target: '/testing/hook-identity'))->assertStatus(409);
     }
 
     public function test_a_call_issued_in_the_far_future_is_refused(): void
     {
         $launch = TestLaunch::start();
 
-        $this->send($launch, $launch->serverHeaders(self::BODY, 'call-7', $this->now() + 301))->assertStatus(409);
+        $this->send($launch, $launch->serverHeaders(self::BODY, 'call-7', $this->now() + 301, target: '/testing/hook-identity'))->assertStatus(409);
     }
 
     public function test_the_window_follows_the_configured_seconds(): void
@@ -94,13 +94,13 @@ final class HookIdentityTest extends TestCase
         $this->app->instance(HookRetryWindow::class, new HookRetryWindow(60));
         $launch = TestLaunch::start();
 
-        $this->send($launch, $launch->serverHeaders(self::BODY, 'call-7', $this->now() - 61))->assertStatus(409);
+        $this->send($launch, $launch->serverHeaders(self::BODY, 'call-7', $this->now() - 61, target: '/testing/hook-identity'))->assertStatus(409);
     }
 
     public function test_a_changed_body_breaks_the_signature(): void
     {
         $launch = TestLaunch::start();
-        $headers = $launch->serverHeaders(self::BODY, 'call-7', $this->now());
+        $headers = $launch->serverHeaders(self::BODY, 'call-7', $this->now(), target: '/testing/hook-identity');
 
         $this->call('POST', '/testing/hook-identity', server: $headers, content: '{"hook":"stop","turn":"turn-2"}')->assertUnauthorized();
     }
@@ -108,10 +108,26 @@ final class HookIdentityTest extends TestCase
     public function test_a_changed_call_id_or_issue_time_breaks_the_signature(): void
     {
         $launch = TestLaunch::start();
-        $headers = $launch->serverHeaders(self::BODY, 'call-7', $this->now());
+        $headers = $launch->serverHeaders(self::BODY, 'call-7', $this->now(), target: '/testing/hook-identity');
 
         $this->send($launch, [...$headers, 'HTTP_X_JOURNAL_CALL_ID' => 'call-8'])->assertUnauthorized();
         $this->send($launch, [...$headers, 'HTTP_X_JOURNAL_CALL_ISSUED_AT' => (string) ($this->now() - 1)])->assertUnauthorized();
+    }
+
+    public function test_a_call_signed_for_another_path_or_method_is_refused(): void
+    {
+        $launch = TestLaunch::start();
+
+        $this->send($launch, $launch->serverHeaders(self::BODY, 'call-7', $this->now(), target: '/testing/hook-identity?plan=13'))->assertUnauthorized();
+        $this->send($launch, $launch->serverHeaders(self::BODY, 'call-7', $this->now(), method: 'PUT', target: '/testing/hook-identity'))->assertUnauthorized();
+    }
+
+    public function test_a_call_in_another_protocol_version_must_upgrade(): void
+    {
+        $launch = TestLaunch::start();
+        $headers = $launch->serverHeaders(self::BODY, 'call-7', $this->now(), target: '/testing/hook-identity');
+
+        $this->send($launch, [...$headers, 'HTTP_X_JOURNAL_PROTOCOL' => '1'])->assertStatus(426);
     }
 
     public function test_a_call_signed_with_another_session_token_is_refused(): void
@@ -119,13 +135,13 @@ final class HookIdentityTest extends TestCase
         $launch = TestLaunch::start();
         $other = TestLaunch::start();
 
-        $this->send($launch, $launch->serverHeaders(self::BODY, 'call-7', $this->now(), signingToken: $other->token))->assertUnauthorized();
+        $this->send($launch, $launch->serverHeaders(self::BODY, 'call-7', $this->now(), signingToken: $other->token, target: '/testing/hook-identity'))->assertUnauthorized();
     }
 
     public function test_a_call_without_its_identity_headers_is_refused(): void
     {
         $launch = TestLaunch::start();
-        $headers = $launch->serverHeaders(self::BODY, 'call-7', $this->now());
+        $headers = $launch->serverHeaders(self::BODY, 'call-7', $this->now(), target: '/testing/hook-identity');
         unset($headers['HTTP_X_JOURNAL_CALL_SIGNATURE']);
 
         $this->send($launch, $headers)->assertUnauthorized()->assertJson(['message' => 'The call carries no X-Journal-Call-Signature header.']);

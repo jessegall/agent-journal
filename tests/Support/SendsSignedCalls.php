@@ -26,7 +26,7 @@ trait SendsSignedCalls
         $this->app->forgetScopedInstances();
         $content = json_encode((object) $body) ?: '{}';
 
-        return $this->call('POST', $path, server: $launch->serverHeaders($content, 'call-'.bin2hex(random_bytes(4))), content: $content);
+        return $this->call('POST', $path, server: $launch->serverHeaders($content, 'call-'.bin2hex(random_bytes(4)), target: $path), content: $content);
     }
 
     private function runCommandsAs(string $token): void

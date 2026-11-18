@@ -28,7 +28,6 @@ trait HasNumber
         });
     }
 
-
     public function numberHolder(): Model
     {
         return GlobalGroup::journal();

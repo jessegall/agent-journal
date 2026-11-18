@@ -21,16 +21,18 @@ final readonly class AgentRequestClient
     {
         $callId = (string) Str::ulid();
         $issuedAt = CarbonImmutable::now()->getTimestamp();
+        $url = $settings->journalUrl.$path;
 
         return $this->http->timeout($settings->timeoutSeconds)
             ->withToken($settings->token)
             ->withHeaders([
                 SignedCall::ID_HEADER => $callId,
                 SignedCall::ISSUED_AT_HEADER => (string) $issuedAt,
-                SignedCall::SIGNATURE_HEADER => SignedCall::signatureFor($settings->token, $callId, $issuedAt, SignedCall::digestOf($body)),
+                SignedCall::PROTOCOL_HEADER => SignedCall::PROTOCOL,
+                SignedCall::SIGNATURE_HEADER => SignedCall::signatureFor($settings->token, 'POST', $url, $callId, $issuedAt, $body),
             ])
             ->withBody($body, 'application/json')
             ->accept('application/json')
-            ->post($settings->journalUrl.$path);
+            ->post($url);
     }
 }

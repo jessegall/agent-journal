@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\AgentRequests\Support\SignedCall;
+use App\Agents\Exceptions\CallProtocolUnsupported;
 use App\Agents\Exceptions\CallSignatureInvalid;
 use App\Agents\Exceptions\CredentialRejected;
 use Carbon\CarbonImmutable;
@@ -30,12 +31,18 @@ final readonly class AgentContextFactory
     private function verifiedCall(Request $request): SignedCall
     {
         $token = self::tokenOf($request);
+        $protocol = $this->header($request, SignedCall::PROTOCOL_HEADER);
+
+        if ($protocol !== SignedCall::PROTOCOL) {
+            throw CallProtocolUnsupported::version($protocol);
+        }
+
         $callId = $this->header($request, SignedCall::ID_HEADER);
         $issuedAt = (int) $this->header($request, SignedCall::ISSUED_AT_HEADER);
         $signature = $this->header($request, SignedCall::SIGNATURE_HEADER);
         $bodyDigest = SignedCall::digestOf($request->getContent());
 
-        if (! hash_equals(SignedCall::signatureFor($token, $callId, $issuedAt, $bodyDigest), $signature)) {
+        if (! hash_equals(SignedCall::signatureFor($token, $request->getMethod(), $request->getRequestUri(), $callId, $issuedAt, $request->getContent()), $signature)) {
             throw CallSignatureInvalid::mismatched($callId);
         }
 

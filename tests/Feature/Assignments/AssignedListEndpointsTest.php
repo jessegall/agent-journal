@@ -76,7 +76,7 @@ final class AssignedListEndpointsTest extends TestCase
     public function test_a_missing_credential_a_body_naming_someone_else_or_a_bad_page_is_refused(): void
     {
         $body = '{}';
-        $headers = $this->caller->serverHeaders($body);
+        $headers = $this->caller->serverHeaders($body, target: '/agent/tasks/assigned');
         unset($headers['HTTP_AUTHORIZATION']);
 
         $this->call('POST', '/agent/tasks/assigned', server: $headers, content: $body)->assertUnauthorized();
@@ -94,6 +94,6 @@ final class AssignedListEndpointsTest extends TestCase
         $this->app->make(CurrentActorSetter::class)->clear();
         $body = json_encode((object) $query) ?: '{}';
 
-        return $this->call('POST', $path, server: $launch->serverHeaders($body, 'call-'.bin2hex(random_bytes(4))), content: $body);
+        return $this->call('POST', $path, server: $launch->serverHeaders($body, 'call-'.bin2hex(random_bytes(4)), target: $path), content: $body);
     }
 }

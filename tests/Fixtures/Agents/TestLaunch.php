@@ -33,16 +33,17 @@ final readonly class TestLaunch
     /**
      * @return array<string, string>
      */
-    public function serverHeaders(string $body, string $callId = 'call-1', int|null $issuedAt = null, string|null $signingToken = null): array
+    public function serverHeaders(string $body, string $callId = 'call-1', int|null $issuedAt = null, string|null $signingToken = null, string $method = 'POST', string $target = '/'): array
     {
         $issuedAt ??= time();
-        $signature = SignedCall::signatureFor($signingToken ?? $this->token, $callId, $issuedAt, SignedCall::digestOf($body));
+        $signature = SignedCall::signatureFor($signingToken ?? $this->token, $method, $target, $callId, $issuedAt, $body);
 
         return [
             'HTTP_AUTHORIZATION' => "Bearer {$this->token}",
             'HTTP_X_JOURNAL_CALL_ID' => $callId,
             'HTTP_X_JOURNAL_CALL_ISSUED_AT' => (string) $issuedAt,
             'HTTP_X_JOURNAL_CALL_SIGNATURE' => $signature,
+            'HTTP_X_JOURNAL_PROTOCOL' => SignedCall::PROTOCOL,
             'CONTENT_TYPE' => 'application/json',
             'HTTP_ACCEPT' => 'application/json',
         ];

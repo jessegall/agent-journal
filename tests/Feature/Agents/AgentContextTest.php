@@ -64,7 +64,7 @@ final class AgentContextTest extends TestCase
         $body = json_encode(['agent' => $other->agent->id, 'session' => $other->session->id]) ?: '';
 
         $this->call('POST', '/testing/agent-context', server: [
-            ...$launch->serverHeaders($body),
+            ...$launch->serverHeaders($body, target: '/testing/agent-context'),
             'HTTP_X_AGENT_ID' => (string) $other->agent->id,
         ], content: $body)->assertOk()->assertJson(['agent' => $launch->agent->id, 'session' => $launch->session->id]);
     }
@@ -72,7 +72,7 @@ final class AgentContextTest extends TestCase
     public function test_a_request_without_a_credential_is_refused(): void
     {
         $launch = TestLaunch::start();
-        $headers = $launch->serverHeaders(self::BODY);
+        $headers = $launch->serverHeaders(self::BODY, target: '/testing/agent-context');
         unset($headers['HTTP_AUTHORIZATION']);
 
         $this->call('POST', '/testing/agent-context', server: $headers, content: self::BODY)->assertUnauthorized();
@@ -81,7 +81,7 @@ final class AgentContextTest extends TestCase
     public function test_an_unknown_credential_is_refused(): void
     {
         $launch = TestLaunch::start();
-        $headers = [...$launch->serverHeaders(self::BODY), 'HTTP_AUTHORIZATION' => 'Bearer not-a-token'];
+        $headers = [...$launch->serverHeaders(self::BODY, target: '/testing/agent-context'), 'HTTP_AUTHORIZATION' => 'Bearer not-a-token'];
 
         $this->call('POST', '/testing/agent-context', server: $headers, content: self::BODY)->assertUnauthorized();
     }
@@ -136,6 +136,6 @@ final class AgentContextTest extends TestCase
      */
     private function callAs(TestLaunch $launch): TestResponse
     {
-        return $this->call('POST', '/testing/agent-context', server: $launch->serverHeaders(self::BODY), content: self::BODY);
+        return $this->call('POST', '/testing/agent-context', server: $launch->serverHeaders(self::BODY, target: '/testing/agent-context'), content: self::BODY);
     }
 }

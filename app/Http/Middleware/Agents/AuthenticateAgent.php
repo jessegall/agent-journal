@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware\Agents;
 
 use App\Actors\Contracts\CurrentActorSetter;
+use App\Agents\Exceptions\CallProtocolUnsupported;
 use App\Agents\Exceptions\CallSignatureInvalid;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Support\AgentContext;
@@ -36,6 +37,8 @@ final readonly class AuthenticateAgent
             $context = $this->contexts->fromRequest($request);
         } catch (CredentialRejected|CallSignatureInvalid $rejection) {
             return new JsonResponse(['message' => $rejection->getMessage()], Response::HTTP_UNAUTHORIZED);
+        } catch (CallProtocolUnsupported $unsupported) {
+            return new JsonResponse(['message' => $unsupported->getMessage()], Response::HTTP_UPGRADE_REQUIRED);
         }
 
         $this->container->instance(AgentContext::class, $context);

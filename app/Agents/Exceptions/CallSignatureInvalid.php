@@ -18,6 +18,6 @@ final class CallSignatureInvalid extends RuntimeException
 
     public static function mismatched(string $callId): self
     {
-        return new self("The signature of call {$callId} does not match its id, issue time and body.");
+        return new self("The signature of call {$callId} does not match its method, target, id, issue time and body.");
     }
 }

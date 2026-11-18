@@ -340,6 +340,8 @@ class	BroadcastPageChange
 class	BypassLog
 class	BypassReport
 class	BypassReportController
+class	CallFieldInvalid
+class	CallProtocolUnsupported
 class	CallScan
 class	CallSignatureInvalid
 class	CancelTask
@@ -983,6 +985,8 @@ constant	RunInTransaction::TIMED_OUT_CODES
 constant	ShellWords::OPERATORS
 constant	SignedCall::ID_HEADER
 constant	SignedCall::ISSUED_AT_HEADER
+constant	SignedCall::PROTOCOL
+constant	SignedCall::PROTOCOL_HEADER
 constant	SignedCall::SIGNATURE_HEADER
 constant	StackTransaction::LOCK_NOT_AVAILABLE
 constant	StackTransaction::QUERY_CANCELED
@@ -1512,6 +1516,8 @@ method	BypassReportController::__construct()
 method	BypassReportController::__invoke()
 method	CallFailure::fromStatus()
 method	CallFailure::isOutage()
+method	CallFieldInvalid::lineBreak()
+method	CallProtocolUnsupported::version()
 method	CallScan::of()
 method	CallSignatureInvalid::mismatched()
 method	CallSignatureInvalid::missing()
@@ -2832,6 +2838,7 @@ method	ShowAssignmentRequest::rules()
 method	SignedCall::__construct()
 method	SignedCall::digestOf()
 method	SignedCall::signatureFor()
+method	SignedCall::targetOf()
 method	SignedInScope::__construct()
 method	SignedInScope::apply()
 method	SimpleAnswer::type()

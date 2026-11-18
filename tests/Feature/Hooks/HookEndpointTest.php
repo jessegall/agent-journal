@@ -129,11 +129,11 @@ final class HookEndpointTest extends TestCase
 
     public function test_an_unauthenticated_call_is_refused(): void
     {
-        $headers = $this->launch->serverHeaders($this->stopBody());
+        $headers = $this->launch->serverHeaders($this->stopBody(), target: '/hooks/claude-code');
         unset($headers['HTTP_AUTHORIZATION']);
 
         $this->call('POST', '/hooks/claude-code', server: $headers, content: $this->stopBody())->assertUnauthorized();
-        $this->call('POST', '/hooks/claude-code', server: $this->launch->serverHeaders('{"other":"body"}'), content: $this->stopBody())->assertUnauthorized();
+        $this->call('POST', '/hooks/claude-code', server: $this->launch->serverHeaders('{"other":"body"}', target: '/hooks/claude-code'), content: $this->stopBody())->assertUnauthorized();
     }
 
     public function test_a_malformed_or_unmapped_payload_is_refused(): void
@@ -165,7 +165,7 @@ final class HookEndpointTest extends TestCase
     {
         $this->app->forgetScopedInstances();
 
-        return $this->call('POST', "/hooks/{$program}", server: $this->launch->serverHeaders($body, $callId), content: $body);
+        return $this->call('POST', "/hooks/{$program}", server: $this->launch->serverHeaders($body, $callId, target: "/hooks/{$program}"), content: $body);
     }
 
     private function asLaunchedAgent(\Closure $work): void
