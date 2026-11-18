@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Sharing\Providers;
 
 use App\Sharing\Contracts\SharePolicy;
+use App\Sharing\Gateways\Ngrok\NgrokGateway;
 use App\Sharing\Gateways\Tunler\TunlerGateway;
 use App\Sharing\Support\OwnerSharePolicy;
 use App\Sharing\Support\ShareGatewayRegistry;
@@ -27,7 +28,9 @@ final class SharingServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->app->make(ShareGatewayRegistry::class)->register(TunlerGateway::KEY, TunlerGateway::class);
+        $gateways = $this->app->make(ShareGatewayRegistry::class);
+        $gateways->register(TunlerGateway::KEY, TunlerGateway::class);
+        $gateways->register(NgrokGateway::KEY, NgrokGateway::class);
         $this->app->booted(fn () => $this->app->make(ShareRecordRegistry::class)->checkRelations());
     }
 }

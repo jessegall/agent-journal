@@ -22,6 +22,21 @@ return [
         'subdomain' => env('SHARING_TUNLER_SUBDOMAIN'),
     ],
 
+    /*
+     * The ngrok gateway: its pinned program, the journal's own configuration folder and the loopback port of its
+     * control API.
+     */
+    'ngrok' => [
+        'binary' => env('SHARING_NGROK_BINARY', '/opt/sharing/bin/ngrok'),
+        'config_dir' => env('SHARING_NGROK_CONFIG_DIR', storage_path('sharing/ngrok')),
+        'control_port' => (int) env('SHARING_NGROK_CONTROL_PORT', 4041),
+    ],
+
+    /*
+     * The gateways' secrets, one file per secret reference, readable by the share service alone.
+     */
+    'secrets_dir' => env('SHARING_SECRETS_DIR', storage_path('sharing/secrets')),
+
     'listener' => [
         'host' => '127.0.0.1',
         'port' => (int) env('SHARING_LISTENER_PORT', 8090),

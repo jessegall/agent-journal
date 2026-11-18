@@ -6,16 +6,15 @@ namespace App\Sharing\Gateways\Tunler;
 
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Exceptions\GatewayOpenFailed;
+use App\Sharing\Gateways\Support\ChallengeProbe;
+use App\Sharing\Gateways\Support\GatewayChildren;
+use App\Sharing\Gateways\Support\PublicOriginCheck;
 use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewayEndpoint;
 use App\Sharing\Support\GatewayHealth;
 use App\Sharing\Support\GatewayOperation;
 use App\Sharing\Support\GatewayReadiness;
-use App\Sharing\Support\ProbeChallenges;
-use App\Sharing\Support\PublicAddresses;
 use Illuminate\Container\Attributes\Config;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\Factory as HttpClient;
 use Illuminate\Process\Factory as Processes;
 use JsonException;
 
@@ -32,16 +31,13 @@ final readonly class TunlerGateway implements ShareGateway
 
     private const int CONNECT_SECONDS = 60;
 
-    private const int PROBE_SECONDS = 5;
-
     private const string CONNECTED_PREFIX = 'tunnel up: ';
 
     public function __construct(
         private Processes $processes,
-        private HttpClient $http,
-        private TunlerChildren $children,
-        private ProbeChallenges $challenges,
-        private PublicAddresses $addresses,
+        private GatewayChildren $children,
+        private PublicOriginCheck $origins,
+        private ChallengeProbe $probe,
         #[Config('sharing.tunler.binary')] private string $binary,
         #[Config('sharing.tunler.config_dir')] private string $configFolder,
         #[Config('sharing.tunler.subdomain')] private string|null $subdomain,
@@ -123,25 +119,7 @@ final readonly class TunlerGateway implements ShareGateway
 
     public function health(GatewayEndpoint $endpoint): GatewayHealth
     {
-        $host = (string) parse_url($endpoint->publicOrigin, PHP_URL_HOST);
-
-        if (! str_starts_with($endpoint->publicOrigin, 'https://') || ! $this->addresses->isPublic($host)) {
-            return new GatewayHealth(['The public origin is not a public HTTPS address.']);
-        }
-
-        $challenge = $this->challenges->issue();
-
-        try {
-            $response = $this->http->timeout(self::PROBE_SECONDS)->withoutRedirecting()->get(rtrim($endpoint->publicOrigin, '/')."/_probe/{$challenge}");
-        } catch (ConnectionException) {
-            return new GatewayHealth(['The public origin did not answer the probe in time.']);
-        }
-
-        if ($response->redirect()) {
-            return new GatewayHealth(['The public origin redirected the probe.']);
-        }
-
-        return $response->ok() && substr($response->body(), 0, 64) === $challenge ? GatewayHealth::healthy() : new GatewayHealth(['The public origin did not answer the probe with its challenge.']);
+        return $this->probe->health($endpoint);
     }
 
     public function close(GatewayEndpoint $endpoint): void
@@ -168,18 +146,11 @@ final readonly class TunlerGateway implements ShareGateway
     }
 
     /**
-     * Only the configured origin, over HTTPS, on the exact subdomain of the provider host, with no path.
+     * Only the configured origin, on the exact subdomain of the provider host.
      */
     private function isExpectedOrigin(string $address, string $publicOrigin, string $providerHost): bool
     {
-        $parts = parse_url($address);
-
-        return is_array($parts)
-            && ($parts['scheme'] ?? null) === 'https'
-            && ($parts['host'] ?? null) === "{$this->subdomain}.{$providerHost}"
-            && in_array($parts['path'] ?? '', ['', '/'], true)
-            && ! isset($parts['port']) && ! isset($parts['query']) && ! isset($parts['user'])
-            && rtrim($address, '/') === rtrim($publicOrigin, '/');
+        return $this->origins->accepts($address, $publicOrigin) && parse_url($address, PHP_URL_HOST) === "{$this->subdomain}.{$providerHost}";
     }
 
     /**

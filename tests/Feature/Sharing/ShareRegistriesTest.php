@@ -87,7 +87,7 @@ final class ShareRegistriesTest extends TestCase
         $gateways = $this->app->make(ShareGatewayRegistry::class);
         $gateways->register('press', PressGateway::class);
 
-        $this->assertSame(['tunler', 'press'], $gateways->keys());
+        $this->assertSame(['tunler', 'ngrok', 'press'], $gateways->keys());
         $this->assertThrows(fn () => $gateways->register('press', PressGateway::class), ShareGatewayInvalid::class, 'already registered');
         $this->assertThrows(fn () => $gateways->register('pamphlet', Pamphlet::class), ShareGatewayInvalid::class, 'is no share gateway');
         $this->assertThrows(fn () => $gateways->get('ngrok'), UnknownShareGateway::class);

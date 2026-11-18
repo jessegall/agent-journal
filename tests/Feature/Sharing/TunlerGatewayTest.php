@@ -105,7 +105,9 @@ final class TunlerGatewayTest extends TestCase
 
         $this->assertTrue($this->gateway()->health($endpoint)->isHealthy());
 
+        $this->http = new HttpClient;
         $this->http->fake(fn () => $this->http->response('', 302, ['Location' => 'https://elsewhere.test/']));
+        $this->app->instance(HttpClient::class, $this->http);
 
         $this->assertSame(['The public origin redirected the probe.'], $this->gateway()->health($endpoint)->problems);
         $this->assertFalse($this->gateway()->health(new GatewayEndpoint('run-1', 1, 'http://docs.example.test', 'run-1:1'))->isHealthy());

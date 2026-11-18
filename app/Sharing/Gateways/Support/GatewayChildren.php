@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Sharing\Gateways\Tunler;
+namespace App\Sharing\Gateways\Support;
 
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Process\InvokedProcess;
 
 /**
- * The tunler programs this supervisor run started, by the reference its endpoints carry; one started in another run
+ * The gateway programs this supervisor run started, by the reference its endpoints carry; one started in another run
  * is never adopted, so closing it here does nothing.
  */
 #[Singleton]
-final class TunlerChildren
+final class GatewayChildren
 {
     /**
      * @var array<string, InvokedProcess>
