@@ -10,6 +10,7 @@ from engine.provider.control_group import ControlGroup
 from engine.provider.program_server_file import ProgramServerFile
 from core.modules.codex.providers.support.codex_server_file import CodexServerFile
 from dataclasses import replace
+from datetime import datetime, timedelta, timezone
 import html
 import json
 import re
@@ -64,6 +65,8 @@ REQUEST_APPROVAL_ARGUMENTS = ["-c", 'approval_policy="on-request"', "-c", 'sandb
 
 # the sessions folder holds year, month and day folders, and the day folder holds the rollout files
 CODEX_SESSION_FOLDER_DEPTH = 4
+SESSION_ID_DIGITS, TIME_DIGITS, VERSION_DIGIT, TIME_ORDERED_VERSION = 32, 12, 12, "7"
+HEX_DIGITS = frozenset("0123456789abcdef")
 
 
 class CodexProvider(Provider):
@@ -170,10 +173,26 @@ class CodexProvider(Provider):
         if cached is not None and FileAccess.is_file(cached):
             return cached
         sessions = self.person_folder() / "sessions"
-        located = next(FileAccess.rglob(sessions, f"rollout-*-{session}.jsonl", CODEX_SESSION_FOLDER_DEPTH), None) if FileAccess.is_dir(sessions) else None
+        if not FileAccess.is_dir(sessions):
+            return None
+        pattern = f"rollout-*-{session}.jsonl"
+        days = self.session_days(session)
+        # a session id that carries its time names the day folders its rollout can be in; only another id walks them all
+        found = (path for day in days for path in FileAccess.glob(sessions / day, pattern)) if days else FileAccess.rglob(sessions, pattern, CODEX_SESSION_FOLDER_DEPTH)
+        located = next(found, None)
         if located is not None:
             self.rollouts[session] = located
         return located
+
+    # a Codex thread id is a version 7 id: its first 48 bits are the milliseconds it began, so its rollout sits in that
+    # day's folder, or a neighbour's when the local day differed
+    @staticmethod
+    def session_days(session: str) -> tuple[str, ...]:
+        digits = session.replace("-", "")
+        if len(digits) != SESSION_ID_DIGITS or digits[VERSION_DIGIT] != TIME_ORDERED_VERSION or not all(digit in HEX_DIGITS for digit in digits.lower()):
+            return ()
+        began = datetime.fromtimestamp(int(digits[:TIME_DIGITS], 16) / 1000, tz=timezone.utc)
+        return tuple(dict.fromkeys(f"{day:%Y/%m/%d}" for day in (began - timedelta(days=1), began, began + timedelta(days=1))))
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:
         return self.context_window(home, session).used_percentage

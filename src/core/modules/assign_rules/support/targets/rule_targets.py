@@ -1,6 +1,7 @@
 from engine.enums.agent_role import AgentRole
 from engine.errors.refusal import Refusal
 from engine.query.queries import Queries
+from engine.query.conditions.is_null import IsNull
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.agent_label import AgentLabel
 from core.modules.agents.support.main_agent_finder import MainAgentFinder
@@ -56,7 +57,7 @@ class RuleTargets:
 
     def model_agent(self, rule: AssignRule, batch: DecisionBatch) -> Usable:
         unavailable_text = f"no agent of {rule.program} {rule.program_model} can take it now"
-        agents = [agent for agent in batch.agents(lambda: tuple(self.queries.query(Agent).every_row(MODEL_AGENTS_REASON))) if agent.role != AgentRole.MAIN and self.runs_rule_model(agent, rule)]
+        agents = [agent for agent in batch.agents(lambda: tuple(self.queries.query(Agent).matching(IsNull("retired_at")).every_row(MODEL_AGENTS_REASON))) if agent.role != AgentRole.MAIN and self.runs_rule_model(agent, rule)]
         if not agents:
             return Usable(None, f"{unavailable_text}: no agent runs that program and model")
         free_agents = [agent for agent in agents if not agent.is_paused and agent.usage_limit_ends_at is None and self.checked(agent, rule, batch).actor_id is not None]
