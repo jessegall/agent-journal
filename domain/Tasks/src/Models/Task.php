@@ -53,6 +53,7 @@ use PhpOption\Some;
  * @property int $revision
  * @property TaskState $state
  * @property int $run_number
+ * @property string|null $run_agent_id
  * @property string|null $run_session_id
  * @property string|null $result_note
  * @property string|null $block_reason
@@ -60,7 +61,7 @@ use PhpOption\Some;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['title', 'brief', 'creator_type', 'creator_id', 'creator_session_id', 'revision', 'run_number', 'run_session_id', 'result_note', 'block_reason', 'cancel_reason'])]
+#[Fillable(['title', 'brief', 'creator_type', 'creator_id', 'creator_session_id', 'revision', 'run_number', 'run_agent_id', 'run_session_id', 'result_note', 'block_reason', 'cancel_reason'])]
 #[UseFactory(TaskFactory::class)]
 final class Task extends Model implements Assignable, Numbered, ReadableModel, WorkedOnStack
 {
@@ -161,7 +162,7 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
      * @throws TaskRestartRefused
      * @throws TaskRunTaken
      */
-    public function startRun(string $sessionId): void
+    public function startRun(string $agentId, string $sessionId): void
     {
         if ($this->state->hasEnded()) {
             throw TaskRestartRefused::forTask($this->number, $this->state->value);
@@ -176,6 +177,7 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
         }
 
         $this->state = TaskState::Started;
+        $this->run_agent_id = $agentId;
         $this->run_session_id = $sessionId;
         $this->save();
     }

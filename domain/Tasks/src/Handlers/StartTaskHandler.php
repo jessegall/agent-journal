@@ -32,7 +32,7 @@ final readonly class StartTaskHandler implements CommandHandler
     {
         $target = $this->sessions->requireActive($command->sessionId);
         $task = Task::lockedById($command->taskId);
-        $task->startRun($command->sessionId);
+        $task->startRun($target->agentId, $command->sessionId);
         $this->events->dispatch(new TaskStarted($command->taskId, $target));
 
         return $task->run_number;

@@ -33,6 +33,8 @@ final class TaskAuthoringTest extends TestCase
 
     private const array TABLES = ['tasks', 'agents', 'agent_sessions', 'launch_credentials', 'agent_stacks'];
 
+    private const string AGENT = '01jd8x0g9m3qz6v4k2agent001';
+
     private const string SESSION = '01jd8x0g9m3qz6v4k2session1';
 
     public function test_the_tasks_table_has_the_authoring_and_run_columns(): void
@@ -64,13 +66,13 @@ final class TaskAuthoringTest extends TestCase
     {
         $task = Task::factory()->create();
 
-        $task->startRun(self::SESSION);
+        $task->startRun(self::AGENT, self::SESSION);
         $this->assertSame([1, TaskState::Started], [$task->run_number, $task->state]);
         $this->assertTrue($task->isRunOwnedBy(self::SESSION));
         $this->assertFalse($task->isRunOwnedBy('01jd8x0g9m3qz6v4k2session2'));
 
         $task->blockRun('Waits on the schema.');
-        $task->startRun(self::SESSION);
+        $task->startRun(self::AGENT, self::SESSION);
         $task->finishRun('Built and tested.');
         $fresh = $task->fresh();
 

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->unsignedInteger('revision')->default(1);
             $table->string('state', 16)->default('open');
             $table->unsignedInteger('run_number')->default(0);
+            $table->ulid('run_agent_id')->nullable();
             $table->ulid('run_session_id')->nullable();
             $table->text('result_note')->nullable();
             $table->text('block_reason')->nullable();
