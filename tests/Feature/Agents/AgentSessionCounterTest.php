@@ -95,7 +95,7 @@ final class AgentSessionCounterTest extends TestCase
         $this->countAt('2026-11-18 12:01:00');
 
         $this->assertCount(1, $queries);
-        $this->assertStringStartsWith('select count(*) as aggregate from "agent_sessions"', $queries[0]);
+        $this->assertStringStartsWith('select count(*) as "aggregate" from "agent_sessions"', $queries[0]);
     }
 
     public function test_the_agents_counter_is_registered_for_active_actors(): void

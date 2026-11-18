@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tests\Fixtures\Domains\Reminders\Handlers;
+namespace Tests\Fixtures\Domains\QuestionReminders\Handlers;
 
 use App\Actors\Contracts\ServerClock;
 use App\Contracts\CommandHandler;
 use App\Hooks\Contracts\StackCleanup;
-use Tests\Fixtures\Domains\Reminders\Commands\SendQuestionReminder;
-use Tests\Fixtures\Domains\Reminders\Models\Question;
+use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder;
+use Tests\Fixtures\Domains\QuestionReminders\Models\Question;
 
 /**
  * Locks the question and rechecks it: a waiting one is reminded once; an answered one sends nothing and its frame

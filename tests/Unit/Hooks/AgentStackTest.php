@@ -296,7 +296,7 @@ final class AgentStackTest extends TestCase
         $switchedOff = new SwitchableState(false);
         $stack = $this->stack(
             $this->ready(),
-            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active))),
+            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active)), CarbonImmutable::now()),
             $this->frame('review', $switchedOff),
         );
 
@@ -309,9 +309,9 @@ final class AgentStackTest extends TestCase
         $stack = $this->stack(
             $this->ready(),
             $this->frame('review', new SwitchableState(false)),
-            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active))),
+            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active)), CarbonImmutable::now()),
             $this->frame('notes', new SwitchableState(true)),
-            new Frame('message-95', $this->reference('chat.answering', '95'), new AnsweringMessageState(new MessageWork(95, MessageWorkState::Answered))),
+            new Frame('message-95', $this->reference('communication.answering', '95'), new AnsweringMessageState(new MessageWork(95, MessageWorkState::Answered)), CarbonImmutable::now()),
         );
 
         $this->assertSame(['ready', 'task-42', 'notes'], $stack->withoutInactiveFrames()->frameIds());

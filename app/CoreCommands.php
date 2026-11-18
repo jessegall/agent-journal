@@ -23,7 +23,6 @@ use App\Engine\Commands\SettleFrameTimes;
 use App\Numbers\Commands\InstallNumbers;
 use App\Records\Commands\LinkRecords;
 use App\Records\Commands\UnlinkRecords;
-use App\Web\Commands\RecordUserHeartbeat;
 use App\Settings\Commands\DisableSettingGroup;
 use App\Settings\Commands\EnableSettingGroup;
 use App\Settings\Commands\ResetSetting;
@@ -35,6 +34,7 @@ use App\Settings\Commands\SetIntegerSetting;
 use App\Settings\Commands\SetStringChoice;
 use App\Settings\Commands\SetStringSetting;
 use App\Sharing\Commands\SaveSharePreview;
+use App\Web\Commands\RecordUserHeartbeat;
 
 /**
  * Core's own commands and middleware, read at start-up beside the domains' (doc 19, section 6.1).

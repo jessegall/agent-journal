@@ -32,9 +32,9 @@ use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\ClosureStateLoader;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryTaskLoader;
-use Tests\Support\FixedServerClock;
 use Tests\Fixtures\Hooks\ScriptedState;
 use Tests\Fixtures\Hooks\SwitchableState;
+use Tests\Support\FixedServerClock;
 
 final class StackRestorerTest extends TestCase
 {
@@ -154,8 +154,8 @@ final class StackRestorerTest extends TestCase
             $event->registry->register('test.switched_off', new ClosureStateLoader(fn () => new SwitchableState(false)));
         });
         $types = new StateTypes($events);
-        $restorer = new StackRestorer($types, new RegisteredStateFactory($types));
-        $switchedOff = new FrameRecord('review', new StateReference('test.switched_off', NoSubject::None), false, 1);
+        $restorer = new StackRestorer($types, new RegisteredStateFactory($types, new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00'))));
+        $switchedOff = new FrameRecord('review', new StateReference('test.switched_off', NoSubject::None), false, 1, CarbonImmutable::now());
 
         $stack = $restorer->restore($this->records($this->bottom(), $this->task('task-42', 42), $switchedOff), ReadyStateType::MainAgent);
 
@@ -164,7 +164,7 @@ final class StackRestorerTest extends TestCase
 
         $this->expectException(StateSchemaUnknown::class);
 
-        $restorer->restore($this->records($this->bottom(), new FrameRecord('review', new StateReference('test.switched_off', NoSubject::None), false, 2)), ReadyStateType::MainAgent);
+        $restorer->restore($this->records($this->bottom(), new FrameRecord('review', new StateReference('test.switched_off', NoSubject::None), false, 2, CarbonImmutable::now())), ReadyStateType::MainAgent);
     }
 
     public function test_a_frame_of_a_switched_off_type_is_restored_reports_off_and_leaves_on_request(): void
@@ -200,9 +200,9 @@ final class StackRestorerTest extends TestCase
             $event->registry->register('plans.working', $switchedOffType);
         });
         $types = new StateTypes($events);
-        $restorer = new StackRestorer($types, new RegisteredStateFactory($types));
+        $restorer = new StackRestorer($types, new RegisteredStateFactory($types, new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00'))));
 
-        $stack = $restorer->restore($this->records($this->bottom(), new FrameRecord('plan-7', new StateReference('plans.working', NoSubject::None), false, 1)), ReadyStateType::MainAgent);
+        $stack = $restorer->restore($this->records($this->bottom(), new FrameRecord('plan-7', new StateReference('plans.working', NoSubject::None), false, 1, CarbonImmutable::now())), ReadyStateType::MainAgent);
 
         $this->assertSame(1, $loaded);
         $this->assertSame([true, false], array_map(fn ($frame) => $frame->isEnabled(), $stack->frames()));

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks;
 
 use App\Agents\Support\StackTarget;
-use App\Records\Support\RecordIdentity;
 use App\Hooks\Exceptions\TooManyTickCommands;
 use App\Hooks\States\AgentState;
 use App\Hooks\States\Support\StateTypeRegistry;
@@ -13,6 +12,7 @@ use App\Hooks\Ticks\ElapsedTime;
 use App\Hooks\Ticks\TickCommands;
 use App\Hooks\Ticks\TickContext;
 use App\Records\Commands\UnlinkRecords;
+use App\Records\Support\RecordIdentity;
 use Carbon\CarbonImmutable;
 use LogicException;
 use PHPUnit\Framework\TestCase;

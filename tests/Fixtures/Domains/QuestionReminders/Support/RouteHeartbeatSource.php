@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Fixtures\Domains\Reminders\Support;
+namespace Tests\Fixtures\Domains\QuestionReminders\Support;
 
 use App\Agents\Contracts\AgentHeartbeatSource;
 use Closure;

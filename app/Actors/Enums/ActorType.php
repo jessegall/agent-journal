@@ -39,7 +39,7 @@ enum ActorType: string
     {
         return match ($this) {
             self::User, self::Agent => true,
-            self::System => false,
+            self::System, self::Engine => false,
         };
     }
 

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tests\Fixtures\Domains\Reminders\States;
+namespace Tests\Fixtures\Domains\QuestionReminders\States;
 
 use App\Hooks\Contracts\TickableState;
 use App\Hooks\States\AgentState;
 use App\Hooks\Ticks\TickCommands;
 use App\Hooks\Ticks\TickContext;
-use Tests\Fixtures\Domains\Reminders\Commands\SendQuestionReminder;
+use Tests\Fixtures\Domains\QuestionReminders\Commands\SendQuestionReminder;
 
 /**
  * An agent waits for the answer to its question. Once it waited long enough the tick asks for one reminder; the
