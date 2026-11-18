@@ -6,7 +6,7 @@ namespace Tests\Feature\Hooks\Programs;
 
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
-use App\Hooks\Enums\CommandType;
+use App\Processes\Enums\CommandType;
 use App\Hooks\Enums\FileOperation;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Exceptions\UnsupportedHook;

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Domain\Processes\Providers;
+namespace App\Processes\Providers;
 
-use App\Hooks\Contracts\ShellCommandParser;
+use App\Processes\Contracts\ShellCommandParser;
 use App\Links\Support\LinkTypeRegistry;
-use Domain\Processes\Models\CommandAlias;
-use Domain\Processes\Support\ShellParser;
+use App\Processes\Models\CommandAlias;
+use App\Processes\Support\ShellParser;
 use Illuminate\Support\ServiceProvider;
 
 /**

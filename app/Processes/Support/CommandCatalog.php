@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Domain\Processes\Support;
+namespace App\Processes\Support;
 
-use App\Hooks\Enums\CommandEffect;
-use App\Hooks\Enums\CommandType;
+use App\Processes\Enums\CommandEffect;
+use App\Processes\Enums\CommandType;
 
 /**
  * What Processes knows about programs: which command lines are test runs or builds, which only read files and

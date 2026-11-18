@@ -11,7 +11,7 @@ use App\Assignments\Registry\AssignmentRegistry;
 use App\CoreApi;
 use App\Domains\Support\DomainRegistry;
 use App\Exports\Support\Exports;
-use App\Hooks\Contracts\ShellCommandParser;
+use App\Processes\Contracts\ShellCommandParser;
 use Tests\Architecture\Support\BindingRules;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DomainFiles;
@@ -93,7 +93,7 @@ final class BindingRulesTest extends TestCase
 
     public function test_cores_parser_comes_from_processes(): void
     {
-        $this->assertStringStartsWith('Domain\Processes\\', $this->app->make(ShellCommandParser::class)::class);
+        $this->assertStringStartsWith('App\Processes\\', $this->app->make(ShellCommandParser::class)::class);
     }
 
     public function test_only_the_authentication_sites_name_the_actor_store_or_set_the_actor(): void

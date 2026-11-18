@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Bindings\Plans;
 
-use App\Hooks\Contracts\ShellCommandParser;
+use App\Processes\Contracts\ShellCommandParser;
 use Illuminate\Support\ServiceProvider;
 use Tests\Fixtures\Bindings\Plans\Contracts\PlanCounter;
 use Tests\Fixtures\Bindings\Tasks\Contracts\TaskReader;

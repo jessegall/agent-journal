@@ -8,7 +8,7 @@ use App\Agents\Events\LaunchStarted;
 use App\Agents\Support\StackTarget;
 use App\Contracts\Listener;
 use App\Hooks\Actions\LaunchStacks;
-use App\Hooks\Contracts\ShellCommandParser;
+use App\Processes\Contracts\ShellCommandParser;
 use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Exceptions\ShellParserMissing;
 use App\Hooks\Inputs\MissingShellParser;

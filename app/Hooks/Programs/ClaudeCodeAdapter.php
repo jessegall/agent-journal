@@ -6,11 +6,11 @@ namespace App\Hooks\Programs;
 
 use App\Hooks\Contracts\ProgramAdapter;
 use App\Hooks\Contracts\ProgramCall;
-use App\Hooks\Contracts\ShellCommandParser;
+use App\Processes\Contracts\ShellCommandParser;
 use App\Hooks\Enums\ClaudeCodeTool;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\SessionStartSource;
-use App\Hooks\Enums\ShellDialect;
+use App\Processes\Enums\ShellDialect;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;

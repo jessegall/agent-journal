@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Domain\Processes\Support;
+namespace App\Processes\Support;
 
-use Domain\Processes\Models\CommandAlias;
+use App\Processes\Models\CommandAlias;
 
 /**
  * The named read of the command aliases Processes keeps.

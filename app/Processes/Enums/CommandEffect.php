@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Enums;
+namespace App\Processes\Enums;
 
 /**
  * What a command part does to files, as the parser knows it.

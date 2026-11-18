@@ -10,7 +10,7 @@ use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\ReadyStateType;
-use App\Hooks\Enums\ShellDialect;
+use App\Processes\Enums\ShellDialect;
 use App\Hooks\Exceptions\RepeatedCommandRewrite;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\ShellCommandRequested;

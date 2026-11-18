@@ -27,7 +27,7 @@ use Domain\Chat\Providers\ChatServiceProvider;
 use Domain\Documents\Providers\DocumentsServiceProvider;
 use Domain\Memory\Providers\MemoryServiceProvider;
 use Domain\Plans\Providers\PlansServiceProvider;
-use Domain\Processes\Providers\ProcessesServiceProvider;
+use App\Processes\Providers\ProcessesServiceProvider;
 use Domain\Rules\Providers\RulesServiceProvider;
 use Domain\Sequences\Providers\SequencesServiceProvider;
 use Domain\Tasks\Providers\TasksServiceProvider;

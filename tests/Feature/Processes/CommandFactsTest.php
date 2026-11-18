@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Domain\Processes\Tests\Feature;
+namespace Tests\Feature\Processes;
 
-use App\Hooks\Contracts\ShellCommandParser;
+use App\Processes\Contracts\ShellCommandParser;
 use App\Hooks\Enums\AnswerType;
-use App\Hooks\Enums\CommandEffect;
-use App\Hooks\Enums\CommandType;
-use App\Hooks\Enums\ParseOutcome;
-use App\Hooks\Enums\PartJoin;
-use App\Hooks\Enums\ShellDialect;
+use App\Processes\Enums\CommandEffect;
+use App\Processes\Enums\CommandType;
+use App\Processes\Enums\ParseOutcome;
+use App\Processes\Enums\PartJoin;
+use App\Processes\Enums\ShellDialect;
 use App\Hooks\Exceptions\ShellParserMissing;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\MissingShellParser;
-use App\Hooks\Inputs\ShellCommand;
+use App\Processes\Values\ShellCommand;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\States\MainAgentReadyState;
 use App\Hooks\States\ReadOnlyHelperReadyState;
 use App\Hooks\States\ReadyState;
-use Domain\Processes\Models\CommandAlias;
-use Domain\Processes\Support\ShellParser;
-use Domain\Processes\Tests\TestCase;
+use App\Processes\Models\CommandAlias;
+use App\Processes\Support\ShellParser;
+use Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;

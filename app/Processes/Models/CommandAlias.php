@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Domain\Processes\Models;
+namespace App\Processes\Models;
 
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;

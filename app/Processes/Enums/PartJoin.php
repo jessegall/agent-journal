@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Enums;
+namespace App\Processes\Enums;
 
 /**
  * How a command part joins the part after it.

@@ -10,7 +10,7 @@ use App\Bus\Support\OperationDeadline;
 use App\Contracts\LaunchTransaction;
 use App\Hooks\Console\PruneHookHistoryCommand;
 use App\Hooks\Console\RelayHookCommand;
-use App\Hooks\Contracts\ShellCommandParser;
+use App\Processes\Contracts\ShellCommandParser;
 use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Inputs\MissingShellParser;
 use App\Hooks\Models\AgentStackRow;

@@ -20,7 +20,6 @@
             <directory>domain/Access/tests/Feature</directory>
             <directory>domain/Documents/tests/Feature</directory>
             <directory>domain/Plans/tests/Feature</directory>
-            <directory>domain/Processes/tests/Feature</directory>
             <directory>domain/Rules/tests/Feature</directory>
             <directory>domain/Sequences/tests/Feature</directory>
             <directory>domain/Tasks/tests/Feature</directory>
