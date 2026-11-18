@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Actors\Contracts;
+
+use App\Actors\Exceptions\ActorUnavailable;
+use App\Actors\Support\ActorIdentity;
+
+/**
+ * Finds the actors of one type, registered with the actor registry by the owner of that type.
+ */
+interface ActorProvider
+{
+    /**
+     * @throws ActorUnavailable
+     */
+    public function actor(ActorIdentity $identity): Actor;
+}
