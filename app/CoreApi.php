@@ -366,6 +366,7 @@ use App\Settings\Values\Decimal;
 use App\Settings\Values\GroupReference;
 use App\Settings\Values\SettingReference;
 use App\Settings\Values\SettingsChange;
+use App\Sharing\Commands\SaveSharePreview;
 use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Contracts\Shareable;
@@ -382,6 +383,7 @@ use App\Sharing\Support\GatewayHealth;
 use App\Sharing\Support\GatewayOperation;
 use App\Sharing\Support\GatewayReadiness;
 use App\Sharing\Support\GatewaySettings;
+use App\Sharing\Support\SavedSharePreview;
 use App\Sharing\Support\ShareCandidates;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\SharedContent;
@@ -727,6 +729,7 @@ final class CoreApi
                 ShareRecordRegistration::class,
                 ShareSelection::class,
                 ShareCandidates::class,
+                SavedSharePreview::class,
                 ShareLinkedCandidate::class,
                 ShareRecordCard::class,
                 ShareRecords::class,
@@ -755,6 +758,7 @@ final class CoreApi
                 RecordUserHeartbeat::class,
                 MarkSilentSessions::class,
                 SettleFrameTimes::class,
+                SaveSharePreview::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,

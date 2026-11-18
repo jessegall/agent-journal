@@ -1179,6 +1179,7 @@ constant	Exports::CORE_SUPPORT
 constant	FailedWindow::MESSAGE
 constant	FrameSettlement::TIME_FORMAT
 constant	GlobalGroup::JOURNAL
+constant	HookController::NATIVE_CHILD_REFUSAL
 constant	IntegerSetting::LARGEST
 constant	IntegerSetting::SMALLEST
 constant	ListenerPolicy::CORE
@@ -2619,7 +2620,9 @@ method	HookInput::identity()
 method	HookInput::methodName()
 method	HookPayload::__construct()
 method	HookPayload::argument()
+method	HookPayload::callsAnyOf()
 method	HookPayload::endReason()
+method	HookPayload::isFromNativeChild()
 method	HookPayload::isSessionStart()
 method	HookPayload::isStopContinuation()
 method	HookPayload::promptText()
@@ -2629,8 +2632,8 @@ method	HookPayload::startSource()
 method	HookPayload::toolArguments()
 method	HookPayload::toolNameText()
 method	HookPayload::toolOutcome()
-method	HookProgram::nativeChildTools()
 method	HookProgram::hookCommand()
+method	HookProgram::nativeChildTools()
 method	HookProgram::nativeEvents()
 method	HookRelay::__construct()
 method	HookRelay::answerWithoutJournal()
@@ -4857,6 +4860,7 @@ property	HookIdentity::$agentId
 property	HookIdentity::$hookId
 property	HookIdentity::$inputDigest
 property	HookIdentity::$sessionId
+property	HookPayload::$agentId
 property	HookPayload::$hookEventName
 property	HookPayload::$prompt
 property	HookPayload::$reason
