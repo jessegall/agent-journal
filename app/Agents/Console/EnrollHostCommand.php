@@ -6,7 +6,6 @@ namespace App\Agents\Console;
 
 use App\Actors\Support\ActorStore;
 use App\Agents\Commands\EnrollHost;
-use App\Agents\Exceptions\HostEnrollmentInvalid;
 use App\Agents\Support\EnrolledHost;
 use App\Bus\Contracts\CommandBus;
 use Illuminate\Console\Command;
@@ -35,9 +34,7 @@ final class EnrollHostCommand extends Command
      */
     private function installationName(): string
     {
-        $name = $this->argument('name');
-
-        return is_string($name) ? $name : throw HostEnrollmentInvalid::withoutName();
+        return $this->argument('name');
     }
 
     /**

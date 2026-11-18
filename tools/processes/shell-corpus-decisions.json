@@ -1,0 +1,114 @@
+{
+    "schema_version": 1,
+    "about": "Where version 6's shell syntax intends another reading than the reference parser (mvdan.cc/sh), each family of lines is named here with its reason (doc 21 revision 3, section 35: decisions alter an expectation with evidence; they are not ignored failures). A difference is explained only when its two outcomes and its source match one family.",
+    "decisions": [
+        {
+            "family": "extended-globs",
+            "reference": "complete",
+            "version6": "invalid",
+            "source_pattern": "[@!*?+]\\(",
+            "reason": "Bash reads @( !( *( ?( +( patterns only with the extglob option on, and it is off by default; version 6 reads the default grammar, so such a line is invalid as bash would say."
+        },
+        {
+            "family": "invalid-inside-unsupported",
+            "reference": "invalid",
+            "version6": "unsupported",
+            "source_pattern": "",
+            "reason": "Version 6 refuses a loop, conditional, case, function or array whole without checking every token of its body; the reference rejects the same line as invalid. Both readings refuse the line, so admission is the same."
+        },
+        {
+            "family": "bash-runtime-errors",
+            "reference": "invalid",
+            "version6": "complete",
+            "source_pattern": "(^|[;&|\\s])(let|eval)\\s|[A-Za-z_][A-Za-z0-9_]*\\[[^\\]]*\\]\\s+=",
+            "reason": "bash -n accepts these lines; they fail only when run (let with spaced operands, eval of an array, a command word such as ENV[\"X\"]). Version 6 follows bash's grammar, and classification still refuses what it cannot place."
+        },
+        {
+            "family": "reserved-word-as-command",
+            "reference": "complete",
+            "version6": "invalid",
+            "source_pattern": "(^|[;&|\\n]\\s*)(else|elif|fi|then|do|done|esac|select|in)(\\s|$)",
+            "reason": "Bash rejects a reserved word where a command should start; the reference reads it as a plain word."
+        },
+        {
+            "family": "extended-globs-after-shopt",
+            "reference": "unsupported",
+            "version6": "invalid",
+            "source_pattern": "[@!*?+]\\(",
+            "reason": "The line turns extglob on with shopt and then uses an extended glob; version 6 reads every line with the default grammar, since a shell option set in the same line cannot change how the line was already parsed by bash either."
+        },
+        {
+            "family": "closing-brace-as-word",
+            "reference": "complete",
+            "version6": "invalid",
+            "source_pattern": "\\{[^}]*;\\s*[^;]*\\}\\s*$",
+            "reason": "After a ; a } stands where a command starts, so bash reads it as the reserved word closing a group that was never opened and rejects the line (awk programs pasted as commands); the reference reads it as a word."
+        },
+        {
+            "family": "parameter-expansion-checked-when-run",
+            "reference": "invalid",
+            "version6": "complete",
+            "source_pattern": "\\$\\{",
+            "reason": "Bash reads a parameter expansion up to its closing brace and reports a bad substitution only when the line runs; bash 5.2 with -n accepts every line of this family (nested ${${x}}, unknown operators such as ${x:Dall}). Version 6 reads it as bash does; an expansion with no parameter name at all stays invalid."
+        },
+        {
+            "family": "unterminated-here-document",
+            "reference": "complete",
+            "version6": "invalid",
+            "source_pattern": "<<",
+            "reason": "Bash only warns when a here-document is not ended by its delimiter and takes the rest of the input as the document; version 6 refuses the line, since text meant as commands would otherwise be read as data."
+        },
+        {
+            "family": "redirect-without-target",
+            "reference": "complete",
+            "version6": "invalid",
+            "source_pattern": "\\$<",
+            "reason": "A Makefile variable such as $< is a $ followed by a redirect with no target; bash 5.2 rejects the line with a syntax error, as version 6 does."
+        },
+        {
+            "family": "arithmetic-command",
+            "reference": "complete",
+            "version6": "unsupported",
+            "source_pattern": "\\(\\(",
+            "reason": "Version 6 does not support the (( )) arithmetic command and refuses it whole; the reference reads this one as nested subshells."
+        },
+        {
+            "family": "nested-backticks",
+            "reference": "complete",
+            "version6": "unsupported",
+            "source_pattern": "\\\\`",
+            "reason": "A backtick substitution inside another needs its own escaping rules; version 6 refuses it as unsupported rather than guess which command runs."
+        },
+        {
+            "family": "bash-accepts",
+            "reference": "invalid",
+            "version6": "complete",
+            "ids": [
+                "line-1f6f092bc620dde17ce2",
+                "line-211e05ffd602e266109a",
+                "line-3066629632048d76426a",
+                "line-313c66d294f8894c22c3",
+                "line-5ba7351d86ccf1701f46",
+                "line-5eaecfbb0e32b7eae495",
+                "line-6328b0c48f332628bcb5",
+                "line-81d373fe3fa19c8f4134",
+                "line-ad9575710db7493eb186",
+                "line-db7dc2145258379fb707",
+                "line-db874ba55d172fb0b372",
+                "line-e5819acc5b3e0a713379",
+                "line-e5f1050f5bf0ba8bdec5",
+                "line-fe9d4214a4760b3d504d"
+            ],
+            "reason": "Each line was checked one by one with real bash 5.2 (bash -n): bash reads it without a syntax error, as version 6 does (&> redirects, let without arguments, jq and Python lines that are odd but valid words, $((...)[0]) in PowerShell lines). Listed by opaque id, so no other line is excused."
+        },
+        {
+            "family": "continuation-ends-at-comment",
+            "reference": "complete",
+            "version6": "complete",
+            "ids": [
+                "line-cf158d60b452ab018963"
+            ],
+            "reason": "A backslash at the end of a comment does not continue the line: bash 5.2 runs the next line as its own command, so version 6's two parts are right where the reference joins them into one."
+        }
+    ]
+}

@@ -1,0 +1,78 @@
+{
+    "schema_version": 1,
+    "qualification_scope": "portable",
+    "source": {
+        "repository": "agent-journal version 5",
+        "revision": "1fc5fd963c5065b9b810a8ff3dacaa7b8136034d",
+        "files": {
+            "splitter_lines.jsonl": "bedb86cca0f1874c038ddb6adb11b57cf872af2083a6c6d5fdcdcaaa7e74b56b",
+            "splitter_corrections.json": "7ca12cfe5e9012e8b83e0fca3062348016e2e5ae429655e3e5192c1ae125ac0b",
+            "generated_forms.json": "e7c9258183a45af030872491068f3a103219427e9602b8a4a44a0c62e5943a8c",
+            "generated_differences.json": "be71445491278204242fbbbd95d6c59eae5b3593645044eb1f09c019b7ae367d",
+            "generated-sample-seed-7.jsonl": "ee17e993f4927d0e0d3573d6268cfc8a15be6b009efbc880b64225b7d3cc0070"
+        }
+    },
+    "generated": {
+        "seed": 7,
+        "count": 500,
+        "random": "Go math/rand/v2 PCG(7, 7), exported by a test run of version 5"
+    },
+    "defaults": {
+        "dialect": "bash",
+        "context": "synthetic-default"
+    },
+    "counts": {
+        "splitter_lines": 847,
+        "corrections": 9,
+        "shapes": 415,
+        "chains": 231,
+        "generated": 500,
+        "known_generated_differences": 12,
+        "boundary_cases": 17,
+        "adversarial_cases": 27,
+        "empty_inputs": 2,
+        "inputs": 2230,
+        "cases": 1622,
+        "origins": 2230
+    },
+    "unsupported_families": [
+        {
+            "family": "zsh-glob-qualifiers",
+            "reason": "Zsh glob qualifiers such as *(.) change what a word expands to and are outside the Bash grammar the parser implements."
+        },
+        {
+            "family": "arithmetic-commands",
+            "reason": "(( )) and let evaluate expressions, not commands; they are read as one opaque word."
+        },
+        {
+            "family": "coprocesses",
+            "reason": "coproc starts a background command with its own pipes, which the tree does not model."
+        },
+        {
+            "family": "function-definitions",
+            "reason": "A function body runs later under another name; its parts are not commands of this line."
+        }
+    ],
+    "decisions_schema": [
+        "case_id",
+        "legacy_outcome",
+        "intended_outcome",
+        "reason",
+        "reference"
+    ],
+    "fixtures": {
+        "cases.jsonl": "2936698eb810dccda0dbbf8f1b7a95b970543d3ab77f9618103953ea35b4e01b",
+        "shapes.json": "a2f43dcc6ca23fe10eb93f7c732c2040e517f2576ef2b6410c4611c4c50a7be8",
+        "decisions.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "expectations": {
+        "evidence": "mvdan.cc/sh/v3 v3.14.1 through tools/shell-oracle",
+        "decisions": 0,
+        "unsupported_family_counts": {
+            "arithmetic command": 2,
+            "case": 2,
+            "conditional": 5,
+            "loop": 14
+        }
+    }
+}

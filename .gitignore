@@ -63,3 +63,6 @@ frankenphp-worker.php
 
 # code-commandments published skills (regenerated on composer update)
 .claude/skills/commandments-*
+
+# The private shell corpus for full-corpus qualification (doc 21 section 35); never committed.
+/corpus/

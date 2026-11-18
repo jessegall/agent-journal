@@ -12,6 +12,7 @@ use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Contracts\LaunchCredentialSource;
 use App\AgentRequests\Support\AgentClientSettings;
 use App\AgentRequests\Support\EnvironmentCredentialSource;
+use App\Agents\Console\EnrollHostCommand;
 use App\Agents\Console\RetireAgentCommand;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Readers\AgentAuthorityRecords;
@@ -51,7 +52,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $actors->register(ActorType::Agent, AgentActors::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agents.php');
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/host.php');
-        $this->commands([RetireAgentCommand::class]);
+        $this->commands([RetireAgentCommand::class, EnrollHostCommand::class]);
         $assignments->registerAssignees(new AssigneeRegistration(ActorType::Agent, AgentAssignees::class));
         $presentActors->register(AgentSessionCounter::class);
     }

@@ -1,0 +1,6071 @@
+{
+    "schema_version": 1,
+    "slot_values": {
+        "word": "alpha",
+        "path": "src/app/main.py",
+        "pattern": "'TODO'",
+        "number": "3",
+        "text": "'a short note'",
+        "glob": "'*.py'",
+        "string": "'hello'",
+        "variable": "$NAME",
+        "code": "'print(1)'",
+        "file": "notes.txt",
+        "assignment": "NAME=value",
+        "substitution": "$(pwd)",
+        "branch": "feature-x",
+        "revision": "HEAD~1",
+        "empty": "''",
+        "url": "https://example.com/api",
+        "version": "1.2.3",
+        "test name": "test_app.py::test_runs",
+        "range": "1,20p",
+        "address": "127.0.0.1",
+        "date": "2.weeks.ago",
+        "number range": "1-5",
+        "json": "'{\"a\": 1}'",
+        "duration": "30s",
+        "stdin": "-",
+        "email": "someone@example.com"
+    },
+    "shapes": [
+        {
+            "id": "shape-fa32cf5ca2f8",
+            "program": "awk",
+            "subcommand": "(no subcommand)",
+            "text": "awk [<code>]"
+        },
+        {
+            "id": "shape-efe793c49a23",
+            "program": "awk",
+            "subcommand": "(no subcommand)",
+            "text": "awk [<json>]"
+        },
+        {
+            "id": "shape-446805bb1fe5",
+            "program": "awk",
+            "subcommand": "(no subcommand)",
+            "text": "awk [<code>] [<path>]"
+        },
+        {
+            "id": "shape-fe67da693b35",
+            "program": "awk",
+            "subcommand": "(no subcommand)",
+            "text": "awk [<pattern>] [<path>]"
+        },
+        {
+            "id": "shape-77af778b51ab",
+            "program": "cat",
+            "subcommand": "(no subcommand)",
+            "text": "cat"
+        },
+        {
+            "id": "shape-66e7fd728108",
+            "program": "cat",
+            "subcommand": "(no subcommand)",
+            "text": "cat [<path>]"
+        },
+        {
+            "id": "shape-46fb29487c20",
+            "program": "cat",
+            "subcommand": "(no subcommand)",
+            "text": "cat [<path>...]"
+        },
+        {
+            "id": "shape-496621d8c17d",
+            "program": "cat",
+            "subcommand": "(no subcommand)",
+            "text": "cat [<pattern>]"
+        },
+        {
+            "id": "shape-aae8f3f417a9",
+            "program": "cd",
+            "subcommand": "(no subcommand)",
+            "text": "cd [<path>]"
+        },
+        {
+            "id": "shape-9be94f00b710",
+            "program": "cd",
+            "subcommand": "(no subcommand)",
+            "text": "cd [<word>]"
+        },
+        {
+            "id": "shape-3bed882cc577",
+            "program": "cd",
+            "subcommand": "(no subcommand)",
+            "text": "cd [<variable>]"
+        },
+        {
+            "id": "shape-9237c173bb31",
+            "program": "cd",
+            "subcommand": "(no subcommand)",
+            "text": "cd [<glob>]"
+        },
+        {
+            "id": "shape-4017ff85cedf",
+            "program": "chmod",
+            "subcommand": "(no subcommand)",
+            "text": "chmod [<pattern>] [<path>]"
+        },
+        {
+            "id": "shape-0753b17ae914",
+            "program": "chmod",
+            "subcommand": "(no subcommand)",
+            "text": "chmod [<pattern>...]"
+        },
+        {
+            "id": "shape-e9c01013e8b1",
+            "program": "chmod",
+            "subcommand": "(no subcommand)",
+            "text": "chmod [<number>] [<path>]"
+        },
+        {
+            "id": "shape-a1a845749828",
+            "program": "chmod",
+            "subcommand": "(no subcommand)",
+            "text": "chmod [<pattern>] [<word>]"
+        },
+        {
+            "id": "shape-07f1cec764ff",
+            "program": "composer",
+            "subcommand": "test",
+            "text": "composer test [<code>...]"
+        },
+        {
+            "id": "shape-4d0a49834638",
+            "program": "composer",
+            "subcommand": "test",
+            "text": "composer test"
+        },
+        {
+            "id": "shape-94d7f2dfef38",
+            "program": "composer",
+            "subcommand": "test",
+            "text": "composer test [<code>]"
+        },
+        {
+            "id": "shape-a2986234bda2",
+            "program": "composer",
+            "subcommand": "test",
+            "text": "composer test [<path>]"
+        },
+        {
+            "id": "shape-179ea5742426",
+            "program": "composer",
+            "subcommand": "install",
+            "text": "composer install [--no-interaction] [--no-scripts] [-q]"
+        },
+        {
+            "id": "shape-c6161aa4f674",
+            "program": "composer",
+            "subcommand": "install",
+            "text": "composer install [--no-interaction]"
+        },
+        {
+            "id": "shape-5e13e8b7ab42",
+            "program": "composer",
+            "subcommand": "install",
+            "text": "composer install [--no-interaction] [--no-scripts]"
+        },
+        {
+            "id": "shape-7acfdd485bbc",
+            "program": "composer",
+            "subcommand": "install",
+            "text": "composer install [--no-dev] [--no-scripts] [--prefer-dist] [--no-interaction] [-q]"
+        },
+        {
+            "id": "shape-03aeee627bd0",
+            "program": "composer",
+            "subcommand": "dump-autoload",
+            "text": "composer dump-autoload [-q]"
+        },
+        {
+            "id": "shape-1127140db8f4",
+            "program": "composer",
+            "subcommand": "dump-autoload",
+            "text": "composer dump-autoload [--no-interaction]"
+        },
+        {
+            "id": "shape-ce5b3c7d3b08",
+            "program": "composer",
+            "subcommand": "dump-autoload",
+            "text": "composer dump-autoload [-q] [--no-scripts]"
+        },
+        {
+            "id": "shape-f4bbdc2f7219",
+            "program": "composer",
+            "subcommand": "(no subcommand)",
+            "text": "composer [<word>]"
+        },
+        {
+            "id": "shape-067a14f5cf93",
+            "program": "composer",
+            "subcommand": "(no subcommand)",
+            "text": "composer [--version]"
+        },
+        {
+            "id": "shape-32b91603c7fb",
+            "program": "composer",
+            "subcommand": "(no subcommand)",
+            "text": "composer [<word>...] [-q]"
+        },
+        {
+            "id": "shape-ebc7586135fc",
+            "program": "composer",
+            "subcommand": "(no subcommand)",
+            "text": "composer [<word>] [<path>]"
+        },
+        {
+            "id": "shape-d1fc323fc82d",
+            "program": "composer",
+            "subcommand": "require",
+            "text": "composer require [<path>] [--no-interaction]"
+        },
+        {
+            "id": "shape-47f0c66dc7b4",
+            "program": "composer",
+            "subcommand": "require",
+            "text": "composer require [--dev] [<pattern>...] [--no-update] [--no-interaction]"
+        },
+        {
+            "id": "shape-d8a82856c29b",
+            "program": "composer",
+            "subcommand": "require",
+            "text": "composer require [--dev] [<pattern>] [-W] [--no-interaction]"
+        },
+        {
+            "id": "shape-b45914e34602",
+            "program": "composer",
+            "subcommand": "require",
+            "text": "composer require [<path>...] [--no-interaction]"
+        },
+        {
+            "id": "shape-2dce75d98483",
+            "program": "composer",
+            "subcommand": "types",
+            "text": "composer types"
+        },
+        {
+            "id": "shape-802731e0226f",
+            "program": "composer",
+            "subcommand": "dev",
+            "text": "composer dev"
+        },
+        {
+            "id": "shape-c96f77a815de",
+            "program": "cp",
+            "subcommand": "(no subcommand)",
+            "text": "cp [<path>...]"
+        },
+        {
+            "id": "shape-f4f48a31e975",
+            "program": "cp",
+            "subcommand": "(no subcommand)",
+            "text": "cp [-R <path>] [<path>]"
+        },
+        {
+            "id": "shape-e951dc0ca34c",
+            "program": "cp",
+            "subcommand": "(no subcommand)",
+            "text": "cp [<path>] [<pattern>]"
+        },
+        {
+            "id": "shape-f8c5ed43293d",
+            "program": "cp",
+            "subcommand": "(no subcommand)",
+            "text": "cp [<pattern>...]"
+        },
+        {
+            "id": "shape-c473277f4ab9",
+            "program": "curl",
+            "subcommand": "(no subcommand)",
+            "text": "curl [-s <url>]"
+        },
+        {
+            "id": "shape-6475ea74ee1a",
+            "program": "curl",
+            "subcommand": "(no subcommand)",
+            "text": "curl [-s <string>] [<path>] [-w <code>] [<url>]"
+        },
+        {
+            "id": "shape-db529d3ada0a",
+            "program": "curl",
+            "subcommand": "(no subcommand)",
+            "text": "curl [-s <string>] [<number>] [-o <path>] [-w <code>] [<url>]"
+        },
+        {
+            "id": "shape-8264e5eac75c",
+            "program": "curl",
+            "subcommand": "(no subcommand)",
+            "text": "curl [-s <string>] [<number>] [<url>]"
+        },
+        {
+            "id": "shape-5803c0e3e38f",
+            "program": "cut",
+            "subcommand": "(no subcommand)",
+            "text": "cut [-c <number range>]"
+        },
+        {
+            "id": "shape-26a064580879",
+            "program": "cut",
+            "subcommand": "(no subcommand)",
+            "text": "cut [<string>] [-f <number range>]"
+        },
+        {
+            "id": "shape-6658ce684acc",
+            "program": "cut",
+            "subcommand": "(no subcommand)",
+            "text": "cut [-c <number range>] [<path>]"
+        },
+        {
+            "id": "shape-a6849af3cb7d",
+            "program": "cut",
+            "subcommand": "(no subcommand)",
+            "text": "cut [-c <number range>] [<pattern>]"
+        },
+        {
+            "id": "shape-2e57806176a5",
+            "program": "date",
+            "subcommand": "(no subcommand)",
+            "text": "date [<pattern>]"
+        },
+        {
+            "id": "shape-6c060a841c32",
+            "program": "date",
+            "subcommand": "(no subcommand)",
+            "text": "date [-u <pattern>]"
+        },
+        {
+            "id": "shape-0e87632cd46b",
+            "program": "date",
+            "subcommand": "(no subcommand)",
+            "text": "date"
+        },
+        {
+            "id": "shape-828d3935f1da",
+            "program": "date",
+            "subcommand": "(no subcommand)",
+            "text": "date [<text>]"
+        },
+        {
+            "id": "shape-198200d1567f",
+            "program": "diff",
+            "subcommand": "(no subcommand)",
+            "text": "diff [<substitution>...]"
+        },
+        {
+            "id": "shape-6fc0ecc4be7d",
+            "program": "diff",
+            "subcommand": "(no subcommand)",
+            "text": "diff [<path>...]"
+        },
+        {
+            "id": "shape-6d8ab756f85d",
+            "program": "diff",
+            "subcommand": "(no subcommand)",
+            "text": "diff [<pattern>...]"
+        },
+        {
+            "id": "shape-ae1915fcd269",
+            "program": "diff",
+            "subcommand": "(no subcommand)",
+            "text": "diff [<substitution>] [<path>]"
+        },
+        {
+            "id": "shape-1989213178b7",
+            "program": "docker",
+            "subcommand": "compose",
+            "text": "docker compose [<word>] [-T <word>] [<word>] [-l <path>]"
+        },
+        {
+            "id": "shape-3627d95d522a",
+            "program": "docker",
+            "subcommand": "compose",
+            "text": "docker compose [<word>] [-T <word>] [<path>] [--dirty] [--format <word>]"
+        },
+        {
+            "id": "shape-32e5b582e60a",
+            "program": "docker",
+            "subcommand": "compose",
+            "text": "docker compose [<word>] [-T <word>] [<word>...] [--compact] [<path>]"
+        },
+        {
+            "id": "shape-0dcf13540e56",
+            "program": "docker",
+            "subcommand": "compose",
+            "text": "docker compose [<word>] [-T <word>] [<word>...] [<string>]"
+        },
+        {
+            "id": "shape-d6032c5f162a",
+            "program": "docker",
+            "subcommand": "run",
+            "text": "docker run [--rm] [--network <word>] [-v] [<pattern>] [-w <path>] [--entrypoint <word>] [<string>] [-c <text>]"
+        },
+        {
+            "id": "shape-17d18dec5fff",
+            "program": "docker",
+            "subcommand": "run",
+            "text": "docker run [--rm] [--memory <string>] [--memory-swap <string>] [--cpus <number>] [-v] [<pattern>] [-w <pattern>] [<string>] [<word>] [-c <code>]"
+        },
+        {
+            "id": "shape-0152f04e695c",
+            "program": "docker",
+            "subcommand": "run",
+            "text": "docker run [--rm] [-d] [--name <word>] [-p <string>] [<string>]"
+        },
+        {
+            "id": "shape-ccf84af0cab6",
+            "program": "docker",
+            "subcommand": "run",
+            "text": "docker run [--rm] [--network <word>] [--env-file <pattern>] [-v] [<pattern>] [-v] [<pattern>] [-v] [<pattern>] [-v] [<pattern>] [-w <path>] [<word>...] [--filter] [<pattern>]"
+        },
+        {
+            "id": "shape-9e1e69149868",
+            "program": "docker",
+            "subcommand": "ps",
+            "text": "docker ps [--format <code>]"
+        },
+        {
+            "id": "shape-f2b21bada5cf",
+            "program": "docker",
+            "subcommand": "ps",
+            "text": "docker ps [--filter] [<assignment>] [--format <code>]"
+        },
+        {
+            "id": "shape-d89a00b65216",
+            "program": "docker",
+            "subcommand": "ps",
+            "text": "docker ps [-a <string>] [<code>]"
+        },
+        {
+            "id": "shape-3fe570f43958",
+            "program": "docker",
+            "subcommand": "ps",
+            "text": "docker ps"
+        },
+        {
+            "id": "shape-f2bbd526472d",
+            "program": "docker",
+            "subcommand": "logs",
+            "text": "docker logs [<word>]"
+        },
+        {
+            "id": "shape-1d2f9a6c3504",
+            "program": "docker",
+            "subcommand": "logs",
+            "text": "docker logs [--tail <number>] [<word>]"
+        },
+        {
+            "id": "shape-ef4cc11190be",
+            "program": "docker",
+            "subcommand": "logs",
+            "text": "docker logs [--since <duration>] [<word>]"
+        },
+        {
+            "id": "shape-d5fd6c9753fc",
+            "program": "docker",
+            "subcommand": "logs",
+            "text": "docker logs [<variable>]"
+        },
+        {
+            "id": "shape-a1d5e31914b9",
+            "program": "docker",
+            "subcommand": "build",
+            "text": "docker build [-q] [-f <path>] [-t] [<string>] [<path>]"
+        },
+        {
+            "id": "shape-e4c4a47742a5",
+            "program": "docker",
+            "subcommand": "build",
+            "text": "docker build [-t] [<path>...]"
+        },
+        {
+            "id": "shape-fefccabebd19",
+            "program": "docker",
+            "subcommand": "build",
+            "text": "docker build [-q] [-t] [<string>] [<path>]"
+        },
+        {
+            "id": "shape-7af0b8dc4fd2",
+            "program": "docker",
+            "subcommand": "build",
+            "text": "docker build [-t] [<word>] [<path>]"
+        },
+        {
+            "id": "shape-eafbec6db5b5",
+            "program": "docker",
+            "subcommand": "stats",
+            "text": "docker stats [--no-stream] [--format <code>]"
+        },
+        {
+            "id": "shape-8b0661fbbec4",
+            "program": "docker",
+            "subcommand": "stats",
+            "text": "docker stats [--no-stream] [--format <code>] [<word>]"
+        },
+        {
+            "id": "shape-122101e17a4b",
+            "program": "docker",
+            "subcommand": "stats",
+            "text": "docker stats [--no-stream] [--format <code>] [<word>...]"
+        },
+        {
+            "id": "shape-e8fbfde9e5a3",
+            "program": "docker",
+            "subcommand": "stats",
+            "text": "docker stats [--no-stream] [--format <code>] [<variable>]"
+        },
+        {
+            "id": "shape-51c52aef8acd",
+            "program": "docker",
+            "subcommand": "inspect",
+            "text": "docker inspect [<word>] [--format <code>]"
+        },
+        {
+            "id": "shape-60d23083c670",
+            "program": "docker",
+            "subcommand": "inspect",
+            "text": "docker inspect [<variable>] [--format <code>]"
+        },
+        {
+            "id": "shape-bb627d63e255",
+            "program": "docker",
+            "subcommand": "inspect",
+            "text": "docker inspect [--format <code>] [<word>]"
+        },
+        {
+            "id": "shape-54b49f2862a2",
+            "program": "docker",
+            "subcommand": "inspect",
+            "text": "docker inspect [-f <code>] [<word>]"
+        },
+        {
+            "id": "shape-b6e7039223cd",
+            "program": "docker",
+            "subcommand": "cp",
+            "text": "docker cp [<path>] [<pattern>]"
+        },
+        {
+            "id": "shape-eb7778d563c1",
+            "program": "docker",
+            "subcommand": "cp",
+            "text": "docker cp [<pattern>] [<path>]"
+        },
+        {
+            "id": "shape-52e9690a2580",
+            "program": "docker",
+            "subcommand": "cp",
+            "text": "docker cp [<path>...]"
+        },
+        {
+            "id": "shape-2f9dd26da7a7",
+            "program": "docker",
+            "subcommand": "cp",
+            "text": "docker cp [<pattern>...]"
+        },
+        {
+            "id": "shape-4c32d9892772",
+            "program": "docker",
+            "subcommand": "info",
+            "text": "docker info"
+        },
+        {
+            "id": "shape-ac461ba3b59f",
+            "program": "docker",
+            "subcommand": "info",
+            "text": "docker info [--format <code>]"
+        },
+        {
+            "id": "shape-0c0d356a9009",
+            "program": "docker",
+            "subcommand": "rm",
+            "text": "docker rm [-f <word>]"
+        },
+        {
+            "id": "shape-4bfa9226536a",
+            "program": "docker",
+            "subcommand": "rm",
+            "text": "docker rm [<word>]"
+        },
+        {
+            "id": "shape-a66dbfea8e0a",
+            "program": "docker",
+            "subcommand": "rm",
+            "text": "docker rm [-f <variable>]"
+        },
+        {
+            "id": "shape-93239f2affef",
+            "program": "docker",
+            "subcommand": "rm",
+            "text": "docker rm [-f <word>] [<word>]"
+        },
+        {
+            "id": "shape-890945e22c22",
+            "program": "du",
+            "subcommand": "(no subcommand)",
+            "text": "du [-sh] [<path>]"
+        },
+        {
+            "id": "shape-bac4844e7500",
+            "program": "du",
+            "subcommand": "(no subcommand)",
+            "text": "du [-sh] [<pattern>]"
+        },
+        {
+            "id": "shape-818d8e0ee8ae",
+            "program": "du",
+            "subcommand": "(no subcommand)",
+            "text": "du [-sh] [<glob>]"
+        },
+        {
+            "id": "shape-c8eacf7600d3",
+            "program": "du",
+            "subcommand": "(no subcommand)",
+            "text": "du [-sh] [<path>...]"
+        },
+        {
+            "id": "shape-fcee5dc00ea3",
+            "program": "echo",
+            "subcommand": "(no subcommand)",
+            "text": "echo [<text>]"
+        },
+        {
+            "id": "shape-1cdf7c37f1f5",
+            "program": "echo",
+            "subcommand": "(no subcommand)",
+            "text": "echo [<word>]"
+        },
+        {
+            "id": "shape-6af90155c575",
+            "program": "echo",
+            "subcommand": "(no subcommand)",
+            "text": "echo [<string>]"
+        },
+        {
+            "id": "shape-3b84e7b43d7e",
+            "program": "echo",
+            "subcommand": "(no subcommand)",
+            "text": "echo [<variable>]"
+        },
+        {
+            "id": "shape-a1a13b268f85",
+            "program": "export",
+            "subcommand": "(no subcommand)",
+            "text": "export [<assignment>]"
+        },
+        {
+            "id": "shape-66ddb6a41198",
+            "program": "export",
+            "subcommand": "(no subcommand)",
+            "text": "export [<assignment>] [<pattern>] [<path>]"
+        },
+        {
+            "id": "shape-031d6b896d28",
+            "program": "export",
+            "subcommand": "(no subcommand)",
+            "text": "export [<assignment>] [-E <pattern>] [<path>]"
+        },
+        {
+            "id": "shape-c30cb2a7aa0f",
+            "program": "export",
+            "subcommand": "(no subcommand)",
+            "text": "export [<substitution>]"
+        },
+        {
+            "id": "shape-b016c2bbc595",
+            "program": "find",
+            "subcommand": "(no subcommand)",
+            "text": "find [<path>] [-name] [<glob>]"
+        },
+        {
+            "id": "shape-5b734749b7fe",
+            "program": "find",
+            "subcommand": "(no subcommand)",
+            "text": "find [<path>] [-type <word>]"
+        },
+        {
+            "id": "shape-a05bb9cb0603",
+            "program": "find",
+            "subcommand": "(no subcommand)",
+            "text": "find [<path>] [-name] [<file>]"
+        },
+        {
+            "id": "shape-2274239a5c17",
+            "program": "find",
+            "subcommand": "(no subcommand)",
+            "text": "find [<path>] [-name] [<file>] [-not] [-path <glob>]"
+        },
+        {
+            "id": "shape-1e544ec98cbf",
+            "program": "gh",
+            "subcommand": "api",
+            "text": "gh api [<path>] [--jq] [<pattern>]"
+        },
+        {
+            "id": "shape-64d2a73c8afa",
+            "program": "gh",
+            "subcommand": "api",
+            "text": "gh api [<code>] [--jq] [<pattern>]"
+        },
+        {
+            "id": "shape-3b0d665e1902",
+            "program": "gh",
+            "subcommand": "api",
+            "text": "gh api [<pattern>]"
+        },
+        {
+            "id": "shape-12d0e314fddc",
+            "program": "gh",
+            "subcommand": "api",
+            "text": "gh api [-X <word>] [<path>] [-F <assignment>] [--jq] [<path>]"
+        },
+        {
+            "id": "shape-1a8e70bda494",
+            "program": "gh",
+            "subcommand": "run view",
+            "text": "gh run view [<number>] [--repo <path>] [--json <string>] [--jq] [<pattern>]"
+        },
+        {
+            "id": "shape-d34aec58d67a",
+            "program": "gh",
+            "subcommand": "run view",
+            "text": "gh run view [<number>] [--repo <path>] [--json <string>] [--jq] [<json>]"
+        },
+        {
+            "id": "shape-0a1ee80206f7",
+            "program": "gh",
+            "subcommand": "run view",
+            "text": "gh run view [<number>] [--json <string>] [-q] [<text>]"
+        },
+        {
+            "id": "shape-e1836eb36a63",
+            "program": "gh",
+            "subcommand": "run view",
+            "text": "gh run view [<number>] [--json <word>]"
+        },
+        {
+            "id": "shape-78538db1738e",
+            "program": "gh",
+            "subcommand": "run list",
+            "text": "gh run list [--repo <path>] [--workflow] [<text>] [--limit <number>] [--json <string>] [--jq] [<pattern>]"
+        },
+        {
+            "id": "shape-8b8ef7b61c78",
+            "program": "gh",
+            "subcommand": "run list",
+            "text": "gh run list [--workflow <file>] [--limit <number>]"
+        },
+        {
+            "id": "shape-c75181edd0f5",
+            "program": "gh",
+            "subcommand": "run list",
+            "text": "gh run list [--repo <path>] [--workflow] [<text>] [--limit <number>] [--json <string>] [--jq] [<text>]"
+        },
+        {
+            "id": "shape-625300998816",
+            "program": "gh",
+            "subcommand": "run list",
+            "text": "gh run list [--limit <number>] [--json <string>] [--jq] [<pattern>]"
+        },
+        {
+            "id": "shape-ae0877c37d2c",
+            "program": "gh",
+            "subcommand": "release create",
+            "text": "gh release create [<version>] [--target <branch>] [--title] [<version>] [--notes-file <path>]"
+        },
+        {
+            "id": "shape-8443c6a9ea53",
+            "program": "gh",
+            "subcommand": "release create",
+            "text": "gh release create [<version>] [--target <branch>] [--title] [<version>] [--notes <text>]"
+        },
+        {
+            "id": "shape-46cddaa346fc",
+            "program": "gh",
+            "subcommand": "release create",
+            "text": "gh release create [<version>] [-R <path>] [--title] [<version>] [--notes-file <pattern>]"
+        },
+        {
+            "id": "shape-bb626754846e",
+            "program": "gh",
+            "subcommand": "release create",
+            "text": "gh release create [<version>] [--title] [<version>] [--notes-file <path>]"
+        },
+        {
+            "id": "shape-6788d8f72210",
+            "program": "gh",
+            "subcommand": "pr create",
+            "text": "gh pr create [--title] [<text>] [--body] [<substitution>]"
+        },
+        {
+            "id": "shape-b9d796a752ff",
+            "program": "gh",
+            "subcommand": "pr create",
+            "text": "gh pr create [--base <branch>] [--title] [<text>] [--body] [<text>]"
+        },
+        {
+            "id": "shape-b6b2e5c43811",
+            "program": "gh",
+            "subcommand": "pr create",
+            "text": "gh pr create [--repo <path>] [--base <branch>] [--head <branch>] [--title] [<text>] [--body-file] [<path>]"
+        },
+        {
+            "id": "shape-e75937929d18",
+            "program": "gh",
+            "subcommand": "pr create",
+            "text": "gh pr create [--title] [<text>] [--body-file] [<path>]"
+        },
+        {
+            "id": "shape-93ee6a7660ba",
+            "program": "gh",
+            "subcommand": "pr view",
+            "text": "gh pr view [<number>] [--json <word>] [--jq] [<path>]"
+        },
+        {
+            "id": "shape-b7c239175613",
+            "program": "gh",
+            "subcommand": "pr view",
+            "text": "gh pr view [<number>] [--repo <path>] [--json <string>] [--jq] [<pattern>]"
+        },
+        {
+            "id": "shape-a2dc5a6d1d76",
+            "program": "gh",
+            "subcommand": "pr view",
+            "text": "gh pr view [<number>] [--json <string>] [-q] [<text>]"
+        },
+        {
+            "id": "shape-4d05e2136a28",
+            "program": "gh",
+            "subcommand": "pr view",
+            "text": "gh pr view [<number>] [--json <string>]"
+        },
+        {
+            "id": "shape-e0c7e65fa84f",
+            "program": "gh",
+            "subcommand": "pr merge",
+            "text": "gh pr merge [<number>] [--merge]"
+        },
+        {
+            "id": "shape-ce32939babba",
+            "program": "gh",
+            "subcommand": "pr merge",
+            "text": "gh pr merge [<number>] [--repo <path>] [--merge]"
+        },
+        {
+            "id": "shape-3ed6707629e0",
+            "program": "gh",
+            "subcommand": "pr merge",
+            "text": "gh pr merge [<number>] [--merge] [--delete-branch]"
+        },
+        {
+            "id": "shape-0bbcf3823c3d",
+            "program": "gh",
+            "subcommand": "pr merge",
+            "text": "gh pr merge [--merge] [--delete-branch]"
+        },
+        {
+            "id": "shape-22ecfb0ace8b",
+            "program": "gh",
+            "subcommand": "release view",
+            "text": "gh release view [<version>] [--json <word>] [--jq] [<text>]"
+        },
+        {
+            "id": "shape-b6631e34cc57",
+            "program": "gh",
+            "subcommand": "release view",
+            "text": "gh release view [<version>] [--json <word>] [--jq] [<pattern>]"
+        },
+        {
+            "id": "shape-1ebf49f9dbd1",
+            "program": "gh",
+            "subcommand": "release view",
+            "text": "gh release view [<version>] [--json <string>]"
+        },
+        {
+            "id": "shape-57d6c450f116",
+            "program": "gh",
+            "subcommand": "release view",
+            "text": "gh release view [<version>] [--json <string>] [--jq] [<text>]"
+        },
+        {
+            "id": "shape-bf3e02ea621c",
+            "program": "gh",
+            "subcommand": "issue view",
+            "text": "gh issue view [<number>] [--json <word>] [--jq] [<path>]"
+        },
+        {
+            "id": "shape-4333fd42b80e",
+            "program": "gh",
+            "subcommand": "issue view",
+            "text": "gh issue view [<number>] [--json <word>] [-q] [<path>]"
+        },
+        {
+            "id": "shape-e9741876fd9e",
+            "program": "gh",
+            "subcommand": "issue view",
+            "text": "gh issue view [<number>] [--comments]"
+        },
+        {
+            "id": "shape-a2ca7d5a74a8",
+            "program": "gh",
+            "subcommand": "issue view",
+            "text": "gh issue view [<variable>] [--json <word>] [--jq] [<path>]"
+        },
+        {
+            "id": "shape-a1d5811bea56",
+            "program": "gh",
+            "subcommand": "run watch",
+            "text": "gh run watch [<variable>] [--exit-status]"
+        },
+        {
+            "id": "shape-41d28aaee67e",
+            "program": "gh",
+            "subcommand": "run watch",
+            "text": "gh run watch [<variable>] [--exit-status] [--interval]"
+        },
+        {
+            "id": "shape-cbf9a10013d8",
+            "program": "gh",
+            "subcommand": "run watch",
+            "text": "gh run watch [<number>] [--exit-status]"
+        },
+        {
+            "id": "shape-718da6445ff4",
+            "program": "gh",
+            "subcommand": "run watch",
+            "text": "gh run watch [<number>] [--exit-status] [--interval]"
+        },
+        {
+            "id": "shape-9901906dd925",
+            "program": "git",
+            "subcommand": "log",
+            "text": "git log [--oneline] [-<number>]"
+        },
+        {
+            "id": "shape-961e8ab438c3",
+            "program": "git",
+            "subcommand": "log",
+            "text": "git log [--oneline] [<range>]"
+        },
+        {
+            "id": "shape-b69888d2da03",
+            "program": "git",
+            "subcommand": "log",
+            "text": "git log [--oneline] [-<number>] [<branch>]"
+        },
+        {
+            "id": "shape-de92b5759a44",
+            "program": "git",
+            "subcommand": "log",
+            "text": "git log [--oneline] [-<number>] [<path>]"
+        },
+        {
+            "id": "shape-70c12b0bd049",
+            "program": "git",
+            "subcommand": "commit",
+            "text": "git commit [-q] [-m <text>]"
+        },
+        {
+            "id": "shape-a0d8ab5b142f",
+            "program": "git",
+            "subcommand": "commit",
+            "text": "git commit [-qm <text>]"
+        },
+        {
+            "id": "shape-14f8f77e0294",
+            "program": "git",
+            "subcommand": "commit",
+            "text": "git commit [-q] [-F <stdin>]"
+        },
+        {
+            "id": "shape-995aa4ba8fc3",
+            "program": "git",
+            "subcommand": "commit",
+            "text": "git commit [-q] [-m <code>]"
+        },
+        {
+            "id": "shape-43edc1aab691",
+            "program": "git",
+            "subcommand": "add",
+            "text": "git add [-A]"
+        },
+        {
+            "id": "shape-f49fbece268e",
+            "program": "git",
+            "subcommand": "add",
+            "text": "git add [<path>...]"
+        },
+        {
+            "id": "shape-fb0a16031ca3",
+            "program": "git",
+            "subcommand": "add",
+            "text": "git add [<path>]"
+        },
+        {
+            "id": "shape-463d031d08c2",
+            "program": "git",
+            "subcommand": "add",
+            "text": "git add [-A] [<word>]"
+        },
+        {
+            "id": "shape-c0a18acc1370",
+            "program": "git",
+            "subcommand": "status",
+            "text": "git status [--short]"
+        },
+        {
+            "id": "shape-5a881a4e8227",
+            "program": "git",
+            "subcommand": "status",
+            "text": "git status [-sb]"
+        },
+        {
+            "id": "shape-ff2afefc4f35",
+            "program": "git",
+            "subcommand": "status",
+            "text": "git status [--porcelain]"
+        },
+        {
+            "id": "shape-a7315d6c7e35",
+            "program": "git",
+            "subcommand": "status",
+            "text": "git status [--short] [<path>]"
+        },
+        {
+            "id": "shape-71bd1bd82c89",
+            "program": "git",
+            "subcommand": "diff",
+            "text": "git diff [--stat]"
+        },
+        {
+            "id": "shape-2a31776081a9",
+            "program": "git",
+            "subcommand": "diff",
+            "text": "git diff [<path>]"
+        },
+        {
+            "id": "shape-5d23c4479192",
+            "program": "git",
+            "subcommand": "diff",
+            "text": "git diff [--stat] [<path>]"
+        },
+        {
+            "id": "shape-2bc35ee8de4e",
+            "program": "git",
+            "subcommand": "diff",
+            "text": "git diff [--name-only] [--diff-filter <word>]"
+        },
+        {
+            "id": "shape-331d33f983b7",
+            "program": "git",
+            "subcommand": "push",
+            "text": "git push [-q] [<word>] [<branch>]"
+        },
+        {
+            "id": "shape-7528aaef662d",
+            "program": "git",
+            "subcommand": "push",
+            "text": "git push [-q] [<word>] [<version>]"
+        },
+        {
+            "id": "shape-9aca4623bbfa",
+            "program": "git",
+            "subcommand": "push",
+            "text": "git push [-q]"
+        },
+        {
+            "id": "shape-a6c815b4f666",
+            "program": "git",
+            "subcommand": "push",
+            "text": "git push [-q] [<word>] [<string>]"
+        },
+        {
+            "id": "shape-c73be1c36543",
+            "program": "git",
+            "subcommand": "show",
+            "text": "git show [<path>]"
+        },
+        {
+            "id": "shape-35a6d731a28e",
+            "program": "git",
+            "subcommand": "show",
+            "text": "git show [--stat] [<revision>]"
+        },
+        {
+            "id": "shape-6f510a12ab1f",
+            "program": "git",
+            "subcommand": "show",
+            "text": "git show [<pattern>]"
+        },
+        {
+            "id": "shape-913bf2ef12c5",
+            "program": "git",
+            "subcommand": "show",
+            "text": "git show [<revision>] [<path>]"
+        },
+        {
+            "id": "shape-9ce079d37fc4",
+            "program": "git",
+            "subcommand": "rebase",
+            "text": "git rebase [<branch>]"
+        },
+        {
+            "id": "shape-4ac0cdb3f091",
+            "program": "git",
+            "subcommand": "rebase",
+            "text": "git rebase [<word>]"
+        },
+        {
+            "id": "shape-5d5c2e88b585",
+            "program": "git",
+            "subcommand": "rebase",
+            "text": "git rebase [--continue]"
+        },
+        {
+            "id": "shape-f3900e4cb8f0",
+            "program": "git",
+            "subcommand": "rebase",
+            "text": "git rebase [-q] [<branch>]"
+        },
+        {
+            "id": "shape-3293eda12a47",
+            "program": "git",
+            "subcommand": "checkout",
+            "text": "git checkout [<path>]"
+        },
+        {
+            "id": "shape-df9bc761a31f",
+            "program": "git",
+            "subcommand": "checkout",
+            "text": "git checkout [-q] [<branch>]"
+        },
+        {
+            "id": "shape-239c588ec8b2",
+            "program": "git",
+            "subcommand": "checkout",
+            "text": "git checkout [-q] [-b <word>] [<branch>]"
+        },
+        {
+            "id": "shape-a69adbfc5c84",
+            "program": "git",
+            "subcommand": "checkout",
+            "text": "git checkout [-q] [--detach] [<branch>]"
+        },
+        {
+            "id": "shape-c5b2ffe6b32a",
+            "program": "git",
+            "subcommand": "fetch",
+            "text": "git fetch [-q] [<word>]"
+        },
+        {
+            "id": "shape-70ad47131f45",
+            "program": "git",
+            "subcommand": "fetch",
+            "text": "git fetch [-q]"
+        },
+        {
+            "id": "shape-aecdf594562e",
+            "program": "git",
+            "subcommand": "fetch",
+            "text": "git fetch [-q] [<word>] [<branch>]"
+        },
+        {
+            "id": "shape-281cc0ee61f6",
+            "program": "git",
+            "subcommand": "fetch",
+            "text": "git fetch [<word>]"
+        },
+        {
+            "id": "shape-70d88b354270",
+            "program": "go",
+            "subcommand": "test",
+            "text": "go test [<code>] [<path>]"
+        },
+        {
+            "id": "shape-2faeeea93023",
+            "program": "go",
+            "subcommand": "test",
+            "text": "go test [<path>]"
+        },
+        {
+            "id": "shape-56d028698394",
+            "program": "go",
+            "subcommand": "test",
+            "text": "go test [-race] [<code>] [<path>]"
+        },
+        {
+            "id": "shape-98247e8c5c6a",
+            "program": "go",
+            "subcommand": "test",
+            "text": "go test [<path>] [-run] [<pattern>]"
+        },
+        {
+            "id": "shape-de261cd5e556",
+            "program": "go",
+            "subcommand": "build",
+            "text": "go build [<path>]"
+        },
+        {
+            "id": "shape-e5885e4e426d",
+            "program": "go",
+            "subcommand": "build",
+            "text": "go build [-o <path>] [<path>]"
+        },
+        {
+            "id": "shape-edbdf76f975b",
+            "program": "go",
+            "subcommand": "build",
+            "text": "go build [-o <pattern>] [<path>]"
+        },
+        {
+            "id": "shape-f01fc007ecad",
+            "program": "go",
+            "subcommand": "build",
+            "text": "go build [-ldflags] [<variable>] [-o <code>] [<path>]"
+        },
+        {
+            "id": "shape-725a629e44b8",
+            "program": "go",
+            "subcommand": "run",
+            "text": "go run [<path>]"
+        },
+        {
+            "id": "shape-25556762ad04",
+            "program": "go",
+            "subcommand": "run",
+            "text": "go run [<path>] [<word>...]"
+        },
+        {
+            "id": "shape-b5ad22ddfb75",
+            "program": "go",
+            "subcommand": "run",
+            "text": "go run [<path>...]"
+        },
+        {
+            "id": "shape-e7274a18aa5a",
+            "program": "go",
+            "subcommand": "run",
+            "text": "go run [<path>] [<word>]"
+        },
+        {
+            "id": "shape-b87ada028a5c",
+            "program": "go",
+            "subcommand": "(no subcommand)",
+            "text": "go [<string>]"
+        },
+        {
+            "id": "shape-f7b784fb566e",
+            "program": "go",
+            "subcommand": "(no subcommand)",
+            "text": "go [-C <path>] [<word>] [<path>] [<word>] [<code>]"
+        },
+        {
+            "id": "shape-4cd0e21a9a07",
+            "program": "go",
+            "subcommand": "(no subcommand)",
+            "text": "go"
+        },
+        {
+            "id": "shape-275fea76990e",
+            "program": "go",
+            "subcommand": "(no subcommand)",
+            "text": "go [-C <substitution>] [<word>] [<code>] [<path>]"
+        },
+        {
+            "id": "shape-c723f65692c3",
+            "program": "go",
+            "subcommand": "version",
+            "text": "go version"
+        },
+        {
+            "id": "shape-55bc048de69f",
+            "program": "go",
+            "subcommand": "version",
+            "text": "go version [-m <path>]"
+        },
+        {
+            "id": "shape-8297b634b3c0",
+            "program": "go",
+            "subcommand": "version",
+            "text": "go version [-m <substitution>]"
+        },
+        {
+            "id": "shape-3cbf102dcd9d",
+            "program": "grep",
+            "subcommand": "(no subcommand)",
+            "text": "grep [-n <pattern>] [<path>]"
+        },
+        {
+            "id": "shape-dc5c34d2a4a1",
+            "program": "grep",
+            "subcommand": "(no subcommand)",
+            "text": "grep [-v] [<pattern>]"
+        },
+        {
+            "id": "shape-2eff6e5b0169",
+            "program": "grep",
+            "subcommand": "(no subcommand)",
+            "text": "grep [-E <pattern>]"
+        },
+        {
+            "id": "shape-b4ddb4035849",
+            "program": "grep",
+            "subcommand": "(no subcommand)",
+            "text": "grep [-n <code>] [-A <number>] [<path>]"
+        },
+        {
+            "id": "shape-21e886421fd6",
+            "program": "head",
+            "subcommand": "(no subcommand)",
+            "text": "head [-<number>]"
+        },
+        {
+            "id": "shape-9f2e6d33a371",
+            "program": "head",
+            "subcommand": "(no subcommand)",
+            "text": "head"
+        },
+        {
+            "id": "shape-8b7be9b0b70d",
+            "program": "head",
+            "subcommand": "(no subcommand)",
+            "text": "head [-<number>] [<path>]"
+        },
+        {
+            "id": "shape-d1107a4de16e",
+            "program": "head",
+            "subcommand": "(no subcommand)",
+            "text": "head [-c <number>]"
+        },
+        {
+            "id": "shape-3f8abb2af40f",
+            "program": "journal",
+            "subcommand": "output read",
+            "text": "journal output read [<number>] [--all]"
+        },
+        {
+            "id": "shape-2849c62566ee",
+            "program": "journal",
+            "subcommand": "output read",
+            "text": "journal output read [<number>] [--tail <number>]"
+        },
+        {
+            "id": "shape-d868c5caa575",
+            "program": "journal",
+            "subcommand": "output read",
+            "text": "journal output read [<number>] [--grep <pattern>]"
+        },
+        {
+            "id": "shape-e0d6a8377564",
+            "program": "journal",
+            "subcommand": "output read",
+            "text": "journal output read [<number>] [--reader <word>]"
+        },
+        {
+            "id": "shape-a36e7cd261b2",
+            "program": "journal",
+            "subcommand": "message read",
+            "text": "journal message read [<number>]"
+        },
+        {
+            "id": "shape-7c8c4a997bf5",
+            "program": "journal",
+            "subcommand": "message read",
+            "text": "journal message read"
+        },
+        {
+            "id": "shape-1367e6dff124",
+            "program": "journal",
+            "subcommand": "message read",
+            "text": "journal message read [<variable>]"
+        },
+        {
+            "id": "shape-f04235d6ca65",
+            "program": "journal",
+            "subcommand": "message read",
+            "text": "journal message read [--help]"
+        },
+        {
+            "id": "shape-640ccc634b81",
+            "program": "journal",
+            "subcommand": "message send",
+            "text": "journal message send [<text>] [--reply-to <number>]"
+        },
+        {
+            "id": "shape-6c80069fde64",
+            "program": "journal",
+            "subcommand": "message send",
+            "text": "journal message send [<text>]"
+        },
+        {
+            "id": "shape-ea7eb831af94",
+            "program": "journal",
+            "subcommand": "message send",
+            "text": "journal message send [<text>] [--reply-to <number>] [--confirm]"
+        },
+        {
+            "id": "shape-539299df438c",
+            "program": "journal",
+            "subcommand": "message send",
+            "text": "journal message send [<code>] [--reply-to <number>]"
+        },
+        {
+            "id": "shape-bc2382ffa15b",
+            "program": "journal",
+            "subcommand": "await",
+            "text": "journal await [<text>] [--output <number>]"
+        },
+        {
+            "id": "shape-8835212eabc6",
+            "program": "journal",
+            "subcommand": "await",
+            "text": "journal await [<text>] [--output <number>] [--reader <word>]"
+        },
+        {
+            "id": "shape-8d8195fcd25e",
+            "program": "journal",
+            "subcommand": "await",
+            "text": "journal await [<text>]"
+        },
+        {
+            "id": "shape-9d4d1e870b4f",
+            "program": "journal",
+            "subcommand": "await",
+            "text": "journal await [<text>] [--until <text>]"
+        },
+        {
+            "id": "shape-b6703e2731e4",
+            "program": "journal",
+            "subcommand": "work log",
+            "text": "journal work log [<number>] [<text>]"
+        },
+        {
+            "id": "shape-3bb43fd7fefc",
+            "program": "journal",
+            "subcommand": "work log",
+            "text": "journal work log [<text>]"
+        },
+        {
+            "id": "shape-acb411a57058",
+            "program": "journal",
+            "subcommand": "work log",
+            "text": "journal work log [<number>] [<code>]"
+        },
+        {
+            "id": "shape-455a1f3bba85",
+            "program": "journal",
+            "subcommand": "work log",
+            "text": "journal work log [<text>] [--n]"
+        },
+        {
+            "id": "shape-b330de667e91",
+            "program": "journal",
+            "subcommand": "todo start",
+            "text": "journal todo start [<number>]"
+        },
+        {
+            "id": "shape-67229c498047",
+            "program": "journal",
+            "subcommand": "todo start",
+            "text": "journal todo start"
+        },
+        {
+            "id": "shape-635fbbeb7639",
+            "program": "journal",
+            "subcommand": "todo start",
+            "text": "journal todo start [<number>] [--force <text>]"
+        },
+        {
+            "id": "shape-1c3ab7f39ff5",
+            "program": "journal",
+            "subcommand": "todo start",
+            "text": "journal todo start [<variable>]"
+        },
+        {
+            "id": "shape-8f0f6b3045df",
+            "program": "journal",
+            "subcommand": "work end",
+            "text": "journal work end [<number>] [--how <text>]"
+        },
+        {
+            "id": "shape-b1feb660b9ab",
+            "program": "journal",
+            "subcommand": "work end",
+            "text": "journal work end [<variable>] [--how <text>]"
+        },
+        {
+            "id": "shape-c61cc46ee911",
+            "program": "journal",
+            "subcommand": "work end",
+            "text": "journal work end [<number>] [--how <text>] [--set <assignment>]"
+        },
+        {
+            "id": "shape-7125304ed920",
+            "program": "journal",
+            "subcommand": "work end",
+            "text": "journal work end [<number>] [--how <word>]"
+        },
+        {
+            "id": "shape-72fd79cbd8d9",
+            "program": "journal",
+            "subcommand": "todo create",
+            "text": "journal todo create [<text>] [--brief <text>]"
+        },
+        {
+            "id": "shape-0566e4f0aee8",
+            "program": "journal",
+            "subcommand": "todo create",
+            "text": "journal todo create [<text>] [--brief <text>] [--set <assignment>]"
+        },
+        {
+            "id": "shape-1533cccf9db8",
+            "program": "journal",
+            "subcommand": "todo create",
+            "text": "journal todo create [<text>] [--brief <code>]"
+        },
+        {
+            "id": "shape-f717e7a31d51",
+            "program": "journal",
+            "subcommand": "todo create",
+            "text": "journal todo create [<text>] [--brief <code>] [--set <assignment>]"
+        },
+        {
+            "id": "shape-89dfb729e16a",
+            "program": "journal",
+            "subcommand": "message reply",
+            "text": "journal message reply [<number>] [<text>]"
+        },
+        {
+            "id": "shape-130c688bc886",
+            "program": "journal",
+            "subcommand": "message reply",
+            "text": "journal message reply [<number range>] [<text>]"
+        },
+        {
+            "id": "shape-94a40ee98e51",
+            "program": "journal",
+            "subcommand": "message reply",
+            "text": "journal message reply [<number>] [<code>]"
+        },
+        {
+            "id": "shape-5325a5ed2b9e",
+            "program": "journal",
+            "subcommand": "message reply",
+            "text": "journal message reply [<number>] [<text>] [--file <path>]"
+        },
+        {
+            "id": "shape-12491ddb139c",
+            "program": "journal",
+            "subcommand": "todo done",
+            "text": "journal todo done [<number>] [--how <text>]"
+        },
+        {
+            "id": "shape-faef592aee20",
+            "program": "journal",
+            "subcommand": "todo done",
+            "text": "journal todo done [<variable>] [--how <text>]"
+        },
+        {
+            "id": "shape-388f30f6decb",
+            "program": "journal",
+            "subcommand": "todo done",
+            "text": "journal todo done [<number>] [--how <code>]"
+        },
+        {
+            "id": "shape-123f28c6deb2",
+            "program": "journal",
+            "subcommand": "todo done",
+            "text": "journal todo done [<number>] [--how <substitution>]"
+        },
+        {
+            "id": "shape-bc3eed4f172d",
+            "program": "jq",
+            "subcommand": "(no subcommand)",
+            "text": "jq [-r <text>]"
+        },
+        {
+            "id": "shape-2435f75488e2",
+            "program": "jq",
+            "subcommand": "(no subcommand)",
+            "text": "jq [-r <pattern>]"
+        },
+        {
+            "id": "shape-5ed6e7794cd8",
+            "program": "jq",
+            "subcommand": "(no subcommand)",
+            "text": "jq [-e] [<text>]"
+        },
+        {
+            "id": "shape-b1da336755d2",
+            "program": "jq",
+            "subcommand": "(no subcommand)",
+            "text": "jq [<code>] [<pattern>]"
+        },
+        {
+            "id": "shape-6b6569816598",
+            "program": "kill",
+            "subcommand": "(no subcommand)",
+            "text": "kill [<variable>]"
+        },
+        {
+            "id": "shape-91ef9a83bce3",
+            "program": "kill",
+            "subcommand": "(no subcommand)",
+            "text": "kill [<substitution>]"
+        },
+        {
+            "id": "shape-0e80271faa45",
+            "program": "kill",
+            "subcommand": "(no subcommand)",
+            "text": "kill [<number>]"
+        },
+        {
+            "id": "shape-4f477411cc4c",
+            "program": "kill",
+            "subcommand": "(no subcommand)",
+            "text": "kill [<number>...]"
+        },
+        {
+            "id": "shape-df9876158a26",
+            "program": "ln",
+            "subcommand": "(no subcommand)",
+            "text": "ln [-s <path>] [<path>]"
+        },
+        {
+            "id": "shape-fa80ed2b2498",
+            "program": "ln",
+            "subcommand": "(no subcommand)",
+            "text": "ln [-s <path>] [<word>]"
+        },
+        {
+            "id": "shape-54d49317af42",
+            "program": "ln",
+            "subcommand": "(no subcommand)",
+            "text": "ln [-sf <path>] [<path>]"
+        },
+        {
+            "id": "shape-72f2eff4ceaa",
+            "program": "ln",
+            "subcommand": "(no subcommand)",
+            "text": "ln [-s <path>] [<pattern>]"
+        },
+        {
+            "id": "shape-9a7ec628d1cf",
+            "program": "ls",
+            "subcommand": "(no subcommand)",
+            "text": "ls [<path>]"
+        },
+        {
+            "id": "shape-cb6212b0f2a4",
+            "program": "ls",
+            "subcommand": "(no subcommand)",
+            "text": "ls [<word>]"
+        },
+        {
+            "id": "shape-901d0d95fcbe",
+            "program": "ls",
+            "subcommand": "(no subcommand)",
+            "text": "ls [<path>...]"
+        },
+        {
+            "id": "shape-9c0dd9112065",
+            "program": "ls",
+            "subcommand": "(no subcommand)",
+            "text": "ls [<pattern>]"
+        },
+        {
+            "id": "shape-a39d6c46f51a",
+            "program": "lsof",
+            "subcommand": "(no subcommand)",
+            "text": "lsof [-nP] [<address>] [<string>]"
+        },
+        {
+            "id": "shape-b5e1af843635",
+            "program": "lsof",
+            "subcommand": "(no subcommand)",
+            "text": "lsof [-nP] [-iTCP] [<string>]"
+        },
+        {
+            "id": "shape-d635bc223129",
+            "program": "lsof",
+            "subcommand": "(no subcommand)",
+            "text": "lsof [<path>]"
+        },
+        {
+            "id": "shape-4fd1bb9fd130",
+            "program": "lsof",
+            "subcommand": "(no subcommand)",
+            "text": "lsof [-p] [<number>]"
+        },
+        {
+            "id": "shape-cdefd5da0b12",
+            "program": "make",
+            "subcommand": "(no subcommand)",
+            "text": "make [<word>...] [<assignment>]"
+        },
+        {
+            "id": "shape-4c10f327138b",
+            "program": "make",
+            "subcommand": "(no subcommand)",
+            "text": "make [<word>...]"
+        },
+        {
+            "id": "shape-6e300962b8b2",
+            "program": "make",
+            "subcommand": "(no subcommand)",
+            "text": "make [<word>]"
+        },
+        {
+            "id": "shape-791ff5f82b8d",
+            "program": "make",
+            "subcommand": "(no subcommand)",
+            "text": "make [<word>] [<assignment>]"
+        },
+        {
+            "id": "shape-5136274d0ced",
+            "program": "mkdir",
+            "subcommand": "(no subcommand)",
+            "text": "mkdir [-p] [<path>]"
+        },
+        {
+            "id": "shape-9b6922cca437",
+            "program": "mkdir",
+            "subcommand": "(no subcommand)",
+            "text": "mkdir [-p] [<pattern>]"
+        },
+        {
+            "id": "shape-1f5ad3b2be47",
+            "program": "mkdir",
+            "subcommand": "(no subcommand)",
+            "text": "mkdir [-p] [<variable>]"
+        },
+        {
+            "id": "shape-15d2853a6647",
+            "program": "mkdir",
+            "subcommand": "(no subcommand)",
+            "text": "mkdir [-p] [<word>]"
+        },
+        {
+            "id": "shape-454cc3bbcfaa",
+            "program": "mv",
+            "subcommand": "(no subcommand)",
+            "text": "mv [<path>...]"
+        },
+        {
+            "id": "shape-c23641158d0a",
+            "program": "mv",
+            "subcommand": "(no subcommand)",
+            "text": "mv [<pattern>...]"
+        },
+        {
+            "id": "shape-532996676543",
+            "program": "mv",
+            "subcommand": "(no subcommand)",
+            "text": "mv [<glob>] [<path>]"
+        },
+        {
+            "id": "shape-3d42004cb1fa",
+            "program": "mv",
+            "subcommand": "(no subcommand)",
+            "text": "mv [<file>...]"
+        },
+        {
+            "id": "shape-c25157aeaa5c",
+            "program": "node",
+            "subcommand": "(no subcommand)",
+            "text": "node [-e <code>]"
+        },
+        {
+            "id": "shape-1979a36bd03f",
+            "program": "node",
+            "subcommand": "(no subcommand)",
+            "text": "node [-e <substitution>]"
+        },
+        {
+            "id": "shape-41ab87078364",
+            "program": "node",
+            "subcommand": "(no subcommand)",
+            "text": "node [--input-type <word>] [-e <code>]"
+        },
+        {
+            "id": "shape-fb26d4c0c3cc",
+            "program": "node",
+            "subcommand": "(no subcommand)",
+            "text": "node [--version]"
+        },
+        {
+            "id": "shape-16c0e4305ac2",
+            "program": "npm",
+            "subcommand": "run build",
+            "text": "npm run build"
+        },
+        {
+            "id": "shape-6dd6e386e3ec",
+            "program": "npm",
+            "subcommand": "run build",
+            "text": "npm run build [--silent]"
+        },
+        {
+            "id": "shape-3c039f005632",
+            "program": "npm",
+            "subcommand": "run build",
+            "text": "npm run build [--prefix <word>]"
+        },
+        {
+            "id": "shape-f27fe6812e6b",
+            "program": "npm",
+            "subcommand": "run build",
+            "text": "npm run build [<string>] [<word>]"
+        },
+        {
+            "id": "shape-f46acf5c488e",
+            "program": "npm",
+            "subcommand": "install",
+            "text": "npm install [-g] [<word>]"
+        },
+        {
+            "id": "shape-3a2dc0ae21eb",
+            "program": "npm",
+            "subcommand": "install",
+            "text": "npm install"
+        },
+        {
+            "id": "shape-8067e5d9a81d",
+            "program": "npm",
+            "subcommand": "install",
+            "text": "npm install [-g] [<path>]"
+        },
+        {
+            "id": "shape-6241c2d8394a",
+            "program": "npm",
+            "subcommand": "install",
+            "text": "npm install [-g] [<email>]"
+        },
+        {
+            "id": "shape-d641a5eb952b",
+            "program": "npm",
+            "subcommand": "run",
+            "text": "npm run [<string>]"
+        },
+        {
+            "id": "shape-8fa5e0cf707f",
+            "program": "npm",
+            "subcommand": "run",
+            "text": "npm run [<word>]"
+        },
+        {
+            "id": "shape-d9b93e4fa38f",
+            "program": "npm",
+            "subcommand": "run",
+            "text": "npm run [<string>...]"
+        },
+        {
+            "id": "shape-6b8faf5a6e9e",
+            "program": "npm",
+            "subcommand": "run",
+            "text": "npm run [<word>] [--workspaces] [--if-present]"
+        },
+        {
+            "id": "shape-9db3f780def6",
+            "program": "npm",
+            "subcommand": "ci",
+            "text": "npm ci"
+        },
+        {
+            "id": "shape-ab90959bf96b",
+            "program": "npm",
+            "subcommand": "ci",
+            "text": "npm ci [--no-audit] [--no-fund]"
+        },
+        {
+            "id": "shape-c206fa0efa98",
+            "program": "npm",
+            "subcommand": "ci",
+            "text": "npm ci [--silent]"
+        },
+        {
+            "id": "shape-fb80a86c4a00",
+            "program": "npm",
+            "subcommand": "ci",
+            "text": "npm ci [--prefix <path>]"
+        },
+        {
+            "id": "shape-91b26e510f12",
+            "program": "npm",
+            "subcommand": "(no subcommand)",
+            "text": "npm [--version]"
+        },
+        {
+            "id": "shape-dba88d6e4274",
+            "program": "npm",
+            "subcommand": "(no subcommand)",
+            "text": "npm [<word>]"
+        },
+        {
+            "id": "shape-ab441f3ad941",
+            "program": "npm",
+            "subcommand": "(no subcommand)",
+            "text": "npm [-v]"
+        },
+        {
+            "id": "shape-23fef93f065f",
+            "program": "npm",
+            "subcommand": "(no subcommand)",
+            "text": "npm [<word>...]"
+        },
+        {
+            "id": "shape-eaefff7adb0c",
+            "program": "npm",
+            "subcommand": "view",
+            "text": "npm view [<path>] [<word>] [--json]"
+        },
+        {
+            "id": "shape-42dc02e42e1c",
+            "program": "npm",
+            "subcommand": "view",
+            "text": "npm view [<pattern>] [<word>]"
+        },
+        {
+            "id": "shape-f7337e53af37",
+            "program": "npm",
+            "subcommand": "view",
+            "text": "npm view [<word>...]"
+        },
+        {
+            "id": "shape-b220923950da",
+            "program": "npm",
+            "subcommand": "view",
+            "text": "npm view [<code>] [<word>]"
+        },
+        {
+            "id": "shape-0c7ec4aac044",
+            "program": "npm",
+            "subcommand": "run test",
+            "text": "npm run test"
+        },
+        {
+            "id": "shape-0897bd562afe",
+            "program": "npm",
+            "subcommand": "run test",
+            "text": "npm run test [-w <path>]"
+        },
+        {
+            "id": "shape-5d92a315f13d",
+            "program": "npm",
+            "subcommand": "run test",
+            "text": "npm run test [<string>]"
+        },
+        {
+            "id": "shape-eb80a601515d",
+            "program": "npm",
+            "subcommand": "run test",
+            "text": "npm run test [--prefix <path>]"
+        },
+        {
+            "id": "shape-326d9800e732",
+            "program": "npm",
+            "subcommand": "run lint",
+            "text": "npm run lint"
+        },
+        {
+            "id": "shape-112fd4de3131",
+            "program": "npm",
+            "subcommand": "run lint",
+            "text": "npm run lint [--prefix <path>]"
+        },
+        {
+            "id": "shape-f219d0aa28b1",
+            "program": "npm",
+            "subcommand": "run lint",
+            "text": "npm run lint [--prefix <word>]"
+        },
+        {
+            "id": "shape-5a62dc4f7c05",
+            "program": "npm",
+            "subcommand": "run lint",
+            "text": "npm run lint [--workspaces] [--if-present]"
+        },
+        {
+            "id": "shape-71a778652cd9",
+            "program": "npm",
+            "subcommand": "run check",
+            "text": "npm run check"
+        },
+        {
+            "id": "shape-7f62d010f6ca",
+            "program": "npm",
+            "subcommand": "run check",
+            "text": "npm run check [--prefix <path>]"
+        },
+        {
+            "id": "shape-77eafe09bebe",
+            "program": "npm",
+            "subcommand": "run deploy",
+            "text": "npm run deploy [--prefix <path>]"
+        },
+        {
+            "id": "shape-7c7261d515db",
+            "program": "npm",
+            "subcommand": "run deploy",
+            "text": "npm run deploy [--prefix <word>]"
+        },
+        {
+            "id": "shape-d7821285f695",
+            "program": "npm",
+            "subcommand": "run deploy",
+            "text": "npm run deploy"
+        },
+        {
+            "id": "shape-9d84485a9359",
+            "program": "perl",
+            "subcommand": "(no subcommand)",
+            "text": "perl [-pi] [-e <pattern>] [<path>]"
+        },
+        {
+            "id": "shape-f0c929a9e723",
+            "program": "perl",
+            "subcommand": "(no subcommand)",
+            "text": "perl"
+        },
+        {
+            "id": "shape-8c1aac0c5bf1",
+            "program": "perl",
+            "subcommand": "(no subcommand)",
+            "text": "perl [-pi] [-e <code>] [<path>]"
+        },
+        {
+            "id": "shape-30b8d8b4ccc4",
+            "program": "perl",
+            "subcommand": "(no subcommand)",
+            "text": "perl [-pi] [-e <pattern>] [<path>...]"
+        },
+        {
+            "id": "shape-eab943a50291",
+            "program": "pgrep",
+            "subcommand": "(no subcommand)",
+            "text": "pgrep [-f] [<text>]"
+        },
+        {
+            "id": "shape-7aa1ea55cc9d",
+            "program": "pgrep",
+            "subcommand": "(no subcommand)",
+            "text": "pgrep [-fl] [<word>]"
+        },
+        {
+            "id": "shape-593caae285e3",
+            "program": "pgrep",
+            "subcommand": "(no subcommand)",
+            "text": "pgrep [-fl] [<text>]"
+        },
+        {
+            "id": "shape-5f771c2d7227",
+            "program": "pgrep",
+            "subcommand": "(no subcommand)",
+            "text": "pgrep [-f] [<path>]"
+        },
+        {
+            "id": "shape-6345f645496c",
+            "program": "php",
+            "subcommand": "(no subcommand)",
+            "text": "php [-l <path>]"
+        },
+        {
+            "id": "shape-e1b8ad0077bd",
+            "program": "php",
+            "subcommand": "(no subcommand)",
+            "text": "php [-l <variable>]"
+        },
+        {
+            "id": "shape-5ed03560f650",
+            "program": "php",
+            "subcommand": "(no subcommand)",
+            "text": "php [-l <pattern>]"
+        },
+        {
+            "id": "shape-074801aa96e3",
+            "program": "php",
+            "subcommand": "(no subcommand)",
+            "text": "php [-l <file>]"
+        },
+        {
+            "id": "shape-e341418a5cad",
+            "program": "printf",
+            "subcommand": "(no subcommand)",
+            "text": "printf [<string>] [<text>]"
+        },
+        {
+            "id": "shape-2910d912f625",
+            "program": "printf",
+            "subcommand": "(no subcommand)",
+            "text": "printf [<code>]"
+        },
+        {
+            "id": "shape-a3c08da6b09e",
+            "program": "printf",
+            "subcommand": "(no subcommand)",
+            "text": "printf [<text>] [<variable>]"
+        },
+        {
+            "id": "shape-48cf63aa7131",
+            "program": "printf",
+            "subcommand": "(no subcommand)",
+            "text": "printf [<text>]"
+        },
+        {
+            "id": "shape-a7eef8381566",
+            "program": "ps",
+            "subcommand": "(no subcommand)",
+            "text": "ps [<word>]"
+        },
+        {
+            "id": "shape-71872273c31e",
+            "program": "ps",
+            "subcommand": "(no subcommand)",
+            "text": "ps [-eo <string>]"
+        },
+        {
+            "id": "shape-07f2fd40cbe3",
+            "program": "ps",
+            "subcommand": "(no subcommand)",
+            "text": "ps [-Ao <string>]"
+        },
+        {
+            "id": "shape-a6cf19fc3534",
+            "program": "ps",
+            "subcommand": "(no subcommand)",
+            "text": "ps [-axo <string>]"
+        },
+        {
+            "id": "shape-a1ad68cf7e9c",
+            "program": "pytest",
+            "subcommand": "(no subcommand)",
+            "text": "pytest [-q] [--timeout <number>] [-n <word>]"
+        },
+        {
+            "id": "shape-2a27f270fac9",
+            "program": "pytest",
+            "subcommand": "(no subcommand)",
+            "text": "pytest [-q] [--timeout <number>] [<path>]"
+        },
+        {
+            "id": "shape-ab002572a95a",
+            "program": "pytest",
+            "subcommand": "(no subcommand)",
+            "text": "pytest [-q] [<path>] [-k <word>]"
+        },
+        {
+            "id": "shape-abad42d17961",
+            "program": "pytest",
+            "subcommand": "(no subcommand)",
+            "text": "pytest [-q] [<path>]"
+        },
+        {
+            "id": "shape-8aebd69cb69b",
+            "program": "python",
+            "subcommand": "(no subcommand)",
+            "text": "python [-c <code>]"
+        },
+        {
+            "id": "shape-c7b876c3c334",
+            "program": "python",
+            "subcommand": "(no subcommand)",
+            "text": "python [<stdin>]"
+        },
+        {
+            "id": "shape-11a4a60b518b",
+            "program": "python",
+            "subcommand": "(no subcommand)",
+            "text": "python"
+        },
+        {
+            "id": "shape-7fb77726e58c",
+            "program": "python",
+            "subcommand": "(no subcommand)",
+            "text": "python [-c <substitution>]"
+        },
+        {
+            "id": "shape-97905ba9b41f",
+            "program": "python3",
+            "subcommand": "(no subcommand)",
+            "text": "python3 [<stdin>]"
+        },
+        {
+            "id": "shape-23063476f414",
+            "program": "python3",
+            "subcommand": "(no subcommand)",
+            "text": "python3 [-c <code>]"
+        },
+        {
+            "id": "shape-75946737b6aa",
+            "program": "python3",
+            "subcommand": "(no subcommand)",
+            "text": "python3 [-I] [<stdin>]"
+        },
+        {
+            "id": "shape-c9d02d24835c",
+            "program": "python3",
+            "subcommand": "(no subcommand)",
+            "text": "python3 [-I] [-c <code>]"
+        },
+        {
+            "id": "shape-b3176b231831",
+            "program": "rm",
+            "subcommand": "(no subcommand)",
+            "text": "rm [-rf] [<path>]"
+        },
+        {
+            "id": "shape-4b474e439264",
+            "program": "rm",
+            "subcommand": "(no subcommand)",
+            "text": "rm [<path>]"
+        },
+        {
+            "id": "shape-eeadadb88349",
+            "program": "rm",
+            "subcommand": "(no subcommand)",
+            "text": "rm [-f] [<path>]"
+        },
+        {
+            "id": "shape-cb1a7c1617cb",
+            "program": "rm",
+            "subcommand": "(no subcommand)",
+            "text": "rm [-rf] [<pattern>]"
+        },
+        {
+            "id": "shape-f47d564d359c",
+            "program": "sed",
+            "subcommand": "(no subcommand)",
+            "text": "sed [-n <number range>] [<path>]"
+        },
+        {
+            "id": "shape-bffad6889b1d",
+            "program": "sed",
+            "subcommand": "(no subcommand)",
+            "text": "sed [-n <number range>]"
+        },
+        {
+            "id": "shape-fda0a8f6beec",
+            "program": "sed",
+            "subcommand": "(no subcommand)",
+            "text": "sed [-i <empty>] [<code>] [<path>]"
+        },
+        {
+            "id": "shape-b68dd06eb1e5",
+            "program": "sed",
+            "subcommand": "(no subcommand)",
+            "text": "sed [-n <pattern>]"
+        },
+        {
+            "id": "shape-c7786cc093b2",
+            "program": "sleep",
+            "subcommand": "(no subcommand)",
+            "text": "sleep [<number>]"
+        },
+        {
+            "id": "shape-27d0cf8df672",
+            "program": "sleep",
+            "subcommand": "(no subcommand)",
+            "text": "sleep [<variable>]"
+        },
+        {
+            "id": "shape-b01cde57cfc9",
+            "program": "sleep",
+            "subcommand": "(no subcommand)",
+            "text": "sleep [<substitution>]"
+        },
+        {
+            "id": "shape-34f1ebea4fc8",
+            "program": "sleep",
+            "subcommand": "(no subcommand)",
+            "text": "sleep [<duration>]"
+        },
+        {
+            "id": "shape-646964943fd2",
+            "program": "sort",
+            "subcommand": "(no subcommand)",
+            "text": "sort"
+        },
+        {
+            "id": "shape-4a25de9f94d3",
+            "program": "sort",
+            "subcommand": "(no subcommand)",
+            "text": "sort [-rn]"
+        },
+        {
+            "id": "shape-4e1314435fb3",
+            "program": "sort",
+            "subcommand": "(no subcommand)",
+            "text": "sort [-u]"
+        },
+        {
+            "id": "shape-c810e73100ac",
+            "program": "sort",
+            "subcommand": "(no subcommand)",
+            "text": "sort [-n]"
+        },
+        {
+            "id": "shape-4b085296e7e8",
+            "program": "sqlite3",
+            "subcommand": "(no subcommand)",
+            "text": "sqlite3 [<path>] [<text>]"
+        },
+        {
+            "id": "shape-2e93f99484ad",
+            "program": "sqlite3",
+            "subcommand": "(no subcommand)",
+            "text": "sqlite3 [<path>] [<code>]"
+        },
+        {
+            "id": "shape-aa80aed8b69c",
+            "program": "sqlite3",
+            "subcommand": "(no subcommand)",
+            "text": "sqlite3 [-readonly <path>] [<text>]"
+        },
+        {
+            "id": "shape-1dc04951e88c",
+            "program": "sqlite3",
+            "subcommand": "(no subcommand)",
+            "text": "sqlite3 [-readonly <path>] [<code>]"
+        },
+        {
+            "id": "shape-107ae43ded26",
+            "program": "ssh",
+            "subcommand": "(no subcommand)",
+            "text": "ssh [-o <assignment>] [<email>] [<text>]"
+        },
+        {
+            "id": "shape-e9c7221d9e4e",
+            "program": "ssh",
+            "subcommand": "(no subcommand)",
+            "text": "ssh [-o <assignment>] [<email>] [<code>]"
+        },
+        {
+            "id": "shape-9a75ebf60060",
+            "program": "ssh",
+            "subcommand": "(no subcommand)",
+            "text": "ssh [<email>] [<text>]"
+        },
+        {
+            "id": "shape-1dc8598bbde1",
+            "program": "ssh",
+            "subcommand": "(no subcommand)",
+            "text": "ssh [-o <assignment>] [<email>] [<substitution>]"
+        },
+        {
+            "id": "shape-d96099b7a51d",
+            "program": "tail",
+            "subcommand": "(no subcommand)",
+            "text": "tail [-<number>]"
+        },
+        {
+            "id": "shape-711ff1df9d58",
+            "program": "tail",
+            "subcommand": "(no subcommand)",
+            "text": "tail [-<number>] [<path>]"
+        },
+        {
+            "id": "shape-4633f88a2db1",
+            "program": "tail",
+            "subcommand": "(no subcommand)",
+            "text": "tail [-n <pattern>]"
+        },
+        {
+            "id": "shape-a603d078040f",
+            "program": "tail",
+            "subcommand": "(no subcommand)",
+            "text": "tail [-c <number>] [<path>]"
+        },
+        {
+            "id": "shape-c1603a2103f5",
+            "program": "touch",
+            "subcommand": "(no subcommand)",
+            "text": "touch [<path>]"
+        },
+        {
+            "id": "shape-c419d2ee30ff",
+            "program": "touch",
+            "subcommand": "(no subcommand)",
+            "text": "touch [<path>...]"
+        },
+        {
+            "id": "shape-dd112f294ab4",
+            "program": "touch",
+            "subcommand": "(no subcommand)",
+            "text": "touch [<pattern>]"
+        },
+        {
+            "id": "shape-c36a62466425",
+            "program": "touch",
+            "subcommand": "(no subcommand)",
+            "text": "touch [<file>]"
+        },
+        {
+            "id": "shape-8354204ce06e",
+            "program": "tr",
+            "subcommand": "(no subcommand)",
+            "text": "tr [<string>] [<text>]"
+        },
+        {
+            "id": "shape-7fea06901cc8",
+            "program": "tr",
+            "subcommand": "(no subcommand)",
+            "text": "tr [-d <string>]"
+        },
+        {
+            "id": "shape-1aa269a9d343",
+            "program": "tr",
+            "subcommand": "(no subcommand)",
+            "text": "tr [<string>...]"
+        },
+        {
+            "id": "shape-509dae313b33",
+            "program": "tr",
+            "subcommand": "(no subcommand)",
+            "text": "tr [-s <text>]"
+        },
+        {
+            "id": "shape-0a84d2765847",
+            "program": "vitest",
+            "subcommand": "run",
+            "text": "vitest run [<path>]"
+        },
+        {
+            "id": "shape-ad6cd6b8acf3",
+            "program": "vitest",
+            "subcommand": "run",
+            "text": "vitest run"
+        },
+        {
+            "id": "shape-ad1f3e4aa38b",
+            "program": "vitest",
+            "subcommand": "run",
+            "text": "vitest run [<path>...]"
+        },
+        {
+            "id": "shape-2ea104b79adb",
+            "program": "vitest",
+            "subcommand": "run",
+            "text": "vitest run [<path>] [-t <text>] [--reporter <word>]"
+        },
+        {
+            "id": "shape-a9127f3d3436",
+            "program": "vitest",
+            "subcommand": "(no subcommand)",
+            "text": "vitest"
+        },
+        {
+            "id": "shape-32a0b99ea288",
+            "program": "vitest",
+            "subcommand": "(no subcommand)",
+            "text": "vitest [--project <word>]"
+        },
+        {
+            "id": "shape-4ef5fc545e6d",
+            "program": "vitest",
+            "subcommand": "(no subcommand)",
+            "text": "vitest [--no-cache] [--no-coverage]"
+        },
+        {
+            "id": "shape-bded1f884262",
+            "program": "vitest",
+            "subcommand": "(no subcommand)",
+            "text": "vitest [--no-watch] [--no-cache] [--coverage]"
+        },
+        {
+            "id": "shape-a45f832a4f90",
+            "program": "wc",
+            "subcommand": "(no subcommand)",
+            "text": "wc [-l]"
+        },
+        {
+            "id": "shape-4fd794bec911",
+            "program": "wc",
+            "subcommand": "(no subcommand)",
+            "text": "wc [-l] [<path>]"
+        },
+        {
+            "id": "shape-723954cf056b",
+            "program": "wc",
+            "subcommand": "(no subcommand)",
+            "text": "wc [-l] [<path>...]"
+        },
+        {
+            "id": "shape-f5078090ad0f",
+            "program": "wc",
+            "subcommand": "(no subcommand)",
+            "text": "wc [-l] [<glob>]"
+        },
+        {
+            "id": "shape-ad292a480164",
+            "program": "which",
+            "subcommand": "(no subcommand)",
+            "text": "which [<word>]"
+        },
+        {
+            "id": "shape-350336f6a372",
+            "program": "which",
+            "subcommand": "(no subcommand)",
+            "text": "which [<word>...]"
+        },
+        {
+            "id": "shape-947b0a7c98cd",
+            "program": "which",
+            "subcommand": "(no subcommand)",
+            "text": "which [-a <word>]"
+        },
+        {
+            "id": "shape-674eb6a84a81",
+            "program": "which",
+            "subcommand": "(no subcommand)",
+            "text": "which [<variable>]"
+        }
+    ],
+    "chains": [
+        {
+            "id": "chain-4673bf37926c",
+            "parts": [
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-11fe0e87ad95",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-d19eb7958f2b",
+            "parts": [
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-e5f2a56c2b22",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-c6ac4b3172a9",
+            "parts": [
+                "PART",
+                "&&",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-79800035da4e",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-e735e4359978",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-b6a184e94546",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-01f94e512f04",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-92151f4f6398",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-fe95e3cfb50f",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-18bfa60dffcb",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-d585181e1176",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-409afd40646f",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-8bc018924597",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-f6a13099ed9d",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-420d0e873e58",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-5d1834ea1a89",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-572a7382a44e",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-9b587200098e",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-cf66c65e697b",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-b7a48ec4c01f",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-77256f17bcb5",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-9f38ddd2ac3a",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-a7e4f4bef255",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-d01955f3cf1f",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-228c36fa66bb",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-b48c6a47fff0",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-59fa5ba187d5",
+            "parts": [
+                "PART",
+                "||",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-0e2707b632b4",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-8e6757226a58",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-9e1b74116e74",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-24f460e6db82",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-b91dac13b2bc",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-0998bd85e2e9",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-ccdd0f47a4ad",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-8617c3fb728e",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-51553ff270d4",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-35856a6cb86b",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-ee654d5c9adf",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-395ed307f8d7",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-ca6a6fbffd69",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-c4933709ea73",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-0e5cee10e772",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-7ada837b5253",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-03d685490e39",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-4a8718eb6675",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-b245504718bc",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-47a6e0826165",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-f1f4a470b1ba",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-00bbd1d4a483",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-fa7783bc43c7",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-60cccc2848b6",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-0b990b0a73ac",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-0f319b9f1b7a",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-ba1c54bf826c",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-188070d72e67",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-c5d8a3b96e6a",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-a35ce592e71c",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-98905e14df01",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-84f291db28e6",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-643b0ca21b2f",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-48c0188f4f60",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-92edb60a76c5",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-9e1ef234dac3",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "2>&1"
+            ]
+        },
+        {
+            "id": "chain-ebb36dd7cf42",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-9f2c9c17332f",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-182156d5f9b2",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-96b5e9031d43",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-82a1ebc4bbff",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-57d30fbe6b36",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-a6a8952ca339",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-e1fe8fe60d21",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-4ea1593e0754",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-c45fce9e719c",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-23092dd15c67",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-442fed84706f",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-6d0c181a1a16",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-037cdb8fcb3c",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-800649b8cbe9",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-af8c1e1eaed7",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-be7cabc47524",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-f928a0a29bea",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-548194505c45",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-337dfb876d6d",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "2>&1"
+            ]
+        },
+        {
+            "id": "chain-40934aa57a87",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-ed583a3d5e94",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-a915276d8848",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-1ab762ac596c",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-58c3cfd1bcc5",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-ebcf76d8ddf1",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-b9089fc80d99",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-ad4f7f2acda4",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-8c303c0fcb08",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-5f14df4ddbf5",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-6519dca9c2f2",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-e14dc375a8d4",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-46ab31826e2f",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-e6c2763ff6bd",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-dab8575e3c79",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-7239ee060679",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-b9293379170f",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-a262cd630e01",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-98f52991fdf2",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-26518c6dad58",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "&&",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-ddd220dac759",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-d878889de60f",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-c7b20185b955",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-79588413a24b",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-0a93ed9bc71d",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-7e88c9acb8a4",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-64622ff4099b",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-1b395b31f94f",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-79b24ac70d81",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-58063e2fd696",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-8d31ec03a022",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-604a8ba733ec",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-6baade301bfe",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-4c087c9b4781",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-5aa18d95a644",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-e96b9bb8bda9",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-7a807d8f9494",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-e7d46f520863",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-8235f1c7d527",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-e7ff2b1db181",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-3837aa76b1d6",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-1fc2b77daf00",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-9d95b0083cfa",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-81d3daba05af",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-31e210e38f2d",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-7feca16c2e06",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-b3dc7b29d361",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-c7d65dcb0953",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-24aa7dae2d45",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-45720809ca0d",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-bf666a489692",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-7afd5974be85",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1"
+            ]
+        },
+        {
+            "id": "chain-761fe50b5b89",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-4bb878f1ab98",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-ac90dca546c5",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-b15987ac8543",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-ed3e39d76e95",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-5647016231ab",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-f65820033118",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "&&",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-587259176e58",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-e82610449498",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-a8ea7d60d370",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-62dbc9d0581f",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-9012645d0d46",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-8ec68a592a60",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-771574b5d3bb",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-609c7dac9e7e",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-dfd2ab4f3544",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-f75e82b5f0b0",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-c267bf1805ff",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-37a964de5df8",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-36176f82105a",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-5958e50e97b9",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-3b43aa7f6ea0",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-8d00225e0e78",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-1871467e3668",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-31ecdd4abcff",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-a2ba60afa9cc",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-a4bfb1caa9c4",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-1d1e1b302bbc",
+            "parts": [
+                "PART",
+                "2>&1",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-8a7fa48c5f34",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-f653bbdb60e0",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-98b1c32145ec",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-4fceabd9cf7e",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-d0062416ea87",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-72d6d0266b4a",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-fca3f9beec51",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-84ab3059a2da",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "&&",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-7cdea2516f7d",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-0feca0054be8",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-013fe76c7c2a",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "2>&1"
+            ]
+        },
+        {
+            "id": "chain-6a0ae3367d49",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-5bc37482516e",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-69704481d46c",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-ddd3162a71e6",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-644650565b49",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-4d7376744a30",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-59ce27ff3974",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-8c4ceb2c1674",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-868dda703974",
+            "parts": [
+                "PART",
+                "2>&1",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-fcf74a388ced",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-4e159192c4d7",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-faf4bfc3e218",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "||",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-bca273dfeefd",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-28eb28cce4d7",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-6053bc31f4df",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-f6fd78d0cb0b",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-fbe64a004f6d",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-5103ae70be4c",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-51850008f7fd",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-adbd8ba467b7",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-f9641e39bc1b",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-1de91f0d74e9",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-007457fa8101",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-e122b62d1a0c",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-c239f7909880",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "||",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-12f13261af3d",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-72328d6eef8d",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-1b7e0c1bc049",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-c7761b00d3d8",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-c81bb51d2684",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-60363e58b7e4",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-fa5c2c400bfc",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-55f857c2586a",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-847f07839b98",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-4447cfd5347a",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART",
+                "&&",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-8baec32ceaaa",
+            "parts": [
+                "PART",
+                "2>&1",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-15305ff5b761",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-f5a135004306",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-c1ece995f20d",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "&&",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-7b910ba3e050",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-91337dee4d4a",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-75fb1db04f52",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-11f3640aacad",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "&&",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-4a14b054216d",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-1f4855dcb9e5",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-f52bfb9272a9",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-c70aa2b82553",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-fabef354d9f6",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-17386b2cd3ec",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-93882779cc2f",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-cda7361627b7",
+            "parts": [
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-582dbceb500d",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-1f2d32504245",
+            "parts": [
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART",
+                "|",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-f40548189abf",
+            "parts": [
+                "PART",
+                "&&",
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART"
+            ]
+        },
+        {
+            "id": "chain-b3185de89040",
+            "parts": [
+                "PART",
+                "2>&1",
+                "|",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                ";",
+                "PART",
+                "|",
+                "PART"
+            ]
+        }
+    ]
+}
