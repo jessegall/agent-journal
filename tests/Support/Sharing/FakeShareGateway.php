@@ -71,7 +71,7 @@ final class FakeShareGateway implements ShareGateway
 
         $this->opened[] = $operation;
 
-        return new GatewayEndpoint($operation->runId, $operation->endpointVersion, $operation->configuration->settings->publicOrigin, self::KEY);
+        return GatewayEndpoint::forOperation($operation);
     }
 
     public function health(GatewayEndpoint $endpoint): GatewayHealth

@@ -14,7 +14,7 @@ use Illuminate\Foundation\Http\FormRequest;
  * The owner approves the proposal the route names from a saved preview of its record, under the Idempotency-Key
  * header.
  */
-final class ApproveShareRequestRequest extends FormRequest
+final class ApproveProposalRequest extends FormRequest
 {
     use ReadsConfirmedPreview, ReadsIdempotencyKey, ReadsShareId;
 

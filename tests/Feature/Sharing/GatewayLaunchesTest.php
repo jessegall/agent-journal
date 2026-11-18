@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Sharing\Exceptions\GatewayOpenFailed;
 use App\Sharing\Enums\GatewayAddressCheck;
+use App\Sharing\Exceptions\GatewayOpenFailed;
 use App\Sharing\Gateways\Support\GatewayChildren;
 use App\Sharing\Gateways\Support\GatewayLaunches;
 use App\Sharing\Support\GatewayConfiguration;
