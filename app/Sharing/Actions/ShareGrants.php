@@ -12,6 +12,7 @@ use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\ShareAuditType;
 use App\Sharing\Exceptions\ShareProposalUnavailable;
 use App\Sharing\Exceptions\ShareQuotaReached;
+use App\Sharing\Exceptions\ShareRefreshRefused;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
 use App\Sharing\Models\ShareGatewayConfiguration;
@@ -27,10 +28,10 @@ use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 
 /**
- * The owner's grants: a new share, or an agent's proposal approved, each from a fresh preview. Both lock the
- * installation, the preview's configuration and the preview in that order, consume the preview, count the live shares
- * under the lock, and write the grant with a new token, its approved members, an open request for its gateway and its
- * audit in the command's transaction.
+ * The owner's grants: a new share, an agent's proposal approved, or a live share's members replaced, each from a
+ * fresh preview. Each locks the installation, the preview's configuration and the preview in that order and consumes
+ * the preview; a new grant counts the live shares under the lock and writes a new token and an open request for its
+ * gateway; every one writes its approved members and its audit in the command's transaction.
  */
 final readonly class ShareGrants
 {
@@ -43,7 +44,9 @@ final readonly class ShareGrants
     public function create(Actor $owner, string $previewId, string $previewChecksum, ShareDuration $duration): Share
     {
         $consumed = $this->consume($owner, $previewId, $previewChecksum);
+        $this->requireLiveSlot();
         $share = Share::grant($consumed->root, $owner->actorId(), $consumed->configuration, ShareToken::generate(), $duration->deadlineFrom(CarbonImmutable::now()));
+        ShareGatewayOperation::request($consumed->configuration, GatewayOperationType::Open);
 
         return $this->publish($owner, $share, $consumed, ShareAuditType::Created);
     }
@@ -54,6 +57,7 @@ final readonly class ShareGrants
     public function approve(Actor $owner, string $proposalId, string $previewId, string $previewChecksum, ShareDuration $duration): Share
     {
         $consumed = $this->consume($owner, $previewId, $previewChecksum);
+        $this->requireLiveSlot();
         $proposal = Share::lockProposal($proposalId);
 
         if (! $proposal->root()->isSameAs($consumed->root)) {
@@ -61,14 +65,38 @@ final readonly class ShareGrants
         }
 
         $proposal->approveAs($owner->actorId(), $consumed->configuration, ShareToken::generate(), $duration->deadlineFrom(CarbonImmutable::now()));
+        ShareGatewayOperation::request($consumed->configuration, GatewayOperationType::Open);
 
         return $this->publish($owner, $proposal, $consumed, ShareAuditType::Approved);
     }
 
     /**
-     * Takes the locks in order, uses the preview once and refuses a grant past the live limit.
+     * Replaces a live share's members with the preview's selection at the next scope version; its token, deadline
+     * and gateway stay as they are.
      *
-     * @throws ShareQuotaReached
+     * @throws ShareRefreshRefused when the share is not live or the preview shows another root
+     */
+    public function refresh(Actor $owner, string $shareId, string $previewId, string $previewChecksum): Share
+    {
+        $consumed = $this->consume($owner, $previewId, $previewChecksum);
+        $share = Share::lockForChange($shareId);
+
+        if (! $share->state->isLive() || ! $share->expires_at->isFuture()) {
+            throw ShareRefreshRefused::notLive($shareId, $share->state);
+        }
+
+        if (! $share->root()->isSameAs($consumed->root)) {
+            throw ShareRefreshRefused::otherRoot($shareId);
+        }
+
+        ShareMember::forgetAllOf($share);
+        $share->advanceScope();
+
+        return $this->publish($owner, $share, $consumed, ShareAuditType::ScopeRefreshed);
+    }
+
+    /**
+     * Takes the locks in order and uses the preview once.
      */
     private function consume(Actor $owner, string $previewId, string $previewChecksum): ConsumedPreview
     {
@@ -81,11 +109,19 @@ final readonly class ShareGrants
         $candidates = $this->scope->discover($preview->root(), MeteredShareBudget::forPreview($this->meter));
         $selection = $preview->consumeFor($owner->actorId(), $previewChecksum, $candidates);
 
+        return new ConsumedPreview($configuration, $preview->root(), $selection, $candidates);
+    }
+
+    /**
+     * Refuses a new grant once the installation holds its most live shares; counted under the installation lock.
+     *
+     * @throws ShareQuotaReached
+     */
+    private function requireLiveSlot(): void
+    {
         if (Share::liveCount() >= Share::MOST_LIVE) {
             throw ShareQuotaReached::at(Share::MOST_LIVE);
         }
-
-        return new ConsumedPreview($configuration, $preview->root(), $selection, $candidates);
     }
 
     private function publish(Actor $owner, Share $share, ConsumedPreview $consumed, ShareAuditType $type): Share
@@ -94,7 +130,6 @@ final readonly class ShareGrants
             ShareMember::approve($share, $consumed->candidates->sourceOf($target), $target);
         }
 
-        ShareGatewayOperation::request($consumed->configuration, GatewayOperationType::Open);
         ShareAudit::recordFor($share, $type, ActorIdentity::of($owner), null);
 
         return $share;

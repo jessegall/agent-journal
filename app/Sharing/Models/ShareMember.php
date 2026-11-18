@@ -71,6 +71,14 @@ final class ShareMember extends Model implements ReadableModel
     }
 
     /**
+     * Removes every member of the share, of every scope version, before a refreshed scope replaces them.
+     */
+    public static function forgetAllOf(Share $share): void
+    {
+        self::query()->ofShare($share)->delete();
+    }
+
+    /**
      * Ends the approval of every member that rested on one of these links; a link made again has a new id, so only a
      * refreshed scope approves it.
      *
@@ -168,6 +176,15 @@ final class ShareMember extends Model implements ReadableModel
     protected function stillApproved(Builder $query): void
     {
         $query->whereNull('invalidated_at');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofShare(Builder $query, Share $share): void
+    {
+        $query->where('share_id', $share->id);
     }
 
     /**

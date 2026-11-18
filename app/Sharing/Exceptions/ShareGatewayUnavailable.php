@@ -25,6 +25,11 @@ final class ShareGatewayUnavailable extends RuntimeException implements CommandR
         return new self('No default gateway is configured; configure a gateway before sharing.');
     }
 
+    public static function forProposal(string $shareId): self
+    {
+        return new self("Share {$shareId} is a proposal and has no gateway until the owner approves it.");
+    }
+
     protected function status(): int
     {
         return 422;

@@ -13,7 +13,9 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Enums\ShareState;
+use App\Sharing\Exceptions\ShareGatewayUnavailable;
 use App\Sharing\Exceptions\ShareProposalUnavailable;
+use App\Sharing\Exceptions\ShareRetryRefused;
 use App\Sharing\Exceptions\ShareUnavailable;
 use App\Sharing\Support\ShareProposalStatus;
 use App\Sharing\Support\ShareSummary;
@@ -184,6 +186,40 @@ final class Share extends Model implements Numbered, ReadableModel
         $this->state = $terminal;
         $this->terminal_at = CarbonImmutable::now();
         $this->token_ciphertext = null;
+        $this->save();
+    }
+
+    /**
+     * The enabled gateway configuration the owner's grant is served under.
+     *
+     * @throws ShareGatewayUnavailable when the share is a proposal or its configuration was disabled
+     */
+    public function gatewayConfiguration(): ShareGatewayConfiguration
+    {
+        return ShareGatewayConfiguration::usable($this->share_gateway_configuration_id ?? throw ShareGatewayUnavailable::forProposal($this->id));
+    }
+
+    /**
+     * Moves the share to its next scope version, whose members are approved next; earlier members stop counting.
+     */
+    public function advanceScope(): void
+    {
+        $this->scope_version++;
+        $this->save();
+    }
+
+    /**
+     * Puts a pending or failed share back to waiting for its gateway, keeping its token and deadline.
+     *
+     * @throws ShareRetryRefused when the share may not be retried or its deadline passed
+     */
+    public function retryOpening(): void
+    {
+        if (! $this->state->mayRetry() || ! $this->expires_at->isFuture()) {
+            throw ShareRetryRefused::for($this->id, $this->expires_at->isFuture() ? $this->state : ShareState::Expired);
+        }
+
+        $this->state = ShareState::Pending;
         $this->save();
     }
 

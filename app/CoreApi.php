@@ -429,7 +429,9 @@ use App\Settings\Values\SettingReference;
 use App\Settings\Values\SettingsChange;
 use App\Sharing\Commands\ApproveShareRequest;
 use App\Sharing\Commands\CreateShare;
+use App\Sharing\Commands\RefreshShareScope;
 use App\Sharing\Commands\RequestShare;
+use App\Sharing\Commands\RetryShare;
 use App\Sharing\Commands\RevokeShare;
 use App\Sharing\Commands\SaveSharePreview;
 use App\Sharing\Contracts\ProvidesShareGateways;
@@ -891,6 +893,8 @@ final class CoreApi
                 RequestShare::class,
                 ApproveShareRequest::class,
                 RevokeShare::class,
+                RefreshShareScope::class,
+                RetryShare::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,
