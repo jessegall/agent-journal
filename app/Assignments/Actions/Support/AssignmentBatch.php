@@ -14,8 +14,6 @@ use App\Assignments\Support\AssignmentOutcome;
 use App\Assignments\Support\AssignmentResult;
 use App\Assignments\Support\RecordIdentity;
 use Closure;
-use PhpOption\None;
-use PhpOption\Some;
 
 /**
  * The steps of a batch command over a group its owner collected: check every record with its owner, learn which are
@@ -69,18 +67,18 @@ final readonly class AssignmentBatch
         $current = $this->store->lockCurrent($record);
 
         if ($current->isEmpty()) {
-            $after = Some::create($this->store->assignIfUnheld($record, $recipient));
+            $after = $this->store->assignIfUnheld($record, $recipient);
 
-            return new AssignmentResult([new AssignmentOutcome($record, $after, AssignmentOutcomeType::Changed)], [new AssignmentChange($record, None::create(), $after)]);
+            return new AssignmentResult([new AssignmentOutcome($record, $after, AssignmentOutcomeType::Changed)], [new AssignmentChange($record, null, $after)]);
         }
 
         if ($current->get()->holder()->isSameAs($recipient)) {
-            return new AssignmentResult([new AssignmentOutcome($record, $current, AssignmentOutcomeType::Unchanged)], []);
+            return new AssignmentResult([new AssignmentOutcome($record, $current->get(), AssignmentOutcomeType::Unchanged)], []);
         }
 
-        $after = Some::create($this->store->replace($current->get(), $recipient));
+        $after = $this->store->replace($current->get(), $recipient);
 
-        return new AssignmentResult([new AssignmentOutcome($record, $after, AssignmentOutcomeType::Changed)], [new AssignmentChange($record, $current, $after)]);
+        return new AssignmentResult([new AssignmentOutcome($record, $after, AssignmentOutcomeType::Changed)], [new AssignmentChange($record, $current->get(), $after)]);
     }
 
     public function clear(RecordIdentity $record): AssignmentResult
@@ -88,16 +86,16 @@ final readonly class AssignmentBatch
         $current = $this->store->lockCurrent($record);
 
         if ($current->isEmpty()) {
-            return new AssignmentResult([new AssignmentOutcome($record, None::create(), AssignmentOutcomeType::Unchanged)], []);
+            return new AssignmentResult([new AssignmentOutcome($record, null, AssignmentOutcomeType::Unchanged)], []);
         }
 
         $this->store->remove($current->get());
 
-        return new AssignmentResult([new AssignmentOutcome($record, None::create(), AssignmentOutcomeType::Changed)], [new AssignmentChange($record, $current, None::create())]);
+        return new AssignmentResult([new AssignmentOutcome($record, null, AssignmentOutcomeType::Changed)], [new AssignmentChange($record, $current->get(), null)]);
     }
 
     public function skip(RecordIdentity $record): AssignmentResult
     {
-        return new AssignmentResult([new AssignmentOutcome($record, $this->store->lockCurrent($record), AssignmentOutcomeType::SkippedFinished)], []);
+        return new AssignmentResult([new AssignmentOutcome($record, $this->store->lockCurrent($record)->getOrElse(null), AssignmentOutcomeType::SkippedFinished)], []);
     }
 }

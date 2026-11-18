@@ -13,6 +13,10 @@ use App\Bus\Exceptions\MiddlewareSkippedCommand;
 use App\Bus\Exceptions\MiddlewareSwallowedFailure;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
+use Domain\Plans\Commands\StartPlan;
+use Domain\Plans\Enums\PlanState;
+use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Models\Plan;
 use Domain\Rules\Commands\ApproveRule;
 use Domain\Rules\Exceptions\RuleNotProposed;
 use Domain\Rules\Models\Rule;
@@ -21,6 +25,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\CallsNextTwice;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\ChangesResult;
+use Tests\Fixtures\Modules\Notes\CommandMiddleware\LimitPlanStarts;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefusesAll;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\ReplacesCardsCommand;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\SkipsCommand;
@@ -40,6 +45,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     {
         // The Rules commands commit for real here, so their rows go too.
         Rule::query()->delete();
+        Plan::query()->delete();
 
         parent::tearDown();
     }
@@ -131,6 +137,23 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         } catch (RuleNotProposed) {
             $this->assertSame(0, $this->app->make(ConnectionInterface::class)->table('module_command_rows')->where('text', 'audit ApproveRule')->count());
         }
+    }
+
+    public function test_notes_limits_plan_starts_and_nothing_is_written(): void
+    {
+        $trail = $this->installCommandModulesRequiring(['Plans'], MiddlewareDeclaration::around(LimitPlanStarts::class, CommandScope::command(StartPlan::class)));
+        $this->startUserRequestAs(1);
+        $plan = Plan::query()->create(['title' => 'Quota', 'type' => PlanType::Build]);
+
+        try {
+            $this->app->make(CommandBus::class)->run(new StartPlan($plan->id));
+            $this->fail('The quota let the start through.');
+        } catch (CommandRefused) {
+            $this->assertSame(PlanState::Planned, $plan->fresh()?->state);
+        }
+
+        $this->app->make(CommandBus::class)->run(new WriteNote('not a plan start'));
+        $this->assertSame(1, count(array_keys($trail->steps, 'notes limits plan starts', true)));
     }
 
     public function test_a_middleware_may_not_replace_another_owners_private_command(): void

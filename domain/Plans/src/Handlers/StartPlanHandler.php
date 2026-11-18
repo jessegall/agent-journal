@@ -1,0 +1,32 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Plans\Handlers;
+
+use App\Actors\Contracts\CurrentActor;
+use Domain\Plans\Api\Events\PlanStarted;
+use Domain\Plans\Commands\StartPlan;
+use Domain\Plans\Exceptions\PlanMissing;
+use Domain\Plans\Models\Plan;
+use Illuminate\Contracts\Events\Dispatcher;
+
+/**
+ * Starts the plan once, under its row lock, by the same rule the plans read offers, and raises PlanStarted only when it changed.
+ */
+final readonly class StartPlanHandler
+{
+    public function __construct(
+        private CurrentActor $actors,
+        private Dispatcher $events,
+    ) {}
+
+    public function handle(StartPlan $command): void
+    {
+        $plan = Plan::query()->whereKey($command->planId)->lockForUpdate()->first() ?? throw PlanMissing::withId($command->planId);
+
+        if ($plan->startOnce()) {
+            $this->events->dispatch(new PlanStarted($plan->id, $this->actors->actor()));
+        }
+    }
+}

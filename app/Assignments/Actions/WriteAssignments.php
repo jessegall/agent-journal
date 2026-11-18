@@ -26,9 +26,6 @@ use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
 use App\Assignments\Support\RecordIdentity;
 use Closure;
-use PhpOption\None;
-use PhpOption\Option;
-use PhpOption\Some;
 
 /**
  * The assignment writer: in one repeatable-read transaction it checks the caller may give out work and the
@@ -59,7 +56,7 @@ final readonly class WriteAssignments implements AssignmentWriter
                 return $this->unchangedIfHeldBy($current->get(), $recipient);
             }
 
-            return $this->changed(AssignmentReason::Assigned, $record, None::create(), Some::create($this->store->assignIfUnheld($record, $recipient)));
+            return $this->changed(AssignmentReason::Assigned, $record, null, $this->store->assignIfUnheld($record, $recipient));
         });
     }
 
@@ -74,7 +71,7 @@ final readonly class WriteAssignments implements AssignmentWriter
                 return $this->unchanged($current);
             }
 
-            return $this->changed(AssignmentReason::Reassigned, $record, Some::create($current), Some::create($this->store->replace($current, $recipient)));
+            return $this->changed(AssignmentReason::Reassigned, $record, $current, $this->store->replace($current, $recipient));
         });
     }
 
@@ -85,13 +82,13 @@ final readonly class WriteAssignments implements AssignmentWriter
             $this->providers->recordProvider($record->type)->requireAssignable($record);
 
             if ($this->store->lockCurrent($record)->isEmpty()) {
-                return new AssignmentResult([new AssignmentOutcome($record, None::create(), AssignmentOutcomeType::Unchanged)], []);
+                return new AssignmentResult([new AssignmentOutcome($record, null, AssignmentOutcomeType::Unchanged)], []);
             }
 
             $current = $this->requireExpected($record, $expected);
             $this->store->remove($current);
 
-            return $this->changed(AssignmentReason::Unassigned, $record, Some::create($current), None::create());
+            return $this->changed(AssignmentReason::Unassigned, $record, $current, null);
         });
     }
 
@@ -213,14 +210,10 @@ final readonly class WriteAssignments implements AssignmentWriter
 
     private function unchanged(Assignment $current): AssignmentResult
     {
-        return new AssignmentResult([new AssignmentOutcome($current->record, Some::create($current), AssignmentOutcomeType::Unchanged)], []);
+        return new AssignmentResult([new AssignmentOutcome($current->record, $current, AssignmentOutcomeType::Unchanged)], []);
     }
 
-    /**
-     * @param  Option<Assignment>  $before
-     * @param  Option<Assignment>  $after
-     */
-    private function changed(AssignmentReason $reason, RecordIdentity $record, Option $before, Option $after): AssignmentResult
+    private function changed(AssignmentReason $reason, RecordIdentity $record, Assignment|null $before, Assignment|null $after): AssignmentResult
     {
         $result = new AssignmentResult(
             [new AssignmentOutcome($record, $after, AssignmentOutcomeType::Changed)],

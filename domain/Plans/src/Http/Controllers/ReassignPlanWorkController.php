@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Domain\Plans\Http\Controllers;
 
 use App\Assignments\Contracts\AssigneeReader;
-use Domain\Plans\Contracts\PlanAssignments;
+use App\Bus\Contracts\CommandBus;
+use Domain\Plans\Commands\ReassignPlanWork;
 use Domain\Plans\Http\Data\PlanWorkResultData;
 use Domain\Plans\Http\Requests\ReassignPlanWorkRequest;
 use Illuminate\Http\JsonResponse;
@@ -15,10 +16,10 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class ReassignPlanWorkController
 {
-    public function __invoke(ReassignPlanWorkRequest $request, PlanAssignments $cascades, AssigneeReader $assignees): JsonResponse
+    public function __invoke(ReassignPlanWorkRequest $request, CommandBus $commands, AssigneeReader $assignees): JsonResponse
     {
         $root = $request->rootRecord();
-        $result = $cascades->reassign($root, $request->expectedRoot(), $request->recipient());
+        $result = $commands->run(new ReassignPlanWork($root, $request->expectedRoot(), $request->recipient()));
 
         return new JsonResponse(PlanWorkResultData::of($root, $result, $assignees->holdersOf($result->currentAssignments())));
     }

@@ -29,6 +29,12 @@ trait RefreshHookDatabase
             $this->app->make(Kernel::class)->call('migrate', ['--force' => true]);
         }
 
+        // A test that commits real rows wraps nothing, so it keeps Laravel's own transaction manager: the testing one
+        // takes the first transaction for the wrapper and would run after-commit work even when it rolls back.
+        if ($this->connectionsToTransact() === []) {
+            return;
+        }
+
         $this->beginLaravelDatabaseTransaction();
     }
 

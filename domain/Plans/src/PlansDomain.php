@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans;
 
+use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Contracts\Domain;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Ui\Contracts\ProvidesNavigation;
@@ -25,9 +26,12 @@ use Domain\Plans\Api\PlanFilters;
 use Domain\Plans\Api\PlanList;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Api\PlanSelection;
-use Domain\Plans\Contracts\PlanAssignments;
+use Domain\Plans\Commands\AddPhaseTasks;
+use Domain\Plans\Commands\AssignPlanWork;
+use Domain\Plans\Commands\ReassignPlanWork;
+use Domain\Plans\Commands\StartPlan;
+use Domain\Plans\Commands\UnassignPlanWork;
 use Domain\Plans\Contracts\PlanReader;
-use Domain\Plans\Contracts\PlanStarter;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\PlanMissing;
@@ -44,7 +48,7 @@ use Domain\Plans\Support\PhaseAssignmentProvider;
 use Domain\Plans\Support\PlanAssignmentProvider;
 use Domain\Tasks\TasksDomain;
 
-final class PlansDomain implements Domain, ProvidesAssignables, ProvidesNavigation, ProvidesPages, ProvidesSections
+final class PlansDomain implements Domain, ProvidesAssignables, ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesSections
 {
     public function description(): string
     {
@@ -68,8 +72,10 @@ final class PlansDomain implements Domain, ProvidesAssignables, ProvidesNavigati
             PlanStarted::class,
             PlanProgressChanged::class,
             PlanReader::class,
-            PlanAssignments::class,
-            PlanStarter::class,
+            StartPlan::class,
+            AssignPlanWork::class,
+            ReassignPlanWork::class,
+            UnassignPlanWork::class,
             PlanMissing::class,
             StartDenied::class,
             PlanFilters::class,
@@ -90,6 +96,14 @@ final class PlansDomain implements Domain, ProvidesAssignables, ProvidesNavigati
             Plan::LINK_TYPE => PlanAssignmentProvider::class,
             Phase::LINK_TYPE => PhaseAssignmentProvider::class,
         ];
+    }
+
+    /**
+     * @return list<class-string>
+     */
+    public function commands(): array
+    {
+        return [StartPlan::class, AddPhaseTasks::class, AssignPlanWork::class, ReassignPlanWork::class, UnassignPlanWork::class];
     }
 
     public function pages(): array

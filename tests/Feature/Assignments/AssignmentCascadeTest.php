@@ -101,7 +101,7 @@ final class AssignmentCascadeTest extends TestCase
 
     public function test_a_deliberate_reassignment_needs_the_roots_reference_and_releasing_clears_the_unfinished(): void
     {
-        $root = $this->writer()->assignUnfinished($this->builder, fn () => $this->group())->outcomes[0]->current->get();
+        $root = $this->writer()->assignUnfinished($this->builder, fn () => $this->group())->outcomes[0]->current;
 
         $this->assertThrows(fn () => $this->writer()->reassignUnfinished(new AssignmentReference(999999, $this->builder), $this->other, fn () => $this->group()), AssignmentConflict::class);
 

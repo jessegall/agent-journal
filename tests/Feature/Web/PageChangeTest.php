@@ -19,7 +19,7 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\Event;
 use RuntimeException;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfMoved;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
 /**
@@ -27,7 +27,12 @@ use Tests\TestCase;
  */
 final class PageChangeTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
+
+    /**
+     * The changes commit for real, so a rolled back one is judged by the real transaction manager.
+     */
+    private const array TABLES = ['users', 'tasks', 'plans', 'phases', 'phase_tasks', 'links', 'assignments'];
 
     private User $owner;
 

@@ -18,7 +18,6 @@ use App\Assignments\Support\AssignmentResult;
 use App\Assignments\Support\AssignmentSet;
 use App\Assignments\Support\Page;
 use App\Assignments\Support\RecordIdentity;
-use PhpOption\None;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -106,9 +105,9 @@ final class AssignmentValuesTest extends TestCase
     public function test_a_result_counts_its_outcomes_by_type(): void
     {
         $result = new AssignmentResult([
-            new AssignmentOutcome(new RecordIdentity('tasks.task', 1), None::create(), AssignmentOutcomeType::Unchanged),
-            new AssignmentOutcome(new RecordIdentity('tasks.task', 2), None::create(), AssignmentOutcomeType::SkippedFinished),
-            new AssignmentOutcome(new RecordIdentity('tasks.task', 3), None::create(), AssignmentOutcomeType::SkippedFinished),
+            new AssignmentOutcome(new RecordIdentity('tasks.task', 1), null, AssignmentOutcomeType::Unchanged),
+            new AssignmentOutcome(new RecordIdentity('tasks.task', 2), null, AssignmentOutcomeType::SkippedFinished),
+            new AssignmentOutcome(new RecordIdentity('tasks.task', 3), null, AssignmentOutcomeType::SkippedFinished),
         ], []);
 
         $this->assertSame(2, $result->count(AssignmentOutcomeType::SkippedFinished));

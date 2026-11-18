@@ -46,14 +46,6 @@ final readonly class AssignmentResult
      */
     public function currentAssignments(): AssignmentSet
     {
-        $assignments = [];
-
-        foreach ($this->outcomes as $outcome) {
-            foreach ($outcome->current as $assignment) {
-                $assignments[] = $assignment;
-            }
-        }
-
-        return new AssignmentSet($assignments);
+        return new AssignmentSet(array_values(array_filter(array_map(fn (AssignmentOutcome $outcome) => $outcome->current, $this->outcomes))));
     }
 }

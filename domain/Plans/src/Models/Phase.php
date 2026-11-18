@@ -53,13 +53,13 @@ final class Phase extends Model implements Assignable
 
     /**
      * Puts several tasks, named by id, at the end of this phase in the order given, with one insert. A task already in
-     * a phase, or named twice, is refused before anything is written.
+     * a phase, or named twice, is refused before anything is written. It runs inside the caller's transaction.
      *
      * @param  list<int>  $taskIds
      */
     public function addTasks(array $taskIds): void
     {
-        $this->getConnection()->transaction(fn () => $this->addTasksUnderPlanLock($taskIds));
+        $this->addTasksUnderPlanLock($taskIds);
     }
 
     /**

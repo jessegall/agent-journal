@@ -8,9 +8,14 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Support\AssignmentReference;
+use App\Assignments\Support\AssignmentResult;
+use App\Assignments\Support\RecordIdentity;
+use App\Bus\Contracts\CommandBus;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Plans\Contracts\PlanAssignments;
+use Domain\Plans\Commands\AssignPlanWork;
+use Domain\Plans\Commands\UnassignPlanWork;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\PhaseTask;
@@ -75,7 +80,7 @@ final class PlanCascadeTest extends TestCase
 
     public function test_a_plan_cascade_gives_the_plan_its_unfinished_phases_and_tasks_and_skips_a_phase_whose_work_is_over(): void
     {
-        $result = $this->cascades()->assign($this->plan->assignmentIdentity(), $this->builder);
+        $result = $this->assignWork($this->plan->assignmentIdentity(), $this->builder);
 
         $this->assertCount(4, $result->changes);
         $this->assertEqualsCanonicalizing([
@@ -88,11 +93,11 @@ final class PlanCascadeTest extends TestCase
 
     public function test_a_phase_cascade_covers_that_phase_and_its_tasks_only_and_releasing_it_clears_them(): void
     {
-        $root = $this->cascades()->assign($this->working->assignmentIdentity(), $this->builder)->outcomes[0]->current->get();
+        $root = $this->assignWork($this->working->assignmentIdentity(), $this->builder)->outcomes[0]->current;
 
         $this->assertEqualsCanonicalizing([Phase::LINK_TYPE, 'tasks.task'], $this->heldTypes());
 
-        $this->cascades()->unassign($this->working->assignmentIdentity(), $root->reference);
+        $this->unassignWork($this->working->assignmentIdentity(), $root->reference);
 
         $this->assertSame(0, AssignmentRecord::query()->count());
     }
@@ -101,14 +106,14 @@ final class PlanCascadeTest extends TestCase
     {
         PhaseTask::query()->insert(['phase_id' => $this->working->id, 'task_id' => 999999, 'position' => 2]);
 
-        $this->assertThrows(fn () => $this->cascades()->assign($this->plan->assignmentIdentity(), $this->builder), TaskMissing::class);
+        $this->assertThrows(fn () => $this->assignWork($this->plan->assignmentIdentity(), $this->builder), TaskMissing::class);
 
         $this->assertSame(0, AssignmentRecord::query()->count());
     }
 
     public function test_work_added_after_a_cascade_takes_no_holder_from_it(): void
     {
-        $this->cascades()->assign($this->plan->assignmentIdentity(), $this->builder);
+        $this->assignWork($this->plan->assignmentIdentity(), $this->builder);
         $late = Task::query()->create(['title' => 'Added later']);
 
         $this->working->addTasks([$late->id]);
@@ -126,8 +131,13 @@ final class PlanCascadeTest extends TestCase
         return array_values(AssignmentRecord::query()->pluck('record_type')->all());
     }
 
-    private function cascades(): PlanAssignments
+    private function assignWork(RecordIdentity $root, ActorIdentity $recipient): AssignmentResult
     {
-        return $this->app->make(PlanAssignments::class);
+        return $this->app->make(CommandBus::class)->run(new AssignPlanWork($root, $recipient));
+    }
+
+    private function unassignWork(RecordIdentity $root, AssignmentReference $expectedRoot): AssignmentResult
+    {
+        return $this->app->make(CommandBus::class)->run(new UnassignPlanWork($root, $expectedRoot));
     }
 }

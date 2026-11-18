@@ -12,8 +12,8 @@ use ReflectionType;
 
 /**
  * What a command may carry and a handler may return (doc 19, section 6.7): whole numbers, text, yes or no and
- * decimals, backed enums, their nullable forms, lists of whole numbers, text or one enum, and allowed values, final
- * readonly classes the owner may name whose own properties follow the same grammar.
+ * decimals, backed enums, their nullable forms, allowed values (final readonly classes the owner may name whose own
+ * properties follow the same grammar), and lists of whole numbers, text, one enum or one allowed value.
  */
 final readonly class CommandGrammar
 {
@@ -77,7 +77,7 @@ final readonly class CommandGrammar
         }
 
         if ($name === 'array') {
-            return $this->problemWithList($property);
+            return $this->problemWithList($property, $seen);
         }
 
         if (enum_exists($name)) {
@@ -87,24 +87,40 @@ final readonly class CommandGrammar
         return $this->problemWithValue($name, $seen);
     }
 
-    private function problemWithList(ReflectionProperty|null $property): string|null
+    /**
+     * @param  list<string>  $seen
+     */
+    private function problemWithList(ReflectionProperty|null $property, array $seen): string|null
     {
         $doc = (string) ($property?->getDeclaringClass()->getConstructor()?->getDocComment() ?: $property?->getDocComment());
 
         if ($property === null || preg_match('/list<([A-Za-z\\\\]+)>\s+\$'.$property->getName().'\b/', $doc, $match) !== 1) {
-            return 'is an array without a list<int>, list<string> or list of an enum docblock';
+            return 'is an array without a list<int>, list<string>, list of an enum or list of a value docblock';
         }
 
         $item = ltrim($match[1], '\\');
 
-        return in_array($item, ['int', 'string'], true) || $this->isBackedEnum($item, $property) ? null : "is a list of {$item}, not of whole numbers, text or an enum";
+        if (in_array($item, ['int', 'string'], true)) {
+            return null;
+        }
+
+        $class = $this->classNamed($item, $property);
+
+        if (enum_exists($class)) {
+            return is_subclass_of($class, BackedEnum::class) ? null : "is a list of the enum {$class}, which has no values";
+        }
+
+        $problem = class_exists($class) ? $this->problemWithValue($class, $seen) : "is typed {$class}, which is no class, enum or allowed type";
+
+        return $problem === null ? null : "is a list whose item {$problem}";
     }
 
-    private function isBackedEnum(string $item, ReflectionProperty $property): bool
+    /**
+     * The class a docblock names, read in the declaring class's namespace when it is written short.
+     */
+    private function classNamed(string $item, ReflectionProperty $property): string
     {
-        $class = str_contains($item, '\\') ? $item : $property->getDeclaringClass()->getNamespaceName().'\\'.$item;
-
-        return enum_exists($class) && is_subclass_of($class, BackedEnum::class);
+        return str_contains($item, '\\') ? $item : $property->getDeclaringClass()->getNamespaceName().'\\'.$item;
     }
 
     /**

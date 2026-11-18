@@ -10,11 +10,16 @@ use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\TestCase;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
 
 final class StartPlanTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
+
+    /**
+     * The start runs on the bus and commits for real, so these tables are emptied around each test.
+     */
+    private const array TABLES = ['users', 'plans', 'phases', 'phase_tasks', 'tasks'];
 
     private User $owner;
 

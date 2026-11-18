@@ -6,21 +6,27 @@ namespace Domain\Plans\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use Domain\Plans\Actions\AddPhaseTasks;
+use App\Bus\Contracts\CommandBus;
+use Domain\Plans\Commands\AddPhaseTasks;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
 
 /**
  * Plans puts tasks into phases by id, after Tasks confirmed they exist.
  */
 final class AddPhaseTasksTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
+
+    /**
+     * The bus commits AddPhaseTasks for real, so these tables are emptied around each test.
+     */
+    private const array TABLES = ['plans', 'phases', 'phase_tasks', 'tasks'];
 
     public function test_tasks_join_a_phase_in_order_once_tasks_confirmed_them(): void
     {
@@ -29,7 +35,7 @@ final class AddPhaseTasksTest extends TestCase
         $first = Task::query()->create(['title' => 'First'])->id;
         $second = Task::query()->create(['title' => 'Second'])->id;
 
-        $this->app->make(AddPhaseTasks::class)->add($phase, [$second, $first]);
+        $this->app->make(CommandBus::class)->run(new AddPhaseTasks($phase->id, [$second, $first]));
 
         $this->assertSame([$second, $first], $phase->taskIds());
     }
@@ -41,7 +47,7 @@ final class AddPhaseTasksTest extends TestCase
         $real = Task::query()->create(['title' => 'Real'])->id;
 
         try {
-            $this->app->make(AddPhaseTasks::class)->add($phase, [$real, 999999]);
+            $this->app->make(CommandBus::class)->run(new AddPhaseTasks($phase->id, [$real, 999999]));
             $this->fail('A missing task was added.');
         } catch (TaskMissing) {
             $this->assertSame([], $phase->taskIds());
@@ -50,11 +56,16 @@ final class AddPhaseTasksTest extends TestCase
 
     public function test_a_task_named_twice_is_refused_before_anything_is_written(): void
     {
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
         $phase = Plan::query()->create(['title' => 'Build', 'type' => PlanType::Build])->addPhase('Read');
         $task = Task::query()->create(['title' => 'Twice'])->id;
 
-        $this->expectExceptionObject(TaskAlreadyInAPhase::forTask($task));
-
-        $phase->addTasks([$task, $task]);
+        try {
+            $this->app->make(CommandBus::class)->run(new AddPhaseTasks($phase->id, [$task, $task]));
+            $this->fail('A task named twice was added.');
+        } catch (TaskAlreadyInAPhase $refusal) {
+            $this->assertEquals(TaskAlreadyInAPhase::forTask($task), $refusal);
+            $this->assertSame([], $phase->taskIds());
+        }
     }
 }

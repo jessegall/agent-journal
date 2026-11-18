@@ -73,10 +73,10 @@ final class AssignmentWriterTest extends TestCase
         $again = $this->writer()->assign($this->task, ActorIdentity::of($this->helper));
 
         $this->assertSame(AssignmentOutcomeType::Changed, $first->outcomes[0]->type);
-        $this->assertTrue($first->changes[0]->before->isEmpty());
+        $this->assertNull($first->changes[0]->before);
         $this->assertSame(AssignmentOutcomeType::Unchanged, $again->outcomes[0]->type);
         $this->assertSame([], $again->changes);
-        $this->assertTrue($again->outcomes[0]->current->get()->reference->isSameAs($first->outcomes[0]->current->get()->reference));
+        $this->assertTrue($again->outcomes[0]->current->reference->isSameAs($first->outcomes[0]->current->reference));
         $this->assertThrows(fn () => $this->writer()->assign($this->task, ActorIdentity::of($this->main)), AssignmentConflict::class);
     }
 
@@ -95,9 +95,9 @@ final class AssignmentWriterTest extends TestCase
 
     public function test_a_reassignment_needs_the_reference_it_read_even_after_a_round_trip(): void
     {
-        $first = $this->writer()->assign($this->task, ActorIdentity::of($this->helper))->outcomes[0]->current->get();
-        $toMain = $this->writer()->reassign($this->task, $first->reference, ActorIdentity::of($this->main))->outcomes[0]->current->get();
-        $back = $this->writer()->reassign($this->task, $toMain->reference, ActorIdentity::of($this->helper))->outcomes[0]->current->get();
+        $first = $this->writer()->assign($this->task, ActorIdentity::of($this->helper))->outcomes[0]->current;
+        $toMain = $this->writer()->reassign($this->task, $first->reference, ActorIdentity::of($this->main))->outcomes[0]->current;
+        $back = $this->writer()->reassign($this->task, $toMain->reference, ActorIdentity::of($this->helper))->outcomes[0]->current;
 
         $this->assertThrows(fn () => $this->writer()->reassign($this->task, $first->reference, ActorIdentity::of($this->main)), AssignmentConflict::class);
         $this->assertSame(AssignmentOutcomeType::Unchanged, $this->writer()->reassign($this->task, $back->reference, ActorIdentity::of($this->helper))->outcomes[0]->type);
@@ -105,12 +105,12 @@ final class AssignmentWriterTest extends TestCase
 
     public function test_releasing_removes_the_holder_and_releasing_an_unheld_record_is_unchanged(): void
     {
-        $held = $this->writer()->assign($this->task, ActorIdentity::of($this->helper))->outcomes[0]->current->get();
+        $held = $this->writer()->assign($this->task, ActorIdentity::of($this->helper))->outcomes[0]->current;
 
         $released = $this->writer()->unassign($this->task, $held->reference);
         $again = $this->writer()->unassign($this->task, $held->reference);
 
-        $this->assertTrue($released->outcomes[0]->current->isEmpty());
+        $this->assertNull($released->outcomes[0]->current);
         $this->assertCount(1, $released->changes);
         $this->assertSame(AssignmentOutcomeType::Unchanged, $again->outcomes[0]->type);
         $this->assertSame(0, AssignmentRecord::query()->count());

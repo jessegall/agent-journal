@@ -89,7 +89,7 @@ final class AssignmentStoreTest extends TestCase
         $result = $this->inTransaction(fn (AssignmentStore $store) => $store->releaseAll($this->builder));
 
         $this->assertCount(2, $result->changes);
-        $this->assertTrue($result->changes[0]->after->isEmpty());
+        $this->assertNull($result->changes[0]->after);
         $this->assertSame([$kept->reference->id], AssignmentRecord::query()->pluck('id')->all());
     }
 

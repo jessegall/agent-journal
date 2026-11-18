@@ -8,23 +8,29 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Support\ActorContext;
+use App\Bus\Contracts\CommandBus;
+use App\Hooks\Support\StackTransaction;
 use Domain\Plans\Api\Events\PlanStarted;
 use Domain\Plans\Api\PlanFilters;
-use Domain\Plans\Contracts\PlanStarter;
+use Domain\Plans\Commands\StartPlan;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Readers\PlanRecords;
 use Domain\Plans\Tests\TestCase;
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Hooks\TestFailure;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\CommitsHookRows;
 
 final class StartPlanTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
+
+    /**
+     * The bus commits StartPlan for real, so these tables are emptied around each test.
+     */
+    private const array TABLES = ['plans', 'phases', 'phase_tasks', 'tasks', 'links', 'assignments'];
 
     private Plan $plan;
 
@@ -39,7 +45,7 @@ final class StartPlanTest extends TestCase
 
     public function test_a_planned_plan_starts_once_and_says_who_started_it(): void
     {
-        $this->startPlan()->start($this->plan->id);
+        $this->startPlan($this->plan->id);
 
         $this->assertSame(PlanState::Started, $this->plan->fresh()?->state);
         Event::assertDispatchedTimes(PlanStarted::class, 1);
@@ -48,8 +54,8 @@ final class StartPlanTest extends TestCase
 
     public function test_starting_a_started_plan_again_changes_nothing_and_raises_nothing(): void
     {
-        $this->startPlan()->start($this->plan->id);
-        $this->startPlan()->start($this->plan->id);
+        $this->startPlan($this->plan->id);
+        $this->startPlan($this->plan->id);
 
         Event::assertDispatchedTimes(PlanStarted::class, 1);
     }
@@ -59,7 +65,7 @@ final class StartPlanTest extends TestCase
         Plan::query()->whereKey($this->plan->id)->update(['state' => PlanState::Paused->value]);
 
         try {
-            $this->startPlan()->start($this->plan->id);
+            $this->startPlan($this->plan->id);
             $this->fail('A paused plan started.');
         } catch (StartDenied) {
             $this->assertSame(PlanState::Paused, $this->plan->fresh()?->state);
@@ -70,8 +76,8 @@ final class StartPlanTest extends TestCase
     public function test_a_start_that_rolls_back_raises_nothing(): void
     {
         try {
-            $this->app->make(ConnectionInterface::class)->transaction(function (): void {
-                $this->startPlan()->start($this->plan->id);
+            $this->app->make(StackTransaction::class)->run(function (): void {
+                $this->startPlan($this->plan->id);
 
                 throw TestFailure::failedAfterTheStart();
             });
@@ -100,15 +106,15 @@ final class StartPlanTest extends TestCase
         $this->app->forgetScopedInstances();
 
         try {
-            $this->startPlan()->start($this->plan->id);
+            $this->startPlan($this->plan->id);
             $this->fail('A start without an actor went through.');
         } catch (ActorContextMissing) {
             $this->assertSame(PlanState::Planned, $this->plan->fresh()?->state);
         }
     }
 
-    private function startPlan(): PlanStarter
+    private function startPlan(int $planId): void
     {
-        return $this->app->make(PlanStarter::class);
+        $this->app->make(CommandBus::class)->run(new StartPlan($planId));
     }
 }

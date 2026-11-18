@@ -81,15 +81,13 @@ final class Plan extends Model implements Assignable
     }
 
     /**
-     * Adds a phase after the last one.
+     * Adds a phase after the last one, inside the caller's transaction.
      */
     public function addPhase(string $title): Phase
     {
-        return $this->getConnection()->transaction(function () use ($title): Phase {
-            self::lockStructure($this->id);
+        self::lockStructure($this->id);
 
-            return $this->phases()->create(['title' => $title, 'position' => $this->phases()->count() + 1]);
-        });
+        return $this->phases()->create(['title' => $title, 'position' => $this->phases()->count() + 1]);
     }
 
     /**
