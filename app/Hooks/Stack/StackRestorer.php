@@ -7,12 +7,14 @@ namespace App\Hooks\Stack;
 use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Enums\ReadyStateType;
+use App\Hooks\Exceptions\StackTooDeep;
 use App\Hooks\Exceptions\StateSchemaUnknown;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
 
 /**
- * Rebuilds an agent's stack from its stored frames: one bottom state of the agent's role, every state read fresh, finished ones removed.
+ * Rebuilds an agent's stack from its stored frames: one bottom state of the agent's role and every state read fresh,
+ * finished ones included. Restoring only reads: it removes, writes and calls nothing.
  */
 final readonly class StackRestorer
 {
@@ -24,8 +26,12 @@ final readonly class StackRestorer
     public function restore(FrameRecords $records, ReadyStateType $role): AgentStack
     {
         $records->checkBottomFor($role);
-
         $all = $records->all();
+
+        if (count($all) > AgentStack::DEEPEST) {
+            throw StackTooDeep::for('a stored stack', AgentStack::DEEPEST);
+        }
+
         $frames = [];
 
         foreach ($this->positionsByType($all) as $typeKey => $positions) {
@@ -48,7 +54,7 @@ final readonly class StackRestorer
 
         ksort($frames);
 
-        return (new AgentStack(array_values($frames), $this->factory))->withoutFinishedFrames();
+        return new AgentStack(array_values($frames), $this->factory);
     }
 
     /**

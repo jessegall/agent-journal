@@ -280,7 +280,7 @@ final class AgentStackTest extends TestCase
 
     public function test_a_step_keeps_its_typed_labels_through_an_array(): void
     {
-        $step = new WalkStep('top', 'guide', 'onStop', AnswerType::Deny, TransitionType::Push);
+        $step = new WalkStep('top', 'guide', 'onStop', AnswerType::Deny, TransitionType::Push, 0);
 
         $copy = WalkStep::from($step->toArray());
 

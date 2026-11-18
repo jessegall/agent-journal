@@ -55,11 +55,11 @@ final class StackRestorerTest extends TestCase
         $this->tasks->tasks[42] = TaskWorkState::Finished;
         $after = $this->restorer->restore($records, ReadyStateType::MainAgent);
 
-        $this->assertSame(['ready', 'task-42'], $before->frameIds());
-        $this->assertSame(['ready'], $after->frameIds());
+        $this->assertSame([false], array_map(fn ($frame) => $frame->isFinished(), array_slice($before->frames(), 1)));
+        $this->assertSame([true], array_map(fn ($frame) => $frame->isFinished(), array_slice($after->frames(), 1)));
     }
 
-    public function test_a_finished_frame_is_removed_from_the_middle(): void
+    public function test_restoring_keeps_a_finished_frame_and_the_stack_drops_it_on_request(): void
     {
         $this->tasks->tasks[42] = TaskWorkState::Cancelled;
 
@@ -68,7 +68,8 @@ final class StackRestorerTest extends TestCase
             ReadyStateType::MainAgent,
         );
 
-        $this->assertSame(['ready', 'task-43'], $stack->frameIds());
+        $this->assertSame(['ready', 'task-42', 'task-43'], $stack->frameIds());
+        $this->assertSame(['ready', 'task-43'], $stack->withoutFinishedFrames()->frameIds());
     }
 
     public function test_the_bottom_state_follows_the_agent_role(): void

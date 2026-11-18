@@ -44,7 +44,7 @@ final class SettingsDocumentCast implements CastsAttributes
             throw SettingsDocumentInvalid::notJson($owner);
         }
 
-        if (! $envelope instanceof stdClass || ! $this->holdsExactly($envelope, ['settings', 'toggles']) || ! is_array($envelope->settings) || ! is_array($envelope->toggles)) {
+        if (! $this->isEnvelope($envelope)) {
             throw SettingsDocumentInvalid::wrongEnvelope($owner);
         }
 
@@ -117,5 +117,18 @@ final class SettingsDocumentCast implements CastsAttributes
         }
 
         return $entries;
+    }
+
+    /**
+     * Whether a decoded value is the document's envelope: an object holding exactly a settings list and a toggles list.
+     *
+     * @phpstan-assert-if-true stdClass&object{settings: list<mixed>, toggles: list<mixed>} $envelope
+     */
+    private function isEnvelope(mixed $envelope): bool
+    {
+        return $envelope instanceof stdClass
+            && $this->holdsExactly($envelope, ['settings', 'toggles'])
+            && is_array($envelope->settings) && array_is_list($envelope->settings)
+            && is_array($envelope->toggles) && array_is_list($envelope->toggles);
     }
 }

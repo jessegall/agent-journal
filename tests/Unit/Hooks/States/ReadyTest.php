@@ -63,7 +63,7 @@ final class ReadyTest extends TestCase
     {
         $hooks = array_filter(
             (new ReflectionClass(AgentState::class))->getMethods(ReflectionMethod::IS_PUBLIC),
-            fn (ReflectionMethod $method) => str_starts_with($method->getName(), 'on'),
+            fn (ReflectionMethod $method) => str_starts_with($method->getName(), 'on') && (string) $method->getReturnType() === Decision::class,
         );
 
         return array_values(array_map(

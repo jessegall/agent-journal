@@ -12,6 +12,7 @@ use App\Hooks\Exceptions\ReplayFound;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\ShellCommandRequested;
+use App\Hooks\Lifecycle\FrameLifecycle;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Programs\ProgramCapabilities;
@@ -23,8 +24,10 @@ use App\Hooks\Support\StackTransaction;
 use Closure;
 
 /**
- * Answers one hook call in one transaction: lock the stack, replay a call already answered, or restore, walk,
- * render and save the reply, its steps and the stack together. Nothing is kept when any step fails.
+ * Answers one hook call in one transaction: lock the stack, replay a call already answered, or restore, walk the
+ * stack without its finished frames, settle what the program accepts, call the lifecycle methods of the frames that
+ * left, arrived or came back on top, then render and save the reply, its steps and the stack together. Nothing is
+ * kept when any step fails.
  */
 final readonly class AgentStateMachine
 {
@@ -34,6 +37,7 @@ final readonly class AgentStateMachine
         private StackRestorer $restorer,
         private HookRewrite $rewrite,
         private Compaction $compaction,
+        private FrameLifecycle $lifecycle,
     ) {}
 
     /**
@@ -62,9 +66,12 @@ final readonly class AgentStateMachine
                     throw ReplayFound::answeredBefore($identity->hookId);
                 }
 
+                $this->lifecycle->refuseChangeDuringCallbacks($this->access->target());
                 $stackBefore = $this->restorer->restore($row->frames, $this->access->role());
-                $settled = $capabilities->finalAnswer($this->walk($stackBefore, $input), $stackBefore);
+                $baseline = $stackBefore->withoutFinishedFrames();
+                $settled = $capabilities->finalAnswer($this->walk($baseline, $input), $baseline);
                 $answer = $settled->withRemindersFirst($reminders);
+                $this->lifecycle->settle($this->access->target(), $stackBefore, $answer->stack);
                 $reply = $render($answer);
 
                 $row->saveFrames($answer->stack->records());

@@ -175,6 +175,7 @@ use App\Hooks\Inputs\StopDetails;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
 use App\Hooks\Inputs\ToolResult;
+use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Hooks\States\AgentState;
 use App\Http\Data\Assignments\RecordHolderData;
@@ -360,6 +361,7 @@ final class CoreApi
                 AnswerType::class,
                 TransitionType::class,
                 StateReference::class,
+                LifecycleContext::class,
                 NoSubject::class,
                 SubjectReference::class,
                 ContextCompacted::class,

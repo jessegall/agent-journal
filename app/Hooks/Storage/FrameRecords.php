@@ -26,6 +26,18 @@ final readonly class FrameRecords
     }
 
     /**
+     * The role the bottom frame stands for.
+     *
+     * @throws InvalidBottomState when the stack has no ready frame at its bottom
+     */
+    public function role(): ReadyStateType
+    {
+        $first = $this->records[0] ?? throw InvalidBottomState::missing();
+
+        return ReadyStateType::tryFrom($first->reference->typeKey) ?? throw InvalidBottomState::missing();
+    }
+
+    /**
      * @throws InvalidBottomState unless the first frame, and only the first, is the bottom state of the role
      */
     public function checkBottomFor(ReadyStateType $role): void

@@ -12,7 +12,7 @@ use App\Hooks\Contracts\UserStack;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Models\AgentStackRow;
-use App\Hooks\Stack\StackRestorer;
+use App\Hooks\Stack\StatePush;
 use App\Hooks\Support\StackTransaction;
 
 /**
@@ -25,7 +25,7 @@ final readonly class UserStacks implements UserStack
     public function __construct(
         private StackTransaction $transaction,
         private CurrentActor $actors,
-        private StackRestorer $restorer,
+        private StatePush $statePush,
     ) {}
 
     public function push(StackTarget $target, StateReference $state): void
@@ -34,10 +34,7 @@ final readonly class UserStacks implements UserStack
         $this->transaction->requireOpen($target);
 
         $role = $this->roleOf($target);
-        $row = AgentStackRow::lockAuthorizedFor($target);
-        $stack = $this->restorer->restore($row->frames, $role)->withStateOnTop($state);
-
-        $row->saveFrames($stack->records());
+        $this->statePush->push($target, AgentStackRow::lockAuthorizedFor($target), $role, $state);
     }
 
     /**

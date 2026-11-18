@@ -22,6 +22,9 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * The stored stack of one agent in one journal session. The agent and session are set only through startFor, never mass assigned.
@@ -100,6 +103,29 @@ final class AgentStackRow extends Model implements ReadableModel
         }
 
         return $row;
+    }
+
+    /**
+     * The target's stack as the given query finds it, open or closed, locked for this transaction: a closed stack is
+     * history, kept as it is, while a missing one is refused.
+     *
+     * @param  Builder<self>  $query
+     */
+    public static function lockKeptFor(Builder $query, StackTarget $target): self
+    {
+        return $query->lockForUpdate()->first() ?? throw StackMissing::forTarget($target->description());
+    }
+
+    /**
+     * The active stack of the target as the caller may read it, unlocked; none when it is missing or closed.
+     *
+     * @return Option<self>
+     */
+    public static function activeFor(StackTarget $target): Option
+    {
+        $row = self::query()->forTarget($target)->first();
+
+        return $row !== null && $row->isActive() ? new Some($row) : None::create();
     }
 
     /**

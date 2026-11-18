@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Lifecycle;
 
-use App\Hooks\Decisions\StateSet;
-use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Contracts\StateType;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Decisions\StateReferences;
+use App\Hooks\Decisions\StateSet;
 use App\Hooks\States\AgentState;
 use Tests\Fixtures\Hooks\ScriptedState;
 

@@ -46,6 +46,7 @@ final class HookWalk
             $this->hookMethod,
             $decision->answerType(),
             $decision->transition->type(),
+            count($decision->context),
         );
     }
 

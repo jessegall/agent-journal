@@ -8,7 +8,7 @@ use App\Agents\Support\StackTarget;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Models\AgentStackRow;
-use App\Hooks\Stack\StackRestorer;
+use App\Hooks\Stack\StatePush;
 use App\Hooks\Support\StackAccess;
 use App\Hooks\Support\StackTransaction;
 
@@ -20,7 +20,7 @@ final readonly class AgentStacks implements AgentStack
     public function __construct(
         private StackTransaction $transaction,
         private StackAccess $access,
-        private StackRestorer $restorer,
+        private StatePush $statePush,
     ) {}
 
     /**
@@ -31,9 +31,6 @@ final readonly class AgentStacks implements AgentStack
         $this->transaction->requireOpen($target);
         $this->access->checkTarget($target);
 
-        $row = AgentStackRow::lockFor($target);
-        $stack = $this->restorer->restore($row->frames, $this->access->role())->withStateOnTop($state);
-
-        $row->saveFrames($stack->records());
+        $this->statePush->push($target, AgentStackRow::lockFor($target), $this->access->role(), $state);
     }
 }

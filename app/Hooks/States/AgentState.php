@@ -15,6 +15,7 @@ use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\Inputs\StopRequested;
 use App\Hooks\Inputs\ToolFinished;
+use App\Hooks\Lifecycle\LifecycleContext;
 
 /**
  * One state on an agent's stack. Every hook method delegates to the state below until a state overrides it, and
@@ -29,6 +30,21 @@ abstract class AgentState implements HookAnswerer
     {
         return false;
     }
+
+    /**
+     * Runs after a committed stack change put this frame on the stack.
+     */
+    public function onEnter(LifecycleContext $context): void {}
+
+    /**
+     * Runs after a committed stack change made this frame the top again, when the frames above it left.
+     */
+    public function onResume(LifecycleContext $context): void {}
+
+    /**
+     * Runs after a committed stack change took this frame off the stack.
+     */
+    public function onExit(LifecycleContext $context): void {}
 
     /**
      * Asked before the hook's own method: a decision answers the hook and the method is not asked; null, the default,
