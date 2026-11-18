@@ -20,6 +20,7 @@ use Domain\Access\Support\AccessSettings;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Models\Document;
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Foundation\Application;
 use RuntimeException;
 use Tests\Support\CommitsHookRows;
@@ -165,6 +166,33 @@ final class SharingListenerTest extends TestCase
         $response->assertStatus(503)->assertSee('This share cannot be shown right now.');
         $this->assertStringNotContainsString($this->token, (string) $response->getContent());
         $this->assertStringNotContainsString('select', (string) $response->getContent());
+    }
+
+    public function test_a_read_whose_audit_fails_answers_a_neutral_503_with_no_content_and_a_retry_reads_afresh(): void
+    {
+        $database = $this->app->make(ConnectionInterface::class);
+        $database->unprepared(<<<'SQL'
+            CREATE FUNCTION refuse_read_audit() RETURNS trigger LANGUAGE plpgsql AS $$
+            BEGIN
+                IF NEW.type = 'read_allowed' THEN
+                    RAISE EXCEPTION 'audit refused for the test';
+                END IF;
+                RETURN NEW;
+            END $$;
+            CREATE TRIGGER refuse_read_audit BEFORE INSERT ON share_audits FOR EACH ROW EXECUTE FUNCTION refuse_read_audit();
+            SQL);
+
+        try {
+            $failed = $this->get("/s/{$this->token}");
+        } finally {
+            $database->unprepared('DROP TRIGGER refuse_read_audit ON share_audits; DROP FUNCTION refuse_read_audit();');
+        }
+
+        $failed->assertStatus(503)->assertSee('This share cannot be shown right now.');
+        $this->assertStringNotContainsString('Ship it.', (string) $failed->getContent());
+        $this->assertStringNotContainsString('audit refused', (string) $failed->getContent());
+
+        $this->get("/s/{$this->token}")->assertOk()->assertSee('Ship it.');
     }
 
     private function activeShareOf(RecordIdentity $root): string
