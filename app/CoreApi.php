@@ -152,6 +152,7 @@ use App\Bus\Exceptions\CommandResultChanged;
 use App\Bus\Exceptions\CommandRetryExhausted;
 use App\Bus\Exceptions\CommandTransactionMismatch;
 use App\Bus\Exceptions\CommandTransactionMissing;
+use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Bus\Exceptions\ContinuationCalledTwice;
 use App\Bus\Exceptions\DomainDisabled;
 use App\Bus\Exceptions\ExplicitTransactionInCommand;
@@ -162,12 +163,12 @@ use App\Bus\Exceptions\MiddlewareListedTwice;
 use App\Bus\Exceptions\MiddlewareSkippedCommand;
 use App\Bus\Exceptions\MiddlewareSwallowedFailure;
 use App\Bus\Exceptions\NestedCommandFailureIgnored;
+use App\Bus\Exceptions\OperationUnavailable;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\Operation;
-use App\Bus\Support\RequestKey;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
 use App\Comments\Contracts\Commentable;
@@ -282,14 +283,20 @@ use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Support\Linkable;
 use App\Links\Support\LinkAccess;
 use App\Links\Support\LinkTypeRegistry;
+use App\Mcp\Contracts\McpCall;
+use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Contracts\OverviewContribution;
+use App\Mcp\Contracts\ProvidesMcpTools;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\OverviewSection;
 use App\Mcp\Data\ToolResult as McpToolResult;
+use App\Mcp\Exceptions\ContinuationInvalid;
+use App\Mcp\Exceptions\ContinuationStale;
+use App\Mcp\Exceptions\ResourceMimeTypeRefused;
+use App\Mcp\Exceptions\ToolArgumentInvalid;
+use App\Mcp\Exceptions\ToolArgumentUnknown;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Support\ListedPage;
-use App\Mcp\Support\McpCall;
-use App\Mcp\Support\NumberedPages;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalTool;
@@ -584,6 +591,9 @@ final class CoreApi
                 Listener::class,
                 CommandHandler::class,
                 ProvidesCommands::class,
+                ProvidesMcpTools::class,
+                McpCall::class,
+                NumberedPages::class,
                 ProvidesCommandMiddleware::class,
                 JournalAccessPolicy::class,
                 UpdatesUserInterface::class,
@@ -624,14 +634,11 @@ final class CoreApi
                 RefusalCode::class,
                 ReceiptState::class,
                 Operation::class,
-                RequestKey::class,
                 McpToolResult::class,
                 NextAction::class,
                 OverviewSection::class,
-                ToolArguments::class,
-                McpCall::class,
                 ListedPage::class,
-                NumberedPages::class,
+                ToolArguments::class,
                 RecordCard::class,
                 StateReferences::class,
                 StateSet::class,
@@ -993,6 +1000,12 @@ final class CoreApi
                 MiddlewareSkippedCommand::class,
                 MiddlewareSwallowedFailure::class,
                 NestedCommandFailureIgnored::class,
+                OperationUnavailable::class,
+                ResourceMimeTypeRefused::class,
+                ToolArgumentInvalid::class,
+                ToolArgumentUnknown::class,
+                ContinuationInvalid::class,
+                ContinuationStale::class,
             )
             ->support(
                 BelongsToOneActor::class,
@@ -1015,6 +1028,7 @@ final class CoreApi
                 JournalTool::class,
                 JournalReadTool::class,
                 JournalResource::class,
+                RendersRefusal::class,
             )
             ->build();
     }

@@ -13,7 +13,6 @@ use Domain\Plans\Contracts\PlanReader;
 use Domain\Plans\Enums\PlanView;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\TestCase;
-use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
@@ -80,17 +79,16 @@ final class PlanDetailsReaderTest extends TestCase
         $this->assertSame($plan->taskIds(), $seen);
     }
 
-    public function test_a_phase_read_lists_its_tasks_in_order_with_their_state(): void
+    public function test_a_phase_read_lists_its_task_references_in_order(): void
     {
         $plan = Plan::factory()->create();
         [$first, $second] = [Task::factory()->create(['title' => 'First']), Task::factory()->create(['title' => 'Second'])];
         $phase = $plan->addPhase('Work');
         $phase->addTasks([$second->id, $first->id]);
-        $first->finish();
 
         $read = $this->app->make(PlanDetailsReader::class)->phase($phase->id);
 
-        $this->assertSame([['Second', TaskState::Open], ['First', TaskState::Finished]], array_map(fn ($task) => [$task->title, $task->state], $read->tasks));
+        $this->assertSame([$second->id, $first->id], $read->taskIds);
         $this->assertSame([$plan->id, 'Work', 1], [$read->planId, $read->title, $read->revision]);
     }
 }

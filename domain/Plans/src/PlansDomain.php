@@ -11,10 +11,10 @@ use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesLinkRecords;
-use App\Domains\Contracts\ProvidesMcpTools;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
+use App\Mcp\Contracts\ProvidesMcpTools;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
 use App\Sharing\Contracts\ProvidesShareRecords;
@@ -58,6 +58,7 @@ use Domain\Plans\Contracts\PlanReader;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Enums\PlanView;
+use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Http\Controllers\StartPlanController;
@@ -124,7 +125,7 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
                 ReassignPlanWork::class,
                 UnassignPlanWork::class,
             )
-            ->exceptions(PlanMissing::class, StartDenied::class)
+            ->exceptions(PlanMissing::class, PhaseMissing::class, StartDenied::class)
             ->build();
     }
 

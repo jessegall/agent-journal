@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
+use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Data\NextAction;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Exceptions\ContinuationInvalid;
@@ -15,7 +16,7 @@ use Closure;
  * budget shortened. A shortened page keeps its remaining references and continues with them, read again under the
  * caller's current authorization, before the next numbered page, which is a new live read.
  */
-final readonly class NumberedPages
+final readonly class RetainedNumberedPages implements NumberedPages
 {
     private const string SELECTOR = 'caller';
 

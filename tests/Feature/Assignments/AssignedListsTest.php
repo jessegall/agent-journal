@@ -79,7 +79,7 @@ final class AssignedListsTest extends TestCase
 
         $this->assertSame([$held->id, $finished->id], array_map(fn ($card) => $card->id, $list->cards));
         $this->assertSame(2, $list->total);
-        $this->assertSame('Main', $list->cards[0]->holder->name);
+        $this->assertSame('Main', $list->cards[0]->holder->get()->name);
         $this->assertSame([$finished->id], array_map(fn ($card) => $card->id, $finishedOnly->cards));
         $this->assertSame([1, $held->id], [$searched->total, $searched->cards[0]->id]);
     }

@@ -11,6 +11,7 @@ use Domain\Tasks\Contracts\TaskDetailsReader;
 use Domain\Tasks\Contracts\TaskReader;
 use Domain\Tasks\Enums\TaskView;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Readers\Support\TaskExecutions;
 
 /**
  * Reads one visible task with its holder and its run; the brief, result note and reasons only in the context view.

@@ -23,7 +23,7 @@ final readonly class ToolArguments
     /**
      * @param  array<string, mixed>  $arguments
      */
-    private function __construct(private array $arguments) {}
+    private function __construct(public array $arguments) {}
 
     /**
      * The request's arguments, refused when one is not among the tool's declared fields.

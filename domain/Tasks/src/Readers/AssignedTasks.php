@@ -18,6 +18,7 @@ use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Api\TaskList;
 use Domain\Tasks\Contracts\AssignedTaskReader;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\Readers\Support\TaskExecutions;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 use PhpOption\Option;
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Mcp;
 
+use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ListedPage;
-use App\Mcp\Support\NumberedPages;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
 use Domain\Plans\Api\PlanFilters;

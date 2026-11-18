@@ -44,6 +44,7 @@ final class Exports
         'App\Mcp\Tools\JournalTool',
         'App\Mcp\Tools\JournalReadTool',
         'App\Mcp\Resources\JournalResource',
+        'App\Bus\Exceptions\Concerns\RendersRefusal',
     ];
 
     /**

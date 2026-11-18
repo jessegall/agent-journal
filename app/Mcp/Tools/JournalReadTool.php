@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
+use App\Mcp\Contracts\McpCall;
 use App\Mcp\Data\ToolResult;
-use App\Mcp\Support\McpCall;
 use App\Mcp\Support\ToolArguments;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\ResponseFactory;

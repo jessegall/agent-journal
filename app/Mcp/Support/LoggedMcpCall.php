@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Mcp\Support;
 
 use App\Agents\Support\AgentContext;
+use App\Mcp\Contracts\McpCall;
 use App\Mcp\Data\ToolResult;
 use Closure;
 use Laravel\Mcp\Response;
@@ -16,7 +17,7 @@ use Throwable;
  * One MCP call of the signed agent: it runs the tool's or resource's answer, turns a failure into a refusal and logs
  * one line with who called, how long it took and its outcome, never the arguments or the body.
  */
-final readonly class McpCall
+final readonly class LoggedMcpCall implements McpCall
 {
     private const string OUTCOME_OK = 'ok';
 
