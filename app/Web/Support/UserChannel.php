@@ -17,7 +17,7 @@ final readonly class UserChannel
 
     public function __construct(private JournalAccessPolicy $access) {}
 
-    public static function nameFor(int $userId): string
+    public static function nameFor(string $userId): string
     {
         return "journal.user.{$userId}";
     }

@@ -14,9 +14,9 @@ final class InvalidAssignmentPage extends InvalidArgumentException implements Co
         return new self("A page holds 1 to 100 entries; {$limit} is not allowed.");
     }
 
-    public static function forCursor(int $afterId): self
+    public static function forCursor(string $afterId): self
     {
-        return new self("A page starts after a positive id; {$afterId} is not one.");
+        return new self("A page starts after a ULID; {$afterId} is not one.");
     }
 
     public static function forRecordCount(int $count): self

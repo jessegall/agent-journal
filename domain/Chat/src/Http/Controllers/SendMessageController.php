@@ -19,7 +19,7 @@ final readonly class SendMessageController
 {
     public function __invoke(MessageInput $input, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $commands->run(new SendMessage($input->body, (int) $input->session));
+        $commands->run(new SendMessage($input->body, (string) $input->session));
 
         // Back to Home with the session chosen for the chat window and for the sections that read it.
         return $redirect->route('home', ['window' => ['chat.conversation' => ['session' => $input->session]], 'session' => $input->session], 303);

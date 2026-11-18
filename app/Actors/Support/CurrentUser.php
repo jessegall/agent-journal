@@ -10,7 +10,7 @@ namespace App\Actors\Support;
 final readonly class CurrentUser
 {
     public function __construct(
-        public int $id,
+        public string $id,
         public string $name,
     ) {}
 }

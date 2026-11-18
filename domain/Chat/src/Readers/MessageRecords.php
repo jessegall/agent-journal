@@ -18,7 +18,7 @@ use Illuminate\Container\Attributes\Scoped;
 #[Scoped]
 final readonly class MessageRecords implements ConversationReader
 {
-    public function get(int $messageId): Message
+    public function get(string $messageId): Message
     {
         return Message::query()->forActor()->find($messageId) ?? throw MessageMissing::forId($messageId);
     }
@@ -26,7 +26,7 @@ final readonly class MessageRecords implements ConversationReader
     /**
      * The journal's own read of a message it addressed to an agent, outside that agent's requests.
      */
-    public function addressedTo(StackTarget $target, int $messageId): Message
+    public function addressedTo(StackTarget $target, string $messageId): Message
     {
         return Message::query()->ownedBy($target->agentId)->find($messageId) ?? throw MessageMissing::forId($messageId);
     }

@@ -15,5 +15,5 @@ interface AgentAuthority
     /**
      * @throws AssignmentDenied
      */
-    public function requireDispatcher(int $agentId): void;
+    public function requireDispatcher(string $agentId): void;
 }

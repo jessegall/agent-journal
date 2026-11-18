@@ -18,12 +18,12 @@ interface TaskReader
     /**
      * @throws TaskMissing
      */
-    public function requireVisible(int $taskId): void;
+    public function requireVisible(string $taskId): void;
 
     /**
      * Every id must be there, or the whole check fails; it never passes for some of them.
      *
-     * @param  list<int>  $taskIds
+     * @param  list<string>  $taskIds
      *
      * @throws TaskMissing
      */

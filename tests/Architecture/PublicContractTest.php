@@ -10,12 +10,14 @@ use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\PublicContracts;
 use Tests\Architecture\Support\PublicOwner;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * What every domain and Core exports is a type of type an owner may publish, and its public signatures show nothing
  * private: no model, no service and no other owner's value.
  */
+#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class PublicContractTest extends TestCase
 {
     public function test_every_export_is_publishable_and_shows_nothing_private(): void

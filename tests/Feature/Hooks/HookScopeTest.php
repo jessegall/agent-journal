@@ -20,6 +20,7 @@ use App\Hooks\Storage\RecordedSteps;
 use Illuminate\Database\Eloquent\Model;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class HookScopeTest extends TestCase
@@ -31,37 +32,37 @@ final class HookScopeTest extends TestCase
     {
         parent::setUp();
 
-        $this->storeFor(new StackTarget(1, 10));
-        $this->storeFor(new StackTarget(1, 11));
-        $this->storeFor(new StackTarget(2, 20));
+        $this->storeFor(new StackTarget(TestIds::of(1), TestIds::of(10)));
+        $this->storeFor(new StackTarget(TestIds::of(1), TestIds::of(11)));
+        $this->storeFor(new StackTarget(TestIds::of(2), TestIds::of(20)));
     }
 
     public function test_each_request_sees_only_the_rows_of_its_own_agent_and_session(): void
     {
         $stateTypes = $this->app->make(StateTypes::class);
 
-        $this->startRequestAs(1, 10);
-        $this->assertSame([[1, 10]], $this->visibleStacks());
-        $this->assertSame([[1, 10]], $this->visibleCalls());
+        $this->startRequestAs(TestIds::of(1), TestIds::of(10));
+        $this->assertSame([[TestIds::of(1), TestIds::of(10)]], $this->visibleStacks());
+        $this->assertSame([[TestIds::of(1), TestIds::of(10)]], $this->visibleCalls());
 
         $this->app->forgetScopedInstances();
-        $this->startRequestAs(2, 20);
+        $this->startRequestAs(TestIds::of(2), TestIds::of(20));
 
-        $this->assertSame([[2, 20]], $this->visibleStacks());
-        $this->assertSame([[2, 20]], $this->visibleCalls());
+        $this->assertSame([[TestIds::of(2), TestIds::of(20)]], $this->visibleStacks());
+        $this->assertSame([[TestIds::of(2), TestIds::of(20)]], $this->visibleCalls());
         $this->assertSame($stateTypes, $this->app->make(StateTypes::class));
     }
 
     public function test_two_sessions_of_one_agent_do_not_see_each_other(): void
     {
-        $this->startRequestAs(1, 11);
+        $this->startRequestAs(TestIds::of(1), TestIds::of(11));
 
-        $this->assertSame([[1, 11]], $this->visibleStacks());
+        $this->assertSame([[TestIds::of(1), TestIds::of(11)]], $this->visibleStacks());
     }
 
     public function test_a_query_after_the_request_ended_fails_instead_of_reading_everything(): void
     {
-        $this->startRequestAs(1, 10);
+        $this->startRequestAs(TestIds::of(1), TestIds::of(10));
         $this->visibleStacks();
         $this->app->forgetScopedInstances();
 
@@ -72,18 +73,18 @@ final class HookScopeTest extends TestCase
 
     public function test_the_limit_comes_back_after_the_models_boot_again(): void
     {
-        $this->startRequestAs(1, 10);
+        $this->startRequestAs(TestIds::of(1), TestIds::of(10));
         $this->visibleStacks();
 
         Model::clearBootedModels();
 
-        $this->assertSame([[1, 10]], $this->visibleStacks());
-        $this->assertSame([[1, 10]], $this->visibleCalls());
+        $this->assertSame([[TestIds::of(1), TestIds::of(10)]], $this->visibleStacks());
+        $this->assertSame([[TestIds::of(1), TestIds::of(10)]], $this->visibleCalls());
     }
 
     public function test_the_locking_query_is_limited_and_names_its_table(): void
     {
-        $this->startRequestAs(2, 20);
+        $this->startRequestAs(TestIds::of(2), TestIds::of(20));
 
         $sql = AgentStackRow::query()->lockForUpdate()->toSql();
 
@@ -94,14 +95,14 @@ final class HookScopeTest extends TestCase
 
     public function test_reading_another_session_is_an_explicit_named_query(): void
     {
-        $this->startRequestAs(1, 10);
-        $other = new StackTarget(2, 20);
+        $this->startRequestAs(TestIds::of(1), TestIds::of(10));
+        $other = new StackTarget(TestIds::of(2), TestIds::of(20));
 
         $stack = AgentStackRow::query()->authorizedFor($other)->sole();
         $call = HookCall::query()->authorizedFor($other)->sole();
 
-        $this->assertSame([2, 20], [$stack->agent_id, $stack->session_id]);
-        $this->assertSame([2, 20], [$call->agent_id, $call->session_id]);
+        $this->assertSame([TestIds::of(2), TestIds::of(20)], [$stack->agent_id, $stack->session_id]);
+        $this->assertSame([TestIds::of(2), TestIds::of(20)], [$call->agent_id, $call->session_id]);
         $this->assertSame(0, AgentStackRow::query()->forTarget($other)->count());
     }
 
@@ -118,7 +119,7 @@ final class HookScopeTest extends TestCase
     }
 
     /**
-     * @return list<array{int, int}>
+     * @return list<array{string, string}>
      */
     private function visibleStacks(): array
     {
@@ -126,7 +127,7 @@ final class HookScopeTest extends TestCase
     }
 
     /**
-     * @return list<array{int, int}>
+     * @return list<array{string, string}>
      */
     private function visibleCalls(): array
     {

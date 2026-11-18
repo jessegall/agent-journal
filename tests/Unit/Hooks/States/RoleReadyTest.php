@@ -29,6 +29,7 @@ use App\Hooks\States\ReadyState;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;
+use Tests\Support\TestIds;
 
 final class RoleReadyTest extends TestCase
 {
@@ -174,6 +175,6 @@ final class RoleReadyTest extends TestCase
 
     private function hook(): HookIdentity
     {
-        return new HookIdentity(1, 2, 'hook-1', 'digest');
+        return new HookIdentity(TestIds::of(1), TestIds::of(2), 'hook-1', 'digest');
     }
 }

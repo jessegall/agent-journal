@@ -13,7 +13,7 @@ use Domain\Sequences\Models\SequenceRun;
  */
 final readonly class SequenceRecords
 {
-    public function get(int $runId): SequenceRun
+    public function get(string $runId): SequenceRun
     {
         return SequenceRun::query()->forActor()->find($runId) ?? throw SequenceRunMissing::forId($runId);
     }
@@ -21,7 +21,7 @@ final readonly class SequenceRecords
     /**
      * The journal's own read of a run it started for an agent, outside that agent's requests.
      */
-    public function followedBy(StackTarget $target, int $runId): SequenceRun
+    public function followedBy(StackTarget $target, string $runId): SequenceRun
     {
         return SequenceRun::query()->ownedBy($target->agentId)->find($runId) ?? throw SequenceRunMissing::forId($runId);
     }

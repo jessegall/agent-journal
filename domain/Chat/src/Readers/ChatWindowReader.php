@@ -30,7 +30,7 @@ final readonly class ChatWindowReader implements PageReader
     {
         $sessions = $this->sessions->active();
         $chosen = $this->request->chosenSession()->flatMap(
-            fn (int $sessionId) => Option::fromArraysValue(array_values(array_filter($sessions, fn (SessionOption $session) => $session->sessionId === $sessionId)), 0),
+            fn (string $sessionId) => Option::fromArraysValue(array_values(array_filter($sessions, fn (SessionOption $session) => $session->sessionId === $sessionId)), 0),
         );
 
         return ChatData::from([

@@ -14,6 +14,6 @@ final readonly class AssigneeList
      */
     public function __construct(
         public array $assignees,
-        public int|null $nextAfterId,
+        public string|null $nextAfterId,
     ) {}
 }

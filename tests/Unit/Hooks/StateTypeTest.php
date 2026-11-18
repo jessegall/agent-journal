@@ -125,7 +125,7 @@ final class StateTypeTest extends TestCase
         $events = new Dispatcher;
         $events->listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('tasks.working', $tasks));
         $factory = new RegisteredStateFactory(new StateTypes($events));
-        $reference = new StateReference('tasks.working', new SubjectReference(42, 1));
+        $reference = new StateReference('tasks.working', new SubjectReference('42', 1));
 
         $first = $factory->frameFor($reference);
         $second = $factory->frameFor($reference);

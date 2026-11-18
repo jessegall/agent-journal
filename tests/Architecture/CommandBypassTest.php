@@ -7,12 +7,14 @@ namespace Tests\Architecture;
 use Tests\Architecture\Support\CallScan;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ParsedFile;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * Commands run only through the CommandBus (doc 19, story 70) and entry adapters write only by dispatching a command
  * (story 86), in every owner already moved onto the bus. The list grows phase by phase as owners move.
  */
+#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class CommandBypassTest extends TestCase
 {
     /**

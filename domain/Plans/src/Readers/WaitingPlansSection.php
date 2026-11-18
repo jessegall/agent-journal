@@ -27,7 +27,7 @@ final readonly class WaitingPlansSection implements SectionReader
 
     public function read(SlotContext $context): PlanListData
     {
-        $this->sessions->requireActive((int) $context->id);
+        $this->sessions->requireActive((string) $context->id);
         $filters = new PlanFilters(states: PlanStateGroup::Waiting->states());
         $list = $this->records->list($filters);
 

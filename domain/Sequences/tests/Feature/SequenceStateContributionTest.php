@@ -21,6 +21,7 @@ use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Models\SequenceRun;
 use Domain\Sequences\Tests\TestCase;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\TestIds;
 
 final class SequenceStateContributionTest extends TestCase
 {
@@ -32,7 +33,7 @@ final class SequenceStateContributionTest extends TestCase
 
         $this->app->make(CommandBus::class)->run(new StartSequence($run->id, $this->target->sessionId));
 
-        $this->assertSame([SequenceRunState::Running, 1, 1, 10], [$run->fresh()?->state, $run->fresh()?->current_step, $run->fresh()?->agent_id, $run->fresh()?->session_id]);
+        $this->assertSame([SequenceRunState::Running, 1, TestIds::of(1), TestIds::of(10)], [$run->fresh()?->state, $run->fresh()?->current_step, $run->fresh()?->agent_id, $run->fresh()?->session_id]);
         $this->assertSame(['hooks.main_ready', 'sequences.following'], $this->storedTypeKeys());
     }
 
@@ -103,7 +104,7 @@ final class SequenceStateContributionTest extends TestCase
     {
         $this->callAs($callId);
         $capabilities = new ProgramCapabilities('Test program', 'compaction context', ['onCompaction'], RewriteSupport::WithoutApproval);
-        $compaction = new ContextCompacted(new HookIdentity(1, 10, $callId, self::inputDigest()), new CompactionDetails('compaction-1'));
+        $compaction = new ContextCompacted(new HookIdentity(TestIds::of(1), TestIds::of(10), $callId, self::inputDigest()), new CompactionDetails('compaction-1'));
 
         $reply = $this->machine()->answer($compaction, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => new ProgramReply(json_encode($answer->context) ?: '[]', '', 0));
 

@@ -6,9 +6,10 @@ namespace App\Assignments\Support;
 
 use App\Actors\Support\Concerns\ComparesTypeAndId;
 use App\Assignments\Exceptions\InvalidAssignmentIdentity;
+use Illuminate\Support\Str;
 
 /**
- * A record by its link alias, such as tasks.task, and its positive id. Whether the alias is registered is checked when
+ * A record by its link alias, such as tasks.task, and its ULID. Whether the alias is registered is checked when
  * the record is resolved, not here.
  */
 final readonly class RecordIdentity
@@ -22,11 +23,11 @@ final readonly class RecordIdentity
      */
     public function __construct(
         public string $type,
-        public int $id,
+        public string $id,
     ) {
         self::checkType($type);
 
-        if ($id < 1) {
+        if (! Str::isUlid($id)) {
             throw InvalidAssignmentIdentity::forId($type, $id);
         }
     }

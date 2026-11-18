@@ -17,15 +17,15 @@ final class RetireAgentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'agentId' => ['required', 'integer', 'min:1'],
+            'agentId' => ['required', 'ulid'],
             'session' => ['prohibited'],
             'session_id' => ['prohibited'],
             'actor' => ['prohibited'],
         ];
     }
 
-    public function agentId(): int
+    public function agentId(): string
     {
-        return $this->integer('agentId');
+        return $this->string('agentId')->lower()->toString();
     }
 }

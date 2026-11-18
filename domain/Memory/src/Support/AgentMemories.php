@@ -29,7 +29,7 @@ final readonly class AgentMemories
     /**
      * @return list<string>
      */
-    public function remindersFor(int $agentId): array
+    public function remindersFor(string $agentId): array
     {
         $texts = Memory::query()->ownedBy($agentId)->orderByDesc('weight')->orderBy('id')->pluck('text')->all();
 

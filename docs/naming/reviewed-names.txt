@@ -531,7 +531,6 @@ class	LayoutsView
 class	Link
 class	LinkAccess
 class	LinkTypeRegistry
-class	LinkTypeRenames
 class	LinkTypeRepeated
 class	LoadMigrations
 class	LockingNumberAllocator
@@ -1379,6 +1378,7 @@ method	AssignmentRecord::casts()
 method	AssignmentRecord::forRecord()
 method	AssignmentRecord::heldForRetirement()
 method	AssignmentRecord::holding()
+method	AssignmentRecord::insertUnlessHeld()
 method	AssignmentRecord::toAssignment()
 method	AssignmentRecords::__construct()
 method	AssignmentRecords::allRecordIdsFor()
@@ -2069,10 +2069,7 @@ method	LayoutsController::update()
 method	LayoutsView::layouts()
 method	Link::between()
 method	Link::connect()
-method	Link::endpointKey()
-method	Link::endpointKeyFor()
 method	Link::forgetModels()
-method	Link::renameTypes()
 method	Link::source()
 method	Link::target()
 method	Link::withSource()
@@ -2081,7 +2078,6 @@ method	LinkAccess::__construct()
 method	LinkAccess::among()
 method	LinkTypeRegistry::modelFor()
 method	LinkTypeRegistry::register()
-method	LinkTypeRenames::rename()
 method	LinkTypeRepeated::for()
 method	Linkable::isLinkedTo()
 method	Linkable::linkTo()
@@ -3061,7 +3057,6 @@ method	UnassignRecordRequest::rules()
 method	UnjudgedCall::__construct()
 method	UnjudgedCall::replyWith()
 method	UnknownLinkType::forAlias()
-method	UnknownLinkType::stored()
 method	UnknownPatchAction::forAction()
 method	UnknownReadyState::forKey()
 method	UnreadablePayload::forValue()
@@ -3073,6 +3068,7 @@ method	User::actorId()
 method	User::actorType()
 method	User::casts()
 method	User::changePassword()
+method	User::ownerIdFor()
 method	UserActorRequired::forActor()
 method	UserAssignees::__construct()
 method	UserAssignees::eligible()
@@ -3569,7 +3565,7 @@ property	MessageSent::$target
 property	MessageView::$body
 property	MessageView::$id
 property	MessageView::$state
-property	MessageWork::$number
+property	MessageWork::$messageId
 property	MessageWork::$state
 property	MiddlewareDeclaration::$middleware
 property	MiddlewareDeclaration::$scope
@@ -3949,7 +3945,7 @@ property	SendMessageHandler::$stacks
 property	SequenceRun::$attributes
 property	SequenceStarted::$runId
 property	SequenceStarted::$target
-property	SequenceWork::$runNumber
+property	SequenceWork::$runId
 property	SequenceWork::$state
 property	SequenceWork::$stepInstruction
 property	SequenceWork::$stepNumber
@@ -4077,9 +4073,9 @@ property	TaskProgress::$started
 property	TaskProgress::$total
 property	TaskStarted::$target
 property	TaskStarted::$taskId
-property	TaskWork::$number
 property	TaskWork::$runNumber
 property	TaskWork::$state
+property	TaskWork::$taskId
 property	ToggleOption::$key
 property	ToggleOption::$label
 property	ToggleOption::$startsOn

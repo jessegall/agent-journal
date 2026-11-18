@@ -14,10 +14,12 @@ use Tests\Architecture\Support\NameScan;
 use Tests\Architecture\Support\ParsedFile;
 use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\StringScan;
+use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * Proves the scans survive real code; what the checker permits is proven elsewhere.
  */
+#[TimeLimit(seconds: 15, reason: 'It parses every PHP file of the project.')]
 final class ScanSmokeTest extends TestCase
 {
     /**

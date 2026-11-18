@@ -15,7 +15,7 @@ use Carbon\CarbonImmutable;
  */
 trait StartsAgentRequests
 {
-    protected function startRequestAs(int $agentId, int $sessionId): void
+    protected function startRequestAs(string $agentId, string $sessionId): void
     {
         $this->app->instance(AgentContext::class, new AgentContext(
             $agentId,
@@ -26,7 +26,7 @@ trait StartsAgentRequests
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agentId));
     }
 
-    protected function startUserRequestAs(int $userId): void
+    protected function startUserRequestAs(string $userId): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($userId));
     }

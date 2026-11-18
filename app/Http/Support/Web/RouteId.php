@@ -4,22 +4,20 @@ declare(strict_types=1);
 
 namespace App\Http\Support\Web;
 
+use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * Reads a record id from a route: a positive whole number within PHP's integer range, or not found before any work.
+ * Reads a record id from a route: a ULID, or not found before any work.
  */
 final class RouteId
 {
-    public static function of(string $value): int
+    public static function of(string $value): string
     {
-        $isPositiveNumber = preg_match('/^[1-9][0-9]{0,18}$/', $value) === 1;
-        $fitsInAnInteger = strlen($value) < 19 || strcmp($value, (string) PHP_INT_MAX) <= 0;
-
-        if (! $isPositiveNumber || ! $fitsInAnInteger) {
+        if (! Str::isUlid($value)) {
             throw new NotFoundHttpException;
         }
 
-        return (int) $value;
+        return strtolower($value);
     }
 }

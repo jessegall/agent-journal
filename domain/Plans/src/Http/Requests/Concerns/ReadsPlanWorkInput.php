@@ -25,7 +25,7 @@ trait ReadsPlanWorkInput
     {
         return [
             'rootType' => ['required', Rule::in([Plan::LINK_TYPE, Phase::LINK_TYPE])],
-            'rootId' => ['required', 'integer', 'min:1'],
+            'rootId' => ['required', 'ulid'],
             'agent' => ['prohibited'],
             'agent_id' => ['prohibited'],
             'session' => ['prohibited'],
@@ -39,7 +39,7 @@ trait ReadsPlanWorkInput
      */
     protected function recipientRules(): array
     {
-        return ['recipientType' => ['required', Rule::enum(ActorType::class)], 'recipientId' => ['required', 'integer', 'min:1']];
+        return ['recipientType' => ['required', Rule::enum(ActorType::class)], 'recipientId' => ['required', 'ulid']];
     }
 
     /**
@@ -48,27 +48,27 @@ trait ReadsPlanWorkInput
     protected function expectedRootRules(): array
     {
         return [
-            'assignmentId' => ['required', 'integer', 'min:1'],
+            'assignmentId' => ['required', 'ulid'],
             'holderType' => ['required', Rule::enum(ActorType::class)],
-            'holderId' => ['required', 'integer', 'min:1'],
+            'holderId' => ['required', 'ulid'],
         ];
     }
 
     public function rootRecord(): RecordIdentity
     {
-        return new RecordIdentity($this->string('rootType')->toString(), $this->integer('rootId'));
+        return new RecordIdentity($this->string('rootType')->toString(), $this->string('rootId')->lower()->toString());
     }
 
     public function recipient(): ActorIdentity
     {
-        return new ActorIdentity(ActorType::from($this->string('recipientType')->toString()), $this->integer('recipientId'));
+        return new ActorIdentity(ActorType::from($this->string('recipientType')->toString()), $this->string('recipientId')->lower()->toString());
     }
 
     public function expectedRoot(): AssignmentReference
     {
         return new AssignmentReference(
-            $this->integer('assignmentId'),
-            new ActorIdentity(ActorType::from($this->string('holderType')->toString()), $this->integer('holderId')),
+            $this->string('assignmentId')->lower()->toString(),
+            new ActorIdentity(ActorType::from($this->string('holderType')->toString()), $this->string('holderId')->lower()->toString()),
         );
     }
 }

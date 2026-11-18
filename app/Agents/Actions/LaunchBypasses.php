@@ -12,7 +12,7 @@ use App\Agents\Support\BypassReport;
  */
 final readonly class LaunchBypasses
 {
-    public function record(int $sessionId, BypassReport $report): void
+    public function record(string $sessionId, BypassReport $report): void
     {
         LaunchBypass::recordAll($sessionId, $report);
     }

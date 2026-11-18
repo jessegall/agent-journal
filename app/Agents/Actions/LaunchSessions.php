@@ -56,7 +56,7 @@ final readonly class LaunchSessions
         $session->mapProgramSession($programSessionId);
     }
 
-    public function mapProgramSessionFor(int $sessionId, string $programSessionId): void
+    public function mapProgramSessionFor(string $sessionId, string $programSessionId): void
     {
         AgentSession::query()->findOrFail($sessionId)->mapProgramSession($programSessionId);
     }

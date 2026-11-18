@@ -11,8 +11,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('launch_credentials', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('agent_session_id')->unique();
+            $table->ulid('id')->primary();
+            $table->ulid('agent_session_id')->unique();
             $table->char('token_hash', 64)->unique();
             $table->timestampTz('revoked_at')->nullable();
             $table->timestampsTz();

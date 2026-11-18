@@ -23,7 +23,7 @@ interface AssignmentReader
     /**
      * Every id of the records of one type the holder holds and the caller may see, page after page.
      *
-     * @return list<int>
+     * @return list<string>
      */
     public function allRecordIdsFor(string $type, ActorIdentity $holder): array;
 

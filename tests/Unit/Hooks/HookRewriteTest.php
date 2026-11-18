@@ -24,6 +24,7 @@ use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ListedCommandParser;
 use Tests\Fixtures\Hooks\RewritingState;
 use Tests\Fixtures\Hooks\ScriptedState;
+use Tests\Support\TestIds;
 
 final class HookRewriteTest extends TestCase
 {
@@ -128,7 +129,7 @@ final class HookRewriteTest extends TestCase
     private function command(string $line): ShellCommandRequested
     {
         return new ShellCommandRequested(
-            new HookIdentity(1, 2, 'hook-1', 'digest'),
+            new HookIdentity(TestIds::of(1), TestIds::of(2), 'hook-1', 'digest'),
             (new ListedCommandParser)->parse($line, ShellDialect::Bash),
         );
     }

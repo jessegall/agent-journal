@@ -14,7 +14,7 @@ use Illuminate\Database\Seeder;
 final class PlanTasksSeeder extends Seeder
 {
     /**
-     * @return list<int>
+     * @return list<string>
      */
     public function readingTaskIds(): array
     {
@@ -22,7 +22,7 @@ final class PlanTasksSeeder extends Seeder
     }
 
     /**
-     * @return list<int>
+     * @return list<string>
      */
     public function startingTaskIds(): array
     {
@@ -30,7 +30,7 @@ final class PlanTasksSeeder extends Seeder
     }
 
     /**
-     * @return list<int>
+     * @return list<string>
      */
     public function reproducingTaskIds(): array
     {
@@ -38,7 +38,7 @@ final class PlanTasksSeeder extends Seeder
     }
 
     /**
-     * @return list<int>
+     * @return list<string>
      */
     private function tasks(string ...$titles): array
     {

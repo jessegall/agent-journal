@@ -23,20 +23,20 @@ final readonly class TaskAssignmentRecords implements TaskAssignmentReader
     public function __construct(private CurrentActor $actors) {}
 
     /**
-     * @param  list<int>  $taskIds
+     * @param  list<string>  $taskIds
      * @return list<RecordIdentity>
      */
     public function records(array $taskIds): array
     {
         $states = $this->statesOf($taskIds);
 
-        return array_map(fn (int $taskId) => new RecordIdentity(Task::LINK_TYPE, $taskId), array_keys($states));
+        return array_map(fn (string $taskId) => new RecordIdentity(Task::LINK_TYPE, $taskId), array_keys($states));
     }
 
     /**
      * @template TKey of array-key
      *
-     * @param  array<TKey, list<int>>  $taskGroups
+     * @param  array<TKey, list<string>>  $taskGroups
      * @return array<TKey, TaskAssignmentCompletion>
      */
     public function completionOf(array $taskGroups): array
@@ -45,13 +45,13 @@ final readonly class TaskAssignmentRecords implements TaskAssignmentReader
 
         return array_map(fn (array $taskIds) => new TaskAssignmentCompletion(
             count($taskIds),
-            count(array_filter($taskIds, fn (int $taskId) => ! $states[$taskId]->hasEnded())),
+            count(array_filter($taskIds, fn (string $taskId) => ! $states[$taskId]->hasEnded())),
         ), $taskGroups);
     }
 
     /**
-     * @param  list<int>  $taskIds
-     * @return array<int, TaskState>
+     * @param  list<string>  $taskIds
+     * @return array<string, TaskState>
      *
      * @throws TaskMissing
      */

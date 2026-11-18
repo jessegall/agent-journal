@@ -22,7 +22,7 @@ final readonly class JournalAccess implements JournalAccessPolicy
     }
 
     /**
-     * @return list<int>
+     * @return list<string>
      */
     public function allowedUserIds(): array
     {

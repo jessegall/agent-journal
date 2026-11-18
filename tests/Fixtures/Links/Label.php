@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Links;
 
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use App\Links\Support\Linkable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -11,11 +12,11 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * A second test model type to link notes to.
  *
- * @property int $id
+ * @property string $id
  * @property string $name
  */
 #[Fillable(['name'])]
 final class Label extends Model
 {
-    use Linkable;
+    use HasUlids, Linkable;
 }

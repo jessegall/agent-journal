@@ -22,6 +22,7 @@ use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Support\StackTransaction;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -45,7 +46,7 @@ final class UserStacksTest extends TestCase
 
     public function test_a_user_pushes_a_state_onto_a_running_agents_stack(): void
     {
-        $this->actAs(ActorContext::forUser(7));
+        $this->actAs(ActorContext::forUser(TestIds::of(7)));
 
         $this->pushInTransaction($this->target);
 
@@ -63,17 +64,17 @@ final class UserStacksTest extends TestCase
 
     public function test_a_guessed_session_is_refused(): void
     {
-        $this->actAs(ActorContext::forUser(7));
+        $this->actAs(ActorContext::forUser(TestIds::of(7)));
 
         $this->expectException(StackTargetRefused::class);
 
-        $this->pushInTransaction(new StackTarget($this->target->agentId, $this->target->sessionId + 100));
+        $this->pushInTransaction(new StackTarget($this->target->agentId, TestIds::of(99999)));
     }
 
     public function test_a_session_of_another_agent_is_refused(): void
     {
         $other = $this->targetOf($this->launch());
-        $this->actAs(ActorContext::forUser(7));
+        $this->actAs(ActorContext::forUser(TestIds::of(7)));
 
         $this->expectException(StackTargetRefused::class);
 
@@ -82,7 +83,7 @@ final class UserStacksTest extends TestCase
 
     public function test_the_push_runs_only_inside_a_stack_transaction(): void
     {
-        $this->actAs(ActorContext::forUser(7));
+        $this->actAs(ActorContext::forUser(TestIds::of(7)));
 
         $this->expectException(StackTransactionRequired::class);
 

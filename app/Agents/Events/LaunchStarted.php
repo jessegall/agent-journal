@@ -12,8 +12,8 @@ use App\Contracts\Event;
 final readonly class LaunchStarted implements Event
 {
     public function __construct(
-        public int $agentId,
-        public int $sessionId,
+        public string $agentId,
+        public string $sessionId,
         public string $role,
     ) {}
 }

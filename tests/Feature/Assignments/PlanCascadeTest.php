@@ -21,9 +21,11 @@ use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
+use Illuminate\Support\Str;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -104,7 +106,7 @@ final class PlanCascadeTest extends TestCase
 
     public function test_a_task_that_vanished_from_a_phase_aborts_the_cascade(): void
     {
-        PhaseTask::query()->insert(['phase_id' => $this->working->id, 'task_id' => 999999, 'position' => 2]);
+        PhaseTask::query()->insert(['id' => strtolower((string) Str::ulid()), 'phase_id' => $this->working->id, 'task_id' => TestIds::of(99999), 'position' => 2]);
 
         $this->assertThrows(fn () => $this->assignWork($this->plan->assignmentIdentity(), $this->builder), TaskMissing::class);
 

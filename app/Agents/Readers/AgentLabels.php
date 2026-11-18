@@ -18,8 +18,8 @@ final readonly class AgentLabels implements AgentReader
     public function __construct(private CurrentActor $actors) {}
 
     /**
-     * @param  list<int>  $agentIds
-     * @return array<int, AgentLabel>
+     * @param  list<string>  $agentIds
+     * @return array<string, AgentLabel>
      */
     public function labelsFor(array $agentIds): array
     {

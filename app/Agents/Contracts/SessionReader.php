@@ -28,5 +28,5 @@ interface SessionReader
      *
      * @throws StackTargetRefused
      */
-    public function requireActive(int $sessionId): StackTarget;
+    public function requireActive(string $sessionId): StackTarget;
 }

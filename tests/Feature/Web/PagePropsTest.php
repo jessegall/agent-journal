@@ -24,6 +24,7 @@ use Tests\Fixtures\UiDeclarations\Shelf\ReaderCalls;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfDomain;
 use Tests\Fixtures\UiDeclarations\Shelf\ShelfReader;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -44,7 +45,7 @@ final class PagePropsTest extends TestCase
         $this->calls = new ReaderCalls;
         $this->app->instance(ReaderCalls::class, $this->calls);
         $this->app->instance(UiDeclarations::class, $this->declarations());
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
     }
 
     public function test_a_hidden_window_gives_a_denied_result_without_calling_its_reader(): void
@@ -60,7 +61,7 @@ final class PagePropsTest extends TestCase
         $result = $this->homeProp('/?window[shelf.shelves][q]=oak&q=elsewhere', 'window_shelf_shelves');
 
         $this->assertInstanceOf(ReadyWindow::class, $result);
-        $this->assertSame(['oak', '', '1'], $result->data['titles']);
+        $this->assertSame(['oak', '', TestIds::of(1)], $result->data['titles']);
     }
 
     public function test_a_window_query_its_request_refuses_is_a_validation_error_not_a_failed_window(): void
@@ -94,13 +95,13 @@ final class PagePropsTest extends TestCase
     {
         $first = $this->homeProp('/', 'window_shelf_shelves');
         $this->app->forgetScopedInstances();
-        $this->startUserRequestAs(2);
+        $this->startUserRequestAs(TestIds::of(2));
         $second = $this->homeProp('/', 'window_shelf_shelves');
 
         $this->assertInstanceOf(ReadyWindow::class, $first);
         $this->assertInstanceOf(ReadyWindow::class, $second);
-        $this->assertSame('1', $first->data['titles'][2]);
-        $this->assertSame('2', $second->data['titles'][2]);
+        $this->assertSame(TestIds::of(1), $first->data['titles'][2]);
+        $this->assertSame(TestIds::of(2), $second->data['titles'][2]);
     }
 
     private function homeProp(string $url, string $prop): mixed

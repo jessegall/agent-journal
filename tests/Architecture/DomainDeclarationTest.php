@@ -13,12 +13,14 @@ use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\Violation;
 use Tests\Fixtures\Declarations\Good\GoodDomain;
 use Tests\Fixtures\Declarations\Wrong\WrongDomain;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * Domain classes, the files outside every domain, namespaces inside domain folders and the shared places: the domain foundation and Core in app.
  * It does not see edits inside the listed starter-kit files beyond the domain names they use.
  */
+#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class DomainDeclarationTest extends TestCase
 {
     /**

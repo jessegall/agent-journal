@@ -15,7 +15,7 @@ use Domain\Tasks\Exceptions\TaskMissing;
 interface TaskAssignmentReader
 {
     /**
-     * @param  list<int>  $taskIds
+     * @param  list<string>  $taskIds
      * @return list<RecordIdentity>
      *
      * @throws TaskMissing
@@ -25,7 +25,7 @@ interface TaskAssignmentReader
     /**
      * @template TKey of array-key
      *
-     * @param  array<TKey, list<int>>  $taskGroups
+     * @param  array<TKey, list<string>>  $taskGroups
      * @return array<TKey, TaskAssignmentCompletion>
      *
      * @throws TaskMissing

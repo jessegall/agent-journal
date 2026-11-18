@@ -10,6 +10,7 @@ use App\Bus\Contracts\CommandBus;
 use Illuminate\Support\Facades\Log;
 use Tests\Fixtures\Modules\Notes\Commands\UserNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Support\TestIds;
 
 /**
  * The actor of a command (doc 19, Book D): no command runs without one, a user-only command refuses an agent, and
@@ -29,7 +30,7 @@ final class CommandActorTest extends CommandBusTestCase
     public function test_a_user_only_command_run_by_an_agent_is_refused(): void
     {
         $this->installCommandModules();
-        $this->startRequestAs(7, 70);
+        $this->startRequestAs(TestIds::of(7), TestIds::of(70));
 
         $this->expectException(UserActorRequired::class);
 
@@ -39,12 +40,12 @@ final class CommandActorTest extends CommandBusTestCase
     public function test_each_command_logs_its_name_owner_actor_and_outcome_and_no_field(): void
     {
         $this->installCommandModules();
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
         $log = Log::spy();
 
         $this->app->make(CommandBus::class)->run(new WriteNote('private text'));
 
         $log->shouldHaveReceived('info')->withArgs(fn (string $line, array $context) => $line === 'Command WriteNote done'
-            && $context['owner'] === 'Notes' && $context['actor'] === 'user:1' && ! str_contains((string) json_encode($context), 'private text'));
+            && $context['owner'] === 'Notes' && $context['actor'] === 'user:'.TestIds::of(1) && ! str_contains((string) json_encode($context), 'private text'));
     }
 }

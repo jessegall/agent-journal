@@ -47,10 +47,7 @@ final readonly class AssignmentStore
     public function assignIfUnheld(RecordIdentity $record, ActorIdentity $holder): Assignment
     {
         $this->requireTransaction();
-        $this->database->insert(
-            'INSERT INTO assignments (record_type, record_id, holder_type, holder_id, created_at, updated_at) VALUES (?, ?, ?, ?, now(), now()) ON CONFLICT (record_type, record_id) DO NOTHING',
-            [$record->type, $record->id, $holder->type->value, $holder->id],
-        );
+        AssignmentRecord::insertUnlessHeld($record, $holder);
 
         return AssignmentRecord::query()->forRecord($record)->lockForUpdate()->firstOrFail()->toAssignment();
     }

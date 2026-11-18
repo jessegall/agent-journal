@@ -12,7 +12,7 @@ use RuntimeException;
  */
 final class PlanMissing extends RuntimeException implements CommandRefusal
 {
-    public static function withId(int $planId): self
+    public static function withId(string $planId): self
     {
         return new self("Plan {$planId} does not exist.");
     }

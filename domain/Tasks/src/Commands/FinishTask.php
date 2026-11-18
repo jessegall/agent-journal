@@ -17,6 +17,6 @@ use Domain\Tasks\Handlers\FinishTaskHandler;
 final readonly class FinishTask implements Command
 {
     public function __construct(
-        public int $taskId,
+        public string $taskId,
     ) {}
 }

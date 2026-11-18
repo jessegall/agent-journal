@@ -11,13 +11,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('agent_sessions', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('agent_id')->index();
-            $table->unsignedBigInteger('parent_session_id')->nullable()->index();
+            $table->ulid('id')->primary();
+            $table->ulid('agent_id')->index();
+            $table->ulid('parent_session_id')->nullable()->index();
             $table->string('program', 32)->nullable();
             $table->string('program_session_id')->nullable();
             $table->string('status', 16)->default('active');
             $table->timestampTz('ended_at')->nullable();
+            $table->timestampTz('last_heartbeat_at')->nullable();
+            $table->timestampTz('silent_since')->nullable();
+            $table->string('end_evidence')->nullable();
             $table->timestampsTz();
 
             $table->unique(['program', 'program_session_id']);

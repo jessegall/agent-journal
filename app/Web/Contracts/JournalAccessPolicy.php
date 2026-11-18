@@ -16,7 +16,7 @@ interface JournalAccessPolicy
     /**
      * The ids of the users who may use the journal, to tell them that something changed.
      *
-     * @return list<int>
+     * @return list<string>
      */
     public function allowedUserIds(): array;
 }

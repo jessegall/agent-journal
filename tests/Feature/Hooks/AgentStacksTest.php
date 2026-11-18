@@ -34,8 +34,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Tests\Fixtures\Hooks\InMemoryTaskType;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 use Throwable;
 
@@ -53,8 +55,8 @@ final class AgentStacksTest extends TestCase
         Schema::dropIfExists('domain_writes');
         Schema::create('domain_writes', fn (Blueprint $table) => $table->string('name'));
 
-        $this->target = new StackTarget(1, 10);
-        $this->app->instance(AgentContext::class, new AgentContext(1, 10, 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64))));
+        $this->target = new StackTarget(TestIds::of(1), TestIds::of(10));
+        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64))));
         $tasks = new InMemoryTaskType([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
         Event::listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('test.tasks', $tasks));
     }
@@ -158,14 +160,14 @@ final class AgentStacksTest extends TestCase
         $this->transaction()->run(fn () => $this->stacks()->push($this->target, $this->task(43)));
         $this->transaction()->run(fn () => $this->stacks()->push($this->target, $this->task(42)));
 
-        $this->assertSame([null, 42, 43], array_map(fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : null, $this->storedFrames()));
+        $this->assertSame([null, '42', '43'], array_map(fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : null, $this->storedFrames()));
     }
 
     public function test_a_push_onto_another_agents_stack_is_refused(): void
     {
         $this->expectException(StackTargetRefused::class);
 
-        $this->transaction()->run(fn () => $this->stacks()->push(new StackTarget(2, 20), $this->task(42)));
+        $this->transaction()->run(fn () => $this->stacks()->push(new StackTarget(TestIds::of(2), TestIds::of(20)), $this->task(42)));
     }
 
     public function test_a_push_without_a_stack_or_onto_a_closed_stack_is_refused(): void
@@ -266,7 +268,7 @@ final class AgentStacksTest extends TestCase
 
     private function task(int $number): StateReference
     {
-        return new StateReference('test.tasks', new SubjectReference($number, 1));
+        return new StateReference('test.tasks', new SubjectReference((string) $number, 1));
     }
 
     /**
@@ -301,6 +303,7 @@ final class AgentStacksTest extends TestCase
         $frames = new FrameRecords([new FrameRecord($frameId, new StateReference($typeKey, NoSubject::None), true, 1)]);
 
         $connection->table('agent_stacks')->insert([
+            'id' => strtolower((string) Str::ulid()),
             'agent_id' => $this->target->agentId,
             'session_id' => $this->target->sessionId,
             'version' => 1,

@@ -12,7 +12,7 @@ use Domain\Rules\Enums\RuleState;
 final readonly class RuleView
 {
     public function __construct(
-        public int $id,
+        public string $id,
         public string $text,
         public RuleState $state,
         public bool $canReview,

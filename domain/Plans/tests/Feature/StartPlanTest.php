@@ -22,6 +22,7 @@ use Domain\Plans\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 
 final class StartPlanTest extends TestCase
 {
@@ -40,7 +41,7 @@ final class StartPlanTest extends TestCase
 
         Event::fake([PlanStarted::class]);
         $this->plan = Plan::query()->create(['title' => 'Build the plans page', 'type' => PlanType::Build]);
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
     }
 
     public function test_a_planned_plan_starts_once_and_says_who_started_it(): void
@@ -113,7 +114,7 @@ final class StartPlanTest extends TestCase
         }
     }
 
-    private function startPlan(int $planId): void
+    private function startPlan(string $planId): void
     {
         $this->app->make(CommandBus::class)->run(new StartPlan($planId));
     }

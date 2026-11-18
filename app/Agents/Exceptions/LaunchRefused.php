@@ -14,7 +14,7 @@ final class LaunchRefused extends RuntimeException
         return new self("No domain supplies hooks for {$program}, so it cannot be launched under the journal.");
     }
 
-    public static function forRetiredAgent(int $agentId, Throwable $previous): self
+    public static function forRetiredAgent(string $agentId, Throwable $previous): self
     {
         return new self("Agent {$agentId} does not exist or is retired, so it cannot be launched.", 0, $previous);
     }

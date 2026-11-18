@@ -13,7 +13,7 @@ use App\Contracts\Event;
 final readonly class TaskStarted implements Event
 {
     public function __construct(
-        public int $taskId,
+        public string $taskId,
         public StackTarget $target,
     ) {}
 }

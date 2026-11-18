@@ -20,5 +20,5 @@ Route::post('/hooks/{program}', HookController::class)
 
 Route::middleware(['web', 'auth'])
     ->get('/hooks/stacks/{agentId}/{sessionId}', StackInspectionController::class)
-    ->whereNumber(['agentId', 'sessionId'])
+    ->whereUlid(['agentId', 'sessionId'])
     ->name('hooks.stacks.show');

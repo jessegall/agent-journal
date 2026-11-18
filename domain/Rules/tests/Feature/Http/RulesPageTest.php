@@ -11,6 +11,7 @@ use Domain\Rules\Models\Rule;
 use Domain\Rules\Tests\TestCase;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 
 /**
  * The rules page: the list and reader on one page, and approving or denying the proposed rule it shows.
@@ -63,7 +64,7 @@ final class RulesPageTest extends TestCase
 
     public function test_an_unknown_rule_is_missing_without_text(): void
     {
-        $this->actingAs($this->owner)->get('/rules?rule=999999')->assertInertia(fn (AssertableInertia $page) => $page
+        $this->actingAs($this->owner)->get('/rules?rule='.TestIds::of(999999))->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.selectionMissing', true)
             ->missing('page.data.selected'));
     }
@@ -105,7 +106,7 @@ final class RulesPageTest extends TestCase
 
     public function test_a_missing_rule_and_a_malformed_id_are_not_found(): void
     {
-        foreach (['999999', 'abc', '0', '9223372036854775808'] as $id) {
+        foreach ([TestIds::of(999999), 'abc', '0', '9223372036854775808'] as $id) {
             $this->actingAs($this->owner)->patch("/rules/{$id}/approve")->assertNotFound();
         }
 

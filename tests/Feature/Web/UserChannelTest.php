@@ -8,6 +8,7 @@ use App\Web\Support\UserChannel;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -32,7 +33,7 @@ final class UserChannelTest extends TestCase
         $channel = $this->app->make(UserChannel::class);
 
         $this->assertTrue($channel->join($this->owner, (string) $this->owner->id));
-        $this->assertFalse($channel->join($this->owner, (string) ($this->owner->id + 1)));
+        $this->assertFalse($channel->join($this->owner, TestIds::of(99999)));
     }
 
     public function test_another_account_cannot_join_even_its_own_channel(): void

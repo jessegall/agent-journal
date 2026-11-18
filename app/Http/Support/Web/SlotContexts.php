@@ -8,6 +8,7 @@ use App\Http\Requests\Web\DeclaredPageRequest;
 use App\Ui\Declarations\Slot;
 use App\Ui\Declarations\SlotContext;
 use App\Ui\Enums\SlotContextType;
+use Illuminate\Support\Str;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;
@@ -32,16 +33,16 @@ final readonly class SlotContexts
     }
 
     /**
-     * A positive whole number written in decimals, as ids travel in queries and routes.
+     * A ULID, as ids travel in queries and routes.
      *
-     * @return Option<int>
+     * @return Option<string>
      */
     private function idIn(mixed $value): Option
     {
-        if (! is_string($value) || preg_match('/^[1-9][0-9]{0,18}$/', $value) !== 1) {
+        if (! is_string($value) || ! Str::isUlid($value)) {
             return None::create();
         }
 
-        return Some::create((int) $value);
+        return Some::create(strtolower($value));
     }
 }

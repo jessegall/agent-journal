@@ -6,12 +6,14 @@ namespace Tests\Architecture;
 
 use App\Contracts\Event;
 use Tests\Architecture\Support\DomainFiles;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * Every class in an Events folder of Core, a domain or an installed module implements Core's Event marker, so what
  * happens is recognisable as an event (user message 2307).
  */
+#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class EventMarkerTest extends TestCase
 {
     public function test_every_event_implements_the_event_marker(): void

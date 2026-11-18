@@ -20,7 +20,7 @@ use Spatie\LaravelData\Data;
 final class AssignedPlanCardData extends Data
 {
     public function __construct(
-        public readonly int $id,
+        public readonly string $id,
         public readonly string $title,
         public readonly PlanType $type,
         public readonly PlanState $state,

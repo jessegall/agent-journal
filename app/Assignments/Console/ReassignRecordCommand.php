@@ -26,7 +26,7 @@ final class ReassignRecordCommand extends Command
     public function handle(AgentRequestSender $journal): int
     {
         try {
-            $body = [...$this->recordFields(), 'assignmentId' => (int) $this->option('assignment'), ...ActorIdentity::fromText((string) $this->option('holder'))->asFields('holder'), ...ActorIdentity::fromText((string) $this->option('to'))->asFields('recipient')];
+            $body = [...$this->recordFields(), 'assignmentId' => (string) $this->option('assignment'), ...ActorIdentity::fromText((string) $this->option('holder'))->asFields('holder'), ...ActorIdentity::fromText((string) $this->option('to'))->asFields('recipient')];
         } catch (InvalidActorText $invalid) {
             $this->error($invalid->getMessage());
 

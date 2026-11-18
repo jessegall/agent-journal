@@ -8,12 +8,14 @@ use App\Domains\Contracts\Domain;
 use App\Domains\Contracts\ProvidesBootstrappers;
 use ReflectionClass;
 use ReflectionMethod;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * A domain says what it is and what its boot runs before anything else: bootstrappers() is the method right below
  * description() (rule 35).
  */
+#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class DomainBootstrapperOrderTest extends TestCase
 {
     public function test_bootstrappers_sit_right_below_description(): void

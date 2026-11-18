@@ -19,6 +19,7 @@ use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 
 /**
  * The Rules commands on the bus (doc 19, phase 2): proposing answers the new rule's id, removing raises its fact,
@@ -42,7 +43,7 @@ final class RuleCommandsTest extends TestCase
 
     public function test_proposing_answers_the_id_of_a_rule_that_does_not_hold_yet(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(3));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)));
 
         $id = $this->app->make(CommandBus::class)->run(new ProposeRule('Every phase ends with its tests.'));
 
@@ -51,7 +52,7 @@ final class RuleCommandsTest extends TestCase
 
     public function test_removing_a_rule_raises_its_fact(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
         $rule = Rule::query()->create(['text' => 'Old rule.']);
 
         $this->app->make(CommandBus::class)->run(new RemoveRule($rule->id));
@@ -62,7 +63,7 @@ final class RuleCommandsTest extends TestCase
 
     public function test_a_main_agent_may_not_approve_a_rule_and_it_stays_proposed(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(3));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)));
         $rule = Rule::proposed('No phase waits on the user.');
 
         try {
@@ -75,7 +76,7 @@ final class RuleCommandsTest extends TestCase
 
     public function test_an_agent_asking_to_approve_is_answered_403(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(3));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)));
         $rule = Rule::proposed('No phase waits on the user.');
         Route::post('/rules-test/approve', fn (CommandBus $commands) => $commands->run(new ApproveRule($rule->id)));
 
@@ -84,10 +85,10 @@ final class RuleCommandsTest extends TestCase
 
     public function test_a_missing_rule_is_refused_by_name(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
 
-        $this->expectExceptionObject(RuleMissing::withId(999999));
+        $this->expectExceptionObject(RuleMissing::withId(TestIds::of(999999)));
 
-        $this->app->make(CommandBus::class)->run(new RemoveRule(999999));
+        $this->app->make(CommandBus::class)->run(new RemoveRule(TestIds::of(999999)));
     }
 }

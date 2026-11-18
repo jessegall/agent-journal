@@ -11,20 +11,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('plans', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('title');
-            $table->string('kind', 16);
+            $table->string('type', 16);
             $table->string('state', 16)->default('planned');
             $table->boolean('focused')->default(false);
-            $table->unsignedBigInteger('agent_id')->nullable();
             $table->timestampsTz();
 
             $table->index('state');
         });
 
         Schema::create('phases', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('plan_id')->constrained('plans')->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('plan_id')->constrained('plans')->cascadeOnDelete();
             $table->string('title');
             $table->unsignedInteger('position');
             $table->timestampsTz();
@@ -33,9 +32,9 @@ return new class extends Migration
         });
 
         Schema::create('phase_tasks', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('phase_id')->constrained('phases')->cascadeOnDelete();
-            $table->unsignedBigInteger('task_id')->unique();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('phase_id')->constrained('phases')->cascadeOnDelete();
+            $table->ulid('task_id')->unique();
             $table->unsignedInteger('position');
 
             $table->unique(['phase_id', 'position']);

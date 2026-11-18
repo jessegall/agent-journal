@@ -16,6 +16,7 @@ use Domain\Plans\Models\Plan;
 use Domain\Rules\Models\Rule;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -142,7 +143,7 @@ final class HomePageTest extends TestCase
 
     public function test_a_guessed_session_is_refused_on_the_session(): void
     {
-        $this->actingAs($this->owner)->from('/')->post('/chat/messages', ['body' => 'Hello', 'session' => (string) ($this->session->id + 100)])
+        $this->actingAs($this->owner)->from('/')->post('/chat/messages', ['body' => 'Hello', 'session' => TestIds::of(99999)])
             ->assertRedirect('/')
             ->assertSessionHasErrors('session');
     }

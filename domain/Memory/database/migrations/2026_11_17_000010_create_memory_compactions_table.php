@@ -11,9 +11,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('memory_compactions', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('agent_id');
-            $table->unsignedBigInteger('session_id');
+            $table->ulid('id')->primary();
+            $table->ulid('agent_id');
+            $table->ulid('session_id');
             $table->string('compaction_id', 128);
             $table->timestampsTz();
 

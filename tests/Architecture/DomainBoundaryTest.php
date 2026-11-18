@@ -12,6 +12,7 @@ use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\CompositionSite;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ProjectRoots;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -23,6 +24,7 @@ use Tests\TestCase;
  * starter-kit files beyond their domain names, a received event re-raised through a copied variable or another
  * method, a query built in another file and passed in, and a string passed to ->dispatch() on an injected dispatcher.
  */
+#[TimeLimit(seconds: 15, reason: 'It parses every PHP file of the project.')]
 final class DomainBoundaryTest extends TestCase
 {
     public function test_no_domain_crosses_its_boundary(): void

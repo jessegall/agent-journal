@@ -14,5 +14,5 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
  */
 final readonly class PlanProgressChanged implements Event, ShouldDispatchAfterCommit, UpdatesUserInterface
 {
-    public function __construct(public int $planId) {}
+    public function __construct(public string $planId) {}
 }

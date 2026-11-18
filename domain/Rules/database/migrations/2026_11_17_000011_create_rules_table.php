@@ -11,7 +11,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('rules', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->text('text');
             $table->string('state', 16)->default('active');
             $table->timestampsTz();

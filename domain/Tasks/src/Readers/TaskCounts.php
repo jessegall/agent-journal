@@ -21,7 +21,7 @@ final readonly class TaskCounts implements TaskProgressCounter
     public function __construct(private CurrentActor $actors) {}
 
     /**
-     * @param  list<int>  $taskIds
+     * @param  list<string>  $taskIds
      */
     public function progressOf(array $taskIds): TaskProgress
     {
@@ -36,7 +36,7 @@ final readonly class TaskCounts implements TaskProgressCounter
      *
      * @template TKey of array-key
      *
-     * @param  array<TKey, list<int>>  $taskIdGroups
+     * @param  array<TKey, list<string>>  $taskIdGroups
      * @return array<TKey, TaskProgress>
      */
     public function progressByGroup(array $taskIdGroups): array
@@ -46,8 +46,8 @@ final readonly class TaskCounts implements TaskProgressCounter
 
         return array_map(
             fn (array $taskIds) => self::progressOfStates(array_count_values(array_map(
-                fn (int $taskId) => $stateOfTask[$taskId]->value,
-                array_values(array_filter($taskIds, fn (int $taskId) => isset($stateOfTask[$taskId]))),
+                fn (string $taskId) => $stateOfTask[$taskId]->value,
+                array_values(array_filter($taskIds, fn (string $taskId) => isset($stateOfTask[$taskId]))),
             ))),
             $taskIdGroups,
         );

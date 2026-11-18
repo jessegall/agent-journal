@@ -43,7 +43,7 @@ final class DecisionTest extends TestCase
 
     public function test_context_and_push_and_pop_delegate(): void
     {
-        $reference = new StateReference('tasks.working', new SubjectReference(3, 1));
+        $reference = new StateReference('tasks.working', new SubjectReference('3', 1));
 
         $this->assertTrue(Decision::addContext('Remember rule 7.')->isDelegating());
         $this->assertTrue(Decision::push($reference)->isDelegating());

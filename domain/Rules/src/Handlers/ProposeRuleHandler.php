@@ -12,7 +12,7 @@ use Domain\Rules\Models\Rule;
  */
 final readonly class ProposeRuleHandler
 {
-    public function handle(ProposeRule $command): int
+    public function handle(ProposeRule $command): string
     {
         return Rule::proposed($command->text)->id;
     }

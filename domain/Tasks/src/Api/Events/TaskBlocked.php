@@ -12,5 +12,5 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
  */
 final readonly class TaskBlocked implements Event, ShouldDispatchAfterCommit
 {
-    public function __construct(public int $taskId) {}
+    public function __construct(public string $taskId) {}
 }

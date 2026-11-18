@@ -17,7 +17,7 @@ use Domain\Chat\Handlers\RequireMessageAnswerHandler;
 final readonly class RequireMessageAnswer implements Command
 {
     public function __construct(
-        public int $messageId,
-        public int $sessionId,
+        public string $messageId,
+        public string $sessionId,
     ) {}
 }

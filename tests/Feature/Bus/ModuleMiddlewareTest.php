@@ -49,6 +49,7 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\TrimMessages;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\UppercasesText;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Support\TestIds;
 
 /**
  * Module middleware on the Cards and Notes test modules (doc 19, Book E): the order by stage, owner and declaration,
@@ -74,7 +75,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_module_middleware_runs_by_stage_then_owner_then_declaration(): void
     {
         $trail = $this->installCommandModules();
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
 
         $this->app->make(CommandBus::class)->run(new WriteNote('ordered'));
 
@@ -84,12 +85,12 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_a_replacement_reaches_the_handler_and_a_refusal_writes_nothing(): void
     {
         $this->installCommandModules(MiddlewareDeclaration::around(UppercasesText::class, CommandScope::command(WriteNote::class)));
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
 
         $this->assertSame('LOUD', $this->rowText($this->app->make(CommandBus::class)->run(new WriteNote('loud'))));
 
         $this->installCommandModules(MiddlewareDeclaration::around(RefusesAll::class, CommandScope::all()));
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
         $this->expectException(CommandRefused::class);
         $this->app->make(CommandBus::class)->run(new WriteNote('refused'));
     }
@@ -112,7 +113,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_a_middleware_that_breaks_its_contract_is_refused_by_name(string $middleware, string $refusal): void
     {
         $this->installCommandModules(MiddlewareDeclaration::around($middleware, CommandScope::all()));
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
 
         $this->expectException($refusal);
         $this->expectExceptionMessage($middleware);
@@ -123,7 +124,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_a_middleware_that_swallows_a_failure_is_refused_and_keeps_the_failure(): void
     {
         $this->installCommandModules(MiddlewareDeclaration::inside(SwallowsFailure::class, CommandScope::all()));
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
 
         try {
             $this->app->make(CommandBus::class)->run(new RefuseNote('swallowed'));
@@ -136,7 +137,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_notes_audits_the_rules_commands_and_not_its_own_writes(): void
     {
         $trail = $this->installCommandModules();
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);
 
         $bus->run(new ApproveRule(Rule::proposed('Every phase ends with its tests.')->id));
@@ -149,7 +150,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_the_audit_row_rolls_back_with_a_refused_rules_command(): void
     {
         $this->installCommandModules();
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
         $settled = Rule::query()->create(['text' => 'Already active.']);
 
         try {
@@ -168,7 +169,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_notes_limits_plan_starts_and_nothing_is_written(): void
     {
         $trail = $this->installCommandModulesRequiring(['Plans'], MiddlewareDeclaration::around(LimitPlanStarts::class, CommandScope::command(StartPlan::class)));
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
         $plan = Plan::query()->create(['title' => 'Quota', 'type' => PlanType::Build]);
 
         try {
@@ -186,7 +187,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     {
         $this->installCommandModulesRequiring(['Chat'], MiddlewareDeclaration::around(TrimMessages::class, CommandScope::command(SendMessage::class)));
         $session = $this->launchedSession();
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
 
         $this->app->make(CommandBus::class)->run(new SendMessage("  Trim me  \n", $session->id));
 
@@ -197,7 +198,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     {
         $this->installCommandModulesRequiring(['Chat'], MiddlewareDeclaration::around(SendsToUnknownSession::class, CommandScope::command(SendMessage::class)));
         $session = $this->launchedSession();
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
 
         try {
             $this->app->make(CommandBus::class)->run(new SendMessage('Hello', $session->id));
@@ -210,7 +211,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_a_middleware_may_not_replace_tasks_private_finish(): void
     {
         $this->installCommandModules(MiddlewareDeclaration::around(ReplacesTasksCommand::class, CommandScope::all()));
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
 
         $this->expectException(CommandReplacementRefused::class);
 
@@ -222,7 +223,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $this->installCommandModules(MiddlewareDeclaration::inside(RefusesAfterRetirement::class, CommandScope::command(RetireAgent::class)));
         $helper = Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.read_only_helper_ready']);
         $task = Task::query()->create(['title' => 'Held']);
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new AssignRecord($task->assignmentIdentity(), ActorIdentity::of($helper)));
 
@@ -238,7 +239,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_a_middleware_may_not_replace_another_owners_private_command(): void
     {
         $this->installCommandModules(MiddlewareDeclaration::around(ReplacesCardsCommand::class, CommandScope::all()));
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
 
         $this->expectException(CommandReplacementRefused::class);
 

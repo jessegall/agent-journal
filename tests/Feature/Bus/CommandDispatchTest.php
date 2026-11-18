@@ -14,6 +14,7 @@ use Tests\Fixtures\Bus\Shop\Enums\ItemSize;
 use Tests\Fixtures\Modules\Cards\Commands\DrawCard;
 use Tests\Fixtures\Modules\Notes\Commands\ClearNotes;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Support\TestIds;
 
 /**
  * Dispatching on the command bus (doc 19, Book C): every registered command reaches its handler and its result comes
@@ -24,7 +25,7 @@ final class CommandDispatchTest extends CommandBusTestCase
     public function test_every_registered_command_has_its_handler_and_its_result_comes_back_unchanged(): void
     {
         $this->installCommandModules();
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);
 
         $this->assertInstanceOf(LaravelCommandBus::class, $bus);
@@ -38,7 +39,7 @@ final class CommandDispatchTest extends CommandBusTestCase
     public function test_an_unregistered_command_is_refused_before_anything_runs(): void
     {
         $this->installCommandModules();
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
 
         $this->expectException(CommandNotRegistered::class);
 

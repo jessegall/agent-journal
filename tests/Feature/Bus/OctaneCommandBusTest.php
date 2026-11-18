@@ -9,6 +9,7 @@ use App\Bus\Exceptions\CommandRefused;
 use Illuminate\Support\Facades\Log;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Support\TestIds;
 
 /**
  * The bus under Octane (doc 19, story 67): each request on one booted app gets its own bus with its own actor, also
@@ -19,7 +20,7 @@ final class OctaneCommandBusTest extends CommandBusTestCase
     public function test_each_request_gets_its_own_bus_with_its_own_actor(): void
     {
         $this->installCommandModules();
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
         $first = $this->app->make(CommandBus::class);
 
         try {
@@ -28,12 +29,12 @@ final class OctaneCommandBusTest extends CommandBusTestCase
         }
 
         $this->app->forgetScopedInstances();
-        $this->startRequestAs(9, 90);
+        $this->startRequestAs(TestIds::of(9), TestIds::of(90));
         $second = $this->app->make(CommandBus::class);
         $log = Log::spy();
         $second->run(new WriteNote('second request'));
 
         $this->assertNotSame($first, $second);
-        $log->shouldHaveReceived('info')->withArgs(fn (string $line, array $context) => $context['actor'] === 'agent:9');
+        $log->shouldHaveReceived('info')->withArgs(fn (string $line, array $context) => $context['actor'] === 'agent:'.TestIds::of(9));
     }
 }

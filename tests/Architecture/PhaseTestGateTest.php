@@ -6,7 +6,9 @@ namespace Tests\Architecture;
 
 use PHPUnit\Framework\TestCase;
 use Tests\Support\RequirePhaseTests;
+use Tests\Support\TimeLimits\TimeLimit;
 
+#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class PhaseTestGateTest extends TestCase
 {
     public function test_a_file_with_tests_passes_the_gate(): void

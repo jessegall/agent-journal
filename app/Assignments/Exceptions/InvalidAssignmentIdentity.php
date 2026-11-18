@@ -17,14 +17,14 @@ final class InvalidAssignmentIdentity extends InvalidArgumentException implement
         return new self("A record type is a link alias such as tasks.task; \"{$type}\" is not one.");
     }
 
-    public static function forId(string $type, int $id): self
+    public static function forId(string $type, string $id): self
     {
-        return new self("A {$type} id is a positive whole number; {$id} is not one.");
+        return new self("A {$type} id is a ULID; {$id} is not one.");
     }
 
-    public static function forReference(int $id): self
+    public static function forReference(string $id): self
     {
-        return new self("An assignment reference is a positive whole number; {$id} is not one.");
+        return new self("An assignment reference is a ULID; {$id} is not one.");
     }
 
     protected function status(): int

@@ -12,6 +12,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -23,7 +24,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 /**
  * A user who can sign in. Only the configured owner gets into the journal (JournalAccess).
  *
- * @property int $id
+ * @property string $id
  * @property string $name
  * @property string $email
  * @property Carbon|null $email_verified_at
@@ -43,7 +44,7 @@ class User extends Authenticatable implements Assignee, MustVerifyEmail, Passkey
     /**
      * @use HasFactory<UserFactory>
      */
-    use HasFactory, Linkable, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
+    use HasFactory, HasUlids, Linkable, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable;
 
     /**
      * Get the attributes that should be cast.
@@ -64,7 +65,7 @@ class User extends Authenticatable implements Assignee, MustVerifyEmail, Passkey
         return ActorType::User;
     }
 
-    public function actorId(): int
+    public function actorId(): string
     {
         return $this->id;
     }
@@ -76,5 +77,15 @@ class User extends Authenticatable implements Assignee, MustVerifyEmail, Passkey
     {
         $this->password = $password;
         $this->save();
+    }
+
+    /**
+     * The id of the user with this email address, the journal's owner; none when no such user exists yet.
+     */
+    public static function ownerIdFor(string $email): string|null
+    {
+        $id = self::query()->where('email', $email)->value('id');
+
+        return is_string($id) ? $id : null;
     }
 }

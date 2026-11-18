@@ -18,6 +18,7 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Readers\TaskCounts;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 
 final class PlanPersistenceTest extends TestCase
 {
@@ -56,11 +57,11 @@ final class PlanPersistenceTest extends TestCase
 
     public function test_tasks_count_progress_by_id_including_none(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
         $done = $this->task('Done');
         $done->finish();
         $started = $this->task('Started');
-        $started->startFor(new StackTarget(1, 10));
+        $started->startFor(new StackTarget(TestIds::of(1), TestIds::of(10)));
         $open = $this->task('Open');
         $counts = $this->app->make(TaskProgressCounter::class);
         $this->assertInstanceOf(TaskCounts::class, $counts);
@@ -75,7 +76,7 @@ final class PlanPersistenceTest extends TestCase
     {
         Plan::query()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
 
-        $this->startRequestAs(2, 20);
+        $this->startRequestAs(TestIds::of(2), TestIds::of(20));
 
         $this->assertSame(['Compare chat layouts'], Plan::query()->pluck('title')->all());
     }

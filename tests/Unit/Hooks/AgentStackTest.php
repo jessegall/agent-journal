@@ -72,14 +72,14 @@ final class AgentStackTest extends TestCase
     public function test_a_pushed_sequence_answers_the_next_stop_before_the_task(): void
     {
         $factory = new InMemoryStateFactory([
-            'sequences.following' => fn () => new FollowingSequenceState(new SequenceWork(8, 3, 'Run the phase tests.', SequenceRunState::Running)),
+            'sequences.following' => fn () => new FollowingSequenceState(new SequenceWork('8', 3, 'Run the phase tests.', SequenceRunState::Running)),
         ]);
         $stack = new AgentStack([
             $this->ready(),
-            new Frame('task-42', $this->reference('tasks.working', 42), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active))),
+            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork('42', 1, TaskWorkState::Active))),
         ], $factory);
 
-        $stack = $stack->withStateOnTop($this->reference('sequences.following', 8));
+        $stack = $stack->withStateOnTop($this->reference('sequences.following', '8'));
         $answer = $stack->answer($this->stop());
 
         $this->assertSame(['ready', 'task-42', 'pushed-1'], $stack->frameIds());
@@ -204,7 +204,7 @@ final class AgentStackTest extends TestCase
     {
         $stack = $this->exampleStack(TaskWorkState::Active, MessageWorkState::Unanswered);
 
-        $this->assertSame($stack, $stack->withStateOnTop($this->reference('tasks.working', 42)));
+        $this->assertSame($stack, $stack->withStateOnTop($this->reference('tasks.working', '42')));
         $this->assertSame(['ready', 'task-42', 'message-95'], $stack->frameIds());
     }
 
@@ -275,7 +275,7 @@ final class AgentStackTest extends TestCase
 
         $this->assertSame(['ready', 'task-42', 'message-95'], array_map(fn ($record) => $record->id, $records));
         $this->assertSame([true, false, false], array_map(fn ($record) => $record->isBottom, $records));
-        $this->assertTrue($records[1]->reference->isSameAs($this->reference('tasks.working', 42)));
+        $this->assertTrue($records[1]->reference->isSameAs($this->reference('tasks.working', '42')));
     }
 
     public function test_a_step_keeps_its_typed_labels_through_an_array(): void
@@ -293,8 +293,8 @@ final class AgentStackTest extends TestCase
     {
         return $this->stack(
             $this->ready(),
-            new Frame('task-42', $this->reference('tasks.working', 42), new WorkingOnTaskState(new TaskWork(42, 1, $taskState))),
-            new Frame('message-95', $this->reference('chat.answering', 95), new AnsweringMessageState(new MessageWork(95, $messageState))),
+            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork('42', 1, $taskState))),
+            new Frame('message-95', $this->reference('chat.answering', '95'), new AnsweringMessageState(new MessageWork('95', $messageState))),
         );
     }
 
@@ -313,13 +313,13 @@ final class AgentStackTest extends TestCase
         return new Frame($id, $this->reference($id), $state);
     }
 
-    private function reference(string $typeKey, int|null $subjectId = null): StateReference
+    private function reference(string $typeKey, string|null $subjectId = null): StateReference
     {
         if ($subjectId === null) {
             return new StateReference($typeKey, NoSubject::None);
         }
 
-        return new StateReference($typeKey, new SubjectReference($subjectId, 1));
+        return new StateReference($typeKey, new SubjectReference((string) $subjectId, 1));
     }
 
     private function stop(): StopRequested

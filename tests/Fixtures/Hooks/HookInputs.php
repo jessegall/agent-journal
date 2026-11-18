@@ -55,7 +55,7 @@ final class HookInputs
      */
     public static function all(): array
     {
-        $hook = new HookIdentity(1, 2, 'hook-1', 'digest');
+        $hook = new HookIdentity('01jd8x0g9m3qz6v4k2t7r5w1ca', '01jd8x0g9m3qz6v4k2t7r5w1cb', 'hook-1', 'digest');
 
         return [
             'session start' => new SessionStarted($hook, new SessionStartDetails('vendor-1', SessionStartSource::Startup)),

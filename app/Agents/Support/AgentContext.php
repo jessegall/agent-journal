@@ -15,8 +15,8 @@ use App\Agents\Models\AgentSession;
 final readonly class AgentContext implements Actor
 {
     public function __construct(
-        public int $agentId,
-        public int $sessionId,
+        public string $agentId,
+        public string $sessionId,
         public string $role,
         public SignedCall $call,
     ) {}
@@ -34,7 +34,7 @@ final readonly class AgentContext implements Actor
         return ActorType::Agent;
     }
 
-    public function actorId(): int
+    public function actorId(): string
     {
         return $this->agentId;
     }

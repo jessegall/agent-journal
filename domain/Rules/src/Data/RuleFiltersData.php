@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Domain\Rules\Data;
 
 use Domain\Rules\Api\RuleFilters;
-use Spatie\LaravelData\Attributes\Validation\Regex;
+use Spatie\LaravelData\Attributes\Validation\Ulid;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * The accepted filters of the rules page as the browser keeps them in the query string: search words, page and the
- * selected rule's id as a decimal string.
+ * selected rule's id as a ULID.
  */
 #[TypeScript]
 final class RuleFiltersData extends Data
@@ -20,7 +20,7 @@ final class RuleFiltersData extends Data
     public function __construct(
         public readonly string $q = '',
         public readonly int $page = 1,
-        #[Regex('/^[1-9][0-9]{0,18}$/')] public readonly string|Optional $rule = new Optional,
+        #[Ulid] public readonly string|Optional $rule = new Optional,
     ) {}
 
     /**
@@ -57,6 +57,6 @@ final class RuleFiltersData extends Data
 
     public function toDomain(): RuleFilters
     {
-        return new RuleFilters($this->q, $this->page, $this->rule instanceof Optional ? null : (int) $this->rule);
+        return new RuleFilters($this->q, $this->page, $this->rule instanceof Optional ? null : (string) $this->rule);
     }
 }

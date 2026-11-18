@@ -19,7 +19,7 @@ final readonly class PageChanged implements Event, ShouldBroadcast, ShouldDispat
     public const string NAME = 'page.changed';
 
     /**
-     * @param  list<int>  $userIds
+     * @param  list<string>  $userIds
      */
     public function __construct(public array $userIds) {}
 
@@ -28,7 +28,7 @@ final readonly class PageChanged implements Event, ShouldBroadcast, ShouldDispat
      */
     public function broadcastOn(): array
     {
-        return array_map(fn (int $userId) => new PrivateChannel(UserChannel::nameFor($userId)), $this->userIds);
+        return array_map(fn (string $userId) => new PrivateChannel(UserChannel::nameFor($userId)), $this->userIds);
     }
 
     public function broadcastAs(): string

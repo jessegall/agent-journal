@@ -12,11 +12,13 @@ use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\RecordIdentity;
 use App\Links\Support\Linkable;
+use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 use Illuminate\Support\Carbon;
 
@@ -24,19 +26,19 @@ use Illuminate\Support\Carbon;
  * The one current holder of a record: a row is inserted to assign, deleted to unassign and replaced by a new row to
  * reassign, so a reference names one holding exactly. Only Core's store writes it.
  *
- * @property int $id
+ * @property string $id
  * @property string $record_type
- * @property int $record_id
+ * @property string $record_id
  * @property ActorType $holder_type
- * @property int $holder_id
+ * @property string $holder_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Table('assignments', incrementing: true)]
+#[Table('assignments')]
 #[Fillable(['record_type', 'record_id', 'holder_type', 'holder_id'])]
 final class AssignmentRecord extends MorphPivot
 {
-    use Linkable;
+    use HasUlids, Linkable;
 
     /**
      * A pivot opens every attribute by default; this one takes only its Fillable list.
@@ -51,6 +53,25 @@ final class AssignmentRecord extends MorphPivot
     protected function casts(): array
     {
         return ['holder_type' => ActorType::class];
+    }
+
+    /**
+     * Gives an unheld record to the holder in one insert that does nothing when the record already has a holder, so
+     * the unique record key decides between two writers without aborting the transaction.
+     */
+    public static function insertUnlessHeld(RecordIdentity $record, ActorIdentity $holder): void
+    {
+        $now = CarbonImmutable::now();
+
+        self::query()->insertOrIgnore([
+            'id' => (new self)->newUniqueId(),
+            'record_type' => $record->type,
+            'record_id' => $record->id,
+            'holder_type' => $holder->type->value,
+            'holder_id' => $holder->id,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
     }
 
     public static function holding(RecordIdentity $record, ActorIdentity $holder): self

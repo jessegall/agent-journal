@@ -15,6 +15,7 @@ use ReflectionClass;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ParsedFile;
 use Tests\Support\InstallsCommandModules;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 use Throwable;
 
@@ -23,6 +24,7 @@ use Throwable;
  * Commands folder is a registered command, the command attributes sit only on registered commands, no handler or
  * middleware keeps static state, and every registered handler and middleware can be built.
  */
+#[TimeLimit(seconds: 15, reason: 'It parses every PHP file of the project.')]
 final class CommandFolderTest extends TestCase
 {
     use InstallsCommandModules;

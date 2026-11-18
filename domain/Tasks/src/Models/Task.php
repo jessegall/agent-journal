@@ -14,6 +14,7 @@ use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Support\TaskWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -21,19 +22,19 @@ use Illuminate\Support\Carbon;
  * One task. Each start begins a run; the agent and session working on it are set only by starting it.
  * Every agent reads every task, so it has no agent limit.
  *
- * @property int $id
+ * @property string $id
  * @property string $title
  * @property TaskState $state
  * @property int $run_number
- * @property int|null $agent_id
- * @property int|null $session_id
+ * @property string|null $agent_id
+ * @property string|null $session_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable(['title'])]
 final class Task extends Model implements Assignable
 {
-    use AssignableListing, Linkable;
+    use AssignableListing, HasUlids, Linkable;
 
     /**
      * The stable name links and assignments use for a task.
@@ -53,15 +54,13 @@ final class Task extends Model implements Assignable
         return [
             'state' => TaskState::class,
             'run_number' => 'integer',
-            'agent_id' => 'integer',
-            'session_id' => 'integer',
         ];
     }
 
     /**
      * The task read under its row lock, for a change that must happen once.
      */
-    public static function lockedById(int $id): self
+    public static function lockedById(string $id): self
     {
         return self::query()->whereKey($id)->lockForUpdate()->first() ?? throw TaskMissing::forId($id);
     }

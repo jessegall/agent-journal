@@ -9,6 +9,7 @@ use App\Links\Support\Linkable;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -17,9 +18,9 @@ use Illuminate\Support\Carbon;
 /**
  * One launch of an agent: one journal session, its parent session for a child, and the program's own session once verified.
  *
- * @property int $id
- * @property int $agent_id
- * @property int|null $parent_session_id
+ * @property string $id
+ * @property string $agent_id
+ * @property string|null $parent_session_id
  * @property string|null $program
  * @property string|null $program_session_id
  * @property SessionStatus $status
@@ -35,7 +36,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['program', 'program_session_id'])]
 final class AgentSession extends Model
 {
-    use Linkable;
+    use HasUlids, Linkable;
 
     /**
      * @return array<string, string>
@@ -43,8 +44,6 @@ final class AgentSession extends Model
     protected function casts(): array
     {
         return [
-            'agent_id' => 'integer',
-            'parent_session_id' => 'integer',
             'status' => SessionStatus::class,
             'ended_at' => 'immutable_datetime',
             'last_heartbeat_at' => 'immutable_datetime',

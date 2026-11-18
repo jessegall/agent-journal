@@ -27,6 +27,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\HookDatabase;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class HookStorageTest extends TestCase
@@ -54,19 +55,19 @@ final class HookStorageTest extends TestCase
     {
         $frames = $this->frames();
         $row = new AgentStackRow;
-        $row->startFor(new StackTarget(7, 9), $frames);
+        $row->startFor(new StackTarget(TestIds::of(7), TestIds::of(9)), $frames);
 
-        $stored = AgentStackRow::query()->forTarget(new StackTarget(7, 9))->sole();
+        $stored = AgentStackRow::query()->forTarget(new StackTarget(TestIds::of(7), TestIds::of(9)))->sole();
 
         $this->assertEquals($frames, $stored->frames);
-        $this->assertSame([7, 9, 1], [$stored->agent_id, $stored->session_id, $stored->version]);
+        $this->assertSame([TestIds::of(7), TestIds::of(9), 1], [$stored->agent_id, $stored->session_id, $stored->version]);
         $this->assertSame(StackStatus::Active, $stored->status);
     }
 
     public function test_saving_frames_raises_the_version_and_closing_records_the_time(): void
     {
         $row = new AgentStackRow;
-        $row->startFor(new StackTarget(7, 9), $this->frames());
+        $row->startFor(new StackTarget(TestIds::of(7), TestIds::of(9)), $this->frames());
         $bottomOnly = new FrameRecords([$this->frames()->all()[0]]);
 
         $row->saveFrames($bottomOnly);
@@ -82,11 +83,11 @@ final class HookStorageTest extends TestCase
 
     public function test_one_agent_and_session_has_one_stack(): void
     {
-        (new AgentStackRow)->startFor(new StackTarget(7, 9), $this->frames());
+        (new AgentStackRow)->startFor(new StackTarget(TestIds::of(7), TestIds::of(9)), $this->frames());
 
         $this->expectException(QueryException::class);
 
-        (new AgentStackRow)->startFor(new StackTarget(7, 9), $this->frames());
+        (new AgentStackRow)->startFor(new StackTarget(TestIds::of(7), TestIds::of(9)), $this->frames());
     }
 
     public function test_a_hook_call_keeps_its_answer_bytes_and_steps_exactly(): void
@@ -127,7 +128,7 @@ final class HookStorageTest extends TestCase
 
     public function test_frames_in_an_unknown_version_are_refused(): void
     {
-        (new AgentStackRow)->startFor(new StackTarget(7, 9), $this->frames());
+        (new AgentStackRow)->startFor(new StackTarget(TestIds::of(7), TestIds::of(9)), $this->frames());
         DB::table('agent_stacks')->update(['frames' => '{"version":2,"frames":[]}']);
 
         $this->expectException(StoredValueInvalid::class);
@@ -148,7 +149,7 @@ final class HookStorageTest extends TestCase
     public function test_a_stack_and_a_hook_call_can_be_linked(): void
     {
         $stack = new AgentStackRow;
-        $stack->startFor(new StackTarget(7, 9), $this->frames());
+        $stack->startFor(new StackTarget(TestIds::of(7), TestIds::of(9)), $this->frames());
         $call = new HookCall;
         $call->recordFor($this->hook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
 
@@ -161,20 +162,20 @@ final class HookStorageTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->instance(AgentContext::class, new AgentContext(7, 9, 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64))));
+        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(7), TestIds::of(9), 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64))));
     }
 
     private function frames(): FrameRecords
     {
         return new FrameRecords([
             new FrameRecord('frame-1', new StateReference('hooks.main_ready', NoSubject::None), true, 1),
-            new FrameRecord('frame-2', new StateReference('tasks.working', new SubjectReference(42, 3)), false, 1),
+            new FrameRecord('frame-2', new StateReference('tasks.working', new SubjectReference('42', 3)), false, 1),
         ]);
     }
 
     private function hook(): HookIdentity
     {
-        return new HookIdentity(7, 9, 'hook-1', str_repeat('a', 64));
+        return new HookIdentity(TestIds::of(7), TestIds::of(9), 'hook-1', str_repeat('a', 64));
     }
 
     private function columnType(string $table, string $column): string

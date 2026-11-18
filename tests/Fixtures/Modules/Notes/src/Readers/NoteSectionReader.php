@@ -19,7 +19,7 @@ final readonly class NoteSectionReader implements SectionReader
 
     public function read(SlotContext $context): NoteSectionData
     {
-        $this->sessions->requireActive((int) $context->id);
+        $this->sessions->requireActive((string) $context->id);
 
         return NoteSectionData::from(['count' => Note::query()->forActor()->count()]);
     }

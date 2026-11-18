@@ -29,7 +29,7 @@ trait BelongsToOneAgent
      * @param  Builder<static>  $query
      */
     #[Scope]
-    protected function ownedBy(Builder $query, int $agentId): void
+    protected function ownedBy(Builder $query, string $agentId): void
     {
         $query->withoutGlobalScope(AgentScope::class)->where($query->qualifyColumn('agent_id'), $agentId);
     }
@@ -68,7 +68,7 @@ trait BelongsToOneAgent
      * The row locked for a change that must happen once, among the actor's own rows or the rows no agent holds yet,
      * such as a message nobody was asked to answer or a run nobody follows; null when the actor may not have it.
      */
-    public static function lockedForActorOrUnheld(int $id): static|null
+    public static function lockedForActorOrUnheld(string $id): static|null
     {
         return static::query()->forActor()->whereKey($id)->lockForUpdate()->first()
             ?? static::query()->withoutGlobalScope(AgentScope::class)->whereNull('agent_id')->whereKey($id)->lockForUpdate()->first();
@@ -85,6 +85,6 @@ trait BelongsToOneAgent
     {
         Container::getInstance()->make(CurrentActor::class)->actor();
 
-        return $this->resolveRouteBindingQuery($this->newQuery()->forActor(), $value, $field)->first();
+        return $this->newQuery()->forActor()->where($field ?? $this->getRouteKeyName(), $value)->first();
     }
 }

@@ -21,6 +21,6 @@ final class RetireAgentCommand extends Command
 
     public function handle(AgentRequestSender $journal): int
     {
-        return $this->sendAndPrint($journal, '/agent/agents/retire', ['agentId' => (int) $this->argument('agent')]);
+        return $this->sendAndPrint($journal, '/agent/agents/retire', ['agentId' => (string) $this->argument('agent')]);
     }
 }

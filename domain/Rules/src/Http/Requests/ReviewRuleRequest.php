@@ -8,7 +8,7 @@ use App\Http\Requests\Web\Concerns\ReadsRouteId;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Which proposed rule to review, named by the route; an id that is no positive whole number in range is not found
+ * Which proposed rule to review, named by the route; an id that is no ULID is not found
  * before any work.
  */
 final class ReviewRuleRequest extends FormRequest
@@ -23,7 +23,7 @@ final class ReviewRuleRequest extends FormRequest
         return [];
     }
 
-    public function ruleId(): int
+    public function ruleId(): string
     {
         return $this->routeId('rule');
     }

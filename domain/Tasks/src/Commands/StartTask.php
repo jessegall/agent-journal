@@ -17,7 +17,7 @@ use Domain\Tasks\Handlers\StartTaskHandler;
 final readonly class StartTask implements Command
 {
     public function __construct(
-        public int $taskId,
-        public int $sessionId,
+        public string $taskId,
+        public string $sessionId,
     ) {}
 }

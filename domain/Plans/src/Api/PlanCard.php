@@ -19,7 +19,7 @@ final readonly class PlanCard
      * @param  Option<AssignmentHolder>  $holder
      */
     public function __construct(
-        public int $id,
+        public string $id,
         public string $title,
         public PlanType $type,
         public PlanState $state,

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -17,19 +18,19 @@ use Illuminate\Support\Carbon;
 /**
  * One link between two models of any type. A link has no direction for lookups: A to B is the same link as B to A.
  *
- * @property int $id
+ * @property string $id
  * @property string $source_type
- * @property int $source_id
+ * @property string $source_id
  * @property string $target_type
- * @property int $target_id
+ * @property string $target_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Table('links', incrementing: true)]
+#[Table('links')]
 #[Fillable(['source_type', 'source_id', 'target_type', 'target_id'])]
 final class Link extends MorphPivot
 {
-    use Linkable;
+    use HasUlids, Linkable;
 
     /**
      * A pivot opens every attribute by default; this one takes only its Fillable list.
@@ -61,30 +62,6 @@ final class Link extends MorphPivot
         foreach ($models as $model) {
             self::query()->where(fn (Builder $either) => $either->withSource($model)->orWhere(fn (Builder $target) => $target->withTarget($model)))->delete();
         }
-    }
-
-    /**
-     * Its two ends as one text, the same for every link between the same two models in the same direction.
-     */
-    public function endpointKey(): string
-    {
-        return $this->endpointKeyFor($this->source_type, $this->target_type);
-    }
-
-    /**
-     * Its two ends as one text, were the ends stored under these type names.
-     */
-    public function endpointKeyFor(string $sourceType, string $targetType): string
-    {
-        return implode('|', [$sourceType, $this->source_id, $targetType, $this->target_id]);
-    }
-
-    /**
-     * Stores the link under new type names for its two ends, keeping its id.
-     */
-    public function renameTypes(string $sourceType, string $targetType): void
-    {
-        $this->update(['source_type' => $sourceType, 'target_type' => $targetType]);
     }
 
     /**

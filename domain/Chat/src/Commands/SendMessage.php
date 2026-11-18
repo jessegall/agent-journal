@@ -18,6 +18,6 @@ final readonly class SendMessage implements Command
 {
     public function __construct(
         public string $body,
-        public int $sessionId,
+        public string $sessionId,
     ) {}
 }

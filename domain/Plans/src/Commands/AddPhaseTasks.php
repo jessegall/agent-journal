@@ -17,10 +17,10 @@ use Domain\Plans\Handlers\AddPhaseTasksHandler;
 final readonly class AddPhaseTasks implements Command
 {
     /**
-     * @param  list<int>  $taskIds
+     * @param  list<string>  $taskIds
      */
     public function __construct(
-        public int $phaseId,
+        public string $phaseId,
         public array $taskIds,
     ) {}
 }

@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * Every domain is a package in Laravel's own layout: its code in domain/<Name>/src, its migrations, factories and
  * seeders in domain/<Name>/database and its tests in domain/<Name>/tests, never a Database folder inside src.
  */
+#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class DomainPackageLayoutTest extends TestCase
 {
     public function test_no_domain_keeps_its_database_folder_inside_src(): void

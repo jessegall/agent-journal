@@ -24,7 +24,7 @@ final class UnassignPlanWorkCommand extends Command
     public function handle(AgentRequestSender $journal): int
     {
         try {
-            $fields = ['assignmentId' => (int) $this->option('assignment'), ...ActorIdentity::fromText((string) $this->option('holder'))->asFields('holder')];
+            $fields = ['assignmentId' => (string) $this->option('assignment'), ...ActorIdentity::fromText((string) $this->option('holder'))->asFields('holder')];
         } catch (InvalidActorText $invalid) {
             $this->error($invalid->getMessage());
 

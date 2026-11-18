@@ -16,8 +16,8 @@ use Illuminate\Container\Attributes\Bind;
 interface AgentReader
 {
     /**
-     * @param  list<int>  $agentIds
-     * @return array<int, AgentLabel> keyed by agent id
+     * @param  list<string>  $agentIds
+     * @return array<string, AgentLabel> keyed by agent id
      */
     public function labelsFor(array $agentIds): array;
 }

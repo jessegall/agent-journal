@@ -12,7 +12,7 @@ use RuntimeException;
  */
 final class RuleMissing extends RuntimeException implements CommandRefusal
 {
-    public static function withId(int $ruleId): self
+    public static function withId(string $ruleId): self
     {
         return new self("Rule {$ruleId} does not exist.");
     }

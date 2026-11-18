@@ -15,9 +15,9 @@ use Illuminate\Database\Seeder;
 final class PlansSeeder extends Seeder
 {
     /**
-     * @param  list<int>  $readingTaskIds  the tasks of the reading phase
-     * @param  list<int>  $startingTaskIds  the tasks of the starting phase
-     * @param  list<int>  $reproducingTaskIds  the tasks of the reproducing phase
+     * @param  list<string>  $readingTaskIds  the tasks of the reading phase
+     * @param  list<string>  $startingTaskIds  the tasks of the starting phase
+     * @param  list<string>  $reproducingTaskIds  the tasks of the reproducing phase
      */
     public function run(array $readingTaskIds = [], array $startingTaskIds = [], array $reproducingTaskIds = []): void
     {

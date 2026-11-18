@@ -8,6 +8,7 @@ use App\Agents\Support\StackTarget;
 use App\Links\Support\Linkable;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -15,9 +16,9 @@ use Illuminate\Support\Carbon;
  * One compaction of one agent's session that has already lowered the agent's memories, so a repeated callback for the
  * same compaction changes nothing.
  *
- * @property int $id
- * @property int $agent_id
- * @property int $session_id
+ * @property string $id
+ * @property string $agent_id
+ * @property string $session_id
  * @property string $compaction_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -25,7 +26,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['agent_id', 'session_id', 'compaction_id'])]
 final class MemoryCompaction extends Model
 {
-    use Linkable;
+    use HasUlids, Linkable;
 
     /**
      * Records the compaction the first time it is seen; answers whether this was the first time.
@@ -35,6 +36,7 @@ final class MemoryCompaction extends Model
         $now = CarbonImmutable::now();
 
         return self::query()->insertOrIgnore([
+            'id' => (new self)->newUniqueId(),
             'agent_id' => $target->agentId,
             'session_id' => $target->sessionId,
             'compaction_id' => $compactionId,

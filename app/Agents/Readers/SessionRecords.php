@@ -31,7 +31,7 @@ final readonly class SessionRecords implements SessionReader
             ->all());
     }
 
-    public function requireActive(int $sessionId): StackTarget
+    public function requireActive(string $sessionId): StackTarget
     {
         $session = $this->visibleSessions()->with('agent')->find($sessionId);
 

@@ -17,6 +17,7 @@ use Domain\Plans\Exceptions\StartDenied;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
@@ -26,7 +27,7 @@ use PhpOption\Option;
  * A goal with phases in order and the tasks in each phase. Every agent and the owner read every plan, so it has no
  * agent limit (rule 4, message 519).
  *
- * @property int $id
+ * @property string $id
  * @property string $title
  * @property PlanType $type
  * @property PlanState $state
@@ -37,7 +38,7 @@ use PhpOption\Option;
 #[Fillable(['title', 'type'])]
 final class Plan extends Model implements Assignable
 {
-    use AssignableListing, Linkable;
+    use AssignableListing, HasUlids, Linkable;
 
     /**
      * The stable name links and assignments use for a plan.
@@ -95,7 +96,7 @@ final class Plan extends Model implements Assignable
      * of a plan's membership and every cascade over it takes this lock first; a future move between plans takes both
      * plans' locks in id order.
      */
-    public static function lockStructure(int $planId): self
+    public static function lockStructure(string $planId): self
     {
         return self::query()->whereKey($planId)->lockForUpdate()->firstOrFail();
     }
@@ -103,7 +104,7 @@ final class Plan extends Model implements Assignable
     /**
      * Every task of the plan, phase by phase, in order.
      *
-     * @return list<int>
+     * @return list<string>
      */
     public function taskIds(): array
     {
@@ -115,7 +116,7 @@ final class Plan extends Model implements Assignable
             ->pluck('phase_tasks.task_id')
             ->all();
 
-        return array_map(intval(...), array_values($taskIds));
+        return array_map(strval(...), array_values($taskIds));
     }
 
     /**

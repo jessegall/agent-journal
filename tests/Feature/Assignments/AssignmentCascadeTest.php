@@ -24,6 +24,7 @@ use Domain\Tasks\Models\Task;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -93,8 +94,8 @@ final class AssignmentCascadeTest extends TestCase
     public function test_a_finished_root_a_missing_record_or_a_group_too_large_is_refused_before_anything_changes(): void
     {
         $this->assertThrows(fn () => $this->writer()->assignUnfinished($this->builder, fn () => new AssignmentGroup($this->finished->assignmentIdentity(), [$this->open->assignmentIdentity()])), AssignmentRootFinished::class);
-        $this->assertThrows(fn () => $this->writer()->assignUnfinished($this->builder, fn () => new AssignmentGroup($this->plan->assignmentIdentity(), [$this->open->assignmentIdentity(), new RecordIdentity('tasks.task', 999999)])), RecordUnavailable::class);
-        $this->assertThrows(fn () => $this->writer()->assignUnfinished($this->builder, fn () => new AssignmentGroup($this->plan->assignmentIdentity(), array_map(fn (int $id) => new RecordIdentity('tasks.task', $id), range(1, 1000)))), AssignmentGroupTooLarge::class);
+        $this->assertThrows(fn () => $this->writer()->assignUnfinished($this->builder, fn () => new AssignmentGroup($this->plan->assignmentIdentity(), [$this->open->assignmentIdentity(), new RecordIdentity('tasks.task', TestIds::of(999999))])), RecordUnavailable::class);
+        $this->assertThrows(fn () => $this->writer()->assignUnfinished($this->builder, fn () => new AssignmentGroup($this->plan->assignmentIdentity(), array_map(fn (int $number) => new RecordIdentity('tasks.task', TestIds::of($number)), range(1, 1000)))), AssignmentGroupTooLarge::class);
 
         $this->assertTrue($this->holderOf($this->open->assignmentIdentity())->isSameAs($this->other));
         $this->assertSame(2, AssignmentRecord::query()->count());
@@ -104,7 +105,7 @@ final class AssignmentCascadeTest extends TestCase
     {
         $root = $this->writer()->assignUnfinished($this->builder, fn () => $this->group())->outcomes[0]->current;
 
-        $this->assertThrows(fn () => $this->writer()->reassignUnfinished(new AssignmentReference(999999, $this->builder), $this->other, fn () => $this->group()), AssignmentConflict::class);
+        $this->assertThrows(fn () => $this->writer()->reassignUnfinished(new AssignmentReference(TestIds::of(999999), $this->builder), $this->other, fn () => $this->group()), AssignmentConflict::class);
 
         $released = $this->writer()->unassignUnfinished($root->reference, fn () => $this->group());
 

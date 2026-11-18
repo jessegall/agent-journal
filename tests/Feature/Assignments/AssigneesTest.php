@@ -20,6 +20,8 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -27,6 +29,7 @@ use Tests\TestCase;
  * agent and a user with the same id stay apart, names are display names, and the agent lifecycle lock makes
  * retirement wait for work given to an agent and the other way round.
  */
+#[TimeLimit(seconds: 5, reason: 'A second connection waits up to its one second lock timeout.')]
 final class AssigneesTest extends TestCase
 {
     use CommitsHookRows;
@@ -78,7 +81,7 @@ final class AssigneesTest extends TestCase
 
         $this->assertThrows(fn () => $registry->assigneeProvider(ActorType::User)->requireEligible(ActorIdentity::of($stranger)), AssigneeUnavailable::class);
         $this->assertThrows(fn () => $registry->assigneeProvider(ActorType::Agent)->requireEligible(ActorIdentity::of($this->builder)), AssigneeUnavailable::class);
-        $this->assertThrows(fn () => $registry->assigneeProvider(ActorType::Agent)->requireEligible(new ActorIdentity(ActorType::Agent, 999999)), AssigneeUnavailable::class);
+        $this->assertThrows(fn () => $registry->assigneeProvider(ActorType::Agent)->requireEligible(new ActorIdentity(ActorType::Agent, TestIds::of(999999))), AssigneeUnavailable::class);
     }
 
     public function test_eligible_lists_page_by_id_and_names_keep_a_retired_agent_and_show_no_email(): void
@@ -140,6 +143,9 @@ final class AssigneesTest extends TestCase
         $config = $this->app->make('config');
         $config->set('database.connections.assignees_other', $config->get('database.connections.'.$config->get('database.default')));
 
-        return DB::connection('assignees_other');
+        $other = DB::connection('assignees_other');
+        $other->statement("SET lock_timeout = '1s'");
+
+        return $other;
     }
 }

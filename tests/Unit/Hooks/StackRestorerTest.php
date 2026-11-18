@@ -155,6 +155,6 @@ final class StackRestorerTest extends TestCase
 
     private function task(string $id, int $number): FrameRecord
     {
-        return new FrameRecord($id, new StateReference('tasks.working', new SubjectReference($number, 1)), false, 1);
+        return new FrameRecord($id, new StateReference('tasks.working', new SubjectReference((string) $number, 1)), false, 1);
     }
 }

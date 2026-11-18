@@ -15,7 +15,7 @@ final readonly class NoteRecords implements NoteReader
 {
     public function __construct(private ConnectionInterface $database) {}
 
-    public function note(int $noteId): NoteValue
+    public function note(string $noteId): NoteValue
     {
         $text = (string) $this->database->table('module_notes')->where('id', $noteId)->value('text');
 

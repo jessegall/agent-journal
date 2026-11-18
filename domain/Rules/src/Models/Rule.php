@@ -12,6 +12,7 @@ use Domain\Rules\Exceptions\RuleNotProposed;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -19,7 +20,7 @@ use Illuminate\Support\Carbon;
  * A standing instruction every agent gets once the owner approved it, until it is removed. Its text stays as proposed.
  * Every agent reads every rule, so it has no agent limit.
  *
- * @property int $id
+ * @property string $id
  * @property string $text
  * @property RuleState $state
  * @property Carbon|null $created_at
@@ -28,7 +29,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['text'])]
 final class Rule extends Model
 {
-    use Linkable;
+    use HasUlids, Linkable;
 
     /**
      * @var array<string, mixed>
@@ -55,7 +56,7 @@ final class Rule extends Model
     /**
      * The rule read under its row lock, for a change that must happen once.
      */
-    public static function lockedById(int $ruleId): self
+    public static function lockedById(string $ruleId): self
     {
         return self::query()->whereKey($ruleId)->lockForUpdate()->first() ?? throw RuleMissing::withId($ruleId);
     }

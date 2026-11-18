@@ -22,9 +22,12 @@ use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -32,6 +35,7 @@ use Tests\TestCase;
  * owner, or a main agent retiring an agent that is not a main agent, may do it. A retirement that had to wait for work
  * given in the meantime still releases that work.
  */
+#[TimeLimit(seconds: 5, reason: 'Retirement waits out locks another connection holds.')]
 final class AgentRetirementTest extends TestCase
 {
     use CommitsHookRows;
@@ -75,10 +79,10 @@ final class AgentRetirementTest extends TestCase
 
     public function test_a_main_agent_retires_a_helper_but_not_a_main_agent_and_a_helper_retires_nobody(): void
     {
-        $this->startRequestAs($this->helper->id, 2);
+        $this->startRequestAs($this->helper->id, TestIds::of(2));
         $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new RetireAgent($this->main->id)), AgentRetirementDenied::class);
 
-        $this->startRequestAs($this->main->id, 1);
+        $this->startRequestAs($this->main->id, TestIds::of(1));
         $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new RetireAgent($this->main->id)), AgentRetirementDenied::class);
         $this->app->make(CommandBus::class)->run(new RetireAgent($this->helper->id));
 
@@ -173,12 +177,12 @@ final class AgentRetirementTest extends TestCase
      * The forked process: it takes the helper's shared lifecycle lock as the writer does, gives it a task, holds on a
      * moment so the retirement is already waiting, then commits and leaves.
      */
-    private function giveWorkWhileHoldingTheSharedLock(int $taskId): never
+    private function giveWorkWhileHoldingTheSharedLock(string $taskId): never
     {
         DB::reconnect();
         DB::transaction(function () use ($taskId): void {
             DB::select('SELECT id FROM agents WHERE id = ? FOR SHARE', [$this->helper->id]);
-            DB::table('assignments')->insert(['record_type' => 'tasks.task', 'record_id' => $taskId, 'holder_type' => 'agent', 'holder_id' => $this->helper->id, 'created_at' => now(), 'updated_at' => now()]);
+            DB::table('assignments')->insert(['id' => strtolower((string) Str::ulid()), 'record_type' => 'tasks.task', 'record_id' => $taskId, 'holder_type' => 'agent', 'holder_id' => $this->helper->id, 'created_at' => now(), 'updated_at' => now()]);
             usleep(800_000);
         });
         DB::disconnect();

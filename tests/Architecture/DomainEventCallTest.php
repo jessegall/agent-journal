@@ -16,6 +16,7 @@ use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\Violation;
 use Tests\Fixtures\Boundary\EventCalls\Plans\PlansDomain;
 use Tests\Fixtures\Boundary\EventCalls\Tasks\TasksDomain;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -23,6 +24,7 @@ use Tests\TestCase;
  * It does not see a received event re-raised through a copied variable or from another method,
  * and a string passed to ->dispatch() on an injected dispatcher, which cannot be told from a job.
  */
+#[TimeLimit(seconds: 15, reason: 'It parses every PHP file of the project.')]
 final class DomainEventCallTest extends TestCase
 {
     /**

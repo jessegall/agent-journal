@@ -11,10 +11,10 @@ namespace App\Assignments\Support;
 final readonly class RecordIds
 {
     /**
-     * @param  list<int>  $ids
+     * @param  list<string>  $ids
      */
     public function __construct(
         public array $ids,
-        public int|null $nextAfterId,
+        public string|null $nextAfterId,
     ) {}
 }

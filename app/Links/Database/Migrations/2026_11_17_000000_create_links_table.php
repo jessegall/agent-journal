@@ -11,9 +11,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('links', function (Blueprint $table) {
-            $table->id();
-            $table->morphs('source');
-            $table->morphs('target');
+            $table->ulid('id')->primary();
+            $table->ulidMorphs('source');
+            $table->ulidMorphs('target');
             $table->timestamps();
 
             $table->unique(['source_type', 'source_id', 'target_type', 'target_id']);

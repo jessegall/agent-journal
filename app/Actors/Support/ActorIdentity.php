@@ -18,7 +18,7 @@ final readonly class ActorIdentity
 
     public function __construct(
         public ActorType $type,
-        public int $id,
+        public string $id,
     ) {}
 
     public static function of(Actor $actor): self
@@ -27,17 +27,17 @@ final readonly class ActorIdentity
     }
 
     /**
-     * An actor written as type:id, such as agent:12 or user:1, as a command line takes it.
+     * An actor written as type:id, such as agent:01jd8x0g9m3qz6v4k2t7r5w1ce, as a command line takes it.
      *
      * @throws InvalidActorText
      */
     public static function fromText(string $text): self
     {
-        if (preg_match('/^(agent|user):([1-9][0-9]*)$/', $text, $parts) !== 1) {
+        if (preg_match('/^(agent|user):([0-9a-hjkmnp-tv-z]{26})$/i', $text, $parts) !== 1) {
             throw InvalidActorText::for($text);
         }
 
-        return new self(ActorType::from($parts[1]), (int) $parts[2]);
+        return new self(ActorType::from($parts[1]), strtolower($parts[2]));
     }
 
     /**

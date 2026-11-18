@@ -17,6 +17,6 @@ use Domain\Tasks\Handlers\BlockTaskHandler;
 final readonly class BlockTask implements Command
 {
     public function __construct(
-        public int $taskId,
+        public string $taskId,
     ) {}
 }

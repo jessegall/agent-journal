@@ -13,7 +13,9 @@ use Tests\Architecture\Support\NameUse;
 use Tests\Architecture\Support\ParsedFile;
 use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\StringScan;
+use Tests\Support\TimeLimits\TimeLimit;
 
+#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class DocblockAndStringScanTest extends TestCase
 {
     private const string CHAT = 'Tests\Fixtures\Names\Chat';

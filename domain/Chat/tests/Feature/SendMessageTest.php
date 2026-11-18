@@ -27,6 +27,7 @@ use Domain\Chat\Readers\MessageRecords;
 use Domain\Chat\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 
 /**
  * The owner sends a message to a running agent's session with no agent context; it lands as the agent's own would.
@@ -47,7 +48,7 @@ final class SendMessageTest extends TestCase
         $agent = Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']);
         $session = $this->app->make(LaunchSessions::class)->launch($agent, 'claude-code')->session;
         $this->target = new StackTarget($session->agent_id, $session->id);
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
     }
 
     public function test_a_sent_message_keeps_its_text_waits_for_the_agent_and_sits_on_its_stack(): void
@@ -65,7 +66,7 @@ final class SendMessageTest extends TestCase
     public function test_a_guessed_target_is_refused_and_leaves_no_message(): void
     {
         try {
-            $this->send('Hello', $this->target->sessionId + 100);
+            $this->send('Hello', TestIds::of(99999));
             $this->fail('A guessed target took a message.');
         } catch (StackTargetRefused) {
             $this->assertSame(0, Message::query()->ownedBy($this->target->agentId)->count());
@@ -103,7 +104,7 @@ final class SendMessageTest extends TestCase
         Event::assertDispatched(MessageDismissed::class, fn (MessageDismissed $event) => $event->messageId === $dismissed->id);
     }
 
-    private function send(string $body, int $sessionId): void
+    private function send(string $body, string $sessionId): void
     {
         $this->app->make(CommandBus::class)->run(new SendMessage($body, $sessionId));
     }

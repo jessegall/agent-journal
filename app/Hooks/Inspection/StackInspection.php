@@ -20,8 +20,8 @@ final class StackInspection extends Data
      * @param  list<InspectedFrame>  $frames
      */
     public function __construct(
-        public readonly int $agentId,
-        public readonly int $sessionId,
+        public readonly string $agentId,
+        public readonly string $sessionId,
         public readonly StackStatus $status,
         public readonly int $version,
         #[DataCollectionOf(InspectedFrame::class)]

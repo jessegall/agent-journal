@@ -12,6 +12,7 @@ use Domain\Chat\Enums\MessageWorkState;
 use Domain\Chat\Exceptions\MessageMissing;
 use Domain\Chat\Support\MessageWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -19,18 +20,18 @@ use Illuminate\Support\Carbon;
  * One message. When it needs an agent's answer, the agent and session that owe it are set by asking for the answer.
  * Only the agent it is addressed to reads it; a message not yet addressed belongs to no agent.
  *
- * @property int $id
+ * @property string $id
  * @property string $body
  * @property MessageState $state
- * @property int|null $agent_id
- * @property int|null $session_id
+ * @property string|null $agent_id
+ * @property string|null $session_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable(['body'])]
 final class Message extends Model
 {
-    use BelongsToOneAgent;
+    use BelongsToOneAgent, HasUlids;
     use Linkable;
 
     /**
@@ -45,15 +46,13 @@ final class Message extends Model
     {
         return [
             'state' => MessageState::class,
-            'agent_id' => 'integer',
-            'session_id' => 'integer',
         ];
     }
 
     /**
      * The message read under its row lock, among those the actor may see, for a change that must happen once.
      */
-    public static function lockedById(int $id): self
+    public static function lockedById(string $id): self
     {
         // A message belongs to no agent until one is asked to answer it.
         return self::lockedForActorOrUnheld($id) ?? throw MessageMissing::forId($id);

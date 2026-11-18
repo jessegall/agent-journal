@@ -11,7 +11,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('module_notes', function (Blueprint $table) {
-            $table->unsignedBigInteger('agent_id')->index();
+            $table->ulid('agent_id')->index();
         });
     }
 

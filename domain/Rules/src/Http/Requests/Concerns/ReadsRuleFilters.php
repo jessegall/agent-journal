@@ -20,7 +20,7 @@ trait ReadsRuleFilters
         return [
             "{$keyPrefix}q" => ['nullable', 'string', 'max:200'],
             "{$keyPrefix}page" => ['nullable', 'integer', 'min:1'],
-            'rule' => ['nullable', 'string', 'regex:/^[1-9][0-9]{0,18}$/'],
+            'rule' => ['nullable', 'string', 'ulid'],
         ];
     }
 

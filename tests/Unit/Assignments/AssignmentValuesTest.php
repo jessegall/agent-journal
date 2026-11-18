@@ -20,6 +20,7 @@ use App\Assignments\Support\Page;
 use App\Assignments\Support\RecordIdentity;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Tests\Support\TestIds;
 
 /**
  * The public assignment values: identities and pages refuse bad input when they are built, a group keeps each record
@@ -28,19 +29,19 @@ use PHPUnit\Framework\TestCase;
 final class AssignmentValuesTest extends TestCase
 {
     /**
-     * @return iterable<string, array{string, int}>
+     * @return iterable<string, array{string, string}>
      */
     public static function invalidRecords(): iterable
     {
-        yield 'no alias' => ['', 1];
-        yield 'a class name' => ['App\\Domain\\Tasks\\Models\\Task', 1];
-        yield 'no owner part' => ['task', 1];
-        yield 'a zero id' => ['tasks.task', 0];
-        yield 'a negative id' => ['tasks.task', -4];
+        yield 'no alias' => ['', TestIds::of(1)];
+        yield 'a class name' => ['App\\Domain\\Tasks\\Models\\Task', TestIds::of(1)];
+        yield 'no owner part' => ['task', TestIds::of(1)];
+        yield 'a number for an id' => ['tasks.task', '12'];
+        yield 'a word for an id' => ['tasks.task', 'not-a-ulid'];
     }
 
     #[DataProvider('invalidRecords')]
-    public function test_a_record_identity_refuses_a_bad_type_or_id(string $type, int $id): void
+    public function test_a_record_identity_refuses_a_bad_type_or_id(string $type, string $id): void
     {
         $this->expectException(InvalidAssignmentIdentity::class);
 
@@ -49,29 +50,29 @@ final class AssignmentValuesTest extends TestCase
 
     public function test_a_user_and_an_agent_with_the_same_id_are_different_actors(): void
     {
-        $user = new ActorIdentity(ActorType::User, 7);
+        $user = new ActorIdentity(ActorType::User, TestIds::of(7));
 
-        $this->assertFalse($user->isSameAs(new ActorIdentity(ActorType::Agent, 7)));
-        $this->assertTrue($user->isSameAs(new ActorIdentity(ActorType::User, 7)));
+        $this->assertFalse($user->isSameAs(new ActorIdentity(ActorType::Agent, TestIds::of(7))));
+        $this->assertTrue($user->isSameAs(new ActorIdentity(ActorType::User, TestIds::of(7))));
     }
 
     public function test_a_group_holds_its_root_and_each_record_once(): void
     {
-        $root = new RecordIdentity('plans.plan', 3);
-        $task = new RecordIdentity('tasks.task', 12);
+        $root = new RecordIdentity('plans.plan', TestIds::of(3));
+        $task = new RecordIdentity('tasks.task', TestIds::of(12));
 
-        $group = new AssignmentGroup($root, [$task, new RecordIdentity('plans.plan', 3), new RecordIdentity('tasks.task', 12)]);
+        $group = new AssignmentGroup($root, [$task, new RecordIdentity('plans.plan', TestIds::of(3)), new RecordIdentity('tasks.task', TestIds::of(12))]);
 
         $this->assertSame([$root, $task], $group->records);
     }
 
     public function test_a_group_of_more_than_a_thousand_records_is_refused(): void
     {
-        $records = array_map(fn (int $id) => new RecordIdentity('tasks.task', $id), range(1, 1000));
+        $records = array_map(fn (int $number) => new RecordIdentity('tasks.task', TestIds::of($number)), range(1, 1000));
 
         $this->expectException(AssignmentGroupTooLarge::class);
 
-        new AssignmentGroup(new RecordIdentity('plans.plan', 1), $records);
+        new AssignmentGroup(new RecordIdentity('plans.plan', TestIds::of(1)), $records);
     }
 
     /**
@@ -81,11 +82,11 @@ final class AssignmentValuesTest extends TestCase
     {
         yield 'no entries' => [null, 0];
         yield 'too many entries' => [null, 101];
-        yield 'a cursor that is no id' => [0, 20];
+        yield 'a cursor that is no id' => ['12', 20];
     }
 
     #[DataProvider('invalidPages')]
-    public function test_a_page_refuses_a_bad_limit_or_cursor(int|null $afterId, int $limit): void
+    public function test_a_page_refuses_a_bad_limit_or_cursor(string|null $afterId, int $limit): void
     {
         $this->expectException(InvalidAssignmentPage::class);
 
@@ -94,20 +95,20 @@ final class AssignmentValuesTest extends TestCase
 
     public function test_a_set_finds_a_records_assignment_or_answers_none(): void
     {
-        $task = new RecordIdentity('tasks.task', 12);
-        $assignment = new Assignment($task, new AssignmentReference(42, new ActorIdentity(ActorType::Agent, 7)));
+        $task = new RecordIdentity('tasks.task', TestIds::of(12));
+        $assignment = new Assignment($task, new AssignmentReference(TestIds::of(42), new ActorIdentity(ActorType::Agent, TestIds::of(7))));
         $set = new AssignmentSet([$assignment]);
 
-        $this->assertSame($assignment, $set->forRecord(new RecordIdentity('tasks.task', 12))->get());
-        $this->assertTrue($set->forRecord(new RecordIdentity('tasks.task', 13))->isEmpty());
+        $this->assertSame($assignment, $set->forRecord(new RecordIdentity('tasks.task', TestIds::of(12)))->get());
+        $this->assertTrue($set->forRecord(new RecordIdentity('tasks.task', TestIds::of(13)))->isEmpty());
     }
 
     public function test_a_result_counts_its_outcomes_by_type(): void
     {
         $result = new AssignmentResult([
-            new AssignmentOutcome(new RecordIdentity('tasks.task', 1), null, AssignmentOutcomeType::Unchanged),
-            new AssignmentOutcome(new RecordIdentity('tasks.task', 2), null, AssignmentOutcomeType::SkippedFinished),
-            new AssignmentOutcome(new RecordIdentity('tasks.task', 3), null, AssignmentOutcomeType::SkippedFinished),
+            new AssignmentOutcome(new RecordIdentity('tasks.task', TestIds::of(1)), null, AssignmentOutcomeType::Unchanged),
+            new AssignmentOutcome(new RecordIdentity('tasks.task', TestIds::of(2)), null, AssignmentOutcomeType::SkippedFinished),
+            new AssignmentOutcome(new RecordIdentity('tasks.task', TestIds::of(3)), null, AssignmentOutcomeType::SkippedFinished),
         ], []);
 
         $this->assertSame(2, $result->count(AssignmentOutcomeType::SkippedFinished));

@@ -26,12 +26,12 @@ final class LinkableTest extends TestCase
 
         $this->app->make(LinkTypeRegistry::class)->register(['fixtures.note' => Note::class, 'fixtures.label' => Label::class]);
         Schema::create('notes', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('owner');
             $table->timestamps();
         });
         Schema::create('labels', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('name');
             $table->timestamps();
         });
@@ -130,9 +130,9 @@ final class LinkableTest extends TestCase
     {
         Link::query()->create([
             'source_type' => $source->getMorphClass(),
-            'source_id' => (int) $source->getKey(),
+            'source_id' => (string) $source->getKey(),
             'target_type' => $target->getMorphClass(),
-            'target_id' => (int) $target->getKey(),
+            'target_id' => (string) $target->getKey(),
         ]);
     }
 

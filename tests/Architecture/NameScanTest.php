@@ -11,7 +11,9 @@ use Tests\Architecture\Support\NameType;
 use Tests\Architecture\Support\NameUse;
 use Tests\Architecture\Support\ParsedFile;
 use Tests\Architecture\Support\ParseFailed;
+use Tests\Support\TimeLimits\TimeLimit;
 
+#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class NameScanTest extends TestCase
 {
     private const string CHAT = 'Tests\Fixtures\Names\Chat';

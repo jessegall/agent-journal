@@ -9,7 +9,7 @@ use RuntimeException;
 
 final class MessageMissing extends RuntimeException implements CommandRefusal
 {
-    public static function forId(int $messageId): self
+    public static function forId(string $messageId): self
     {
         return new self("Message {$messageId} does not exist.");
     }

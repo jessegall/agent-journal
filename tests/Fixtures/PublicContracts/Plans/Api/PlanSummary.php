@@ -12,6 +12,6 @@ final readonly class PlanSummary
 
     public function firstTask(): TaskRecord
     {
-        return new TaskRecord(1);
+        return new TaskRecord('01jd8x0g9m3qz6v4k2t7r5w1cc');
     }
 }

@@ -24,6 +24,8 @@ use Tests\Fixtures\Modules\Ledger\Models\LedgerEntry;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsCommandModules;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -31,6 +33,7 @@ use Tests\TestCase;
  * back with it, a number never changes once saved, a save outside a command is refused, a held group lock ends in
  * the bus's lock timeout, and the cap refuses instead of wrapping. Every command commits for real.
  */
+#[TimeLimit(seconds: 5, reason: 'It waits out a lock held on a second PostgreSQL connection.')]
 final class NumberAllocationTest extends TestCase
 {
     use CommitsHookRows;
@@ -48,7 +51,7 @@ final class NumberAllocationTest extends TestCase
         $this->createLedgerTables();
         $this->bootModules(LedgerDomain::class);
         GlobalGroup::installJournal();
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
         $this->commands = $this->app->make(CommandBus::class);
     }
 
@@ -113,7 +116,7 @@ final class NumberAllocationTest extends TestCase
 
         try {
             $this->app->forgetScopedInstances();
-            $this->startUserRequestAs(1);
+            $this->startUserRequestAs(TestIds::of(1));
             $this->app->make(CommandBus::class)->run(new WriteEntry($ledger, 'waits'));
             $this->fail('The write did not wait on the held lock.');
         } catch (StackLockTimedOut) {

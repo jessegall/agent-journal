@@ -64,20 +64,20 @@ final readonly class UserAssignees implements AssigneeProvider
     public function eligible(Page $page): AssigneeList
     {
         $this->actors->actor();
-        $ids = array_values(array_filter($this->access->allowedUserIds(), fn (int $id) => $page->afterId === null || $id > $page->afterId));
+        $ids = array_values(array_filter($this->access->allowedUserIds(), fn (string $id) => $page->afterId === null || $id > $page->afterId));
         sort($ids);
         $shownIds = array_slice($ids, 0, $page->limit);
 
         return new AssigneeList(
-            $this->names(array_map(fn (int $id) => new ActorIdentity(ActorType::User, $id), $shownIds)),
+            $this->names(array_map(fn (string $id) => new ActorIdentity(ActorType::User, $id), $shownIds)),
             $this->nextAfterId($shownIds, count($ids) > $page->limit),
         );
     }
 
     /**
-     * @param  list<int>  $shownIds
+     * @param  list<string>  $shownIds
      */
-    private function nextAfterId(array $shownIds, bool $hasMore): int|null
+    private function nextAfterId(array $shownIds, bool $hasMore): string|null
     {
         if (! $hasMore || $shownIds === []) {
             return null;

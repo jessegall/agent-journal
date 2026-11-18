@@ -17,6 +17,6 @@ use Domain\Plans\Handlers\StartPlanHandler;
 final readonly class StartPlan implements Command
 {
     public function __construct(
-        public int $planId,
+        public string $planId,
     ) {}
 }

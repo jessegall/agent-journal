@@ -11,7 +11,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('module_notes', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->text('text');
             $table->timestamps();
         });

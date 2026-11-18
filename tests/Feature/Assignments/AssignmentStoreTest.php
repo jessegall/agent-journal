@@ -16,10 +16,12 @@ use Exception;
 use Illuminate\Database\Connection;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use PDOException;
 use ReflectionProperty;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -44,10 +46,10 @@ final class AssignmentStoreTest extends TestCase
     {
         parent::setUp();
 
-        $this->task = new RecordIdentity('tasks.task', 12);
-        $this->builder = new ActorIdentity(ActorType::Agent, 7);
-        $this->reviewer = new ActorIdentity(ActorType::Agent, 8);
-        $this->startUserRequestAs(1);
+        $this->task = new RecordIdentity('tasks.task', TestIds::of(12));
+        $this->builder = new ActorIdentity(ActorType::Agent, TestIds::of(7));
+        $this->reviewer = new ActorIdentity(ActorType::Agent, TestIds::of(8));
+        $this->startUserRequestAs(TestIds::of(1));
     }
 
     protected function tearDown(): void
@@ -81,10 +83,10 @@ final class AssignmentStoreTest extends TestCase
 
     public function test_releasing_an_actor_removes_only_its_rows_and_reports_each_change(): void
     {
-        $plan = new RecordIdentity('plans.plan', 3);
+        $plan = new RecordIdentity('plans.plan', TestIds::of(3));
         $this->inTransaction(fn (AssignmentStore $store) => $store->assignIfUnheld($this->task, $this->builder));
         $this->inTransaction(fn (AssignmentStore $store) => $store->assignIfUnheld($plan, $this->builder));
-        $kept = $this->inTransaction(fn (AssignmentStore $store) => $store->assignIfUnheld(new RecordIdentity('tasks.task', 13), $this->reviewer));
+        $kept = $this->inTransaction(fn (AssignmentStore $store) => $store->assignIfUnheld(new RecordIdentity('tasks.task', TestIds::of(13)), $this->reviewer));
 
         $result = $this->inTransaction(fn (AssignmentStore $store) => $store->releaseAll($this->builder));
 
@@ -110,10 +112,10 @@ final class AssignmentStoreTest extends TestCase
         $assignment = $this->app->make(AssignmentTransaction::class)->run(function () use (&$attempts, $other) {
             $attempts++;
             $store = $this->app->make(AssignmentStore::class);
-            $store->lockCurrent(new RecordIdentity('tasks.task', 99));
+            $store->lockCurrent(new RecordIdentity('tasks.task', TestIds::of(99)));
 
             if ($attempts === 1) {
-                $other->table('assignments')->insert(['record_type' => 'tasks.task', 'record_id' => 12, 'holder_type' => 'agent', 'holder_id' => 8, 'created_at' => now(), 'updated_at' => now()]);
+                $other->table('assignments')->insert(['id' => strtolower((string) Str::ulid()), 'record_type' => 'tasks.task', 'record_id' => $this->task->id, 'holder_type' => 'agent', 'holder_id' => $this->reviewer->id, 'created_at' => now(), 'updated_at' => now()]);
             }
 
             return $store->assignIfUnheld($this->task, $this->builder);

@@ -15,6 +15,7 @@ use Domain\Tasks\Models\Task;
 use Illuminate\Http\Request;
 use Inertia\Testing\AssertableInertia;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 
 final class PlansPageTest extends TestCase
 {
@@ -75,7 +76,7 @@ final class PlansPageTest extends TestCase
 
     public function test_a_selection_that_cannot_be_read_shows_no_title(): void
     {
-        $this->actingAs($this->owner)->get('/plans?plan=999999')->assertInertia(fn (AssertableInertia $page) => $page
+        $this->actingAs($this->owner)->get('/plans?plan='.TestIds::of(999999))->assertInertia(fn (AssertableInertia $page) => $page
             ->where('page.data.selectionMissing', true)
             ->missing('page.data.selected'));
     }
@@ -123,7 +124,7 @@ final class PlansPageTest extends TestCase
 
     public function test_a_plan_that_cannot_be_read_is_not_found(): void
     {
-        $this->actingAs($this->owner)->get('/plans/999999')->assertNotFound();
+        $this->actingAs($this->owner)->get('/plans/'.TestIds::of(999999))->assertNotFound();
         $this->actingAs($this->owner)->get('/plans/0')->assertNotFound();
     }
 }

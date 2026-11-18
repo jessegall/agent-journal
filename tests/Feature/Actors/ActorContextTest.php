@@ -16,6 +16,7 @@ use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class ActorContextTest extends TestCase
@@ -31,8 +32,8 @@ final class ActorContextTest extends TestCase
 
     public function test_the_next_request_on_a_worker_does_not_see_the_previous_actor(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
-        $this->assertSame([ActorType::User, 7], [$this->app->make(ActorContext::class)->type, $this->app->make(ActorContext::class)->id]);
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
+        $this->assertSame([ActorType::User, TestIds::of(7)], [$this->app->make(ActorContext::class)->type, $this->app->make(ActorContext::class)->id]);
 
         $this->app->forgetScopedInstances();
 
@@ -45,8 +46,8 @@ final class ActorContextTest extends TestCase
         $actors = $this->app->make(CurrentActor::class);
         $this->assertFalse($actors->hasActor());
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(3));
-        $this->assertSame([ActorType::Agent, 3], [$actors->actor()->type, $actors->actor()->id]);
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)));
+        $this->assertSame([ActorType::Agent, TestIds::of(3)], [$actors->actor()->type, $actors->actor()->id]);
 
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->assertFalse($actors->hasActor());
@@ -66,15 +67,15 @@ final class ActorContextTest extends TestCase
 
     public function test_the_context_of_a_signed_agent_call_is_that_agent_as_actor(): void
     {
-        $actor = ActorContext::of(new AgentContext(3, 30, 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64))));
+        $actor = ActorContext::of(new AgentContext(TestIds::of(3), TestIds::of(30), 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64))));
 
-        $this->assertSame([ActorType::Agent, 3], [$actor->type, $actor->id]);
+        $this->assertSame([ActorType::Agent, TestIds::of(3)], [$actor->type, $actor->id]);
     }
 
     public function test_an_agent_is_not_a_user(): void
     {
         $this->expectException(UserActorRequired::class);
 
-        ActorContext::forAgent(3)->requireUser();
+        ActorContext::forAgent(TestIds::of(3))->requireUser();
     }
 }

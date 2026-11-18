@@ -9,7 +9,7 @@ use RuntimeException;
 
 final class TaskMissing extends RuntimeException implements CommandRefusal
 {
-    public static function forId(int $taskId): self
+    public static function forId(string $taskId): self
     {
         return new self("Task {$taskId} does not exist.");
     }

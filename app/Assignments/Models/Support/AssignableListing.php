@@ -19,7 +19,7 @@ trait AssignableListing
      * Only the records with these ids, read in chunks the database can take; no ids means no records.
      *
      * @param  Builder<static>  $query
-     * @param  list<int>  $ids
+     * @param  list<string>  $ids
      */
     #[Scope]
     protected function amongIds(Builder $query, array $ids): void

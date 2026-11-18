@@ -11,8 +11,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('launch_bypasses', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('agent_session_id')->index();
+            $table->ulid('id')->primary();
+            $table->ulid('agent_session_id')->index();
             $table->string('native_event', 64);
             $table->string('failure', 32);
             $table->timestampTz('occurred_at');

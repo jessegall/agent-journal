@@ -11,11 +11,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('messages', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->text('body');
             $table->string('state', 32)->default('sent');
-            $table->unsignedBigInteger('agent_id')->nullable();
-            $table->unsignedBigInteger('session_id')->nullable();
+            $table->ulid('agent_id')->nullable();
+            $table->ulid('session_id')->nullable();
             $table->timestampsTz();
 
             $table->index(['agent_id', 'session_id']);

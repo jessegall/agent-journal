@@ -17,7 +17,7 @@ final readonly class AgentLifecycle
     /**
      * @throws AgentNotAvailable
      */
-    public function lockShared(int $agentId): Agent
+    public function lockShared(string $agentId): Agent
     {
         $agent = Agent::query()->whereKey($agentId)->sharedLock()->first() ?? throw AgentNotAvailable::forAgent($agentId);
 
@@ -31,7 +31,7 @@ final readonly class AgentLifecycle
     /**
      * @throws AgentNotAvailable
      */
-    public function lockExclusive(int $agentId): Agent
+    public function lockExclusive(string $agentId): Agent
     {
         return Agent::query()->whereKey($agentId)->lockForUpdate()->first() ?? throw AgentNotAvailable::forAgent($agentId);
     }

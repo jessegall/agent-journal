@@ -15,6 +15,7 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\TestIds;
 
 final class TaskStateContributionTest extends TestCase
 {
@@ -28,7 +29,7 @@ final class TaskStateContributionTest extends TestCase
 
         $stored = $task->fresh();
         $this->assertNotNull($stored);
-        $this->assertSame([TaskState::Started, 1, 1, 10], [$stored->state, $stored->run_number, $stored->agent_id, $stored->session_id]);
+        $this->assertSame([TaskState::Started, 1, TestIds::of(1), TestIds::of(10)], [$stored->state, $stored->run_number, $stored->agent_id, $stored->session_id]);
         $this->assertSame(["tasks.working {$task->id} 1"], $this->taskFrames());
     }
 

@@ -11,11 +11,13 @@ use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ModelConventions;
 use Tests\Architecture\Support\Violation;
 use Tests\Fixtures\Models\Shop\ShopDomain;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * Every domain and core model lists its fillable attributes with #[Fillable([...])] only, and no model is open to mass assignment.
  */
+#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class DomainModelConventionTest extends TestCase
 {
     public function test_each_model_is_judged_by_what_laravel_really_does_with_it(): void

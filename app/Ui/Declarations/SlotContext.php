@@ -21,12 +21,12 @@ final readonly class SlotContext
         return new self(SlotContextType::Nothing, null);
     }
 
-    public static function session(int $id): self
+    public static function session(string $id): self
     {
         return new self(SlotContextType::Session, (string) $id);
     }
 
-    public static function record(int $id): self
+    public static function record(string $id): self
     {
         return new self(SlotContextType::Record, (string) $id);
     }

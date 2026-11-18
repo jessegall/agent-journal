@@ -12,7 +12,7 @@ use App\Contracts\Event;
 final readonly class LaunchEnded implements Event
 {
     public function __construct(
-        public int $agentId,
-        public int $sessionId,
+        public string $agentId,
+        public string $sessionId,
     ) {}
 }

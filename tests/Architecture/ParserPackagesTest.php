@@ -7,7 +7,9 @@ namespace Tests\Architecture;
 use PhpParser\ParserFactory;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPUnit\Framework\TestCase;
+use Tests\Support\TimeLimits\TimeLimit;
 
+#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class ParserPackagesTest extends TestCase
 {
     public function test_the_php_parser_reads_a_file(): void

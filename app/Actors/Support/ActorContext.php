@@ -17,7 +17,7 @@ final readonly class ActorContext implements Actor
 {
     private function __construct(
         public ActorType $type,
-        public int $id,
+        public string $id,
     ) {}
 
     /**
@@ -28,7 +28,7 @@ final readonly class ActorContext implements Actor
         return new self($actor->actorType(), $actor->actorId());
     }
 
-    public static function forAgent(int $agentId): self
+    public static function forAgent(string $agentId): self
     {
         return new self(ActorType::Agent, $agentId);
     }
@@ -36,7 +36,7 @@ final readonly class ActorContext implements Actor
     /**
      * Only the domain that owns users and their access fills this, after its policy let the user in.
      */
-    public static function forUser(int $userId): self
+    public static function forUser(string $userId): self
     {
         return new self(ActorType::User, $userId);
     }
@@ -46,7 +46,7 @@ final readonly class ActorContext implements Actor
         return $this->type;
     }
 
-    public function actorId(): int
+    public function actorId(): string
     {
         return $this->id;
     }

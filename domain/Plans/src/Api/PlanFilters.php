@@ -18,7 +18,7 @@ final readonly class PlanFilters
     public function __construct(
         public string $search = '',
         public int $page = 1,
-        public int|null $selectedPlanId = null,
+        public string|null $selectedPlanId = null,
         public array $states = [],
     ) {}
 }

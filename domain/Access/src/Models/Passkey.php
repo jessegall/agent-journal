@@ -6,14 +6,15 @@ namespace Domain\Access\Models;
 
 use App\Links\Support\Linkable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Support\Carbon;
 use Laravel\Passkeys\Passkey as PackagePasskey;
 
 /**
  * One passkey a user signs in with, the package's model made linkable like every other journal model.
  *
- * @property int $id
- * @property int $user_id
+ * @property string $id
+ * @property string $user_id
  * @property string $name
  * @property string $credential_id
  * @property array<string, mixed> $credential
@@ -24,7 +25,7 @@ use Laravel\Passkeys\Passkey as PackagePasskey;
 #[Fillable(['name', 'credential_id', 'credential'])]
 final class Passkey extends PackagePasskey
 {
-    use Linkable;
+    use HasUlids, Linkable;
 
     /**
      * Empty, so the package's own list does not add to the Fillable attribute.

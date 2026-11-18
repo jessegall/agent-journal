@@ -13,7 +13,7 @@ use App\Contracts\Event;
 final readonly class MessageNeedsAnswer implements Event
 {
     public function __construct(
-        public int $messageId,
+        public string $messageId,
         public StackTarget $target,
     ) {}
 }

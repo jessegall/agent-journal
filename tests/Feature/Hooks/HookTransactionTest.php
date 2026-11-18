@@ -13,8 +13,10 @@ use App\Hooks\Storage\WalkStep;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
+#[TimeLimit(seconds: 5, reason: 'It waits for a second process to release a stack lock.')]
 final class HookTransactionTest extends TestCase
 {
     use CommittedHookStack;

@@ -22,7 +22,7 @@ trait SendsPlanWorkCommands
         try {
             $reply = $journal->send("/agent/plans/work/{$verb}", [
                 'rootType' => (string) $this->argument('type'),
-                'rootId' => (int) $this->argument('id'),
+                'rootId' => (string) $this->argument('id'),
                 ...$fields,
             ]);
         } catch (AgentRequestFailed $failure) {

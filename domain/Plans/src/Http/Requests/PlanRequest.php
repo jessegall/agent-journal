@@ -8,7 +8,7 @@ use App\Http\Requests\Web\Concerns\ReadsRouteId;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * The plan a record page shows, named by its route; an id that is no positive whole number in range is not found.
+ * The plan a record page shows, named by its route; an id that is no ULID is not found.
  */
 final class PlanRequest extends FormRequest
 {
@@ -22,7 +22,7 @@ final class PlanRequest extends FormRequest
         return [];
     }
 
-    public function planId(): int
+    public function planId(): string
     {
         return $this->routeId('plan');
     }

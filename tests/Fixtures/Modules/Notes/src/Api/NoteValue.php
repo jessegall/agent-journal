@@ -10,7 +10,7 @@ namespace Tests\Fixtures\Modules\Notes\Api;
 final readonly class NoteValue
 {
     public function __construct(
-        public int $id,
+        public string $id,
         public string $text,
     ) {}
 }

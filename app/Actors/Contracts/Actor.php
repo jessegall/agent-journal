@@ -14,5 +14,5 @@ interface Actor
 {
     public function actorType(): ActorType;
 
-    public function actorId(): int;
+    public function actorId(): string;
 }

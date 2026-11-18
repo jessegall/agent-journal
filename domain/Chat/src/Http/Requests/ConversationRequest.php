@@ -19,14 +19,14 @@ final class ConversationRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['session' => ['nullable', 'string', 'regex:/^[1-9][0-9]{0,18}$/']];
+        return ['session' => ['nullable', 'string', 'ulid']];
     }
 
     /**
-     * @return Option<int>
+     * @return Option<string>
      */
     public function chosenSession(): Option
     {
-        return $this->filled('session') ? Some::create($this->integer('session')) : None::create();
+        return $this->filled('session') ? Some::create($this->string('session')->lower()->toString()) : None::create();
     }
 }

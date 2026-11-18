@@ -70,7 +70,7 @@ final class JournalAccessTest extends TestCase
         $this->assertFalse($policy->allows($agent));
     }
 
-    private function configureOwner(int|null $ownerId): void
+    private function configureOwner(string|null $ownerId): void
     {
         $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
     }

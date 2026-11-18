@@ -9,6 +9,7 @@ use App\Web\Contracts\JournalAccessPolicy;
 use Domain\Access\Actions\CreateNewUser;
 use Domain\Access\Actions\ResetUserPassword;
 use Domain\Access\Models\Passkey;
+use Domain\Access\Models\User;
 use Domain\Access\Readers\CurrentUserRecords;
 use Domain\Access\Support\AccessSettings;
 use Domain\Access\Support\JournalAccess;
@@ -31,9 +32,9 @@ class AccessServiceProvider extends ServiceProvider
         $this->app->bind(CurrentUserReader::class, CurrentUserRecords::class);
         $this->app->bind(JournalAccessPolicy::class, JournalAccess::class);
         $this->app->singleton(AccessSettings::class, function (): AccessSettings {
-            $ownerId = $this->app->make('config')->get('access.owner_id');
+            $ownerEmail = $this->app->make('config')->get('access.owner_email');
 
-            return new AccessSettings(is_numeric($ownerId) ? (int) $ownerId : null);
+            return new AccessSettings(is_string($ownerEmail) ? User::ownerIdFor($ownerEmail) : null);
         });
         $this->app->scoped(UserAssignees::class);
     }

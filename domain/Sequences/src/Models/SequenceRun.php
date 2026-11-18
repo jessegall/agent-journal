@@ -11,6 +11,7 @@ use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Exceptions\SequenceRunMissing;
 use Domain\Sequences\Support\SequenceWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -18,20 +19,20 @@ use Illuminate\Support\Carbon;
  * One run of a sequence: its steps, the step it is on and whether it still runs. The agent and session following it are set by starting it.
  * Only the agent following it reads it.
  *
- * @property int $id
+ * @property string $id
  * @property string $name
  * @property list<string> $steps
  * @property int $current_step
  * @property SequenceRunState $state
- * @property int|null $agent_id
- * @property int|null $session_id
+ * @property string|null $agent_id
+ * @property string|null $session_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'steps'])]
 final class SequenceRun extends Model
 {
-    use BelongsToOneAgent;
+    use BelongsToOneAgent, HasUlids;
     use Linkable;
 
     /**
@@ -48,15 +49,13 @@ final class SequenceRun extends Model
             'steps' => 'array',
             'current_step' => 'integer',
             'state' => SequenceRunState::class,
-            'agent_id' => 'integer',
-            'session_id' => 'integer',
         ];
     }
 
     /**
      * The run read under its row lock, among those the actor may see, for a change that must happen once.
      */
-    public static function lockedById(int $id): self
+    public static function lockedById(string $id): self
     {
         // A run belongs to no agent until it is started, so its start may also take a run nobody follows yet.
         return self::lockedForActorOrUnheld($id) ?? throw SequenceRunMissing::forId($id);

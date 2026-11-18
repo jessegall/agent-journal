@@ -11,6 +11,7 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Tests\TestCase;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 
 final class StartPlanTest extends TestCase
 {
@@ -79,7 +80,7 @@ final class StartPlanTest extends TestCase
     public function test_a_guest_and_a_guessed_plan_get_no_start(): void
     {
         $this->post("/plans/{$this->plan->id}/start")->assertRedirect('/login');
-        $this->actingAs($this->owner)->post('/plans/999999/start')->assertNotFound();
+        $this->actingAs($this->owner)->post('/plans/'.TestIds::of(999999).'/start')->assertNotFound();
 
         $this->assertSame(PlanState::Planned, $this->plan->fresh()?->state);
     }

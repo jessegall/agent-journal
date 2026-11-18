@@ -18,7 +18,7 @@ final readonly class AgentAuthorityRecords implements AgentAuthority
 {
     public function __construct(private AgentLifecycle $lifecycle) {}
 
-    public function requireDispatcher(int $agentId): void
+    public function requireDispatcher(string $agentId): void
     {
         $caller = new ActorIdentity(ActorType::Agent, $agentId);
 

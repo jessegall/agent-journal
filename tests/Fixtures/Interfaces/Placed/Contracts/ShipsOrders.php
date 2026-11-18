@@ -6,5 +6,5 @@ namespace Tests\Fixtures\Interfaces\Placed\Contracts;
 
 interface ShipsOrders
 {
-    public function ship(int $orderId): void;
+    public function ship(string $orderId): void;
 }

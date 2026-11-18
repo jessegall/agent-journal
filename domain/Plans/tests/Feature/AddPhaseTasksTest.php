@@ -15,6 +15,7 @@ use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 
 /**
  * Plans puts tasks into phases by id, after Tasks confirmed they exist.
@@ -30,7 +31,7 @@ final class AddPhaseTasksTest extends TestCase
 
     public function test_tasks_join_a_phase_in_order_once_tasks_confirmed_them(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
         $phase = Plan::query()->create(['title' => 'Build', 'type' => PlanType::Build])->addPhase('Read');
         $first = Task::query()->create(['title' => 'First'])->id;
         $second = Task::query()->create(['title' => 'Second'])->id;
@@ -42,12 +43,12 @@ final class AddPhaseTasksTest extends TestCase
 
     public function test_one_missing_task_refuses_the_whole_addition(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
         $phase = Plan::query()->create(['title' => 'Build', 'type' => PlanType::Build])->addPhase('Read');
         $real = Task::query()->create(['title' => 'Real'])->id;
 
         try {
-            $this->app->make(CommandBus::class)->run(new AddPhaseTasks($phase->id, [$real, 999999]));
+            $this->app->make(CommandBus::class)->run(new AddPhaseTasks($phase->id, [$real, TestIds::of(999999)]));
             $this->fail('A missing task was added.');
         } catch (TaskMissing) {
             $this->assertSame([], $phase->taskIds());
@@ -56,7 +57,7 @@ final class AddPhaseTasksTest extends TestCase
 
     public function test_a_task_named_twice_is_refused_before_anything_is_written(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
         $phase = Plan::query()->create(['title' => 'Build', 'type' => PlanType::Build])->addPhase('Read');
         $task = Task::query()->create(['title' => 'Twice'])->id;
 

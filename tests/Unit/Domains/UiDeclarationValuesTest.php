@@ -25,6 +25,7 @@ use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\UiDeclarations\LooseReader;
 use Tests\Fixtures\UiDeclarations\RecentNotesData;
 use Tests\Fixtures\UiDeclarations\RecentNotesReader;
+use Tests\Support\TestIds;
 use ValueError;
 
 /**
@@ -155,8 +156,8 @@ final class UiDeclarationValuesTest extends TestCase
     public function test_a_slot_context_carries_a_decimal_id_only_for_a_session_or_record(): void
     {
         $this->assertNull(SlotContext::nothing()->id);
-        $this->assertSame([SlotContextType::Session, '12'], [SlotContext::session(12)->type, SlotContext::session(12)->id]);
-        $this->assertSame([SlotContextType::Record, '7'], [SlotContext::record(7)->type, SlotContext::record(7)->id]);
+        $this->assertSame([SlotContextType::Session, TestIds::of(12)], [SlotContext::session(TestIds::of(12))->type, SlotContext::session(TestIds::of(12))->id]);
+        $this->assertSame([SlotContextType::Record, TestIds::of(7)], [SlotContext::record(TestIds::of(7))->type, SlotContext::record(TestIds::of(7))->id]);
     }
 
     public function test_an_icon_the_host_does_not_draw_is_refused(): void

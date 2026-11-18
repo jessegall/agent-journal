@@ -17,6 +17,6 @@ use Domain\Chat\Handlers\DismissMessageHandler;
 final readonly class DismissMessage implements Command
 {
     public function __construct(
-        public int $messageId,
+        public string $messageId,
     ) {}
 }

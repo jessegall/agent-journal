@@ -20,7 +20,9 @@ use Tests\Fixtures\PublicContracts\Plans\Models\Plan;
 use Tests\Fixtures\PublicContracts\Plans\PlanMissing;
 use Tests\Fixtures\PublicContracts\Plans\PlanService;
 use Tests\Fixtures\PublicContracts\Tasks\Api\TaskRecord;
+use Tests\Support\TimeLimits\TimeLimit;
 
+#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class PublicContractRulesTest extends TestCase
 {
     public function test_an_interface_an_enum_and_a_data_value_showing_only_public_types_pass(): void

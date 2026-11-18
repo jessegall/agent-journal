@@ -24,6 +24,7 @@ use Domain\Processes\Support\ShellParser;
 use Domain\Processes\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestIds;
 
 final class CommandFactsTest extends TestCase
 {
@@ -115,6 +116,6 @@ final class CommandFactsTest extends TestCase
 
     private function answer(ReadyState $ready, string $line): AnswerType
     {
-        return (new ShellCommandRequested(new HookIdentity(1, 10, 'call-1', 'digest'), $this->parse($line)))->answerBy($ready)->answerType();
+        return (new ShellCommandRequested(new HookIdentity(TestIds::of(1), TestIds::of(10), 'call-1', 'digest'), $this->parse($line)))->answerBy($ready)->answerType();
     }
 }

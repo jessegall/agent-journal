@@ -7,8 +7,8 @@ namespace App\Hooks\Inputs;
 final readonly class HookIdentity
 {
     public function __construct(
-        public int $agentId,
-        public int $sessionId,
+        public string $agentId,
+        public string $sessionId,
         public string $hookId,
         public string $inputDigest,
     ) {}

@@ -17,12 +17,14 @@ use App\Domains\Support\DomainEntry;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -83,11 +85,11 @@ final class ModuleAssignmentTest extends TestCase
         $this->startUserRequestAs($this->owner->id);
         $this->app->make(AssignmentWriterInTransaction::class)->assign($this->note->assignmentIdentity(), ActorIdentity::of($this->writer));
 
-        $this->startRequestAs($this->main->id, 1);
+        $this->startRequestAs($this->main->id, TestIds::of(1));
         $hidden = $this->app->make(AssignmentReader::class)->assignmentsFor([$this->note->assignmentIdentity()]);
         $this->assertThrows(fn () => $this->app->make(AssignmentWriterInTransaction::class)->assign($this->note->assignmentIdentity(), ActorIdentity::of($this->main)), RecordUnavailable::class);
 
-        $this->startRequestAs($this->writer->id, 2);
+        $this->startRequestAs($this->writer->id, TestIds::of(2));
         $own = $this->app->make(AssignmentReader::class)->assignmentsFor([$this->note->assignmentIdentity()]);
 
         $this->app->forgetScopedInstances();
@@ -99,7 +101,7 @@ final class ModuleAssignmentTest extends TestCase
 
     public function test_without_the_module_its_records_cannot_be_read_but_retirement_still_releases_them(): void
     {
-        AssignmentRecord::query()->insert(['record_type' => Note::LINK_TYPE, 'record_id' => $this->note->id, 'holder_type' => 'agent', 'holder_id' => $this->writer->id, 'created_at' => now(), 'updated_at' => now()]);
+        AssignmentRecord::query()->insert(['id' => strtolower((string) Str::ulid()), 'record_type' => Note::LINK_TYPE, 'record_id' => $this->note->id, 'holder_type' => 'agent', 'holder_id' => $this->writer->id, 'created_at' => now(), 'updated_at' => now()]);
         $this->startUserRequestAs($this->owner->id);
 
         $this->assertThrows(fn () => $this->app->make(AssignmentReader::class)->assignmentsFor([$this->note->assignmentIdentity()]), AssignmentTypeUnavailable::class);

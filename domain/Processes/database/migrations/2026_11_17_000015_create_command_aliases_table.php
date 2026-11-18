@@ -11,7 +11,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('command_aliases', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('name', 64)->unique();
             $table->text('line');
             $table->timestampsTz();

@@ -11,12 +11,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tasks', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('title');
             $table->string('state', 16)->default('open');
             $table->unsignedInteger('run_number')->default(0);
-            $table->unsignedBigInteger('agent_id')->nullable();
-            $table->unsignedBigInteger('session_id')->nullable();
+            $table->ulid('agent_id')->nullable();
+            $table->ulid('session_id')->nullable();
             $table->timestampsTz();
 
             $table->index(['agent_id', 'session_id']);

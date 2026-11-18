@@ -13,7 +13,7 @@ final class AgentRetirementDenied extends RuntimeException implements CommandRef
 {
     use RendersRefusal;
 
-    public static function forCaller(ActorIdentity $caller, int $agentId): self
+    public static function forCaller(ActorIdentity $caller, string $agentId): self
     {
         return new self("The {$caller->type->value} {$caller->id} may not retire agent {$agentId}; only the owner, or a main agent retiring an agent that is not a main agent, may.");
     }

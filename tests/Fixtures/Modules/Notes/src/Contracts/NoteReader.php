@@ -11,5 +11,5 @@ use Tests\Fixtures\Modules\Notes\Api\NoteValue;
  */
 interface NoteReader
 {
-    public function note(int $noteId): NoteValue;
+    public function note(string $noteId): NoteValue;
 }

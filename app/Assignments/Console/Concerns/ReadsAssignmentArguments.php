@@ -11,10 +11,10 @@ namespace App\Assignments\Console\Concerns;
 trait ReadsAssignmentArguments
 {
     /**
-     * @return array{recordType: string, recordId: int}
+     * @return array{recordType: string, recordId: string}
      */
     protected function recordFields(): array
     {
-        return ['recordType' => (string) $this->argument('type'), 'recordId' => (int) $this->argument('id')];
+        return ['recordType' => (string) $this->argument('type'), 'recordId' => (string) $this->argument('id')];
     }
 }

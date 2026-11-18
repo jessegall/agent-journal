@@ -19,7 +19,7 @@ $database = new PDO(
 $database->beginTransaction();
 
 $select = $database->prepare('SELECT id, frames FROM agent_stacks WHERE agent_id = ? AND session_id = ? FOR UPDATE');
-$select->execute([(int) $environment('LOCK_AGENT_ID'), (int) $environment('LOCK_SESSION_ID')]);
+$select->execute([(string) $environment('LOCK_AGENT_ID'), (string) $environment('LOCK_SESSION_ID')]);
 $row = $select->fetch(PDO::FETCH_ASSOC);
 
 fwrite(STDOUT, "locked\n");
@@ -33,7 +33,7 @@ $frames['frames'][] = [
     'typeKey' => 'test.tasks',
     'schemaVersion' => 1,
     'isBottom' => false,
-    'subject' => ['id' => (int) $environment('LOCK_TASK_NUMBER'), 'runNumber' => 1],
+    'subject' => ['id' => (string) $environment('LOCK_TASK_NUMBER'), 'runNumber' => 1],
 ];
 
 $update = $database->prepare('UPDATE agent_stacks SET frames = ?, version = version + 1 WHERE id = ?');

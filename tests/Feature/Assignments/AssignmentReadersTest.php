@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -93,8 +94,8 @@ final class AssignmentReadersTest extends TestCase
     {
         $reader = $this->app->make(AssignmentReader::class);
 
-        $this->assertThrows(fn () => $reader->assignmentsFor(array_map(fn (int $id) => new RecordIdentity('tasks.task', $id), range(1, 101))), InvalidAssignmentPage::class);
-        $this->assertThrows(fn () => $reader->assignmentsFor([new RecordIdentity('notes.note', 1)]), AssignmentTypeUnavailable::class);
+        $this->assertThrows(fn () => $reader->assignmentsFor(array_map(fn (int $number) => new RecordIdentity('tasks.task', TestIds::of($number)), range(1, 101))), InvalidAssignmentPage::class);
+        $this->assertThrows(fn () => $reader->assignmentsFor([new RecordIdentity('notes.note', TestIds::of(1))]), AssignmentTypeUnavailable::class);
     }
 
     public function test_names_come_from_each_actor_types_owner(): void
@@ -112,6 +113,6 @@ final class AssignmentReadersTest extends TestCase
 
         $this->expectException(ActorContextMissing::class);
 
-        $this->app->make(AssignmentReader::class)->assignmentsFor([new RecordIdentity('tasks.task', 1)]);
+        $this->app->make(AssignmentReader::class)->assignmentsFor([new RecordIdentity('tasks.task', TestIds::of(1))]);
     }
 }

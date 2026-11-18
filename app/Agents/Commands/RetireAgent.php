@@ -17,5 +17,5 @@ use App\Bus\Contracts\Command;
 #[HandledBy(RetireAgentHandler::class)]
 final readonly class RetireAgent implements Command
 {
-    public function __construct(public int $agentId) {}
+    public function __construct(public string $agentId) {}
 }

@@ -10,6 +10,7 @@ use App\Assignments\Contracts\Assignee;
 use App\Links\Support\Linkable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -17,7 +18,7 @@ use Illuminate\Support\Carbon;
  * An agent the journal launches, with the role its bottom state follows. It can hold assigned work until it is
  * retired; retirement is final.
  *
- * @property int $id
+ * @property string $id
  * @property string $name
  * @property string $role
  * @property Carbon|null $retired_at
@@ -27,7 +28,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['name', 'role'])]
 final class Agent extends Model implements Assignee
 {
-    use Linkable;
+    use HasUlids, Linkable;
 
     /**
      * @return array<string, string>
@@ -42,7 +43,7 @@ final class Agent extends Model implements Assignee
         return ActorType::Agent;
     }
 
-    public function actorId(): int
+    public function actorId(): string
     {
         return $this->id;
     }

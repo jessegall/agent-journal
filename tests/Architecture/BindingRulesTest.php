@@ -18,12 +18,14 @@ use Tests\Architecture\Support\NameUse;
 use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\PublicOwner;
 use Tests\Architecture\Support\Violation;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * The bindings the code states are sound, Core's parser comes from Processes, and only the authentication sites
  * set who acts in a request. Closures in providers are not judged.
  */
+#[TimeLimit(seconds: 15, reason: 'It parses every PHP file of the project.')]
 final class BindingRulesTest extends TestCase
 {
     /**

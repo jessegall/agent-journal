@@ -20,9 +20,11 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -47,7 +49,7 @@ final class AssignedListsTest extends TestCase
 
         $this->main = Agent::query()->create(['name' => 'Main', 'role' => 'hooks.main_ready']);
         $this->other = Agent::query()->create(['name' => 'Other', 'role' => 'hooks.read_only_helper_ready']);
-        $this->startRequestAs($this->main->id, 1);
+        $this->startRequestAs($this->main->id, TestIds::of(1));
     }
 
     protected function tearDown(): void
@@ -116,7 +118,7 @@ final class AssignedListsTest extends TestCase
 
         [$before, $after] = $this->app->make(AssignmentTransaction::class)->run(function () use ($other, $late): array {
             $before = $this->app->make(AssignedTaskReader::class)->assignedToCaller(new TaskFilters);
-            $other->table('assignments')->insert(['record_type' => 'tasks.task', 'record_id' => $late->id, 'holder_type' => 'agent', 'holder_id' => $this->main->id, 'created_at' => now(), 'updated_at' => now()]);
+            $other->table('assignments')->insert(['id' => strtolower((string) Str::ulid()), 'record_type' => 'tasks.task', 'record_id' => $late->id, 'holder_type' => 'agent', 'holder_id' => $this->main->id, 'created_at' => now(), 'updated_at' => now()]);
 
             return [$before, $this->app->make(AssignedTaskReader::class)->assignedToCaller(new TaskFilters)];
         });
@@ -127,7 +129,7 @@ final class AssignedListsTest extends TestCase
 
     public function test_a_user_has_no_assigned_list_and_a_bad_page_is_refused(): void
     {
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
 
         $this->assertThrows(fn () => $this->app->make(AssignedTaskReader::class)->assignedToCaller(new TaskFilters), AgentActorRequired::class);
         $this->assertThrows(fn () => new NumberedPage(0, 20), InvalidAssignmentPage::class);

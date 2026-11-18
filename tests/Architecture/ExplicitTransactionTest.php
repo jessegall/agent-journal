@@ -7,12 +7,14 @@ namespace Tests\Architecture;
 use Tests\Architecture\Support\CallScan;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ParsedFile;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * The bus opens the one transaction of a command (doc 19, section 6.11): no code of an owner moved onto the bus opens,
  * commits or rolls back a transaction itself or sets its isolation. The list grows phase by phase as owners move.
  */
+#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class ExplicitTransactionTest extends TestCase
 {
     /**

@@ -171,7 +171,6 @@ use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Support\Linkable;
 use App\Links\Support\LinkAccess;
 use App\Links\Support\LinkTypeRegistry;
-use App\Links\Support\LinkTypeRenames;
 use App\Numbers\Commands\InstallNumbers;
 use App\Queries\Support\TextSearch;
 use App\Ui\Contracts\CountReader;
@@ -204,8 +203,8 @@ use App\Web\Contracts\JournalAccessPolicy;
 /**
  * Core's public surface: every type a domain or module may use, written out one by one. Everything else in Core is
  * private, whatever folder it sits in. Core is not a domain and is never required; domains use it without declaring it.
- * CurrentActorSetter, LinkTypeRegistry and LinkTypeRenames are listed for the few places that compose the application (the
- * sign-in middleware, owner providers and migrations), not for ordinary use.
+ * CurrentActorSetter and LinkTypeRegistry are listed for the few places that compose the application (the
+ * sign-in middleware and owner providers), not for ordinary use.
  */
 final class CoreApi
 {
@@ -282,7 +281,6 @@ final class CoreApi
             Linkable::class,
             LinkAccess::class,
             LinkTypeRegistry::class,
-            LinkTypeRenames::class,
             UnknownLinkType::class,
             StateSubjectMissing::class,
             StackTargetRefused::class,

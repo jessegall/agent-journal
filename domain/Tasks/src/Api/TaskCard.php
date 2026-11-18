@@ -13,7 +13,7 @@ use Domain\Tasks\Enums\TaskState;
 final readonly class TaskCard
 {
     public function __construct(
-        public int $id,
+        public string $id,
         public string $title,
         public TaskState $state,
         public AssignmentHolder $holder,

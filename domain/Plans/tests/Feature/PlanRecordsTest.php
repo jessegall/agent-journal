@@ -17,6 +17,7 @@ use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 
 final class PlanRecordsTest extends TestCase
 {
@@ -32,7 +33,7 @@ final class PlanRecordsTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
 
         $this->build = Plan::query()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
         $read = $this->build->addPhase('Read');
@@ -95,7 +96,7 @@ final class PlanRecordsTest extends TestCase
 
     public function test_a_missing_selection_carries_no_title(): void
     {
-        $selection = $this->records()->list(new PlanFilters(selectedPlanId: 999999))->selection;
+        $selection = $this->records()->list(new PlanFilters(selectedPlanId: TestIds::of(99999)))->selection;
 
         $this->assertTrue($selection->isMissing());
         $this->assertNull($selection->card);

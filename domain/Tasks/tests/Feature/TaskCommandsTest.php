@@ -23,6 +23,7 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 
 /**
  * The Tasks commands on the bus (doc 19, phase 4): finish, block and cancel announce their change once it committed,
@@ -42,7 +43,7 @@ final class TaskCommandsTest extends TestCase
         parent::setUp();
 
         Event::fake([TaskFinished::class, TaskBlocked::class, TaskCancelled::class]);
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
     }
 
     public function test_finish_block_and_cancel_each_announce_their_change_once(): void
@@ -62,10 +63,10 @@ final class TaskCommandsTest extends TestCase
 
     public function test_a_task_nobody_has_is_refused_and_nothing_is_announced(): void
     {
-        $this->expectExceptionObject(TaskMissing::forId(999999));
+        $this->expectExceptionObject(TaskMissing::forId(TestIds::of(999999)));
 
         try {
-            $this->app->make(CommandBus::class)->run(new FinishTask(999999));
+            $this->app->make(CommandBus::class)->run(new FinishTask(TestIds::of(999999)));
         } finally {
             Event::assertNotDispatched(TaskFinished::class);
         }
@@ -77,7 +78,7 @@ final class TaskCommandsTest extends TestCase
         $session = $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']), 'claude-code')->session;
 
         try {
-            $this->app->make(CommandBus::class)->run(new StartTask($task->id, $session->id + 100));
+            $this->app->make(CommandBus::class)->run(new StartTask($task->id, TestIds::of(999999)));
             $this->fail('A start reached a session nobody may see.');
         } catch (StackTargetRefused) {
             $this->assertNotSame(TaskState::Started, $task->fresh()?->state);

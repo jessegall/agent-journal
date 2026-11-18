@@ -16,6 +16,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Carbon;
@@ -23,9 +24,9 @@ use Illuminate\Support\Carbon;
 /**
  * One answered hook call, kept so a retry of the same call gets the same answer. The agent and session are set only through recordFor.
  *
- * @property int $id
- * @property int $agent_id
- * @property int $session_id
+ * @property string $id
+ * @property string $agent_id
+ * @property string $session_id
  * @property string $event_id
  * @property string $input_digest
  * @property RecordedAnswer $answer
@@ -36,7 +37,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['event_id', 'input_digest', 'answer', 'steps'])]
 final class HookCall extends Model
 {
-    use Linkable;
+    use HasUlids, Linkable;
 
     /**
      * @return array<string, string>
@@ -44,8 +45,6 @@ final class HookCall extends Model
     protected function casts(): array
     {
         return [
-            'agent_id' => 'integer',
-            'session_id' => 'integer',
             'answer' => RecordedAnswerCast::class,
             'steps' => RecordedStepsCast::class,
         ];

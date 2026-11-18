@@ -16,5 +16,5 @@ use Domain\Rules\Handlers\RemoveRuleHandler;
 #[HandledBy(RemoveRuleHandler::class)]
 final readonly class RemoveRule implements Command
 {
-    public function __construct(public int $ruleId) {}
+    public function __construct(public string $ruleId) {}
 }

@@ -6,5 +6,5 @@ namespace Tests\Fixtures\PublicContracts\Tasks\Api;
 
 final readonly class TaskRecord
 {
-    public function __construct(public int $id) {}
+    public function __construct(public string $id) {}
 }

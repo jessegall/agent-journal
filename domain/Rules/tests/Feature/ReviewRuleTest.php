@@ -18,6 +18,7 @@ use Domain\Rules\Support\ActiveRules;
 use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 
 /**
  * The user reviews a proposed rule through the ApproveRule and DenyRule commands: once, and only while it is proposed.
@@ -38,7 +39,7 @@ final class ReviewRuleTest extends TestCase
         parent::setUp();
 
         Event::fake([RuleApproved::class, RuleDenied::class]);
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(7));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
         $this->proposed = Rule::proposed('No phase waits on the user.');
     }
 

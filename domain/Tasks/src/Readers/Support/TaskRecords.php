@@ -12,7 +12,7 @@ use Domain\Tasks\Models\Task;
  */
 final readonly class TaskRecords
 {
-    public function get(int $taskId): Task
+    public function get(string $taskId): Task
     {
         return Task::query()->find($taskId) ?? throw TaskMissing::forId($taskId);
     }

@@ -23,6 +23,7 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class HookCompactionTest extends TestCase
@@ -105,7 +106,7 @@ final class HookCompactionTest extends TestCase
     private function compact(string $callId): string
     {
         $this->callAs($callId, hash('sha256', $callId));
-        $compaction = new ContextCompacted(new HookIdentity(1, 10, $callId, hash('sha256', $callId)), new CompactionDetails($callId));
+        $compaction = new ContextCompacted(new HookIdentity(TestIds::of(1), TestIds::of(10), $callId, hash('sha256', $callId)), new CompactionDetails($callId));
         $capabilities = new ProgramCapabilities('Test program', 'compaction context', ['onCompaction'], RewriteSupport::WithoutApproval);
 
         $reply = $this->machine()->answer($compaction, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => new ProgramReply((string) json_encode($answer->context), '', 0));
@@ -115,6 +116,6 @@ final class HookCompactionTest extends TestCase
 
     private function remember(string $text, int $weight): void
     {
-        (new Memory(['text' => $text, 'weight' => $weight]))->saveFor(1);
+        (new Memory(['text' => $text, 'weight' => $weight]))->saveFor(TestIds::of(1));
     }
 }

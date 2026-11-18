@@ -18,6 +18,7 @@ use Domain\Sequences\Support\SequenceWork;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;
+use Tests\Support\TestIds;
 
 final class FollowingSequenceTest extends TestCase
 {
@@ -69,7 +70,7 @@ final class FollowingSequenceTest extends TestCase
     #[DataProvider('settledStates')]
     public function test_a_settled_run_is_finished(SequenceRunState $state): void
     {
-        $this->assertTrue((new FollowingSequenceState(new SequenceWork(8, 3, 'Run the phase tests.', $state)))->isFinished());
+        $this->assertTrue((new FollowingSequenceState(new SequenceWork('8', 3, 'Run the phase tests.', $state)))->isFinished());
     }
 
     public function test_a_running_sequence_is_not_finished(): void
@@ -85,7 +86,7 @@ final class FollowingSequenceTest extends TestCase
 
     private function running(): SequenceWork
     {
-        return new SequenceWork(8, 3, 'Run the phase tests.', SequenceRunState::Running);
+        return new SequenceWork('8', 3, 'Run the phase tests.', SequenceRunState::Running);
     }
 
     private function following(): FollowingSequenceState
@@ -105,6 +106,6 @@ final class FollowingSequenceTest extends TestCase
 
     private function hook(): HookIdentity
     {
-        return new HookIdentity(1, 2, 'hook-1', 'digest');
+        return new HookIdentity(TestIds::of(1), TestIds::of(2), 'hook-1', 'digest');
     }
 }

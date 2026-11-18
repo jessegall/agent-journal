@@ -17,7 +17,7 @@ use Domain\Sequences\Handlers\StartSequenceHandler;
 final readonly class StartSequence implements Command
 {
     public function __construct(
-        public int $sequenceRunId,
-        public int $sessionId,
+        public string $sequenceRunId,
+        public string $sessionId,
     ) {}
 }

@@ -11,6 +11,7 @@ use ReflectionClass;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\FolderType;
 use Tests\Architecture\Support\ParsedFile;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -18,6 +19,7 @@ use Tests\TestCase;
  * service providers sit in Providers, and a type folder such as States or Readers holds only classes of that type;
  * what helps a type without being of it sits in that folder's Support subfolder.
  */
+#[TimeLimit(seconds: 15, reason: 'It parses every PHP file of the project.')]
 final class FolderLayoutTest extends TestCase
 {
     public function test_every_domain_root_holds_only_its_domain_class_and_a_core_area_root_nothing(): void

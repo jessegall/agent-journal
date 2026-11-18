@@ -10,7 +10,7 @@ namespace App\Hooks\Decisions;
 final readonly class SubjectReference
 {
     public function __construct(
-        public int $id,
+        public string $id,
         public int $runNumber,
     ) {}
 }

@@ -12,7 +12,7 @@ use Domain\Chat\Enums\MessageState;
 final readonly class MessageView
 {
     public function __construct(
-        public int $id,
+        public string $id,
         public string $body,
         public MessageState $state,
     ) {}

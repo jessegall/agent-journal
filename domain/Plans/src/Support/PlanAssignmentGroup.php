@@ -52,10 +52,10 @@ final readonly class PlanAssignmentGroup
 
     /**
      * @param  Collection<int, Phase>  $phases
-     * @return list<int>
+     * @return list<string>
      */
     private function taskIdsOf(Collection $phases): array
     {
-        return array_map(intval(...), array_values(PhaseTask::query()->whereIn('phase_id', $phases->modelKeys())->orderBy('phase_id')->orderBy('position')->pluck('task_id')->all()));
+        return array_map(strval(...), array_values(PhaseTask::query()->whereIn('phase_id', $phases->modelKeys())->orderBy('phase_id')->orderBy('position')->pluck('task_id')->all()));
     }
 }

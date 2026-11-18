@@ -14,6 +14,7 @@ use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedCalls;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -54,11 +55,11 @@ final class SingleRecordCommandsTest extends TestCase
         $this->callAs($this->main, 'assign', [...$record, 'recipientType' => 'agent', 'recipientId' => $this->helper->agent->id])
             ->assertOk()->assertJson(['changed' => 1, 'outcomes' => [['type' => 'changed', 'record' => ['holder' => ['type' => 'agent', 'id' => (string) $this->helper->agent->id]]]]]);
         $shown = $this->callAs($this->main, 'show', $record)->assertOk();
-        $first = (int) $shown->json('holder.reference');
+        $first = (string) $shown->json('holder.reference');
 
         $this->callAs($this->main, 'reassign', [...$record, 'assignmentId' => $first, 'holderType' => 'agent', 'holderId' => $this->helper->agent->id, 'recipientType' => 'agent', 'recipientId' => $this->main->agent->id])
             ->assertOk()->assertJson(['changed' => 1]);
-        $second = (int) $this->callAs($this->main, 'show', $record)->json('holder.reference');
+        $second = (string) $this->callAs($this->main, 'show', $record)->json('holder.reference');
         $this->callAs($this->main, 'reassign', [...$record, 'assignmentId' => $second, 'holderType' => 'agent', 'holderId' => $this->main->agent->id, 'recipientType' => 'agent', 'recipientId' => $this->helper->agent->id])->assertOk();
 
         $this->callAs($this->main, 'unassign', [...$record, 'assignmentId' => $first, 'holderType' => 'agent', 'holderId' => $this->helper->agent->id])->assertConflict();
@@ -104,7 +105,7 @@ final class SingleRecordCommandsTest extends TestCase
             ->expectsOutputToContain('"changed":1')->assertExitCode(0);
         $this->artisan('assignment:show', ['type' => 'tasks.task', 'id' => $this->task->id, '--json' => true])
             ->expectsOutputToContain('"reference"')->assertExitCode(0);
-        $this->artisan('assignment:unassign', ['type' => 'tasks.task', 'id' => $this->task->id, '--assignment' => 999999, '--holder' => "agent:{$this->helper->agent->id}"])
+        $this->artisan('assignment:unassign', ['type' => 'tasks.task', 'id' => $this->task->id, '--assignment' => TestIds::of(999999), '--holder' => "agent:{$this->helper->agent->id}"])
             ->expectsOutputToContain('(409)')->assertExitCode(1);
         $this->artisan('assignment:assign', ['type' => 'tasks.task', 'id' => $this->task->id, '--to' => 'somebody'])
             ->expectsOutputToContain('type:id')->assertExitCode(1);

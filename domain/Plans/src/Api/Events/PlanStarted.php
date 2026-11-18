@@ -16,7 +16,7 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 final readonly class PlanStarted implements Event, ShouldDispatchAfterCommit, UpdatesUserInterface
 {
     public function __construct(
-        public int $planId,
+        public string $planId,
         public ActorContext $startedBy,
     ) {}
 }

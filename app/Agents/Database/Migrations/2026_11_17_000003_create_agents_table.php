@@ -11,9 +11,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('agents', function (Blueprint $table) {
-            $table->id();
+            $table->ulid('id')->primary();
             $table->string('name');
             $table->string('role', 64);
+            $table->timestampTz('retired_at')->nullable();
             $table->timestampsTz();
         });
     }

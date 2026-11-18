@@ -11,9 +11,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('hook_calls', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('agent_id');
-            $table->unsignedBigInteger('session_id');
+            $table->ulid('id')->primary();
+            $table->ulid('agent_id');
+            $table->ulid('session_id');
             $table->string('event_id', 128);
             $table->char('input_digest', 64);
             $table->jsonb('answer');

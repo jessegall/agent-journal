@@ -12,6 +12,7 @@ use App\Hooks\States\AgentState;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;
+use Tests\Support\TestIds;
 
 final class HookInputTest extends TestCase
 {
@@ -41,7 +42,7 @@ final class HookInputTest extends TestCase
 
     public function test_an_input_keeps_the_identity_it_was_given(): void
     {
-        $hook = new HookIdentity(7, 9, 'hook-7', 'digest-7');
+        $hook = new HookIdentity(TestIds::of(7), TestIds::of(9), 'hook-7', 'digest-7');
 
         $this->assertSame($hook, (new StopRequested($hook, new StopDetails('turn-7', true)))->identity());
     }

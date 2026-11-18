@@ -12,7 +12,7 @@ use Domain\Tasks\Enums\TaskWorkState;
 final readonly class TaskWork
 {
     public function __construct(
-        public int $number,
+        public string $taskId,
         public int $runNumber,
         public TaskWorkState $state,
     ) {}
@@ -24,6 +24,6 @@ final readonly class TaskWork
 
     public function unfinishedReason(): string
     {
-        return "Task {$this->number} still needs work: finish it or record why it is blocked.";
+        return "Task {$this->taskId} still needs work: finish it or record why it is blocked.";
     }
 }

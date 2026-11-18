@@ -10,8 +10,8 @@ namespace App\Agents\Support;
 final readonly class StackTarget
 {
     public function __construct(
-        public int $agentId,
-        public int $sessionId,
+        public string $agentId,
+        public string $sessionId,
     ) {}
 
     /**

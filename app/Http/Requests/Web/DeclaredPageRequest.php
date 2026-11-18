@@ -21,7 +21,7 @@ final class DeclaredPageRequest extends FormRequest
         return [
             'inspect' => ['nullable', 'string', 'max:200'],
             'window' => ['nullable', 'array'],
-            'session' => ['nullable', 'string', 'max:20'],
+            'session' => ['nullable', 'string', 'ulid'],
         ];
     }
 

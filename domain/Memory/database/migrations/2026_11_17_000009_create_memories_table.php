@@ -11,8 +11,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('memories', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('agent_id')->index();
+            $table->ulid('id')->primary();
+            $table->ulid('agent_id')->index();
             $table->text('text');
             $table->unsignedSmallInteger('weight');
             $table->timestampsTz();

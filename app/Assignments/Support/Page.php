@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Assignments\Support;
 
 use App\Assignments\Exceptions\InvalidAssignmentPage;
+use Illuminate\Support\Str;
 
 /**
  * Which page of an id-ordered list to read, such as the record ids an actor holds or the actors work may go to: those
@@ -18,14 +19,14 @@ final readonly class Page
      * @throws InvalidAssignmentPage
      */
     public function __construct(
-        public int|null $afterId = null,
+        public string|null $afterId = null,
         public int $limit = 20,
     ) {
         if ($limit < 1 || $limit > self::LARGEST_LIMIT) {
             throw InvalidAssignmentPage::forLimit($limit);
         }
 
-        if ($afterId !== null && $afterId < 1) {
+        if ($afterId !== null && ! Str::isUlid($afterId)) {
             throw InvalidAssignmentPage::forCursor($afterId);
         }
     }

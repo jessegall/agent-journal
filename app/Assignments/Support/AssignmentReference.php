@@ -6,6 +6,7 @@ namespace App\Assignments\Support;
 
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Exceptions\InvalidAssignmentIdentity;
+use Illuminate\Support\Str;
 
 /**
  * One assignment as it was read: its row id and its holder. A command that changes an assignment names the reference
@@ -17,10 +18,10 @@ final readonly class AssignmentReference
      * @throws InvalidAssignmentIdentity
      */
     public function __construct(
-        public int $id,
+        public string $id,
         public ActorIdentity $holder,
     ) {
-        if ($id < 1) {
+        if (! Str::isUlid($id)) {
             throw InvalidAssignmentIdentity::forReference($id);
         }
     }

@@ -29,12 +29,14 @@ use Tests\Fixtures\Modules\Notes\Contracts\NoteReader;
 use Tests\Fixtures\Modules\Notes\NoteRecords;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * A module outside the domain folder, registered beside the domains as a package would be, is discovered like a domain and
  * judged by every boundary check in both directions: what it uses, and what others use of it.
  */
+#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class RegisteredModuleTest extends TestCase
 {
     public function test_a_registered_module_is_discovered_with_its_listeners_migrations_and_bindings(): void

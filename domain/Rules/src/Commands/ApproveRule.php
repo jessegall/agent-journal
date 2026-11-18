@@ -19,5 +19,5 @@ use Domain\Rules\Handlers\ApproveRuleHandler;
 #[RequiresActor(ActorType::User)]
 final readonly class ApproveRule implements Command
 {
-    public function __construct(public int $ruleId) {}
+    public function __construct(public string $ruleId) {}
 }

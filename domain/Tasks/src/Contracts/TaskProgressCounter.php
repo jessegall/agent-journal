@@ -15,14 +15,14 @@ use Illuminate\Container\Attributes\Bind;
 interface TaskProgressCounter
 {
     /**
-     * @param  list<int>  $taskIds
+     * @param  list<string>  $taskIds
      */
     public function progressOf(array $taskIds): TaskProgress;
 
     /**
      * @template TKey of array-key
      *
-     * @param  array<TKey, list<int>>  $taskIdGroups
+     * @param  array<TKey, list<string>>  $taskIdGroups
      * @return array<TKey, TaskProgress>
      */
     public function progressByGroup(array $taskIdGroups): array;

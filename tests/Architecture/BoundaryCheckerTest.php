@@ -18,7 +18,9 @@ use Tests\Architecture\Support\ViolationType;
 use Tests\Fixtures\Boundary\Chat\ChatDomain;
 use Tests\Fixtures\Boundary\Plans\PlansDomain;
 use Tests\Fixtures\Boundary\Tasks\TasksDomain;
+use Tests\Support\TimeLimits\TimeLimit;
 
+#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class BoundaryCheckerTest extends TestCase
 {
     /**

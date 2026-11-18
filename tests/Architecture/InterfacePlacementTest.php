@@ -6,11 +6,13 @@ namespace Tests\Architecture;
 
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\InterfacePlacement;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * Rule 17: every interface of a domain or the core lives in a Contracts folder of the area that uses it.
  */
+#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class InterfacePlacementTest extends TestCase
 {
     public function test_an_interface_outside_a_contracts_folder_is_named_and_one_inside_passes(): void

@@ -9,7 +9,7 @@ use Spatie\LaravelData\Data;
 final class InspectedSubject extends Data
 {
     public function __construct(
-        public readonly int $id,
+        public readonly string $id,
         public readonly int $runNumber,
     ) {}
 }

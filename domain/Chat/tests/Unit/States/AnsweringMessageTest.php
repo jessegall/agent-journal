@@ -26,6 +26,7 @@ use Domain\Chat\Support\MessageWork;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;
+use Tests\Support\TestIds;
 
 final class AnsweringMessageTest extends TestCase
 {
@@ -92,7 +93,7 @@ final class AnsweringMessageTest extends TestCase
     #[DataProvider('settledStates')]
     public function test_a_settled_message_is_finished(MessageWorkState $state): void
     {
-        $this->assertTrue((new AnsweringMessageState(new MessageWork(95, $state)))->isFinished());
+        $this->assertTrue((new AnsweringMessageState(new MessageWork('95', $state)))->isFinished());
         $this->assertFalse($this->unanswered()->isFinished());
     }
 
@@ -115,7 +116,7 @@ final class AnsweringMessageTest extends TestCase
 
     private function message(): MessageWork
     {
-        return new MessageWork(95, MessageWorkState::Unanswered);
+        return new MessageWork('95', MessageWorkState::Unanswered);
     }
 
     private function unanswered(): AnsweringMessageState
@@ -125,6 +126,6 @@ final class AnsweringMessageTest extends TestCase
 
     private function hook(): HookIdentity
     {
-        return new HookIdentity(1, 2, 'hook-1', 'digest');
+        return new HookIdentity(TestIds::of(1), TestIds::of(2), 'hook-1', 'digest');
     }
 }

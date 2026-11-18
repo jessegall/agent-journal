@@ -10,7 +10,7 @@ namespace App\Agents\Support;
 final readonly class SessionOption
 {
     public function __construct(
-        public int $sessionId,
+        public string $sessionId,
         public string $agentName,
         public StackTarget $target,
     ) {}

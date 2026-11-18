@@ -13,7 +13,7 @@ use App\Contracts\Event;
 final readonly class SequenceStarted implements Event
 {
     public function __construct(
-        public int $runId,
+        public string $runId,
         public StackTarget $target,
     ) {}
 }

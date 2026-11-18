@@ -17,6 +17,6 @@ use Domain\Chat\Handlers\AnswerMessageHandler;
 final readonly class AnswerMessage implements Command
 {
     public function __construct(
-        public int $messageId,
+        public string $messageId,
     ) {}
 }

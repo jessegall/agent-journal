@@ -10,7 +10,7 @@ namespace App\Agents\Support;
 final readonly class AgentLabel
 {
     public function __construct(
-        public int $agentId,
+        public string $agentId,
         public string $name,
     ) {}
 }

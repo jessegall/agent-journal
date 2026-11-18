@@ -15,7 +15,9 @@ use Tests\Architecture\Support\Violation;
 use Tests\Fixtures\Boundary\Events\Chat\ChatDomain;
 use Tests\Fixtures\Boundary\Events\Plans\PlansDomain;
 use Tests\Fixtures\Boundary\Events\Tasks\TasksDomain;
+use Tests\Support\TimeLimits\TimeLimit;
 
+#[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class DomainEventRulesTest extends TestCase
 {
     private const string TASK_CLOSED = 'Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClosed';

@@ -17,15 +17,16 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
  * The stored stack of one agent in one journal session. The agent and session are set only through startFor, never mass assigned.
  *
- * @property int $id
- * @property int $agent_id
- * @property int $session_id
+ * @property string $id
+ * @property string $agent_id
+ * @property string $session_id
  * @property int $version
  * @property FrameRecords $frames
  * @property StackStatus $status
@@ -37,7 +38,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['version', 'frames', 'status', 'closed_at'])]
 final class AgentStackRow extends Model
 {
-    use Linkable;
+    use HasUlids, Linkable;
 
     protected $table = 'agent_stacks';
 
@@ -47,8 +48,6 @@ final class AgentStackRow extends Model
     protected function casts(): array
     {
         return [
-            'agent_id' => 'integer',
-            'session_id' => 'integer',
             'version' => 'integer',
             'frames' => FrameRecordsCast::class,
             'status' => StackStatus::class,
@@ -75,6 +74,7 @@ final class AgentStackRow extends Model
         $now = CarbonImmutable::now();
 
         self::query()->withoutGlobalScope(AgentSessionScope::class)->insertOrIgnore([
+            'id' => (new self)->newUniqueId(),
             'agent_id' => $target->agentId,
             'session_id' => $target->sessionId,
             'version' => 1,

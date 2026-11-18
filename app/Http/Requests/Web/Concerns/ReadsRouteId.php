@@ -4,21 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Web\Concerns;
 
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use App\Http\Support\Web\RouteId;
 
 /**
- * Reads a record id from the route: a positive whole number that fits an int, or the page is not found.
+ * Reads a record id from the route: a ULID, or the page is not found.
  */
 trait ReadsRouteId
 {
-    protected function routeId(string $parameter): int
+    protected function routeId(string $parameter): string
     {
-        $value = (string) $this->route($parameter);
-
-        if (preg_match('/^[1-9][0-9]{0,18}$/', $value) !== 1 || (strlen($value) === 19 && strcmp($value, (string) PHP_INT_MAX) > 0)) {
-            throw new NotFoundHttpException;
-        }
-
-        return (int) $value;
+        return RouteId::of((string) $this->route($parameter));
     }
 }

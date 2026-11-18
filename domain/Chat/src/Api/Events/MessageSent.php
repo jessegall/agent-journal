@@ -15,7 +15,7 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 final readonly class MessageSent implements Event, ShouldDispatchAfterCommit, UpdatesUserInterface
 {
     public function __construct(
-        public int $messageId,
+        public string $messageId,
         public StackTarget $target,
     ) {}
 }

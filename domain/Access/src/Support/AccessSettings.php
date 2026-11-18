@@ -9,5 +9,5 @@ namespace Domain\Access\Support;
  */
 final readonly class AccessSettings
 {
-    public function __construct(public int|null $ownerId) {}
+    public function __construct(public string|null $ownerId) {}
 }

@@ -81,7 +81,7 @@ final readonly class AssignmentRecords implements AssignmentReader
                 ->orderBy('record_id')
                 ->limit(self::LARGEST_BATCH)
                 ->pluck('record_id')
-                ->map(fn (mixed $id) => (int) $id)
+                ->map(fn (mixed $id) => (string) $id)
                 ->values()
                 ->all();
 
@@ -89,7 +89,7 @@ final readonly class AssignmentRecords implements AssignmentReader
                 return new RecordIds($ids, null);
             }
 
-            $visible = array_map(fn (RecordIdentity $record) => $record->id, $this->visibleAmong($type, array_values(array_map(fn (int $id) => new RecordIdentity($type, $id), $candidates))));
+            $visible = array_map(fn (RecordIdentity $record) => $record->id, $this->visibleAmong($type, array_values(array_map(fn (string $id) => new RecordIdentity($type, $id), $candidates))));
 
             foreach ($candidates as $candidate) {
                 $examinedUpTo = $candidate;
@@ -110,7 +110,7 @@ final readonly class AssignmentRecords implements AssignmentReader
     }
 
     /**
-     * @return list<int>
+     * @return list<string>
      */
     public function allRecordIdsFor(string $type, ActorIdentity $holder): array
     {

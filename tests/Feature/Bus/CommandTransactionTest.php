@@ -17,6 +17,7 @@ use Tests\Fixtures\Modules\Notes\Commands\OpenTransactionNote;
 use Tests\Fixtures\Modules\Notes\Commands\PinNote;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
+use Tests\Support\TestIds;
 
 /**
  * One transaction per command (doc 19, Book D): it commits in the command's isolation, a nested command joins it, a
@@ -28,7 +29,7 @@ final class CommandTransactionTest extends CommandBusTestCase
     public function test_a_command_commits_in_its_isolation_and_a_repeatable_read_command_gets_its_own(): void
     {
         $this->installCommandModules();
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);
 
         $id = $bus->run(new WriteNote('kept'));
@@ -41,7 +42,7 @@ final class CommandTransactionTest extends CommandBusTestCase
     public function test_a_command_dispatched_by_a_handler_joins_the_open_transaction(): void
     {
         $this->installCommandModules();
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
 
         $id = $this->app->make(CommandBus::class)->run(new CopyNote('copied'));
 
@@ -51,7 +52,7 @@ final class CommandTransactionTest extends CommandBusTestCase
     public function test_a_refusal_rolls_back_everything_the_command_wrote(): void
     {
         $this->installCommandModules();
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
 
         try {
             $this->app->make(CommandBus::class)->run(new RefuseNote('gone'));
@@ -64,7 +65,7 @@ final class CommandTransactionTest extends CommandBusTestCase
     public function test_a_handler_that_ignores_a_failed_inner_command_fails_the_whole_command(): void
     {
         $this->installCommandModules();
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
 
         try {
             $this->app->make(CommandBus::class)->run(new IgnoreFailedNote('half'));
@@ -77,7 +78,7 @@ final class CommandTransactionTest extends CommandBusTestCase
     public function test_a_transaction_a_handler_opens_itself_is_refused_and_nothing_is_left_open(): void
     {
         $this->installCommandModules();
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
 
         try {
             $this->app->make(CommandBus::class)->run(new OpenTransactionNote('own'));
@@ -91,7 +92,7 @@ final class CommandTransactionTest extends CommandBusTestCase
     public function test_a_command_joins_a_stack_transaction_of_its_isolation_and_refuses_another(): void
     {
         $this->installCommandModules();
-        $this->startUserRequestAs(1);
+        $this->startUserRequestAs(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);
 
         $id = $this->app->make(StackTransaction::class)->run(fn () => $bus->run(new WriteNote('joined')));

@@ -18,19 +18,19 @@ final readonly class VisibleTasks implements TaskReader
 {
     public function __construct(private CurrentActor $actors) {}
 
-    public function requireVisible(int $taskId): void
+    public function requireVisible(string $taskId): void
     {
         $this->requireAllVisible([$taskId]);
     }
 
     /**
-     * @param  list<int>  $taskIds
+     * @param  list<string>  $taskIds
      */
     public function requireAllVisible(array $taskIds): void
     {
         $this->actors->actor();
         $wanted = array_values(array_unique($taskIds));
-        $found = array_map(intval(...), Task::query()->whereKey($wanted)->pluck('id')->all());
+        $found = array_map(strval(...), Task::query()->whereKey($wanted)->pluck('id')->all());
         $missing = array_values(array_diff($wanted, $found));
 
         if ($missing !== []) {

@@ -13,5 +13,5 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
  */
 final readonly class RuleRemoved implements Event, ShouldDispatchAfterCommit, UpdatesUserInterface
 {
-    public function __construct(public int $ruleId) {}
+    public function __construct(public string $ruleId) {}
 }

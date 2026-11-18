@@ -22,9 +22,11 @@ use Domain\Tasks\Models\Task;
 use Illuminate\Database\Connection;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -83,14 +85,14 @@ final class AssignmentWriterTest extends TestCase
 
     public function test_a_main_agent_gives_out_work_and_a_helper_or_a_retired_main_may_not(): void
     {
-        $this->startRequestAs($this->main->id, 1);
+        $this->startRequestAs($this->main->id, TestIds::of(1));
         $this->writer()->assign($this->task, ActorIdentity::of($this->helper));
 
-        $this->startRequestAs($this->helper->id, 2);
+        $this->startRequestAs($this->helper->id, TestIds::of(2));
         $this->assertThrows(fn () => $this->writer()->assign(Task::query()->create(['title' => 'Other'])->assignmentIdentity(), ActorIdentity::of($this->helper)), AssignmentDenied::class);
 
         $this->main->retireAt(CarbonImmutable::now());
-        $this->startRequestAs($this->main->id, 1);
+        $this->startRequestAs($this->main->id, TestIds::of(1));
         $this->assertThrows(fn () => $this->writer()->assign(Task::query()->create(['title' => 'Third'])->assignmentIdentity(), ActorIdentity::of($this->helper)), AssignmentDenied::class);
     }
 
@@ -124,7 +126,7 @@ final class AssignmentWriterTest extends TestCase
 
         $this->assertThrows(fn () => $this->writer()->assign($this->task, ActorIdentity::of($stranger)), AssigneeUnavailable::class);
         $this->assertThrows(fn () => $this->writer()->assign($this->task, ActorIdentity::of($this->helper)), AssigneeUnavailable::class);
-        $this->assertThrows(fn () => $this->writer()->assign(new RecordIdentity('tasks.task', 999999), ActorIdentity::of($this->main)), RecordUnavailable::class);
+        $this->assertThrows(fn () => $this->writer()->assign(new RecordIdentity('tasks.task', TestIds::of(999999)), ActorIdentity::of($this->main)), RecordUnavailable::class);
     }
 
     public function test_a_retirement_waits_for_an_assignment_in_progress_and_then_sees_it(): void
@@ -160,7 +162,7 @@ final class AssignmentWriterTest extends TestCase
                 AssignmentRecord::query()->count();
 
                 if ($attempts === 1) {
-                    $other->table('assignments')->insert(['record_type' => $this->task->type, 'record_id' => $this->task->id, 'holder_type' => 'agent', 'holder_id' => $this->main->id, 'created_at' => now(), 'updated_at' => now()]);
+                    $other->table('assignments')->insert(['id' => strtolower((string) Str::ulid()), 'record_type' => $this->task->type, 'record_id' => $this->task->id, 'holder_type' => 'agent', 'holder_id' => $this->main->id, 'created_at' => now(), 'updated_at' => now()]);
                 }
 
                 $this->writer()->assign($this->task, ActorIdentity::of($this->helper));
