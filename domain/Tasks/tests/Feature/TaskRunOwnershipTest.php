@@ -64,7 +64,7 @@ final class TaskRunOwnershipTest extends TestCase
         $this->assertThrows(fn () => $this->bus()->run(new StartTask($this->task->id, $this->second->id)), TaskRunTaken::class);
 
         $this->assertSame([1, 1], [$run, $retry]);
-        $this->assertSame($this->first->id, $this->task->fresh()?->run_session_id);
+        $this->assertSame($this->first->agent_id, $this->task->fresh()?->run_actor_id);
     }
 
     public function test_finishing_records_the_note_and_ends_the_working_state(): void

@@ -39,7 +39,7 @@ final class RulesPageTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->active = Rule::query()->create(['text' => 'Write all code in plain English.']);
-        $this->proposed = Rule::proposed("Every phase ends with its tests.\n  - run them once", 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)), null);
+        $this->proposed = Rule::proposed("Every phase ends with its tests.\n  - run them once", 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)));
     }
 
     public function test_a_guest_is_sent_to_sign_in(): void

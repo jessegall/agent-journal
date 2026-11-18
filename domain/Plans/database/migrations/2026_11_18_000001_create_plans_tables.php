@@ -19,7 +19,6 @@ return new class extends Migration
             $table->text('brief');
             $table->string('creator_type', 16);
             $table->string('creator_id', 64);
-            $table->ulid('creator_session_id')->nullable();
             $table->unsignedInteger('revision')->default(1);
             $table->string('type', 16);
             $table->string('state', 16)->default('planned');

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Readers;
 
+use App\Actors\Enums\ActorType;
 use App\Agents\Contracts\AgentReader;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Models\Task;
@@ -24,7 +25,7 @@ final readonly class TaskExecutions
      */
     public function of(Collection $tasks): array
     {
-        $labels = $this->agents->labelsFor(array_values(array_unique(array_filter($tasks->pluck('run_agent_id')->all(), is_string(...)))));
+        $labels = $this->agents->labelsFor(array_values(array_unique(array_filter($tasks->filter(fn (Task $task): bool => $task->run_actor_type === ActorType::Agent)->pluck('run_actor_id')->all(), is_string(...)))));
 
         return $tasks->mapWithKeys(fn (Task $task): array => [$task->id => $task->executionWith($labels)])->all();
     }

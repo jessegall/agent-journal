@@ -35,7 +35,6 @@ class PlanFactory extends Factory
             'type' => PlanType::Build,
             'creator_type' => $creator->type,
             'creator_id' => $creator->id,
-            'creator_session_id' => null,
         ];
     }
 }

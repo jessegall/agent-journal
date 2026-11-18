@@ -141,7 +141,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $this->startUserRequestAs(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);
 
-        $bus->run(new ApproveRule(Rule::proposed('Every phase ends with its tests.', 'Phases ended untested.', null, ActorContext::forUser(TestIds::of(1)), null)->id));
+        $bus->run(new ApproveRule(Rule::proposed('Every phase ends with its tests.', 'Phases ended untested.', null, ActorContext::forUser(TestIds::of(1)))->id));
         $bus->run(new WriteNote('not a rules command'));
 
         $this->assertSame(1, $this->app->make(ConnectionInterface::class)->table('module_command_rows')->where('text', 'audit ApproveRule')->count());

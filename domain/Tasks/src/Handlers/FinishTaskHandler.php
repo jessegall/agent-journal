@@ -29,7 +29,7 @@ final readonly class FinishTaskHandler implements CommandHandler
     public function handle(FinishTask $command): void
     {
         $task = Task::lockedById($command->taskId);
-        $task->requireRun($command->runNumber, $this->caller->sessionId());
+        $task->requireRun($command->runNumber, $this->caller->runOwner());
         $this->cleanup->endWork($task, fn (Task $task) => $task->finishRun($command->note));
         $this->events->dispatch(new TaskFinished($command->taskId));
     }

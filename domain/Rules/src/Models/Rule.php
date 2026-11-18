@@ -35,11 +35,10 @@ use Illuminate\Support\Carbon;
  * @property string|null $replaces_rule_id
  * @property ActorType|null $proposer_type
  * @property string|null $proposer_id
- * @property string|null $proposer_session_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['text', 'reason', 'replaces_rule_id', 'proposer_type', 'proposer_id', 'proposer_session_id'])]
+#[Fillable(['text', 'reason', 'replaces_rule_id', 'proposer_type', 'proposer_id'])]
 final class Rule extends Model implements Numbered, ReadableModel
 {
     use BoundedReads;
@@ -62,7 +61,7 @@ final class Rule extends Model implements Numbered, ReadableModel
      * A rule proposed with its reason, the rule it would replace if any, and who proposed it; it holds only once the
      * user approves it.
      */
-    public static function proposed(string $text, string $reason, string|null $replacesRuleId, ActorContext $proposer, string|null $proposerSessionId): self
+    public static function proposed(string $text, string $reason, string|null $replacesRuleId, ActorContext $proposer): self
     {
         $rule = new self([
             'text' => $text,
@@ -70,7 +69,6 @@ final class Rule extends Model implements Numbered, ReadableModel
             'replaces_rule_id' => $replacesRuleId,
             'proposer_type' => $proposer->type,
             'proposer_id' => $proposer->id,
-            'proposer_session_id' => $proposerSessionId,
         ]);
         $rule->state = RuleState::Proposed;
         $rule->save();

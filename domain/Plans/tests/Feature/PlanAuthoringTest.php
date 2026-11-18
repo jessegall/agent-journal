@@ -40,7 +40,7 @@ final class PlanAuthoringTest extends TestCase
 
     public function test_the_plans_and_phases_tables_have_the_authoring_columns(): void
     {
-        $this->assertTrue(Schema::hasColumns('plans', ['brief', 'creator_type', 'creator_id', 'creator_session_id', 'revision', 'finish_note', 'cancel_reason']));
+        $this->assertTrue(Schema::hasColumns('plans', ['brief', 'creator_type', 'creator_id', 'revision', 'finish_note', 'cancel_reason']));
         $this->assertTrue(Schema::hasColumn('phases', 'revision'));
     }
 
@@ -50,7 +50,7 @@ final class PlanAuthoringTest extends TestCase
 
         $plan = Plan::query()->findOrFail($planId);
         $this->assertSame(['Ship version 6.', PlanType::Build, PlanState::Planned, 1], [$plan->brief, $plan->type, $plan->state, $plan->revision]);
-        $this->assertSame([ActorType::Agent, $this->launch->agent->id, $this->launch->session->id], [$plan->creator_type, $plan->creator_id, $plan->creator_session_id]);
+        $this->assertSame([ActorType::Agent, $this->launch->agent->id], [$plan->creator_type, $plan->creator_id]);
     }
 
     public function test_phases_append_in_order(): void

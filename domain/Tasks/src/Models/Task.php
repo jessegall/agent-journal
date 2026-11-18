@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Tasks\Models;
 
 use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Support\AgentLabel;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Models\Support\AssignableListing;
@@ -51,19 +52,18 @@ use PhpOption\Some;
  * @property string $brief
  * @property ActorType $creator_type
  * @property string $creator_id
- * @property string|null $creator_session_id
  * @property int $revision
  * @property TaskState $state
  * @property int $run_number
- * @property string|null $run_agent_id
- * @property string|null $run_session_id
+ * @property ActorType|null $run_actor_type
+ * @property string|null $run_actor_id
  * @property string|null $result_note
  * @property string|null $block_reason
  * @property string|null $cancel_reason
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['title', 'brief', 'creator_type', 'creator_id', 'creator_session_id', 'revision', 'run_number', 'run_agent_id', 'run_session_id', 'result_note', 'block_reason', 'cancel_reason'])]
+#[Fillable(['title', 'brief', 'creator_type', 'creator_id', 'revision', 'run_number', 'run_actor_type', 'run_actor_id', 'result_note', 'block_reason', 'cancel_reason'])]
 #[UseFactory(TaskFactory::class)]
 final class Task extends Model implements Assignable, Numbered, ReadableModel, WorkedOnStack
 {
@@ -91,6 +91,7 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
         return [
             'state' => TaskState::class,
             'creator_type' => ActorType::class,
+            'run_actor_type' => ActorType::class,
             'revision' => 'integer',
             'run_number' => 'integer',
         ];
@@ -158,19 +159,19 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
     }
 
     /**
-     * Starts a new run owned by the session; a task already started by that session keeps its run. An ended task is not
-     * started again, and another session's run is not taken.
+     * Starts a new run owned by the actor; a task already started by that actor keeps its run. An ended task is not
+     * started again, and another actor's run is not taken.
      *
      * @throws TaskRestartRefused
      * @throws TaskRunTaken
      */
-    public function startRun(string $agentId, string $sessionId): void
+    public function startRun(ActorIdentity $actor): void
     {
         if ($this->state->hasEnded()) {
             throw TaskRestartRefused::forTask($this->number, $this->state->value);
         }
 
-        if ($this->state === TaskState::Started && $this->run_session_id !== $sessionId) {
+        if ($this->state === TaskState::Started && ! $this->isRunOwnedBy($actor)) {
             throw TaskRunTaken::forTask($this->number);
         }
 
@@ -179,8 +180,8 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
         }
 
         $this->state = TaskState::Started;
-        $this->run_agent_id = $agentId;
-        $this->run_session_id = $sessionId;
+        $this->run_actor_type = $actor->type;
+        $this->run_actor_id = $actor->id;
         $this->save();
     }
 
@@ -218,14 +219,14 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
     }
 
     /**
-     * Refuses a run number that is not the task's current run, or a session that does not own it; a caller without a
-     * session (the user) names the run only.
+     * Refuses a run number that is not the task's current run, or an actor that does not own it; a caller who may act
+     * on any run (the user) names the run only.
      *
      * @throws TaskRunNotYours
      */
-    public function requireRun(int $runNumber, string|null $sessionId): void
+    public function requireRun(int $runNumber, ActorIdentity|null $owner): void
     {
-        if ($runNumber !== $this->run_number || ($sessionId !== null && $this->run_session_id !== $sessionId)) {
+        if ($runNumber !== $this->run_number || ($owner !== null && ! $this->isRunOwnedBy($owner))) {
             throw TaskRunNotYours::forRun($this->number, $runNumber);
         }
     }
@@ -237,18 +238,18 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
      */
     public function executionWith(array $labels): TaskExecution|null
     {
-        if ($this->run_agent_id === null || $this->run_session_id === null) {
+        if ($this->run_actor_type === null || $this->run_actor_id === null) {
             return null;
         }
 
-        $label = $labels[$this->run_agent_id] ?? null;
+        $label = $labels[$this->run_actor_id] ?? null;
 
-        return new TaskExecution($this->run_agent_id, $label?->name, $this->run_session_id, $this->run_number, $this->state->workState());
+        return new TaskExecution($this->run_actor_type, $this->run_actor_id, $label?->name, $this->run_number, $this->state->workState());
     }
 
-    public function isRunOwnedBy(string $sessionId): bool
+    public function isRunOwnedBy(ActorIdentity $actor): bool
     {
-        return $this->state === TaskState::Started && $this->run_session_id === $sessionId;
+        return $this->run_actor_type === $actor->type && $this->run_actor_id === $actor->id;
     }
 
     /**

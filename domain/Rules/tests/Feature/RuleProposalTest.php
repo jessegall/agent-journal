@@ -44,7 +44,6 @@ final class RuleProposalTest extends TestCase
 
         $details = $this->app->make(RuleDetailsReader::class)->rule($id);
         $this->assertSame([RuleState::Proposed, 'The old one is too vague.', ActorType::Agent, $launch->agent->id, $old->number], [$details->state, $details->reason, $details->proposerType, $details->proposerId, $details->replacesRuleNumber]);
-        $this->assertSame($launch->session->id, Rule::query()->findOrFail($id)->proposer_session_id);
         $this->assertSame(["Rule {$old->id}: Old rule."], $this->app->make(ActiveRules::class)->reminders());
         $this->assertSame(1, $this->app->make(RuleDetailsReader::class)->activeCount());
     }
@@ -53,7 +52,7 @@ final class RuleProposalTest extends TestCase
     {
         $launch = TestLaunch::start();
         $active = Rule::query()->create(['text' => 'Held rule.']);
-        $proposed = Rule::proposed('Proposed rule.', 'A reason.', null, ActorContext::forUser(TestIds::of(7)), null);
+        $proposed = Rule::proposed('Proposed rule.', 'A reason.', null, ActorContext::forUser(TestIds::of(7)));
         $this->startRequestAs($launch->agent->id, $launch->session->id);
         $bus = $this->app->make(CommandBus::class);
 

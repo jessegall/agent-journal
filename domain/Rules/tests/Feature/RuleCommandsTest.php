@@ -66,7 +66,7 @@ final class RuleCommandsTest extends TestCase
     public function test_a_main_agent_may_not_approve_a_rule_and_it_stays_proposed(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)));
-        $rule = Rule::proposed('No phase waits on the user.', 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)), null);
+        $rule = Rule::proposed('No phase waits on the user.', 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)));
 
         try {
             $this->app->make(CommandBus::class)->run(new ApproveRule($rule->id));
@@ -79,7 +79,7 @@ final class RuleCommandsTest extends TestCase
     public function test_an_agent_asking_to_approve_is_answered_403(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)));
-        $rule = Rule::proposed('No phase waits on the user.', 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)), null);
+        $rule = Rule::proposed('No phase waits on the user.', 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)));
         Route::post('/rules-test/approve', fn (CommandBus $commands) => $commands->run(new ApproveRule($rule->id)));
 
         $this->postJson('/rules-test/approve')->assertForbidden();

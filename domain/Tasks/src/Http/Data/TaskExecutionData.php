@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Http\Data;
 
+use App\Actors\Enums\ActorType;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Enums\TaskWorkState;
 use Spatie\LaravelData\Data;
@@ -16,16 +17,16 @@ use Spatie\LaravelData\Data;
 final class TaskExecutionData extends Data
 {
     public function __construct(
-        public readonly string $agentId,
-        public readonly string|null $agentLabel,
-        public readonly string $sessionId,
+        public readonly ActorType $actorType,
+        public readonly string $actorId,
+        public readonly string|null $actorLabel,
         public readonly int $runNumber,
         public readonly TaskWorkState $workState,
     ) {}
 
     public static function fromExecution(TaskExecution $execution): self
     {
-        return new self($execution->agentId, $execution->agentLabel, $execution->sessionId, $execution->runNumber, $execution->workState);
+        return new self($execution->actorType, $execution->actorId, $execution->actorLabel, $execution->runNumber, $execution->workState);
     }
 
     /**
@@ -33,6 +34,6 @@ final class TaskExecutionData extends Data
      */
     public function label(): string
     {
-        return "run {$this->runNumber} by ".($this->agentLabel ?? "agent {$this->agentId}")." in session {$this->sessionId}, {$this->workState->value}";
+        return "run {$this->runNumber} by ".($this->actorLabel ?? "{$this->actorType->value} {$this->actorId}").", {$this->workState->value}";
     }
 }

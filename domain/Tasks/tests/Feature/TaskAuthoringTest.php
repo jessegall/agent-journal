@@ -6,6 +6,7 @@ namespace Domain\Tasks\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\CommandBus;
 use Domain\Tasks\Commands\CreateTask;
@@ -35,11 +36,9 @@ final class TaskAuthoringTest extends TestCase
 
     private const string AGENT = '01jd8x0g9m3qz6v4k2agent001';
 
-    private const string SESSION = '01jd8x0g9m3qz6v4k2session1';
-
     public function test_the_tasks_table_has_the_authoring_and_run_columns(): void
     {
-        $this->assertTrue(Schema::hasColumns('tasks', ['brief', 'creator_type', 'creator_id', 'creator_session_id', 'revision', 'run_number', 'run_session_id', 'result_note', 'block_reason', 'cancel_reason']));
+        $this->assertTrue(Schema::hasColumns('tasks', ['brief', 'creator_type', 'creator_id', 'revision', 'run_number', 'run_actor_type', 'run_actor_id', 'result_note', 'block_reason', 'cancel_reason']));
     }
 
     public function test_create_task_records_its_brief_and_creator(): void
@@ -49,7 +48,7 @@ final class TaskAuthoringTest extends TestCase
         $task = Task::query()->findOrFail($this->app->make(CommandBus::class)->run(new CreateTask('Write the brief', 'What it asks.')));
 
         $this->assertSame(['Write the brief', 'What it asks.', 1], [$task->title, $task->brief, $task->revision]);
-        $this->assertSame([ActorType::User, TestIds::of(7), null], [$task->creator_type, $task->creator_id, $task->creator_session_id]);
+        $this->assertSame([ActorType::User, TestIds::of(7)], [$task->creator_type, $task->creator_id]);
     }
 
     public function test_describe_changes_only_title_brief_and_revision(): void
@@ -66,13 +65,13 @@ final class TaskAuthoringTest extends TestCase
     {
         $task = Task::factory()->create();
 
-        $task->startRun(self::AGENT, self::SESSION);
+        $task->startRun(new ActorIdentity(ActorType::Agent, self::AGENT));
         $this->assertSame([1, TaskState::Started], [$task->run_number, $task->state]);
-        $this->assertTrue($task->isRunOwnedBy(self::SESSION));
-        $this->assertFalse($task->isRunOwnedBy('01jd8x0g9m3qz6v4k2session2'));
+        $this->assertTrue($task->isRunOwnedBy(new ActorIdentity(ActorType::Agent, self::AGENT)));
+        $this->assertFalse($task->isRunOwnedBy(new ActorIdentity(ActorType::Agent, '01jd8x0g9m3qz6v4k2agent002')));
 
         $task->blockRun('Waits on the schema.');
-        $task->startRun(self::AGENT, self::SESSION);
+        $task->startRun(new ActorIdentity(ActorType::Agent, self::AGENT));
         $task->finishRun('Built and tested.');
         $fresh = $task->fresh();
 
@@ -105,7 +104,7 @@ final class TaskAuthoringTest extends TestCase
         $taskId = $this->signed($launch, '/agent/tasks/create', ['title' => 'From the agent', 'brief' => 'What it asks.'])->assertCreated()->json('taskId');
 
         $task = Task::query()->findOrFail($taskId);
-        $this->assertSame([ActorType::Agent, $launch->agent->id, $launch->session->id, TaskState::Open], [$task->creator_type, $task->creator_id, $task->creator_session_id, $task->state]);
+        $this->assertSame([ActorType::Agent, $launch->agent->id, TaskState::Open], [$task->creator_type, $task->creator_id, $task->state]);
         $this->assertSame(1, Task::query()->count());
     }
 

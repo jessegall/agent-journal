@@ -21,7 +21,6 @@ return new class extends Migration
             $table->ulid('replaces_rule_id')->nullable();
             $table->string('proposer_type', 16)->nullable();
             $table->string('proposer_id', 64)->nullable();
-            $table->ulid('proposer_session_id')->nullable();
             $table->timestampsTz();
 
             $table->unique(['number_group_id', 'number']);

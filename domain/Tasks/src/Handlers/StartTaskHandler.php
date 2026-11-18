@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Handlers;
 
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\SessionReader;
 use App\Contracts\CommandHandler;
 use Domain\Tasks\Commands\StartTask;
@@ -32,7 +34,7 @@ final readonly class StartTaskHandler implements CommandHandler
     {
         $target = $this->sessions->requireActive($command->sessionId);
         $task = Task::lockedById($command->taskId);
-        $task->startRun($target->agentId, $command->sessionId);
+        $task->startRun(new ActorIdentity(ActorType::Agent, $target->agentId));
         $this->events->dispatch(new TaskStarted($command->taskId, $target));
 
         return $task->run_number;

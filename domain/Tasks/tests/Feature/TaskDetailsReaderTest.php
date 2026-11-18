@@ -66,7 +66,7 @@ final class TaskDetailsReaderTest extends TestCase
         $details = $this->app->make(TaskDetailsReader::class)->details($task->id, TaskView::Context);
 
         $this->assertSame($holder->id, $details->holder->get()->actor()->id);
-        $this->assertSame([$runner->agent_id, 'Runner', $runner->id, 1, TaskWorkState::Active], [$details->execution?->agentId, $details->execution?->agentLabel, $details->execution?->sessionId, $details->execution?->runNumber, $details->execution?->workState]);
+        $this->assertSame([$runner->agent_id, 'Runner', 1, TaskWorkState::Active], [$details->execution?->actorId, $details->execution?->actorLabel, $details->execution?->runNumber, $details->execution?->workState]);
         $this->assertSame('Held by one, run by another.', $details->brief);
         $this->assertNull($this->app->make(TaskDetailsReader::class)->details($task->id, TaskView::Summary)->brief);
     }
@@ -88,7 +88,7 @@ final class TaskDetailsReaderTest extends TestCase
 
         $list = $this->app->make(TaskListReader::class)->list(new TaskFilters(page: new NumberedPage(1, 20)));
 
-        $this->assertCount(20, array_filter($list->cards, fn ($card) => $card->execution?->agentLabel === 'Runner'));
+        $this->assertCount(20, array_filter($list->cards, fn ($card) => $card->execution?->actorLabel === 'Runner'));
         $this->assertSame(1, $agentReads);
     }
 

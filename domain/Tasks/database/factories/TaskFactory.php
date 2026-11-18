@@ -33,7 +33,6 @@ class TaskFactory extends Factory
             'brief' => 'What the task asks and when it is done.',
             'creator_type' => $creator->type,
             'creator_id' => $creator->id,
-            'creator_session_id' => null,
         ];
     }
 }

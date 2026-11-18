@@ -44,7 +44,6 @@ use PhpOption\Option;
  * @property string $brief
  * @property ActorType $creator_type
  * @property string $creator_id
- * @property string|null $creator_session_id
  * @property int $revision
  * @property PlanType $type
  * @property string|null $finish_note
@@ -53,7 +52,7 @@ use PhpOption\Option;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['title', 'brief', 'creator_type', 'creator_id', 'creator_session_id', 'revision', 'type', 'finish_note', 'cancel_reason'])]
+#[Fillable(['title', 'brief', 'creator_type', 'creator_id', 'revision', 'type', 'finish_note', 'cancel_reason'])]
 #[UseFactory(PlanFactory::class)]
 final class Plan extends Model implements Assignable, Numbered, ReadableModel, Shareable
 {

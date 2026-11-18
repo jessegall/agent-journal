@@ -29,7 +29,7 @@ final readonly class BlockTaskHandler implements CommandHandler
     public function handle(BlockTask $command): void
     {
         $task = Task::lockedById($command->taskId);
-        $task->requireRun($command->runNumber, $this->caller->sessionId());
+        $task->requireRun($command->runNumber, $this->caller->runOwner());
         $this->cleanup->endWork($task, fn (Task $task) => $task->blockRun($command->reason));
         $this->events->dispatch(new TaskBlocked($command->taskId));
     }
