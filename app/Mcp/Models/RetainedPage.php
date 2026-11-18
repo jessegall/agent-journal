@@ -51,7 +51,7 @@ final class RetainedPage extends Model implements ReadableModel
 
     protected static function booted(): void
     {
-        static::addGlobalScope(new AgentSessionScope(
+        self::addGlobalScope(new AgentSessionScope(
             static fn (): CurrentActor => Container::getInstance()->make(CurrentActor::class),
             static fn (): AgentContext => Container::getInstance()->make(AgentContext::class),
         ));

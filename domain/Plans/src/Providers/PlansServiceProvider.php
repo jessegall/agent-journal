@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Domain\Plans\Providers;
 
 use App\Links\Support\LinkTypeRegistry;
-use Domain\Plans\Console\AssignPlanWorkCommand;
 use Domain\Plans\Console\AssignedPlansCommand;
+use Domain\Plans\Console\AssignPlanWorkCommand;
 use Domain\Plans\Console\ReassignPlanWorkCommand;
 use Domain\Plans\Console\UnassignPlanWorkCommand;
 use Domain\Plans\Contracts\PlanDetailsReader;

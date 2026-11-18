@@ -66,7 +66,7 @@ final class CommandReceipt extends Model implements ReadableModel
 
     protected static function booted(): void
     {
-        static::addGlobalScope('caller-session', static fn (Builder $query) => $query->where(
+        self::addGlobalScope('caller-session', static fn (Builder $query) => $query->where(
             $query->qualifyColumn('session_id'),
             Container::getInstance()->make(CallerSession::class)->sessionId(),
         ));

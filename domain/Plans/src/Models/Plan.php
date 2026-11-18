@@ -18,15 +18,15 @@ use App\Sharing\Contracts\Shareable;
 use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareRelationSet;
 use Domain\Plans\Api\PlanCard;
-use Domain\Plans\Database\Factories\PlanFactory;
 use Domain\Plans\Api\PlanProgress;
+use Domain\Plans\Database\Factories\PlanFactory;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\StartDenied;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -60,6 +60,7 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
      * @use HasFactory<PlanFactory>
      */
     use AssignableListing, HasFactory, HasNumber, HasUlids, Linkable;
+
     use BoundedReads;
 
     /**
