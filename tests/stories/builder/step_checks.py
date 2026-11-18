@@ -99,6 +99,9 @@ class StepChecks:
     def expect_viewer_text(self, part: str) -> None:
         assert self.viewer_status < 300 and part in json.dumps(self.viewer_answer), f"the viewer's request answered {self.viewer_status} {self.viewer_answer}, not text holding {part!r}"
 
+    def expect_viewer_never_says(self, part: str) -> None:
+        assert part not in json.dumps(self.viewer_answer), f"the viewer's request answered with {part!r} in it: {self.viewer_answer}"
+
     def expect_viewer_shows(self, name: str, value: object) -> None:
         assert self.viewer_answer.get(name) == value, f"the viewer was given {name} {self.viewer_answer.get(name)!r}, not {value!r}"
 

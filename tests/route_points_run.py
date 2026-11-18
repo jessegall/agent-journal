@@ -66,6 +66,7 @@ LEFT_OUT = {
     "POST /journal/mcp/{name}/key": "writes an MCP server's configuration",
     "POST /journal/mcp/{name}/remove": "writes an MCP server's configuration",
     "POST /journal/mcp/{name}/sign-in": "signs in to an MCP server",
+    "POST /journal/mcp/{name}/callback": "signs in to an MCP server",
 }
 PARAMETERS = {"id": "1", "table": "tasks", "name": "journal", "provider": "claude", "session": "s1", "key": "k", "job": "j"}
 # the body a route needs to do its work, the shim's own words and environment for the command routes; every other write is sent an empty one

@@ -4,6 +4,7 @@ from journal.models.mcp_server import McpServer
 from journal.features.mcp.support.mcp_catalogue import McpCatalogue
 from journal.features.mcp.support.health import Health
 from journal.features.mcp.support.mcp_installing import McpInstalling
+from journal.features.mcp.support.mcp_sign_ins import McpSignIns
 from journal.support.keys import Keys
 from journal.support.pending_restarts import PendingRestarts
 from journal.http.controllers.support.server_entry import ServerEntry
@@ -11,16 +12,18 @@ from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.repositories.mcp_servers import McpServers
 from journal.support.missing_row import MissingRow
+from journal.support.rejection import Rejection
 
 
-NAME = re.compile(r"^[A-Za-z0-9_-]+$")
+NAMING = "a server's name is letters, digits, dashes and underscores, and starts with a letter or a digit"
+NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
 
 
 class McpController:
     """The MCP page: the project's MCP servers and how they stand, the suggestions, and the acts on them."""
 
-    def __init__(self, servers: McpServers, catalogue: McpCatalogue, keys: Keys, installing: McpInstalling, health: Health, pending: PendingRestarts) -> None:
-        self.servers, self.catalogue, self.keys, self.installing, self.health, self.pending = servers, catalogue, keys, installing, health, pending
+    def __init__(self, servers: McpServers, catalogue: McpCatalogue, keys: Keys, installing: McpInstalling, sign_ins: McpSignIns, health: Health, pending: PendingRestarts) -> None:
+        self.servers, self.catalogue, self.keys, self.installing, self.sign_ins, self.health, self.pending = servers, catalogue, keys, installing, sign_ins, health, pending
 
     def index(self, request: Request) -> Response:
         report = self.health.report()
@@ -47,7 +50,7 @@ class McpController:
     @staticmethod
     def known_row(existing) -> ServerEntry:
         if existing.instructions.startswith("http"):
-            return ServerEntry(existing.name, existing.name, "http", existing.state, False, url=existing.instructions, last_error=existing.error)
+            return ServerEntry(existing.name, existing.name, "http", existing.state, False, url=existing.instructions, auth="oauth" if existing.state == "needs_auth" else "none", last_error=existing.error)
         return ServerEntry(existing.name, existing.name, "stdio", existing.state, False, command=existing.instructions, last_error=existing.error)
 
     def install(self, request: Request) -> Response:
@@ -61,7 +64,7 @@ class McpController:
         body = request.body
         name, url, command = str(body.get("name", "")).strip(), str(body.get("url", "")).strip(), str(body.get("command", "")).strip()
         if not NAME.match(name):
-            return Response.refused("a server's name is letters, digits, dashes and underscores")
+            return Response.refused(NAMING)
         if bool(url) == bool(command):
             return Response.refused("a server is reached by a url or started by a command, one of them")
         self.installing.add_custom(McpServer(name=name, url=url, command=command, args=tuple(str(arg) for arg in body.get("args", []))))
@@ -88,13 +91,20 @@ class McpController:
         return Response.json({"removed": server.name})
 
     def login(self, request: Request) -> Response:
-        try:
-            server = self.servers.lookup(request.params["name"])
-        except MissingRow as missing:
-            return Response.missing(missing)
-        if not self.installing.login(server):
-            return Response.refused("no agent is running to sign in: start one first")
-        return Response.json({"asked": server.name})
+        name = self.server_name(request)
+        return Response.json({"signing_in": name, "url": self.sign_ins.start(name)})
+
+    def callback(self, request: Request) -> Response:
+        name = self.server_name(request)
+        self.sign_ins.finish(name, str(request.body.get("url", "")))
+        return Response.json({"signed_in": name})
+
+    @staticmethod
+    def server_name(request: Request) -> str:
+        """The server named in the address, any the agent program knows, the journal's or its own; a name a program could read as an option is refused."""
+        if not NAME.match(request.params["name"]):
+            raise Rejection(NAMING)
+        return request.params["name"]
 
     def check(self, request: Request) -> Response:
         return Response.json({"servers": [self.row(s) for s in self.installing.checked(request.actor)]})

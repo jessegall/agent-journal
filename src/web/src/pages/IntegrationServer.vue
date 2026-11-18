@@ -4,15 +4,16 @@ import Btn from "../kit/Btn.vue";
 import StateDot from "../kit/StateDot.vue";
 import TextInput from "../kit/TextInput.vue";
 import IntegrationPending from "./IntegrationPending.vue";
+import {signsIn, SIGN_IN_WORDS} from "../domain/mcpSignIn.js";
 
 const props = defineProps({
     server: {type: Object, required: true},
     busy: Boolean,
-    signingIn: Boolean,
-    agentOnline: Boolean,
+    signInPage: {type: String, default: ""},
     keyValue: {type: String, default: ""},
+    returnAddress: {type: String, default: ""},
 });
-defineEmits(["remove", "update:keyValue", "saveKey", "signIn"]);
+defineEmits(["remove", "update:keyValue", "saveKey", "signIn", "update:returnAddress", "finishSignIn"]);
 
 const DOTS = {connected: "done", failed: "failed", needs_key: "queued", needs_auth: "queued", installed: "draft"};
 const WORDS = {
@@ -23,7 +24,6 @@ const WORDS = {
     installed: "Installed, not checked yet",
 };
 
-const askedFor = computed(() => (props.server.managed ? props.server.auth : "none"));
 const keyHint = computed(() =>
     props.server.has_key ? `${props.server.key_var} is set; paste a new one to replace it` : `Paste the ${props.server.key_var}`,
 );
@@ -42,7 +42,7 @@ const keyHint = computed(() =>
             <p class="integration-error">{{ server.last_error }}</p>
         </template>
         <code class="integration-how">{{ server.url || server.command }}</code>
-        <template v-if="askedFor === 'key'">
+        <template v-if="server.auth === 'key'">
             <div class="integration-key">
                 <TextInput
                     :value="keyValue"
@@ -56,15 +56,30 @@ const keyHint = computed(() =>
                 </Btn>
             </div>
         </template>
-        <template v-else-if="askedFor === 'oauth' && signingIn">
-            <div class="integration-key">
-                <IntegrationPending class="integration-note">Signing in: approve it in the browser window the agent opened.</IntegrationPending>
+        <template v-else-if="signsIn(server) && signInPage">
+            <div class="integration-sign-in">
+                <IntegrationPending class="integration-note">
+                    <a :href="signInPage" target="_blank" rel="noopener noreferrer">{{ SIGN_IN_WORDS.open }}</a>. {{ SIGN_IN_WORDS.approve }}
+                </IntegrationPending>
+                <span class="integration-note">{{ SIGN_IN_WORDS.paste }}</span>
+                <div class="integration-key">
+                    <TextInput
+                        :value="returnAddress"
+                        :placeholder="SIGN_IN_WORDS.placeholder"
+                        @input="$emit('update:returnAddress', $event.target.value)"
+                        @keydown.enter="returnAddress.trim() && $emit('finishSignIn')"
+                    />
+                    <Btn kind="primary" small :busy="busy" :disabled="!returnAddress.trim()" @click="$emit('finishSignIn')">
+                        {{ SIGN_IN_WORDS.finish }}
+                    </Btn>
+                    <Btn kind="ghost" small :disabled="busy" @click="$emit('signIn')">{{ SIGN_IN_WORDS.again }}</Btn>
+                </div>
             </div>
         </template>
-        <template v-else-if="askedFor === 'oauth'">
+        <template v-else-if="signsIn(server)">
             <div class="integration-key">
-                <span class="integration-note">Asks the agent to sign in; a browser window opens from its terminal.</span>
-                <Btn kind="primary" small :busy="busy" :disabled="!agentOnline" @click="$emit('signIn')">Sign in</Btn>
+                <span class="integration-note">{{ SIGN_IN_WORDS.offer }}</span>
+                <Btn kind="primary" small :busy="busy" @click="$emit('signIn')">{{ SIGN_IN_WORDS.button }}</Btn>
             </div>
         </template>
     </li>
@@ -117,6 +132,12 @@ const keyHint = computed(() =>
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+.integration-sign-in {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .integration-key > :first-child {
