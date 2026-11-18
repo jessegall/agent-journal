@@ -56,7 +56,6 @@
             "Domain\\Documents\\Database\\Seeders\\": "domain/Documents/database/seeders/",
             "Domain\\Memory\\": "domain/Memory/src/",
             "Domain\\Plans\\": "domain/Plans/src/",
-            "Domain\\Profiles\\": "domain/Profiles/src/",
             "Domain\\Reminders\\": "domain/Reminders/src/",
             "Domain\\Rules\\": "domain/Rules/src/",
             "Domain\\Sequences\\": "domain/Sequences/src/",

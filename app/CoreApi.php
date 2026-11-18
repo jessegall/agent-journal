@@ -376,6 +376,12 @@ use App\Processes\Values\TreeDiagnostic;
 use App\Processes\Values\UnresolvedFact;
 use App\Processes\Values\Word;
 use App\Processes\Values\WordSegment;
+use App\Profiles\Contracts\ProfileReader;
+use App\Profiles\Enums\ProfileType;
+use App\Profiles\Exceptions\ProfileKeyInvalid;
+use App\Profiles\Exceptions\ProfileMissing;
+use App\Profiles\Values\ProfileKey;
+use App\Profiles\Values\ProfileSnapshot;
 use App\Queries\Support\TextSearch;
 use App\Reads\Attributes\ReadBudget;
 use App\Reads\Contracts\ReadableModel;
@@ -715,6 +721,7 @@ final class CoreApi
                 CodedRefusal::class,
                 OperationReader::class,
                 OverviewContribution::class,
+                ProfileReader::class,
             )
             ->values(
                 RefusalCode::class,
@@ -988,6 +995,9 @@ final class CoreApi
                 ShareFact::class,
                 ShareProposalStatus::class,
                 ShareState::class,
+                ProfileKey::class,
+                ProfileType::class,
+                ProfileSnapshot::class,
             )
             ->commands(
                 PostComment::class,
@@ -1162,6 +1172,8 @@ final class CoreApi
                 ToolArgumentUnknown::class,
                 ContinuationInvalid::class,
                 ContinuationStale::class,
+                ProfileKeyInvalid::class,
+                ProfileMissing::class,
             )
             ->support(
                 BelongsToOneActor::class,
