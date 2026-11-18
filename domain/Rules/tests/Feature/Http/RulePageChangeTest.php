@@ -17,6 +17,7 @@ use Domain\Rules\Models\Rule;
 use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TestIds;
 
 /**
  * A RulesPageTest command that changes what the owner sees tells the owner's page once, through the bus that commits it.
@@ -44,7 +45,7 @@ final class RulePageChangeTest extends TestCase
 
     public function test_an_approved_rule_tells_the_owner_once_on_their_private_channel(): void
     {
-        $rule = Rule::proposed('Every phase ends with its tests.');
+        $rule = Rule::proposed('Every phase ends with its tests.', 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)), null);
 
         $this->app->make(CommandBus::class)->run(new ApproveRule($rule->id));
 

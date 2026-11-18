@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Tests\Feature\Http;
 
+use App\Actors\Support\ActorContext;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Rules\Enums\RuleState;
@@ -38,7 +39,7 @@ final class RulesPageTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->active = Rule::query()->create(['text' => 'Write all code in plain English.']);
-        $this->proposed = Rule::proposed("Every phase ends with its tests.\n  - run them once");
+        $this->proposed = Rule::proposed("Every phase ends with its tests.\n  - run them once", 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)), null);
     }
 
     public function test_a_guest_is_sent_to_sign_in(): void

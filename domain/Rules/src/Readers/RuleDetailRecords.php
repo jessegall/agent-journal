@@ -9,10 +9,12 @@ use Domain\Rules\Api\RuleDetails;
 use Domain\Rules\Contracts\RuleDetailsReader;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Models\Rule;
+use Illuminate\Container\Attributes\Scoped;
 
 /**
  * Reads one rule with its proposal, and counts the rules that hold.
  */
+#[Scoped]
 final readonly class RuleDetailRecords implements RuleDetailsReader
 {
     public function __construct(private CurrentActor $actors) {}

@@ -19,6 +19,7 @@ use Domain\Rules\Tests\TestCase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 
 /**
@@ -28,6 +29,7 @@ use Tests\Support\TestIds;
 final class RuleCommandsTest extends TestCase
 {
     use CommitsHookRows;
+    use StartsAgentRequests;
 
     /**
      * The bus commits the Rules commands for real, so these tables are emptied around each test.
@@ -43,9 +45,9 @@ final class RuleCommandsTest extends TestCase
 
     public function test_proposing_answers_the_id_of_a_rule_that_does_not_hold_yet(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)));
+        $this->startRequestAs(TestIds::of(3), TestIds::of(4));
 
-        $id = $this->app->make(CommandBus::class)->run(new ProposeRule('Every phase ends with its tests.'));
+        $id = $this->app->make(CommandBus::class)->run(new ProposeRule('Every phase ends with its tests.', 'Phases ended untested.'));
 
         $this->assertSame(RuleState::Proposed, Rule::query()->findOrFail($id)->state);
     }
@@ -64,7 +66,7 @@ final class RuleCommandsTest extends TestCase
     public function test_a_main_agent_may_not_approve_a_rule_and_it_stays_proposed(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)));
-        $rule = Rule::proposed('No phase waits on the user.');
+        $rule = Rule::proposed('No phase waits on the user.', 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)), null);
 
         try {
             $this->app->make(CommandBus::class)->run(new ApproveRule($rule->id));
@@ -77,7 +79,7 @@ final class RuleCommandsTest extends TestCase
     public function test_an_agent_asking_to_approve_is_answered_403(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)));
-        $rule = Rule::proposed('No phase waits on the user.');
+        $rule = Rule::proposed('No phase waits on the user.', 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)), null);
         Route::post('/rules-test/approve', fn (CommandBus $commands) => $commands->run(new ApproveRule($rule->id)));
 
         $this->postJson('/rules-test/approve')->assertForbidden();
