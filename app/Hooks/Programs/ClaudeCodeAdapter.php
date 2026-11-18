@@ -56,7 +56,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         return match ($payload->hookEventName) {
             'SessionStart' => $this->startCall($payload, $hook),
             'UserPromptSubmit' => new JudgedCall(
-                new PromptSubmitted($hook, new PromptDetails($hook->hookId, $payload->promptText())),
+                new PromptSubmitted($hook, new PromptDetails($payload->nativePromptId() ?? $hook->hookId, $payload->promptText())),
                 fn (HookAnswer $answer) => ProgramReplies::prompt($answer),
             ),
             'PreToolUse' => $this->toolCall($payload, $hook),

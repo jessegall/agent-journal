@@ -35,7 +35,22 @@ final class HookPayload extends Data
         public readonly bool|Optional $stopHookActive = new Optional,
         public readonly string|Optional $reason = new Optional,
         public readonly string|Optional $agentId = new Optional,
+        public readonly string|Optional $promptId = new Optional,
+        public readonly string|Optional $turnId = new Optional,
     ) {}
+
+    /**
+     * The program's own id of the prompt this call belongs to: Claude Code's prompt_id, Codex's turn_id (plan 26
+     * task 883). Null when the program sent none; the journal never invents one.
+     */
+    public function nativePromptId(): string|null
+    {
+        return match (true) {
+            is_string($this->promptId) => $this->promptId,
+            is_string($this->turnId) => $this->turnId,
+            default => null,
+        };
+    }
 
     /**
      * Whether the call comes from inside a program's own native child, which carries the child's agent id.

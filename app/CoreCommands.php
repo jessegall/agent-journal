@@ -4,8 +4,24 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Agents\Commands\ChangeAgentEffort;
+use App\Agents\Commands\ChangeAgentModel;
+use App\Agents\Commands\ClaimDriverRequests;
+use App\Agents\Commands\ClaimLaunchGrant;
+use App\Agents\Commands\DeliverAgent;
+use App\Agents\Commands\EnrollHost;
+use App\Agents\Commands\InterruptAgent;
+use App\Agents\Commands\OpenAgentRuntime;
+use App\Agents\Commands\OpenHostMainRuntime;
 use App\Agents\Commands\RecordHeartbeat;
+use App\Agents\Commands\ReportDriverTurn;
+use App\Agents\Commands\ReportRequestProgress;
+use App\Agents\Commands\ReportRuntimeActivity;
+use App\Agents\Commands\ReportRuntimeExit;
+use App\Agents\Commands\ReportRuntimeHeartbeat;
 use App\Agents\Commands\RetireAgent;
+use App\Agents\Commands\StopAgent;
+use App\Agents\Commands\WakeAgent;
 use App\Assignments\Commands\AssignRecord;
 use App\Assignments\Commands\ReassignRecord;
 use App\Assignments\Commands\UnassignRecord;
@@ -47,7 +63,7 @@ final class CoreCommands
     public static function commands(): array
     {
         return [
-            AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, SettleFrameTimes::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class,
+            AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, EnrollHost::class, OpenAgentRuntime::class, DeliverAgent::class, WakeAgent::class, ChangeAgentModel::class, ChangeAgentEffort::class, InterruptAgent::class, StopAgent::class, ClaimDriverRequests::class, ClaimLaunchGrant::class, ReportRuntimeActivity::class, ReportRequestProgress::class, ReportDriverTurn::class, ReportRuntimeHeartbeat::class, ReportRuntimeExit::class, OpenHostMainRuntime::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, SettleFrameTimes::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class,
             SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class,
             SetStringSetting::class, SetBooleanSetting::class, SetIntegerSetting::class, SetDecimalSetting::class, SetStringChoice::class, SetIntegerChoice::class, ResetSetting::class, EnableSettingGroup::class, DisableSettingGroup::class, ResetSettingGroup::class,
             SaveSharePreview::class,

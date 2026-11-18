@@ -37,7 +37,39 @@ use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Contracts\AgentReader;
 use App\Agents\Contracts\CurrentSession;
+use App\Agents\Commands\EnrollHost;
+use App\Agents\Commands\OpenAgentRuntime;
+use App\Agents\Commands\DeliverAgent;
+use App\Agents\Commands\WakeAgent;
+use App\Agents\Commands\ChangeAgentModel;
+use App\Agents\Commands\ChangeAgentEffort;
+use App\Agents\Commands\InterruptAgent;
+use App\Agents\Commands\StopAgent;
+use App\Agents\Commands\ClaimDriverRequests;
+use App\Agents\Commands\ClaimLaunchGrant;
+use App\Agents\Commands\ReportRuntimeActivity;
+use App\Agents\Commands\ReportRequestProgress;
+use App\Agents\Commands\ReportDriverTurn;
+use App\Agents\Commands\ReportRuntimeHeartbeat;
+use App\Agents\Commands\ReportRuntimeExit;
+use App\Agents\Commands\OpenHostMainRuntime;
+use App\Agents\Support\EnrolledHost;
+use App\Agents\Support\OpenedRuntime;
+use App\Agents\Enums\DriverType;
+use App\Agents\Support\DriverReceipt;
+use App\Agents\Support\ClaimedRequests;
+use App\Agents\Support\ClaimedRequest;
+use App\Agents\Contracts\RuntimeReader;
 use App\Agents\Contracts\SessionReader;
+use App\Agents\Data\DriverRequestStatus;
+use App\Agents\Data\RuntimeSetting;
+use App\Agents\Data\RuntimeStatus;
+use App\Agents\Enums\DriverOperation;
+use App\Agents\Enums\ExpectedTiming;
+use App\Agents\Enums\HoldReason;
+use App\Agents\Enums\RequestOutcome;
+use App\Agents\Enums\RequestProgress;
+use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Events\LaunchEnded;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Exceptions\AgentNotAvailable;
@@ -473,6 +505,7 @@ final class CoreApi
                 CurrentActorSetter::class,
                 AgentReader::class,
                 SessionReader::class,
+                RuntimeReader::class,
                 AgentStack::class,
                 UserStack::class,
                 StackTransactionRunner::class,
@@ -723,6 +756,21 @@ final class CoreApi
                 SettingReference::class,
                 GroupReference::class,
                 SettingsChange::class,
+                RuntimeStatus::class,
+                EnrolledHost::class,
+                OpenedRuntime::class,
+                DriverType::class,
+                DriverReceipt::class,
+                ClaimedRequests::class,
+                ClaimedRequest::class,
+                RuntimeActivity::class,
+                HoldReason::class,
+                RequestProgress::class,
+                RequestOutcome::class,
+                ExpectedTiming::class,
+                DriverOperation::class,
+                RuntimeSetting::class,
+                DriverRequestStatus::class,
                 DisabledSettingsGroup::class,
                 ShareRelationSet::class,
                 ShareRelation::class,
@@ -756,6 +804,22 @@ final class CoreApi
                 RetireAgent::class,
                 RecordHeartbeat::class,
                 RecordUserHeartbeat::class,
+                EnrollHost::class,
+                OpenAgentRuntime::class,
+                DeliverAgent::class,
+                WakeAgent::class,
+                ChangeAgentModel::class,
+                ChangeAgentEffort::class,
+                InterruptAgent::class,
+                StopAgent::class,
+                ClaimDriverRequests::class,
+                ClaimLaunchGrant::class,
+                ReportRuntimeActivity::class,
+                ReportRequestProgress::class,
+                ReportDriverTurn::class,
+                ReportRuntimeHeartbeat::class,
+                ReportRuntimeExit::class,
+                OpenHostMainRuntime::class,
                 MarkSilentSessions::class,
                 SettleFrameTimes::class,
                 SaveSharePreview::class,

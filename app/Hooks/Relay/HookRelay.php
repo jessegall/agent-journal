@@ -29,7 +29,7 @@ final readonly class HookRelay
 
         try {
             $this->uploadBypasses($settings, $log);
-            $response = $this->client->post($settings->client(), "/hooks/{$program->value}", $payload);
+            $response = $this->client->post($settings->client(), $settings->hookPath($program->value), $payload);
         } catch (ConnectionException) {
             return $this->answerWithoutJournal(CallFailure::Unreachable, $payload, $settings, $log);
         }

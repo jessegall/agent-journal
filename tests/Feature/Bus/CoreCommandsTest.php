@@ -37,6 +37,22 @@ use App\Settings\Commands\SetStringSetting;
 use App\Sharing\Commands\SaveSharePreview;
 use App\Web\Commands\RecordUserHeartbeat;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
+use App\Agents\Commands\EnrollHost;
+use App\Agents\Commands\OpenAgentRuntime;
+use App\Agents\Commands\DeliverAgent;
+use App\Agents\Commands\WakeAgent;
+use App\Agents\Commands\ChangeAgentModel;
+use App\Agents\Commands\ChangeAgentEffort;
+use App\Agents\Commands\InterruptAgent;
+use App\Agents\Commands\StopAgent;
+use App\Agents\Commands\ClaimDriverRequests;
+use App\Agents\Commands\ClaimLaunchGrant;
+use App\Agents\Commands\ReportRuntimeActivity;
+use App\Agents\Commands\ReportRequestProgress;
+use App\Agents\Commands\ReportDriverTurn;
+use App\Agents\Commands\ReportRuntimeHeartbeat;
+use App\Agents\Commands\ReportRuntimeExit;
+use App\Agents\Commands\OpenHostMainRuntime;
 
 /**
  * Core's own commands (doc 19, phase 5): a module uses them without declaring Core, and a scope owned by Core covers
@@ -44,12 +60,12 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
  */
 final class CoreCommandsTest extends CommandBusTestCase
 {
-    public function test_core_lists_its_twenty_eight_commands_and_exports_them(): void
+    public function test_core_lists_its_commands_and_exports_them(): void
     {
         $this->installCommandModules();
         $registry = $this->app->make(CommandRegistry::class);
 
-        $this->assertSame([AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, SettleFrameTimes::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class, SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class, SetStringSetting::class, SetBooleanSetting::class, SetIntegerSetting::class, SetDecimalSetting::class, SetStringChoice::class, SetIntegerChoice::class, ResetSetting::class, EnableSettingGroup::class, DisableSettingGroup::class, ResetSettingGroup::class, SaveSharePreview::class], CoreCommands::commands());
+        $this->assertSame([AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, EnrollHost::class, OpenAgentRuntime::class, DeliverAgent::class, WakeAgent::class, ChangeAgentModel::class, ChangeAgentEffort::class, InterruptAgent::class, StopAgent::class, ClaimDriverRequests::class, ClaimLaunchGrant::class, ReportRuntimeActivity::class, ReportRequestProgress::class, ReportDriverTurn::class, ReportRuntimeHeartbeat::class, ReportRuntimeExit::class, OpenHostMainRuntime::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, SettleFrameTimes::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class, SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class, SetStringSetting::class, SetBooleanSetting::class, SetIntegerSetting::class, SetDecimalSetting::class, SetStringChoice::class, SetIntegerChoice::class, ResetSetting::class, EnableSettingGroup::class, DisableSettingGroup::class, ResetSettingGroup::class, SaveSharePreview::class], CoreCommands::commands());
 
         foreach (CoreCommands::commands() as $command) {
             $this->assertTrue($registry->has($command));
