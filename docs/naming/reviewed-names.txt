@@ -1484,8 +1484,8 @@ interface	StackEditor
 interface	StackTransactionRunner
 interface	StackTransition
 interface	StateFactory
+interface	StateLoader
 interface	StateRegistration
-interface	StateType
 interface	TaskAssignmentReader
 interface	TaskProgressCounter
 interface	TaskReader
@@ -4149,6 +4149,8 @@ method	StartTaskHandler::__construct()
 method	StartTaskHandler::handle()
 method	StateBelowTopPushed::for()
 method	StateFactory::frameFor()
+method	StateLoader::schemaVersion()
+method	StateLoader::statesFor()
 method	StatePush::__construct()
 method	StatePush::push()
 method	StateReference::__construct()
@@ -4163,8 +4165,6 @@ method	StateSet::__construct()
 method	StateSet::build()
 method	StateSet::stateAt()
 method	StateSubjectMissing::for()
-method	StateType::schemaVersion()
-method	StateType::statesFor()
 method	StateTypeMissing::forClass()
 method	StateTypeRegistry::freeze()
 method	StateTypeRegistry::get()

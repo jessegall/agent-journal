@@ -2,20 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Tests\Fixtures\Hooks\Lifecycle;
+namespace Tests\Fixtures\Hooks;
 
-use App\Hooks\Contracts\StateType;
+use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\States\AgentState;
-use Tests\Fixtures\Hooks\ScriptedState;
+use Closure;
 
 /**
- * A stateless state type a fixture domain registers through its own listener.
+ * A state type for tests that builds its state with a closure.
  */
-final class NoteStateType implements StateType
+final readonly class ClosureStateLoader implements StateLoader
 {
+    /**
+     * @param  Closure(StateReference): AgentState  $make
+     */
+    public function __construct(private Closure $make) {}
+
     public function statesFor(StateReferences $references): StateSet
     {
         return StateSet::build($references, fn (StateReference $reference): AgentState => $this->stateFor($reference));
@@ -23,7 +28,7 @@ final class NoteStateType implements StateType
 
     private function stateFor(StateReference $reference): AgentState
     {
-        return ScriptedState::delegating();
+        return ($this->make)($reference);
     }
 
     public function schemaVersion(): int

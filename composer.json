@@ -113,16 +113,19 @@
         "types:check": [
             "phpstan analyse --memory-limit=1G"
         ],
-        "test": [
+        "test": "@php tests/bin/in-docker.php test:inside",
+        "test:inside": [
             "@php artisan config:clear --ansi",
             "@lint:check",
             "@types:check",
-            "@test:run"
+            "@test:run-inside"
         ],
-        "test:run": [
+        "test:run": "@php tests/bin/in-docker.php test:run-inside",
+        "test:run-inside": [
             "@php artisan test --parallel --recreate-databases"
         ],
-        "test:affected": [
+        "test:affected": "@php tests/bin/in-docker.php test:affected-inside",
+        "test:affected-inside": [
             "@php tests/bin/affected-tests.php"
         ],
         "post-autoload-dump": [
@@ -148,8 +151,7 @@
         "laravel": {
             "dont-discover": [],
             "installer": {
-                "post-create-project": [
-                ]
+                "post-create-project": []
             }
         }
     },

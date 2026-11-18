@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
-use App\Hooks\Contracts\StateType;
+use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Enums\AnswerType;
@@ -117,7 +117,7 @@ final class HookRewriteTest extends TestCase
         ], $factory);
     }
 
-    private function bottomOf(StateType $role): AgentState
+    private function bottomOf(StateLoader $role): AgentState
     {
         return $role->statesFor(new StateReferences([new StateReference('ready', NoSubject::None)]))->stateAt(0);
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Lifecycle;
 
-use App\Hooks\Contracts\StateType;
+use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
@@ -14,7 +14,7 @@ use App\Hooks\States\AgentState;
 /**
  * A fixture state type whose states log their lifecycle calls; a test marks subjects finished between operations.
  */
-final class RecordingStateType implements StateType
+final class RecordingStateLoader implements StateLoader
 {
     /**
      * @var list<string> subjects whose work is done

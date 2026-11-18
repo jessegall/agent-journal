@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\States\Support;
 
-use App\Hooks\Contracts\StateType;
+use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
@@ -17,7 +17,7 @@ use Domain\Plans\States\WorkingOnPlanState;
 /**
  * Builds the working-on-plan state from the plan as it is now, reading a batch of plans in one query.
  */
-final readonly class WorkingOnPlanStateFactory implements StateType
+final readonly class WorkingOnPlanStateFactory implements StateLoader
 {
     public function statesFor(StateReferences $references): StateSet
     {

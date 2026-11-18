@@ -22,14 +22,14 @@ use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\States\WorkingOnTaskState;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
-use Tests\Fixtures\Hooks\InMemoryTaskType;
+use Tests\Fixtures\Hooks\InMemoryTaskLoader;
 use Tests\Fixtures\Hooks\TestFailure;
 
-final class StateTypeTest extends TestCase
+final class StateLoaderTest extends TestCase
 {
     public function test_a_registered_type_is_found_by_its_key(): void
     {
-        $type = new InMemoryTaskType;
+        $type = new InMemoryTaskLoader;
         $registry = new StateTypeRegistry;
         $registry->register('tasks.working', $type);
 
@@ -48,11 +48,11 @@ final class StateTypeTest extends TestCase
     public function test_a_key_registered_twice_is_an_error(): void
     {
         $registry = new StateTypeRegistry;
-        $registry->register('tasks.working', new InMemoryTaskType);
+        $registry->register('tasks.working', new InMemoryTaskLoader);
 
         $this->expectException(StateTypeRepeated::class);
 
-        $registry->register('tasks.working', new InMemoryTaskType);
+        $registry->register('tasks.working', new InMemoryTaskLoader);
     }
 
     public function test_nothing_is_registered_after_the_registry_is_frozen(): void
@@ -62,7 +62,7 @@ final class StateTypeTest extends TestCase
 
         $this->expectException(StateTypesFrozen::class);
 
-        $registry->register('tasks.working', new InMemoryTaskType);
+        $registry->register('tasks.working', new InMemoryTaskLoader);
     }
 
     public function test_the_types_are_built_once_with_the_roles_and_every_listener_type(): void
@@ -71,7 +71,7 @@ final class StateTypeTest extends TestCase
         $buildCount = 0;
         $events->listen(StateTypesRequested::class, function (StateTypesRequested $event) use (&$buildCount) {
             $buildCount++;
-            $event->registry->register('tasks.working', new InMemoryTaskType);
+            $event->registry->register('tasks.working', new InMemoryTaskLoader);
         });
         $types = new StateTypes($events);
 
@@ -105,7 +105,7 @@ final class StateTypeTest extends TestCase
                 throw TestFailure::listenerFailed();
             }
 
-            $event->registry->register('tasks.working', new InMemoryTaskType);
+            $event->registry->register('tasks.working', new InMemoryTaskLoader);
         });
         $types = new StateTypes($events);
 
@@ -122,7 +122,7 @@ final class StateTypeTest extends TestCase
 
     public function test_a_pushed_frame_reads_its_subject_through_the_registered_type(): void
     {
-        $tasks = new InMemoryTaskType([42 => TaskWorkState::Active]);
+        $tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active]);
         $events = new Dispatcher;
         $events->listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('tasks.working', $tasks));
         $factory = new RegisteredStateFactory(new StateTypes($events));

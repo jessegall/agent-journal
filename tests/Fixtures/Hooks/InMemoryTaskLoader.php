@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
-use App\Hooks\Contracts\StateType;
+use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
@@ -18,7 +18,7 @@ use Domain\Tasks\Support\TaskWork;
 /**
  * A task state type for tests that reads each task's state from a list the test can change between restores.
  */
-final class InMemoryTaskType implements StateType
+final class InMemoryTaskLoader implements StateLoader
 {
     /**
      * @param  array<int, TaskWorkState>  $tasks  task number to its current state

@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use RuntimeException;
 use Tests\Fixtures\Hooks\Lifecycle\LifecycleLog;
-use Tests\Fixtures\Hooks\Lifecycle\RecordingStateType;
+use Tests\Fixtures\Hooks\Lifecycle\RecordingStateLoader;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -47,7 +47,7 @@ final class StateLifecycleTest extends TestCase
 
     private LifecycleLog $log;
 
-    private RecordingStateType $tasks;
+    private RecordingStateLoader $tasks;
 
     protected function setUp(): void
     {
@@ -58,8 +58,8 @@ final class StateLifecycleTest extends TestCase
         $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), 'hooks.main_ready', new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64))));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(1)));
         $this->log = new LifecycleLog;
-        $this->tasks = new RecordingStateType($this->log);
-        $plans = new RecordingStateType($this->log);
+        $this->tasks = new RecordingStateLoader($this->log);
+        $plans = new RecordingStateLoader($this->log);
         Event::listen(StateTypesRequested::class, function (StateTypesRequested $event) use ($plans): void {
             $event->registry->register('test.tasks', $this->tasks);
             $event->registry->register('test.plans', $plans);

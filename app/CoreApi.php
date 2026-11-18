@@ -129,8 +129,8 @@ use App\Hooks\Contracts\StackCleanup;
 use App\Hooks\Contracts\StackEditor;
 use App\Hooks\Contracts\StackTransactionRunner;
 use App\Hooks\Contracts\StackTransition;
+use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Contracts\StateRegistration;
-use App\Hooks\Contracts\StateType;
 use App\Hooks\Contracts\UserStack;
 use App\Hooks\Contracts\WorkedOnStack;
 use App\Hooks\Decisions\Decision;
@@ -298,7 +298,7 @@ final class CoreApi
                 AgentStack::class,
                 UserStack::class,
                 StackTransactionRunner::class,
-                StateType::class,
+                StateLoader::class,
                 Answer::class,
                 StackTransition::class,
                 StackEditor::class,

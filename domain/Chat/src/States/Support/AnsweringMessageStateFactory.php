@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\States\Support;
 
-use App\Hooks\Contracts\StateType;
+use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
@@ -17,7 +17,7 @@ use Domain\Chat\States\AnsweringMessageState;
 /**
  * Builds the answering-message state from the message as it is now; it keeps no message between calls.
  */
-final readonly class AnsweringMessageStateFactory implements StateType
+final readonly class AnsweringMessageStateFactory implements StateLoader
 {
     public function __construct(private MessageRecords $messages) {}
 
