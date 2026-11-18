@@ -6,6 +6,7 @@ namespace App\Hooks\States\Support;
 
 use App\Hooks\Contracts\StateLoader;
 use App\Hooks\Contracts\StateRegistration;
+use App\Hooks\Contracts\TickableStateLoader;
 use App\Hooks\Exceptions\StateTypeRepeated;
 use App\Hooks\Exceptions\StateTypesFrozen;
 use App\Hooks\Exceptions\StateTypeUnknown;
@@ -43,6 +44,16 @@ final class StateTypeRegistry implements StateRegistration
     public function has(string $typeKey): bool
     {
         return isset($this->types[$typeKey]);
+    }
+
+    /**
+     * The type keys whose loader is marked as ticking, the mark inherited or not.
+     *
+     * @return list<string>
+     */
+    public function tickingTypeKeys(): array
+    {
+        return array_keys(array_filter($this->types, fn (StateLoader $type) => $type instanceof TickableStateLoader));
     }
 
     public function freeze(): void
