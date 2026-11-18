@@ -11,6 +11,7 @@ from journal.support.law_text import LawText
 from journal.features.profiles.support.profile_files import ProfileFiles
 from journal.features.shell.support.restart_queue import RestartQueue
 from journal.features.shell.support.shell_request import OUTPUT_FOLDER_VARIABLE
+from journal.features.shell.support.unsupervised_journal import UnsupervisedJournal
 from journal.models.command_output import CommandOutput
 from journal.models.environment import Environment
 from journal.features.skills.support.skill_files import SkillFiles
@@ -24,6 +25,8 @@ from journal.support.project_command import ProjectCommand
 # what the project's .gitignore keeps out of git, each with the spellings that already do: the journal's folder, and the
 # agent's settings of this machine, which hold the journal's hooks with this machine's paths
 IGNORED_PATHS = (("/.journal", ".journal", ".journal/"), ("/.claude/settings.local.json", ".claude/settings.local.json"))
+# how a restart line begins when the supervisor refused it
+RESTART_FAILED = "restart failed"
 
 
 class SetupCommand(Command):
@@ -65,11 +68,17 @@ class SetupCommand(Command):
             print(line)
         if not lines:
             print("no journal is running")
-        return 0
+        return 1 if any(line.startswith(RESTART_FAILED) for line in lines) else 0
 
     def restarted(self) -> list[str]:
         asking_folder = os.environ.get(OUTPUT_FOLDER_VARIABLE, "")
-        return [self.restart_line(environment, self.queue.restart(environment.row_id, asking_folder)) for environment in self.supervisor.running(self.environments.all())]
+        return [self.restarting(environment, asking_folder) for environment in self.supervisor.running(self.environments.all())]
+
+    def restarting(self, environment: Environment, asking_folder: str) -> str:
+        try:
+            return self.restart_line(environment, self.queue.restart(environment.row_id, asking_folder))
+        except UnsupervisedJournal as refused:
+            return f"{RESTART_FAILED} for {environment.name}: {refused}"
 
     @staticmethod
     def restart_line(environment: Environment, outputs: list[CommandOutput]) -> str:
