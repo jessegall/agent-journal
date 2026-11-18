@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Settings\Storage;
 
 use JsonSerializable;
+use PhpOption\None;
+use PhpOption\Option;
 
 /**
  * One stored setting or toggle value as its JSON text, kept whatever JSON it holds so that a value no declaration
@@ -29,6 +31,42 @@ final readonly class EncodedValue implements JsonSerializable
     public function equals(self $other): bool
     {
         return $this->json === $other->json;
+    }
+
+    /**
+     * The value when it is a JSON string.
+     *
+     * @return Option<string>
+     */
+    public function string(): Option
+    {
+        $decoded = $this->jsonSerialize();
+
+        return is_string($decoded) ? Option::fromValue($decoded) : None::create();
+    }
+
+    /**
+     * The value when it is a JSON true or false.
+     *
+     * @return Option<bool>
+     */
+    public function boolean(): Option
+    {
+        $decoded = $this->jsonSerialize();
+
+        return is_bool($decoded) ? Option::fromValue($decoded) : None::create();
+    }
+
+    /**
+     * The value when it is a JSON number written without a fraction or exponent that fits an int.
+     *
+     * @return Option<int>
+     */
+    public function integer(): Option
+    {
+        $decoded = $this->jsonSerialize();
+
+        return is_int($decoded) ? Option::fromValue($decoded) : None::create();
     }
 
     public function jsonSerialize(): mixed
