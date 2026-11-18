@@ -45,9 +45,9 @@ const (
 	rootFolder       = "."
 )
 
-// skippedFolders hold what no agent writes by hand, in any project.
-var skippedFolders = map[string]bool{".git": true, ".journal": true, ".venv": true, "venv": true, "node_modules": true, "__pycache__": true,
-	"dist": true, "vendor": true, ".idea": true, ".cache": true, ".pytest_cache": true, ".mypy_cache": true, "graphify-out": true}
+// skippedFolders hold what no agent writes by hand, in any project; a hidden folder, whose name starts with a dot,
+// is skipped as well, so the journal's own folder and the worktrees inside it are never walked.
+var skippedFolders = map[string]bool{"venv": true, "node_modules": true, "__pycache__": true, "dist": true, "vendor": true, "graphify-out": true}
 
 // Fingerprint tells whether a file may have changed without reading it.
 type Fingerprint struct {
@@ -368,7 +368,7 @@ func fingerprints(root string) (map[string]Fingerprint, error) {
 			return err
 		}
 		if entry.IsDir() {
-			if skippedFolders[entry.Name()] || rules.matches(relative, entry.Name()) {
+			if skippedFolders[entry.Name()] || strings.HasPrefix(entry.Name(), ".") || rules.matches(relative, entry.Name()) {
 				return filepath.SkipDir
 			}
 			rules.read(root, relative)
