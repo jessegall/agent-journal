@@ -50,6 +50,7 @@ use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\RevokeCommandPermissions;
 use App\Processes\Commands\WithdrawCommandRequest;
 use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\LaunchProfileMain;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Records\Commands\LinkRecords;
 use App\Records\Commands\UnlinkRecords;
@@ -179,6 +180,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             PruneShareAudit::class,
             ActivateProfiles::class,
             RevokeProfiles::class,
+            LaunchProfileMain::class,
             CreateSkill::class,
             ReviseSkill::class,
             RestoreSkill::class,

@@ -488,8 +488,10 @@ use App\Processes\Values\UnresolvedFact;
 use App\Processes\Values\Word;
 use App\Processes\Values\WordSegment;
 use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\LaunchProfileMain;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Profiles\Contracts\ProfileReader;
+use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Enums\ProfileChangeType;
 use App\Profiles\Enums\ProfileType;
@@ -501,6 +503,7 @@ use App\Profiles\Exceptions\ProfilePolicyRefused;
 use App\Profiles\Exceptions\ProfileProposalRefused;
 use App\Profiles\Exceptions\ProfileRetired;
 use App\Profiles\Exceptions\ProfileRevisionUnreadable;
+use App\Profiles\Exceptions\ProfileTypeConflict;
 use App\Profiles\Support\ClassRule;
 use App\Profiles\Support\OperationRule;
 use App\Profiles\Support\PolicyOverride;
@@ -514,6 +517,7 @@ use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileLaunchPolicy;
 use App\Profiles\Values\ProfileProvenance;
+use App\Profiles\Values\ProfileSelection;
 use App\Profiles\Values\ProfileSnapshot;
 use App\Programs\Enums\HookProgram;
 use App\Programs\Exceptions\ProgramKeyInvalid;
@@ -950,6 +954,7 @@ final class CoreApi
                 OperationReader::class,
                 OverviewContribution::class,
                 ProfileReader::class,
+                ProfileSelections::class,
                 ProvidesSkills::class,
                 Skill::class,
                 SkillCondition::class,
@@ -1292,6 +1297,7 @@ final class CoreApi
                 ProfileSnapshot::class,
                 ProfileLaunchPolicy::class,
                 ProfileProvenance::class,
+                ProfileSelection::class,
                 ProfileProposal::class,
                 ProposedProfile::class,
                 PolicyOverride::class,
@@ -1338,6 +1344,7 @@ final class CoreApi
             ->commands(
                 ActivateProfiles::class,
                 RevokeProfiles::class,
+                LaunchProfileMain::class,
                 CreateSkill::class,
                 ReviseSkill::class,
                 RestoreSkill::class,
@@ -1559,6 +1566,7 @@ final class CoreApi
                 ProfileFieldUnknown::class,
                 ProfileProposalRefused::class,
                 ProfilePolicyRefused::class,
+                ProfileTypeConflict::class,
                 SkillDeclarationInvalid::class,
                 SkillKeyInvalid::class,
                 ProgramKeyInvalid::class,

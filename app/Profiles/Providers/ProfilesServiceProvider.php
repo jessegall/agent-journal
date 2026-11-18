@@ -10,12 +10,15 @@ use App\Profiles\Console\ProfileRevokeCommand;
 use App\Profiles\Console\ProfileShowCommand;
 use App\Profiles\Contracts\KnownOperations;
 use App\Profiles\Contracts\ProfileReader;
+use App\Profiles\Contracts\ProfileSelections;
+use App\Profiles\Readers\ProfilePrograms;
 use App\Profiles\Readers\ProfileRecords;
 use App\Profiles\Support\ConfiguredOperations;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * Binds Core's profile reader to the stored profile revisions and registers the profile console reads.
+ * Binds Core's profile reader and launch selection to the stored profile revisions, loads the main launch route and
+ * registers the profile console commands.
  */
 final class ProfilesServiceProvider extends ServiceProvider
 {
@@ -23,10 +26,13 @@ final class ProfilesServiceProvider extends ServiceProvider
     {
         $this->app->bind(ProfileReader::class, ProfileRecords::class);
         $this->app->bind(KnownOperations::class, ConfiguredOperations::class);
+        $this->app->bind(ProfileSelections::class, ProfilePrograms::class);
     }
 
     public function boot(): void
     {
+        $this->loadRoutesFrom(dirname(__DIR__).'/Routes/web.php');
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 ProfileListCommand::class,
