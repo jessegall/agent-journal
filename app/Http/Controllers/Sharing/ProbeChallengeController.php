@@ -14,8 +14,15 @@ use Symfony\Component\HttpFoundation\Response as BaseResponse;
  */
 final readonly class ProbeChallengeController
 {
-    public function __invoke(string $challenge, ProbeChallenges $challenges): BaseResponse
-    {
-        return $challenges->answer($challenge) ? new Response($challenge, 200, ['Content-Type' => 'text/plain']) : SharedPageResponses::refused(404);
+    public function __invoke(
+        string $challenge,
+        ProbeChallenges $challenges,
+        SharedPageResponses $responses,
+    ): BaseResponse {
+        if (! $challenges->answer($challenge)) {
+            return $responses->refused(404);
+        }
+
+        return new Response($challenge, 200, ['Content-Type' => 'text/plain']);
     }
 }

@@ -44,9 +44,12 @@ final readonly class SharingAssets
         $files = [];
 
         foreach ($this->manifest() as $entry) {
-            if (is_array($entry)) {
-                array_push($files, ...array_filter([$entry['file'] ?? null, ...($entry['css'] ?? [])], 'is_string'));
+            if (! is_array($entry)) {
+                continue;
             }
+
+            $listed = [$entry['file'] ?? null, ...($entry['css'] ?? [])];
+            array_push($files, ...array_filter($listed, 'is_string'));
         }
 
         return $files;
@@ -59,7 +62,7 @@ final readonly class SharingAssets
      */
     private function manifest(): array
     {
-        $file = public_path(self::FOLDER.'/manifest.json');
+        $file = $this->path('manifest.json');
 
         if (! is_file($file)) {
             return [];

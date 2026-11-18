@@ -15,6 +15,6 @@ final readonly class RefreshShareScopeController
 {
     public function __invoke(RefreshShareScopeRequest $request, ShareOpener $shares): RedirectResponse
     {
-        return $shares->runAndOpen($request->command());
+        return $shares->refreshScope($request->command());
     }
 }

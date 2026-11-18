@@ -29,6 +29,16 @@ final readonly class ShareLinkedCandidate
     }
 
     /**
+     * Whether the candidate's link is one of these approved links.
+     *
+     * @param  list<string>  $approvedLinkIds
+     */
+    public function isApprovedAmong(array $approvedLinkIds): bool
+    {
+        return in_array($this->linkId, $approvedLinkIds, true);
+    }
+
+    /**
      * This candidate as the owner selected it: the record, its link and its published version.
      */
     public function toSelectedTarget(): ShareSelectedTarget

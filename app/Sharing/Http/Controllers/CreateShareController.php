@@ -15,6 +15,6 @@ final readonly class CreateShareController
 {
     public function __invoke(CreateShareRequest $request, ShareOpener $shares): RedirectResponse
     {
-        return $shares->runAndOpen($request->command());
+        return $shares->create($request->command());
     }
 }

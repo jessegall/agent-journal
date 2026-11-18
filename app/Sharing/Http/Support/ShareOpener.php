@@ -6,12 +6,15 @@ namespace App\Sharing\Http\Support;
 
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
+use App\Sharing\Commands\ApproveShareRequest;
+use App\Sharing\Commands\CreateShare;
+use App\Sharing\Commands\RefreshShareScope;
 use App\Sharing\Support\ShareSummary;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
 /**
- * Runs an owner's command that ends on one share through the bus, then opens that share's page.
+ * The owner's commands that end on one share, run through the bus, each answered by opening that share's page.
  */
 final readonly class ShareOpener
 {
@@ -20,10 +23,25 @@ final readonly class ShareOpener
         private Redirector $redirect,
     ) {}
 
+    public function create(CreateShare $command): RedirectResponse
+    {
+        return $this->runAndOpen($command);
+    }
+
+    public function approve(ApproveShareRequest $command): RedirectResponse
+    {
+        return $this->runAndOpen($command);
+    }
+
+    public function refreshScope(RefreshShareScope $command): RedirectResponse
+    {
+        return $this->runAndOpen($command);
+    }
+
     /**
      * @param  Command<ShareSummary>  $command
      */
-    public function runAndOpen(Command $command): RedirectResponse
+    private function runAndOpen(Command $command): RedirectResponse
     {
         $summary = $this->commands->run($command);
 

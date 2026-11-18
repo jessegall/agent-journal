@@ -15,6 +15,6 @@ final readonly class ApproveShareRequestController
 {
     public function __invoke(ApproveProposalRequest $request, ShareOpener $shares): RedirectResponse
     {
-        return $shares->runAndOpen($request->command());
+        return $shares->approve($request->command());
     }
 }

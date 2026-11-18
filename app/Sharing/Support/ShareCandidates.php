@@ -44,7 +44,7 @@ final readonly class ShareCandidates
     {
         return array_values(array_filter(
             $this->linked,
-            fn (ShareLinkedCandidate $candidate) => ! in_array($candidate->linkId, $approvedLinkIds, true),
+            fn (ShareLinkedCandidate $candidate) => ! $candidate->isApprovedAmong($approvedLinkIds),
         ));
     }
 
