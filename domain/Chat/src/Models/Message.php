@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Chat\Models;
 
 use App\Agents\Support\StackTarget;
+use App\Hooks\Contracts\WorkedOnStack;
 use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
@@ -19,6 +20,9 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * One message. When it needs an agent's answer, the agent and session that owe it are set by asking for the answer.
@@ -35,7 +39,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['body'])]
-final class Message extends Model implements Numbered, ReadableModel
+final class Message extends Model implements Numbered, ReadableModel, WorkedOnStack
 {
     use BelongsToOneAgent, HasNumber, HasUlids;
     use BoundedReads;
@@ -81,6 +85,14 @@ final class Message extends Model implements Numbered, ReadableModel
         $this->agent_id = $target->agentId;
         $this->session_id = $target->sessionId;
         $this->save();
+    }
+
+    /**
+     * The recipient stack the question is answered on; none for a message sent to no session.
+     */
+    public function workTarget(): Option
+    {
+        return $this->agent_id === null || $this->session_id === null ? None::create() : new Some(new StackTarget($this->agent_id, $this->session_id));
     }
 
     public function markAnswered(): void

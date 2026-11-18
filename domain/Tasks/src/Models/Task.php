@@ -8,6 +8,9 @@ use App\Agents\Support\StackTarget;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\RecordIdentity;
+use App\Hooks\Contracts\WorkedOnStack;
+use App\Hooks\Decisions\StateReference;
+use App\Hooks\Decisions\SubjectReference;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
@@ -22,6 +25,9 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use PhpOption\None;
+use PhpOption\Option;
+use PhpOption\Some;
 
 /**
  * One task. Each start begins a run; the agent and session working on it are set only by starting it.
@@ -39,7 +45,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['title'])]
-final class Task extends Model implements Assignable, Numbered, ReadableModel
+final class Task extends Model implements Assignable, Numbered, ReadableModel, WorkedOnStack
 {
     use AssignableListing, HasNumber, HasUlids, Linkable;
     use BoundedReads;
@@ -74,6 +80,14 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
     }
 
     /**
+     * The stack the task is worked on, from the agent and session that started it; none for a task never started.
+     */
+    public function workTarget(): Option
+    {
+        return $this->agent_id === null || $this->session_id === null ? None::create() : new Some(new StackTarget($this->agent_id, $this->session_id));
+    }
+
+    /**
      * Starts a new run for the target; a task that is already started keeps its run.
      */
     public function startFor(StackTarget $target): void
@@ -104,6 +118,22 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
     {
         $this->state = TaskState::Cancelled;
         $this->save();
+    }
+
+    /**
+     * The summary of the task a task frame stands for; none when the frame names no task that exists.
+     *
+     * @return Option<TaskSummary>
+     */
+    public static function summaryOf(StateReference $frame): Option
+    {
+        if (! $frame->subject instanceof SubjectReference) {
+            return None::create();
+        }
+
+        $task = self::query()->whereKey($frame->subject->id)->first();
+
+        return $task === null ? None::create() : new Some($task->summary());
     }
 
     /**

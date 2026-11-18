@@ -7,6 +7,7 @@ namespace Tests;
 use App\Numbers\Support\NumberingOutsideCommands;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Http;
@@ -16,12 +17,28 @@ use Tests\Support\RefreshHookDatabase;
 
 abstract class TestCase extends BaseTestCase
 {
+    /**
+     * @var array<string, class-string> the application's morph map, before a test adds fixture types to it
+     */
+    private array $applicationMorphMap = [];
+
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->applicationMorphMap = Relation::morphMap();
         Http::preventStrayRequests();
         $this->app->make(NumberingOutsideCommands::class)->allow();
+    }
+
+    /**
+     * The morph map is static and outlives the application, so a test's fixture types leave with it.
+     */
+    protected function tearDown(): void
+    {
+        Relation::morphMap($this->applicationMorphMap, false);
+
+        parent::tearDown();
     }
 
     /**

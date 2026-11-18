@@ -6,14 +6,20 @@ namespace Domain\Tasks\Readers;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Contracts\CurrentSession;
+use App\Agents\Support\StackTarget;
 use App\Assignments\Contracts\AssigneeReader;
 use App\Assignments\Contracts\AssignmentReader;
 use App\Assignments\Contracts\AssignmentTransaction;
+use App\Hooks\Contracts\CurrentState;
+use App\Hooks\Decisions\StateReference;
 use Domain\Tasks\Api\TaskCard;
 use Domain\Tasks\Api\TaskFilters;
 use Domain\Tasks\Api\TaskList;
 use Domain\Tasks\Contracts\AssignedTaskReader;
 use Domain\Tasks\Models\Task;
+use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
+use PhpOption\Option;
 
 /**
  * Lists the tasks the calling agent holds: the held ids come from Core, then one query of only those tasks filters,
@@ -26,7 +32,18 @@ final readonly class AssignedTasks implements AssignedTaskReader
         private AssignmentTransaction $transaction,
         private AssignmentReader $assignments,
         private AssigneeReader $assignees,
+        private CurrentSession $session,
+        private CurrentState $currentState,
     ) {}
+
+    public function currentForCaller(): Option
+    {
+        $caller = $this->actors->actor();
+        $caller->requireAgent();
+
+        return $this->currentState->of(new StackTarget($caller->actorId(), $this->session->sessionId()), WorkingOnTaskStateReference::TYPE_KEY)
+            ->flatMap(fn (StateReference $frame) => Task::summaryOf($frame));
+    }
 
     public function assignedToCaller(TaskFilters $filters): TaskList
     {
