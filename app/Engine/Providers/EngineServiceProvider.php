@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Engine\Providers;
 
 use App\Engine\Contracts\EngineLock;
+use App\Engine\Contracts\MonotonicClock;
 use App\Engine\Support\AdvisoryEngineLock;
 use App\Engine\Support\EngineAccess;
 use App\Engine\Support\EngineSettings;
+use App\Engine\Support\SystemMonotonicClock;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,5 +31,6 @@ final class EngineServiceProvider extends ServiceProvider
         ));
         $this->app->singleton(EngineLock::class, AdvisoryEngineLock::class);
         $this->app->scoped(EngineAccess::class);
+        $this->app->singleton(MonotonicClock::class, SystemMonotonicClock::class);
     }
 }
