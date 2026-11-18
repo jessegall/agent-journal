@@ -139,6 +139,24 @@ final class Share extends Model implements ReadableModel
         return Option::fromValue(self::query()->openedByDigest($digest)->first(['id', 'state', 'scope_version', 'expires_at']));
     }
 
+    /**
+     * The share locked for reading until the transaction ends: readers share the lock, while a revoke or a scope
+     * change waits for them.
+     */
+    public static function lockForRead(string $id): self
+    {
+        return self::query()->whereKey($id)->sharedLock()->firstOrFail();
+    }
+
+    /**
+     * Whether a public read may proceed: the share is active and its deadline has not passed, whatever the state
+     * column has caught up with.
+     */
+    public function isReadableNow(): bool
+    {
+        return $this->state === ShareState::Active && $this->expires_at->isFuture();
+    }
+
     public function root(): RecordIdentity
     {
         return new RecordIdentity($this->root_type, $this->root_id);
