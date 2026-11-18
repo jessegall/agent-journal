@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Skills\Support;
 
-use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
 
 /**
@@ -26,8 +25,9 @@ final readonly class PublicationFiles
         public array $manifest,
     ) {}
 
-    public static function of(SkillPublication $publication, SkillGeneration $generation, SkillTargets $targets): self
+    public static function of(SkillPublication $publication, SkillTargets $targets): self
     {
+        $generation = $publication->generation();
         $skills = [];
 
         foreach ($publication->skill_keys as $key) {
@@ -49,9 +49,17 @@ final readonly class PublicationFiles
 
         return new self(
             "{$targets->generationsFolder()}/{$generation->id}/".sha1($publication->target),
-            [...$skills, self::MANIFEST => json_encode($manifest, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n"],
+            [...$skills, self::MANIFEST => self::manifestText($manifest)],
             $manifest,
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $manifest
+     */
+    private static function manifestText(array $manifest): string
+    {
+        return json_encode($manifest, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n";
     }
 
     public function count(): int

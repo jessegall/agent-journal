@@ -111,7 +111,12 @@ final readonly class HostSkillPublisher implements SkillPublisher
         $real = realpath($existing);
         $realRoot = realpath($root);
 
-        if ($real !== false && $realRoot !== false && $real !== $realRoot && ! str_starts_with($real, $realRoot.'/') && ! is_link($path)) {
+        $leavesRoot = $real !== false
+            && $realRoot !== false
+            && $real !== $realRoot
+            && ! str_starts_with($real, $realRoot.'/');
+
+        if ($leavesRoot && ! is_link($path)) {
             throw SkillPublicationFailed::escape($path);
         }
 

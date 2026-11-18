@@ -45,7 +45,23 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['session_id', 'program', 'target', 'generation_id', 'selection_digest', 'skill_keys', 'expected_previous_generation_id', 'fencing_version', 'lease_holder', 'lease_until', 'progress', 'state', 'open_key', 'manifest', 'error'])]
+#[Fillable([
+    'session_id',
+    'program',
+    'target',
+    'generation_id',
+    'selection_digest',
+    'skill_keys',
+    'expected_previous_generation_id',
+    'fencing_version',
+    'lease_holder',
+    'lease_until',
+    'progress',
+    'state',
+    'open_key',
+    'manifest',
+    'error',
+])]
 final class SkillPublication extends Model implements ReadableModel
 {
     use Linkable;
@@ -73,12 +89,23 @@ final class SkillPublication extends Model implements ReadableModel
      *
      * @param  list<string>  $skillKeys  the keys of the selected skills, in the generation's order
      */
-    public static function intend(string $sessionId, string $program, string $target, SkillGeneration $generation, string $selectionDigest, array $skillKeys): self
+    public static function intend(
+        string $sessionId,
+        string $program,
+        string $target,
+        SkillGeneration $generation,
+        string $selectionDigest,
+        array $skillKeys,
+    ): self
     {
         $openKey = self::openKeyOf($sessionId, $target);
         $earlier = self::query()->where('open_key', $openKey)->lockForUpdate()->first();
         $earlier?->supersede();
-        $delivered = self::query()->forTarget($sessionId, $target)->inState(PublicationState::Delivered)->orderByDesc('created_at')->first();
+        $delivered = self::query()
+            ->forTarget($sessionId, $target)
+            ->inState(PublicationState::Delivered)
+            ->orderByDesc('created_at')
+            ->first();
 
         return self::query()->create([
             'session_id' => $sessionId,
@@ -131,7 +158,13 @@ final class SkillPublication extends Model implements ReadableModel
         $this->lease_holder = null;
         $this->lease_until = null;
         $this->save();
-        self::query()->forTarget($this->session_id, $this->target)->inState(PublicationState::Delivered)->whereKeyNot($this->id)->readAll('a target keeps a handful of delivered publications')->get()->each(fn (self $older) => $older->supersede());
+        self::query()
+            ->forTarget($this->session_id, $this->target)
+            ->inState(PublicationState::Delivered)
+            ->whereKeyNot($this->id)
+            ->readAll('a target keeps a handful of delivered publications')
+            ->get()
+            ->each(fn (self $older) => $older->supersede());
     }
 
     public function fail(string $reason): void
@@ -168,6 +201,14 @@ final class SkillPublication extends Model implements ReadableModel
         $this->save();
     }
 
+    /**
+     * The immutable generation this publication delivers.
+     */
+    public function generation(): SkillGeneration
+    {
+        return SkillGeneration::query()->whereKey($this->generation_id)->firstOrFail();
+    }
+
     public function isHeldBy(int $fence): bool
     {
         return $this->fencing_version === $fence;
@@ -175,7 +216,12 @@ final class SkillPublication extends Model implements ReadableModel
 
     public function isClaimable(CarbonImmutable $now): bool
     {
-        return $this->state === PublicationState::Pending || ($this->state === PublicationState::Preparing && ($this->lease_until === null || $this->lease_until->lessThan($now)));
+        if ($this->state === PublicationState::Pending) {
+            return true;
+        }
+
+        return $this->state === PublicationState::Preparing
+            && ($this->lease_until === null || $this->lease_until->lessThan($now));
     }
 
     /**
@@ -183,7 +229,16 @@ final class SkillPublication extends Model implements ReadableModel
      */
     public static function hasSelection(string $sessionId, string $target, string $selectionDigest): bool
     {
-        $latest = self::query()->forTarget($sessionId, $target)->whereIn('state', [PublicationState::Pending->value, PublicationState::Preparing->value, PublicationState::Delivered->value])->orderByDesc('created_at')->orderByDesc('id')->first();
+        $latest = self::query()
+            ->forTarget($sessionId, $target)
+            ->whereIn('state', [
+                PublicationState::Pending->value,
+                PublicationState::Preparing->value,
+                PublicationState::Delivered->value,
+            ])
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->first();
 
         return $latest !== null && $latest->selection_digest === $selectionDigest;
     }
@@ -200,7 +255,13 @@ final class SkillPublication extends Model implements ReadableModel
      */
     public static function open(int $limit): array
     {
-        return array_values(self::query()->whereIn('state', [PublicationState::Pending->value, PublicationState::Preparing->value])->orderBy('created_at')->readLimit($limit)->get()->all());
+        $open = self::query()
+            ->whereIn('state', [PublicationState::Pending->value, PublicationState::Preparing->value])
+            ->orderBy('created_at')
+            ->readLimit($limit)
+            ->get();
+
+        return array_values($open->all());
     }
 
     /**
@@ -211,7 +272,14 @@ final class SkillPublication extends Model implements ReadableModel
      */
     public static function latestOfSessions(array $sessionIds, int $limit): array
     {
-        return array_values(self::query()->whereIn('session_id', $sessionIds)->orderByDesc('created_at')->readLimit($limit)->get()->unique('session_id')->values()->all());
+        $latest = self::query()
+            ->whereIn('session_id', $sessionIds)
+            ->orderByDesc('created_at')
+            ->readLimit($limit)
+            ->get()
+            ->unique('session_id');
+
+        return array_values($latest->all());
     }
 
     /**
@@ -219,7 +287,11 @@ final class SkillPublication extends Model implements ReadableModel
      */
     public function isReadableBy(ActorIdentity $actor): bool
     {
-        return $actor->type === ActorType::User || AgentSession::query()->whereKey($this->session_id)->where('agent_id', $actor->id)->exists();
+        if ($actor->type === ActorType::User) {
+            return true;
+        }
+
+        return AgentSession::query()->whereKey($this->session_id)->where('agent_id', $actor->id)->exists();
     }
 
     /**

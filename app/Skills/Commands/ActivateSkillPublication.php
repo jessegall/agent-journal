@@ -11,7 +11,8 @@ use App\Bus\Contracts\Command;
 use App\Skills\Handlers\ActivateSkillPublicationHandler;
 
 /**
- * The worker holding a fully staged publication switches its target to it and marks it delivered; a target already on it is recorded delivered.
+ * The worker holding a fully staged publication switches its target to it and marks it delivered; a target already
+ * on it is recorded delivered.
  *
  * @implements Command<null>
  */
