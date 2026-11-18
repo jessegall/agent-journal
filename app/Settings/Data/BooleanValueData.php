@@ -17,6 +17,6 @@ final class BooleanValueData extends Data
     public function __construct(
         public readonly bool $value,
         #[LiteralTypeScriptType("'boolean'")]
-        public readonly string $kind = 'boolean',
+        public readonly string $type = 'boolean',
     ) {}
 }

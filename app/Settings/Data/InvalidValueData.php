@@ -17,6 +17,6 @@ final class InvalidValueData extends Data
 {
     public function __construct(
         #[LiteralTypeScriptType("'invalid'")]
-        public readonly string $kind = 'invalid',
+        public readonly string $type = 'invalid',
     ) {}
 }

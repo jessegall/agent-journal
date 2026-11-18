@@ -32,7 +32,7 @@ final class DomainSettingsTest extends TestCase
         $this->assertSame(1, LibrarySettings::$built);
     }
 
-    public function test_a_domain_declaring_every_type_registers_both_kinds_of_group(): void
+    public function test_a_domain_declaring_every_type_registers_both_types_of_group(): void
     {
         $registry = DomainRegistry::from([ReviewsDomain::class])->settingDeclarations(new CoreSettings);
         $reviews = $registry->definition('Reviews');

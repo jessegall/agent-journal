@@ -17,6 +17,6 @@ final class StringChoiceValueData extends Data
     public function __construct(
         public readonly string $value,
         #[LiteralTypeScriptType("'stringChoice'")]
-        public readonly string $kind = 'stringChoice',
+        public readonly string $type = 'stringChoice',
     ) {}
 }

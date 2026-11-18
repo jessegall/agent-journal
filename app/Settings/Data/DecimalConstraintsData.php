@@ -22,6 +22,6 @@ final class DecimalConstraintsData extends Data
         public readonly string|Optional $minimum = new Optional,
         public readonly string|Optional $maximum = new Optional,
         #[LiteralTypeScriptType("'decimal'")]
-        public readonly string $kind = 'decimal',
+        public readonly string $type = 'decimal',
     ) {}
 }

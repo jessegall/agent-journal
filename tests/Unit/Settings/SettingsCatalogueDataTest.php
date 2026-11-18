@@ -29,7 +29,7 @@ use Tests\TestCase;
 
 /**
  * The catalogue's Data keep honest types on the wire: booleans stay booleans, decimals are text, whole-number choices
- * are numbers, each variant names its kind, an absent value is left out, and no property is an untyped bag.
+ * are numbers, each variant names its type, an absent value is left out, and no property is an untyped bag.
  */
 final class SettingsCatalogueDataTest extends TestCase
 {
@@ -87,14 +87,14 @@ final class SettingsCatalogueDataTest extends TestCase
 
         $review = $catalogue['groups'][0];
         $this->assertSame(['state' => 'disabled', 'defaultEnabled' => true], $review['availability']);
-        $this->assertSame(['value' => false, 'kind' => 'boolean'], $review['settings'][0]['configured']);
-        $this->assertSame(['value' => '0.50', 'kind' => 'decimal'], $review['settings'][1]['default']);
-        $this->assertSame(['kind' => 'invalid'], $review['settings'][1]['configured']);
-        $this->assertSame(['precision' => 5, 'scale' => 2, 'kind' => 'decimal'], $review['settings'][1]['constraints']);
+        $this->assertSame(['value' => false, 'type' => 'boolean'], $review['settings'][0]['configured']);
+        $this->assertSame(['value' => '0.50', 'type' => 'decimal'], $review['settings'][1]['default']);
+        $this->assertSame(['type' => 'invalid'], $review['settings'][1]['configured']);
+        $this->assertSame(['precision' => 5, 'scale' => 2, 'type' => 'decimal'], $review['settings'][1]['constraints']);
 
         $priority = $catalogue['groups'][1]['settings'][0];
         $this->assertSame(['state' => 'always'], $catalogue['groups'][1]['availability']);
-        $this->assertSame(['value' => 0, 'kind' => 'integerChoice'], $priority['default']);
+        $this->assertSame(['value' => 0, 'type' => 'integerChoice'], $priority['default']);
         $this->assertSame([['value' => 0, 'label' => 'Normal']], $priority['constraints']['options']);
         $this->assertArrayNotHasKey('configured', $priority);
         $this->assertSame(['owner' => 'Reviews', 'key' => 'priority', 'canonicalKey' => 'Reviews.priority'], $priority['identity']);

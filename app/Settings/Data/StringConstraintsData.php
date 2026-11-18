@@ -18,6 +18,6 @@ final class StringConstraintsData extends Data
         public readonly int $minimumLength,
         public readonly int $maximumLength,
         #[LiteralTypeScriptType("'string'")]
-        public readonly string $kind = 'string',
+        public readonly string $type = 'string',
     ) {}
 }

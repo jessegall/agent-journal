@@ -17,6 +17,6 @@ final class DecimalValueData extends Data
     public function __construct(
         public readonly string $value,
         #[LiteralTypeScriptType("'decimal'")]
-        public readonly string $kind = 'decimal',
+        public readonly string $type = 'decimal',
     ) {}
 }

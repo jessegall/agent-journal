@@ -18,6 +18,6 @@ final class IntegerConstraintsData extends Data
         public readonly int $minimum,
         public readonly int $maximum,
         #[LiteralTypeScriptType("'integer'")]
-        public readonly string $kind = 'integer',
+        public readonly string $type = 'integer',
     ) {}
 }

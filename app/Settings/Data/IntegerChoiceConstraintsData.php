@@ -22,6 +22,6 @@ final class IntegerChoiceConstraintsData extends Data
         #[DataCollectionOf(IntegerChoiceOptionData::class)]
         public readonly array $options,
         #[LiteralTypeScriptType("'integerChoice'")]
-        public readonly string $kind = 'integerChoice',
+        public readonly string $type = 'integerChoice',
     ) {}
 }
