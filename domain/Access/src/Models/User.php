@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Access\Models;
 
+use App\Actors\Contracts\ReceivesMessages;
+use App\Actors\Contracts\SendsMessages;
 use App\Actors\Enums\ActorType;
 use App\Assignments\Contracts\Assignee;
 use App\Links\Support\Linkable;
@@ -41,7 +43,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 #[UseFactory(UserFactory::class)]
-class User extends Authenticatable implements Assignee, MustVerifyEmail, PasskeyUser, ReadableModel
+class User extends Authenticatable implements Assignee, MustVerifyEmail, PasskeyUser, ReadableModel, ReceivesMessages, SendsMessages
 {
     use BoundedReads;
 

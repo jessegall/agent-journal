@@ -8,6 +8,7 @@ use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorContextMissing;
+use Closure;
 use Illuminate\Container\Attributes\Scoped;
 
 /**
@@ -37,5 +38,26 @@ final class ActorStore implements CurrentActor, CurrentActorSetter
     public function clear(): void
     {
         $this->actor = null;
+    }
+
+    /**
+     * Runs trusted Core work as the journal itself, then gives back the actor held before, also when the work throws,
+     * so no later request or job keeps the system actor. It is the only way to act as the system.
+     *
+     * @template TResult
+     *
+     * @param  Closure(): TResult  $work
+     * @return TResult
+     */
+    public function actAsSystem(Closure $work): mixed
+    {
+        $before = $this->actor;
+        $this->actor = ActorContext::of(new SystemActor);
+
+        try {
+            return $work();
+        } finally {
+            $this->actor = $before;
+        }
     }
 }

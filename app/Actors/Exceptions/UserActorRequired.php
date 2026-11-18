@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Actors\Exceptions;
 
+use App\Contracts\CommandRefusal;
 use RuntimeException;
 
-final class UserActorRequired extends RuntimeException
+final class UserActorRequired extends RuntimeException implements CommandRefusal
 {
     public static function forActor(string $type): self
     {

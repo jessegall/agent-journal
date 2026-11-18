@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Providers;
 
+use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActiveActorCounterRegistry;
 use App\AgentRequests\Actions\SendAgentRequests;
@@ -12,6 +13,7 @@ use App\AgentRequests\Support\AgentClientSettings;
 use App\Agents\Console\RetireAgentCommand;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Readers\AgentAuthorityRecords;
+use App\Agents\Support\AgentActors;
 use App\Agents\Support\AgentAssignees;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\AgentSessionCounter;
@@ -38,8 +40,9 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(AgentRequestSender::class, SendAgentRequests::class);
     }
 
-    public function boot(AssignmentRegistration $assignments, ActiveActorCounterRegistry $presentActors): void
+    public function boot(AssignmentRegistration $assignments, ActorProviderRegistration $actors, ActiveActorCounterRegistry $presentActors): void
     {
+        $actors->register(ActorType::Agent, AgentActors::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agents.php');
         $this->commands([RetireAgentCommand::class]);
         $assignments->registerAssignees(new AssigneeRegistration(ActorType::Agent, AgentAssignees::class));

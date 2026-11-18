@@ -5,12 +5,20 @@ declare(strict_types=1);
 namespace App;
 
 use App\Actors\Contracts\Actor;
+use App\Actors\Contracts\ActorProvider;
+use App\Actors\Contracts\ActorProviderRegistration;
+use App\Actors\Contracts\ActorReader;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Contracts\ReceivesMessages;
+use App\Actors\Contracts\SendsMessages;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorContextMissing;
+use App\Actors\Exceptions\ActorProviderRepeated;
+use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Exceptions\AgentActorRequired;
 use App\Actors\Exceptions\InvalidActorText;
+use App\Actors\Exceptions\SystemActorRequired;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorContext;
@@ -132,6 +140,9 @@ use App\Comments\Exceptions\CommentUnavailable;
 use App\Comments\Exceptions\SubmissionKeyConflict;
 use App\Comments\Exceptions\TargetNotCommentable;
 use App\Comments\Support\HasComments;
+use App\Communication\Contracts\MessageAddressReader;
+use App\Communication\Exceptions\ActorCannotSend;
+use App\Communication\Support\MessageAddress;
 use App\Contracts\CommandHandler;
 use App\Contracts\CommandRefusal;
 use App\Contracts\Event;
@@ -358,6 +369,12 @@ final class CoreApi
                 TextContent::class,
                 TextReader::class,
                 Commentable::class,
+                SendsMessages::class,
+                ReceivesMessages::class,
+                ActorReader::class,
+                ActorProvider::class,
+                ActorProviderRegistration::class,
+                MessageAddressReader::class,
                 CommentReader::class,
                 ShellCommandParser::class,
                 HookAnswerer::class,
@@ -437,6 +454,7 @@ final class CoreApi
                 TextAnchorType::class,
                 WholeRecord::class,
                 CommentType::class,
+                MessageAddress::class,
                 CommentDetails::class,
                 RecordCommentView::class,
                 TextCommentView::class,
@@ -565,6 +583,10 @@ final class CoreApi
                 TargetHasNoText::class,
                 SubmissionKeyConflict::class,
                 CommentUnavailable::class,
+                ActorUnavailable::class,
+                ActorProviderRepeated::class,
+                SystemActorRequired::class,
+                ActorCannotSend::class,
                 SettingDeclarationInvalid::class,
                 SettingHandleUnknown::class,
                 DecimalInvalid::class,
