@@ -47,6 +47,18 @@ final class EngineAccess
     }
 
     /**
+     * Passes when the grant covers the target, or the maintenance capability that may address any target.
+     *
+     * @throws EngineAccessRefused
+     */
+    public function checkTargetOrMaintenance(StackTarget $target, string $capability): void
+    {
+        if (! $this->grant->allowsTarget($target) && ! $this->grant->allowsMaintenance($capability)) {
+            throw EngineAccessRefused::forTarget($target, $this->grant->description());
+        }
+    }
+
+    /**
      * @throws EngineAccessRefused
      */
     public function checkMaintenance(string $capability): void

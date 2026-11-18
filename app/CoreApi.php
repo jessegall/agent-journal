@@ -138,6 +138,7 @@ use App\Contracts\CommandHandler;
 use App\Contracts\CommandRefusal;
 use App\Contracts\Event;
 use App\Contracts\Listener;
+use App\Engine\Commands\SettleFrameTimes;
 use App\Engine\Events\EngineTicked;
 use App\Exports\Exceptions\MalformedExports;
 use App\Exports\Support\ExportBuilder;
@@ -540,6 +541,7 @@ final class CoreApi
                 RecordHeartbeat::class,
                 RecordUserHeartbeat::class,
                 MarkSilentSessions::class,
+                SettleFrameTimes::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,
