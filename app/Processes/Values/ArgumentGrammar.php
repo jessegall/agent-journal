@@ -23,6 +23,7 @@ final readonly class ArgumentGrammar
         public bool $repeatsLastOperand,
         public bool $endsOptionsAtDoubleDash,
         public bool $acceptsNumericOptions = false,
+        public int $minimumOperands = 0,
     ) {}
 
     public static function none(): self
@@ -37,7 +38,7 @@ final readonly class ArgumentGrammar
      */
     public static function options(array $flags): self
     {
-        return new self(array_map(fn (string $flag): OptionGrammar => OptionGrammar::flag($flag), $flags), [], false, false);
+        return new self(array_map(fn (string $flag) => OptionGrammar::flag($flag), $flags), [], false, false);
     }
 
     /**
@@ -55,12 +56,12 @@ final readonly class ArgumentGrammar
 
     public function withOptions(OptionGrammar ...$options): self
     {
-        return new self([...$this->options, ...array_values($options)], $this->operands, $this->repeatsLastOperand, $this->endsOptionsAtDoubleDash, $this->acceptsNumericOptions);
+        return new self([...$this->options, ...array_values($options)], $this->operands, $this->repeatsLastOperand, $this->endsOptionsAtDoubleDash, $this->acceptsNumericOptions, $this->minimumOperands);
     }
 
     public function withOperands(OperandType ...$operands): self
     {
-        return new self($this->options, [...$this->operands, ...array_values($operands)], $this->repeatsLastOperand, $this->endsOptionsAtDoubleDash, $this->acceptsNumericOptions);
+        return new self($this->options, [...$this->operands, ...array_values($operands)], $this->repeatsLastOperand, $this->endsOptionsAtDoubleDash, $this->acceptsNumericOptions, $this->minimumOperands);
     }
 
     /**
@@ -68,12 +69,20 @@ final readonly class ArgumentGrammar
      */
     public function repeating(): self
     {
-        return new self($this->options, $this->operands, true, $this->endsOptionsAtDoubleDash, $this->acceptsNumericOptions);
+        return new self($this->options, $this->operands, true, $this->endsOptionsAtDoubleDash, $this->acceptsNumericOptions, $this->minimumOperands);
     }
 
     public function endingOptionsAtDoubleDash(): self
     {
-        return new self($this->options, $this->operands, $this->repeatsLastOperand, true, $this->acceptsNumericOptions);
+        return new self($this->options, $this->operands, $this->repeatsLastOperand, true, $this->acceptsNumericOptions, $this->minimumOperands);
+    }
+
+    /**
+     * Requires at least this many operands, as git branch topic requires the new branch's name.
+     */
+    public function requiringOperands(int $count): self
+    {
+        return new self($this->options, $this->operands, $this->repeatsLastOperand, $this->endsOptionsAtDoubleDash, $this->acceptsNumericOptions, $count);
     }
 
     /**
@@ -109,25 +118,39 @@ final readonly class ArgumentGrammar
                 }
                 $seen = [...$seen, ...$options];
                 $last = $options[array_key_last($options)];
-                $index += $last->takesValue() && ! $last->carriesValue((string) $text) && ! $this->isClustered((string) $text, $last) ? 1 : 0;
+                $index += $last->takesNextWord((string) $text) ? 1 : 0;
 
                 continue;
             }
-            if ($operandCount >= count($this->operands) && ! ($this->repeatsLastOperand && $this->operands !== [])) {
+            if ($operandCount >= count($this->operands) && ! $this->hasRepeatingOperand()) {
                 return [new UnresolvedFact(UnresolvedType::UnknownSubcommand, $node, 'The word '.($text ?? 'with an expansion').' is not an accepted operand.')];
             }
             $operandCount++;
+        }
+
+        if ($operandCount < $this->minimumOperands) {
+            return [new UnresolvedFact(UnresolvedType::UnknownSubcommand, $node, "{$this->minimumOperands} operands are required here.")];
         }
 
         return $this->missingRequired($seen, $node);
     }
 
     /**
-     * Whether no command line can match both grammars: one requires an option the other does not accept.
+     * Whether no command line can match both grammars: one requires an option the other does not accept, or more operands
+     * than the other takes.
      */
     public function isDisjointFrom(self $other): bool
     {
-        return $this->requiresOptionUnknownTo($other) || $other->requiresOptionUnknownTo($this);
+        return $this->requiresOptionUnknownTo($other) || $other->requiresOptionUnknownTo($this)
+            || $this->minimumOperands > $other->maximumOperands() || $other->minimumOperands > $this->maximumOperands();
+    }
+
+    /**
+     * The most operands the grammar accepts; a repeating last slot accepts any number.
+     */
+    private function maximumOperands(): int|float
+    {
+        return $this->hasRepeatingOperand() ? INF : count($this->operands);
     }
 
     private function requiresOptionUnknownTo(self $other): bool
@@ -193,11 +216,11 @@ final readonly class ArgumentGrammar
     }
 
     /**
-     * Whether a valued short option arrived inside a longer word, so its value is attached rather than the next word.
+     * Whether the last operand slot repeats, so any number of operands is accepted.
      */
-    private function isClustered(string $text, OptionGrammar $option): bool
+    private function hasRepeatingOperand(): bool
     {
-        return ! in_array($text, $option->names, true) && ! str_starts_with($text, '--') && $option->names !== [] && str_starts_with($text, $option->names[0]) && strlen($text) > strlen($option->names[0]);
+        return $this->repeatsLastOperand && $this->operands !== [];
     }
 
     /**
@@ -208,6 +231,6 @@ final readonly class ArgumentGrammar
     {
         $missing = array_filter($this->options, fn (OptionGrammar $option): bool => $option->isRequired && ! in_array($option, $seen, true));
 
-        return array_values(array_map(fn (OptionGrammar $option): UnresolvedFact => new UnresolvedFact(UnresolvedType::UnknownOption, $node, "The option {$option->names[0]} is required here."), $missing));
+        return array_values(array_map(fn (OptionGrammar $option) => new UnresolvedFact(UnresolvedType::UnknownOption, $node, "The option {$option->names[0]} is required here."), $missing));
     }
 }

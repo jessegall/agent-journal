@@ -12,9 +12,14 @@ return new class extends Migration
     {
         Schema::create('command_aliases', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->string('name', 64)->unique();
+            $table->string('project_key', 64);
+            $table->string('name', 64);
             $table->text('line');
+            $table->unsignedInteger('revision')->default(1);
+            $table->string('body_digest', 64);
+            $table->json('argument_grammar');
             $table->timestampsTz();
+            $table->unique(['project_key', 'name']);
         });
     }
 

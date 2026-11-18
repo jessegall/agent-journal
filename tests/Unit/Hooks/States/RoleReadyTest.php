@@ -71,12 +71,12 @@ final class RoleReadyTest extends TestCase
     }
 
     #[DataProvider('commandsWithoutAlias')]
-    public function test_each_role_refuses_a_command_that_must_be_saved_or_cannot_be_read(ReadyState $ready, ShellCommand $command): void
+    public function test_each_role_refuses_a_command_that_must_be_saved_or_cannot_be_read_and_says_how_to_write_it(ReadyState $ready, ShellCommand $command): void
     {
         $decision = $ready->onShellCommand($this->request($command));
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertStringContainsString('journal run', $decision->refusalReason());
+        $this->assertStringContainsString($command->isFullyRead() ? 'journal run' : 'without dynamic parts', $decision->refusalReason());
     }
 
     #[DataProvider('roles')]

@@ -15,7 +15,7 @@ class MainAgentReadyState extends ReadyState
     public function onShellCommand(ShellCommandRequested $input): Decision
     {
         if (! $input->command->isFullyRead()) {
-            return Decision::deny('This line could not be read fully: write it without dynamic parts, or save it as a named command and run it through journal run.');
+            return Decision::deny('This line could not be read fully: write it without dynamic parts.');
         }
 
         if ($input->command->needsAlias()) {

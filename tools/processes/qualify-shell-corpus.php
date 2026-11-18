@@ -33,7 +33,7 @@ if (! is_dir(WORK) && ! mkdir(WORK, 0o700, true)) {
 }
 
 [$records, $sources] = corpusRecords();
-$inputHash = hash('sha256', implode("\n", array_keys($records)));
+$inputHash = hash('sha256', implode("\n", array_keys($records)).codeHash());
 $chunks = array_chunk(array_values($records), CHUNK_LINES);
 
 $cursorFile = WORK.'/cursor.json';
@@ -57,10 +57,14 @@ foreach ($chunks as $number => $chunk) {
     $counts = ['lines' => count($chunk), 'agree' => 0, 'differ' => 0, 'outcomes' => [], 'explained' => []];
     $differences = [];
     $readings = hash_init('sha256');
+    $classifications = hash_init('sha256');
     foreach ($chunk as $record) {
         $want = comparable($expected[$record['id']] ?? ['outcome' => 'missing', 'parts' => []]);
         $got = comparable($actual[$record['id']] ?? ['outcome' => 'missing', 'parts' => []]);
         hash_update($readings, $record['id'].json_encode($got, JSON_THROW_ON_ERROR)."\n");
+        $classification = $actual[$record['id']]['classification'] ?? null;
+        hash_update($classifications, $record['id'].json_encode($classification, JSON_THROW_ON_ERROR)."\n");
+        $counts['known'] = ($counts['known'] ?? 0) + (($classification['known'] ?? false) ? 1 : 0);
         $counts['outcomes'][$got['outcome']] = ($counts['outcomes'][$got['outcome']] ?? 0) + 1;
         if ($want === $got) {
             $counts['agree']++;
@@ -75,6 +79,7 @@ foreach ($chunks as $number => $chunk) {
         $differences[] = json_encode(['id' => $record['id'], 'source' => $record['source'], 'origin' => $record['origin'], 'reference' => $want, 'version6' => $got, 'decision' => $family], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
     $counts['version6_digest'] = hash_final($readings);
+    $counts['classification_digest'] = hash_final($classifications);
     file_put_contents(WORK."/differences-{$number}.jsonl", $differences === [] ? '' : implode("\n", $differences)."\n");
     $cursor['done'][] = $number;
     $cursor['counts'][$number] = $counts;
@@ -85,6 +90,8 @@ foreach ($chunks as $number => $chunk) {
 $total = ['lines' => 0, 'agree' => 0, 'differ' => 0, 'outcomes' => [], 'explained' => []];
 ksort($cursor['counts']);
 $total['version6_digest'] = hash('sha256', implode('', array_column($cursor['counts'], 'version6_digest')));
+$total['classification_digest'] = hash('sha256', implode('', array_column($cursor['counts'], 'classification_digest')));
+$total['known'] = array_sum(array_column($cursor['counts'], 'known'));
 foreach ($cursor['counts'] as $counts) {
     foreach ($counts['explained'] ?? [] as $family => $count) {
         $total['explained'][$family] = ($total['explained'][$family] ?? 0) + $count;
@@ -282,4 +289,19 @@ function notRun(string $reason): never
 {
     fwrite(STDERR, "qualification not run: {$reason}\n");
     exit(2);
+}
+
+/**
+ * A hash of the analysis code (app/Processes and the analyser), so a cursor from other code never resumes.
+ */
+function codeHash(): string
+{
+    $root = __DIR__.'/../..';
+    $files = [__DIR__.'/analyse-shell-lines.php'];
+    foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root.'/app/Processes', FilesystemIterator::SKIP_DOTS)) as $file) {
+        $files[] = $file->getPathname();
+    }
+    sort($files);
+
+    return hash('sha256', implode('', array_map(fn (string $file): string => hash_file('sha256', $file), $files)));
 }

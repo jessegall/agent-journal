@@ -9,11 +9,14 @@ use App\Actors\Support\ActorIdentity;
 use App\AgentRequests\Console\Concerns\SendsSignedCalls;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\Assignments\Console\Concerns\ReadsAssignmentArguments;
+use App\Processes\Attributes\JournalRoute;
+use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**
  * Release one record from the holder it has now, over a signed call as the agent of the launch.
  */
+#[JournalRoute(JournalRouteType::Write)]
 final class UnassignRecordCommand extends Command
 {
     use ReadsAssignmentArguments;

@@ -6,11 +6,14 @@ namespace App\Agents\Console;
 
 use App\AgentRequests\Console\Concerns\SendsSignedCalls;
 use App\AgentRequests\Contracts\AgentRequestSender;
+use App\Processes\Attributes\JournalRoute;
+use App\Processes\Enums\JournalRouteType;
 use Illuminate\Console\Command;
 
 /**
  * Retires an agent for good, over a signed call as the main agent of the launch, and prints what it released.
  */
+#[JournalRoute(JournalRouteType::Write)]
 final class RetireAgentCommand extends Command
 {
     use SendsSignedCalls;
