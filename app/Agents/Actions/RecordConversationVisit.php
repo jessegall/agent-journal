@@ -34,7 +34,7 @@ final readonly class RecordConversationVisit implements ConversationVisits
         $session = AgentSession::lockedForUpdate($sessionId);
         $context = LaunchRecord::query()->where('request_id', $session->launch_request_id)->value('context_reference');
         $conversation = ProgramConversation::query()->native((string) $session->program, self::HOST_SETTINGS, $nativeId)->first()
-            ?? ProgramConversation::query()->create(['program' => $session->program, 'settings_identity' => self::HOST_SETTINGS, 'native_id' => $nativeId, 'agent_id' => $session->agent_id, 'context_reference' => $context]);
+            ?? ProgramConversation::begin($session, self::HOST_SETTINGS, $nativeId, $context);
 
         if (! $conversation->admits($session->agent_id, $context)) {
             throw ConversationIncompatible::forSession($session->id);

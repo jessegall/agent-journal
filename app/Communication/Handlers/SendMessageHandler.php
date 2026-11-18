@@ -32,7 +32,7 @@ final readonly class SendMessageHandler implements CommandHandler
         }
 
         $target = $this->sessions->requireActive($command->sessionId);
-        $message = Message::query()->create(['body' => $command->body]);
+        $message = Message::write($command->body);
         $message->requireAnswerFrom($target);
         $this->stacks->push($target, AnsweringMessageStateReference::forMessage($message));
         $this->events->dispatch(new MessageSent($message->id, $target));

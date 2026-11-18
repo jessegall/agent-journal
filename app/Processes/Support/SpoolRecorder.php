@@ -32,15 +32,7 @@ final readonly class SpoolRecorder implements OutputRecorder
         $offset = $chunk->part->stream_offsets[$stream] ?? 0;
         $relative = "{$chunk->part->process_run_id}/{$chunk->part->id}/{$stream}/".str_pad((string) $offset, 20, '0', STR_PAD_LEFT).'.chunk';
         $this->write($this->disks->disk(self::DISK)->path($relative), $chunk->bytes);
-        $stored = OutputChunk::query()->create([
-            'part_run_id' => $chunk->part->id,
-            'stream' => $chunk->stream,
-            'offset' => $offset,
-            'length' => strlen($chunk->bytes),
-            'checksum' => hash('sha256', $chunk->bytes),
-            'captured_at' => $chunk->capturedAt,
-            'storage_path' => $relative,
-        ]);
+        $stored = OutputChunk::record($chunk, $offset, $relative);
         $chunk->part->captureUpTo($stored);
         $this->events->dispatch(new OutputChunkCommitted($chunk->part->id, $stream, $offset, $stored->length));
 

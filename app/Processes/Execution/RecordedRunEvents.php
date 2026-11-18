@@ -36,13 +36,7 @@ final class RecordedRunEvents implements RunEvents
         if (! $this->note('part_queued', $part)) {
             return;
         }
-        $this->parts[$part->name()] = PartRun::query()->create([
-            'process_run_id' => $this->run->id,
-            'syntax_node' => $part->node,
-            'part_id' => $part->partId(),
-            'attempt' => $part->attempt,
-            'operation' => $part->operation,
-        ]);
+        $this->parts[$part->name()] = PartRun::queue($this->run, $part);
     }
 
     public function started(PartKey $part, int $pid, string $host): void
