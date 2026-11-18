@@ -15,6 +15,7 @@ use App\Hooks\Providers\HooksServiceProvider;
 use App\Mcp\Providers\McpServiceProvider;
 use App\Numbers\Providers\NumbersServiceProvider;
 use App\Processes\Providers\ProcessesServiceProvider;
+use App\Profiles\Providers\ProfilesServiceProvider;
 use App\Providers\AppServiceProvider;
 use App\Providers\CoreServiceProvider;
 use App\Reads\Providers\ReadsServiceProvider;
@@ -38,6 +39,7 @@ return [
     DomainServiceProvider::class,
     DomainEventServiceProvider::class,
     CoreServiceProvider::class,
+    ProfilesServiceProvider::class,
     ActorsServiceProvider::class,
     AgentsServiceProvider::class,
     AssignmentsServiceProvider::class,

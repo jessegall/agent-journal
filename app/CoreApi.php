@@ -376,10 +376,16 @@ use App\Processes\Values\TreeDiagnostic;
 use App\Processes\Values\UnresolvedFact;
 use App\Processes\Values\Word;
 use App\Processes\Values\WordSegment;
+use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\RevokeProfiles;
 use App\Profiles\Contracts\ProfileReader;
 use App\Profiles\Enums\ProfileType;
 use App\Profiles\Exceptions\ProfileKeyInvalid;
 use App\Profiles\Exceptions\ProfileMissing;
+use App\Profiles\Exceptions\ProfileRetired;
+use App\Profiles\Values\ActivatedProfile;
+use App\Profiles\Values\ProfileActivation;
+use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
 use App\Queries\Support\TextSearch;
@@ -998,8 +1004,13 @@ final class CoreApi
                 ProfileKey::class,
                 ProfileType::class,
                 ProfileSnapshot::class,
+                ProfileDefinition::class,
+                ProfileActivation::class,
+                ActivatedProfile::class,
             )
             ->commands(
+                ActivateProfiles::class,
+                RevokeProfiles::class,
                 PostComment::class,
                 PostTextComment::class,
                 SendMessage::class,
@@ -1174,6 +1185,7 @@ final class CoreApi
                 ContinuationStale::class,
                 ProfileKeyInvalid::class,
                 ProfileMissing::class,
+                ProfileRetired::class,
             )
             ->support(
                 BelongsToOneActor::class,

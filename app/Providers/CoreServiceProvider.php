@@ -17,6 +17,8 @@ use App\Hooks\Models\HookCall;
 use App\Links\Models\Link;
 use App\Links\Support\LinkTypeRegistry;
 use App\Mcp\Models\RetainedPage;
+use App\Profiles\Models\Profile;
+use App\Profiles\Models\ProfileRevision;
 use App\Settings\Models\SettingsRecord;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
@@ -34,7 +36,7 @@ use Illuminate\Support\ServiceProvider;
  */
 final class CoreServiceProvider extends ServiceProvider
 {
-    private const array AREAS = ['Actors', 'Agents', 'Assignments', 'Bus', 'Comments', 'Communication', 'Engine', 'Hooks', 'Links', 'Mcp', 'Numbers', 'Processes', 'Settings', 'Sharing', 'Web'];
+    private const array AREAS = ['Actors', 'Agents', 'Assignments', 'Bus', 'Comments', 'Communication', 'Engine', 'Hooks', 'Links', 'Mcp', 'Numbers', 'Processes', 'Profiles', 'Settings', 'Sharing', 'Web'];
 
     public function boot(LinkTypeRegistry $links): void
     {
@@ -50,6 +52,8 @@ final class CoreServiceProvider extends ServiceProvider
             'core.settings-record' => SettingsRecord::class,
             'core.user-presence' => UserPresence::class,
             'core.engine-frame-time' => EngineFrameTime::class,
+            Profile::LINK_TYPE => Profile::class,
+            ProfileRevision::LINK_TYPE => ProfileRevision::class,
             RetainedPage::LINK_TYPE => RetainedPage::class,
             CommandReceipt::LINK_TYPE => CommandReceipt::class,
             Share::LINK_TYPE => Share::class,
