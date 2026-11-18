@@ -18,6 +18,15 @@ Class, interface, enum and trait names are short names, never sentences with a c
 - `composer test` runs Pint and PHPStan, then the whole suite in parallel with fresh worker databases (`php artisan test --parallel --recreate-databases`). Pass overrides to `composer test:run`, never to `composer test`: `composer test:run -- --processes=2` or `composer test:run -- --filter=HookTransactionTest`.
 - Each parallel worker runs on its own database `journal_hooks_test_test_<n>`; these databases are expected to stay after a run, and the next run recreates them.
 
+=== .ai/tests-at-phase-end rules ===
+
+# Tests and the judge at the end of a plan phase
+
+- While working a plan phase, write every task of the phase first and do not run the tests or the commandments judge between tasks. A single targeted test now and then, for a change you cannot otherwise trust, is fine; a run after each task is not.
+- At the end of the phase, run the phase's tests and the judge once, fix what they find, and rerun only what failed.
+- Type checks (PHPStan) and formatting (Pint) may still run while writing.
+- `composer test:affected` runs only the tests the changed files can break, read from the domain boundaries.
+
 === foundation rules ===
 
 # Laravel Boost Guidelines
