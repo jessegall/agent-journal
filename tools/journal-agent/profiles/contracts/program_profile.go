@@ -1,6 +1,8 @@
 // Package contracts holds the interfaces of launch profiles.
 package contracts
 
+import "journal-agent/screen"
+
 // Mode is how a program is launched: one child per turn, or one persistent terminal.
 type Mode string
 
@@ -62,4 +64,8 @@ type ProgramProfile interface {
 
 	// RejectContrary refuses extra arguments that would undo the profile, such as re-enabling a delegation tool.
 	RejectContrary(extraArguments []string) error
+
+	// Screens is how the build draws its terminal: its composer, menus and other regions, measured from its
+	// recordings.
+	Screens() screen.Layout
 }

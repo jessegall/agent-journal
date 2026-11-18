@@ -10,8 +10,12 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/creack/pty"
+
+	"journal-agent/screen"
+	inputs "journal-agent/terminal"
 )
 
 // The frames on the attach socket: a byte naming the frame, four bytes of length, then the payload.
@@ -40,12 +44,20 @@ type TerminalStarter func(request AttachRequest) (*os.File, error)
 type AttachSocket struct {
 	Folder    string
 	Start     TerminalStarter
+	Layout    LayoutFinder
 	mutex     sync.Mutex
 	terminals map[string]*hostTerminal
 }
 
+// LayoutFinder gives the screen layout of the program a request starts, from its profile.
+type LayoutFinder func(request AttachRequest) (screen.Layout, error)
+
+// hostTerminal is one program the host runs: its PTY, the screen read from its output, and the one gate every key
+// passes through on its way in.
 type hostTerminal struct {
 	pty      *os.File
+	reader   *screen.EmulatorReader
+	gate     *inputs.InputGate
 	mutex    sync.Mutex
 	attached io.Writer
 }
@@ -102,7 +114,7 @@ func (socket *AttachSocket) serve(connection net.Conn) {
 		}
 		switch kind {
 		case frameData:
-			if _, err := terminal.pty.Write(payload); err != nil {
+			if err := terminal.gate.Human(payload); err != nil {
 				return
 			}
 		case frameResize:
@@ -119,11 +131,20 @@ func (socket *AttachSocket) terminalFor(request AttachRequest) (*hostTerminal, e
 	if terminal, found := socket.terminals[request.RuntimeID]; found {
 		return terminal, nil
 	}
+	layout, err := socket.Layout(request)
+	if err != nil {
+		return nil, err
+	}
+	reader, err := screen.NewEmulatorReader(int(request.Columns), int(request.Rows), screen.DefaultLimits, layout.Regions())
+	if err != nil {
+		return nil, err
+	}
 	file, err := socket.Start(request)
 	if err != nil {
 		return nil, err
 	}
-	terminal := &hostTerminal{pty: file}
+	gate := inputs.NewInputGate(file, reader, layout.Composer, time.Now)
+	terminal := &hostTerminal{pty: file, reader: reader, gate: gate}
 	socket.terminals[request.RuntimeID] = terminal
 	go terminal.copyOut()
 	return terminal, nil
@@ -142,6 +163,7 @@ func (terminal *hostTerminal) copyOut() {
 	for {
 		count, err := terminal.pty.Read(buffer)
 		if count > 0 {
+			_ = terminal.reader.Feed(buffer[:count])
 			terminal.mutex.Lock()
 			if terminal.attached != nil {
 				writeFrame(terminal.attached, frameData, buffer[:count])
