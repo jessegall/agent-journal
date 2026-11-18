@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use App\Actors\Commands\RecordUserHeartbeat;
+use App\Agents\Commands\MarkSilentSessions;
 use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Commands\RetireAgent;
 use App\Assignments\Commands\AssignRecord;
@@ -29,7 +30,7 @@ final class CoreCommands
      */
     public static function commands(): array
     {
-        return [AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, RecordHeartbeat::class, RecordUserHeartbeat::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class];
+        return [AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class];
     }
 
     /**
