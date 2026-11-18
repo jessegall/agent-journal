@@ -23,7 +23,7 @@ use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
- * A committed change that a page shows becomes one page change for the users Access allows; nothing else does.
+ * A committed change that a page shows becomes one page change for the users LoginTest allows; nothing else does.
  */
 final class PageChangeTest extends TestCase
 {

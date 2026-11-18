@@ -77,7 +77,7 @@ final class DomainEventCallTest extends TestCase
     public function test_no_domain_of_the_real_app_names_or_raises_an_event_it_may_not(): void
     {
         $registry = $this->app->make(DomainRegistry::class);
-        $folders = [app_path(), base_path('domain')];
+        $folders = [app_path(), ...DomainFiles::domainCode()];
         $calls = [];
 
         foreach (DomainFiles::in($folders) as $file) {

@@ -61,7 +61,7 @@ final class BindingRulesTest extends TestCase
             ...array_map(PublicOwner::fromDomain(...), $this->app->make(DomainRegistry::class)->all()),
         ];
 
-        $violations = (new BindingRules($owners, DomainFiles::in([app_path(), base_path('domain')])))->violations();
+        $violations = (new BindingRules($owners, DomainFiles::in([app_path(), ...DomainFiles::domainCode()])))->violations();
 
         $this->assertSame([], $violations, BoundaryReport::of($violations, base_path()));
     }

@@ -40,6 +40,10 @@
     "autoload": {
         "psr-4": {
             "App\\": "app/",
+            "Domain\\Access\\Database\\Factories\\": "domain/Access/database/factories/",
+            "Domain\\Access\\Database\\Seeders\\": "domain/Access/database/seeders/",
+            "Domain\\Plans\\Database\\Seeders\\": "domain/Plans/database/seeders/",
+            "Domain\\Tasks\\Database\\Seeders\\": "domain/Tasks/database/seeders/",
             "Domain\\Access\\": "domain/Access/src/",
             "Domain\\Chat\\": "domain/Chat/src/",
             "Domain\\Memory\\": "domain/Memory/src/",
@@ -56,6 +60,13 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Domain\\Access\\Tests\\": "domain/Access/tests/",
+            "Domain\\Chat\\Tests\\": "domain/Chat/tests/",
+            "Domain\\Plans\\Tests\\": "domain/Plans/tests/",
+            "Domain\\Processes\\Tests\\": "domain/Processes/tests/",
+            "Domain\\Rules\\Tests\\": "domain/Rules/tests/",
+            "Domain\\Sequences\\Tests\\": "domain/Sequences/tests/",
+            "Domain\\Tasks\\Tests\\": "domain/Tasks/tests/",
             "Tests\\": "tests/"
         }
     },
@@ -100,6 +111,9 @@
         ],
         "test:run": [
             "@php artisan test --parallel --recreate-databases"
+        ],
+        "test:affected": [
+            "@php tests/bin/affected-tests.php"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

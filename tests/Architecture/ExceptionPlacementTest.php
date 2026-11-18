@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
+use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ExceptionPlacement;
 use Tests\TestCase;
 
@@ -19,6 +20,6 @@ final class ExceptionPlacementTest extends TestCase
 
     public function test_every_exception_of_the_domains_and_the_core_lies_in_an_exceptions_folder(): void
     {
-        $this->assertSame([], ExceptionPlacement::misplacedIn([app_path(), base_path('domain')]));
+        $this->assertSame([], ExceptionPlacement::misplacedIn([app_path(), ...DomainFiles::domainCode()]));
     }
 }

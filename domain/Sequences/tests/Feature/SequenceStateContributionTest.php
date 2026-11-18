@@ -1,0 +1,111 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Sequences\Tests\Feature;
+
+use App\Hooks\Enums\RewriteSupport;
+use App\Hooks\Exceptions\StackAlreadyClosed;
+use App\Hooks\Inputs\CompactionDetails;
+use App\Hooks\Inputs\ContextCompacted;
+use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Models\AgentStackRow;
+use App\Hooks\Programs\ProgramCapabilities;
+use App\Hooks\Programs\ProgramReply;
+use App\Hooks\Stack\HookAnswer;
+use App\Hooks\Support\OperationDeadline;
+use Carbon\CarbonImmutable;
+use Domain\Sequences\Actions\StartSequence;
+use Domain\Sequences\Enums\SequenceRunState;
+use Domain\Sequences\Models\SequenceRun;
+use Domain\Sequences\Tests\TestCase;
+use Tests\Support\CommittedHookStack;
+
+final class SequenceStateContributionTest extends TestCase
+{
+    use CommittedHookStack;
+
+    public function test_starting_a_run_commits_the_start_and_its_state_together(): void
+    {
+        $run = $this->newRun();
+
+        $this->app->make(StartSequence::class)->start($run, $this->target);
+
+        $this->assertSame([SequenceRunState::Running, 1, 1, 10], [$run->fresh()?->state, $run->fresh()?->current_step, $run->fresh()?->agent_id, $run->fresh()?->session_id]);
+        $this->assertSame(['hooks.main_ready', 'sequences.following'], $this->storedTypeKeys());
+    }
+
+    public function test_a_failed_push_rolls_the_start_back(): void
+    {
+        $run = $this->newRun();
+        AgentStackRow::query()->sole()->closeAt(CarbonImmutable::now());
+
+        try {
+            $this->app->make(StartSequence::class)->start($run, $this->target);
+            $this->fail('The start went through without its push.');
+        } catch (StackAlreadyClosed) {
+            $this->assertNull($run->fresh()?->agent_id);
+        }
+    }
+
+    public function test_each_hook_reads_the_current_step_fresh(): void
+    {
+        $run = $this->newRun();
+        $this->app->make(StartSequence::class)->start($run, $this->target);
+
+        $onFirstStep = $this->answerStop('call-1');
+        $run->advance();
+        $onSecondStep = $this->answerStop('call-2');
+
+        $this->assertStringContainsString("Sequence run {$run->id} is on step 1: Read the brief.", $onFirstStep);
+        $this->assertStringContainsString("Sequence run {$run->id} is on step 2: Run the phase tests.", $onSecondStep);
+    }
+
+    public function test_a_compaction_repeats_the_step_without_advancing_the_run(): void
+    {
+        $run = $this->newRun();
+        $this->app->make(StartSequence::class)->start($run, $this->target);
+
+        $context = json_decode($this->answerCompaction('call-1'), true, flags: JSON_THROW_ON_ERROR);
+
+        $this->assertSame(["Sequence run {$run->id} is on step 1: Read the brief."], $context);
+        $this->assertSame(1, $run->fresh()?->current_step);
+    }
+
+    public function test_a_finished_or_cancelled_run_leaves_on_the_next_hook(): void
+    {
+        $finished = $this->newRun();
+        $this->app->make(StartSequence::class)->start($finished, $this->target);
+        $finished->advance();
+        $finished->advance();
+
+        $this->assertSame(SequenceRunState::Finished, $finished->fresh()?->state);
+        $this->assertSame('{}', $this->answerStop('call-1'));
+
+        $cancelled = $this->newRun();
+        $this->app->make(StartSequence::class)->start($cancelled, $this->target);
+        $cancelled->cancel();
+
+        $this->assertSame('{}', $this->answerStop('call-2'));
+        $this->assertSame(['hooks.main_ready'], $this->storedTypeKeys());
+    }
+
+    private function newRun(): SequenceRun
+    {
+        return SequenceRun::query()->create(['name' => 'Close a task', 'steps' => ['Read the brief.', 'Run the phase tests.']]);
+    }
+
+    /**
+     * The reply to a compaction, which carries the answer's context as JSON.
+     */
+    private function answerCompaction(string $callId): string
+    {
+        $this->callAs($callId);
+        $capabilities = new ProgramCapabilities('Test program', 'compaction context', ['onCompaction'], RewriteSupport::WithoutApproval);
+        $compaction = new ContextCompacted(new HookIdentity(1, 10, $callId, self::inputDigest()), new CompactionDetails('compaction-1'));
+
+        $reply = $this->machine()->answer($compaction, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => new ProgramReply(json_encode($answer->context) ?: '[]', '', 0));
+
+        return $reply->stdout;
+    }
+}

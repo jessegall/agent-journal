@@ -29,7 +29,7 @@ final class DomainBoundaryTest extends TestCase
     {
         $registry = $this->app->make(DomainRegistry::class);
         $roots = ProjectRoots::fromComposer(base_path('composer.json'));
-        $folders = [app_path(), base_path('domain')];
+        $folders = [app_path(), ...DomainFiles::domainCode()];
 
         $violations = (new BoundaryChecker($registry->all(), $roots, CoreApi::exports()))
             ->violations(DomainFiles::usesIn(DomainFiles::in($folders), $roots));

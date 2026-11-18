@@ -104,7 +104,12 @@ final class DocblockAndStringScanTest extends TestCase
 
     public function test_the_project_roots_come_from_composer(): void
     {
-        $this->assertSame(['App\\', 'Domain\\Access\\', 'Domain\\Chat\\', 'Domain\\Memory\\', 'Domain\\Plans\\', 'Domain\\Processes\\', 'Domain\\Profiles\\', 'Domain\\Reminders\\', 'Domain\\Rules\\', 'Domain\\Sequences\\', 'Domain\\Tasks\\', 'Database\\Factories\\', 'Database\\Seeders\\', 'Tests\\'], $this->roots()->namespaces);
+        $namespaces = $this->roots()->namespaces;
+        $domains = array_map(fn (string $package) => 'Domain\\'.basename($package).'\\', glob(dirname(__DIR__, 2).'/domain/*', GLOB_ONLYDIR) ?: []);
+
+        foreach (['App\\', 'Tests\\', 'Database\\Factories\\', ...$domains] as $root) {
+            $this->assertContains($root, $namespaces);
+        }
     }
 
     private function fixture(string $name): ParsedFile

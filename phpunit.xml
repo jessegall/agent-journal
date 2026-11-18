@@ -8,9 +8,19 @@
     <testsuites>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
+            <directory>domain/Chat/tests/Unit</directory>
+            <directory>domain/Sequences/tests/Unit</directory>
+            <directory>domain/Tasks/tests/Unit</directory>
         </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
+            <directory>domain/Access/tests/Feature</directory>
+            <directory>domain/Chat/tests/Feature</directory>
+            <directory>domain/Plans/tests/Feature</directory>
+            <directory>domain/Processes/tests/Feature</directory>
+            <directory>domain/Rules/tests/Feature</directory>
+            <directory>domain/Sequences/tests/Feature</directory>
+            <directory>domain/Tasks/tests/Feature</directory>
         </testsuite>
         <testsuite name="Architecture">
             <directory>tests/Architecture</directory>

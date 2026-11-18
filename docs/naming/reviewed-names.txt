@@ -566,7 +566,6 @@ class	OpenLaunchStack
 class	OpenPlansCount
 class	OperationDeadline
 class	OutageReply
-class	OwnerSeeder
 class	Page
 class	PageChanged
 class	PageController
@@ -595,12 +594,10 @@ class	PlanRecords
 class	PlanRequest
 class	PlanSelection
 class	PlanStarted
-class	PlanTasksSeeder
 class	PlanWindowReader
 class	PlanWorkResultData
 class	PlansDomain
 class	PlansRequest
-class	PlansSeeder
 class	PlansServiceProvider
 class	PlansWindowReader
 class	PreToolBody
@@ -840,7 +837,6 @@ class	User
 class	UserActorRequired
 class	UserAssignees
 class	UserChannel
-class	UserFactory
 class	UserStacks
 class	Violation
 class	VisibilityChecks
@@ -1693,6 +1689,7 @@ method	DomainEntry::exportsName()
 method	DomainEntry::fromClass()
 method	DomainEntry::holdsFile()
 method	DomainEntry::holdsListenerFile()
+method	DomainEntry::isPackage()
 method	DomainEntry::listenerFolder()
 method	DomainEntry::migrationFolder()
 method	DomainEntry::nameOf()
@@ -1702,6 +1699,7 @@ method	DomainEntry::ownsName()
 method	DomainEntry::requiresDomain()
 method	DomainEntry::ui()
 method	DomainFiles::allIn()
+method	DomainFiles::domainCode()
 method	DomainFiles::in()
 method	DomainFiles::usesIn()
 method	DomainListedTwice::for()
@@ -2129,7 +2127,6 @@ method	OptionalOrMissing::optionalOrMissing()
 method	OutageReply::for()
 method	OutageReply::neutral()
 method	OutageReply::refusal()
-method	OwnerSeeder::run()
 method	Page::__construct()
 method	Page::actions()
 method	Page::at()
@@ -2249,10 +2246,6 @@ method	PlanStarter::start()
 method	PlanState::canStart()
 method	PlanState::hasEnded()
 method	PlanStateGroup::states()
-method	PlanTasksSeeder::readingTaskIds()
-method	PlanTasksSeeder::reproducingTaskIds()
-method	PlanTasksSeeder::startingTaskIds()
-method	PlanTasksSeeder::tasks()
 method	PlanWindowReader::__construct()
 method	PlanWindowReader::read()
 method	PlanWorkResultData::__construct()
@@ -2266,7 +2259,6 @@ method	PlansDomain::requires()
 method	PlansDomain::sections()
 method	PlansRequest::filters()
 method	PlansRequest::rules()
-method	PlansSeeder::run()
 method	PlansServiceProvider::boot()
 method	PlansServiceProvider::register()
 method	PlansWindowReader::__construct()
@@ -2937,9 +2929,6 @@ method	UserAssignees::requireEligible()
 method	UserChannel::__construct()
 method	UserChannel::join()
 method	UserChannel::nameFor()
-method	UserFactory::definition()
-method	UserFactory::unverified()
-method	UserFactory::withTwoFactor()
 method	UserStack::push()
 method	UserStacks::__construct()
 method	UserStacks::push()
@@ -3922,7 +3911,6 @@ property	UnjudgedCall::$reply
 property	UserAssignees::$access
 property	UserAssignees::$actors
 property	UserChannel::$access
-property	UserFactory::$model
 property	UserStacks::$actors
 property	UserStacks::$restorer
 property	UserStacks::$transaction

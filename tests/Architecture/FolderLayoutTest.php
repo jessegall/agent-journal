@@ -46,7 +46,7 @@ final class FolderLayoutTest extends TestCase
     {
         $misplaced = [];
 
-        foreach (DomainFiles::in([app_path(), base_path('domain')]) as $file) {
+        foreach (DomainFiles::in([app_path(), ...DomainFiles::domainCode()]) as $file) {
             $enums = (new NodeFinder)->findInstanceOf(ParsedFile::fromPath($file)->statements, Enum_::class);
 
             if ($enums !== [] && basename(dirname($file)) !== 'Enums') {
@@ -61,7 +61,7 @@ final class FolderLayoutTest extends TestCase
     {
         $misfits = [];
 
-        foreach (DomainFiles::in([app_path(), base_path('domain')]) as $file) {
+        foreach (DomainFiles::in([app_path(), ...DomainFiles::domainCode()]) as $file) {
             $type = FolderType::ofFolder(dirname($file));
 
             if ($type === null) {

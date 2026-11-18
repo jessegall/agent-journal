@@ -107,7 +107,7 @@ final class DomainDeclarationTest extends TestCase
         $sharedFolder = $appFolder.'/Domains';
         $starterKitFiles = array_map(fn (string $file) => "{$appFolder}/{$file}", self::STARTER_KIT_FILES);
         $rules = $this->rules($this->app->make(DomainRegistry::class));
-        $files = DomainFiles::in([base_path('domain')]);
+        $files = DomainFiles::in(DomainFiles::domainCode());
 
         $violations = [
             ...$rules->misnamedDomainClasses($files, 'Domain'),

@@ -34,7 +34,7 @@ final readonly class AreaCycles
     {
         $edges = [];
 
-        foreach (DomainFiles::in([$appFolder, $domainFolder]) as $path) {
+        foreach (DomainFiles::in([$appFolder, ...glob("{$domainFolder}/*/src", GLOB_ONLYDIR) ?: []]) as $path) {
             $user = self::areaOfFile($path, $appFolder, $domainFolder);
 
             if ($user === self::CORE_ROOT) {

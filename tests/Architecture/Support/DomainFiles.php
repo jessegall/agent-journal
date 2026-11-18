@@ -14,6 +14,16 @@ use SplFileInfo;
 final class DomainFiles
 {
     /**
+     * The code folder of every domain, domain/<Name>/src; a domain's tests beside it are not domain code.
+     *
+     * @return list<string>
+     */
+    public static function domainCode(): array
+    {
+        return glob(base_path('domain/*/src'), GLOB_ONLYDIR) ?: [];
+    }
+
+    /**
      * @param  list<string>  $folders
      * @return list<string>
      */

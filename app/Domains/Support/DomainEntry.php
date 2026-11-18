@@ -135,6 +135,14 @@ final readonly class DomainEntry
         return in_array($other->className(), $this->requires, true);
     }
 
+    /**
+     * Whether the domain is a package whose code sits in src, as every domain in domain/<Name> is.
+     */
+    private function isPackage(): bool
+    {
+        return basename($this->folder) === 'src';
+    }
+
     public function listenerFolder(): string
     {
         return $this->folder.'/Listeners';
@@ -142,7 +150,9 @@ final readonly class DomainEntry
 
     public function migrationFolder(): string
     {
-        return $this->folder.'/Database/Migrations';
+        // A domain package keeps Laravel's own layout beside its src (domain/<Name>/database/migrations); a flat test
+        // module keeps them in its class folder.
+        return $this->isPackage() ? dirname($this->folder).'/database/migrations' : $this->folder.'/Database/Migrations';
     }
 
     /**
