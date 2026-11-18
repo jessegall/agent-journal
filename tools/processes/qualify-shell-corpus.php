@@ -17,9 +17,11 @@ declare(strict_types=1);
 ini_set('memory_limit', '6G');
 
 const ROOT = __DIR__.'/../..';
-const CORPUS = ROOT.'/../shell-corpus-private';
+
+// A worker's worktree sits deeper than the project, so it names the corpus and the oracle through the environment.
+define('CORPUS', getenv('SHELL_CORPUS') ?: ROOT.'/../shell-corpus-private');
+define('ORACLE', getenv('SHELL_ORACLE') ?: ROOT.'/tools/shell-oracle/bin/shell-oracle');
 const WORK = CORPUS.'/qualification';
-const ORACLE = ROOT.'/tools/shell-oracle/bin/shell-oracle';
 const CHUNK_LINES = 50_000;
 const BUDGET_SECONDS = 1_800;
 const DECISIONS = __DIR__.'/shell-corpus-decisions.json';
