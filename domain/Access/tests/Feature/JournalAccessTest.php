@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Domain\Access\Tests\Feature;
 
+use App\Actors\Contracts\JournalAccessPolicy;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
 use App\Agents\Models\Agent;
-use App\Web\Contracts\JournalAccessPolicy;
 use Domain\Access\Database\Factories\UserFactory;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;

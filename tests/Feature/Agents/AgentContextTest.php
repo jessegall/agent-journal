@@ -128,7 +128,7 @@ final class AgentContextTest extends TestCase
         }
 
         $this->callAs($second)->assertJson(['agent' => $second->agent->id, 'session' => $second->session->id]);
-        $this->assertSame($second->session->id, $this->app->make(AgentContext::class)->sessionId);
+        $this->assertThrows(fn () => $this->app->make(AgentContext::class), AgentContextMissing::class);
     }
 
     /**

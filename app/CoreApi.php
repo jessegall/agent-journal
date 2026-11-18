@@ -4,19 +4,25 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Actors\Contracts\ActiveActorCounter;
+use App\Actors\Contracts\ActiveActorRegistration;
 use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\ActorProvider;
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\ActorReader;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Contracts\JournalAccessPolicy;
 use App\Actors\Contracts\ReceivesMessages;
 use App\Actors\Contracts\SendsMessages;
+use App\Actors\Contracts\UserPresences;
 use App\Actors\Enums\ActorType;
+use App\Actors\Exceptions\ActiveActorCounterRepeated;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Exceptions\ActorProviderRepeated;
 use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Exceptions\AgentActorRequired;
+use App\Actors\Exceptions\EngineActorRequired;
 use App\Actors\Exceptions\InvalidActorText;
 use App\Actors\Exceptions\SystemActorRequired;
 use App\Actors\Exceptions\UserActorRequired;
@@ -86,6 +92,7 @@ use App\Assignments\Support\AssignmentSet;
 use App\Assignments\Support\NumberedPage;
 use App\Assignments\Support\Page;
 use App\Assignments\Support\RecordIds;
+use App\Bus\Attributes\AllowsEngine;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresActor;
@@ -114,6 +121,7 @@ use App\Bus\Exceptions\CommandRetryExhausted;
 use App\Bus\Exceptions\CommandTransactionMismatch;
 use App\Bus\Exceptions\CommandTransactionMissing;
 use App\Bus\Exceptions\ContinuationCalledTwice;
+use App\Bus\Exceptions\DomainDisabled;
 use App\Bus\Exceptions\ExplicitTransactionInCommand;
 use App\Bus\Exceptions\HandlerInOtherOwner;
 use App\Bus\Exceptions\HandlerServesTwoCommands;
@@ -163,17 +171,20 @@ use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Support\MessageAddress;
 use App\Contracts\CommandHandler;
 use App\Contracts\CommandRefusal;
+use App\Contracts\DomainAvailability;
 use App\Contracts\Event;
 use App\Contracts\Listener;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Engine\Events\EngineTicked;
+use App\Engine\Values\FrameSettlement;
 use App\Exports\Exceptions\MalformedExports;
 use App\Exports\Support\ExportBuilder;
 use App\Exports\Support\Exports;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\Answer;
 use App\Hooks\Contracts\ConditionalState;
+use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Contracts\HookAnswerer;
 use App\Hooks\Contracts\HookInput;
@@ -207,6 +218,7 @@ use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Enums\TransitionType;
 use App\Hooks\Events\ContextWasCompacted;
 use App\Hooks\Events\StateTypesRequested;
+use App\Hooks\Exceptions\MonotonicClockWentBack;
 use App\Hooks\Exceptions\StackTransactionRequired;
 use App\Hooks\Exceptions\StateReferencesInvalid;
 use App\Hooks\Exceptions\StateSubjectMissing;
@@ -235,6 +247,7 @@ use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Hooks\States\AgentState;
+use App\Hooks\Ticks\ElapsedTime;
 use App\Http\Data\Assignments\RecordHolderData;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
 use App\Links\Events\LinksRemoved;
@@ -371,13 +384,16 @@ use App\Settings\Values\Decimal;
 use App\Settings\Values\GroupReference;
 use App\Settings\Values\SettingReference;
 use App\Settings\Values\SettingsChange;
+use App\Sharing\Commands\SaveSharePreview;
 use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Contracts\Shareable;
+use App\Sharing\Contracts\ShareCharges;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Contracts\ShareRecordProvider;
 use App\Sharing\Enums\ShareRelationType;
+use App\Sharing\Exceptions\ShareBudgetExceeded;
 use App\Sharing\Exceptions\SharingNotAllowed;
 use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewayEndpoint;
@@ -385,7 +401,7 @@ use App\Sharing\Support\GatewayHealth;
 use App\Sharing\Support\GatewayOperation;
 use App\Sharing\Support\GatewayReadiness;
 use App\Sharing\Support\GatewaySettings;
-use App\Sharing\Support\ShareBudget;
+use App\Sharing\Support\SavedSharePreview;
 use App\Sharing\Support\ShareCandidates;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\SharedContent;
@@ -450,7 +466,6 @@ use App\Ui\Enums\PageSkeleton;
 use App\Ui\Enums\SlotContextType;
 use App\Web\Commands\RecordUserHeartbeat;
 use App\Web\Contracts\CurrentUserReader;
-use App\Web\Contracts\JournalAccessPolicy;
 
 /**
  * Core's public surface: every type a domain or module may use, written out one by one. Everything else in Core is
@@ -495,6 +510,9 @@ final class CoreApi
                 ActorReader::class,
                 ActorProvider::class,
                 ActorProviderRegistration::class,
+                ActiveActorRegistration::class,
+                ActiveActorCounter::class,
+                UserPresences::class,
                 MessageAddressReader::class,
                 ConversationReader::class,
                 CommentReader::class,
@@ -503,6 +521,8 @@ final class CoreApi
                 HookInput::class,
                 StateRegistration::class,
                 ConditionalState::class,
+                ConditionalStateType::class,
+                DomainAvailability::class,
                 ReminderContribution::class,
                 Assignee::class,
                 Assignable::class,
@@ -550,6 +570,7 @@ final class CoreApi
                 SettingsAccessPolicy::class,
                 Shareable::class,
                 ShareRecordProvider::class,
+                ShareCharges::class,
                 ShareGateway::class,
                 ProvidesShareRecords::class,
                 ProvidesShareGateways::class,
@@ -672,6 +693,9 @@ final class CoreApi
                 HandledBy::class,
                 RepeatableRead::class,
                 RequiresActor::class,
+                AllowsEngine::class,
+                ElapsedTime::class,
+                FrameSettlement::class,
                 MiddlewareStage::class,
                 CommandScopeType::class,
                 CommandScope::class,
@@ -737,8 +761,8 @@ final class CoreApi
                 ShareRelation::class,
                 ShareRecordRegistration::class,
                 ShareSelection::class,
-                ShareBudget::class,
                 ShareCandidates::class,
+                SavedSharePreview::class,
                 ShareLinkedCandidate::class,
                 ShareRecordCard::class,
                 ShareRecords::class,
@@ -767,6 +791,7 @@ final class CoreApi
                 RecordUserHeartbeat::class,
                 MarkSilentSessions::class,
                 SettleFrameTimes::class,
+                SaveSharePreview::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,
@@ -785,6 +810,10 @@ final class CoreApi
                 ResetSettingGroup::class,
             )
             ->exceptions(
+                EngineActorRequired::class,
+                ActiveActorCounterRepeated::class,
+                MonotonicClockWentBack::class,
+                ShareBudgetExceeded::class,
                 SettingUnavailable::class,
                 SettingDisabled::class,
                 GroupSnapshotRequired::class,
@@ -796,6 +825,7 @@ final class CoreApi
                 SettingsUnavailable::class,
                 SettingReferenceInvalid::class,
                 SettingsOwnerUnknown::class,
+                DomainDisabled::class,
                 ContentMissing::class,
                 ContentTooLarge::class,
                 MarkdownInvalid::class,

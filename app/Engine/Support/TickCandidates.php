@@ -8,6 +8,7 @@ use App\Agents\Support\StackTarget;
 use App\Engine\Values\TickBatch;
 use App\Engine\Values\TickCandidate;
 use App\Engine\Values\TickCursor;
+use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\TickableState;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Exceptions\StateSchemaUnknown;
@@ -23,7 +24,7 @@ use PhpOption\Some;
 /**
  * Selects the ticking frames of a pass: open stacks that hold one, in stack and frame order from where the last pass
  * stopped, up to a limit, and restores only their ticking states, at most 100 references per type per read. Finished
- * frames are skipped and stay stored. The cursor lives as long as the engine process.
+ * frames and the frames of a switched-off type are skipped and stay stored. The cursor lives as long as the engine process.
  */
 final class TickCandidates
 {
@@ -135,6 +136,10 @@ final class TickCandidates
 
         foreach ($byType as $typeKey => $indexes) {
             $type = $this->types->registry()->get($typeKey);
+
+            if ($type instanceof ConditionalStateType && ! $type->isEnabled()) {
+                continue;
+            }
 
             foreach (array_chunk($indexes, StateReferences::MAXIMUM) as $batch) {
                 $states = $type->statesFor(new StateReferences(array_map(fn (int $index) => $selected[$index]->record->reference, $batch)));

@@ -6,7 +6,7 @@ namespace Tests\Fixtures\Domains\Pamphlets;
 
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Contracts\ShareRecordProvider;
-use App\Sharing\Support\ShareBudget;
+use App\Sharing\Contracts\ShareCharges;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\SharedContent;
 use App\Sharing\Support\ShareRecordCard;
@@ -26,22 +26,22 @@ final class PamphletShareProvider implements ShareRecordProvider
         return $record->type === 'pamphlets.pamphlet';
     }
 
-    public function preview(ShareSelection $selection, ShareBudget $budget): ShareRecordCard
+    public function preview(ShareSelection $selection, ShareCharges $budget): ShareRecordCard
     {
         return $this->card($selection->root);
     }
 
-    public function readTargets(ShareTargetRead $read, ShareBudget $budget): ShareRecords
+    public function readTargets(ShareTargetRead $read, ShareCharges $budget): ShareRecords
     {
         return new ShareRecords([], [], null);
     }
 
-    public function readRelated(ShareRelationRead $read, ShareBudget $budget): ShareRecords
+    public function readRelated(ShareRelationRead $read, ShareCharges $budget): ShareRecords
     {
         return new ShareRecords([], [], null);
     }
 
-    public function content(ShareContentRead $read, ShareBudget $budget): SharedContent
+    public function content(ShareContentRead $read, ShareCharges $budget): SharedContent
     {
         return new SharedContent($this->card($read->record), 'A pamphlet.');
     }

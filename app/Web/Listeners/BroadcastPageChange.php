@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Web\Listeners;
 
+use App\Actors\Contracts\JournalAccessPolicy;
 use App\Contracts\Listener;
 use App\Ui\Contracts\UpdatesUserInterface;
-use App\Web\Contracts\JournalAccessPolicy;
 use App\Web\Events\PageChanged;
 use Illuminate\Contracts\Events\Dispatcher;
 

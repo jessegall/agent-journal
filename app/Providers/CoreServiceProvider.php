@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Actors\Models\UserPresence;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\LaunchBypass;
 use App\Agents\Models\LaunchCredential;
 use App\Bus\Models\CommandReceipt;
 use App\Comments\Models\Comment;
+use App\Engine\Models\EngineFrameTime;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\HookCall;
 use App\Links\Models\Link;
@@ -46,6 +48,8 @@ final class CoreServiceProvider extends ServiceProvider
             'core.link' => Link::class,
             'core.comment' => Comment::class,
             'core.settings-record' => SettingsRecord::class,
+            'core.user-presence' => UserPresence::class,
+            'core.engine-frame-time' => EngineFrameTime::class,
             RetainedPage::LINK_TYPE => RetainedPage::class,
             CommandReceipt::LINK_TYPE => CommandReceipt::class,
             Share::LINK_TYPE => Share::class,

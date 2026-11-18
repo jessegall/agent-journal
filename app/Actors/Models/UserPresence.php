@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actors\Models;
 
 use App\Actors\Support\PresenceWindow;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -30,6 +31,7 @@ final class UserPresence extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     /**
      * @return array<string, string>
