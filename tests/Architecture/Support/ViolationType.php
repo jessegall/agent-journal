@@ -43,6 +43,7 @@ enum ViolationType: string
     case ModelNotLinkable = 'model-not-linkable';
     case RawRowAccess = 'raw-row-access';
     case ListenerRegisteredByHand = 'listener-registered-by-hand';
+    case ModelReadsUnbounded = 'model-reads-unbounded';
 
     public function reason(Violation $violation): string
     {
@@ -77,6 +78,7 @@ enum ViolationType: string
             self::OpenModel => "declares model {$violation->used}, which is open to mass assignment; close its guard",
             self::OpeningModelCall => "calls {$violation->used}, which opens a model to mass assignment",
             self::KeyNotUlid => "declares model {$violation->used}, whose key is no ULID; use HasUlids",
+            self::ModelReadsUnbounded => "declares model {$violation->used}, whose reads are not bounded; implement ReadableModel and use BoundedReads",
             self::ListenerRegisteredByHand => "registers a listener for {$violation->used} by hand; write a concrete typed listener in a Listeners folder",
             self::RawRowAccess => "calls {$violation->used}, which reaches rows past their model; use the model's scopes and methods (rule 25)",
             self::ModelNotLinkable => "declares model {$violation->used}, which cannot be linked; use Linkable (rule 29)",

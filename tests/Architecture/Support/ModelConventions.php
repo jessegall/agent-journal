@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Tests\Architecture\Support;
 
 use App\Links\Support\Linkable;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -78,6 +80,27 @@ final class ModelConventions
 
                 if (! in_array(Linkable::class, $traits, true)) {
                     $violations[] = new Violation($path, $line, $class, 'none', 'none', ViolationType::ModelNotLinkable);
+                }
+            }
+        }
+
+        return $violations;
+    }
+
+    /**
+     * Every model bounds its reads: it implements ReadableModel and uses BoundedReads.
+     *
+     * @param  list<string>  $files
+     * @return list<Violation>
+     */
+    public static function readPolicyViolations(array $files): array
+    {
+        $violations = [];
+
+        foreach (self::modelsIn($files) as $path => $models) {
+            foreach ($models as $line => $class) {
+                if (! is_subclass_of($class, ReadableModel::class) || ! in_array(BoundedReads::class, class_uses_recursive($class), true)) {
+                    $violations[] = new Violation($path, $line, $class, 'none', 'none', ViolationType::ModelReadsUnbounded);
                 }
             }
         }

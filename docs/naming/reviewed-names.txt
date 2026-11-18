@@ -198,6 +198,7 @@ case	ViolationType::ListenerRegisteredByHand
 case	ViolationType::MigrationNameTwice
 case	ViolationType::MisnamedDomainClass
 case	ViolationType::ModelNotLinkable
+case	ViolationType::ModelReadsUnbounded
 case	ViolationType::ModelTableElsewhere
 case	ViolationType::NamespaceOutsideDomain
 case	ViolationType::OpenModel
@@ -712,6 +713,7 @@ class	ReadLimitTooLarge
 class	ReadLog
 class	ReadOnlyHelperReadyState
 class	ReadOrder
+class	ReadPolicyMissing
 class	ReadReasonMissing
 class	ReadShapeUnsupported
 class	ReadTally
@@ -2338,6 +2340,7 @@ method	ModelConventions::listsFillableOnlyInTheAttribute()
 method	ModelConventions::modelViolations()
 method	ModelConventions::modelsIn()
 method	ModelConventions::openingCalls()
+method	ModelConventions::readPolicyViolations()
 method	ModelConventions::violationsOf()
 method	ModelReadAllRefused::for()
 method	ModelTables::in()
@@ -2726,6 +2729,7 @@ method	ReadOnlyHelperReadyState::onShellCommand()
 method	ReadOrder::__construct()
 method	ReadOrder::by()
 method	ReadOrder::newestFirst()
+method	ReadPolicyMissing::for()
 method	ReadReasonMissing::create()
 method	ReadShapeUnsupported::method()
 method	ReadTally::addCompletedQuery()

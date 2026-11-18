@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
-use App\Exports\Support\Exports;
-use App\Domains\Concerns\HasStates;
-use App\Domains\Concerns\HasAssignables;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
-use App\Domains\Support\Domain;
+use App\Domains\Concerns\HasAssignables;
+use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesStates;
+use App\Domains\Support\Domain;
+use App\Exports\Support\Exports;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Contracts\ProvidesSections;

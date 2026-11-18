@@ -39,18 +39,18 @@ final class PhaseTask extends Pivot implements ReadableModel
     protected $guarded = ['*'];
 
     /**
-     * The places of a phase in their order; the table has no created_at.
-     */
-    public function defaultReadOrder(): ReadOrder
-    {
-        return ReadOrder::by(['phase_tasks.phase_id', 'phase_tasks.position'], 'phase_tasks.id');
-    }
-
-    /**
      * @return array<string, string>
      */
     protected function casts(): array
     {
         return ['position' => 'integer'];
+    }
+
+    /**
+     * The places of a phase in their order; the table has no created_at.
+     */
+    public function defaultReadOrder(): ReadOrder
+    {
+        return ReadOrder::by(['phase_tasks.phase_id', 'phase_tasks.position'], 'phase_tasks.id');
     }
 }

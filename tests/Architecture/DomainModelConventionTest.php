@@ -55,13 +55,20 @@ final class DomainModelConventionTest extends TestCase
         $this->assertSame(['IntegerKeyModel' => 'key-not-ulid', 'UnlinkedModel' => 'model-not-linkable'], $this->typesByModel($violations));
     }
 
+    public function test_a_model_without_bounded_reads_fails(): void
+    {
+        $violations = ModelConventions::readPolicyViolations(DomainFiles::in([$this->fixtureFolder().'/Identity']));
+
+        $this->assertSame(['IntegerKeyModel', 'UnlinkedModel'], array_values(array_unique(array_map(fn (Violation $violation) => class_basename($violation->used), $violations))));
+    }
+
     public function test_the_models_of_the_domains_and_the_core_follow_rule_six(): void
     {
         $files = DomainFiles::in([
             ...array_map(fn (DomainEntry $entry) => $entry->folder, $this->app->make(DomainRegistry::class)->all()),
             app_path(),
         ]);
-        $violations = [...ModelConventions::modelViolations($files), ...ModelConventions::openingCalls($files), ...ModelConventions::identityViolations($files)];
+        $violations = [...ModelConventions::modelViolations($files), ...ModelConventions::openingCalls($files), ...ModelConventions::identityViolations($files), ...ModelConventions::readPolicyViolations($files)];
 
         $this->assertSame([], $violations, BoundaryReport::of($violations, base_path()));
     }

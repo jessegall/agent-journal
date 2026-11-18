@@ -7,6 +7,8 @@ namespace Tests\Fixtures\Modules\Ledger\Models;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -18,8 +20,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $title
  */
 #[Fillable(['title'])]
-final class Ledger extends Model implements Numbered
+final class Ledger extends Model implements Numbered, ReadableModel
 {
+    use BoundedReads;
     use HasNumber, HasUlids, Linkable;
 
     public const string LINK_TYPE = 'ledger.ledger';

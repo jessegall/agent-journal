@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Reads\Providers;
 
+use App\Reads\Contracts\ReadableModel;
 use App\Reads\Contracts\ReadMeter;
 use App\Reads\Exceptions\ReadLimitInvalid;
+use App\Reads\Exceptions\ReadPolicyMissing;
 use App\Reads\Support\ReadLog;
 use App\Reads\Support\ScopedReadMeter;
 use Illuminate\Console\Events\CommandFinished;
@@ -15,6 +17,7 @@ use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Queue\Events\JobFailed;
@@ -42,6 +45,14 @@ final class ReadsServiceProvider extends ServiceProvider
         if ($defaultLimit < 1 || $defaultLimit > $pageMax) {
             throw ReadLimitInvalid::configured($defaultLimit, $pageMax);
         }
+
+        $this->app->booted(static function (): void {
+            foreach (Relation::morphMap() as $linkType => $model) {
+                if (! is_subclass_of($model, ReadableModel::class)) {
+                    throw ReadPolicyMissing::for($model, $linkType);
+                }
+            }
+        });
 
         foreach ($databases->getConnections() as $connection) {
             self::countQueriesOn($connection);

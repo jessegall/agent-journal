@@ -195,6 +195,7 @@ use App\Reads\Exceptions\QueryInValueRead;
 use App\Reads\Exceptions\ReadLimitExceeded;
 use App\Reads\Exceptions\ReadLimitInvalid;
 use App\Reads\Exceptions\ReadLimitTooLarge;
+use App\Reads\Exceptions\ReadPolicyMissing;
 use App\Reads\Exceptions\ReadReasonMissing;
 use App\Reads\Exceptions\ReadShapeUnsupported;
 use App\Reads\Exceptions\RelationReadUndeclared;
@@ -405,6 +406,7 @@ final class CoreApi
                 UnassignRecord::class,
             )
             ->exceptions(
+                ReadPolicyMissing::class,
                 QueryInValueRead::class,
                 LazyLoadRefused::class,
                 StateReferencesInvalid::class,

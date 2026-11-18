@@ -8,6 +8,8 @@ use App\Assignments\Contracts\Assignable;
 use App\Assignments\Support\RecordIdentity;
 use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Links\Support\Linkable;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -25,9 +27,10 @@ use Illuminate\Support\Carbon;
  */
 #[Fillable(['text'])]
 #[Table('module_notes')]
-final class Note extends Model implements Assignable
+final class Note extends Model implements Assignable, ReadableModel
 {
     use BelongsToOneAgent, HasUlids;
+    use BoundedReads;
     use Linkable;
 
     /**

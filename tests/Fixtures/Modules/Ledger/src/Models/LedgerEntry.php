@@ -7,6 +7,8 @@ namespace Tests\Fixtures\Modules\Ledger\Models;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -20,8 +22,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $text
  */
 #[Fillable(['ledger_id', 'text'])]
-final class LedgerEntry extends Model implements Numbered
+final class LedgerEntry extends Model implements Numbered, ReadableModel
 {
+    use BoundedReads;
     use HasNumber, HasUlids, Linkable;
 
     public const string LINK_TYPE = 'ledger.entry';
@@ -36,6 +39,6 @@ final class LedgerEntry extends Model implements Numbered
 
     public function numberHolder(): Model
     {
-        return $this->ledger;
+        return $this->relationLoaded('ledger') ? $this->ledger : $this->ledger()->sole();
     }
 }

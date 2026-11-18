@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Domain\Access\Models;
 
 use App\Links\Support\Linkable;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Support\Carbon;
@@ -23,9 +25,9 @@ use Laravel\Passkeys\Passkey as PackagePasskey;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'credential_id', 'credential'])]
-final class Passkey extends PackagePasskey
+final class Passkey extends PackagePasskey implements ReadableModel
 {
-    use HasUlids, Linkable;
+    use BoundedReads, HasUlids, Linkable;
 
     /**
      * Empty, so the package's own list does not add to the Fillable attribute.

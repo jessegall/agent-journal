@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Cards;
 
-use App\Exports\Support\Exports;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Domains\Support\Domain;
+use App\Exports\Support\Exports;
 use Tests\Fixtures\Modules\Cards\CommandMiddleware\RecordCards;
 use Tests\Fixtures\Modules\Cards\Commands\DrawCard;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck;
