@@ -35,7 +35,6 @@ use Illuminate\Support\Str;
  * @property string $token
  * @property ActorType $author_type
  * @property string $author_id
- * @property string|null $session_id
  * @property int $base_revision_number
  * @property int $version
  * @property string $title
@@ -43,7 +42,7 @@ use Illuminate\Support\Str;
  * @property string $body
  * @property Carbon|null $updated_at
  */
-#[Fillable(['document_id', 'token', 'author_type', 'author_id', 'session_id', 'base_revision_number', 'title', 'abstract', 'body', 'opened_at'])]
+#[Fillable(['document_id', 'token', 'author_type', 'author_id', 'base_revision_number', 'title', 'abstract', 'body', 'opened_at'])]
 final class DocumentDraft extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
@@ -72,7 +71,6 @@ final class DocumentDraft extends Model implements ReadableModel
             'token' => Str::random(40),
             'author_type' => $editor->type(),
             'author_id' => $editor->id(),
-            'session_id' => $editor->sessionId,
             'base_revision_number' => $base->number,
             'title' => $base->title,
             'abstract' => $base->abstract,
@@ -82,14 +80,14 @@ final class DocumentDraft extends Model implements ReadableModel
     }
 
     /**
-     * The drafts an agent holds in one session, which close when that session ends.
+     * The draft an agent holds, which closes when the agent's session ends.
      *
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function heldBySession(Builder $query, string $agentId, string $sessionId): void
+    protected function heldByAgent(Builder $query, string $agentId): void
     {
-        $query->where('author_type', ActorType::Agent->value)->where('author_id', $agentId)->where('session_id', $sessionId);
+        $query->where('author_type', ActorType::Agent->value)->where('author_id', $agentId);
     }
 
     /**
@@ -105,7 +103,7 @@ final class DocumentDraft extends Model implements ReadableModel
      */
     public function requireEditor(Editor $editor): void
     {
-        $isTheEditor = $this->author_type === $editor->type() && $this->author_id === $editor->id() && $this->session_id === $editor->sessionId;
+        $isTheEditor = $this->author_type === $editor->type() && $this->author_id === $editor->id();
 
         if (! $isTheEditor) {
             throw DraftConflict::notYours();
@@ -173,7 +171,7 @@ final class DocumentDraft extends Model implements ReadableModel
     public function closeInto(Document $document, DocumentRevision $base, CloseCause $cause, Actor|null $closer, string|null $reason): DocumentClose
     {
         $published = $this->hasChangesFrom($base);
-        $resultNumber = $published ? $document->addRevision($this->title, $this->abstract, $this->body, $this->author_type, $this->author_id, $this->session_id)->number : $base->number;
+        $resultNumber = $published ? $document->addRevision($this->title, $this->abstract, $this->body, $this->author_type, $this->author_id)->number : $base->number;
         $close = DocumentClose::record($this, $resultNumber, $cause, $closer, $reason, $published);
 
         if ($published) {

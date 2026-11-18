@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('record_docks', function (Blueprint $table) {
             $table->ulid('id')->primary();
-            $table->ulid('session_id');
+            $table->string('recipient_type', 16);
+            $table->string('recipient_id');
             $table->string('parent_type', 32);
             $table->ulid('parent_id');
             $table->string('docked_by_type', 16);
@@ -22,8 +23,8 @@ return new class extends Migration
             $table->boolean('hidden_from_dock')->default(false);
             $table->timestampsTz();
 
-            $table->unique(['session_id', 'parent_type', 'parent_id'], 'record_docks_session_record_unique');
-            $table->index(['session_id', 'hidden_from_dock', 'docked_at', 'id'], 'record_docks_session_order');
+            $table->unique(['recipient_type', 'recipient_id', 'parent_type', 'parent_id'], 'record_docks_recipient_record_unique');
+            $table->index(['recipient_type', 'recipient_id', 'hidden_from_dock', 'docked_at', 'id'], 'record_docks_recipient_order');
         });
 
         DB::statement("ALTER TABLE record_docks ADD CONSTRAINT record_docks_parent_type CHECK (parent_type IN ('documents.document', 'documents.report'))");

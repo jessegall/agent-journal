@@ -34,10 +34,9 @@ use Illuminate\Support\Carbon;
  * @property string $body
  * @property ActorType $author_type
  * @property string $author_id
- * @property string|null $session_id
  * @property Carbon|null $closed_at
  */
-#[Fillable(['document_id', 'title', 'abstract', 'body', 'author_type', 'author_id', 'session_id', 'closed_at'])]
+#[Fillable(['document_id', 'title', 'abstract', 'body', 'author_type', 'author_id', 'closed_at'])]
 final class DocumentRevision extends Model implements Numbered, ReadableModel
 {
     use BoundedReads, HasNumber, HasUlids, Linkable, SearchesText;

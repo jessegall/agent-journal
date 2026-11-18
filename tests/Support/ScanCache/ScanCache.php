@@ -7,8 +7,8 @@ namespace Tests\Support\ScanCache;
 use Tests\Architecture\Support\ParsedFile;
 
 /**
- * Keeps each file's findings for each scan on disk, keyed by the file's content hash, so a run parses only the files
- * that changed since the last one. Parallel workers each write a whole new cache file and rename it into place.
+ * Keeps each file's findings for each scan on disk, keyed by its path with the hash of the content they were read
+ * from, so a run parses only the files that changed since the last one and a changed file replaces its old entry. Parallel workers each write a whole new cache file and rename it into place.
  */
 final class ScanCache
 {
@@ -43,14 +43,14 @@ final class ScanCache
         $byFile = [];
 
         foreach ($paths as $path) {
-            $hash = sha1($path."\0".file_get_contents($path));
+            $hash = sha1((string) file_get_contents($path));
 
-            if (! isset($stored[$hash])) {
+            if (($stored[$path]['hash'] ?? null) !== $hash) {
                 self::$parsedFiles++;
-                $stored[$hash] = $scan->findingsIn(ParsedFile::fromPath($path));
+                $stored[$path] = ['hash' => $hash, 'findings' => $scan->findingsIn(ParsedFile::fromPath($path))];
             }
 
-            $byFile[$path] = $stored[$hash];
+            $byFile[$path] = $stored[$path]['findings'];
         }
 
         self::write($cacheFile, $stored);
@@ -69,7 +69,7 @@ final class ScanCache
     }
 
     /**
-     * @return array<string, list<mixed>>
+     * @return array<string, array{hash: string, findings: list<mixed>}>
      */
     private static function read(string $cacheFile): array
     {
@@ -83,7 +83,7 @@ final class ScanCache
     }
 
     /**
-     * @param  array<string, list<mixed>>  $findings
+     * @param  array<string, array{hash: string, findings: list<mixed>}>  $findings
      */
     private static function write(string $cacheFile, array $findings): void
     {

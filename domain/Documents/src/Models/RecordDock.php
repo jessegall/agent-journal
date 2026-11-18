@@ -6,6 +6,7 @@ namespace Domain\Documents\Models;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
 use App\Assignments\Support\RecordIdentity;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
@@ -22,13 +23,14 @@ use Illuminate\Database\Eloquent\Model;
  * it keeps the row, and the record and its links stay as they were.
  *
  * @property string $id
- * @property string $session_id
+ * @property string $recipient_type
+ * @property string $recipient_id
  * @property string $parent_type
  * @property string $parent_id
  * @property bool $hidden_from_dock
  * @property CarbonImmutable $docked_at
  */
-#[Fillable(['session_id', 'parent_type', 'parent_id', 'docked_by_type', 'docked_by_id', 'docked_at'])]
+#[Fillable(['recipient_type', 'recipient_id', 'parent_type', 'parent_id', 'docked_by_type', 'docked_by_id', 'docked_at'])]
 final class RecordDock extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids, Linkable;
@@ -49,9 +51,9 @@ final class RecordDock extends Model implements ReadableModel
     /**
      * Docks the record in the session, or shows its card again when it was hidden.
      */
-    public static function dockIn(string $sessionId, RecordIdentity $record, Actor $actor): self
+    public static function dockIn(ActorIdentity $recipient, RecordIdentity $record, Actor $actor): self
     {
-        $dock = self::query()->where('session_id', $sessionId)->where('parent_type', $record->type)->where('parent_id', $record->id)->first();
+        $dock = self::query()->inDockOf($recipient)->where('parent_type', $record->type)->where('parent_id', $record->id)->first();
 
         if ($dock !== null) {
             $dock->hidden_from_dock = false;
@@ -61,7 +63,8 @@ final class RecordDock extends Model implements ReadableModel
         }
 
         return self::query()->create([
-            'session_id' => $sessionId,
+            'recipient_type' => $recipient->type->value,
+            'recipient_id' => $recipient->id,
             'parent_type' => $record->type,
             'parent_id' => $record->id,
             'docked_by_type' => $actor->actorType(),
@@ -73,9 +76,9 @@ final class RecordDock extends Model implements ReadableModel
     /**
      * Hides the record's card in the session; nothing else changes.
      */
-    public static function hideIn(string $sessionId, RecordIdentity $record): void
+    public static function hideIn(ActorIdentity $recipient, RecordIdentity $record): void
     {
-        self::query()->where('session_id', $sessionId)->where('parent_type', $record->type)->where('parent_id', $record->id)->update(['hidden_from_dock' => true]);
+        self::query()->inDockOf($recipient)->where('parent_type', $record->type)->where('parent_id', $record->id)->update(['hidden_from_dock' => true]);
     }
 
     /**
@@ -84,8 +87,8 @@ final class RecordDock extends Model implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function inSession(Builder $query, string $sessionId): void
+    protected function inDockOf(Builder $query, ActorIdentity $recipient): void
     {
-        $query->where('session_id', $sessionId)->orderByDesc('docked_at')->orderByDesc('id');
+        $query->where('recipient_type', $recipient->type->value)->where('recipient_id', $recipient->id)->orderByDesc('docked_at')->orderByDesc('id');
     }
 }

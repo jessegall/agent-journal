@@ -76,7 +76,7 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
             'creator_type' => $author->actorType(),
             'creator_id' => $author->actorId(),
         ]);
-        $document->addRevision($title, $abstract, $body->text, $author->actorType(), $author->actorId(), null);
+        $document->addRevision($title, $abstract, $body->text, $author->actorType(), $author->actorId());
 
         return $document;
     }
@@ -84,7 +84,7 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
     /**
      * Adds the next revision and makes it the document's current one.
      */
-    public function addRevision(string $title, string $abstract, string $body, ActorType $authorType, string $authorId, string|null $sessionId): DocumentRevision
+    public function addRevision(string $title, string $abstract, string $body, ActorType $authorType, string $authorId): DocumentRevision
     {
         $revision = $this->revisions()->create([
             'title' => $title,
@@ -92,7 +92,6 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
             'body' => $body,
             'author_type' => $authorType,
             'author_id' => $authorId,
-            'session_id' => $sessionId,
             'closed_at' => CarbonImmutable::now(),
         ]);
         $this->current_revision_id = $revision->id;

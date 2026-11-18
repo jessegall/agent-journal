@@ -8,11 +8,11 @@ use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
 
 /**
- * Who edits a document: the acting user, or the acting agent with its session.
+ * Who edits a document: the acting actor, a user or an agent.
  */
 final readonly class Editor
 {
-    public function __construct(public Actor $actor, public string|null $sessionId) {}
+    public function __construct(public Actor $actor) {}
 
     public function type(): ActorType
     {

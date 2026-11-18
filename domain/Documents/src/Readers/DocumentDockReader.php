@@ -29,8 +29,7 @@ final readonly class DocumentDockReader implements SectionReader
     public function read(SlotContext $context): DockData
     {
         $sessionId = (string) $context->id;
-        $this->sessions->requireActive($sessionId);
-        $docks = RecordDock::query()->inSession($sessionId)->readAll('a session dock holds the cards its agent made, shown ten at a time')->get();
+        $docks = RecordDock::query()->inDockOf($this->sessions->requireActive($sessionId)->actorIdentity())->readAll('a session dock holds the cards its agent made, shown ten at a time')->get();
         $visible = $this->cardsOf($docks->where('hidden_from_dock', false));
 
         return DockData::from([
