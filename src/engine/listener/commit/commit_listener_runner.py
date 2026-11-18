@@ -49,12 +49,15 @@ class CommitListenerRunner(RoundState):
         self.registry, self.log, self.container, self.errors, self.cursors, self.exceptions, self.scopes = registry, log, container, errors, cursors, exceptions, scopes
         self.positions: dict[str, int] = {}
         self.positions_stale = False
+        # listeners with no cursor row at the last read, so a round does not read every cursor again for them
+        self.names_without_cursor: set[str] = set()
         self.held_listeners: set[str] = set()
         self.heard_names: dict[tuple[str, str], bool] = {}
 
     def reset(self) -> None:
         self.positions = {}
         self.positions_stale = False
+        self.names_without_cursor = set()
 
     def run(self) -> None:
         self.flush_exceptions()
@@ -106,7 +109,7 @@ class CommitListenerRunner(RoundState):
 
     def run_rounds(self, entries: list[ListenerEntry], urgent_entries: list[ListenerEntry]) -> None:
         if self.positions_stale:
-            self.positions, self.positions_stale = {}, False
+            self.positions, self.positions_stale, self.names_without_cursor = {}, False, set()
         state = self.container.get(PerformanceState)
         boot_event = state.boot_event()
         for _ in range(CHAIN_LIMIT_ROUNDS):
@@ -141,8 +144,10 @@ class CommitListenerRunner(RoundState):
         return self.heard_names[key]
 
     def known_positions(self, entries: list[ListenerEntry]) -> dict[str, int]:
-        if any(entry.name not in self.positions for entry in entries):
+        names = {entry.name for entry in entries}
+        if not names <= self.positions.keys() | self.names_without_cursor:
             self.positions = self.cursors.positions()
+            self.names_without_cursor = names - self.positions.keys()
         return self.positions
 
     def run_entry(self, entry: ListenerEntry, urgent_entries: list[ListenerEntry], events: list[LoggedEvent]) -> bool:
