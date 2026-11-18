@@ -60,7 +60,7 @@ final class HookInputs
         return [
             'session start' => new SessionStarted($hook, new SessionStartDetails('vendor-1', SessionStartSource::Startup)),
             'prompt' => new PromptSubmitted($hook, new PromptDetails('prompt-1', 'Build the plan.')),
-            'shell command' => new ShellCommandRequested($hook, new ShellCommand('composer test', ShellDialect::Bash, ParseOutcome::Complete, [new CommandPart('composer', ['test'], CommandEffect::ChangesFiles, CommandType::TestRun)])),
+            'shell command' => new ShellCommandRequested($hook, new ShellCommand('composer test', ShellDialect::Bash, ParseOutcome::Complete, [new CommandPart('composer', ['test'], CommandEffect::ChangesFiles, CommandType::Verification)])),
             'file edit' => new FileEditRequested($hook, new FileChanges([new FileChange('app/Domains/Contracts/Domain.php', FileOperation::Edit)])),
             'stop' => new StopRequested($hook, new StopDetails('turn-1', false)),
             'compaction' => new ContextCompacted($hook, new CompactionDetails('compaction-1')),

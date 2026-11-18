@@ -307,14 +307,55 @@ use App\Numbers\Exceptions\InvalidRecordReference;
 use App\Numbers\Support\HasNumber;
 use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\RecordReference;
+use App\Processes\Contracts\CommandClassifier;
+use App\Processes\Contracts\FactOrigin;
+use App\Processes\Contracts\ProgramClassifier;
+use App\Processes\Contracts\ProvidesCommandRules;
 use App\Processes\Contracts\ShellCommandParser;
+use App\Processes\Enums\BindingType;
+use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\CommandEffect;
 use App\Processes\Enums\CommandType;
+use App\Processes\Enums\NodeType;
+use App\Processes\Enums\OperandType;
+use App\Processes\Enums\OutputRequirement;
 use App\Processes\Enums\ParseOutcome;
 use App\Processes\Enums\PartJoin;
+use App\Processes\Enums\RedirectType;
+use App\Processes\Enums\ScopeType;
 use App\Processes\Enums\ShellDialect;
+use App\Processes\Enums\UnresolvedType;
+use App\Processes\Enums\WordSegmentType;
+use App\Processes\Exceptions\CommandRuleConflict;
+use App\Processes\Exceptions\CommandRuleInvalid;
+use App\Processes\Exceptions\ShellNodeMissing;
+use App\Processes\Values\ArgumentGrammar;
+use App\Processes\Values\ClassFact;
+use App\Processes\Values\Classification;
+use App\Processes\Values\CommandClassSet;
+use App\Processes\Values\CommandOperation;
 use App\Processes\Values\CommandPart;
+use App\Processes\Values\CommandRule;
+use App\Processes\Values\ExecutableBinding;
+use App\Processes\Values\ExecutionContext;
+use App\Processes\Values\HereDocument;
+use App\Processes\Values\OptionGrammar;
+use App\Processes\Values\PartClassification;
+use App\Processes\Values\ProgramIdentity;
+use App\Processes\Values\ProgramSpellings;
+use App\Processes\Values\Redirect;
+use App\Processes\Values\RuleOrigin;
+use App\Processes\Values\RuleReference;
+use App\Processes\Values\RuleScope;
 use App\Processes\Values\ShellCommand;
+use App\Processes\Values\ShellNode;
+use App\Processes\Values\ShellTree;
+use App\Processes\Values\SourceRange;
+use App\Processes\Values\SyntaxOrigin;
+use App\Processes\Values\TreeDiagnostic;
+use App\Processes\Values\UnresolvedFact;
+use App\Processes\Values\Word;
+use App\Processes\Values\WordSegment;
 use App\Queries\Support\TextSearch;
 use App\Reads\Attributes\ReadBudget;
 use App\Reads\Contracts\ReadableModel;
@@ -563,6 +604,10 @@ final class CoreApi
                 ConversationReader::class,
                 CommentReader::class,
                 ShellCommandParser::class,
+                CommandClassifier::class,
+                ProvidesCommandRules::class,
+                ProgramClassifier::class,
+                FactOrigin::class,
                 HookAnswerer::class,
                 HookInput::class,
                 StateRegistration::class,
@@ -702,6 +747,40 @@ final class CoreApi
                 ShellCommandRequested::class,
                 ShellCommand::class,
                 CommandPart::class,
+                CommandClass::class,
+                CommandRule::class,
+                RuleScope::class,
+                ScopeType::class,
+                ProgramSpellings::class,
+                ArgumentGrammar::class,
+                OptionGrammar::class,
+                OperandType::class,
+                ExecutableBinding::class,
+                BindingType::class,
+                RuleReference::class,
+                ProgramIdentity::class,
+                CommandOperation::class,
+                CommandClassSet::class,
+                Classification::class,
+                PartClassification::class,
+                ClassFact::class,
+                UnresolvedFact::class,
+                UnresolvedType::class,
+                OutputRequirement::class,
+                RuleOrigin::class,
+                SyntaxOrigin::class,
+                ExecutionContext::class,
+                ShellTree::class,
+                ShellNode::class,
+                SourceRange::class,
+                Word::class,
+                WordSegment::class,
+                Redirect::class,
+                HereDocument::class,
+                TreeDiagnostic::class,
+                NodeType::class,
+                WordSegmentType::class,
+                RedirectType::class,
                 CommandType::class,
                 CommandEffect::class,
                 PartJoin::class,
@@ -1001,6 +1080,9 @@ final class CoreApi
                 MiddlewareSwallowedFailure::class,
                 NestedCommandFailureIgnored::class,
                 OperationUnavailable::class,
+                CommandRuleInvalid::class,
+                CommandRuleConflict::class,
+                ShellNodeMissing::class,
                 ResourceMimeTypeRefused::class,
                 ToolArgumentInvalid::class,
                 ToolArgumentUnknown::class,

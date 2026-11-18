@@ -48,12 +48,12 @@ final class RoleReadyTest extends TestCase
     public static function commandsWithoutAlias(): iterable
     {
         foreach (self::roles() as $role => [$ready]) {
-            yield "{$role}, a test run" => [$ready, self::line([self::part(CommandType::TestRun)])];
+            yield "{$role}, a test run" => [$ready, self::line([self::part(CommandType::Verification)])];
             yield "{$role}, a build" => [$ready, self::line([self::part(CommandType::Build)])];
             yield "{$role}, an unnamed program" => [$ready, self::line([self::part(CommandType::Unknown)])];
             yield "{$role}, a test run piped behind a read" => [$ready, self::line([
                 self::part(CommandType::Ordinary, join: PartJoin::Pipe),
-                self::part(CommandType::TestRun),
+                self::part(CommandType::Verification),
             ])];
             yield "{$role}, a dynamic expansion" => [$ready, self::line([self::part(CommandType::Ordinary)], ParseOutcome::DynamicExpansion)];
             yield "{$role}, an unparsed line" => [$ready, self::line([], ParseOutcome::Unparsed)];

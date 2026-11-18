@@ -13,6 +13,8 @@ use App\Domains\Exceptions\DomainListedTwice;
 use App\Domains\Exceptions\DomainNotFound;
 use App\Domains\Exceptions\RequiredDomainMissing;
 use App\Mcp\Contracts\McpRegistration;
+use App\Processes\Support\CommandRuleRegistry;
+use App\Processes\Values\CommandRule;
 use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Support\CoreSettings;
@@ -108,6 +110,16 @@ final readonly class DomainRegistry
     public function commandDeclarations(CommandOwner $core): CommandRegistry
     {
         return CommandRegistry::from([$core, ...array_map(fn (DomainEntry $entry) => $entry->commandOwner(), $this->all())]);
+    }
+
+    /**
+     * Core's built-in command rules with every domain's own, which wait for review.
+     *
+     * @param  list<CommandRule>  $coreRules
+     */
+    public function commandRules(array $coreRules): CommandRuleRegistry
+    {
+        return CommandRuleRegistry::from([...$coreRules, ...array_merge(...array_map(fn (DomainEntry $entry): array => $entry->commandRules(), $this->all()))]);
     }
 
     /**

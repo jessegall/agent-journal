@@ -24,6 +24,9 @@ use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Contracts\ProvidesMcpTools;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
+use App\Processes\Contracts\ProvidesCommandRules;
+use App\Processes\Values\CommandRule;
+use App\Processes\Values\RuleScope;
 use App\Records\Contracts\RecordProvider;
 use App\Settings\Contracts\ProvidesSettings;
 use App\Settings\Contracts\SettingsDefinition;
@@ -332,6 +335,22 @@ final readonly class DomainEntry
     public function assignees(): array
     {
         return $this->domain instanceof ProvidesAssignees ? $this->domain->assignees() : [];
+    }
+
+    /**
+     * The command rules this domain declares for its own programs, owned by it as a module so they wait for review;
+     * none without ProvidesCommandRules.
+     *
+     * @return list<CommandRule>
+     */
+    public function commandRules(): array
+    {
+        if (! $this->domain instanceof ProvidesCommandRules) {
+            return [];
+        }
+        $scope = RuleScope::module($this->name, '');
+
+        return array_map(fn (CommandRule $rule): CommandRule => $rule->ownedBy($scope, $rule->revision), $this->domain->commandRules());
     }
 
     /**

@@ -81,7 +81,7 @@ final class CommandFactsTest extends TestCase
         $this->assertSame(ParseOutcome::Complete, $command->outcome);
         $this->assertSame(['composer', 'tee', 'git'], array_map(fn ($part) => $part->program, $command->parts));
         $this->assertSame([PartJoin::Pipe, PartJoin::Sequence, PartJoin::End], array_map(fn ($part) => $part->join, $command->parts));
-        $this->assertSame([CommandType::TestRun, CommandType::Ordinary, CommandType::Ordinary], array_map(fn ($part) => $part->type, $command->parts));
+        $this->assertSame([CommandType::Verification, CommandType::Ordinary, CommandType::Ordinary], array_map(fn ($part) => $part->type, $command->parts));
         $this->assertSame(CommandEffect::ChangesFiles, $command->parts[1]->effect);
         $this->assertSame(['test'], $command->parts[0]->arguments);
     }
@@ -95,7 +95,7 @@ final class CommandFactsTest extends TestCase
         $this->assertSame(CommandEffect::ReadsOnly, $command->parts[0]->effect);
     }
 
-    public function test_a_comment_or_a_flag_does_not_make_a_test_run_saved(): void
+    public function test_a_comment_or_a_flag_does_not_make_a_check_saved(): void
     {
         foreach (['composer test --saved', 'SAVED=1 composer test', 'composer test # journal'] as $line) {
             $this->assertTrue($this->parse($line)->needsAlias(), $line);
