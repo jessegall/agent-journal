@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Sharing\ProbeChallengeController;
 use App\Http\Controllers\Sharing\ReadShareController;
 use App\Http\Controllers\Sharing\SharingAssetController;
 use Illuminate\Support\Facades\Route;
@@ -12,3 +13,6 @@ Route::match(['GET', 'HEAD'], '/s/{token}/{path?}', ReadShareController::class)
 
 Route::match(['GET', 'HEAD'], '/build-sharing/{file}', SharingAssetController::class)
     ->where('file', '[A-Za-z0-9._/-]+');
+
+Route::get('/_probe/{challenge}', ProbeChallengeController::class)
+    ->where('challenge', '[a-f0-9]{32}');

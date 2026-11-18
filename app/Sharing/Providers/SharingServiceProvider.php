@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Sharing\Providers;
 
 use App\Sharing\Contracts\SharePolicy;
+use App\Sharing\Gateways\Tunler\TunlerGateway;
 use App\Sharing\Support\OwnerSharePolicy;
 use App\Sharing\Support\ShareGatewayRegistry;
 use App\Sharing\Support\ShareRecordRegistry;
@@ -26,6 +27,7 @@ final class SharingServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->app->make(ShareGatewayRegistry::class)->register(TunlerGateway::KEY, TunlerGateway::class);
         $this->app->booted(fn () => $this->app->make(ShareRecordRegistry::class)->checkRelations());
     }
 }
