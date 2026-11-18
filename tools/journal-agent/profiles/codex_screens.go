@@ -41,6 +41,8 @@ func (Codex) Screens() screen.Layout {
 			codexMenu("question", "human_input", "question requested", "none of the above", "free-form"),
 			codexMenu("resume-session", "human_input", "resume a previous session", "fork a previous session",
 				"current directory"),
+			codexMenu("model-picker", "human_input", "select model and effort", "(current)", "enter select",
+				"esc back"),
 			codexMenu("approval", "permission_required", "would you like to", "yes, proceed",
 				"what to do differently", "grant these permissions", "this host"),
 		},
