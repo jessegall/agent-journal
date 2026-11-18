@@ -9,11 +9,12 @@ use App\Processes\Exceptions\ReaderDefinitionInvalid;
 
 /**
  * One rule of a reader: a role and a pattern of literal text with named placeholders ({failed:int}, {name:word},
- * {message:rest}). The pattern compiles to an anchored expression of possessive matches, so it never backtracks.
+ * {message:rest}); a word stops at a space or a quote. The pattern compiles to an anchored expression of possessive
+ * matches, so it never backtracks.
  */
 final readonly class RecordRule
 {
-    private const array PLACEHOLDERS = ['int' => '\d++', 'word' => '\S++', 'rest' => '.*+'];
+    private const array PLACEHOLDERS = ['int' => '\d++', 'word' => '[^\s\'"]++', 'rest' => '.*+'];
 
     private function __construct(
         public RecordRole $role,

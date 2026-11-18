@@ -7,8 +7,7 @@ namespace Domain\Plans\Tests\Feature;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
-use App\Assignments\Commands\AssignRecord;
-use App\Bus\Contracts\CommandBus;
+use App\Agents\Models\Agent;
 use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Support\OpenTiming;
 use App\Processes\Values\TimingVerdict;
@@ -18,8 +17,8 @@ use Domain\Plans\Support\PhaseTiming;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
-use Tests\Fixtures\Agents\TestLaunch;
-use Tests\Support\RefreshHookDatabase;
+use Tests\Support\AssignmentWriterInTransaction;
+use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 
 /**
@@ -28,9 +27,11 @@ use Tests\Support\TestIds;
  */
 final class PhaseTimingTest extends TestCase
 {
-    use RefreshHookDatabase;
+    use CommitsHookRows;
 
-    private TestLaunch $launch;
+    private const array TABLES = ['agents', 'tasks', 'plans', 'phases', 'phase_tasks', 'assignments'];
+
+    private Agent $agent;
 
     /**
      * @var list<Task>
@@ -41,14 +42,14 @@ final class PhaseTimingTest extends TestCase
     {
         parent::setUp();
 
-        $this->launch = TestLaunch::start();
+        $this->agent = Agent::query()->create(['name' => 'Worker', 'role' => 'hooks.writing_helper_ready']);
         $plan = Plan::factory()->create(['title' => 'Phase timing']);
         Plan::query()->whereKey($plan->id)->update(['state' => PlanState::Started->value]);
         $this->tasks = [Task::factory()->create(['title' => 'First']), Task::factory()->create(['title' => 'Second'])];
         $plan->addPhase('Build')->addTasks(array_map(fn (Task $task): string => $task->id, $this->tasks));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
-        $recipient = ActorIdentity::of($this->launch->agent);
-        $this->app->make(CommandBus::class)->run(new AssignRecord($plan->assignmentIdentity(), $recipient));
+        $writer = $this->app->make(AssignmentWriterInTransaction::class);
+        $writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->agent));
     }
 
     public function test_the_plans_domain_fills_the_timing_seam(): void
@@ -86,7 +87,7 @@ final class PhaseTimingTest extends TestCase
     private function timingForAgent(): TimingVerdict
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->launch->agent->id));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agent->id));
 
         return $this->app->make(VerificationTiming::class)->forCaller();
     }

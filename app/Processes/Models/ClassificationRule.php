@@ -8,6 +8,7 @@ use App\Links\Support\Linkable;
 use App\Processes\Casts\RuleScopeCast;
 use App\Processes\Enums\ClassificationState;
 use App\Processes\Exceptions\ClassificationRuleRefused;
+use App\Processes\Values\CommandRule;
 use App\Processes\Values\RuleScope;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -54,17 +55,17 @@ final class ClassificationRule extends Model implements ReadableModel
     }
 
     /**
-     * The rule a revision belongs to, or a new rule with no active revision yet that its first activation saves.
+     * The project's classification rule of a declaration, or a new one not yet active when it has none.
      */
-    public static function forRevision(RuleRevision $revision): self
+    public static function forRule(string $projectKey, CommandRule $rule): self
     {
         return self::query()
-            ->ofProject($revision->project_key)
-            ->ofRule($revision->scope, $revision->rule_id)
+            ->ofProject($projectKey)
+            ->ofRule($rule->scope, $rule->id)
             ->firstOrNew([], [
-                'project_key' => $revision->project_key,
-                'scope' => $revision->scope,
-                'rule_id' => $revision->rule_id,
+                'project_key' => $projectKey,
+                'scope' => $rule->scope,
+                'rule_id' => $rule->id,
                 'active_revision' => 0,
             ]);
     }
@@ -132,7 +133,7 @@ final class ClassificationRule extends Model implements ReadableModel
     /**
      * @throws ClassificationRuleRefused
      */
-    private function checkExpected(int $expectedRevision): void
+    public function checkExpected(int $expectedRevision): void
     {
         if ($expectedRevision !== $this->active_revision) {
             throw ClassificationRuleRefused::stale($this->rule_id, $expectedRevision, $this->active_revision);

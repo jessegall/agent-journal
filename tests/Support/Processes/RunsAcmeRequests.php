@@ -118,18 +118,15 @@ trait RunsAcmeRequests
 
     private function asAgent(object $command): mixed
     {
-        return $this->runAs(ActorContext::forAgent($this->launch->agent->id), $command);
+        $this->launch->startRequest($this->app);
+
+        return $this->app->make(CommandBus::class)->run($command);
     }
 
     private function asUser(object $command): mixed
     {
-        return $this->runAs(ActorContext::forUser(TestIds::of(7)), $command);
-    }
-
-    private function runAs(ActorContext $actor, object $command): mixed
-    {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set($actor);
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
 
         return $this->app->make(CommandBus::class)->run($command);
     }

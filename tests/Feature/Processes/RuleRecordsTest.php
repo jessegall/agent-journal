@@ -157,7 +157,7 @@ final class RuleRecordsTest extends TestCase
         $first = $this->approve($this->statusRule(), []);
         $second = $this->approve($this->statusRule(), []);
 
-        $rule = ClassificationRule::forRevision($first);
+        $rule = ClassificationRule::forRule(self::PROJECT, $first->payload);
         $rule->activate($first, 0);
         $this->assertThrows(fn () => $rule->activate($second, 0), ClassificationRuleRefused::class);
         $rule->activate($second, 1);
@@ -173,7 +173,7 @@ final class RuleRecordsTest extends TestCase
         $this->assertSame(ClassificationState::Active, $rule->state);
         $this->assertSame($first->id, $rule->active_revision_id);
         $this->assertSame(1, $rule->active_revision);
-        $this->assertSame($rule->id, ClassificationRule::forRevision($second)->id);
+        $this->assertSame($rule->id, ClassificationRule::forRule(self::PROJECT, $second->payload)->id);
     }
 
     public function test_a_revision_of_another_rule_is_refused(): void
@@ -181,7 +181,7 @@ final class RuleRecordsTest extends TestCase
         $status = $this->approve($this->statusRule(), []);
         $check = $this->approve($this->checkRule(), [new ReaderApproval('reader-revision-1', 'proof-1')]);
 
-        $rule = ClassificationRule::forRevision($status);
+        $rule = ClassificationRule::forRule(self::PROJECT, $status->payload);
         $rule->activate($status, 0);
 
         $this->assertThrows(fn () => $rule->activate($check, 1), ClassificationRuleRefused::class);
@@ -190,7 +190,7 @@ final class RuleRecordsTest extends TestCase
     public function test_another_project_key_sees_no_row(): void
     {
         $revision = $this->approve($this->statusRule(), []);
-        ClassificationRule::forRevision($revision)->activate($revision, 0);
+        ClassificationRule::forRule(self::PROJECT, $revision->payload)->activate($revision, 0);
 
         $this->assertSame(0, RuleProposal::query()->ofProject('other-project')->count());
         $this->assertSame(0, RuleProposalRevision::query()->ofProject('other-project')->count());

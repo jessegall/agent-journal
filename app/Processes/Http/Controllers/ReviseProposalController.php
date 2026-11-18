@@ -15,13 +15,13 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class ReviseProposalController
 {
-    public function __construct(private RuleDeclarations $declarations, private CommandBus $commands) {}
+    public function __construct(private RuleDeclarations $declarations) {}
 
-    public function __invoke(DeclarationRequest $request, string $proposal): JsonResponse
+    public function __invoke(DeclarationRequest $request, string $proposal, CommandBus $commands): JsonResponse
     {
         $declared = $this->declarations->readOne($request->declaration());
         $command = new ReviseRuleProposal($proposal, $request->expectedRevision(), $declared->proposed);
 
-        return new JsonResponse($this->commands->run($command)->toArray());
+        return new JsonResponse($commands->run($command)->toArray());
     }
 }

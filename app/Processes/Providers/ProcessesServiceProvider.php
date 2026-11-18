@@ -33,7 +33,6 @@ use App\Processes\Contracts\AliasReader;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\CommandRuleReader;
 use App\Processes\Contracts\OutputRecorder;
-use App\Processes\Contracts\ProcessRunner;
 use App\Processes\Contracts\ResultPublisher;
 use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Contracts\ShellAdmission;
@@ -69,7 +68,6 @@ use App\Processes\Support\RequiredServices;
 use App\Processes\Support\ReceiptPublisher;
 use App\Processes\Support\ShellParser;
 use App\Processes\Support\SpoolRecorder;
-use App\Processes\Support\SupervisedRunner;
 use App\Processes\Syntax\TreeParser;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
@@ -98,7 +96,6 @@ final class ProcessesServiceProvider extends ServiceProvider
             ->give(fn (Application $app): CommandRuleRegistry => $app->make(ActiveRules::class)->registry());
         $this->app->scoped(AliasReader::class, CommandAliases::class);
         $this->app->scoped(OutputRecorder::class, SpoolRecorder::class);
-        $this->app->scoped(ProcessRunner::class, SupervisedRunner::class);
         $this->app->singleton(
             JournalRoutes::class,
             fn (Application $app) => JournalRoutes::fromCommands($app->make(ConsoleKernel::class)->all()),

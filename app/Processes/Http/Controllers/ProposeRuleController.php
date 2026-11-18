@@ -15,13 +15,13 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class ProposeRuleController
 {
-    public function __construct(private RuleDeclarations $declarations, private CommandBus $commands) {}
+    public function __construct(private RuleDeclarations $declarations) {}
 
-    public function __invoke(DeclarationRequest $request, string $commandRequest): JsonResponse
+    public function __invoke(DeclarationRequest $request, string $commandRequest, CommandBus $commands): JsonResponse
     {
         $declared = $this->declarations->readOne($request->declaration());
         $command = new ProposeCommandRule($commandRequest, $declared->requestId, $declared->proposed);
 
-        return new JsonResponse($this->commands->run($command)->toArray());
+        return new JsonResponse($commands->run($command)->toArray());
     }
 }

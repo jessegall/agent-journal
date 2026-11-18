@@ -44,7 +44,7 @@ final class RunReconcileTest extends TestCase
 
         config(['processes.runner' => true]);
         $this->launch = TestLaunch::start();
-        $this->setActor(ActorContext::forAgent($this->launch->agent->id));
+        $this->launch->startRequest($this->app);
         $context = ExecutionContext::inFolder(base_path());
         $admissions = $this->app->make(ShellAdmission::class);
         $admission = $admissions->admit('cat composer.json', ShellDialect::Bash, $context, 'key-1');

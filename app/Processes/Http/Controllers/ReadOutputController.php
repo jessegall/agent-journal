@@ -27,14 +27,13 @@ final readonly class ReadOutputController
 {
     public function __construct(
         private StoredOutput $output,
-        private CommandBus $commands,
         private ResultReceipts $receipts,
     ) {}
 
-    public function __invoke(ReadOutputRequest $request, ProcessRun $processRun): JsonResponse
+    public function __invoke(ReadOutputRequest $request, ProcessRun $processRun, CommandBus $commands): JsonResponse
     {
         if ($request->mode() === 'summary') {
-            return $this->summary($processRun);
+            return $this->summary($processRun, $commands);
         }
         $part = $processRun->parts()->where('syntax_node', $request->partNode())->orderByDesc('attempt')->firstOrFail();
         $stream = $request->stream();
@@ -49,7 +48,7 @@ final readonly class ReadOutputController
             'search' => [],
             default => [EvidenceRange::bytes($part->id, $source, 0, $shown['length'])],
         };
-        $this->commands->run(new RecordEvidenceReads($processRun->id, $ranges));
+        $commands->run(new RecordEvidenceReads($processRun->id, $ranges));
 
         return new JsonResponse(['label' => 'diagnostic output', 'stream' => $stream->value, ...$shown]);
     }
@@ -85,11 +84,11 @@ final readonly class ReadOutputController
         return 'result unavailable: '.implode(', ', $codes);
     }
 
-    private function summary(ProcessRun $run): JsonResponse
+    private function summary(ProcessRun $run, CommandBus $commands): JsonResponse
     {
         $parts = $run->parts()->orderBy('syntax_node')->orderBy('attempt')->readLimit(500)->get();
         $envelopes = $parts->map(fn (PartRun $part): EvidenceRange => EvidenceRange::envelope($part->id))->all();
-        $this->commands->run(new RecordEvidenceReads($run->id, array_values($envelopes)));
+        $commands->run(new RecordEvidenceReads($run->id, array_values($envelopes)));
 
         return new JsonResponse([
             'label' => 'diagnostic output',

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
 use App\Processes\Commands\CleanProcessOutput;
 use App\Processes\Commands\VerifyRestoredOutput;
 use App\Processes\Contracts\ShellAdmission;
@@ -96,8 +94,7 @@ final class OutputCleanupTest extends TestCase
 
     private function admitCat(string $key): Admission
     {
-        $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->launch->agent->id));
+        $this->launch->startRequest($this->app);
 
         return $this->app->make(ShellAdmission::class)
             ->admit('cat composer.json', ShellDialect::Bash, ExecutionContext::inFolder(base_path()), $key);

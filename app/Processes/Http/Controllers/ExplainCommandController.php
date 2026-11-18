@@ -21,25 +21,25 @@ final readonly class ExplainCommandController
 {
     private const string NOTICE = 'Nothing in this request started.';
 
-    public function __construct(private Explanations $explanations, private CommandBus $commands) {}
+    public function __construct(private Explanations $explanations) {}
 
-    public function __invoke(ExplainCommandRequest $request): ExplanationData
+    public function __invoke(ExplainCommandRequest $request, CommandBus $commands): ExplanationData
     {
         $explanation = $this->explanations->explain($request->line(), $request->dialect());
         if ($explanation->held === []) {
             return $explanation;
         }
         $held = array_map(
-            fn (HeldPartData $part): HeldPartData => $this->withRequest($part, $request),
+            fn (HeldPartData $part): HeldPartData => $this->withRequest($part, $request, $commands),
             $explanation->held,
         );
 
         return ExplanationData::from([...$explanation->toArray(), 'held' => $held, 'notice' => self::NOTICE]);
     }
 
-    private function withRequest(HeldPartData $part, ExplainCommandRequest $request): HeldPartData
+    private function withRequest(HeldPartData $part, ExplainCommandRequest $request, CommandBus $commands): HeldPartData
     {
-        $requestId = $this->commands->run(new OpenCommandRequest(
+        $requestId = $commands->run(new OpenCommandRequest(
             $part->operation,
             hash('sha256', $part->operation),
             $request->line(),

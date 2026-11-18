@@ -15,11 +15,14 @@ final readonly class ReadOrder
     private function __construct(public array $columns) {}
 
     /**
-     * Newest first: created_at descending, then the key descending, both qualified by the table.
+     * Newest first: the creation time descending, then the key descending, both qualified by the table.
      */
-    public static function newestFirst(string $table, string $key): self
+    public static function newestFirst(string $table, string $createdAt, string $key): self
     {
-        return new self([['column' => "{$table}.created_at", 'direction' => 'desc'], ['column' => "{$table}.{$key}", 'direction' => 'desc']]);
+        return new self([
+            ['column' => "{$table}.{$createdAt}", 'direction' => 'desc'],
+            ['column' => "{$table}.{$key}", 'direction' => 'desc'],
+        ]);
     }
 
     /**

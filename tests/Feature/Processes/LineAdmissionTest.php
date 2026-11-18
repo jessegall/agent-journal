@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
 use App\Processes\Contracts\ShellAdmission;
 use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Enums\RefusalCode;
@@ -89,12 +87,12 @@ final class LineAdmissionTest extends TestCase
         config(['processes.runner' => false]);
         $switchedOff = $this->refusalOf($this->admit('cat composer.json', 'key-1'));
         $this->assertSame(RefusalCode::RunnerUnavailable, $switchedOff->code);
+        $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
 
         Schema::drop('module_rule_bundles');
         $broken = $this->refusalOf($this->admit('cat composer.json', 'key-2'));
 
         $this->assertSame(RefusalCode::ClassificationUnavailable, $broken->code);
-        $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
     }
 
     public function test_a_secret_in_an_assignment_never_shows_in_the_refusal(): void
@@ -107,8 +105,7 @@ final class LineAdmissionTest extends TestCase
 
     private function admit(string $line, string $key): Admission
     {
-        $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->launch->agent->id));
+        $this->launch->startRequest($this->app);
 
         return $this->app->make(ShellAdmission::class)
             ->admit($line, ShellDialect::Bash, ExecutionContext::inFolder(base_path()), $key);

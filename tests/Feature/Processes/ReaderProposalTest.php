@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Processes\Commands\OpenCommandRequest;
@@ -184,8 +182,7 @@ final class ReaderProposalTest extends TestCase
 
     private function runAsAgent(object $command): mixed
     {
-        $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->launch->agent->id));
+        $this->launch->startRequest($this->app);
 
         return $this->app->make(CommandBus::class)->run($command);
     }

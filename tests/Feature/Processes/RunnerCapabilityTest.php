@@ -4,26 +4,26 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
-use App\Processes\Contracts\ProcessRunner;
-use App\Processes\Exceptions\OutputHiddenRefused;
-use App\Processes\Exceptions\RunnerUnavailable;
+use App\Processes\Contracts\ShellAdmission;
+use App\Processes\Enums\RefusalCode;
+use App\Processes\Enums\ShellDialect;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Support\SpoolRecorder;
-use App\Processes\Values\AdmittedRun;
+use App\Processes\Values\Admission;
+use App\Processes\Values\AdmissionRefusal;
+use App\Processes\Values\ExecutionContext;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Agents\TestLaunch;
-use Tests\Fixtures\Processes\TestAdmissions;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\TestCase;
 
 /**
- * The supervised runner starts nothing while its host capability is off, and with it on the demonstrations run with a
- * record, an own exit and full output per part (doc 21 revision 6, sections 53, 56 and 73).
+ * The shell admission starts nothing while the runner's host capability is off; with it on, each demonstration
+ * process:run executes runs with a record, an own exit and full output per part (doc 21 revision 6, sections 53,
+ * 56 and 73).
  */
 final class RunnerCapabilityTest extends TestCase
 {
@@ -48,21 +48,21 @@ final class RunnerCapabilityTest extends TestCase
 
     public function test_with_the_capability_off_nothing_starts(): void
     {
-        $this->expectException(RunnerUnavailable::class);
+        $refusal = $this->admit('echo hi')->decision;
 
-        $this->runner()->start($this->admit('echo hi'));
+        $this->assertInstanceOf(AdmissionRefusal::class, $refusal);
+        $this->assertSame(RefusalCode::RunnerUnavailable, $refusal->code);
+        $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
     }
 
     public function test_a_check_whose_status_a_pipe_would_lose_is_refused_before_anything_starts(): void
     {
         config(['processes.runner' => true]);
 
-        try {
-            $this->runner()->start($this->admit('vendor/bin/phpstan analyse | grep error'));
-            $this->fail('The piped check was started.');
-        } catch (OutputHiddenRefused $refusal) {
-            $this->assertStringContainsString('exit status', $refusal->getMessage());
-        }
+        $refusal = $this->admit('vendor/bin/phpstan analyse | grep error')->decision;
+
+        $this->assertInstanceOf(AdmissionRefusal::class, $refusal);
+        $this->assertSame(RefusalCode::OutputHidden, $refusal->code);
         $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
     }
 
@@ -82,20 +82,20 @@ final class RunnerCapabilityTest extends TestCase
     public function test_each_demonstration_records_its_parts(string $line, int $parts): void
     {
         config(['processes.runner' => true]);
-        $receipt = $this->runner()->start($this->admit($line));
+        $admission = $this->admit($line);
+        $this->assertTrue($admission->isAllowed());
 
-        $this->artisan('process:run', ['--admission' => $receipt->runId])->assertExitCode(0);
+        $this->artisan('process:run', ['--admission' => $admission->runId])->assertExitCode(0);
 
-        $this->assertSame($parts, PartRun::query()->where('process_run_id', $receipt->runId)->count());
+        $this->assertSame($parts, PartRun::query()->where('process_run_id', $admission->runId)->count());
     }
 
-    private function runner(): ProcessRunner
+    private function admit(string $line): Admission
     {
-        return $this->app->make(ProcessRunner::class);
-    }
+        $this->launch->startRequest($this->app);
+        $context = ExecutionContext::inFolder($this->folder);
+        $requestKey = bin2hex(random_bytes(8));
 
-    private function admit(string $line): AdmittedRun
-    {
-        return $this->app->make(TestAdmissions::class)->admit($line, $this->folder, new ActorIdentity(ActorType::Agent, $this->launch->agent->id));
+        return $this->app->make(ShellAdmission::class)->admit($line, ShellDialect::Bash, $context, $requestKey);
     }
 }

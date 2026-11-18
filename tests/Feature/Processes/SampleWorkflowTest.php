@@ -171,7 +171,9 @@ final class SampleWorkflowTest extends TestCase
 
     private function asAgent(object $command): mixed
     {
-        return $this->runAs(ActorContext::forAgent($this->launch->agent->id), $command);
+        $this->launch->startRequest($this->app);
+
+        return $this->app->make(CommandBus::class)->run($command);
     }
 
     private function asUser(object $command): mixed

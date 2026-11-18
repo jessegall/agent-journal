@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Processes\Support;
 
 use App\Processes\Contracts\CommandClassifier;
-use App\Processes\Contracts\ProcessRunner;
 use App\Processes\Contracts\ResultPublisher;
 use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Contracts\ShellAdmission;
@@ -14,7 +13,7 @@ use App\Processes\Exceptions\ProcessesServiceMissing;
 use Illuminate\Contracts\Container\Container;
 
 /**
- * The services every shell command goes through: parser, classifier, admission, runner, result publisher and the
+ * The services every shell command goes through: parser, classifier, admission, result publisher and the
  * receipt gate. Start-up fails by name when one is not bound; there is no fallback that lets a command through.
  */
 final readonly class RequiredServices
@@ -23,7 +22,6 @@ final readonly class RequiredServices
         ShellCommandParser::class,
         CommandClassifier::class,
         ShellAdmission::class,
-        ProcessRunner::class,
         ResultPublisher::class,
         ResultReceipts::class,
     ];
