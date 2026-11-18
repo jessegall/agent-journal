@@ -10,13 +10,13 @@ use App\Bus\Support\Operation;
 use Illuminate\Container\Attributes\Bind;
 
 /**
- * The calling session's receipted writes, read by their request key.
+ * The caller's receipted writes, read by their request key: an agent's of its session.
  */
 #[Bind(CallerOperations::class)]
 interface OperationReader
 {
     /**
-     * @throws OperationUnavailable when this session has no write under the key
+     * @throws OperationUnavailable when the caller has no write under the key
      */
     public function operation(string $requestKey): Operation;
 }

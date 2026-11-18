@@ -51,7 +51,19 @@ use App\Settings\Commands\SetIntegerChoice;
 use App\Settings\Commands\SetIntegerSetting;
 use App\Settings\Commands\SetStringChoice;
 use App\Settings\Commands\SetStringSetting;
+use App\Sharing\Commands\ApproveShareRequest;
+use App\Sharing\Commands\ClaimGatewayOperation;
+use App\Sharing\Commands\ConfigureShareGateway;
+use App\Sharing\Commands\CreateShare;
+use App\Sharing\Commands\DisableShareGateway;
+use App\Sharing\Commands\ExpireShares;
 use App\Sharing\Commands\ReadShare;
+use App\Sharing\Commands\RecordGatewayHealth;
+use App\Sharing\Commands\RecordGatewayOutcome;
+use App\Sharing\Commands\RefreshShareScope;
+use App\Sharing\Commands\RequestShare;
+use App\Sharing\Commands\RetryShare;
+use App\Sharing\Commands\RevokeShare;
 use App\Sharing\Commands\SaveSharePreview;
 use App\Web\Commands\RecordUserHeartbeat;
 
@@ -69,20 +81,20 @@ final class CoreCommands
             AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, LaunchAgent::class, CreateAgent::class, EnrollHost::class, OpenAgentRuntime::class, DeliverAgent::class, WakeAgent::class, ChangeAgentModel::class, ChangeAgentEffort::class, InterruptAgent::class, StopAgent::class, ClaimDriverRequests::class, ClaimLaunchGrant::class, ReportRuntimeActivity::class, ReportRequestProgress::class, ReportDriverTurn::class, ReportRuntimeHeartbeat::class, ReportRuntimeExit::class, OpenHostMainRuntime::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, SettleFrameTimes::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class,
             SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class,
             SetStringSetting::class, SetBooleanSetting::class, SetIntegerSetting::class, SetDecimalSetting::class, SetStringChoice::class, SetIntegerChoice::class, ResetSetting::class, EnableSettingGroup::class, DisableSettingGroup::class, ResetSettingGroup::class,
-            SaveSharePreview::class,
-            ReadShare::class,
+            SaveSharePreview::class, CreateShare::class, RequestShare::class, ApproveShareRequest::class, RevokeShare::class, RefreshShareScope::class, RetryShare::class, ConfigureShareGateway::class, DisableShareGateway::class,
+            ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class,
         ];
     }
 
     /**
-     * Core's commands that stay private: registered for Core's own runtime, such as the system's public share read,
+     * Core's commands that stay private: registered for Core's own runtime, such as the system's public share read, share expiry and the gateway supervisor's claims and reports,
      * and never exported to a domain or module.
      *
      * @return list<class-string<Command<mixed>>>
      */
     public static function privateCommands(): array
     {
-        return [ReadShare::class];
+        return [ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class];
     }
 
     /**

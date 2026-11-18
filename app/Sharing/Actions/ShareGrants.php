@@ -1,0 +1,148 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Sharing\Actions;
+
+use App\Actors\Contracts\Actor;
+use App\Actors\Support\ActorIdentity;
+use App\Reads\Contracts\ReadMeter;
+use App\Sharing\Contracts\SharePolicy;
+use App\Sharing\Enums\GatewayOperationType;
+use App\Sharing\Enums\ShareAuditType;
+use App\Sharing\Events\ShareCreated;
+use App\Sharing\Events\ShareScopeChanged;
+use App\Sharing\Exceptions\ShareProposalUnavailable;
+use App\Sharing\Exceptions\ShareQuotaReached;
+use App\Sharing\Exceptions\ShareRefreshRefused;
+use App\Sharing\Models\Share;
+use App\Sharing\Models\ShareAudit;
+use App\Sharing\Models\ShareGatewayConfiguration;
+use App\Sharing\Models\ShareGatewayOperation;
+use App\Sharing\Models\ShareInstallation;
+use App\Sharing\Models\ShareMember;
+use App\Sharing\Models\SharePreview;
+use App\Sharing\Support\ConsumedPreview;
+use App\Sharing\Support\MeteredShareBudget;
+use App\Sharing\Support\ShareDuration;
+use App\Sharing\Support\ShareScope;
+use App\Sharing\Support\ShareToken;
+use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Events\Dispatcher;
+
+/**
+ * The owner's grants: a new share, an agent's proposal approved, or a live share's members replaced, each from a
+ * fresh preview. Each locks the installation, the preview's configuration and the preview in that order and consumes
+ * the preview; a new grant counts the live shares under the lock and writes a new token and an open request for its
+ * gateway; every one writes its approved members and its audit in the command's transaction.
+ */
+final readonly class ShareGrants
+{
+    public function __construct(
+        private SharePolicy $policy,
+        private ShareScope $scope,
+        private ReadMeter $meter,
+        private Dispatcher $events,
+    ) {}
+
+    public function create(Actor $owner, string $previewId, string $previewChecksum, ShareDuration $duration): Share
+    {
+        $consumed = $this->consume($owner, $previewId, $previewChecksum);
+        $this->requireLiveSlot();
+        $share = Share::grant($consumed->root, $owner->actorId(), $consumed->configuration, ShareToken::generate(), $duration->deadlineFrom(CarbonImmutable::now()));
+        ShareGatewayOperation::request($consumed->configuration, GatewayOperationType::Open);
+
+        $this->publish($owner, $share, $consumed, ShareAuditType::Created);
+        $this->events->dispatch(new ShareCreated($share->fact()));
+
+        return $share;
+    }
+
+    /**
+     * @throws ShareProposalUnavailable when the proposal is not open or the preview shows another root
+     */
+    public function approve(Actor $owner, string $proposalId, string $previewId, string $previewChecksum, ShareDuration $duration): Share
+    {
+        $consumed = $this->consume($owner, $previewId, $previewChecksum);
+        $this->requireLiveSlot();
+        $proposal = Share::lockProposal($proposalId);
+
+        if (! $proposal->root()->isSameAs($consumed->root)) {
+            throw ShareProposalUnavailable::forOtherRoot($proposalId);
+        }
+
+        $proposal->approveAs($owner->actorId(), $consumed->configuration, ShareToken::generate(), $duration->deadlineFrom(CarbonImmutable::now()));
+        ShareGatewayOperation::request($consumed->configuration, GatewayOperationType::Open);
+
+        $this->publish($owner, $proposal, $consumed, ShareAuditType::Approved);
+        $this->events->dispatch(new ShareCreated($proposal->fact()));
+
+        return $proposal;
+    }
+
+    /**
+     * Replaces a live share's members with the preview's selection at the next scope version; its token, deadline
+     * and gateway stay as they are.
+     *
+     * @throws ShareRefreshRefused when the share is not live or the preview shows another root
+     */
+    public function refresh(Actor $owner, string $shareId, string $previewId, string $previewChecksum): Share
+    {
+        $consumed = $this->consume($owner, $previewId, $previewChecksum);
+        $share = Share::lockForChange($shareId);
+
+        if (! $share->state->isLive() || ! $share->expires_at->isFuture()) {
+            throw ShareRefreshRefused::notLive($shareId, $share->state);
+        }
+
+        if (! $share->root()->isSameAs($consumed->root)) {
+            throw ShareRefreshRefused::otherRoot($shareId);
+        }
+
+        ShareMember::forgetAllOf($share);
+        $share->advanceScope();
+
+        $this->publish($owner, $share, $consumed, ShareAuditType::ScopeRefreshed);
+        $this->events->dispatch(new ShareScopeChanged($share->fact()));
+
+        return $share;
+    }
+
+    /**
+     * Takes the locks in order and uses the preview once.
+     */
+    private function consume(Actor $owner, string $previewId, string $previewChecksum): ConsumedPreview
+    {
+        $this->policy->requireManager($owner);
+        $configurationId = SharePreview::of($previewId)->share_gateway_configuration_id;
+
+        ShareInstallation::lockForAdmission();
+        $configuration = ShareGatewayConfiguration::lockUsable($configurationId);
+        $preview = SharePreview::lockFor($previewId);
+        $candidates = $this->scope->discover($preview->root(), MeteredShareBudget::forPreview($this->meter));
+        $selection = $preview->consumeFor($owner->actorId(), $previewChecksum, $candidates);
+
+        return new ConsumedPreview($configuration, $preview->root(), $selection, $candidates);
+    }
+
+    /**
+     * Refuses a new grant once the installation holds its most live shares; counted under the installation lock.
+     *
+     * @throws ShareQuotaReached
+     */
+    private function requireLiveSlot(): void
+    {
+        if (Share::liveCount() >= Share::MOST_LIVE) {
+            throw ShareQuotaReached::at(Share::MOST_LIVE);
+        }
+    }
+
+    private function publish(Actor $owner, Share $share, ConsumedPreview $consumed, ShareAuditType $type): void
+    {
+        foreach ($consumed->selection as $target) {
+            ShareMember::approve($share, $consumed->candidates->sourceOf($target), $target);
+        }
+
+        ShareAudit::recordFor($share, $type, ActorIdentity::of($owner), null);
+    }
+}

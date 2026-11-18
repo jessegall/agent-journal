@@ -157,8 +157,7 @@ final readonly class PlanRecords implements PlanReader
             ->groupBy('phase_id')
             ->map(fn (Collection $places) => array_map(strval(...), array_values($places->pluck('task_id')->all())));
         $progressOfPhase = array_map(self::planProgressOf(...), $this->taskCounts->progressByGroup($taskIdsOfPhase->all()));
-        $assignments = $this->assignments->assignmentsFor(array_values($plans->map(fn (Plan $plan) => $plan->assignmentIdentity())->all()));
-        $holders = $this->assignees->holdersOf($assignments);
+        $holders = $this->assignees->holdersOfRecords(array_values($plans->map(fn (Plan $plan) => $plan->assignmentIdentity())->all()));
 
         return array_values($plans->map(fn (Plan $plan) => $plan->card(
             $phasesOfPlan->get($plan->id, new Collection())->mapWithKeys(fn (Phase $phase) => [$phase->number => $progressOfPhase[$phase->id] ?? PlanProgress::none()])->all(),

@@ -7,6 +7,7 @@ namespace Tests\Architecture;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresActor;
+use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Support\CommandRegistry;
 use App\Bus\Support\RegisteredMiddleware;
 use ReflectionClass;
@@ -51,7 +52,7 @@ final class CommandFolderTest extends TestCase
         foreach ($this->allClasses() as $class) {
             $reflection = new ReflectionClass($class);
 
-            foreach ([HandledBy::class, RepeatableRead::class, RequiresActor::class] as $attribute) {
+            foreach ([HandledBy::class, RepeatableRead::class, RequiresActor::class, RequiresRequestKey::class] as $attribute) {
                 if ($reflection->getAttributes($attribute) !== [] && ! $registry->has($class)) {
                     $misplaced[] = "{$class} carries ".class_basename($attribute);
                 }

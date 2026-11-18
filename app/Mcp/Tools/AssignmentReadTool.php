@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Mcp\Tools;
 
 use App\Assignments\Contracts\AssigneeReader;
-use App\Assignments\Contracts\AssignmentReader;
 use App\Assignments\Support\AssignmentData;
 use App\Assignments\Support\AssignmentHolder;
 use App\Mcp\Data\ToolResult;
@@ -26,7 +25,6 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 final class AssignmentReadTool extends JournalReadTool
 {
     public function __construct(
-        private readonly AssignmentReader $assignments,
         private readonly AssigneeReader $assignees,
         private readonly RecordReader $records,
     ) {}
@@ -42,7 +40,7 @@ final class AssignmentReadTool extends JournalReadTool
     protected function read(ToolArguments $arguments): ToolResult
     {
         $record = new RecordIdentity($arguments->text('record_type'), $arguments->text('record_id'));
-        $holders = $this->assignees->holdersOf($this->assignments->assignmentsFor([$record]));
+        $holders = $this->assignees->holdersOfRecords([$record]);
         $this->records->requireReadable($record);
 
         return new ToolResult('ok', [

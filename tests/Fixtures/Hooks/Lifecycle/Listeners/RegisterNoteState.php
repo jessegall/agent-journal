@@ -11,6 +11,6 @@ final class RegisterNoteState
 {
     public function handle(StateTypesRequested $event): void
     {
-        $event->registry->register('notes.reading', new NoteStateLoader);
+        $event->registry->register('notes.reading', new NoteStateLoader());
     }
 }

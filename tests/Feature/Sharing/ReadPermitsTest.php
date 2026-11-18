@@ -46,7 +46,7 @@ final class ReadPermitsTest extends TestCase
 
         $permit = $permits->issue($this->token->token);
 
-        $this->assertSame([$this->share->id, 0], [$permit->shareId, $permit->scopeVersion]);
+        $this->assertSame([$this->share->id, Share::FIRST_SCOPE_VERSION], [$permit->shareId, $permit->scopeVersion]);
         $this->assertSame($permit, $permits->take($permit->reference));
         $this->assertThrows(fn () => $permits->take($permit->reference), ReadPermitMissing::class);
     }

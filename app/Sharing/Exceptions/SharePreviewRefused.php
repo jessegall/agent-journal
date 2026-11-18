@@ -16,6 +16,16 @@ final class SharePreviewRefused extends RuntimeException implements CommandRefus
 {
     use RendersRefusal;
 
+    public static function unknown(string $previewId): self
+    {
+        return new self("There is no preview {$previewId}; preview the share again.");
+    }
+
+    public static function targetGone(string $linkId): self
+    {
+        return new self("Link {$linkId} is no longer among the records to share; preview the share again.");
+    }
+
     public static function expired(string $previewId): self
     {
         return new self("Preview {$previewId} expired; preview the share again.");

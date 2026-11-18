@@ -79,6 +79,17 @@ final class SharingListenerTest extends TestCase
         $this->assertSame([], $response->headers->getCookies());
     }
 
+    public function test_the_public_page_carries_no_broadcasting_configuration(): void
+    {
+        config(['broadcasting.connections.reverb.key' => 'reverb-key-of-the-owner']);
+
+        $page = (string) $this->get("/s/{$this->token}")->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('reverb-key-of-the-owner', $page);
+        $this->assertStringNotContainsStringIgnoringCase('reverb', $page);
+        $this->assertStringNotContainsString('broadcasting/auth', $page);
+    }
+
     public function test_other_methods_upgrades_and_other_routes_are_refused(): void
     {
         $this->post("/s/{$this->token}")->assertStatus(405);

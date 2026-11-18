@@ -7,6 +7,7 @@ namespace App\Sharing\Models;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Sharing\Exceptions\GatewayRunStale;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -36,6 +37,11 @@ final class ShareInstallation extends Model implements ReadableModel
     private const string NAME = 'installation';
 
     /**
+     * How long a supervisor run holds the gateways after its last claim, outcome or health report.
+     */
+    private const int RUN_LEASE_SECONDS = 90;
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -61,6 +67,45 @@ final class ShareInstallation extends Model implements ReadableModel
         ]);
 
         return self::query()->named(self::NAME)->lockForUpdate()->firstOrFail();
+    }
+
+    /**
+     * Holds the gateways for the supervisor run: a run newer than the holder takes them over, the holder renews its
+     * lease, and an older run is refused. Run ids are ULIDs, so a later start sorts after an earlier one. Returns
+     * whether the run took them over just now.
+     *
+     * @throws GatewayRunStale
+     */
+    public function holdFor(string $runId): bool
+    {
+        if ($this->run_id !== null && strcmp($runId, $this->run_id) < 0) {
+            throw GatewayRunStale::for($runId);
+        }
+
+        $takesOver = $this->run_id !== $runId;
+        $this->run_id = $runId;
+        $this->run_lease_ends_at = CarbonImmutable::now()->addSeconds(self::RUN_LEASE_SECONDS);
+        $this->save();
+
+        return $takesOver;
+    }
+
+    /**
+     * Whether a sharing supervisor holds the gateways now: its lease was renewed within the last 90 seconds.
+     */
+    public static function hasLiveRun(): bool
+    {
+        return self::query()->named(self::NAME)->whereNotNull('run_id')->where('run_lease_ends_at', '>', CarbonImmutable::now())->exists();
+    }
+
+    /**
+     * @throws GatewayRunStale when another run holds the gateways
+     */
+    public function requireRun(string $runId): void
+    {
+        if ($this->run_id !== $runId) {
+            throw GatewayRunStale::for($runId);
+        }
     }
 
     /**

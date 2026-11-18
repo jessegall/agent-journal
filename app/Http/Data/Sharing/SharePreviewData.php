@@ -10,13 +10,15 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * The owner's preview page of sharing one root, named as people name it: its latest published title, the linked candidates to select
- * from, and the last saved preview when one is still open.
+ * from, the last saved preview when one is still open, and the root's live share and open proposals, which a confirmed
+ * preview refreshes or approves.
  */
 #[TypeScript]
 final class SharePreviewData extends Data
 {
     /**
      * @param  list<ShareCandidateData>  $candidates
+     * @param  list<RootShareData>  $openProposals
      */
     public function __construct(
         public readonly string $rootReference,
@@ -24,5 +26,8 @@ final class SharePreviewData extends Data
         #[DataCollectionOf(ShareCandidateData::class)]
         public readonly array $candidates,
         public readonly SavedSharePreviewData|null $savedPreview,
+        public readonly RootShareData|null $liveShare,
+        #[DataCollectionOf(RootShareData::class)]
+        public readonly array $openProposals,
     ) {}
 }

@@ -70,4 +70,12 @@ final class RequestKey
     {
         return $this->depth === 1 ? $this->key : null;
     }
+
+    /**
+     * Whether the command running now is the outermost one and the request carries no key for it.
+     */
+    public function isMissingForCurrentCommand(): bool
+    {
+        return $this->depth === 1 && $this->key === null;
+    }
 }

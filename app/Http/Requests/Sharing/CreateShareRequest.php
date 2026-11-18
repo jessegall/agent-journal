@@ -1,0 +1,35 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Requests\Sharing;
+
+use App\Http\Requests\Sharing\Concerns\ReadsConfirmedPreview;
+use App\Http\Requests\Sharing\Concerns\ReadsIdempotencyKey;
+use App\Sharing\Support\ShareDuration;
+use Illuminate\Foundation\Http\FormRequest;
+
+/**
+ * The owner confirms a saved preview into a share, for a number of minutes or the standard seven days, under the
+ * Idempotency-Key header.
+ */
+final class CreateShareRequest extends FormRequest
+{
+    use ReadsConfirmedPreview, ReadsIdempotencyKey;
+
+    /**
+     * @return array<string, list<string>>
+     */
+    public function rules(): array
+    {
+        return [...$this->confirmedPreviewRules(), ...$this->idempotencyKeyRules(), 'minutes' => ['nullable', 'integer']];
+    }
+
+    /**
+     * The minutes asked for, or seven days when the owner named none; the command checks the bounds.
+     */
+    public function minutesUntilExpiry(): int
+    {
+        return $this->integer('minutes', ShareDuration::STANDARD_MINUTES);
+    }
+}

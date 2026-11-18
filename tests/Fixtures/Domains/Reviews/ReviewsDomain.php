@@ -38,6 +38,6 @@ final class ReviewsDomain extends Domain implements ProvidesSettings, ProvidesSt
 
     public function settings(): ReviewSettings
     {
-        return new ReviewSettings;
+        return new ReviewSettings();
     }
 }

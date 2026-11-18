@@ -15,6 +15,6 @@ final class UsesForbidden
      */
     public function forbidden(): array
     {
-        return [new Message, new Helper, new Thing, 'tests\fixtures\boundary\chat\Message'];
+        return [new Message(), new Helper(), new Thing(), 'tests\fixtures\boundary\chat\Message'];
     }
 }

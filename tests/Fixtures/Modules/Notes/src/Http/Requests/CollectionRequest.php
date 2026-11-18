@@ -25,7 +25,7 @@ final class CollectionRequest extends FormRequest
         $value = (string) $this->route('collection');
 
         if (preg_match('/^[0-9]{4}-(0[1-9]|1[0-2])$/', $value) !== 1) {
-            throw new NotFoundHttpException;
+            throw new NotFoundHttpException();
         }
 
         return $value;
