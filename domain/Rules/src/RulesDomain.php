@@ -11,6 +11,7 @@ use App\Exports\Support\Exports;
 use App\Mcp\Contracts\ProvidesMcpTools;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
+use App\Skills\Contracts\ProvidesSkills;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Declarations\ActionRoute;
@@ -38,8 +39,9 @@ use Domain\Rules\Http\Controllers\DenyRuleController;
 use Domain\Rules\Mcp\ActiveRulesOverview;
 use Domain\Rules\Models\Rule;
 use Domain\Rules\Readers\RulesWindowReader;
+use Domain\Rules\Skills\RulesSkill;
 
-final class RulesDomain extends Domain implements ProvidesCommands, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages
+final class RulesDomain extends Domain implements ProvidesCommands, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSkills
 {
     use HasNumberedModels;
 
@@ -117,5 +119,10 @@ final class RulesDomain extends Domain implements ProvidesCommands, ProvidesMcpT
     public function overviewContributions(): array
     {
         return [ActiveRulesOverview::class];
+    }
+
+    public function skills(): array
+    {
+        return [RulesSkill::class];
     }
 }

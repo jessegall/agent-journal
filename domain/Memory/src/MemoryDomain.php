@@ -10,10 +10,12 @@ use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
+use App\Skills\Contracts\ProvidesSkills;
 use Domain\Memory\Commands\RememberForAgent;
 use Domain\Memory\Models\Memory;
+use Domain\Memory\Skills\MemorySkill;
 
-final class MemoryDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels
+final class MemoryDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels, ProvidesSkills
 {
     use HasNumberedModels;
 
@@ -44,5 +46,10 @@ final class MemoryDomain extends Domain implements ProvidesCommands, ProvidesNum
     public function commands(): array
     {
         return [RememberForAgent::class];
+    }
+
+    public function skills(): array
+    {
+        return [MemorySkill::class];
     }
 }
