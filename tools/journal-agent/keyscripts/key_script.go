@@ -22,6 +22,9 @@ const (
 	WaitForScreen Action = "wait-for-screen"
 	// WaitForHuman stops the script for the person to act, with the step named.
 	WaitForHuman Action = "wait-for-human"
+	// SelectEntry moves a menu's highlight down, one confirmed move at a time, until the highlighted entry is
+	// exactly the wanted one; never a neighbour.
+	SelectEntry Action = "select-entry"
 )
 
 // Expectation is the screen a step needs before it acts: a kind and, for a menu, its family.
@@ -30,8 +33,16 @@ type Expectation struct {
 	Menu string
 }
 
+// AnyScreen is the expectation of a step that may act on whatever stable screen it finds, such as a slash command
+// typed into the composer.
+var AnyScreen = Expectation{}
+
 // matches is whether a stable reading is the expected screen.
 func (expectation Expectation) matches(reading screen.Classification) bool {
+	if expectation == AnyScreen {
+		return reading.Stable
+	}
+
 	return reading.Stable && reading.Kind == expectation.Kind && reading.Menu == expectation.Menu
 }
 
@@ -43,6 +54,8 @@ type KeyStep struct {
 	Keys      string
 	Parameter string
 	Deadline  time.Duration
+	// MoveBudget is how many moves a SelectEntry step may make before the entry counts as unavailable.
+	MoveBudget int
 }
 
 // KeyScript is a versioned recipe for one program build: its registered name, the parameters it is given, the
@@ -59,9 +72,9 @@ type KeyScript struct {
 // arrowDown moves a menu's highlight one entry down.
 const arrowDown = "\x1b[B"
 
-// SelectEntry is the steps that move a menu's highlight down by moves entries and choose it, one confirmed movement
+// MoveAndChoose is the steps that move a menu's highlight down by moves entries and choose it, one confirmed movement
 // at a time: each move waits for the menu again, so a menu that changed stops the script before the next key.
-func SelectEntry(menu string, moves int, deadline time.Duration) []KeyStep {
+func MoveAndChoose(menu string, moves int, deadline time.Duration) []KeyStep {
 	expect := Expectation{Kind: screen.MenuShown, Menu: menu}
 	steps := make([]KeyStep, 0, moves+1)
 
