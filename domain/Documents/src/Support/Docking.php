@@ -63,18 +63,21 @@ final readonly class Docking
         }
     }
 
+    /**
+     * Docks the record for the agent the session belongs to: the session only says which agent the dock is for.
+     */
     private function dock(RecordIdentity $record, string $sessionId): void
     {
-        $this->sessions->requireActive($sessionId);
-        RecordDock::dockIn($sessionId, $record, $this->actors->actor());
-        $this->events->dispatch(new RecordDockChanged($sessionId, $record->type, $record->id));
+        $recipient = $this->sessions->requireActive($sessionId)->actorIdentity();
+        RecordDock::dockIn($recipient, $record, $this->actors->actor());
+        $this->events->dispatch(new RecordDockChanged($recipient, $record->type, $record->id));
     }
 
     private function hide(RecordIdentity $record, string $sessionId): void
     {
-        $this->sessions->requireActive($sessionId);
-        RecordDock::hideIn($sessionId, $record);
-        $this->events->dispatch(new RecordDockChanged($sessionId, $record->type, $record->id));
+        $recipient = $this->sessions->requireActive($sessionId)->actorIdentity();
+        RecordDock::hideIn($recipient, $record);
+        $this->events->dispatch(new RecordDockChanged($recipient, $record->type, $record->id));
     }
 
     private function documentOf(int $number): RecordIdentity
