@@ -106,6 +106,7 @@ final class CoreCommands
             AssignRecord::class, ReassignRecord::class, UnassignRecord::class,
             EnableAutoAssignment::class, ConfigureAutoAssignment::class, DisableAutoAssignment::class,
             RetireAgent::class,
+            FenceProfileRevision::class,
             LaunchAgent::class,
             CreateAgent::class,
             EnrollHost::class,

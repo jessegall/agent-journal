@@ -39,7 +39,8 @@ final class RevisionFence extends Model implements ReadableModel
      */
     public static function retain(string $revisionReference): self
     {
-        return self::query()->firstOrCreate(['revision_reference' => $revisionReference]);
+        return self::query()->where('revision_reference', $revisionReference)->first()
+            ?? self::query()->create(['revision_reference' => $revisionReference]);
     }
 
     public static function isPending(string $revisionReference): bool
