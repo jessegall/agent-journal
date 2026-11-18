@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
+use App\Actors\Support\PresenceWindow;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Links\Support\Linkable;
@@ -11,6 +12,7 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -148,6 +150,21 @@ final class AgentSession extends Model implements ReadableModel
         $this->silent_since = null;
         $this->status = $this->status === SessionStatus::Silent ? SessionStatus::Active : $this->status;
         $this->save();
+    }
+
+    /**
+     * The running sessions present at the observation time: a beat whose window is strictly later, an unrevoked
+     * credential and an agent that is not retired.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function present(Builder $query, CarbonImmutable $observedAt, PresenceWindow $window): void
+    {
+        $query->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))
+            ->where('last_heartbeat_at', '>', $observedAt->subSeconds($window->presenceSeconds))
+            ->whereHas('credential', fn (Builder $credential) => $credential->whereNull('revoked_at'))
+            ->whereHas('agent', fn (Builder $agent) => $agent->whereNull('retired_at'));
     }
 
     /**
