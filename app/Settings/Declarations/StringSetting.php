@@ -10,7 +10,7 @@ use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Support\SettingKey;
 
 /**
- * A text setting: its default and the shortest and longest value it accepts, in UTF-8 bytes, never above 16 KiB.
+ * A text setting: its default and the shortest and longest value it accepts, in UTF-8 bytes, never above LONGEST.
  */
 final readonly class StringSetting implements Setting
 {
@@ -32,7 +32,7 @@ final readonly class StringSetting implements Setting
         SettingKey::require($key, $label);
 
         if ($minimumLength < 0 || $maximumLength > self::LONGEST || $minimumLength > $maximumLength) {
-            throw SettingDeclarationInvalid::badLengths($key);
+            throw SettingDeclarationInvalid::badLengths($key, self::LONGEST);
         }
 
         $setting = new self($key, $label, $default, $minimumLength, $maximumLength);

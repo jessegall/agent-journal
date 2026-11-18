@@ -18,9 +18,9 @@ final readonly class SettingRegistry
 {
     public const string CORE = 'Core';
 
-    private const int SETTINGS_PER_OWNER = 500;
+    public const int SETTINGS_PER_OWNER = 500;
 
-    private const int GROUPS_PER_OWNER = 100;
+    public const int GROUPS_PER_OWNER = 100;
 
     /**
      * @param  array<string, SettingsDefinition>  $definitions
@@ -95,7 +95,7 @@ final readonly class SettingRegistry
         $groups = $definition->groups();
 
         if (count($groups) > self::GROUPS_PER_OWNER) {
-            throw SettingDeclarationInvalid::tooManyGroups($owner);
+            throw SettingDeclarationInvalid::tooManyGroups($owner, self::GROUPS_PER_OWNER);
         }
 
         $addresses = [];
@@ -121,7 +121,7 @@ final readonly class SettingRegistry
         }
 
         if (count($settingKeys) > self::SETTINGS_PER_OWNER) {
-            throw SettingDeclarationInvalid::tooManySettings($owner);
+            throw SettingDeclarationInvalid::tooManySettings($owner, self::SETTINGS_PER_OWNER);
         }
 
         return $addresses;

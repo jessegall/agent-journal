@@ -8,6 +8,7 @@ use App\Settings\Declarations\SettingGroup;
 use App\Settings\Declarations\StringSetting;
 use App\Settings\Enums\SettingType;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
+use App\Settings\Support\SettingKey;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -25,7 +26,7 @@ final class SettingDeclarationsTest extends TestCase
         $this->assertSame([$setting], $group->settings());
         $this->assertTrue($setting->accepts('Mine'));
         $this->assertFalse($setting->accepts(''));
-        $this->assertFalse($setting->accepts(str_repeat('a', 201)));
+        $this->assertFalse($setting->accepts(str_repeat('a', $setting->maximumLength + 1)));
     }
 
     /**
@@ -36,7 +37,7 @@ final class SettingDeclarationsTest extends TestCase
         yield 'uppercase' => ['Display'];
         yield 'a dot' => ['display.name'];
         yield 'a colon' => ['display:name'];
-        yield 'over 64 characters' => [str_repeat('a', 65)];
+        yield 'over the key length' => [str_repeat('a', SettingKey::KEY_CHARACTERS + 1)];
     }
 
     #[DataProvider('badKeys')]
@@ -63,11 +64,11 @@ final class SettingDeclarationsTest extends TestCase
         StringSetting::make('display_name', ' ', 'Journal');
     }
 
-    public function test_a_label_over_200_characters_is_refused(): void
+    public function test_a_label_over_the_label_length_is_refused(): void
     {
         $this->expectException(SettingDeclarationInvalid::class);
 
-        StringSetting::make('display_name', str_repeat('é', 201), 'Journal');
+        StringSetting::make('display_name', str_repeat('é', SettingKey::LABEL_CHARACTERS + 1), 'Journal');
     }
 
     public function test_a_default_outside_the_lengths_is_refused_without_the_value(): void
@@ -81,7 +82,7 @@ final class SettingDeclarationsTest extends TestCase
         }
     }
 
-    public function test_lengths_above_16_kib_are_refused(): void
+    public function test_lengths_above_the_longest_text_are_refused(): void
     {
         $this->expectException(SettingDeclarationInvalid::class);
 

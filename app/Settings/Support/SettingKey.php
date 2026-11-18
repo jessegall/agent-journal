@@ -8,21 +8,21 @@ use App\Settings\Exceptions\SettingDeclarationInvalid;
 
 /**
  * The one check of a setting's or group's key and label: a key is lowercase letters, digits and underscores, starts
- * with a letter and is at most 64 characters; a label is 1 to 200 characters.
+ * with a letter and has at most KEY_CHARACTERS; a label is not empty and has at most LABEL_CHARACTERS.
  */
 final class SettingKey
 {
-    private const string KEY_PATTERN = '/^[a-z][a-z0-9_]{0,63}$/';
+    public const int KEY_CHARACTERS = 64;
 
-    private const int LABEL_CHARACTERS = 200;
+    public const int LABEL_CHARACTERS = 200;
 
     /**
      * @throws SettingDeclarationInvalid
      */
     public static function require(string $key, string $label): void
     {
-        if (preg_match(self::KEY_PATTERN, $key) !== 1) {
-            throw SettingDeclarationInvalid::badKey($key);
+        if (preg_match('/^[a-z][a-z0-9_]*$/', $key) !== 1 || strlen($key) > self::KEY_CHARACTERS) {
+            throw SettingDeclarationInvalid::badKey($key, self::KEY_CHARACTERS);
         }
 
         if (trim($label) === '') {
@@ -30,7 +30,7 @@ final class SettingKey
         }
 
         if (mb_strlen($label) > self::LABEL_CHARACTERS) {
-            throw SettingDeclarationInvalid::labelTooLong($key);
+            throw SettingDeclarationInvalid::labelTooLong($key, self::LABEL_CHARACTERS);
         }
     }
 }

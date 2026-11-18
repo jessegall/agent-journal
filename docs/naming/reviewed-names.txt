@@ -1284,7 +1284,7 @@ constant	RunInTransaction::REPEATABLE_READ
 constant	RunInTransaction::RETRIED_CODES
 constant	RunInTransaction::TIMED_OUT_CODES
 constant	SessionRecords::CHOICES_SHOWN
-constant	SettingKey::KEY_PATTERN
+constant	SettingKey::KEY_CHARACTERS
 constant	SettingKey::LABEL_CHARACTERS
 constant	SettingRegistry::CORE
 constant	SettingRegistry::GROUPS_PER_OWNER

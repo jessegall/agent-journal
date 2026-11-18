@@ -95,12 +95,12 @@ final class SettingRegistryTest extends TestCase
         ])]);
     }
 
-    public function test_more_than_500_settings_are_refused(): void
+    public function test_settings_past_the_limit_per_owner_are_refused(): void
     {
-        $settings = array_map(fn (int $number) => StringSetting::make("setting_{$number}", 'Setting', ''), range(1, 501));
+        $settings = array_map(fn (int $number) => StringSetting::make("setting_{$number}", 'Setting', ''), range(1, SettingRegistry::SETTINGS_PER_OWNER + 1));
 
         $this->expectException(SettingDeclarationInvalid::class);
-        $this->expectExceptionMessage('Library declares more than 500 settings');
+        $this->expectExceptionMessage('Library declares more than '.SettingRegistry::SETTINGS_PER_OWNER.' settings');
 
         SettingRegistry::from(['Core' => new CoreSettings, 'Library' => new SettingsList([SettingGroup::make('many', 'Many', $settings)])]);
     }
