@@ -1,0 +1,126 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Support\Processes;
+
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Support\ActorContext;
+use App\Bus\Contracts\CommandBus;
+use App\Processes\Commands\ApproveSample;
+use App\Processes\Commands\OpenCommandRequest;
+use App\Processes\Commands\ProposeCommandRule;
+use App\Processes\Commands\ProposeReader;
+use App\Processes\Commands\SettleSample;
+use App\Processes\Commands\StartSample;
+use App\Processes\Enums\OutputStream;
+use App\Processes\Enums\RecordRole;
+use App\Processes\Enums\RequestHoldReason;
+use App\Processes\Models\CommandRequest;
+use App\Processes\Models\PartRun;
+use App\Processes\Support\SpoolRecorder;
+use App\Processes\Values\CapturedChunk;
+use App\Processes\Values\PartEnd;
+use App\Processes\Values\ReaderDefinition;
+use App\Processes\Values\RecordRule;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Storage;
+use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\TestIds;
+
+/**
+ * Walks an acme verify command request through its workflow in a test: an agent's request and declaration,
+ * owner-approved samples that ended with a status and an output, the agent's reads, and a draft reader.
+ */
+trait RunsAcmeRequests
+{
+    private const string PASSED_OUTPUT = "{\"test\":\"a\",\"status\":\"ok\"}\n{\"passed\":1,\"failed\":0}\n";
+
+    private const string FINDINGS_OUTPUT = "{\"test\":\"a\",\"status\":\"fail\"}\n{\"passed\":0,\"failed\":1}\n";
+
+    private TestLaunch $launch;
+
+    private string $requestId;
+
+    private function openAcmeRequest(): void
+    {
+        Storage::fake(SpoolRecorder::DISK);
+        $this->launch = TestLaunch::start();
+        $this->requestId = $this->asAgent(new OpenCommandRequest(
+            'acme verify',
+            str_repeat('a', 64),
+            'acme verify',
+            sys_get_temp_dir(),
+            RequestHoldReason::UnknownCommand,
+        ));
+        $this->asAgent(new ProposeCommandRule($this->requestId, 'request-1', AcmeDeclarations::proposedVerify()));
+    }
+
+    /**
+     * A draft reader for the acme verify output: one outcome rule per status and the summary with its failures.
+     */
+    private function reader(): string
+    {
+        $definition = new ReaderDefinition([
+            new RecordRule(RecordRole::Outcome, "test='{name:word}' status='ok'"),
+            new RecordRule(RecordRole::Outcome, "test='{name:word}' status='fail'"),
+            new RecordRule(RecordRole::Summary, 'passed={passed:int} failed={failed:int}'),
+        ], failureField: 'failed');
+
+        return $this->asAgent(new ProposeReader($this->requestId, 1, $definition));
+    }
+
+    /**
+     * One owner-approved sample that ended with the status and wrote the output, read by the agent when asked.
+     */
+    private function sample(int $status, string $output, bool $read): string
+    {
+        $permit = $this->asUser(new ApproveSample($this->requestId, 1, $this->request()->source_digest));
+        $runId = $this->asAgent(new StartSample($this->requestId, $permit, "sample-{$status}"));
+        $part = PartRun::query()->create([
+            'process_run_id' => $runId,
+            'syntax_node' => 1,
+            'part_id' => 'node-1',
+            'attempt' => 1,
+            'operation' => 'acme verify',
+        ]);
+        $part->start(1, 'host');
+        $recorder = $this->app->make(SpoolRecorder::class);
+        $recorder->append(new CapturedChunk($part, OutputStream::Stdout, $output, CarbonImmutable::now()));
+        $part->finishProcess(PartEnd::exited($status));
+        $part->finishDraining();
+        $recorder->finish($part, PartEnd::exited($status));
+        if ($read) {
+            $this->signed($this->launch, "/agent/processes/runs/{$runId}/output", ['mode' => 'summary'])->assertOk();
+            $tail = ['mode' => 'tail', 'part' => 1, 'stream' => 'stdout', 'tail' => 50];
+            $this->signed($this->launch, "/agent/processes/runs/{$runId}/output", $tail)->assertOk();
+        }
+        $this->asAgent(new SettleSample($this->requestId));
+
+        return $runId;
+    }
+
+    private function request(): CommandRequest
+    {
+        return CommandRequest::query()->findOrFail($this->requestId);
+    }
+
+    private function asAgent(object $command): mixed
+    {
+        return $this->runAs(ActorContext::forAgent($this->launch->agent->id), $command);
+    }
+
+    private function asUser(object $command): mixed
+    {
+        return $this->runAs(ActorContext::forUser(TestIds::of(7)), $command);
+    }
+
+    private function runAs(ActorContext $actor, object $command): mixed
+    {
+        $this->app->forgetScopedInstances();
+        $this->app->make(CurrentActorSetter::class)->set($actor);
+
+        return $this->app->make(CommandBus::class)->run($command);
+    }
+}

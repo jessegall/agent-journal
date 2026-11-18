@@ -27,6 +27,11 @@ final class RuleProposalRefused extends RuntimeException implements CommandRefus
         return new self("Proposal {$id} is {$state->value}, so it takes no new revision.");
     }
 
+    public static function notPending(string $id, ProposalState $state): self
+    {
+        return new self("Proposal {$id} is {$state->value}; only a complete pending proposal is reviewed.");
+    }
+
     public static function notTheAuthor(string $id): self
     {
         return new self("Only the author of proposal {$id} may revise or withdraw it.");

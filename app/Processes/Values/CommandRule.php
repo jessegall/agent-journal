@@ -235,6 +235,14 @@ final readonly class CommandRule implements StoredValue
         );
     }
 
+    /**
+     * Whether the other rule is a revision of this one: the same id under the same owner.
+     */
+    public function isSameRuleAs(self $other): bool
+    {
+        return $this->id === $other->id && $this->scope->isSameOwner($other->scope);
+    }
+
     public function reference(): RuleReference
     {
         return new RuleReference($this->scope, $this->id, $this->revision);

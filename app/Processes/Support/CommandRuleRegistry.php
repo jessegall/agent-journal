@@ -55,13 +55,13 @@ final readonly class CommandRuleRegistry
     }
 
     /**
-     * This registry with one more rule, checked as every rule is: a proposed rule that overlaps an active one fails.
+     * This registry with more rules, checked as every rule is: a rule that overlaps an active one fails.
      *
      * @throws CommandRuleConflict
      */
-    public function withCandidate(CommandRule $rule): self
+    public function withRules(CommandRule ...$rules): self
     {
-        return self::from([...array_merge(...array_values($this->active)), ...$this->held, $rule]);
+        return self::from([...array_merge(...array_values($this->active)), ...$this->held, ...array_values($rules)]);
     }
 
     /**

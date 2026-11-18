@@ -57,7 +57,7 @@ enum RequestState: string
 
         return in_array($next, match ($this) {
             self::CollectingDeclaration => [self::AwaitingSampleApproval],
-            self::AwaitingSampleApproval => [self::ReadyForSample, self::CollectingDeclaration],
+            self::AwaitingSampleApproval => [self::ReadyForSample, self::CollectingDeclaration, self::Active],
             self::ReadyForSample => [self::CapturingSample],
             self::CapturingSample => [self::AwaitingProof, self::AwaitingSampleApproval],
             self::AwaitingProof => [self::AwaitingApproval, self::CollectingDeclaration, self::ReadyForSample],

@@ -195,9 +195,24 @@ final class CommandRequest extends Model implements ReadableModel
     }
 
     /**
+     * The owner approved a test, check or build with its proven reader; only a proven request awaits that.
+     *
      * @throws RequestTransitionRefused
      */
     public function approve(): void
+    {
+        if ($this->state !== RequestState::AwaitingApproval) {
+            throw $this->refusal(RequestState::Active);
+        }
+        $this->moveTo(RequestState::Active);
+    }
+
+    /**
+     * The owner approved a declaration that is no test, check or build: it needs no reader, so no sample or proof.
+     *
+     * @throws RequestTransitionRefused
+     */
+    public function approveOrdinary(): void
     {
         $this->moveTo(RequestState::Active);
     }
@@ -250,10 +265,15 @@ final class CommandRequest extends Model implements ReadableModel
     private function moveTo(RequestState $next): void
     {
         if (! $this->state->allows($next)) {
-            throw RequestTransitionRefused::from($this->state, $next, implode('; ', $this->nextStep()->obligations));
+            throw $this->refusal($next);
         }
         $this->state = $next;
         $this->save();
+    }
+
+    private function refusal(RequestState $next): RequestTransitionRefused
+    {
+        return RequestTransitionRefused::from($this->state, $next, implode('; ', $this->nextStep()->obligations));
     }
 
     /**

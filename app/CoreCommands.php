@@ -40,6 +40,7 @@ use App\Communication\Commands\SendMessage;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Numbers\Commands\InstallNumbers;
+use App\Processes\Commands\ApproveRuleProposal;
 use App\Processes\Commands\ApproveSample;
 use App\Processes\Commands\ImportRuleProposals;
 use App\Processes\Commands\IssueEvidencePermit;
@@ -48,8 +49,12 @@ use App\Processes\Commands\ProposeCommandRule;
 use App\Processes\Commands\ProposeReader;
 use App\Processes\Commands\ProveReader;
 use App\Processes\Commands\RecordEvidenceReads;
+use App\Processes\Commands\RejectRuleProposal;
+use App\Processes\Commands\RestoreCommandRule;
+use App\Processes\Commands\RetireCommandRule;
 use App\Processes\Commands\ReviseRuleProposal;
 use App\Processes\Commands\RevokeCommandPermissions;
+use App\Processes\Commands\SaveCommandRule;
 use App\Processes\Commands\SettleSample;
 use App\Processes\Commands\StartSample;
 use App\Processes\Commands\WithdrawCommandRequest;
@@ -124,6 +129,11 @@ final class CoreCommands
             StartSample::class,
             SettleSample::class,
             ProveReader::class,
+            ApproveRuleProposal::class,
+            SaveCommandRule::class,
+            RejectRuleProposal::class,
+            RetireCommandRule::class,
+            RestoreCommandRule::class,
             CreateSkill::class, ReviseSkill::class, RestoreSkill::class, RetireSkill::class, CopySkill::class,
             RefreshSkills::class, PublishSkills::class, PrepareSkillPublication::class, ActivateSkillPublication::class, FailSkillPublication::class,
         ];

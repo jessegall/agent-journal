@@ -131,6 +131,37 @@ final class RuleProposal extends Model implements ReadableModel
         $this->save();
     }
 
+    /**
+     * The owner approved the current revision; the proposal is ended.
+     *
+     * @throws RuleProposalRefused
+     */
+    public function approve(): void
+    {
+        $this->end(ProposalState::Approved);
+    }
+
+    /**
+     * @throws RuleProposalRefused
+     */
+    public function reject(): void
+    {
+        $this->end(ProposalState::Rejected);
+    }
+
+    /**
+     * @throws RuleProposalRefused
+     */
+    public function checkReviewable(int $expectedRevision): void
+    {
+        if ($this->state !== ProposalState::Pending) {
+            throw RuleProposalRefused::notPending($this->id, $this->state);
+        }
+        if ($expectedRevision !== $this->current_revision) {
+            throw RuleProposalRefused::stale($this->id, $expectedRevision, $this->current_revision);
+        }
+    }
+
     public function isAuthoredBy(ActorIdentity $actor): bool
     {
         return $this->author_type === $actor->type->value && $this->author_id === $actor->id;
@@ -192,6 +223,18 @@ final class RuleProposal extends Model implements ReadableModel
         $this->save();
 
         return $revision;
+    }
+
+    /**
+     * @throws RuleProposalRefused
+     */
+    private function end(ProposalState $state): void
+    {
+        if (! $this->state->acceptsRevision()) {
+            throw RuleProposalRefused::ended($this->id, $this->state);
+        }
+        $this->state = $state;
+        $this->save();
     }
 
     /**

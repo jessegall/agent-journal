@@ -85,7 +85,7 @@ final readonly class TreeClassifier implements CommandClassifier
     public function withCandidate(CommandRule $rule): self
     {
         return new self(
-            $this->rules->withCandidate($rule),
+            $this->rules->withRules($rule),
             $this->names,
             $this->redirects,
             $this->wrappers,
