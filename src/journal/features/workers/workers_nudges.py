@@ -13,6 +13,7 @@ class WorkersNudges:
     OUTPUT_UNFINISHED = Nudge("workers", "own_output_running", "output {{n}} still runs and ends when you stop", "wait for it, then stop", repeat=Timeout.seconds(0))
     OUTPUT_END = Nudge("workers", "own_output_ended", "output {{n}} ended with code {{status}}", "read it with `journal output read {{n}} --summary`", repeat=Timeout.seconds(0))
     USER_CLOSURE = Nudge("workers", "task_closed_by_user", "the user closed your task {{task}}", "stop now", repeat=Timeout.seconds(0))
+    CLOCK_OUT_DUE = Nudge("workers", "clock_out_due", "you have not clocked out of task {{task}}", "`journal clock-out \"<report>\"`, or `journal stuck \"<why>\"`", repeat=Timeout.seconds(0))
     OPEN_TODOS = Nudge("workers", "open_todos", "{{count}} to-dos open: {{items|cap=34}}", "finish them, or say why in `journal clock-out \"<report>\"`", repeat=Timeout.seconds(0))
     WORK_READY = Nudge("workers", "work_ready", "worker {{n}} ready: task {{task}}", repeat=Timeout.seconds(0))
     BRANCH_KEEPS_CLASHING = Nudge("workers", "branch_keeps_clashing", "worker {{n}}'s branch rebased {{clashes}} times in a row, clashing in {{clashing|cap=25}}", "let it merge before the others", repeat=Timeout.seconds(0))

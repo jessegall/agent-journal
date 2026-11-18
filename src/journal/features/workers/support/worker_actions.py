@@ -53,7 +53,7 @@ SESSION_BUSY_REFUSAL = "worker {n}'s last session still runs, and {provider} tak
 REDO_MOVE = REJECTION_MOVE
 
 class WorkerActions:
-    """What is done to a worker after its dispatch, by its command and from the viewer alike, each under the worker's lock: its next job sent, or a point sent back, into the session it still runs in when its process lives on, so it never runs in two sessions and keeps its token, else in a new run of its last session; a word informed while it runs, a stop, a retire. A check names the task the worker is on, or one of its queue it finished, which waits for the same merge; every point found short is saved at once, the last one's save sending the worker back with the others' reasons too, since that send-back ends its clock-out; one unchecked point of any task the merge would close refuses the whole merge, naming the task."""
+    """What is done to a worker after its dispatch, by its command and from the viewer alike, each under the worker's lock: its next job sent, a new task handed to it before its session is started or told, or a point sent back, into the session it still runs in when its process lives on, so it never runs in two sessions and keeps its token, else in a new run of its last session; a word informed while it runs, a stop, a retire. A check names the task the worker is on, or one of its queue it finished, which waits for the same merge; every point found short is saved at once, the last one's save sending the worker back with the others' reasons too, since that send-back ends its clock-out; one unchecked point of any task the merge would close refuses the whole merge, naming the task."""
 
     def __init__(self, workers: Workers, runner: WorkerRunner, providers: Providers, inbox: SessionInbox, branch: WorkerBranch, tasks: Tasks, proofs: Proofs, events: CommandEvents, failures: FailedRuns, settings: SettingRows, merger: Merger, time_source: TimeSource, statuses: MergeStatuses, assigner: WorkerTaskAssigner) -> None:
         self.assigner = assigner
@@ -76,9 +76,9 @@ class WorkerActions:
             if worker.is_ended_mid_queue():
                 self.relaunch(worker, brief, None, actor, JOB_MOVE)
 
-    def resend(self, n: int, brief: str, model: str, profile: str | None, dispatcher: str | None, actor: Actor) -> Worker:
+    def resend(self, n: int, brief: str, model: str, profile: str | None, dispatcher: str | None, actor: Actor, task: Task | None = None) -> Worker:
         with self.runner.lock(n):
-            return self.relaunch(self.workers.find(n).with_(model=model, profile=profile), brief, dispatcher, actor, JOB_MOVE)
+            return self.relaunch(self.workers.find(n).with_(model=model, profile=profile), brief, dispatcher, actor, JOB_MOVE, task=task)
 
     def redo(self, n: int, brief: str, actor: Actor) -> Worker:
         with self.runner.lock(n):
@@ -205,10 +205,9 @@ class WorkerActions:
         latest = self.latest_proofs(task)
         return [point for point in range(1, len(task.points()) + 1) if point not in latest or latest[point].state not in CHECKED_STATES]
 
-    def refuse_unchecked(self, worker: Worker, task: Task, task_option: str) -> None:
+    def unchecked_refusal(self, worker: Worker, task: Task, task_option: str) -> str:
         unchecked = self.unchecked_points(task)
-        if unchecked:
-            raise Rejection(f"point {', '.join(map(str, unchecked))} of task {task.id} unchecked: `journal worker check {worker.id} <n>{task_option}`")
+        return f"point {', '.join(map(str, unchecked))} of task {task.id} unchecked: `journal worker check {worker.id} <n>{task_option}`" if unchecked else ""
 
     def merge_commit(self, worker: Worker, task: Task) -> str:
         try:
@@ -229,10 +228,9 @@ class WorkerActions:
             return "", 0
         try:
             with self.runner.lock(n):
-                worker = self.relaunch(self.workers.find(n), f"Your next task, {task.id}: {task.title}. {task.brief}", None, actor, JOB_MOVE, reused)
+                self.relaunch(self.workers.find(n), f"Your next task, {task.id}: {task.title}. {task.brief}", None, actor, JOB_MOVE, reused, task)
         except Rejection as refused:
             return f"its next queued task {task.id} was not sent, since {refused}", 0
-        self.assigner.handed(worker, task, actor)
         return f"it went straight on to task {task.id} from its queue, in its own session and worktree", task.id
 
     def merged_worktree_line(self, worker: Worker) -> str:
@@ -255,8 +253,9 @@ class WorkerActions:
         owned = proved or worker_tasks
         if not worker.is_delivered():
             return self.checked_tasks(worker, owned)
-        for task in owned:
-            self.refuse_unchecked(worker, task, "" if task is owned[-1] else f" --task {task.id}")
+        refusals = [line for task in owned if (line := self.unchecked_refusal(worker, task, "" if task is owned[-1] else f" --task {task.id}"))]
+        if refusals:
+            raise Rejection("; ".join(refusals))
         return owned
 
     def checked_tasks(self, worker: Worker, owned: tuple[Task, ...]) -> tuple[Task, ...]:
@@ -303,7 +302,7 @@ class WorkerActions:
             self.tasks.release_all(Ref.build(worker), actor)
             return self.workers.save(worker.released(self.time_source.moment().timestamp()), actor)
 
-    def relaunch(self, worker: Worker, brief: str, dispatcher: str | None, actor: Actor, move: str, reused: type[WorkerReused] = WorkerReused) -> Worker:
+    def relaunch(self, worker: Worker, brief: str, dispatcher: str | None, actor: Actor, move: str, reused: type[WorkerReused] = WorkerReused, task: Task | None = None) -> Worker:
         revival = worker.state == WorkerState.STOPPED or self.runner.is_ended(worker)
         if self.runner.is_ended(worker):
             worker = self.runner.recorded_end(worker, actor)
@@ -311,7 +310,10 @@ class WorkerActions:
         brief = self.rebase_note(worker) + (EDITED_NOTE.format(task=worker.edited_task) if worker.edited_task else "") + brief
         repositories = self.renewal(worker, brief)
         moved, time = worker.with_(dispatcher=worker.dispatcher if dispatcher is None else dispatcher, repositories=repositories, edited_task=0), self.time_source.moment().timestamp()
-        if self.is_session_busy(worker):
+        busy = self.is_session_busy(worker)
+        if task:
+            self.assigner.handed(worker, task, actor)
+        if busy:
             self.inbox.deliver(worker.pid, worker.resume, "the agent that dispatched you", brief)
             return self.workers.save(moved.redirected(brief, time, reused, move), actor)
         worker = self.workers.save(moved.resumed(brief, time, WorkerRevived if revival else reused, move), actor)

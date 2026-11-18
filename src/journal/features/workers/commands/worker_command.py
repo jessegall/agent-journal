@@ -253,9 +253,7 @@ class WorkerCommand(Command):
         holdings = self.actions.task_holdings(args.n, args.task)
         if not args.task and not holdings:
             raise Rejection(f"worker {args.n} has no task: `journal worker send {args.n} --task <task> '<job>'`")
-        worker = self.actions.resend(args.n, args.brief, *self.staffing(args), caller.session, caller.actor)
-        if args.task:
-            self.tasks.handover(self.tasks.find(args.task), Ref.build(worker), caller.actor)
+        worker = self.actions.resend(args.n, args.brief, *self.staffing(args), caller.session, caller.actor, self.tasks.find(args.task) if args.task else None)
         print(f"worker {worker.id} {worker.name} told, on {worker.model}; it reports in the chat when it ends")
         return 0
 

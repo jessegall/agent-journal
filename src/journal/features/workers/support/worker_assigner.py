@@ -8,7 +8,7 @@ from journal.repositories.tasks import Tasks
 
 
 class WorkerAssigner:
-    """Puts a clocked-in worker to work on the task it holds, once its session has an agent row: Void, the helper's floor, hears the assignment and pushes WorkingTask over itself; a pool worker on the machine that runs it is put to work at its clock-in, since its clock-in is made on the journal that dispatched it."""
+    """Puts a worker to work on the task it holds, once its session has an agent row, at its clock-in and at each hook of its session that finds it out on the task while resting on Void: Void, the helper's floor, hears the assignment and pushes WorkingTask over itself; a pool worker on the machine that runs it is put to work at its clock-in, since its clock-in is made on the journal that dispatched it."""
 
     def __init__(self, tasks: Tasks, agents: Agents, events: CommandEvents) -> None:
         self.tasks, self.agents, self.events = tasks, agents, events

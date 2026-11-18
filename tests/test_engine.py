@@ -522,7 +522,8 @@ def test_a_workers_stop_is_held_while_its_own_output_runs_and_told_its_end(app: 
         request = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main", "X-Journal-Actor": f"worker:{worker.id}", "X-Journal-Actor-Token": "tok"})
         with urlopen(request, timeout=5) as reply:
             return json.loads(reply.read())
-    assert "decision" not in worker_stop(), "a worker with nothing running may stop"
+    first = worker_stop()
+    assert first["decision"] == "block" and "you have not clocked out of task" in first["reason"], "a worker at work with nothing running is held until it clocks out"
     with scope.environment(1):
         outputs = app.container.get(CommandOutputs)
         output = outputs.save(CommandOutput(environment_id=1, command="pytest -q", session="w1", moved=True), Actor.worker(worker.id))
@@ -533,7 +534,7 @@ def test_a_workers_stop_is_held_while_its_own_output_runs_and_told_its_end(app: 
         app.container.get(CommandEvents).ended(ended, app.container.get(Agents).session_agent("w1"))
     told = worker_stop()
     assert told["decision"] == "block" and f"output {output.id} ended with code 0" in told["reason"], "the output's end comes back in the answer to its next stop"
-    assert "decision" not in worker_stop(), "told once"
+    assert "you have not clocked out of task" in worker_stop()["reason"], "the output's end is told once; after it the stop waits for the clock-out"
 
 
 def test_the_users_edits_and_closes_of_a_workers_task_reach_the_worker(app: App):

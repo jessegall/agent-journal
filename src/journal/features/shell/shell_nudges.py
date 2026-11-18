@@ -38,7 +38,7 @@ class ShellNudges:
     ALIASED_LINE = Nudge("shell", "aliased_line_refused", "alias journal {{name}} runs this line: {{line|cap=25}}", "run `journal {{name}} [args]` instead", repeat=Timeout.seconds(0))
     MORE_SPECIFIC_ALIAS = Nudge("shell", "more_specific_alias_refused", "journal {{name}} already runs this line: {{line|cap=23}}", "run `journal {{name}} [args]` instead", repeat=Timeout.seconds(0))
     COMPLETE_PROGRESS_RUN = Nudge("shell", "run_stands_at_100_percent", "output {{n}} at 100% for {{seconds}} seconds", "read `journal output read {{n}}`; give its reader a pattern for that step", repeat=Timeout.seconds(0), kind=NudgeKind.REMARK)
-    SHARED_TITLE = Nudge("shell", "give_each_run_its_own_title", "`{{first_line|cap=28}}` and `{{second_line|cap=28}}` share a title: give each a `--label \"<words>\"`", "", repeat=Timeout.seconds(0), kind=NudgeKind.REMARK)
+    SHARED_TITLE = Nudge("shell", "give_each_run_its_own_title", "`{{first_line|cap=28}}` and `{{second_line|cap=28}}` share a title", "`journal output watch {{n}} --title \"<words>\"`", repeat=Timeout.seconds(0), kind=NudgeKind.REMARK)
     FLAGGED_TITLE = Nudge("shell", "name_the_run_in_words", "output {{n}}'s title {{card_title|cap=16}} is a flag or path", "title it in words: `journal output watch {{n}} --title \"<words>\"`", repeat=Timeout.seconds(0), kind=NudgeKind.REMARK)
     ALIAS_SUGGESTION = Nudge("shell", "add_an_alias", "you ran {{shape|cap=30}} often", "add an alias: `journal alias add <name> \"<line>\"{{reader|cap=20}}`", repeat=Timeout.seconds(0), kind=NudgeKind.REMARK)
 

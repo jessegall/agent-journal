@@ -27,7 +27,7 @@ KIND_REFUSALS = {TEST_RUN: WorkersNudges.TEST_QUEUE, BUILD: WorkersNudges.BUILD_
 
 @dataclass(frozen=True)
 class WorkingTask(BaseState):
-    """A worker at work on its task, pushed over Void when it clocks in and popped back to Void when its work is delivered, sent to review, or its task is closed by the user: its writes wait while the journal rebases its worktree, it never runs git, it runs only the kinds of command the setting allows, a test or a build refused with the line to queue it with the journal, its stop waits for an output of its own still running and is told the to-do items still open, it is told the end of each of its outputs, its journal await and journal stuck push the wait and the stuck state over its work, and a quiet span past its length tells it to log."""
+    """A worker at work on its task, pushed over Void when it clocks in, or at its session's first hook while it is out on the task it holds, and popped back to Void when its work is delivered, sent to review, or its task is closed by the user: its writes wait while the journal rebases its worktree, it never runs git, it runs only the kinds of command the setting allows, a test or a build refused with the line to queue it with the journal, its stop is held until it clocks out, told the output of its own still running or the to-do items still open, it is told the end of each of its outputs, its journal await and journal stuck push the wait and the stuck state over its work, and a quiet span past its length tells it to log."""
 
     name = "working_task"
     title = "At work on its task"
@@ -48,7 +48,9 @@ class WorkingTask(BaseState):
         if unfinished:
             return self.refuse(WorkersNudges.OUTPUT_UNFINISHED.create(n=unfinished[0]))
         items = [item for item in event.data.part(SessionWorkersPart).todos if not item.complete]
-        return self.none(WorkersNudges.OPEN_TODOS.create(count=len(items), items="; ".join(f"{item.position}. {item.text}" for item in items))) if items else self.none()
+        if items:
+            return self.refuse(WorkersNudges.OPEN_TODOS.create(count=len(items), items="; ".join(f"{item.position}. {item.text}" for item in items)))
+        return self.refuse(WorkersNudges.CLOCK_OUT_DUE.create(task=self.task_id))
 
     def on_worker_silent(self, event: WorkerSilent, settings: Settings) -> Transition:
         return self.none(WorkersNudges.WORKER_LOG_DUE.create(minutes=event.minutes)) if event.worker.session == event.session else self.none()
