@@ -1,0 +1,29 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Unit\Domains;
+
+use App\Contracts\Event;
+use App\Domains\Support\Exports;
+use App\Exports\Support\Exports as ExportList;
+use Tests\Fixtures\ExportedEvents\Api\Events\DraftSaved;
+use Tests\Fixtures\ExportedEvents\Support\ReportReady;
+use Tests\TestCase;
+
+/**
+ * An event is public because its owner exports it, wherever it sits: an exported event outside any Events folder is
+ * published, and an event in Api/Events that is not exported stays private. Both carry the Event marker.
+ */
+final class EventPlacementTest extends TestCase
+{
+    public function test_the_exports_list_and_not_the_folder_decides_which_event_is_public(): void
+    {
+        $checked = Exports::check('Fixture', 'Tests\\Fixtures\\ExportedEvents', ExportList::make()->events(ReportReady::class)->build());
+
+        $this->assertSame([ReportReady::class], $checked->events);
+        $this->assertNotContains(DraftSaved::class, $checked->events);
+        $this->assertTrue(is_a(ReportReady::class, Event::class, true));
+        $this->assertTrue(is_a(DraftSaved::class, Event::class, true));
+    }
+}

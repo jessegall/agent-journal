@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Bus;
 
 use App\Actors\Enums\ActorType;
+use App\Agents\Commands\RetireAgent;
 use App\Bus\Exceptions\CommandDeclarationInvalid;
 use App\Bus\Exceptions\CommandHandlerMissing;
 use App\Bus\Exceptions\CommandListedTwice;
@@ -163,6 +164,16 @@ final class CommandRegistryTest extends TestCase
             $this->shop([AddItem::class]),
             $this->garden([], [MiddlewareDeclaration::around(Fence::class, CommandScope::command(AddItem::class))]),
         ]);
+    }
+
+    public function test_a_domain_scopes_middleware_to_an_exported_core_command_without_requiring_core(): void
+    {
+        $registry = CommandRegistry::from([
+            CoreCommands::owner(),
+            $this->garden([], [MiddlewareDeclaration::around(Fence::class, CommandScope::command(RetireAgent::class))]),
+        ]);
+
+        $this->assertContains(Fence::class, array_map(fn (RegisteredMiddleware $entry) => $entry->declaration->middleware, $registry->middlewareFor(RetireAgent::class)));
     }
 
     /**
