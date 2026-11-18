@@ -15,6 +15,7 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\SessionOption;
 use Carbon\CarbonImmutable;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -45,10 +46,10 @@ final class AgentReadersTest extends TestCase
         $this->builder = Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']);
         $this->reviewer = Agent::query()->create(['name' => 'Reviewer', 'role' => 'hooks.main_ready']);
         $launch = $this->app->make(LaunchSessions::class);
-        $this->running = $launch->launch($this->builder, 'claude-code')->session;
-        $this->ended = $launch->launch($this->builder, 'claude-code')->session;
+        $this->running = $launch->launch($this->builder, TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        $this->ended = $launch->launch($this->builder, TestSelections::of('claude-code'), TestSelections::requestId())->session;
         $this->ended->endAt(CarbonImmutable::now());
-        $this->reviewing = $launch->launch($this->reviewer, 'claude-code')->session;
+        $this->reviewing = $launch->launch($this->reviewer, TestSelections::of('claude-code'), TestSelections::requestId())->session;
     }
 
     public function test_the_user_sees_every_running_session_with_its_agent_name(): void

@@ -45,6 +45,14 @@ final readonly class RelaySettings
      * The hook path, with the process generation the host gave this program when it has one, so the server can refuse
      * a call from an older process (doc 40, section 12).
      */
+    /**
+     * The folder of callback envelopes not yet answered, beside the bypass log.
+     */
+    public function pendingEnvelopesFolder(): string
+    {
+        return $this->bypassLogPath.'.pending';
+    }
+
     public function hookPath(string $program): string
     {
         return $this->processGeneration > 0 ? "/hooks/{$program}?generation={$this->processGeneration}" : "/hooks/{$program}";

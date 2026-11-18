@@ -24,4 +24,9 @@ return [
     */
     'operation_deadline_milliseconds' => (int) env('HOOK_OPERATION_DEADLINE_MILLISECONDS', 5000),
 
+    /*
+    | How many characters of reminders beyond the required ones a launch, clear, resume or compaction may carry.
+    */
+    'context_budget_characters' => (int) env('HOOK_CONTEXT_BUDGET_CHARACTERS', 8000),
+
 ];

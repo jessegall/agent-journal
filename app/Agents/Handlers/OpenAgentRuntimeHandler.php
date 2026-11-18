@@ -15,10 +15,13 @@ use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\Host;
 use App\Agents\Support\AgentContext;
+use App\Agents\Support\ModelSelection;
 use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\RuntimeIntent;
+use App\Agents\Support\SelectedProgram;
 use App\Contracts\CommandHandler;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Support\Str;
 
 final readonly class OpenAgentRuntimeHandler implements CommandHandler
 {
@@ -42,7 +45,9 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         $parent = $this->parentSessionFor($command);
         $intent = new RuntimeIntent($host->id, $command->folder, $command->program, $command->programBuild, $command->profile, $command->driverType, $command->model, $command->effort, $command->firstMessage);
 
-        return $this->launches->launch(Agent::query()->findOrFail($command->agentId), $command->program, $parent, $intent)->opened();
+        $selection = SelectedProgram::resolve($command->program, ModelSelection::fromInput($command->model), null, null);
+
+        return $this->launches->launch(Agent::query()->findOrFail($command->agentId), $selection, (string) Str::ulid(), $parent, $intent)->opened();
     }
 
     /**

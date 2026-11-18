@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Hooks\Console;
 
 use App\AgentRequests\Contracts\LaunchCredentialSource;
-use App\Hooks\Enums\HookProgram;
 use App\Hooks\Relay\HookRelay;
 use App\Hooks\Relay\RelaySettings;
+use App\Programs\Enums\HookProgram;
 use Illuminate\Console\Command;
 
 /**

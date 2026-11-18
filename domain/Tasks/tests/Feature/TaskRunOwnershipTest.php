@@ -26,6 +26,7 @@ use Domain\Tasks\Exceptions\TaskRunNotYours;
 use Domain\Tasks\Exceptions\TaskRunTaken;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 
 /**
@@ -123,7 +124,7 @@ final class TaskRunOwnershipTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->clear();
 
-        return $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => $name, 'role' => $role]), 'claude-code')->session;
+        return $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => $name, 'role' => $role]), TestSelections::of('claude-code'), TestSelections::requestId())->session;
     }
 
     private function actAs(AgentSession $session): void

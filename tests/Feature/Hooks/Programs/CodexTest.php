@@ -140,6 +140,12 @@ final class CodexTest extends TestCase
         return ($call->render)($answer);
     }
 
+    public function test_the_host_starts_the_program_on_the_selected_model_and_no_actual_model_is_reported(): void
+    {
+        $this->assertSame(['--model', 'gpt-5-codex'], $this->adapter()->modelArguments('gpt-5-codex'));
+        $this->assertFalse($this->adapter()->capabilities()->reportsActualModel);
+    }
+
     private function adapter(): CodexAdapter
     {
         return $this->app->make(CodexAdapter::class);

@@ -12,6 +12,7 @@ use App\Communication\Contracts\MessageAddressReader;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\DB;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -42,7 +43,7 @@ final class MessageAddressTest extends TestCase
         $this->first = Agent::query()->create(['name' => 'First', 'role' => 'hooks.main_ready']);
         $this->second = Agent::query()->create(['name' => 'Second', 'role' => 'hooks.main_ready']);
         $this->secondSession = new AgentSession();
-        $this->secondSession->startFor($this->second, null);
+        $this->secondSession->startFor($this->second, null, TestSelections::of(), TestSelections::requestId());
         $this->startUserRequestAs($owner->id);
     }
 

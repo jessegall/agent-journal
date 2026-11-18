@@ -8,9 +8,9 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Actions\ProgramChildSessions;
+use App\Agents\Actions\RecordConversationVisit;
 use App\Agents\Exceptions\CredentialRejected;
-use App\Agents\Exceptions\LaunchRefused;
+use App\Agents\Exceptions\ProgramUnsupported;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
@@ -19,7 +19,6 @@ use App\Agents\Support\LaunchedAgent;
 use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\OperationDeadline;
-use App\Hooks\Enums\HookProgram;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\StackStatus;
 use App\Hooks\Exceptions\ShellParserMissing;
@@ -35,11 +34,13 @@ use App\Hooks\Stack\AgentStateMachine;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Storage\FrameRecord;
 use App\Processes\Contracts\ShellCommandParser;
+use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
 use Closure;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\DB;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -47,7 +48,7 @@ final class HookLaunchTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'tasks', 'links'];
+    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'tasks', 'links', 'program_conversations', 'conversation_visits'];
 
     public function test_the_isolated_settings_hold_only_the_journal_hooks_and_turn_off_the_child_tool(): void
     {
@@ -102,7 +103,7 @@ final class HookLaunchTest extends TestCase
 
     public function test_a_program_without_journal_hooks_cannot_be_launched(): void
     {
-        $this->expectException(LaunchRefused::class);
+        $this->expectException(ProgramUnsupported::class);
 
         $this->launch('hooks.main_ready', 'some-other-program');
     }
@@ -110,14 +111,14 @@ final class HookLaunchTest extends TestCase
     public function test_a_clear_or_resume_keeps_the_journal_session_and_its_stack(): void
     {
         $launched = $this->launch('hooks.main_ready');
-        $sessions = $this->app->make(LaunchSessions::class);
+        $visits = $this->app->make(RecordConversationVisit::class);
 
-        $sessions->mapProgramSession($launched->session, 'program-session-1');
+        $visits->entered($launched->session->id, 'program-session-1', 'call-1', CarbonImmutable::now());
         $framesBefore = $this->bottomOf($launched);
-        $sessions->mapProgramSession($launched->session, 'program-session-2');
+        $visits->entered($launched->session->id, 'program-session-2', 'call-2', CarbonImmutable::now());
 
         $this->assertSame(1, AgentSession::query()->count());
-        $this->assertSame('program-session-2', $launched->session->fresh()?->program_session_id);
+        $this->assertSame('program-session-2', $launched->session->fresh(['currentConversation'])?->currentConversation?->native_id);
         $this->assertSame($framesBefore, $this->bottomOf($launched));
         $this->assertSame($launched->session->id, $this->app->make(CredentialLookup::class)->sessionFor($launched->token)->id);
     }
@@ -129,7 +130,7 @@ final class HookLaunchTest extends TestCase
         $this->as($parent, fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id, $parent->session->id)));
         $childAgent = Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.read_only_helper_ready']);
 
-        $child = $this->app->make(ProgramChildSessions::class)->open($parent->session, $childAgent, 'claude-code');
+        $child = $this->app->make(LaunchSessions::class)->launch($childAgent, TestSelections::of('claude-code'), TestSelections::requestId(), $parent->session);
 
         $this->assertSame($parent->session->id, $child->session->fresh()?->parent_session_id);
         $this->assertSame('{}', $this->stopAs($child, 'call-1'));
@@ -151,7 +152,7 @@ final class HookLaunchTest extends TestCase
     {
         $agent = Agent::query()->create(['name' => 'Test agent', 'role' => $role]);
 
-        return $this->app->make(LaunchSessions::class)->launch($agent, $program);
+        return $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of($program), TestSelections::requestId());
     }
 
     /**

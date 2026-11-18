@@ -14,10 +14,14 @@ use App\Agents\Models\DriverRequest;
  */
 final readonly class LaunchedAgent
 {
+    /**
+     * @param  list<string>  $programArguments  the arguments the host starts the program with, such as its model
+     */
     public function __construct(
         public AgentSession $session,
         public string $token,
         public string $settings,
+        public array $programArguments,
         public AgentRuntime|null $runtime,
         public DriverRequest|null $firstRequest,
     ) {}

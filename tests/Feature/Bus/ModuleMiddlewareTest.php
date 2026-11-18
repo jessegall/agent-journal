@@ -35,6 +35,7 @@ use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\ConnectionInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\CallsNextTwice;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\ChangesResult;
@@ -164,7 +165,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
 
     private function launchedSession(): AgentSession
     {
-        return $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Reader', 'role' => 'hooks.main_ready']), 'claude-code')->session;
+        return $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Reader', 'role' => 'hooks.main_ready']), TestSelections::of('claude-code'), TestSelections::requestId())->session;
     }
 
     public function test_notes_limits_plan_starts_and_nothing_is_written(): void

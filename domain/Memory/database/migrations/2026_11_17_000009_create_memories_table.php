@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('actor_id');
             $table->text('text');
             $table->unsignedSmallInteger('weight');
+            $table->unsignedInteger('revision')->default(1);
             $table->timestampsTz();
 
             $table->unique(['number_group_id', 'number']);

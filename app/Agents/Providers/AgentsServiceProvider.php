@@ -14,13 +14,24 @@ use App\AgentRequests\Support\AgentClientSettings;
 use App\AgentRequests\Support\EnvironmentCredentialSource;
 use App\Agents\Console\EnrollHostCommand;
 use App\Agents\Console\RetireAgentCommand;
+use App\Agents\Contracts\HelperImages;
+use App\Agents\Contracts\ProgramConversationReader;
+use App\Agents\Contracts\HostCapabilities;
+use App\Agents\Contracts\LaunchMaterialReader;
+use App\Agents\Contracts\LaunchRecordReader;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Readers\AgentAuthorityRecords;
+use App\Agents\Readers\ProgramConversationRecords;
+use App\Agents\Readers\HostLaunchMaterial;
+use App\Agents\Readers\LaunchRecords;
+use App\Agents\Readers\RecordedHostCapabilities;
+use App\Agents\Readers\VerifiedHelperImages;
 use App\Agents\Support\AgentActors;
 use App\Agents\Support\AgentAssignees;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\AgentSessionCounter;
 use App\Agents\Support\DatabaseLaunchTransaction;
+use App\Agents\Support\HostCapacity;
 use App\Agents\Support\RequestSession;
 use App\Agents\Support\RolePermissionReader;
 use App\Assignments\Contracts\AgentAuthority;
@@ -43,6 +54,17 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->scoped(AgentContext::class, fn () => throw AgentContextMissing::forRequest());
         $this->app->scoped(AgentAssignees::class);
         $this->app->bind(AgentAuthority::class, AgentAuthorityRecords::class);
+        $this->app->bind(LaunchRecordReader::class, LaunchRecords::class);
+        $this->app->bind(ProgramConversationReader::class, ProgramConversationRecords::class);
+        $this->app->bind(HelperImages::class, fn () => new VerifiedHelperImages(base_path('docs/accounts/helper-image.json')));
+        $this->app->singleton(HostCapacity::class, fn () => new HostCapacity(
+            $this->app->make('config')->integer('agents.host_capacity.cpu_cores'),
+            $this->app->make('config')->integer('agents.host_capacity.memory_bytes'),
+            $this->app->make('config')->integer('agents.host_capacity.disk_bytes'),
+        ));
+        $this->app->scoped(HostLaunchMaterial::class);
+        $this->app->bind(LaunchMaterialReader::class, HostLaunchMaterial::class);
+        $this->app->bind(HostCapabilities::class, fn () => new RecordedHostCapabilities(base_path('docs/accounts/container-capabilities.json')));
         $this->app->bindIf(LaunchTransaction::class, DatabaseLaunchTransaction::class);
         $this->app->bind(LaunchCredentialSource::class, fn () => new EnvironmentCredentialSource(array_filter(getenv(), is_string(...))));
         $this->app->bind(AgentClientSettings::class, fn ($app) => $app->make(LaunchCredentialSource::class)->forThisLaunch());

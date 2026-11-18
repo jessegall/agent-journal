@@ -15,8 +15,10 @@ use App\Assignments\Contracts\AssignmentReader;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
+use App\Assignments\Contracts\RecordVisibility;
 use App\Assignments\Readers\AssigneeRecords;
 use App\Assignments\Readers\AssignmentRecords;
+use App\Assignments\Readers\VisibleRecords;
 use App\Assignments\Registry\AssignmentRegistry;
 use App\Assignments\Storage\DatabaseAssignmentTransaction;
 use App\Links\Support\LinkTypeRegistry;
@@ -37,6 +39,7 @@ final class AssignmentsServiceProvider extends ServiceProvider
         $this->app->scoped(AssignmentWriter::class, WriteAssignments::class);
         $this->app->scoped(AssignmentReader::class, AssignmentRecords::class);
         $this->app->scoped(AssigneeReader::class, AssigneeRecords::class);
+        $this->app->scoped(RecordVisibility::class, VisibleRecords::class);
     }
 
     public function boot(): void

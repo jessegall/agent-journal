@@ -30,6 +30,7 @@ use App\Actors\Models\Support\BelongsToOneActor;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\CurrentUser;
+use App\AgentRequests\Console\Concerns\SendsSignedCalls;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Exceptions\AgentRequestFailed;
 use App\AgentRequests\Support\AgentReply;
@@ -37,9 +38,11 @@ use App\Agents\Commands\ChangeAgentEffort;
 use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ClaimDriverRequests;
 use App\Agents\Commands\ClaimLaunchGrant;
+use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\InterruptAgent;
+use App\Agents\Commands\LaunchAgent;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\OpenHostMainRuntime;
 use App\Agents\Commands\RecordHeartbeat;
@@ -52,33 +55,100 @@ use App\Agents\Commands\RetireAgent;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\AgentReader;
+use App\Agents\Contracts\HelperImages;
+use App\Agents\Contracts\ProgramConversationReader;
 use App\Agents\Contracts\CurrentSession;
+use App\Agents\Contracts\HostCapabilities;
+use App\Agents\Contracts\LaunchExecutor;
 use App\Agents\Contracts\LaunchReadiness;
+use App\Agents\Contracts\LaunchRecordReader;
 use App\Agents\Contracts\RuntimeReader;
 use App\Agents\Contracts\SessionReader;
 use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
+use App\Agents\Enums\AccessRuleType;
+use App\Agents\Enums\AccountModeType;
+use App\Agents\Enums\AgentRole;
+use App\Agents\Enums\CapabilityStatusType;
+use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\DriverType;
+use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
+use App\Agents\Enums\HostCapabilityType;
+use App\Agents\Enums\LaunchDisposition;
+use App\Agents\Enums\LaunchOriginType;
+use App\Agents\Enums\LaunchRefusalType;
+use App\Agents\Enums\ModelSelectionType;
+use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
+use App\Agents\Enums\ReservationState;
 use App\Agents\Enums\RuntimeActivity;
+use App\Agents\Events\LaunchAccepted;
 use App\Agents\Events\LaunchEnded;
+use App\Agents\Exceptions\AccessPolicyInvalid;
+use App\Agents\Exceptions\AccountContainerUnsupported;
+use App\Agents\Exceptions\AgentBusy;
 use App\Agents\Exceptions\AgentContextMissing;
+use App\Agents\Exceptions\AgentNameRequired;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Exceptions\AgentRetirementDenied;
+use App\Agents\Exceptions\CapacityUnavailable;
+use App\Agents\Exceptions\ContainerUnavailable;
+use App\Agents\Exceptions\ConversationIncompatible;
+use App\Agents\Exceptions\DefaultUnavailable;
+use App\Agents\Exceptions\ExecutionBudgetInvalid;
+use App\Agents\Exceptions\ExecutionPolicyInvalid;
+use App\Agents\Exceptions\HostCapabilityUnsupported;
+use App\Agents\Exceptions\ImageUnverified;
+use App\Agents\Exceptions\LaunchRecordMissing;
+use App\Agents\Exceptions\LaunchRequestConflict;
+use App\Agents\Exceptions\ManifestRefused;
+use App\Agents\Exceptions\ModelRequired;
+use App\Agents\Exceptions\ModelUnavailable;
+use App\Agents\Exceptions\ProgramConflict;
+use App\Agents\Exceptions\ProgramRequired;
+use App\Agents\Exceptions\ProgramUnsupported;
 use App\Agents\Exceptions\StackTargetRefused;
+use App\Agents\Exceptions\StopConditionsInvalid;
 use App\Agents\Support\AgentLabel;
 use App\Agents\Support\ClaimedRequest;
 use App\Agents\Support\ClaimedRequests;
+use App\Agents\Support\ContainerManifest;
+use App\Agents\Support\HostCapacity;
+use App\Agents\Support\ManifestMount;
+use App\Agents\Support\ProgramConversationSummary;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\EnrolledHost;
+use App\Agents\Support\ExecutionBudgets;
+use App\Agents\Support\ExecutionPolicy;
+use App\Agents\Support\ExecutionReceipt;
+use App\Agents\Support\ExecutionReference;
+use App\Agents\Support\ExitReceipt;
+use App\Agents\Support\HostCapability;
+use App\Agents\Support\HostCapabilityQuery;
+use App\Agents\Support\LaunchReceipt;
+use App\Agents\Support\LaunchRecordDetails;
+use App\Agents\Support\LaunchRequest;
+use App\Agents\Support\ModelSelection;
 use App\Agents\Support\OpenedRuntime;
+use App\Agents\Support\PreparedLaunch;
+use App\Agents\Support\ProfileDefaults;
+use App\Agents\Support\SelectedProgram;
+use App\Agents\Support\SelectionSource;
 use App\Agents\Support\SessionOption;
 use App\Agents\Support\StackTarget;
+use App\Agents\Values\AccessDecision;
+use App\Agents\Values\AccessPolicy;
+use App\Agents\Values\ClassGrant;
+use App\Agents\Values\Operation as PolicyOperation;
+use App\Agents\Values\OperationGrant;
+use App\Agents\Values\ResourceRequest;
+use App\Agents\Values\StopCondition;
+use App\Agents\Values\StopConditions;
 use App\Assignments\Commands\AssignRecord;
 use App\Assignments\Commands\ReassignRecord;
 use App\Assignments\Commands\UnassignRecord;
@@ -91,6 +161,7 @@ use App\Assignments\Contracts\AssignmentReader;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
+use App\Assignments\Contracts\RecordVisibility;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Events\AssignmentsChanged;
@@ -241,13 +312,14 @@ use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\AnswerType;
+use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Enums\FileOperation;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\SessionEndReason;
 use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Enums\TransitionType;
-use App\Hooks\Events\ContextWasCompacted;
+use App\Hooks\Events\ContextStarted;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Exceptions\MonotonicClockWentBack;
 use App\Hooks\Exceptions\StackTransactionRequired;
@@ -308,6 +380,10 @@ use App\Numbers\Exceptions\InvalidRecordReference;
 use App\Numbers\Support\HasNumber;
 use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\RecordReference;
+use App\Operations\Enums\AccessType;
+use App\Operations\Enums\ResourceAreaType;
+use App\Operations\Exceptions\UnknownAccessType;
+use App\Operations\Exceptions\UnknownResourceArea;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Commands\IssueEvidencePermit;
 use App\Processes\Commands\RevokeCommandPermissions;
@@ -379,6 +455,7 @@ use App\Processes\Values\TreeDiagnostic;
 use App\Processes\Values\UnresolvedFact;
 use App\Processes\Values\Word;
 use App\Processes\Values\WordSegment;
+use App\Programs\Enums\HookProgram;
 use App\Queries\Support\TextSearch;
 use App\Reads\Attributes\ReadBudget;
 use App\Reads\Contracts\ReadableModel;
@@ -608,7 +685,7 @@ final class CoreApi
     public static function exports(): Exports
     {
         return Exports::make()
-            ->events(LinksRemoved::class, CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, EngineTicked::class, SettingsChanged::class, ShareRequested::class, ShareCreated::class, ShareActivated::class, ShareFailed::class, ShareScopeChanged::class, ShareRevoked::class, ShareExpired::class, ShareGatewayChanged::class)
+            ->events(LinksRemoved::class, CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextStarted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, LaunchAccepted::class, EngineTicked::class, SettingsChanged::class, ShareRequested::class, ShareCreated::class, ShareActivated::class, ShareFailed::class, ShareScopeChanged::class, ShareRevoked::class, ShareExpired::class, ShareGatewayChanged::class)
             ->contracts(
                 RecordProvider::class,
                 RecordReader::class,
@@ -622,6 +699,12 @@ final class CoreApi
                 AgentReader::class,
                 SessionReader::class,
                 LaunchReadiness::class,
+                LaunchExecutor::class,
+                HostCapabilities::class,
+                LaunchRecordReader::class,
+                ProgramConversationReader::class,
+                HelperImages::class,
+                RecordVisibility::class,
                 RuntimeReader::class,
                 AgentStack::class,
                 UserStack::class,
@@ -727,6 +810,49 @@ final class CoreApi
                 NextAction::class,
                 OverviewSection::class,
                 ListedPage::class,
+                AgentRole::class,
+                HookProgram::class,
+                PreparedLaunch::class,
+                ExecutionReceipt::class,
+                ExecutionReference::class,
+                ExitReceipt::class,
+                HostCapabilityQuery::class,
+                HostCapability::class,
+                CapabilityStatusType::class,
+                ExecutionModeType::class,
+                AccountModeType::class,
+                HostCapabilityType::class,
+                SelectedProgram::class,
+                ModelSelection::class,
+                SelectionSource::class,
+                ProfileDefaults::class,
+                ModelSelectionType::class,
+                ProgramSourceType::class,
+                LaunchRefusalType::class,
+                LaunchRequest::class,
+                LaunchReceipt::class,
+                LaunchRecordDetails::class,
+                ProgramConversationSummary::class,
+                ContainerManifest::class,
+                ManifestMount::class,
+                HostCapacity::class,
+                ReservationState::class,
+                LaunchOriginType::class,
+                ConversationModeType::class,
+                LaunchDisposition::class,
+                AccessType::class,
+                ResourceAreaType::class,
+                AccessRuleType::class,
+                ResourceRequest::class,
+                PolicyOperation::class,
+                OperationGrant::class,
+                ClassGrant::class,
+                AccessDecision::class,
+                AccessPolicy::class,
+                StopCondition::class,
+                StopConditions::class,
+                ExecutionBudgets::class,
+                ExecutionPolicy::class,
                 ToolArguments::class,
                 RecordCard::class,
                 StateReferences::class,
@@ -775,6 +901,7 @@ final class CoreApi
                 SubjectReference::class,
                 ContextCompacted::class,
                 CompactionDetails::class,
+                ContextStartType::class,
                 FileEditRequested::class,
                 FileChanges::class,
                 FileChange::class,
@@ -1001,6 +1128,8 @@ final class CoreApi
                 AnswerMessage::class,
                 DismissMessage::class,
                 RetireAgent::class,
+                LaunchAgent::class,
+                CreateAgent::class,
                 RecordHeartbeat::class,
                 RecordUserHeartbeat::class,
                 EnrollHost::class,
@@ -1164,6 +1293,29 @@ final class CoreApi
                 ShellNodeMissing::class,
                 VerificationContractInvalid::class,
                 ResourceMimeTypeRefused::class,
+                AccountContainerUnsupported::class,
+                HostCapabilityUnsupported::class,
+                ModelRequired::class,
+                ModelUnavailable::class,
+                DefaultUnavailable::class,
+                ProgramRequired::class,
+                ProgramConflict::class,
+                ProgramUnsupported::class,
+                LaunchRequestConflict::class,
+                AgentBusy::class,
+                AgentNameRequired::class,
+                LaunchRecordMissing::class,
+                ConversationIncompatible::class,
+                ManifestRefused::class,
+                ContainerUnavailable::class,
+                ImageUnverified::class,
+                CapacityUnavailable::class,
+                UnknownAccessType::class,
+                UnknownResourceArea::class,
+                AccessPolicyInvalid::class,
+                StopConditionsInvalid::class,
+                ExecutionPolicyInvalid::class,
+                ExecutionBudgetInvalid::class,
                 ToolArgumentInvalid::class,
                 ToolArgumentUnknown::class,
                 ContinuationInvalid::class,
@@ -1191,6 +1343,7 @@ final class CoreApi
                 JournalReadTool::class,
                 JournalResource::class,
                 RendersRefusal::class,
+                SendsSignedCalls::class,
             )
             ->build();
     }

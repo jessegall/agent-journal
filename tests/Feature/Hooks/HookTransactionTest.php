@@ -4,15 +4,24 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Agents\Models\AgentSession;
 use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\OperationDeadline;
+use App\Hooks\Enums\RewriteSupport;
+use App\Hooks\Enums\SessionStartSource;
+use App\Hooks\Inputs\HookIdentity;
+use App\Hooks\Inputs\SessionStartDetails;
+use App\Hooks\Inputs\SessionStarted;
 use App\Hooks\Models\HookCall;
+use App\Hooks\Programs\ProgramCapabilities;
 use App\Hooks\Programs\ProgramReplies;
+use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Storage\WalkStep;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommittedHookStack;
+use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -99,5 +108,24 @@ final class HookTransactionTest extends TestCase
         if ($line !== "{$expected}\n") {
             throw TestFailure::lockHolderSaid(var_export($line, true));
         }
+    }
+
+    public function test_a_replayed_session_start_with_a_changed_program_session_id_keeps_the_first_mapping(): void
+    {
+        $capabilities = new ProgramCapabilities('Test program', 'session starts', ['onSessionStart'], RewriteSupport::WithoutApproval);
+
+        $this->answerSessionStart('vendor-1', $capabilities);
+        $this->answerSessionStart('vendor-2', $capabilities);
+
+        $this->assertSame('vendor-1', AgentSession::query()->with('currentConversation')->findOrFail($this->target->sessionId)->currentConversation?->native_id);
+        $this->assertSame(1, HookCall::query()->count());
+    }
+
+    private function answerSessionStart(string $vendorSessionId, ProgramCapabilities $capabilities): void
+    {
+        $this->callAs('call-start', hash('sha256', 'call-start'));
+        $start = new SessionStarted(new HookIdentity(TestIds::of(1), TestIds::of(10), 'call-start', hash('sha256', 'call-start')), new SessionStartDetails($vendorSessionId, SessionStartSource::Startup));
+
+        $this->machine()->answer($start, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => new ProgramReply('{}', '', 0));
     }
 }

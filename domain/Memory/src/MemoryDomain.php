@@ -10,7 +10,15 @@ use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
-use Domain\Memory\Commands\RememberForAgent;
+use Domain\Memory\Api\MemoryCard;
+use Domain\Memory\Api\MemoryPage;
+use Domain\Memory\Commands\EditMemory;
+use Domain\Memory\Commands\RemoveMemory;
+use Domain\Memory\Commands\SaveMemory;
+use Domain\Memory\Contracts\MemoryReader;
+use Domain\Memory\Exceptions\MemoryInvalid;
+use Domain\Memory\Exceptions\MemoryRevisionChanged;
+use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Models\Memory;
 
 final class MemoryDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels
@@ -33,6 +41,9 @@ final class MemoryDomain extends Domain implements ProvidesCommands, ProvidesNum
     public function exports(): Exports
     {
         return Exports::make()
+            ->contracts(MemoryReader::class)
+            ->values(MemoryPage::class, MemoryCard::class)
+            ->exceptions(MemoryUnavailable::class, MemoryInvalid::class, MemoryRevisionChanged::class)
             ->build();
     }
 
@@ -43,6 +54,6 @@ final class MemoryDomain extends Domain implements ProvidesCommands, ProvidesNum
 
     public function commands(): array
     {
-        return [RememberForAgent::class];
+        return [SaveMemory::class, EditMemory::class, RemoveMemory::class];
     }
 }

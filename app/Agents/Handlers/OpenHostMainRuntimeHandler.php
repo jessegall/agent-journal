@@ -19,6 +19,6 @@ final readonly class OpenHostMainRuntimeHandler implements CommandHandler
      */
     public function handle(OpenHostMainRuntime $command): OpenedRuntime
     {
-        return $this->runtimes->handle(new OpenAgentRuntime($command->agentId, $command->hostId, $command->folder, $command->program, $command->programBuild, $command->profile, DriverType::Terminal));
+        return $this->runtimes->handle(new OpenAgentRuntime($command->agentId, $command->hostId, $command->folder, $command->program, $command->programBuild, $command->profile, DriverType::Terminal, $command->model));
     }
 }

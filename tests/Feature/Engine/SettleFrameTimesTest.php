@@ -20,6 +20,7 @@ use Carbon\CarbonImmutable;
 use Closure;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
+use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
 
@@ -41,7 +42,7 @@ final class SettleFrameTimesTest extends TestCase
     {
         parent::setUp();
 
-        $session = $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Test agent', 'role' => 'hooks.main_ready']), 'claude-code')->session;
+        $session = $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Test agent', 'role' => 'hooks.main_ready']), TestSelections::of('claude-code'), TestSelections::requestId())->session;
         $this->target = new StackTarget($session->agent_id, $session->id);
         $this->stack = AgentStackRow::query()->authorizedFor($this->target)->sole();
     }

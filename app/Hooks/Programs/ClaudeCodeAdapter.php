@@ -30,6 +30,7 @@ use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Stack\HookAnswer;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Enums\ShellDialect;
+use App\Programs\Enums\HookProgram;
 
 /**
  * Reads Claude Code's hook payloads into the journal's inputs and renders its answers as Claude Code replies.
@@ -49,6 +50,11 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
             ['onSessionStart', 'onPrompt', 'onCompaction', 'onShellCommand', 'onFileEdit', 'onStop', 'onToolFinished', 'onSessionEnd'],
             RewriteSupport::WithoutApproval,
         );
+    }
+
+    public function modelArguments(string $model): array
+    {
+        return HookProgram::ClaudeCode->modelArguments($model);
     }
 
     public function callFor(HookPayload $payload, HookIdentity $hook): ProgramCall

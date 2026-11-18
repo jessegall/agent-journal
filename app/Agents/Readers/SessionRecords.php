@@ -9,6 +9,7 @@ use App\Agents\Contracts\SessionReader;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\AgentSession;
+use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\SessionOption;
 use App\Agents\Support\StackTarget;
 use App\Reads\Support\ReadBuilder;
@@ -33,7 +34,7 @@ final readonly class SessionRecords implements SessionReader
      */
     public function active(): array
     {
-        return array_values($this->visibleSessions()->with('agent')->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))
+        return array_values($this->visibleSessions()->with(['agent', 'currentConversation'])->withCount('visits')->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))
             ->orderBy('id')->readLimit(self::CHOICES_SHOWN)->get()
             ->map(fn (AgentSession $session) => self::optionOf($session))
             ->all());
@@ -41,7 +42,7 @@ final readonly class SessionRecords implements SessionReader
 
     public function requireActive(string $sessionId): StackTarget
     {
-        $session = $this->visibleSessions()->with('agent')->find($sessionId);
+        $session = $this->visibleSessions()->with(['agent', 'currentConversation'])->withCount('visits')->find($sessionId);
 
         if ($session === null || ! $session->isActive()) {
             throw StackTargetRefused::forTarget("session {$sessionId}");
@@ -76,6 +77,14 @@ final readonly class SessionRecords implements SessionReader
 
     private static function optionOf(AgentSession $session): SessionOption
     {
-        return new SessionOption($session->id, $session->agent->name, new StackTarget($session->agent_id, $session->id));
+        return new SessionOption(
+            $session->id,
+            $session->agent->name,
+            new StackTarget($session->agent_id, $session->id),
+            $session->selection(),
+            LaunchReceipt::ACTUAL_MODEL_NOT_REPORTED,
+            $session->currentConversation?->native_id,
+            (int) $session->getAttribute('visits_count'),
+        );
     }
 }
