@@ -6,7 +6,8 @@ namespace App\Processes\Values;
 
 /**
  * What one proposal revision submits for review: the validated rule, the evidence for its behaviour and its examples.
- * It is complete only with evidence and at least one line the rule must match; until then the proposal stays a draft.
+ * It is complete only with evidence, a line the rule must match and each contract's exit policy; until then the
+ * proposal stays a draft.
  */
 final readonly class ProposedRule
 {
@@ -17,9 +18,30 @@ final readonly class ProposedRule
 
     public function isComplete(): bool
     {
-        $matches = array_any($this->examples, fn (RuleExample $example): bool => $example->isPositive());
+        return $this->missingFields() === [];
+    }
 
-        return trim($this->evidence) !== '' && $matches;
+    /**
+     * The fields review still needs: evidence, a line the rule must match, and the exit policy of each contract.
+     *
+     * @return list<string>
+     */
+    public function missingFields(): array
+    {
+        $missing = [];
+        if (trim($this->evidence) === '') {
+            $missing[] = 'evidence';
+        }
+        if (! array_any($this->examples, fn (RuleExample $example): bool => $example->isPositive())) {
+            $missing[] = 'examples';
+        }
+        foreach ($this->rule->contracts as $index => $contract) {
+            if ($contract->exits->branches === []) {
+                $missing[] = "contracts.{$index}.exits";
+            }
+        }
+
+        return $missing;
     }
 
     /**

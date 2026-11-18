@@ -33,7 +33,11 @@ final readonly class CommandRuleRegistry
      */
     public static function from(array $rules): self
     {
-        usort($rules, fn (CommandRule $first, CommandRule $second): int => [$first->id, $first->scope->name()] <=> [$second->id, $second->scope->name()]);
+        usort(
+            $rules,
+            fn (CommandRule $first, CommandRule $second): int => [$first->id, $first->scope->name()]
+                <=> [$second->id, $second->scope->name()],
+        );
         $standing = self::withoutReplaced($rules);
         self::checkIds($standing);
         self::checkDisjoint($standing);
@@ -59,9 +63,12 @@ final readonly class CommandRuleRegistry
     {
         $rules = $this->active[$program->family] ?? [];
         if ($rules === []) {
-            return new UnresolvedFact(UnresolvedType::UnknownProgram, $node, "No rule declares the program {$program->family}.");
+            $problem = "No rule declares the program {$program->family}.";
+
+            return new UnresolvedFact(UnresolvedType::UnknownProgram, $node, $problem);
         }
-        $closest = new UnresolvedFact(UnresolvedType::UnknownSubcommand, $node, "No rule of {$program->family} accepts these words.");
+        $problem = "No rule of {$program->family} accepts these words.";
+        $closest = new UnresolvedFact(UnresolvedType::UnknownSubcommand, $node, $problem);
         $closestLength = -1;
         foreach ($this->bySubcommandLength($rules) as $rule) {
             $length = $rule->subcommandLength($words);
@@ -91,6 +98,19 @@ final readonly class CommandRuleRegistry
     }
 
     /**
+     * Whether an active rule with a verification contract already covers the same program and subcommands.
+     */
+    public function coversAsCheck(CommandRule $rule): bool
+    {
+        $known = $this->active[$rule->program->family] ?? [];
+
+        return array_any(
+            $known,
+            fn (CommandRule $other): bool => $other->coversSameCommand($rule) && $other->hasContract(),
+        );
+    }
+
+    /**
      * @return list<CommandRule>
      */
     public function awaitingReview(): array
@@ -104,7 +124,11 @@ final readonly class CommandRuleRegistry
      */
     private function bySubcommandLength(array $rules): array
     {
-        usort($rules, fn (CommandRule $first, CommandRule $second): int => count($second->subcommands) <=> count($first->subcommands));
+        usort(
+            $rules,
+            fn (CommandRule $first, CommandRule $second): int => count($second->subcommands)
+                <=> count($first->subcommands),
+        );
 
         return $rules;
     }
@@ -115,7 +139,13 @@ final readonly class CommandRuleRegistry
      */
     private static function withoutReplaced(array $rules): array
     {
-        return array_values(array_filter($rules, fn (CommandRule $rule): bool => ! array_any($rules, fn (CommandRule $other): bool => $other->replaces($rule))));
+        return array_values(array_filter(
+            $rules,
+            fn (CommandRule $rule): bool => ! array_any(
+                $rules,
+                fn (CommandRule $other): bool => $other->replaces($rule),
+            ),
+        ));
     }
 
     /**

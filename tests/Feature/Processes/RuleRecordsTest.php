@@ -109,7 +109,7 @@ final class RuleRecordsTest extends TestCase
         $proposal->save();
 
         $this->assertThrows(
-            fn () => $proposal->record($this->complete($this->statusRule()), $this->agent()),
+            fn () => $proposal->revise(1, $this->complete($this->statusRule()), $this->agent()),
             RuleProposalRefused::class,
         );
     }
@@ -145,7 +145,8 @@ final class RuleRecordsTest extends TestCase
         $rule = $this->statusRule()->replacing($replaced);
 
         $proposal = $this->open('request-1', $this->complete($rule));
-        $revision = RuleRevision::approve($proposal->revisions()->firstOrFail(), self::PROJECT, $this->user(), [], [$script]);
+        $proposed = $proposal->revisions()->firstOrFail();
+        $revision = RuleRevision::approve($proposed, self::PROJECT, $this->user(), [], [$script]);
 
         $this->assertEquals([$replaced], $proposal->refresh()->replaces);
         $this->assertEquals([$script], $revision->refresh()->script_bindings);

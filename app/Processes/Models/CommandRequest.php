@@ -6,6 +6,7 @@ namespace App\Processes\Models;
 
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
+use App\Processes\Enums\ProposalState;
 use App\Processes\Enums\RequestHoldReason;
 use App\Processes\Enums\RequestState;
 use App\Processes\Exceptions\RequestTransitionRefused;
@@ -38,7 +39,17 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['project_key', 'actor_type', 'actor_id', 'operation', 'binding_digest', 'source_digest', 'source_excerpt', 'hold_reason', 'state'])]
+#[Fillable([
+    'project_key',
+    'actor_type',
+    'actor_id',
+    'operation',
+    'binding_digest',
+    'source_digest',
+    'source_excerpt',
+    'hold_reason',
+    'state',
+])]
 final class CommandRequest extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -135,6 +146,22 @@ final class CommandRequest extends Model implements ReadableModel
     }
 
     /**
+     * A new proposal revision answers the request: a revision after a sample or proof starts the collection again,
+     * and a complete one moves the request on to its evidence sample.
+     *
+     * @throws RequestTransitionRefused
+     */
+    public function answerWith(RuleProposal $proposal): void
+    {
+        if ($this->state->restartsCollection()) {
+            $this->revise();
+        }
+        if ($this->state === RequestState::CollectingDeclaration && $proposal->state === ProposalState::Pending) {
+            $this->propose();
+        }
+    }
+
+    /**
      * @throws RequestTransitionRefused
      */
     public function reject(): void
@@ -195,6 +222,10 @@ final class CommandRequest extends Model implements ReadableModel
     #[Scope]
     protected function stillOpen(Builder $query): void
     {
-        $query->whereNotIn('state', [RequestState::Active->value, RequestState::Rejected->value, RequestState::Withdrawn->value]);
+        $query->whereNotIn('state', [
+            RequestState::Active->value,
+            RequestState::Rejected->value,
+            RequestState::Withdrawn->value,
+        ]);
     }
 }

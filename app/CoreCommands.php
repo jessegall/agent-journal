@@ -40,10 +40,14 @@ use App\Communication\Commands\SendMessage;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Numbers\Commands\InstallNumbers;
+use App\Processes\Commands\ImportRuleProposals;
 use App\Processes\Commands\IssueEvidencePermit;
 use App\Processes\Commands\OpenCommandRequest;
+use App\Processes\Commands\ProposeCommandRule;
+use App\Processes\Commands\ReviseRuleProposal;
 use App\Processes\Commands\RevokeCommandPermissions;
 use App\Processes\Commands\WithdrawCommandRequest;
+use App\Processes\Commands\WithdrawRuleProposal;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Records\Commands\LinkRecords;
@@ -104,6 +108,10 @@ final class CoreCommands
             SaveSharePreview::class, CreateShare::class, RequestShare::class, ApproveShareRequest::class, RevokeShare::class, RevokeCommandPermissions::class, IssueEvidencePermit::class, OpenCommandRequest::class, WithdrawCommandRequest::class, RefreshShareScope::class, RetryShare::class, ConfigureShareGateway::class, DisableShareGateway::class,
             ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class, ReopenSharedGateways::class, PruneShareAudit::class,
             ActivateProfiles::class, RevokeProfiles::class,
+            ProposeCommandRule::class,
+            ReviseRuleProposal::class,
+            WithdrawRuleProposal::class,
+            ImportRuleProposals::class,
             CreateSkill::class, ReviseSkill::class, RestoreSkill::class, RetireSkill::class, CopySkill::class,
             RefreshSkills::class, PublishSkills::class, PrepareSkillPublication::class, ActivateSkillPublication::class, FailSkillPublication::class,
         ];
