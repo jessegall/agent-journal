@@ -41,13 +41,16 @@ final readonly class SharePreviewReader implements PageReader
         $approved = Share::liveFor($root)->map(fn (Share $share) => ShareMember::approvedLinkIdsOf($share))->getOrElse([]);
         $saved = SharePreview::openFor($this->actors->actor()->actorId(), $root);
 
-        return new SharePreviewData(
-            $this->request->rootReference(),
-            $candidates->root->title,
-            array_map(fn (ShareLinkedCandidate $candidate) => ShareCandidateData::fromCandidate($candidate, $approved), $candidates->linked),
-            $saved->map(SavedSharePreviewData::fromPreview(...))->getOrElse(null),
-            Share::liveFor($root)->map(RootShareData::fromShare(...))->getOrElse(null),
-            array_map(RootShareData::fromShare(...), Share::openProposalsFor($root)),
-        );
+        return SharePreviewData::from([
+            'rootReference' => $this->request->rootReference(),
+            'rootTitle' => $candidates->root->title,
+            'candidates' => array_map(
+                fn (ShareLinkedCandidate $candidate) => ShareCandidateData::fromCandidate($candidate, $approved),
+                $candidates->linked,
+            ),
+            'savedPreview' => $saved->map(SavedSharePreviewData::fromPreview(...))->getOrElse(null),
+            'liveShare' => Share::liveFor($root)->map(RootShareData::fromShare(...))->getOrElse(null),
+            'openProposals' => array_map(RootShareData::fromShare(...), Share::openProposalsFor($root)),
+        ]);
     }
 }

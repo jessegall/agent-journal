@@ -6,6 +6,7 @@ namespace App\Http\Data\Sharing;
 
 use App\Sharing\Enums\ShareState;
 use App\Sharing\Models\Share;
+use App\Sharing\Models\ShareMember;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -40,31 +41,25 @@ final class ShareDetailData extends Data
     ) {}
 
     /**
-     * @param  list<ShareMemberData>  $members
+     * The share as its owner sees it, with whether its link may be revealed and the page of its audit read for them.
      */
-    public static function fromShare(
-        Share $share,
-        string|null $gatewayKey,
-        array $members,
-        bool $mayReveal,
-        ShareAuditData $audit,
-        ShareRuntimeData $runtime,
-    ): self {
+    public static function fromShare(Share $share, bool $mayReveal, ShareAuditData $audit): self
+    {
         return new self(
             $share->id,
             $share->number,
             $share->state,
             $share->root_type,
             $share->root_id,
-            $gatewayKey,
+            $share->gatewayKey(),
             $share->scope_version,
             $share->expires_at->toIso8601String(),
-            $members,
+            array_map(ShareMemberData::fromMember(...), ShareMember::currentOf($share)),
             $mayReveal,
             $share->state->mayRetry() && $share->expires_at->isFuture(),
             ! $share->state->isTerminal(),
             $audit,
-            $runtime,
+            ShareRuntimeData::fromShare($share),
         );
     }
 }

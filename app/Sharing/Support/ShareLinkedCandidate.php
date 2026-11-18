@@ -19,6 +19,16 @@ final readonly class ShareLinkedCandidate
     ) {}
 
     /**
+     * Whether the candidate's record is one of these ids.
+     *
+     * @param  list<string>  $recordIds
+     */
+    public function isAmong(array $recordIds): bool
+    {
+        return in_array($this->card->record->id, $recordIds, true);
+    }
+
+    /**
      * This candidate as the owner selected it: the record, its link and its published version.
      */
     public function toSelectedTarget(): ShareSelectedTarget

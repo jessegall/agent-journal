@@ -29,7 +29,7 @@ final readonly class ShareCandidates
      */
     public function selection(array $recordIds): array
     {
-        $chosen = array_filter($this->linked, fn (ShareLinkedCandidate $candidate) => in_array($candidate->card->record->id, $recordIds, true));
+        $chosen = array_filter($this->linked, fn (ShareLinkedCandidate $candidate) => $candidate->isAmong($recordIds));
 
         return array_values(array_map(fn (ShareLinkedCandidate $candidate) => $candidate->toSelectedTarget(), $chosen));
     }
@@ -42,7 +42,10 @@ final readonly class ShareCandidates
      */
     public function notSharedYet(array $approvedLinkIds): array
     {
-        return array_values(array_filter($this->linked, fn (ShareLinkedCandidate $candidate) => ! in_array($candidate->linkId, $approvedLinkIds, true)));
+        return array_values(array_filter(
+            $this->linked,
+            fn (ShareLinkedCandidate $candidate) => ! in_array($candidate->linkId, $approvedLinkIds, true),
+        ));
     }
 
     /**
