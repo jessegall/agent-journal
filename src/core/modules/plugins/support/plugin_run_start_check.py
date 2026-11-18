@@ -9,7 +9,7 @@ from core.modules.processes.support.process_type_start_check import ProcessTypeS
 from core.modules.plugins.support.plugin_run_rule import PluginRunRule
 
 
-PLUGIN_CLASS_COST = 4
+PLUGIN_CLASS_COST = 1
 
 
 class PluginRunStartCheck(ProcessTypeStartCheck):
