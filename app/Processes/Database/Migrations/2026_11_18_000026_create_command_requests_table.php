@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('binding_digest', 64);
             $table->string('source_digest', 64);
             $table->string('source_excerpt', 200);
+            $table->text('source_line');
+            $table->text('working_folder');
             $table->string('hold_reason', 32);
             $table->string('state', 32);
             $table->timestampsTz();

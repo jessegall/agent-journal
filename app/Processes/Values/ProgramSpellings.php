@@ -15,6 +15,22 @@ final readonly class ProgramSpellings
      */
     public function __construct(public string $family, public array $spellings = []) {}
 
+    /**
+     * @return array{family: string, spellings: list<string>}
+     */
+    public function toArray(): array
+    {
+        return ['family' => $this->family, 'spellings' => $this->spellings];
+    }
+
+    /**
+     * @param  array{family: string, spellings: list<string>}  $fields
+     */
+    public static function fromArray(array $fields): self
+    {
+        return new self($fields['family'], $fields['spellings']);
+    }
+
     public function names(string $name): bool
     {
         return $name === $this->family || in_array($name, $this->spellings, true);
@@ -26,6 +42,8 @@ final readonly class ProgramSpellings
      */
     public function resembles(string $name): bool
     {
-        return ! $this->names($name) && preg_match('/^'.preg_quote($this->family, '/').'(?:[0-9][0-9.]*|\.[a-z]+)$/', $name) === 1;
+        $pattern = '/^'.preg_quote($this->family, '/').'(?:[0-9][0-9.]*|\.[a-z]+)$/';
+
+        return ! $this->names($name) && preg_match($pattern, $name) === 1;
     }
 }

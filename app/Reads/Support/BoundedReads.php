@@ -12,7 +12,7 @@ use Illuminate\Database\Query\Builder as QueryBuilder;
 
 /**
  * Bounds every plain read of a model: at most reads.default_limit rows, newest first, unless the read names a
- * larger one. A model without created_at overrides defaultReadOrder().
+ * larger one. A model without a creation time overrides defaultReadOrder().
  */
 trait BoundedReads
 {

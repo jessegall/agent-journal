@@ -35,7 +35,12 @@ final class ChannelRunEvents implements RunEvents
      */
     private array $offsets = [];
 
-    public function __construct(private readonly AgentRequestSender $journal, private readonly string $runId, private readonly string $eventKey, private readonly string $spoolFolder)
+    public function __construct(
+        private readonly AgentRequestSender $journal,
+        private readonly string $runId,
+        private readonly string $eventKey,
+        private readonly string $spoolFolder,
+    )
     {
         if (! is_dir($spoolFolder)) {
             mkdir($spoolFolder, 0700, true);
@@ -72,7 +77,12 @@ final class ChannelRunEvents implements RunEvents
 
     public function ended(PartKey $part, PartEnd $end, bool $drained): void
     {
-        $this->emit(RunEventType::PartEnded, $part, ['end' => $end->type->value, 'code' => $end->code, 'reason' => $end->reason, 'drained' => (int) $drained]);
+        $this->emit(RunEventType::PartEnded, $part, [
+            'end' => $end->type->value,
+            'code' => $end->code,
+            'reason' => $end->reason,
+            'drained' => (int) $drained,
+        ]);
     }
 
     public function skipped(PartKey $part, string $controllingResult): void
@@ -93,6 +103,17 @@ final class ChannelRunEvents implements RunEvents
     public function lost(PartKey $part): void
     {
         $this->emit(RunEventType::PartLost, $part);
+    }
+
+    public function staleReason(PartKey $part): string
+    {
+        try {
+            $reply = $this->journal->send("/agent/processes/runs/{$this->runId}/currency", ['key' => $this->eventKey]);
+        } catch (AgentRequestFailed) {
+            return 'registry-unavailable: the journal could not confirm the rules this part was admitted under';
+        }
+
+        return (string) $reply->body['stale_reason'];
     }
 
     public function runStopped(string $reason): void
@@ -148,7 +169,8 @@ final class ChannelRunEvents implements RunEvents
      */
     private function append(string $file, array $record): void
     {
-        file_put_contents("{$this->spoolFolder}/{$file}", json_encode($record, JSON_THROW_ON_ERROR)."\n", FILE_APPEND | LOCK_EX);
+        $line = json_encode($record, JSON_THROW_ON_ERROR)."\n";
+        file_put_contents("{$this->spoolFolder}/{$file}", $line, FILE_APPEND | LOCK_EX);
         $this->flush();
     }
 
@@ -168,15 +190,19 @@ final class ChannelRunEvents implements RunEvents
     private function sendSpooled(): void
     {
         $lines = $this->spooledLines('events.jsonl');
-        $events = array_slice(array_map(fn (string $line) => json_decode($line, true, 512, JSON_THROW_ON_ERROR), $lines), $this->sent);
+        $decoded = array_map(fn (string $line) => json_decode($line, true, 512, JSON_THROW_ON_ERROR), $lines);
+        $events = array_slice($decoded, $this->sent);
         if ($events !== []) {
-            $this->journal->send("/agent/processes/runs/{$this->runId}/events", ['key' => $this->eventKey, 'events' => $events]);
+            $path = "/agent/processes/runs/{$this->runId}/events";
+            $this->journal->send($path, ['key' => $this->eventKey, 'events' => $events]);
             $this->sent += count($events);
         }
         $chunks = $this->spooledLines('chunks.jsonl');
         foreach ($chunks as $index => $line) {
-            $this->journal->send("/agent/processes/runs/{$this->runId}/chunks", ['key' => $this->eventKey, ...json_decode($line, true, 512, JSON_THROW_ON_ERROR)]);
-            file_put_contents($this->spoolFolder.'/chunks.jsonl', implode('', array_map(fn (string $rest) => $rest."\n", array_slice($chunks, $index + 1))), LOCK_EX);
+            $chunk = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
+            $this->journal->send("/agent/processes/runs/{$this->runId}/chunks", ['key' => $this->eventKey, ...$chunk]);
+            $rest = implode('', array_map(fn (string $left) => $left."\n", array_slice($chunks, $index + 1)));
+            file_put_contents($this->spoolFolder.'/chunks.jsonl', $rest, LOCK_EX);
         }
     }
 }

@@ -4,12 +4,19 @@ declare(strict_types=1);
 
 namespace App\Processes\Models;
 
+use App\Actors\Enums\ActorType;
 use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
+use App\Processes\Commands\OpenCommandRequest;
+use App\Processes\Enums\EvidenceSource;
+use App\Processes\Enums\OutputStream;
+use App\Processes\Enums\ProposalState;
 use App\Processes\Enums\RequestHoldReason;
 use App\Processes\Enums\RequestState;
 use App\Processes\Exceptions\RequestTransitionRefused;
+use App\Processes\Values\ExitBranch;
+use App\Processes\Values\ExitPolicy;
 use App\Processes\Values\NextStep;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -34,12 +41,26 @@ use Illuminate\Support\Carbon;
  * @property string $binding_digest
  * @property string $source_digest
  * @property string $source_excerpt
+ * @property string $source_line
+ * @property string $working_folder
  * @property RequestHoldReason $hold_reason
  * @property RequestState $state
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['project_key', 'actor_type', 'actor_id', 'operation', 'binding_digest', 'source_digest', 'source_excerpt', 'hold_reason', 'state'])]
+#[Fillable([
+    'project_key',
+    'actor_type',
+    'actor_id',
+    'operation',
+    'binding_digest',
+    'source_digest',
+    'source_excerpt',
+    'source_line',
+    'working_folder',
+    'hold_reason',
+    'state',
+])]
 final class CommandRequest extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -56,34 +77,84 @@ final class CommandRequest extends Model implements ReadableModel
     }
 
     /**
-     * A request one actor opens to run a command line, held while its declaration is collected.
+     * A new request holding the actor's command line in the project, collecting its declaration first.
      */
-    public static function open(
-        string $projectKey,
-        ActorIdentity $actor,
-        string $operation,
-        string $bindingDigest,
-        string $line,
-        RequestHoldReason $reason,
-    ): self {
-        $excerpt = mb_substr((string) preg_replace('/[\x00-\x1F\x7F]/', ' ', $line), 0, self::EXCERPT_LENGTH);
-
+    public static function open(string $projectKey, ActorIdentity $actor, OpenCommandRequest $command): self
+    {
         return self::query()->create([
             'project_key' => $projectKey,
             'actor_type' => $actor->type->value,
             'actor_id' => $actor->id,
-            'operation' => $operation,
-            'binding_digest' => $bindingDigest,
-            'source_digest' => hash('sha256', $line),
-            'source_excerpt' => $excerpt,
-            'hold_reason' => $reason,
+            'operation' => $command->operation,
+            'binding_digest' => $command->bindingDigest,
+            'source_digest' => hash('sha256', $command->line),
+            'source_excerpt' => self::excerptOf($command->line),
+            'source_line' => $command->line,
+            'working_folder' => $command->workingFolder,
+            'hold_reason' => $command->reason,
             'state' => RequestState::CollectingDeclaration,
         ]);
+    }
+
+    /**
+     * The line as a request shows it: control bytes as spaces, cut to the excerpt length.
+     */
+    public static function excerptOf(string $line): string
+    {
+        return mb_substr((string) preg_replace('/[\x00-\x1F\x7F]/', ' ', $line), 0, self::EXCERPT_LENGTH);
     }
 
     public function nextStep(): NextStep
     {
         return $this->state->nextStep($this->id, $this->operation);
+    }
+
+    /**
+     * Whether the request's actor read the run's envelope and at least one range of every stream its parts wrote,
+     * as a reader must be proven only against evidence its author looked at (story 202).
+     */
+    public function hasReadEvidence(ProcessRun $run): bool
+    {
+        $reads = EvidenceRead::query()->ofRunReadBy($run, $this->opener())->readLimit(1_000)->get();
+        if (! $reads->contains(fn (EvidenceRead $read): bool => $read->source === EvidenceSource::Envelope)) {
+            return false;
+        }
+
+        return $run->parts()->readLimit(500)->get()->every(fn (PartRun $part): bool => array_all(
+            $part->recordedStreams(),
+            fn (OutputStream $stream): bool => $reads->contains(
+                fn (EvidenceRead $read): bool => $read->part_run_id === $part->id
+                    && $read->source === EvidenceSource::of($stream),
+            ),
+        ));
+    }
+
+    public function opener(): ActorIdentity
+    {
+        return new ActorIdentity(ActorType::from($this->actor_type), $this->actor_id);
+    }
+
+    /**
+     * The exit branches of the contract that no complete sample of this request ended with yet (story 185).
+     *
+     * @return list<ExitBranch>
+     */
+    public function unsampledBranches(ExitPolicy $exits): array
+    {
+        $runs = EvidencePermit::query()->sampling($this)->readLimit(100)->pluck('process_run_id')->all();
+        $statuses = PartRun::query()
+            ->whereIn('process_run_id', $runs)
+            ->where('operation', $this->operation)
+            ->readLimit(500)
+            ->get()
+            ->filter(fn (PartRun $part): bool => $part->end()->hasStatus())
+            ->map(fn (PartRun $part): int => $part->end_code)
+            ->all();
+
+        return array_values(array_filter(
+            $exits->branches,
+            fn (ExitBranch $branch): bool => ! in_array($branch->status, $statuses, true),
+        ));
     }
 
     public function isOpenedBy(ActorIdentity $actor): bool
@@ -100,6 +171,8 @@ final class CommandRequest extends Model implements ReadableModel
     }
 
     /**
+     * The owner approves one more sample: the first, or one for an exit branch the earlier samples did not reach.
+     *
      * @throws RequestTransitionRefused
      */
     public function approveSample(): void
@@ -126,13 +199,13 @@ final class CommandRequest extends Model implements ReadableModel
     }
 
     /**
-     * The sample run ended without usable evidence; the owner's approval of one sample still stands.
+     * The sample run ended without usable evidence; another sample needs the owner's explicit approval again.
      *
      * @throws RequestTransitionRefused
      */
     public function retrySample(): void
     {
-        $this->moveTo(RequestState::ReadyForSample);
+        $this->moveTo(RequestState::AwaitingSampleApproval);
     }
 
     /**
@@ -144,9 +217,24 @@ final class CommandRequest extends Model implements ReadableModel
     }
 
     /**
+     * The owner approved a test, check or build with its proven reader; only a proven request awaits that.
+     *
      * @throws RequestTransitionRefused
      */
     public function approve(): void
+    {
+        if ($this->state !== RequestState::AwaitingApproval) {
+            throw $this->refusal(RequestState::Active);
+        }
+        $this->moveTo(RequestState::Active);
+    }
+
+    /**
+     * The owner approved a declaration that is no test, check or build: it needs no reader, so no sample or proof.
+     *
+     * @throws RequestTransitionRefused
+     */
+    public function approveOrdinary(): void
     {
         $this->moveTo(RequestState::Active);
     }
@@ -159,6 +247,22 @@ final class CommandRequest extends Model implements ReadableModel
     public function revise(): void
     {
         $this->moveTo(RequestState::CollectingDeclaration);
+    }
+
+    /**
+     * A new proposal revision answers the request: a revision after a sample or proof starts the collection again,
+     * and a complete one moves the request on to its evidence sample.
+     *
+     * @throws RequestTransitionRefused
+     */
+    public function answerWith(RuleProposal $proposal): void
+    {
+        if ($this->state->restartsCollection()) {
+            $this->revise();
+        }
+        if ($this->state === RequestState::CollectingDeclaration && $proposal->state === ProposalState::Pending) {
+            $this->propose();
+        }
     }
 
     /**
@@ -183,10 +287,15 @@ final class CommandRequest extends Model implements ReadableModel
     private function moveTo(RequestState $next): void
     {
         if (! $this->state->allows($next)) {
-            throw RequestTransitionRefused::from($this->state, $next, implode('; ', $this->nextStep()->obligations));
+            throw $this->refusal($next);
         }
         $this->state = $next;
         $this->save();
+    }
+
+    private function refusal(RequestState $next): RequestTransitionRefused
+    {
+        return RequestTransitionRefused::from($this->state, $next, implode('; ', $this->nextStep()->obligations));
     }
 
     /**
@@ -213,6 +322,10 @@ final class CommandRequest extends Model implements ReadableModel
     #[Scope]
     protected function stillOpen(Builder $query): void
     {
-        $query->whereNotIn('state', [RequestState::Active->value, RequestState::Rejected->value, RequestState::Withdrawn->value]);
+        $query->whereNotIn('state', [
+            RequestState::Active->value,
+            RequestState::Rejected->value,
+            RequestState::Withdrawn->value,
+        ]);
     }
 }

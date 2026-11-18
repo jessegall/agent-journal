@@ -39,6 +39,14 @@ enum RequestState: string
     }
 
     /**
+     * Whether a new declaration sends a request in this state back to collecting, so its sample and proof start again.
+     */
+    public function restartsCollection(): bool
+    {
+        return $this !== self::CollectingDeclaration && $this->allows(self::CollectingDeclaration);
+    }
+
+    /**
      * Whether a request in this state may move to the other state.
      */
     public function allows(self $next): bool
@@ -49,10 +57,10 @@ enum RequestState: string
 
         return in_array($next, match ($this) {
             self::CollectingDeclaration => [self::AwaitingSampleApproval],
-            self::AwaitingSampleApproval => [self::ReadyForSample, self::CollectingDeclaration],
+            self::AwaitingSampleApproval => [self::ReadyForSample, self::CollectingDeclaration, self::Active],
             self::ReadyForSample => [self::CapturingSample],
-            self::CapturingSample => [self::AwaitingProof, self::ReadyForSample],
-            self::AwaitingProof => [self::AwaitingApproval, self::CollectingDeclaration],
+            self::CapturingSample => [self::AwaitingProof, self::AwaitingSampleApproval],
+            self::AwaitingProof => [self::AwaitingApproval, self::CollectingDeclaration, self::ReadyForSample],
             self::AwaitingApproval => [self::Active, self::CollectingDeclaration],
             self::Active, self::Rejected, self::Withdrawn => [],
         }, true);
@@ -63,15 +71,37 @@ enum RequestState: string
      */
     public function nextStep(string $requestId, string $operation): NextStep
     {
+        return new NextStep($this, $this->obligations(), $this->nextCommand($requestId, $operation));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function obligations(): array
+    {
         return match ($this) {
-            self::CollectingDeclaration => new NextStep($this, ['a proposed classification and a bounded reader'], "journal command-type propose --request {$requestId} --operation '{$operation}'"),
-            self::AwaitingSampleApproval => new NextStep($this, ["a project owner's approval of one evidence sample"], "waiting for the owner: journal reader sample-approve {$requestId}"),
-            self::ReadyForSample => new NextStep($this, ['one captured evidence sample'], "journal reader sample-run {$requestId}"),
-            self::CapturingSample => new NextStep($this, ['the evidence sample run to end'], "waiting for the sample run: journal command-request show {$requestId}"),
-            self::AwaitingProof => new NextStep($this, ["the journal's proof of the reader against real runs"], "journal reader prove {$requestId}"),
-            self::AwaitingApproval => new NextStep($this, ["a project owner's approval of the declaration, reader and proof"], "waiting for the owner: journal command-type approve {$requestId}"),
-            self::Active => new NextStep($this, [], 'none: the command is approved and runs'),
-            self::Rejected, self::Withdrawn => new NextStep($this, [], 'none: the request is closed; a new attempt opens a new request'),
+            self::CollectingDeclaration => ['a proposed classification and a bounded reader'],
+            self::AwaitingSampleApproval => ["a project owner's approval of one evidence sample"],
+            self::ReadyForSample => ['one captured evidence sample'],
+            self::CapturingSample => ['the evidence sample run to end'],
+            self::AwaitingProof => ["the journal's proof of the reader against real runs"],
+            self::AwaitingApproval => ["a project owner's approval of the declaration, reader and proof"],
+            self::Active, self::Rejected, self::Withdrawn => [],
+        };
+    }
+
+    private function nextCommand(string $requestId, string $operation): string
+    {
+        return match ($this) {
+            self::CollectingDeclaration => "journal command-type propose --request {$requestId}"
+                ." --operation '{$operation}'",
+            self::AwaitingSampleApproval => "waiting for the owner: journal reader sample-approve {$requestId}",
+            self::ReadyForSample => "journal reader sample-run {$requestId}",
+            self::CapturingSample => "waiting for the sample run: journal command-request show {$requestId}",
+            self::AwaitingProof => "journal reader prove {$requestId}",
+            self::AwaitingApproval => "waiting for the owner: journal command-type approve {$requestId}",
+            self::Active => 'none: the command is approved and runs',
+            self::Rejected, self::Withdrawn => 'none: the request is closed; a new attempt opens a new request',
         };
     }
 }

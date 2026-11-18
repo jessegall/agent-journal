@@ -15,6 +15,8 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -39,6 +41,8 @@ use Illuminate\Support\Carbon;
  * @property LifecycleState $lifecycle
  * @property CaptureState $capture_state
  * @property string $stop_reason
+ * @property int $update_sequence  the number of the last live update sent for this run
+ * @property string $stale_reason  why the run's admission no longer holds, or empty while it does
  * @property string $event_key_hash
  * @property string $working_folder
  * @property array<string, mixed> $plan
@@ -49,7 +53,19 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['admission_id', 'mode', 'project_key', 'source_digest', 'dialect', 'tree_digest', 'registry_revision', 'policy_revision', 'event_key_hash', 'working_folder', 'plan'])]
+#[Fillable([
+    'admission_id',
+    'mode',
+    'project_key',
+    'source_digest',
+    'dialect',
+    'tree_digest',
+    'registry_revision',
+    'policy_revision',
+    'event_key_hash',
+    'working_folder',
+    'plan',
+])]
 final class ProcessRun extends Model implements ReadableModel
 {
     use BelongsToOneActor, HasUlids;
@@ -82,7 +98,16 @@ final class ProcessRun extends Model implements ReadableModel
     /**
      * Admits a run for an actor; the admission id is single-use, so a second admission with it fails on its key.
      *
-     * @param  array{admission_id: string, mode: RunMode, project_key: string, source_digest: string, dialect: ShellDialect, tree_digest: string, registry_revision: string, policy_revision: string}  $admission
+     * @param  array{
+     *     admission_id: string,
+     *     mode: RunMode,
+     *     project_key: string,
+     *     source_digest: string,
+     *     dialect: ShellDialect,
+     *     tree_digest: string,
+     *     registry_revision: string,
+     *     policy_revision: string,
+     * }  $admission
      */
     public static function admit(ActorIdentity $actor, array $admission): self
     {
@@ -96,13 +121,67 @@ final class ProcessRun extends Model implements ReadableModel
     /**
      * Whether its result may answer the agent: an evidence run never gets a result receipt.
      */
+    /**
+     * Whether every part ended on its own and its output was captured complete, as a sample must to be evidence.
+     */
+    public function hasCompleteEvidence(): bool
+    {
+        $parts = $this->parts()->readLimit(500)->get();
+
+        return $parts->isNotEmpty() && $parts->every(
+            fn (PartRun $part): bool => $part->lifecycle === LifecycleState::Ended
+                && $part->capture_state === CaptureState::Complete,
+        );
+    }
+
+    /**
+     * Whether every part of the run has reached a final state, so its evidence can be judged.
+     */
+    public function hasEnded(): bool
+    {
+        $parts = $this->parts()->readLimit(500)->get();
+
+        return $parts->isNotEmpty() && $parts->every(fn (PartRun $part): bool => $part->lifecycle->isFinal());
+    }
+
+    /**
+     * A rule, binding or policy the run was admitted under changed: an admission not yet started is refused, and a
+     * running run starts no further part; parts already started keep their records.
+     */
+    public function markStale(string $reason): void
+    {
+        $this->stale_reason = $reason;
+        $this->save();
+    }
+
+    /**
+     * The number of the next live update of this run, one higher than the last.
+     */
+    public function nextUpdate(): int
+    {
+        $this->increment('update_sequence');
+
+        return $this->update_sequence;
+    }
+
+    public function isRunBy(ActorIdentity $actor): bool
+    {
+        return $this->actor_type === $actor->type->value && $this->actor_id === $actor->id;
+    }
+
+    public function isStale(): bool
+    {
+        return $this->stale_reason !== '';
+    }
+
     public function mayAnswer(): bool
     {
         return $this->mode === RunMode::Normal;
     }
 
     /**
-     * Consumes the admission and returns the run's new event key, shown only this once; a consumed admission returns ''.
+     * Consumes the admission and returns the run's new event key, shown only this once; a consumed admission
+     * returns ''.
      */
     public function consumeWithEventKey(): string
     {
@@ -138,12 +217,24 @@ final class ProcessRun extends Model implements ReadableModel
      */
     public function isSuspect(int $quietSeconds = 15): bool
     {
-        return $this->lifecycle === LifecycleState::Running && ($this->heartbeat_at ?? $this->started_at)?->lessThan(CarbonImmutable::now()->subSeconds($quietSeconds)) === true;
+        $lastSign = $this->heartbeat_at ?? $this->started_at;
+
+        return $this->lifecycle === LifecycleState::Running
+            && $lastSign?->lessThan(CarbonImmutable::now()->subSeconds($quietSeconds)) === true;
     }
 
     /**
      * Records that the run was stopped and why; a stopped run never ends with a pass.
      */
+    /**
+     * Nothing more will be heard from the run's supervisor; its unfinished parts were marked lost.
+     */
+    public function markLost(): void
+    {
+        $this->lifecycle = LifecycleState::Lost;
+        $this->save();
+    }
+
     public function markStopped(string $reason): void
     {
         $this->lifecycle = LifecycleState::Stopped;
@@ -165,5 +256,34 @@ final class ProcessRun extends Model implements ReadableModel
     public function events(): HasMany
     {
         return $this->hasMany(ProcessEvent::class);
+    }
+
+    /**
+     * Runs of the project that have not ended: admissions not yet started and runs still going.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unfinishedIn(Builder $query, string $projectKey): void
+    {
+        $query->where('project_key', $projectKey)->whereIn('lifecycle', [
+            LifecycleState::Queued->value,
+            LifecycleState::Running->value,
+            LifecycleState::Draining->value,
+        ]);
+    }
+
+    /**
+     * Running runs whose supervisor has been silent longer than the replay window.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function silentSince(Builder $query, CarbonImmutable $moment): void
+    {
+        $query->where('lifecycle', LifecycleState::Running->value)
+            ->where(fn (Builder $silent) => $silent
+                ->where('heartbeat_at', '<', $moment)
+                ->orWhere(fn (Builder $never) => $never->whereNull('heartbeat_at')->where('started_at', '<', $moment)));
     }
 }

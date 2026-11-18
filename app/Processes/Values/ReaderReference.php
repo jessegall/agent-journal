@@ -22,6 +22,14 @@ final readonly class ReaderReference
         return new self('');
     }
 
+    /**
+     * The reference as it is stored again: its revision, or empty when no reader is proven yet.
+     */
+    public static function stored(string $revision): self
+    {
+        return new self($revision);
+    }
+
     public function isProven(): bool
     {
         return $this->revision !== '';

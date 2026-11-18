@@ -16,6 +16,7 @@ final class ExplanationData extends Data
     /**
      * @param  list<ExplainedNodeData>  $nodes
      * @param  list<string>  $requiredClasses  the union of every class the command needs
+     * @param  list<HeldPartData>  $held  the parts the journal will not run yet, each with its command request
      */
     public function __construct(
         public readonly string $outcome,
@@ -26,5 +27,8 @@ final class ExplanationData extends Data
         public readonly array $nodes,
         public readonly array $requiredClasses = [],
         public readonly bool $isKnown = true,
+        #[DataCollectionOf(HeldPartData::class)]
+        public readonly array $held = [],
+        public readonly string $notice = '',
     ) {}
 }

@@ -7,6 +7,7 @@ namespace App\Processes\Models;
 use App\Links\Support\Linkable;
 use App\Processes\Enums\CaptureState;
 use App\Processes\Enums\LifecycleState;
+use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\PartEndType;
 use App\Processes\Exceptions\PartTransitionRefused;
 use App\Processes\Values\PartEnd;
@@ -15,6 +16,8 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -58,7 +61,12 @@ final class PartRun extends Model implements ReadableModel
     /**
      * @var array<string, mixed>
      */
-    protected $attributes = ['lifecycle' => 'queued', 'end_type' => 'not_yet', 'capture_state' => 'recording', 'stream_offsets' => '{}'];
+    protected $attributes = [
+        'lifecycle' => 'queued',
+        'end_type' => 'not_yet',
+        'capture_state' => 'recording',
+        'stream_offsets' => '{}',
+    ];
 
     /**
      * @return array<string, string>
@@ -160,8 +168,16 @@ final class PartRun extends Model implements ReadableModel
         $this->finishAs(LifecycleState::Stopped);
     }
 
+    /**
+     * The supervisor went silent past its replay window: the part ends without a status, its capture incomplete and
+     * its bytes kept. Silence is never a success.
+     */
     public function lose(): void
     {
+        $this->end_type = PartEndType::Unavailable;
+        $this->end_code = 0;
+        $this->end_reason = 'exit_unavailable: the supervisor stopped reporting';
+        $this->capture_state = CaptureState::Incomplete;
         $this->finishAs(LifecycleState::Lost);
     }
 
@@ -197,11 +213,46 @@ final class PartRun extends Model implements ReadableModel
     }
 
     /**
+     * The streams this part wrote at least one byte to.
+     *
+     * @return list<OutputStream>
+     */
+    public function recordedStreams(): array
+    {
+        $written = array_keys(array_filter($this->stream_offsets, fn (int $end): bool => $end > 0));
+
+        return array_map(fn (string $stream): OutputStream => OutputStream::from($stream), $written);
+    }
+
+    /**
+     * The digest of each stream's chunk manifest: its chunk checksums in offset order.
+     *
+     * @return array<string, string>
+     */
+    public function manifestDigests(): array
+    {
+        $checksums = [];
+        foreach ($this->chunks()->orderBy('stream')->orderBy('offset')->readLimit(100_000)->get() as $chunk) {
+            $checksums[$chunk->stream->value][] = $chunk->checksum;
+        }
+
+        return array_map(fn (array $sums): string => hash('sha256', implode("\n", $sums)), $checksums);
+    }
+
+    /**
      * @return BelongsTo<ProcessRun, $this>
      */
     public function run(): BelongsTo
     {
         return $this->belongsTo(ProcessRun::class, 'process_run_id');
+    }
+
+    /**
+     * @return HasMany<OutputAssessment, $this>
+     */
+    public function assessments(): HasMany
+    {
+        return $this->hasMany(OutputAssessment::class);
     }
 
     /**
@@ -225,5 +276,18 @@ final class PartRun extends Model implements ReadableModel
             throw PartTransitionRefused::between($this->lifecycle, $next);
         }
         $this->lifecycle = $next;
+    }
+
+    /**
+     * The ended parts of a run that no reader assessed yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function endedUnassessedOf(Builder $query, ProcessRun $run): void
+    {
+        $query->where('process_run_id', $run->id)
+            ->where('lifecycle', LifecycleState::Ended->value)
+            ->whereDoesntHave('assessments');
     }
 }

@@ -7,20 +7,28 @@ namespace App\Processes\Models;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Processes\Exceptions\ReaderDefinitionInvalid;
-use App\Processes\Exceptions\ReaderRevisionImmutable;
+use App\Processes\Exceptions\RevisionImmutable;
 use App\Processes\Values\ReaderDefinition;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
- * One immutable revision of a reader for an operation: its declarative definition, the output contract it reads
- * under, and who wrote it. It is never updated; a change is a new revision.
+ * One immutable revision of a reader for an operation: the command request and declaration revision it was proposed
+ * for, its declarative definition, the output contract it reads under, and who wrote it. It is a draft until a
+ * ReaderProof proves it; it is never updated, so a change is a new revision that needs its own proof (story 188).
  *
  * @property string $id
+ * @property string $project_key
+ * @property string $command_request_id
+ * @property int $declaration_revision
  * @property string $operation
  * @property string $contract_label
  * @property array<string, mixed> $definition
@@ -28,7 +36,16 @@ use Illuminate\Support\Carbon;
  * @property string $actor_id
  * @property Carbon $created_at
  */
-#[Fillable(['operation', 'contract_label', 'definition', 'actor_type', 'actor_id'])]
+#[Fillable([
+    'project_key',
+    'command_request_id',
+    'declaration_revision',
+    'operation',
+    'contract_label',
+    'definition',
+    'actor_type',
+    'actor_id',
+])]
 final class ReaderRevision extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -41,13 +58,24 @@ final class ReaderRevision extends Model implements ReadableModel
      */
     protected function casts(): array
     {
-        return ['definition' => 'array'];
+        return ['definition' => 'array', 'declaration_revision' => 'integer'];
     }
 
-    public static function write(string $operation, string $contractLabel, ReaderDefinition $definition, ActorIdentity $author): self
-    {
+    /**
+     * A draft reader for the request's operation, written for one declaration revision and its output contract.
+     */
+    public static function propose(
+        CommandRequest $request,
+        int $declarationRevision,
+        string $contractLabel,
+        ReaderDefinition $definition,
+        ActorIdentity $author,
+    ): self {
         return self::query()->create([
-            'operation' => $operation,
+            'project_key' => $request->project_key,
+            'command_request_id' => $request->id,
+            'declaration_revision' => $declarationRevision,
+            'operation' => $request->operation,
             'contract_label' => $contractLabel,
             'definition' => $definition->toArray(),
             'actor_type' => $author->type->value,
@@ -63,8 +91,38 @@ final class ReaderRevision extends Model implements ReadableModel
         return ReaderDefinition::fromArray($this->definition);
     }
 
+    public function isProven(): bool
+    {
+        return $this->proofs()->exists();
+    }
+
+    /**
+     * @return HasMany<ReaderProof, $this>
+     */
+    public function proofs(): HasMany
+    {
+        return $this->hasMany(ReaderProof::class);
+    }
+
+    /**
+     * @return BelongsTo<CommandRequest, $this>
+     */
+    public function commandRequest(): BelongsTo
+    {
+        return $this->belongsTo(CommandRequest::class);
+    }
+
     protected static function booted(): void
     {
-        self::updating(fn (self $revision) => throw ReaderRevisionImmutable::forRevision($revision->id));
+        self::updating(fn (self $revision) => throw RevisionImmutable::reader($revision->id));
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofProject(Builder $query, string $projectKey): void
+    {
+        $query->where('project_key', $projectKey);
     }
 }

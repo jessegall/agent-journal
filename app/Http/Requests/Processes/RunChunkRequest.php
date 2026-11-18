@@ -36,7 +36,11 @@ final class RunChunkRequest extends FormRequest
 
     public function part(): PartKey
     {
-        return new PartKey($this->integer('part.node'), $this->integer('part.attempt'), $this->string('part.operation')->toString());
+        return new PartKey(
+            $this->integer('part.node'),
+            $this->integer('part.attempt'),
+            $this->string('part.operation')->toString(),
+        );
     }
 
     public function stream(): OutputStream

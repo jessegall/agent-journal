@@ -30,12 +30,62 @@ final readonly class VerificationContract
     ) {}
 
     /**
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'operation' => $this->operation,
+            'tool' => $this->tool->value,
+            'binding' => $this->binding->toArray(),
+            'output' => $this->output->toArray(),
+            'exits' => $this->exits->toArray(),
+            'progress' => $this->progress->toArray(),
+            'reader' => $this->reader->revision,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $fields  the shape toArray writes
+     */
+    public static function fromArray(array $fields): self
+    {
+        return new self(
+            $fields['operation'],
+            ToolType::from($fields['tool']),
+            ExecutableBinding::fromArray($fields['binding']),
+            OutputContract::fromArray($fields['output']),
+            ExitPolicy::fromArray($fields['exits']),
+            ProgressPolicy::fromArray($fields['progress']),
+            ReaderReference::stored($fields['reader']),
+        );
+    }
+
+    /**
+     * The digest of what the contract promises, apart from which reader reads it: a repaired reader keeps the digest.
+     */
+    public function digest(): string
+    {
+        $promised = array_diff_key($this->toArray(), ['reader' => true]);
+
+        return hash('sha256', json_encode($promised, JSON_THROW_ON_ERROR));
+    }
+
+    /**
      * The contract of a declared check whose reader and exits are not proven yet: plain lines, every exit an execution
      * error, no total, and a reader required before it may run normally.
      */
     public static function unproven(string $operation, ToolType $tool, ExecutableBinding $binding): self
     {
-        return new self($operation, $tool, $binding, OutputContract::plainLines(), ExitPolicy::unproven(), ProgressPolicy::indeterminate(), ReaderReference::required());
+        return new self(
+            $operation,
+            $tool,
+            $binding,
+            OutputContract::plainLines(),
+            ExitPolicy::unproven(),
+            ProgressPolicy::indeterminate(),
+            ReaderReference::required(),
+        );
     }
 
     /**
@@ -45,7 +95,11 @@ final readonly class VerificationContract
      */
     public function description(): array
     {
-        $exits = array_map(fn (ExitBranch $branch): string => "exit {$branch->status}: {$branch->outcome->value} when {$branch->requires}", $this->exits->branches);
+        $exits = array_map(
+            fn (ExitBranch $branch): string => "exit {$branch->status}: {$branch->outcome->value}"
+                ." when {$branch->requires}",
+            $this->exits->branches,
+        );
 
         return [
             "tool {$this->tool->value}",

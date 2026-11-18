@@ -15,6 +15,22 @@ final readonly class EmptyRunPolicy
 {
     private function __construct(public EmptyPolicy $policy, public string $summary) {}
 
+    /**
+     * @return array{policy: string, summary: string}
+     */
+    public function toArray(): array
+    {
+        return ['policy' => $this->policy->value, 'summary' => $this->summary];
+    }
+
+    /**
+     * @param  array{policy: string, summary: string}  $fields
+     */
+    public static function fromArray(array $fields): self
+    {
+        return new self(EmptyPolicy::from($fields['policy']), $fields['summary']);
+    }
+
     public static function invalid(): self
     {
         return new self(EmptyPolicy::Invalid, '');
@@ -26,7 +42,10 @@ final readonly class EmptyRunPolicy
     public static function allowedSuccess(string $summary): self
     {
         if (trim($summary) === '') {
-            throw VerificationContractInvalid::field('output.empty', 'an allowed empty success needs the summary text it shows');
+            throw VerificationContractInvalid::field(
+                'output.empty',
+                'an allowed empty success needs the summary text it shows',
+            );
         }
 
         return new self(EmptyPolicy::AllowedSuccess, $summary);

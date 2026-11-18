@@ -6,9 +6,11 @@ namespace App\Processes\Models;
 
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
+use App\Processes\Casts\StoredValuesCast;
 use App\Processes\Exceptions\EvidencePermitRefused;
-use App\Processes\Values\Classification;
-use App\Processes\Values\ExecutionContext;
+use App\Processes\Values\CommandRule;
+use App\Processes\Values\PermittedLine;
+use App\Processes\Values\PermitLimits;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -39,10 +41,26 @@ use Illuminate\Support\Carbon;
  * @property string|null $request_id
  * @property CarbonImmutable|null $consumed_at
  * @property string|null $process_run_id
+ * @property string|null $command_request_id
+ * @property list<CommandRule> $candidate_rules  the proposed rules the line is classified with, for a request's sample
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['project_key', 'working_folder', 'source_line', 'source_digest', 'classification_digest', 'approved_classes', 'runner_type', 'runner_id', 'byte_cap', 'seconds_cap', 'expires_at'])]
+#[Fillable([
+    'project_key',
+    'working_folder',
+    'source_line',
+    'source_digest',
+    'classification_digest',
+    'approved_classes',
+    'runner_type',
+    'runner_id',
+    'byte_cap',
+    'seconds_cap',
+    'expires_at',
+    'command_request_id',
+    'candidate_rules',
+])]
 final class EvidencePermit extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -53,34 +71,43 @@ final class EvidencePermit extends Model implements ReadableModel
      */
     protected function casts(): array
     {
-        return ['approved_classes' => 'array', 'byte_cap' => 'integer', 'seconds_cap' => 'integer', 'expires_at' => 'immutable_datetime', 'consumed_at' => 'immutable_datetime'];
+        return [
+            'approved_classes' => 'array',
+            'byte_cap' => 'integer',
+            'seconds_cap' => 'integer',
+            'expires_at' => 'immutable_datetime',
+            'consumed_at' => 'immutable_datetime',
+            'candidate_rules' => StoredValuesCast::class.':'.CommandRule::class,
+        ];
     }
 
     /**
-     * A permit for one actor to run one classified line once in one folder, within its caps and until it expires.
+     * The owner's permit to run one exact line once under the runner's actor, within the limits.
      */
     public static function issue(
-        string $workingFolder,
-        string $line,
-        Classification $classification,
-        string $classificationDigest,
+        string $projectKey,
+        PermittedLine $line,
         ActorIdentity $runner,
-        int $byteCap,
-        int $secondsCap,
-        int $minutesValid,
+        PermitLimits $limits,
+    ): self {
+        $fields = self::fieldsOf($projectKey, $line, $runner, $limits);
+
+        return self::query()->create([...$fields, 'candidate_rules' => []]);
+    }
+
+    /**
+     * The permit for one sample of a request's line, classified with the declaration the owner approved for sampling.
+     */
+    public static function forRequest(
+        CommandRequest $request,
+        PermittedLine $line,
+        CommandRule $proposed,
+        PermitLimits $limits,
     ): self {
         return self::query()->create([
-            'project_key' => ExecutionContext::inFolder($workingFolder)->projectKey(),
-            'working_folder' => $workingFolder,
-            'source_line' => $line,
-            'source_digest' => hash('sha256', $line),
-            'classification_digest' => $classificationDigest,
-            'approved_classes' => array_map(fn ($class) => $class->value, $classification->requiredClasses()->classes),
-            'runner_type' => $runner->type->value,
-            'runner_id' => $runner->id,
-            'byte_cap' => $byteCap,
-            'seconds_cap' => $secondsCap,
-            'expires_at' => CarbonImmutable::now()->addMinutes($minutesValid),
+            ...self::fieldsOf($request->project_key, $line, $request->opener(), $limits),
+            'command_request_id' => $request->id,
+            'candidate_rules' => [$proposed],
         ]);
     }
 
@@ -132,8 +159,41 @@ final class EvidencePermit extends Model implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
+    protected function sampling(Builder $query, CommandRequest $request): void
+    {
+        $query->where('command_request_id', $request->id)->whereNotNull('process_run_id');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
     protected function ofProject(Builder $query, string $projectKey): void
     {
         $query->where('project_key', $projectKey);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function fieldsOf(
+        string $projectKey,
+        PermittedLine $line,
+        ActorIdentity $runner,
+        PermitLimits $limits,
+    ): array {
+        return [
+            'project_key' => $projectKey,
+            'working_folder' => $line->workingFolder,
+            'source_line' => $line->line,
+            'source_digest' => hash('sha256', $line->line),
+            'classification_digest' => $line->classificationDigest,
+            'approved_classes' => $line->approvedClasses,
+            'runner_type' => $runner->type->value,
+            'runner_id' => $runner->id,
+            'byte_cap' => $limits->byteCap,
+            'seconds_cap' => $limits->secondsCap,
+            'expires_at' => CarbonImmutable::now()->addMinutes($limits->minutesValid),
+        ];
     }
 }

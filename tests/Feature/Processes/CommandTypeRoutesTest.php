@@ -1,0 +1,120 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Processes;
+
+use App\Processes\Enums\RequestState;
+use App\Processes\Models\ClassificationRule;
+use App\Processes\Models\CommandRequest;
+use App\Processes\Models\RuleProposal;
+use App\Processes\Values\RuleExample;
+use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Fixtures\Processes\AcmeDeclarations;
+use Tests\Support\RefreshHookDatabase;
+use Tests\Support\SendsSignedCalls;
+use Tests\TestCase;
+
+/**
+ * An agent explains an unknown line, gets the request that holds it and the next command, proposes through the
+ * command-type routes and reads the request back; owner actions are refused for an agent (doc 21 revision 6, sections
+ * 51, 71 and 72; stories 79-81, 83, 94, 96, 179 and 192).
+ */
+final class CommandTypeRoutesTest extends TestCase
+{
+    use RefreshHookDatabase;
+    use SendsSignedCalls;
+
+    private TestLaunch $launch;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->launch = TestLaunch::start();
+    }
+
+    public function test_explaining_an_unknown_line_opens_its_request_and_names_the_propose_step(): void
+    {
+        $reply = $this->signed($this->launch, '/agent/processes/explain', ['line' => 'acme verify'])->assertOk();
+
+        $this->assertSame('Nothing in this request started.', $reply->json('notice'));
+        $this->assertSame('acme', $reply->json('held.0.operation'));
+        $this->assertSame(RequestState::CollectingDeclaration->value, $reply->json('held.0.requestState'));
+        $this->assertStringStartsWith('journal command-type propose --request ', (string) $reply->json('held.0.next'));
+        $this->assertSame(1, CommandRequest::query()->count());
+    }
+
+    public function test_explaining_a_check_without_a_proven_reader_opens_a_reader_request(): void
+    {
+        $reply = $this->signed($this->launch, '/agent/processes/explain', ['line' => 'vendor/bin/phpstan analyse'])
+            ->assertOk();
+
+        $this->assertContains('reader_required', array_column((array) $reply->json('held'), 'code'));
+    }
+
+    public function test_a_proposal_through_the_route_moves_the_request_on_and_show_reads_it_back(): void
+    {
+        $requestId = $this->explainAcme();
+
+        $reply = $this->signed($this->launch, "/agent/processes/requests/{$requestId}/proposals", [
+            'declaration' => $this->declaration(),
+        ])->assertOk();
+
+        $this->assertSame('pending', $reply->json('state'));
+        $this->app->forgetScopedInstances();
+        $shown = $this->signed($this->launch, "/agent/processes/requests/{$requestId}/show", [])->assertOk();
+        $this->assertSame(RequestState::AwaitingSampleApproval->value, $shown->json('state'));
+        $this->assertSame("waiting for the owner: journal reader sample-approve {$requestId}", $shown->json('next'));
+        $this->assertSame($reply->json('proposal_id'), $shown->json('proposals.0.proposal_id'));
+    }
+
+    public function test_an_invalid_declaration_answers_its_field_errors(): void
+    {
+        $requestId = $this->explainAcme();
+        $declaration = $this->declaration();
+        $declaration['rule']['purpose'] = 'harmless';
+
+        $reply = $this->signed($this->launch, "/agent/processes/requests/{$requestId}/proposals", [
+            'declaration' => $declaration,
+        ])->assertStatus(422);
+
+        $this->assertStringContainsString('declarations.0.rule.purpose', (string) $reply->json('message'));
+        $this->assertSame(0, RuleProposal::query()->count());
+    }
+
+    public function test_an_agent_cannot_approve_through_the_route(): void
+    {
+        $requestId = $this->explainAcme();
+        $proposal = $this->signed($this->launch, "/agent/processes/requests/{$requestId}/proposals", [
+            'declaration' => $this->declaration(),
+        ])->json('proposal_id');
+
+        $path = "/agent/processes/proposals/{$proposal}/approve";
+        $reply = $this->signed($this->launch, $path, ['expected_revision' => 1]);
+
+        $this->assertFalse($reply->isSuccessful());
+        $this->assertSame(0, ClassificationRule::query()->count());
+    }
+
+    private function explainAcme(): string
+    {
+        return (string) $this->signed($this->launch, '/agent/processes/explain', ['line' => 'acme verify'])
+            ->json('held.0.requestId');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function declaration(): array
+    {
+        $proposed = AcmeDeclarations::proposedVerify();
+
+        return [
+            'request_id' => 'propose-1',
+            'evidence' => $proposed->evidence,
+            'examples' => array_map(fn (RuleExample $example): array => $example->toArray(), $proposed->examples),
+            'rule' => $proposed->rule->toArray(),
+        ];
+    }
+}

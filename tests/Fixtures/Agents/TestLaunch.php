@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Agents;
 
+use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\AgentSessions;
 use App\Agents\Actions\LaunchCredentials;
 use App\Agents\Lifecycle\AgentLifecycle;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
+use App\Agents\Support\AgentContext;
+use Carbon\CarbonImmutable;
+use Illuminate\Foundation\Application;
 
 /**
  * One launched test agent with its session and token, and the server headers of a call it signs.
@@ -28,6 +33,18 @@ final readonly class TestLaunch
         $session = new AgentSessions(new AgentLifecycle())->start($agent, TestSelections::of(), TestSelections::requestId());
 
         return new self($agent, $session, new LaunchCredentials()->issue($session));
+    }
+
+    /**
+     * Starts a fresh request as this agent and session, binding what the agent middleware binds for its call.
+     */
+    public function startRequest(Application $app): void
+    {
+        $call = new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64));
+        $context = new AgentContext($this->agent->id, $this->session->id, $this->agent->role, $call, null);
+        $app->forgetScopedInstances();
+        $app->instance(AgentContext::class, $context);
+        $app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agent->id));
     }
 
     /**

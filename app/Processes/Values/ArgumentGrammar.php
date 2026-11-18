@@ -26,6 +26,36 @@ final readonly class ArgumentGrammar
         public int $minimumOperands = 0,
     ) {}
 
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'options' => array_map(fn (OptionGrammar $option): array => $option->toArray(), $this->options),
+            'operands' => array_map(fn (OperandType $type): string => $type->value, $this->operands),
+            'repeats_last_operand' => $this->repeatsLastOperand,
+            'ends_options_at_double_dash' => $this->endsOptionsAtDoubleDash,
+            'accepts_numeric_options' => $this->acceptsNumericOptions,
+            'minimum_operands' => $this->minimumOperands,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $fields  the shape toArray writes
+     */
+    public static function fromArray(array $fields): self
+    {
+        return new self(
+            array_map(OptionGrammar::fromArray(...), $fields['options']),
+            array_map(OperandType::from(...), $fields['operands']),
+            $fields['repeats_last_operand'],
+            $fields['ends_options_at_double_dash'],
+            $fields['accepts_numeric_options'],
+            $fields['minimum_operands'],
+        );
+    }
+
     public static function none(): self
     {
         return new self([], [], false, false);
@@ -56,12 +86,26 @@ final readonly class ArgumentGrammar
 
     public function withOptions(OptionGrammar ...$options): self
     {
-        return new self([...$this->options, ...array_values($options)], $this->operands, $this->repeatsLastOperand, $this->endsOptionsAtDoubleDash, $this->acceptsNumericOptions, $this->minimumOperands);
+        return new self(
+            [...$this->options, ...array_values($options)],
+            $this->operands,
+            $this->repeatsLastOperand,
+            $this->endsOptionsAtDoubleDash,
+            $this->acceptsNumericOptions,
+            $this->minimumOperands,
+        );
     }
 
     public function withOperands(OperandType ...$operands): self
     {
-        return new self($this->options, [...$this->operands, ...array_values($operands)], $this->repeatsLastOperand, $this->endsOptionsAtDoubleDash, $this->acceptsNumericOptions, $this->minimumOperands);
+        return new self(
+            $this->options,
+            [...$this->operands, ...array_values($operands)],
+            $this->repeatsLastOperand,
+            $this->endsOptionsAtDoubleDash,
+            $this->acceptsNumericOptions,
+            $this->minimumOperands,
+        );
     }
 
     /**
@@ -69,12 +113,26 @@ final readonly class ArgumentGrammar
      */
     public function repeating(): self
     {
-        return new self($this->options, $this->operands, true, $this->endsOptionsAtDoubleDash, $this->acceptsNumericOptions, $this->minimumOperands);
+        return new self(
+            $this->options,
+            $this->operands,
+            true,
+            $this->endsOptionsAtDoubleDash,
+            $this->acceptsNumericOptions,
+            $this->minimumOperands,
+        );
     }
 
     public function endingOptionsAtDoubleDash(): self
     {
-        return new self($this->options, $this->operands, $this->repeatsLastOperand, true, $this->acceptsNumericOptions, $this->minimumOperands);
+        return new self(
+            $this->options,
+            $this->operands,
+            $this->repeatsLastOperand,
+            true,
+            $this->acceptsNumericOptions,
+            $this->minimumOperands,
+        );
     }
 
     /**
@@ -82,7 +140,14 @@ final readonly class ArgumentGrammar
      */
     public function requiringOperands(int $count): self
     {
-        return new self($this->options, $this->operands, $this->repeatsLastOperand, $this->endsOptionsAtDoubleDash, $this->acceptsNumericOptions, $count);
+        return new self(
+            $this->options,
+            $this->operands,
+            $this->repeatsLastOperand,
+            $this->endsOptionsAtDoubleDash,
+            $this->acceptsNumericOptions,
+            $count,
+        );
     }
 
     /**
@@ -90,7 +155,14 @@ final readonly class ArgumentGrammar
      */
     public function acceptingNumericOptions(): self
     {
-        return new self($this->options, $this->operands, $this->repeatsLastOperand, $this->endsOptionsAtDoubleDash, true);
+        return new self(
+            $this->options,
+            $this->operands,
+            $this->repeatsLastOperand,
+            $this->endsOptionsAtDoubleDash,
+            true,
+            $this->minimumOperands,
+        );
     }
 
     /**
@@ -114,7 +186,9 @@ final readonly class ArgumentGrammar
             if (! $afterDoubleDash && $this->isOptionWord($text)) {
                 $options = $this->optionsIn((string) $text);
                 if ($options === []) {
-                    return [new UnresolvedFact(UnresolvedType::UnknownOption, $node, "The option {$text} is not declared.")];
+                    $problem = "The option {$text} is not declared.";
+
+                    return [new UnresolvedFact(UnresolvedType::UnknownOption, $node, $problem)];
                 }
                 $seen = [...$seen, ...$options];
                 $last = $options[array_key_last($options)];
@@ -123,21 +197,25 @@ final readonly class ArgumentGrammar
                 continue;
             }
             if ($operandCount >= count($this->operands) && ! $this->hasRepeatingOperand()) {
-                return [new UnresolvedFact(UnresolvedType::UnknownSubcommand, $node, 'The word '.($text ?? 'with an expansion').' is not an accepted operand.')];
+                $problem = 'The word '.($text ?? 'with an expansion').' is not an accepted operand.';
+
+                return [new UnresolvedFact(UnresolvedType::UnknownSubcommand, $node, $problem)];
             }
             $operandCount++;
         }
 
         if ($operandCount < $this->minimumOperands) {
-            return [new UnresolvedFact(UnresolvedType::UnknownSubcommand, $node, "{$this->minimumOperands} operands are required here.")];
+            $problem = "{$this->minimumOperands} operands are required here.";
+
+            return [new UnresolvedFact(UnresolvedType::UnknownSubcommand, $node, $problem)];
         }
 
         return $this->missingRequired($seen, $node);
     }
 
     /**
-     * Whether no command line can match both grammars: one requires an option the other does not accept, or more operands
-     * than the other takes.
+     * Whether no command line can match both grammars: one requires an option the other does not accept, or more
+     * operands than the other takes.
      */
     public function isDisjointFrom(self $other): bool
     {
@@ -155,7 +233,15 @@ final readonly class ArgumentGrammar
 
     private function requiresOptionUnknownTo(self $other): bool
     {
-        return array_any($this->options, fn (OptionGrammar $option): bool => $option->isRequired && ! array_any($other->options, fn (OptionGrammar $theirs): bool => $theirs->sharesNameWith($option)));
+        return array_any(
+            $this->options,
+            fn (OptionGrammar $option): bool => $option->isRequired && ! $other->knowsOption($option),
+        );
+    }
+
+    private function knowsOption(OptionGrammar $option): bool
+    {
+        return array_any($this->options, fn (OptionGrammar $known): bool => $known->sharesNameWith($option));
     }
 
     private function isOptionWord(string|null $text): bool
@@ -172,7 +258,10 @@ final readonly class ArgumentGrammar
      */
     private function optionsIn(string $text): array
     {
-        $named = array_values(array_filter($this->options, fn (OptionGrammar $option): bool => $option->matches($text)));
+        $named = array_values(array_filter(
+            $this->options,
+            fn (OptionGrammar $option): bool => $option->matches($text),
+        ));
         if ($named !== []) {
             return [$named[0]];
         }
@@ -212,7 +301,10 @@ final readonly class ArgumentGrammar
      */
     private function shortOption(string $letter): array
     {
-        return array_values(array_filter($this->options, fn (OptionGrammar $option): bool => in_array("-{$letter}", $option->names, true)));
+        return array_values(array_filter(
+            $this->options,
+            fn (OptionGrammar $option): bool => in_array("-{$letter}", $option->names, true),
+        ));
     }
 
     /**
@@ -229,8 +321,18 @@ final readonly class ArgumentGrammar
      */
     private function missingRequired(array $seen, int $node): array
     {
-        $missing = array_filter($this->options, fn (OptionGrammar $option): bool => $option->isRequired && ! in_array($option, $seen, true));
+        $missing = array_filter(
+            $this->options,
+            fn (OptionGrammar $option): bool => $option->isRequired && ! in_array($option, $seen, true),
+        );
 
-        return array_values(array_map(fn (OptionGrammar $option) => new UnresolvedFact(UnresolvedType::UnknownOption, $node, "The option {$option->names[0]} is required here."), $missing));
+        return array_values(array_map(
+            fn (OptionGrammar $option) => new UnresolvedFact(
+                UnresolvedType::UnknownOption,
+                $node,
+                "The option {$option->names[0]} is required here.",
+            ),
+            $missing,
+        ));
     }
 }

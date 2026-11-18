@@ -15,9 +15,4 @@ final class RunnerUnavailable extends RuntimeException
     {
         return new self('runner-unavailable: this host does not run admitted command lines (processes.runner is off).');
     }
-
-    public static function changedAdmission(): self
-    {
-        return new self('runner-unavailable: the admitted line no longer matches its admission digests.');
-    }
 }

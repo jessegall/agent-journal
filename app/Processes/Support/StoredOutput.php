@@ -26,11 +26,15 @@ final readonly class StoredOutput
     {
         $disk = $this->disks->disk(SpoolRecorder::DISK);
         $bytes = '';
-        OutputChunk::query()->where('part_run_id', $part->id)->where('stream', $stream->value)->orderBy('offset')->readInChunks(200, function (Collection $chunks) use ($disk, &$bytes): void {
-            foreach ($chunks as $chunk) {
-                $bytes .= (string) $disk->get($chunk->storage_path);
-            }
-        });
+        OutputChunk::query()
+            ->where('part_run_id', $part->id)
+            ->where('stream', $stream->value)
+            ->orderBy('offset')
+            ->readInChunks(200, function (Collection $chunks) use ($disk, &$bytes): void {
+                foreach ($chunks as $chunk) {
+                    $bytes .= (string) $disk->get($chunk->storage_path);
+                }
+            });
 
         return $bytes;
     }
@@ -60,16 +64,16 @@ final readonly class StoredOutput
     }
 
     /**
-     * The last lines of a stream and how many bytes come before them.
+     * The last lines of a stream, how many bytes come before them and where they end.
      *
-     * @return array{text: string, before: int}
+     * @return array{text: string, before: int, end: int}
      */
     public function tail(PartRun $part, OutputStream $stream, int $lines): array
     {
         $bytes = rtrim($this->bytes($part, $stream), "\n");
         $text = implode("\n", array_slice(explode("\n", $bytes), -$lines));
 
-        return ['text' => $this->preview($text), 'before' => strlen($bytes) - strlen($text)];
+        return ['text' => $this->preview($text), 'before' => strlen($bytes) - strlen($text), 'end' => strlen($bytes)];
     }
 
     /**
@@ -90,9 +94,10 @@ final readonly class StoredOutput
      */
     public function preview(string $bytes): string
     {
-        $escaped = (string) preg_replace_callback('/[\x00-\x08\x0B-\x1F\x7F]/', fn (array $byte) => sprintf('\x%02X', ord($byte[0])), $bytes);
+        $escape = fn (array $byte): string => sprintf('\x%02X', ord($byte[0]));
+        $escaped = (string) preg_replace_callback('/[\x00-\x08\x0B-\x1F\x7F]/', $escape, $bytes);
         if (! mb_check_encoding($escaped, 'UTF-8')) {
-            $escaped = (string) preg_replace_callback('/[\x80-\xFF]/', fn (array $byte) => sprintf('\x%02X', ord($byte[0])), $escaped);
+            $escaped = (string) preg_replace_callback('/[\x80-\xFF]/', $escape, $escaped);
         }
 
         return mb_substr($escaped, 0, self::PREVIEW_CHARACTERS);

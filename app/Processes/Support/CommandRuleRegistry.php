@@ -9,6 +9,7 @@ use App\Processes\Exceptions\CommandRuleConflict;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\ProgramIdentity;
 use App\Processes\Values\ProgramSpellings;
+use App\Processes\Values\RuleBundle;
 use App\Processes\Values\UnresolvedFact;
 use App\Processes\Values\Word;
 
@@ -28,19 +29,24 @@ final readonly class CommandRuleRegistry
 
     /**
      * @param  list<CommandRule>  $rules
+     * @param  list<CommandRule>  $approved  module rules whose bundle the project owner activated
      *
      * @throws CommandRuleConflict
      */
-    public static function from(array $rules): self
+    public static function from(array $rules, array $approved = []): self
     {
-        usort($rules, fn (CommandRule $first, CommandRule $second): int => [$first->id, $first->scope->name()] <=> [$second->id, $second->scope->name()]);
+        usort(
+            $rules,
+            fn (CommandRule $first, CommandRule $second): int => [$first->id, $first->scope->name()]
+                <=> [$second->id, $second->scope->name()],
+        );
         $standing = self::withoutReplaced($rules);
         self::checkIds($standing);
         self::checkDisjoint($standing);
         $active = [];
         $held = [];
         foreach ($standing as $rule) {
-            if ($rule->scope->type->isActiveUnreviewed()) {
+            if ($rule->scope->type->isActiveUnreviewed() || in_array($rule, $approved, true)) {
                 $active[$rule->program->family][] = $rule;
             } else {
                 $held[] = $rule;
@@ -48,6 +54,70 @@ final readonly class CommandRuleRegistry
         }
 
         return new self($active, $held);
+    }
+
+    /**
+     * This registry with more rules, checked as every rule is: a rule that overlaps an active one fails.
+     *
+     * @throws CommandRuleConflict
+     */
+    public function withRules(CommandRule ...$rules): self
+    {
+        $active = $this->activeRules();
+
+        return self::from([...$active, ...$this->held, ...array_values($rules)], $active);
+    }
+
+    /**
+     * This registry with the rules of the bundles the project owner activated taken out of review.
+     *
+     * @throws CommandRuleConflict
+     */
+    public function withApprovedBundles(RuleBundle ...$bundles): self
+    {
+        $active = $this->activeRules();
+        $approved = array_merge([], ...array_map(fn (RuleBundle $bundle): array => $bundle->rules, $bundles));
+
+        return self::from([...$active, ...$this->held], [...$active, ...$approved]);
+    }
+
+    /**
+     * The rules waiting for review, one bundle per module and version.
+     *
+     * @return list<RuleBundle>
+     */
+    public function bundles(): array
+    {
+        $rules = [];
+        foreach ($this->held as $rule) {
+            $rules[$rule->scope->name()][] = $rule;
+        }
+
+        return array_values(array_map(
+            fn (array $owned): RuleBundle => new RuleBundle($owned[0]->scope->owner, $owned[0]->scope->version, $owned),
+            $rules,
+        ));
+    }
+
+    /**
+     * The digest of every active rule, which an admission records so a later change of the rules is seen.
+     */
+    public function revision(): string
+    {
+        $digests = array_map(fn (CommandRule $rule): string => $rule->digest(), $this->activeRules());
+        sort($digests);
+
+        return hash('sha256', implode("\n", $digests));
+    }
+
+    /**
+     * Every rule an owner declares, active or waiting for review.
+     *
+     * @return list<CommandRule>
+     */
+    public function declaredRules(): array
+    {
+        return [...$this->activeRules(), ...$this->held];
     }
 
     /**
@@ -59,9 +129,12 @@ final readonly class CommandRuleRegistry
     {
         $rules = $this->active[$program->family] ?? [];
         if ($rules === []) {
-            return new UnresolvedFact(UnresolvedType::UnknownProgram, $node, "No rule declares the program {$program->family}.");
+            $problem = "No rule declares the program {$program->family}.";
+
+            return new UnresolvedFact(UnresolvedType::UnknownProgram, $node, $problem);
         }
-        $closest = new UnresolvedFact(UnresolvedType::UnknownSubcommand, $node, "No rule of {$program->family} accepts these words.");
+        $problem = "No rule of {$program->family} accepts these words.";
+        $closest = new UnresolvedFact(UnresolvedType::UnknownSubcommand, $node, $problem);
         $closestLength = -1;
         foreach ($this->bySubcommandLength($rules) as $rule) {
             $length = $rule->subcommandLength($words);
@@ -91,6 +164,19 @@ final readonly class CommandRuleRegistry
     }
 
     /**
+     * Whether an active rule with a verification contract already covers the same program and subcommands.
+     */
+    public function coversAsCheck(CommandRule $rule): bool
+    {
+        $known = $this->active[$rule->program->family] ?? [];
+
+        return array_any(
+            $known,
+            fn (CommandRule $other): bool => $other->coversSameCommand($rule) && $other->hasContract(),
+        );
+    }
+
+    /**
      * @return list<CommandRule>
      */
     public function awaitingReview(): array
@@ -99,12 +185,24 @@ final readonly class CommandRuleRegistry
     }
 
     /**
+     * @return list<CommandRule>
+     */
+    private function activeRules(): array
+    {
+        return array_merge([], ...array_values($this->active));
+    }
+
+    /**
      * @param  list<CommandRule>  $rules
      * @return list<CommandRule>
      */
     private function bySubcommandLength(array $rules): array
     {
-        usort($rules, fn (CommandRule $first, CommandRule $second): int => count($second->subcommands) <=> count($first->subcommands));
+        usort(
+            $rules,
+            fn (CommandRule $first, CommandRule $second): int => count($second->subcommands)
+                <=> count($first->subcommands),
+        );
 
         return $rules;
     }
@@ -115,7 +213,13 @@ final readonly class CommandRuleRegistry
      */
     private static function withoutReplaced(array $rules): array
     {
-        return array_values(array_filter($rules, fn (CommandRule $rule): bool => ! array_any($rules, fn (CommandRule $other): bool => $other->replaces($rule))));
+        return array_values(array_filter(
+            $rules,
+            fn (CommandRule $rule): bool => ! array_any(
+                $rules,
+                fn (CommandRule $other): bool => $other->replaces($rule),
+            ),
+        ));
     }
 
     /**

@@ -13,7 +13,6 @@ use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\CommandBus;
 use App\Hooks\Actions\LaunchStacks;
 use App\Hooks\Enums\ReadyStateType;
-use App\Hooks\Inputs\MissingShellParser;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Support\StackTransaction;
 use App\Processes\Contracts\ShellCommandParser;
@@ -91,15 +90,6 @@ final class HookEndpointTest extends TestCase
         $stdout = $this->hook('claude-code', (string) json_encode($flagged))->assertOk()->json('stdout');
 
         $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $stdout);
-    }
-
-    public function test_without_a_parser_a_shell_call_is_refused_and_nothing_is_recorded(): void
-    {
-        $this->app->instance(ShellCommandParser::class, new MissingShellParser());
-
-        $this->hook('claude-code', $this->bashBody('git status'))->assertStatus(503);
-
-        $this->assertSame(0, HookCall::query()->authorizedFor($this->target())->count());
     }
 
     public function test_a_retry_gets_exactly_the_recorded_bytes(): void

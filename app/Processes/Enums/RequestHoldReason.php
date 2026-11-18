@@ -14,4 +14,12 @@ enum RequestHoldReason: string
     case ReaderRequired = 'reader_required';
     case ReaderStale = 'reader_stale';
     case BindingChanged = 'binding_changed';
+
+    /**
+     * Whether the request holds a command already known as a test, check or build, which waits for its reader.
+     */
+    public function needsReader(): bool
+    {
+        return $this === self::ReaderRequired || $this === self::ReaderStale;
+    }
 }

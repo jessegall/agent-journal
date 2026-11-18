@@ -9,16 +9,16 @@ use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Models\CommandRequest;
-use App\Processes\Values\ExecutionContext;
+use App\Processes\Support\ProjectKey;
 
 final readonly class OpenCommandRequestHandler implements CommandHandler
 {
-    public function __construct(private CurrentActor $actors) {}
+    public function __construct(private CurrentActor $actors, private ProjectKey $projects) {}
 
     public function handle(OpenCommandRequest $command): string
     {
         $actor = ActorIdentity::of($this->actors->actor());
-        $projectKey = ExecutionContext::inFolder($command->workingFolder)->projectKey();
+        $projectKey = $this->projects->current();
         $open = CommandRequest::query()
             ->ofProject($projectKey)
             ->byActor($actor)
@@ -30,13 +30,6 @@ final readonly class OpenCommandRequestHandler implements CommandHandler
             return $open->id;
         }
 
-        return CommandRequest::open(
-            $projectKey,
-            $actor,
-            $command->operation,
-            $command->bindingDigest,
-            $command->line,
-            $command->reason,
-        )->id;
+        return CommandRequest::open($projectKey, $actor, $command)->id;
     }
 }

@@ -32,6 +32,22 @@ final readonly class RuleScope
         return new self(ScopeType::Project, 'project', '');
     }
 
+    /**
+     * @return array{type: string, owner: string, version: string}
+     */
+    public function toArray(): array
+    {
+        return ['type' => $this->type->value, 'owner' => $this->owner, 'version' => $this->version];
+    }
+
+    /**
+     * @param  array{type: string, owner: string, version: string}  $fields
+     */
+    public static function fromArray(array $fields): self
+    {
+        return new self(ScopeType::from($fields['type']), $fields['owner'], $fields['version']);
+    }
+
     public function name(): string
     {
         return $this->version === '' ? $this->owner : "{$this->owner}@{$this->version}";

@@ -21,6 +21,18 @@ enum ProblemCode: string
     case ReaderFailed = 'reader_failed';
     case RecordLimit = 'record_limit';
     case ReaderStale = 'reader_stale';
+    case ExecutionError = 'execution_error';
+    case ExitUnavailable = 'exit_unavailable';
+    case OutcomeConflict = 'outcome_conflict';
+    case NotNormalRun = 'not_normal_run';
+
+    /**
+     * Whether the reader itself broke on the output, rather than the output being wrong.
+     */
+    public function isReaderFailure(): bool
+    {
+        return $this === self::ReaderFailed || $this === self::RecordLimit;
+    }
 
     /**
      * The next action a person or agent takes for this problem.
@@ -35,6 +47,9 @@ enum ProblemCode: string
             self::CountsInvalid, self::ProgressTotalStale => 'read the check output by hand; its counts do not add up',
             self::ReaderFailed, self::RecordLimit => 'revise the reader within its limits and prove it again',
             self::ReaderStale => 'propose a reader for the check as it is now',
+            self::ExecutionError, self::ExitUnavailable => 'read the diagnostics; the check itself did not run to an end',
+            self::OutcomeConflict => 'read the output by hand; its exit and its summary disagree',
+            self::NotNormalRun => 'run the check normally; an evidence sample never gives a result',
         };
     }
 }

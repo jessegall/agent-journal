@@ -55,6 +55,7 @@ use Domain\Plans\Commands\CreatePlan;
 use Domain\Plans\Commands\EditPlan;
 use Domain\Plans\Commands\FinishPlan;
 use Domain\Plans\Commands\ReassignPlanWork;
+use Domain\Plans\Commands\RecordPhaseCheck;
 use Domain\Plans\Commands\StartPlan;
 use Domain\Plans\Commands\UnassignPlanWork;
 use Domain\Plans\Contracts\PlanDetailsReader;
@@ -88,7 +89,19 @@ use Domain\Plans\Support\PlanShareProvider;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\TasksDomain;
 
-final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesAutoAssignments, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesShareRecords, ProvidesSkills, ProvidesStates
+final class PlansDomain extends Domain implements
+    ProvidesAssignables,
+    ProvidesAutoAssignments,
+    ProvidesCommands,
+    ProvidesLinkRecords,
+    ProvidesMcpTools,
+    ProvidesNavigation,
+    ProvidesNumberedModels,
+    ProvidesPages,
+    ProvidesSections,
+    ProvidesShareRecords,
+    ProvidesSkills,
+    ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -192,6 +205,7 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesA
             AssignPlanWork::class,
             ReassignPlanWork::class,
             UnassignPlanWork::class,
+            RecordPhaseCheck::class,
         ];
     }
 

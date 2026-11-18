@@ -9,14 +9,22 @@ use App\Processes\Admission\OutputPolicy;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\CommandPermissionReader;
 use App\Processes\Contracts\ShellSyntax;
+use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Enums\ParseOutcome;
 use App\Processes\Enums\RunMode;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Exceptions\EvidencePermitRefused;
+use App\Processes\Exceptions\PhaseTimingRefused;
+use App\Processes\Models\CommandRequest;
 use App\Processes\Models\EvidencePermit;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Values\Classification;
+use App\Processes\Values\CommandRule;
 use App\Processes\Values\ExecutionContext;
+use App\Processes\Values\PermitLimits;
+use App\Processes\Values\PermittedLine;
+use App\Processes\Values\TimingVerdict;
+use Carbon\CarbonImmutable;
 
 /**
  * Issues evidence permits for known command lines and turns a used permit into an evidence-only run (doc 21 revision
@@ -32,34 +40,35 @@ final readonly class EvidenceRuns
         private ExecutionPlanner $planner,
         private OutputPolicy $outputs,
         private CommandPermissionReader $permissions,
+        private ProjectKey $projects,
+        private VerificationTiming $timing,
     ) {}
 
     /**
      * @throws EvidencePermitRefused
      */
-    public function issue(string $line, string $workingFolder, ActorIdentity $runner, int $byteCap, int $secondsCap, int $minutesValid): EvidencePermit
-    {
-        $classification = $this->classify($line, $workingFolder);
-        if (! $classification->isKnown()) {
-            throw EvidencePermitRefused::unknown();
-        }
-        $permissions = $this->permissions->forActor($runner);
-        foreach ($classification->parts as $part) {
-            if (! $permissions->admits($classification->requiredClasses(), $classification->argvOf($part))) {
-                throw EvidencePermitRefused::beyondRole();
-            }
-        }
+    public function issue(
+        string $line,
+        string $workingFolder,
+        ActorIdentity $runner,
+        PermitLimits $limits,
+    ): EvidencePermit {
+        $permitted = $this->permitted($line, $workingFolder, $runner, []);
 
-        return EvidencePermit::issue(
-            $workingFolder,
-            $line,
-            $classification,
-            $this->digestOf($classification),
-            $runner,
-            $byteCap,
-            $secondsCap,
-            $minutesValid,
-        );
+        return EvidencePermit::issue($this->projects->current(), $permitted, $runner, $limits);
+    }
+
+    /**
+     * The permit for one sample of a request's exact line, classified with the declaration the owner approved for
+     * sampling and run by the actor who opened the request, under the sample limits.
+     *
+     * @throws EvidencePermitRefused
+     */
+    public function issueForRequest(CommandRequest $request, CommandRule $proposed): EvidencePermit
+    {
+        $permitted = $this->permitted($request->source_line, $request->working_folder, $request->opener(), [$proposed]);
+
+        return EvidencePermit::forRequest($request, $permitted, $proposed, PermitLimits::forSample());
     }
 
     /**
@@ -69,10 +78,14 @@ final readonly class EvidenceRuns
      */
     public function start(EvidencePermit $permit, ActorIdentity $runner, string $requestId): ProcessRun
     {
-        $classification = $this->classify($permit->source_line, $permit->working_folder);
+        $classification = $this->classify($permit->source_line, $permit->working_folder, $permit->candidate_rules);
         $permit->checkUse($runner, $requestId, $this->digestOf($classification));
         if ($permit->wasStartedBy($requestId)) {
             return ProcessRun::query()->withoutGlobalScopes()->findOrFail($permit->process_run_id);
+        }
+        $timing = $classification->hasVerification() ? $this->timing->forCaller() : TimingVerdict::allowed();
+        if (! $timing->isAllowed()) {
+            throw PhaseTimingRefused::by($timing);
         }
         $verdict = $this->outputs->check($classification);
         if (! $verdict->isAllowed()) {
@@ -96,14 +109,66 @@ final readonly class EvidenceRuns
         return $run;
     }
 
-    private function classify(string $line, string $workingFolder): Classification
+    /**
+     * @param  list<CommandRule>  $candidates
+     *
+     * @throws EvidencePermitRefused
+     */
+    private function checkedClassification(
+        string $line,
+        string $workingFolder,
+        ActorIdentity $runner,
+        array $candidates,
+    ): Classification {
+        $classification = $this->classify($line, $workingFolder, $candidates);
+        if (! $classification->isKnown()) {
+            throw EvidencePermitRefused::unknown();
+        }
+        $permissions = $this->permissions->forActor($runner);
+        foreach ($classification->parts as $part) {
+            if (! $permissions->admits($classification->requiredClasses(), $classification->argvOf($part))) {
+                throw EvidencePermitRefused::beyondRole();
+            }
+        }
+
+        return $classification;
+    }
+
+    /**
+     * @param  list<CommandRule>  $candidates
+     *
+     * @throws EvidencePermitRefused
+     */
+    private function permitted(
+        string $line,
+        string $workingFolder,
+        ActorIdentity $runner,
+        array $candidates,
+    ): PermittedLine {
+        $classification = $this->checkedClassification($line, $workingFolder, $runner, $candidates);
+        $classes = array_map(fn ($class) => $class->value, $classification->requiredClasses()->classes);
+
+        return new PermittedLine($line, $workingFolder, $this->digestOf($classification), $classes);
+    }
+
+    /**
+     * @param  list<CommandRule>  $candidates
+     *
+     * @throws EvidencePermitRefused
+     */
+    private function classify(string $line, string $workingFolder, array $candidates): Classification
     {
         $tree = $this->syntax->parse($line, ShellDialect::Bash);
         if ($tree->outcome !== ParseOutcome::Complete) {
             throw EvidencePermitRefused::unknown();
         }
+        $classifier = array_reduce(
+            $candidates,
+            fn (CommandClassifier $known, CommandRule $rule): CommandClassifier => $known->withCandidate($rule),
+            $this->classifier,
+        );
 
-        return $this->classifier->classify($tree, ExecutionContext::inFolder($workingFolder));
+        return $classifier->classify($tree, ExecutionContext::inFolder($workingFolder));
     }
 
     private function digestOf(Classification $classification): string

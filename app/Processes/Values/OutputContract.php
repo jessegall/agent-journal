@@ -28,6 +28,38 @@ final readonly class OutputContract
     ) {}
 
     /**
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'encoding' => $this->encoding->value,
+            'framing' => $this->framing->value,
+            'schema_versions' => $this->schemaVersions,
+            'streams' => $this->streams->value,
+            'summary' => $this->summary->value,
+            'empty' => $this->empty->toArray(),
+            'empty_selection' => $this->emptySelection->value,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $fields  the shape toArray writes
+     */
+    public static function fromArray(array $fields): self
+    {
+        return new self(
+            OutputEncoding::from($fields['encoding']),
+            FramingType::from($fields['framing']),
+            $fields['schema_versions'],
+            StreamUse::from($fields['streams']),
+            SummaryRule::from($fields['summary']),
+            EmptyRunPolicy::fromArray($fields['empty']),
+            EmptySelection::from($fields['empty_selection']),
+        );
+    }
+
+    /**
      * The contract as a reader names it: its framing, summary rule and empty-run policy.
      */
     public function label(): string
@@ -35,11 +67,24 @@ final readonly class OutputContract
         return "output {$this->framing->value}, summary {$this->summary->value}, empty {$this->empty->policy->value}";
     }
 
+    public function requiresSummary(): bool
+    {
+        return $this->summary === SummaryRule::RequiredTerminalRecord;
+    }
+
     /**
      * Plain text lines on merged streams with no promised summary: the contract of a check whose reader is not proven.
      */
     public static function plainLines(): self
     {
-        return new self(OutputEncoding::Utf8, FramingType::Lines, '*', StreamUse::MergeAllowed, SummaryRule::NotRequired, EmptyRunPolicy::invalid(), EmptySelection::ConfigurationProblem);
+        return new self(
+            OutputEncoding::Utf8,
+            FramingType::Lines,
+            '*',
+            StreamUse::MergeAllowed,
+            SummaryRule::NotRequired,
+            EmptyRunPolicy::invalid(),
+            EmptySelection::ConfigurationProblem,
+        );
     }
 }

@@ -62,7 +62,7 @@ final readonly class CheckRules
             $this->check('core.vp.check', new ProgramSpellings('vp'), ['check'], ArgumentGrammar::operands(OperandType::Path)->repeating(), $read),
             $this->check('core.vp.check-fix', new ProgramSpellings('vp'), ['check'], ArgumentGrammar::optionWithOperands('--fix', OperandType::Path)->repeating(), $fix),
             $this->check('core.vp.test', new ProgramSpellings('vp'), ['test', 'run'], ArgumentGrammar::operands(OperandType::Path)->repeating(), $read),
-            $this->check('core.pytest', new ProgramSpellings('pytest'), [], ArgumentGrammar::operands(OperandType::Path)->repeating()->withOptions(OptionGrammar::valued(OperandType::Pattern, '-k'), OptionGrammar::flag('-x'), OptionGrammar::flag('-q'), OptionGrammar::flag('-v'), OptionGrammar::flag('-rf')), $read),
+            $this->check('core.pytest', new ProgramSpellings('pytest'), [], $this->pytest(), $read),
             $this->check('core.go.test', new ProgramSpellings('go'), ['test'], ArgumentGrammar::operands(OperandType::Path)->repeating()->withOptions(OptionGrammar::valued(OperandType::Pattern, '-run'), OptionGrammar::flag('-v'), OptionGrammar::flag('-race'), OptionGrammar::valued(OperandType::Count, '-count')), $read),
             $this->check('core.cargo.test', new ProgramSpellings('cargo'), ['test'], ArgumentGrammar::operands(OperandType::Pattern)->withOptions(OptionGrammar::flag('--release'), OptionGrammar::flag('-q')), $read),
             $this->check('core.yarn.test', new ProgramSpellings('yarn'), ['test'], ArgumentGrammar::none(), $read),
@@ -101,6 +101,25 @@ final readonly class CheckRules
     {
         return ArgumentGrammar::operands(OperandType::Path)->repeating()->withOptions(
             OptionGrammar::flag('--dirty'), OptionGrammar::flag('--parallel'), OptionGrammar::valued(OperandType::Name, '--format'), OptionGrammar::valued(OperandType::Path, '--config'), OptionGrammar::flag('-v'),
+        );
+    }
+
+    /**
+     * The pytest options a check run may take: selection, stopping, verbosity and the report of failures.
+     */
+    private function pytest(): ArgumentGrammar
+    {
+        return ArgumentGrammar::operands(OperandType::Path)->repeating()->withOptions(
+            OptionGrammar::valued(OperandType::Pattern, '-k'),
+            OptionGrammar::valued(OperandType::Pattern, '-m'),
+            OptionGrammar::valued(OperandType::Count, '--maxfail'),
+            OptionGrammar::valued(OperandType::Text, '--tb'),
+            OptionGrammar::flag('-x', '--exitfirst'),
+            OptionGrammar::flag('-q', '--quiet'),
+            OptionGrammar::flag('-v', '--verbose'),
+            OptionGrammar::flag('-s'),
+            OptionGrammar::flag('-rf'),
+            OptionGrammar::flag('--lf', '--last-failed'),
         );
     }
 }

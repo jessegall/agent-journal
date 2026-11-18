@@ -420,8 +420,11 @@ use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\FactOrigin;
 use App\Processes\Contracts\ProgramClassifier;
 use App\Processes\Contracts\ProvidesCommandRules;
+use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Contracts\ShellCommandParser;
+use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Declarations\VerificationContract;
+use App\Processes\Enums\AssessmentOutcome;
 use App\Processes\Enums\BindingType;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\CommandEffect;
@@ -473,6 +476,7 @@ use App\Processes\Values\PartClassification;
 use App\Processes\Values\ProgramIdentity;
 use App\Processes\Values\ProgramSpellings;
 use App\Processes\Values\ProgressPolicy;
+use App\Processes\Values\PublishedResult;
 use App\Processes\Values\ReaderReference;
 use App\Processes\Values\Redirect;
 use App\Processes\Values\RuleOrigin;
@@ -483,6 +487,7 @@ use App\Processes\Values\ShellNode;
 use App\Processes\Values\ShellTree;
 use App\Processes\Values\SourceRange;
 use App\Processes\Values\SyntaxOrigin;
+use App\Processes\Values\TimingVerdict;
 use App\Processes\Values\TreeDiagnostic;
 use App\Processes\Values\UnresolvedFact;
 use App\Processes\Values\Word;
@@ -878,6 +883,8 @@ final class CoreApi
                 ProvidesCommandRules::class,
                 ProgramClassifier::class,
                 FactOrigin::class,
+                ResultReceipts::class,
+                VerificationTiming::class,
                 HookAnswerer::class,
                 HookInput::class,
                 StateRegistration::class,
@@ -1083,6 +1090,9 @@ final class CoreApi
                 JournalRouteType::class,
                 CommandRule::class,
                 RuleScope::class,
+                TimingVerdict::class,
+                PublishedResult::class,
+                AssessmentOutcome::class,
                 ScopeType::class,
                 ProgramSpellings::class,
                 ArgumentGrammar::class,

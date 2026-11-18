@@ -12,6 +12,9 @@ return new class extends Migration
     {
         Schema::create('reader_revisions', function (Blueprint $table) {
             $table->ulid('id')->primary();
+            $table->string('project_key', 64);
+            $table->foreignUlid('command_request_id')->constrained('command_requests')->cascadeOnDelete();
+            $table->unsignedInteger('declaration_revision');
             $table->string('operation');
             $table->string('contract_label');
             $table->jsonb('definition');
@@ -19,17 +22,19 @@ return new class extends Migration
             $table->string('actor_id');
             $table->timestampTz('created_at');
 
-            $table->index('operation');
+            $table->index(['project_key', 'operation']);
         });
 
         Schema::create('reader_positions', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->foreignUlid('part_run_id')->constrained('part_runs')->cascadeOnDelete();
             $table->foreignUlid('reader_revision_id')->constrained('reader_revisions')->cascadeOnDelete();
+            $table->string('purpose', 16);
             $table->jsonb('checkpoint');
+            $table->string('interpretation', 16);
             $table->timestampsTz();
 
-            $table->unique(['part_run_id', 'reader_revision_id']);
+            $table->unique(['part_run_id', 'reader_revision_id', 'purpose']);
         });
     }
 

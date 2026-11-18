@@ -22,6 +22,7 @@ final readonly class CoreRules
         private CheckRules $checks = new CheckRules(),
         private BuildRules $builds = new BuildRules(),
         private GitRules $git = new GitRules(),
+        private ToolRules $tools = new ToolRules(),
     ) {}
 
     /**
@@ -38,6 +39,7 @@ final readonly class CoreRules
             ...$this->checks->all(),
             ...$this->builds->all(),
             ...$this->git->all(),
+            ...$this->tools->all(),
         ];
     }
 }

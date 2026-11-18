@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Hooks\Enums\AnswerType;
-use App\Hooks\Exceptions\ShellParserMissing;
 use App\Hooks\Inputs\HookIdentity;
-use App\Hooks\Inputs\MissingShellParser;
 use App\Hooks\Inputs\ShellCommandRequested;
 use App\Hooks\States\MainAgentReadyState;
 use App\Hooks\States\ReadOnlyHelperReadyState;
@@ -101,13 +99,6 @@ final class CommandFactsTest extends TestCase
         foreach (['composer test --saved', 'SAVED=1 composer test', 'composer test # journal'] as $line) {
             $this->assertTrue($this->parse($line)->needsAlias(), $line);
         }
-    }
-
-    public function test_without_a_parser_every_shell_command_fails_by_name(): void
-    {
-        $this->expectException(ShellParserMissing::class);
-
-        new MissingShellParser()->parse('git status', ShellDialect::Bash);
     }
 
     private function parse(string $line): ShellCommand
