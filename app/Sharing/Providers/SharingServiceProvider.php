@@ -14,6 +14,7 @@ use App\Sharing\Console\ShareListCommand;
 use App\Sharing\Console\ShareRevokeCommand;
 use App\Sharing\Console\ShareStatusCommand;
 use App\Sharing\Console\ShareUrlCommand;
+use App\Sharing\Console\SuperviseSharingCommand;
 use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Contracts\SharePolicy;
@@ -60,7 +61,7 @@ final class SharingServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/sharing.php');
 
         if ($this->app->runningInConsole()) {
-            $this->commands([RequestShareCommand::class, ShareStatusCommand::class, ShareListCommand::class, ShareCreateCommand::class, ShareRevokeCommand::class, ShareUrlCommand::class, ConfigureShareGatewayCommand::class]);
+            $this->commands([RequestShareCommand::class, ShareStatusCommand::class, ShareListCommand::class, ShareCreateCommand::class, ShareRevokeCommand::class, ShareUrlCommand::class, ConfigureShareGatewayCommand::class, SuperviseSharingCommand::class]);
         }
     }
 }

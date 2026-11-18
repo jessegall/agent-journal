@@ -13,10 +13,12 @@ use App\Sharing\Commands\ConfigureShareGateway;
 use App\Sharing\Commands\CreateShare;
 use App\Sharing\Commands\DisableShareGateway;
 use App\Sharing\Commands\ExpireShares;
+use App\Sharing\Commands\PruneShareAudit;
 use App\Sharing\Commands\ReadShare;
 use App\Sharing\Commands\RecordGatewayHealth;
 use App\Sharing\Commands\RecordGatewayOutcome;
 use App\Sharing\Commands\RefreshShareScope;
+use App\Sharing\Commands\ReopenSharedGateways;
 use App\Sharing\Commands\RequestShare;
 use App\Sharing\Commands\RetryShare;
 use App\Sharing\Commands\RevokeShare;
@@ -54,7 +56,7 @@ final class SharingBoundaryTest extends TestCase
      */
     private const array ENTRY_COMMANDS = [SaveSharePreview::class, CreateShare::class, RequestShare::class, ApproveShareRequest::class, RevokeShare::class, RefreshShareScope::class, RetryShare::class, ConfigureShareGateway::class, DisableShareGateway::class];
 
-    private const array SYSTEM_COMMANDS = [ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class];
+    private const array SYSTEM_COMMANDS = [ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class, ReopenSharedGateways::class, PruneShareAudit::class];
 
     private const array SEAMS = [Shareable::class, ShareRecordProvider::class, ShareGateway::class, ProvidesShareRecords::class, ProvidesShareGateways::class, SharePolicy::class];
 

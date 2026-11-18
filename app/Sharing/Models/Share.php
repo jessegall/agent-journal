@@ -245,6 +245,40 @@ final class Share extends Model implements Numbered, ReadableModel
     }
 
     /**
+     * The ids of the shares that ended before the cutoff, as a subquery.
+     *
+     * @return Builder<self>
+     */
+    public static function endedBefore(CarbonImmutable $cutoff): Builder
+    {
+        return self::query()->whereNotNull('terminal_at')->where('terminal_at', '<', $cutoff)->select('id');
+    }
+
+    /**
+     * Keeps the count of the audit rows pruning removed, and when it last pruned, so the share's history stays
+     * counted after its details are gone.
+     */
+    public function countPruned(int $allowedReads, int $deniedReads, int $lifecycleRows, CarbonImmutable $at): void
+    {
+        $this->pruned_allowed_reads += $allowedReads;
+        $this->pruned_denied_reads += $deniedReads;
+        $this->pruned_lifecycle_rows += $lifecycleRows;
+        $this->last_pruned_at = $at;
+        $this->save();
+    }
+
+    /**
+     * The gateway configurations that serve at least one share still live and unexpired: what a new supervisor run
+     * opens again. Proposals and ended shares never open a tunnel.
+     *
+     * @return list<string>
+     */
+    public static function configurationsToReopen(): array
+    {
+        return array_values(array_unique(array_map(strval(...), self::query()->liveNow()->whereNotNull('share_gateway_configuration_id')->readLimit(self::MOST_LIVE)->pluck('share_gateway_configuration_id')->all())));
+    }
+
+    /**
      * Every share the configuration's gateway serves that has not ended, whatever its deadline, by id: what disabling
      * the gateway would revoke.
      *

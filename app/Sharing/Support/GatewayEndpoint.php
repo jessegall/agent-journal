@@ -16,4 +16,21 @@ final readonly class GatewayEndpoint
         public string $publicOrigin,
         public string $processReference,
     ) {}
+
+    /**
+     * The endpoint a claimed operation opens or closes, named by its run and version, the reference its program is
+     * kept under.
+     */
+    public static function forOperation(GatewayOperation $operation): self
+    {
+        return new self($operation->runId, $operation->endpointVersion, $operation->configuration->settings->publicOrigin, self::referenceOf($operation->runId, $operation->endpointVersion));
+    }
+
+    /**
+     * The reference a run keeps the program of one endpoint version under.
+     */
+    public static function referenceOf(string $runId, int $endpointVersion): string
+    {
+        return "{$runId}:{$endpointVersion}";
+    }
 }

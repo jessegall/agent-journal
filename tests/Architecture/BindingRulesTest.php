@@ -46,6 +46,7 @@ final class BindingRulesTest extends TestCase
         'app/Http/Middleware/Agents/AuthenticateHost.php',
         'app/Agents/Console/EnrollHostCommand.php',
         'app/Sharing/Support/ConsoleOwner.php',
+        'app/Sharing/Support/SharingSupervisor.php',
         'domain/Access/Http/Middleware/AuthenticateUser.php',
         'app/Engine/Support/EnginePass.php',
     ];
