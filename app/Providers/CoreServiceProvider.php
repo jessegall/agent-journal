@@ -7,8 +7,11 @@ namespace App\Providers;
 use App\Actors\Models\UserPresence;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
+use App\Agents\Models\CapacityReservation;
+use App\Agents\Models\ConversationVisit;
 use App\Agents\Models\LaunchBypass;
 use App\Agents\Models\LaunchCredential;
+use App\Agents\Models\ProgramConversation;
 use App\Bus\Models\CommandReceipt;
 use App\Comments\Models\Comment;
 use App\Engine\Models\EngineFrameTime;
@@ -30,13 +33,10 @@ use App\Sharing\Models\ShareMember;
 use App\Sharing\Models\SharePreview;
 use App\Skills\Models\Skill;
 use App\Skills\Models\SkillGeneration;
-use App\Skills\Models\SkillRevision;
-use Illuminate\Support\ServiceProvider;
-use App\Agents\Models\CapacityReservation;
-use App\Agents\Models\ConversationVisit;
-use App\Agents\Models\ProgramConversation;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Models\SkillRequest;
+use App\Skills\Models\SkillRevision;
+use Illuminate\Support\ServiceProvider;
 
 /**
  * Loads the core that every domain and module builds on: the migrations and listeners of its agents, hooks and links.

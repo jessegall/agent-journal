@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use App\Links\Support\Linkable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -28,10 +28,9 @@ use Illuminate\Support\Carbon;
 #[Fillable(['session_id', 'conversation_id', 'sequence_number', 'event_id', 'observed_at'])]
 final class ConversationVisit extends Model implements ReadableModel
 {
-    use Linkable;
-
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     /**
      * @return array<string, string>

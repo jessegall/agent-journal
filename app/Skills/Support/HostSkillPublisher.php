@@ -64,7 +64,7 @@ final readonly class HostSkillPublisher implements SkillPublisher
         }
     }
 
-    public function activeFolder(string $target): ?string
+    public function activeFolder(string $target): string|null
     {
         $target = $this->insideRoot($target);
 

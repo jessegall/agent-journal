@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Handlers;
 
-use App\Agents\Support\HostCapacityLock;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
@@ -29,6 +28,7 @@ use App\Agents\Models\LaunchRecord;
 use App\Agents\Readers\HostLaunchMaterial;
 use App\Agents\Support\HostCapabilityQuery;
 use App\Agents\Support\HostCapacity;
+use App\Agents\Support\HostCapacityLock;
 use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\LaunchRequest;
 use App\Contracts\CommandHandler;

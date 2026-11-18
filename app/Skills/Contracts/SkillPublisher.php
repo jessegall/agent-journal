@@ -31,5 +31,5 @@ interface SkillPublisher
     /**
      * The staged folder the target points at now, or null when the journal has not published there.
      */
-    public function activeFolder(string $target): ?string;
+    public function activeFolder(string $target): string|null;
 }

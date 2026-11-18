@@ -49,7 +49,7 @@ final class SkillGeneration extends Model implements ReadableModel
 
     protected static function booted(): void
     {
-        static::updating(function (self $generation): void {
+        self::updating(function (self $generation): void {
             if ($generation->isDirty(['entries', 'catalogue_digest', 'registration_digest'])) {
                 throw SkillGenerationImmutable::for($generation->id);
             }
@@ -75,7 +75,7 @@ final class SkillGeneration extends Model implements ReadableModel
     /**
      * The newest ready generation, or null before the first refresh.
      */
-    public static function latestReady(): ?self
+    public static function latestReady(): self|null
     {
         return self::query()->inState(GenerationState::Ready)->orderByDesc('created_at')->orderByDesc('id')->first();
     }
@@ -83,7 +83,7 @@ final class SkillGeneration extends Model implements ReadableModel
     /**
      * The newest generation of any state, for status.
      */
-    public static function latest(): ?self
+    public static function latest(): self|null
     {
         return self::query()->orderByDesc('created_at')->orderByDesc('id')->first();
     }
@@ -99,7 +99,7 @@ final class SkillGeneration extends Model implements ReadableModel
      *
      * @return array{key: string, owner: string, revision: int|null, markdown: string, digest: string}|null
      */
-    public function entry(string $key): ?array
+    public function entry(string $key): array|null
     {
         foreach ($this->entries as $entry) {
             if ($entry['key'] === $key) {

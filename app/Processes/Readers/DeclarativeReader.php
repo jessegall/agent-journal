@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Processes\Readers;
 
-use App\Processes\Readers\Support\CheckpointBuilder;
-use App\Processes\Readers\Support\LineNormalizer;
 use App\Processes\Contracts\OutputReader;
 use App\Processes\Enums\ClaimedOutcome;
 use App\Processes\Enums\FramingType;
@@ -15,6 +13,8 @@ use App\Processes\Enums\ProblemCode;
 use App\Processes\Enums\RecordRole;
 use App\Processes\Enums\StreamUse;
 use App\Processes\Enums\SummaryRule;
+use App\Processes\Readers\Support\CheckpointBuilder;
+use App\Processes\Readers\Support\LineNormalizer;
 use App\Processes\Values\OutputContract;
 use App\Processes\Values\OutputFrame;
 use App\Processes\Values\OutputRecord;

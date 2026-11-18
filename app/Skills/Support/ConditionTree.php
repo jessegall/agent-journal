@@ -6,6 +6,8 @@ namespace App\Skills\Support;
 
 use App\Profiles\Enums\ProfileType;
 use App\Profiles\Values\ProfileKey;
+use App\Programs\Values\ProgramKey;
+use App\Programs\Values\ProviderKey;
 use App\Skills\Conditions\AgentTypes;
 use App\Skills\Conditions\AllOf;
 use App\Skills\Conditions\AnyOf;
@@ -20,8 +22,6 @@ use App\Skills\Conditions\Providers;
 use App\Skills\Conditions\RegisteredCondition;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Exceptions\SkillConditionInvalid;
-use App\Programs\Values\ProgramKey;
-use App\Programs\Values\ProviderKey;
 use App\Text\Support\StableKey;
 use Closure;
 use Illuminate\Contracts\Container\Container;

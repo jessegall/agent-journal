@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use App\Links\Support\Linkable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -30,10 +30,9 @@ use Illuminate\Support\Carbon;
 #[Fillable(['program', 'settings_identity', 'native_id', 'agent_id', 'context_reference'])]
 final class ProgramConversation extends Model implements ReadableModel
 {
-    use Linkable;
-
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     /**
      * Whether a session of this agent, launched for this context, may continue the conversation.

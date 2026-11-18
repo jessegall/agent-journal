@@ -8,11 +8,11 @@ use App\Agents\Enums\ReservationState;
 use App\Agents\Exceptions\CapacityUnavailable;
 use App\Agents\Support\ExecutionBudgets;
 use App\Agents\Support\HostCapacity;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use App\Links\Support\Linkable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -31,10 +31,9 @@ use Illuminate\Support\Carbon;
 #[Fillable(['launch_request_id', 'cpu_cores', 'memory_bytes', 'disk_bytes', 'state'])]
 final class CapacityReservation extends Model implements ReadableModel
 {
-    use Linkable;
-
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     /**
      * @return array<string, string>
