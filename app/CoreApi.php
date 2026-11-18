@@ -634,8 +634,10 @@ use App\Sharing\Support\ShareSelectedTarget;
 use App\Sharing\Support\ShareSelection;
 use App\Sharing\Support\ShareSummary;
 use App\Sharing\Support\ShareTargetRead;
+use App\Skills\Commands\CopySkill;
 use App\Skills\Commands\CreateSkill;
 use App\Skills\Commands\RestoreSkill;
+use App\Skills\Commands\RetireSkill;
 use App\Skills\Commands\ReviseSkill;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Conditions\Everyone;
@@ -646,11 +648,13 @@ use App\Skills\Contracts\SkillCondition;
 use App\Skills\Contracts\SkillReader;
 use App\Skills\Enums\ConditionOutcome;
 use App\Skills\Exceptions\ProgramKeyInvalid;
+use App\Skills\Exceptions\ShippedSkillReadOnly;
 use App\Skills\Exceptions\ProviderKeyInvalid;
 use App\Skills\Exceptions\SkillConditionInvalid;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillKeyInvalid;
 use App\Skills\Exceptions\SkillKeyTaken;
+use App\Skills\Exceptions\SkillOwnerRequired;
 use App\Skills\Exceptions\SkillRequestReused;
 use App\Skills\Exceptions\SkillRetired;
 use App\Skills\Exceptions\SkillRevisionConflict;
@@ -1201,6 +1205,8 @@ final class CoreApi
                 CreateSkill::class,
                 ReviseSkill::class,
                 RestoreSkill::class,
+                RetireSkill::class,
+                CopySkill::class,
                 PostComment::class,
                 PostTextComment::class,
                 SendMessage::class,
@@ -1412,6 +1418,8 @@ final class CoreApi
                 SkillRequestReused::class,
                 SkillRetired::class,
                 SkillKeyTaken::class,
+                ShippedSkillReadOnly::class,
+                SkillOwnerRequired::class,
             )
             ->support(
                 BelongsToOneActor::class,

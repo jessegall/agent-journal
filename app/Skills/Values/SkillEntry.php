@@ -23,4 +23,15 @@ final readonly class SkillEntry
         public ?int $revision,
         public RenderedSkill $rendered,
     ) {}
+
+    /**
+     * This skill's rendered text as the draft of a copy: one section holding the text below its title, with the same
+     * name, description and condition. The copy is a snapshot of these bytes.
+     */
+    public function copyDraft(): SkillDraft
+    {
+        $body = (string) preg_replace('/\A---\n.*?\n---\n\n# [^\n]*\n\n/s', '', $this->rendered->markdown, 1);
+
+        return new SkillDraft($this->name, $this->description, [new SectionDraft('copied', $this->name, rtrim($body, "\n"))], json_encode($this->condition->toArray(), JSON_THROW_ON_ERROR));
+    }
 }

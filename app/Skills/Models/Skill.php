@@ -12,6 +12,7 @@ use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Skills\Contracts\SkillCondition;
+use App\Skills\Exceptions\SkillOwnerRequired;
 use App\Skills\Exceptions\SkillRetired;
 use App\Skills\Exceptions\SkillRevisionConflict;
 use App\Skills\Values\SkillDraft;
@@ -88,12 +89,21 @@ final class Skill extends Model implements Numbered, ReadableModel
     }
 
     /**
-     * Takes the skill out of every future selection; its revisions stay readable.
+     * Takes the skill out of every future selection, when its owner asks; its revisions stay readable. Answers the
+     * revision that was current.
+     *
+     * @throws SkillOwnerRequired
      */
-    public function retire(): void
+    public function retireBy(ActorIdentity $actor): SkillRevision
     {
+        if ($this->owner_type !== $actor->type || $this->owner_id !== $actor->id) {
+            throw SkillOwnerRequired::toRetire($this->key);
+        }
+
         $this->retired_at = CarbonImmutable::now();
         $this->save();
+
+        return SkillRevision::currentOf($this);
     }
 
     /**
