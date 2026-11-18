@@ -8,7 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\CommandBus;
 use App\Reads\Contracts\ReadMeter;
-use App\Sharing\Support\ShareBudget;
+use App\Sharing\Support\MeteredShareBudget;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareRecordRegistry;
@@ -54,8 +54,8 @@ final class PlanSharingTest extends TestCase
         $this->assertStringNotContainsString('Secret phase', (string) json_encode($candidates));
     }
 
-    private function budget(): ShareBudget
+    private function budget(): MeteredShareBudget
     {
-        return ShareBudget::forPreview($this->app->make(ReadMeter::class));
+        return MeteredShareBudget::forPreview($this->app->make(ReadMeter::class));
     }
 }

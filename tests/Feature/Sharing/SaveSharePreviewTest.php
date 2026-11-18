@@ -16,8 +16,8 @@ use App\Sharing\Exceptions\SharingNotAllowed;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\SharePreview;
 use App\Sharing\Support\GatewaySettings;
+use App\Sharing\Support\MeteredShareBudget;
 use App\Sharing\Support\SavedSharePreview;
-use App\Sharing\Support\ShareBudget;
 use App\Sharing\Support\ShareCandidates;
 use App\Sharing\Support\ShareRecordRegistry;
 use App\Sharing\Support\ShareScope;
@@ -125,6 +125,6 @@ final class SaveSharePreviewTest extends TestCase
 
     private function current(): ShareCandidates
     {
-        return $this->app->make(ShareScope::class)->discover($this->root, ShareBudget::forPreview($this->app->make(ReadMeter::class)));
+        return $this->app->make(ShareScope::class)->discover($this->root, MeteredShareBudget::forPreview($this->app->make(ReadMeter::class)));
     }
 }

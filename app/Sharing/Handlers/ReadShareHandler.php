@@ -10,6 +10,7 @@ use App\Contracts\CommandHandler;
 use App\Reads\Contracts\ReadMeter;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\ReadShare;
+use App\Sharing\Contracts\ShareBudget;
 use App\Sharing\Enums\ShareAuditType;
 use App\Sharing\Enums\ShareRelationType;
 use App\Sharing\Exceptions\ShareBudgetExceeded;
@@ -20,9 +21,9 @@ use App\Sharing\Exceptions\UnknownShareRelation;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
 use App\Sharing\Models\ShareMember;
+use App\Sharing\Support\MeteredShareBudget;
 use App\Sharing\Support\OwnerSharePolicy;
 use App\Sharing\Support\ReadPermits;
-use App\Sharing\Support\ShareBudget;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\ShareCursor;
 use App\Sharing\Support\ShareCursors;
@@ -112,7 +113,7 @@ final readonly class ReadShareHandler implements CommandHandler
      */
     private function read(Share $share, RecordIdentity $target, ShareReadPath $path, ReadShare $command): SharedPage
     {
-        $budget = ShareBudget::forRead($this->meter);
+        $budget = MeteredShareBudget::forRead($this->meter);
         $provider = $this->records->provider($target->type);
         $content = $budget->run(fn () => $provider->content(new ShareContentRead($target), $budget));
         $linked = $this->linkedFrom($share, $target, $budget);

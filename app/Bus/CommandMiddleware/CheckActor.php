@@ -27,12 +27,12 @@ final readonly class CheckActor implements CommandMiddleware
         $actor = $call->actor() ?? throw ActorContextMissing::forRequest();
         $required = $this->registry->requiredActor($call->name());
 
-        if ($actor->type === ActorType::System && $required !== ActorType::System) {
-            throw SystemNotAllowed::forCommand($call->name());
-        }
-
         if ($actor->type === ActorType::Engine && ! $this->registry->allowsEngine($call->name())) {
             throw EngineNotAllowed::forCommand($call->name());
+        }
+
+        if ($actor->type === ActorType::System && $required !== ActorType::System) {
+            throw SystemNotAllowed::forCommand($call->name());
         }
 
         if ($required !== null && $actor->type !== $required) {

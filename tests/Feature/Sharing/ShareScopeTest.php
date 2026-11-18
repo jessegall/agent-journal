@@ -11,7 +11,7 @@ use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Exceptions\ShareScopeTooLarge;
 use App\Sharing\Exceptions\UnknownShareRecordType;
-use App\Sharing\Support\ShareBudget;
+use App\Sharing\Support\MeteredShareBudget;
 use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareRecordRegistry;
 use App\Sharing\Support\ShareScope;
@@ -94,9 +94,9 @@ final class ShareScopeTest extends TestCase
         return $this->app->make(ShareScope::class);
     }
 
-    private function budget(): ShareBudget
+    private function budget(): MeteredShareBudget
     {
-        return ShareBudget::forPreview($this->app->make(ReadMeter::class));
+        return MeteredShareBudget::forPreview($this->app->make(ReadMeter::class));
     }
 
     private function root(int $number): RecordIdentity

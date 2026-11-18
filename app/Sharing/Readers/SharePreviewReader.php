@@ -14,7 +14,7 @@ use App\Records\Contracts\RecordReader;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareMember;
 use App\Sharing\Models\SharePreview;
-use App\Sharing\Support\ShareBudget;
+use App\Sharing\Support\MeteredShareBudget;
 use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareScope;
 use App\Ui\Contracts\PageReader;
@@ -36,7 +36,7 @@ final readonly class SharePreviewReader implements PageReader
     public function read(): SharePreviewData
     {
         $root = $this->request->root($this->records);
-        $candidates = $this->scope->discover($root, ShareBudget::forPreview($this->meter));
+        $candidates = $this->scope->discover($root, MeteredShareBudget::forPreview($this->meter));
         $approved = Share::liveFor($root)->map(fn (Share $share) => ShareMember::approvedLinkIdsOf($share))->getOrElse([]);
         $saved = SharePreview::openFor($this->actors->actor()->actorId(), $root);
 

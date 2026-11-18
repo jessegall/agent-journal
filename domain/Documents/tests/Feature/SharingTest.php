@@ -11,7 +11,7 @@ use App\Reads\Contracts\ReadMeter;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Enums\ShareRelationType;
-use App\Sharing\Support\ShareBudget;
+use App\Sharing\Support\MeteredShareBudget;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareRecordRegistration;
@@ -178,8 +178,8 @@ final class SharingTest extends TestCase
         }
     }
 
-    private function budget(): ShareBudget
+    private function budget(): MeteredShareBudget
     {
-        return ShareBudget::forRead($this->app->make(ReadMeter::class));
+        return MeteredShareBudget::forRead($this->app->make(ReadMeter::class));
     }
 }

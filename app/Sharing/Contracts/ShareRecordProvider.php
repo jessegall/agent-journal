@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Sharing\Contracts;
 
 use App\Records\Support\RecordIdentity;
-use App\Sharing\Support\ShareBudget;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\SharedContent;
 use App\Sharing\Support\ShareRecordCard;

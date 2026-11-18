@@ -6,8 +6,8 @@ namespace App\Comments\Support;
 
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
+use App\Sharing\Contracts\ShareBudget;
 use App\Sharing\Contracts\ShareRecordProvider;
-use App\Sharing\Support\ShareBudget;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\SharedContent;
 use App\Sharing\Support\ShareRecordCard;

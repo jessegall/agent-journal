@@ -7,7 +7,7 @@ namespace Domain\Documents\Support\Concerns;
 use App\Comments\Support\PublicComment;
 use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
-use App\Sharing\Support\ShareBudget;
+use App\Sharing\Contracts\ShareBudget;
 use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareRecords;
