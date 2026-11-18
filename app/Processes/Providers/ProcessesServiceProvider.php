@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Processes\Providers;
 
 use App\Links\Support\LinkTypeRegistry;
+use App\Processes\Classification\TreeClassifier;
 use App\Processes\Console\ExplainCommandTypeCommand;
+use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Models\CommandAlias;
@@ -23,6 +25,7 @@ final class ProcessesServiceProvider extends ServiceProvider
     {
         $this->app->singleton(ShellCommandParser::class, ShellParser::class);
         $this->app->singleton(ShellSyntax::class, TreeParser::class);
+        $this->app->scoped(CommandClassifier::class, TreeClassifier::class);
     }
 
     public function boot(LinkTypeRegistry $links): void

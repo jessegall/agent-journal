@@ -50,7 +50,7 @@ final readonly class CommandCatalog
         }
 
         if (self::startsWithAny($words, self::TEST_RUNS)) {
-            return CommandType::TestRun;
+            return CommandType::Verification;
         }
 
         if (self::startsWithAny($words, self::BUILDS)) {
