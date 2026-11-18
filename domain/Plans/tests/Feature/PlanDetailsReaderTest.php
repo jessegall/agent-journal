@@ -16,6 +16,7 @@ use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
 
 /**
  * A plan read counts progress as every plan list does, sees a task finish on the next read, and pages a large plan's
@@ -55,6 +56,7 @@ final class PlanDetailsReaderTest extends TestCase
         $this->assertSame(2, $reader->plan($plan->id, PlanView::Summary)->progress->done);
     }
 
+    #[TimeLimit(seconds: 5, reason: 'It builds 120 tasks in one plan and reads them in three pages.')]
     public function test_a_plan_with_120_tasks_pages_them_50_at_a_time(): void
     {
         $plan = Plan::factory()->create();
