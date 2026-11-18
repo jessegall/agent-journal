@@ -6,12 +6,14 @@ namespace Tests\Feature\Mcp;
 
 use Symfony\Component\Process\InputStream;
 use Symfony\Component\Process\Process;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
  * php artisan mcp:relay as a launched program runs it: a child process on stdio, posting each frame as one signed call
  * to a stand-in journal (tests/Fixtures/Mcp/relay-server.php) and writing each answer back as one line.
  */
+#[TimeLimit(seconds: 15, reason: 'It starts the relay and a stand-in journal as child processes, and one stand-in call waits two seconds.')]
 final class RelayTest extends TestCase
 {
     private const float WAIT_SECONDS = 15.0;

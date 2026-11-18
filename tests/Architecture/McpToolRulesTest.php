@@ -129,7 +129,7 @@ final class McpToolRulesTest extends TestCase
                     array_push($found, ...$this->toolViolations(new ReflectionClass($class)));
                 }
 
-                if (is_subclass_of($class, Resource::class) && ! is_subclass_of($class, JournalResource::class)) {
+                if (is_subclass_of($class, Resource::class) && ! is_a($class, JournalResource::class, true)) {
                     $found[] = "{$class} does not extend JournalResource";
                 }
             }

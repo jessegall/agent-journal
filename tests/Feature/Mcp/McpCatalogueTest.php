@@ -27,12 +27,18 @@ use Tests\TestCase;
  */
 final class McpCatalogueTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->app->instance(AgentContext::class, new AgentContext('agent-1', 'session-1', 'main', new SignedCall('call-1', CarbonImmutable::now(), 'digest'), null));
+    }
+
     public function test_a_domain_tool_appears_in_tools_list(): void
     {
         $catalogue = new McpCatalogue;
         DomainRegistry::from([LedgerDomain::class])->registerMcpToolsIn($catalogue);
         $this->app->instance(McpCatalogue::class, $catalogue);
-        $this->app->instance(AgentContext::class, new AgentContext('agent-1', 'session-1', 'main', new SignedCall('call-1', CarbonImmutable::now(), 'digest'), null));
         $this->mock(LaunchReadiness::class)->shouldReceive('recordDiscovery')->once();
 
         JournalServer::tools()->assertRegistered(LedgerReadTool::class);
