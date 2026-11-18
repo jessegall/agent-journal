@@ -57,7 +57,9 @@ trait InstallsCommandModules
      */
     protected function installCommandRegistry(array $alsoRequired = [], MiddlewareDeclaration ...$extraNotesMiddleware): void
     {
-        $owners = array_map(fn (DomainEntry $entry) => $entry->commandOwner(), $this->domainsWith(CardsDomain::class, LedgerDomain::class, NotesDomain::class)->all());
+        $domains = $this->domainsWith(CardsDomain::class, LedgerDomain::class, NotesDomain::class);
+        $this->app->instance(DomainRegistry::class, $domains);
+        $owners = array_map(fn (DomainEntry $entry) => $entry->commandOwner(), $domains->all());
         $owners = array_map(fn (CommandOwner $owner) => $owner->domainClass === NotesDomain::class
             ? new CommandOwner($owner->name, $owner->namespace, $owner->domainClass, $owner->commands, [...$owner->middleware, ...$extraNotesMiddleware], [...$owner->requires, ...$alsoRequired], $owner->exports)
             : $owner, $owners);
@@ -74,7 +76,9 @@ trait InstallsCommandModules
      */
     protected function bootModules(string ...$moduleClasses): void
     {
-        $this->app->instance(CommandRegistry::class, $this->domainsWith(...$moduleClasses)->commandDeclarations(CoreCommands::owner()));
+        $domains = $this->domainsWith(...$moduleClasses);
+        $this->app->instance(DomainRegistry::class, $domains);
+        $this->app->instance(CommandRegistry::class, $domains->commandDeclarations(CoreCommands::owner()));
 
         foreach ($moduleClasses as $moduleClass) {
             DomainEntry::fromClass($moduleClass)->boot($this->app);

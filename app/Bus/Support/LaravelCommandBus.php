@@ -12,7 +12,7 @@ use Illuminate\Contracts\Container\Container;
 
 /**
  * The command bus of one request: a Laravel dispatcher of its own, built with this request's container, mapped to
- * the registered handlers and piped only through MiddlewareRunner. The shared dispatcher keeps the container it was
+ * the registered handlers and piped only through MiddlewareRunner. A handler is built only when its command reaches it. The shared dispatcher keeps the container it was
  * booted with under Octane, so commands never go through it.
  */
 final readonly class LaravelCommandBus implements CommandBus
@@ -20,6 +20,7 @@ final readonly class LaravelCommandBus implements CommandBus
     private function __construct(
         private Dispatcher $dispatcher,
         private CommandRegistry $registry,
+        private Container $container,
     ) {}
 
     /**
@@ -31,7 +32,7 @@ final readonly class LaravelCommandBus implements CommandBus
         $dispatcher->map($registry->handlerMap());
         $dispatcher->pipeThrough([$container->make(MiddlewareRunner::class)]);
 
-        return new self($dispatcher, $registry);
+        return new self($dispatcher, $registry, $container);
     }
 
     public function run(Command $command): mixed
@@ -40,7 +41,7 @@ final readonly class LaravelCommandBus implements CommandBus
             throw CommandNotRegistered::for($command::class);
         }
 
-        return $this->dispatcher->dispatchSync($command);
+        return $this->dispatcher->dispatchSync($command, new DeferredCommandHandler($this->container, $this->registry->handlerOf($command::class)));
     }
 
     /**
