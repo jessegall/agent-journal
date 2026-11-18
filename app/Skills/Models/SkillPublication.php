@@ -347,6 +347,18 @@ final class SkillPublication extends Model implements ReadableModel
     }
 
     /**
+     * The session's newest publication, or null when none was asked for it.
+     */
+    public static function latestOfSession(string $sessionId): self|null
+    {
+        return self::query()
+            ->where('session_id', $sessionId)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->first();
+    }
+
+    /**
      * The newest publication of every session, for a user's status.
      *
      * @return list<self>

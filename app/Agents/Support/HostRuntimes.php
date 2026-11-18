@@ -15,11 +15,6 @@ final readonly class HostRuntimes
     /**
      * Hands a runtime's launch credential to its own host, once.
      */
-    public function claimLaunchGrant(string $hostId, string $runtimeId): string|null
-    {
-        return $this->lockedFor($hostId, $runtimeId)->claimLaunchGrant();
-    }
-
     public function lockedFor(string $hostId, string $runtimeId): AgentRuntime
     {
         $runtime = AgentRuntime::query()->whereKey($runtimeId)->lockForUpdate()->first();

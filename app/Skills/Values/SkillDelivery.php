@@ -5,19 +5,18 @@ declare(strict_types=1);
 namespace App\Skills\Values;
 
 /**
- * Where a program discovers a launch's skills, the arguments its launch adds so it does, and the links its isolated
- * settings folder needs: typed values, never shell text.
+ * Where the host writes a launch's skill set and what the launch adds so the program finds it: a folder inside the
+ * launch's isolated settings folder, and the arguments that come right before that folder's absolute path. Typed
+ * values, never shell text.
  */
 final readonly class SkillDelivery
 {
     /**
-     * @param  list<string>  $launchArguments
-     * @param  array<string, string>  $settingsLinks  the target each link in the launch's settings folder points at, by
-     *                                                link name
+     * @param  list<string>  $folderArguments  the arguments the host puts before the folder's path, none when the
+     *                                         program finds the folder by itself
      */
     public function __construct(
-        public string $target,
-        public array $launchArguments,
-        public array $settingsLinks,
+        public string $folder,
+        public array $folderArguments,
     ) {}
 }

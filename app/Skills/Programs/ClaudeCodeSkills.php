@@ -7,25 +7,22 @@ namespace App\Skills\Programs;
 use App\Programs\Enums\HookProgram;
 use App\Skills\Contracts\ProgramSkills;
 use App\Skills\Enums\SkillReload;
-use App\Skills\Support\SkillTargets;
-use App\Skills\Values\LaunchSkillSet;
 use App\Skills\Values\PublishedSkill;
 use App\Skills\Values\SkillDelivery;
 use App\Skills\Values\SkillKey;
 
 /**
  * Claude Code 2.1.323 finds a session's skills in a plugin folder passed with --plugin-dir, the only route that works
- * with the journal's empty setting sources (report 171). It lists them at start only.
+ * with the journal's empty setting sources (report 171). The host writes that folder inside the launch's isolated
+ * settings folder; the program lists its skills at start only.
  */
 final readonly class ClaudeCodeSkills implements ProgramSkills
 {
     public const string PLUGIN_NAME = 'journal-session-skills';
 
-    private const string SKILL_TOOL = 'Skill';
+    public const string FOLDER = 'journal-skills';
 
-    public function __construct(
-        private SkillTargets $targets,
-    ) {}
+    private const string SKILL_TOOL = 'Skill';
 
     public function skillFile(SkillKey $key): string
     {
@@ -43,11 +40,9 @@ final readonly class ClaudeCodeSkills implements ProgramSkills
         return ['.claude-plugin/plugin.json' => json_encode($plugin, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT)."\n"];
     }
 
-    public function delivery(LaunchSkillSet $skills): SkillDelivery
+    public function delivery(): SkillDelivery
     {
-        $target = $this->targets->targetFor($skills->sessionId, HookProgram::ClaudeCode->programKey());
-
-        return new SkillDelivery($target, ['--plugin-dir', $target], []);
+        return new SkillDelivery(self::FOLDER, ['--plugin-dir']);
     }
 
     /**

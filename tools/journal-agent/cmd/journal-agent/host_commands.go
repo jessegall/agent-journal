@@ -196,7 +196,7 @@ func openMainRuntime(stateFolder, agentID, folder, program, hookCommand string) 
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
-	credential, err := journal.LaunchGrant(ctx, opened.RuntimeID)
+	grant, err := journal.LaunchGrant(ctx, opened.RuntimeID)
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
@@ -212,8 +212,13 @@ func openMainRuntime(stateFolder, agentID, folder, program, hookCommand string) 
 	if err != nil {
 		return host.AttachRequest{}, err
 	}
+	folderArguments, err := host.WriteLaunchFolders(launch.SettingsFolder, grant.Folders)
+	if err != nil {
+		return host.AttachRequest{}, err
+	}
+	launchArguments = append(launchArguments, folderArguments...)
 	environment := append(profile.Environment(drivers.WithoutJournalVariables(os.Environ()), launch),
-		"JOURNAL_URL="+journal.JournalURL(), "JOURNAL_LAUNCH_TOKEN="+credential, "JOURNAL_PROCESS_GENERATION=1")
+		"JOURNAL_URL="+journal.JournalURL(), "JOURNAL_LAUNCH_TOKEN="+grant.Token, "JOURNAL_PROCESS_GENERATION=1")
 	return host.AttachRequest{RuntimeID: opened.RuntimeID, Command: append([]string{profile.Program()}, launchArguments...), Folder: absolute, Env: environment}, nil
 }
 

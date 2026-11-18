@@ -39,6 +39,7 @@ use App\Agents\Models\DriverTurn;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\EnrolledHost;
+use App\Agents\Support\LaunchGrant;
 use App\Agents\Support\NativeTurns;
 use App\Agents\Support\OpenedRuntime;
 use App\Bus\Contracts\Command;
@@ -174,7 +175,8 @@ final class AgentDriverLedgerTest extends TestCase
         $first = $this->asSystem(new ClaimLaunchGrant($host->hostId, $opened->runtimeId));
         $second = $this->asSystem(new ClaimLaunchGrant($host->hostId, $opened->runtimeId));
 
-        $this->assertIsString($first);
+        $this->assertInstanceOf(LaunchGrant::class, $first);
+        $this->assertNotSame('', $first->token);
         $this->assertNull($second);
     }
 

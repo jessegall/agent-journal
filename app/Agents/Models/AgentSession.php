@@ -44,6 +44,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $profile_key
  * @property int|null $profile_revision
  * @property string $launch_request_id
+ * @property string|null $skill_generation_id
  * @property SessionStatus $status
  * @property CarbonImmutable|null $ended_at
  * @property CarbonImmutable|null $last_heartbeat_at
@@ -66,6 +67,7 @@ use Illuminate\Support\Carbon;
     'profile_key',
     'profile_revision',
     'launch_request_id',
+    'skill_generation_id',
 ])]
 final class AgentSession extends Model implements ReadableModel
 {
@@ -139,6 +141,15 @@ final class AgentSession extends Model implements ReadableModel
             $requested,
             new SelectionSource($this->program_source, $this->profile_key, $this->profile_revision),
         );
+    }
+
+    /**
+     * Records the skill generation the session's program was spawned with.
+     */
+    public function recordSkillGeneration(string $generationId): void
+    {
+        $this->skill_generation_id = $generationId;
+        $this->save();
     }
 
     public function enterConversation(ProgramConversation $conversation): void

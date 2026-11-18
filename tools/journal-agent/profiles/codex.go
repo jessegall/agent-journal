@@ -72,12 +72,39 @@ func (Codex) Arguments(launch contracts.Launch) ([]string, error) {
 	for _, feature := range codexAgentFeatures {
 		arguments = append(arguments, "-c", "features."+feature+"=false")
 	}
+	if userSkills := userHomeSkillsSwitchedOff(); userSkills != "" {
+		arguments = append(arguments, "-c", userSkills)
+	}
 
 	if launch.Prompt != "" {
 		arguments = append(arguments, launch.Prompt)
 	}
 
 	return arguments, nil
+}
+
+// userHomeSkillsSwitchedOff is the setting that turns off every skill in the person's own ~/.agents/skills, which
+// codex-cli 0.165.0 offers whatever CODEX_HOME is (report 171); empty when there is none.
+func userHomeSkillsSwitchedOff() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	return skillsSwitchedOff(filepath.Join(home, ".agents", "skills"))
+}
+
+// skillsSwitchedOff lists each SKILL.md under the folder as a disabled skills.config entry.
+func skillsSwitchedOff(folder string) string {
+	files, err := filepath.Glob(filepath.Join(folder, "*", "SKILL.md"))
+	if err != nil || len(files) == 0 {
+		return ""
+	}
+	entries := make([]string, 0, len(files))
+	for _, file := range files {
+		path, _ := json.Marshal(file)
+		entries = append(entries, "{path="+string(path)+", enabled=false}")
+	}
+	return "skills.config=[" + strings.Join(entries, ", ") + "]"
 }
 
 // Environment points Codex at the isolated home and drops inherited Codex variables; the login is a link in the isolated home,
