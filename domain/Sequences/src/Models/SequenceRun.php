@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Sequences\Models;
 
-use App\Agents\Support\StackTarget;
-use App\Hooks\Models\Support\BelongsToOneAgent;
+use App\Actors\Models\Support\BelongsToOneActor;
+use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
@@ -30,15 +30,15 @@ use Illuminate\Support\Carbon;
  * @property list<string> $steps
  * @property int $current_step
  * @property SequenceRunState $state
- * @property string|null $agent_id
- * @property string|null $session_id
+ * @property string|null $actor_type
+ * @property string|null $actor_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'steps'])]
 final class SequenceRun extends Model implements Numbered, ReadableModel
 {
-    use BelongsToOneAgent, HasNumber, HasUlids;
+    use BelongsToOneActor, HasNumber, HasUlids;
     use BoundedReads;
     use Linkable;
 
@@ -64,16 +64,15 @@ final class SequenceRun extends Model implements Numbered, ReadableModel
      */
     public static function lockedById(string $id): self
     {
-        // A run belongs to no agent until it is started, so its start may also take a run nobody follows yet.
+        // A run belongs to no actor until it is started, so its start may also take a run nobody follows yet.
         return self::lockedForActorOrUnheld($id) ?? throw SequenceRunMissing::forId($id);
     }
 
-    public function startFor(StackTarget $target): void
+    public function startFor(ActorIdentity $follower): void
     {
         $this->current_step = 1;
         $this->state = SequenceRunState::Running;
-        $this->agent_id = $target->agentId;
-        $this->session_id = $target->sessionId;
+        $this->belongTo($follower);
         $this->save();
     }
 

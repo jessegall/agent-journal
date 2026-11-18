@@ -19,13 +19,13 @@ return new class extends Migration
             $table->jsonb('steps');
             $table->unsignedInteger('current_step')->default(1);
             $table->string('state', 16)->default('running');
-            $table->ulid('agent_id')->nullable();
-            $table->ulid('session_id')->nullable();
+            $table->string('actor_type', 16)->nullable();
+            $table->string('actor_id')->nullable();
             $table->timestampsTz();
 
             $table->unique(['number_group_id', 'number']);
 
-            $table->index(['agent_id', 'session_id']);
+            $table->index(['actor_type', 'actor_id']);
         });
 
         DB::statement('ALTER TABLE sequence_runs ADD CONSTRAINT sequence_runs_number_positive CHECK (number > 0)');

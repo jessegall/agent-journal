@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Enums\RewriteSupport;
@@ -116,6 +118,6 @@ final class HookCompactionTest extends TestCase
 
     private function remember(string $text, int $weight): void
     {
-        (new Memory(['text' => $text, 'weight' => $weight]))->saveFor(TestIds::of(1));
+        (new Memory(['text' => $text, 'weight' => $weight]))->saveFor(new ActorIdentity(ActorType::Agent, TestIds::of(1)));
     }
 }

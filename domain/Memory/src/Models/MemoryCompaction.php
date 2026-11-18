@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Models;
 
-use App\Agents\Support\StackTarget;
+use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -19,13 +19,13 @@ use Illuminate\Support\Carbon;
  * same compaction changes nothing.
  *
  * @property string $id
- * @property string $agent_id
- * @property string $session_id
- * @property string $compaction_id
+ * @property string $actor_type
+ * @property string $actor_id
+ * @property string $compaction_key the id the agent program gave the compaction, not a row reference
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
-#[Fillable(['agent_id', 'session_id', 'compaction_id'])]
+#[Fillable(['actor_type', 'actor_id', 'compaction_key'])]
 final class MemoryCompaction extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -34,15 +34,15 @@ final class MemoryCompaction extends Model implements ReadableModel
     /**
      * Records the compaction the first time it is seen; answers whether this was the first time.
      */
-    public static function recordOnce(StackTarget $target, string $compactionId): bool
+    public static function recordOnce(ActorIdentity $actor, string $compactionId): bool
     {
         $now = CarbonImmutable::now();
 
         return self::query()->insertOrIgnore([
             'id' => (new self)->newUniqueId(),
-            'agent_id' => $target->agentId,
-            'session_id' => $target->sessionId,
-            'compaction_id' => $compactionId,
+            'actor_type' => $actor->type->value,
+            'actor_id' => $actor->id,
+            'compaction_key' => $compactionId,
             'created_at' => $now,
             'updated_at' => $now,
         ]) === 1;

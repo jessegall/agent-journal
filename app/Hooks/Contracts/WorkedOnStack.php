@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace App\Hooks\Contracts;
 
-use App\Agents\Support\StackTarget;
-use PhpOption\Option;
+use App\Hooks\Decisions\StateReference;
 
 /**
- * A record an agent works on through a frame on its stack, such as a task or a question it must answer.
+ * A record an actor works on through a frame on its stack, such as a task or a question it must answer. The record
+ * names only the state it is worked under; the stacks holding that state are found when its work ends.
  */
 interface WorkedOnStack
 {
     /**
-     * The stack the record is worked on; none while no agent works on it.
-     *
-     * @return Option<StackTarget>
+     * The state a frame holds while the record is worked on, for its current run.
      */
-    public function workTarget(): Option;
+    public function workState(): StateReference;
 }

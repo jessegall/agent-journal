@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
-use App\Agents\Support\StackTarget;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\RecordIdentity;
@@ -20,6 +19,7 @@ use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 use Domain\Tasks\Support\TaskWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -39,8 +39,6 @@ use PhpOption\Some;
  * @property string $title
  * @property TaskState $state
  * @property int $run_number
- * @property string|null $agent_id
- * @property string|null $session_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -80,25 +78,23 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
     }
 
     /**
-     * The stack the task is worked on, from the agent and session that started it; none for a task never started.
+     * The state a frame holds while this run of the task is worked on.
      */
-    public function workTarget(): Option
+    public function workState(): StateReference
     {
-        return $this->agent_id === null || $this->session_id === null ? None::create() : new Some(new StackTarget($this->agent_id, $this->session_id));
+        return WorkingOnTaskStateReference::forTask($this);
     }
 
     /**
-     * Starts a new run for the target; a task that is already started keeps its run.
+     * Starts a new run; a task that is already started keeps its run.
      */
-    public function startFor(StackTarget $target): void
+    public function start(): void
     {
         if ($this->state !== TaskState::Started) {
             $this->run_number++;
         }
 
         $this->state = TaskState::Started;
-        $this->agent_id = $target->agentId;
-        $this->session_id = $target->sessionId;
         $this->save();
     }
 

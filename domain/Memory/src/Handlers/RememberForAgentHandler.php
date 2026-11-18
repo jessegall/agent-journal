@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Handlers;
 
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use Domain\Memory\Commands\RememberForAgent;
 use Domain\Memory\Models\Memory;
@@ -13,7 +15,7 @@ final readonly class RememberForAgentHandler implements CommandHandler
     public function handle(RememberForAgent $command): string
     {
         $memory = new Memory(['text' => $command->text, 'weight' => $command->weight]);
-        $memory->saveFor($command->agentId);
+        $memory->saveFor(new ActorIdentity(ActorType::Agent, $command->agentId));
 
         return $memory->id;
     }

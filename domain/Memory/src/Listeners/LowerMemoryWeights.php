@@ -19,7 +19,7 @@ final readonly class LowerMemoryWeights implements Listener
     {
         $this->memories->lowerWeightsOnce($event->target, $event->compactionId);
 
-        foreach ($this->memories->remindersFor($event->target->agentId) as $reminder) {
+        foreach ($this->memories->remindersFor($event->target->actorIdentity()) as $reminder) {
             $event->reminders->add($reminder);
         }
     }

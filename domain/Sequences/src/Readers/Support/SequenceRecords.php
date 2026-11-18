@@ -34,6 +34,6 @@ final readonly class SequenceRecords
      */
     public function followedBy(StackTarget $target, string $runId): SequenceRun
     {
-        return SequenceRun::query()->ownedBy($target->agentId)->find($runId) ?? throw SequenceRunMissing::forId($runId);
+        return SequenceRun::query()->ownedBy($target->actorIdentity())->find($runId) ?? throw SequenceRunMissing::forId($runId);
     }
 }

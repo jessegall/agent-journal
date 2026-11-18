@@ -33,7 +33,7 @@ final class SequenceStateContributionTest extends TestCase
 
         $this->app->make(CommandBus::class)->run(new StartSequence($run->id, $this->target->sessionId));
 
-        $this->assertSame([SequenceRunState::Running, 1, TestIds::of(1), TestIds::of(10)], [$run->fresh()?->state, $run->fresh()?->current_step, $run->fresh()?->agent_id, $run->fresh()?->session_id]);
+        $this->assertSame([SequenceRunState::Running, 1, 'agent', TestIds::of(1)], [$run->fresh()?->state, $run->fresh()?->current_step, $run->fresh()?->actor_type, $run->fresh()?->actor_id]);
         $this->assertSame(['hooks.main_ready', 'sequences.following'], $this->storedTypeKeys());
     }
 
@@ -46,7 +46,7 @@ final class SequenceStateContributionTest extends TestCase
             $this->app->make(CommandBus::class)->run(new StartSequence($run->id, $this->target->sessionId));
             $this->fail('The start went through without its push.');
         } catch (StackAlreadyClosed) {
-            $this->assertNull($run->fresh()?->agent_id);
+            $this->assertNull($run->fresh()?->actor_id);
         }
     }
 

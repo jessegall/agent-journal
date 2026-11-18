@@ -43,12 +43,10 @@ use Illuminate\Support\Carbon;
  * @property string $body
  * @property ActorType $creator_type
  * @property string $creator_id
- * @property string|null $origin_agent_id
- * @property string|null $origin_session_id
  * @property Carbon $filed_at
  * @property AttentionState $attention
  */
-#[Fillable(['title', 'abstract', 'body', 'creator_type', 'creator_id', 'origin_agent_id', 'origin_session_id', 'filed_at'])]
+#[Fillable(['title', 'abstract', 'body', 'creator_type', 'creator_id', 'filed_at'])]
 final class Report extends Model implements Commentable, Numbered, ReadableModel, TextContent
 {
     use BoundedReads, CreatedWithAttention, HasComments, HasNumber, HasUlids, Linkable, SearchesText, Settles;
@@ -79,7 +77,6 @@ final class Report extends Model implements Commentable, Numbered, ReadableModel
             'body' => $body->text,
             'creator_type' => $author->actorType(),
             'creator_id' => $author->actorId(),
-            'origin_agent_id' => $author->actorType() === ActorType::Agent ? $author->actorId() : null,
             'filed_at' => CarbonImmutable::now(),
         ]);
     }

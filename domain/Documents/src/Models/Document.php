@@ -44,13 +44,11 @@ use Illuminate\Support\Carbon;
  * @property int $number
  * @property ActorType $creator_type
  * @property string $creator_id
- * @property string|null $origin_agent_id
- * @property string|null $origin_session_id
  * @property AttentionState $attention
  * @property string|null $current_revision_id
  * @property Carbon|null $created_at
  */
-#[Fillable(['creator_type', 'creator_id', 'origin_agent_id', 'origin_session_id'])]
+#[Fillable(['creator_type', 'creator_id'])]
 final class Document extends Model implements Commentable, Numbered, ReadableModel, TextContent
 {
     use BoundedReads, CreatedWithAttention, HasComments, HasNumber, HasUlids, Linkable, Settles;
@@ -77,7 +75,6 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
         $document = self::query()->create([
             'creator_type' => $author->actorType(),
             'creator_id' => $author->actorId(),
-            'origin_agent_id' => $author->actorType() === ActorType::Agent ? $author->actorId() : null,
         ]);
         $document->addRevision($title, $abstract, $body->text, $author->actorType(), $author->actorId(), null);
 
