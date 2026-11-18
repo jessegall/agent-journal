@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { RecordPageData } from '@generated/types/documents';
-import CommentsPanel from './CommentsPanel.vue';
+import CommentsPanel from '@kit/CommentsPanel';
 import DockToSession from './DockToSession.vue';
 import LinksPanel from './LinksPanel.vue';
 import RecordStatus from './RecordStatus.vue';
