@@ -1,0 +1,121 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Skills\Models;
+
+use App\Links\Support\Linkable;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
+use App\Skills\Enums\GenerationState;
+use App\Skills\Exceptions\SkillGenerationImmutable;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
+
+/**
+ * One checked rendering of the whole catalogue: the digests it was made from and every entry's rendered bytes, kept
+ * until it is retired. The files on disk are a projection of it. Its entries never change once it is ready.
+ *
+ * @property string $id
+ * @property string $catalogue_digest
+ * @property string $registration_digest
+ * @property list<array{key: string, owner: string, revision: int|null, markdown: string, digest: string}> $entries
+ * @property GenerationState $state
+ * @property string|null $error_reason
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
+#[Fillable(['catalogue_digest', 'registration_digest', 'entries', 'state', 'error_reason'])]
+final class SkillGeneration extends Model implements ReadableModel
+{
+    use BoundedReads, HasUlids, Linkable;
+
+    public const string LINK_TYPE = 'core.skill-generation';
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'entries' => 'array',
+            'state' => GenerationState::class,
+        ];
+    }
+
+    protected static function booted(): void
+    {
+        static::updating(function (self $generation): void {
+            if ($generation->isDirty(['entries', 'catalogue_digest', 'registration_digest'])) {
+                throw SkillGenerationImmutable::for($generation->id);
+            }
+        });
+    }
+
+    /**
+     * @param  list<array{key: string, owner: string, revision: int|null, markdown: string, digest: string}>  $entries
+     */
+    public static function ready(string $catalogueDigest, string $registrationDigest, array $entries): self
+    {
+        return self::query()->create(['catalogue_digest' => $catalogueDigest, 'registration_digest' => $registrationDigest, 'entries' => $entries, 'state' => GenerationState::Ready]);
+    }
+
+    /**
+     * A generation that could not be made, with the owner and key that stopped it; it holds no entries.
+     */
+    public static function failed(string $registrationDigest, string $reason): self
+    {
+        return self::query()->create(['catalogue_digest' => '', 'registration_digest' => $registrationDigest, 'entries' => [], 'state' => GenerationState::Failed, 'error_reason' => $reason]);
+    }
+
+    /**
+     * The newest ready generation, or null before the first refresh.
+     */
+    public static function latestReady(): ?self
+    {
+        return self::query()->inState(GenerationState::Ready)->orderByDesc('created_at')->orderByDesc('id')->first();
+    }
+
+    /**
+     * The newest generation of any state, for status.
+     */
+    public static function latest(): ?self
+    {
+        return self::query()->orderByDesc('created_at')->orderByDesc('id')->first();
+    }
+
+    public function retire(): void
+    {
+        $this->state = GenerationState::Retired;
+        $this->save();
+    }
+
+    /**
+     * The entry of this key, or null when the generation holds none.
+     *
+     * @return array{key: string, owner: string, revision: int|null, markdown: string, digest: string}|null
+     */
+    public function entry(string $key): ?array
+    {
+        foreach ($this->entries as $entry) {
+            if ($entry['key'] === $key) {
+                return $entry;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inState(Builder $query, GenerationState $state): void
+    {
+        $query->where('state', $state->value);
+    }
+}
