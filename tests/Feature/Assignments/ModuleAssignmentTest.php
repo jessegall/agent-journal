@@ -9,17 +9,14 @@ use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentReader;
-use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\RecordUnavailable;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
-use App\Domains\Support\DomainRegistry;
+use App\Domains\Support\DomainEntry;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Domain\Rules\RulesDomain;
 use Illuminate\Support\Facades\Schema;
-use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
@@ -119,7 +116,7 @@ final class ModuleAssignmentTest extends TestCase
     private function installNotes(): void
     {
         $this->app->register(NotesServiceProvider::class);
-        DomainRegistry::from([CardsDomain::class, RulesDomain::class, NotesDomain::class])->registerAssignmentsIn($this->app->make(AssignmentRegistration::class));
+        DomainEntry::fromClass(NotesDomain::class)->boot($this->app);
     }
 
     /**

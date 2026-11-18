@@ -6,11 +6,14 @@ namespace Domain\Access;
 
 use App\Actors\Enums\ActorType;
 use App\Assignments\Support\AssigneeRegistration;
+use App\Domains\Bootstrappers\LoadMigrations;
+use App\Domains\Bootstrappers\RegisterAssignables;
 use App\Domains\Contracts\Domain;
 use App\Domains\Contracts\ProvidesAssignees;
+use App\Domains\Contracts\ProvidesBootstrappers;
 use Domain\Access\Support\UserAssignees;
 
-final class AccessDomain implements Domain, ProvidesAssignees
+final class AccessDomain implements Domain, ProvidesAssignees, ProvidesBootstrappers
 {
     public function description(): string
     {
@@ -39,5 +42,10 @@ final class AccessDomain implements Domain, ProvidesAssignees
     public function assignees(): array
     {
         return [new AssigneeRegistration(ActorType::User, UserAssignees::class)];
+    }
+
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class, RegisterAssignables::class];
     }
 }

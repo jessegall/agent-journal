@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Domain\Rules;
 
 use App\Bus\Contracts\ProvidesCommands;
+use App\Domains\Bootstrappers\LoadMigrations;
 use App\Domains\Contracts\Domain;
+use App\Domains\Contracts\ProvidesBootstrappers;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Declarations\ActionRoute;
@@ -30,7 +32,7 @@ use Domain\Rules\Http\Controllers\ApproveRuleController;
 use Domain\Rules\Http\Controllers\DenyRuleController;
 use Domain\Rules\Readers\RulesWindowReader;
 
-final class RulesDomain implements Domain, ProvidesCommands, ProvidesNavigation, ProvidesPages
+final class RulesDomain implements Domain, ProvidesBootstrappers, ProvidesCommands, ProvidesNavigation, ProvidesPages
 {
     public function description(): string
     {
@@ -90,5 +92,10 @@ final class RulesDomain implements Domain, ProvidesCommands, ProvidesNavigation,
     public function navigation(): array
     {
         return [NavigationItem::page('list', 'Rules', Icon::Rules, group: 'Agents', position: 30)];
+    }
+
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class];
     }
 }

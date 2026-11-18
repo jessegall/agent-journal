@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace Domain\Tasks;
 
 use App\Bus\Contracts\ProvidesCommands;
+use App\Domains\Bootstrappers\LoadMigrations;
+use App\Domains\Bootstrappers\RegisterAssignables;
+use App\Domains\Bootstrappers\RegisterStates;
 use App\Domains\Contracts\Domain;
 use App\Domains\Contracts\ProvidesAssignables;
+use App\Domains\Contracts\ProvidesBootstrappers;
 use App\Domains\Contracts\ProvidesStates;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
@@ -33,7 +37,7 @@ use Domain\Tasks\Readers\TaskAssignments;
 use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 
-final class TasksDomain implements Domain, ProvidesAssignables, ProvidesCommands, ProvidesStates
+final class TasksDomain implements Domain, ProvidesAssignables, ProvidesBootstrappers, ProvidesCommands, ProvidesStates
 {
     public function description(): string
     {
@@ -89,5 +93,10 @@ final class TasksDomain implements Domain, ProvidesAssignables, ProvidesCommands
     public function assignables(): array
     {
         return [Task::LINK_TYPE => TaskAssignments::class];
+    }
+
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class, RegisterAssignables::class, RegisterStates::class];
     }
 }

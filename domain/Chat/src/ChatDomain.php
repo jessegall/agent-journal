@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Domain\Chat;
 
 use App\Bus\Contracts\ProvidesCommands;
+use App\Domains\Bootstrappers\LoadMigrations;
+use App\Domains\Bootstrappers\RegisterStates;
 use App\Domains\Contracts\Domain;
+use App\Domains\Contracts\ProvidesBootstrappers;
 use App\Domains\Contracts\ProvidesStates;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
@@ -35,7 +38,7 @@ use Domain\Chat\Readers\ChosenAgentSection;
 use Domain\Chat\States\Support\AnsweringMessageStateFactory;
 use Domain\Chat\States\Support\AnsweringMessageStateReference;
 
-final class ChatDomain implements Domain, ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesStates
+final class ChatDomain implements Domain, ProvidesBootstrappers, ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesStates
 {
     public function description(): string
     {
@@ -100,5 +103,10 @@ final class ChatDomain implements Domain, ProvidesCommands, ProvidesNavigation, 
     public function sections(): array
     {
         return [Section::make('agent', 'Agent', 'web.bar', SlotContextType::Session, ChosenAgentSection::class, 'ChosenAgent.vue')];
+    }
+
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class, RegisterStates::class];
     }
 }

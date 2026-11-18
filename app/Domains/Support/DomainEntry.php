@@ -11,8 +11,11 @@ use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Domains\Contracts\Domain;
+use App\Domains\Contracts\DomainBootstrapper;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesAssignees;
+use App\Domains\Contracts\ProvidesBootstrappers;
+use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Exceptions\DomainRequiresItself;
 use App\Domains\Exceptions\NotADomain;
 use App\Domains\Exceptions\RequiredDomainTwice;
@@ -22,6 +25,7 @@ use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Section;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Str;
 use ReflectionClass;
 
@@ -221,6 +225,36 @@ final readonly class DomainEntry
     public function assignables(): array
     {
         return $this->domain instanceof ProvidesAssignables ? $this->domain->assignables() : [];
+    }
+
+    /**
+     * The steps this domain runs as the application boots, in order; none when it declares no ProvidesBootstrappers.
+     *
+     * @return list<class-string<DomainBootstrapper>>
+     */
+    public function bootstrappers(): array
+    {
+        return $this->domain instanceof ProvidesBootstrappers ? $this->domain->bootstrappers() : [];
+    }
+
+    /**
+     * Runs this domain's bootstrappers one by one, each built by the container.
+     */
+    public function boot(Container $container): void
+    {
+        foreach ($this->bootstrappers() as $bootstrapper) {
+            $container->make($bootstrapper)($this);
+        }
+    }
+
+    /**
+     * The agent states this domain declares, each type key with its factory; none when it declares no ProvidesStates.
+     *
+     * @return array<string, class-string>
+     */
+    public function states(): array
+    {
+        return $this->domain instanceof ProvidesStates ? $this->domain->states() : [];
     }
 
     /**

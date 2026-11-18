@@ -533,6 +533,7 @@ class	LinkAccess
 class	LinkTypeRegistry
 class	LinkTypeRenames
 class	LinkTypeRepeated
+class	LoadMigrations
 class	LockingNumberAllocator
 class	LogCommand
 class	LoggedBypass
@@ -686,6 +687,9 @@ class	RecordedAnswer
 class	RecordedAnswerCast
 class	RecordedSteps
 class	RecordedStepsCast
+class	RegisterAssignables
+class	RegisterNumberedModels
+class	RegisterStates
 class	RegisteredAction
 class	RegisteredCommand
 class	RegisteredMiddleware
@@ -1057,6 +1061,7 @@ interface	CurrentActor
 interface	CurrentActorSetter
 interface	CurrentUserReader
 interface	Domain
+interface	DomainBootstrapper
 interface	Event
 interface	HookAnswerer
 interface	HookInput
@@ -1072,6 +1077,7 @@ interface	ProgramAdapter
 interface	ProgramCall
 interface	ProvidesAssignables
 interface	ProvidesAssignees
+interface	ProvidesBootstrappers
 interface	ProvidesCommandMiddleware
 interface	ProvidesCommands
 interface	ProvidesNavigation
@@ -1098,6 +1104,7 @@ interface	UpdatesUserInterface
 interface	UserStack
 interface	VisibilityCheck
 method	AccessDomain::assignees()
+method	AccessDomain::bootstrappers()
 method	AccessDomain::description()
 method	AccessDomain::exports()
 method	AccessDomain::requires()
@@ -1496,6 +1503,7 @@ method	CancelTask::__construct()
 method	CancelTaskHandler::__construct()
 method	CancelTaskHandler::handle()
 method	ChatData::__construct()
+method	ChatDomain::bootstrappers()
 method	ChatDomain::commands()
 method	ChatDomain::description()
 method	ChatDomain::exports()
@@ -1736,10 +1744,13 @@ method	DocblockTypeCollector::resolved()
 method	Domain::description()
 method	Domain::exports()
 method	Domain::requires()
+method	DomainBootstrapper::__invoke()
 method	DomainCycle::for()
 method	DomainEntry::__construct()
 method	DomainEntry::assignables()
 method	DomainEntry::assignees()
+method	DomainEntry::boot()
+method	DomainEntry::bootstrappers()
 method	DomainEntry::checkedRequirements()
 method	DomainEntry::className()
 method	DomainEntry::commandMiddleware()
@@ -1760,6 +1771,7 @@ method	DomainEntry::ownsEvent()
 method	DomainEntry::ownsName()
 method	DomainEntry::requiresDomain()
 method	DomainEntry::scriptFolder()
+method	DomainEntry::states()
 method	DomainEntry::ui()
 method	DomainFiles::allIn()
 method	DomainFiles::domainCode()
@@ -1775,9 +1787,6 @@ method	DomainRegistry::get()
 method	DomainRegistry::has()
 method	DomainRegistry::listenerFolders()
 method	DomainRegistry::refuseCycleFrom()
-method	DomainRegistry::registerAssignmentsIn()
-method	DomainRegistry::registerNumberedModelsIn()
-method	DomainRegistry::registerStatesIn()
 method	DomainRegistry::uiDeclarations()
 method	DomainRequiresItself::for()
 method	DomainServiceProvider::boot()
@@ -2078,6 +2087,8 @@ method	Linkable::isLinkedTo()
 method	Linkable::linkTo()
 method	Linkable::links()
 method	Linkable::unlinkFrom()
+method	LoadMigrations::__construct()
+method	LoadMigrations::__invoke()
 method	LockingNumberAllocator::__construct()
 method	LockingNumberAllocator::allocate()
 method	LockingNumberAllocator::lockedGroup()
@@ -2099,6 +2110,7 @@ method	MainAgentReadyState::onShellCommand()
 method	Memory::casts()
 method	Memory::saveFor()
 method	MemoryCompaction::recordOnce()
+method	MemoryDomain::bootstrappers()
 method	MemoryDomain::description()
 method	MemoryDomain::exports()
 method	MemoryDomain::requires()
@@ -2356,6 +2368,7 @@ method	PlanWindowReader::read()
 method	PlanWorkResultData::__construct()
 method	PlanWorkResultData::of()
 method	PlansDomain::assignables()
+method	PlansDomain::bootstrappers()
 method	PlansDomain::commands()
 method	PlansDomain::description()
 method	PlansDomain::exports()
@@ -2371,6 +2384,7 @@ method	PlansWindowReader::__construct()
 method	PlansWindowReader::read()
 method	PreToolBody::__construct()
 method	PreToolOutput::__construct()
+method	ProcessesDomain::bootstrappers()
 method	ProcessesDomain::description()
 method	ProcessesDomain::exports()
 method	ProcessesDomain::requires()
@@ -2422,6 +2436,7 @@ method	ProposeRule::__construct()
 method	ProposeRuleHandler::handle()
 method	ProvidesAssignables::assignables()
 method	ProvidesAssignees::assignees()
+method	ProvidesBootstrappers::bootstrappers()
 method	ProvidesCommandMiddleware::commandMiddleware()
 method	ProvidesCommands::commands()
 method	ProvidesNavigation::navigation()
@@ -2544,6 +2559,12 @@ method	RecordedSteps::of()
 method	RecordedStepsCast::get()
 method	RecordedStepsCast::set()
 method	Refusal::reason()
+method	RegisterAssignables::__construct()
+method	RegisterAssignables::__invoke()
+method	RegisterNumberedModels::__construct()
+method	RegisterNumberedModels::__invoke()
+method	RegisterStates::__construct()
+method	RegisterStates::__invoke()
 method	RegisteredAction::__construct()
 method	RegisteredAction::of()
 method	RegisteredCommand::__construct()
@@ -2654,6 +2675,7 @@ method	RuleRemoved::__construct()
 method	RuleRowData::__construct()
 method	RuleRowData::fromRuleView()
 method	RuleView::__construct()
+method	RulesDomain::bootstrappers()
 method	RulesDomain::commands()
 method	RulesDomain::description()
 method	RulesDomain::exports()
@@ -2706,6 +2728,7 @@ method	SequenceStarted::__construct()
 method	SequenceWork::__construct()
 method	SequenceWork::currentInstruction()
 method	SequenceWork::needsWork()
+method	SequencesDomain::bootstrappers()
 method	SequencesDomain::commands()
 method	SequencesDomain::description()
 method	SequencesDomain::exports()
@@ -2948,6 +2971,7 @@ method	TaskWork::needsWork()
 method	TaskWork::unfinishedReason()
 method	TaskWorkState::needsWork()
 method	TasksDomain::assignables()
+method	TasksDomain::bootstrappers()
 method	TasksDomain::commands()
 method	TasksDomain::description()
 method	TasksDomain::exports()
@@ -3515,6 +3539,7 @@ property	LayoutsController::$redirect
 property	LayoutsController::$users
 property	Link::$guarded
 property	LinkAccess::$model
+property	LoadMigrations::$app
 property	LockingNumberAllocator::$transaction
 property	LockingNumberAllocator::$types
 property	LogCommand::$log
@@ -3787,6 +3812,10 @@ property	RecordedAnswer::$type
 property	RecordedAnswer::$version
 property	RecordedSteps::$steps
 property	RecordedSteps::$version
+property	RegisterAssignables::$assignments
+property	RegisterNumberedModels::$numbered
+property	RegisterStates::$container
+property	RegisterStates::$events
 property	RegisteredAction::$action
 property	RegisteredAction::$guard
 property	RegisteredAction::$owner

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Books;
 
+use App\Domains\Bootstrappers\LoadMigrations;
 use App\Domains\Contracts\Domain;
+use App\Domains\Contracts\ProvidesBootstrappers;
 
-final class BooksDomain implements Domain
+final class BooksDomain implements Domain, ProvidesBootstrappers
 {
     public function description(): string
     {
@@ -24,5 +26,10 @@ final class BooksDomain implements Domain
     public function exports(): array
     {
         return [];
+    }
+
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class];
     }
 }

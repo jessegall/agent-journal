@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Processes;
 
+use App\Domains\Bootstrappers\LoadMigrations;
 use App\Domains\Contracts\Domain;
+use App\Domains\Contracts\ProvidesBootstrappers;
 
-final class ProcessesDomain implements Domain
+final class ProcessesDomain implements Domain, ProvidesBootstrappers
 {
     public function description(): string
     {
@@ -27,5 +29,10 @@ final class ProcessesDomain implements Domain
     public function exports(): array
     {
         return [];
+    }
+
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class];
     }
 }

@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
+use App\Domains\Bootstrappers\RegisterStates;
+use App\Domains\Bootstrappers\RegisterAssignables;
+use App\Domains\Bootstrappers\LoadMigrations;
+use App\Domains\Contracts\ProvidesBootstrappers;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Support\CommandScope;
@@ -46,7 +50,7 @@ use Tests\Fixtures\Modules\Notes\Support\NoteAssignments;
 /**
  * A module installed outside the domain folder, registered beside the domains only in the architecture fixtures.
  */
-final class NotesDomain implements Domain, ProvidesAssignables, ProvidesCommandMiddleware, ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesStates
+final class NotesDomain implements Domain, ProvidesAssignables, ProvidesCommandMiddleware, ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesStates, ProvidesBootstrappers
 {
     public function description(): string
     {
@@ -113,5 +117,10 @@ final class NotesDomain implements Domain, ProvidesAssignables, ProvidesCommandM
             MiddlewareDeclaration::inside(AuditNotes::class, CommandScope::ownedBy(self::class)),
             MiddlewareDeclaration::inside(AuditRules::class, CommandScope::ownedBy(RulesDomain::class)),
         ];
+    }
+
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class, RegisterAssignables::class, RegisterStates::class];
     }
 }

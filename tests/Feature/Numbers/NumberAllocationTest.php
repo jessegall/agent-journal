@@ -46,7 +46,7 @@ final class NumberAllocationTest extends TestCase
         parent::setUp();
 
         $this->createLedgerTables();
-        $this->installModules([Ledger::LINK_TYPE => Ledger::class, LedgerEntry::LINK_TYPE => LedgerEntry::class], LedgerDomain::class);
+        $this->bootModules(LedgerDomain::class);
         GlobalGroup::installJournal();
         $this->startUserRequestAs(1);
         $this->commands = $this->app->make(CommandBus::class);

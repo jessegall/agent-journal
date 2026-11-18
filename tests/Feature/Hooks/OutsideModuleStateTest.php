@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
-use App\Domains\Support\DomainRegistry;
+use App\Domains\Support\DomainEntry;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\NoSubject;
-use App\Hooks\Events\StateTypesRequested;
-use Domain\Rules\RulesDomain;
-use Illuminate\Contracts\Events\Dispatcher;
-use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Support\CommittedHookStack;
 use Tests\TestCase;
@@ -25,8 +21,7 @@ final class OutsideModuleStateTest extends TestCase
 
     public function test_a_module_outside_the_domains_registers_and_pushes_its_own_state(): void
     {
-        $notes = DomainRegistry::from([CardsDomain::class, RulesDomain::class, NotesDomain::class]);
-        $this->app->make(Dispatcher::class)->listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $notes->registerStatesIn($event->registry, $this->app));
+        DomainEntry::fromClass(NotesDomain::class)->boot($this->app);
 
         $this->pushState(new StateReference('notes.writing', NoSubject::None));
 

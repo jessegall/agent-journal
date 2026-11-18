@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Domain\Plans;
 
 use App\Bus\Contracts\ProvidesCommands;
+use App\Domains\Bootstrappers\LoadMigrations;
+use App\Domains\Bootstrappers\RegisterAssignables;
 use App\Domains\Contracts\Domain;
 use App\Domains\Contracts\ProvidesAssignables;
+use App\Domains\Contracts\ProvidesBootstrappers;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Contracts\ProvidesSections;
@@ -48,7 +51,7 @@ use Domain\Plans\Support\PhaseAssignmentProvider;
 use Domain\Plans\Support\PlanAssignmentProvider;
 use Domain\Tasks\TasksDomain;
 
-final class PlansDomain implements Domain, ProvidesAssignables, ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesSections
+final class PlansDomain implements Domain, ProvidesAssignables, ProvidesBootstrappers, ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesSections
 {
     public function description(): string
     {
@@ -136,5 +139,10 @@ final class PlansDomain implements Domain, ProvidesAssignables, ProvidesCommands
                 NavigationItem::page('closed', 'Closed', page: 'list', query: ['state' => 'closed']),
             ]),
         ];
+    }
+
+    public function bootstrappers(): array
+    {
+        return [LoadMigrations::class, RegisterAssignables::class];
     }
 }

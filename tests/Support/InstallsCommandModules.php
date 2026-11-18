@@ -10,9 +10,7 @@ use App\Bus\Support\MiddlewareDeclaration;
 use App\CoreCommands;
 use App\Domains\Support\DomainEntry;
 use App\Domains\Support\DomainRegistry;
-use App\Links\Support\LinkTypeRegistry;
 use App\Numbers\Support\NumberedTypeRegistry;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Tests\Fixtures\Modules\Cards\CardsDomain;
@@ -69,23 +67,20 @@ trait InstallsCommandModules
     }
 
     /**
-     * Installs test modules beside the domains of bootstrap/domains.php, as the application would boot them: their
-     * commands, the link types of their models, and their numbered models, checked.
+     * Boots test modules beside the domains of bootstrap/domains.php, as the application boots a domain: the command
+     * registry with their commands, then each module's own bootstrappers, then the numbered models checked.
      *
-     * @param  array<string, class-string<Model>>  $linkTypes
-     * @param  class-string  ...$domainClasses
+     * @param  class-string  ...$moduleClasses
      */
-    protected function installModules(array $linkTypes, string ...$domainClasses): void
+    protected function bootModules(string ...$moduleClasses): void
     {
-        $this->app->instance(CommandRegistry::class, $this->domainsWith(...$domainClasses)->commandDeclarations(CoreCommands::owner()));
-        $this->app->make(LinkTypeRegistry::class)->register($linkTypes);
-        $numbered = $this->app->make(NumberedTypeRegistry::class);
+        $this->app->instance(CommandRegistry::class, $this->domainsWith(...$moduleClasses)->commandDeclarations(CoreCommands::owner()));
 
-        foreach ($domainClasses as $domainClass) {
-            $numbered->register(...DomainEntry::fromClass($domainClass)->numberedModels());
+        foreach ($moduleClasses as $moduleClass) {
+            DomainEntry::fromClass($moduleClass)->boot($this->app);
         }
 
-        $numbered->checkDeclarations();
+        $this->app->make(NumberedTypeRegistry::class)->checkDeclarations();
         $this->app->forgetScopedInstances();
     }
 

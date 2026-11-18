@@ -12,18 +12,14 @@ use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Support\LaunchedAgent;
 use App\Agents\Support\StackTarget;
-use App\Domains\Support\DomainRegistry;
+use App\Domains\Support\DomainEntry;
 use App\Hooks\Actions\UserStacks;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\NoSubject;
-use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Exceptions\StackTransactionRequired;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Support\StackTransaction;
-use Domain\Rules\RulesDomain;
-use Illuminate\Contracts\Events\Dispatcher;
-use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
@@ -43,8 +39,7 @@ final class UserStacksTest extends TestCase
     {
         parent::setUp();
 
-        $notes = DomainRegistry::from([CardsDomain::class, RulesDomain::class, NotesDomain::class]);
-        $this->app->make(Dispatcher::class)->listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $notes->registerStatesIn($event->registry, $this->app));
+        DomainEntry::fromClass(NotesDomain::class)->boot($this->app);
         $this->target = $this->targetOf($this->launch());
     }
 
