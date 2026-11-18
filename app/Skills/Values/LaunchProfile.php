@@ -48,6 +48,16 @@ final readonly class LaunchProfile
     }
 
     /**
+     * The skills the profile requires; none for a session launched without one.
+     *
+     * @return list<string>
+     */
+    public function requiredSkills(): array
+    {
+        return $this->snapshot === null ? [] : $this->snapshot->requiredSkills;
+    }
+
+    /**
      * The profile's key and revision, such as reviewer@3, or null for a session launched without one.
      */
     public function revisionText(): string|null
