@@ -18,12 +18,25 @@ final class StackLockTimedOut extends RuntimeException implements CodedRefusal, 
 {
     public static function after(int $milliseconds, Throwable $cause): self
     {
-        return new self("The stack operation did not finish within {$milliseconds} ms and was rolled back.", previous: $cause);
+        return new self(
+            "The stack operation did not finish within {$milliseconds} ms and was rolled back.",
+            previous: $cause,
+        );
+    }
+
+    public static function spent(int $milliseconds): self
+    {
+        return new self(
+            "The operation's time ran out {$milliseconds} ms ago, before the command could start or run again.",
+        );
     }
 
     public static function held(int $milliseconds, Throwable $cause): self
     {
-        return new self("The stack stayed busy with another operation for {$milliseconds} ms; send the call again shortly.", previous: $cause);
+        return new self(
+            "The stack stayed busy with another operation for {$milliseconds} ms; send the call again shortly.",
+            previous: $cause,
+        );
     }
 
     public function refusalCode(): RefusalCode

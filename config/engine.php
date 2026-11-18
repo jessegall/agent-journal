@@ -34,4 +34,18 @@ return [
     */
     'watchdog_seconds' => 10,
 
+    /*
+    | Filling auto-assignments: how often the engine considers them, how many enabled facts one pass reads and how
+    | many it claims for, the most time one pass spends on them (a slice of the pass, at most max_slice_ms and at most
+    | slice_share of it), and the most ids one ordered pool may list.
+    */
+    'auto_assignments' => [
+        'interval_seconds' => 5,
+        'facts_per_pass' => 20,
+        'claims_per_pass' => 5,
+        'max_slice_ms' => 100,
+        'slice_share' => 0.2,
+        'ordered_ids_max' => 1000,
+    ],
+
 ];
