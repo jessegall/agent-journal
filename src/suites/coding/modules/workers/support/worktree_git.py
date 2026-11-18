@@ -274,6 +274,10 @@ class WorktreeGit:
             self.checked(folder, GIT_LIMIT_SECONDS, "rebase", "--quit")
         if self.git(folder, GIT_LIMIT_SECONDS, "symbolic-ref", "--quiet", "--short", "HEAD").stdout.strip() == worktree.branch:
             return
+        # a head left behind on its own branch by a cut rebase goes back onto the branch, files and all
+        if self.is_ancestor(folder, "HEAD", worktree.branch):
+            self.checked(folder, GIT_LIMIT_SECONDS, "checkout", worktree.branch)
+            return
         if not self.is_ancestor(folder, worktree.branch, "HEAD"):
             raise Refusal(f"your worktree's head left the branch {worktree.branch}, and both hold commits of their own",
                           AskTopic.CONFLICT.hint("the main agent joins them; commit nothing until then"))
@@ -302,6 +306,13 @@ class WorktreeGit:
 
     def head(self, folder: str) -> str:
         return self.git(folder, GIT_LIMIT_SECONDS, "symbolic-ref", "--short", "HEAD").stdout.strip()
+
+    # a worktree in the middle of a rebase, or with its head off its branch, belongs to the operation running in it:
+    # nothing from outside may move or write it until that operation ends
+    def is_mid_sequence(self, worktree: Worktree) -> bool:
+        if any(FileAccess.is_dir(self.git_folder(worktree.folder) / name) for name in REBASE_FOLDERS):
+            return True
+        return self.head(worktree.folder) != worktree.branch
 
     def sync(self, worktree: Worktree) -> tuple[str, ...]:
         with self.without_instruction_files(worktree.folder):
