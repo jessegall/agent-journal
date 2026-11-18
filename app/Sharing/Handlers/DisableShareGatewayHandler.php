@@ -19,6 +19,7 @@ use App\Sharing\Models\ShareGatewayEndpoint;
 use App\Sharing\Models\ShareGatewayOperation;
 use App\Sharing\Models\ShareInstallation;
 use App\Sharing\Support\GatewayConfiguration;
+use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Locks the installation, the configuration and its unended shares by id; revokes every one of them, then cancels the
@@ -31,6 +32,7 @@ final readonly class DisableShareGatewayHandler implements CommandHandler
         private CurrentActor $actors,
         private SharePolicy $policy,
         private ShareEndings $endings,
+        private Dispatcher $events,
     ) {}
 
     public function handle(DisableShareGateway $command): GatewayConfiguration
@@ -49,6 +51,7 @@ final readonly class DisableShareGatewayHandler implements CommandHandler
 
         $configuration->disable();
         ShareAudit::recordForInstallation(ShareAuditType::GatewayChanged, ActorIdentity::of($owner), 'disabled');
+        $this->events->dispatch($configuration->changeFact());
 
         return $configuration->toConfiguration();
     }

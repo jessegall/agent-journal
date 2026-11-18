@@ -487,6 +487,14 @@ use App\Sharing\Contracts\ShareRecordProvider;
 use App\Sharing\Contracts\ShareStatusReader;
 use App\Sharing\Enums\ShareRelationType;
 use App\Sharing\Enums\ShareState;
+use App\Sharing\Events\ShareActivated;
+use App\Sharing\Events\ShareCreated;
+use App\Sharing\Events\ShareExpired;
+use App\Sharing\Events\ShareFailed;
+use App\Sharing\Events\ShareGatewayChanged;
+use App\Sharing\Events\ShareRequested;
+use App\Sharing\Events\ShareRevoked;
+use App\Sharing\Events\ShareScopeChanged;
 use App\Sharing\Exceptions\ShareBudgetExceeded;
 use App\Sharing\Exceptions\SharingNotAllowed;
 use App\Sharing\Support\GatewayConfiguration;
@@ -501,6 +509,7 @@ use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\SharedContent;
 use App\Sharing\Support\SharedPage;
 use App\Sharing\Support\SharedPageItem;
+use App\Sharing\Support\ShareFact;
 use App\Sharing\Support\ShareLinkedCandidate;
 use App\Sharing\Support\ShareProposalStatus;
 use App\Sharing\Support\ShareRecordCard;
@@ -576,7 +585,7 @@ final class CoreApi
     public static function exports(): Exports
     {
         return Exports::make()
-            ->events(LinksRemoved::class, CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, EngineTicked::class, SettingsChanged::class)
+            ->events(LinksRemoved::class, CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, EngineTicked::class, SettingsChanged::class, ShareRequested::class, ShareCreated::class, ShareActivated::class, ShareFailed::class, ShareScopeChanged::class, ShareRevoked::class, ShareExpired::class, ShareGatewayChanged::class)
             ->contracts(
                 RecordProvider::class,
                 RecordReader::class,
@@ -938,6 +947,7 @@ final class CoreApi
                 DisabledSettingsGroup::class,
                 SavedSharePreview::class,
                 ShareSummary::class,
+                ShareFact::class,
                 ShareProposalStatus::class,
                 ShareState::class,
             )

@@ -17,6 +17,7 @@ use App\Sharing\Exceptions\ShareGatewayUnavailable;
 use App\Sharing\Exceptions\ShareProposalUnavailable;
 use App\Sharing\Exceptions\ShareRetryRefused;
 use App\Sharing\Exceptions\ShareUnavailable;
+use App\Sharing\Support\ShareFact;
 use App\Sharing\Support\ShareListFilters;
 use App\Sharing\Support\ShareProposalStatus;
 use App\Sharing\Support\ShareSummary;
@@ -447,6 +448,14 @@ final class Share extends Model implements Numbered, ReadableModel
         }
 
         return Option::fromValue(ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->shareUrl($this->token_ciphertext));
+    }
+
+    /**
+     * What a lifecycle event tells about the share as it stands now.
+     */
+    public function fact(): ShareFact
+    {
+        return new ShareFact($this->id, $this->share_gateway_configuration_id, $this->state, $this->scope_version, CarbonImmutable::now());
     }
 
     /**

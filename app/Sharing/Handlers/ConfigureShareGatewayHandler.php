@@ -19,6 +19,7 @@ use App\Sharing\Models\ShareInstallation;
 use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewaySettings;
 use App\Sharing\Support\ShareGatewayRegistry;
+use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Checks the owner, the registered gateway and that every named secret is stored, then under the installation lock
@@ -32,6 +33,7 @@ final readonly class ConfigureShareGatewayHandler implements CommandHandler
         private SharePolicy $policy,
         private ShareGatewayRegistry $gateways,
         private GatewaySecrets $secrets,
+        private Dispatcher $events,
     ) {}
 
     public function handle(ConfigureShareGateway $command): GatewayConfiguration
@@ -61,6 +63,7 @@ final readonly class ConfigureShareGatewayHandler implements CommandHandler
         }
 
         ShareAudit::recordForInstallation(ShareAuditType::GatewayChanged, ActorIdentity::of($owner), 'configured');
+        $this->events->dispatch($configuration->changeFact());
 
         return $configuration->toConfiguration();
     }

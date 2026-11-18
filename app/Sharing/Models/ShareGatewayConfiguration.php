@@ -8,6 +8,7 @@ use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Sharing\Casts\GatewaySettingsCast;
+use App\Sharing\Events\ShareGatewayChanged;
 use App\Sharing\Exceptions\ShareGatewayUnavailable;
 use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewaySettings;
@@ -183,6 +184,14 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     public function shareUrl(string $token): string
     {
         return rtrim($this->settings->publicOrigin, '/').'/s/'.$token;
+    }
+
+    /**
+     * The event that tells this revision was configured or disabled.
+     */
+    public function changeFact(): ShareGatewayChanged
+    {
+        return new ShareGatewayChanged($this->id, $this->configuration_version, $this->isDisabled(), CarbonImmutable::now());
     }
 
     public function toConfiguration(): GatewayConfiguration

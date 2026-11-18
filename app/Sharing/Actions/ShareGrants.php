@@ -10,6 +10,8 @@ use App\Reads\Contracts\ReadMeter;
 use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\ShareAuditType;
+use App\Sharing\Events\ShareCreated;
+use App\Sharing\Events\ShareScopeChanged;
 use App\Sharing\Exceptions\ShareProposalUnavailable;
 use App\Sharing\Exceptions\ShareQuotaReached;
 use App\Sharing\Exceptions\ShareRefreshRefused;
@@ -26,6 +28,7 @@ use App\Sharing\Support\ShareDuration;
 use App\Sharing\Support\ShareScope;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * The owner's grants: a new share, an agent's proposal approved, or a live share's members replaced, each from a
@@ -39,6 +42,7 @@ final readonly class ShareGrants
         private SharePolicy $policy,
         private ShareScope $scope,
         private ReadMeter $meter,
+        private Dispatcher $events,
     ) {}
 
     public function create(Actor $owner, string $previewId, string $previewChecksum, ShareDuration $duration): Share
@@ -48,7 +52,10 @@ final readonly class ShareGrants
         $share = Share::grant($consumed->root, $owner->actorId(), $consumed->configuration, ShareToken::generate(), $duration->deadlineFrom(CarbonImmutable::now()));
         ShareGatewayOperation::request($consumed->configuration, GatewayOperationType::Open);
 
-        return $this->publish($owner, $share, $consumed, ShareAuditType::Created);
+        $this->publish($owner, $share, $consumed, ShareAuditType::Created);
+        $this->events->dispatch(new ShareCreated($share->fact()));
+
+        return $share;
     }
 
     /**
@@ -67,7 +74,10 @@ final readonly class ShareGrants
         $proposal->approveAs($owner->actorId(), $consumed->configuration, ShareToken::generate(), $duration->deadlineFrom(CarbonImmutable::now()));
         ShareGatewayOperation::request($consumed->configuration, GatewayOperationType::Open);
 
-        return $this->publish($owner, $proposal, $consumed, ShareAuditType::Approved);
+        $this->publish($owner, $proposal, $consumed, ShareAuditType::Approved);
+        $this->events->dispatch(new ShareCreated($proposal->fact()));
+
+        return $proposal;
     }
 
     /**
@@ -92,7 +102,10 @@ final readonly class ShareGrants
         ShareMember::forgetAllOf($share);
         $share->advanceScope();
 
-        return $this->publish($owner, $share, $consumed, ShareAuditType::ScopeRefreshed);
+        $this->publish($owner, $share, $consumed, ShareAuditType::ScopeRefreshed);
+        $this->events->dispatch(new ShareScopeChanged($share->fact()));
+
+        return $share;
     }
 
     /**
@@ -124,14 +137,12 @@ final readonly class ShareGrants
         }
     }
 
-    private function publish(Actor $owner, Share $share, ConsumedPreview $consumed, ShareAuditType $type): Share
+    private function publish(Actor $owner, Share $share, ConsumedPreview $consumed, ShareAuditType $type): void
     {
         foreach ($consumed->selection as $target) {
             ShareMember::approve($share, $consumed->candidates->sourceOf($target), $target);
         }
 
         ShareAudit::recordFor($share, $type, ActorIdentity::of($owner), null);
-
-        return $share;
     }
 }

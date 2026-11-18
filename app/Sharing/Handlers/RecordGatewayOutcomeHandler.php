@@ -12,6 +12,8 @@ use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\GatewayOutcome;
 use App\Sharing\Enums\ShareAuditType;
 use App\Sharing\Enums\ShareState;
+use App\Sharing\Events\ShareActivated;
+use App\Sharing\Events\ShareFailed;
 use App\Sharing\Exceptions\GatewayLeaseRefused;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
@@ -19,6 +21,7 @@ use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\ShareGatewayEndpoint;
 use App\Sharing\Models\ShareGatewayOperation;
 use App\Sharing\Models\ShareInstallation;
+use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Locks the installation, configuration, endpoint, the affected shares by id and the operation, in that order, and
@@ -28,6 +31,8 @@ use App\Sharing\Models\ShareInstallation;
  */
 final readonly class RecordGatewayOutcomeHandler implements CommandHandler
 {
+    public function __construct(private Dispatcher $events) {}
+
     public function handle(RecordGatewayOutcome $command): void
     {
         ShareInstallation::lockForAdmission()->requireRun($command->runId);
@@ -77,6 +82,7 @@ final readonly class RecordGatewayOutcomeHandler implements CommandHandler
         foreach ($shares as $share) {
             $share->activate();
             ShareAudit::recordFor($share, ShareAuditType::Activated, ActorIdentity::system(), null);
+            $this->events->dispatch(new ShareActivated($share->fact()));
         }
 
         if (! Share::anyLiveOn($configuration->id)) {
@@ -97,6 +103,7 @@ final readonly class RecordGatewayOutcomeHandler implements CommandHandler
             if ($share->state === ShareState::Pending) {
                 $share->failActivation();
                 ShareAudit::recordFor($share, ShareAuditType::ActivationFailed, ActorIdentity::system(), 'gateway_open_failed');
+                $this->events->dispatch(new ShareFailed($share->fact()));
             }
         }
     }

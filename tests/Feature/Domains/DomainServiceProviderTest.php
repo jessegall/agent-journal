@@ -9,6 +9,7 @@ use App\Domains\Exceptions\RequiredDomainMissing;
 use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Providers\DomainServiceProvider;
 use App\Domains\Support\DomainRegistry;
+use App\Sharing\Events\ShareActivated;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
@@ -16,6 +17,7 @@ use ReflectionProperty;
 use Tests\Fixtures\Domains\Books\BooksDomain;
 use Tests\Fixtures\Domains\Plans\PlansDomain;
 use Tests\Fixtures\Domains\Shelves\Events\BookShelved;
+use Tests\Fixtures\Domains\Shelves\Listeners\CountActivatedShare;
 use Tests\Fixtures\Domains\Shelves\Listeners\CountShelvedBook;
 use Tests\Fixtures\Domains\Shelves\ShelvesDomain;
 use Tests\Fixtures\Domains\Tasks\TaskList;
@@ -61,6 +63,15 @@ final class DomainServiceProviderTest extends TestCase
         $events = new DomainEventServiceProvider($this->app)->discoverEvents();
 
         $this->assertSame([CountShelvedBook::class.'@handle'], $events[BookShelved::class]);
+    }
+
+    public function test_a_domain_listens_to_an_exported_sharing_event(): void
+    {
+        $this->registerDomains([ShelvesDomain::class]);
+
+        $events = new DomainEventServiceProvider($this->app)->discoverEvents();
+
+        $this->assertSame([CountActivatedShare::class.'@handle'], $events[ShareActivated::class]);
     }
 
     public function test_the_discovery_paths_are_the_domain_listener_folders(): void

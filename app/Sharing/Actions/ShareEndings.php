@@ -8,10 +8,13 @@ use App\Actors\Support\ActorIdentity;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\ShareAuditType;
 use App\Sharing\Enums\ShareState;
+use App\Sharing\Events\ShareExpired;
+use App\Sharing\Events\ShareRevoked;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\ShareGatewayOperation;
+use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Ends a locked share once, revoked by the owner or expired by the system: its token can no longer be read back, a
@@ -20,12 +23,20 @@ use App\Sharing\Models\ShareGatewayOperation;
  */
 final readonly class ShareEndings
 {
+    public function __construct(private Dispatcher $events) {}
+
     /**
      * Revokes a live share or dismisses a proposal; returns whether anything changed.
      */
     public function revoke(Share $share, ActorIdentity $owner): bool
     {
-        return $this->endAndRelease($share, ShareState::Revoked, ShareAuditType::Revoked, $owner);
+        if (! $this->endAndRelease($share, ShareState::Revoked, ShareAuditType::Revoked, $owner)) {
+            return false;
+        }
+
+        $this->events->dispatch(new ShareRevoked($share->fact()));
+
+        return true;
     }
 
     /**
@@ -33,7 +44,13 @@ final readonly class ShareEndings
      */
     public function expire(Share $share): bool
     {
-        return $this->endAndRelease($share, ShareState::Expired, ShareAuditType::Expired, ActorIdentity::system());
+        if (! $this->endAndRelease($share, ShareState::Expired, ShareAuditType::Expired, ActorIdentity::system())) {
+            return false;
+        }
+
+        $this->events->dispatch(new ShareExpired($share->fact()));
+
+        return true;
     }
 
     /**
@@ -45,7 +62,9 @@ final readonly class ShareEndings
     public function revokeAll(array $shares, ActorIdentity $owner): void
     {
         foreach ($shares as $share) {
-            $this->end($share, ShareState::Revoked, ShareAuditType::Revoked, $owner);
+            if ($this->end($share, ShareState::Revoked, ShareAuditType::Revoked, $owner)) {
+                $this->events->dispatch(new ShareRevoked($share->fact()));
+            }
         }
     }
 
