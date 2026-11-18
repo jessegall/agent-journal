@@ -102,6 +102,21 @@ class JsonSchema:
             return []
         return [f"{pointer or '/'}: is below {rule}"]
 
+    def maximum(self, rule: object, schema: Mapping[str, object], value: object, pointer: str) -> list[str]:
+        if not is_number(value) or not isinstance(rule, (int, float)) or value <= rule:
+            return []
+        return [f"{pointer or '/'}: is above {rule}"]
+
+    def exclusive_minimum(self, rule: object, schema: Mapping[str, object], value: object, pointer: str) -> list[str]:
+        if not is_number(value) or not isinstance(rule, (int, float)) or value > rule:
+            return []
+        return [f"{pointer or '/'}: is not above {rule}"]
+
+    def exclusive_maximum(self, rule: object, schema: Mapping[str, object], value: object, pointer: str) -> list[str]:
+        if not is_number(value) or not isinstance(rule, (int, float)) or value < rule:
+            return []
+        return [f"{pointer or '/'}: is not below {rule}"]
+
     def min_properties(self, rule: object, schema: Mapping[str, object], value: object, pointer: str) -> list[str]:
         if not is_mapping(value) or not isinstance(rule, int) or len(value) >= rule:
             return []
@@ -133,5 +148,6 @@ KEYWORDS: Mapping[str, Callable[[JsonSchema, object, Mapping[str, object], objec
     "additionalProperties": JsonSchema.additional_properties, "items": JsonSchema.items, "enum": JsonSchema.enum, "const": JsonSchema.const,
     "anyOf": JsonSchema.matches_alternative, "minLength": JsonSchema.min_length, "minimum": JsonSchema.minimum, "pattern": JsonSchema.pattern,
     "propertyNames": JsonSchema.property_names, "uniqueItems": JsonSchema.unique_items, "minProperties": JsonSchema.min_properties,
-    "maxProperties": JsonSchema.max_properties,
+    "maxProperties": JsonSchema.max_properties, "maximum": JsonSchema.maximum, "exclusiveMinimum": JsonSchema.exclusive_minimum,
+    "exclusiveMaximum": JsonSchema.exclusive_maximum,
 }
