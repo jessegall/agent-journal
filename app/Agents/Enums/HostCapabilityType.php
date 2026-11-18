@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Enums;
 
 use App\Agents\Exceptions\AccountContainerUnsupported;
+use App\Agents\Exceptions\ContainerUnavailable;
 use App\Agents\Exceptions\HostCapabilityUnsupported;
 use App\Agents\Support\HostCapability;
 
@@ -21,12 +22,17 @@ enum HostCapabilityType: string
     case ProcessTracking = 'process-tracking';
     case CompletionFence = 'completion-fence';
     case StopDeadline = 'stop-deadline';
+    case ContainerRuntime = 'container-runtime';
 
     /**
      * The refusal of a launch that needs this capability where the evidence does not prove it.
      */
-    public function refusalFor(HostCapability $capability): AccountContainerUnsupported|HostCapabilityUnsupported
+    public function refusalFor(HostCapability $capability): AccountContainerUnsupported|ContainerUnavailable|HostCapabilityUnsupported
     {
-        return $this === self::AccountTransport ? AccountContainerUnsupported::for($capability) : HostCapabilityUnsupported::for($capability);
+        return match ($this) {
+            self::AccountTransport => AccountContainerUnsupported::for($capability),
+            self::ContainerRuntime => ContainerUnavailable::because($capability->reason),
+            default => HostCapabilityUnsupported::for($capability),
+        };
     }
 }

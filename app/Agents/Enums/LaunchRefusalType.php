@@ -18,4 +18,7 @@ enum LaunchRefusalType: string
     case AccountContainerUnsupported = 'account-container-unsupported';
     case CapabilityUnsupported = 'capability-unsupported';
     case ContextFailed = 'context-failed';
+    case ContainerUnavailable = 'container-unavailable';
+    case ImageUnverified = 'image-unverified';
+    case CapacityUnavailable = 'capacity-unavailable';
 }

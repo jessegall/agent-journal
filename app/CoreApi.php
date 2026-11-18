@@ -55,6 +55,7 @@ use App\Agents\Commands\RetireAgent;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\AgentReader;
+use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\ProgramConversationReader;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\HostCapabilities;
@@ -84,6 +85,7 @@ use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
+use App\Agents\Enums\ReservationState;
 use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Events\LaunchAccepted;
 use App\Agents\Events\LaunchEnded;
@@ -94,13 +96,17 @@ use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Exceptions\AgentNameRequired;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Exceptions\AgentRetirementDenied;
+use App\Agents\Exceptions\CapacityUnavailable;
+use App\Agents\Exceptions\ContainerUnavailable;
 use App\Agents\Exceptions\ConversationIncompatible;
 use App\Agents\Exceptions\DefaultUnavailable;
 use App\Agents\Exceptions\ExecutionBudgetInvalid;
 use App\Agents\Exceptions\ExecutionPolicyInvalid;
 use App\Agents\Exceptions\HostCapabilityUnsupported;
+use App\Agents\Exceptions\ImageUnverified;
 use App\Agents\Exceptions\LaunchRecordMissing;
 use App\Agents\Exceptions\LaunchRequestConflict;
+use App\Agents\Exceptions\ManifestRefused;
 use App\Agents\Exceptions\ModelRequired;
 use App\Agents\Exceptions\ModelUnavailable;
 use App\Agents\Exceptions\ProgramConflict;
@@ -111,6 +117,9 @@ use App\Agents\Exceptions\StopConditionsInvalid;
 use App\Agents\Support\AgentLabel;
 use App\Agents\Support\ClaimedRequest;
 use App\Agents\Support\ClaimedRequests;
+use App\Agents\Support\ContainerManifest;
+use App\Agents\Support\HostCapacity;
+use App\Agents\Support\ManifestMount;
 use App\Agents\Support\ProgramConversationSummary;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\EnrolledHost;
@@ -694,6 +703,7 @@ final class CoreApi
                 HostCapabilities::class,
                 LaunchRecordReader::class,
                 ProgramConversationReader::class,
+                HelperImages::class,
                 RecordVisibility::class,
                 RuntimeReader::class,
                 AgentStack::class,
@@ -823,6 +833,10 @@ final class CoreApi
                 LaunchReceipt::class,
                 LaunchRecordDetails::class,
                 ProgramConversationSummary::class,
+                ContainerManifest::class,
+                ManifestMount::class,
+                HostCapacity::class,
+                ReservationState::class,
                 LaunchOriginType::class,
                 ConversationModeType::class,
                 LaunchDisposition::class,
@@ -1292,6 +1306,10 @@ final class CoreApi
                 AgentNameRequired::class,
                 LaunchRecordMissing::class,
                 ConversationIncompatible::class,
+                ManifestRefused::class,
+                ContainerUnavailable::class,
+                ImageUnverified::class,
+                CapacityUnavailable::class,
                 UnknownAccessType::class,
                 UnknownResourceArea::class,
                 AccessPolicyInvalid::class,

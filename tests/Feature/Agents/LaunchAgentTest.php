@@ -99,7 +99,7 @@ final class LaunchAgentTest extends TestCase
 
     public function test_a_codex_launch_receipt_carries_its_model_flag_and_no_actual_model(): void
     {
-        $request = new LaunchRequest(TestSelections::requestId(), $this->agent->id, TestSelections::of('codex'), LaunchOriginType::MainLaunch, null, null, ConversationModeType::New, null);
+        $request = new LaunchRequest(TestSelections::requestId(), $this->agent->id, TestSelections::of('codex'), LaunchOriginType::MainLaunch, null, null, ConversationModeType::New, null, TestSelections::onHost());
 
         $receipt = $this->launch($request);
 
@@ -108,7 +108,7 @@ final class LaunchAgentTest extends TestCase
 
     private function request(): LaunchRequest
     {
-        return new LaunchRequest(TestSelections::requestId(), $this->agent->id, TestSelections::of(), LaunchOriginType::MainLaunch, null, null, ConversationModeType::New, null);
+        return new LaunchRequest(TestSelections::requestId(), $this->agent->id, TestSelections::of(), LaunchOriginType::MainLaunch, null, null, ConversationModeType::New, null, TestSelections::onHost());
     }
 
     private function launch(LaunchRequest $request): LaunchReceipt

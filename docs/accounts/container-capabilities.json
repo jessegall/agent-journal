@@ -139,6 +139,26 @@
             "status": "unverified",
             "evidence": "docs/hooks/program-capabilities.md#container-capabilities",
             "reason": "The task 89 capture saw stop_hook_active on Stop but never blocked a stop or ran past a hook timeout, so the Stop deadline and the continuation cap of 0.165.0 are not measured; only SessionEnd's 1 second default (3 at most) is known."
+        },
+        {
+            "capability": "container-runtime",
+            "program": "claude-code",
+            "program_version": "2.1.323",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unverified",
+            "evidence": "docs/accounts/launch-handshake.md#the-protected-host",
+            "reason": "No protected host runs Docker for the journal yet (task 258), so no container runtime, rootless mode or kernel control has been checked on this host."
+        },
+        {
+            "capability": "container-runtime",
+            "program": "codex",
+            "program_version": "0.165.0",
+            "account_mode": "subscription",
+            "execution_mode": "required_container",
+            "status": "unverified",
+            "evidence": "docs/accounts/launch-handshake.md#the-protected-host",
+            "reason": "No protected host runs Docker for the journal yet (task 258), so no container runtime, rootless mode or kernel control has been checked on this host."
         }
     ]
 }

@@ -6,6 +6,7 @@ namespace App\Agents\Support;
 
 use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Exceptions\AccountContainerUnsupported;
+use App\Agents\Exceptions\ContainerUnavailable;
 use App\Agents\Exceptions\HostCapabilityUnsupported;
 
 /**
@@ -24,6 +25,7 @@ final readonly class HostCapability
      * Refuses a launch that needs this capability unless the evidence proves it; nothing is started or changed.
      *
      * @throws AccountContainerUnsupported
+     * @throws ContainerUnavailable
      * @throws HostCapabilityUnsupported
      */
     public function requireSupported(): void

@@ -31,8 +31,6 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 use App\Operations\Exceptions\UnknownAccessType;
 use Illuminate\Events\Dispatcher;
-use PhpOption\None;
-use PhpOption\Some;
 use Tests\TestCase;
 
 /**
@@ -123,10 +121,10 @@ final class PolicyValuesTest extends TestCase
         $this->assertSame([2, 4 * 1024 ** 3, 4 * 1024 ** 3, 256, 1024, 256 * 1024 ** 2, 10 * 1024 ** 3, 21600], [$budgets->cpuCores, $budgets->memoryBytes, $budgets->memorySwapBytes, $budgets->processes, $budgets->openFiles, $budgets->tmpBytes, $budgets->workspaceBytes, $budgets->wallSeconds]);
         $this->assertSame(ExecutionModeType::ProtectedHost, AgentRole::MainAgent->defaultExecutionMode());
         $this->assertSame(ExecutionModeType::RequiredContainer, AgentRole::ReadOnlyHelper->defaultExecutionMode());
-        $this->assertSame(ExecutionModeType::RequiredContainer, ExecutionPolicy::make(AgentRole::WritingHelper, ExecutionModeType::RequiredContainer, new Some('registry/helper@sha256:abc'), 'worktree-1', $budgets, [])->mode);
+        $this->assertSame(ExecutionModeType::RequiredContainer, ExecutionPolicy::make(AgentRole::WritingHelper, ExecutionModeType::RequiredContainer, 'registry/helper@sha256:abc', 'worktree-1', $budgets, [])->mode);
 
-        $this->assertRefused(ExecutionPolicyInvalid::class, fn () => ExecutionPolicy::make(AgentRole::WritingHelper, ExecutionModeType::ProtectedHost, None::create(), 'worktree-1', $budgets, []));
-        $this->assertRefused(ExecutionPolicyInvalid::class, fn () => ExecutionPolicy::make(AgentRole::ReadOnlyHelper, ExecutionModeType::RequiredContainer, None::create(), 'worktree-1', $budgets, []));
+        $this->assertRefused(ExecutionPolicyInvalid::class, fn () => ExecutionPolicy::make(AgentRole::WritingHelper, ExecutionModeType::ProtectedHost, null, 'worktree-1', $budgets, []));
+        $this->assertRefused(ExecutionPolicyInvalid::class, fn () => ExecutionPolicy::make(AgentRole::ReadOnlyHelper, ExecutionModeType::RequiredContainer, null, 'worktree-1', $budgets, []));
         $this->assertRefused(ExecutionBudgetInvalid::class, fn () => ExecutionBudgets::make(9, 1024, 1024, 1, 1, 1, 1, 1));
         $this->assertRefused(ExecutionBudgetInvalid::class, fn () => ExecutionBudgets::make(2, 1024, 2048, 1, 1, 1, 1, 1));
         $this->assertRefused(ExecutionBudgetInvalid::class, fn () => ExecutionBudgets::make(0, 1024, 1024, 1, 1, 1, 1, 1));

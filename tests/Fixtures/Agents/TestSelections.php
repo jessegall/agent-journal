@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Agents;
 
+use App\Agents\Enums\AgentRole;
+use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Support\ExecutionBudgets;
+use App\Agents\Support\ExecutionPolicy;
 use App\Agents\Support\ModelSelection;
 use App\Agents\Support\SelectedProgram;
 use App\Programs\Enums\HookProgram;
@@ -41,5 +45,13 @@ final class TestSelections
             'program_source' => 'explicit',
             'launch_request_id' => self::requestId(),
         ];
+    }
+
+    /**
+     * A launch on the protected host, as a main agent runs.
+     */
+    public static function onHost(): ExecutionPolicy
+    {
+        return ExecutionPolicy::make(AgentRole::MainAgent, ExecutionModeType::ProtectedHost, null, '/workspaces/test', ExecutionBudgets::defaults(), []);
     }
 }

@@ -9,7 +9,7 @@ use App\Agents\Enums\LaunchOriginType;
 
 /**
  * One request to launch an agent: its id, which makes a repeat find the same launch, the agent, the selected
- * program and model, who asked and for what, and how the conversation starts. It holds no credential.
+ * program and model, who asked and for what, how the conversation starts and where it runs. It holds no credential.
  */
 final readonly class LaunchRequest
 {
@@ -22,6 +22,7 @@ final readonly class LaunchRequest
         public string|null $contextReference,
         public ConversationModeType $conversationMode,
         public string|null $parentSessionId,
+        public ExecutionPolicy $execution,
     ) {}
 
     /**
@@ -43,6 +44,8 @@ final readonly class LaunchRequest
             $this->contextReference,
             $this->conversationMode->value,
             $this->parentSessionId,
+            $this->execution->mode->value,
+            $this->execution->imageReference,
         ], JSON_THROW_ON_ERROR));
     }
 }

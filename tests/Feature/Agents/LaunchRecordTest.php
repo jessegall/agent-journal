@@ -110,6 +110,6 @@ final class LaunchRecordTest extends TestCase
     {
         $origin = $owner === null ? LaunchOriginType::MainLaunch : LaunchOriginType::OwnerRequest;
 
-        return new LaunchRequest($requestId, $agent->id, SelectedProgram::resolve('claude-code', $model, null, null), $origin, $owner, null, ConversationModeType::New, null);
+        return new LaunchRequest($requestId, $agent->id, SelectedProgram::resolve('claude-code', $model, null, null), $origin, $owner, null, ConversationModeType::New, null, TestSelections::onHost());
     }
 }
