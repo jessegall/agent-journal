@@ -6,6 +6,7 @@ namespace Tests\Unit\Hooks;
 
 use App\Hooks\Contracts\StateType;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\ReadyStateType;
@@ -118,7 +119,7 @@ final class HookRewriteTest extends TestCase
 
     private function bottomOf(StateType $role): AgentState
     {
-        return $role->stateFor(new StateReference('ready', NoSubject::None));
+        return $role->statesFor(new StateReferences([new StateReference('ready', NoSubject::None)]))->stateAt(0);
     }
 
     private function guide(): StateReference

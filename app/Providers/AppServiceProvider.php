@@ -40,6 +40,9 @@ class AppServiceProvider extends ServiceProvider
             ! app()->isProduction(),
         );
 
+        // A lazy load is one query per model: it is refused in every environment, production too.
+        Model::preventLazyLoading();
+
         DB::prohibitDestructiveCommands(
             app()->isProduction(),
         );

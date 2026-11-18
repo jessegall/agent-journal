@@ -6,10 +6,11 @@ namespace Domain\Tasks\States\Support;
 
 use App\Hooks\Contracts\StateType;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Decisions\StateReferences;
+use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\States\AgentState;
-use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Readers\Support\TaskRecords;
 use Domain\Tasks\States\WorkingOnTaskState;
 
@@ -20,21 +21,19 @@ final readonly class WorkingOnTaskStateFactory implements StateType
 {
     public function __construct(private TaskRecords $tasks) {}
 
-    public function stateFor(StateReference $reference): AgentState
+    public function statesFor(StateReferences $references): StateSet
     {
-        $subject = $reference->subject;
+        $subjects = $this->tasks->many($references->subjectIds());
 
-        if (! $subject instanceof SubjectReference) {
-            throw StateSubjectMissing::for($reference->typeKey);
-        }
+        return StateSet::build($references, function (StateReference $reference) use ($subjects): AgentState {
+            $subject = $reference->subject;
 
-        try {
-            $task = $this->tasks->get($subject->id);
-        } catch (TaskMissing $missing) {
-            throw StateSubjectMissing::for($reference->typeKey, $missing);
-        }
+            if (! $subject instanceof SubjectReference || ! isset($subjects[$subject->id])) {
+                throw StateSubjectMissing::for($reference->typeKey);
+            }
 
-        return new WorkingOnTaskState($task->workFor($subject->runNumber));
+            return new WorkingOnTaskState($subjects[$subject->id]->workFor($subject->runNumber));
+        });
     }
 
     public function schemaVersion(): int

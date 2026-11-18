@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks\Lifecycle;
 
+use App\Hooks\Decisions\StateSet;
+use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Contracts\StateType;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\States\AgentState;
@@ -14,7 +16,12 @@ use Tests\Fixtures\Hooks\ScriptedState;
  */
 final class NoteStateType implements StateType
 {
-    public function stateFor(StateReference $reference): AgentState
+    public function statesFor(StateReferences $references): StateSet
+    {
+        return StateSet::build($references, fn (StateReference $reference): AgentState => $this->stateFor($reference));
+    }
+
+    private function stateFor(StateReference $reference): AgentState
     {
         return ScriptedState::delegating();
     }

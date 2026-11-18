@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Hooks;
 
+use App\Hooks\Decisions\StateSet;
+use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Contracts\StateType;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\NoSubject;
@@ -26,7 +28,12 @@ final class InMemoryTaskType implements StateType
         private readonly int $version = 1,
     ) {}
 
-    public function stateFor(StateReference $reference): AgentState
+    public function statesFor(StateReferences $references): StateSet
+    {
+        return StateSet::build($references, fn (StateReference $reference): AgentState => $this->stateFor($reference));
+    }
+
+    private function stateFor(StateReference $reference): AgentState
     {
         if ($reference->subject === NoSubject::None || ! isset($this->tasks[$reference->subject->id])) {
             throw StateSubjectMissing::for($reference->typeKey);

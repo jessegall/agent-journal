@@ -12,6 +12,8 @@ use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\RecordIdentity;
 use App\Links\Support\Linkable;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use App\Reads\Support\CountsPivotLoads;
 use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;
@@ -37,9 +39,9 @@ use Illuminate\Support\Carbon;
  */
 #[Table('assignments')]
 #[Fillable(['record_type', 'record_id', 'holder_type', 'holder_id'])]
-final class AssignmentRecord extends MorphPivot
+final class AssignmentRecord extends MorphPivot implements ReadableModel
 {
-    use CountsPivotLoads;
+    use BoundedReads, CountsPivotLoads;
     use HasUlids, Linkable;
 
     /**

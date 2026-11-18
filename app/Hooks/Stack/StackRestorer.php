@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Stack;
 
 use App\Hooks\Contracts\StateFactory;
+use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Exceptions\StateSchemaUnknown;
 use App\Hooks\Storage\FrameRecord;
@@ -24,19 +25,46 @@ final readonly class StackRestorer
     {
         $records->checkBottomFor($role);
 
-        $frames = array_map(fn (FrameRecord $record) => $this->frameFor($record), $records->all());
+        $all = $records->all();
+        $frames = [];
 
-        return (new AgentStack($frames, $this->factory))->withoutFinishedFrames();
-    }
+        foreach ($this->positionsByType($all) as $typeKey => $positions) {
+            $type = $this->types->registry()->get($typeKey);
 
-    private function frameFor(FrameRecord $record): Frame
-    {
-        $type = $this->types->registry()->get($record->reference->typeKey);
+            foreach (array_chunk($positions, StateReferences::MAXIMUM) as $batch) {
+                $states = $type->statesFor(new StateReferences(array_map(fn (int $position) => $all[$position]->reference, $batch)));
 
-        if ($record->schemaVersion !== $type->schemaVersion()) {
-            throw StateSchemaUnknown::for($record->description(), $type->schemaVersion());
+                foreach ($batch as $index => $position) {
+                    $record = $all[$position];
+
+                    if ($record->schemaVersion !== $type->schemaVersion()) {
+                        throw StateSchemaUnknown::for($record->description(), $type->schemaVersion());
+                    }
+
+                    $frames[$position] = Frame::restored($record, $states->stateAt($index));
+                }
+            }
         }
 
-        return Frame::restored($record, $type->stateFor($record->reference));
+        ksort($frames);
+
+        return (new AgentStack(array_values($frames), $this->factory))->withoutFinishedFrames();
+    }
+
+    /**
+     * The stack positions of the frames of each state type, so each type reads its subjects once per batch.
+     *
+     * @param  list<FrameRecord>  $records
+     * @return array<string, list<int>>
+     */
+    private function positionsByType(array $records): array
+    {
+        $positions = [];
+
+        foreach ($records as $position => $record) {
+            $positions[$record->reference->typeKey][] = $position;
+        }
+
+        return $positions;
     }
 }

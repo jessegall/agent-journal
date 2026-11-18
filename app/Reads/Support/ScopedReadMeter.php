@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Reads\Support;
 
 use App\Reads\Contracts\ReadMeter;
+use App\Reads\Exceptions\QueryInValueRead;
 use App\Reads\Values\Measurement;
 use App\Reads\Values\ReadCounts;
 use Illuminate\Container\Container;
@@ -19,6 +20,13 @@ final class ScopedReadMeter implements ReadMeter
      * @var list<ReadTally>
      */
     private array $open = [];
+
+    /**
+     * The boundaries that may run no query, innermost last.
+     *
+     * @var list<string>
+     */
+    private array $queryFreeBoundaries = [];
 
     /**
      * The meter of the request, job or command running now, for the database and model hooks that cannot take it
@@ -66,8 +74,38 @@ final class ScopedReadMeter implements ReadMeter
         return $innermost->counts();
     }
 
+    /**
+     * Runs the work with every query refused, naming the boundary in the refusal.
+     *
+     * @template TValue
+     *
+     * @param  callable(): TValue  $work
+     * @return TValue
+     */
+    public function withoutQueries(string $boundary, callable $work): mixed
+    {
+        $this->queryFreeBoundaries[] = $boundary;
+
+        try {
+            return $work();
+        } finally {
+            array_pop($this->queryFreeBoundaries);
+        }
+    }
+
+    /**
+     * @throws QueryInValueRead when a query-free boundary is open
+     */
     public function recordQuery(string $connection, bool $writes): void
     {
+        $boundary = end($this->queryFreeBoundaries);
+
+        if ($boundary !== false) {
+            $this->recordRefusedQuery();
+
+            throw QueryInValueRead::during($boundary);
+        }
+
         foreach ($this->open as $tally) {
             $tally->addQuery($connection, $writes);
         }

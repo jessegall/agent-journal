@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Agents\Models;
 
 use App\Links\Support\Linkable;
-use App\Reads\Support\CountsLoads;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -25,9 +26,9 @@ use Illuminate\Support\Carbon;
  * @property-read AgentSession $session
  */
 #[Fillable(['revoked_at'])]
-final class LaunchCredential extends Model
+final class LaunchCredential extends Model implements ReadableModel
 {
-    use CountsLoads;
+    use BoundedReads;
     use HasUlids, Linkable;
 
     /**

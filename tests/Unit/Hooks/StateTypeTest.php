@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks;
 
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\ReadyStateType;
@@ -89,8 +90,8 @@ final class StateTypeTest extends TestCase
         $registry = (new StateTypes(new Dispatcher))->registry();
         $noSubject = fn (string $key) => new StateReference($key, NoSubject::None);
 
-        $this->assertSame(MainAgentReadyState::class, $registry->get('hooks.main_ready')->stateFor($noSubject('hooks.main_ready'))::class);
-        $this->assertSame(ReadOnlyHelperReadyState::class, $registry->get('hooks.read_only_helper_ready')->stateFor($noSubject('hooks.read_only_helper_ready'))::class);
+        $this->assertSame(MainAgentReadyState::class, $registry->get('hooks.main_ready')->statesFor(new StateReferences([$noSubject('hooks.main_ready')]))->stateAt(0)::class);
+        $this->assertSame(ReadOnlyHelperReadyState::class, $registry->get('hooks.read_only_helper_ready')->statesFor(new StateReferences([$noSubject('hooks.read_only_helper_ready')]))->stateAt(0)::class);
     }
 
     public function test_a_failed_build_is_not_kept_and_the_next_use_builds_again(): void

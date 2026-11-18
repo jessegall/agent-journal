@@ -10,8 +10,8 @@ use App\Hooks\Support\HookRetryWindow;
 use App\Hooks\Support\PrunedHistory;
 use App\Hooks\Support\RetentionPeriods;
 use App\Links\Models\Link;
+use App\Reads\Support\ReadBuilder;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -37,14 +37,14 @@ final readonly class PruneHookHistory
     }
 
     /**
-     * @param  callable(): Builder<covariant Model>  $prunable
+     * @param  callable(): ReadBuilder<covariant Model>  $prunable
      */
     private function deleteInBatches(callable $prunable): int
     {
         $deleted = 0;
 
         do {
-            $batch = $prunable()->orderBy('id')->limit($this->periods->batchSize)->get();
+            $batch = $prunable()->orderBy('id')->readLimit($this->periods->batchSize)->get();
             Link::forgetModels(array_values($batch->all()));
             $count = $prunable()->whereKey($batch->modelKeys())->delete();
             $deleted += (int) $count;

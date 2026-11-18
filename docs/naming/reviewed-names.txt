@@ -552,6 +552,7 @@ class	LayoutData
 class	LayoutRequest
 class	LayoutsController
 class	LayoutsView
+class	LazyLoadRefused
 class	Link
 class	LinkAccess
 class	LinkTypeRegistry
@@ -699,6 +700,7 @@ class	PushMessageState
 class	PushSequenceState
 class	PushState
 class	PushTaskState
+class	QueryInValueRead
 class	RaisePlanProgressChanged
 class	RawRowAccess
 class	ReadBudget
@@ -860,7 +862,10 @@ class	StartTask
 class	StartTaskHandler
 class	StateBelowTopPushed
 class	StateReference
+class	StateReferences
+class	StateReferencesInvalid
 class	StateSchemaUnknown
+class	StateSet
 class	StateSubjectMissing
 class	StateTypeRegistry
 class	StateTypeRepeated
@@ -1037,6 +1042,7 @@ constant	SignedCall::PROTOCOL_HEADER
 constant	SignedCall::SIGNATURE_HEADER
 constant	StackTransaction::LOCK_NOT_AVAILABLE
 constant	StackTransaction::QUERY_CANCELED
+constant	StateReferences::MAXIMUM
 constant	StoredFrames::CURRENT_VERSION
 constant	TableChecker::ROOT_MIGRATIONS
 constant	TableScan::DB
@@ -1333,7 +1339,7 @@ method	AnsweringMessageState::onShellCommand()
 method	AnsweringMessageState::onStop()
 method	AnsweringMessageStateFactory::__construct()
 method	AnsweringMessageStateFactory::schemaVersion()
-method	AnsweringMessageStateFactory::stateFor()
+method	AnsweringMessageStateFactory::statesFor()
 method	AnsweringMessageStateReference::forMessage()
 method	AppServiceProvider::boot()
 method	AppServiceProvider::configureDefaults()
@@ -1562,7 +1568,11 @@ method	BoundaryReport::relative()
 method	BoundedReads::all()
 method	BoundedReads::defaultReadLimit()
 method	BoundedReads::defaultReadOrder()
+method	BoundedReads::getRelationshipFromMethod()
+method	BoundedReads::mutateAttribute()
+method	BoundedReads::mutateAttributeMarkedAttribute()
 method	BoundedReads::newEloquentBuilder()
+method	BoundedReads::toArray()
 method	BroadcastPageChange::__construct()
 method	BroadcastPageChange::handle()
 method	BypassLog::__construct()
@@ -1985,7 +1995,7 @@ method	FollowingSequenceState::onCompaction()
 method	FollowingSequenceState::onStop()
 method	FollowingSequenceStateFactory::__construct()
 method	FollowingSequenceStateFactory::schemaVersion()
-method	FollowingSequenceStateFactory::stateFor()
+method	FollowingSequenceStateFactory::statesFor()
 method	FollowingSequenceStateReference::forRun()
 method	Frame::__construct()
 method	Frame::answer()
@@ -2219,6 +2229,7 @@ method	LayoutsController::destroy()
 method	LayoutsController::store()
 method	LayoutsController::update()
 method	LayoutsView::layouts()
+method	LazyLoadRefused::for()
 method	Link::between()
 method	Link::connect()
 method	Link::forgetModels()
@@ -2295,6 +2306,7 @@ method	MessageNeedsAnswer::__construct()
 method	MessageRecords::addressedTo()
 method	MessageRecords::conversationWith()
 method	MessageRecords::get()
+method	MessageRecords::many()
 method	MessageSent::__construct()
 method	MessageView::__construct()
 method	MessageWork::__construct()
@@ -2669,6 +2681,7 @@ method	PushState::applyTo()
 method	PushState::type()
 method	PushTaskState::__construct()
 method	PushTaskState::handle()
+method	QueryInValueRead::during()
 method	RaisePlanProgressChanged::__construct()
 method	RaisePlanProgressChanged::handle()
 method	RawRowAccess::changesSchema()
@@ -2765,7 +2778,7 @@ method	ReadyState::onToolFinished()
 method	ReadyStateType::forKey()
 method	ReadyStateType::newState()
 method	ReadyStateType::schemaVersion()
-method	ReadyStateType::stateFor()
+method	ReadyStateType::statesFor()
 method	ReadyWindow::__construct()
 method	ReadyWindow::of()
 method	Reason::__construct()
@@ -2961,6 +2974,7 @@ method	ScopedReadMeter::recordCompletedQuery()
 method	ScopedReadMeter::recordModel()
 method	ScopedReadMeter::recordQuery()
 method	ScopedReadMeter::recordRefusedQuery()
+method	ScopedReadMeter::withoutQueries()
 method	Section::__construct()
 method	Section::actions()
 method	Section::at()
@@ -2977,6 +2991,7 @@ method	SendsPlanWorkCommands::sendCascade()
 method	SendsSignedCalls::sendAndPrint()
 method	SequenceRecords::followedBy()
 method	SequenceRecords::get()
+method	SequenceRecords::many()
 method	SequenceRun::advance()
 method	SequenceRun::cancel()
 method	SequenceRun::casts()
@@ -3084,7 +3099,7 @@ method	StackInspectionQuery::forTarget()
 method	StackLockTimedOut::after()
 method	StackMissing::forTarget()
 method	StackRestorer::__construct()
-method	StackRestorer::frameFor()
+method	StackRestorer::positionsByType()
 method	StackRestorer::restore()
 method	StackTarget::__construct()
 method	StackTarget::description()
@@ -3117,11 +3132,17 @@ method	StateBelowTopPushed::for()
 method	StateFactory::frameFor()
 method	StateReference::__construct()
 method	StateReference::isSameAs()
+method	StateReferences::__construct()
+method	StateReferences::subjectIds()
+method	StateReferencesInvalid::tooMany()
 method	StateRegistration::register()
 method	StateSchemaUnknown::for()
+method	StateSet::__construct()
+method	StateSet::build()
+method	StateSet::stateAt()
 method	StateSubjectMissing::for()
 method	StateType::schemaVersion()
-method	StateType::stateFor()
+method	StateType::statesFor()
 method	StateTypeRegistry::freeze()
 method	StateTypeRegistry::get()
 method	StateTypeRegistry::has()
@@ -3229,6 +3250,7 @@ method	TaskReader::requireAllVisible()
 method	TaskReader::requireVisible()
 method	TaskReader::summaries()
 method	TaskRecords::get()
+method	TaskRecords::many()
 method	TaskStarted::__construct()
 method	TaskState::hasEnded()
 method	TaskState::workState()
@@ -3383,7 +3405,7 @@ method	WorkingOnTaskState::isFinished()
 method	WorkingOnTaskState::onStop()
 method	WorkingOnTaskStateFactory::__construct()
 method	WorkingOnTaskStateFactory::schemaVersion()
-method	WorkingOnTaskStateFactory::stateFor()
+method	WorkingOnTaskStateFactory::statesFor()
 method	WorkingOnTaskStateReference::forTask()
 method	WriteAssignments::__construct()
 method	WriteAssignments::assign()
@@ -4277,6 +4299,7 @@ property	RunningCommand::$isolation
 property	RunningCommandTransaction::$database
 property	RunningCommandTransaction::$running
 property	ScopedReadMeter::$open
+property	ScopedReadMeter::$queryFreeBoundaries
 property	Section::$actions
 property	Section::$component
 property	Section::$dataClass
@@ -4369,6 +4392,9 @@ property	StartTaskHandler::$events
 property	StartTaskHandler::$sessions
 property	StateReference::$subject
 property	StateReference::$typeKey
+property	StateReferences::$all
+property	StateSet::$states
+property	StateSet::$typeKey
 property	StateTypeRegistry::$isFrozen
 property	StateTypeRegistry::$types
 property	StateTypes::$events

@@ -12,7 +12,8 @@ use App\Hooks\Storage\RecordedAnswerCast;
 use App\Hooks\Storage\RecordedSteps;
 use App\Hooks\Storage\RecordedStepsCast;
 use App\Links\Support\Linkable;
-use App\Reads\Support\CountsLoads;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -36,9 +37,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['event_id', 'input_digest', 'answer', 'steps'])]
-final class HookCall extends Model
+final class HookCall extends Model implements ReadableModel
 {
-    use CountsLoads;
+    use BoundedReads;
     use HasUlids, Linkable;
 
     /**

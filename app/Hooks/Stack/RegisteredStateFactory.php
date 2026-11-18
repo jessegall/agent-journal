@@ -6,6 +6,7 @@ namespace App\Hooks\Stack;
 
 use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Decisions\StateReferences;
 use Illuminate\Support\Str;
 
 /**
@@ -19,6 +20,6 @@ final readonly class RegisteredStateFactory implements StateFactory
     {
         $type = $this->types->registry()->get($reference->typeKey);
 
-        return new Frame((string) Str::ulid(), $reference, $type->stateFor($reference), schemaVersion: $type->schemaVersion());
+        return new Frame((string) Str::ulid(), $reference, $type->statesFor(new StateReferences([$reference]))->stateAt(0), schemaVersion: $type->schemaVersion());
     }
 }

@@ -45,7 +45,7 @@ final readonly class UserStacks implements UserStack
      */
     private function roleOf(StackTarget $target): ReadyStateType
     {
-        $session = AgentSession::query()->whereKey($target->sessionId)->where('agent_id', $target->agentId)->first();
+        $session = AgentSession::query()->with('agent')->whereKey($target->sessionId)->where('agent_id', $target->agentId)->first();
 
         if ($session === null || ! $session->isActive()) {
             throw StackTargetRefused::forTarget($target->description());

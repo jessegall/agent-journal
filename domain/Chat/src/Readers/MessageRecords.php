@@ -24,6 +24,17 @@ final readonly class MessageRecords implements ConversationReader
     }
 
     /**
+     * The messages of these ids the actor may read, by id, in one read.
+     *
+     * @param  list<string>  $messageIds
+     * @return array<string, Message>
+     */
+    public function many(array $messageIds): array
+    {
+        return Message::query()->forActor()->whereKey($messageIds)->limit(count($messageIds))->get()->keyBy('id')->all();
+    }
+
+    /**
      * The journal's own read of a message it addressed to an agent, outside that agent's requests.
      */
     public function addressedTo(StackTarget $target, string $messageId): Message

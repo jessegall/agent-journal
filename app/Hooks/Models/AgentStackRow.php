@@ -13,7 +13,8 @@ use App\Hooks\Storage\FrameRecords;
 use App\Hooks\Storage\FrameRecordsCast;
 use App\Hooks\Storage\StoredFrames;
 use App\Links\Support\Linkable;
-use App\Reads\Support\CountsLoads;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -37,9 +38,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['version', 'frames', 'status', 'closed_at'])]
-final class AgentStackRow extends Model
+final class AgentStackRow extends Model implements ReadableModel
 {
-    use CountsLoads;
+    use BoundedReads;
     use HasUlids, Linkable;
 
     protected $table = 'agent_stacks';

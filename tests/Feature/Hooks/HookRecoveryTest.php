@@ -111,7 +111,7 @@ final class HookRecoveryTest extends TestCase
         $this->startTask($exited);
         $this->heartbeats()->markExited($exited->session, 'killed');
 
-        $replacement = $this->app->make(LaunchSessions::class)->launch($exited->session->agent, 'claude-code');
+        $replacement = $this->app->make(LaunchSessions::class)->launch($exited->session->loadMissing('agent')->agent, 'claude-code');
 
         $this->assertNotSame($exited->session->id, $replacement->session->id);
         $this->assertSame(['hooks.main_ready'], array_map(fn (FrameRecord $frame) => $frame->reference->typeKey, $this->stackOf($replacement)->frames->all()));

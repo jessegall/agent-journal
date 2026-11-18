@@ -6,9 +6,9 @@ namespace App\Hooks\Enums;
 
 use App\Agents\Enums\AgentRole;
 use App\Hooks\Contracts\StateType;
-use App\Hooks\Decisions\StateReference;
+use App\Hooks\Decisions\StateReferences;
+use App\Hooks\Decisions\StateSet;
 use App\Hooks\Exceptions\UnknownReadyState;
-use App\Hooks\States\AgentState;
 use App\Hooks\States\MainAgentReadyState;
 use App\Hooks\States\ReadOnlyHelperReadyState;
 use App\Hooks\States\ReadyState;
@@ -26,9 +26,9 @@ enum ReadyStateType: string implements StateType
         return self::tryFrom($typeKey) ?? throw UnknownReadyState::forKey($typeKey);
     }
 
-    public function stateFor(StateReference $reference): AgentState
+    public function statesFor(StateReferences $references): StateSet
     {
-        return $this->newState();
+        return StateSet::build($references, fn () => $this->newState());
     }
 
     public function schemaVersion(): int

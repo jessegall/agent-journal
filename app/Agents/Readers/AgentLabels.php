@@ -30,7 +30,7 @@ final readonly class AgentLabels implements AgentReader
             return [];
         }
 
-        return Agent::query()->whereKey($visible)->get()
+        return Agent::query()->whereKey($visible)->readLimit(count($visible))->get()
             ->mapWithKeys(fn (Agent $agent) => [$agent->id => new AgentLabel($agent->id, $agent->name)])
             ->all();
     }

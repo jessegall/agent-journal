@@ -6,10 +6,11 @@ namespace Domain\Sequences\States\Support;
 
 use App\Hooks\Contracts\StateType;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Decisions\StateReferences;
+use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\States\AgentState;
-use Domain\Sequences\Exceptions\SequenceRunMissing;
 use Domain\Sequences\Readers\Support\SequenceRecords;
 use Domain\Sequences\States\FollowingSequenceState;
 
@@ -20,21 +21,19 @@ final readonly class FollowingSequenceStateFactory implements StateType
 {
     public function __construct(private SequenceRecords $runs) {}
 
-    public function stateFor(StateReference $reference): AgentState
+    public function statesFor(StateReferences $references): StateSet
     {
-        $subject = $reference->subject;
+        $subjects = $this->runs->many($references->subjectIds());
 
-        if (! $subject instanceof SubjectReference) {
-            throw StateSubjectMissing::for($reference->typeKey);
-        }
+        return StateSet::build($references, function (StateReference $reference) use ($subjects): AgentState {
+            $subject = $reference->subject;
 
-        try {
-            $run = $this->runs->get($subject->id);
-        } catch (SequenceRunMissing $missing) {
-            throw StateSubjectMissing::for($reference->typeKey, $missing);
-        }
+            if (! $subject instanceof SubjectReference || ! isset($subjects[$subject->id])) {
+                throw StateSubjectMissing::for($reference->typeKey);
+            }
 
-        return new FollowingSequenceState($run->work());
+            return new FollowingSequenceState($subjects[$subject->id]->work());
+        });
     }
 
     public function schemaVersion(): int

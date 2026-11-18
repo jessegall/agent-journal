@@ -186,7 +186,7 @@ final class HookLaunchTest extends TestCase
         $this->app->instance(AgentContext::class, new AgentContext(
             $launched->session->agent_id,
             $launched->session->id,
-            $launched->session->agent->role,
+            $launched->session->loadMissing('agent')->agent->role,
             new SignedCall($callId, CarbonImmutable::now(), hash('sha256', $callId)),
         ));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id));

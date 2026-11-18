@@ -8,7 +8,8 @@ use App\Actors\Enums\ActorType;
 use App\Agents\Enums\AgentRole;
 use App\Assignments\Contracts\Assignee;
 use App\Links\Support\Linkable;
-use App\Reads\Support\CountsLoads;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -27,9 +28,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(['name', 'role'])]
-final class Agent extends Model implements Assignee
+final class Agent extends Model implements Assignee, ReadableModel
 {
-    use CountsLoads;
+    use BoundedReads;
     use HasUlids, Linkable;
 
     /**

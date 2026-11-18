@@ -16,4 +16,15 @@ final readonly class TaskRecords
     {
         return Task::query()->find($taskId) ?? throw TaskMissing::forId($taskId);
     }
+
+    /**
+     * The tasks of these ids that exist, by id, in one read.
+     *
+     * @param  list<string>  $taskIds
+     * @return array<string, Task>
+     */
+    public function many(array $taskIds): array
+    {
+        return Task::query()->whereKey($taskIds)->readLimit(count($taskIds))->get()->keyBy('id')->all();
+    }
 }

@@ -128,6 +128,8 @@ use App\Hooks\Contracts\StateType;
 use App\Hooks\Contracts\UserStack;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Decisions\StateReferences;
+use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\CommandEffect;
@@ -144,6 +146,7 @@ use App\Hooks\Enums\TransitionType;
 use App\Hooks\Events\ContextWasCompacted;
 use App\Hooks\Events\StateTypesRequested;
 use App\Hooks\Exceptions\StackTransactionRequired;
+use App\Hooks\Exceptions\StateReferencesInvalid;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\Exceptions\StateTypeRepeated;
 use App\Hooks\Exceptions\StateTypesFrozen;
@@ -186,7 +189,9 @@ use App\Reads\Attributes\ReadBudget;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Contracts\ReadMeter;
 use App\Reads\Enums\ReadMode;
+use App\Reads\Exceptions\LazyLoadRefused;
 use App\Reads\Exceptions\ModelReadAllRefused;
+use App\Reads\Exceptions\QueryInValueRead;
 use App\Reads\Exceptions\ReadLimitExceeded;
 use App\Reads\Exceptions\ReadLimitInvalid;
 use App\Reads\Exceptions\ReadLimitTooLarge;
@@ -294,6 +299,8 @@ final class CoreApi
                 VisibilityCheck::class,
             )
             ->values(
+                StateReferences::class,
+                StateSet::class,
                 ReadMode::class,
                 ReadOrder::class,
                 PageSize::class,
@@ -398,6 +405,9 @@ final class CoreApi
                 UnassignRecord::class,
             )
             ->exceptions(
+                QueryInValueRead::class,
+                LazyLoadRefused::class,
+                StateReferencesInvalid::class,
                 ReadLimitInvalid::class,
                 ReadLimitTooLarge::class,
                 ReadReasonMissing::class,

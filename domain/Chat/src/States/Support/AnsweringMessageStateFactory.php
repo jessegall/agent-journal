@@ -6,10 +6,11 @@ namespace Domain\Chat\States\Support;
 
 use App\Hooks\Contracts\StateType;
 use App\Hooks\Decisions\StateReference;
+use App\Hooks\Decisions\StateReferences;
+use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\States\AgentState;
-use Domain\Chat\Exceptions\MessageMissing;
 use Domain\Chat\Readers\MessageRecords;
 use Domain\Chat\States\AnsweringMessageState;
 
@@ -20,21 +21,19 @@ final readonly class AnsweringMessageStateFactory implements StateType
 {
     public function __construct(private MessageRecords $messages) {}
 
-    public function stateFor(StateReference $reference): AgentState
+    public function statesFor(StateReferences $references): StateSet
     {
-        $subject = $reference->subject;
+        $subjects = $this->messages->many($references->subjectIds());
 
-        if (! $subject instanceof SubjectReference) {
-            throw StateSubjectMissing::for($reference->typeKey);
-        }
+        return StateSet::build($references, function (StateReference $reference) use ($subjects): AgentState {
+            $subject = $reference->subject;
 
-        try {
-            $message = $this->messages->get($subject->id);
-        } catch (MessageMissing $missing) {
-            throw StateSubjectMissing::for($reference->typeKey, $missing);
-        }
+            if (! $subject instanceof SubjectReference || ! isset($subjects[$subject->id])) {
+                throw StateSubjectMissing::for($reference->typeKey);
+            }
 
-        return new AnsweringMessageState($message->work());
+            return new AnsweringMessageState($subjects[$subject->id]->work());
+        });
     }
 
     public function schemaVersion(): int

@@ -19,6 +19,17 @@ final readonly class SequenceRecords
     }
 
     /**
+     * The runs of these ids the actor may read, by id, in one read.
+     *
+     * @param  list<string>  $runIds
+     * @return array<string, SequenceRun>
+     */
+    public function many(array $runIds): array
+    {
+        return SequenceRun::query()->forActor()->whereKey($runIds)->limit(count($runIds))->get()->keyBy('id')->all();
+    }
+
+    /**
      * The journal's own read of a run it started for an agent, outside that agent's requests.
      */
     public function followedBy(StackTarget $target, string $runId): SequenceRun

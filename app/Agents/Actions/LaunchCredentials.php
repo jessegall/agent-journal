@@ -28,7 +28,7 @@ final readonly class LaunchCredentials
 
     public function revoke(AgentSession $session): void
     {
-        $credential = $session->credential ?? throw CredentialRejected::unknown();
+        $credential = $session->loadMissing('credential')->credential ?? throw CredentialRejected::unknown();
         $credential->revokeAt(CarbonImmutable::now());
     }
 
