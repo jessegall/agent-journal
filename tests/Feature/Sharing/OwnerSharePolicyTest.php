@@ -93,7 +93,7 @@ final class OwnerSharePolicyTest extends TestCase
 
     public function test_disclosure_is_the_record_providers_answer(): void
     {
-        $this->registerShareDomain(new PamphletsDomain);
+        $this->registerShareDomain(new PamphletsDomain());
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
         $policy = $this->app->make(SharePolicy::class);
 

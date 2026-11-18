@@ -26,7 +26,7 @@ final class StackInspection extends Data
         public readonly int $version,
         #[DataCollectionOf(InspectedFrame::class)]
         public readonly array $frames,
-        public readonly InspectedCall|Optional $lastCall = new Optional,
+        public readonly InspectedCall|Optional $lastCall = new Optional(),
     ) {}
 
     public static function fromAgentStackRow(AgentStackRow $row, InspectedCall|Optional $lastCall): self

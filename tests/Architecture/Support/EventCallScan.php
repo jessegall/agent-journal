@@ -50,7 +50,7 @@ final readonly class EventCallScan implements FileScan
     public static function of(ParsedFile $file): array
     {
         $calls = [];
-        $finder = new NodeFinder;
+        $finder = new NodeFinder();
 
         foreach ($finder->findInstanceOf($file->statements, Expr\FuncCall::class) as $call) {
             if (! $call->name instanceof Name || ! in_array($call->name->toLowerString(), self::HELPERS, true)) {
@@ -90,7 +90,7 @@ final readonly class EventCallScan implements FileScan
     private static function declaredRegistrations(ParsedFile $file): array
     {
         $registrations = [];
-        $finder = new NodeFinder;
+        $finder = new NodeFinder();
 
         foreach ($finder->findInstanceOf($file->statements, ClassMethod::class) as $method) {
             $type = ($method->params[0] ?? null)?->type;
@@ -188,7 +188,7 @@ final readonly class EventCallScan implements FileScan
             $event === null => '',
             $event instanceof String_ => $event->value,
             $event instanceof Expr\ClassConstFetch && $event->class instanceof Name => $event->class->toString(),
-            default => (new Standard)->prettyPrintExpr($event),
+            default => new Standard()->prettyPrintExpr($event),
         };
     }
 }

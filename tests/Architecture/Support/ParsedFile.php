@@ -39,7 +39,7 @@ final readonly class ParsedFile
     private static function fromCode(string $path, string $code): self
     {
         try {
-            $statements = (new ParserFactory)->createForNewestSupportedVersion()->parse($code);
+            $statements = new ParserFactory()->createForNewestSupportedVersion()->parse($code);
         } catch (Error $error) {
             throw ParseFailed::for($path, $error);
         }
@@ -48,7 +48,7 @@ final readonly class ParsedFile
             throw ParseFailed::unreadable($path);
         }
 
-        $traverser = new NodeTraverser(new NameResolver, new ParentConnectingVisitor);
+        $traverser = new NodeTraverser(new NameResolver(), new ParentConnectingVisitor());
 
         return new self($path, $code, array_values($traverser->traverse($statements)));
     }

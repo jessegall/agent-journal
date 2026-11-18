@@ -15,7 +15,7 @@ final readonly class RecordUserHeartbeatController
 {
     public function __invoke(CommandBus $commands): Response
     {
-        $commands->run(new RecordUserHeartbeat);
+        $commands->run(new RecordUserHeartbeat());
 
         return new Response(status: Response::HTTP_NO_CONTENT);
     }

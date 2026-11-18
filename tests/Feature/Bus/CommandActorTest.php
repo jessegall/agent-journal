@@ -122,6 +122,6 @@ final class CommandActorTest extends CommandBusTestCase
 
     private function actAsEngine(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new EngineActor));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new EngineActor()));
     }
 }

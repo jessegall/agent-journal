@@ -33,8 +33,8 @@ final class SettingCodecTest extends TestCase
     {
         parent::setUp();
 
-        $this->codec = new SettingCodec;
-        $this->settings = new ReviewSettings;
+        $this->codec = new SettingCodec();
+        $this->settings = new ReviewSettings();
     }
 
     public function test_every_type_round_trips_its_default_and_a_bound_value(): void

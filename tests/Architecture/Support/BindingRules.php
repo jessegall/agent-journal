@@ -126,7 +126,7 @@ final readonly class BindingRules
             return null;
         }
 
-        foreach ((new ReflectionClass($class))->getConstructor()?->getParameters() ?? [] as $parameter) {
+        foreach (new ReflectionClass($class)->getConstructor()?->getParameters() ?? [] as $parameter) {
             $type = $parameter->getType();
 
             if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
@@ -159,7 +159,7 @@ final readonly class BindingRules
     {
         $registrations = [];
 
-        foreach (ScanCache::findings(new BindingRegistrationScan, $this->files) as $registration) {
+        foreach (ScanCache::findings(new BindingRegistrationScan(), $this->files) as $registration) {
             $registrations[] = $registration;
         }
 
@@ -183,7 +183,7 @@ final readonly class BindingRules
     {
         $registrations = [];
 
-        foreach ((new NodeFinder)->findInstanceOf($file->statements, ClassLike::class) as $type) {
+        foreach (new NodeFinder()->findInstanceOf($file->statements, ClassLike::class) as $type) {
             $name = $type->namespacedName?->toString();
 
             if ($name === null || ! self::exists($name)) {
@@ -215,7 +215,7 @@ final readonly class BindingRules
 
         $registrations = [];
 
-        foreach ((new NodeFinder)->findInstanceOf($file->statements, MethodCall::class) as $call) {
+        foreach (new NodeFinder()->findInstanceOf($file->statements, MethodCall::class) as $call) {
             $method = $call->name instanceof Node\Identifier ? $call->name->toString() : '';
             $abstract = self::classStringOf($call->getArgs()[0]->value ?? null);
 
@@ -245,14 +245,14 @@ final readonly class BindingRules
             return null;
         }
 
-        $attribute = (new ReflectionClass($name))->getAttributes(Bind::class)[0] ?? null;
+        $attribute = new ReflectionClass($name)->getAttributes(Bind::class)[0] ?? null;
 
         return $attribute?->newInstance()->concrete;
     }
 
     private static function isScopedClass(string|null $name): bool
     {
-        return $name !== null && class_exists($name) && (new ReflectionClass($name))->getAttributes(Scoped::class) !== [];
+        return $name !== null && class_exists($name) && new ReflectionClass($name)->getAttributes(Scoped::class) !== [];
     }
 
     private function isCoreExport(string $name): bool
@@ -274,7 +274,7 @@ final readonly class BindingRules
 
     private static function namespaceOf(string $file): string
     {
-        return ScanCache::findings(new NamespacesDeclared, [$file])[0]['name'] ?? '';
+        return ScanCache::findings(new NamespacesDeclared(), [$file])[0]['name'] ?? '';
     }
 
     /**

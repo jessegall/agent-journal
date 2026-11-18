@@ -44,7 +44,7 @@ final class ProgramCapabilitiesTest extends TestCase
 
     public function test_the_rewrite_support_decides_between_a_rewrite_and_a_refusal(): void
     {
-        $answer = new HookAnswer(Decision::rewrite('journal run tests'), [], [], new AgentStack([], new InMemoryStateFactory));
+        $answer = new HookAnswer(Decision::rewrite('journal run tests'), [], [], new AgentStack([], new InMemoryStateFactory()));
         $original = new ProgramToolInput(['command' => 'composer test']);
 
         $taken = $this->capabilities(RewriteSupport::WithoutApproval)->rewrites->reply($answer, $original);
@@ -58,7 +58,7 @@ final class ProgramCapabilitiesTest extends TestCase
     {
         $hookMethods = array_map(
             fn ($method) => $method->getName(),
-            array_filter((new ReflectionClass(AgentState::class))->getMethods(), fn ($method) => str_starts_with($method->getName(), 'on')),
+            array_filter(new ReflectionClass(AgentState::class)->getMethods(), fn ($method) => str_starts_with($method->getName(), 'on')),
         );
 
         $this->assertSame([], array_diff(['onShellCommand', 'onStop'], $hookMethods));

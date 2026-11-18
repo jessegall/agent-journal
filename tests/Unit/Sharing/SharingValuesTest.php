@@ -69,12 +69,12 @@ final class SharingValuesTest extends TestCase
 
     public function test_a_page_of_records_has_more_only_with_a_continuation_and_problems_mean_not_ready(): void
     {
-        $this->assertTrue((new ShareRecords([], [], 'next'))->hasMore());
-        $this->assertFalse((new ShareRecords([], [], null))->hasMore());
+        $this->assertTrue(new ShareRecords([], [], 'next')->hasMore());
+        $this->assertFalse(new ShareRecords([], [], null)->hasMore());
         $this->assertTrue(GatewayReadiness::ready()->isReady());
-        $this->assertFalse((new GatewayReadiness(['The tunler program is not installed.']))->isReady());
+        $this->assertFalse(new GatewayReadiness(['The tunler program is not installed.'])->isReady());
         $this->assertTrue(GatewayHealth::healthy()->isHealthy());
-        $this->assertFalse((new GatewayHealth(['The probe was redirected.']))->isHealthy());
+        $this->assertFalse(new GatewayHealth(['The probe was redirected.'])->isHealthy());
     }
 
     /**

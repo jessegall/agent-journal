@@ -17,7 +17,7 @@ final class SharedData extends Data
 {
     public function __construct(
         public readonly string $name,
-        public readonly CurrentUserData|Optional $currentUser = new Optional,
-        public readonly bool|Optional $canShare = new Optional,
+        public readonly CurrentUserData|Optional $currentUser = new Optional(),
+        public readonly bool|Optional $canShare = new Optional(),
     ) {}
 }

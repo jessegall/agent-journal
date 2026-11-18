@@ -81,7 +81,7 @@ class ReadBuilder extends Builder
     public function readInChunks(int $size, callable $each): void
     {
         $this->mode = ReadMode::Chunked;
-        (new ChunkedRead($this, $size))->run($each);
+        new ChunkedRead($this, $size)->run($each);
     }
 
     /**

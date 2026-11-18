@@ -55,7 +55,7 @@ final class HookStorageTest extends TestCase
     public function test_a_stack_keeps_its_frames_exactly(): void
     {
         $frames = $this->frames();
-        $row = new AgentStackRow;
+        $row = new AgentStackRow();
         $row->startFor(new StackTarget(TestIds::of(7), TestIds::of(9)), $frames, new TickingTypes([]));
 
         $stored = AgentStackRow::query()->forTarget(new StackTarget(TestIds::of(7), TestIds::of(9)))->sole();
@@ -67,7 +67,7 @@ final class HookStorageTest extends TestCase
 
     public function test_saving_frames_raises_the_version_and_closing_records_the_time(): void
     {
-        $row = new AgentStackRow;
+        $row = new AgentStackRow();
         $row->startFor(new StackTarget(TestIds::of(7), TestIds::of(9)), $this->frames(), new TickingTypes([]));
         $bottomOnly = new FrameRecords([$this->frames()->all()[0]]);
 
@@ -84,11 +84,11 @@ final class HookStorageTest extends TestCase
 
     public function test_one_agent_and_session_has_one_stack(): void
     {
-        (new AgentStackRow)->startFor(new StackTarget(TestIds::of(7), TestIds::of(9)), $this->frames(), new TickingTypes([]));
+        new AgentStackRow()->startFor(new StackTarget(TestIds::of(7), TestIds::of(9)), $this->frames(), new TickingTypes([]));
 
         $this->expectException(QueryException::class);
 
-        (new AgentStackRow)->startFor(new StackTarget(TestIds::of(7), TestIds::of(9)), $this->frames(), new TickingTypes([]));
+        new AgentStackRow()->startFor(new StackTarget(TestIds::of(7), TestIds::of(9)), $this->frames(), new TickingTypes([]));
     }
 
     public function test_a_hook_call_keeps_its_answer_bytes_and_steps_exactly(): void
@@ -98,7 +98,7 @@ final class HookStorageTest extends TestCase
             new WalkStep('frame-2', 'tasks.working', 'onStop', AnswerType::Delegate, TransitionType::Keep, 2),
             new WalkStep('frame-1', 'hooks.main_ready', 'onStop', AnswerType::Deny, TransitionType::Push, 1),
         ]);
-        $call = new HookCall;
+        $call = new HookCall();
         $call->recordFor($this->hook(), RecordedAnswer::of(AnswerType::Deny, $response), $steps);
 
         $stored = HookCall::query()->sole();
@@ -112,24 +112,24 @@ final class HookStorageTest extends TestCase
 
     public function test_one_hook_id_is_recorded_once_per_agent_and_session(): void
     {
-        (new HookCall)->recordFor($this->hook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
+        new HookCall()->recordFor($this->hook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
 
         $this->expectException(QueryException::class);
 
-        (new HookCall)->recordFor($this->hook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
+        new HookCall()->recordFor($this->hook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
     }
 
     public function test_the_agent_and_session_cannot_be_mass_assigned(): void
     {
-        $this->assertFalse((new AgentStackRow)->isFillable('agent_id'));
-        $this->assertFalse((new AgentStackRow)->isFillable('session_id'));
-        $this->assertFalse((new HookCall)->isFillable('agent_id'));
-        $this->assertFalse((new HookCall)->isFillable('session_id'));
+        $this->assertFalse(new AgentStackRow()->isFillable('agent_id'));
+        $this->assertFalse(new AgentStackRow()->isFillable('session_id'));
+        $this->assertFalse(new HookCall()->isFillable('agent_id'));
+        $this->assertFalse(new HookCall()->isFillable('session_id'));
     }
 
     public function test_frames_in_an_unknown_version_are_refused(): void
     {
-        (new AgentStackRow)->startFor(new StackTarget(TestIds::of(7), TestIds::of(9)), $this->frames(), new TickingTypes([]));
+        new AgentStackRow()->startFor(new StackTarget(TestIds::of(7), TestIds::of(9)), $this->frames(), new TickingTypes([]));
         DB::table('agent_stacks')->update(['frames' => '{"version":2,"frames":[]}']);
 
         $this->expectException(StoredValueInvalid::class);
@@ -139,7 +139,7 @@ final class HookStorageTest extends TestCase
 
     public function test_steps_without_their_fields_are_refused(): void
     {
-        (new HookCall)->recordFor($this->hook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
+        new HookCall()->recordFor($this->hook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
         DB::table('hook_calls')->update(['steps' => '{"version":1,"steps":[{"frameId":"frame-1"}]}']);
 
         $this->expectException(StoredValueInvalid::class);
@@ -149,9 +149,9 @@ final class HookStorageTest extends TestCase
 
     public function test_a_stack_and_a_hook_call_can_be_linked(): void
     {
-        $stack = new AgentStackRow;
+        $stack = new AgentStackRow();
         $stack->startFor(new StackTarget(TestIds::of(7), TestIds::of(9)), $this->frames(), new TickingTypes([]));
-        $call = new HookCall;
+        $call = new HookCall();
         $call->recordFor($this->hook(), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
 
         $stack->linkTo($call);

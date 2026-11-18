@@ -18,11 +18,11 @@ final class MessageCapabilityTest extends TestCase
 {
     public function test_users_and_agents_send_and_receive_and_the_system_only_sends(): void
     {
-        $this->assertInstanceOf(SendsMessages::class, new Agent);
-        $this->assertInstanceOf(ReceivesMessages::class, new Agent);
-        $this->assertInstanceOf(SendsMessages::class, new User);
-        $this->assertInstanceOf(ReceivesMessages::class, new User);
-        $this->assertInstanceOf(SendsMessages::class, new SystemActor);
-        $this->assertNotInstanceOf(ReceivesMessages::class, new SystemActor);
+        $this->assertInstanceOf(SendsMessages::class, new Agent());
+        $this->assertInstanceOf(ReceivesMessages::class, new Agent());
+        $this->assertInstanceOf(SendsMessages::class, new User());
+        $this->assertInstanceOf(ReceivesMessages::class, new User());
+        $this->assertInstanceOf(SendsMessages::class, new SystemActor());
+        $this->assertNotInstanceOf(ReceivesMessages::class, new SystemActor());
     }
 }

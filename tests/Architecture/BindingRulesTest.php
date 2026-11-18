@@ -69,7 +69,7 @@ final class BindingRulesTest extends TestCase
             ...array_map(PublicOwner::fromDomain(...), $this->app->make(DomainRegistry::class)->all()),
         ];
 
-        $violations = (new BindingRules($owners, DomainFiles::in([app_path(), ...DomainFiles::domainCode()])))->violations();
+        $violations = new BindingRules($owners, DomainFiles::in([app_path(), ...DomainFiles::domainCode()]))->violations();
 
         $this->assertSame([], $violations, BoundaryReport::of($violations, base_path()));
     }
@@ -83,7 +83,7 @@ final class BindingRulesTest extends TestCase
             new PublicOwner('Tasks', 'Tests\Fixtures\Bindings\Tasks', Exports::make()->build()),
         ];
 
-        $violations = (new BindingRules($owners, DomainFiles::in([$fixtures])))->violations();
+        $violations = new BindingRules($owners, DomainFiles::in([$fixtures]))->violations();
 
         $this->assertSame([
             'PlanReader.php:10 binds Tests\Fixtures\Bindings\Plans\Contracts\PlanReader, but Tests\Fixtures\Bindings\Plans\PlanNotes does not implement it',

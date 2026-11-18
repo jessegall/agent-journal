@@ -27,7 +27,7 @@ final class SourceLineMarksTest extends TestCase
 
     public function test_a_part_keeps_the_line_numbers_of_the_whole_text(): void
     {
-        $html = (new TextPart("## Later\n\nText.", 40, 42, null))->toSafeHtml();
+        $html = new TextPart("## Later\n\nText.", 40, 42, null)->toSafeHtml();
 
         $this->assertStringContainsString('<h2 data-source-first="40" data-source-last="40">Later</h2>', $html);
         $this->assertStringContainsString('<p data-source-first="42" data-source-last="42">Text.</p>', $html);

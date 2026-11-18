@@ -51,7 +51,7 @@ final readonly class CommentRecords implements CommentReader
         );
     }
 
-    public function location(RecordIdentity $target, string $commentId, TextSelection $selection = new TextSelection): RecordCommentLocation|TextCommentLocation
+    public function location(RecordIdentity $target, string $commentId, TextSelection $selection = new TextSelection()): RecordCommentLocation|TextCommentLocation
     {
         $record = $this->commentable($target);
         $comment = self::commentsOf($record)->whereKey($commentId)->first() ?? throw CommentUnavailable::for($commentId);

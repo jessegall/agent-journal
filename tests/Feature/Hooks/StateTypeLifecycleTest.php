@@ -104,7 +104,7 @@ final class StateTypeLifecycleTest extends TestCase
 
     private function fixtureListenerFolder(): string
     {
-        return dirname((string) (new ReflectionClass(RegisterNoteState::class))->getFileName());
+        return dirname((string) new ReflectionClass(RegisterNoteState::class)->getFileName());
     }
 
     private function discoveryPaths(): ReflectionProperty

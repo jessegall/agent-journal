@@ -94,7 +94,7 @@ final class AssigneesTest extends TestCase
         $firstPage = $registry->assigneeProvider(ActorType::Agent)->eligible(new Page(null, 1));
         $secondPage = $registry->assigneeProvider(ActorType::Agent)->eligible(new Page($firstPage->nextAfterId, 1));
         $names = $registry->assigneeProvider(ActorType::Agent)->names([ActorIdentity::of($retired), ActorIdentity::of($this->builder)]);
-        $users = $registry->assigneeProvider(ActorType::User)->eligible(new Page);
+        $users = $registry->assigneeProvider(ActorType::User)->eligible(new Page());
 
         $this->assertSame(['Builder'], array_map(fn ($name) => $name->name, $firstPage->assignees));
         $this->assertSame(['Reviewer'], array_map(fn ($name) => $name->name, $secondPage->assignees));

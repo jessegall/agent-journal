@@ -23,6 +23,6 @@ final readonly class ChosenAgentSection implements SectionReader
     {
         $chosen = array_values(array_filter($this->sessions->active(), fn (SessionOption $session) => (string) $session->sessionId === $context->id));
 
-        return $chosen === [] ? throw new NotFoundHttpException : ChosenAgentData::from(['label' => $chosen[0]->agentName]);
+        return $chosen === [] ? throw new NotFoundHttpException() : ChosenAgentData::from(['label' => $chosen[0]->agentName]);
     }
 }

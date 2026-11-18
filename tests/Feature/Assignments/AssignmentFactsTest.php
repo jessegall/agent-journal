@@ -91,7 +91,7 @@ final class AssignmentFactsTest extends TestCase
     {
         $attempts = 0;
         $conflict = new PDOException('could not serialize access');
-        (new ReflectionProperty(Exception::class, 'code'))->setValue($conflict, '40001');
+        new ReflectionProperty(Exception::class, 'code')->setValue($conflict, '40001');
 
         $this->app->make(AssignmentTransaction::class)->run(function () use (&$attempts, $conflict): void {
             $attempts++;
@@ -121,7 +121,7 @@ final class AssignmentFactsTest extends TestCase
      */
     private function useTheApplicationsTransactionManager(): void
     {
-        $manager = new DatabaseTransactionsManager;
+        $manager = new DatabaseTransactionsManager();
         $this->app->instance('db.transactions', $manager);
         DB::connection()->setTransactionManager($manager);
     }

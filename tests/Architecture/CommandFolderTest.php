@@ -67,7 +67,7 @@ final class CommandFolderTest extends TestCase
         $static = [];
 
         foreach ([...$this->classesIn('Handlers'), ...$this->classesIn('CommandMiddleware')] as $class) {
-            foreach ((new ReflectionClass($class))->getProperties() as $property) {
+            foreach (new ReflectionClass($class)->getProperties() as $property) {
                 if ($property->isStatic()) {
                     $static[] = "{$class}::\${$property->getName()}";
                 }
@@ -115,7 +115,7 @@ final class CommandFolderTest extends TestCase
     {
         $classes = [];
 
-        foreach (ScanCache::findings(new TypesDeclared, DomainFiles::in([app_path(), base_path('tests/Fixtures/Modules')])) as $declaration) {
+        foreach (ScanCache::findings(new TypesDeclared(), DomainFiles::in([app_path(), base_path('tests/Fixtures/Modules')])) as $declaration) {
             $name = $declaration['name'];
 
             if (class_exists($name) || interface_exists($name) || enum_exists($name)) {

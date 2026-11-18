@@ -47,7 +47,7 @@ final class ScopedReadMeter implements ReadMeter
 
     public function measure(string $label, callable $work): Measurement
     {
-        $tally = new ReadTally;
+        $tally = new ReadTally();
         $this->open[] = $tally;
 
         try {
@@ -64,7 +64,7 @@ final class ScopedReadMeter implements ReadMeter
      */
     public function begin(): void
     {
-        $this->open[] = new ReadTally;
+        $this->open[] = new ReadTally();
     }
 
     /**
@@ -72,12 +72,12 @@ final class ScopedReadMeter implements ReadMeter
      */
     public function end(): ReadCounts
     {
-        return (array_pop($this->open) ?? new ReadTally)->counts();
+        return (array_pop($this->open) ?? new ReadTally())->counts();
     }
 
     public function current(): ReadCounts
     {
-        $innermost = $this->open === [] ? new ReadTally : $this->open[array_key_last($this->open)];
+        $innermost = $this->open === [] ? new ReadTally() : $this->open[array_key_last($this->open)];
 
         return $innermost->counts();
     }

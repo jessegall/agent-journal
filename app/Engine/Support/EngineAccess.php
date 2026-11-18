@@ -19,7 +19,7 @@ final class EngineAccess implements EngineTargetAccess
 
     public function __construct()
     {
-        $this->grant = new NoEngineGrant;
+        $this->grant = new NoEngineGrant();
     }
 
     public function grantFrame(StackTarget $target, string $frameId): void
@@ -34,7 +34,7 @@ final class EngineAccess implements EngineTargetAccess
 
     public function clear(): void
     {
-        $this->grant = new NoEngineGrant;
+        $this->grant = new NoEngineGrant();
     }
 
     /**

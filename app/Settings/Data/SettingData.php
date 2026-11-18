@@ -26,7 +26,7 @@ final class SettingData extends Data
         public readonly SettingSource $source,
         public readonly SettingAvailability $availability,
         public readonly StringValueData|BooleanValueData|IntegerValueData|DecimalValueData|StringChoiceValueData|IntegerChoiceValueData $default,
-        public readonly StringConstraintsData|IntegerConstraintsData|DecimalConstraintsData|StringChoiceConstraintsData|IntegerChoiceConstraintsData|Optional $constraints = new Optional,
-        public readonly StringValueData|BooleanValueData|IntegerValueData|DecimalValueData|StringChoiceValueData|IntegerChoiceValueData|InvalidValueData|Optional $configured = new Optional,
+        public readonly StringConstraintsData|IntegerConstraintsData|DecimalConstraintsData|StringChoiceConstraintsData|IntegerChoiceConstraintsData|Optional $constraints = new Optional(),
+        public readonly StringValueData|BooleanValueData|IntegerValueData|DecimalValueData|StringChoiceValueData|IntegerChoiceValueData|InvalidValueData|Optional $configured = new Optional(),
     ) {}
 }

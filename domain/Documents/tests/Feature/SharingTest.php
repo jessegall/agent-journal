@@ -73,7 +73,7 @@ final class SharingTest extends TestCase
 
     public function test_both_record_types_are_registered_with_the_linked_capability_and_owned_comments(): void
     {
-        $aliases = array_map(fn (ShareRecordRegistration $registration) => [$registration->alias, $registration->capabilities], (new DocumentsDomain)->shareRecords());
+        $aliases = array_map(fn (ShareRecordRegistration $registration) => [$registration->alias, $registration->capabilities], new DocumentsDomain()->shareRecords());
 
         $this->assertSame([[Document::LINK_TYPE, ['share-linked-record']], [Report::LINK_TYPE, ['share-linked-record']]], $aliases);
         $this->assertSame(ShareRelationType::Owned, Document::shareRelations()->find('comments')->get()->type);

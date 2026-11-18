@@ -122,7 +122,7 @@ final class HookRetentionTest extends TestCase
     {
         $this->expectException(RetentionTooShort::class);
 
-        (new RetentionPeriods(hookCallDays: 0))->checkLongerThan(new HookRetryWindow(300));
+        new RetentionPeriods(hookCallDays: 0)->checkLongerThan(new HookRetryWindow(300));
     }
 
     public function test_the_command_prunes_in_batches_and_says_how_much(): void
@@ -139,7 +139,7 @@ final class HookRetentionTest extends TestCase
 
     private function stack(StackTarget $target): AgentStackRow
     {
-        $row = new AgentStackRow;
+        $row = new AgentStackRow();
         $row->startFor($target, new FrameRecords([new FrameRecord('ready', new StateReference('hooks.main_ready', NoSubject::None), true, 1, CarbonImmutable::now())]), new TickingTypes([]));
 
         return $row;
@@ -147,7 +147,7 @@ final class HookRetentionTest extends TestCase
 
     private function recordCall(StackTarget $target, string $hookId): HookCall
     {
-        $call = new HookCall;
+        $call = new HookCall();
         $call->recordFor(new HookIdentity($target->agentId, $target->sessionId, $hookId, str_repeat('a', 64)), RecordedAnswer::of(AnswerType::Allow, '{}'), RecordedSteps::of([]));
 
         return $call;

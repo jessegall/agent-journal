@@ -25,7 +25,7 @@ final readonly class TraitsUsed implements FileScan
     {
         $traits = [];
 
-        foreach ((new NodeFinder)->findInstanceOf($file->statements, TraitUse::class) as $traitUse) {
+        foreach (new NodeFinder()->findInstanceOf($file->statements, TraitUse::class) as $traitUse) {
             array_push($traits, ...array_map(fn (Name $trait) => $trait->toString(), $traitUse->traits));
         }
 

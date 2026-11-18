@@ -38,7 +38,7 @@ trait HasNumber
      */
     public static function idOfNumber(int $number): string|null
     {
-        $id = static::query()->where('number', $number)->value((new static)->getKeyName());
+        $id = static::query()->where('number', $number)->value((new static())->getKeyName());
 
         return is_string($id) ? $id : null;
     }

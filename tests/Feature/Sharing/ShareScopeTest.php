@@ -40,7 +40,7 @@ final class ShareScopeTest extends TestCase
     {
         parent::setUp();
 
-        $this->registerShareDomain(new BindersDomain);
+        $this->registerShareDomain(new BindersDomain());
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
     }
 

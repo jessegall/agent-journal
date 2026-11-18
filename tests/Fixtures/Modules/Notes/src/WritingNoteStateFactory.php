@@ -22,7 +22,7 @@ final class WritingNoteStateFactory implements StateLoader
 
     private function stateFor(StateReference $reference): AgentState
     {
-        return new WritingNoteState;
+        return new WritingNoteState();
     }
 
     public function schemaVersion(): int

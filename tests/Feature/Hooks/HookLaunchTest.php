@@ -90,7 +90,7 @@ final class HookLaunchTest extends TestCase
 
     public function test_a_launch_without_a_command_parser_is_refused_and_keeps_nothing(): void
     {
-        $this->app->instance(ShellCommandParser::class, new MissingShellParser);
+        $this->app->instance(ShellCommandParser::class, new MissingShellParser());
 
         try {
             $this->launch('hooks.main_ready');

@@ -44,7 +44,7 @@ final class DomainStateTypesTest extends TestCase
 
         $this->assertInstanceOf(DomainStateType::class, $working);
         $this->assertSame('Tasks', $working->owner);
-        $this->assertSame((new WorkingOnTaskStateFactory($this->app->make(TaskRecords::class)))->schemaVersion(), $working->schemaVersion());
+        $this->assertSame(new WorkingOnTaskStateFactory($this->app->make(TaskRecords::class))->schemaVersion(), $working->schemaVersion());
         $this->assertNotInstanceOf(ConditionalStateType::class, $types->get('hooks.main_ready'));
     }
 

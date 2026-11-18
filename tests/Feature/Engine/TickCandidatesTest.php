@@ -46,11 +46,11 @@ final class TickCandidatesTest extends TestCase
     {
         parent::setUp();
 
-        $this->ticking = new CountingTickingLoader;
-        $this->switchable = new CountingTickingLoader;
+        $this->ticking = new CountingTickingLoader();
+        $this->switchable = new CountingTickingLoader();
         Event::listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
             $event->registry->register('test.ticking', $this->ticking);
-            $event->registry->register('test.plain', new UnreadLoader);
+            $event->registry->register('test.plain', new UnreadLoader());
             $event->registry->register('test.switchable', new DomainTickableStateType(new DomainStateType('Switchable', $this->switchable, fn () => $this->availability())));
         });
     }

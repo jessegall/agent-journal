@@ -32,7 +32,7 @@ final readonly class DeclarationRules
     {
         $violations = [];
 
-        foreach (ScanCache::findingsByFile(new ClassesDeclared, $files) as $path => $classes) {
+        foreach (ScanCache::findingsByFile(new ClassesDeclared(), $files) as $path => $classes) {
             foreach ($classes as $name) {
                 if (! is_subclass_of($name, Domain::class) || ($reflection = new ReflectionClass($name))->isAbstract()) {
                     continue;
@@ -107,7 +107,7 @@ final readonly class DeclarationRules
         $violations = [];
 
         foreach ($this->entries as $entry) {
-            foreach (ScanCache::findingsByFile(new NamespacesDeclared, DomainFiles::in([$entry->folder])) as $path => $namespaces) {
+            foreach (ScanCache::findingsByFile(new NamespacesDeclared(), DomainFiles::in([$entry->folder])) as $path => $namespaces) {
                 foreach ($namespaces as $namespace) {
                     $name = $namespace['name'] === '' ? 'the global namespace' : $namespace['name'];
 

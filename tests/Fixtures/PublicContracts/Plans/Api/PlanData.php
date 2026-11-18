@@ -13,6 +13,6 @@ final class PlanData extends Data
     public function __construct(
         public readonly string $title,
         public readonly CarbonImmutable $startedAt,
-        public readonly PlanStatus|Optional $status = new Optional,
+        public readonly PlanStatus|Optional $status = new Optional(),
     ) {}
 }

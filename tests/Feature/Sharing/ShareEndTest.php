@@ -135,7 +135,7 @@ final class ShareEndTest extends TestCase
     {
         $this->startUserRequestAs(TestIds::of(9));
 
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new ExpireShares), SystemActorRequired::class);
+        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new ExpireShares()), SystemActorRequired::class);
     }
 
     private function activeShare(CarbonImmutable $expiresAt): Share
@@ -159,9 +159,9 @@ final class ShareEndTest extends TestCase
     private function expire(): ShareExpiry
     {
         $this->app->forgetScopedInstances();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new SystemActor));
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new SystemActor()));
 
-        return $this->app->make(CommandBus::class)->run(new ExpireShares);
+        return $this->app->make(CommandBus::class)->run(new ExpireShares());
     }
 
     /**

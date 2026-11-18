@@ -27,16 +27,16 @@ final class HookPayload extends Data
     public function __construct(
         public readonly string $hookEventName,
         public readonly string $sessionId,
-        public readonly string|Optional $source = new Optional,
-        public readonly string|Optional $prompt = new Optional,
-        public readonly string|Optional $toolName = new Optional,
-        public readonly array|Optional $toolInput = new Optional,
-        public readonly array|string|Optional $toolResponse = new Optional,
-        public readonly bool|Optional $stopHookActive = new Optional,
-        public readonly string|Optional $reason = new Optional,
-        public readonly string|Optional $agentId = new Optional,
-        public readonly string|Optional $promptId = new Optional,
-        public readonly string|Optional $turnId = new Optional,
+        public readonly string|Optional $source = new Optional(),
+        public readonly string|Optional $prompt = new Optional(),
+        public readonly string|Optional $toolName = new Optional(),
+        public readonly array|Optional $toolInput = new Optional(),
+        public readonly array|string|Optional $toolResponse = new Optional(),
+        public readonly bool|Optional $stopHookActive = new Optional(),
+        public readonly string|Optional $reason = new Optional(),
+        public readonly string|Optional $agentId = new Optional(),
+        public readonly string|Optional $promptId = new Optional(),
+        public readonly string|Optional $turnId = new Optional(),
     ) {}
 
     /**

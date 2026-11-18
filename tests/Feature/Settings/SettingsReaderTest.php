@@ -50,7 +50,7 @@ final class SettingsReaderTest extends TestCase
     {
         parent::setUp();
 
-        $this->registry = DomainRegistry::from([ReviewsDomain::class])->settingDeclarations(new CoreSettings);
+        $this->registry = DomainRegistry::from([ReviewsDomain::class])->settingDeclarations(new CoreSettings());
         $this->app->instance(SettingRegistry::class, $this->registry);
         $this->core = $this->registry->definition('Core');
         $this->reviews = $this->registry->definition('Reviews');

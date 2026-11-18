@@ -96,7 +96,7 @@ final class DeclaredRoutesTest extends TestCase
 
     public function test_a_prefix_another_route_uses_is_refused(): void
     {
-        $routes = new RouteCollection;
+        $routes = new RouteCollection();
         $routes->add(new Route(['GET'], 'library/old', fn () => 'old'));
 
         $this->expectExceptionObject(UiPrefixUnavailable::usedByRoute('library', 'library/old'));
@@ -108,7 +108,7 @@ final class DeclaredRoutesTest extends TestCase
     {
         $this->expectExceptionObject(UiPrefixUnavailable::usedByPublicFile('library'));
 
-        $this->declaredRoutes()->refuseTakenPrefixes(new RouteCollection, dirname(__DIR__, 2).'/Fixtures/UiDeclarations/PublicFolder');
+        $this->declaredRoutes()->refuseTakenPrefixes(new RouteCollection(), dirname(__DIR__, 2).'/Fixtures/UiDeclarations/PublicFolder');
     }
 
     public function test_the_declared_routes_themselves_take_no_prefix(): void

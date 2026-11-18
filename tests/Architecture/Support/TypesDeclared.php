@@ -25,7 +25,7 @@ final readonly class TypesDeclared implements FileScan
     {
         $types = [];
 
-        foreach ((new NodeFinder)->findInstanceOf($file->statements, ClassLike::class) as $type) {
+        foreach (new NodeFinder()->findInstanceOf($file->statements, ClassLike::class) as $type) {
             $name = $type->namespacedName?->toString();
 
             if ($name !== null) {

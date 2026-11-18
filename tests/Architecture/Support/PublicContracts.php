@@ -194,7 +194,7 @@ final readonly class PublicContracts
     private static function publicNamesIn(string $path, string $shortName): array
     {
         $file = ParsedFile::fromPath($path);
-        $type = (new NodeFinder)->findFirst($file->statements, fn (Node $node) => $node instanceof ClassLike && $node->name?->toString() === $shortName);
+        $type = new NodeFinder()->findFirst($file->statements, fn (Node $node) => $node instanceof ClassLike && $node->name?->toString() === $shortName);
 
         if (! $type instanceof ClassLike) {
             return [];
@@ -260,7 +260,7 @@ final readonly class PublicContracts
      */
     private static function typeNames(array $types, string $path, string $memberPath): array
     {
-        $names = (new NodeFinder)->findInstanceOf(array_values(array_filter($types)), Name::class);
+        $names = new NodeFinder()->findInstanceOf(array_values(array_filter($types)), Name::class);
 
         return array_values(array_map(
             fn (Name $name) => new PublicTypePath($path, $name->getStartLine(), $name->toString(), $memberPath),

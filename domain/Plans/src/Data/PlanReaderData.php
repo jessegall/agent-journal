@@ -18,7 +18,7 @@ final class PlanReaderData extends Data
     public function __construct(
         public readonly PlanCardData $card,
         public readonly bool $insideResults,
-        public readonly StartPlanData|Optional $start = new Optional,
+        public readonly StartPlanData|Optional $start = new Optional(),
     ) {}
 
     /**

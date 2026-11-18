@@ -35,7 +35,7 @@ final readonly class RawRowAccess implements FileScan
 
     public function findingsIn(ParsedFile $file): array
     {
-        $finder = new NodeFinder;
+        $finder = new NodeFinder();
         $violations = [];
 
         foreach ($finder->findInstanceOf($file->statements, StaticCall::class) as $call) {

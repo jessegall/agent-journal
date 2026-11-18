@@ -31,7 +31,7 @@ final readonly class AgentSessions
             throw LaunchRefused::forRetiredAgent($agent->id, $retired);
         }
 
-        $session = new AgentSession;
+        $session = new AgentSession();
         $session->startFor($agent, $parent);
 
         return $session;

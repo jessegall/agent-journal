@@ -20,7 +20,7 @@ final class StringScan
     {
         $uses = [];
 
-        $finder = new NodeFinder;
+        $finder = new NodeFinder();
         $strings = [
             ...$finder->findInstanceOf($file->statements, String_::class),
             ...$finder->findInstanceOf($file->statements, InterpolatedStringPart::class),

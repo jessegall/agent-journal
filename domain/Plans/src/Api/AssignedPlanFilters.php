@@ -19,6 +19,6 @@ final readonly class AssignedPlanFilters
     public function __construct(
         public string $search = '',
         public array $states = [],
-        public NumberedPage $page = new NumberedPage,
+        public NumberedPage $page = new NumberedPage(),
     ) {}
 }

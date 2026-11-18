@@ -52,7 +52,7 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
      */
     public static function openFor(ShareGatewayConfiguration $configuration, int $endpointVersion, string $runId): self
     {
-        $endpoint = new self;
+        $endpoint = new self();
         $endpoint->share_gateway_configuration_id = $configuration->id;
         $endpoint->endpoint_version = $endpointVersion;
         $endpoint->run_id = $runId;

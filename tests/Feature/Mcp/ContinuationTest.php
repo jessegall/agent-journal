@@ -95,7 +95,7 @@ final class ContinuationTest extends TestCase
     {
         $this->expectExceptionObject(ContinuationStale::revisionChanged(2, 3));
 
-        (new Continuation('docs_read', '16', [], 33, revision: 2))->requireRevision(3);
+        new Continuation('docs_read', '16', [], 33, revision: 2)->requireRevision(3);
     }
 
     public function test_a_page_shortened_to_7_of_20_continues_with_the_13_omitted_entries_in_order(): void

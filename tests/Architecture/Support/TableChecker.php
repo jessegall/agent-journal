@@ -147,7 +147,7 @@ final readonly class TableChecker
     {
         $violations = [];
 
-        foreach (ScanCache::findings(new TableScan, DomainFiles::in([$this->rootMigrationFolder])) as $use) {
+        foreach (ScanCache::findings(new TableScan(), DomainFiles::in([$this->rootMigrationFolder])) as $use) {
             $owner = $this->owners[$use->table] ?? null;
 
             if ($owner !== null && $use->type === TableType::Change) {
@@ -166,7 +166,7 @@ final readonly class TableChecker
     {
         $creations = [];
 
-        foreach (ScanCache::findings(new TableScan, DomainFiles::in($folders)) as $use) {
+        foreach (ScanCache::findings(new TableScan(), DomainFiles::in($folders)) as $use) {
             if ($use->type === TableType::Create) {
                 $creations[] = $use;
             }

@@ -104,7 +104,7 @@ final class HookRewriteTest extends TestCase
 
     private function rewrite(): HookRewrite
     {
-        return new HookRewrite(new ListedCommandParser);
+        return new HookRewrite(new ListedCommandParser());
     }
 
     private function stack(ReadyStateType $role, RewritingState $rewriter): AgentStack
@@ -132,7 +132,7 @@ final class HookRewriteTest extends TestCase
     {
         return new ShellCommandRequested(
             new HookIdentity(TestIds::of(1), TestIds::of(2), 'hook-1', 'digest'),
-            (new ListedCommandParser)->parse($line, ShellDialect::Bash),
+            new ListedCommandParser()->parse($line, ShellDialect::Bash),
         );
     }
 

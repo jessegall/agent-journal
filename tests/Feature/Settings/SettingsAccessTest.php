@@ -33,7 +33,7 @@ final class SettingsAccessTest extends TestCase
     public function test_without_web_nobody_is_let_in(): void
     {
         $application = new Application($this->app->basePath());
-        (new SettingsServiceProvider($application))->register();
+        new SettingsServiceProvider($application)->register();
 
         $policy = $application->make(SettingsAccessPolicy::class);
 
@@ -52,7 +52,7 @@ final class SettingsAccessTest extends TestCase
             }
         };
         $application->instance(SettingsAccessPolicy::class, $allowsEveryone);
-        (new SettingsServiceProvider($application))->register();
+        new SettingsServiceProvider($application)->register();
 
         $this->assertSame($allowsEveryone, $application->make(SettingsAccessPolicy::class));
     }

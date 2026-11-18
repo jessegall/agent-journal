@@ -95,7 +95,7 @@ final class StartPlanTest extends TestCase
 
         $canStart = [];
 
-        foreach ($this->app->make(PlanRecords::class)->list(new PlanFilters)->cards as $card) {
+        foreach ($this->app->make(PlanRecords::class)->list(new PlanFilters())->cards as $card) {
             $canStart[$card->id] = $card->canStart;
         }
 

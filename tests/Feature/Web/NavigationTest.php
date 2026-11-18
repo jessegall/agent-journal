@@ -44,7 +44,7 @@ final class NavigationTest extends TestCase
     {
         parent::setUp();
 
-        $this->calls = new ReaderCalls;
+        $this->calls = new ReaderCalls();
         $this->app->instance(ReaderCalls::class, $this->calls);
         $declarations = $this->declarations();
         $this->app->instance(UiDeclarations::class, $declarations);

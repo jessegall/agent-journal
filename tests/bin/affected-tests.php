@@ -63,7 +63,7 @@ if ($files === []) {
     exit(0);
 }
 
-$folders = (new AffectedTests($app->make(DomainRegistry::class), $root))->for($files);
+$folders = new AffectedTests($app->make(DomainRegistry::class), $root)->for($files);
 
 $configuration = configurationFor($root, $folders);
 $listed = explode("\n", run(['php', 'artisan', 'test', '--list-tests', "--configuration={$configuration}"], $environment, $root, true));

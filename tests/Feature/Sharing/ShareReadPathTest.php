@@ -33,7 +33,7 @@ final class ShareReadPathTest extends TestCase
     {
         parent::setUp();
 
-        $this->registerShareDomain(new PamphletsDomain);
+        $this->registerShareDomain(new PamphletsDomain());
         $this->records = $this->app->make(ShareRecordRegistry::class);
         $this->records->checkRelations();
         $this->root = new RecordIdentity('pamphlets.pamphlet', TestIds::of(1));

@@ -33,7 +33,7 @@ final readonly class MiddlewareStep
     public function handle(CommandCall $call, Closure $next): mixed
     {
         $name = $this->entry->middlewareClass();
-        $record = new ContinuationRecord;
+        $record = new ContinuationRecord();
 
         $result = $this->middleware->handle($call, function (CommandCall $passed) use ($call, $next, $name, $record): mixed {
             if ($record->called) {

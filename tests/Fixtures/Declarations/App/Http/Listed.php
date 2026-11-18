@@ -10,6 +10,6 @@ final class Listed
 {
     public function thing(): Thing
     {
-        return new Thing;
+        return new Thing();
     }
 }

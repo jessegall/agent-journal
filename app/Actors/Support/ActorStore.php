@@ -62,7 +62,7 @@ final class ActorStore implements CurrentActor, CurrentActorSetter
     public function actAsSystem(Closure $work): mixed
     {
         $before = $this->actor;
-        $this->actor = ActorContext::of(new SystemActor);
+        $this->actor = ActorContext::of(new SystemActor());
 
         try {
             return $work();

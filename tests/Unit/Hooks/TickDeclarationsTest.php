@@ -32,7 +32,7 @@ final class TickDeclarationsTest extends TestCase
     public function test_only_marked_loaders_and_their_subclasses_tick(): void
     {
         $make = fn (): AgentState => throw new LogicException('No state is built here.');
-        $registry = new StateTypeRegistry;
+        $registry = new StateTypeRegistry();
         $registry->register('test.ticking', new TickingLoader($make));
         $registry->register('test.inherited', new InheritedTickingLoader($make));
         $registry->register('test.plain', new ClosureStateLoader($make));
@@ -53,7 +53,7 @@ final class TickDeclarationsTest extends TestCase
     public function test_the_tick_context_has_exactly_four_public_fields(): void
     {
         $context = new TickContext(CarbonImmutable::now(), ElapsedTime::zero(true), CarbonImmutable::now(), new StackTarget('a', 's'));
-        $fields = array_map(fn (ReflectionProperty $property) => $property->getName(), (new ReflectionClass($context))->getProperties(ReflectionProperty::IS_PUBLIC));
+        $fields = array_map(fn (ReflectionProperty $property) => $property->getName(), new ReflectionClass($context)->getProperties(ReflectionProperty::IS_PUBLIC));
 
         $this->assertSame(['now', 'delta', 'enteredAt', 'target'], $fields);
     }

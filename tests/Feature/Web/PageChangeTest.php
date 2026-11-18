@@ -50,7 +50,7 @@ final class PageChangeTest extends TestCase
 
     public function test_a_page_fact_no_owner_exports_changes_no_page(): void
     {
-        event(new ShelfMoved);
+        event(new ShelfMoved());
 
         Event::assertNotDispatched(PageChanged::class);
     }

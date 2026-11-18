@@ -145,7 +145,7 @@ final class OwnerReceiptTest extends CommandBusTestCase
         $request = Request::create('/sharing', 'POST');
         $request->headers->set('Idempotency-Key', self::KEY);
 
-        $this->app->make(ReadIdempotencyKey::class)->handle($request, fn () => new Response);
+        $this->app->make(ReadIdempotencyKey::class)->handle($request, fn () => new Response());
 
         $this->assertSame(self::KEY, $this->app->make(RequestKey::class)->key());
     }

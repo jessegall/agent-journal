@@ -21,13 +21,13 @@ final class ModelTables
     {
         $uses = [];
 
-        foreach (ScanCache::findingsByFile(new ClassesDeclared, $files) as $path => $classes) {
+        foreach (ScanCache::findingsByFile(new ClassesDeclared(), $files) as $path => $classes) {
             foreach ($classes as $name) {
                 if (! is_subclass_of($name, Model::class) || ($reflection = new ReflectionClass($name))->isAbstract()) {
                     continue;
                 }
 
-                $uses[] = new TableUse($path, (int) $reflection->getStartLine(), (new $name)->getTable(), TableType::ModelTable);
+                $uses[] = new TableUse($path, (int) $reflection->getStartLine(), new $name()->getTable(), TableType::ModelTable);
             }
         }
 

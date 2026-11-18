@@ -58,7 +58,7 @@ final readonly class ReaderRequests
             return $this->container->make($reader->reader);
         }
 
-        $request = $reader->request::createFrom($current, new $reader->request);
+        $request = $reader->request::createFrom($current, new $reader->request());
         $request->query->replace($query);
 
         if ($route !== null) {

@@ -34,14 +34,14 @@ final readonly class CheckPageVisibility
     public function handle(Request $request, Closure $next, string $key): Response
     {
         if (! $this->owners->isAvailable($this->declarations->ownerOf($key))) {
-            throw new NotFoundHttpException;
+            throw new NotFoundHttpException();
         }
 
         $actor = $this->actors->actor();
 
         foreach ($this->declarations->visibilityChecksOf($key) as $checkClass) {
             if (! $this->container->make($checkClass)->allows($actor)) {
-                throw new NotFoundHttpException;
+                throw new NotFoundHttpException();
             }
         }
 

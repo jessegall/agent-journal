@@ -95,7 +95,7 @@ final class HookEndpointTest extends TestCase
 
     public function test_without_a_parser_a_shell_call_is_refused_and_nothing_is_recorded(): void
     {
-        $this->app->instance(ShellCommandParser::class, new MissingShellParser);
+        $this->app->instance(ShellCommandParser::class, new MissingShellParser());
 
         $this->hook('claude-code', $this->bashBody('git status'))->assertStatus(503);
 

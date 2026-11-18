@@ -300,13 +300,13 @@ final readonly class MarkdownText
     private static function rendered(string $text, int|null $firstLine): string
     {
         $environment = new Environment(['html_input' => 'escape', 'allow_unsafe_links' => false]);
-        $environment->addExtension(new CommonMarkCoreExtension);
+        $environment->addExtension(new CommonMarkCoreExtension());
 
         if ($firstLine !== null) {
             $environment->addEventListener(DocumentParsedEvent::class, fn (DocumentParsedEvent $event) => self::markSourceLines($event->getDocument(), $firstLine));
         }
 
-        $html = (string) (new MarkdownConverter($environment))->convert($text);
+        $html = (string) new MarkdownConverter($environment)->convert($text);
         $html = (string) preg_replace('/<img src="([^"]*)" alt="([^"]*)"[^>]*>/', '<a href="$1" rel="noopener noreferrer">$2</a>', $html);
 
         return (string) preg_replace('/<a href="/', '<a rel="noopener noreferrer" href="', $html);

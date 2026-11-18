@@ -24,7 +24,7 @@ final readonly class InterfacesDeclared implements FileScan
     {
         return array_values(array_filter(array_map(
             fn (Interface_ $interface) => $interface->namespacedName?->toString() ?? '',
-            (new NodeFinder)->findInstanceOf($file->statements, Interface_::class),
+            new NodeFinder()->findInstanceOf($file->statements, Interface_::class),
         ), fn (string $name) => $name !== ''));
     }
 }

@@ -161,7 +161,7 @@ final readonly class PlanRecords implements PlanReader
         $holders = $this->assignees->holdersOf($assignments);
 
         return array_values($plans->map(fn (Plan $plan) => $plan->card(
-            $phasesOfPlan->get($plan->id, new Collection)->mapWithKeys(fn (Phase $phase) => [$phase->number => $progressOfPhase[$phase->id] ?? PlanProgress::none()])->all(),
+            $phasesOfPlan->get($plan->id, new Collection())->mapWithKeys(fn (Phase $phase) => [$phase->number => $progressOfPhase[$phase->id] ?? PlanProgress::none()])->all(),
             $holders->forRecord($plan->assignmentIdentity()),
             $focused->getOrElse(null) === $plan->id,
         ))->all());

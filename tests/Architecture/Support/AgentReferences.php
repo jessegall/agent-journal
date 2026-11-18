@@ -68,9 +68,9 @@ final readonly class AgentReferences
         foreach (glob($modelsFolder.'/*.php') ?: [] as $file) {
             $class = self::classIn($file);
 
-            foreach ((new ReflectionClass($class))->getMethods() as $method) {
+            foreach (new ReflectionClass($class)->getMethods() as $method) {
                 if ($method->getDeclaringClass()->getName() === $class && self::namesAnAgent($method)) {
-                    $found[] = (new ReflectionClass($class))->getShortName()."::{$method->getName()}()";
+                    $found[] = new ReflectionClass($class)->getShortName()."::{$method->getName()}()";
                 }
             }
         }

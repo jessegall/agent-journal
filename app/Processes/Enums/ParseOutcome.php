@@ -10,6 +10,13 @@ namespace App\Processes\Enums;
 enum ParseOutcome: string
 {
     case Complete = 'complete';
+    case Invalid = 'invalid';
+    case Unsupported = 'unsupported';
+    case LimitExceeded = 'limit_exceeded';
+
+    /**
+     * The old parser's outcome for a line whose expansion it could not follow; it stays until the cutover to the tree.
+     */
     case DynamicExpansion = 'dynamic_expansion';
     case Unparsed = 'unparsed';
 

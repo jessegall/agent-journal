@@ -39,6 +39,6 @@ abstract class JournalTool extends Tool
      */
     protected function arguments(Request $request): ToolArguments
     {
-        return ToolArguments::read($this->name(), $request, array_keys($this->schema(new JsonSchemaTypeFactory)));
+        return ToolArguments::read($this->name(), $request, array_keys($this->schema(new JsonSchemaTypeFactory())));
     }
 }

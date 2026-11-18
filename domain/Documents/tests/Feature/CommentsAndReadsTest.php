@@ -67,7 +67,7 @@ final class CommentsAndReadsTest extends TestCase
         $this->comment('Looks right.', WholeRecord::Record);
         $this->comment('Which editor?', TextRange::quote('1', 2, 2, 'the editor', 5, 15));
 
-        $items = $this->comments()->list($this->document(), new Page)->items;
+        $items = $this->comments()->list($this->document(), new Page())->items;
 
         $this->assertSame(['Looks right.', 'Which editor?'], array_map(fn ($item) => $item->comment->body, $items));
         $this->assertInstanceOf(RecordCommentView::class, $items[0]);
@@ -102,7 +102,7 @@ final class CommentsAndReadsTest extends TestCase
         try {
             $this->comment('Hm.', TextRange::quote('1', 2, 2, 'the plan', 5, 13));
         } finally {
-            $this->assertSame([], $this->comments()->list($this->document(), new Page)->items);
+            $this->assertSame([], $this->comments()->list($this->document(), new Page())->items);
         }
     }
 
@@ -114,7 +114,7 @@ final class CommentsAndReadsTest extends TestCase
         $this->comment('From an agent.', WholeRecord::Record);
 
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)));
-        $comment = $this->comments()->list($this->document(), new Page)->items[0]->comment;
+        $comment = $this->comments()->list($this->document(), new Page())->items[0]->comment;
         $this->assertSame([ActorType::Agent, $agent->id], [$comment->authorType, $comment->authorId]);
     }
 
@@ -122,7 +122,7 @@ final class CommentsAndReadsTest extends TestCase
     {
         $this->comment('<script>alert(1)</script>', WholeRecord::Record);
 
-        $this->assertStringNotContainsString('<script>', $this->comments()->list($this->document(), new Page)->items[0]->comment->bodyHtml);
+        $this->assertStringNotContainsString('<script>', $this->comments()->list($this->document(), new Page())->items[0]->comment->bodyHtml);
     }
 
     public function test_a_read_without_flags_gives_the_outline_and_a_long_section_is_cut_with_its_continuation(): void
@@ -130,7 +130,7 @@ final class CommentsAndReadsTest extends TestCase
         $lines = implode("\n", array_map(fn (int $line) => "Line {$line}.", range(1, 300)));
         $this->bus()->run(new CreateDocument('Long', 'Many lines', "# Long\n{$lines}\n"));
 
-        $outline = $this->documents()->read(2, new TextSelection);
+        $outline = $this->documents()->read(2, new TextSelection());
         $part = $this->documents()->read(2, new TextSelection(section: '1'));
 
         $this->assertSame(['1 Long (lines 1-302)'], $outline->outline);

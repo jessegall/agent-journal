@@ -48,7 +48,7 @@ final class LaunchBypass extends Model implements ReadableModel
         $now = CarbonImmutable::now();
 
         self::query()->insert(array_map(fn (LoggedBypass $fact) => [
-            'id' => (new self)->newUniqueId(),
+            'id' => new self()->newUniqueId(),
             'agent_session_id' => $sessionId,
             'native_event' => $fact->nativeEvent,
             'failure' => $fact->failure,

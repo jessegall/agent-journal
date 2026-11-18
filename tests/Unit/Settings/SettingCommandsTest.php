@@ -45,7 +45,7 @@ final class SettingCommandsTest extends TestCase
     {
         parent::setUp();
 
-        $registry = DomainRegistry::from([ReviewsDomain::class])->settingDeclarations(new CoreSettings);
+        $registry = DomainRegistry::from([ReviewsDomain::class])->settingDeclarations(new CoreSettings());
         $this->commands = new RegisteredSettingCommands($registry);
         $this->reviews = $registry->definition('Reviews');
     }

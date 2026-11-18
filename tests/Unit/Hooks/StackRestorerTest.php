@@ -148,7 +148,7 @@ final class StackRestorerTest extends TestCase
 
     public function test_a_switched_off_frame_is_restored_and_validated_and_left_out_only_on_request(): void
     {
-        $events = new Dispatcher;
+        $events = new Dispatcher();
         $events->listen(StateTypesRequested::class, function (StateTypesRequested $event): void {
             $event->registry->register('tasks.working', $this->tasks);
             $event->registry->register('test.switched_off', new ClosureStateLoader(fn () => new SwitchableState(false)));
@@ -194,7 +194,7 @@ final class StackRestorerTest extends TestCase
                 return false;
             }
         };
-        $events = new Dispatcher;
+        $events = new Dispatcher();
         $events->listen(StateTypesRequested::class, function (StateTypesRequested $event) use ($switchedOffType): void {
             $event->registry->register('tasks.working', $this->tasks);
             $event->registry->register('plans.working', $switchedOffType);
@@ -211,7 +211,7 @@ final class StackRestorerTest extends TestCase
 
     private function restorerWith(InMemoryTaskLoader $tasks): StackRestorer
     {
-        $events = new Dispatcher;
+        $events = new Dispatcher();
         $events->listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('tasks.working', $tasks));
         $types = new StateTypes($events);
 

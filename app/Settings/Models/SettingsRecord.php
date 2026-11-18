@@ -68,7 +68,7 @@ final class SettingsRecord extends Model implements ReadableModel
         $now = CarbonImmutable::now();
 
         self::query()->insertOrIgnore([
-            'id' => (new self)->newUniqueId(),
+            'id' => new self()->newUniqueId(),
             'owner' => $owner,
             'revision' => 0,
             'document' => SettingsDocument::empty()->toJson(),

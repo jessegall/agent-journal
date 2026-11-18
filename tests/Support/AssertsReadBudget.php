@@ -20,7 +20,7 @@ trait AssertsReadBudget
      */
     protected function assertWithinReadBudget(callable $call, array $method): void
     {
-        $attributes = (new ReflectionMethod($method[0], $method[1]))->getAttributes(ReadBudget::class);
+        $attributes = new ReflectionMethod($method[0], $method[1])->getAttributes(ReadBudget::class);
         $this->assertNotSame([], $attributes, "{$method[0]}::{$method[1]} declares no ReadBudget.");
         $budget = $attributes[0]->newInstance();
         $counts = $this->readCounts($call);

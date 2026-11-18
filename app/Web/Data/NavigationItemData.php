@@ -27,8 +27,8 @@ final class NavigationItemData extends Data
         public readonly array $children,
         public readonly bool $atFoot,
         public readonly bool $counted,
-        public readonly Icon|Optional $icon = new Optional,
-        public readonly string|Optional $url = new Optional,
-        public readonly string|Optional $group = new Optional,
+        public readonly Icon|Optional $icon = new Optional(),
+        public readonly string|Optional $url = new Optional(),
+        public readonly string|Optional $group = new Optional(),
     ) {}
 }

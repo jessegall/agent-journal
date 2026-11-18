@@ -21,8 +21,8 @@ final class PlanFiltersData extends Data
     public function __construct(
         public readonly string $q = '',
         public readonly int $page = 1,
-        #[Regex('/^[1-9][0-9]{0,18}$/')] public readonly string|Optional $plan = new Optional,
-        public readonly PlanStateGroup|Optional $state = new Optional,
+        #[Regex('/^[1-9][0-9]{0,18}$/')] public readonly string|Optional $plan = new Optional(),
+        public readonly PlanStateGroup|Optional $state = new Optional(),
     ) {}
 
     /**

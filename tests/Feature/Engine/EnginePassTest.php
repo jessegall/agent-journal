@@ -36,7 +36,7 @@ final class EnginePassTest extends TestCase
     {
         parent::setUp();
 
-        $this->clock = new FakeMonotonicClock;
+        $this->clock = new FakeMonotonicClock();
         $this->app->instance(MonotonicClock::class, $this->clock);
     }
 

@@ -25,7 +25,7 @@ final readonly class ClassesDeclared implements FileScan
     {
         return array_values(array_filter(array_map(
             fn (Class_ $class) => $class->namespacedName?->toString() ?? '',
-            (new NodeFinder)->findInstanceOf($file->statements, Class_::class),
+            new NodeFinder()->findInstanceOf($file->statements, Class_::class),
         ), fn (string $name) => $name !== ''));
     }
 }

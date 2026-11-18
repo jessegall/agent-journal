@@ -19,7 +19,7 @@ final class RecordHolderData extends Data
     public function __construct(
         public readonly string $recordType,
         public readonly string $recordId,
-        public readonly AssignmentData|Optional $holder = new Optional,
+        public readonly AssignmentData|Optional $holder = new Optional(),
     ) {}
 
     /**

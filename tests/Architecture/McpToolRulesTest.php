@@ -99,7 +99,7 @@ final class McpToolRulesTest extends TestCase
     {
         $found = [];
 
-        foreach (ScanCache::findingsByFile(new NamesUsed, $files) as $path => $uses) {
+        foreach (ScanCache::findingsByFile(new NamesUsed(), $files) as $path => $uses) {
             foreach ($uses as $use) {
                 if ($this->isForbidden($use)) {
                     $found[] = substr($path, strlen(base_path()) + 1).":{$use->line} uses {$use->name}";
@@ -123,7 +123,7 @@ final class McpToolRulesTest extends TestCase
     {
         $found = [];
 
-        foreach (ScanCache::findingsByFile(new ClassesDeclared, $files) as $classes) {
+        foreach (ScanCache::findingsByFile(new ClassesDeclared(), $files) as $classes) {
             foreach ($classes as $class) {
                 if (is_subclass_of($class, Tool::class)) {
                     array_push($found, ...$this->toolViolations(new ReflectionClass($class)));
@@ -158,7 +158,7 @@ final class McpToolRulesTest extends TestCase
             $violations[] = "{$class} has no snake_case #[Name]";
         }
 
-        foreach (array_intersect(array_keys($type->newInstanceWithoutConstructor()->schema(new JsonSchemaTypeFactory)), self::IDENTITY_PROPERTIES) as $property) {
+        foreach (array_intersect(array_keys($type->newInstanceWithoutConstructor()->schema(new JsonSchemaTypeFactory())), self::IDENTITY_PROPERTIES) as $property) {
             $violations[] = "{$class} asks for {$property}";
         }
 

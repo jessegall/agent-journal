@@ -62,10 +62,10 @@ final class CreateShareTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(ShareRecordRegistry::class)->registerFrom(new BindersDomain);
+        $this->app->make(ShareRecordRegistry::class)->registerFrom(new BindersDomain());
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
         $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
-        $this->app->instance(BinderPublications::class, new BinderPublications);
+        $this->app->instance(BinderPublications::class, new BinderPublications());
         $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
         $this->root = new RecordIdentity('binders.binder', TestIds::of(1));
 

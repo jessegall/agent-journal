@@ -89,7 +89,7 @@ final class DomainEventCallTest extends TestCase
     {
         $registry = $this->app->make(DomainRegistry::class);
         $folders = [app_path(), ...DomainFiles::domainCode()];
-        $calls = ScanCache::findings(new EventCallScan, DomainFiles::in($folders));
+        $calls = ScanCache::findings(new EventCallScan(), DomainFiles::in($folders));
 
         $violations = $this->checker($registry)->eventCallViolations($calls);
 
@@ -106,7 +106,7 @@ final class DomainEventCallTest extends TestCase
 
         return array_map(
             fn (Violation $violation) => "{$violation->line} {$violation->reason()}",
-            $this->checker($registry)->eventCallViolations(ScanCache::findings(new EventCallScan, [$file])),
+            $this->checker($registry)->eventCallViolations(ScanCache::findings(new EventCallScan(), [$file])),
         );
     }
 

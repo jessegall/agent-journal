@@ -28,7 +28,7 @@ final class DomainListTest extends TestCase
     public function test_listeners_are_discovered_only_in_the_domain_and_core_listener_folders(): void
     {
         $registry = $this->app->make(DomainRegistry::class);
-        $paths = (new DomainEventServiceProvider($this->app))->discoverEventsWithin();
+        $paths = new DomainEventServiceProvider($this->app)->discoverEventsWithin();
 
         foreach ($registry->listenerFolders() as $folder) {
             $this->assertContains($folder, $paths);

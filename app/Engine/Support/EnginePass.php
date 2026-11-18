@@ -44,7 +44,7 @@ final readonly class EnginePass
         $meter->begin();
 
         try {
-            $this->app->make(CurrentActorSetter::class)->set(new EngineActor);
+            $this->app->make(CurrentActorSetter::class)->set(new EngineActor());
 
             return $work();
         } finally {

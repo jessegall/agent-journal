@@ -20,7 +20,7 @@ final class RuleFiltersData extends Data
     public function __construct(
         public readonly string $q = '',
         public readonly int $page = 1,
-        #[Ulid] public readonly string|Optional $rule = new Optional,
+        #[Ulid] public readonly string|Optional $rule = new Optional(),
     ) {}
 
     /**

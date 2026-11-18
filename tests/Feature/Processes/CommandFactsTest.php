@@ -65,8 +65,8 @@ final class CommandFactsTest extends TestCase
     #[DataProvider('linesAndRoleAnswers')]
     public function test_the_parsed_facts_decide_each_role_answer(string $line, AnswerType $mainAgent, AnswerType $readOnlyHelper): void
     {
-        $this->assertSame($mainAgent, $this->answer(new MainAgentReadyState, $line));
-        $this->assertSame($readOnlyHelper, $this->answer(new ReadOnlyHelperReadyState, $line));
+        $this->assertSame($mainAgent, $this->answer(new MainAgentReadyState(), $line));
+        $this->assertSame($readOnlyHelper, $this->answer(new ReadOnlyHelperReadyState(), $line));
     }
 
     public function test_the_app_reads_shell_commands_with_the_processes_parser(): void
@@ -106,7 +106,7 @@ final class CommandFactsTest extends TestCase
     {
         $this->expectException(ShellParserMissing::class);
 
-        (new MissingShellParser)->parse('git status', ShellDialect::Bash);
+        new MissingShellParser()->parse('git status', ShellDialect::Bash);
     }
 
     private function parse(string $line): ShellCommand
@@ -116,6 +116,6 @@ final class CommandFactsTest extends TestCase
 
     private function answer(ReadyState $ready, string $line): AnswerType
     {
-        return (new ShellCommandRequested(new HookIdentity(TestIds::of(1), TestIds::of(10), 'call-1', 'digest'), $this->parse($line)))->answerBy($ready)->answerType();
+        return new ShellCommandRequested(new HookIdentity(TestIds::of(1), TestIds::of(10), 'call-1', 'digest'), $this->parse($line))->answerBy($ready)->answerType();
     }
 }

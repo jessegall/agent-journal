@@ -41,7 +41,7 @@ final class MessageAddressTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->first = Agent::query()->create(['name' => 'First', 'role' => 'hooks.main_ready']);
         $this->second = Agent::query()->create(['name' => 'Second', 'role' => 'hooks.main_ready']);
-        $this->secondSession = new AgentSession;
+        $this->secondSession = new AgentSession();
         $this->secondSession->startFor($this->second, null);
         $this->startUserRequestAs($owner->id);
     }

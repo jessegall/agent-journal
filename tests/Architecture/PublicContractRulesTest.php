@@ -73,7 +73,7 @@ final class PublicContractRulesTest extends TestCase
 
         return array_values(array_map(
             fn (Violation $violation) => self::describe($violation),
-            array_filter((new PublicContracts($owners, $roots))->violations(), fn (Violation $violation) => $violation->usingDomain === 'Plans'),
+            array_filter(new PublicContracts($owners, $roots)->violations(), fn (Violation $violation) => $violation->usingDomain === 'Plans'),
         ));
     }
 

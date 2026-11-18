@@ -33,7 +33,7 @@ final class DomainBoundaryTest extends TestCase
         $roots = ProjectRoots::fromComposer(base_path('composer.json'));
         $folders = [app_path(), ...DomainFiles::domainCode()];
 
-        $violations = (new BoundaryChecker($registry->all(), $roots, CoreApi::exports()))
+        $violations = new BoundaryChecker($registry->all(), $roots, CoreApi::exports())
             ->violations(DomainFiles::usesIn(DomainFiles::in($folders), $roots));
 
         $this->assertSame([], $violations, BoundaryReport::of($violations, base_path()));
@@ -44,7 +44,7 @@ final class DomainBoundaryTest extends TestCase
         $registry = $this->app->make(DomainRegistry::class);
         $roots = ProjectRoots::fromComposer(base_path('composer.json'));
 
-        $violations = (new BoundaryChecker($registry->all(), $roots, CoreApi::exports()))
+        $violations = new BoundaryChecker($registry->all(), $roots, CoreApi::exports())
             ->compositionViolations(DomainFiles::usesIn(CompositionSite::files(base_path()), $roots), base_path());
 
         $this->assertSame([], $violations, BoundaryReport::of($violations, base_path()));

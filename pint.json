@@ -9,6 +9,13 @@
         "ordered_types": {
             "null_adjustment": "always_last",
             "sort_algorithm": "none"
+        },
+        "new_with_parentheses": {
+            "anonymous_class": false,
+            "named_class": true
+        },
+        "new_expression_parentheses": {
+            "use_parentheses": false
         }
     },
     "exclude": [

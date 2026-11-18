@@ -14,7 +14,7 @@ final class ParserPackagesTest extends TestCase
 {
     public function test_the_php_parser_reads_a_file(): void
     {
-        $statements = (new ParserFactory)->createForNewestSupportedVersion()->parse('<?php echo 1;');
+        $statements = new ParserFactory()->createForNewestSupportedVersion()->parse('<?php echo 1;');
 
         $this->assertNotEmpty($statements);
     }

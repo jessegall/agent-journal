@@ -39,7 +39,7 @@ final class RecordPageData extends Data
         #[DataCollectionOf(DockSession::class)]
         public readonly array $sessions,
         public readonly bool $publiclyShared,
-        public readonly string|Optional $revision = new Optional,
+        public readonly string|Optional $revision = new Optional(),
     ) {}
 
     /**

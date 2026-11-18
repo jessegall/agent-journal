@@ -24,6 +24,6 @@ final class RuleListData extends Data
         public readonly RuleFiltersData $filters,
         public readonly RulePaginationData $pagination,
         public readonly bool $selectionMissing,
-        public readonly RuleReaderData|Optional $selected = new Optional,
+        public readonly RuleReaderData|Optional $selected = new Optional(),
     ) {}
 }

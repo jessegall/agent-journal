@@ -52,7 +52,7 @@ final class IsolationTest extends TestCase
     public function test_no_create_command_takes_an_author(): void
     {
         foreach ([CreateDocument::class] as $command) {
-            $parameters = array_map(fn ($parameter) => $parameter->getName(), (new ReflectionClass($command))->getConstructor()?->getParameters() ?? []);
+            $parameters = array_map(fn ($parameter) => $parameter->getName(), new ReflectionClass($command)->getConstructor()?->getParameters() ?? []);
 
             $this->assertSame([], array_values(array_filter($parameters, fn (string $name) => preg_match('/author|creator|actor/i', $name) === 1)));
         }

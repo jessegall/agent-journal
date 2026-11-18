@@ -30,8 +30,8 @@ final class PlanCardData extends Data
         public readonly bool $focused,
         public readonly int $doneTasks,
         public readonly int $totalTasks,
-        public readonly string|Optional $phase = new Optional,
-        public readonly AssignmentData|Optional $holder = new Optional,
+        public readonly string|Optional $phase = new Optional(),
+        public readonly AssignmentData|Optional $holder = new Optional(),
     ) {}
 
     /**

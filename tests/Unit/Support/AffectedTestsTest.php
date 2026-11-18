@@ -38,6 +38,6 @@ final class AffectedTestsTest extends TestCase
      */
     private function affectedBy(string ...$files): array
     {
-        return (new AffectedTests($this->app->make(DomainRegistry::class), base_path()))->for(array_values($files));
+        return new AffectedTests($this->app->make(DomainRegistry::class), base_path())->for(array_values($files));
     }
 }

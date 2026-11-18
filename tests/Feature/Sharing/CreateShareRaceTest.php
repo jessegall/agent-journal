@@ -47,10 +47,10 @@ final class CreateShareRaceTest extends TestCase
 
     public function test_two_creations_for_the_last_slot_on_two_configurations_admit_one(): void
     {
-        $this->app->make(ShareRecordRegistry::class)->registerFrom(new BindersDomain);
+        $this->app->make(ShareRecordRegistry::class)->registerFrom(new BindersDomain());
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
         $this->app->instance(AccessSettings::class, new AccessSettings(TestIds::of(9)));
-        $this->app->instance(BinderPublications::class, new BinderPublications);
+        $this->app->instance(BinderPublications::class, new BinderPublications());
         $first = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
         $second = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
 

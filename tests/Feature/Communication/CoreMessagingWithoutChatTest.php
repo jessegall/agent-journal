@@ -28,7 +28,7 @@ final class CoreMessagingWithoutChatTest extends TestCase
 {
     public function test_chat_registers_no_messaging_mechanics(): void
     {
-        $chat = new ChatDomain;
+        $chat = new ChatDomain();
 
         $this->assertNotInstanceOf(ProvidesCommands::class, $chat);
         $this->assertNotInstanceOf(ProvidesStates::class, $chat);
@@ -42,7 +42,7 @@ final class CoreMessagingWithoutChatTest extends TestCase
         $this->assertTrue($this->app->make(CommandRegistry::class)->has(SendMessage::class));
         $this->assertSame(Message::class, $this->app->make(LinkTypeRegistry::class)->modelFor(Message::LINK_TYPE));
 
-        $states = new StateTypeRegistry;
+        $states = new StateTypeRegistry();
         $this->app->make(Dispatcher::class)->dispatch(new StateTypesRequested($states));
         $this->assertTrue($states->has(AnsweringMessageStateReference::TYPE_KEY));
     }

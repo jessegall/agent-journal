@@ -101,7 +101,7 @@ final class AssignmentReadersTest extends TestCase
     public function test_names_come_from_each_actor_types_owner(): void
     {
         $names = $this->app->make(AssigneeReader::class)->names([$this->helper, ActorIdentity::of($this->owner)]);
-        $users = $this->app->make(AssigneeReader::class)->eligible(ActorType::User, new Page);
+        $users = $this->app->make(AssigneeReader::class)->eligible(ActorType::User, new Page());
 
         $this->assertEqualsCanonicalizing(['Helper', 'Jesse'], array_map(fn ($name) => $name->name, $names));
         $this->assertSame(['Jesse'], array_map(fn ($name) => $name->name, $users->assignees));

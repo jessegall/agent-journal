@@ -73,7 +73,7 @@ final class ShareAudit extends Model implements ReadableModel
 
     private static function fact(ShareAuditType $type, ActorIdentity $actor, string|null $reasonCode): self
     {
-        $audit = new self;
+        $audit = new self();
         $audit->type = $type;
         $audit->actor_type = $actor->type;
         $audit->actor_id = $actor->id;

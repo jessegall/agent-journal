@@ -36,8 +36,8 @@ final class ActiveActorsTest extends TestCase
 
     public function test_the_snapshot_adds_every_counter_at_one_observation_time(): void
     {
-        $agents = new FakeAgentCounter;
-        $users = new FakeUserCounter;
+        $agents = new FakeAgentCounter();
+        $users = new FakeUserCounter();
         $this->app->instance(FakeAgentCounter::class, $agents);
         $this->app->instance(FakeUserCounter::class, $users);
         $this->counters->register(FakeAgentCounter::class);

@@ -29,7 +29,7 @@ final class EngineTickedDeliveryTest extends TestCase
         $second = $this->app->make(RecordingEngineListener::class);
         $this->app->instance(FailingEngineListener::class, $first);
         $this->app->instance(RecordingEngineListener::class, $second);
-        $listeners = new EngineListenerSet;
+        $listeners = new EngineListenerSet();
         $listeners->add(FailingEngineListener::class);
         $listeners->add(RecordingEngineListener::class);
         $this->app->instance(EngineListenerSet::class, $listeners);
@@ -48,7 +48,7 @@ final class EngineTickedDeliveryTest extends TestCase
 
     public function test_with_no_listeners_only_plain_observers_hear_it(): void
     {
-        $this->app->instance(EngineListenerSet::class, new EngineListenerSet);
+        $this->app->instance(EngineListenerSet::class, new EngineListenerSet());
         Event::fake([EngineTicked::class]);
         $event = $this->ticked();
 

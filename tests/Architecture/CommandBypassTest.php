@@ -50,7 +50,7 @@ final class CommandBypassTest extends TestCase
     {
         $found = [];
 
-        foreach (ScanCache::findingsByFile(new CallScan, DomainFiles::in(array_map(base_path(...), $folders))) as $path => $calls) {
+        foreach (ScanCache::findingsByFile(new CallScan(), DomainFiles::in(array_map(base_path(...), $folders))) as $path => $calls) {
             $file = substr($path, strlen(base_path()) + 1);
 
             if ($file === self::BUS) {
