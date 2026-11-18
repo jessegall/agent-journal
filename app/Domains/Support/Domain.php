@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domains\Support;
 
+use App\Assignments\Contracts\ProvidesAutoAssignments;
 use App\Domains\Bootstrappers\LoadMigrations;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Concerns\HasNumberedModels;
@@ -29,6 +30,7 @@ abstract class Domain
     private const array TRAIT_OF_CAPABILITY = [
         ProvidesAssignables::class => HasAssignables::class,
         ProvidesAssignees::class => HasAssignables::class,
+        ProvidesAutoAssignments::class => HasAssignables::class,
         ProvidesStates::class => HasStates::class,
         ProvidesNumberedModels::class => HasNumberedModels::class,
     ];

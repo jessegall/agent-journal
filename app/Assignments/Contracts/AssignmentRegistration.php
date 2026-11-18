@@ -5,17 +5,39 @@ declare(strict_types=1);
 namespace App\Assignments\Contracts;
 
 use App\Assignments\Support\AssigneeRegistration;
+use App\Assignments\Support\PoolDefinition;
 
 /**
- * Where the application's composition registers which provider answers for each record type and actor type. Only the
- * domain foundation and Core's own providers call it, while the application boots.
+ * Where the application's composition registers which provider answers for each record type and actor type, and the
+ * auto-assigners and pools each owner declares. Only the domain foundation and Core's own providers call it, while
+ * the application boots.
  */
 interface AssignmentRegistration
 {
     /**
+     * Registers an owner by its domain name with the names of the domains it requires, before it declares anything.
+     *
+     * @param  list<string>  $requires
+     */
+    public function registerOwner(string $owner, array $requires): void;
+
+    /**
      * @param  class-string<AssignableProvider>  $providerClass
      */
-    public function registerRecord(string $type, string $providerClass): void;
+    public function registerRecord(string $type, string $providerClass, string $owner): void;
+
+    /**
+     * @param  class-string<AutoAssigner>  $assignerClass
+     * @param  class-string<AssignedWorkProvider>  $workProviderClass
+     */
+    public function registerAutoAssigner(
+        string $type,
+        string $assignerClass,
+        string $workProviderClass,
+        string $owner,
+    ): void;
+
+    public function registerPool(PoolDefinition $pool, string $owner): void;
 
     public function registerAssignees(AssigneeRegistration $registration): void;
 }

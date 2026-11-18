@@ -20,6 +20,16 @@ final class AssignmentTypeUnavailable extends RuntimeException implements CodedR
         return new self("Records of type {$type} cannot be assigned here.");
     }
 
+    public static function forAutoAssignment(string $type): self
+    {
+        return new self("Records of type {$type} cannot be assigned automatically here.");
+    }
+
+    public static function forPool(string $key): self
+    {
+        return new self("No pool {$key} exists here.");
+    }
+
     public static function forActorType(ActorType $type): self
     {
         return new self("An actor of type {$type->value} cannot hold records here.");

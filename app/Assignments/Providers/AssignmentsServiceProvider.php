@@ -26,7 +26,8 @@ use Illuminate\Support\ServiceProvider;
 
 /**
  * Keeps one registry of assignable record types and actor types for the worker, and checks once the application has
- * booted that every registered type is a link alias of an Assignable model, so an owner may register its alias late.
+ * booted that every registered type is a link alias of an Assignable model and every pool's owner may use its type,
+ * so an owner may register its alias, or the type its pool holds, late.
  */
 final class AssignmentsServiceProvider extends ServiceProvider
 {
@@ -45,7 +46,16 @@ final class AssignmentsServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/assignments.php');
-        $this->commands([ShowAssignmentCommand::class, AssignRecordCommand::class, ReassignRecordCommand::class, UnassignRecordCommand::class]);
-        $this->app->booted(fn () => $this->app->make(AssignmentRegistry::class)->checkRecordModels($this->app->make(LinkTypeRegistry::class)));
+        $this->commands([
+            ShowAssignmentCommand::class,
+            AssignRecordCommand::class,
+            ReassignRecordCommand::class,
+            UnassignRecordCommand::class,
+        ]);
+        $this->app->booted(function (): void {
+            $registry = $this->app->make(AssignmentRegistry::class);
+            $registry->checkRecordModels($this->app->make(LinkTypeRegistry::class));
+            $registry->checkPools();
+        });
     }
 }
