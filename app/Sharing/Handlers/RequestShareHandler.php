@@ -6,7 +6,6 @@ namespace App\Sharing\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Contracts\CurrentSession;
 use App\Contracts\CommandHandler;
 use App\Records\Contracts\RecordReader;
 use App\Records\Support\RecordIdentity;
@@ -28,7 +27,6 @@ final readonly class RequestShareHandler implements CommandHandler
 {
     public function __construct(
         private CurrentActor $actors,
-        private CurrentSession $session,
         private RecordReader $records,
         private ShareRecordRegistry $shareable,
     ) {}
@@ -46,7 +44,7 @@ final readonly class RequestShareHandler implements CommandHandler
             throw ShareQuotaReached::forProposals(Share::MOST_PROPOSED);
         }
 
-        $proposal = Share::propose($root, $agent->actorId(), $this->session->sessionId(), CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS));
+        $proposal = Share::propose($root, ActorIdentity::of($agent), CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS));
         ShareAudit::recordFor($proposal, ShareAuditType::Created, ActorIdentity::of($agent), null);
 
         return $proposal->proposalStatus();

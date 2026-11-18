@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
 use App\Records\Support\RecordIdentity;
@@ -43,7 +44,7 @@ use Tests\TestCase;
 /**
  * An agent proposes sharing a document it may read and learns only the proposal's number and state; it may not create
  * a share itself. The owner approves the proposal from a fresh preview into a pending grant. Open proposals are
- * capped at 100, and an expired one frees its slot at once.
+ * capped at 100, and an expired one frees its slot at once. The requester is kept as an actor, never by session.
  */
 #[TimeLimit(seconds: 10, reason: 'It commits a document and a hundred proposals, and empties the sharing and agent tables around each test.')]
 final class ShareProposalTest extends TestCase
@@ -84,8 +85,7 @@ final class ShareProposalTest extends TestCase
         $this->assertSame(['number', 'state'], array_keys(get_object_vars($status)));
         $this->assertNull($proposal->token_digest);
         $this->assertNull($proposal->owner_user_id);
-        $this->assertSame($this->launch->agent->id, $proposal->requesting_agent_id);
-        $this->assertSame($this->launch->session->id, $proposal->requesting_session_id);
+        $this->assertSame([ActorType::Agent, $this->launch->agent->id], [$proposal->requester_type, $proposal->requester_id]);
         $this->assertSame(0, ShareGatewayOperation::query()->count());
         $audit = ShareAudit::query()->readAll('one audit')->sole();
         $this->assertSame([ShareAuditType::Created, ActorType::Agent], [$audit->type, $audit->actor_type]);
@@ -146,7 +146,7 @@ final class ShareProposalTest extends TestCase
     public function test_the_hundred_and_first_proposal_is_refused_and_an_expired_one_frees_a_slot(): void
     {
         for ($index = 0; $index < Share::MOST_PROPOSED; $index++) {
-            Share::propose($this->root, $this->launch->agent->id, $this->launch->session->id, CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS));
+            Share::propose($this->root, new ActorIdentity(ActorType::Agent, $this->launch->agent->id), CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS));
         }
 
         $this->assertThrows(fn () => $this->request('01JD8X0G9M3QZ6V4K2PROPOSE1'), ShareQuotaReached::class);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Sharing\Support;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Support\ActorIdentity;
 use App\Sharing\Models\Share;
 
 /**
@@ -23,6 +24,6 @@ final readonly class ProposalStatusReader
         $agent = $this->actors->actor();
         $agent->requireAgent();
 
-        return array_map(fn (Share $proposal) => $proposal->proposalStatus(), Share::proposedBy($agent->actorId()));
+        return array_map(fn (Share $proposal) => $proposal->proposalStatus(), Share::proposedBy(ActorIdentity::of($agent)));
     }
 }

@@ -98,7 +98,7 @@ final class SharingModelsTest extends TestCase
 
     public function test_a_proposal_member_and_audit_are_made_through_their_methods(): void
     {
-        $proposal = Share::propose($this->root(), TestIds::of(5), TestIds::of(6), CarbonImmutable::now()->addDays(7));
+        $proposal = Share::propose($this->root(), new ActorIdentity(ActorType::Agent, TestIds::of(5)), CarbonImmutable::now()->addDays(7));
         $member = ShareMember::approve($proposal, $this->root(), new ShareSelectedTarget(new RecordIdentity('documents.report', TestIds::of(7)), TestIds::of(8), '1'));
         $audit = ShareAudit::recordFor($proposal, ShareAuditType::Created, new ActorIdentity(ActorType::Agent, TestIds::of(5)), null);
         $change = ShareAudit::recordForInstallation(ShareAuditType::GatewayChanged, new ActorIdentity(ActorType::User, TestIds::of(9)), 'disabled');

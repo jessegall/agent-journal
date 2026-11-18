@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Sharing\Models;
 
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
@@ -12,6 +14,7 @@ use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Enums\ShareState;
 use App\Sharing\Exceptions\ShareProposalUnavailable;
+use App\Sharing\Exceptions\ShareUnavailable;
 use App\Sharing\Support\ShareProposalStatus;
 use App\Sharing\Support\ShareSummary;
 use App\Sharing\Support\ShareToken;
@@ -38,8 +41,8 @@ use PhpOption\Option;
  * @property string $root_type
  * @property string $root_id
  * @property string|null $owner_user_id
- * @property string|null $requesting_agent_id
- * @property string|null $requesting_session_id
+ * @property ActorType|null $requester_type
+ * @property string|null $requester_id
  * @property string|null $share_gateway_configuration_id
  * @property int|null $configuration_version
  * @property int $scope_version
@@ -89,6 +92,7 @@ final class Share extends Model implements Numbered, ReadableModel
     {
         return [
             'state' => ShareState::class,
+            'requester_type' => ActorType::class,
             'configuration_version' => 'integer',
             'scope_version' => 'integer',
             'token_ciphertext' => 'encrypted',
@@ -103,13 +107,13 @@ final class Share extends Model implements Numbered, ReadableModel
 
     /**
      * An agent's proposal to share the root: no token, no gateway, kept until the owner approves or it expires.
-     * The requesting agent and session are kept for attribution only, never as authority.
+     * The requesting actor is kept for attribution only, never as authority.
      */
-    public static function propose(RecordIdentity $root, string $agentId, string $sessionId, CarbonImmutable $expiresAt): self
+    public static function propose(RecordIdentity $root, ActorIdentity $requester, CarbonImmutable $expiresAt): self
     {
         $share = self::forRoot($root, ShareState::Proposed, $expiresAt);
-        $share->requesting_agent_id = $agentId;
-        $share->requesting_session_id = $sessionId;
+        $share->requester_type = $requester->type;
+        $share->requester_id = $requester->id;
         $share->save();
 
         return $share;
@@ -151,6 +155,48 @@ final class Share extends Model implements Numbered, ReadableModel
     }
 
     /**
+     * The share of this id, locked until the transaction ends.
+     *
+     * @throws ShareUnavailable
+     */
+    public static function lockForChange(string $id): self
+    {
+        return self::query()->whereKey($id)->lockForUpdate()->first() ?? throw ShareUnavailable::for($id);
+    }
+
+    /**
+     * The proposals and live shares whose deadline has passed but whose state has not caught up, oldest first and
+     * locked, at most the given number.
+     *
+     * @return list<self>
+     */
+    public static function lockPastDeadline(int $most): array
+    {
+        return array_values(self::query()->pastDeadline()->orderBy('id')->lockForUpdate()->readLimit($most)->get()->all());
+    }
+
+    /**
+     * Ends the share in a terminal state once: its token can no longer be read back, while its digest stays so a
+     * read with the old token is answered as denied.
+     */
+    public function end(ShareState $terminal): void
+    {
+        $this->state = $terminal;
+        $this->terminal_at = CarbonImmutable::now();
+        $this->token_ciphertext = null;
+        $this->save();
+    }
+
+    /**
+     * Whether no other live, unexpired share is served by this share's gateway configuration.
+     */
+    public function isLastLiveOfItsConfiguration(): bool
+    {
+        return $this->share_gateway_configuration_id !== null
+            && ! self::query()->liveNow()->servedBy($this->share_gateway_configuration_id)->whereKeyNot($this->id)->exists();
+    }
+
+    /**
      * How many unexpired proposals the installation holds now; counted under the installation lock.
      */
     public static function proposedCount(): int
@@ -169,13 +215,13 @@ final class Share extends Model implements Numbered, ReadableModel
     }
 
     /**
-     * The agent's newest proposals, whatever became of them.
+     * The actor's newest proposals, whatever became of them.
      *
      * @return list<self>
      */
-    public static function proposedBy(string $agentId): array
+    public static function proposedBy(ActorIdentity $requester): array
     {
-        return array_values(self::query()->requestedBy($agentId)->orderByDesc('id')->readLimit(self::MOST_PROPOSED)->get()->all());
+        return array_values(self::query()->requestedBy($requester)->orderByDesc('id')->readLimit(self::MOST_PROPOSED)->get()->all());
     }
 
     /**
@@ -305,6 +351,25 @@ final class Share extends Model implements Numbered, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
+    protected function pastDeadline(Builder $query): void
+    {
+        $open = [ShareState::Proposed, ...ShareState::liveStates()];
+        $query->whereIn('state', array_map(fn (ShareState $state) => $state->value, $open))->where('expires_at', '<=', CarbonImmutable::now());
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function servedBy(Builder $query, string $configurationId): void
+    {
+        $query->where('share_gateway_configuration_id', $configurationId);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
     protected function proposedNow(Builder $query): void
     {
         $query->where('state', ShareState::Proposed->value)->where('expires_at', '>', CarbonImmutable::now());
@@ -314,9 +379,9 @@ final class Share extends Model implements Numbered, ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function requestedBy(Builder $query, string $agentId): void
+    protected function requestedBy(Builder $query, ActorIdentity $requester): void
     {
-        $query->where('requesting_agent_id', $agentId);
+        $query->where('requester_type', $requester->type->value)->where('requester_id', $requester->id);
     }
 
     /**

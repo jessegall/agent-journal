@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('root_type');
             $table->string('root_id');
             $table->string('owner_user_id')->nullable();
-            $table->string('requesting_agent_id')->nullable();
-            $table->string('requesting_session_id')->nullable();
+            $table->string('requester_type', 16)->nullable();
+            $table->string('requester_id', 64)->nullable();
             $table->foreignUlid('share_gateway_configuration_id')->nullable()->constrained('share_gateway_configurations')->restrictOnDelete();
             $table->unsignedInteger('configuration_version')->nullable();
             $table->unsignedInteger('scope_version')->default(0);

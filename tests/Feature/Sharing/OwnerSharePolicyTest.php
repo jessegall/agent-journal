@@ -8,6 +8,7 @@ use App\Actors\Contracts\Actor;
 use App\Actors\Contracts\JournalAccessPolicy;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
 use App\Domains\Support\Domain;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Contracts\ProvidesShareGateways;
@@ -78,7 +79,7 @@ final class OwnerSharePolicyTest extends TestCase
     {
         $policy = $this->app->make(OwnerSharePolicy::class);
         $share = Share::grant(new RecordIdentity('pamphlets.pamphlet', TestIds::of(4)), $this->ownerId, $this->configuration(), ShareToken::generate(), CarbonImmutable::now()->addDays(7));
-        $proposal = Share::propose(new RecordIdentity('pamphlets.pamphlet', TestIds::of(4)), TestIds::of(5), TestIds::of(6), CarbonImmutable::now()->addDays(7));
+        $proposal = Share::propose(new RecordIdentity('pamphlets.pamphlet', TestIds::of(4)), new ActorIdentity(ActorType::Agent, TestIds::of(5)), CarbonImmutable::now()->addDays(7));
 
         $this->assertTrue($policy->grantHolds($share));
         $this->assertFalse($policy->grantHolds($proposal));
