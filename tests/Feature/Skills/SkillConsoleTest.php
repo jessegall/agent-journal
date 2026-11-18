@@ -21,7 +21,7 @@ use Tests\TestCase;
  * skill:list and skill:show read only the catalogue: the list names every skill, show prints the rendered bytes, and a
  * catalogue that cannot be built answers with its reason instead of a partial list.
  */
-final class SkillConsoleTest extends TestCase
+final class SkillAuthoringTest extends TestCase
 {
     public function test_the_list_names_the_module_skill_and_every_shipped_skill(): void
     {

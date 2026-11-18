@@ -7,7 +7,7 @@ namespace App\Skills\Console;
 use App\Bus\Contracts\CommandBus;
 use App\Skills\Commands\CopySkill;
 use App\Skills\Console\Concerns\PrintsSkillRefusals;
-use App\Skills\Support\SkillConsole;
+use App\Skills\Support\SkillAuthoring;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
@@ -22,7 +22,7 @@ final class SkillCopyCommand extends Command
 
     protected $description = 'Copy a skill into a new stored skill';
 
-    public function handle(SkillConsole $console, CommandBus $commands): int
+    public function handle(SkillAuthoring $console, CommandBus $commands): int
     {
         $requestId = (string) ($this->option('request-id') ?? Str::ulid());
         $this->line("Request id: {$requestId}");

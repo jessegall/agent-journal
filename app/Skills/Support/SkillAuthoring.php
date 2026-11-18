@@ -23,10 +23,11 @@ use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Str;
 
 /**
- * What the skill console commands share: acting as the journal's owner, finding a stored skill by number or key,
+ * What every skill authoring entry point shares, on the command line and over MCP: acting as the journal owner on
+ * the command line, finding a stored skill by number or key,
  * turning a Markdown body and audience flags into a draft, and the plain lines a save prints.
  */
-final readonly class SkillConsole
+final readonly class SkillAuthoring
 {
     public function __construct(
         private JournalAccessPolicy $access,
@@ -143,6 +144,26 @@ final readonly class SkillConsole
         return [
             "Skill {$result->number} ({$skill->key}): revision {$result->revision} saved; publication pending.",
             ...$this->statusLines($skill),
+        ];
+    }
+
+    /**
+     * What a write answers over MCP: the request id, the saved revision and the skill's status.
+     *
+     * @return array<string, mixed>
+     */
+    public function receipt(SkillRevisionResult $result, string $requestId): array
+    {
+        $skill = Skill::query()->whereKey($result->skillId)->firstOrFail();
+
+        return [
+            'request_id' => $requestId,
+            'skill_id' => $result->skillId,
+            'number' => $result->number,
+            'key' => $skill->key,
+            'revision' => $result->revision,
+            'publication' => 'pending',
+            'status' => $this->statusLines($skill),
         ];
     }
 

@@ -6,7 +6,7 @@ namespace App\Skills\Console;
 
 use App\Skills\Console\Concerns\PrintsSkillRefusals;
 use App\Skills\Models\SkillRevision;
-use App\Skills\Support\SkillConsole;
+use App\Skills\Support\SkillAuthoring;
 use Illuminate\Console\Command;
 
 /**
@@ -22,7 +22,7 @@ final class SkillRevisionsCommand extends Command
 
     protected $description = 'List the revisions of a stored skill';
 
-    public function handle(SkillConsole $console): int
+    public function handle(SkillAuthoring $console): int
     {
         return $this->printRefusals(function () use ($console) {
             $console->actAsOwner();

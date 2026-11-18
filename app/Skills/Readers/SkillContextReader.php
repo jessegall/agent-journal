@@ -13,6 +13,7 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Profiles\Contracts\ProfileReader;
 use App\Profiles\Values\ProfileKey;
+use App\Skills\Exceptions\SkillAgentHidden;
 use App\Skills\Exceptions\SkillContextUnavailable;
 use App\Skills\Support\LaunchProgram;
 use App\Skills\Values\LaunchProfile;
@@ -50,12 +51,13 @@ final readonly class SkillContextReader
     /**
      * The context of an agent's latest session, for a preview by an actor who may see that agent.
      *
+     * @throws SkillAgentHidden
      * @throws SkillContextUnavailable
      */
     public function forAgent(Agent $agent): SkillContext
     {
         if ($this->agents->labelsFor([$agent->id]) === []) {
-            throw SkillContextUnavailable::hidden();
+            throw SkillAgentHidden::for();
         }
 
         $session = AgentSession::latestOf($agent->id) ?? throw SkillContextUnavailable::neverLaunched($agent->id);

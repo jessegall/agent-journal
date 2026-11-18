@@ -17,6 +17,7 @@ use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Enums\ConditionOutcome;
+use App\Skills\Exceptions\SkillAgentHidden;
 use App\Skills\Exceptions\SkillContextUnavailable;
 use App\Skills\Readers\SkillContextReader;
 use App\Skills\Values\SkillContext;
@@ -106,7 +107,7 @@ final class SkillContextReaderTest extends TestCase
 
         $this->assertSame($main->id, $reader->forAgent($main)->actor->id);
 
-        $this->expectException(SkillContextUnavailable::class);
+        $this->expectException(SkillAgentHidden::class);
 
         $reader->forAgent($other);
     }
