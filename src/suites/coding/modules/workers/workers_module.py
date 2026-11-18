@@ -30,6 +30,7 @@ from suites.coding.modules.workers.marks.worker_mark import WorkerMark
 from suites.coding.modules.workers.models.worker_progress import WorkerProgress
 from engine.module.module import Module
 from suites.coding.modules.workers.types.merger import Merger
+from suites.coding.modules.workers.types.supervisor import Supervisor
 from suites.coding.modules.workers.types.worker import Worker
 from suites.coding.modules.workers.models.worker_points import WorkerPoints
 from suites.coding.modules.workers.models.worker_wait import WorkerWait
@@ -52,7 +53,7 @@ class WorkersModule(Module):
     lines = WORKERS_LINES
     policies = WORKERS_POLICIES
     profiles = WORKER_PROFILES
-    helper_types = [Worker, Merger]
+    helper_types = [Worker, Merger, Supervisor]
     helper_lines = [WorkersHelperLines]
     templates = WORKER_TEMPLATES
     window_extensions = WORKERS_WINDOW_EXTENSIONS
