@@ -1,8 +1,19 @@
 # Public events
 
-A public event is a fact a domain publishes for anyone to hear: it lives in the owner's `Api/Events` folder and is on the owner's export list. Every other event stays private to its owner. Core's two extension requests are the other type of public event: they ask listeners to contribute, at once, inside the work that raised them.
+An event is any class that implements Core's marker interface `App\Contracts\Event`, Core's, a domain's or a module's, whatever folder it sits in; `EventMarkerTest` fails on a class in an `Events` folder that does not. An event is public only when its owner lists it under `events` in its exports:
 
-Every event, public or private, Core's, a domain's or a module's, implements Core's marker interface `App\Contracts\Event`; `EventMarkerTest` fails on a class in an `Events` folder that does not.
+```php
+public function exports(): Exports
+{
+    return Exports::make()
+        ->events(PlanStarted::class, PlanProgressChanged::class)
+        ->contracts(PlanReader::class)
+        ->commands(StartPlan::class)
+        ->build();
+}
+```
+
+Every other event stays private to its owner. Another domain hears a public event only through a concrete typed listener in its `Listeners` folder, and only when it requires the owner; Core's public events need no requirement. Core's two extension requests are public events too: they ask listeners to contribute, at once, inside the work that raised them. Whether an event is public and when it is raised are separate choices: a public event may be raised at once or after the commit.
 
 ## Facts, raised after the outermost commit
 
@@ -20,9 +31,13 @@ Each fact implements `ShouldDispatchAfterCommit`, so a listener hears it only on
 
 `AssignmentsChanged` is raised once per command, never per record, and only from the attempt that committed: an attempt the writer ran again after a serialization failure leaves no fact. A cascade over a plan raises one fact for all its changes.
 
-A fact that changes what users see also implements `App\Ui\Contracts\UpdatesUserInterface` (Chat's three, Plans' two and Rules' three today). Web listens for that marker once, through the dispatcher's interface listeners, so a new domain's or module's fact refreshes the open pages without any change to Web; Core owns the marker and names no domain.
+A fact that changes what users see also implements `App\Ui\Contracts\UpdatesUserInterface` (Chat's three, Plans' two and Rules' three today). Web's `BroadcastPageChange` listens for that marker, and the checked provider turns it into one listener for each exported event that implements it, so a new domain's or module's exported fact refreshes the open pages without any change to Web, while a fact nobody exports refreshes nothing; Core owns the marker and names no domain.
 
-`TaskStarted`, `SequenceStarted` and `MessageNeedsAnswer` stay private: their listeners push stack states inside the same transaction, so they are not facts after a commit. Plans hears `TaskStarted` through its approved requirement of Tasks: `TasksDomain::exports()` lists it, so only a domain that requires Tasks may name it.
+`TaskStarted` is exported and raised at once, not after the commit: its listeners push stack states inside the same transaction. Plans hears it through its approved requirement of Tasks. `SequenceStarted` and `MessageNeedsAnswer` are internal: their owners do not export them, so only their own listeners hear them.
+
+## How a private event is refused
+
+One provider, `App\Domains\Providers\DomainEventServiceProvider`, registers every listener: it discovers the `Listeners` folders of Core (`CoreApi::listenerFolders()`) and of each domain, and `App\Domains\Support\ListenerPolicy` checks each event and listener pair. A listener on an event its owner does not export, on an event of a domain its own domain does not require, or on something that is not a concrete event stops the application with `InvalidListener`, naming the listener, the event and its owner. The same check runs when `php artisan event:cache` writes the cache and when a cached boot reads it, so a cache cannot let a private pair through. A cache written before a declaration change is refused with the instruction to run `php artisan event:cache` again; restart long-lived workers (`php artisan octane:reload`, `php artisan queue:restart`) after a declaration change. A listener registered by hand (`Event::listen` on a project event, a wildcard, a subscriber or a `listen` property) is refused by the architecture suite; the one exception is each domain's state types answering `StateTypesRequested` through the `RegisterStates` bootstrapper.
 
 ## Requests, answered inside the work
 

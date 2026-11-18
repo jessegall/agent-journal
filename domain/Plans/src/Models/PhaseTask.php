@@ -24,14 +24,14 @@ final class PhaseTask extends Pivot
 {
     use HasUlids, Linkable;
 
+    public $timestamps = false;
+
     /**
      * A pivot opens every attribute by default; this one takes only its Fillable list.
      *
      * @var list<string>
      */
     protected $guarded = ['*'];
-
-    public $timestamps = false;
 
     /**
      * @return array<string, string>
