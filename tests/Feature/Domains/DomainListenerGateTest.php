@@ -1,0 +1,87 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Domains;
+
+use App\Contracts\DomainAvailability;
+use App\Domains\Providers\DomainEventServiceProvider;
+use App\Domains\Support\AvailableListener;
+use App\Hooks\Stack\StateTypes;
+use App\Settings\Models\SettingsRecord;
+use App\Settings\Storage\EncodedToggle;
+use App\Settings\Storage\EncodedValue;
+use Domain\Memory\Listeners\LowerMemoryWeights;
+use Domain\Plans\Listeners\RaisePlanProgressChanged;
+use stdClass;
+use Tests\Fixtures\Listeners\CountingListener;
+use Tests\Support\RefreshHookDatabase;
+use Tests\TestCase;
+
+/**
+ * A domain's listeners run only while the domain that owns them is available, asked when the event is delivered;
+ * Core's listeners and registration closures always run, and the cached map gets the same gate as the discovered one.
+ */
+final class DomainListenerGateTest extends TestCase
+{
+    use RefreshHookDatabase;
+
+    public function test_a_gated_listener_runs_only_while_its_domain_is_available_asked_at_delivery(): void
+    {
+        CountingListener::$heard = 0;
+        $available = new class implements DomainAvailability
+        {
+            public bool $plansOn = false;
+
+            public function isEnabled(string $owner): bool
+            {
+                return $owner !== 'Plans' || $this->plansOn;
+            }
+        };
+        $this->app->instance(DomainAvailability::class, $available);
+        $gate = new AvailableListener('Plans', CountingListener::class);
+
+        $gate(new stdClass);
+        $this->assertSame(0, CountingListener::$heard);
+
+        $available->plansOn = true;
+        $gate(new stdClass);
+        $this->assertSame(1, CountingListener::$heard);
+    }
+
+    public function test_domain_listeners_are_gated_by_their_own_domain_and_the_map_keeps_every_declaration(): void
+    {
+        $provider = new DomainEventServiceProvider($this->app);
+        $discovered = $provider->discoverEvents();
+        $gated = $provider->getEvents();
+
+        $this->assertSame(array_map('count', $discovered), array_map('count', array_intersect_key($gated, $discovered)));
+
+        $owners = [];
+        $coreListeners = [];
+        foreach ($gated as $listeners) {
+            foreach ($listeners as $listener) {
+                if ($listener instanceof AvailableListener) {
+                    $owners[explode('@', $listener->listener)[0]] = $listener->owner;
+                } elseif (is_string($listener)) {
+                    $coreListeners[] = explode('@', $listener)[0];
+                }
+            }
+        }
+
+        $this->assertSame('Plans', $owners[RaisePlanProgressChanged::class]);
+        $this->assertSame('Memory', $owners[LowerMemoryWeights::class]);
+        $this->assertNotEmpty(array_filter($coreListeners, fn (string $class) => str_starts_with($class, 'App\\')));
+        $this->assertSame([], array_filter($coreListeners, fn (string $class) => str_starts_with($class, 'Domain\\')));
+    }
+
+    public function test_registration_still_reaches_a_switched_off_domain(): void
+    {
+        SettingsRecord::insertIfAbsent('Core');
+        $record = SettingsRecord::sharedRuntimeForOwner('Core')->get();
+        $record->revise($record->document->withToggle(new EncodedToggle('domain_tasks', EncodedValue::of(false))));
+        $this->app->forgetScopedInstances();
+
+        $this->assertTrue($this->app->make(StateTypes::class)->registry()->has('tasks.working'));
+    }
+}

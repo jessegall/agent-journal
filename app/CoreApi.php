@@ -109,6 +109,7 @@ use App\Bus\Exceptions\CommandRetryExhausted;
 use App\Bus\Exceptions\CommandTransactionMismatch;
 use App\Bus\Exceptions\CommandTransactionMissing;
 use App\Bus\Exceptions\ContinuationCalledTwice;
+use App\Bus\Exceptions\DomainDisabled;
 use App\Bus\Exceptions\ExplicitTransactionInCommand;
 use App\Bus\Exceptions\HandlerInOtherOwner;
 use App\Bus\Exceptions\HandlerServesTwoCommands;
@@ -156,6 +157,7 @@ use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Support\MessageAddress;
 use App\Contracts\CommandHandler;
 use App\Contracts\CommandRefusal;
+use App\Contracts\DomainAvailability;
 use App\Contracts\Event;
 use App\Contracts\Listener;
 use App\Engine\Commands\MarkSilentSessions;
@@ -167,6 +169,7 @@ use App\Exports\Support\Exports;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\Answer;
 use App\Hooks\Contracts\ConditionalState;
+use App\Hooks\Contracts\ConditionalStateType;
 use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Contracts\HookAnswerer;
 use App\Hooks\Contracts\HookInput;
@@ -484,6 +487,8 @@ final class CoreApi
                 HookInput::class,
                 StateRegistration::class,
                 ConditionalState::class,
+                ConditionalStateType::class,
+                DomainAvailability::class,
                 ReminderContribution::class,
                 Assignee::class,
                 Assignable::class,
@@ -763,6 +768,7 @@ final class CoreApi
                 SettingsUnavailable::class,
                 SettingReferenceInvalid::class,
                 SettingsOwnerUnknown::class,
+                DomainDisabled::class,
                 ContentMissing::class,
                 ContentTooLarge::class,
                 MarkdownInvalid::class,
