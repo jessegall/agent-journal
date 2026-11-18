@@ -16,6 +16,8 @@ use App\Settings\Contracts\EnabledSettingsGroup;
 use App\Settings\Contracts\SettingCommands;
 use App\Settings\Contracts\SettingsReader;
 use App\Settings\Enums\SettingsOutcome;
+use App\Settings\Enums\SettingTarget;
+use App\Settings\Events\SettingsChanged;
 use App\Settings\Exceptions\SettingDisabled;
 use App\Settings\Exceptions\SettingsAccessDenied;
 use App\Settings\Exceptions\SettingsConflict;
@@ -36,6 +38,8 @@ use App\Settings\Values\SettingsChange;
 use Closure;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use RuntimeException;
 use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 use Tests\Support\CommitsHookRows;
@@ -81,6 +85,53 @@ final class SettingsCommandsTest extends TestCase
         $this->assertChange(SettingsOutcome::Changed, 1, $this->runCommand($this->commands->integer($this->reviews->retryLimit, 4, 0)));
         $this->assertChange(SettingsOutcome::Unchanged, 1, $this->runCommand($this->commands->integer($this->reviews->retryLimit, 4, 1)));
         $this->assertSame(4, $this->reviewGroup()->integer($this->reviews->retryLimit));
+    }
+
+    public function test_each_changing_command_announces_one_change_after_commit_and_no_other_command_announces_any(): void
+    {
+        $announced = [];
+        Event::listen(SettingsChanged::class, function (SettingsChanged $event) use (&$announced): void {
+            $announced[] = [$event->owner, $event->target, $event->key, $event->revision];
+        });
+
+        $this->runCommand($this->commands->integer($this->reviews->retryLimit, 4, 0));
+        $this->runCommand($this->commands->integer($this->reviews->retryLimit, 4, 1));
+        $this->runCommand($this->commands->reset($this->reviews->retryLimit, 1));
+        $this->runCommand($this->commands->reset($this->reviews->retryLimit, 2));
+        $this->runCommand($this->commands->disable($this->reviews->review, 2));
+        $this->runCommand($this->commands->enable($this->reviews->review, 3));
+        $this->runCommand($this->commands->resetGroup($this->reviews->review, 4));
+        $this->assertRefused(SettingsConflict::class, $this->commands->integer($this->reviews->retryLimit, 7, 0));
+        $this->assertRefused(SettingValueInvalid::class, $this->commands->integer($this->reviews->retryLimit, 11, 5));
+
+        $this->assertSame([
+            ['Reviews', SettingTarget::Setting, 'retry_limit', 1],
+            ['Reviews', SettingTarget::Setting, 'retry_limit', 2],
+            ['Reviews', SettingTarget::Group, 'review', 3],
+            ['Reviews', SettingTarget::Group, 'review', 4],
+            ['Reviews', SettingTarget::Group, 'review', 5],
+        ], $announced);
+        $this->assertSame(['owner', 'target', 'key', 'revision'], array_keys(get_object_vars(new SettingsChanged('Reviews', SettingTarget::Setting, 'retry_limit', 1))));
+    }
+
+    public function test_a_change_rolled_back_with_its_transaction_announces_nothing(): void
+    {
+        $announced = 0;
+        Event::listen(SettingsChanged::class, function () use (&$announced): void {
+            $announced++;
+        });
+
+        try {
+            DB::transaction(function (): void {
+                $this->runCommand($this->commands->integer($this->reviews->retryLimit, 4, 0));
+
+                throw new RuntimeException('The surrounding work failed.');
+            });
+        } catch (RuntimeException) {
+        }
+
+        $this->assertSame(0, $announced);
+        $this->assertSame(0, SettingsRecord::query()->count());
     }
 
     public function test_a_value_equal_to_the_default_is_stored_as_an_override(): void

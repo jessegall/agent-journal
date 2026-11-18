@@ -9,6 +9,8 @@ use App\Bus\Exceptions\CommandTransactionMissing;
 use App\Settings\Contracts\Setting;
 use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Enums\SettingsOutcome;
+use App\Settings\Enums\SettingTarget;
+use App\Settings\Events\SettingsChanged;
 use App\Settings\Exceptions\SettingDisabled;
 use App\Settings\Exceptions\SettingsConflict;
 use App\Settings\Exceptions\SettingStorageInvalid;
@@ -18,6 +20,7 @@ use App\Settings\Storage\EncodedToggle;
 use App\Settings\Storage\EncodedValue;
 use App\Settings\Storage\SettingsDocument;
 use App\Settings\Values\SettingsChange;
+use Illuminate\Contracts\Events\Dispatcher;
 
 /**
  * Changes one owner's stored settings inside the running bus command: it makes the owner's record when there is none,
@@ -33,6 +36,7 @@ final readonly class SettingsWriter
         private SettingRegistry $registry,
         private SettingCodec $codec,
         private DatabaseSettingsReader $reader,
+        private Dispatcher $events,
     ) {}
 
     /**
@@ -53,7 +57,7 @@ final readonly class SettingsWriter
             return $this->unchanged($record);
         }
 
-        return $this->revise($record, $record->document->withSetting(new EncodedSetting($setting->key(), $value)));
+        return $this->revise($record, $record->document->withSetting(new EncodedSetting($setting->key(), $value)), SettingTarget::Setting, $setting->key());
     }
 
     /**
@@ -74,7 +78,7 @@ final readonly class SettingsWriter
             return $this->unchanged($record);
         }
 
-        return $this->revise($record, $record->document->withoutSetting($setting->key()));
+        return $this->revise($record, $record->document->withoutSetting($setting->key()), SettingTarget::Setting, $setting->key());
     }
 
     /**
@@ -94,7 +98,7 @@ final readonly class SettingsWriter
             return $this->unchanged($record);
         }
 
-        return $this->revise($record, $record->document->withToggle(new EncodedToggle($group->key, $value)));
+        return $this->revise($record, $record->document->withToggle(new EncodedToggle($group->key, $value)), SettingTarget::Group, $group->key);
     }
 
     /**
@@ -113,7 +117,7 @@ final readonly class SettingsWriter
             return $this->unchanged($record);
         }
 
-        return $this->revise($record, $record->document->withoutToggle($group->key));
+        return $this->revise($record, $record->document->withoutToggle($group->key), SettingTarget::Group, $group->key);
     }
 
     /**
@@ -161,10 +165,14 @@ final readonly class SettingsWriter
         return new SettingsChange($record->owner, $record->revision, SettingsOutcome::Unchanged);
     }
 
-    private function revise(SettingsRecord $record, SettingsDocument $document): SettingsChange
+    /**
+     * Stores the document as the next revision and announces it once the command's transaction commits.
+     */
+    private function revise(SettingsRecord $record, SettingsDocument $document, SettingTarget $target, string $key): SettingsChange
     {
         $record->revise($document);
         $this->reader->forget($record->owner);
+        $this->events->dispatch(new SettingsChanged($record->owner, $target, $key, $record->revision));
 
         return new SettingsChange($record->owner, $record->revision, SettingsOutcome::Changed);
     }
