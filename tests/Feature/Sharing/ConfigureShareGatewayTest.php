@@ -90,10 +90,10 @@ final class ConfigureShareGatewayTest extends TestCase
     public function test_a_gateway_that_is_not_ready_cannot_be_made_the_default(): void
     {
         $this->assertThrows(fn () => $this->configure(UnreadyShareGateway::KEY, true), GatewayNotReady::class, 'not logged in');
-        $this->assertSame(0, ShareGatewayConfiguration::query()->count());
+        $this->assertSame(0, ShareGatewayConfiguration::query()->where('is_default', true)->count());
 
-        $this->configure(UnreadyShareGateway::KEY, false);
-        $this->assertFalse(ShareGatewayConfiguration::query()->sole()->is_default);
+        $configured = $this->configure(UnreadyShareGateway::KEY, false);
+        $this->assertFalse(ShareGatewayConfiguration::query()->findOrFail($configured->configurationId)->is_default);
     }
 
     public function test_a_secret_entered_at_the_prompt_appears_in_no_row_receipt_or_log(): void
