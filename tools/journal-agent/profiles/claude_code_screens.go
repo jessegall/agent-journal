@@ -50,6 +50,8 @@ func (ClaudeCode) Screens() screen.Layout {
 				"tokens long", "summary"),
 			claudeCodeMenu("question", "human_input", "chat about this", "type something", "review your answers",
 				"submit answers"),
+			claudeCodeMenu("model-picker", "human_input", "select model", "switch between claude models",
+				"default for new sessions", "effort"),
 			claudeCodeMenu("tool-permission", "permission_required", "do you want to", "don't ask again",
 				"what to do differently", "allow all edits", "allow this connection"),
 		},

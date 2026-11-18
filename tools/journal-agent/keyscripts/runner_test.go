@@ -59,7 +59,8 @@ func newRun(t *testing.T) *run {
 	program := &bytes.Buffer{}
 	gate := terminal.NewInputGate(program, reader, layout.Composer, clock.Now)
 	result := &run{gate: gate, program: program, clock: clock}
-	result.runner = NewRunner(gate, screen.NewClassifier(layout, reader), clock, func(step Progress) {
+	highlight := func() string { return "" }
+	result.runner = NewRunner(gate, screen.NewClassifier(layout, reader), clock, highlight, func(step Progress) {
 		result.steps = append(result.steps, step)
 	})
 
@@ -72,14 +73,14 @@ func trustScript(steps ...KeyStep) KeyScript {
 
 func TestEachConfirmedStepSendsExactlyOneKey(t *testing.T) {
 	run := newRun(t)
-	script := trustScript(SelectEntry("folder-trust", 1, 2*time.Second)...)
+	script := trustScript(MoveAndChoose("folder-trust", 1, 2*time.Second)...)
 
 	result, err := run.runner.Run(script, nil)
 	if err != nil || result.Outcome != Finished {
 		t.Fatalf("the run ended %+v, %v", result, err)
 	}
 	if run.program.String() != "\x1b[B\r" || len(run.steps) != 2 {
-		t.Fatalf("the program got %q after %d confirmed steps, not one arrow and one Enter", run.program.String(), len(run.steps))
+		t.Fatalf("the program got %q after %d confirmed steps", run.program.String(), len(run.steps))
 	}
 }
 
@@ -104,7 +105,7 @@ func TestAScreenThatIsNotTheExpectedOneStopsTheScriptAtItsStep(t *testing.T) {
 
 func TestAPersonsKeyPausesTheScriptAndResumeStartsFromAFreshCheckpoint(t *testing.T) {
 	run := newRun(t)
-	script := trustScript(SelectEntry("folder-trust", 1, 2*time.Second)...)
+	script := trustScript(MoveAndChoose("folder-trust", 1, 2*time.Second)...)
 	run.gate.Human([]byte("\x1b[A"))
 
 	result, err := run.runner.Run(script, nil)
