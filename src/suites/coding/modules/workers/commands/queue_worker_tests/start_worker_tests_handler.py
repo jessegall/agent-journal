@@ -49,8 +49,14 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
         queued = [proof for proof in proofs if proof.state is ProofState.QUEUED]
         ready = {worktree_id for worktree_id in {proof.worktree_id for proof in queued} if self.is_ready(worktrees[worktree_id], running)}
         folders = {worktree_id: self.test_folder(worktrees[worktree_id], running) for worktree_id in ready}
+        # proofs of one worktree with the same command share one run instead of each queueing it again
+        shared: dict[tuple[int, str], int] = {}
         for proof in (proof for proof in queued if proof.worktree_id in ready):
-            self.start(proof, worktrees[proof.worktree_id], folders[proof.worktree_id], context)
+            key = (proof.worktree_id, proof.test_command)
+            if key in shared:
+                self.repository.save_change(proof, proof.moved(ProofLifecycle.run, process_id=shared[key]), context)
+                continue
+            shared[key] = self.start(proof, worktrees[proof.worktree_id], folders[proof.worktree_id], context)
             running.add(proof.worktree_id)
         for first_answer in first_answers:
             if first_answer.worktree_id not in worktrees or first_answer.worktree_id in running:
@@ -73,10 +79,11 @@ class StartWorkerTestsHandler(Handler[StartWorkerTests, None]):
             return self.runner.folder(self.environments.find(worktree.environment_id), self.plans.find_phase(worktree.task_id).plan_id)
         return self.git.test_folder(worktree) if worktree.id in running else self.git.test_checkout(worktree)
 
-    def start(self, proof: Proof, worktree: Worktree, folder: str, context: Context) -> None:
+    def start(self, proof: Proof, worktree: Worktree, folder: str, context: Context) -> int:
         start = WorkerTestStart.started(worktree.session_agent_id, proof.test_command, folder)
         process = self.bus.dispatch(replace(start, owner_agent_id=worktree.session_agent_id, task_id=proof.task_id), context)
         self.repository.save_change(proof, proof.moved(ProofLifecycle.run, process_id=process.id), context)
+        return process.id
 
     def start_picker(self, first_answer: AffectedTest, worktree: Worktree, context: Context) -> None:
         start = WorkerTestStart.started(worktree.session_agent_id, first_answer.picker_command, self.libraries.worker_checkout(worktree, self.git.merged_checkout(worktree)))
