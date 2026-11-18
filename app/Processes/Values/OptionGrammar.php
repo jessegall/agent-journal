@@ -58,6 +58,14 @@ final readonly class OptionGrammar
         return $this->takesValue() && ! in_array($word, $this->names, true);
     }
 
+    /**
+     * Whether the word is the option's own name and its value is the next word.
+     */
+    public function takesNextWord(string $word): bool
+    {
+        return $this->takesValue() && in_array($word, $this->names, true);
+    }
+
     public function sharesNameWith(self $other): bool
     {
         return array_intersect($this->names, $other->names) !== [];

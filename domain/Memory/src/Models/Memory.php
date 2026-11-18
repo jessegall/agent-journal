@@ -11,6 +11,8 @@ use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use Domain\Memory\Exceptions\MemoryInvalid;
+use Domain\Memory\Exceptions\MemoryUnavailable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -37,6 +39,10 @@ final class Memory extends Model implements Numbered, ReadableModel
     use BoundedReads;
     use Linkable;
 
+    public const int LIGHTEST = 1;
+
+    public const int HEAVIEST = 10;
+
     /**
      * @return array<string, string>
      */
@@ -45,9 +51,68 @@ final class Memory extends Model implements Numbered, ReadableModel
         return ['weight' => 'integer'];
     }
 
+    /**
+     * Keeps a new memory for its owner.
+     *
+     * @throws MemoryInvalid
+     */
+    public static function keep(ActorIdentity $owner, string $text, int $weight): self
+    {
+        $memory = new self();
+        $memory->text = self::checkedText($text);
+        $memory->weight = self::checkedWeight($weight);
+        $memory->saveFor($owner);
+
+        return $memory;
+    }
+
+    /**
+     * One of the calling actor's own memories, locked for a change; another actor's answers as unavailable.
+     *
+     * @throws MemoryUnavailable
+     */
+    public static function ownForUpdate(string $memoryId): self
+    {
+        return self::query()->whereKey($memoryId)->lockForUpdate()->first() ?? throw MemoryUnavailable::forId($memoryId);
+    }
+
     public function saveFor(ActorIdentity $actor): void
     {
         $this->belongTo($actor);
         $this->save();
+    }
+
+    /**
+     * @throws MemoryInvalid
+     */
+    public function rewrite(string $text): void
+    {
+        $this->text = self::checkedText($text);
+        $this->save();
+    }
+
+    /**
+     * @throws MemoryInvalid
+     */
+    public function reweigh(int $weight): void
+    {
+        $this->weight = self::checkedWeight($weight);
+        $this->save();
+    }
+
+    /**
+     * @throws MemoryInvalid
+     */
+    private static function checkedText(string $text): string
+    {
+        return trim($text) !== '' ? $text : throw MemoryInvalid::blankText();
+    }
+
+    /**
+     * @throws MemoryInvalid
+     */
+    private static function checkedWeight(int $weight): int
+    {
+        return $weight >= self::LIGHTEST && $weight <= self::HEAVIEST ? $weight : throw MemoryInvalid::weight($weight);
     }
 }

@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Processes;
 
+use App\Processes\Contracts\AliasReader;
+use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\ParseOutcome;
 use App\Processes\Enums\ShellDialect;
+use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\ShellNode;
+use Tests\Fixtures\Processes\NoAliases;
 use Tests\TestCase;
 
 /**
@@ -58,6 +62,28 @@ final class ShellCorpusTest extends TestCase
         }
 
         $this->assertSame([], array_slice($differences, 0, self::SHOWN_DIFFERENCES), count($differences).' cases differ from their frozen expectation');
+    }
+
+    public function test_every_complete_case_classifies_as_its_frozen_expectation(): void
+    {
+        $this->app->instance(AliasReader::class, new NoAliases());
+        $syntax = $this->app->make(ShellSyntax::class);
+        $classifier = $this->app->make(CommandClassifier::class);
+        $context = new ExecutionContext(ShellDialect::Bash, '/work', '/work');
+        $differences = [];
+
+        foreach ($this->cases() as $case) {
+            if ($case['expected']['outcome'] !== 'complete') {
+                continue;
+            }
+            $actual = $classifier->classify($syntax->parse($case['source'], ShellDialect::from($case['dialect'])), $context)->summary();
+
+            if ($actual !== $case['expected']['classification']) {
+                $differences[] = $case['id'].' expected '.json_encode($case['expected']['classification']).' classified '.json_encode($actual);
+            }
+        }
+
+        $this->assertSame([], array_slice($differences, 0, self::SHOWN_DIFFERENCES), count($differences).' cases classify differently from their frozen expectation');
     }
 
     /**

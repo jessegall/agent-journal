@@ -12,6 +12,8 @@ use App\Processes\Enums\ShellDialect;
 use App\Processes\Enums\UnresolvedType;
 use App\Processes\Rules\WrapperRules;
 use App\Processes\Support\CommandRuleRegistry;
+use App\Processes\Support\PackageScripts;
+use App\Processes\Support\ProgramClassifiers;
 use App\Processes\Support\ProgramNames;
 use App\Processes\Syntax\TreeParser;
 use App\Processes\Values\ArgumentGrammar;
@@ -24,6 +26,7 @@ use App\Processes\Values\UnresolvedFact;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\Container as ContainerContract;
 use PHPUnit\Framework\TestCase;
+use Tests\Fixtures\Processes\NoAliases;
 
 /**
  * The tree classifier gives every part its declared classes, every redirect and background job its own fact, and
@@ -129,6 +132,6 @@ final class TreeClassifierTest extends TestCase
             CommandRule::forProgram('core.echo', new ProgramSpellings('echo'), [], ArgumentGrammar::operands(OperandType::Text)->repeating(), CommandClassSet::empty()),
         ]);
 
-        return new TreeClassifier($rules, new ProgramNames(), new RedirectFacts(), new WrapperRules(), $parser)->classify($tree, new ExecutionContext(ShellDialect::Bash, '/work', '/work'));
+        return new TreeClassifier($rules, new ProgramNames(), new RedirectFacts(), new WrapperRules(), $parser, new ProgramClassifiers(), new PackageScripts(), new NoAliases())->classify($tree, new ExecutionContext(ShellDialect::Bash, '/work', '/work'));
     }
 }

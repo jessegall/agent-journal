@@ -6,6 +6,8 @@ namespace Domain\Tasks\Console;
 
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Exceptions\AgentRequestFailed;
+use App\Processes\Attributes\JournalRoute;
+use App\Processes\Enums\JournalRouteType;
 use Domain\Tasks\Http\Data\AssignedTaskCardData;
 use Domain\Tasks\Http\Data\AssignedTaskListData;
 use Illuminate\Console\Command;
@@ -14,6 +16,7 @@ use Illuminate\Console\Command;
  * Lists the tasks the calling agent holds, asked of the journal over a signed call with the launch's token: the
  * launch decides who calls, never an option.
  */
+#[JournalRoute(JournalRouteType::Read)]
 final class AssignedTasksCommand extends Command
 {
     protected $signature = 'task:assigned {--search= : Words in the title} {--state=* : Only these states} {--page=1} {--per-page=20} {--json : Print the answer as JSON}';

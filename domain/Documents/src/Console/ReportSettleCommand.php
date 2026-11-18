@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Domain\Documents\Console;
 
 use App\AgentRequests\Contracts\AgentRequestSender;
+use App\Processes\Attributes\JournalRoute;
+use App\Processes\Enums\JournalRouteType;
 use Domain\Documents\Console\Concerns\SendsSettlement;
 use Illuminate\Console\Command;
 
+#[JournalRoute(JournalRouteType::Write)]
 final class ReportSettleCommand extends Command
 {
     use SendsSettlement;

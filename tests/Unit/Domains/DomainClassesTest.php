@@ -31,7 +31,7 @@ final class DomainClassesTest extends TestCase
         yield 'Plans' => [PlansDomain::class, [TasksDomain::class], ['PlanStarted', 'PlanProgressChanged', 'PlanReader', 'StartPlan', 'AssignPlanWork', 'ReassignPlanWork', 'UnassignPlanWork', 'PlanMissing', 'StartDenied', 'PlanFilters', 'PlanList', 'PlanSelection', 'PlanCard', 'AssignedPlanFilters', 'AssignedPlanList', 'PlanProgress', 'PlanType', 'PlanState', 'PlanFinished', 'PlanCancelled', 'PlanDetailsReader', 'PlanDetails', 'PlanPhaseTasks', 'PhaseDetails', 'PlanView', 'PhaseMissing']];
         yield 'Profiles' => [ProfilesDomain::class, [], []];
         yield 'Chat' => [ChatDomain::class, [], []];
-        yield 'Memory' => [MemoryDomain::class, [], []];
+        yield 'Memory' => [MemoryDomain::class, [], ['MemoryReader', 'MemoryPage', 'MemoryCard', 'MemoryUnavailable', 'MemoryInvalid']];
         yield 'Rules' => [RulesDomain::class, [], ['RuleApproved', 'RuleDenied', 'RuleRemoved', 'RuleReader', 'ApproveRule', 'DenyRule', 'RuleFilters', 'RuleList', 'RuleView', 'RuleState', 'RuleMissing', 'RuleNotProposed', 'RuleDetailsReader', 'RuleDetails']];
         yield 'Sequences' => [SequencesDomain::class, [], []];
         yield 'Reminders' => [RemindersDomain::class, [], []];

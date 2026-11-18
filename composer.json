@@ -73,6 +73,7 @@
             "Domain\\Plans\\Tests\\": "domain/Plans/tests/",
             "Domain\\Rules\\Tests\\": "domain/Rules/tests/",
             "Domain\\Sequences\\Tests\\": "domain/Sequences/tests/",
+            "Domain\\Memory\\Tests\\": "domain/Memory/tests/",
             "Domain\\Tasks\\Tests\\": "domain/Tasks/tests/",
             "Tests\\Fixtures\\Modules\\Cards\\": "tests/Fixtures/Modules/Cards/src/",
             "Tests\\Fixtures\\Modules\\Ledger\\": "tests/Fixtures/Modules/Ledger/src/",

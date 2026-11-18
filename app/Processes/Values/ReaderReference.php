@@ -1,0 +1,34 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Processes\Values;
+
+/**
+ * The reader a check's output is read with: a proven reader revision, or the state that no reader is proven yet, in
+ * which case the check needs one before it may run normally.
+ */
+final readonly class ReaderReference
+{
+    private function __construct(public string $revision) {}
+
+    public static function proven(string $revision): self
+    {
+        return new self($revision);
+    }
+
+    public static function required(): self
+    {
+        return new self('');
+    }
+
+    public function isProven(): bool
+    {
+        return $this->revision !== '';
+    }
+
+    public function label(): string
+    {
+        return $this->isProven() ? "reader {$this->revision}" : 'reader required';
+    }
+}

@@ -8,6 +8,7 @@ use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Data\ExplainedNodeData;
 use App\Processes\Data\ExplanationData;
+use App\Processes\Declarations\VerificationContract;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\NodeType;
 use App\Processes\Enums\ShellDialect;
@@ -67,6 +68,8 @@ final readonly class Explanations
             array_values(array_unique(array_map(fn (ClassFact $fact): string => $fact->class->value, $facts))),
             array_map(fn (ClassFact $fact): string => "{$fact->class->value} from {$fact->origin->reference()}", $facts),
             array_map(fn (UnresolvedFact $fact): string => "{$fact->type->value}: {$fact->reason}", array_merge(...array_map(fn (PartClassification $part): array => $part->unresolved, $parts))),
+            $parts === [] ? '' : $parts[0]->purpose->label(),
+            array_merge(...array_map(fn (VerificationContract $contract): array => $contract->description(), $parts[0]->contracts ?? [])),
         );
     }
 

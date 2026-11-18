@@ -369,28 +369,41 @@ use App\Operations\Enums\AccessType;
 use App\Operations\Enums\ResourceAreaType;
 use App\Operations\Exceptions\UnknownAccessType;
 use App\Operations\Exceptions\UnknownResourceArea;
+use App\Processes\Attributes\JournalRoute;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\FactOrigin;
 use App\Processes\Contracts\ProgramClassifier;
 use App\Processes\Contracts\ProvidesCommandRules;
 use App\Processes\Contracts\ShellCommandParser;
+use App\Processes\Declarations\VerificationContract;
 use App\Processes\Enums\BindingType;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\CommandEffect;
 use App\Processes\Enums\CommandType;
+use App\Processes\Enums\EmptyPolicy;
+use App\Processes\Enums\EmptySelection;
+use App\Processes\Enums\FramingType;
+use App\Processes\Enums\JournalRouteType;
 use App\Processes\Enums\NodeType;
 use App\Processes\Enums\OperandType;
+use App\Processes\Enums\Outcome;
+use App\Processes\Enums\OutputEncoding;
 use App\Processes\Enums\OutputRequirement;
 use App\Processes\Enums\ParseOutcome;
 use App\Processes\Enums\PartJoin;
+use App\Processes\Enums\ProgressType;
 use App\Processes\Enums\RedirectType;
 use App\Processes\Enums\ScopeType;
 use App\Processes\Enums\ShellDialect;
+use App\Processes\Enums\StreamUse;
+use App\Processes\Enums\SummaryRule;
+use App\Processes\Enums\ToolType;
 use App\Processes\Enums\UnresolvedType;
 use App\Processes\Enums\WordSegmentType;
 use App\Processes\Exceptions\CommandRuleConflict;
 use App\Processes\Exceptions\CommandRuleInvalid;
 use App\Processes\Exceptions\ShellNodeMissing;
+use App\Processes\Exceptions\VerificationContractInvalid;
 use App\Processes\Values\ArgumentGrammar;
 use App\Processes\Values\ClassFact;
 use App\Processes\Values\Classification;
@@ -398,13 +411,19 @@ use App\Processes\Values\CommandClassSet;
 use App\Processes\Values\CommandOperation;
 use App\Processes\Values\CommandPart;
 use App\Processes\Values\CommandRule;
+use App\Processes\Values\EmptyRunPolicy;
 use App\Processes\Values\ExecutableBinding;
 use App\Processes\Values\ExecutionContext;
+use App\Processes\Values\ExitBranch;
+use App\Processes\Values\ExitPolicy;
 use App\Processes\Values\HereDocument;
 use App\Processes\Values\OptionGrammar;
+use App\Processes\Values\OutputContract;
 use App\Processes\Values\PartClassification;
 use App\Processes\Values\ProgramIdentity;
 use App\Processes\Values\ProgramSpellings;
+use App\Processes\Values\ProgressPolicy;
+use App\Processes\Values\ReaderReference;
 use App\Processes\Values\Redirect;
 use App\Processes\Values\RuleOrigin;
 use App\Processes\Values\RuleReference;
@@ -853,6 +872,8 @@ final class CoreApi
                 ShellCommand::class,
                 CommandPart::class,
                 CommandClass::class,
+                JournalRoute::class,
+                JournalRouteType::class,
                 CommandRule::class,
                 RuleScope::class,
                 ScopeType::class,
@@ -864,6 +885,22 @@ final class CoreApi
                 BindingType::class,
                 RuleReference::class,
                 ProgramIdentity::class,
+                VerificationContract::class,
+                ToolType::class,
+                OutputEncoding::class,
+                FramingType::class,
+                StreamUse::class,
+                EmptyPolicy::class,
+                Outcome::class,
+                SummaryRule::class,
+                EmptySelection::class,
+                ProgressType::class,
+                EmptyRunPolicy::class,
+                OutputContract::class,
+                ExitBranch::class,
+                ExitPolicy::class,
+                ProgressPolicy::class,
+                ReaderReference::class,
                 CommandOperation::class,
                 CommandClassSet::class,
                 Classification::class,
@@ -1190,6 +1227,7 @@ final class CoreApi
                 CommandRuleInvalid::class,
                 CommandRuleConflict::class,
                 ShellNodeMissing::class,
+                VerificationContractInvalid::class,
                 ResourceMimeTypeRefused::class,
                 AccountContainerUnsupported::class,
                 HostCapabilityUnsupported::class,

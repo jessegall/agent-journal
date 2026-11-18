@@ -7,12 +7,19 @@ namespace App\Processes\Providers;
 use App\Links\Support\LinkTypeRegistry;
 use App\Processes\Classification\TreeClassifier;
 use App\Processes\Console\ExplainCommandTypeCommand;
+use App\Processes\Contracts\AliasReader;
 use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Models\CommandAlias;
+use App\Processes\Rules\JournalClassifier;
+use App\Processes\Support\CommandAliases;
+use App\Processes\Support\JournalRoutes;
+use App\Processes\Support\ProgramClassifiers;
 use App\Processes\Support\ShellParser;
 use App\Processes\Syntax\TreeParser;
+use Illuminate\Contracts\Console\Kernel as ConsoleKernel;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -26,6 +33,11 @@ final class ProcessesServiceProvider extends ServiceProvider
         $this->app->singleton(ShellCommandParser::class, ShellParser::class);
         $this->app->singleton(ShellSyntax::class, TreeParser::class);
         $this->app->scoped(CommandClassifier::class, TreeClassifier::class);
+        $this->app->scoped(AliasReader::class, CommandAliases::class);
+        $this->app->singleton(JournalRoutes::class, fn (Application $app) => JournalRoutes::fromCommands($app->make(ConsoleKernel::class)->all()));
+        $this->app->scoped(ProgramClassifiers::class, fn (Application $app) => new ProgramClassifiers([
+            new JournalClassifier($app->make(JournalRoutes::class), $app->basePath('bin/journal')),
+        ]));
     }
 
     public function boot(LinkTypeRegistry $links): void

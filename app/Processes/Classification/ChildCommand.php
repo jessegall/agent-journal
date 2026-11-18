@@ -26,12 +26,14 @@ final readonly class ChildCommand
         $facts = $ownFacts;
         $unresolved = $ownUnresolved;
         $purpose = CommandType::Ordinary;
+        $contracts = [];
         foreach ($children as $child) {
-            $facts = [...$facts, ...array_map(fn (ClassFact $fact): ClassFact => new ClassFact($fact->class, $node, $fact->origin, "Its child {$child->program?->family}: {$fact->reason}"), $child->facts)];
-            $unresolved = [...$unresolved, ...array_map(fn (UnresolvedFact $fact): UnresolvedFact => new UnresolvedFact($fact->type, $node, $fact->reason), $child->unresolved)];
+            $contracts = [...$contracts, ...$child->contracts];
+            $facts = [...$facts, ...array_map(fn (ClassFact $fact) => new ClassFact($fact->class, $node, $fact->origin, "Its child {$child->program?->family}: {$fact->reason}"), $child->facts)];
+            $unresolved = [...$unresolved, ...array_map(fn (UnresolvedFact $fact) => new UnresolvedFact($fact->type, $node, $fact->reason), $child->unresolved)];
             $purpose = $purpose === CommandType::Ordinary ? $child->purpose : $purpose;
         }
 
-        return new PartClassification($node, $facts, $unresolved, $unresolved === [] ? $purpose : CommandType::Unknown, $wrapper);
+        return new PartClassification($node, $facts, $unresolved, $unresolved === [] ? $purpose : CommandType::Unknown, $wrapper, $contracts);
     }
 }
