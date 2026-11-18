@@ -7,11 +7,13 @@ namespace App\Agents\Data;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RuntimeActivity;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * A runtime as last stored: activity and hold, the model and effort as requested, staged and observed, kept apart,
  * and how old the host's last observation is. Reading it calls no host.
  */
+#[TypeScript]
 final class RuntimeStatus extends Data
 {
     public function __construct(
