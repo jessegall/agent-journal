@@ -27,6 +27,6 @@ final class LibraryDomain extends Domain implements ProvidesSettings
 
     public function settings(): LibrarySettings
     {
-        return new LibrarySettings;
+        return new LibrarySettings();
     }
 }

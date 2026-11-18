@@ -9,6 +9,8 @@ use App\Actors\Support\ActorIdentity;
 use App\Assignments\Commands\AssignRecord;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Models\CommandReceipt;
+use App\Bus\Support\ReceiptCaller;
+use App\Bus\Support\ReceiptRetention;
 use App\Bus\Support\RequestKey;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\ConnectionInterface;
@@ -100,6 +102,6 @@ final class OperationsReadTest extends TestCase
 
     private function receipt(string $sessionId, CascadeResult $result): void
     {
-        CommandReceipt::take($sessionId, self::KEY, new stdClass(), ActorContext::forAgent($this->launch->agent->id))->complete($result);
+        CommandReceipt::take(ReceiptCaller::inSession(ActorContext::forAgent($this->launch->agent->id), $sessionId), self::KEY, new stdClass(), ReceiptRetention::standard())->complete($result);
     }
 }

@@ -128,6 +128,7 @@ use App\Bus\Attributes\AllowsEngine;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Attributes\RequiresActor;
+use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
@@ -486,6 +487,14 @@ use App\Settings\Values\Decimal;
 use App\Settings\Values\GroupReference;
 use App\Settings\Values\SettingReference;
 use App\Settings\Values\SettingsChange;
+use App\Sharing\Commands\ApproveShareRequest;
+use App\Sharing\Commands\ConfigureShareGateway;
+use App\Sharing\Commands\CreateShare;
+use App\Sharing\Commands\DisableShareGateway;
+use App\Sharing\Commands\RefreshShareScope;
+use App\Sharing\Commands\RequestShare;
+use App\Sharing\Commands\RetryShare;
+use App\Sharing\Commands\RevokeShare;
 use App\Sharing\Commands\SaveSharePreview;
 use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ProvidesShareRecords;
@@ -496,7 +505,17 @@ use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Contracts\ShareRecordProvider;
 use App\Sharing\Contracts\ShareStatusReader;
 use App\Sharing\Enums\ShareRelationType;
+use App\Sharing\Enums\ShareState;
+use App\Sharing\Events\ShareActivated;
+use App\Sharing\Events\ShareCreated;
+use App\Sharing\Events\ShareExpired;
+use App\Sharing\Events\ShareFailed;
+use App\Sharing\Events\ShareGatewayChanged;
+use App\Sharing\Events\ShareRequested;
+use App\Sharing\Events\ShareRevoked;
+use App\Sharing\Events\ShareScopeChanged;
 use App\Sharing\Exceptions\ShareBudgetExceeded;
+use App\Sharing\Exceptions\SharePreviewRefused;
 use App\Sharing\Exceptions\SharingNotAllowed;
 use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewayEndpoint;
@@ -510,7 +529,9 @@ use App\Sharing\Support\ShareContentRead;
 use App\Sharing\Support\SharedContent;
 use App\Sharing\Support\SharedPage;
 use App\Sharing\Support\SharedPageItem;
+use App\Sharing\Support\ShareFact;
 use App\Sharing\Support\ShareLinkedCandidate;
+use App\Sharing\Support\ShareProposalStatus;
 use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareRecordRegistration;
 use App\Sharing\Support\ShareRecords;
@@ -519,6 +540,7 @@ use App\Sharing\Support\ShareRelationRead;
 use App\Sharing\Support\ShareRelationSet;
 use App\Sharing\Support\ShareSelectedTarget;
 use App\Sharing\Support\ShareSelection;
+use App\Sharing\Support\ShareSummary;
 use App\Sharing\Support\ShareTargetRead;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextReader;
@@ -583,7 +605,7 @@ final class CoreApi
     public static function exports(): Exports
     {
         return Exports::make()
-            ->events(LinksRemoved::class, CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, EngineTicked::class, SettingsChanged::class)
+            ->events(LinksRemoved::class, CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, EngineTicked::class, SettingsChanged::class, ShareRequested::class, ShareCreated::class, ShareActivated::class, ShareFailed::class, ShareScopeChanged::class, ShareRevoked::class, ShareExpired::class, ShareGatewayChanged::class)
             ->contracts(
                 RecordProvider::class,
                 RecordReader::class,
@@ -857,6 +879,7 @@ final class CoreApi
                 HandledBy::class,
                 RepeatableRead::class,
                 RequiresActor::class,
+                RequiresRequestKey::class,
                 AllowsEngine::class,
                 ElapsedTime::class,
                 FrameSettlement::class,
@@ -961,6 +984,10 @@ final class CoreApi
                 DriverRequestStatus::class,
                 DisabledSettingsGroup::class,
                 SavedSharePreview::class,
+                ShareSummary::class,
+                ShareFact::class,
+                ShareProposalStatus::class,
+                ShareState::class,
             )
             ->commands(
                 PostComment::class,
@@ -991,6 +1018,14 @@ final class CoreApi
                 MarkSilentSessions::class,
                 SettleFrameTimes::class,
                 SaveSharePreview::class,
+                CreateShare::class,
+                RequestShare::class,
+                ApproveShareRequest::class,
+                RevokeShare::class,
+                RefreshShareScope::class,
+                RetryShare::class,
+                ConfigureShareGateway::class,
+                DisableShareGateway::class,
                 InstallNumbers::class,
                 LinkRecords::class,
                 UnlinkRecords::class,
@@ -1117,6 +1152,7 @@ final class CoreApi
                 MiddlewareSwallowedFailure::class,
                 NestedCommandFailureIgnored::class,
                 OperationUnavailable::class,
+                SharePreviewRefused::class,
                 CommandRuleInvalid::class,
                 CommandRuleConflict::class,
                 ShellNodeMissing::class,

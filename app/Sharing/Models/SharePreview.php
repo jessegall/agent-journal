@@ -83,6 +83,26 @@ final class SharePreview extends Model implements ReadableModel
     }
 
     /**
+     * The preview of this id, read without a lock to learn which configuration to lock first.
+     *
+     * @throws SharePreviewRefused
+     */
+    public static function of(string $previewId): self
+    {
+        return self::query()->whereKey($previewId)->first() ?? throw SharePreviewRefused::unknown($previewId);
+    }
+
+    /**
+     * The preview of this id, locked until the transaction ends so it is consumed once.
+     *
+     * @throws SharePreviewRefused
+     */
+    public static function lockFor(string $previewId): self
+    {
+        return self::query()->whereKey($previewId)->lockForUpdate()->first() ?? throw SharePreviewRefused::unknown($previewId);
+    }
+
+    /**
      * The owner's newest preview of the root that is neither used nor expired, if there is one.
      *
      * @return Option<self>

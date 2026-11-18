@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Domain\Tasks\Readers;
 
 use App\Assignments\Contracts\AssigneeReader;
-use App\Assignments\Contracts\AssignmentReader;
 use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Contracts\TaskDetailsReader;
 use Domain\Tasks\Contracts\TaskReader;
@@ -20,7 +19,6 @@ final readonly class TaskDetailRecords implements TaskDetailsReader
 {
     public function __construct(
         private TaskReader $visibility,
-        private AssignmentReader $assignments,
         private AssigneeReader $assignees,
         private TaskExecutions $executions,
     ) {}
@@ -29,7 +27,7 @@ final readonly class TaskDetailRecords implements TaskDetailsReader
     {
         $this->visibility->requireVisible($taskId);
         $task = Task::query()->whereKey($taskId)->sole();
-        $holder = $this->assignees->holdersOf($this->assignments->assignmentsFor([$task->assignmentIdentity()]))->forRecord($task->assignmentIdentity());
+        $holder = $this->assignees->holdersOfRecords([$task->assignmentIdentity()])->forRecord($task->assignmentIdentity());
         $text = $view->includesText();
 
         return new TaskDetails(

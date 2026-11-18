@@ -20,6 +20,6 @@ final class UsesAllowed
             throw new Exception('no registry');
         }
 
-        return new Collection([new Task, new Plan]);
+        return new Collection([new Task(), new Plan()]);
     }
 }

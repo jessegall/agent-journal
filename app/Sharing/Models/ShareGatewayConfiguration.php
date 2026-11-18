@@ -8,6 +8,7 @@ use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Sharing\Casts\GatewaySettingsCast;
+use App\Sharing\Events\ShareGatewayChanged;
 use App\Sharing\Exceptions\ShareGatewayUnavailable;
 use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewaySettings;
@@ -54,18 +55,43 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     }
 
     /**
-     * A new configuration at its first version, not yet the default.
+     * The gateway's next settings revision, numbered after every earlier one and not yet the default; earlier
+     * revisions stay for the shares that pin them. A command calls it under the installation lock, so two revisions
+     * never take one number.
      */
     public static function configure(GatewaySettings $settings): self
     {
+        $latest = self::query()->forGateway($settings->gatewayKey)->max('configuration_version');
         $configuration = new self();
         $configuration->gateway_key = $settings->gatewayKey;
-        $configuration->configuration_version = 1;
+        $configuration->configuration_version = (is_numeric($latest) ? (int) $latest : 0) + 1;
         $configuration->settings = $settings;
         $configuration->is_default = false;
         $configuration->save();
 
         return $configuration;
+    }
+
+    /**
+     * Takes the gateway out of use: no new share or preview uses it, and it is no longer the default. The provider's
+     * account and domain are left as they are.
+     */
+    public function disable(): void
+    {
+        $this->disabled_at = CarbonImmutable::now();
+        $this->is_default = false;
+        $this->save();
+    }
+
+    /**
+     * Makes this revision the one new shares use when the owner names none; no other stays the default.
+     */
+    public function makeDefault(): void
+    {
+        self::query()->markedDefault()->whereKeyNot($this->id)->lockForUpdate()->readAll('at most one configuration is the default')->get();
+        self::query()->markedDefault()->whereKeyNot($this->id)->update(['is_default' => false]);
+        $this->is_default = true;
+        $this->save();
     }
 
     /**
@@ -76,6 +102,50 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     public static function usable(string $configurationId): self
     {
         return self::query()->enabled()->whereKey($configurationId)->first() ?? throw ShareGatewayUnavailable::forConfiguration($configurationId);
+    }
+
+    /**
+     * The enabled configuration of this id, locked until the transaction ends.
+     *
+     * @throws ShareGatewayUnavailable
+     */
+    public static function lockUsable(string $configurationId): self
+    {
+        return self::query()->enabled()->whereKey($configurationId)->lockForUpdate()->first() ?? throw ShareGatewayUnavailable::forConfiguration($configurationId);
+    }
+
+    /**
+     * The configuration of this id, enabled or not, locked until the transaction ends.
+     */
+    public static function lockById(string $configurationId): self
+    {
+        return self::query()->whereKey($configurationId)->lockForUpdate()->firstOrFail();
+    }
+
+    /**
+     * Every gateway revision, newest first, for the owner's gateway settings.
+     *
+     * @return list<self>
+     */
+    public static function allRevisions(): array
+    {
+        return array_values(self::query()->orderByDesc('id')->readAll('an installation keeps a handful of gateway revisions')->get()->all());
+    }
+
+    public function isDisabled(): bool
+    {
+        return $this->disabled_at !== null;
+    }
+
+    /**
+     * The gateway key of each of these configurations, by configuration id.
+     *
+     * @param  list<string>  $ids
+     * @return array<string, string>
+     */
+    public static function gatewayKeysOf(array $ids): array
+    {
+        return array_map(strval(...), self::query()->whereKey($ids)->readLimit(max(1, count($ids)))->pluck('gateway_key', 'id')->all());
     }
 
     /**
@@ -97,6 +167,22 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
         return SourceAddressRule::none();
     }
 
+    /**
+     * The public address a share's token opens under this configuration.
+     */
+    public function shareUrl(string $token): string
+    {
+        return rtrim($this->settings->publicOrigin, '/').'/s/'.$token;
+    }
+
+    /**
+     * The event that tells this revision was configured or disabled.
+     */
+    public function changeFact(): ShareGatewayChanged
+    {
+        return new ShareGatewayChanged($this->id, $this->configuration_version, $this->isDisabled(), CarbonImmutable::now());
+    }
+
     public function toConfiguration(): GatewayConfiguration
     {
         return new GatewayConfiguration($this->id, $this->configuration_version, $this->settings);
@@ -109,6 +195,15 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     protected function enabled(Builder $query): void
     {
         $query->whereNull('disabled_at');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function forGateway(Builder $query, string $gatewayKey): void
+    {
+        $query->where('gateway_key', $gatewayKey);
     }
 
     /**

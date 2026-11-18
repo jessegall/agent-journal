@@ -9,9 +9,13 @@ use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Sharing\Enums\ShareAuditActor;
 use App\Sharing\Enums\ShareAuditType;
+use App\Sharing\Support\ShareAuditEntry;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
@@ -69,6 +73,60 @@ final class ShareAudit extends Model implements ReadableModel
         $audit->save();
 
         return $audit;
+    }
+
+    /**
+     * One page of the share's audit rows, newest first, starting after the given id; one more row than the page holds
+     * is read so the caller knows whether another follows.
+     *
+     * @return list<self>
+     */
+    public static function pageOf(Share $share, string|null $after, int $rows): array
+    {
+        $query = self::query()->ofShare($share)->orderByDesc('id');
+        $query->when($after, fn (Builder $query, string $id) => $query->olderThan($id));
+
+        return array_values($query->readLimit($rows + 1)->get()->all());
+    }
+
+    /**
+     * The row as the share's owner reads it: a public read shows an unknown visitor, any other step its actor's role: the
+     * owner, the requesting agent or the system.
+     */
+    public function entry(): ShareAuditEntry
+    {
+        return new ShareAuditEntry($this->id, $this->type, $this->created_at, $this->reason_code, $this->shownActor());
+    }
+
+    private function shownActor(): ShareAuditActor
+    {
+        if ($this->type->isRead()) {
+            return ShareAuditActor::Visitor;
+        }
+
+        return match ($this->actor_type) {
+            ActorType::User => ShareAuditActor::Owner,
+            ActorType::Agent => ShareAuditActor::Agent,
+            ActorType::System, ActorType::Engine => ShareAuditActor::System,
+        };
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofShare(Builder $query, Share $share): void
+    {
+        $query->where('share_id', $share->id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function olderThan(Builder $query, string $id): void
+    {
+        $query->where('id', '<', $id);
     }
 
     private static function fact(ShareAuditType $type, ActorIdentity $actor, string|null $reasonCode): self

@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Bus\Models;
 
-use App\Actors\Support\ActorContext;
-use App\Bus\Contracts\CallerSession;
 use App\Bus\Enums\ReceiptState;
 use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\RefusalReplayed;
+use App\Bus\Exceptions\RequestKeyExpired;
 use App\Bus\Support\Operation;
 use App\Bus\Support\PlainValue;
+use App\Bus\Support\ReceiptCaller;
+use App\Bus\Support\ReceiptCallers;
+use App\Bus\Support\ReceiptRetention;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -24,12 +26,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One receipted write of an agent session under its request key: the command and its fingerprint, and the result it
- * returned or the refusal it got, so a retry with the same key gets the same answer without running it again. Every
- * query sees only the calling session's receipts; the prune reads wider through its named query.
+ * One receipted write of a caller under its request key: the command and its fingerprint, and the result it returned
+ * or the refusal it got, so a retry with the same key gets the same answer without running it again. Keys are kept
+ * per caller and command (an agent's per session); past its retention a receipt is expired, its answer cleared and
+ * its key refused until the receipt is pruned. Every query sees only the caller's receipts; the prune reads wider
+ * through its named queries.
  *
  * @property string $id
- * @property string $session_id
+ * @property string $author_type
+ * @property string $author_id
+ * @property string|null $session_id
  * @property int $contract_major
  * @property string $request_key
  * @property string $command
@@ -38,12 +44,12 @@ use Illuminate\Support\Carbon;
  * @property array{value: mixed, php: string}|null $result
  * @property string|null $refusal_code
  * @property string|null $refusal_message
- * @property string $author_type
- * @property string $author_id
+ * @property CarbonImmutable $answers_until
+ * @property CarbonImmutable $refuses_until
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['session_id', 'contract_major', 'request_key', 'command', 'fingerprint', 'state', 'result', 'refusal_code', 'refusal_message', 'author_type', 'author_id'])]
+#[Fillable(['author_type', 'author_id', 'session_id', 'contract_major', 'request_key', 'command', 'fingerprint', 'state', 'result', 'refusal_code', 'refusal_message', 'answers_until', 'refuses_until'])]
 final class CommandReceipt extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -61,59 +67,75 @@ final class CommandReceipt extends Model implements ReadableModel
      */
     protected function casts(): array
     {
-        return ['state' => ReceiptState::class, 'result' => 'array', 'contract_major' => 'integer'];
+        return [
+            'state' => ReceiptState::class,
+            'result' => 'array',
+            'contract_major' => 'integer',
+            'answers_until' => 'immutable_datetime',
+            'refuses_until' => 'immutable_datetime',
+        ];
     }
 
     protected static function booted(): void
     {
-        self::addGlobalScope('caller-session', static fn (Builder $query) => $query->where(
-            $query->qualifyColumn('session_id'),
-            Container::getInstance()->make(CallerSession::class)->sessionId(),
-        ));
+        self::addGlobalScope('caller', static fn (Builder $query) => Container::getInstance()->make(ReceiptCallers::class)->current()->limit($query));
     }
 
     /**
-     * The caller's receipt under the key, locked for this transaction, if it has one.
+     * The caller's receipt of the command under the key, locked for this transaction, if it has one.
+     *
+     * @param  class-string  $command
      */
-    public static function lockedFor(string $requestKey): self|null
+    public static function lockedFor(ReceiptCaller $caller, string $command, string $requestKey): self|null
     {
-        return self::query()->where('contract_major', self::CONTRACT_MAJOR)->where('request_key', $requestKey)->lockForUpdate()->first();
+        $query = self::query()->withoutGlobalScope('caller');
+        $caller->limit($query);
+
+        return $query->where('command', $command)->where('contract_major', self::CONTRACT_MAJOR)->where('request_key', $requestKey)->lockForUpdate()->first();
     }
 
     /**
      * Takes the key for a command that is about to run.
      */
-    public static function take(string $sessionId, string $requestKey, object $command, ActorContext $author): self
+    public static function take(ReceiptCaller $caller, string $requestKey, object $command, ReceiptRetention $retention): self
     {
-        return self::query()->create([
-            'session_id' => $sessionId,
-            'contract_major' => self::CONTRACT_MAJOR,
-            'request_key' => $requestKey,
-            'command' => $command::class,
-            'fingerprint' => PlainValue::fingerprintOf($command),
-            'state' => ReceiptState::Taken,
-            'author_type' => $author->type->value,
-            'author_id' => $author->id,
-        ]);
+        return self::query()->create([...self::keyColumns($caller, $requestKey, $command, $retention), 'state' => ReceiptState::Taken]);
     }
 
     /**
-     * Stores the refusal a write got, in one statement after its transaction rolled back.
+     * Stores the refusal a write got after its transaction rolled back; when the write ran inside a transaction it
+     * joined, nothing rolled back, so the key it took is marked refused instead.
      */
-    public static function recordRefusal(string $sessionId, string $requestKey, object $command, ActorContext $author, RefusalCode $code, string $message): void
+    public static function recordRefusal(ReceiptCaller $caller, string $requestKey, object $command, ReceiptRetention $retention, RefusalCode $code, string $message): void
     {
-        self::query()->create([
-            'session_id' => $sessionId,
+        $refusal = ['state' => ReceiptState::Refused, 'refusal_code' => $code->value, 'refusal_message' => $message];
+        $taken = self::lockedFor($caller, $command::class, $requestKey);
+
+        if ($taken !== null) {
+            $taken->fill($refusal)->save();
+
+            return;
+        }
+
+        self::query()->create([...self::keyColumns($caller, $requestKey, $command, $retention), ...$refusal]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function keyColumns(ReceiptCaller $caller, string $requestKey, object $command, ReceiptRetention $retention): array
+    {
+        $now = CarbonImmutable::now();
+
+        return [
+            ...$caller->columns(),
             'contract_major' => self::CONTRACT_MAJOR,
             'request_key' => $requestKey,
             'command' => $command::class,
             'fingerprint' => PlainValue::fingerprintOf($command),
-            'state' => ReceiptState::Refused,
-            'refusal_code' => $code->value,
-            'refusal_message' => $message,
-            'author_type' => $author->type->value,
-            'author_id' => $author->id,
-        ]);
+            'answers_until' => $retention->answersUntil($now),
+            'refuses_until' => $retention->refusesUntil($now),
+        ];
     }
 
     public function complete(mixed $result): void
@@ -123,18 +145,40 @@ final class CommandReceipt extends Model implements ReadableModel
         $this->save();
     }
 
+    /**
+     * Expires every receipt of every caller past its retention: the answer is cleared, the key and fingerprint stay so
+     * the key is refused. Returns how many it expired.
+     */
+    public static function expirePastRetention(CarbonImmutable $now): int
+    {
+        return self::query()->pastRetention($now)->update(['state' => ReceiptState::Expired->value, 'result' => null, 'refusal_code' => null, 'refusal_message' => null]);
+    }
+
     public function isFor(object $command): bool
     {
         return hash_equals($this->fingerprint, PlainValue::fingerprintOf($command));
     }
 
     /**
+     * Whether the receipt no longer answers a repeat: expired, or past its retention before the prune expired it.
+     */
+    public function isExpired(): bool
+    {
+        return $this->state === ReceiptState::Expired || $this->answers_until->isPast();
+    }
+
+    /**
      * The answer the write got the first time: its result again, or its refusal thrown again.
      *
      * @throws RefusalReplayed
+     * @throws RequestKeyExpired
      */
     public function replay(): mixed
     {
+        if ($this->isExpired()) {
+            throw RequestKeyExpired::for($this->request_key);
+        }
+
         if ($this->state === ReceiptState::Refused) {
             throw RefusalReplayed::of(RefusalCode::from((string) $this->refusal_code), (string) $this->refusal_message);
         }
@@ -156,13 +200,24 @@ final class CommandReceipt extends Model implements ReadableModel
     }
 
     /**
-     * Receipts older than the cutoff, of every session, for the operator's prune.
+     * Receipts of every caller whose answer is kept no longer and that are not yet expired, for the prune.
      *
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function olderThan(Builder $query, CarbonImmutable $cutoff): void
+    protected function pastRetention(Builder $query, CarbonImmutable $now): void
     {
-        $query->withoutGlobalScope('caller-session')->where('created_at', '<', $cutoff);
+        $query->withoutGlobalScope('caller')->where('answers_until', '<', $now)->whereNot('state', ReceiptState::Expired->value);
+    }
+
+    /**
+     * Receipts of every caller whose key is refused no longer, for the prune.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function pastTombstone(Builder $query, CarbonImmutable $now): void
+    {
+        $query->withoutGlobalScope('caller')->where('refuses_until', '<', $now);
     }
 }

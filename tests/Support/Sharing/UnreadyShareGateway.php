@@ -1,0 +1,37 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Support\Sharing;
+
+use App\Sharing\Contracts\ShareGateway;
+use App\Sharing\Support\GatewayConfiguration;
+use App\Sharing\Support\GatewayEndpoint;
+use App\Sharing\Support\GatewayHealth;
+use App\Sharing\Support\GatewayOperation;
+use App\Sharing\Support\GatewayReadiness;
+
+/**
+ * A gateway that is never ready, for the rule that only a ready gateway becomes the default.
+ */
+final class UnreadyShareGateway implements ShareGateway
+{
+    public const string KEY = 'unready';
+
+    public function readiness(GatewayConfiguration $configuration): GatewayReadiness
+    {
+        return new GatewayReadiness(['The journal is not logged in to this provider.']);
+    }
+
+    public function open(GatewayOperation $operation): GatewayEndpoint
+    {
+        return new GatewayEndpoint($operation->runId, $operation->endpointVersion, $operation->configuration->settings->publicOrigin, self::KEY);
+    }
+
+    public function health(GatewayEndpoint $endpoint): GatewayHealth
+    {
+        return GatewayHealth::healthy();
+    }
+
+    public function close(GatewayEndpoint $endpoint): void {}
+}

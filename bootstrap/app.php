@@ -7,6 +7,7 @@ use App\Http\Middleware\Agents\AuthenticateHost;
 use App\Http\Middleware\Agents\ReadRequestKey;
 use App\Http\Middleware\MeasureReads;
 use App\Http\Middleware\Web\HandleInertiaRequests;
+use App\Http\Middleware\Web\ReadIdempotencyKey;
 use Domain\Access\Http\Middleware\AuthenticateUser;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -39,7 +40,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->group('journal.agent', [AuthenticateAgent::class, ReadRequestKey::class]);
         // A message body is kept exactly as typed, its leading and trailing spaces and newlines included.
         $middleware->trimStrings(except: ['body']);
+        // A user's write is receipted under the Idempotency-Key header it carries.
         $middleware->web(append: [
+            ReadIdempotencyKey::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
