@@ -6,8 +6,14 @@ namespace App\Assignments\Providers;
 
 use App\Assignments\Actions\WriteAssignments;
 use App\Assignments\Console\AssignRecordCommand;
+use App\Assignments\Console\AutoAssignmentPoolsCommand;
+use App\Assignments\Console\ConfigureAutoAssignmentCommand;
+use App\Assignments\Console\DisableAutoAssignmentCommand;
+use App\Assignments\Console\EnableAutoAssignmentCommand;
+use App\Assignments\Console\ListAutoAssignmentsCommand;
 use App\Assignments\Console\ReassignRecordCommand;
 use App\Assignments\Console\ShowAssignmentCommand;
+use App\Assignments\Console\ShowAutoAssignmentCommand;
 use App\Assignments\Console\UnassignRecordCommand;
 use App\Assignments\Contracts\AssignedWorkReader;
 use App\Assignments\Contracts\AssigneeReader;
@@ -68,6 +74,12 @@ final class AssignmentsServiceProvider extends ServiceProvider
             AssignRecordCommand::class,
             ReassignRecordCommand::class,
             UnassignRecordCommand::class,
+            EnableAutoAssignmentCommand::class,
+            ConfigureAutoAssignmentCommand::class,
+            DisableAutoAssignmentCommand::class,
+            ShowAutoAssignmentCommand::class,
+            ListAutoAssignmentsCommand::class,
+            AutoAssignmentPoolsCommand::class,
         ]);
         $this->app->booted(function (): void {
             $registry = $this->app->make(AssignmentRegistry::class);
