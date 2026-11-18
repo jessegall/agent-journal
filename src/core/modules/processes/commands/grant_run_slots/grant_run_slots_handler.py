@@ -5,7 +5,8 @@ from core.modules.processes.support.run_slots import RunSlots
 
 
 class GrantRunSlotsHandler(Handler[GrantRunSlots, None]):
-    """Grants the free spots to the queued runs and takes the count of each run that has listed its tests."""
+    """Grants the free spots to the queued runs, takes the count of each run that has listed its tests, and grants
+    the spots those counts freed."""
 
     command = GrantRunSlots
     runs_once = True
@@ -16,3 +17,5 @@ class GrantRunSlotsHandler(Handler[GrantRunSlots, None]):
     def handle(self, command: GrantRunSlots, context: Context) -> None:
         self.slots.grant_all_environments(context)
         self.slots.claim_counts(context)
+        # a count can stop a run and free its slot; no grant nests inside this one, so this one fills it
+        self.slots.grant_all_environments(context)

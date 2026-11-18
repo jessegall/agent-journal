@@ -168,6 +168,9 @@ class Database:
         finally:
             self.nested.pop()
 
+    def is_running(self, label: str) -> bool:
+        return label in self.nested
+
     def change_mark(self) -> tuple[int, int]:
         return self.connection.execute("PRAGMA data_version").fetchone()[0], self.connection.total_changes
 
