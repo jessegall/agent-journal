@@ -33,6 +33,8 @@ use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Models\Document;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Support\Str;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
@@ -145,9 +147,7 @@ final class ShareProposalTest extends TestCase
 
     public function test_the_hundred_and_first_proposal_is_refused_and_an_expired_one_frees_a_slot(): void
     {
-        for ($index = 0; $index < Share::MOST_PROPOSED; $index++) {
-            Share::propose($this->root, new ActorIdentity(ActorType::Agent, $this->launch->agent->id), CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS));
-        }
+        $this->proposeMany(Share::MOST_PROPOSED);
 
         $this->assertThrows(fn () => $this->request('01JD8X0G9M3QZ6V4K2PROPOSE1'), ShareQuotaReached::class);
 
@@ -170,5 +170,34 @@ final class ShareProposalTest extends TestCase
     private function preview(): SavedSharePreview
     {
         return $this->app->make(CommandBus::class)->run(new SaveSharePreview($this->root->type, $this->root->id, [], $this->configuration->id));
+    }
+
+    /**
+     * Open proposals of the root in one insert after the first, numbered after it, so the limit is reached quickly.
+     */
+    private function proposeMany(int $count): void
+    {
+        $first = Share::propose($this->root, new ActorIdentity(ActorType::Agent, $this->launch->agent->id), CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS));
+        $now = CarbonImmutable::now();
+        $rows = [];
+
+        for ($index = 1; $index < $count; $index++) {
+            $rows[] = [
+                'id' => Str::lower((string) Str::ulid()),
+                'number_group_id' => $first->number_group_id,
+                'number' => $first->number + $index,
+                'state' => ShareState::Proposed->value,
+                'root_type' => $this->root->type,
+                'root_id' => $this->root->id,
+                'requester_type' => ActorType::Agent->value,
+                'requester_id' => $this->launch->agent->id,
+                'scope_version' => 0,
+                'expires_at' => $now->addDays(Share::PROPOSAL_DAYS),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        $this->app->make(ConnectionInterface::class)->table('shares')->insert($rows);
     }
 }

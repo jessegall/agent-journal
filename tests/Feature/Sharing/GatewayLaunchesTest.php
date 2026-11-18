@@ -17,7 +17,8 @@ use Tests\TestCase;
 
 /**
  * The one launch every gateway opens through: a confirmed address keeps the program for the run under its endpoint
- * reference, another address or none stops it and refuses, and closing the reference ends the program it keeps.
+ * reference, another address stops it and refuses, no address before it exits refuses without signalling the exited
+ * program, and closing the reference ends the program it keeps.
  */
 final class GatewayLaunchesTest extends TestCase
 {
@@ -56,12 +57,12 @@ final class GatewayLaunchesTest extends TestCase
         $this->assertTrue($child->hasReceivedSignal(15));
     }
 
-    public function test_no_address_before_the_program_exits_stops_it_and_refuses(): void
+    public function test_no_address_before_the_program_exits_refuses_and_signals_nothing_that_exited(): void
     {
         $child = $this->start();
 
         $this->assertThrows(fn () => $this->app->make(GatewayLaunches::class)->open('fake', $this->operation(), $child, fn () => GatewayAddressCheck::Waiting), GatewayOpenFailed::class, 'no public address');
-        $this->assertTrue($child->hasReceivedSignal(15));
+        $this->assertFalse($child->hasReceivedSignal(15));
     }
 
     private function start(): FakeInvokedProcess

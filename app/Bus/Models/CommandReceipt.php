@@ -103,16 +103,21 @@ final class CommandReceipt extends Model implements ReadableModel
     }
 
     /**
-     * Stores the refusal a write got, in one statement after its transaction rolled back.
+     * Stores the refusal a write got after its transaction rolled back; when the write ran inside a transaction it
+     * joined, nothing rolled back, so the key it took is marked refused instead.
      */
     public static function recordRefusal(ReceiptCaller $caller, string $requestKey, object $command, ReceiptRetention $retention, RefusalCode $code, string $message): void
     {
-        self::query()->create([
-            ...self::keyColumns($caller, $requestKey, $command, $retention),
-            'state' => ReceiptState::Refused,
-            'refusal_code' => $code->value,
-            'refusal_message' => $message,
-        ]);
+        $refusal = ['state' => ReceiptState::Refused, 'refusal_code' => $code->value, 'refusal_message' => $message];
+        $taken = self::lockedFor($caller, $command::class, $requestKey);
+
+        if ($taken !== null) {
+            $taken->fill($refusal)->save();
+
+            return;
+        }
+
+        self::query()->create([...self::keyColumns($caller, $requestKey, $command, $retention), ...$refusal]);
     }
 
     /**

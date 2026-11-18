@@ -44,10 +44,15 @@ final class GatewayChildren
     }
 
     /**
-     * Asks the program to end, and ends it by force when it is still running ten seconds later.
+     * Asks the program to end, and ends it by force when it is still running ten seconds later; a program that
+     * already exited is left alone, since an exited program cannot be signalled.
      */
     public function end(InvokedProcess $child): void
     {
+        if (! $child->running()) {
+            return;
+        }
+
         $child->signal(self::TERMINATE);
         $deadline = microtime(true) + self::GRACE_SECONDS;
 
