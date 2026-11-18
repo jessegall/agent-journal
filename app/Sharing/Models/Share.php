@@ -11,6 +11,8 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Enums\ShareState;
+use App\Sharing\Exceptions\ShareProposalUnavailable;
+use App\Sharing\Support\ShareProposalStatus;
 use App\Sharing\Support\ShareSummary;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
@@ -71,6 +73,16 @@ final class Share extends Model implements Numbered, ReadableModel
     public const int FIRST_SCOPE_VERSION = 1;
 
     /**
+     * The most unexpired proposals the installation holds at once.
+     */
+    public const int MOST_PROPOSED = 100;
+
+    /**
+     * How long a proposal waits for the owner before it expires.
+     */
+    public const int PROPOSAL_DAYS = 7;
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -91,6 +103,7 @@ final class Share extends Model implements Numbered, ReadableModel
 
     /**
      * An agent's proposal to share the root: no token, no gateway, kept until the owner approves or it expires.
+     * The requesting agent and session are kept for attribution only, never as authority.
      */
     public static function propose(RecordIdentity $root, string $agentId, string $sessionId, CarbonImmutable $expiresAt): self
     {
@@ -118,6 +131,51 @@ final class Share extends Model implements Numbered, ReadableModel
         $share->save();
 
         return $share;
+    }
+
+    /**
+     * Turns the proposal into the owner's grant under a gateway configuration with a new token, at its first scope
+     * version and with its own deadline, waiting for its gateway.
+     */
+    public function approveAs(string $ownerUserId, ShareGatewayConfiguration $configuration, ShareToken $token, CarbonImmutable $expiresAt): void
+    {
+        $this->state = ShareState::Pending;
+        $this->owner_user_id = $ownerUserId;
+        $this->scope_version = self::FIRST_SCOPE_VERSION;
+        $this->expires_at = $expiresAt;
+        $this->share_gateway_configuration_id = $configuration->id;
+        $this->configuration_version = $configuration->configuration_version;
+        $this->token_digest = $token->digest;
+        $this->token_ciphertext = $token->token;
+        $this->save();
+    }
+
+    /**
+     * How many unexpired proposals the installation holds now; counted under the installation lock.
+     */
+    public static function proposedCount(): int
+    {
+        return self::query()->proposedNow()->count();
+    }
+
+    /**
+     * The unexpired proposal of this id, locked until the transaction ends.
+     *
+     * @throws ShareProposalUnavailable
+     */
+    public static function lockProposal(string $id): self
+    {
+        return self::query()->whereKey($id)->proposedNow()->lockForUpdate()->first() ?? throw ShareProposalUnavailable::for($id);
+    }
+
+    /**
+     * The agent's newest proposals, whatever became of them.
+     *
+     * @return list<self>
+     */
+    public static function proposedBy(string $agentId): array
+    {
+        return array_values(self::query()->requestedBy($agentId)->orderByDesc('id')->readLimit(self::MOST_PROPOSED)->get()->all());
     }
 
     /**
@@ -211,6 +269,14 @@ final class Share extends Model implements Numbered, ReadableModel
         return new ShareSummary($this->id, $this->number, $this->state);
     }
 
+    /**
+     * What the requesting agent learns of its proposal: its number and state, nothing more.
+     */
+    public function proposalStatus(): ShareProposalStatus
+    {
+        return new ShareProposalStatus($this->number, $this->state);
+    }
+
     public function root(): RecordIdentity
     {
         return new RecordIdentity($this->root_type, $this->root_id);
@@ -233,6 +299,24 @@ final class Share extends Model implements Numbered, ReadableModel
     protected function ofRoot(Builder $query, RecordIdentity $root): void
     {
         $query->where('root_type', $root->type)->where('root_id', $root->id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function proposedNow(Builder $query): void
+    {
+        $query->where('state', ShareState::Proposed->value)->where('expires_at', '>', CarbonImmutable::now());
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function requestedBy(Builder $query, string $agentId): void
+    {
+        $query->where('requesting_agent_id', $agentId);
     }
 
     /**
