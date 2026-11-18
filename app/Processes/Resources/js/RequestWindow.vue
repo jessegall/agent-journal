@@ -34,7 +34,9 @@ const refusal = computed(() => page.props.errors.review ?? '');
         </section>
         <template v-for="proposal in data.proposals" :key="proposal.id">
             <section :aria-label="`Proposal ${proposal.id}`">
-                <h2>Proposal by {{ proposal.author }}: {{ proposal.state }}, revision {{ proposal.currentRevision }}</h2>
+                <h2>
+                    Proposal by {{ proposal.author }}: {{ proposal.state }}, revision {{ proposal.currentRevision }}
+                </h2>
                 <template v-for="revision in proposal.revisions" :key="revision.revision">
                     <article :aria-label="`Revision ${revision.revision}`">
                         <h3>Revision {{ revision.revision }}: {{ revision.operation }} ({{ revision.owner }})</h3>

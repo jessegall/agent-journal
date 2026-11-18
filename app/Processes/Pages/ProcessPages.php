@@ -8,8 +8,11 @@ use App\Http\Controllers\Processes\ApproveBundlePageController;
 use App\Http\Controllers\Processes\ApproveProposalPageController;
 use App\Http\Controllers\Processes\ApproveSamplePageController;
 use App\Http\Controllers\Processes\RejectProposalPageController;
+use App\Http\Controllers\Processes\StopRunPageController;
 use App\Processes\Readers\RequestListReader;
 use App\Processes\Readers\RequestWindowReader;
+use App\Processes\Readers\RunsWindowReader;
+use App\Processes\Readers\RunWindowReader;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\DomainUi;
@@ -29,7 +32,7 @@ final class ProcessPages implements ProvidesPages
 
     public function pages(): array
     {
-        return [$this->listPage(), $this->requestPage()];
+        return [$this->listPage(), $this->requestPage(), $this->runsPage(), $this->runPage()];
     }
 
     /**
@@ -68,5 +71,17 @@ final class ProcessPages implements ProvidesPages
         return Page::make('command-request', 'Command request', Icon::Rules, RequestWindowReader::class, self::WINDOW)
             ->at('requests/{request}')
             ->actions($sample, $approve, $reject);
+    }
+
+    private function runsPage(): Page
+    {
+        return Page::make('runs', 'Runs', Icon::Rules, RunsWindowReader::class, 'RunsWindow.vue')->at('runs');
+    }
+
+    private function runPage(): Page
+    {
+        return Page::make('run', 'Run', Icon::Rules, RunWindowReader::class, 'RunView.vue')
+            ->at('runs/{run}')
+            ->actions(ActionRoute::post('runs/{run}/stop', StopRunPageController::class, 'stop-run'));
     }
 }

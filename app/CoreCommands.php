@@ -62,6 +62,7 @@ use App\Processes\Commands\RevokeCommandPermissions;
 use App\Processes\Commands\SaveCommandRule;
 use App\Processes\Commands\SettleSample;
 use App\Processes\Commands\StartSample;
+use App\Processes\Commands\StopProcessRun;
 use App\Processes\Commands\WithdrawCommandRequest;
 use App\Processes\Commands\WithdrawRuleProposal;
 use App\Profiles\Commands\ActivateProfiles;
@@ -144,6 +145,7 @@ final class CoreCommands
             AssessPartOutput::class,
             ReadPartLive::class,
             ReplayAssessment::class,
+            StopProcessRun::class,
             CreateSkill::class, ReviseSkill::class, RestoreSkill::class, RetireSkill::class, CopySkill::class,
             RefreshSkills::class, PublishSkills::class, PrepareSkillPublication::class, ActivateSkillPublication::class, FailSkillPublication::class,
         ];
