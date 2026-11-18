@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Skills\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use InvalidArgumentException;
 
 /**
  * A condition that is not a valid tree; it is refused whole, before anything is evaluated.
  */
-final class SkillConditionInvalid extends InvalidArgumentException
+final class SkillConditionInvalid extends InvalidArgumentException implements CodedRefusal
 {
     public static function field(string $field, string $problem): self
     {
@@ -34,5 +36,10 @@ final class SkillConditionInvalid extends InvalidArgumentException
     public static function notJson(string $reason): self
     {
         return new self("The condition is not valid JSON: {$reason}.");
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::InvalidInput;
     }
 }

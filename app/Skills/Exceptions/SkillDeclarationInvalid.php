@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Skills\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use LogicException;
 
 /**
  * A skill that cannot be rendered as declared: a reserved key, too few or too many sections, a section key twice, a
  * description out of bounds, text that is not UTF-8 or a result too large. Nothing of it is rendered.
  */
-final class SkillDeclarationInvalid extends LogicException
+final class SkillDeclarationInvalid extends LogicException implements CodedRefusal
 {
     public static function reservedKey(string $owner, string $key): self
     {
@@ -40,5 +42,10 @@ final class SkillDeclarationInvalid extends LogicException
     public static function tooLarge(string $key, int $most): self
     {
         return new self("The skill {$key} renders to more than {$most} bytes.");
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::InvalidInput;
     }
 }
