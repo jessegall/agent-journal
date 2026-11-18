@@ -55,13 +55,13 @@ use App\Agents\Commands\RetireAgent;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\AgentReader;
-use App\Agents\Contracts\HelperImages;
-use App\Agents\Contracts\ProgramConversationReader;
 use App\Agents\Contracts\CurrentSession;
+use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchExecutor;
 use App\Agents\Contracts\LaunchReadiness;
 use App\Agents\Contracts\LaunchRecordReader;
+use App\Agents\Contracts\ProgramConversationReader;
 use App\Agents\Contracts\RuntimeReader;
 use App\Agents\Contracts\SessionReader;
 use App\Agents\Data\DriverRequestStatus;
@@ -118,9 +118,6 @@ use App\Agents\Support\AgentLabel;
 use App\Agents\Support\ClaimedRequest;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\ContainerManifest;
-use App\Agents\Support\HostCapacity;
-use App\Agents\Support\ManifestMount;
-use App\Agents\Support\ProgramConversationSummary;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\ExecutionBudgets;
@@ -130,13 +127,16 @@ use App\Agents\Support\ExecutionReference;
 use App\Agents\Support\ExitReceipt;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
+use App\Agents\Support\HostCapacity;
 use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\LaunchRecordDetails;
 use App\Agents\Support\LaunchRequest;
+use App\Agents\Support\ManifestMount;
 use App\Agents\Support\ModelSelection;
 use App\Agents\Support\OpenedRuntime;
 use App\Agents\Support\PreparedLaunch;
 use App\Agents\Support\ProfileDefaults;
+use App\Agents\Support\ProgramConversationSummary;
 use App\Agents\Support\SelectedProgram;
 use App\Agents\Support\SelectionSource;
 use App\Agents\Support\SessionOption;
@@ -455,7 +455,6 @@ use App\Processes\Values\TreeDiagnostic;
 use App\Processes\Values\UnresolvedFact;
 use App\Processes\Values\Word;
 use App\Processes\Values\WordSegment;
-use App\Programs\Enums\HookProgram;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\RevokeProfiles;
 use App\Profiles\Contracts\ProfileReader;
@@ -468,6 +467,7 @@ use App\Profiles\Values\ProfileActivation;
 use App\Profiles\Values\ProfileDefinition;
 use App\Profiles\Values\ProfileKey;
 use App\Profiles\Values\ProfileSnapshot;
+use App\Programs\Enums\HookProgram;
 use App\Queries\Support\TextSearch;
 use App\Reads\Attributes\ReadBudget;
 use App\Reads\Contracts\ReadableModel;
@@ -634,6 +634,9 @@ use App\Sharing\Support\ShareSelectedTarget;
 use App\Sharing\Support\ShareSelection;
 use App\Sharing\Support\ShareSummary;
 use App\Sharing\Support\ShareTargetRead;
+use App\Skills\Commands\CreateSkill;
+use App\Skills\Commands\RestoreSkill;
+use App\Skills\Commands\ReviseSkill;
 use App\Skills\Conditions\Conditions;
 use App\Skills\Conditions\Everyone;
 use App\Skills\Contracts\ProvidesSkillConditions;
@@ -642,21 +645,28 @@ use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Contracts\SkillReader;
 use App\Skills\Enums\ConditionOutcome;
-use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\ProgramKeyInvalid;
 use App\Skills\Exceptions\ProviderKeyInvalid;
 use App\Skills\Exceptions\SkillConditionInvalid;
+use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillKeyInvalid;
+use App\Skills\Exceptions\SkillKeyTaken;
+use App\Skills\Exceptions\SkillRequestReused;
+use App\Skills\Exceptions\SkillRetired;
+use App\Skills\Exceptions\SkillRevisionConflict;
 use App\Skills\Values\ConditionResult;
 use App\Skills\Values\LaunchProfile;
 use App\Skills\Values\MarkdownPart;
 use App\Skills\Values\ProgramKey;
 use App\Skills\Values\ProviderKey;
 use App\Skills\Values\RenderedSkill;
+use App\Skills\Values\SectionDraft;
 use App\Skills\Values\SkillConditionRegistration;
 use App\Skills\Values\SkillContext;
+use App\Skills\Values\SkillDraft;
 use App\Skills\Values\SkillEntry;
 use App\Skills\Values\SkillKey;
+use App\Skills\Values\SkillRevisionResult;
 use App\Skills\Values\SkillSection;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextReader;
@@ -1179,12 +1189,18 @@ final class CoreApi
                 SkillConditionRegistration::class,
                 SkillEntry::class,
                 RenderedSkill::class,
+                SkillDraft::class,
+                SectionDraft::class,
+                SkillRevisionResult::class,
                 Conditions::class,
                 Everyone::class,
             )
             ->commands(
                 ActivateProfiles::class,
                 RevokeProfiles::class,
+                CreateSkill::class,
+                ReviseSkill::class,
+                RestoreSkill::class,
                 PostComment::class,
                 PostTextComment::class,
                 SendMessage::class,
@@ -1392,6 +1408,10 @@ final class CoreApi
                 ProgramKeyInvalid::class,
                 ProviderKeyInvalid::class,
                 SkillConditionInvalid::class,
+                SkillRevisionConflict::class,
+                SkillRequestReused::class,
+                SkillRetired::class,
+                SkillKeyTaken::class,
             )
             ->support(
                 BelongsToOneActor::class,

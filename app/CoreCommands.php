@@ -73,6 +73,9 @@ use App\Sharing\Commands\RetryShare;
 use App\Sharing\Commands\RevokeShare;
 use App\Sharing\Commands\SaveSharePreview;
 use App\Skills\CommandMiddleware\RefuseWritesDuringEvaluation;
+use App\Skills\Commands\CreateSkill;
+use App\Skills\Commands\RestoreSkill;
+use App\Skills\Commands\ReviseSkill;
 use App\Web\Commands\RecordUserHeartbeat;
 
 /**
@@ -92,6 +95,7 @@ final class CoreCommands
             SaveSharePreview::class, CreateShare::class, RequestShare::class, ApproveShareRequest::class, RevokeShare::class, RevokeCommandPermissions::class, IssueEvidencePermit::class, RefreshShareScope::class, RetryShare::class, ConfigureShareGateway::class, DisableShareGateway::class,
             ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class, ReopenSharedGateways::class, PruneShareAudit::class,
             ActivateProfiles::class, RevokeProfiles::class,
+            CreateSkill::class, ReviseSkill::class, RestoreSkill::class,
         ];
     }
 

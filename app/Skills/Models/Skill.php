@@ -12,6 +12,8 @@ use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Skills\Contracts\SkillCondition;
+use App\Skills\Exceptions\SkillRetired;
+use App\Skills\Exceptions\SkillRevisionConflict;
 use App\Skills\Values\SkillDraft;
 use App\Skills\Values\SkillKey;
 use Carbon\CarbonImmutable;
@@ -92,6 +94,25 @@ final class Skill extends Model implements Numbered, ReadableModel
     {
         $this->retired_at = CarbonImmutable::now();
         $this->save();
+    }
+
+    /**
+     * Refuses a write to a retired skill, or one made against a revision that is no longer current.
+     *
+     * @throws SkillRetired
+     * @throws SkillRevisionConflict
+     */
+    public function checkWritableAt(int $expectedRevision): void
+    {
+        if ($this->isRetired()) {
+            throw SkillRetired::for($this->key);
+        }
+
+        $latest = SkillRevision::currentOf($this)->revision;
+
+        if ($latest !== $expectedRevision) {
+            throw SkillRevisionConflict::latest($this->key, $latest);
+        }
     }
 
     public function isRetired(): bool
