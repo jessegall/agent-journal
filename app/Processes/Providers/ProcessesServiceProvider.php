@@ -6,6 +6,16 @@ namespace App\Processes\Providers;
 
 use App\Links\Support\LinkTypeRegistry;
 use App\Processes\Classification\TreeClassifier;
+use App\Processes\Console\CommandTypeApproveCommand;
+use App\Processes\Console\CommandTypeImportCommand;
+use App\Processes\Console\CommandTypeListCommand;
+use App\Processes\Console\CommandTypeProposeCommand;
+use App\Processes\Console\CommandTypeRejectCommand;
+use App\Processes\Console\CommandTypeRestoreCommand;
+use App\Processes\Console\CommandTypeRetireCommand;
+use App\Processes\Console\CommandTypeReviseCommand;
+use App\Processes\Console\CommandTypeShowCommand;
+use App\Processes\Console\CommandTypeWithdrawCommand;
 use App\Processes\Console\ExplainCommandTypeCommand;
 use App\Processes\Console\OutputReadCommand;
 use App\Processes\Console\ProcessExportCommand;
@@ -100,6 +110,16 @@ final class ProcessesServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/processes.php');
         $this->commands([
             ExplainCommandTypeCommand::class,
+            CommandTypeApproveCommand::class,
+            CommandTypeImportCommand::class,
+            CommandTypeListCommand::class,
+            CommandTypeProposeCommand::class,
+            CommandTypeRejectCommand::class,
+            CommandTypeRestoreCommand::class,
+            CommandTypeRetireCommand::class,
+            CommandTypeReviseCommand::class,
+            CommandTypeShowCommand::class,
+            CommandTypeWithdrawCommand::class,
             RunProcessCommand::class,
             OutputReadCommand::class,
             ProcessShowCommand::class,

@@ -52,7 +52,31 @@ final readonly class RuleDeclarations
         } catch (JsonException $broken) {
             throw DeclarationInvalid::notJson($broken->getMessage());
         }
-        $validator = $this->validators->make(is_array($file) ? $file : [], $this->rules());
+
+        return $this->readFile(is_array($file) ? $file : []);
+    }
+
+    /**
+     * One declaration sent on its own, as a propose or revise call sends it: request id, evidence, examples and rule.
+     *
+     * @param  array<string, mixed>  $declaration
+     *
+     * @throws DeclarationInvalid
+     */
+    public function readOne(array $declaration): DeclaredProposal
+    {
+        return $this->readFile(['declarations' => [$declaration]])[0];
+    }
+
+    /**
+     * @param  array<mixed>  $file
+     * @return list<DeclaredProposal>
+     *
+     * @throws DeclarationInvalid
+     */
+    private function readFile(array $file): array
+    {
+        $validator = $this->validators->make($file, $this->rules());
         if ($validator->fails()) {
             throw DeclarationInvalid::fields($this->fieldErrors($validator->errors()->messages()));
         }

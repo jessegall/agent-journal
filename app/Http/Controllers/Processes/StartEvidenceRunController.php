@@ -16,7 +16,12 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class StartEvidenceRunController
 {
-    public function __invoke(StartEvidenceRunRequest $request, EvidencePermit $evidencePermit, CurrentActor $actors, EvidenceRuns $evidence): JsonResponse
+    public function __invoke(
+        StartEvidenceRunRequest $request,
+        EvidencePermit $evidencePermit,
+        CurrentActor $actors,
+        EvidenceRuns $evidence,
+    ): JsonResponse
     {
         $run = $evidence->start($evidencePermit, ActorIdentity::of($actors->actor()), $request->requestId());
 

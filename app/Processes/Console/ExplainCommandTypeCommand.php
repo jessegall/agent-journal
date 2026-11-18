@@ -18,14 +18,18 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Read)]
 final class ExplainCommandTypeCommand extends Command
 {
-    protected $signature = 'command-type:explain {--line= : The shell line to explain} {--dialect=bash : bash, sh or zsh} {--json : Print the answer as JSON}';
+    protected $signature = 'command-type:explain {--line= : The shell line to explain}'
+        .' {--dialect=bash : bash, sh or zsh} {--json : Print the answer as JSON}';
 
     protected $description = 'Explain how a shell line is read, without running it';
 
     public function handle(AgentRequestSender $journal): int
     {
         try {
-            $reply = $journal->send('/agent/processes/explain', ['line' => (string) $this->option('line'), 'dialect' => (string) $this->option('dialect')]);
+            $reply = $journal->send('/agent/processes/explain', [
+                'line' => (string) $this->option('line'),
+                'dialect' => (string) $this->option('dialect'),
+            ]);
         } catch (AgentRequestFailed $failure) {
             $this->error($failure->getMessage());
 
@@ -39,11 +43,28 @@ final class ExplainCommandTypeCommand extends Command
         }
 
         $explanation = ExplanationData::from($reply->body);
-        $this->line("Outcome: {$explanation->outcome}".($explanation->diagnostic === null ? '' : " at byte {$explanation->diagnosticPosition}: {$explanation->diagnostic}"));
+        $where = $explanation->diagnostic === null
+            ? ''
+            : " at byte {$explanation->diagnosticPosition}: {$explanation->diagnostic}";
+        $this->line("Outcome: {$explanation->outcome}{$where}");
         if ($explanation->executableParts === 0) {
             $this->line('No executable parts.');
         }
-        $this->table(['Node', 'Type', 'Parent', 'Source', 'Redirects'], array_map(fn (ExplainedNodeData $node) => [$node->id, $node->type, $node->parent ?? '-', $node->snippet, implode('; ', $node->redirects)], $explanation->nodes));
+        $this->table(['Node', 'Type', 'Parent', 'Source', 'Redirects'], array_map(fn (ExplainedNodeData $node) => [
+            $node->id,
+            $node->type,
+            $node->parent ?? '-',
+            $node->snippet,
+            implode('; ', $node->redirects),
+        ], $explanation->nodes));
+        foreach ($explanation->held as $part) {
+            $request = "request {$part->requestId} ({$part->requestState})";
+            $this->line("Node {$part->node} {$part->operation}: {$part->code}, {$request}.");
+            $this->line("Next: {$part->next}");
+        }
+        if ($explanation->notice !== '') {
+            $this->line($explanation->notice);
+        }
 
         return self::SUCCESS;
     }

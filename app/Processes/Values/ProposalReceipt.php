@@ -23,6 +23,19 @@ final readonly class ProposalReceipt
         public array $missingFields,
     ) {}
 
+    /**
+     * @return array{proposal_id: string, revision: int, state: string, missing_fields: list<string>}
+     */
+    public function toArray(): array
+    {
+        return [
+            'proposal_id' => $this->proposalId,
+            'revision' => $this->revision,
+            'state' => $this->state->value,
+            'missing_fields' => $this->missingFields,
+        ];
+    }
+
     public static function of(RuleProposal $proposal, ProposedRule $proposed): self
     {
         return new self($proposal->id, $proposal->current_revision, $proposal->state, $proposed->missingFields());
