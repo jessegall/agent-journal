@@ -53,30 +53,56 @@ use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\AgentReader;
 use App\Agents\Contracts\CurrentSession;
+use App\Agents\Contracts\HostCapabilities;
+use App\Agents\Contracts\LaunchExecutor;
 use App\Agents\Contracts\LaunchReadiness;
 use App\Agents\Contracts\RuntimeReader;
 use App\Agents\Contracts\SessionReader;
 use App\Agents\Data\DriverRequestStatus;
 use App\Agents\Data\RuntimeSetting;
 use App\Agents\Data\RuntimeStatus;
+use App\Agents\Enums\AccountModeType;
+use App\Agents\Enums\AgentRole;
+use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\DriverOperation;
 use App\Agents\Enums\DriverType;
+use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
+use App\Agents\Enums\LaunchRefusalType;
+use App\Agents\Enums\ModelSelectionType;
+use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\RuntimeActivity;
 use App\Agents\Events\LaunchEnded;
+use App\Agents\Exceptions\AccountContainerUnsupported;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Exceptions\AgentRetirementDenied;
+use App\Agents\Exceptions\DefaultUnavailable;
+use App\Agents\Exceptions\ModelRequired;
+use App\Agents\Exceptions\ModelUnavailable;
+use App\Agents\Exceptions\ProgramConflict;
+use App\Agents\Exceptions\ProgramRequired;
+use App\Agents\Exceptions\ProgramUnsupported;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\AgentLabel;
 use App\Agents\Support\ClaimedRequest;
 use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\EnrolledHost;
+use App\Agents\Support\ExecutionReceipt;
+use App\Agents\Support\ExecutionReference;
+use App\Agents\Support\ExitReceipt;
+use App\Agents\Support\HostCapability;
+use App\Agents\Support\HostCapabilityQuery;
+use App\Agents\Support\ModelSelection;
 use App\Agents\Support\OpenedRuntime;
+use App\Agents\Support\PreparedLaunch;
+use App\Agents\Support\ProfileDefaults;
+use App\Agents\Support\SelectedProgram;
+use App\Agents\Support\SelectionSource;
 use App\Agents\Support\SessionOption;
 use App\Agents\Support\StackTarget;
 use App\Assignments\Commands\AssignRecord;
@@ -241,6 +267,7 @@ use App\Hooks\Decisions\StateSet;
 use App\Hooks\Decisions\SubjectReference;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\FileOperation;
+use App\Hooks\Enums\HookProgram;
 use App\Hooks\Enums\NoSubject;
 use App\Hooks\Enums\SessionEndReason;
 use App\Hooks\Enums\SessionStartSource;
@@ -537,6 +564,8 @@ final class CoreApi
                 AgentReader::class,
                 SessionReader::class,
                 LaunchReadiness::class,
+                LaunchExecutor::class,
+                HostCapabilities::class,
                 RuntimeReader::class,
                 AgentStack::class,
                 UserStack::class,
@@ -638,6 +667,24 @@ final class CoreApi
                 NextAction::class,
                 OverviewSection::class,
                 ListedPage::class,
+                AgentRole::class,
+                HookProgram::class,
+                PreparedLaunch::class,
+                ExecutionReceipt::class,
+                ExecutionReference::class,
+                ExitReceipt::class,
+                HostCapabilityQuery::class,
+                HostCapability::class,
+                CapabilityStatusType::class,
+                ExecutionModeType::class,
+                AccountModeType::class,
+                SelectedProgram::class,
+                ModelSelection::class,
+                SelectionSource::class,
+                ProfileDefaults::class,
+                ModelSelectionType::class,
+                ProgramSourceType::class,
+                LaunchRefusalType::class,
                 ToolArguments::class,
                 RecordCard::class,
                 StateReferences::class,
@@ -1002,6 +1049,13 @@ final class CoreApi
                 NestedCommandFailureIgnored::class,
                 OperationUnavailable::class,
                 ResourceMimeTypeRefused::class,
+                AccountContainerUnsupported::class,
+                ModelRequired::class,
+                ModelUnavailable::class,
+                DefaultUnavailable::class,
+                ProgramRequired::class,
+                ProgramConflict::class,
+                ProgramUnsupported::class,
                 ToolArgumentInvalid::class,
                 ToolArgumentUnknown::class,
                 ContinuationInvalid::class,

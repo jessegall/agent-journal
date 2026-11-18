@@ -14,8 +14,10 @@ use App\AgentRequests\Support\AgentClientSettings;
 use App\AgentRequests\Support\EnvironmentCredentialSource;
 use App\Agents\Console\EnrollHostCommand;
 use App\Agents\Console\RetireAgentCommand;
+use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Readers\AgentAuthorityRecords;
+use App\Agents\Readers\RecordedHostCapabilities;
 use App\Agents\Support\AgentActors;
 use App\Agents\Support\AgentAssignees;
 use App\Agents\Support\AgentContext;
@@ -40,6 +42,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->scoped(AgentContext::class, fn () => throw AgentContextMissing::forRequest());
         $this->app->scoped(AgentAssignees::class);
         $this->app->bind(AgentAuthority::class, AgentAuthorityRecords::class);
+        $this->app->bind(HostCapabilities::class, fn () => new RecordedHostCapabilities(base_path('docs/accounts/container-capabilities.json')));
         $this->app->bindIf(LaunchTransaction::class, DatabaseLaunchTransaction::class);
         $this->app->bind(LaunchCredentialSource::class, fn () => new EnvironmentCredentialSource(array_filter(getenv(), is_string(...))));
         $this->app->bind(AgentClientSettings::class, fn ($app) => $app->make(LaunchCredentialSource::class)->forThisLaunch());

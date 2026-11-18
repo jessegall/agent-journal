@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Agents\Support;
+
+use App\Agents\Enums\CapabilityStatusType;
+use App\Agents\Exceptions\AccountContainerUnsupported;
+
+/**
+ * The recorded answer for one combination: its status, the evidence file behind it and the reason it holds.
+ */
+final readonly class HostCapability
+{
+    public function __construct(
+        public HostCapabilityQuery $query,
+        public CapabilityStatusType $status,
+        public string $evidence,
+        public string $reason,
+    ) {}
+
+    /**
+     * Refuses a launch of this combination unless the evidence proves it; nothing is started or changed.
+     *
+     * @throws AccountContainerUnsupported
+     */
+    public function requireSupported(): void
+    {
+        if ($this->status !== CapabilityStatusType::Supported) {
+            throw AccountContainerUnsupported::for($this);
+        }
+    }
+}
