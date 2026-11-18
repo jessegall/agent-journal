@@ -91,6 +91,14 @@ final class ShareInstallation extends Model implements ReadableModel
     }
 
     /**
+     * Whether a sharing supervisor holds the gateways now: its lease was renewed within the last 90 seconds.
+     */
+    public static function hasLiveRun(): bool
+    {
+        return self::query()->named(self::NAME)->whereNotNull('run_id')->where('run_lease_ends_at', '>', CarbonImmutable::now())->exists();
+    }
+
+    /**
      * @throws GatewayRunStale when another run holds the gateways
      */
     public function requireRun(string $runId): void

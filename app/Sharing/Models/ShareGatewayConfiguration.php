@@ -133,6 +133,21 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     }
 
     /**
+     * Every gateway revision, newest first, for the owner's gateway settings.
+     *
+     * @return list<self>
+     */
+    public static function allRevisions(): array
+    {
+        return array_values(self::query()->orderByDesc('id')->readAll('an installation keeps a handful of gateway revisions')->get()->all());
+    }
+
+    public function isDisabled(): bool
+    {
+        return $this->disabled_at !== null;
+    }
+
+    /**
      * The gateway key of each of these configurations, by configuration id.
      *
      * @param  list<string>  $ids

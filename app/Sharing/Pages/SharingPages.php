@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\Sharing\Pages;
 
 use App\Sharing\Http\Controllers\ApproveShareRequestController;
+use App\Sharing\Http\Controllers\ConfigureShareGatewayController;
 use App\Sharing\Http\Controllers\CreateShareController;
+use App\Sharing\Http\Controllers\DisableShareGatewayController;
+use App\Sharing\Http\Controllers\MakeShareGatewayDefaultController;
 use App\Sharing\Http\Controllers\RefreshShareScopeController;
 use App\Sharing\Http\Controllers\RetryShareController;
 use App\Sharing\Http\Controllers\RevealShareLinkController;
 use App\Sharing\Http\Controllers\RevokeShareController;
 use App\Sharing\Http\Controllers\SharePreviewController;
+use App\Sharing\Readers\GatewaySettingsReader;
 use App\Sharing\Readers\ShareDetailReader;
 use App\Sharing\Readers\ShareListReader;
 use App\Sharing\Readers\SharePreviewReader;
@@ -23,7 +27,8 @@ use App\Ui\Enums\Icon;
 
 /**
  * The pages Core's Sharing declares, for the owner alone, under /sharing: the list of shares and proposals, one share
- * with its reveal, retry and revoke, and the preview of sharing one record, which confirms, approves or refreshes.
+ * with its reveal, retry and revoke, the gateway settings with configure, default and disable, and the preview of
+ * sharing one record, which confirms, approves or refreshes.
  */
 final class SharingPages implements ProvidesPages
 {
@@ -40,6 +45,14 @@ final class SharingPages implements ProvidesPages
                     ActionRoute::post('shares/{share}/link', RevealShareLinkController::class, 'reveal-share-link'),
                     ActionRoute::post('shares/{share}/retry', RetryShareController::class, 'retry-share'),
                     ActionRoute::delete('shares/{share}', RevokeShareController::class, 'revoke-share'),
+                ),
+            Page::make('gateways', 'Share gateways', Icon::Docs, GatewaySettingsReader::class, 'GatewaySettingsWindow.vue')
+                ->at('gateways')
+                ->visibleWhen(SharingOwnerCheck::class)
+                ->actions(
+                    ActionRoute::post('gateways', ConfigureShareGatewayController::class, 'configure-share-gateway'),
+                    ActionRoute::post('gateways/{configuration}/default', MakeShareGatewayDefaultController::class, 'make-share-gateway-default'),
+                    ActionRoute::delete('gateways/{configuration}', DisableShareGatewayController::class, 'disable-share-gateway'),
                 ),
             Page::make('share-preview', 'Share', Icon::Docs, SharePreviewReader::class, 'SharePreview.vue')
                 ->at('{reference}')

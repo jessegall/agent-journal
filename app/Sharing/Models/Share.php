@@ -244,15 +244,24 @@ final class Share extends Model implements Numbered, ReadableModel
     }
 
     /**
+     * Every share the configuration's gateway serves that has not ended, whatever its deadline, by id: what disabling
+     * the gateway would revoke.
+     *
+     * @return list<self>
+     */
+    public static function unendedOf(string $configurationId): array
+    {
+        return array_values(self::query()->servedBy($configurationId)->unended()->orderBy('id')->readLimit(self::MOST_LIVE)->get()->all());
+    }
+
+    /**
      * Every share the configuration's gateway serves that has not ended, whatever its deadline, by id and locked.
      *
      * @return list<self>
      */
     public static function lockUnendedOf(string $configurationId): array
     {
-        $unended = array_map(fn (ShareState $state) => $state->value, ShareState::liveStates());
-
-        return array_values(self::query()->servedBy($configurationId)->whereIn('state', $unended)->orderBy('id')->lockForUpdate()->readLimit(self::MOST_LIVE)->get()->all());
+        return array_values(self::query()->servedBy($configurationId)->unended()->orderBy('id')->lockForUpdate()->readLimit(self::MOST_LIVE)->get()->all());
     }
 
     /**
@@ -478,6 +487,15 @@ final class Share extends Model implements Numbered, ReadableModel
     protected function ofRoot(Builder $query, RecordIdentity $root): void
     {
         $query->where('root_type', $root->type)->where('root_id', $root->id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unended(Builder $query): void
+    {
+        $query->whereIn('state', array_map(fn (ShareState $state) => $state->value, ShareState::liveStates()));
     }
 
     /**

@@ -40,6 +40,11 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
     public const string LINK_TYPE = 'core.share-gateway-endpoint';
 
     /**
+     * How long after its last healthy report an endpoint still counts as healthy.
+     */
+    private const int HEALTHY_SECONDS = 45;
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -83,6 +88,24 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
     public static function lockRunningOf(ShareGatewayConfiguration $configuration, string $runId): Option
     {
         return Option::fromValue(self::query()->ofConfiguration($configuration->id)->ofRun($runId)->stillRunning()->orderByDesc('endpoint_version')->lockForUpdate()->first());
+    }
+
+    /**
+     * The newest opening or open endpoint version of the configuration, under any run, if it has one.
+     *
+     * @return Option<self>
+     */
+    public static function newestRunningOf(ShareGatewayConfiguration $configuration): Option
+    {
+        return Option::fromValue(self::query()->ofConfiguration($configuration->id)->stillRunning()->orderByDesc('endpoint_version')->first());
+    }
+
+    /**
+     * Whether the endpoint answered a health check within the last 45 seconds.
+     */
+    public function isHealthy(): bool
+    {
+        return $this->last_health_at !== null && $this->last_health_at->isAfter(CarbonImmutable::now()->subSeconds(self::HEALTHY_SECONDS));
     }
 
     /**
