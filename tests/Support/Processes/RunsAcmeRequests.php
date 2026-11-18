@@ -5,22 +5,32 @@ declare(strict_types=1);
 namespace Tests\Support\Processes;
 
 use App\Actors\Contracts\CurrentActorSetter;
+use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
 use App\Bus\Contracts\CommandBus;
+use App\Processes\Commands\ApproveRuleProposal;
 use App\Processes\Commands\ApproveSample;
 use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\ProposeCommandRule;
 use App\Processes\Commands\ProposeReader;
+use App\Processes\Commands\ProveReader;
 use App\Processes\Commands\SettleSample;
 use App\Processes\Commands\StartSample;
 use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\RecordRole;
 use App\Processes\Enums\RequestHoldReason;
+use App\Processes\Enums\RunMode;
+use App\Processes\Enums\ShellDialect;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\PartRun;
+use App\Processes\Models\ProcessRun;
+use App\Processes\Models\RuleProposal;
 use App\Processes\Support\SpoolRecorder;
 use App\Processes\Values\CapturedChunk;
+use App\Processes\Values\OwnerApproval;
 use App\Processes\Values\PartEnd;
+use App\Processes\Values\ReaderApproval;
 use App\Processes\Values\ReaderDefinition;
 use App\Processes\Values\RecordRule;
 use Carbon\CarbonImmutable;
@@ -122,5 +132,45 @@ trait RunsAcmeRequests
         $this->app->make(CurrentActorSetter::class)->set($actor);
 
         return $this->app->make(CommandBus::class)->run($command);
+    }
+
+    private function approvePair(): void
+    {
+        $passed = $this->sample(0, self::PASSED_OUTPUT, read: true);
+        $findings = $this->sample(1, self::FINDINGS_OUTPUT, read: true);
+        $reader = $this->reader();
+        $proof = $this->asAgent(new ProveReader($this->requestId, $reader, [$passed, $findings]));
+        $approval = new OwnerApproval(1, 0, [new ReaderApproval($reader, $proof)], 'proven');
+
+        $this->asUser(new ApproveRuleProposal(RuleProposal::query()->sole()->id, $approval));
+    }
+
+    private function normalRun(int $status, string $output, RunMode $mode = RunMode::Normal): PartRun
+    {
+        $run = ProcessRun::admit(new ActorIdentity(ActorType::Agent, $this->launch->agent->id), [
+            'admission_id' => bin2hex(random_bytes(8)),
+            'mode' => $mode,
+            'project_key' => (string) config('processes.project_key'),
+            'source_digest' => str_repeat('a', 64),
+            'dialect' => ShellDialect::Bash,
+            'tree_digest' => str_repeat('b', 64),
+            'registry_revision' => 'rules-1',
+            'policy_revision' => 'policy-1',
+        ]);
+        $part = PartRun::query()->create([
+            'process_run_id' => $run->id,
+            'syntax_node' => 1,
+            'part_id' => 'node-1',
+            'attempt' => 1,
+            'operation' => 'acme verify',
+        ]);
+        $part->start(1, 'host');
+        $recorder = $this->app->make(SpoolRecorder::class);
+        $recorder->append(new CapturedChunk($part, OutputStream::Stdout, $output, CarbonImmutable::now()));
+        $part->finishProcess(PartEnd::exited($status));
+        $part->finishDraining();
+        $recorder->finish($part, PartEnd::exited($status));
+
+        return $part->refresh();
     }
 }

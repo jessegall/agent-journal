@@ -9,7 +9,9 @@ use Domain\Plans\Http\Controllers\AssignPlanWorkController;
 use Domain\Plans\Http\Controllers\CreatePlanController;
 use Domain\Plans\Http\Controllers\EditPlanController;
 use Domain\Plans\Http\Controllers\EndPlanController;
+use Domain\Plans\Http\Controllers\PhaseChecksController;
 use Domain\Plans\Http\Controllers\ReassignPlanWorkController;
+use Domain\Plans\Http\Controllers\RecordPhaseCheckController;
 use Domain\Plans\Http\Controllers\UnassignPlanWorkController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,4 +32,6 @@ Route::middleware('journal.agent')->prefix('agent/plans')->name('plans.')->group
     Route::post('cancel', EndPlanController::class)->defaults('ending', 'cancel')->name('cancel');
     Route::post('phases/create', AddPhaseController::class)->name('phases.create');
     Route::post('phases/add-tasks', AddPhaseTasksController::class)->name('phases.add-tasks');
+    Route::post('phases/check', RecordPhaseCheckController::class)->name('phases.check');
+    Route::post('phases/checks', PhaseChecksController::class)->name('phases.checks');
 });

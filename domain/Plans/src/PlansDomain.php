@@ -52,6 +52,7 @@ use Domain\Plans\Commands\CreatePlan;
 use Domain\Plans\Commands\EditPlan;
 use Domain\Plans\Commands\FinishPlan;
 use Domain\Plans\Commands\ReassignPlanWork;
+use Domain\Plans\Commands\RecordPhaseCheck;
 use Domain\Plans\Commands\StartPlan;
 use Domain\Plans\Commands\UnassignPlanWork;
 use Domain\Plans\Contracts\PlanDetailsReader;
@@ -84,7 +85,18 @@ use Domain\Plans\Support\PlanRecords;
 use Domain\Plans\Support\PlanShareProvider;
 use Domain\Tasks\TasksDomain;
 
-final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesShareRecords, ProvidesSkills, ProvidesStates
+final class PlansDomain extends Domain implements
+    ProvidesAssignables,
+    ProvidesCommands,
+    ProvidesLinkRecords,
+    ProvidesMcpTools,
+    ProvidesNavigation,
+    ProvidesNumberedModels,
+    ProvidesPages,
+    ProvidesSections,
+    ProvidesShareRecords,
+    ProvidesSkills,
+    ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -160,7 +172,19 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
      */
     public function commands(): array
     {
-        return [StartPlan::class, CreatePlan::class, EditPlan::class, FinishPlan::class, CancelPlan::class, AddPhase::class, AddPhaseTasks::class, AssignPlanWork::class, ReassignPlanWork::class, UnassignPlanWork::class];
+        return [
+            StartPlan::class,
+            CreatePlan::class,
+            EditPlan::class,
+            FinishPlan::class,
+            CancelPlan::class,
+            AddPhase::class,
+            AddPhaseTasks::class,
+            AssignPlanWork::class,
+            ReassignPlanWork::class,
+            UnassignPlanWork::class,
+            RecordPhaseCheck::class,
+        ];
     }
 
     public function skills(): array
@@ -187,7 +211,14 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function sections(): array
     {
         return [
-            Section::make('waiting', 'Waiting for review', 'chat.dock', SlotContextType::Session, WaitingPlansSection::class, 'WaitingPlansSection.vue'),
+            Section::make(
+                'waiting',
+                'Waiting for review',
+                'chat.dock',
+                SlotContextType::Session,
+                WaitingPlansSection::class,
+                'WaitingPlansSection.vue',
+            ),
         ];
     }
 
@@ -195,8 +226,10 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
     {
         return [
             NavigationItem::page('list', 'Plans', Icon::Plan, position: 20)->children([
-                NavigationItem::page('open', 'Open', page: 'list', query: ['state' => 'open'])->count(OpenPlansCount::class),
-                NavigationItem::page('waiting', 'Waiting', page: 'list', query: ['state' => 'waiting'])->count(WaitingPlansCount::class),
+                NavigationItem::page('open', 'Open', page: 'list', query: ['state' => 'open'])
+                    ->count(OpenPlansCount::class),
+                NavigationItem::page('waiting', 'Waiting', page: 'list', query: ['state' => 'waiting'])
+                    ->count(WaitingPlansCount::class),
                 NavigationItem::page('closed', 'Closed', page: 'list', query: ['state' => 'closed']),
             ]),
         ];

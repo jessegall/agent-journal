@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Api;
 
+use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskState;
 
 /**
@@ -11,5 +12,10 @@ use Domain\Tasks\Enums\TaskState;
  */
 final readonly class TaskSummary
 {
-    public function __construct(public int $number, public string $title, public TaskState $state) {}
+    public function __construct(
+        public int $number,
+        public string $title,
+        public TaskState $state,
+        public CarbonImmutable $changedAt,
+    ) {}
 }

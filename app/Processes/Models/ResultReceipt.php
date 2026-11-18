@@ -95,6 +95,14 @@ final class ResultReceipt extends Model implements ReadableModel
         $this->save();
     }
 
+    /**
+     * The canonical operation of the part this receipt is the result of.
+     */
+    public function operation(): string
+    {
+        return PartRun::query()->whereKey($this->part_run_id)->value('operation');
+    }
+
     public function isCurrent(): bool
     {
         return $this->superseded_by_id === null;

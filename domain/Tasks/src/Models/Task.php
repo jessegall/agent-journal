@@ -20,6 +20,7 @@ use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
+use Carbon\CarbonImmutable;
 use Domain\Tasks\Api\TaskDetails;
 use Domain\Tasks\Api\TaskExecution;
 use Domain\Tasks\Api\TaskSummary;
@@ -290,7 +291,9 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
      */
     public function summary(): TaskSummary
     {
-        return new TaskSummary($this->number, $this->title, $this->state);
+        $changedAt = CarbonImmutable::parse((string) ($this->updated_at ?? $this->created_at));
+
+        return new TaskSummary($this->number, $this->title, $this->state, $changedAt);
     }
 
     /**

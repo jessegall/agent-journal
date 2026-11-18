@@ -8,6 +8,8 @@ use App\Links\Support\LinkTypeRegistry;
 use App\Processes\Contracts\VerificationTiming;
 use Domain\Plans\Console\AssignedPlansCommand;
 use Domain\Plans\Console\AssignPlanWorkCommand;
+use Domain\Plans\Console\PhaseCheckCommand;
+use Domain\Plans\Console\PhaseShowCommand;
 use Domain\Plans\Console\ReassignPlanWorkCommand;
 use Domain\Plans\Console\UnassignPlanWorkCommand;
 use Domain\Plans\Contracts\PlanDetailsReader;
@@ -56,6 +58,8 @@ final class PlansServiceProvider extends ServiceProvider
             AssignPlanWorkCommand::class,
             ReassignPlanWorkCommand::class,
             UnassignPlanWorkCommand::class,
+            PhaseCheckCommand::class,
+            PhaseShowCommand::class,
         ]);
         $links->register([
             Plan::LINK_TYPE => Plan::class,
