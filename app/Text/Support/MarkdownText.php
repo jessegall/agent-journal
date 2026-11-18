@@ -436,7 +436,7 @@ final readonly class MarkdownText
         $firstHeadingLine = $headings[0][0] ?? $lineCount + 1;
 
         if ($firstHeadingLine > 1) {
-            $sections[] = new Section(1, 0, '', 1, $firstHeadingLine - 1);
+            $sections[] = Section::preamble($firstHeadingLine - 1);
         }
 
         foreach ($headings as $position => [$line, $level, $heading]) {

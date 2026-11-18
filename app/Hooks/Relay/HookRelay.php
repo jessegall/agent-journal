@@ -15,6 +15,7 @@ use App\Hooks\Programs\OutageReply;
 use App\Hooks\Programs\ProgramReply;
 use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Client\ConnectionException;
 
 /**
@@ -30,12 +31,15 @@ final readonly class HookRelay
      */
     private const int ATTEMPTS = 2;
 
-    public function __construct(private AgentRequestClient $client) {}
+    public function __construct(
+        private AgentRequestClient $client,
+        private Filesystem $files,
+    ) {}
 
     public function relay(HookProgram $program, string $payload, RelaySettings $settings): ProgramReply
     {
         $log = new BypassLog($settings->bypassLogPath);
-        $pending = new PendingEnvelopes($settings->pendingEnvelopesFolder());
+        $pending = new PendingEnvelopes($this->files, $settings->pendingEnvelopesFolder());
         $envelope = CallbackEnvelope::forCallback($program->value, $payload, CarbonImmutable::now());
         $pending->keep($envelope);
 

@@ -49,6 +49,19 @@ final readonly class SkillContextReader
     }
 
     /**
+     * The agents of the list that the actor of this request may see, in the list's order.
+     *
+     * @param  list<Agent>  $agents
+     * @return list<Agent>
+     */
+    public function visible(array $agents): array
+    {
+        $labels = $this->agents->labelsFor(array_map(fn (Agent $agent) => $agent->id, $agents));
+
+        return array_values(array_filter($agents, fn (Agent $agent) => isset($labels[$agent->id])));
+    }
+
+    /**
      * The context of an agent's latest session, for a preview by an actor who may see that agent.
      *
      * @throws SkillAgentHidden

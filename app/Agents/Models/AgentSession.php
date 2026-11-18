@@ -286,12 +286,8 @@ final class AgentSession extends Model implements ReadableModel
     }
 
     /**
-     * The running sessions present at the observation time: a beat whose window is strictly later, an unrevoked
-     * credential and an agent that is not retired.
+     * The running sessions of one agent.
      *
-     * @param  Builder<self>  $query
-     */
-    /**
      * @param  Builder<self>  $query
      */
     #[Scope]

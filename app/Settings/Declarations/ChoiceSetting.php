@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace App\Settings\Declarations;
 
-use App\Settings\Contracts\Setting;
+use App\Settings\Contracts\CatalogueConstraints;
+use App\Settings\Contracts\CatalogueValue;
+use App\Settings\Contracts\OptionSetting;
 use App\Settings\Enums\SettingType;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Support\ChoiceOptions;
 use App\Settings\Support\SettingKey;
 use App\Settings\Values\Choice;
+use App\Settings\Values\Decimal;
+use BackedEnum;
+use Spatie\LaravelData\Optional;
 
 /**
  * A setting that holds one of a fixed list of options, in the order declared; every option and the default are all
@@ -17,7 +22,7 @@ use App\Settings\Values\Choice;
  *
  * @template-covariant TValue of string|int
  */
-final readonly class ChoiceSetting implements Setting
+final readonly class ChoiceSetting implements OptionSetting
 {
     /**
      * @param  TValue  $default
@@ -70,5 +75,20 @@ final readonly class ChoiceSetting implements Setting
     public function accepts(string|int $value): bool
     {
         return $this->options->contains($value);
+    }
+
+    public function defaultValue(): string|int
+    {
+        return $this->default;
+    }
+
+    public function catalogueValue(string|bool|int|Decimal|BackedEnum $value): CatalogueValue
+    {
+        return ChoiceOptions::valueData($value);
+    }
+
+    public function catalogueConstraints(): CatalogueConstraints|Optional
+    {
+        return ChoiceOptions::constraintsData($this->options());
     }
 }

@@ -6,6 +6,7 @@ namespace App\Mcp\Support;
 
 use App\Mcp\Contracts\NumberedPages;
 use App\Mcp\Data\NextAction;
+use App\Mcp\Data\NumberedPageContent;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Exceptions\ContinuationInvalid;
 use App\Mcp\Exceptions\ContinuationStale;
@@ -72,7 +73,7 @@ final readonly class RetainedNumberedPages implements NumberedPages
             default => [],
         };
 
-        return new ToolResult('ok', $this->payload($page, array_slice($cards, 0, $count), $entries->unavailableCount), $nextActions);
+        return ToolResult::ok($this->payload($page, array_slice($cards, 0, $count), $entries->unavailableCount), $nextActions);
     }
 
     private function rest(Continuation $continuation, ListedPage $page, int $offset): NextAction
@@ -89,12 +90,12 @@ final readonly class RetainedNumberedPages implements NumberedPages
      */
     private function payload(ListedPage $page, array $cards, int $unavailableCount): array
     {
-        return [
+        return NumberedPageContent::from([
             'cards' => array_values($cards),
             'page' => $page->page,
-            'per_page' => $page->perPage,
+            'perPage' => $page->perPage,
             'total' => $page->total,
-            'unavailable_count' => $unavailableCount,
-        ];
+            'unavailableCount' => $unavailableCount,
+        ])->toArray();
     }
 }

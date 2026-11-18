@@ -18,12 +18,6 @@ final readonly class GroupReference
      */
     public function __construct(public string $owner, public string $key)
     {
-        if (trim($owner) === '') {
-            throw SettingReferenceInvalid::emptyOwner();
-        }
-
-        if (! SettingKey::isValidKey($key)) {
-            throw SettingReferenceInvalid::badKey($owner);
-        }
+        SettingKey::requireAddress($owner, $key);
     }
 }

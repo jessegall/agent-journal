@@ -24,7 +24,8 @@ final class ConfigureAutoAssignmentCommand extends Command
     protected $signature = 'assignment:auto-configure {actor : The actor as type:id} {type : The record type}
         {--pool= : The pool key} {--task=* : A task number the pool lists, in order}
         {--plan= : The plan number the pool is about} {--size= : How many items to keep in hand}
-        {--revision= : The revision read last} {--json}';
+        {--revision= : The revision read last}
+        {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Give an actor\'s auto-assignment of one record type a new pool and size';
 

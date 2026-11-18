@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Support;
 
+use App\Settings\Contracts\OptionSetting;
 use App\Settings\Contracts\Setting;
 use App\Settings\Declarations\BooleanSetting;
 use App\Settings\Declarations\ChoiceSetting;
@@ -65,13 +66,13 @@ final readonly class SettingCodec
     }
 
     /**
-     * @param  ChoiceSetting<string|int>  $setting
+     * Stores an option of a choice or enum setting, which must be exactly one of its options.
      *
      * @throws SettingValueInvalid
      */
-    public function encodeChoice(string $owner, ChoiceSetting $setting, string|int $value): EncodedValue
+    public function encodeOption(string $owner, OptionSetting $setting, string|int $value): EncodedValue
     {
-        return $setting->accepts($value) ? EncodedValue::of($value) : throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
+        return $setting->accepts($value) ? EncodedValue::of($value) : throw SettingValueInvalid::for($owner, $setting->key(), $setting->type());
     }
 
     /**
@@ -86,18 +87,6 @@ final readonly class SettingCodec
         return $value instanceof $setting->enum && $setting->accepts($value->value)
             ? EncodedValue::of($value->value)
             : throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
-    }
-
-    /**
-     * Stores a backing value a command carries for an enum setting, which must be exactly one of its cases' values.
-     *
-     * @param  EnumSetting<BackedEnum>  $setting
-     *
-     * @throws SettingValueInvalid
-     */
-    public function encodeEnumValue(string $owner, EnumSetting $setting, string|int $value): EncodedValue
-    {
-        return $setting->accepts($value) ? EncodedValue::of($value) : throw SettingValueInvalid::for($owner, $setting->key, $setting->type());
     }
 
     /**
@@ -172,7 +161,9 @@ final readonly class SettingCodec
      */
     public function decodeChoice(string $owner, ChoiceSetting $setting, EncodedValue $value): string|int
     {
-        /** @var TValue $option one of the setting's own options, which accepts() just checked by exact type */
+        /**
+         * @var TValue $option one of the setting's own options, which accepts() just checked by exact type
+         */
         $option = $this->choiceValue($value)->filter($setting->accepts(...))->getOrThrow(SettingStorageInvalid::for($owner, $setting->key));
 
         return $option;

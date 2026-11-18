@@ -25,7 +25,8 @@ final class EnableAutoAssignmentCommand extends Command
         {type : The record type, such as tasks.task}
         {--pool= : The pool key, such as tasks.open} {--task=* : A task number the pool lists, in order}
         {--plan= : The plan number the pool is about} {--size=1 : How many items to keep in hand}
-        {--revision=0 : The revision read last} {--json}';
+        {--revision=0 : The revision read last}
+        {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Turn an actor\'s auto-assignment of one record type on';
 

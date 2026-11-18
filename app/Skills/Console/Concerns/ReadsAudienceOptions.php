@@ -19,22 +19,34 @@ trait ReadsAudienceOptions
     }
 
     /**
-     * Each audience flag's values, by the condition type it compiles to.
+     * Each audience flag's values, by the condition type it names.
      *
      * @return array<string, list<string>>
      */
     private function audience(): array
     {
-        return [
-            'profiles' => array_values(array_map(strval(...), (array) $this->option('profile'))),
-            'agent-types' => array_values(array_map(strval(...), (array) $this->option('type'))),
-            'programs' => array_values(array_map(strval(...), (array) $this->option('program'))),
-            'providers' => array_values(array_map(strval(...), (array) $this->option('provider'))),
+        $optionsByType = [
+            'profiles' => 'profile',
+            'agent-types' => 'type',
+            'programs' => 'program',
+            'providers' => 'provider',
         ];
+
+        return array_map(fn (string $option) => $this->optionValues($option), $optionsByType);
     }
 
-    private function namesAudience(): bool
+    /**
+     * @return list<string>
+     */
+    private function optionValues(string $option): array
     {
-        return $this->conditionsOption() !== null || (bool) $this->option('main-agent') || array_filter($this->audience()) !== [];
+        return array_values(array_map(strval(...), (array) $this->option($option)));
+    }
+
+    private function hasAudienceOptions(): bool
+    {
+        return $this->conditionsOption() !== null
+            || (bool) $this->option('main-agent')
+            || array_filter($this->audience()) !== [];
     }
 }

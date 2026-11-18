@@ -33,7 +33,7 @@ final readonly class OverviewReader
             $sections[$contribution->section()] = $contribution->read()->structuredContent();
         }
 
-        return new ToolResult('ok', [
+        return ToolResult::ok([
             'agent_id' => $this->agent->agentId,
             'session_id' => $this->agent->sessionId,
             'role' => $this->agent->role,

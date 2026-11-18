@@ -96,7 +96,8 @@ final readonly class ShellOperations
             RedirectType::Input => [AccessType::Read],
             RedirectType::Output, RedirectType::Append, RedirectType::Clobber => [AccessType::Create, AccessType::Edit],
             RedirectType::ReadWrite => [AccessType::Read, AccessType::Create, AccessType::Edit],
-            default => [],
+            RedirectType::DuplicateInput, RedirectType::DuplicateOutput, RedirectType::Close,
+            RedirectType::HereDocument, RedirectType::HereString => [],
         };
     }
 

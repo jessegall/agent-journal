@@ -23,6 +23,10 @@ final readonly class ActiveRulesOverview implements OverviewContribution
 
     public function read(): OverviewSection
     {
-        return new OverviewSection('Rules that hold', ['active' => $this->rules->activeCount()], new NextAction('rules_list', ['state' => 'active']));
+        return OverviewSection::from([
+            'title' => 'Rules that hold',
+            'counts' => ['active' => $this->rules->activeCount()],
+            'nextAction' => new NextAction('rules_list', ['state' => 'active']),
+        ]);
     }
 }

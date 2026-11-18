@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Data;
 
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Optional;
 
 /**
  * One setting of a runtime in its three states: what was asked for, what the host has staged and what the program
@@ -13,9 +14,9 @@ use Spatie\LaravelData\Data;
 final class RuntimeSetting extends Data
 {
     public function __construct(
-        public readonly string|null $requested,
-        public readonly string|null $staged,
-        public readonly string|null $observed,
-        public readonly int|null $observedAgeSeconds,
+        public readonly string|Optional $requested = new Optional(),
+        public readonly string|Optional $staged = new Optional(),
+        public readonly string|Optional $observed = new Optional(),
+        public readonly int|Optional $observedAgeSeconds = new Optional(),
     ) {}
 }

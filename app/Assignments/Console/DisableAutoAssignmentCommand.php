@@ -22,7 +22,8 @@ final class DisableAutoAssignmentCommand extends Command
     use SendsSignedWrites;
 
     protected $signature = 'assignment:auto-disable {actor : The actor as type:id} {type : The record type}
-        {--revision= : The revision read last} {--json}';
+        {--revision= : The revision read last}
+        {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Turn an actor\'s auto-assignment of one record type off, keeping its pool and size';
 

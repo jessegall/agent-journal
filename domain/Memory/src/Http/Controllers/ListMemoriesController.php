@@ -18,7 +18,7 @@ final readonly class ListMemoriesController
         $page = $memories->own($request->page());
 
         return new JsonResponse([
-            'memories' => array_map(fn ($card): array => ['id' => $card->id, 'number' => $card->number, 'text' => $card->text, 'weight' => $card->weight, 'revision' => $card->revision], $page->cards),
+            'memories' => array_map(fn ($card) => ['id' => $card->id, 'number' => $card->number, 'text' => $card->text, 'weight' => $card->weight, 'revision' => $card->revision], $page->cards),
             'page' => $page->page,
             'perPage' => $page->perPage,
             'total' => $page->total,

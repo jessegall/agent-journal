@@ -52,7 +52,7 @@ final readonly class Frame
     /**
      * Whether the program waits for an answer to this frame: a request, with an id and a method.
      */
-    public function expectsAnswer(): bool
+    public function isRequest(): bool
     {
         return $this->id() !== null && $this->method() !== null;
     }
@@ -62,9 +62,13 @@ final readonly class Frame
      */
     public function cancelledId(): int|string|null
     {
+        if ($this->method() !== self::CANCELLED) {
+            return null;
+        }
+
         $requestId = $this->params()['requestId'] ?? null;
 
-        return $this->method() === self::CANCELLED && (is_int($requestId) || is_string($requestId)) ? $requestId : null;
+        return is_int($requestId) || is_string($requestId) ? $requestId : null;
     }
 
     public function isLegacyInitialize(): bool
@@ -91,14 +95,27 @@ final readonly class Frame
     public function mcpHeaders(string|null $negotiatedVersion): array
     {
         $version = $this->protocolVersion();
+        $method = $this->method();
 
-        if ($version !== null && $this->method() !== null) {
-            $request = new JsonRpcRequest($this->id() ?? 0, $this->method(), $this->params());
-
-            return [...$request->mirroredHeaders(), RequestHeader::PROTOCOL_VERSION->value => $version];
+        if ($version !== null && $method !== null) {
+            return [...$this->mirroredHeaders($method), RequestHeader::PROTOCOL_VERSION->value => $version];
         }
 
         return $negotiatedVersion === null ? [] : [RequestHeader::PROTOCOL_VERSION->value => $negotiatedVersion];
+    }
+
+    /**
+     * The method and name headers a modern frame mirrors; a notification has no name to mirror.
+     *
+     * @return array<string, string>
+     */
+    private function mirroredHeaders(string $method): array
+    {
+        $id = $this->id();
+
+        return $id === null
+            ? [RequestHeader::METHOD->value => $method]
+            : new JsonRpcRequest($id, $method, $this->params())->mirroredHeaders();
     }
 
     /**

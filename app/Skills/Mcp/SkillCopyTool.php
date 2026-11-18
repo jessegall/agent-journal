@@ -41,6 +41,6 @@ final class SkillCopyTool extends JournalWriteTool
         $requestId = $arguments->optionalText('request_id') ?? (string) Str::ulid();
         $result = $this->commands->run(new CopySkill($arguments->text('key'), $arguments->text('new_key'), $requestId));
 
-        return new ToolResult('ok', $this->authoring->receipt($result, $requestId), []);
+        return ToolResult::ok($this->authoring->receipt($result, $requestId), []);
     }
 }

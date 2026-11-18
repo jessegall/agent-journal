@@ -4,10 +4,17 @@ declare(strict_types=1);
 
 namespace App\Settings\Declarations;
 
+use App\Settings\Contracts\CatalogueConstraints;
+use App\Settings\Contracts\CatalogueValue;
 use App\Settings\Contracts\Setting;
+use App\Settings\Data\StringConstraintsData;
+use App\Settings\Data\StringValueData;
 use App\Settings\Enums\SettingType;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Support\SettingKey;
+use App\Settings\Values\Decimal;
+use BackedEnum;
+use Spatie\LaravelData\Optional;
 
 /**
  * A text setting: its default and the shortest and longest value it accepts, in UTF-8 bytes, never above LONGEST.
@@ -65,5 +72,20 @@ final readonly class StringSetting implements Setting
     public function accepts(string $value): bool
     {
         return mb_check_encoding($value, 'UTF-8') && strlen($value) >= $this->minimumLength && strlen($value) <= $this->maximumLength;
+    }
+
+    public function defaultValue(): string
+    {
+        return $this->default;
+    }
+
+    public function catalogueValue(string|bool|int|Decimal|BackedEnum $value): CatalogueValue
+    {
+        return StringValueData::from(['value' => $value]);
+    }
+
+    public function catalogueConstraints(): CatalogueConstraints|Optional
+    {
+        return StringConstraintsData::from(['minimumLength' => $this->minimumLength, 'maximumLength' => $this->maximumLength]);
     }
 }

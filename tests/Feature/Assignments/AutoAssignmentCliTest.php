@@ -64,9 +64,7 @@ final class AutoAssignmentCliTest extends TestCase
         ])->expectsOutputToContain('"revision":1')->assertExitCode(0);
 
         $this->artisan('assignment:auto-show', ['actor' => $worker, 'type' => 'tasks.task', '--json' => true])
-            ->expectsOutputToContain('"state":"ready"')
-            ->expectsOutputToContain('"pool":"Named tasks"')
-            ->expectsOutputToContain('"size":3')
+            ->expectsOutputToContain('"state":"ready","stateLabel":"Ready","revision":1,"pool":"Named tasks","size":3')
             ->assertExitCode(0);
 
         $this->artisan('assignment:auto-list', ['actor' => $worker, '--json' => true])
@@ -84,9 +82,10 @@ final class AutoAssignmentCliTest extends TestCase
     public function test_the_pools_of_tasks_are_listed_with_their_labels(): void
     {
         $this->artisan('assignment:auto-pools', ['type' => 'tasks.task', '--json' => true])
-            ->expectsOutputToContain('Open tasks')
-            ->expectsOutputToContain('Named tasks')
-            ->expectsOutputToContain('Tasks in a started plan')
+            ->expectsOutputToContain(
+                '"label":"Open tasks"},{"key":"tasks.named","label":"Named tasks"},'
+                .'{"key":"plans.tasks","label":"Tasks in a started plan"}',
+            )
             ->assertExitCode(0);
     }
 

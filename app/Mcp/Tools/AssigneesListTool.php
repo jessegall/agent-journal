@@ -53,9 +53,9 @@ final class AssigneesListTool extends JournalReadTool
             'continuation' => $this->continuations->issue(new Continuation($this->name(), $type->value, ['after_id' => $list->nextAfterId, 'limit' => $filters['limit']], 0)),
         ])];
 
-        return new ToolResult('ok', [
+        return ToolResult::ok([
             'type' => $type->value,
-            'assignees' => array_map(fn (AssigneeName $assignee): array => ['type' => $assignee->actor->type->value, 'id' => $assignee->actor->id, 'name' => $assignee->name], $list->assignees),
+            'assignees' => array_map(fn (AssigneeName $assignee) => $assignee->listing(), $list->assignees),
         ], $nextActions);
     }
 }

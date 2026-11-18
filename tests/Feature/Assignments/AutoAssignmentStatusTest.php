@@ -73,7 +73,7 @@ final class AutoAssignmentStatusTest extends TestCase
 
     public function test_without_a_row_it_is_off(): void
     {
-        $status = $this->status();
+        $status = $this->currentStatus();
 
         $this->assertSame(AutoAssignmentState::Off, $status->state);
         $this->assertSame(0, $status->revision);
@@ -86,7 +86,7 @@ final class AutoAssignmentStatusTest extends TestCase
         $this->key = new AutoAssignmentKey(ActorIdentity::of($idle), TaskType::VALUE);
         $this->enable(self::open(), 2);
 
-        $this->assertSame(AutoAssignmentState::Inactive, $this->status()->state);
+        $this->assertSame(AutoAssignmentState::Inactive, $this->currentStatus()->state);
     }
 
     public function test_a_switched_off_tasks_domain_makes_it_unavailable(): void
@@ -100,7 +100,7 @@ final class AutoAssignmentStatusTest extends TestCase
             }
         });
 
-        $this->assertSame(AutoAssignmentState::DomainUnavailable, $this->status()->state);
+        $this->assertSame(AutoAssignmentState::DomainUnavailable, $this->currentStatus()->state);
     }
 
     public function test_a_paused_plan_pool_is_unavailable_and_a_plan_past_a_thousand_tasks_too_large(): void
@@ -108,7 +108,7 @@ final class AutoAssignmentStatusTest extends TestCase
         $paused = Plan::factory()->create(['state' => PlanState::Paused]);
         $this->enable(new PoolReference('plans.tasks', $paused->assignmentIdentity(), []), 2);
 
-        $this->assertSame(AutoAssignmentState::PoolUnavailable, $this->status()->state);
+        $this->assertSame(AutoAssignmentState::PoolUnavailable, $this->currentStatus()->state);
 
         $large = Plan::factory()->create(['state' => PlanState::Started]);
         $large->addPhase('Build')->addTasks(array_map(fn () => strtolower((string) Str::ulid()), range(1, 1001)));
@@ -117,7 +117,7 @@ final class AutoAssignmentStatusTest extends TestCase
             1,
         ));
 
-        $this->assertSame(AutoAssignmentState::TooLarge, $this->status()->state);
+        $this->assertSame(AutoAssignmentState::TooLarge, $this->currentStatus()->state);
     }
 
     public function test_holdings_make_it_ready_full_or_over_capacity(): void
@@ -125,7 +125,7 @@ final class AutoAssignmentStatusTest extends TestCase
         $this->enable(self::open(), 2);
         $this->hold(TaskState::Started);
 
-        $ready = $this->status();
+        $ready = $this->currentStatus();
 
         $this->assertSame(AutoAssignmentState::Ready, $ready->state);
         $this->assertEquals(new AssignmentTotals(1, 1), $ready->totals->get());
@@ -134,10 +134,10 @@ final class AutoAssignmentStatusTest extends TestCase
         $this->hold(TaskState::Blocked);
         $this->hold(TaskState::Finished);
 
-        $this->assertSame(AutoAssignmentState::Full, $this->status()->state);
+        $this->assertSame(AutoAssignmentState::Full, $this->currentStatus()->state);
 
         $this->hold(TaskState::Open);
-        $over = $this->status();
+        $over = $this->currentStatus();
 
         $this->assertSame(AutoAssignmentState::OverCapacity, $over->state);
         $this->assertEquals(new AssignmentTotals(3, 0), $over->totals->get());
@@ -148,7 +148,7 @@ final class AutoAssignmentStatusTest extends TestCase
         $this->enable(self::open(), 2);
         $this->startRequestAs($this->worker->agent->id, $this->worker->session->id);
 
-        $own = $this->status();
+        $own = $this->currentStatus();
 
         $this->assertSame(AutoAssignmentState::Ready, $own->state);
         $this->assertTrue($own->totals->isEmpty());
@@ -159,7 +159,7 @@ final class AutoAssignmentStatusTest extends TestCase
         $this->enable(self::open(), 2);
         DB::table('auto_assignments')->update(['pool' => '{"type": 3}']);
 
-        $this->assertSame(AutoAssignmentState::Invalid, $this->status()->state);
+        $this->assertSame(AutoAssignmentState::Invalid, $this->currentStatus()->state);
     }
 
     private function enable(PoolReference $pool, int $size): void
@@ -182,7 +182,7 @@ final class AutoAssignmentStatusTest extends TestCase
         AssignmentRecord::holding($task->assignmentIdentity(), $this->key->actor);
     }
 
-    private function status(): AutoAssignmentStatus
+    private function currentStatus(): AutoAssignmentStatus
     {
         return $this->app->make(AutoAssignmentReader::class)->status($this->key);
     }

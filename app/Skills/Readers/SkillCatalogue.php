@@ -44,7 +44,9 @@ final readonly class SkillCatalogue implements SkillReader
 
         foreach ($registry->owners() as $owner) {
             foreach ($owner->skills as $class) {
-                /** @var Skill $skill */
+                /**
+                 * @var Skill $skill
+                 */
                 $skill = $container->make($class);
                 $key = SkillKey::from($skill->key());
                 $owner->checkKey($key);

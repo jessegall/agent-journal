@@ -19,8 +19,7 @@ enum RuntimeActivity: string
 
     /**
      * When a request accepted now is expected to land, judged from this last reported activity.
-     */
-    /**
+     *
      * Whether the runtime is ending or ended, so it takes no new requests.
      */
     public function isStopping(): bool

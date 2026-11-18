@@ -42,9 +42,9 @@ final class SkillPreviewTool extends JournalReadTool
         $agentId = $arguments->optionalText('agent');
 
         if ($agentId === null) {
-            return new ToolResult('ok', $this->preview->audience($skill), []);
+            return ToolResult::ok($this->preview->audience($skill), []);
         }
 
-        return new ToolResult('ok', $this->preview->forAgentId($skill, $this->skills->all(), $agentId), []);
+        return ToolResult::ok($this->preview->forAgentId($skill, $this->skills->all(), $agentId), []);
     }
 }

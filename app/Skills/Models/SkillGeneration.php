@@ -17,8 +17,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * One checked rendering of the whole catalogue: the digests it was made from and every entry's rendered bytes, kept
- * until it is retired. The files on disk are a projection of it. Its entries never change once it is ready.
+ * One checked rendering of the whole catalogue: the digests it was made from and every entry's rendered bytes. The
+ * files on disk are written from it, and a ready generation's entries never change.
  *
  * @property string $id
  * @property string $catalogue_digest

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Mcp\Tools;
 
+use App\Mcp\Contracts\McpCall;
+use App\Mcp\Data\ToolResult;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
 use App\Mcp\Support\ToolArguments;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Laravel\Mcp\Request;
+use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
 
 /**
@@ -33,6 +36,16 @@ abstract class JournalTool extends Tool
 
         return $tool;
     }
+
+    final public function handle(Request $request, McpCall $call): ResponseFactory
+    {
+        return $call->answerTool($this->name(), fn () => $this->answer($this->arguments($request)));
+    }
+
+    /**
+     * What the tool answers for its checked arguments.
+     */
+    abstract protected function answer(ToolArguments $arguments): ToolResult;
 
     /**
      * @throws ToolArgumentUnknown

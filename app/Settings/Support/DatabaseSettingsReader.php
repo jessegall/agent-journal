@@ -57,12 +57,13 @@ final class DatabaseSettingsReader implements SettingsReader
         return $this->plain($setting)->decimal($setting);
     }
 
-    public function stringChoice(ChoiceSetting $setting): string
-    {
-        return $this->plain($setting)->choice($setting);
-    }
-
-    public function integerChoice(ChoiceSetting $setting): int
+    /**
+     * @template TValue of string|int
+     *
+     * @param  ChoiceSetting<TValue>  $setting
+     * @return TValue
+     */
+    public function choice(ChoiceSetting $setting): string|int
     {
         return $this->plain($setting)->choice($setting);
     }

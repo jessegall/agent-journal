@@ -21,6 +21,8 @@ use App\Sharing\Contracts\Shareable;
 use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareRelationSet;
 use Domain\Plans\Api\PlanCard;
+use Domain\Plans\Api\PlanDetails;
+use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Database\Factories\PlanFactory;
 use Domain\Plans\Enums\PlanState;
@@ -304,5 +306,32 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
     public function shareSummary(): string
     {
         return "# {$this->title}\n\nThis plan is {$this->state->value}.\n";
+    }
+
+    /**
+     * The plan as a read shows it: its card's progress, a window of its phases' tasks and, when the read asks, its
+     * long texts.
+     *
+     * @param  list<PlanPhaseTasks>  $phases
+     */
+    public function details(PlanCard $card, array $phases, int|null $nextTaskOffset, bool $withText): PlanDetails
+    {
+        return new PlanDetails(
+            $this->id,
+            $this->number,
+            $this->title,
+            $this->type,
+            $this->state,
+            $this->revision,
+            $this->creator_type,
+            $this->creator_id,
+            $card->progress,
+            $card->currentPhase,
+            $phases,
+            $nextTaskOffset,
+            $withText ? $this->brief : null,
+            $withText ? $this->finish_note : null,
+            $withText ? $this->cancel_reason : null,
+        );
     }
 }

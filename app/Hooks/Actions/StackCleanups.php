@@ -87,7 +87,7 @@ final readonly class StackCleanups implements StackCleanup
             ->readLimit(self::STACKS_PER_RECORD)
             ->get();
 
-        return array_values($rows->map(fn (AgentStackRow $row) => new StackTarget($row->agent_id, $row->session_id))->all());
+        return array_values($rows->map(fn (AgentStackRow $row) => $row->target())->all());
     }
 
     /**

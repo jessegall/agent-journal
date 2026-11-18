@@ -152,18 +152,32 @@ final class AgentRuntime extends Model implements ReadableModel
     {
         $settingsAge = $this->settings_observed_at === null ? null : (int) $this->settings_observed_at->diffInSeconds($now, true);
 
-        return new RuntimeStatus(
-            $this->id,
-            $this->agent_session_id,
-            $this->program,
-            $this->activity,
-            $this->hold_reason,
-            new RuntimeSetting($this->requested_model, $this->staged_model, $this->observed_model, $settingsAge),
-            new RuntimeSetting($this->requested_effort, $this->staged_effort, $this->observed_effort, $settingsAge),
-            $this->observationAge($now),
-            $this->isStale($now),
-            $this->process_generation,
-        );
+        return RuntimeStatus::from([
+            'runtimeId' => $this->id,
+            'sessionId' => $this->agent_session_id,
+            'program' => $this->program,
+            'activity' => $this->activity,
+            'hold' => $this->hold_reason,
+            'model' => self::setting($this->requested_model, $this->staged_model, $this->observed_model, $settingsAge),
+            'effort' => self::setting($this->requested_effort, $this->staged_effort, $this->observed_effort, $settingsAge),
+            'observationAgeSeconds' => $this->observationAge($now),
+            'isStale' => $this->isStale($now),
+            'processGeneration' => $this->process_generation,
+        ]);
+    }
+
+    /**
+     * One setting in its three states; a state the runtime has no value for is left out.
+     */
+    private static function setting(
+        string|null $requested,
+        string|null $staged,
+        string|null $observed,
+        int|null $observedAgeSeconds,
+    ): RuntimeSetting {
+        $known = compact('requested', 'staged', 'observed', 'observedAgeSeconds');
+
+        return RuntimeSetting::from(array_filter($known, fn (string|int|null $value) => $value !== null));
     }
 
     /**

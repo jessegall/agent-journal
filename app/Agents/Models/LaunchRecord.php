@@ -82,18 +82,22 @@ final class LaunchRecord extends Model implements ReadableModel
             return $existing->requireDigest($request);
         }
 
+        $selection = $request->selection;
+        $requested = $selection->requested;
+        $source = $selection->source;
+
         return self::query()->create([
             'request_id' => $request->requestId,
             'agent_id' => $request->agentId,
             'actor_type' => $requester->type->value,
             'actor_id' => $requester->id,
-            'program' => $request->selection->program->value,
-            'model' => $request->selection->model,
-            'requested_model_type' => $request->selection->requested->type,
-            'requested_model' => $request->selection->requested->model,
-            'program_source' => $request->selection->source->programSource,
-            'profile_key' => $request->selection->source->profileKey,
-            'profile_revision' => $request->selection->source->profileRevision,
+            'program' => $selection->program->value,
+            'model' => $selection->model,
+            'requested_model_type' => $requested->type,
+            'requested_model' => $requested->model,
+            'program_source' => $source->programSource,
+            'profile_key' => $source->profileKey,
+            'profile_revision' => $source->profileRevision,
             'origin_type' => $request->origin,
             'owner_reference' => $request->ownerReference,
             'context_reference' => $request->contextReference,

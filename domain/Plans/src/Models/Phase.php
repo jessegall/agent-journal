@@ -11,6 +11,8 @@ use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
+use Domain\Plans\Api\PhaseDetails;
+use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Exceptions\PhaseRevisionChanged;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -152,5 +154,23 @@ final class Phase extends Model implements Assignable, Numbered, ReadableModel
     public function numberHolder(): Model
     {
         return $this->relationLoaded('plan') ? $this->plan : $this->plan()->sole();
+    }
+
+    /**
+     * The phase as a read shows it, with every task in its order.
+     */
+    public function details(): PhaseDetails
+    {
+        return new PhaseDetails($this->id, $this->plan_id, $this->number, $this->title, $this->revision, $this->taskIds());
+    }
+
+    /**
+     * The phase in a plan read, with the window of its tasks that read shows.
+     *
+     * @param  list<string>  $taskIds
+     */
+    public function withTasks(array $taskIds): PlanPhaseTasks
+    {
+        return new PlanPhaseTasks($this->id, $this->number, $this->title, $this->revision, $taskIds);
     }
 }

@@ -17,6 +17,11 @@ use App\Assignments\Support\PoolDefinition;
 interface AssignmentProviders
 {
     /**
+     * Whether a provider answers for this record type.
+     */
+    public function hasRecordProvider(string $type): bool;
+
+    /**
      * @throws AssignmentTypeUnavailable
      * @throws AssignmentProviderInvalid
      */

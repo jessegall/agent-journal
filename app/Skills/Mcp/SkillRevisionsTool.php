@@ -38,7 +38,7 @@ final class SkillRevisionsTool extends JournalReadTool
     {
         $skill = $this->authoring->stored($arguments->text('skill'));
 
-        return new ToolResult('ok', [
+        return ToolResult::ok([
             'key' => $skill->key,
             'number' => $skill->number,
             'status' => $this->authoring->statusLines($skill),

@@ -195,6 +195,11 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
         $this->activities[$type] = $registration->activityClass;
     }
 
+    public function hasRecordProvider(string $type): bool
+    {
+        return isset($this->recordProviders[$type]);
+    }
+
     /**
      * @throws AssignmentTypeUnavailable
      * @throws AssignmentProviderInvalid

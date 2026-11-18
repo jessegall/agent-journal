@@ -43,6 +43,6 @@ final class SkillRestoreTool extends JournalWriteTool
         $skill = $this->authoring->stored($arguments->text('skill'));
         $result = $this->commands->run(new RestoreSkill($skill->id, $arguments->positiveInteger('revision'), $arguments->positiveInteger('expected_revision'), $requestId));
 
-        return new ToolResult('ok', $this->authoring->receipt($result, $requestId), []);
+        return ToolResult::ok($this->authoring->receipt($result, $requestId), []);
     }
 }

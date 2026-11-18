@@ -70,4 +70,26 @@ final class PhaseTask extends Pivot implements ReadableModel
             ->orderBy('phase_tasks.position')
             ->orderBy('phase_tasks.id');
     }
+
+    /**
+     * The task ids of each of the phases, each phase's in its order, read in one query and keyed by phase id.
+     *
+     * @param  list<string>  $phaseIds
+     * @return array<string, list<string>>
+     */
+    public static function taskIdsByPhase(array $phaseIds): array
+    {
+        $taskIds = array_fill_keys($phaseIds, []);
+        $places = self::query()
+            ->whereIn('phase_id', $phaseIds)
+            ->readAll('every task of the phases a plan read shows')
+            ->orderBy('position')
+            ->get(['phase_id', 'task_id']);
+
+        foreach ($places as $place) {
+            $taskIds[$place->phase_id][] = (string) $place->task_id;
+        }
+
+        return $taskIds;
+    }
 }

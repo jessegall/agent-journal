@@ -62,7 +62,7 @@ final readonly class SkillSelection
             'session' => $context->sessionId,
             'role' => $context->agentRole->value,
             'environment' => $context->environment,
-            'profile' => $context->profile->snapshot === null ? null : [$context->profile->snapshot->key->key, $context->profile->snapshot->revision],
+            'profile' => $context->profile->revisionText(),
             'program' => $context->program?->key,
             'provider' => $context->provider?->key,
             'skills' => array_map(fn (SkillEntry $skill) => [$skill->key->key, $skill->rendered->digest], $selected),

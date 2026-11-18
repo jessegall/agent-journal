@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Engine\Support;
 
-use App\Agents\Support\StackTarget;
 use App\Engine\Values\TickBatch;
 use App\Engine\Values\TickCandidate;
 use App\Engine\Values\TickCursor;
@@ -168,11 +167,11 @@ final class TickCandidates
     private function candidate(SelectedFrame $frame, AgentState $state): TickCandidate
     {
         if (! $state instanceof TickableState) {
-            throw TickableStateMissing::forType($frame->record->reference->typeKey, $state::class);
+            throw TickableStateMissing::forType($frame->typeKey(), $state::class);
         }
 
         return new TickCandidate(
-            new StackTarget($frame->row->agent_id, $frame->row->session_id),
+            $frame->row->target(),
             $frame->row->id,
             $frame->row->version,
             $frame->record->id,

@@ -58,7 +58,7 @@ final readonly class StackTransaction implements LaunchTransaction, StackTransac
      */
     public function runAdmitted(string $sessionId, OperationDeadline $deadline, Closure $work): mixed
     {
-        return $this->admission->admit($sessionId, $deadline, fn (): mixed => $this->runWithin($deadline, $work));
+        return $this->admission->admit($sessionId, $deadline, fn () => $this->runWithin($deadline, $work));
     }
 
     /**

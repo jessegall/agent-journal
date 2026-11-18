@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console\Support;
 
+use Illuminate\Filesystem\Filesystem;
+
 /**
  * The token and version of the drafts this agent holds, kept in a file beside the agent so an edit can name the
  * version it was made on.
  */
 final readonly class DraftTokens
 {
-    private string $path;
+    private const string FILE = 'journal-document-drafts.json';
 
-    public function __construct()
-    {
-        $this->path = sys_get_temp_dir().'/journal-document-drafts.json';
-    }
+    public function __construct(private Filesystem $files) {}
 
     /**
      * @return array{token: string, version: int}|null
@@ -31,14 +30,14 @@ final readonly class DraftTokens
     {
         $all = $this->all();
         $all["doc {$documentNumber}"] = ['token' => $token, 'version' => $version];
-        file_put_contents($this->path, json_encode($all, JSON_THROW_ON_ERROR));
+        $this->files->put($this->path(), json_encode($all, JSON_THROW_ON_ERROR));
     }
 
     public function forget(int $documentNumber): void
     {
         $all = $this->all();
         unset($all["doc {$documentNumber}"]);
-        file_put_contents($this->path, json_encode($all, JSON_THROW_ON_ERROR));
+        $this->files->put($this->path(), json_encode($all, JSON_THROW_ON_ERROR));
     }
 
     /**
@@ -46,8 +45,11 @@ final readonly class DraftTokens
      */
     private function all(): array
     {
-        $stored = is_file($this->path) ? json_decode((string) file_get_contents($this->path), true) : [];
+        return $this->files->exists($this->path()) ? $this->files->json($this->path(), JSON_THROW_ON_ERROR) : [];
+    }
 
-        return is_array($stored) ? $stored : [];
+    private function path(): string
+    {
+        return sys_get_temp_dir().'/'.self::FILE;
     }
 }

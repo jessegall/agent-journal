@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Data;
 
+use App\Settings\Contracts\CatalogueValue;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -12,7 +13,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
  * An exact decimal setting's value, as its canonical text so no digit is lost.
  */
 #[TypeScript]
-final class DecimalValueData extends Data
+final class DecimalValueData extends Data implements CatalogueValue
 {
     public function __construct(
         public readonly string $value,

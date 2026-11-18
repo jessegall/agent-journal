@@ -163,8 +163,7 @@ final readonly class DomainRegistry
     /**
      * Every owner's settings, Core's first under its reserved name and then the domains in bootstrap/domains.php
      * order, checked together; start-up stops at the first wrong declaration.
-     */
-    /**
+     *
      * One Core switch per domain that can be switched off, keyed domain_<name>, on by default and holding no
      * settings; a name that makes an invalid key fails like any declaration.
      *
