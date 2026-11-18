@@ -6,6 +6,7 @@ namespace Domain\Chat;
 
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
+use App\Skills\Contracts\ProvidesSkills;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Contracts\ProvidesSections;
@@ -19,8 +20,9 @@ use App\Ui\Enums\SlotContextType;
 use Domain\Chat\Http\Controllers\SendMessageController;
 use Domain\Chat\Readers\ChatWindowReader;
 use Domain\Chat\Readers\ChosenAgentSection;
+use Domain\Chat\Skills\ChatSkill;
 
-final class ChatDomain extends Domain implements ProvidesNavigation, ProvidesPages, ProvidesSections
+final class ChatDomain extends Domain implements ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesSkills
 {
     public function description(): string
     {
@@ -59,5 +61,10 @@ final class ChatDomain extends Domain implements ProvidesNavigation, ProvidesPag
     public function sections(): array
     {
         return [Section::make('agent', 'Agent', 'web.bar', SlotContextType::Session, ChosenAgentSection::class, 'ChosenAgent.vue')];
+    }
+
+    public function skills(): array
+    {
+        return [ChatSkill::class];
     }
 }

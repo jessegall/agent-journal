@@ -460,6 +460,18 @@ use App\Processes\Values\TreeDiagnostic;
 use App\Processes\Values\UnresolvedFact;
 use App\Processes\Values\Word;
 use App\Processes\Values\WordSegment;
+use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\RevokeProfiles;
+use App\Profiles\Contracts\ProfileReader;
+use App\Profiles\Enums\ProfileType;
+use App\Profiles\Exceptions\ProfileKeyInvalid;
+use App\Profiles\Exceptions\ProfileMissing;
+use App\Profiles\Exceptions\ProfileRetired;
+use App\Profiles\Values\ActivatedProfile;
+use App\Profiles\Values\ProfileActivation;
+use App\Profiles\Values\ProfileDefinition;
+use App\Profiles\Values\ProfileKey;
+use App\Profiles\Values\ProfileSnapshot;
 use App\Programs\Enums\HookProgram;
 use App\Queries\Support\TextSearch;
 use App\Reads\Attributes\ReadBudget;
@@ -627,6 +639,44 @@ use App\Sharing\Support\ShareSelectedTarget;
 use App\Sharing\Support\ShareSelection;
 use App\Sharing\Support\ShareSummary;
 use App\Sharing\Support\ShareTargetRead;
+use App\Skills\Commands\CopySkill;
+use App\Skills\Commands\CreateSkill;
+use App\Skills\Commands\RestoreSkill;
+use App\Skills\Commands\RetireSkill;
+use App\Skills\Commands\ReviseSkill;
+use App\Skills\Conditions\Conditions;
+use App\Skills\Conditions\Everyone;
+use App\Skills\Contracts\ProvidesSkillConditions;
+use App\Skills\Contracts\ProvidesSkills;
+use App\Skills\Contracts\Skill;
+use App\Skills\Contracts\SkillCondition;
+use App\Skills\Contracts\SkillReader;
+use App\Skills\Enums\ConditionOutcome;
+use App\Skills\Exceptions\ProgramKeyInvalid;
+use App\Skills\Exceptions\ShippedSkillReadOnly;
+use App\Skills\Exceptions\ProviderKeyInvalid;
+use App\Skills\Exceptions\SkillConditionInvalid;
+use App\Skills\Exceptions\SkillDeclarationInvalid;
+use App\Skills\Exceptions\SkillKeyInvalid;
+use App\Skills\Exceptions\SkillKeyTaken;
+use App\Skills\Exceptions\SkillOwnerRequired;
+use App\Skills\Exceptions\SkillRequestReused;
+use App\Skills\Exceptions\SkillRetired;
+use App\Skills\Exceptions\SkillRevisionConflict;
+use App\Skills\Values\ConditionResult;
+use App\Skills\Values\LaunchProfile;
+use App\Skills\Values\MarkdownPart;
+use App\Skills\Values\ProgramKey;
+use App\Skills\Values\ProviderKey;
+use App\Skills\Values\RenderedSkill;
+use App\Skills\Values\SectionDraft;
+use App\Skills\Values\SkillConditionRegistration;
+use App\Skills\Values\SkillContext;
+use App\Skills\Values\SkillDraft;
+use App\Skills\Values\SkillEntry;
+use App\Skills\Values\SkillKey;
+use App\Skills\Values\SkillRevisionResult;
+use App\Skills\Values\SkillSection;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextReader;
 use App\Text\Data\TextSections;
@@ -806,6 +856,12 @@ final class CoreApi
                 CodedRefusal::class,
                 OperationReader::class,
                 OverviewContribution::class,
+                ProfileReader::class,
+                ProvidesSkills::class,
+                Skill::class,
+                SkillCondition::class,
+                ProvidesSkillConditions::class,
+                SkillReader::class,
             )
             ->values(
                 RefusalCode::class,
@@ -1127,8 +1183,38 @@ final class CoreApi
                 ShareFact::class,
                 ShareProposalStatus::class,
                 ShareState::class,
+                ProfileKey::class,
+                ProfileType::class,
+                ProfileSnapshot::class,
+                ProfileDefinition::class,
+                ProfileActivation::class,
+                ActivatedProfile::class,
+                SkillKey::class,
+                ProgramKey::class,
+                ProviderKey::class,
+                SkillSection::class,
+                MarkdownPart::class,
+                SkillContext::class,
+                LaunchProfile::class,
+                ConditionResult::class,
+                ConditionOutcome::class,
+                SkillConditionRegistration::class,
+                SkillEntry::class,
+                RenderedSkill::class,
+                SkillDraft::class,
+                SectionDraft::class,
+                SkillRevisionResult::class,
+                Conditions::class,
+                Everyone::class,
             )
             ->commands(
+                ActivateProfiles::class,
+                RevokeProfiles::class,
+                CreateSkill::class,
+                ReviseSkill::class,
+                RestoreSkill::class,
+                RetireSkill::class,
+                CopySkill::class,
                 PostComment::class,
                 PostTextComment::class,
                 SendMessage::class,
@@ -1330,6 +1416,20 @@ final class CoreApi
                 ToolArgumentUnknown::class,
                 ContinuationInvalid::class,
                 ContinuationStale::class,
+                ProfileKeyInvalid::class,
+                ProfileMissing::class,
+                ProfileRetired::class,
+                SkillDeclarationInvalid::class,
+                SkillKeyInvalid::class,
+                ProgramKeyInvalid::class,
+                ProviderKeyInvalid::class,
+                SkillConditionInvalid::class,
+                SkillRevisionConflict::class,
+                SkillRequestReused::class,
+                SkillRetired::class,
+                SkillKeyTaken::class,
+                ShippedSkillReadOnly::class,
+                SkillOwnerRequired::class,
             )
             ->support(
                 BelongsToOneActor::class,

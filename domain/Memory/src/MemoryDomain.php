@@ -10,6 +10,7 @@ use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
+use App\Skills\Contracts\ProvidesSkills;
 use Domain\Memory\Api\MemoryCard;
 use Domain\Memory\Api\MemoryPage;
 use Domain\Memory\Commands\EditMemory;
@@ -20,8 +21,9 @@ use Domain\Memory\Exceptions\MemoryInvalid;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Models\Memory;
+use Domain\Memory\Skills\MemorySkill;
 
-final class MemoryDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels
+final class MemoryDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels, ProvidesSkills
 {
     use HasNumberedModels;
 
@@ -55,5 +57,10 @@ final class MemoryDomain extends Domain implements ProvidesCommands, ProvidesNum
     public function commands(): array
     {
         return [SaveMemory::class, EditMemory::class, RemoveMemory::class];
+    }
+
+    public function skills(): array
+    {
+        return [MemorySkill::class];
     }
 }

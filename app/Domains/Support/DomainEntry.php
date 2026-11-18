@@ -18,6 +18,8 @@ use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Exceptions\DomainRequiresItself;
 use App\Domains\Exceptions\NotADomain;
 use App\Domains\Exceptions\RequiredDomainTwice;
+use App\Domains\Exceptions\SkillConditionRefused;
+use App\Domains\Exceptions\SkillDeclarationRefused;
 use App\Domains\Support\Exports as ExportsCheck;
 use App\Exports\Support\Exports;
 use App\Mcp\Contracts\McpRegistration;
@@ -31,12 +33,19 @@ use App\Records\Contracts\RecordProvider;
 use App\Settings\Contracts\ProvidesSettings;
 use App\Settings\Contracts\SettingsDefinition;
 use App\Settings\Support\EmptySettingsDefinition;
+use App\Skills\Contracts\ProvidesSkillConditions;
+use App\Skills\Contracts\ProvidesSkills;
+use App\Skills\Contracts\Skill;
+use App\Skills\Contracts\SkillConditionEvaluator;
+use App\Skills\Values\SkillConditionRegistration;
+use App\Skills\Values\SkillOwner;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Section;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Str;
+use Spatie\LaravelData\Data;
 use ReflectionClass;
 
 /**
@@ -46,6 +55,8 @@ final readonly class DomainEntry
 {
     /**
      * @param  list<class-string<Domain>>  $requires
+     * @param  list<class-string<Skill>>  $skills
+     * @param  list<SkillConditionRegistration>  $skillConditions
      */
     private function __construct(
         public string $name,
@@ -56,6 +67,8 @@ final readonly class DomainEntry
         public Exports $exports,
         private SettingsDefinition $settings,
         private bool $switchable,
+        private array $skills,
+        private array $skillConditions,
     ) {}
 
     /**
@@ -87,6 +100,8 @@ final readonly class DomainEntry
             exports: ExportsCheck::check($name, $namespace, $domain->exports()),
             settings: $domain instanceof ProvidesSettings ? $domain->settings() : new EmptySettingsDefinition(),
             switchable: $domain->canDisable(),
+            skills: $domain instanceof ProvidesSkills ? self::checkedSkills($name, $namespace, $domain->skills()) : [],
+            skillConditions: $domain instanceof ProvidesSkillConditions ? self::checkedSkillConditions($name, $domain->skillConditions()) : [],
         );
     }
 
@@ -225,6 +240,96 @@ final readonly class DomainEntry
         }
 
         return $seen;
+    }
+
+    /**
+     * Refuses a declared skill class that is missing, does not implement Skill or lies outside the domain's namespace.
+     *
+     * @param  list<class-string<Skill>>  $skills
+     * @return list<class-string<Skill>>
+     */
+    private static function checkedSkills(string $name, string $namespace, array $skills): array
+    {
+        foreach ($skills as $class) {
+            if (! class_exists($class)) {
+                throw SkillDeclarationRefused::for($name, $class, 'no such class exists');
+            }
+
+            if (! is_subclass_of($class, Skill::class)) {
+                throw SkillDeclarationRefused::for($name, $class, 'it does not implement App\\Skills\\Contracts\\Skill');
+            }
+
+            if (stripos(ltrim($class, '\\'), $namespace.'\\') !== 0) {
+                throw SkillDeclarationRefused::for($name, $class, 'it lies outside the domain\'s own package');
+            }
+        }
+
+        return $skills;
+    }
+
+    /**
+     * Refuses a condition registration whose key lacks the domain's prefix or comes twice, or whose parameter or
+     * evaluator class is not what the contract asks.
+     *
+     * @param  list<SkillConditionRegistration>  $registrations
+     * @return list<SkillConditionRegistration>
+     */
+    private static function checkedSkillConditions(string $name, array $registrations): array
+    {
+        $prefix = Str::kebab($name).'.';
+        $seen = [];
+
+        foreach ($registrations as $registration) {
+            $key = $registration->key;
+            $reason = match (true) {
+                ! str_starts_with($key, $prefix) || preg_match('/^[a-z0-9]+(-[a-z0-9]+)*\.[a-z0-9]+(-[a-z0-9]+)*$/D', $key) !== 1 => "its key does not start with {$prefix}",
+                in_array($key, $seen, true) => 'it registers that key twice',
+                ! is_subclass_of($registration->parameters, Data::class) => 'its parameters class is no Spatie Data class',
+                ! is_subclass_of($registration->evaluator, SkillConditionEvaluator::class) => 'its evaluator does not implement App\\Skills\\Contracts\\SkillConditionEvaluator',
+                $registration->version < 1 => 'its version is below 1',
+                default => null,
+            };
+
+            if ($reason !== null) {
+                throw SkillConditionRefused::for($name, $key, $reason);
+            }
+
+            $seen[] = $key;
+        }
+
+        return $registrations;
+    }
+
+    /**
+     * The named condition types this domain registers, checked when it was registered; none without
+     * ProvidesSkillConditions.
+     *
+     * @return list<SkillConditionRegistration>
+     */
+    public function skillConditions(): array
+    {
+        return $this->skillConditions;
+    }
+
+    /**
+     * The skill classes this domain declares, checked when it was registered; none without ProvidesSkills.
+     *
+     * @return list<class-string<Skill>>
+     */
+    public function skills(): array
+    {
+        return $this->skills;
+    }
+
+    /**
+     * This domain as a supplier of skills: its name, its package folder and the skill classes it declares; a package in
+     * domain/ is first-party, anything else a module.
+     */
+    public function skillOwner(): SkillOwner
+    {
+        $sourceRoot = $this->isPackage() ? dirname($this->folder) : $this->folder;
+
+        return new SkillOwner($this->name, $sourceRoot, $this->skills, str_starts_with($sourceRoot, base_path('domain').DIRECTORY_SEPARATOR));
     }
 
     /**

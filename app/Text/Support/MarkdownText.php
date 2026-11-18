@@ -103,6 +103,37 @@ final readonly class MarkdownText
     }
 
     /**
+     * The sections reached by an exact heading path, such as ["Failure", "Retry"]: each heading nested under the one
+     * before it. Headings inside code fences are no headings.
+     *
+     * @param  list<string>  $path
+     * @return list<Section>
+     */
+    public function sectionsAtPath(array $path): array
+    {
+        $found = [];
+        $open = [];
+
+        foreach ($this->sections as $section) {
+            if ($section->level === 0) {
+                continue;
+            }
+
+            while ($open !== [] && $open[array_key_last($open)]->level >= $section->level) {
+                array_pop($open);
+            }
+
+            $open[] = $section;
+
+            if (array_map(fn (Section $heading) => $heading->heading, $open) === $path) {
+                $found[] = $section;
+            }
+        }
+
+        return $found;
+    }
+
+    /**
      * The section headed so, when exactly one is.
      *
      * @throws SectionMissing

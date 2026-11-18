@@ -19,6 +19,7 @@ use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
 use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Support\ShareRecordRegistration;
+use App\Skills\Contracts\ProvidesSkills;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Contracts\ProvidesSections;
@@ -73,6 +74,7 @@ use Domain\Plans\Readers\PlansWindowReader;
 use Domain\Plans\Readers\PlanWindowReader;
 use Domain\Plans\Readers\WaitingPlansCount;
 use Domain\Plans\Readers\WaitingPlansSection;
+use Domain\Plans\Skills\PlanSkill;
 use Domain\Plans\States\Support\WorkingOnPlanStateFactory;
 use Domain\Plans\States\Support\WorkingOnPlanStateReference;
 use Domain\Plans\Support\PhaseAssignmentProvider;
@@ -82,7 +84,7 @@ use Domain\Plans\Support\PlanRecords;
 use Domain\Plans\Support\PlanShareProvider;
 use Domain\Tasks\TasksDomain;
 
-final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesShareRecords, ProvidesStates
+final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesShareRecords, ProvidesSkills, ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -159,6 +161,11 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function commands(): array
     {
         return [StartPlan::class, CreatePlan::class, EditPlan::class, FinishPlan::class, CancelPlan::class, AddPhase::class, AddPhaseTasks::class, AssignPlanWork::class, ReassignPlanWork::class, UnassignPlanWork::class];
+    }
+
+    public function skills(): array
+    {
+        return [PlanSkill::class];
     }
 
     public function pages(): array

@@ -94,7 +94,7 @@ final readonly class CommandGrammar
     {
         $doc = (string) ($property?->getDeclaringClass()->getConstructor()?->getDocComment() ?: $property?->getDocComment());
 
-        if ($property === null || preg_match('/list<([A-Za-z\\\\]+)>\s+\$'.$property->getName().'\b/', $doc, $match) !== 1) {
+        if ($property === null || preg_match('/list<([A-Za-z\\\\]+)>(?:\|null)?\s+\$'.$property->getName().'\b/', $doc, $match) !== 1) {
             return 'is an array without a list<int>, list<string>, list of an enum or list of a value docblock';
         }
 

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Programs\Enums;
 
+use App\Skills\Values\ProgramKey;
+use App\Skills\Values\ProviderKey;
+
 /**
  * The agent programs whose hooks the journal answers, as they appear in the hook endpoint's address.
  */
@@ -36,6 +39,22 @@ enum HookProgram: string
         return match ($this) {
             self::ClaudeCode => ['Agent', 'Task', 'Workflow', 'SendMessage', 'ListAgents', 'RemoteTrigger', 'Skill'],
             self::Codex => ['collaboration.spawn_agent', 'collaboration.wait_agent', 'collaboration.send_message', 'collaboration.followup_task', 'collaboration.interrupt_agent', 'collaboration.list_agents'],
+        };
+    }
+
+    public function programKey(): ProgramKey
+    {
+        return ProgramKey::from($this->value);
+    }
+
+    /**
+     * The provider family the program runs on, as its registration gives it; never read from a model name.
+     */
+    public function provider(): ProviderKey
+    {
+        return match ($this) {
+            self::ClaudeCode => ProviderKey::from('anthropic'),
+            self::Codex => ProviderKey::from('openai'),
         };
     }
 

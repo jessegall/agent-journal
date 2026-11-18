@@ -128,6 +128,22 @@ final class AgentSession extends Model implements ReadableModel
         $this->save();
     }
 
+    /**
+     * The session with this id.
+     */
+    public static function byId(string $sessionId): self
+    {
+        return self::query()->whereKey($sessionId)->firstOrFail();
+    }
+
+    /**
+     * The agent's most recent session, or null when it never launched.
+     */
+    public static function latestOf(string $agentId): ?self
+    {
+        return self::query()->where('agent_id', $agentId)->orderByDesc('created_at')->orderByDesc('id')->first();
+    }
+
     public static function lockedForUpdate(string $sessionId): self
     {
         return self::query()->whereKey($sessionId)->lockForUpdate()->firstOrFail();

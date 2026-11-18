@@ -17,6 +17,7 @@ use App\Exports\Support\Exports;
 use App\Mcp\Contracts\ProvidesMcpTools;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
+use App\Skills\Contracts\ProvidesSkills;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
@@ -50,10 +51,11 @@ use Domain\Tasks\Mcp\HeldTasksOverview;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Readers\TaskAssignments;
 use Domain\Tasks\Readers\TaskRecords;
+use Domain\Tasks\Skills\TasksSkill;
 use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 
-final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNumberedModels, ProvidesStates
+final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNumberedModels, ProvidesSkills, ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -145,5 +147,10 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function overviewContributions(): array
     {
         return [HeldTasksOverview::class];
+    }
+
+    public function skills(): array
+    {
+        return [TasksSkill::class];
     }
 }

@@ -29,6 +29,7 @@ use App\Assignments\Commands\ReassignRecord;
 use App\Assignments\Commands\UnassignRecord;
 use App\Bus\Contracts\Command;
 use App\Bus\Support\CommandOwner;
+use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
@@ -43,6 +44,8 @@ use App\Processes\Commands\IssueEvidencePermit;
 use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\RevokeCommandPermissions;
 use App\Processes\Commands\WithdrawCommandRequest;
+use App\Profiles\Commands\ActivateProfiles;
+use App\Profiles\Commands\RevokeProfiles;
 use App\Records\Commands\LinkRecords;
 use App\Records\Commands\UnlinkRecords;
 use App\Settings\Commands\DisableSettingGroup;
@@ -71,6 +74,12 @@ use App\Sharing\Commands\RequestShare;
 use App\Sharing\Commands\RetryShare;
 use App\Sharing\Commands\RevokeShare;
 use App\Sharing\Commands\SaveSharePreview;
+use App\Skills\CommandMiddleware\RefuseWritesDuringEvaluation;
+use App\Skills\Commands\CopySkill;
+use App\Skills\Commands\CreateSkill;
+use App\Skills\Commands\RestoreSkill;
+use App\Skills\Commands\RetireSkill;
+use App\Skills\Commands\ReviseSkill;
 use App\Web\Commands\RecordUserHeartbeat;
 
 /**
@@ -89,6 +98,8 @@ final class CoreCommands
             SetStringSetting::class, SetBooleanSetting::class, SetIntegerSetting::class, SetDecimalSetting::class, SetStringChoice::class, SetIntegerChoice::class, ResetSetting::class, EnableSettingGroup::class, DisableSettingGroup::class, ResetSettingGroup::class,
             SaveSharePreview::class, CreateShare::class, RequestShare::class, ApproveShareRequest::class, RevokeShare::class, RevokeCommandPermissions::class, IssueEvidencePermit::class, OpenCommandRequest::class, WithdrawCommandRequest::class, RefreshShareScope::class, RetryShare::class, ConfigureShareGateway::class, DisableShareGateway::class,
             ReadShare::class, ExpireShares::class, ClaimGatewayOperation::class, RecordGatewayOutcome::class, RecordGatewayHealth::class, ReopenSharedGateways::class, PruneShareAudit::class,
+            ActivateProfiles::class, RevokeProfiles::class,
+            CreateSkill::class, ReviseSkill::class, RestoreSkill::class, RetireSkill::class, CopySkill::class,
         ];
     }
 
@@ -108,7 +119,7 @@ final class CoreCommands
      */
     public static function middleware(): array
     {
-        return [];
+        return [MiddlewareDeclaration::around(RefuseWritesDuringEvaluation::class, CommandScope::all())];
     }
 
     /**

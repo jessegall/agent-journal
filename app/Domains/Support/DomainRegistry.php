@@ -19,6 +19,8 @@ use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Support\CoreSettings;
 use App\Settings\Support\SettingRegistry;
+use App\Skills\Values\SkillConditionRegistration;
+use App\Skills\Values\SkillOwner;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Support\UiDeclarations;
 
@@ -110,6 +112,32 @@ final readonly class DomainRegistry
     public function commandDeclarations(CommandOwner $core): CommandRegistry
     {
         return CommandRegistry::from([$core, ...array_map(fn (DomainEntry $entry) => $entry->commandOwner(), $this->all())]);
+    }
+
+    /**
+     * Every owner of skills, Core's first and then the domains in bootstrap/domains.php order.
+     *
+     * @return list<SkillOwner>
+     */
+    public function skillDeclarations(SkillOwner $core): array
+    {
+        return [$core, ...array_map(fn (DomainEntry $entry) => $entry->skillOwner(), $this->all())];
+    }
+
+    /**
+     * Every domain's named skill condition types, by domain name, in bootstrap/domains.php order.
+     *
+     * @return array<string, list<SkillConditionRegistration>>
+     */
+    public function skillConditionDeclarations(): array
+    {
+        $byOwner = [];
+
+        foreach ($this->all() as $entry) {
+            $byOwner[$entry->name] = $entry->skillConditions();
+        }
+
+        return $byOwner;
     }
 
     /**

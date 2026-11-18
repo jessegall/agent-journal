@@ -1,0 +1,56 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Skills\Support;
+
+use App\Skills\Contracts\Skill;
+use App\Skills\Contracts\SkillCondition;
+use App\Skills\Models\SkillRevision;
+use App\Skills\Values\SkillSection;
+
+/**
+ * A skill a user stored, read from one revision: its sections are the literal Markdown that was saved, never an
+ * include, and nothing in it is run or built as code.
+ */
+final readonly class StoredSkill implements Skill
+{
+    public function __construct(
+        private string $key,
+        private SkillRevision $revision,
+        private SkillCondition $condition,
+    ) {}
+
+    public function key(): string
+    {
+        return $this->key;
+    }
+
+    public function name(): string
+    {
+        return $this->revision->name;
+    }
+
+    public function description(): string
+    {
+        return $this->revision->description;
+    }
+
+    public function condition(): SkillCondition
+    {
+        return $this->condition;
+    }
+
+    /**
+     * @return list<SkillSection>
+     */
+    public function sections(): array
+    {
+        return $this->revision->sections;
+    }
+
+    public function revisionNumber(): int
+    {
+        return $this->revision->revision;
+    }
+}
