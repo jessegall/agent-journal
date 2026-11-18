@@ -8,6 +8,8 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorStore;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\StackLockTimedOut;
+use App\Bus\Support\OperationDeadline;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\ReadShare;
 use App\Sharing\Enums\ShareAuditType;
@@ -38,9 +40,10 @@ use Throwable;
 /**
  * One public read: an active share reads its record, its approved linked records and a page of comments, and audits
  * the read; an expired share, a lapsed grant or an unapproved step is denied and audited without content; a read
- * nested in another transaction is refused before anything is read.
+ * nested in another transaction is refused before anything is read; a linked record whose disclosure is withdrawn is
+ * denied while its sibling reads; a read waits for a revoke holding the share and is denied once it committed.
  */
-#[TimeLimit(seconds: 5, reason: 'It commits real bus reads and empties fourteen tables around each test.')]
+#[TimeLimit(seconds: 10, reason: 'It commits real bus reads and empties fourteen tables around each test.')]
 final class ReadShareTest extends TestCase
 {
     use CommitsHookRows;
@@ -137,6 +140,63 @@ final class ReadShareTest extends TestCase
 
         $this->assertThrows(fn () => DB::transaction(fn () => $this->read($token)), Throwable::class);
         $this->assertSame([], $this->auditTypes());
+    }
+
+    public function test_a_linked_record_whose_disclosure_is_withdrawn_is_denied_while_its_sibling_still_reads(): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(9)));
+        $this->app->make(CommandBus::class)->run(new CreateDocument('Notes', 'What we learned', "# Notes\nKeep it.\n"));
+        $this->app->make(CurrentActorSetter::class)->clear();
+        $sibling = Document::query()->where('number', 2)->sole();
+        $this->plan->linkTo($sibling);
+        $token = $this->activeShare($this->plan->shareIdentity(), CarbonImmutable::now()->addDay());
+        $share = Share::query()->sole();
+
+        foreach ([$this->document, $sibling] as $document) {
+            $linkId = (string) DB::table('links')->where('target_id', $document->id)->orWhere('source_id', $document->id)->value('id');
+            ShareMember::approve($share, $this->plan->shareIdentity(), new ShareSelectedTarget($document->shareIdentity(), $linkId, '1'));
+        }
+
+        $this->assertTrue($this->read($token, "records/documents.document/{$this->document->id}")->allowed);
+
+        DB::table('document_revisions')->where('document_id', $this->document->id)->update(['closed_at' => null]);
+
+        $withdrawn = $this->read($token, "records/documents.document/{$this->document->id}");
+        $this->assertFalse($withdrawn->allowed);
+        $this->assertSame('', $withdrawn->body);
+        $this->assertSame([$sibling->id], array_map(fn ($item) => $item->id, $this->read($token)->linked));
+        $this->assertTrue($this->read($token, "records/documents.document/{$sibling->id}")->allowed);
+    }
+
+    public function test_a_read_waits_for_a_revoke_holding_the_share_and_is_denied_once_it_committed(): void
+    {
+        $token = $this->activeShare($this->document->shareIdentity(), CarbonImmutable::now()->addDay());
+        $shareId = Share::query()->sole()->id;
+        config(['database.connections.revoker' => config('database.connections.'.config('database.default'))]);
+        $revoker = DB::connection('revoker');
+        $revoker->beginTransaction();
+
+        try {
+            $revoker->table('shares')->where('id', $shareId)->lockForUpdate()->sole();
+            $this->app->instance(OperationDeadline::class, new OperationDeadline(500));
+
+            $this->assertThrows(fn () => $this->read($token), StackLockTimedOut::class);
+
+            $revoker->table('shares')->where('id', $shareId)->update(['state' => ShareState::Revoked->value, 'token_ciphertext' => null, 'terminal_at' => CarbonImmutable::now()]);
+            $revoker->commit();
+        } finally {
+            if ($revoker->transactionLevel() > 0) {
+                $revoker->rollBack();
+            }
+
+            DB::purge('revoker');
+        }
+
+        $this->app->forgetScopedInstances();
+        $after = $this->read($token);
+
+        $this->assertFalse($after->allowed);
+        $this->assertSame('', $after->body);
     }
 
     private function activeShare(RecordIdentity $root, CarbonImmutable $expiresAt): string
