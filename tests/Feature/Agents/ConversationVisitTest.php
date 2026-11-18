@@ -59,7 +59,7 @@ final class ConversationVisitTest extends TestCase
         $this->assertSame([1, 2, 3], $kept->pluck('sequence_number')->all());
         $this->assertSame($kept[0]->conversation_id, $kept[2]->conversation_id);
         $this->assertNotSame($kept[0]->conversation_id, $kept[1]->conversation_id);
-        $this->assertSame('native-a', $session->fresh()?->currentConversation?->native_id);
+        $this->assertSame('native-a', $session->fresh(['currentConversation'])?->currentConversation?->native_id);
     }
 
     public function test_a_retry_with_the_same_event_id_adds_no_visit(): void

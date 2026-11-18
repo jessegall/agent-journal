@@ -171,7 +171,7 @@ trait CommittedHookStack
      */
     private static function committedTables(): array
     {
-        return ['agent_stacks', 'hook_calls', 'links', 'tasks', 'messages', 'sequence_runs', 'memories', 'memory_compactions', 'rules', 'users', 'agents', 'agent_sessions', 'launch_credentials', 'launch_bypasses', 'command_aliases'];
+        return ['agent_stacks', 'hook_calls', 'links', 'tasks', 'messages', 'sequence_runs', 'memories', 'memory_compactions', 'rules', 'users', 'agents', 'agent_sessions', 'launch_credentials', 'launch_bypasses', 'command_aliases', 'program_conversations', 'conversation_visits'];
     }
 
     private function hookIdentity(): HookIdentity

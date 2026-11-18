@@ -48,7 +48,7 @@ final class HookLaunchTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'tasks', 'links'];
+    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'tasks', 'links', 'program_conversations', 'conversation_visits'];
 
     public function test_the_isolated_settings_hold_only_the_journal_hooks_and_turn_off_the_child_tool(): void
     {
@@ -118,7 +118,7 @@ final class HookLaunchTest extends TestCase
         $visits->entered($launched->session->id, 'program-session-2', 'call-2', CarbonImmutable::now());
 
         $this->assertSame(1, AgentSession::query()->count());
-        $this->assertSame('program-session-2', $launched->session->fresh()?->currentConversation?->native_id);
+        $this->assertSame('program-session-2', $launched->session->fresh(['currentConversation'])?->currentConversation?->native_id);
         $this->assertSame($framesBefore, $this->bottomOf($launched));
         $this->assertSame($launched->session->id, $this->app->make(CredentialLookup::class)->sessionFor($launched->token)->id);
     }
