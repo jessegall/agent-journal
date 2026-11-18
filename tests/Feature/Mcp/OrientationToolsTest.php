@@ -99,8 +99,6 @@ final class OrientationToolsTest extends TestCase
      */
     private function callTool(string $name, array $headers = []): TestResponse
     {
-        return $this->sendMcp($this->caller, 'tools/call', ['name' => $name, 'arguments' => (object) []], $headers)
-            ->assertOk()
-            ->assertJsonPath('result.isError', false);
+        return $this->callMcpTool($this->caller, $name, [], $headers)->assertJsonPath('result.isError', false);
     }
 }

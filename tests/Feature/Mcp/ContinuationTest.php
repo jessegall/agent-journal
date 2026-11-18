@@ -107,7 +107,8 @@ final class ContinuationTest extends TestCase
 
         $entries = $pages->resolve($retained, 7, fn (array $omitted): array => array_combine($omitted, array_map(strtoupper(...), $omitted)));
 
-        $this->assertSame(array_map(fn (int $number): string => "TASK-{$number}", range(8, 20)), $entries->entries);
+        $this->assertSame(array_map(fn (int $number): string => "TASK-{$number}", range(8, 20)), array_values($entries->entries));
+        $this->assertSame(7, $entries->offsets['task-8']);
         $this->assertSame(0, $entries->unavailableCount);
     }
 
@@ -119,7 +120,7 @@ final class ContinuationTest extends TestCase
 
         $entries = $pages->resolve($retained, 0, fn (array $omitted): array => ['task-3' => 'third', 'task-1' => 'first']);
 
-        $this->assertSame(['first', 'third'], $entries->entries);
+        $this->assertSame(['task-1' => 'first', 'task-3' => 'third'], $entries->entries);
         $this->assertSame(1, $entries->unavailableCount);
     }
 

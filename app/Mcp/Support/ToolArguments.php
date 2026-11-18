@@ -69,15 +69,35 @@ final readonly class ToolArguments
     /**
      * @throws ToolArgumentInvalid
      */
-    public function positiveInteger(string $name): int
+    public function positiveInteger(string $name, int $largest = PHP_INT_MAX): int
     {
         $value = $this->arguments[$name] ?? null;
 
-        if (! is_int($value) || $value < 1) {
-            throw ToolArgumentInvalid::for($name, 'a whole number of at least 1');
+        if (! is_int($value) || $value < 1 || $value > $largest) {
+            throw ToolArgumentInvalid::for($name, $largest === PHP_INT_MAX ? 'a whole number of at least 1' : "a whole number from 1 to {$largest}");
         }
 
         return $value;
+    }
+
+    /**
+     * The whole number the caller sent, or the tool's default when it sent none.
+     *
+     * @throws ToolArgumentInvalid
+     */
+    public function positiveIntegerOr(string $name, int $default, int $largest = PHP_INT_MAX): int
+    {
+        return array_key_exists($name, $this->arguments) ? $this->positiveInteger($name, $largest) : $default;
+    }
+
+    /**
+     * The text the caller sent, or the tool's default when it sent none.
+     *
+     * @throws ToolArgumentInvalid
+     */
+    public function textOr(string $name, string $default): string
+    {
+        return array_key_exists($name, $this->arguments) ? $this->text($name) : $default;
     }
 
     /**
@@ -125,6 +145,33 @@ final readonly class ToolArguments
     }
 
     /**
+     * The values of a list of an enum's cases; a list the caller left out is empty.
+     *
+     * @template T of BackedEnum
+     *
+     * @param  class-string<T>  $type
+     * @return list<string>
+     *
+     * @throws ToolArgumentInvalid
+     */
+    public function enumValues(string $name, string $type): array
+    {
+        if (! array_key_exists($name, $this->arguments)) {
+            return [];
+        }
+
+        $values = $this->list($name);
+
+        foreach ($values as $value) {
+            if ($type::tryFrom($value) === null) {
+                throw ToolArgumentInvalid::for($name, 'a list of '.self::valuesOf($type));
+            }
+        }
+
+        return $values;
+    }
+
+    /**
      * @template T of BackedEnum
      *
      * @param  class-string<T>  $type
@@ -138,11 +185,17 @@ final readonly class ToolArguments
         $case = is_string($value) || is_int($value) ? $type::tryFrom($value) : null;
 
         if ($case === null) {
-            $values = implode(', ', array_map(fn (BackedEnum $case): string => (string) $case->value, $type::cases()));
-
-            throw ToolArgumentInvalid::for($name, "one of {$values}");
+            throw ToolArgumentInvalid::for($name, 'one of '.self::valuesOf($type));
         }
 
         return $case;
+    }
+
+    /**
+     * @param  class-string<BackedEnum>  $type
+     */
+    private static function valuesOf(string $type): string
+    {
+        return implode(', ', array_map(fn (BackedEnum $case): string => (string) $case->value, $type::cases()));
     }
 }

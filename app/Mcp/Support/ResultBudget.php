@@ -22,16 +22,24 @@ final readonly class ResultBudget
     private const int JSON_FLAGS = JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
 
     /**
+     * Whether a payload, counted with the text that mirrors it, leaves the 2 KiB kept for status and recovery.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    public function payloadFits(array $payload): bool
+    {
+        return self::payloadBytes($payload) <= self::RESULT_BYTES - self::RECOVERY_BYTES;
+    }
+
+    /**
      * The result as a structured response, refused when it is over budget.
      *
      * @throws ResultTooLarge
      */
     public function fit(ToolResult $result): ResponseFactory
     {
-        $payloadBytes = 2 * strlen(json_encode($result->payload, self::JSON_FLAGS));
-
-        if ($payloadBytes > self::RESULT_BYTES - self::RECOVERY_BYTES) {
-            throw ResultTooLarge::for('payload', $payloadBytes, self::RESULT_BYTES - self::RECOVERY_BYTES);
+        if (! $this->payloadFits($result->payload)) {
+            throw ResultTooLarge::for('payload', self::payloadBytes($result->payload), self::RESULT_BYTES - self::RECOVERY_BYTES);
         }
 
         $structured = $result->structuredContent();
@@ -43,5 +51,13 @@ final readonly class ResultBudget
         }
 
         return Response::structured($structured);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    private static function payloadBytes(array $payload): int
+    {
+        return 2 * strlen(json_encode($payload, self::JSON_FLAGS));
     }
 }

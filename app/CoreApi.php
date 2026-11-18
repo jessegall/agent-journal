@@ -243,7 +243,9 @@ use App\Mcp\Data\OverviewSection;
 use App\Mcp\Data\ToolResult as McpToolResult;
 use App\Mcp\Enums\RefusalCode;
 use App\Mcp\Resources\JournalResource;
+use App\Mcp\Support\ListedPage;
 use App\Mcp\Support\McpCall;
+use App\Mcp\Support\NumberedPages;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
 use App\Mcp\Tools\JournalTool;
@@ -558,6 +560,8 @@ final class CoreApi
                 OverviewSection::class,
                 ToolArguments::class,
                 McpCall::class,
+                ListedPage::class,
+                NumberedPages::class,
                 RecordCard::class,
                 StateReferences::class,
                 StateSet::class,

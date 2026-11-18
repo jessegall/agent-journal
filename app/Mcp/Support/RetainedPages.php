@@ -44,8 +44,16 @@ final readonly class RetainedPages
             ?? throw ContinuationStale::expired();
         $references = array_slice($page->references, $offset);
         $found = $read($references);
-        $entries = array_values(array_filter(array_map(fn (string $reference) => $found[$reference] ?? null, $references), fn ($entry) => $entry !== null));
+        $entries = [];
+        $offsets = [];
 
-        return new RetainedEntries($entries, count($references) - count($entries));
+        foreach ($references as $index => $reference) {
+            if (array_key_exists($reference, $found)) {
+                $entries[$reference] = $found[$reference];
+                $offsets[$reference] = $offset + $index;
+            }
+        }
+
+        return new RetainedEntries($entries, $offsets, count($references) - count($entries));
     }
 }

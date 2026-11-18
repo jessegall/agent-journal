@@ -39,6 +39,7 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\Events\TaskStarted;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Mcp\AssignedTasksTool;
 use Domain\Tasks\Mcp\HeldTasksOverview;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Readers\TaskAssignments;
@@ -122,7 +123,7 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesC
 
     public function mcpTools(): array
     {
-        return [];
+        return [AssignedTasksTool::class];
     }
 
     public function mcpResources(): array

@@ -36,6 +36,18 @@ trait SendsMcpFrames
     }
 
     /**
+     * A tools/call frame for the tool with its arguments.
+     *
+     * @param  array<string, mixed>  $arguments
+     * @param  array<string, string>  $headers
+     * @return TestResponse<Response>
+     */
+    protected function callMcpTool(TestLaunch $launch, string $name, array $arguments = [], array $headers = []): TestResponse
+    {
+        return $this->sendMcp($launch, 'tools/call', ['name' => $name, 'arguments' => (object) $arguments], $headers)->assertOk();
+    }
+
+    /**
      * @param  array<string, mixed>  $params
      */
     protected function mcpFrame(string $method, array $params = []): string

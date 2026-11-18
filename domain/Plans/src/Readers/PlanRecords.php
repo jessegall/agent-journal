@@ -63,7 +63,7 @@ final readonly class PlanRecords implements PlanReader
         $page = min(max(1, $filters->page), $lastPage);
         $plans = $this->listed($filters)->listOrder($focused)->forPage($page, self::PER_PAGE)->get();
 
-        return new PlanList($this->cardsOf($plans, $focused), $filters, $page, $lastPage, $total, $this->selection($filters, $focused));
+        return new PlanList($this->cardsOf($plans, $focused), $filters, $page, self::PER_PAGE, $lastPage, $total, $this->selection($filters, $focused));
     }
 
     /**

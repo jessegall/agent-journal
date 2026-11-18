@@ -48,7 +48,9 @@ use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Http\Controllers\StartPlanController;
+use Domain\Plans\Mcp\AssignedPlansTool;
 use Domain\Plans\Mcp\HeldPlansOverview;
+use Domain\Plans\Mcp\PlansListTool;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Readers\OpenPlansCount;
@@ -178,7 +180,7 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
 
     public function mcpTools(): array
     {
-        return [];
+        return [AssignedPlansTool::class, PlansListTool::class];
     }
 
     public function mcpResources(): array
