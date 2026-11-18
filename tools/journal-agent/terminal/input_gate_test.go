@@ -108,7 +108,8 @@ func TestThePersonsDraftIsNeverErasedOrRetyped(t *testing.T) {
 	gate.Human([]byte("my draft"))
 	reader.Feed([]byte("my draft"))
 
-	if _, err := gate.Type("request-1", 1, "journal work", reader.Generation("composer")); !errors.Is(err, ErrComposerHeld) {
+	_, err := gate.Type("request-1", 1, "journal work", reader.Generation("composer"))
+	if !errors.Is(err, ErrComposerHeld) {
 		t.Fatalf("a driver line was typed over the person's draft: %v", err)
 	}
 	draft, found := gate.Draft()
