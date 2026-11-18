@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Skills\Console;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Contracts\JournalAccessPolicy;
-use App\Actors\Support\ActorContext;
 use App\Agents\Models\Agent;
 use App\Skills\Conditions\Everyone;
 use App\Skills\Contracts\SkillReader;
@@ -16,10 +13,10 @@ use App\Skills\Exceptions\SkillContextUnavailable;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillKeyInvalid;
 use App\Skills\Exceptions\SkillMissing;
-use App\Skills\Exceptions\SkillPreviewRefused;
 use App\Skills\Exceptions\SkillSelectionConflict;
 use App\Skills\Exceptions\SkillSourceInvalid;
 use App\Skills\Readers\SkillContextReader;
+use App\Skills\Support\SkillConsole;
 use App\Skills\Support\SkillSelection;
 use App\Skills\Values\SkillEntry;
 use App\Skills\Values\SkillKey;
@@ -38,10 +35,9 @@ final class SkillPreviewCommand extends Command
 
     protected $description = 'Show which agents a skill reaches and why';
 
-    public function handle(Container $container, JournalAccessPolicy $access, CurrentActorSetter $actors, SkillContextReader $contexts, SkillSelection $selection): int
+    public function handle(Container $container, SkillConsole $console, SkillContextReader $contexts, SkillSelection $selection): int
     {
-        $owner = $access->allowedUserIds()[0] ?? throw SkillPreviewRefused::noOwner();
-        $actors->set(ActorContext::forUser($owner));
+        $console->actAsOwner();
 
         try {
             $reader = $container->make(SkillReader::class);

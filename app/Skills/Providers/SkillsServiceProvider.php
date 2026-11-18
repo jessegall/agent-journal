@@ -7,8 +7,15 @@ namespace App\Skills\Providers;
 use App\Domains\Support\DomainRegistry;
 use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\NumberedTypeRegistry;
+use App\Skills\Console\SkillCopyCommand;
+use App\Skills\Console\SkillEditCommand;
 use App\Skills\Console\SkillListCommand;
+use App\Skills\Console\SkillMakeCommand;
 use App\Skills\Console\SkillPreviewCommand;
+use App\Skills\Console\SkillRestoreCommand;
+use App\Skills\Console\SkillRetireCommand;
+use App\Skills\Console\SkillRevisionCommand;
+use App\Skills\Console\SkillRevisionsCommand;
 use App\Skills\Console\SkillShowCommand;
 use App\Skills\Contracts\SkillReader;
 use App\Skills\Contracts\SkillRenderer;
@@ -50,7 +57,7 @@ final class SkillsServiceProvider extends ServiceProvider
         $numbers->register(NumberedModel::global(Skill::class));
 
         if ($this->app->runningInConsole()) {
-            $this->commands([SkillListCommand::class, SkillShowCommand::class, SkillPreviewCommand::class]);
+            $this->commands([SkillListCommand::class, SkillShowCommand::class, SkillPreviewCommand::class, SkillMakeCommand::class, SkillEditCommand::class, SkillRestoreCommand::class, SkillRetireCommand::class, SkillCopyCommand::class, SkillRevisionsCommand::class, SkillRevisionCommand::class]);
         }
     }
 }

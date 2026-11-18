@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Skills\Console;
+
+use App\Bus\Contracts\CommandBus;
+use App\Skills\Commands\CopySkill;
+use App\Skills\Console\Concerns\PrintsSkillRefusals;
+use App\Skills\Support\SkillConsole;
+use Illuminate\Console\Command;
+use Illuminate\Support\Str;
+
+/**
+ * Copies a skill you may read, shipped or stored, into a new stored skill under a user- key.
+ */
+final class SkillCopyCommand extends Command
+{
+    use PrintsSkillRefusals;
+
+    protected $signature = 'skill:copy {key : The skill to copy} {new-key : A new user- key} {--request-id= : Send again under the id a failed attempt printed}';
+
+    protected $description = 'Copy a skill into a new stored skill';
+
+    public function handle(SkillConsole $console, CommandBus $commands): int
+    {
+        $requestId = (string) ($this->option('request-id') ?? Str::ulid());
+        $this->line("Request id: {$requestId}");
+
+        return $this->printRefusals(function () use ($console, $commands, $requestId) {
+            $console->actAsOwner();
+
+            return $console->savedLines($commands->run(new CopySkill((string) $this->argument('key'), (string) $this->argument('new-key'), $requestId)));
+        });
+    }
+}

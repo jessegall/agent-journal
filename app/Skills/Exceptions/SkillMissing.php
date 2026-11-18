@@ -13,4 +13,9 @@ final class SkillMissing extends RuntimeException
     {
         return new self("There is no skill {$key}.");
     }
+
+    public static function forNumber(int $number): self
+    {
+        return new self("There is no skill {$number}.");
+    }
 }
