@@ -13,6 +13,7 @@ use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\HookCall;
 use App\Links\Models\Link;
 use App\Links\Support\LinkTypeRegistry;
+use App\Mcp\Models\RetainedPage;
 use App\Settings\Models\SettingsRecord;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
@@ -44,6 +45,7 @@ final class CoreServiceProvider extends ServiceProvider
             'core.link' => Link::class,
             'core.comment' => Comment::class,
             'core.settings-record' => SettingsRecord::class,
+            RetainedPage::LINK_TYPE => RetainedPage::class,
             Share::LINK_TYPE => Share::class,
             ShareAudit::LINK_TYPE => ShareAudit::class,
             ShareGatewayConfiguration::LINK_TYPE => ShareGatewayConfiguration::class,

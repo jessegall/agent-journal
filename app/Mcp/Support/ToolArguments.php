@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
+use App\Mcp\Exceptions\ContinuationInvalid;
 use App\Mcp\Exceptions\ToolArgumentInvalid;
 use App\Mcp\Exceptions\ToolArgumentUnknown;
 use BackedEnum;
@@ -14,6 +15,11 @@ use Laravel\Mcp\Request;
  */
 final readonly class ToolArguments
 {
+    /**
+     * The first-page arguments a continuation replaces; it carries their values itself.
+     */
+    private const array FIRST_PAGE_FILTERS = ['page', 'per_page', 'after_id', 'limit', 'search', 'states', 'view', 'section', 'line_start', 'line_end', 'character_offset', 'revision'];
+
     /**
      * @param  array<string, mixed>  $arguments
      */
@@ -37,6 +43,27 @@ final readonly class ToolArguments
         }
 
         return new self($arguments);
+    }
+
+    /**
+     * The continuation the caller sent instead of first-page filters, or null on a first-page read.
+     *
+     * @throws ContinuationInvalid
+     * @throws ToolArgumentInvalid
+     */
+    public function continuation(): string|null
+    {
+        if (! array_key_exists('continuation', $this->arguments)) {
+            return null;
+        }
+
+        foreach (self::FIRST_PAGE_FILTERS as $filter) {
+            if (array_key_exists($filter, $this->arguments)) {
+                throw ContinuationInvalid::withFilters($filter);
+            }
+        }
+
+        return $this->text('continuation');
     }
 
     /**

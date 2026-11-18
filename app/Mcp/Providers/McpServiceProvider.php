@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace App\Mcp\Providers;
 
 use App\Agents\Support\AgentContext;
+use App\Mcp\Models\RetainedPage;
 use Illuminate\Cache\RateLimiter;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * Serves the journal's MCP server on its signed route, and limits each agent session to 120 calls a minute.
+ * Serves the journal's MCP server on its signed route, limits each agent session to 120 calls a minute and prunes
+ * expired retained pages daily.
  */
 final class McpServiceProvider extends ServiceProvider
 {
@@ -21,6 +24,7 @@ final class McpServiceProvider extends ServiceProvider
     public function boot(RateLimiter $limiter): void
     {
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/mcp.php');
+        $this->callAfterResolving(Schedule::class, fn (Schedule $schedule) => $schedule->command('model:prune', ['--model' => [RetainedPage::class]])->daily());
 
         $limiter->for('journal-mcp', fn (Request $request): Limit => Limit::perMinute(self::CALLS_PER_MINUTE)
             ->by($this->app->make(AgentContext::class)->sessionId)

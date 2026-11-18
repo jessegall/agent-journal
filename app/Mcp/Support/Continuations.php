@@ -9,7 +9,6 @@ use App\Mcp\Exceptions\ContinuationInvalid;
 use App\Mcp\Exceptions\ContinuationStale;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Encryption\Encrypter;
-use JsonException;
 
 /**
  * Issues and opens the opaque continuation cursors of the calling session: a payload signed with HMAC-SHA256 over the
@@ -77,18 +76,13 @@ final readonly class Continuations
     }
 
     /**
-     * @return array{agent: string, session: string, expires: int, tool: string, selector: string, filters: array<string, mixed>, offset: int, character_offset: int, revision: int|null, retained_page: string|null}
+     * The fields of a payload whose signature matched, so the journal wrote them itself.
      *
-     * @throws ContinuationInvalid
+     * @return array{agent: string, session: string, expires: int, tool: string, selector: string, filters: array<string, mixed>, offset: int, character_offset: int, revision: int|null, retained_page: string|null}
      */
     private function fieldsOf(string $payload): array
     {
-        try {
-            /** @var array{agent: string, session: string, expires: int, tool: string, selector: string, filters: array<string, mixed>, offset: int, character_offset: int, revision: int|null, retained_page: string|null} */
-            return json_decode(self::decode($payload), true, 16, JSON_THROW_ON_ERROR);
-        } catch (JsonException $unreadable) {
-            throw ContinuationInvalid::unreadable();
-        }
+        return json_decode(self::decode($payload), true, 16, JSON_THROW_ON_ERROR);
     }
 
     private function signatureOf(string $payload): string
