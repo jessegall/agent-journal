@@ -133,7 +133,7 @@ func TestWideAndCombiningCharacters(t *testing.T) {
 		t.Fatalf("row %q", snapshot.Rows[0])
 	}
 	if snapshot.Cursor.Column != 6 {
-		t.Fatalf("a wide character takes two cells and a combining mark none: the cursor is at %d, not 6", snapshot.Cursor.Column)
+		t.Fatalf("a wide character takes two cells, a combining mark none: the cursor is at %d, not 6", snapshot.Cursor.Column)
 	}
 }
 
