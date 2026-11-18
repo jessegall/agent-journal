@@ -1269,6 +1269,7 @@ constant	RunInTransaction::READ_COMMITTED
 constant	RunInTransaction::REPEATABLE_READ
 constant	RunInTransaction::RETRIED_CODES
 constant	RunInTransaction::TIMED_OUT_CODES
+constant	SessionRecords::CHOICES_SHOWN
 constant	ShellWords::OPERATORS
 constant	SignedCall::ID_HEADER
 constant	SignedCall::ISSUED_AT_HEADER
@@ -3782,6 +3783,7 @@ method	SessionStarted::answerBy()
 method	SessionStarted::identity()
 method	SessionStarted::methodName()
 method	SessionStatus::isRunning()
+method	SessionStatus::running()
 method	SettleDocument::__construct()
 method	SettleDocumentController::__invoke()
 method	SettleDocumentHandler::__construct()

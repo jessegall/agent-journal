@@ -13,6 +13,7 @@ use Domain\Tasks\Models\Task;
 use Domain\Tasks\Readers\TaskRecords;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -64,6 +65,7 @@ final class RepeatedReadTest extends TestCase
         $this->assertCount(12, $identities->value);
     }
 
+    #[TimeLimit(seconds: 5, reason: 'It files 249 tasks one by one, each numbered, before the chunked read it checks.')]
     public function test_a_chunked_read_over_251_rows_runs_every_batch(): void
     {
         foreach (range(3, 251) as $number) {

@@ -18,6 +18,16 @@ enum SessionStatus: string
     /**
      * Whether the session may still act: active, or silent for a while.
      */
+    /**
+     * The statuses of a session that is still running.
+     *
+     * @return list<self>
+     */
+    public static function running(): array
+    {
+        return array_values(array_filter(self::cases(), fn (self $status) => $status->isRunning()));
+    }
+
     public function isRunning(): bool
     {
         return match ($this) {

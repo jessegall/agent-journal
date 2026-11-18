@@ -6,6 +6,7 @@ namespace App\Agents\Readers;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Agents\Contracts\SessionReader;
+use App\Agents\Enums\SessionStatus;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\SessionOption;
@@ -18,15 +19,22 @@ use App\Reads\Support\ReadBuilder;
  */
 final readonly class SessionRecords implements SessionReader
 {
+    /**
+     * How many running sessions a choice offers; more running sessions than this is not a working setup.
+     */
+    public const int CHOICES_SHOWN = 50;
+
     public function __construct(private CurrentActor $actors) {}
 
     /**
+     * The running sessions, oldest first: running is decided in the query, and the choice holds at most a page.
+     *
      * @return list<SessionOption>
      */
     public function active(): array
     {
-        return array_values($this->visibleSessions()->with('agent')->orderBy('id')->readAll('the session choices, until task 663 pages them')->get()
-            ->filter(fn (AgentSession $session) => $session->isActive())
+        return array_values($this->visibleSessions()->with('agent')->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()))
+            ->orderBy('id')->readLimit(self::CHOICES_SHOWN)->get()
             ->map(fn (AgentSession $session) => self::optionOf($session))
             ->all());
     }
