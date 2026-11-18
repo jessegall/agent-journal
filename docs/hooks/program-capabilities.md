@@ -129,3 +129,19 @@ A program that exits or is killed without an end hook is handled by `LaunchHeart
 | Model-visible channel | not verified |
 | Exit, timeout and stop cap | not verified: the capture never blocked a stop or ran past a timeout; SessionEnd hooks run for 1 second unless they say more, 3 at most |
 | Captured fixtures | `tests/Fixtures/Hooks/Codex/hooks.json`, captured 2026-11-17, redacted |
+
+## Container capabilities
+
+Doc 14 (sections 55 to 57 and 60) asks five things of each pinned program before a helper runs it in a required container. `docs/accounts/container-capabilities.json` holds one row per capability and program, read through `HostCapabilities`; a launch whose configured guarantee needs a capability that is not `supported` is refused before work with `capability-unsupported` (`HostCapabilityUnsupported`), and the account transport with `account-container-unsupported`.
+
+A capability is marked supported only from a native run inside the admitted container, never from documentation. No such run exists yet: the protected host that starts containers is task 258 (plan 8), and the hook capture of task 89 ran the programs headless on the host. Every row is therefore unverified, with what is known:
+
+| Capability | What must hold | Claude Code 2.1.323 | Codex 0.165.0 |
+|---|---|---|---|
+| callback-separation | native hook callbacks travel on a channel apart from MCP requests, and model tools cannot forge them | unverified: hooks are command children of the program and MCP has its own servers, but no container run has tried to forge a callback from a tool | unverified: the same shape, not tried |
+| relay-protection | relay channel material is unreadable by model-run descendants | unverified: hook commands run as the same user as the Bash tool; a separate user or the program's sandbox has not been checked | unverified: hook commands run as the same user as the shell tool; Codex's sandbox has not been checked |
+| process-tracking | the host tracks every model-run descendant, background shells included, as one process group | unverified: no container run | unverified: no container run |
+| completion-fence | the host closes new action admission through completion and bumps the workspace generation before a changing tool | unverified: no host yet (task 258) | unverified: no host yet (task 258) |
+| stop-deadline | the Stop hook's deadline, `stop_hook_active` and the continuation cap | unverified: `stop_hook_active` is captured on Stop; the capture never blocked a stop or passed a timeout | unverified: `stop_hook_active` is captured on Stop; SessionEnd hooks run for 1 second unless they say more, 3 at most; the Stop deadline and cap are not measured |
+
+A row turns supported only with the commands, the redacted output and the program build of a container run recorded here.

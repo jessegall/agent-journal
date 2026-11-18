@@ -16,4 +16,5 @@ enum LaunchRefusalType: string
     case ProgramConflict = 'program-conflict';
     case ProgramUnsupported = 'program-unsupported';
     case AccountContainerUnsupported = 'account-container-unsupported';
+    case CapabilityUnsupported = 'capability-unsupported';
 }

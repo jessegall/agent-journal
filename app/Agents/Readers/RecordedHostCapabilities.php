@@ -8,6 +8,7 @@ use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Enums\AccountModeType;
 use App\Agents\Enums\CapabilityStatusType;
 use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Enums\HostCapabilityType;
 use App\Agents\Exceptions\CapabilityMatrixInvalid;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
@@ -15,8 +16,8 @@ use App\Programs\Enums\HookProgram;
 use JsonException;
 
 /**
- * Answers from the checked-in matrix docs/accounts/container-capabilities.json; a combination without a row is
- * unverified, so it never launches.
+ * Answers from the checked-in matrix docs/accounts/container-capabilities.json; a capability without a row is
+ * unverified, so nothing that needs it launches.
  */
 final readonly class RecordedHostCapabilities implements HostCapabilities
 {
@@ -60,6 +61,7 @@ final readonly class RecordedHostCapabilities implements HostCapabilities
         foreach ($matrix['rows'] as $number => $row) {
             $rows[] = new HostCapability(
                 new HostCapabilityQuery(
+                    HostCapabilityType::tryFrom($this->field($row, $number, 'capability')) ?? throw CapabilityMatrixInvalid::row($this->matrixPath, $number, 'capability'),
                     HookProgram::tryFrom($this->field($row, $number, 'program')) ?? throw CapabilityMatrixInvalid::row($this->matrixPath, $number, 'program'),
                     AccountModeType::tryFrom($this->field($row, $number, 'account_mode')) ?? throw CapabilityMatrixInvalid::row($this->matrixPath, $number, 'account_mode'),
                     ExecutionModeType::tryFrom($this->field($row, $number, 'execution_mode')) ?? throw CapabilityMatrixInvalid::row($this->matrixPath, $number, 'execution_mode'),

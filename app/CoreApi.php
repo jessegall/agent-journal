@@ -70,6 +70,7 @@ use App\Agents\Enums\DriverType;
 use App\Agents\Enums\ExecutionModeType;
 use App\Agents\Enums\ExpectedTiming;
 use App\Agents\Enums\HoldReason;
+use App\Agents\Enums\HostCapabilityType;
 use App\Agents\Enums\LaunchRefusalType;
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\ProgramSourceType;
@@ -85,6 +86,7 @@ use App\Agents\Exceptions\AgentRetirementDenied;
 use App\Agents\Exceptions\DefaultUnavailable;
 use App\Agents\Exceptions\ExecutionBudgetInvalid;
 use App\Agents\Exceptions\ExecutionPolicyInvalid;
+use App\Agents\Exceptions\HostCapabilityUnsupported;
 use App\Agents\Exceptions\ModelRequired;
 use App\Agents\Exceptions\ModelUnavailable;
 use App\Agents\Exceptions\ProgramConflict;
@@ -697,6 +699,7 @@ final class CoreApi
                 CapabilityStatusType::class,
                 ExecutionModeType::class,
                 AccountModeType::class,
+                HostCapabilityType::class,
                 SelectedProgram::class,
                 ModelSelection::class,
                 SelectionSource::class,
@@ -1082,6 +1085,7 @@ final class CoreApi
                 OperationUnavailable::class,
                 ResourceMimeTypeRefused::class,
                 AccountContainerUnsupported::class,
+                HostCapabilityUnsupported::class,
                 ModelRequired::class,
                 ModelUnavailable::class,
                 DefaultUnavailable::class,
