@@ -18,6 +18,8 @@ use Symfony\Component\HttpFoundation\Response;
  * Gives an MCP call its deadline from the signed issue time: at most 15 seconds from entry and never past 19 seconds
  * after the agent issued it, so every lock wait and statement of the call shares what is left. A call already past
  * its deadline is refused before anything runs. The request's deadline replaces the default only for this request.
+ * It reads the agent context when it handles the call, never when it is built: the kernel builds every route
+ * middleware again after the response, when the context is gone.
  */
 final readonly class SetCallDeadline
 {
@@ -27,15 +29,15 @@ final readonly class SetCallDeadline
 
     private const int SERVER_ERROR = -32000;
 
-    public function __construct(private Container $container, private AgentContext $agent) {}
+    public function __construct(private Container $container) {}
 
     /**
      * @param  Closure(Request): Response  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $now = CarbonImmutable::now();
-        $signedLeft = (int) $now->diffInMilliseconds($this->agent->call->issuedAt->addMilliseconds(self::SIGNED_MILLISECONDS), false);
+        $issuedAt = $this->container->make(AgentContext::class)->call->issuedAt;
+        $signedLeft = (int) CarbonImmutable::now()->diffInMilliseconds($issuedAt->addMilliseconds(self::SIGNED_MILLISECONDS), false);
         $deadline = new OperationDeadline(min(self::ENTRY_MILLISECONDS, $signedLeft));
 
         if ($deadline->hasRunOut()) {

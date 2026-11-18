@@ -15,12 +15,12 @@ final class RetireAgentCommand extends Command
 {
     use SendsSignedCalls;
 
-    protected $signature = 'agent:retire {agent : The id of the agent to retire} {--json}';
+    protected $signature = 'agent:retire {agent : The id of the agent to retire} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Retire an agent for good, releasing everything it held';
 
     public function handle(AgentRequestSender $journal): int
     {
-        return $this->sendAndPrint($journal, '/agent/agents/retire', ['agentId' => (string) $this->argument('agent')]);
+        return $this->sendWriteAndPrint($journal, '/agent/agents/retire', ['agentId' => (string) $this->argument('agent')]);
     }
 }

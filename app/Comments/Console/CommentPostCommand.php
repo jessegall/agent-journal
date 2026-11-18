@@ -18,7 +18,7 @@ final class CommentPostCommand extends Command
      */
     private const array PLACE_FLAGS = ['at-revision' => 'version', 'section' => 'section', 'quote' => 'quote', 'start-offset' => 'start_offset', 'end-offset' => 'end_offset'];
 
-    protected $signature = 'comment:post {target : Such as "doc 12"} {--body=} {--submission-key=} {--at-revision=} {--section=} {--lines=} {--quote=} {--start-offset=} {--end-offset=} {--json}';
+    protected $signature = 'comment:post {target : Such as "doc 12"} {--body=} {--submission-key=} {--at-revision=} {--section=} {--lines=} {--quote=} {--start-offset=} {--end-offset=} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Comment on a record: on the whole record, or on a section, lines or an exact quote of one revision';
 
@@ -30,7 +30,7 @@ final class CommentPostCommand extends Command
         $key = is_string($given) && $given !== '' ? $given : (string) Str::uuid();
         $this->line("Submission key: {$key} (reuse it with --submission-key to retry this comment)");
 
-        return $this->sendAndPrint($journal, '/agent/comments/post', [
+        return $this->sendWriteAndPrint($journal, '/agent/comments/post', [
             'target' => (string) $this->argument('target'),
             'body' => (string) $this->option('body'),
             'submission_key' => $key,

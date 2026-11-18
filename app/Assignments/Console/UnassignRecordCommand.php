@@ -19,7 +19,7 @@ final class UnassignRecordCommand extends Command
     use ReadsAssignmentArguments;
     use SendsSignedCalls;
 
-    protected $signature = 'assignment:unassign {type} {id} {--assignment= : The assignment row id it has now} {--holder= : Its holder now as type:id} {--json}';
+    protected $signature = 'assignment:unassign {type} {id} {--assignment= : The assignment row id it has now} {--holder= : Its holder now as type:id} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Release one record from the holder it has now';
 
@@ -33,6 +33,6 @@ final class UnassignRecordCommand extends Command
             return self::FAILURE;
         }
 
-        return $this->sendAndPrint($journal, '/agent/assignments/unassign', $body);
+        return $this->sendWriteAndPrint($journal, '/agent/assignments/unassign', $body);
     }
 }
