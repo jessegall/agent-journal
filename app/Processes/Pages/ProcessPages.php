@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Processes\Pages;
 
-use App\Http\Controllers\Processes\ApproveBundlePageController;
-use App\Http\Controllers\Processes\ApproveProposalPageController;
-use App\Http\Controllers\Processes\ApproveSamplePageController;
-use App\Http\Controllers\Processes\CleanRunPageController;
-use App\Http\Controllers\Processes\RejectProposalPageController;
-use App\Http\Controllers\Processes\StopRunPageController;
+use App\Processes\Http\Controllers\ApproveBundlePageController;
+use App\Processes\Http\Controllers\ApproveProposalPageController;
+use App\Processes\Http\Controllers\ApproveSamplePageController;
+use App\Processes\Http\Controllers\CleanRunPageController;
+use App\Processes\Http\Controllers\RejectProposalPageController;
+use App\Processes\Http\Controllers\StopRunPageController;
 use App\Processes\Readers\RequestListReader;
 use App\Processes\Readers\RequestWindowReader;
 use App\Processes\Readers\RunsWindowReader;

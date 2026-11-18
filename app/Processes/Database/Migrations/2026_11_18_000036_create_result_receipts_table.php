@@ -23,10 +23,14 @@ return new class extends Migration
             $table->string('manifest_digest', 64);
             $table->foreignUlid('output_assessment_id')->unique()->constrained('output_assessments')->cascadeOnDelete();
             $table->string('outcome', 16);
-            $table->foreignUlid('superseded_by_id')->nullable()->constrained('result_receipts')->nullOnDelete();
+            $table->ulid('superseded_by_id')->nullable();
             $table->timestampTz('published_at');
 
             $table->index(['project_key', 'part_run_id']);
+        });
+
+        Schema::table('result_receipts', function (Blueprint $table) {
+            $table->foreign('superseded_by_id')->references('id')->on('result_receipts')->nullOnDelete();
         });
     }
 
