@@ -37,6 +37,10 @@ type MenuFamily struct {
 	Keywords    []string
 	MinKeywords int
 	StableFor   time.Duration
+	// Hold is the reason the runtime holds while the menu shows, such as permission_required.
+	Hold string
+	// LaterKeys are the recorded keys that choose a menu's harmless Later; empty means nothing is answered.
+	LaterKeys string
 }
 
 // matches is whether the snapshot shows this family: its option list is drawn and enough keywords appear.
