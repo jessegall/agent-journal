@@ -30,6 +30,16 @@ final class ActorStore implements CurrentActor, CurrentActorSetter
         return $this->actor !== null;
     }
 
+    public function isSignedIn(): bool
+    {
+        return $this->actor !== null && $this->actor->type->isSignedIn();
+    }
+
+    public function isSystem(): bool
+    {
+        return $this->actor !== null && ! $this->actor->type->isSignedIn();
+    }
+
     public function set(Actor $actor): void
     {
         $this->actor = ActorContext::of($actor);

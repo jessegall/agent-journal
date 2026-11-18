@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Domain\Plans\Models;
 
 use App\Assignments\Contracts\Assignable;
-use App\Assignments\Support\RecordIdentity;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Records\Support\RecordIdentity;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;

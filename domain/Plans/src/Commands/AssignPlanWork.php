@@ -6,10 +6,10 @@ namespace Domain\Plans\Commands;
 
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Support\AssignmentResult;
-use App\Assignments\Support\RecordIdentity;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Contracts\Command;
+use App\Records\Support\RecordIdentity;
 use Domain\Plans\Handlers\AssignPlanWorkHandler;
 
 /**

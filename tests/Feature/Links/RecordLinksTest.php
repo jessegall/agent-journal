@@ -9,9 +9,6 @@ use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Support\AgentContext;
 use App\Agents\Support\StackTarget;
-use App\Assignments\Exceptions\InvalidAssignmentIdentity;
-use App\Assignments\Exceptions\RecordUnavailable;
-use App\Assignments\Support\RecordIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Communication\Models\Message;
 use App\Links\Exceptions\UnknownLinkType;
@@ -20,6 +17,9 @@ use App\Numbers\Support\RecordReference;
 use App\Records\Commands\LinkRecords;
 use App\Records\Commands\UnlinkRecords;
 use App\Records\Contracts\RecordReader;
+use App\Records\Exceptions\InvalidRecordIdentity;
+use App\Records\Exceptions\RecordUnavailable;
+use App\Records\Support\RecordIdentity;
 use App\Text\Exceptions\ContentTooLarge;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Commands\CreateDocument;
@@ -72,7 +72,7 @@ final class RecordLinksTest extends TestCase
             $this->records()->card(new RecordIdentity('fake.thing', (string) Str::ulid()));
             $this->fail('An unknown alias was read.');
         } catch (UnknownLinkType) {
-            $this->expectException(InvalidAssignmentIdentity::class);
+            $this->expectException(InvalidRecordIdentity::class);
         }
 
         new RecordIdentity('Domain\\Tasks\\Models\\Task', (string) Str::ulid());

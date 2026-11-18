@@ -7,8 +7,8 @@ namespace App\Assignments\Contracts;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Support\AssignmentSet;
 use App\Assignments\Support\Page;
-use App\Assignments\Support\RecordIdentity;
 use App\Assignments\Support\RecordIds;
+use App\Records\Support\RecordIdentity;
 
 /**
  * The current assignments the calling actor may see, read in bounded batches.

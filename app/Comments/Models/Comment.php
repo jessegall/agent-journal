@@ -6,7 +6,6 @@ namespace App\Comments\Models;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Assignments\Support\RecordIdentity;
 use App\Comments\Data\CommentDetails;
 use App\Comments\Enums\WholeRecord;
 use App\Comments\Exceptions\CommentAnchorCorrupt;
@@ -14,6 +13,7 @@ use App\Comments\Exceptions\CommentImmutable;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Records\Support\RecordIdentity;
 use App\Text\Exceptions\IncompleteTextAnchor;
 use App\Text\Support\MarkdownText;
 use App\Text\Values\TextAnchor;

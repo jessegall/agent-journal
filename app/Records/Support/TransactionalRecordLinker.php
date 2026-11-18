@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Records\Support;
 
-use App\Assignments\Support\RecordIdentity;
 use App\Bus\Contracts\CommandTransaction;
 use App\Links\Models\Link;
 use App\Records\Contracts\RecordLinker;
@@ -33,7 +32,7 @@ final readonly class TransactionalRecordLinker implements RecordLinker
     public function unlink(RecordIdentity $source, RecordIdentity $target): void
     {
         [$from, $to] = $this->lockedPair($source, $target);
-        Link::query()->between($from, $to)->delete();
+        Link::removeBetween($from, $to);
     }
 
     /**

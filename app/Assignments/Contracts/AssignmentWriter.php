@@ -9,11 +9,11 @@ use App\Assignments\Exceptions\AssigneeUnavailable;
 use App\Assignments\Exceptions\AssignmentConflict;
 use App\Assignments\Exceptions\AssignmentDenied;
 use App\Assignments\Exceptions\AssignmentRootFinished;
-use App\Assignments\Exceptions\RecordUnavailable;
 use App\Assignments\Support\AssignmentGroup;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Exceptions\RecordUnavailable;
+use App\Records\Support\RecordIdentity;
 use Closure;
 
 /**

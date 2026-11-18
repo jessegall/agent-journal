@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Links;
 
-use App\Assignments\Support\RecordIdentity;
 use App\Numbers\Support\RecordReference;
 use App\Records\Contracts\RecordReader;
+use App\Records\Support\RecordIdentity;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

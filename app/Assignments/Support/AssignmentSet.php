@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Assignments\Support;
 
+use App\Records\Support\RecordIdentity;
 use PhpOption\None;
 use PhpOption\Option;
 use PhpOption\Some;

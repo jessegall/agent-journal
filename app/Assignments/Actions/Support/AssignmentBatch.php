@@ -12,7 +12,7 @@ use App\Assignments\Support\AssignmentChange;
 use App\Assignments\Support\AssignmentGroup;
 use App\Assignments\Support\AssignmentOutcome;
 use App\Assignments\Support\AssignmentResult;
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Support\RecordIdentity;
 use Closure;
 
 /**

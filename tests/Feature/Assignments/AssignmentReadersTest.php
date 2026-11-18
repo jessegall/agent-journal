@@ -13,7 +13,7 @@ use App\Assignments\Contracts\AssignmentReader;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Assignments\Support\Page;
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Support\RecordIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;

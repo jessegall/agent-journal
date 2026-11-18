@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Comments\Readers;
 
 use App\Assignments\Support\Page;
-use App\Assignments\Support\RecordIdentity;
 use App\Comments\Contracts\Commentable;
 use App\Comments\Contracts\CommentReader;
 use App\Comments\Data\CommentList;
@@ -20,6 +19,7 @@ use App\Comments\Models\Comment;
 use App\Reads\Support\ReadBuilder;
 use App\Records\Contracts\RecordReader;
 use App\Records\Data\RecordCard;
+use App\Records\Support\RecordIdentity;
 use App\Text\Contracts\TextContent;
 use App\Text\Exceptions\TargetHasNoText;
 use App\Text\Support\MarkdownText;

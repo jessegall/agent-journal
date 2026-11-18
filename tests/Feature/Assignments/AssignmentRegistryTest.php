@@ -11,11 +11,11 @@ use App\Assignments\Exceptions\AssigneeTypeRepeated;
 use App\Assignments\Exceptions\AssignmentProviderInvalid;
 use App\Assignments\Exceptions\AssignmentTypeRepeated;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
-use App\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Assignments\Registry\AssignmentRegistry;
 use App\Assignments\Support\AssigneeRegistration;
 use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Support\LinkTypeRegistry;
+use App\Records\Exceptions\InvalidRecordIdentity;
 use Domain\Access\Models\User;
 use Domain\Plans\Models\Plan;
 use Tests\TestCase;
@@ -51,7 +51,7 @@ final class AssignmentRegistryTest extends TestCase
 
     public function test_a_type_that_is_no_alias_or_a_provider_of_the_wrong_type_is_refused(): void
     {
-        $this->assertThrows(fn () => $this->registry->registerRecord('Tasks', $this->createStub(AssignableProvider::class)::class), InvalidAssignmentIdentity::class);
+        $this->assertThrows(fn () => $this->registry->registerRecord('Tasks', $this->createStub(AssignableProvider::class)::class), InvalidRecordIdentity::class);
         // A module's descriptor is read at runtime, so a wrong class must be refused even though the types forbid it.
         $this->assertThrows(fn () => $this->registry->registerRecord('tests.record', self::class), AssignmentProviderInvalid::class); // @phpstan-ignore argument.type
         $this->assertThrows(fn () => $this->registry->registerAssignees(new AssigneeRegistration(ActorType::User, self::class)), AssignmentProviderInvalid::class); // @phpstan-ignore argument.type

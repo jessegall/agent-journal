@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Links\Models;
 
+use App\Links\Events\LinksRemoved;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Reads\Support\CountsPivotLoads;
+use App\Reads\Support\ReadBuilder;
+use Illuminate\Container\Container;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -63,9 +67,21 @@ final class Link extends MorphPivot implements ReadableModel
      */
     public static function forgetModels(array $models): void
     {
+        $removed = [];
+
         foreach ($models as $model) {
-            self::query()->where(fn (Builder $either) => $either->withSource($model)->orWhere(fn (Builder $target) => $target->withTarget($model)))->delete();
+            array_push($removed, ...self::removeAll(self::query()->touching($model)));
         }
+
+        self::announceRemoved($removed);
+    }
+
+    /**
+     * Removes the link between the two models, in either direction, and announces it.
+     */
+    public static function removeBetween(Model $first, Model $second): void
+    {
+        self::announceRemoved(self::removeAll(self::query()->between($first, $second)));
     }
 
     /**
@@ -92,7 +108,20 @@ final class Link extends MorphPivot implements ReadableModel
     #[Scope]
     protected function touching(Builder $query, Model $record): void
     {
-        $query->where(fn (Builder $either) => $either->withSource($record)->orWhere(fn (Builder $target) => $target->withTarget($record)));
+        $query->touchingKey($record->getMorphClass(), (string) $record->getKey());
+    }
+
+    /**
+     * Every link with the record of this link alias and id on either side.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function touchingKey(Builder $query, string $type, string $id): void
+    {
+        $query->where(fn (Builder $either) => $either
+            ->where(fn (Builder $source) => $source->where('source_type', $type)->where('source_id', $id))
+            ->orWhere(fn (Builder $target) => $target->where('target_type', $type)->where('target_id', $id)));
     }
 
     /**
@@ -102,9 +131,45 @@ final class Link extends MorphPivot implements ReadableModel
      */
     public function otherSideFrom(Model $record): array
     {
-        $isSource = $this->source_type === $record->getMorphClass() && $this->source_id === (string) $record->getKey();
+        return $this->otherSideFromKey($record->getMorphClass(), (string) $record->getKey());
+    }
+
+    /**
+     * The record on the other side of this link from the record of this link alias and id.
+     *
+     * @return array{string, string}
+     */
+    public function otherSideFromKey(string $type, string $id): array
+    {
+        $isSource = $this->source_type === $type && $this->source_id === $id;
 
         return $isSource ? [$this->target_type, $this->target_id] : [$this->source_type, $this->source_id];
+    }
+
+    /**
+     * Deletes the links of the query and returns their ids.
+     *
+     * @param  ReadBuilder<self>  $query
+     * @return list<string>
+     */
+    private static function removeAll(ReadBuilder $query): array
+    {
+        $ids = array_values(array_map(strval(...), $query->readAll('every removed link is announced by id')->pluck('id')->all()));
+        self::query()->whereKey($ids)->delete();
+
+        return $ids;
+    }
+
+    /**
+     * Raises LinksRemoved inside the running transaction, so what rested on the links ends with them.
+     *
+     * @param  list<string>  $ids
+     */
+    private static function announceRemoved(array $ids): void
+    {
+        if ($ids !== []) {
+            Container::getInstance()->make(Dispatcher::class)->dispatch(new LinksRemoved($ids));
+        }
     }
 
     /**

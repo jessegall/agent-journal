@@ -18,6 +18,7 @@ use App\Providers\CoreServiceProvider;
 use App\Reads\Providers\ReadsServiceProvider;
 use App\Records\Providers\RecordsServiceProvider;
 use App\Settings\Providers\SettingsServiceProvider;
+use App\Sharing\Providers\SharingServiceProvider;
 use App\Text\Providers\TextServiceProvider;
 use App\Web\Providers\TypeScriptServiceProvider;
 use App\Web\Providers\WebServiceProvider;
@@ -40,6 +41,7 @@ return [
     AgentsServiceProvider::class,
     AssignmentsServiceProvider::class,
     RecordsServiceProvider::class,
+    SharingServiceProvider::class,
     CommunicationServiceProvider::class,
     CommentsServiceProvider::class,
     TextServiceProvider::class,

@@ -68,7 +68,6 @@ use App\Assignments\Exceptions\AssignmentTypeRepeated;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
-use App\Assignments\Exceptions\RecordUnavailable;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\AssigneeList;
 use App\Assignments\Support\AssigneeName;
@@ -85,7 +84,6 @@ use App\Assignments\Support\AssignmentResult;
 use App\Assignments\Support\AssignmentSet;
 use App\Assignments\Support\NumberedPage;
 use App\Assignments\Support\Page;
-use App\Assignments\Support\RecordIdentity;
 use App\Assignments\Support\RecordIds;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
@@ -232,6 +230,7 @@ use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Hooks\States\AgentState;
 use App\Http\Data\Assignments\RecordHolderData;
 use App\Http\Requests\Web\Concerns\ReadsRouteNumber;
+use App\Links\Events\LinksRemoved;
 use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Support\Linkable;
 use App\Links\Support\LinkAccess;
@@ -273,6 +272,8 @@ use App\Records\Contracts\RecordLinker;
 use App\Records\Contracts\RecordProvider;
 use App\Records\Contracts\RecordReader;
 use App\Records\Data\RecordCard;
+use App\Records\Exceptions\InvalidRecordIdentity;
+use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\ProvidesModelRecords;
 use App\Settings\Commands\DisableSettingGroup;
 use App\Settings\Commands\EnableSettingGroup;
@@ -284,6 +285,7 @@ use App\Settings\Commands\SetIntegerChoice;
 use App\Settings\Commands\SetIntegerSetting;
 use App\Settings\Commands\SetStringChoice;
 use App\Settings\Commands\SetStringSetting;
+use App\Records\Support\RecordIdentity;
 use App\Settings\Contracts\ChoiceLabel;
 use App\Settings\Contracts\EnabledSettingsGroup;
 use App\Settings\Contracts\GroupDeclaration;
@@ -351,6 +353,34 @@ use App\Settings\Values\Decimal;
 use App\Settings\Values\GroupReference;
 use App\Settings\Values\SettingReference;
 use App\Settings\Values\SettingsChange;
+use App\Sharing\Contracts\ProvidesShareGateways;
+use App\Sharing\Contracts\ProvidesShareRecords;
+use App\Sharing\Contracts\Shareable;
+use App\Sharing\Contracts\ShareGateway;
+use App\Sharing\Contracts\SharePolicy;
+use App\Sharing\Contracts\ShareRecordProvider;
+use App\Sharing\Enums\ShareRelationType;
+use App\Sharing\Exceptions\SharingNotAllowed;
+use App\Sharing\Support\GatewayConfiguration;
+use App\Sharing\Support\GatewayEndpoint;
+use App\Sharing\Support\GatewayHealth;
+use App\Sharing\Support\GatewayOperation;
+use App\Sharing\Support\GatewayReadiness;
+use App\Sharing\Support\GatewaySettings;
+use App\Sharing\Support\ShareBudget;
+use App\Sharing\Support\ShareCandidates;
+use App\Sharing\Support\ShareContentRead;
+use App\Sharing\Support\SharedContent;
+use App\Sharing\Support\ShareLinkedCandidate;
+use App\Sharing\Support\ShareRecordCard;
+use App\Sharing\Support\ShareRecordRegistration;
+use App\Sharing\Support\ShareRecords;
+use App\Sharing\Support\ShareRelation;
+use App\Sharing\Support\ShareRelationRead;
+use App\Sharing\Support\ShareRelationSet;
+use App\Sharing\Support\ShareSelectedTarget;
+use App\Sharing\Support\ShareSelection;
+use App\Sharing\Support\ShareTargetRead;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextReader;
 use App\Text\Data\TextSections;
@@ -415,7 +445,7 @@ final class CoreApi
     public static function exports(): Exports
     {
         return Exports::make()
-            ->events(CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, EngineTicked::class, SettingsChanged::class)
+            ->events(LinksRemoved::class, CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, EngineTicked::class, SettingsChanged::class)
             ->contracts(
                 RecordProvider::class,
                 RecordReader::class,
@@ -499,6 +529,12 @@ final class CoreApi
                 EnabledSettingsGroup::class,
                 SettingsCatalogue::class,
                 SettingsAccessPolicy::class,
+                Shareable::class,
+                ShareRecordProvider::class,
+                ShareGateway::class,
+                ProvidesShareRecords::class,
+                ProvidesShareGateways::class,
+                SharePolicy::class,
             )
             ->values(
                 RecordCard::class,
@@ -664,6 +700,27 @@ final class CoreApi
                 GroupReference::class,
                 SettingsChange::class,
                 DisabledSettingsGroup::class,
+                ShareRelationSet::class,
+                ShareRelation::class,
+                ShareRecordRegistration::class,
+                ShareSelection::class,
+                ShareBudget::class,
+                ShareCandidates::class,
+                ShareLinkedCandidate::class,
+                ShareRecordCard::class,
+                ShareRecords::class,
+                ShareTargetRead::class,
+                ShareRelationRead::class,
+                ShareContentRead::class,
+                SharedContent::class,
+                ShareSelectedTarget::class,
+                GatewayConfiguration::class,
+                GatewaySettings::class,
+                GatewayOperation::class,
+                GatewayEndpoint::class,
+                GatewayReadiness::class,
+                GatewayHealth::class,
+                ShareRelationType::class,
             )
             ->commands(
                 PostComment::class,
@@ -754,6 +811,8 @@ final class CoreApi
                 StackLockTimedOut::class,
                 StackTransactionRequired::class,
                 InvalidAssignmentIdentity::class,
+                InvalidRecordIdentity::class,
+                SharingNotAllowed::class,
                 InvalidAssignmentPage::class,
                 AssignmentGroupTooLarge::class,
                 AssigneeUnavailable::class,

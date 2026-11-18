@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Assignments\Support;
 
 use App\Actors\Support\ActorIdentity;
+use App\Records\Support\RecordIdentity;
 
 /**
  * The one current holder of a record, with the reference a later change must name.

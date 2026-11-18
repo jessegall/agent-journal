@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Assignments\Support;
+namespace App\Records\Support;
 
 use App\Actors\Support\Concerns\ComparesTypeAndId;
-use App\Assignments\Exceptions\InvalidAssignmentIdentity;
+use App\Records\Exceptions\InvalidRecordIdentity;
 use Illuminate\Support\Str;
 
 /**
@@ -19,7 +19,7 @@ final readonly class RecordIdentity
     private const string ALIAS_PATTERN = '/^[a-z][a-z0-9_-]*\.[a-z][a-z0-9_-]*$/';
 
     /**
-     * @throws InvalidAssignmentIdentity
+     * @throws InvalidRecordIdentity
      */
     public function __construct(
         public string $type,
@@ -28,17 +28,17 @@ final readonly class RecordIdentity
         self::checkType($type);
 
         if (! Str::isUlid($id)) {
-            throw InvalidAssignmentIdentity::forId($type, $id);
+            throw InvalidRecordIdentity::forId($type, $id);
         }
     }
 
     /**
-     * @throws InvalidAssignmentIdentity
+     * @throws InvalidRecordIdentity
      */
     public static function checkType(string $type): void
     {
         if (preg_match(self::ALIAS_PATTERN, $type) !== 1) {
-            throw InvalidAssignmentIdentity::forType($type);
+            throw InvalidRecordIdentity::forType($type);
         }
     }
 }

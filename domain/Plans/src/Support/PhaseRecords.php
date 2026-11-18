@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Domain\Plans\Support;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Assignments\Exceptions\RecordUnavailable;
-use App\Assignments\Support\RecordIdentity;
 use App\Reads\Support\ReadBuilder;
 use App\Records\Contracts\RecordProvider;
 use App\Records\Data\RecordCard;
+use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\ProvidesModelRecords;
+use App\Records\Support\RecordIdentity;
 use Domain\Plans\Models\Phase;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Database\Eloquent\Model;

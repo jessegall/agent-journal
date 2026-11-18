@@ -14,6 +14,14 @@ use App\Hooks\Models\HookCall;
 use App\Links\Models\Link;
 use App\Links\Support\LinkTypeRegistry;
 use App\Settings\Models\SettingsRecord;
+use App\Sharing\Models\Share;
+use App\Sharing\Models\ShareAudit;
+use App\Sharing\Models\ShareGatewayConfiguration;
+use App\Sharing\Models\ShareGatewayEndpoint;
+use App\Sharing\Models\ShareGatewayOperation;
+use App\Sharing\Models\ShareInstallation;
+use App\Sharing\Models\ShareMember;
+use App\Sharing\Models\SharePreview;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -22,7 +30,7 @@ use Illuminate\Support\ServiceProvider;
  */
 final class CoreServiceProvider extends ServiceProvider
 {
-    private const array AREAS = ['Actors', 'Agents', 'Assignments', 'Comments', 'Communication', 'Engine', 'Hooks', 'Links', 'Numbers', 'Settings', 'Web'];
+    private const array AREAS = ['Actors', 'Agents', 'Assignments', 'Comments', 'Communication', 'Engine', 'Hooks', 'Links', 'Numbers', 'Settings', 'Sharing', 'Web'];
 
     public function boot(LinkTypeRegistry $links): void
     {
@@ -36,6 +44,14 @@ final class CoreServiceProvider extends ServiceProvider
             'core.link' => Link::class,
             'core.comment' => Comment::class,
             'core.settings-record' => SettingsRecord::class,
+            Share::LINK_TYPE => Share::class,
+            ShareAudit::LINK_TYPE => ShareAudit::class,
+            ShareGatewayConfiguration::LINK_TYPE => ShareGatewayConfiguration::class,
+            ShareGatewayEndpoint::LINK_TYPE => ShareGatewayEndpoint::class,
+            ShareGatewayOperation::LINK_TYPE => ShareGatewayOperation::class,
+            ShareInstallation::LINK_TYPE => ShareInstallation::class,
+            ShareMember::LINK_TYPE => ShareMember::class,
+            SharePreview::LINK_TYPE => SharePreview::class,
         ]);
 
         foreach (self::AREAS as $area) {

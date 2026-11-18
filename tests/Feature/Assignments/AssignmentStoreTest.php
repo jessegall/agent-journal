@@ -11,7 +11,7 @@ use App\Assignments\Exceptions\AssignmentRetryExhausted;
 use App\Assignments\Exceptions\AssignmentTransactionRequired;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Storage\AssignmentStore;
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Support\RecordIdentity;
 use Exception;
 use Illuminate\Database\Connection;
 use Illuminate\Database\QueryException;

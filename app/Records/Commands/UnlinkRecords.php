@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Records\Commands;
 
-use App\Assignments\Support\RecordIdentity;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
 use App\Records\Handlers\UnlinkRecordsHandler;
+use App\Records\Support\RecordIdentity;
 
 /**
  * Removes the link between two records in both directions and keeps both records; unlinking again changes nothing.

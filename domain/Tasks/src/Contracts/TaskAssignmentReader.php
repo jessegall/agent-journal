@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Contracts;
 
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Support\RecordIdentity;
 use Domain\Tasks\Api\TaskAssignmentCompletion;
 use Domain\Tasks\Exceptions\TaskMissing;
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Assignments\Support;
 
 use App\Assignments\Enums\AssignmentOutcomeType;
+use App\Records\Support\RecordIdentity;
 
 /**
  * What a command did to one record it was asked about, with the record's assignment afterwards.

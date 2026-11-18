@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks;
 
 use App\Agents\Support\StackTarget;
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Support\RecordIdentity;
 use App\Hooks\Exceptions\TooManyTickCommands;
 use App\Hooks\States\AgentState;
 use App\Hooks\States\Support\StateTypeRegistry;

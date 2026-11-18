@@ -43,6 +43,7 @@ use Tests\Fixtures\Modules\Notes\Commands\IgnoreFailedNote;
 use Tests\Fixtures\Modules\Notes\Commands\OpenTransactionNote;
 use Tests\Fixtures\Modules\Notes\Commands\PinNote;
 use Tests\Fixtures\Modules\Notes\Commands\RefuseNote;
+use Tests\Fixtures\Modules\Notes\Commands\SystemNote;
 use Tests\Fixtures\Modules\Notes\Commands\UserNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
 use Tests\Fixtures\Modules\Notes\Contracts\NoteReader;
@@ -130,7 +131,7 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
 
     public function commands(): array
     {
-        return [WriteNote::class, PinNote::class, CopyNote::class, RefuseNote::class, IgnoreFailedNote::class, OpenTransactionNote::class, UserNote::class, ClearNotes::class, EngineNote::class, EngineCopyNote::class];
+        return [WriteNote::class, PinNote::class, CopyNote::class, RefuseNote::class, IgnoreFailedNote::class, OpenTransactionNote::class, UserNote::class, SystemNote::class, ClearNotes::class, EngineNote::class, EngineCopyNote::class];
     }
 
     public function commandMiddleware(): array

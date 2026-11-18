@@ -22,7 +22,7 @@ trait Linkable
 
     public function unlinkFrom(Model $other): void
     {
-        Link::query()->between($this, $other)->delete();
+        Link::removeBetween($this, $other);
     }
 
     public function isLinkedTo(Model $other): bool

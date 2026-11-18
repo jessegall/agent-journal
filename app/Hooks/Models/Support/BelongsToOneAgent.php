@@ -20,7 +20,10 @@ trait BelongsToOneAgent
 {
     public static function bootBelongsToOneAgent(): void
     {
-        static::addGlobalScope(new AgentScope(static fn (): AgentContext => Container::getInstance()->make(AgentContext::class)));
+        static::addGlobalScope(new AgentScope(
+            static fn (): CurrentActor => Container::getInstance()->make(CurrentActor::class),
+            static fn (): AgentContext => Container::getInstance()->make(AgentContext::class),
+        ));
     }
 
     /**
@@ -59,7 +62,7 @@ trait BelongsToOneAgent
     {
         $actors = Container::getInstance()->make(CurrentActor::class);
 
-        if ($actors->hasActor() && $actors->actor()->isUser()) {
+        if ($actors->isSignedIn() && $actors->actor()->isUser()) {
             $query->visibleToUser();
         }
     }

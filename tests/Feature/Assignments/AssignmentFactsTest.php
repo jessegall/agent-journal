@@ -11,7 +11,7 @@ use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Events\AssignmentsChanged;
 use App\Assignments\Models\AssignmentRecord;
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Support\RecordIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;

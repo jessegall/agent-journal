@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Text\Contracts;
 
-use App\Assignments\Support\RecordIdentity;
 use App\Reads\Values\PageSize;
+use App\Records\Support\RecordIdentity;
 use App\Text\Data\TextSections;
 use App\Text\Data\TextVersionInfo;
 use App\Text\Readers\TextRecords;

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Actors\Exceptions\ActorContextMissing;
-use App\Assignments\Exceptions\RecordUnavailable;
 use App\Assignments\Registry\AssignmentRegistry;
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Exceptions\RecordUnavailable;
+use App\Records\Support\RecordIdentity;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;

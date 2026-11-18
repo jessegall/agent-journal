@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Text\Readers;
 
-use App\Assignments\Support\RecordIdentity;
 use App\Reads\Values\PageSize;
 use App\Records\Contracts\RecordReader;
+use App\Records\Support\RecordIdentity;
 use App\Text\Contracts\TextContent;
 use App\Text\Contracts\TextReader;
 use App\Text\Data\TextSections;

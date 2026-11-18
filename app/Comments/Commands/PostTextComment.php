@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Comments\Commands;
 
-use App\Assignments\Support\RecordIdentity;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
 use App\Comments\Handlers\PostTextCommentHandler;
+use App\Records\Support\RecordIdentity;
 use App\Text\Values\TextRange;
 
 /**

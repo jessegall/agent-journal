@@ -21,4 +21,14 @@ interface CurrentActor
     public function actor(): ActorContext;
 
     public function hasActor(): bool;
+
+    /**
+     * Whether a signed-in user or agent acts, the only actors ordinary content scopes admit.
+     */
+    public function isSignedIn(): bool;
+
+    /**
+     * Whether the journal's own system principal acts, which sees no row through an ordinary content scope.
+     */
+    public function isSystem(): bool;
 }

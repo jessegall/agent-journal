@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Domain\Documents\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Assignments\Support\RecordIdentity;
 use App\Contracts\CommandHandler;
 use App\Records\Contracts\RecordLinker;
+use App\Records\Support\RecordIdentity;
 use App\Text\Support\MarkdownText;
 use Domain\Documents\Api\CreatedRecord;
 use Domain\Documents\Api\Events\ReportFiled;

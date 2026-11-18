@@ -7,8 +7,8 @@ namespace Domain\Plans\Http\Data;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Support\AssignmentHolders;
 use App\Assignments\Support\AssignmentResult;
-use App\Assignments\Support\RecordIdentity;
 use App\Http\Data\Assignments\RecordHolderData;
+use App\Records\Support\RecordIdentity;
 use Spatie\LaravelData\Data;
 
 /**

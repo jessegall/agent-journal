@@ -1,0 +1,95 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature\Sharing;
+
+use App\Domains\Support\DomainEntry;
+use App\Records\Exceptions\InvalidRecordIdentity;
+use App\Sharing\Enums\ShareRelationType;
+use App\Sharing\Exceptions\ShareGatewayInvalid;
+use App\Sharing\Exceptions\ShareRecordInvalid;
+use App\Sharing\Exceptions\ShareRelationInvalid;
+use App\Sharing\Exceptions\UnknownShareGateway;
+use App\Sharing\Exceptions\UnknownShareRecordType;
+use App\Sharing\Exceptions\UnknownShareRelation;
+use App\Sharing\Support\ShareGatewayRegistry;
+use App\Sharing\Support\ShareRecordRegistration;
+use App\Sharing\Support\ShareRecordRegistry;
+use Tests\Fixtures\Domains\Flyers\FlyersDomain;
+use Tests\Fixtures\Domains\Leaflets\LeafletsDomain;
+use Tests\Fixtures\Domains\Pamphlets\Pamphlet;
+use Tests\Fixtures\Domains\Pamphlets\PamphletsDomain;
+use Tests\Fixtures\Domains\Pamphlets\PamphletShareProvider;
+use Tests\Fixtures\Domains\Pamphlets\PressGateway;
+use Tests\TestCase;
+
+/**
+ * The share registries: domains register shareable record types and gateways when they boot, each alias and key once
+ * with a class of the right interface; relations are read and checked once, and an unknown alias, relation or gateway
+ * is a named refusal.
+ */
+final class ShareRegistriesTest extends TestCase
+{
+    public function test_a_booted_domain_resolves_its_alias_to_model_provider_and_relation(): void
+    {
+        DomainEntry::fromClass(PamphletsDomain::class)->boot($this->app);
+        $records = $this->app->make(ShareRecordRegistry::class);
+        $records->checkRelations();
+
+        $this->assertSame(Pamphlet::class, $records->get('pamphlets.pamphlet')->modelClass);
+        $this->assertInstanceOf(PamphletShareProvider::class, $records->provider('pamphlets.pamphlet'));
+        $this->assertSame(ShareRelationType::Owned, $records->relation('pamphlets.pamphlet', 'notes')->type);
+        $this->assertInstanceOf(PressGateway::class, $this->app->make(ShareGatewayRegistry::class)->get('press'));
+    }
+
+    public function test_a_second_domain_registering_the_same_alias_stops_its_boot(): void
+    {
+        DomainEntry::fromClass(PamphletsDomain::class)->boot($this->app);
+
+        $this->expectExceptionObject(ShareRecordInvalid::repeated('pamphlets.pamphlet'));
+
+        DomainEntry::fromClass(LeafletsDomain::class)->boot($this->app);
+    }
+
+    public function test_a_relation_needing_a_capability_no_record_advertises_is_refused(): void
+    {
+        DomainEntry::fromClass(FlyersDomain::class)->boot($this->app);
+
+        $this->expectExceptionObject(ShareRelationInvalid::unknownCapability('flyers.flyer', 'records', 'share-nothing-advertises'));
+
+        $this->app->make(ShareRecordRegistry::class)->checkRelations();
+    }
+
+    public function test_a_model_or_provider_of_the_wrong_interface_and_a_bad_alias_are_refused(): void
+    {
+        $records = $this->app->make(ShareRecordRegistry::class);
+
+        $this->assertThrows(fn () => $records->register(new ShareRecordRegistration('tests.thing', PamphletShareProvider::class, PamphletShareProvider::class, [])), ShareRecordInvalid::class, 'does not implement Shareable');
+        $this->assertThrows(fn () => $records->register(new ShareRecordRegistration('tests.thing', Pamphlet::class, Pamphlet::class, [])), ShareRecordInvalid::class, 'is no share record provider');
+        $this->assertThrows(fn () => $records->register(new ShareRecordRegistration('Tests\\Thing', Pamphlet::class, PamphletShareProvider::class, [])), InvalidRecordIdentity::class);
+    }
+
+    public function test_an_unknown_alias_or_relation_is_a_named_refusal(): void
+    {
+        DomainEntry::fromClass(PamphletsDomain::class)->boot($this->app);
+        $records = $this->app->make(ShareRecordRegistry::class);
+        $records->checkRelations();
+
+        $this->assertFalse($records->has('Tests\\Fixtures\\Domains\\Pamphlets\\Pamphlet'));
+        $this->assertThrows(fn () => $records->get('Tests\\Fixtures\\Domains\\Pamphlets\\Pamphlet'), UnknownShareRecordType::class);
+        $this->assertThrows(fn () => $records->relation('pamphlets.pamphlet', 'shareRelations'), UnknownShareRelation::class);
+        $this->assertThrows(fn () => $records->relation('pamphlets.note', 'notes'), UnknownShareRelation::class);
+    }
+
+    public function test_a_gateway_key_is_registered_once_with_a_gateway_class(): void
+    {
+        $gateways = $this->app->make(ShareGatewayRegistry::class);
+        $gateways->register('press', PressGateway::class);
+
+        $this->assertSame(['press'], $gateways->keys());
+        $this->assertThrows(fn () => $gateways->register('press', PressGateway::class), ShareGatewayInvalid::class, 'already registered');
+        $this->assertThrows(fn () => $gateways->register('pamphlet', Pamphlet::class), ShareGatewayInvalid::class, 'is no share gateway');
+        $this->assertThrows(fn () => $gateways->get('ngrok'), UnknownShareGateway::class);
+    }
+}

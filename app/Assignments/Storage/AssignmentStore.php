@@ -12,7 +12,7 @@ use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentChange;
 use App\Assignments\Support\AssignmentOutcome;
 use App\Assignments\Support\AssignmentResult;
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Support\RecordIdentity;
 use Illuminate\Database\ConnectionInterface;
 use PhpOption\None;
 use PhpOption\Option;

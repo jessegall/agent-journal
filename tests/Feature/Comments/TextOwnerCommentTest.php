@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Comments;
 
 use App\Assignments\Support\Page;
-use App\Assignments\Support\RecordIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
@@ -15,6 +14,7 @@ use App\Comments\Data\TextCommentView;
 use App\Comments\Exceptions\TargetNotCommentable;
 use App\Comments\Models\Comment;
 use App\Reads\Values\PageSize;
+use App\Records\Support\RecordIdentity;
 use App\Text\Contracts\TextReader;
 use App\Text\Support\TextSelection;
 use App\Text\Values\TextRange;

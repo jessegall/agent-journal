@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Comments\Readers;
 
-use App\Assignments\Exceptions\RecordUnavailable;
-use App\Assignments\Support\RecordIdentity;
 use App\Comments\Models\Comment;
 use App\Records\Contracts\RecordProvider;
 use App\Records\Contracts\RecordReader;
 use App\Records\Data\RecordCard;
+use App\Records\Exceptions\RecordUnavailable;
+use App\Records\Support\RecordIdentity;
 use Illuminate\Container\Attributes\Scoped;
 use Illuminate\Support\Str;
 

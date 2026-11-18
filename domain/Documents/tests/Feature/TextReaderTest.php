@@ -6,11 +6,11 @@ namespace Domain\Documents\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Assignments\Support\RecordIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Numbers\Support\RecordReference;
 use App\Reads\Values\PageSize;
 use App\Records\Contracts\RecordReader;
+use App\Records\Support\RecordIdentity;
 use App\Text\Contracts\TextReader;
 use App\Text\Exceptions\TextLineTooLong;
 use App\Text\Exceptions\TextSelectionRefused;

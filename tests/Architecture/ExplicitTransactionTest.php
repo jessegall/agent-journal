@@ -20,7 +20,7 @@ final class ExplicitTransactionTest extends TestCase
     /**
      * The folders judged: the test modules now; each later phase adds the owner it moves.
      */
-    public const array CHECKED = ['app/Agents/Handlers', 'app/Assignments/Handlers', 'app/Bus', 'app/Records/Handlers', 'domain/Access/src', 'domain/Chat/src', 'domain/Documents/src', 'domain/Memory/src', 'domain/Plans/src', 'domain/Processes/src', 'domain/Profiles/src', 'domain/Reminders/src', 'domain/Rules/src', 'domain/Sequences/src', 'domain/Tasks/src', 'tests/Fixtures/Modules'];
+    public const array CHECKED = ['app/Agents/Handlers', 'app/Assignments/Handlers', 'app/Bus', 'app/Records', 'app/Sharing', 'domain/Access/src', 'domain/Chat/src', 'domain/Documents/src', 'domain/Memory/src', 'domain/Plans/src', 'domain/Processes/src', 'domain/Profiles/src', 'domain/Reminders/src', 'domain/Rules/src', 'domain/Sequences/src', 'domain/Tasks/src', 'tests/Fixtures/Modules'];
 
     private const array TRANSACTION_CALLS = ['transaction', 'beginTransaction', 'commit', 'rollBack'];
 

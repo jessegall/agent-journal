@@ -560,6 +560,7 @@ class	InvalidListener
 class	InvalidNavigationDeclaration
 class	InvalidObservationAnswer
 class	InvalidPageDeclaration
+class	InvalidRecordIdentity
 class	InvalidRecordReference
 class	InvalidSectionDeclaration
 class	InvalidShellAnswer
@@ -2556,9 +2557,7 @@ method	InterfacePlacement::misplacedIn()
 method	InterfacesDeclared::findingsIn()
 method	InterfacesDeclared::key()
 method	InvalidActorText::for()
-method	InvalidAssignmentIdentity::forId()
 method	InvalidAssignmentIdentity::forReference()
-method	InvalidAssignmentIdentity::forType()
 method	InvalidAssignmentIdentity::status()
 method	InvalidAssignmentPage::forCursor()
 method	InvalidAssignmentPage::forLimit()
@@ -2595,6 +2594,9 @@ method	InvalidPageDeclaration::optionWithoutChoices()
 method	InvalidPageDeclaration::readerReturnsNoData()
 method	InvalidPageDeclaration::recordSlotWithoutParameter()
 method	InvalidPageDeclaration::unknownChoice()
+method	InvalidRecordIdentity::forId()
+method	InvalidRecordIdentity::forType()
+method	InvalidRecordIdentity::status()
 method	InvalidRecordReference::number()
 method	InvalidRecordReference::unreadable()
 method	InvalidSectionDeclaration::readerReturnsNoData()

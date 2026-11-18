@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Records\Contracts;
 
-use App\Assignments\Exceptions\RecordUnavailable;
-use App\Assignments\Support\RecordIdentity;
 use App\Bus\Exceptions\CommandTransactionMissing;
 use App\Links\Exceptions\UnknownLinkType;
+use App\Records\Exceptions\RecordUnavailable;
+use App\Records\Support\RecordIdentity;
 use App\Records\Support\TransactionalRecordLinker;
 use Illuminate\Container\Attributes\Bind;
 use Illuminate\Database\Eloquent\Model;

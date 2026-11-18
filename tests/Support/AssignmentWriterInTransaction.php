@@ -10,7 +10,7 @@ use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Support\RecordIdentity;
 use Closure;
 
 /**

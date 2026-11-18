@@ -7,10 +7,10 @@ namespace App\Assignments\Commands;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Handlers\AssignRecordHandler;
 use App\Assignments\Support\AssignmentResult;
-use App\Assignments\Support\RecordIdentity;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Attributes\RepeatableRead;
 use App\Bus\Contracts\Command;
+use App\Records\Support\RecordIdentity;
 
 /**
  * Gives one record to a holder, in one repeatable-read transaction.

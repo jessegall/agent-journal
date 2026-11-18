@@ -7,7 +7,7 @@ namespace Domain\Plans\Http\Requests\Concerns;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Support\AssignmentReference;
-use App\Assignments\Support\RecordIdentity;
+use App\Records\Support\RecordIdentity;
 use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Illuminate\Validation\Rule;

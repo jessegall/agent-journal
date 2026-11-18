@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Actors\Contracts\CurrentActor;
+use App\Actors\Support\ActorStore;
 use App\Agents\Exceptions\AgentContextMissing;
+use App\Agents\Support\AgentContext;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\AnswerType;
@@ -12,6 +15,7 @@ use App\Hooks\Enums\NoSubject;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\HookCall;
+use App\Hooks\Models\Support\AgentScope;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
@@ -82,6 +86,28 @@ final class HookScopeTest extends TestCase
 
         $this->assertSame([[TestIds::of(1), TestIds::of(10)]], $this->visibleStacks());
         $this->assertSame([[TestIds::of(1), TestIds::of(10)]], $this->visibleCalls());
+    }
+
+    public function test_the_system_acting_sees_no_agent_rows_and_the_agent_still_sees_its_own(): void
+    {
+        $this->startRequestAs(TestIds::of(1), TestIds::of(10));
+        $store = $this->app->make(ActorStore::class);
+
+        $this->assertSame([[], []], $store->actAsSystem(fn () => [$this->visibleStacks(), $this->visibleCalls()]));
+        $this->assertSame([[TestIds::of(1), TestIds::of(10)]], $this->visibleStacks());
+    }
+
+    public function test_the_agent_scope_matches_nothing_while_the_system_acts(): void
+    {
+        $this->startRequestAs(TestIds::of(1), TestIds::of(10));
+        $store = $this->app->make(ActorStore::class);
+        $scope = new AgentScope(fn (): CurrentActor => $store, fn (): AgentContext => $this->app->make(AgentContext::class));
+
+        $query = AgentStackRow::query()->withoutGlobalScopes();
+        $store->actAsSystem(fn () => $scope->apply($query, new AgentStackRow));
+
+        $this->assertSame(0, $query->count());
+        $this->assertStringNotContainsString('agent_id', $query->toSql());
     }
 
     public function test_the_locking_query_is_limited_and_names_its_table(): void

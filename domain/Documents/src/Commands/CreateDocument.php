@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Commands;
 
-use App\Assignments\Support\RecordIdentity;
 use App\Bus\Attributes\HandledBy;
 use App\Bus\Contracts\Command;
+use App\Records\Support\RecordIdentity;
 use Domain\Documents\Api\CreatedRecord;
 use Domain\Documents\Handlers\CreateDocumentHandler;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Exceptions;
 
-use App\Assignments\Exceptions\Concerns\RendersRefusal;
+use App\Bus\Exceptions\Concerns\RendersRefusal;
 use RuntimeException;
 
 final class AgentNotAvailable extends RuntimeException

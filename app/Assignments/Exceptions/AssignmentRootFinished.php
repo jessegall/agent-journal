@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Assignments\Exceptions;
 
-use App\Assignments\Exceptions\Concerns\RendersRefusal;
-use App\Assignments\Support\RecordIdentity;
+use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
+use App\Records\Support\RecordIdentity;
 use RuntimeException;
 
 final class AssignmentRootFinished extends RuntimeException implements CommandRefusal
