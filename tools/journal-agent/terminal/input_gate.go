@@ -163,9 +163,39 @@ func (gate *InputGate) Choose(choice DraftChoice, clearKeys string) (string, err
 	}
 }
 
-// echoes is whether the composer shows the text, as the program draws it, spaces made plain.
+// Echoes is whether the composer shows the text, as the program draws it, spaces made plain.
+func (gate *InputGate) Echoes(text string) bool {
+	gate.mutex.Lock()
+	defer gate.mutex.Unlock()
+
+	return gate.echoes(text)
+}
+
+// echoes is whether the composer shows the text: every typed character at its place after the marker. A program may
+// draw a typed space by moving the cursor, leaving an earlier placeholder's letter in that cell, so spaces are not
+// compared.
 func (gate *InputGate) echoes(text string) bool {
-	return strings.Contains(gate.composerText(), strings.TrimSpace(text))
+	drawn := []rune(gate.composerText())
+	typed := []rune(strings.TrimSpace(text))
+
+	for start := 0; start+len(typed) <= len(drawn); start++ {
+		if matchesIgnoringSpaces(drawn[start:start+len(typed)], typed) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// matchesIgnoringSpaces is whether every typed character that is not a space is drawn in the same place.
+func matchesIgnoringSpaces(drawn, typed []rune) bool {
+	for index, character := range typed {
+		if character != ' ' && drawn[index] != character {
+			return false
+		}
+	}
+
+	return true
 }
 
 // composerText is the text in the composer after its marker, or nothing while the composer is not drawn.

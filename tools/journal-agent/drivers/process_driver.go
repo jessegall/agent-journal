@@ -232,3 +232,15 @@ func RegisterProcessDriver(factory *host.RuntimeFactory, runtimeOf func(grant ho
 		return NewProcessDriver(runtime, generation), nil
 	})
 }
+
+// RunKeyScript is refused: a runtime run one child per turn has no terminal to type a script into.
+func (driver *ProcessDriver) RunKeyScript(
+	_ context.Context,
+	request contracts.KeyScriptRequest,
+) (contracts.OperationResult, error) {
+	return contracts.OperationResult{
+		Request:  request.Request,
+		Progress: contracts.ProgressUnavailable,
+		Outcome:  contracts.OutcomeTerminalRequired,
+	}, nil
+}
