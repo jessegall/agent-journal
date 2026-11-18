@@ -12,6 +12,7 @@ use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Domain\Memory\Exceptions\MemoryInvalid;
+use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Exceptions\MemoryUnavailable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -29,10 +30,11 @@ use Illuminate\Support\Carbon;
  * @property string $actor_id
  * @property string $text
  * @property int $weight
+ * @property int $revision
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['text', 'weight'])]
+#[Fillable(['text', 'weight', 'revision'])]
 final class Memory extends Model implements Numbered, ReadableModel
 {
     use BelongsToOneActor, HasNumber, HasUlids;
@@ -48,7 +50,7 @@ final class Memory extends Model implements Numbered, ReadableModel
      */
     protected function casts(): array
     {
-        return ['weight' => 'integer'];
+        return ['weight' => 'integer', 'revision' => 'integer'];
     }
 
     /**
@@ -61,6 +63,7 @@ final class Memory extends Model implements Numbered, ReadableModel
         $memory = new self();
         $memory->text = self::checkedText($text);
         $memory->weight = self::checkedWeight($weight);
+        $memory->revision = 1;
         $memory->saveFor($owner);
 
         return $memory;
@@ -76,6 +79,16 @@ final class Memory extends Model implements Numbered, ReadableModel
         return self::query()->whereKey($memoryId)->lockForUpdate()->first() ?? throw MemoryUnavailable::forId($memoryId);
     }
 
+    /**
+     * @throws MemoryRevisionChanged
+     */
+    public function requireRevision(int $expectedRevision): void
+    {
+        if ($this->revision !== $expectedRevision) {
+            throw MemoryRevisionChanged::for($this->id, $expectedRevision, $this->revision);
+        }
+    }
+
     public function saveFor(ActorIdentity $actor): void
     {
         $this->belongTo($actor);
@@ -83,20 +96,19 @@ final class Memory extends Model implements Numbered, ReadableModel
     }
 
     /**
+     * Rewrites the text, the weight or both as one change, one revision later.
+     *
      * @throws MemoryInvalid
      */
-    public function rewrite(string $text): void
+    public function revise(string|null $text, int|null $weight): void
     {
-        $this->text = self::checkedText($text);
-        $this->save();
-    }
+        if ($text === null && $weight === null) {
+            throw MemoryInvalid::nothingToChange();
+        }
 
-    /**
-     * @throws MemoryInvalid
-     */
-    public function reweigh(int $weight): void
-    {
-        $this->weight = self::checkedWeight($weight);
+        $this->text = $text === null ? $this->text : self::checkedText($text);
+        $this->weight = $weight === null ? $this->weight : self::checkedWeight($weight);
+        $this->revision++;
         $this->save();
     }
 

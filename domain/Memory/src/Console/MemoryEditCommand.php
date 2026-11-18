@@ -19,12 +19,12 @@ final class MemoryEditCommand extends Command
 {
     use SendsSignedCalls;
 
-    protected $signature = 'memory:edit {memory : The memory id} {--text= : The new text} {--weight= : The new weight, 1 to 10} {--request-key= : Send again under the key a failed attempt printed} {--json}';
+    protected $signature = 'memory:edit {memory : The memory id} {--revision= : The revision you read, from memory:list} {--text= : The new text} {--weight= : The new weight, 1 to 10} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 
     protected $description = 'Change the text or weight of a memory of the calling agent';
 
     public function handle(AgentRequestSender $journal): int
     {
-        return $this->sendWriteAndPrint($journal, '/agent/memory/edit', array_filter(['memory_id' => (string) $this->argument('memory'), 'text' => $this->option('text'), 'weight' => $this->option('weight') === null ? null : (int) $this->option('weight')], fn ($value) => $value !== null));
+        return $this->sendWriteAndPrint($journal, '/agent/memory/edit', array_filter(['memory_id' => (string) $this->argument('memory'), 'revision' => (int) $this->option('revision'), 'text' => $this->option('text'), 'weight' => $this->option('weight') === null ? null : (int) $this->option('weight')], fn ($value) => $value !== null));
     }
 }

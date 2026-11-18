@@ -9,6 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use Domain\Memory\Api\MemoryCard;
 use Domain\Memory\Api\MemoryPage;
 use Domain\Memory\Contracts\MemoryReader;
+use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Models\Memory;
 
 /**
@@ -24,9 +25,21 @@ final readonly class OwnMemories implements MemoryReader
         $query = Memory::query()->ownedBy($owner);
         $total = $query->clone()->count();
         $cards = $query->orderByDesc('weight')->orderBy('id')->forPage($page, self::PER_PAGE)->readLimit(self::PER_PAGE)->get()
-            ->map(fn (Memory $memory): MemoryCard => new MemoryCard($memory->id, $memory->number, $memory->text, $memory->weight))
+            ->map(fn (Memory $memory): MemoryCard => self::cardOf($memory))
             ->all();
 
         return new MemoryPage(array_values($cards), $page, self::PER_PAGE, $total);
+    }
+
+    public function memory(string $memoryId): MemoryCard
+    {
+        $memory = Memory::query()->ownedBy(ActorIdentity::of($this->actors->actor()))->whereKey($memoryId)->first();
+
+        return $memory !== null ? self::cardOf($memory) : throw MemoryUnavailable::forId($memoryId);
+    }
+
+    private static function cardOf(Memory $memory): MemoryCard
+    {
+        return new MemoryCard($memory->id, $memory->number, $memory->text, $memory->weight, $memory->revision);
     }
 }

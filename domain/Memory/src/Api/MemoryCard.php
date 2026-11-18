@@ -14,5 +14,6 @@ final readonly class MemoryCard
         public int $number,
         public string $text,
         public int $weight,
+        public int $revision,
     ) {}
 }

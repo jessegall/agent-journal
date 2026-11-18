@@ -20,6 +20,7 @@ final class EditMemoryRequest extends FormRequest
     {
         return [
             'memory_id' => ['required', 'string', 'ulid'],
+            'revision' => ['required', 'integer', 'min:1'],
             'text' => ['nullable', 'string'],
             'weight' => ['nullable', 'integer', 'min:'.Memory::LIGHTEST, 'max:'.Memory::HEAVIEST],
             'agent' => ['prohibited'],
@@ -34,6 +35,7 @@ final class EditMemoryRequest extends FormRequest
     {
         return new EditMemory(
             $this->string('memory_id')->value(),
+            $this->integer('revision'),
             $this->filled('text') ? $this->string('text')->value() : null,
             $this->filled('weight') ? $this->integer('weight') : null,
         );

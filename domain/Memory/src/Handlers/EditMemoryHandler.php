@@ -7,6 +7,7 @@ namespace Domain\Memory\Handlers;
 use App\Contracts\CommandHandler;
 use Domain\Memory\Commands\EditMemory;
 use Domain\Memory\Exceptions\MemoryInvalid;
+use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Models\Memory;
 
@@ -18,22 +19,13 @@ final readonly class EditMemoryHandler implements CommandHandler
     /**
      * @throws MemoryUnavailable
      * @throws MemoryInvalid
+     * @throws MemoryRevisionChanged
      */
     public function handle(EditMemory $command): string
     {
-        if ($command->text === null && $command->weight === null) {
-            throw MemoryInvalid::nothingToChange();
-        }
-
         $memory = Memory::ownForUpdate($command->memoryId);
-
-        if ($command->text !== null) {
-            $memory->rewrite($command->text);
-        }
-
-        if ($command->weight !== null) {
-            $memory->reweigh($command->weight);
-        }
+        $memory->requireRevision($command->expectedRevision);
+        $memory->revise($command->text, $command->weight);
 
         return $memory->id;
     }

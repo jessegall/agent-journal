@@ -7,6 +7,8 @@ namespace Domain\Memory\Tests\Feature;
 use App\Actors\Support\ActorIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Domain\Memory\Contracts\MemoryReader;
+use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Tests\TestCase;
 use Tests\Fixtures\Agents\TestLaunch;
@@ -67,8 +69,8 @@ final class MemoryCommandsTest extends TestCase
         $this->artisan('memory:save', ['text' => 'First words.'])->assertExitCode(0);
         $memory = Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->sole();
 
-        $this->artisan('memory:edit', ['memory' => $memory->id, '--text' => 'Better words.', '--weight' => 9])->assertExitCode(0);
-        $this->assertSame(['Better words.', 9], [$memory->refresh()->text, $memory->weight]);
+        $this->artisan('memory:edit', ['memory' => $memory->id, '--revision' => 1, '--text' => 'Better words.', '--weight' => 9])->assertExitCode(0);
+        $this->assertSame(['Better words.', 9, 2], [$memory->refresh()->text, $memory->weight, $memory->revision]);
 
         $this->artisan('memory:remove', ['memory' => $memory->id])->assertExitCode(0);
         $this->assertSame(0, Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->count());
@@ -82,7 +84,7 @@ final class MemoryCommandsTest extends TestCase
 
         $this->runCommandsAs($this->other->token);
 
-        $this->artisan('memory:edit', ['memory' => $memory->id, '--text' => 'Taken.'])->expectsOutputToContain("Memory {$memory->id} is not one of yours.")->assertExitCode(1);
+        $this->artisan('memory:edit', ['memory' => $memory->id, '--revision' => 1, '--text' => 'Taken.'])->expectsOutputToContain("Memory {$memory->id} is not one of yours.")->assertExitCode(1);
         $this->artisan('memory:remove', ['memory' => $memory->id])->expectsOutputToContain("Memory {$memory->id} is not one of yours.")->assertExitCode(1);
         $this->artisan('memory:list', ['--json' => true])->expectsOutputToContain('"memories":[]')->assertExitCode(0);
         $this->assertSame('Mine alone.', $memory->refresh()->text);
@@ -96,5 +98,35 @@ final class MemoryCommandsTest extends TestCase
         $this->artisan('memory:save', ['text' => 'Heavy.', '--weight' => 11])->assertExitCode(1);
 
         $this->assertSame(0, Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->count());
+    }
+
+    public function test_a_stale_edit_is_a_conflict_and_keeps_the_newer_text(): void
+    {
+        $this->runCommandsAs($this->owner->token);
+        $this->artisan('memory:save', ['text' => 'Old words.'])->assertExitCode(0);
+        $memory = Memory::query()->ownedBy(ActorIdentity::of($this->owner->agent))->sole();
+        $this->artisan('memory:edit', ['memory' => $memory->id, '--revision' => 1, '--text' => 'Newer words.'])->assertExitCode(0);
+
+        $this->artisan('memory:edit', ['memory' => $memory->id, '--revision' => 1, '--text' => 'Stale words.'])
+            ->expectsOutputToContain("Memory {$memory->id} is at revision 2, not 1")
+            ->assertExitCode(1);
+
+        $this->assertSame(['Newer words.', 2], [$memory->refresh()->text, $memory->revision]);
+    }
+
+    public function test_reading_one_memory_gives_its_revision_and_another_agents_is_unavailable(): void
+    {
+        $this->startRequestAs($this->owner->agent->id, $this->owner->session->id);
+        $memory = Memory::keep(ActorIdentity::of($this->owner->agent), 'Read me.', 4);
+        $reader = $this->app->make(MemoryReader::class);
+
+        $this->assertSame(['Read me.', 1], [$reader->memory($memory->id)->text, $reader->memory($memory->id)->revision]);
+
+        $this->app->forgetScopedInstances();
+        $this->startRequestAs($this->other->agent->id, $this->other->session->id);
+
+        $this->expectException(MemoryUnavailable::class);
+
+        $this->app->make(MemoryReader::class)->memory($memory->id);
     }
 }
