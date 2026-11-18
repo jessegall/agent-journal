@@ -163,8 +163,8 @@ class SupervisorLink:
     def restart_agent(self, environment_id: int, resume: tuple[str, ...]) -> None:
         self._send(environment_id, "restart", {"name": AGENT, "resume": list(resume)})
 
-    def restart_journal(self, environment_id: int) -> None:
-        self._send(environment_id, "restart", {"name": JOURNAL, "after": RESTART_DELAY_SECONDS})
+    def restart_journal(self, environment_id: int) -> SupervisorReply:
+        return self._send(environment_id, "restart", {"name": JOURNAL, "after": RESTART_DELAY_SECONDS})
 
     def restart_supervisor(self, environment_id: int, resume: tuple[str, ...]) -> None:
         self._send(environment_id, "restart", {"name": SUPERVISOR, "resume": list(resume)})

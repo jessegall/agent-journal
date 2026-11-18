@@ -18,6 +18,7 @@ from journal.features.updates.support.update_pause import UpdatePause
 from journal.features.updates.support.update_data import UpdateData
 from journal.features.updates.support.update_target import UpdateTarget
 from journal.features.shell.support.restart_queue import RestartQueue
+from journal.features.shell.support.unsupervised_journal import UnsupervisedJournal
 from journal.supervisor_link import SupervisorLink
 from journal.support.actor import Actor
 from journal.support.caller import LOCAL_USER
@@ -265,7 +266,12 @@ class Updater:
 
     def restart(self) -> None:
         host = self.supervisor.hosting()
-        outputs = self.queue.restart(host, "") if host is not None else []
+        try:
+            outputs = self.queue.restart(host, "") if host is not None else []
+        except UnsupervisedJournal as refused:
+            self.problem = f"The update installed, but {refused}"
+            self.card.clear()
+            return
         if outputs:
             self.card.step(f"Restarting once these commands end: {', '.join(output.headline()[:WAITING_COMMAND_CHARACTERS] for output in outputs)}")
         elif host is not None and self.queue.is_waiting(host):

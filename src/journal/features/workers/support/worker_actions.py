@@ -44,6 +44,8 @@ INBOX_MISSING = "worker {n}, {name}, runs {provider}, which takes no message whi
 
 
 CHECKED_STATES = (ProofState.CHECKED, ProofState.CHECKED_UNFINISHED)
+# the states of a proof the worker gave and nobody checked yet
+FRESH_STATES = (ProofState.SHOWN, ProofState.UNFINISHED)
 # a worker whose checked work can be taken in: clocked out, or stopped or ended before it clocked out
 MERGEABLE_STATES = (WorkerState.DELIVERED, WorkerState.STOPPED, WorkerState.UNFINISHED)
 EDITED_NOTE = "Task {task} was changed while you were away: read it again with journal task show {task}. Then: "
@@ -115,6 +117,8 @@ class WorkerActions:
         return task
 
     def checked_task(self, worker: Worker, task_id: int) -> Task:
+        if not task_id:
+            task_id = self.freshly_proved_task_id(worker)
         if not task_id and not self.tasks.holder_task_ids(Ref.build(worker)):
             raise Rejection(f"worker {worker.id} has no task now: add --task <n>; waiting for the merge: {', '.join(f'task {n}' for n in self.merged_task_ids(worker)) or 'none'}")
         if not task_id:
@@ -122,6 +126,12 @@ class WorkerActions:
         if task_id not in self.merged_task_ids(worker):
             raise Rejection(f"worker {worker.id} has no task {task_id} to check: its tasks waiting for the merge are {', '.join(f'task {n}' for n in self.merged_task_ids(worker))}")
         return self.tasks.find(task_id)
+
+    def freshly_proved_task_id(self, worker: Worker) -> int:
+        proved = [task_id for task_id in self.merged_task_ids(worker) if any(proof.state in FRESH_STATES for proof in self.latest_proofs(self.tasks.find(task_id)).values())]
+        if len(proved) > 1:
+            raise Rejection(f"worker {worker.id} has proofs to check on {len(proved)} tasks, so name the task: {'; '.join(f'journal worker check {worker.id} <point> --task {proved_id}' for proved_id in proved)}")
+        return proved[0] if proved else 0
 
     def merged_task_ids(self, worker: Worker) -> tuple[int, ...]:
         return (*self.tasks.finished_task_ids(Ref.build(worker)), *self.tasks.holder_task_ids(Ref.build(worker)))
