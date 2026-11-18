@@ -6,6 +6,7 @@ namespace App\Comments\Models;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
+use App\Assignments\Support\RecordIdentity;
 use App\Comments\Data\CommentDetails;
 use App\Comments\Enums\WholeRecord;
 use App\Comments\Exceptions\CommentAnchorCorrupt;
@@ -131,6 +132,24 @@ final class Comment extends Model implements ReadableModel
         } catch (IncompleteTextAnchor $broken) {
             throw CommentAnchorCorrupt::for($this->id, $broken->getMessage());
         }
+    }
+
+    /**
+     * The record the comment is on.
+     */
+    public function target(): RecordIdentity
+    {
+        return new RecordIdentity($this->target_type, $this->target_id);
+    }
+
+    /**
+     * What the comment is about, in a few words: the whole record, or the version and lines of its text.
+     */
+    public function placeLabel(): string
+    {
+        $subject = $this->subject();
+
+        return $subject instanceof TextAnchor ? "on {$subject->versionLabel}, lines {$subject->firstLine}-{$subject->lastLine}" : 'on the whole record';
     }
 
     /**
