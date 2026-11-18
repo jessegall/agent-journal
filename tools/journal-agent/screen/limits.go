@@ -5,13 +5,15 @@ import "fmt"
 
 // Limits bound what a reader takes, so a runaway program fails as unreadable instead of exhausting the host.
 type Limits struct {
-	MaxChunkBytes int
-	MaxColumns    int
-	MaxRows       int
+	MaxChunkBytes      int
+	MaxColumns         int
+	MaxRows            int
+	MaxScrollbackLines int
 }
 
-// DefaultLimits are measured from the phase 1 recordings with ample headroom (task 882 log).
-var DefaultLimits = Limits{MaxChunkBytes: 1 << 20, MaxColumns: 500, MaxRows: 300}
+// DefaultLimits are measured from the phase 1 recordings with ample headroom (task 882 log). The longest recorded
+// turn scrolls about 300 lines; the scrollback keeps the latest 5000 and drops older lines, so memory stays bounded.
+var DefaultLimits = Limits{MaxChunkBytes: 1 << 20, MaxColumns: 500, MaxRows: 300, MaxScrollbackLines: 5000}
 
 // ScreenUnreadable is the screen a reader refuses to guess: a feed or a size past its limits.
 type ScreenUnreadable struct {
