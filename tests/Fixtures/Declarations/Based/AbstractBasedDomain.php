@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Declarations\Based;
 
-use App\Exports\Support\Exports;
 use App\Domains\Support\Domain;
+use App\Exports\Support\Exports;
 
 abstract class AbstractBasedDomain extends Domain
 {

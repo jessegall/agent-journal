@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\ThreeCycle\Hooks;
 
-use App\Exports\Support\Exports;
 use App\Domains\Support\Domain;
+use App\Exports\Support\Exports;
 use Tests\Fixtures\Domains\ThreeCycle\Agents\AgentsDomain;
 
 final class HooksDomain extends Domain

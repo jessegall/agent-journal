@@ -30,7 +30,7 @@ final class DocblockTypes
      *
      * @throws ChatFailed
      */
-    public function first(array $shape): ?object
+    public function first(array $shape): object|null
     {
         if ($shape['count'] < 0) {
             throw new ChatFailed;
@@ -47,7 +47,7 @@ final class DocblockTypes
     }
 
     /**
-     * @return \Tests\Fixtures\Names\Chat\Message
+     * @return Message
      */
     public function fullyWritten(): object
     {

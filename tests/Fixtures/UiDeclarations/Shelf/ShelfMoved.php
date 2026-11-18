@@ -10,4 +10,4 @@ use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
 /**
  * A fact of a module Web knows nothing about, which changes what users see.
  */
-final readonly class ShelfMoved implements UpdatesUserInterface, ShouldDispatchAfterCommit {}
+final readonly class ShelfMoved implements ShouldDispatchAfterCommit, UpdatesUserInterface {}

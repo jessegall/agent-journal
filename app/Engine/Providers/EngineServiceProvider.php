@@ -6,12 +6,14 @@ namespace App\Engine\Providers;
 
 use App\Engine\Contracts\EngineLock;
 use App\Engine\Support\AdvisoryEngineLock;
+use App\Engine\Support\EngineAccess;
 use App\Engine\Support\EngineSettings;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * The engine's settings, read once from config/engine.php, and its one lock for the life of the process.
+ * The engine's settings, read once from config/engine.php, its one lock for the life of the process, and what it may
+ * address in the current operation.
  */
 final class EngineServiceProvider extends ServiceProvider
 {
@@ -26,5 +28,6 @@ final class EngineServiceProvider extends ServiceProvider
             $app->make('config')->integer('engine.watchdog_seconds'),
         ));
         $this->app->singleton(EngineLock::class, AdvisoryEngineLock::class);
+        $this->app->scoped(EngineAccess::class);
     }
 }

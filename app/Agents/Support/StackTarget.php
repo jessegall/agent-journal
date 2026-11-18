@@ -14,6 +14,11 @@ final readonly class StackTarget
         public string $sessionId,
     ) {}
 
+    public function isSameAs(self $other): bool
+    {
+        return $this->agentId === $other->agentId && $this->sessionId === $other->sessionId;
+    }
+
     /**
      * The stack named in words, for a message: agent 1, session 10.
      */

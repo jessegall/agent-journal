@@ -10,13 +10,14 @@ use App\Actors\Exceptions\AgentActorRequired;
 use App\Actors\Exceptions\EngineActorRequired;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Bus\Contracts\CommandMiddleware;
+use App\Bus\Exceptions\EngineNotAllowed;
 use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandRegistry;
 use Closure;
 
 /**
- * Lets a command run only with an actor, and only with the type of actor its RequiresActor names, before anything of
- * it can write.
+ * Lets a command run only with an actor, only with the type of actor its RequiresActor names, and with the engine only
+ * when it declares AllowsEngine, before anything of it can write. Nested commands pass it again.
  */
 final readonly class CheckActor implements CommandMiddleware
 {
@@ -26,6 +27,10 @@ final readonly class CheckActor implements CommandMiddleware
     {
         $actor = $call->actor() ?? throw ActorContextMissing::forRequest();
         $required = $this->registry->requiredActor($call->name());
+
+        if ($actor->type === ActorType::Engine && ! $this->registry->allowsEngine($call->name())) {
+            throw EngineNotAllowed::forCommand($call->name());
+        }
 
         if ($required !== null && $actor->type !== $required) {
             throw match ($required) {

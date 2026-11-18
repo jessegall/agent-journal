@@ -8,7 +8,7 @@ use App\Actors\Enums\ActorType;
 
 /**
  * One registered command as the bus runs it: its handler, owner, whether it is exported, its isolation, the actor
- * type it requires and its ordered module middleware.
+ * type it requires, whether the engine may run it, and its ordered module middleware.
  */
 final readonly class RegisteredCommand
 {
@@ -22,6 +22,7 @@ final readonly class RegisteredCommand
         public bool $exported,
         public bool $repeatableRead,
         public ActorType|null $actor,
+        public bool $allowsEngine,
         public array $middleware,
     ) {}
 }

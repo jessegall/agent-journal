@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Models;
 
-use App\Comments\Contracts\Commentable;
-use App\Comments\Support\HasComments;
-use App\Numbers\Contracts\Numbered;
-use App\Numbers\Support\HasNumber;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Support\RecordIdentity;
+use App\Comments\Contracts\Commentable;
+use App\Comments\Support\HasComments;
 use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Links\Support\Linkable;
+use App\Numbers\Contracts\Numbered;
+use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;

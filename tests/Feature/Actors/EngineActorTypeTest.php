@@ -8,13 +8,13 @@ use App\Actors\Commands\RecordUserHeartbeat;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\InvalidActorText;
-use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\EngineNotAllowed;
 use App\Engine\Support\EngineActor;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -24,7 +24,7 @@ use Tests\TestCase;
 
 /**
  * The engine is an actor of its own type that no request or command line may name, that never holds work, and that a
- * command requiring another type refuses with that type's own failure.
+ * command that does not allow it refuses.
  */
 final class EngineActorTypeTest extends TestCase
 {
@@ -67,11 +67,11 @@ final class EngineActorTypeTest extends TestCase
         $this->app->make(AssignmentProviders::class)->assigneeProvider(ActorType::Engine);
     }
 
-    public function test_a_command_for_users_refuses_the_engine_as_a_user_command_would(): void
+    public function test_a_command_for_users_refuses_the_engine(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new EngineActor));
 
-        $this->expectException(UserActorRequired::class);
+        $this->expectException(EngineNotAllowed::class);
 
         $this->app->make(CommandBus::class)->run(new RecordUserHeartbeat);
     }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\Events\Tasks;
 
-use App\Exports\Support\Exports;
 use App\Domains\Support\Domain;
+use App\Exports\Support\Exports;
 use Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClosed;
 
 final class TasksDomain extends Domain

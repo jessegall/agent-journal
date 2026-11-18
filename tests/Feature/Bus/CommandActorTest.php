@@ -4,10 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Exceptions\UserActorRequired;
+use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Exceptions\EngineNotAllowed;
+use App\Engine\Support\EngineActor;
 use Illuminate\Support\Facades\Log;
+use Tests\Fixtures\Modules\Notes\Commands\EngineCopyNote;
+use Tests\Fixtures\Modules\Notes\Commands\EngineNote;
 use Tests\Fixtures\Modules\Notes\Commands\UserNote;
 use Tests\Fixtures\Modules\Notes\Commands\WriteNote;
 use Tests\Support\TestIds;
@@ -47,5 +53,48 @@ final class CommandActorTest extends CommandBusTestCase
 
         $log->shouldHaveReceived('info')->withArgs(fn (string $line, array $context) => $line === 'Command WriteNote done'
             && $context['owner'] === 'Notes' && $context['actor'] === 'user:'.TestIds::of(1) && ! str_contains((string) json_encode($context), 'private text'));
+    }
+
+    public function test_the_engine_is_refused_a_command_that_does_not_allow_it(): void
+    {
+        $this->installCommandModules();
+        $this->actAsEngine();
+
+        $this->expectException(EngineNotAllowed::class);
+
+        $this->app->make(CommandBus::class)->run(new WriteNote('never'));
+    }
+
+    public function test_the_engine_runs_a_command_that_allows_it(): void
+    {
+        $this->installCommandModules();
+        $this->actAsEngine();
+
+        $this->assertSame(4, $this->app->make(CommandBus::class)->run(new EngineNote('tick')));
+    }
+
+    public function test_a_command_for_users_refuses_the_engine(): void
+    {
+        $this->installCommandModules();
+        $this->actAsEngine();
+
+        $this->expectException(EngineNotAllowed::class);
+
+        $this->app->make(CommandBus::class)->run(new UserNote('mine'));
+    }
+
+    public function test_a_nested_command_checks_the_engine_again(): void
+    {
+        $this->installCommandModules();
+        $this->actAsEngine();
+
+        $this->expectException(EngineNotAllowed::class);
+
+        $this->app->make(CommandBus::class)->run(new EngineCopyNote('nested'));
+    }
+
+    private function actAsEngine(): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::of(new EngineActor));
     }
 }
