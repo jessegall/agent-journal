@@ -34,7 +34,7 @@ trait BoundedReads
 
     public function defaultReadOrder(): ReadOrder
     {
-        return ReadOrder::newestFirst($this->getTable(), $this->getKeyName());
+        return ReadOrder::newestFirst($this->getTable(), (string) $this->getCreatedAtColumn(), $this->getKeyName());
     }
 
     /**

@@ -28,7 +28,9 @@ final class SkillReceipt extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids;
 
-    public $timestamps = false;
+    public const string CREATED_AT = 'read_at';
+
+    public const null UPDATED_AT = null;
 
     /**
      * @return array<string, string>
@@ -54,7 +56,7 @@ final class SkillReceipt extends Model implements ReadableModel
     ): self {
         return self::query()->firstOrCreate(
             ['session_id' => $sessionId, 'context_epoch' => $epoch, 'skill_key' => $skillKey, 'content_digest' => $digest],
-            ['evidence' => $evidence, 'read_at' => CarbonImmutable::now()],
+            ['evidence' => $evidence],
         );
     }
 
