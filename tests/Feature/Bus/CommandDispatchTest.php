@@ -9,6 +9,8 @@ use App\Bus\Exceptions\CommandNestingTooDeep;
 use App\Bus\Exceptions\CommandNotRegistered;
 use App\Bus\Support\CommandNesting;
 use App\Bus\Support\LaravelCommandBus;
+use Illuminate\Support\Facades\Log;
+use Mockery;
 use Tests\Fixtures\Bus\Shop\Commands\AddItem;
 use Tests\Fixtures\Bus\Shop\Enums\ItemSize;
 use Tests\Fixtures\Modules\Cards\Commands\DrawCard;
@@ -34,6 +36,17 @@ final class CommandDispatchTest extends CommandBusTestCase
         $bus->run(new WriteNote('cleared'));
         $bus->run(new ClearNotes);
         $this->assertSame(0, $this->rowCount());
+    }
+
+    public function test_the_command_log_line_counts_queries_and_models_and_no_time(): void
+    {
+        $this->installCommandModules();
+        $this->startUserRequestAs(TestIds::of(1));
+        Log::spy();
+
+        $this->app->make(CommandBus::class)->run(new WriteNote('counted'));
+
+        Log::shouldHaveReceived('info')->with('Command WriteNote done', Mockery::on(fn (array $context): bool => $context['queries_run'] > 0 && isset($context['models_loaded']) && ! isset($context['milliseconds'])))->once();
     }
 
     public function test_an_unregistered_command_is_refused_before_anything_runs(): void

@@ -29,7 +29,16 @@ final readonly class EventCall
      */
     public function isEventNamedByString(): bool
     {
-        return $this->takesOnlyEvents && $this->argument->isWrittenName();
+        return $this->takesOnlyEvents && $this->argument->isWrittenName() && ! $this->namesModelLifecycle();
+    }
+
+    /**
+     * One of Laravel's model lifecycle strings, such as 'eloquent.retrieved: *': a framework hook, not an event of
+     * the project.
+     */
+    private function namesModelLifecycle(): bool
+    {
+        return str_starts_with($this->event, 'eloquent.');
     }
 
     /**
@@ -45,7 +54,7 @@ final readonly class EventCall
 
         return match ($this->argument) {
             EventArgument::ClassName => $roots->startsWithProjectNamespace($this->event),
-            EventArgument::String => str_contains($this->event, '*'),
+            EventArgument::String => str_contains($this->event, '*') && ! $this->namesModelLifecycle(),
             EventArgument::Other => in_array($this->call, ['subscribe(Dispatcher)', '$listen', '$subscribe'], true) || str_ends_with($this->call, 'subscribe()'),
             default => false,
         };

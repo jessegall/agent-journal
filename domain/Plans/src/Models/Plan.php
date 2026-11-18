@@ -11,6 +11,7 @@ use App\Assignments\Support\RecordIdentity;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
+use App\Reads\Support\CountsLoads;
 use Domain\Plans\Api\PlanCard;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Enums\PlanState;
@@ -42,6 +43,7 @@ use PhpOption\Option;
 final class Plan extends Model implements Assignable, Numbered
 {
     use AssignableListing, HasNumber, HasUlids, Linkable;
+    use CountsLoads;
 
     /**
      * The stable name links and assignments use for a plan.

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Links\Models;
 
 use App\Links\Support\Linkable;
+use App\Reads\Support\CountsPivotLoads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -30,6 +31,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['source_type', 'source_id', 'target_type', 'target_id'])]
 final class Link extends MorphPivot
 {
+    use CountsPivotLoads;
     use HasUlids, Linkable;
 
     /**

@@ -12,6 +12,7 @@ use App\Hooks\Storage\RecordedAnswerCast;
 use App\Hooks\Storage\RecordedSteps;
 use App\Hooks\Storage\RecordedStepsCast;
 use App\Links\Support\Linkable;
+use App\Reads\Support\CountsLoads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -37,6 +38,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['event_id', 'input_digest', 'answer', 'steps'])]
 final class HookCall extends Model
 {
+    use CountsLoads;
     use HasUlids, Linkable;
 
     /**

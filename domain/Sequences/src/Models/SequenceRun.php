@@ -9,6 +9,7 @@ use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
+use App\Reads\Support\CountsLoads;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\Exceptions\SequenceRunMissing;
 use Domain\Sequences\Support\SequenceWork;
@@ -37,6 +38,7 @@ use Illuminate\Support\Carbon;
 final class SequenceRun extends Model implements Numbered
 {
     use BelongsToOneAgent, HasNumber, HasUlids;
+    use CountsLoads;
     use Linkable;
 
     /**

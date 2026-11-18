@@ -8,6 +8,7 @@ use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
+use App\Reads\Support\CountsLoads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -30,6 +31,7 @@ use Illuminate\Support\Carbon;
 final class Memory extends Model implements Numbered
 {
     use BelongsToOneAgent, HasNumber, HasUlids;
+    use CountsLoads;
     use Linkable;
 
     /**

@@ -6,6 +6,7 @@ namespace Domain\Memory\Models;
 
 use App\Agents\Support\StackTarget;
 use App\Links\Support\Linkable;
+use App\Reads\Support\CountsLoads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -26,6 +27,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['agent_id', 'session_id', 'compaction_id'])]
 final class MemoryCompaction extends Model
 {
+    use CountsLoads;
     use HasUlids, Linkable;
 
     /**

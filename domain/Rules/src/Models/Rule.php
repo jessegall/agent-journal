@@ -8,6 +8,7 @@ use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
 use App\Queries\Support\TextSearch;
+use App\Reads\Support\CountsLoads;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Exceptions\RuleNotProposed;
@@ -33,6 +34,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['text'])]
 final class Rule extends Model implements Numbered
 {
+    use CountsLoads;
     use HasNumber, HasUlids, Linkable;
 
     /**

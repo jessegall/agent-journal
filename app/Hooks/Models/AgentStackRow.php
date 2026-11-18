@@ -13,6 +13,7 @@ use App\Hooks\Storage\FrameRecords;
 use App\Hooks\Storage\FrameRecordsCast;
 use App\Hooks\Storage\StoredFrames;
 use App\Links\Support\Linkable;
+use App\Reads\Support\CountsLoads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -38,6 +39,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['version', 'frames', 'status', 'closed_at'])]
 final class AgentStackRow extends Model
 {
+    use CountsLoads;
     use HasUlids, Linkable;
 
     protected $table = 'agent_stacks';

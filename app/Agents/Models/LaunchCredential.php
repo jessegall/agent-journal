@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Agents\Models;
 
 use App\Links\Support\Linkable;
+use App\Reads\Support\CountsLoads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -26,6 +27,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['revoked_at'])]
 final class LaunchCredential extends Model
 {
+    use CountsLoads;
     use HasUlids, Linkable;
 
     /**

@@ -182,6 +182,12 @@ use App\Numbers\Support\HasNumber;
 use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\RecordReference;
 use App\Queries\Support\TextSearch;
+use App\Reads\Attributes\ReadBudget;
+use App\Reads\Contracts\ReadMeter;
+use App\Reads\Support\CountsLoads;
+use App\Reads\Support\CountsPivotLoads;
+use App\Reads\Values\Measurement;
+use App\Reads\Values\ReadCounts;
 use App\Ui\Contracts\CountReader;
 use App\Ui\Contracts\NavigationChildren;
 use App\Ui\Contracts\PageOption;
@@ -222,6 +228,7 @@ final class CoreApi
         return Exports::make()
             ->events(ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class)
             ->contracts(
+                ReadMeter::class,
                 Actor::class,
                 CurrentActor::class,
                 CurrentActorSetter::class,
@@ -272,6 +279,9 @@ final class CoreApi
                 VisibilityCheck::class,
             )
             ->values(
+                ReadBudget::class,
+                ReadCounts::class,
+                Measurement::class,
                 ActorType::class,
                 ActorContext::class,
                 AgentLabel::class,
@@ -422,6 +432,8 @@ final class CoreApi
                 NestedCommandFailureIgnored::class,
             )
             ->support(
+                CountsLoads::class,
+                CountsPivotLoads::class,
                 AgentState::class,
                 BelongsToOneAgent::class,
                 Linkable::class,

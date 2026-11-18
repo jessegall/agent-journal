@@ -9,6 +9,7 @@ use App\Assignments\Support\RecordIdentity;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
+use App\Reads\Support\CountsLoads;
 use Domain\Plans\Exceptions\TaskAlreadyInAPhase;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -32,6 +33,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['title'])]
 final class Phase extends Model implements Assignable, Numbered
 {
+    use CountsLoads;
     use HasNumber, HasUlids, Linkable;
 
     /**

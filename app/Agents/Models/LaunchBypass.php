@@ -7,6 +7,7 @@ namespace App\Agents\Models;
 use App\Agents\Support\BypassReport;
 use App\Agents\Support\LoggedBypass;
 use App\Links\Support\Linkable;
+use App\Reads\Support\CountsLoads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -27,6 +28,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['native_event', 'failure', 'occurred_at'])]
 final class LaunchBypass extends Model
 {
+    use CountsLoads;
     use HasUlids, Linkable;
 
     /**

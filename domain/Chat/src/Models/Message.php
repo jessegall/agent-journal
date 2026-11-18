@@ -9,6 +9,7 @@ use App\Hooks\Models\Support\BelongsToOneAgent;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
+use App\Reads\Support\CountsLoads;
 use Domain\Chat\Enums\MessageState;
 use Domain\Chat\Enums\MessageWorkState;
 use Domain\Chat\Exceptions\MessageMissing;
@@ -36,6 +37,7 @@ use Illuminate\Support\Carbon;
 final class Message extends Model implements Numbered
 {
     use BelongsToOneAgent, HasNumber, HasUlids;
+    use CountsLoads;
     use Linkable;
 
     /**

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\Agents\AuthenticateAgent;
+use App\Http\Middleware\MeasureReads;
 use App\Http\Middleware\Web\HandleInertiaRequests;
 use Domain\Access\Http\Middleware\AuthenticateUser;
 use Illuminate\Foundation\Application;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
     // Listeners are registered once, by App\Domains\Providers\DomainEventServiceProvider, through its checks.
     ->withEvents(discover: false)
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend(MeasureReads::class);
         $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: AuthenticateAgent::class);
         $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: AuthenticateUser::class);
         $middleware->alias(['journal.user' => AuthenticateUser::class, 'journal.agent' => AuthenticateAgent::class]);

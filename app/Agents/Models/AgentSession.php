@@ -6,6 +6,7 @@ namespace App\Agents\Models;
 
 use App\Agents\Enums\SessionStatus;
 use App\Links\Support\Linkable;
+use App\Reads\Support\CountsLoads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -36,6 +37,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['program', 'program_session_id'])]
 final class AgentSession extends Model
 {
+    use CountsLoads;
     use HasUlids, Linkable;
 
     /**

@@ -12,6 +12,7 @@ use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\RecordIdentity;
 use App\Links\Support\Linkable;
+use App\Reads\Support\CountsPivotLoads;
 use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -38,6 +39,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['record_type', 'record_id', 'holder_type', 'holder_id'])]
 final class AssignmentRecord extends MorphPivot
 {
+    use CountsPivotLoads;
     use HasUlids, Linkable;
 
     /**

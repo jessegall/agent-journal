@@ -33,6 +33,8 @@ final class Exports
         'App\Links\Support\LinkTypeRegistry',
         'App\Queries\Support\TextSearch',
         'App\Numbers\Support\HasNumber',
+        'App\Reads\Support\CountsLoads',
+        'App\Reads\Support\CountsPivotLoads',
     ];
 
     /**

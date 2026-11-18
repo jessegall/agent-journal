@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Web\Models;
 
 use App\Links\Support\Linkable;
+use App\Reads\Support\CountsLoads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -24,6 +25,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['user_id', 'name', 'shape'])]
 final class Layout extends Model
 {
+    use CountsLoads;
     use HasUlids, Linkable;
 
     /**

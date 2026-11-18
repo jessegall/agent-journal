@@ -7,6 +7,7 @@ namespace Domain\Access\Models;
 use App\Actors\Enums\ActorType;
 use App\Assignments\Contracts\Assignee;
 use App\Links\Support\Linkable;
+use App\Reads\Support\CountsLoads;
 use Domain\Access\Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -41,6 +42,8 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 #[UseFactory(UserFactory::class)]
 class User extends Authenticatable implements Assignee, MustVerifyEmail, PasskeyUser
 {
+    use CountsLoads;
+
     /**
      * @use HasFactory<UserFactory>
      */

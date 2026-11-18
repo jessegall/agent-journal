@@ -6,6 +6,7 @@ namespace App\Numbers\Models;
 
 use App\Links\Support\Linkable;
 use App\Numbers\Exceptions\GlobalGroupMissing;
+use App\Reads\Support\CountsLoads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -22,6 +23,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['name'])]
 final class GlobalGroup extends Model
 {
+    use CountsLoads;
     use HasUlids, Linkable;
 
     public const string JOURNAL = 'journal';

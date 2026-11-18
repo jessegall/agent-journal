@@ -11,6 +11,7 @@ use App\Assignments\Support\RecordIdentity;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
+use App\Reads\Support\CountsLoads;
 use Domain\Tasks\Api\TaskSummary;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWorkState;
@@ -40,6 +41,7 @@ use Illuminate\Support\Carbon;
 final class Task extends Model implements Assignable, Numbered
 {
     use AssignableListing, HasNumber, HasUlids, Linkable;
+    use CountsLoads;
 
     /**
      * The stable name links and assignments use for a task.

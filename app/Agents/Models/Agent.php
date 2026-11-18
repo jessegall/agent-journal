@@ -8,6 +8,7 @@ use App\Actors\Enums\ActorType;
 use App\Agents\Enums\AgentRole;
 use App\Assignments\Contracts\Assignee;
 use App\Links\Support\Linkable;
+use App\Reads\Support\CountsLoads;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -28,6 +29,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['name', 'role'])]
 final class Agent extends Model implements Assignee
 {
+    use CountsLoads;
     use HasUlids, Linkable;
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Processes\Models;
 
 use App\Links\Support\Linkable;
+use App\Reads\Support\CountsLoads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
@@ -23,5 +24,6 @@ use Illuminate\Support\Carbon;
 #[Fillable(['name', 'line'])]
 final class CommandAlias extends Model
 {
+    use CountsLoads;
     use HasUlids, Linkable;
 }

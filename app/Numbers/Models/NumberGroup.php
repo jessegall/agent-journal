@@ -6,6 +6,7 @@ namespace App\Numbers\Models;
 
 use App\Links\Support\Linkable;
 use App\Numbers\Exceptions\NumberLimitReached;
+use App\Reads\Support\CountsLoads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,6 +30,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['holder_type', 'holder_id', 'record_type'])]
 final class NumberGroup extends Model
 {
+    use CountsLoads;
     use HasUlids, Linkable;
 
     /**

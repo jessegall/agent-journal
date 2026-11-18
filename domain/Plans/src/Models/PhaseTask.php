@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Models;
 
 use App\Links\Support\Linkable;
+use App\Reads\Support\CountsPivotLoads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -22,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 #[Fillable(['phase_id', 'task_id', 'position'])]
 final class PhaseTask extends Pivot
 {
+    use CountsPivotLoads;
     use HasUlids, Linkable;
 
     public $timestamps = false;
