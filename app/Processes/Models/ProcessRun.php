@@ -1,0 +1,169 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Processes\Models;
+
+use App\Actors\Models\Support\BelongsToOneActor;
+use App\Actors\Support\ActorIdentity;
+use App\Links\Support\Linkable;
+use App\Processes\Enums\CaptureState;
+use App\Processes\Enums\LifecycleState;
+use App\Processes\Enums\RunMode;
+use App\Processes\Enums\ShellDialect;
+use App\Reads\Contracts\ReadableModel;
+use App\Reads\Support\BoundedReads;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
+
+/**
+ * One admitted command line run under supervision (doc 21 revision 6, sections 53 and 69): its single-use admission,
+ * whether it is a normal or an evidence run, the source and tree digests and rule revisions it was admitted under,
+ * and where its lifecycle and capture stand. The actor who runs it holds it.
+ *
+ * @property string $id
+ * @property string $admission_id
+ * @property RunMode $mode
+ * @property string $project_key
+ * @property string|null $actor_type
+ * @property string|null $actor_id
+ * @property string $source_digest
+ * @property ShellDialect $dialect
+ * @property string $tree_digest
+ * @property string $registry_revision
+ * @property string $policy_revision
+ * @property LifecycleState $lifecycle
+ * @property CaptureState $capture_state
+ * @property string $stop_reason
+ * @property string $event_key_hash
+ * @property string $working_folder
+ * @property array<string, mixed> $plan
+ * @property CarbonImmutable|null $consumed_at
+ * @property CarbonImmutable|null $heartbeat_at
+ * @property CarbonImmutable|null $started_at
+ * @property CarbonImmutable|null $ended_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
+#[Fillable(['admission_id', 'mode', 'project_key', 'source_digest', 'dialect', 'tree_digest', 'registry_revision', 'policy_revision', 'event_key_hash', 'working_folder', 'plan'])]
+final class ProcessRun extends Model implements ReadableModel
+{
+    use BelongsToOneActor, HasUlids;
+    use BoundedReads;
+    use Linkable;
+
+    /**
+     * @var array<string, mixed>
+     */
+    protected $attributes = ['lifecycle' => 'queued', 'capture_state' => 'recording'];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'mode' => RunMode::class,
+            'dialect' => ShellDialect::class,
+            'lifecycle' => LifecycleState::class,
+            'capture_state' => CaptureState::class,
+            'started_at' => 'immutable_datetime',
+            'ended_at' => 'immutable_datetime',
+            'plan' => 'array',
+            'consumed_at' => 'immutable_datetime',
+            'heartbeat_at' => 'immutable_datetime',
+        ];
+    }
+
+    /**
+     * Admits a run for an actor; the admission id is single-use, so a second admission with it fails on its key.
+     *
+     * @param  array{admission_id: string, mode: RunMode, project_key: string, source_digest: string, dialect: ShellDialect, tree_digest: string, registry_revision: string, policy_revision: string}  $admission
+     */
+    public static function admit(ActorIdentity $actor, array $admission): self
+    {
+        $run = new self($admission);
+        $run->belongTo($actor);
+        $run->save();
+
+        return $run;
+    }
+
+    /**
+     * Whether its result may answer the agent: an evidence run never gets a result receipt.
+     */
+    public function mayAnswer(): bool
+    {
+        return $this->mode === RunMode::Normal;
+    }
+
+    /**
+     * Consumes the admission and returns the run's new event key, shown only this once; a consumed admission returns ''.
+     */
+    public function consumeWithEventKey(): string
+    {
+        if ($this->consumed_at !== null) {
+            return '';
+        }
+        $key = bin2hex(random_bytes(32));
+        $this->event_key_hash = hash('sha256', $key);
+        $this->consumed_at = CarbonImmutable::now();
+        $this->lifecycle = LifecycleState::Running;
+        $this->started_at = $this->consumed_at;
+        $this->save();
+
+        return $key;
+    }
+
+    /**
+     * Whether a host's event carries this run's event key.
+     */
+    public function acceptsEventKey(string $key): bool
+    {
+        return $this->event_key_hash !== '' && hash_equals($this->event_key_hash, hash('sha256', $key));
+    }
+
+    public function recordHeartbeat(): void
+    {
+        $this->heartbeat_at = CarbonImmutable::now();
+        $this->save();
+    }
+
+    /**
+     * Whether the host has gone quiet: no heartbeat for longer than the suspect limit while the run is running.
+     */
+    public function isSuspect(int $quietSeconds = 15): bool
+    {
+        return $this->lifecycle === LifecycleState::Running && ($this->heartbeat_at ?? $this->started_at)?->lessThan(CarbonImmutable::now()->subSeconds($quietSeconds)) === true;
+    }
+
+    /**
+     * Records that the run was stopped and why; a stopped run never ends with a pass.
+     */
+    public function markStopped(string $reason): void
+    {
+        $this->lifecycle = LifecycleState::Stopped;
+        $this->stop_reason = $reason;
+        $this->save();
+    }
+
+    /**
+     * @return HasMany<PartRun, $this>
+     */
+    public function parts(): HasMany
+    {
+        return $this->hasMany(PartRun::class);
+    }
+
+    /**
+     * @return HasMany<ProcessEvent, $this>
+     */
+    public function events(): HasMany
+    {
+        return $this->hasMany(ProcessEvent::class);
+    }
+}

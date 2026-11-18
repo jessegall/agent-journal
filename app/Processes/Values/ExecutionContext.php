@@ -18,6 +18,8 @@ final readonly class ExecutionContext
      * @param  array<string, string>  $programs  program name => resolved executable path
      * @param  list<string>  $positional  $1, $2 ... in order
      * @param  list<string>  $aliases  the ids of the saved aliases whose bodies this command runs inside, outermost first
+     * @param  bool  $pipefail  whether a pipeline fails when any member fails, not only the last
+     * @param  int  $lastStatus  the status $? reads
      */
     public function __construct(
         public ShellDialect $dialect,
@@ -27,6 +29,8 @@ final readonly class ExecutionContext
         public array $programs = [],
         public array $positional = [],
         public array $aliases = [],
+        public bool $pipefail = false,
+        public int $lastStatus = 0,
     ) {}
 
     /**
@@ -39,7 +43,7 @@ final readonly class ExecutionContext
 
     public function withWorkingFolder(string $workingFolder): self
     {
-        return new self($this->dialect, $workingFolder, $this->projectRoot, $this->environment, $this->programs, $this->positional, $this->aliases);
+        return new self($this->dialect, $workingFolder, $this->projectRoot, $this->environment, $this->programs, $this->positional, $this->aliases, $this->pipefail, $this->lastStatus);
     }
 
     /**
@@ -47,7 +51,7 @@ final readonly class ExecutionContext
      */
     public function withEnvironment(array $environment): self
     {
-        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $environment, $this->programs, $this->positional, $this->aliases);
+        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $environment, $this->programs, $this->positional, $this->aliases, $this->pipefail, $this->lastStatus);
     }
 
     /**
@@ -55,7 +59,7 @@ final readonly class ExecutionContext
      */
     public function withPrograms(array $programs): self
     {
-        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $programs, $this->positional, $this->aliases);
+        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $programs, $this->positional, $this->aliases, $this->pipefail, $this->lastStatus);
     }
 
     /**
@@ -63,7 +67,7 @@ final readonly class ExecutionContext
      */
     public function withPositional(array $positional): self
     {
-        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $this->programs, $positional, $this->aliases);
+        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $this->programs, $positional, $this->aliases, $this->pipefail, $this->lastStatus);
     }
 
     /**
@@ -73,6 +77,16 @@ final readonly class ExecutionContext
      */
     public function insideAlias(string $aliasId, array $arguments): self
     {
-        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $this->programs, $arguments, [...$this->aliases, $aliasId]);
+        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $this->programs, $arguments, [...$this->aliases, $aliasId], $this->pipefail, $this->lastStatus);
+    }
+
+    public function withPipefail(bool $pipefail): self
+    {
+        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $this->programs, $this->positional, $this->aliases, $pipefail, $this->lastStatus);
+    }
+
+    public function withLastStatus(int $status): self
+    {
+        return new self($this->dialect, $this->workingFolder, $this->projectRoot, $this->environment, $this->programs, $this->positional, $this->aliases, $this->pipefail, $status);
     }
 }
