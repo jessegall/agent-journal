@@ -9,7 +9,7 @@ use App\Agents\Exceptions\LaunchRefused;
 use App\Agents\Models\AgentSession;
 use App\Contracts\Listener;
 use App\Skills\Contracts\SkillReader;
-use App\Skills\Events\LaunchSkillsIntended;
+use App\Skills\Events\SessionSkillsIntended;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Programs\ProgramSkillAdapters;
@@ -62,6 +62,6 @@ final readonly class AdmitLaunchSkills implements Listener
             $selected->selectedKeys(),
         );
 
-        $this->events->dispatch(new LaunchSkillsIntended($publication->id));
+        $this->events->dispatch(new SessionSkillsIntended($publication->id));
     }
 }

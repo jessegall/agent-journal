@@ -30,6 +30,14 @@ enum PublicationState: string
     }
 
     /**
+     * Whether the session still waits for it: open, or failed and waiting for a retry.
+     */
+    public function awaitsDelivery(): bool
+    {
+        return $this->isOpen() || $this === self::Failed;
+    }
+
+    /**
      * Whether a worker still has to deliver it.
      */
     public function isOpen(): bool

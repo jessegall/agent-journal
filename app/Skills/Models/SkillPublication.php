@@ -347,6 +347,19 @@ final class SkillPublication extends Model implements ReadableModel
     }
 
     /**
+     * Where each of these publications stands, by id; an id that names none is left out.
+     *
+     * @param  list<string>  $publicationIds
+     * @return array<string, PublicationState>
+     */
+    public static function statesOf(array $publicationIds): array
+    {
+        $publications = self::query()->whereKey($publicationIds)->readLimit(max(1, count($publicationIds)))->get();
+
+        return $publications->mapWithKeys(fn (self $publication) => [$publication->id => $publication->state])->all();
+    }
+
+    /**
      * The session's newest publication, or null when none was asked for it.
      */
     public static function latestOfSession(string $sessionId): self|null
