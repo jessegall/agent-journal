@@ -33,6 +33,7 @@ from journal.events.rows.worker_notified import WorkerNotified
 from journal.events.rows.worker_retired import WorkerRetired
 from journal.events.rows.worker_reused import WorkerReused
 from journal.events.rows.worker_revived import WorkerRevived
+from journal.events.rows.worker_auto_dispatched import WorkerAutoDispatched
 from journal.events.rows.worker_queue_drained import WorkerQueueDrained
 from journal.models.helper import Helper
 from journal.models.reviewer import Reviewer
@@ -103,6 +104,9 @@ class Worker(Helper):
 
     def dispatched(self, time: float) -> "Worker":
         return self.contacted(time).moved("dispatched", time).with_(state=WorkerState.DISPATCHED).with_event(self.pending(WorkerDispatched, time))
+
+    def auto_dispatched(self, time: float) -> "Worker":
+        return self.contacted(time).moved("dispatched", time).with_(state=WorkerState.DISPATCHED).with_event(WorkerAutoDispatched(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), label=self.mention().label(), awaiter=None, brief=self.brief))
 
     def pending(self, type_name: type[WorkerDispatched], time: float) -> WorkerDispatched:
         return type_name(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), label=self.mention().label(), awaiter=self.dispatcher, brief=self.brief)

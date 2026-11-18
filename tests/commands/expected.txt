@@ -80,6 +80,14 @@ $ agent: journal task unblock 2
 exit 0
 task 2 open again
 
+$ agent: journal task manual 2
+exit 0
+task 2 is kept for you to hand out: the journal's own dispatch passes it over
+
+$ agent: journal task manual 2 --off
+exit 0
+task 2 is left to the journal's own dispatch again
+
 $ agent: journal task dock 1
 exit 0
 Task 1: Write the footer docked above the chat
@@ -1368,6 +1376,8 @@ workers.affected_tests_command = ''
 workers.test_command_proof = ''
 workers.test_run_lines = True
 workers.most_out = 3
+workers.auto_dispatch = False  (the user sets it)
+workers.auto_dispatch_most = 0
 workers.most_subagents = 5
 workers.idle_kept = 8
 workers.worktree_step = True

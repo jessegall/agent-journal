@@ -90,6 +90,9 @@ class TaskCommand(Command):
         block.add_argument("why", nargs="?", default="")
         Waits.arguments(block, "task")
         self.verb(verbs, "unblock", "what it waited on came: the task is open again").add_argument("n", type=int)
+        manual = self.verb(verbs, "manual", "keep a task for the orchestrator to hand out by hand: the journal, dispatching the next tasks by itself, passes it over")
+        manual.add_argument("n", type=int)
+        manual.add_argument("--off", action="store_true", help="leave the task to the journal's own dispatch again")
         testing = self.verb(verbs, "test", "the work is done but a test run must say so: the task waits in testing, out of your hand; the run passing completes it, failing blocks it with what failed")
         testing.add_argument("n", type=int)
         testing.add_argument("--output", type=int, default=0, help="the run that tests it, by its output number")
@@ -230,6 +233,16 @@ class TaskCommand(Command):
         task = self.tasks.save(self.tasks.find(args.n).blocked(args.why, self._time()), caller.actor)
         self.waits.linked(task, args.on, args.until, args.every, caller.actor)
         print(f"task {task.row_id} blocked, waiting on: {self.tasks.reason(task)}")
+        return 0
+
+    def manual(self, args: Namespace, caller: Caller) -> int:
+        task = self.tasks.find(args.n)
+        if args.off:
+            self.tasks.save(task.left_to_the_journal(), caller.actor)
+            print(f"task {task.row_id} is left to the journal's own dispatch again")
+            return 0
+        self.tasks.save(task.kept_by_hand(), caller.actor)
+        print(f"task {task.row_id} is kept for you to hand out: the journal's own dispatch passes it over")
         return 0
 
     def unblock(self, args: Namespace, caller: Caller) -> int:

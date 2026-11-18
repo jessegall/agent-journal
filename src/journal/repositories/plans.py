@@ -161,6 +161,15 @@ class Plans(ScopedRepository[Plan]):
         members = self.links.query().filter(link_type=PHASE_LINK, target=Ref.build(phase)).filter_ref("source", self.tasks.query())
         return {TaskState(state): count for state, count in self.tasks.grouped_counts(self.tasks.query().filter_existing(members), "state").items()}
 
+    def later_phase_task_ids(self) -> set[int]:
+        later = [phase for plan in self.running_plans() for phase in self.later_phases(plan)]
+        return {task_id for task_ids in self.phase_task_ids(later).values() for task_id in task_ids}
+
+    def later_phases(self, plan: Plan) -> list[Phase]:
+        states = self.phase_states(plan)
+        current = plan.current_phase(states)
+        return [phase.phase for phase in states if phase.number > current]
+
     def phase_task_ids(self, phases: list[Phase]) -> dict[int, list[int]]:
         members: dict[int, list[int]] = {phase.id: [] for phase in phases}
         for link in self.phase_links(phases):
