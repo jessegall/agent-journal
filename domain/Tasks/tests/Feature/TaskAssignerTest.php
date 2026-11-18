@@ -1,0 +1,155 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Domain\Tasks\Tests\Feature;
+
+use App\Actors\Enums\ActorType;
+use App\Actors\Support\ActorIdentity;
+use App\Assignments\Contracts\AssignmentPool;
+use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Support\PoolMembers;
+use Domain\Tasks\Api\TaskType;
+use Domain\Tasks\Assignments\ActiveTaskAssignments;
+use Domain\Tasks\Assignments\TaskAssigner;
+use Domain\Tasks\Enums\TaskState;
+use Domain\Tasks\Exceptions\CandidateLimitInvalid;
+use Domain\Tasks\Exceptions\TaskNotOpenForAssignment;
+use Domain\Tasks\Models\Task;
+use Domain\Tasks\Tests\TestCase;
+use Tests\Support\StartsAgentRequests;
+use Tests\Support\TestIds;
+
+/**
+ * Tasks counts the unfinished tasks an actor holds, picks open tasks nobody holds in its pool's order with the
+ * filtering done before the limit, and refuses to give out a task that is no longer open.
+ */
+final class TaskAssignerTest extends TestCase
+{
+    use StartsAgentRequests;
+
+    private ActorIdentity $builder;
+
+    private ActorIdentity $reviewer;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->builder = new ActorIdentity(ActorType::Agent, TestIds::of(7));
+        $this->reviewer = new ActorIdentity(ActorType::Agent, TestIds::of(8));
+        $this->startUserRequestAs(TestIds::of(1));
+    }
+
+    public function test_task_type_is_the_alias_tasks_are_assigned_under(): void
+    {
+        $this->assertSame(Task::LINK_TYPE, TaskType::VALUE);
+        $this->assertSame(TaskType::VALUE, Task::factory()->create()->assignmentIdentity()->type);
+        $this->assertSame([TaskState::Open, TaskState::Started, TaskState::Blocked], TaskState::unfinished());
+    }
+
+    public function test_the_count_holds_the_actors_unfinished_tasks_only(): void
+    {
+        $this->hold($this->task(TaskState::Started), $this->builder);
+        $this->hold($this->task(TaskState::Blocked), $this->builder);
+        $this->hold($this->task(TaskState::Finished), $this->builder);
+        $this->hold($this->task(TaskState::Open), $this->reviewer);
+
+        $this->assertSame(2, $this->app->make(ActiveTaskAssignments::class)->countFor($this->builder));
+    }
+
+    public function test_an_all_pool_gives_the_lowest_id_open_task_nobody_holds(): void
+    {
+        $tasks = [$this->task(TaskState::Open), $this->task(TaskState::Open), $this->task(TaskState::Open)];
+        sort($tasks);
+        [$lowest, $middle, $highest] = $tasks;
+        $this->hold($lowest, $this->reviewer);
+        $this->task(TaskState::Started);
+
+        $assigner = $this->app->make(TaskAssigner::class);
+
+        $this->assertSame([$middle], $assigner->pick($this->builder, self::pool(PoolMembers::all()), 1)->ids);
+        $this->assertSame(
+            [$middle, $highest],
+            $assigner->pick($this->builder, self::pool(PoolMembers::all()), 5)->ids,
+        );
+    }
+
+    public function test_an_ordered_pool_keeps_its_order_and_filters_before_the_limit(): void
+    {
+        $first = $this->task(TaskState::Open);
+        $second = $this->task(TaskState::Open);
+        $third = $this->task(TaskState::Open);
+        $finished = $this->task(TaskState::Finished);
+        $this->hold($third, $this->reviewer);
+        $pool = self::pool(PoolMembers::ordered([$third, $finished, $first, $second]));
+
+        $assigner = $this->app->make(TaskAssigner::class);
+
+        $this->assertSame([$first], $assigner->pick($this->builder, $pool, 1)->ids);
+        $this->assertSame([$first, $second], $assigner->pick($this->builder, $pool, 3)->ids);
+        $this->assertSame([], $assigner->pick($this->builder, self::pool(PoolMembers::ordered([])), 3)->ids);
+    }
+
+    public function test_an_ordered_pool_past_ten_ids_keeps_its_numeric_order(): void
+    {
+        $ids = array_map(fn () => $this->task(TaskState::Open), range(1, 12));
+        $listed = array_reverse($ids);
+
+        $pool = self::pool(PoolMembers::ordered($listed));
+
+        $picked = $this->app->make(TaskAssigner::class)->pick($this->builder, $pool, 12);
+
+        $this->assertSame($listed, $picked->ids);
+    }
+
+    public function test_a_limit_outside_one_to_a_thousand_is_refused(): void
+    {
+        $assigner = $this->app->make(TaskAssigner::class);
+
+        $this->assertThrows(
+            fn () => $assigner->pick($this->builder, self::pool(PoolMembers::all()), 0),
+            CandidateLimitInvalid::class,
+        );
+        $this->assertThrows(
+            fn () => $assigner->pick($this->builder, self::pool(PoolMembers::all()), 1001),
+            CandidateLimitInvalid::class,
+        );
+    }
+
+    public function test_a_candidate_must_still_be_open(): void
+    {
+        $assigner = $this->app->make(TaskAssigner::class);
+        $open = Task::factory()->create();
+        $finished = Task::factory()->create(['state' => TaskState::Finished]);
+
+        $assigner->requireCandidate($open->assignmentIdentity());
+
+        $this->expectException(TaskNotOpenForAssignment::class);
+
+        $assigner->requireCandidate($finished->assignmentIdentity());
+    }
+
+    private function task(TaskState $state): string
+    {
+        return Task::factory()->create(['state' => $state])->id;
+    }
+
+    private function hold(string $taskId, ActorIdentity $holder): void
+    {
+        AssignmentRecord::holding(Task::query()->findOrFail($taskId)->assignmentIdentity(), $holder);
+    }
+
+    private static function pool(PoolMembers $members): AssignmentPool
+    {
+        return new readonly class($members) implements AssignmentPool
+        {
+            public function __construct(private PoolMembers $members) {}
+
+            public function members(): PoolMembers
+            {
+                return $this->members;
+            }
+        };
+    }
+}
