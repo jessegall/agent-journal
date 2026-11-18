@@ -82,19 +82,6 @@ final readonly class LaunchSessions
         return new LaunchedAgent($session, $token, $settings->content(), $selection->program->modelArguments($selection->model), $runtime, $firstRequest);
     }
 
-    /**
-     * Records the program's own session id, which changes on a clear or a resume, without starting another journal session.
-     */
-    public function mapProgramSession(AgentSession $session, string $programSessionId): void
-    {
-        $session->mapProgramSession($programSessionId);
-    }
-
-    public function mapProgramSessionFor(string $sessionId, string $programSessionId): void
-    {
-        AgentSession::query()->findOrFail($sessionId)->mapProgramSession($programSessionId);
-    }
-
     public function end(AgentSession $session): void
     {
         $this->transaction->runForSession($session->id, function () use ($session): void {

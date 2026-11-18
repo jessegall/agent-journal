@@ -149,7 +149,7 @@ final class HookEndpointTest extends TestCase
         $this->hook('claude-code', '{"session_id":"program-session-2","hook_event_name":"SessionStart","source":"clear"}', 'call-2')->assertOk();
 
         $this->assertSame(1, AgentSession::query()->count());
-        $this->assertSame('program-session-2', $this->launch->session->fresh()?->program_session_id);
+        $this->assertSame('program-session-2', $this->launch->session->fresh()?->currentConversation?->native_id);
         $this->assertSame(2, HookCall::query()->authorizedFor($this->target())->count());
     }
 

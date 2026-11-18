@@ -117,7 +117,7 @@ final class HookTransactionTest extends TestCase
         $this->answerSessionStart('vendor-1', $capabilities);
         $this->answerSessionStart('vendor-2', $capabilities);
 
-        $this->assertSame('vendor-1', AgentSession::query()->findOrFail($this->target->sessionId)->program_session_id);
+        $this->assertSame('vendor-1', AgentSession::query()->findOrFail($this->target->sessionId)->currentConversation?->native_id);
         $this->assertSame(1, HookCall::query()->count());
     }
 

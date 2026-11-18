@@ -34,7 +34,7 @@ use Illuminate\Support\Carbon;
  * @property string $agent_id
  * @property string|null $parent_session_id
  * @property string|null $program
- * @property string|null $program_session_id
+ * @property string|null $current_conversation_id
  * @property string $model
  * @property ModelSelectionType $requested_model_type
  * @property string|null $requested_model
@@ -53,7 +53,7 @@ use Illuminate\Support\Carbon;
  * @property-read Agent $agent
  * @property-read LaunchCredential|null $credential
  */
-#[Fillable(['program', 'program_session_id', 'discovered_at', 'model', 'requested_model_type', 'requested_model', 'program_source', 'profile_key', 'profile_revision', 'launch_request_id'])]
+#[Fillable(['program', 'current_conversation_id', 'discovered_at', 'model', 'requested_model_type', 'requested_model', 'program_source', 'profile_key', 'profile_revision', 'launch_request_id'])]
 final class AgentSession extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -121,10 +121,23 @@ final class AgentSession extends Model implements ReadableModel
         return new SelectedProgram(HookProgram::from((string) $this->program), $this->model, $requested, new SelectionSource($this->program_source, $this->profile_key, $this->profile_revision));
     }
 
-    public function mapProgramSession(string $programSessionId): void
+    public function enterConversation(ProgramConversation $conversation): void
     {
-        $this->program_session_id = $programSessionId;
+        $this->current_conversation_id = $conversation->id;
         $this->save();
+    }
+
+    public static function lockedForUpdate(string $sessionId): self
+    {
+        return self::query()->whereKey($sessionId)->lockForUpdate()->firstOrFail();
+    }
+
+    /**
+     * @return BelongsTo<ProgramConversation, $this>
+     */
+    public function currentConversation(): BelongsTo
+    {
+        return $this->belongsTo(ProgramConversation::class, 'current_conversation_id');
     }
 
     public function endAt(CarbonImmutable $time): void

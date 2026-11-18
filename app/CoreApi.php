@@ -55,6 +55,7 @@ use App\Agents\Commands\RetireAgent;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Agents\Contracts\AgentReader;
+use App\Agents\Contracts\ProgramConversationReader;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchExecutor;
@@ -93,6 +94,7 @@ use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Exceptions\AgentNameRequired;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Exceptions\AgentRetirementDenied;
+use App\Agents\Exceptions\ConversationIncompatible;
 use App\Agents\Exceptions\DefaultUnavailable;
 use App\Agents\Exceptions\ExecutionBudgetInvalid;
 use App\Agents\Exceptions\ExecutionPolicyInvalid;
@@ -109,6 +111,7 @@ use App\Agents\Exceptions\StopConditionsInvalid;
 use App\Agents\Support\AgentLabel;
 use App\Agents\Support\ClaimedRequest;
 use App\Agents\Support\ClaimedRequests;
+use App\Agents\Support\ProgramConversationSummary;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\EnrolledHost;
 use App\Agents\Support\ExecutionBudgets;
@@ -686,6 +689,7 @@ final class CoreApi
                 LaunchExecutor::class,
                 HostCapabilities::class,
                 LaunchRecordReader::class,
+                ProgramConversationReader::class,
                 RecordVisibility::class,
                 RuntimeReader::class,
                 AgentStack::class,
@@ -814,6 +818,7 @@ final class CoreApi
                 LaunchRequest::class,
                 LaunchReceipt::class,
                 LaunchRecordDetails::class,
+                ProgramConversationSummary::class,
                 LaunchOriginType::class,
                 ConversationModeType::class,
                 LaunchDisposition::class,
@@ -1278,6 +1283,7 @@ final class CoreApi
                 AgentBusy::class,
                 AgentNameRequired::class,
                 LaunchRecordMissing::class,
+                ConversationIncompatible::class,
                 UnknownAccessType::class,
                 UnknownResourceArea::class,
                 AccessPolicyInvalid::class,

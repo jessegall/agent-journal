@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Hooks;
 
+use App\Agents\Exceptions\ConversationIncompatible;
 use App\Agents\Exceptions\StaleProcessGeneration;
 use App\Agents\Support\NativeTurns;
 use App\Bus\Exceptions\StackLockTimedOut;
@@ -64,7 +65,7 @@ final readonly class HookController
             $reply = $call->replyWith(fn (HookInput $input, Closure $render) => $machine->answer($input, $adapter->capabilities(), $this->deadline, $render));
         } catch (UnsupportedHook|UnreadablePayload $refused) {
             return $this->failure($refused->getMessage(), Response::HTTP_UNPROCESSABLE_ENTITY);
-        } catch (HookIdentityExpired|HookDigestChanged|StaleProcessGeneration $conflict) {
+        } catch (HookIdentityExpired|HookDigestChanged|StaleProcessGeneration|ConversationIncompatible $conflict) {
             return $this->failure($conflict->getMessage(), Response::HTTP_CONFLICT);
         } catch (ShellParserMissing|StackLockTimedOut $unavailable) {
             return $this->failure($unavailable->getMessage(), Response::HTTP_SERVICE_UNAVAILABLE);

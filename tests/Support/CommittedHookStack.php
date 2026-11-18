@@ -91,7 +91,7 @@ trait CommittedHookStack
         $agent = Agent::query()->find(TestIds::of(1)) ?? new Agent(['name' => 'Hook agent', 'role' => 'hooks.main_ready']);
         $agent->id = TestIds::of(1);
         $agent->save();
-        $session = AgentSession::query()->find(TestIds::of(10)) ?? new AgentSession([...TestSelections::sessionColumns(), 'program_session_id' => 'hook-session']);
+        $session = AgentSession::query()->find(TestIds::of(10)) ?? new AgentSession(TestSelections::sessionColumns());
         $session->id = TestIds::of(10);
         $session->agent_id = $agent->id;
         $session->save();

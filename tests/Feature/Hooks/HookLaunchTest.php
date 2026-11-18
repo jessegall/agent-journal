@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
+use App\Agents\Actions\RecordConversationVisit;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Exceptions\ProgramUnsupported;
 use App\Agents\Models\Agent;
@@ -110,14 +111,14 @@ final class HookLaunchTest extends TestCase
     public function test_a_clear_or_resume_keeps_the_journal_session_and_its_stack(): void
     {
         $launched = $this->launch('hooks.main_ready');
-        $sessions = $this->app->make(LaunchSessions::class);
+        $visits = $this->app->make(RecordConversationVisit::class);
 
-        $sessions->mapProgramSession($launched->session, 'program-session-1');
+        $visits->entered($launched->session->id, 'program-session-1', 'call-1', CarbonImmutable::now());
         $framesBefore = $this->bottomOf($launched);
-        $sessions->mapProgramSession($launched->session, 'program-session-2');
+        $visits->entered($launched->session->id, 'program-session-2', 'call-2', CarbonImmutable::now());
 
         $this->assertSame(1, AgentSession::query()->count());
-        $this->assertSame('program-session-2', $launched->session->fresh()?->program_session_id);
+        $this->assertSame('program-session-2', $launched->session->fresh()?->currentConversation?->native_id);
         $this->assertSame($framesBefore, $this->bottomOf($launched));
         $this->assertSame($launched->session->id, $this->app->make(CredentialLookup::class)->sessionFor($launched->token)->id);
     }
