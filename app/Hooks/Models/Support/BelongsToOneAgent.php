@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Models\Support;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Models\Support\ReadsForActor;
 use App\Agents\Support\AgentContext;
 use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -18,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 trait BelongsToOneAgent
 {
+    use ReadsForActor;
+
     public static function bootBelongsToOneAgent(): void
     {
         static::addGlobalScope(new AgentScope(
@@ -52,22 +55,6 @@ trait BelongsToOneAgent
     }
 
     /**
-     * The read for whoever acts in this request: a user reads through visibleToUser, anyone else keeps the agent
-     * scope, which still needs the agent context and fails without it.
-     *
-     * @param  Builder<static>  $query
-     */
-    #[Scope]
-    protected function forActor(Builder $query): void
-    {
-        $actors = Container::getInstance()->make(CurrentActor::class);
-
-        if ($actors->isSignedIn() && $actors->actor()->isUser()) {
-            $query->visibleToUser();
-        }
-    }
-
-    /**
      * The row locked for a change that must happen once, among the actor's own rows or the rows no agent holds yet,
      * such as a message nobody was asked to answer or a run nobody follows; null when the actor may not have it.
      */
@@ -75,19 +62,5 @@ trait BelongsToOneAgent
     {
         return static::query()->forActor()->whereKey($id)->lockForUpdate()->first()
             ?? static::query()->withoutGlobalScope(AgentScope::class)->whereNull('agent_id')->whereKey($id)->lockForUpdate()->first();
-    }
-
-    /**
-     * Route binding reads through the actor's own scope: a user's route binds through visibleToUser, an agent's
-     * through its own agent scope, and a request with no actor fails before any row is read.
-     *
-     * @param  mixed  $value
-     * @param  string|null  $field
-     */
-    public function resolveRouteBinding($value, $field = null): Model|null
-    {
-        Container::getInstance()->make(CurrentActor::class)->actor();
-
-        return $this->newQuery()->forActor()->where($field ?? $this->getRouteKeyName(), $value)->first();
     }
 }

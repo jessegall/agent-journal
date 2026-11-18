@@ -18,6 +18,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 trait BelongsToOneActor
 {
+    use ReadsForActor;
+
     public static function bootBelongsToOneActor(): void
     {
         static::addGlobalScope(new ActorScope(static fn (): CurrentActor => Container::getInstance()->make(CurrentActor::class)));
@@ -57,21 +59,6 @@ trait BelongsToOneActor
     }
 
     /**
-     * The read for whoever acts in this request: a user reads through visibleToUser, anyone else only its own rows.
-     *
-     * @param  Builder<static>  $query
-     */
-    #[Scope]
-    protected function forActor(Builder $query): void
-    {
-        $actors = Container::getInstance()->make(CurrentActor::class);
-
-        if ($actors->isSignedIn() && $actors->actor()->isUser()) {
-            $query->visibleToUser();
-        }
-    }
-
-    /**
      * The row locked for a change that must happen once, among the actor's own rows or the rows no actor holds yet,
      * such as a run nobody follows; null when the actor may not have it.
      */
@@ -79,18 +66,5 @@ trait BelongsToOneActor
     {
         return static::query()->forActor()->whereKey($id)->lockForUpdate()->first()
             ?? static::query()->withoutGlobalScope(ActorScope::class)->whereNull('actor_id')->whereKey($id)->lockForUpdate()->first();
-    }
-
-    /**
-     * Binds a route to a row the acting actor may read.
-     *
-     * @param  mixed  $value
-     * @param  string|null  $field
-     */
-    public function resolveRouteBinding($value, $field = null): Model|null
-    {
-        Container::getInstance()->make(CurrentActor::class)->actor();
-
-        return $this->newQuery()->forActor()->where($field ?? $this->getRouteKeyName(), $value)->first();
     }
 }
