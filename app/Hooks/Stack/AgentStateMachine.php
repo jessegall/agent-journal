@@ -24,7 +24,8 @@ use App\Hooks\Support\StackTransaction;
 use Closure;
 
 /**
- * Answers one hook call in one transaction: lock the stack, replay a call already answered, or restore, walk the
+ * Answers one hook call in one transaction: lock the stack, replay a call already answered before anything else runs,
+ * or collect a compaction's reminders, run the session-start step, restore, walk the
  * stack without its finished frames, settle what the program accepts, call the lifecycle methods of the frames that
  * left, arrived or came back on top, then render and save the reply, its steps and the stack together. Nothing is
  * kept when any step fails.
@@ -39,6 +40,7 @@ final readonly class AgentStateMachine
         private Compaction $compaction,
         private FrameLifecycle $lifecycle,
         private StateTypes $types,
+        private SessionStartStep $sessionStart,
     ) {}
 
     /**
@@ -57,7 +59,6 @@ final readonly class AgentStateMachine
 
         try {
             return $this->transaction->runAdmitted($this->access->target()->sessionId, $deadline, function () use ($input, $capabilities, $render, $identity, &$replayed): ProgramReply {
-                $reminders = $this->remindersFor($input);
                 $row = AgentStackRow::lockFor($this->access->target());
                 $recorded = HookCall::query()->forHookId($identity->hookId)->first();
 
@@ -66,6 +67,10 @@ final readonly class AgentStateMachine
 
                     throw ReplayFound::answeredBefore($identity->hookId);
                 }
+
+                $reminders = $this->remindersFor($input);
+
+                $this->sessionStart->run($input, $this->access->target());
 
                 $this->lifecycle->refuseChangeDuringCallbacks($this->access->target());
                 $stackBefore = $this->restorer->restore($row->frames, $this->access->role());
@@ -88,7 +93,8 @@ final readonly class AgentStateMachine
     }
 
     /**
-     * The reminders a compaction brings, read before the stack lock; any other hook brings none.
+     * The reminders a new compaction brings, read after the replay check under the stack lock; a replayed compaction and
+     * any other hook bring none.
      *
      * @return list<string>
      */

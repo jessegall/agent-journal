@@ -9,6 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Enums\RewriteSupport;
+use App\Hooks\Events\ContextWasCompacted;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
 use App\Hooks\Inputs\HookIdentity;
@@ -24,6 +25,7 @@ use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -100,6 +102,19 @@ final class HookCompactionTest extends TestCase
         $this->assertSame(TaskState::Started, $this->task->fresh()?->state);
         $this->assertSame(1, $this->run->fresh()?->current_step);
         $this->assertSame(['hooks.main_ready', 'tasks.working', 'sequences.following'], $this->storedTypeKeys());
+    }
+
+    public function test_a_replayed_compaction_runs_no_reminder_listener(): void
+    {
+        $this->compact('call-1');
+        $heard = 0;
+        Event::listen(ContextWasCompacted::class, function () use (&$heard): void {
+            $heard++;
+        });
+
+        $this->compact('call-1');
+
+        $this->assertSame(0, $heard);
     }
 
     /**
