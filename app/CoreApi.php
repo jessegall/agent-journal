@@ -142,6 +142,7 @@ use App\Assignments\Contracts\AssignmentReader;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
+use App\Assignments\Contracts\RecordVisibility;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Events\AssignmentsChanged;
@@ -637,6 +638,7 @@ final class CoreApi
                 LaunchExecutor::class,
                 HostCapabilities::class,
                 LaunchRecordReader::class,
+                RecordVisibility::class,
                 RuntimeReader::class,
                 AgentStack::class,
                 UserStack::class,
