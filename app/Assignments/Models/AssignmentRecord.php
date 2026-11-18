@@ -98,7 +98,9 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
 
     protected static function booted(): void
     {
-        self::addGlobalScope(new SignedInScope(static fn (): CurrentActor => Container::getInstance()->make(CurrentActor::class)));
+        self::addGlobalScope(
+            new SignedInScope(static fn (): CurrentActor => Container::getInstance()->make(CurrentActor::class)),
+        );
     }
 
     /**
@@ -108,6 +110,36 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     protected function forRecord(Builder $query, RecordIdentity $record): void
     {
         $query->where('record_type', $record->type)->where('record_id', $record->id);
+    }
+
+    /**
+     * The ids of the records of one type the holder holds, for a domain's trusted count and pick to filter by. It
+     * lifts the signed-in limit, since the engine fills assignments with nobody signed in.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function heldRecordIds(Builder $query, string $type, ActorIdentity $holder): void
+    {
+        $query->withoutGlobalScope(SignedInScope::class)
+            ->select('record_id')
+            ->where('record_type', $type)
+            ->where('holder_type', $holder->type)
+            ->where('holder_id', $holder->id);
+    }
+
+    /**
+     * The ids of the records of one type anyone holds, for a domain's trusted pick to leave out. It lifts the
+     * signed-in limit, since the engine fills assignments with nobody signed in.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function assignedRecordIds(Builder $query, string $type): void
+    {
+        $query->withoutGlobalScope(SignedInScope::class)
+            ->select('record_id')
+            ->where('record_type', $type);
     }
 
     /**

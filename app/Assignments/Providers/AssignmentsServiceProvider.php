@@ -9,8 +9,10 @@ use App\Assignments\Console\AssignRecordCommand;
 use App\Assignments\Console\ReassignRecordCommand;
 use App\Assignments\Console\ShowAssignmentCommand;
 use App\Assignments\Console\UnassignRecordCommand;
+use App\Assignments\Contracts\AssignedWorkReader;
 use App\Assignments\Contracts\AssigneeReader;
 use App\Assignments\Contracts\AssignmentProviders;
+use App\Assignments\Contracts\AssignmentQuery;
 use App\Assignments\Contracts\AssignmentReader;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Contracts\AssignmentTransaction;
@@ -18,8 +20,10 @@ use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Contracts\RecordVisibility;
 use App\Assignments\Readers\AssigneeRecords;
 use App\Assignments\Readers\AssignmentRecords;
+use App\Assignments\Readers\RegisteredAssignedWork;
 use App\Assignments\Readers\VisibleRecords;
 use App\Assignments\Registry\AssignmentRegistry;
+use App\Assignments\Storage\DatabaseAssignmentQuery;
 use App\Assignments\Storage\DatabaseAssignmentTransaction;
 use App\Links\Support\LinkTypeRegistry;
 use Illuminate\Support\ServiceProvider;
@@ -41,6 +45,8 @@ final class AssignmentsServiceProvider extends ServiceProvider
         $this->app->scoped(AssignmentReader::class, AssignmentRecords::class);
         $this->app->scoped(AssigneeReader::class, AssigneeRecords::class);
         $this->app->scoped(RecordVisibility::class, VisibleRecords::class);
+        $this->app->scoped(AssignmentQuery::class, DatabaseAssignmentQuery::class);
+        $this->app->scoped(AssignedWorkReader::class, RegisteredAssignedWork::class);
     }
 
     public function boot(): void
