@@ -75,7 +75,7 @@ final class PlanWorkingStateTest extends TestCase
 
     private function plan(): Plan
     {
-        return Plan::query()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
+        return Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
     }
 
     /**

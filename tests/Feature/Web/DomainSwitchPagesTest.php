@@ -41,7 +41,7 @@ final class DomainSwitchPagesTest extends TestCase
 
     public function test_pages_and_actions_of_a_switched_off_domain_answer_not_found_and_others_stay(): void
     {
-        $plan = Plan::query()->create(['title' => 'Kept', 'type' => PlanType::Build]);
+        $plan = Plan::factory()->create(['title' => 'Kept', 'type' => PlanType::Build]);
         $this->switchPlansOff();
 
         $this->inertia('/plans')->assertNotFound();

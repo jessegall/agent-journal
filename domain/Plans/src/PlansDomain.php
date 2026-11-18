@@ -40,6 +40,8 @@ use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Api\PlanSelection;
 use Domain\Plans\Commands\AddPhase;
 use Domain\Plans\Commands\AddPhaseTasks;
+use Domain\Plans\Commands\CreatePlan;
+use Domain\Plans\Commands\EditPlan;
 use Domain\Plans\Commands\AssignPlanWork;
 use Domain\Plans\Commands\ReassignPlanWork;
 use Domain\Plans\Commands\StartPlan;
@@ -142,7 +144,7 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
      */
     public function commands(): array
     {
-        return [StartPlan::class, AddPhase::class, AddPhaseTasks::class, AssignPlanWork::class, ReassignPlanWork::class, UnassignPlanWork::class];
+        return [StartPlan::class, CreatePlan::class, EditPlan::class, AddPhase::class, AddPhaseTasks::class, AssignPlanWork::class, ReassignPlanWork::class, UnassignPlanWork::class];
     }
 
     public function pages(): array

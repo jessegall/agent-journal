@@ -51,7 +51,7 @@ final class AssignedListCommandsTest extends TestCase
     {
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $task = Task::factory()->create(['title' => 'Write the client']);
-        $plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
+        $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $held = $writer->assign($task->assignmentIdentity(), ActorIdentity::of($this->caller->agent))->outcomes[0]->current;
         $writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->caller->agent));
         $this->runCommandsAs($this->caller->token);

@@ -21,13 +21,13 @@ final class PlansSeeder extends Seeder
      */
     public function run(array $readingTaskIds = [], array $startingTaskIds = [], array $reproducingTaskIds = []): void
     {
-        $build = Plan::query()->create(['title' => 'Build the plans page', 'type' => PlanType::Build]);
+        $build = Plan::factory()->create(['title' => 'Build the plans page', 'type' => PlanType::Build]);
         $build->addPhase('Read the plans')->addTasks($readingTaskIds);
         $build->addPhase('Start a plan')->addTasks($startingTaskIds);
 
-        $fix = Plan::query()->create(['title' => 'Fix the login redirect', 'type' => PlanType::Fix]);
+        $fix = Plan::factory()->create(['title' => 'Fix the login redirect', 'type' => PlanType::Fix]);
         $fix->addPhase('Reproduce it')->addTasks($reproducingTaskIds);
 
-        Plan::query()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
+        Plan::factory()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
     }
 }

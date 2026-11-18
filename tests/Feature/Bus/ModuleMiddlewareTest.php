@@ -170,7 +170,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     {
         $trail = $this->installCommandModulesRequiring(['Plans'], MiddlewareDeclaration::around(LimitPlanStarts::class, CommandScope::command(StartPlan::class)));
         $this->startUserRequestAs(TestIds::of(1));
-        $plan = Plan::query()->create(['title' => 'Quota', 'type' => PlanType::Build]);
+        $plan = Plan::factory()->create(['title' => 'Quota', 'type' => PlanType::Build]);
 
         try {
             $this->app->make(CommandBus::class)->run(new StartPlan($plan->id));

@@ -50,7 +50,7 @@ final class AssignedListEndpointsTest extends TestCase
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $held = Task::factory()->create(['title' => 'Write the endpoint']);
         $others = Task::factory()->create(['title' => 'Not mine']);
-        $plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
+        $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $writer->assign($held->assignmentIdentity(), ActorIdentity::of($this->caller->agent));
         $writer->assign($others->assignmentIdentity(), ActorIdentity::of($this->other->agent));
         $writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->caller->agent));

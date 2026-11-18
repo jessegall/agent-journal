@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Models;
 
+use App\Actors\Enums\ActorType;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Assignments\Support\AssignmentHolder;
@@ -17,15 +18,18 @@ use App\Sharing\Contracts\Shareable;
 use App\Sharing\Support\ShareRecordCard;
 use App\Sharing\Support\ShareRelationSet;
 use Domain\Plans\Api\PlanCard;
+use Domain\Plans\Database\Factories\PlanFactory;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Exceptions\PhaseMissing;
 use Domain\Plans\Exceptions\StartDenied;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
@@ -37,15 +41,26 @@ use PhpOption\Option;
  *
  * @property string $id
  * @property string $title
+ * @property string $brief
+ * @property ActorType $creator_type
+ * @property string $creator_id
+ * @property string|null $creator_session_id
+ * @property int $revision
  * @property PlanType $type
+ * @property string|null $finish_note
+ * @property string|null $cancel_reason
  * @property PlanState $state
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['title', 'type'])]
+#[Fillable(['title', 'brief', 'creator_type', 'creator_id', 'creator_session_id', 'revision', 'type', 'finish_note', 'cancel_reason'])]
+#[UseFactory(PlanFactory::class)]
 final class Plan extends Model implements Assignable, Numbered, ReadableModel, Shareable
 {
-    use AssignableListing, HasNumber, HasUlids, Linkable;
+    /**
+     * @use HasFactory<PlanFactory>
+     */
+    use AssignableListing, HasFactory, HasNumber, HasUlids, Linkable;
     use BoundedReads;
 
     /**
@@ -56,7 +71,7 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
     /**
      * @var array<string, mixed>
      */
-    protected $attributes = ['state' => 'planned'];
+    protected $attributes = ['state' => 'planned', 'revision' => 1];
 
     /**
      * @return array<string, string>
@@ -66,7 +81,21 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
         return [
             'type' => PlanType::class,
             'state' => PlanState::class,
+            'creator_type' => ActorType::class,
+            'revision' => 'integer',
         ];
+    }
+
+    /**
+     * Gives the plan a new title, brief and type, as a new revision.
+     */
+    public function describe(string $title, string $brief, PlanType $type): void
+    {
+        $this->title = $title;
+        $this->brief = $brief;
+        $this->type = $type;
+        $this->revision++;
+        $this->save();
     }
 
     /**

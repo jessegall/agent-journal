@@ -57,7 +57,7 @@ final class RecordLinksTest extends TestCase
     public function test_a_task_a_plan_and_a_document_are_read_as_cards_by_their_reference(): void
     {
         Task::factory()->create(['title' => 'Write the client']);
-        Plan::query()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
+        Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
         $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n"));
 
         $cards = array_map(fn (string $reference) => $this->records()->card($this->records()->identify(RecordReference::parse($reference))), ['task 1', 'plan 1', 'doc 1']);
@@ -93,7 +93,7 @@ final class RecordLinksTest extends TestCase
 
     public function test_a_report_links_to_a_plan_and_a_document_once_and_unlinking_keeps_both_records(): void
     {
-        Plan::query()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
+        Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
         $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n"));
         $this->bus()->run(new CreateReport('Check', 'What we found', "All good\n"));
         [$report, $plan, $document] = array_map(fn (string $reference) => $this->records()->identify(RecordReference::parse($reference)), ['report 1', 'plan 1', 'doc 1']);

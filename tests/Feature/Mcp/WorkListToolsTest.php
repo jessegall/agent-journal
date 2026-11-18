@@ -74,7 +74,7 @@ final class WorkListToolsTest extends TestCase
 
     public function test_a_held_plan_appears_in_plans_assigned_with_its_state_and_progress(): void
     {
-        $plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
+        $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $this->writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->caller->agent));
 
         $card = $this->callMcpTool($this->caller, 'plans_assigned')->json('result.structuredContent.cards.0');

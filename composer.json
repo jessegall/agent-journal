@@ -45,6 +45,7 @@
             "App\\": "app/",
             "Domain\\Access\\Database\\Factories\\": "domain/Access/database/factories/",
             "Domain\\Access\\Database\\Seeders\\": "domain/Access/database/seeders/",
+            "Domain\\Plans\\Database\\Factories\\": "domain/Plans/database/factories/",
             "Domain\\Plans\\Database\\Seeders\\": "domain/Plans/database/seeders/",
             "Domain\\Tasks\\Database\\Factories\\": "domain/Tasks/database/factories/",
             "Domain\\Tasks\\Database\\Seeders\\": "domain/Tasks/database/seeders/",

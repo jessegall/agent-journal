@@ -58,7 +58,7 @@ final class PageChangeTest extends TestCase
     public function test_a_finished_task_of_a_plan_moves_the_plan_and_changes_the_page(): void
     {
         $task = Task::factory()->create(['title' => 'List the plans']);
-        $plan = Plan::query()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
+        $plan = Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
         $plan->addPhase('Read')->addTasks([$task->id]);
         $progress = [];
         Event::listen(PlanProgressChanged::class, function (PlanProgressChanged $changed) use (&$progress): void {
@@ -81,7 +81,7 @@ final class PageChangeTest extends TestCase
     public function test_a_rolled_back_change_sends_nothing(): void
     {
         $task = Task::factory()->create(['title' => 'List the plans']);
-        Plan::query()->create(['title' => 'Build the release page', 'type' => PlanType::Build])->addPhase('Read')->addTasks([$task->id]);
+        Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build])->addPhase('Read')->addTasks([$task->id]);
 
         try {
             $this->app->make(ConnectionInterface::class)->transaction(function () use ($task): void {

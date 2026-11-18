@@ -59,7 +59,7 @@ final class AssignmentCascadeTest extends TestCase
         $this->startUserRequestAs($owner->id);
         $this->builder = ActorIdentity::of(Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.read_only_helper_ready']));
         $this->other = ActorIdentity::of(Agent::query()->create(['name' => 'Other', 'role' => 'hooks.read_only_helper_ready']));
-        $this->plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
+        $this->plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $this->open = Task::factory()->create(['title' => 'Open']);
         $this->finished = Task::factory()->create(['title' => 'Finished']);
         $this->unheld = Task::factory()->create(['title' => 'Unheld']);

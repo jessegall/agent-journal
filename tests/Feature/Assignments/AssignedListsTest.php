@@ -87,8 +87,8 @@ final class AssignedListsTest extends TestCase
     public function test_a_held_plan_is_listed_but_holding_one_of_its_tasks_adds_no_plan(): void
     {
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
-        $plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
-        $other = Plan::query()->create(['title' => 'Research', 'type' => PlanType::Research]);
+        $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
+        $other = Plan::factory()->create(['title' => 'Research', 'type' => PlanType::Research]);
         $task = Task::factory()->create(['title' => 'In the research plan']);
         $other->addPhase('One')->addTasks([$task->id]);
         $writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->main));

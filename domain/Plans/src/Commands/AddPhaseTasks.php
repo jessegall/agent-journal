@@ -21,6 +21,7 @@ final readonly class AddPhaseTasks implements Command
      */
     public function __construct(
         public string $phaseId,
+        public int $expectedRevision,
         public array $taskIds,
     ) {}
 }

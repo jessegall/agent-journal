@@ -42,7 +42,7 @@ final class PlanWorkCommandsTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->main = TestLaunch::start('hooks.main_ready');
         $this->helper = TestLaunch::start('hooks.read_only_helper_ready');
-        $this->plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
+        $this->plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $open = Task::factory()->create(['title' => 'Open']);
         $finished = Task::factory()->create(['title' => 'Finished']);
         $finished->finish();

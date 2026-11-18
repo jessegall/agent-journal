@@ -33,9 +33,9 @@ final class PlansPageTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->release = Plan::query()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
+        $this->release = Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
         $this->release->addPhase('Read')->addTasks([Task::factory()->create(['title' => 'List the plans'])->id]);
-        $this->paused = Plan::query()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
+        $this->paused = Plan::factory()->create(['title' => 'Compare chat layouts', 'type' => PlanType::Research]);
         Plan::query()->whereKey($this->paused->id)->update(['state' => PlanState::Paused->value]);
     }
 

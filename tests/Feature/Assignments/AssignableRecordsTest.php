@@ -71,7 +71,7 @@ final class AssignableRecordsTest extends TestCase
         $finished->finish();
         $cancelled = Task::factory()->create(['title' => 'Cancelled']);
         $cancelled->cancel();
-        $plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
+        $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
 
         $overTasks = $this->registry->recordProvider(Task::LINK_TYPE)->finishedRecords([$open, $finished, $cancelled]);
         $overPlans = $this->registry->recordProvider(Plan::LINK_TYPE)->finishedRecords([$plan]);
@@ -82,7 +82,7 @@ final class AssignableRecordsTest extends TestCase
 
     public function test_a_phase_is_over_only_when_it_holds_tasks_and_all_ended(): void
     {
-        $plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
+        $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $empty = $plan->addPhase('Empty');
         $allEnded = $plan->addPhase('All ended');
         $mixed = $plan->addPhase('Mixed');
