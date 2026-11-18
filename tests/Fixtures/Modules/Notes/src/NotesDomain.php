@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
+use Tests\Fixtures\Modules\Notes\Models\NotePage;
+use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
+use Tests\Fixtures\Modules\Notes\Links\NotePageLinkRecords;
+use Tests\Fixtures\Modules\Notes\Links\NoteSnapshotLinkRecords;
 use App\Domains\Concerns\HasLinkRecords;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Contracts\ProvidesLinkRecords;
@@ -80,12 +84,12 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
 
     public function numberedModels(): array
     {
-        return [NumberedModel::global(Note::class)];
+        return [NumberedModel::global(Note::class), NumberedModel::global(NotePage::class), NumberedModel::global(NoteSnapshot::class)];
     }
 
     public function linkRecords(): array
     {
-        return [Note::LINK_TYPE => NoteLinkRecords::class];
+        return [Note::LINK_TYPE => NoteLinkRecords::class, NotePage::LINK_TYPE => NotePageLinkRecords::class, NoteSnapshot::LINK_TYPE => NoteSnapshotLinkRecords::class];
     }
 
     public function states(): array

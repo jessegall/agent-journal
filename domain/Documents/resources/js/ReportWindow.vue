@@ -20,6 +20,6 @@ const number = props.data.label.replace('report ', '');
         <RecordStatus :data="data" editing="free" :settle-action="`/documents/reports/${number}/settle`" />
         <DockToSession type="report" :number="number" :sessions="data.sessions" />
         <LinksPanel :source="data.label" :links="data.links" />
-        <CommentsPanel :comments="data.comments" :target="data.label" :body="data.body" version="1" />
+        <CommentsPanel :comments="data.comments" :target="data.label" version="1" />
     </div>
 </template>

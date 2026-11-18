@@ -14,6 +14,7 @@ use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
 use App\Comments\Contracts\CommentReader;
 use App\Comments\Data\RecordCommentView;
+use App\Comments\Data\TextCommentLocation;
 use App\Comments\Data\TextCommentView;
 use App\Comments\Enums\WholeRecord;
 use App\Numbers\Support\RecordReference;
@@ -73,6 +74,25 @@ final class CommentsAndReadsTest extends TestCase
         $this->assertInstanceOf(TextCommentView::class, $items[1]);
         $this->assertSame(['1', 'the editor'], [$items[1]->anchor->versionId, $items[1]->anchor->quote]);
         $this->assertSame('1', $this->documents()->show(1)->revision);
+    }
+
+    public function test_section_and_line_comments_reopen_on_their_original_revision_after_a_newer_one(): void
+    {
+        $this->bus()->run(new CreateDocument('Sections', 'Three parts', "# One\nFirst.\n\n# Two\nSecond.\n\n# Three\nThird part.\nStill third.\n"));
+        $section = $this->bus()->run(new PostTextComment($this->documentNumbered(2), 'About the third part.', TextRange::section('1', 3), (string) Str::uuid()));
+        $lines = $this->bus()->run(new PostTextComment($this->documentNumbered(2), 'About these lines.', TextRange::lines('1', 2, 5), (string) Str::uuid()));
+        $draft = $this->bus()->run(new OpenDocument(2));
+        $draft = $this->bus()->run(new ReplaceDocumentText($this->target($draft), 'Third part.', 'A rewritten third part.'));
+        $this->bus()->run(new CloseDocument($this->target($draft)));
+
+        $sectionPlace = $this->comments()->location($this->documentNumbered(2), $section);
+        $linesPlace = $this->comments()->location($this->documentNumbered(2), $lines);
+
+        $this->assertInstanceOf(TextCommentLocation::class, $sectionPlace);
+        $this->assertSame(['1', 3, 7, 10], [$sectionPlace->anchor->versionId, $sectionPlace->anchor->sectionNumber, $sectionPlace->part->firstLine, $sectionPlace->part->lastLine]);
+        $this->assertStringContainsString('Third part.', $sectionPlace->part->text);
+        $this->assertInstanceOf(TextCommentLocation::class, $linesPlace);
+        $this->assertSame([2, 5], [$linesPlace->part->firstLine, $linesPlace->part->lastLine]);
     }
 
     public function test_a_quote_that_is_not_the_revision_text_is_refused_and_nothing_is_stored(): void
@@ -186,7 +206,12 @@ final class CommentsAndReadsTest extends TestCase
 
     private function document(): RecordIdentity
     {
-        return $this->app->make(RecordReader::class)->identify(RecordReference::of('doc', 1));
+        return $this->documentNumbered(1);
+    }
+
+    private function documentNumbered(int $number): RecordIdentity
+    {
+        return $this->app->make(RecordReader::class)->identify(RecordReference::of('doc', $number));
     }
 
     private function comments(): CommentReader

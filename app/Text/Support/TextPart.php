@@ -24,4 +24,12 @@ final class TextPart extends Data
         public readonly int $lastLine,
         public readonly int|null $nextLine,
     ) {}
+
+    /**
+     * The part as safe HTML, each block marked with its line in the whole text.
+     */
+    public function toSafeHtml(): string
+    {
+        return MarkdownText::body($this->text)->toSafeHtml($this->firstLine);
+    }
 }

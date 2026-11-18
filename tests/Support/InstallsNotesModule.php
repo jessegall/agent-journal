@@ -10,15 +10,37 @@ use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
 
 /**
- * Installs the Notes fixture module as a package would, after the application booted: its provider, its domain
- * declarations and the check of the models it numbers.
+ * Installs the Notes fixture module as a package would, after the application booted: its tables, its provider, its
+ * domain declarations and the check of the models it numbers; and drops its tables again.
  */
 trait InstallsNotesModule
 {
+    protected function createNotesTables(): void
+    {
+        foreach ($this->notesMigrations() as $migration) {
+            (require $migration)->up();
+        }
+    }
+
+    protected function dropNotesTables(): void
+    {
+        foreach (array_reverse($this->notesMigrations()) as $migration) {
+            (require $migration)->down();
+        }
+    }
+
     protected function installNotesModule(): void
     {
         $this->app->register(NotesServiceProvider::class);
         DomainEntry::fromClass(NotesDomain::class)->boot($this->app);
         $this->app->make(NumberedTypeRegistry::class)->checkDeclarations();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function notesMigrations(): array
+    {
+        return glob(base_path('tests/Fixtures/Modules/Notes/database/migrations/*.php')) ?: [];
     }
 }

@@ -8,8 +8,19 @@ use App\Text\Exceptions\ContentMissing;
 use App\Text\Exceptions\ContentTooLarge;
 use App\Text\Exceptions\MarkdownInvalid;
 use App\Text\Exceptions\SectionMissing;
+use App\Text\Exceptions\TextLineTooLong;
 use App\Text\Exceptions\TextMatchInvalid;
-use League\CommonMark\CommonMarkConverter;
+use League\CommonMark\Environment\Environment;
+use League\CommonMark\Event\DocumentParsedEvent;
+use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
+use League\CommonMark\Extension\CommonMark\Node\Block\FencedCode;
+use League\CommonMark\Extension\CommonMark\Node\Block\Heading;
+use League\CommonMark\Extension\CommonMark\Node\Block\IndentedCode;
+use League\CommonMark\Extension\CommonMark\Node\Block\ListItem;
+use League\CommonMark\MarkdownConverter;
+use League\CommonMark\Node\Block\AbstractBlock;
+use League\CommonMark\Node\Block\Document;
+use League\CommonMark\Node\Block\Paragraph;
 
 /**
  * The Markdown body of a document or report: checked when it is made, read by sections, and rendered to safe HTML.
@@ -21,9 +32,10 @@ final readonly class MarkdownText
 
     public const int COMMENT_BYTES = 16_384;
 
-
-
-
+    /**
+     * The blocks a rendered body marks with their source lines.
+     */
+    private const array MARKED_BLOCKS = [Heading::class, Paragraph::class, ListItem::class, FencedCode::class, IndentedCode::class];
 
     /**
      * @param  list<Section>  $sections
@@ -164,6 +176,10 @@ final readonly class MarkdownText
         foreach ($numbered as $number => $line) {
             $full = ! $all && (count($taken) >= TextPart::LINES || $bytes + strlen($line) + 1 > TextPart::BYTES);
 
+            if ($full && $taken === []) {
+                throw TextLineTooLong::at($number, TextPart::BYTES);
+            }
+
             if ($full) {
                 return new TextPart(implode("\n", $taken), $first, $number - 1, $number);
             }
@@ -248,23 +264,54 @@ final readonly class MarkdownText
     }
 
     /**
-     * HTML that shows the text and runs nothing: raw HTML escaped, unsafe links dropped, images shown as links.
+     * HTML that shows the text and runs nothing: raw HTML escaped, unsafe links dropped, images shown as links. Each
+     * heading, paragraph, list item and code block carries the source lines it came from, counted from the first line.
      */
-    public function toSafeHtml(): string
+    public function toSafeHtml(int $firstLine = 1): string
     {
-        return self::safeHtmlOf($this->text);
+        return self::rendered($this->text, $firstLine);
     }
 
     /**
-     * HTML for any Markdown text, such as a comment, made safe the same way as a body.
+     * HTML for any Markdown text, such as a comment, made safe the same way as a body, without source lines.
      */
     public static function safeHtmlOf(string $text): string
     {
-        $converter = new CommonMarkConverter(['html_input' => 'escape', 'allow_unsafe_links' => false]);
-        $html = (string) $converter->convert($text);
+        return self::rendered($text, null);
+    }
+
+    /**
+     * Renders safely; with a first line, each block is marked with its source lines after that offset. Raw HTML is
+     * escaped, so an author can never write these marks.
+     */
+    private static function rendered(string $text, int|null $firstLine): string
+    {
+        $environment = new Environment(['html_input' => 'escape', 'allow_unsafe_links' => false]);
+        $environment->addExtension(new CommonMarkCoreExtension);
+
+        if ($firstLine !== null) {
+            $environment->addEventListener(DocumentParsedEvent::class, fn (DocumentParsedEvent $event) => self::markSourceLines($event->getDocument(), $firstLine));
+        }
+
+        $html = (string) (new MarkdownConverter($environment))->convert($text);
         $html = (string) preg_replace('/<img src="([^"]*)" alt="([^"]*)"[^>]*>/', '<a href="$1" rel="noopener noreferrer">$2</a>', $html);
 
         return (string) preg_replace('/<a href="/', '<a rel="noopener noreferrer" href="', $html);
+    }
+
+    /**
+     * Gives every marked block its first and last source line, shifted so the text's own first line is firstLine.
+     */
+    private static function markSourceLines(Document $document, int $firstLine): void
+    {
+        foreach ($document->iterator() as $node) {
+            if (! in_array($node::class, self::MARKED_BLOCKS, true) || ! $node instanceof AbstractBlock || $node->getStartLine() === null || $node->getEndLine() === null) {
+                continue;
+            }
+
+            $node->data->set('attributes/data-source-first', (string) ($node->getStartLine() + $firstLine - 1));
+            $node->data->set('attributes/data-source-last', (string) ($node->getEndLine() + $firstLine - 1));
+        }
     }
 
     /**

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Providers;
 
+use Tests\Fixtures\Modules\Notes\Models\NotePage;
+use Tests\Fixtures\Modules\Notes\Models\NoteSnapshot;
 use App\Links\Support\LinkTypeRegistry;
 use Illuminate\Support\ServiceProvider;
 use Tests\Fixtures\Modules\Notes\Contracts\NoteReader;
@@ -23,6 +25,6 @@ final class NotesServiceProvider extends ServiceProvider
 
     public function boot(LinkTypeRegistry $links): void
     {
-        $links->register([Note::LINK_TYPE => Note::class]);
+        $links->register([Note::LINK_TYPE => Note::class, NotePage::LINK_TYPE => NotePage::class, NoteSnapshot::LINK_TYPE => NoteSnapshot::class]);
     }
 }

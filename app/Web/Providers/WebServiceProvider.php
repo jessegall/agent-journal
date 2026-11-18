@@ -6,7 +6,7 @@ namespace App\Web\Providers;
 
 use App\Actors\Exceptions\AgentActorRequired;
 use App\Actors\Exceptions\UserActorRequired;
-use App\Bus\Exceptions\CommandRefused;
+use App\Contracts\CommandRefusal;
 use App\Domains\Support\DomainRegistry;
 use App\Http\Middleware\Web\CheckPageVisibility;
 use App\Links\Support\LinkTypeRegistry;
@@ -25,11 +25,13 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Foundation\Exceptions\Handler;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\View\FileViewFinder;
+use Throwable;
 
 /**
  * Registers the browser routes, Web's own pages and every declared page and action of the installed domains among
@@ -83,8 +85,14 @@ final class WebServiceProvider extends ServiceProvider
             return;
         }
 
-        $exceptions->renderable(fn (CommandRefused|UserActorRequired|AgentActorRequired $refusal, Request $request) => $request->expectsJson()
-            ? new JsonResponse(['message' => $refusal->getMessage()], 403)
-            : $this->app->make(Redirector::class)->back(303)->withErrors(['command' => $refusal->getMessage()]));
+        $exceptions->renderable(function (Throwable $failure, Request $request): JsonResponse|RedirectResponse|null {
+            if (! $failure instanceof CommandRefusal && ! $failure instanceof UserActorRequired && ! $failure instanceof AgentActorRequired) {
+                return null;
+            }
+
+            return $request->expectsJson()
+                ? new JsonResponse(['message' => $failure->getMessage()], 403)
+                : $this->app->make(Redirector::class)->back(303)->withErrors(['command' => $failure->getMessage()]);
+        });
     }
 }

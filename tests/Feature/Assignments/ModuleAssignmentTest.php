@@ -16,7 +16,6 @@ use App\Records\Exceptions\RecordUnavailable;
 use App\Records\Support\RecordIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Support\AssignmentWriterInTransaction;
@@ -51,7 +50,7 @@ final class ModuleAssignmentTest extends TestCase
     {
         parent::setUp();
 
-        $this->createNotesTable();
+        $this->createNotesTables();
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->main = Agent::query()->create(['name' => 'Main', 'role' => 'hooks.main_ready']);
@@ -60,7 +59,7 @@ final class ModuleAssignmentTest extends TestCase
 
     protected function tearDown(): void
     {
-        Schema::dropIfExists('module_notes');
+        $this->dropNotesTables();
 
         parent::tearDown();
     }
@@ -119,15 +118,5 @@ final class ModuleAssignmentTest extends TestCase
         $this->installNotesModule();
         $this->note = new Note(['text' => 'Check the lock order']);
         $this->note->saveFor($this->writer->id);
-    }
-
-    /**
-     * Runs the module's own migrations, which only the architecture fixtures register.
-     */
-    private function createNotesTable(): void
-    {
-        foreach (glob(base_path('tests/Fixtures/Modules/Notes/database/migrations/*.php')) ?: [] as $migration) {
-            (require $migration)->up();
-        }
     }
 }

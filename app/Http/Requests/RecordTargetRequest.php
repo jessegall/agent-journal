@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\Comments;
+namespace App\Http\Requests;
 
 use App\Numbers\Support\RecordReference;
 use App\Records\Contracts\RecordReader;
@@ -10,9 +10,9 @@ use App\Records\Support\RecordIdentity;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * A request about one record's comments, the record named as people name it, such as doc 12.
+ * A request about one record, named as people name it, such as doc 12.
  */
-abstract class CommentTargetRequest extends FormRequest
+abstract class RecordTargetRequest extends FormRequest
 {
     /**
      * @return array<string, list<string>>
