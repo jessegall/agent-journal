@@ -46,6 +46,7 @@ use App\Processes\Commands\IssueEvidencePermit;
 use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\ProposeCommandRule;
 use App\Processes\Commands\ProposeReader;
+use App\Processes\Commands\ProveReader;
 use App\Processes\Commands\RecordEvidenceReads;
 use App\Processes\Commands\ReviseRuleProposal;
 use App\Processes\Commands\RevokeCommandPermissions;
@@ -122,6 +123,7 @@ final class CoreCommands
             ApproveSample::class,
             StartSample::class,
             SettleSample::class,
+            ProveReader::class,
             CreateSkill::class, ReviseSkill::class, RestoreSkill::class, RetireSkill::class, CopySkill::class,
             RefreshSkills::class, PublishSkills::class, PrepareSkillPublication::class, ActivateSkillPublication::class, FailSkillPublication::class,
         ];

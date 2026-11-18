@@ -12,7 +12,6 @@ use App\Bus\Contracts\CommandBus;
 use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\ProposeCommandRule;
 use App\Processes\Enums\OutputStream;
-use App\Processes\Enums\ReaderState;
 use App\Processes\Enums\RequestHoldReason;
 use App\Processes\Enums\RequestState;
 use App\Processes\Enums\RunMode;
@@ -68,7 +67,7 @@ final class ReaderProposalTest extends TestCase
         $reply = $this->proposeReader($this->definition(withSummary: true))->assertOk();
 
         $revision = ReaderRevision::query()->findOrFail($reply->json('reader_revision_id'));
-        $this->assertSame(ReaderState::Draft, $revision->state);
+        $this->assertFalse($revision->isProven());
         $this->assertSame($this->request->id, $revision->command_request_id);
         $this->assertSame(1, $revision->declaration_revision);
         $this->assertSame('acme verify', $revision->operation);

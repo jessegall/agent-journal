@@ -6,6 +6,7 @@ use App\Http\Controllers\Processes\ApproveSampleController;
 use App\Http\Controllers\Processes\ExplainCommandController;
 use App\Http\Controllers\Processes\FetchAdmissionController;
 use App\Http\Controllers\Processes\ProposeReaderController;
+use App\Http\Controllers\Processes\ProveReaderController;
 use App\Http\Controllers\Processes\ReadOutputController;
 use App\Http\Controllers\Processes\RecordRunChunkController;
 use App\Http\Controllers\Processes\RecordRunEventsController;
@@ -29,8 +30,10 @@ Route::middleware(['journal.agent', SubstituteBindings::class])
         Route::post('permits/{evidencePermit}/runs', StartEvidenceRunController::class)->name('evidence');
         Route::post('runs/{processRun}/output', ReadOutputController::class)->name('output');
         Route::post('requests/{commandRequest}/readers', ProposeReaderController::class)->name('readers');
-        Route::post('requests/{commandRequest}/sample-approval', ApproveSampleController::class)->name('sample-approval');
+        Route::post('requests/{commandRequest}/sample-approval', ApproveSampleController::class)
+            ->name('sample-approval');
         Route::post('requests/{commandRequest}/samples', StartSampleController::class)->name('samples');
         Route::post('requests/{commandRequest}/samples/settle', SettleSampleController::class)
             ->name('samples.settle');
+        Route::post('requests/{commandRequest}/proofs', ProveReaderController::class)->name('proofs');
     });

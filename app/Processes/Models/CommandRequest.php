@@ -149,6 +149,8 @@ final class CommandRequest extends Model implements ReadableModel
     }
 
     /**
+     * The owner approves one more sample: the first, or one for an exit branch the earlier samples did not reach.
+     *
      * @throws RequestTransitionRefused
      */
     public function approveSample(): void

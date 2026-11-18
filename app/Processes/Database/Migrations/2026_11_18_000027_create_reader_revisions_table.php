@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('operation');
             $table->string('contract_label');
             $table->jsonb('definition');
-            $table->string('state', 16);
             $table->string('actor_type', 16);
             $table->string('actor_id');
             $table->timestampTz('created_at');

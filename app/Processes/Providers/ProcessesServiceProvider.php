@@ -11,6 +11,7 @@ use App\Processes\Console\OutputReadCommand;
 use App\Processes\Console\ProcessExportCommand;
 use App\Processes\Console\ProcessShowCommand;
 use App\Processes\Console\ReaderProposeCommand;
+use App\Processes\Console\ReaderProveCommand;
 use App\Processes\Console\ReaderSampleApproveCommand;
 use App\Processes\Console\ReaderSampleRunCommand;
 use App\Processes\Console\RunProcessCommand;
@@ -30,6 +31,7 @@ use App\Processes\Models\PermissionRevocation;
 use App\Processes\Models\ProcessEvent;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Models\ReaderPosition;
+use App\Processes\Models\ReaderProof;
 use App\Processes\Models\ReaderRevision;
 use App\Processes\Models\RuleProposal;
 use App\Processes\Models\RuleRevision;
@@ -84,6 +86,7 @@ final class ProcessesServiceProvider extends ServiceProvider
             'processes.rule-proposal' => RuleProposal::class,
             'processes.rule-revision' => RuleRevision::class,
             'processes.classification-rule' => ClassificationRule::class,
+            'processes.reader-proof' => ReaderProof::class,
         ]);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/processes.php');
         $this->commands([
@@ -93,6 +96,7 @@ final class ProcessesServiceProvider extends ServiceProvider
             ProcessShowCommand::class,
             ProcessExportCommand::class,
             ReaderProposeCommand::class,
+            ReaderProveCommand::class,
             ReaderSampleApproveCommand::class,
             ReaderSampleRunCommand::class,
         ]);

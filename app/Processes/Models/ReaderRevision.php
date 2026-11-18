@@ -6,7 +6,6 @@ namespace App\Processes\Models;
 
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
-use App\Processes\Enums\ReaderState;
 use App\Processes\Exceptions\ReaderDefinitionInvalid;
 use App\Processes\Exceptions\RevisionImmutable;
 use App\Processes\Values\ReaderDefinition;
@@ -18,12 +17,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
  * One immutable revision of a reader for an operation: the command request and declaration revision it was proposed
- * for, its declarative definition, the output contract it reads under, who wrote it, and whether it is still a draft.
- * It is never updated; a change is a new revision.
+ * for, its declarative definition, the output contract it reads under, and who wrote it. It is a draft until a
+ * ReaderProof proves it; it is never updated, so a change is a new revision that needs its own proof (story 188).
  *
  * @property string $id
  * @property string $project_key
@@ -32,7 +32,6 @@ use Illuminate\Support\Carbon;
  * @property string $operation
  * @property string $contract_label
  * @property array<string, mixed> $definition
- * @property ReaderState $state
  * @property string $actor_type
  * @property string $actor_id
  * @property Carbon $created_at
@@ -44,7 +43,6 @@ use Illuminate\Support\Carbon;
     'operation',
     'contract_label',
     'definition',
-    'state',
     'actor_type',
     'actor_id',
 ])]
@@ -72,7 +70,6 @@ final class ReaderRevision extends Model implements ReadableModel
             'operation' => $request->operation,
             'contract_label' => $contractLabel,
             'definition' => $definition->toArray(),
-            'state' => ReaderState::Draft,
             'actor_type' => $author->type->value,
             'actor_id' => $author->id,
         ]);
@@ -84,6 +81,19 @@ final class ReaderRevision extends Model implements ReadableModel
     public function readerDefinition(): ReaderDefinition
     {
         return ReaderDefinition::fromArray($this->definition);
+    }
+
+    public function isProven(): bool
+    {
+        return $this->proofs()->exists();
+    }
+
+    /**
+     * @return HasMany<ReaderProof, $this>
+     */
+    public function proofs(): HasMany
+    {
+        return $this->hasMany(ReaderProof::class);
     }
 
     /**
@@ -99,7 +109,7 @@ final class ReaderRevision extends Model implements ReadableModel
      */
     protected function casts(): array
     {
-        return ['definition' => 'array', 'declaration_revision' => 'integer', 'state' => ReaderState::class];
+        return ['definition' => 'array', 'declaration_revision' => 'integer'];
     }
 
     protected static function booted(): void

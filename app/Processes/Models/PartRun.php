@@ -200,6 +200,21 @@ final class PartRun extends Model implements ReadableModel
     }
 
     /**
+     * The digest of each stream's chunk manifest: its chunk checksums in offset order.
+     *
+     * @return array<string, string>
+     */
+    public function manifestDigests(): array
+    {
+        $checksums = [];
+        foreach ($this->chunks()->orderBy('stream')->orderBy('offset')->readLimit(100_000)->get() as $chunk) {
+            $checksums[$chunk->stream->value][] = $chunk->checksum;
+        }
+
+        return array_map(fn (array $sums): string => hash('sha256', implode("\n", $sums)), $checksums);
+    }
+
+    /**
      * @return BelongsTo<ProcessRun, $this>
      */
     public function run(): BelongsTo
