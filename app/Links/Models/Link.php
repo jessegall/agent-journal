@@ -54,6 +54,30 @@ final class Link extends Model
     }
 
     /**
+     * Its two ends as one text, the same for every link between the same two models in the same direction.
+     */
+    public function endpointKey(): string
+    {
+        return $this->endpointKeyFor($this->source_type, $this->target_type);
+    }
+
+    /**
+     * Its two ends as one text, were the ends stored under these type names.
+     */
+    public function endpointKeyFor(string $sourceType, string $targetType): string
+    {
+        return implode('|', [$sourceType, $this->source_id, $targetType, $this->target_id]);
+    }
+
+    /**
+     * Stores the link under new type names for its two ends, keeping its id.
+     */
+    public function renameTypes(string $sourceType, string $targetType): void
+    {
+        $this->update(['source_type' => $sourceType, 'target_type' => $targetType]);
+    }
+
+    /**
      * @return MorphTo<Model, $this>
      */
     public function source(): MorphTo

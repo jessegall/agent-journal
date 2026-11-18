@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Links\Support;
 
+use App\Links\Models\Link;
 use Illuminate\Database\ConnectionInterface;
 
 /**
@@ -18,23 +19,33 @@ final class LinkTypeRenames
      */
     public static function rename(ConnectionInterface $database, array $nameOfClass): void
     {
-        $database->transaction(function () use ($database, $nameOfClass): void {
-            $affected = $database->table('links')->whereIn('source_type', array_keys($nameOfClass))->orWhereIn('target_type', array_keys($nameOfClass))->orderBy('id')->get();
+        $database->transaction(function () use ($nameOfClass): void {
+            $names = array_values(array_unique([...array_keys($nameOfClass), ...array_values($nameOfClass)]));
+            $links = Link::query()->whereIn('source_type', $names)->orWhereIn('target_type', $names)->orderBy('id')->get();
+            $idOfEndpoints = $links->mapWithKeys(fn (Link $link) => [$link->endpointKey() => $link->id])->all();
 
-            foreach ($affected as $link) {
+            foreach ($links as $link) {
                 $source = $nameOfClass[$link->source_type] ?? $link->source_type;
                 $target = $nameOfClass[$link->target_type] ?? $link->target_type;
-                $twin = $database->table('links')->where('id', '!=', $link->id)
-                    ->where(['source_type' => $source, 'source_id' => $link->source_id, 'target_type' => $target, 'target_id' => $link->target_id])
-                    ->exists();
 
-                if ($twin) {
-                    $database->table('links')->where('id', $link->id)->delete();
+                if ($source === $link->source_type && $target === $link->target_type) {
+                    continue;
+                }
+
+                if (($idOfEndpoints[$link->endpointKey()] ?? null) === $link->id) {
+                    unset($idOfEndpoints[$link->endpointKey()]);
+                }
+
+                $newEndpoints = $link->endpointKeyFor($source, $target);
+
+                if (isset($idOfEndpoints[$newEndpoints])) {
+                    $link->delete();
 
                     continue;
                 }
 
-                $database->table('links')->where('id', $link->id)->update(['source_type' => $source, 'target_type' => $target]);
+                $link->renameTypes($source, $target);
+                $idOfEndpoints[$newEndpoints] = $link->id;
             }
         });
     }

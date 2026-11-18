@@ -22,7 +22,7 @@ final readonly class Compaction
     public function collectReminders(StackTarget $target, string $compactionId): array
     {
         $reminders = new CompactionReminders;
-        $this->events->dispatch(new ContextWasCompacted($target->agentId, $target->sessionId, $compactionId, $reminders));
+        $this->events->dispatch(new ContextWasCompacted($target, $compactionId, $reminders));
 
         return $reminders->all();
     }

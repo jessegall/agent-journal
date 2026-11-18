@@ -4,37 +4,26 @@ declare(strict_types=1);
 
 namespace Domain\Memory\Support;
 
-use Carbon\CarbonImmutable;
+use App\Agents\Support\StackTarget;
 use Domain\Memory\Models\Memory;
-use Illuminate\Database\ConnectionInterface;
+use Domain\Memory\Models\MemoryCompaction;
 
 /**
  * The named operations on an agent's memories: fading them once per compaction, and the reminders they give.
  */
 final readonly class AgentMemories
 {
-    public function __construct(private ConnectionInterface $database) {}
-
     /**
      * Lowers every memory of the agent by one for this compaction, once: a repeated compaction id changes nothing.
      */
-    public function lowerWeightsOnce(int $agentId, int $sessionId, string $compactionId): void
+    public function lowerWeightsOnce(StackTarget $target, string $compactionId): void
     {
-        $now = CarbonImmutable::now();
-        $isNew = $this->database->table('memory_compactions')->insertOrIgnore([
-            'agent_id' => $agentId,
-            'session_id' => $sessionId,
-            'compaction_id' => $compactionId,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ]) === 1;
-
-        if (! $isNew) {
+        if (! MemoryCompaction::recordOnce($target, $compactionId)) {
             return;
         }
 
-        Memory::query()->ownedBy($agentId)->decrement('weight');
-        Memory::query()->ownedBy($agentId)->where('weight', '<=', 0)->delete();
+        Memory::query()->ownedBy($target->agentId)->decrement('weight');
+        Memory::query()->ownedBy($target->agentId)->where('weight', '<=', 0)->delete();
     }
 
     /**

@@ -535,6 +535,7 @@ class	LoginPage
 class	LowerMemoryWeights
 class	MainAgentReadyState
 class	Memory
+class	MemoryCompaction
 class	MemoryDomain
 class	MemoryServiceProvider
 class	Message
@@ -1140,7 +1141,6 @@ method	AgentLabels::__construct()
 method	AgentLabels::labelsFor()
 method	AgentLifecycle::lockExclusive()
 method	AgentLifecycle::lockShared()
-method	AgentMemories::__construct()
 method	AgentMemories::lowerWeightsOnce()
 method	AgentMemories::remindersFor()
 method	AgentNotAvailable::forAgent()
@@ -1731,6 +1731,7 @@ method	DomainEntry::overlaps()
 method	DomainEntry::ownsEvent()
 method	DomainEntry::ownsName()
 method	DomainEntry::requiresDomain()
+method	DomainEntry::scriptFolder()
 method	DomainEntry::ui()
 method	DomainFiles::allIn()
 method	DomainFiles::domainCode()
@@ -2021,7 +2022,10 @@ method	LayoutsController::update()
 method	LayoutsView::layouts()
 method	Link::between()
 method	Link::connect()
+method	Link::endpointKey()
+method	Link::endpointKeyFor()
 method	Link::forgetModels()
+method	Link::renameTypes()
 method	Link::source()
 method	Link::target()
 method	Link::withSource()
@@ -2053,6 +2057,7 @@ method	LowerMemoryWeights::handle()
 method	MainAgentReadyState::onShellCommand()
 method	Memory::casts()
 method	Memory::saveFor()
+method	MemoryCompaction::recordOnce()
 method	MemoryDomain::description()
 method	MemoryDomain::exports()
 method	MemoryDomain::requires()
@@ -3057,7 +3062,6 @@ property	AgentContextFactory::$credentials
 property	AgentLabel::$agentId
 property	AgentLabel::$name
 property	AgentLabels::$actors
-property	AgentMemories::$database
 property	AgentReply::$body
 property	AgentRequestClient::$http
 property	AgentScope::$currentContext
@@ -3250,10 +3254,9 @@ property	ContextCompacted::$compaction
 property	ContextCompacted::$hook
 property	ContextOutput::$additionalContext
 property	ContextOutput::$hookEventName
-property	ContextWasCompacted::$agentId
 property	ContextWasCompacted::$compactionId
 property	ContextWasCompacted::$reminders
-property	ContextWasCompacted::$sessionId
+property	ContextWasCompacted::$target
 property	ContinuationRecord::$called
 property	ContinuationRecord::$failure
 property	ContinuationRecord::$result

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Events;
 
+use App\Agents\Support\StackTarget;
 use App\Contracts\Event;
 use App\Hooks\Contracts\ReminderContribution;
 
@@ -15,8 +16,7 @@ use App\Hooks\Contracts\ReminderContribution;
 final readonly class ContextWasCompacted implements Event
 {
     public function __construct(
-        public int $agentId,
-        public int $sessionId,
+        public StackTarget $target,
         public string $compactionId,
         public ReminderContribution $reminders,
     ) {}

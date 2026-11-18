@@ -16,9 +16,9 @@ final readonly class LowerMemoryWeights
 
     public function handle(ContextWasCompacted $event): void
     {
-        $this->memories->lowerWeightsOnce($event->agentId, $event->sessionId, $event->compactionId);
+        $this->memories->lowerWeightsOnce($event->target, $event->compactionId);
 
-        foreach ($this->memories->remindersFor($event->agentId) as $reminder) {
+        foreach ($this->memories->remindersFor($event->target->agentId) as $reminder) {
             $event->reminders->add($reminder);
         }
     }
