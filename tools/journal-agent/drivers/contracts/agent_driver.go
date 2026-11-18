@@ -40,6 +40,18 @@ type InterruptRequest struct{ Request RequestIdentity }
 // StopRequest asks the program to end.
 type StopRequest struct{ Request RequestIdentity }
 
+// KeyScriptRequest asks the program to run one registered maintenance key script with its parameters.
+type KeyScriptRequest struct {
+	Request    RequestIdentity
+	Script     string
+	Parameters map[string]string
+}
+
+// KeyScriptRunner runs registered key scripts; a driver with no terminal answers with OutcomeTerminalRequired.
+type KeyScriptRunner interface {
+	RunKeyScript(ctx context.Context, request KeyScriptRequest) (OperationResult, error)
+}
+
 // Progress is how far a request got, in the journal's words (doc 40, section 21).
 type Progress string
 
@@ -59,6 +71,8 @@ const (
 	OutcomeConfirmed Outcome = "confirmed"
 	OutcomeRefused   Outcome = "refused"
 	OutcomeTimedOut  Outcome = "timed_out"
+	// OutcomeTerminalRequired answers a key script sent to a runtime that has no terminal to type it into.
+	OutcomeTerminalRequired Outcome = "terminal_required"
 )
 
 // Hold is why a runtime waits on something other than the journal.
