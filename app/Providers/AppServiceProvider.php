@@ -27,6 +27,18 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->refuseDestructiveCommandsOutsideTestDatabases();
+    }
+
+    /**
+     * Refuses migrate:fresh, migrate:refresh, migrate:reset and db:wipe when the testing environment points at a
+     * database that is not a test database: with no .env.testing, --env=testing falls back to the development database.
+     */
+    protected function refuseDestructiveCommandsOutsideTestDatabases(): void
+    {
+        $database = DB::connection()->getDatabaseName();
+
+        DB::prohibitDestructiveCommands($this->app->environment('testing') && ! str_starts_with($database, 'journal_hooks_test'));
     }
 
     /**
