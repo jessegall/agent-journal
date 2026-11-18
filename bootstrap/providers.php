@@ -22,6 +22,7 @@ use App\Reads\Providers\ReadsServiceProvider;
 use App\Records\Providers\RecordsServiceProvider;
 use App\Settings\Providers\SettingsServiceProvider;
 use App\Sharing\Providers\SharingServiceProvider;
+use App\Skills\Providers\SkillsServiceProvider;
 use App\Text\Providers\TextServiceProvider;
 use App\Web\Providers\TypeScriptServiceProvider;
 use App\Web\Providers\WebServiceProvider;
@@ -37,6 +38,7 @@ use Domain\Tasks\Providers\TasksServiceProvider;
 return [
     AppServiceProvider::class,
     DomainServiceProvider::class,
+    SkillsServiceProvider::class,
     DomainEventServiceProvider::class,
     CoreServiceProvider::class,
     ProfilesServiceProvider::class,

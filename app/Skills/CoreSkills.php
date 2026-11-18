@@ -27,6 +27,6 @@ final class CoreSkills
      */
     public static function owner(): SkillOwner
     {
-        return new SkillOwner(self::OWNER, base_path(), self::skills());
+        return new SkillOwner(self::OWNER, base_path(), self::skills(), true);
     }
 }

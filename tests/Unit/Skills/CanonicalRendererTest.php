@@ -143,6 +143,6 @@ final class CanonicalRendererTest extends TestCase
 
     private function owner(string $root): SkillOwner
     {
-        return new SkillOwner('Guide', $root, []);
+        return new SkillOwner('Guide', $root, [], true);
     }
 }

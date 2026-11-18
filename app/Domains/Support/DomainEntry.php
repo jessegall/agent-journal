@@ -270,11 +270,14 @@ final readonly class DomainEntry
     }
 
     /**
-     * This domain as a supplier of skills: its name, its package folder and the skill classes it declares.
+     * This domain as a supplier of skills: its name, its package folder and the skill classes it declares; a package in
+     * domain/ is first-party, anything else a module.
      */
     public function skillOwner(): SkillOwner
     {
-        return new SkillOwner($this->name, $this->isPackage() ? dirname($this->folder) : $this->folder, $this->skills);
+        $sourceRoot = $this->isPackage() ? dirname($this->folder) : $this->folder;
+
+        return new SkillOwner($this->name, $sourceRoot, $this->skills, str_starts_with($sourceRoot, base_path('domain').DIRECTORY_SEPARATOR));
     }
 
     /**
