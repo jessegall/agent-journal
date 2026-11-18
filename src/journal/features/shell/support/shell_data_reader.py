@@ -75,7 +75,7 @@ class ShellDataReader:
 
     def titled(self, output: CommandOutput) -> TitledRun:
         part = self.card.shown_part(output)
-        return TitledRun(output.row_id, self.card.title(output, part), part, self.card.topic(output), self.readers.is_locked(output.watch_reader))
+        return TitledRun(output.row_id, self.card.title(output, part), part, self.card.topic(output), not output.ended, self.readers.is_locked(output.watch_reader))
 
     def last_ending_line(self, agent: Agent) -> Moment:
         return self.entries.last_keys_moment(agent.session, (ShellNudges.OUTPUTS_ENDED.key, ShellNudges.UNREAD_OUTPUT.key, TasksNudges.WAIT_END.key)) or Moment()

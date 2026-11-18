@@ -3,12 +3,13 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class TitledRun:
-    """A run of the agent's by its number, the title its card shows, the line the card shows, the topic its reader picks from that line, and whether that reader ships with the journal, whose titles the agent cannot change."""
+    """A run of the agent's by its number, the title its card shows, the line the card shows, the topic its reader picks from that line, whether its command still runs, and whether that reader ships with the journal, whose titles the agent cannot change."""
 
     id: int
     title: str
     line: str
     topic: str
+    is_running: bool
     shipped_reader: bool = False
 
     def is_flagged(self) -> bool:
