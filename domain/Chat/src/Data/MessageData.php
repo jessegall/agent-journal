@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Data;
 
-use Domain\Chat\Api\MessageView;
-use Domain\Chat\Enums\MessageState;
+use App\Communication\Data\MessageView;
+use App\Communication\Enums\MessageState;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 

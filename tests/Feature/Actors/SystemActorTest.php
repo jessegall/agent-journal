@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Actors\Contracts\ReceivesMessages;
-use App\Actors\Contracts\SendsMessages;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\InvalidActorText;
 use App\Actors\Exceptions\SystemActorRequired;
@@ -13,7 +11,6 @@ use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\ActorStore;
 use App\Actors\Support\SystemActor;
-use App\Agents\Models\Agent;
 use Domain\Access\Models\User;
 use RuntimeException;
 use Tests\TestCase;
@@ -24,16 +21,6 @@ use Tests\TestCase;
  */
 final class SystemActorTest extends TestCase
 {
-    public function test_users_and_agents_send_and_receive_and_the_system_only_sends(): void
-    {
-        $this->assertInstanceOf(SendsMessages::class, new Agent);
-        $this->assertInstanceOf(ReceivesMessages::class, new Agent);
-        $this->assertInstanceOf(SendsMessages::class, new User);
-        $this->assertInstanceOf(ReceivesMessages::class, new User);
-        $this->assertInstanceOf(SendsMessages::class, new SystemActor);
-        $this->assertNotInstanceOf(ReceivesMessages::class, new SystemActor);
-    }
-
     public function test_text_from_outside_never_names_the_system(): void
     {
         $this->assertTrue(ActorIdentity::system()->isSameAs(ActorIdentity::of(new SystemActor)));

@@ -14,6 +14,10 @@ use App\Bus\Support\CommandOwner;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
+use App\Communication\Commands\AnswerMessage;
+use App\Communication\Commands\DismissMessage;
+use App\Communication\Commands\RequireMessageAnswer;
+use App\Communication\Commands\SendMessage;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Numbers\Commands\InstallNumbers;
@@ -31,7 +35,7 @@ final class CoreCommands
      */
     public static function commands(): array
     {
-        return [AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, SettleFrameTimes::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class];
+        return [AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, SettleFrameTimes::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class, SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class];
     }
 
     /**

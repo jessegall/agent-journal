@@ -10,7 +10,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('messages', function (Blueprint $table) {
+        Schema::create('chat_drafts', function (Blueprint $table) {
             $table->id();
         });
 

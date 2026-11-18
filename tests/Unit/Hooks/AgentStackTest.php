@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Hooks;
 
+use App\Communication\Enums\MessageWorkState;
+use App\Communication\States\AnsweringMessageState;
+use App\Communication\Support\MessageWork;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
@@ -25,9 +28,6 @@ use App\Hooks\States\AgentState;
 use App\Hooks\States\ReadyState;
 use App\Hooks\Storage\WalkStep;
 use Carbon\CarbonImmutable;
-use Domain\Chat\Enums\MessageWorkState;
-use Domain\Chat\States\AnsweringMessageState;
-use Domain\Chat\Support\MessageWork;
 use Domain\Sequences\Enums\SequenceRunState;
 use Domain\Sequences\States\FollowingSequenceState;
 use Domain\Sequences\Support\SequenceWork;
@@ -295,7 +295,7 @@ final class AgentStackTest extends TestCase
         return $this->stack(
             $this->ready(),
             new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, $taskState)), CarbonImmutable::now()),
-            new Frame('message-95', $this->reference('chat.answering', '95'), new AnsweringMessageState(new MessageWork(95, $messageState)), CarbonImmutable::now()),
+            new Frame('message-95', $this->reference('communication.answering', '95'), new AnsweringMessageState(new MessageWork(95, $messageState)), CarbonImmutable::now()),
         );
     }
 

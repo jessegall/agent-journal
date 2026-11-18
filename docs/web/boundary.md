@@ -66,7 +66,7 @@ Generated files are build output and ignored by git: `resources/js/types/generat
 
 ## Sending a message (task 110)
 
-`Domain\Chat\Actions\SendMessage::send($body, StackTarget)` is the user's way to message a running agent's session: in one stack transaction it creates the message (body kept byte for byte; a blank body is refused with `MessageBodyEmpty`), asks that session to answer it and pushes the answering state through `UserStacks`, so a guessed, ended or foreign target is refused and leaves no message. The agent path keeps `RequireMessageAnswer`. `MessageSent`, `MessageAnswered` and `MessageDismissed` (raised by `CloseMessage`) fire after the commit. `MessageRecords::conversationWith(StackTarget)` reads the conversation with a session for the user; its id is `"<agent>-<session>"`. States read their subject with the `forActor` scope: a user reads through `visibleToUser`, an agent keeps its own scope.
+Messaging is Core (`app/Communication`, plan 16): the `SendMessage` command creates the message (body kept byte for byte; a blank body is refused with `MessageBodyEmpty`); `RequireMessageAnswer` asks an agent session to answer it and pushes the `communication.answering` state, so a guessed, ended or foreign session is refused and leaves no message. `MessageSent`, `MessageAnswered` and `MessageDismissed` fire after the commit. `ConversationReader::conversationWith(StackTarget)` reads the conversation with a session; its id is `"<agent>-<session>"`. Chat is the conversation product on top: its window, composer and chosen agent call these Core commands and readers.
 
 ## Rule approval (task 112)
 

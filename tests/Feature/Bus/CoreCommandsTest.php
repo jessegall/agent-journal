@@ -14,6 +14,10 @@ use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
+use App\Communication\Commands\AnswerMessage;
+use App\Communication\Commands\DismissMessage;
+use App\Communication\Commands\RequireMessageAnswer;
+use App\Communication\Commands\SendMessage;
 use App\CoreCommands;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
@@ -29,12 +33,12 @@ use Tests\Fixtures\Modules\Notes\CommandMiddleware\RecordAll;
  */
 final class CoreCommandsTest extends CommandBusTestCase
 {
-    public function test_core_lists_its_thirteen_commands_and_exports_them(): void
+    public function test_core_lists_its_seventeen_commands_and_exports_them(): void
     {
         $this->installCommandModules();
         $registry = $this->app->make(CommandRegistry::class);
 
-        $this->assertSame([AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, SettleFrameTimes::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class], CoreCommands::commands());
+        $this->assertSame([AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class, RecordHeartbeat::class, RecordUserHeartbeat::class, MarkSilentSessions::class, SettleFrameTimes::class, InstallNumbers::class, LinkRecords::class, UnlinkRecords::class, PostComment::class, PostTextComment::class, SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class], CoreCommands::commands());
 
         foreach (CoreCommands::commands() as $command) {
             $this->assertTrue($registry->has($command));
