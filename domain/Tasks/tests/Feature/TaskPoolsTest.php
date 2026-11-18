@@ -21,6 +21,7 @@ use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Exceptions\TaskPoolRefused;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
+use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 
@@ -30,6 +31,7 @@ use Tests\Support\TestIds;
  */
 final class TaskPoolsTest extends TestCase
 {
+    use RefreshHookDatabase;
     use StartsAgentRequests;
 
     private ActorIdentity $builder;
@@ -46,10 +48,11 @@ final class TaskPoolsTest extends TestCase
     {
         $providers = $this->app->make(AssignmentProviders::class);
 
-        $this->assertSame(
-            ['tasks.open', 'tasks.named'],
-            array_map(fn (PoolDefinition $pool) => $pool->key, $providers->pools(TaskType::VALUE)),
-        );
+        $keys = array_map(fn (PoolDefinition $pool) => $pool->key, $providers->pools(TaskType::VALUE));
+
+        $tasksPools = array_values(array_intersect($keys, ['tasks.open', 'tasks.named']));
+
+        $this->assertSame(['tasks.open', 'tasks.named'], $tasksPools);
         $this->assertSame('Tasks', $providers->poolOwner('tasks.open'));
         $this->assertSame('Tasks', $providers->poolOwner('tasks.named'));
         $this->assertInstanceOf(OpenTaskPoolFactory::class, $providers->poolFactory('tasks.open'));

@@ -14,11 +14,6 @@ use App\Records\Support\RecordIdentity;
 final readonly class PoolReference
 {
     /**
-     * @var list<string>
-     */
-    public array $recordIds;
-
-    /**
      * @param  list<string>  $recordIds
      *
      * @throws InvalidRecordIds
@@ -26,9 +21,9 @@ final readonly class PoolReference
     public function __construct(
         public string $type,
         public RecordIdentity|null $target,
-        array $recordIds,
+        public array $recordIds,
     ) {
-        $this->recordIds = new OrderedRecordIds($recordIds)->ids;
+        new OrderedRecordIds($recordIds);
     }
 
     /**

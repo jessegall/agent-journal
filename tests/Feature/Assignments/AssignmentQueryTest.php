@@ -21,8 +21,9 @@ use App\Records\Support\RecordIdentity;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\Eloquent\Builder;
 use RuntimeException;
-use Tests\Fixtures\Domains\Errands\ErrandsDomain;
 use Tests\Fixtures\Domains\Errands\ErrandWork;
+use Tests\Fixtures\Domains\Errands\ErrandsDomain;
+use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\TestCase;
@@ -33,6 +34,7 @@ use Tests\TestCase;
  */
 final class AssignmentQueryTest extends TestCase
 {
+    use RefreshHookDatabase;
     use StartsAgentRequests;
 
     private ActorIdentity $builder;

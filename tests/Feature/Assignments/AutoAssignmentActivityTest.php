@@ -16,6 +16,7 @@ use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Access\Support\UserActivity;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
@@ -25,6 +26,8 @@ use Tests\TestCase;
  */
 final class AutoAssignmentActivityTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_an_agent_takes_work_only_while_a_session_runs(): void
     {
         $agent = Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.writing_helper_ready']);
@@ -34,7 +37,7 @@ final class AutoAssignmentActivityTest extends TestCase
         $this->assertInstanceOf(AgentActivity::class, $activity);
         $this->assertFalse($activity->mayTakeWork($actor));
 
-        $first = $this->session($agent);
+        $first = $this->runningSession($agent);
 
         $this->assertTrue($activity->mayTakeWork($actor));
 
@@ -42,7 +45,7 @@ final class AutoAssignmentActivityTest extends TestCase
 
         $this->assertFalse($activity->mayTakeWork($actor));
 
-        $this->session($agent);
+        $this->runningSession($agent);
 
         $this->assertTrue($activity->mayTakeWork($actor));
 
@@ -72,7 +75,7 @@ final class AutoAssignmentActivityTest extends TestCase
         $this->app->make(AssignmentProviders::class)->activity(ActorType::Engine);
     }
 
-    private function session(Agent $agent): AgentSession
+    private function runningSession(Agent $agent): AgentSession
     {
         $session = new AgentSession();
         $session->startFor($agent, null, TestSelections::of(), TestSelections::requestId());

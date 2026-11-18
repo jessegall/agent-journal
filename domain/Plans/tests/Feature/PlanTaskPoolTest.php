@@ -23,6 +23,7 @@ use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Models\Task;
 use Illuminate\Support\Str;
+use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 
@@ -32,6 +33,7 @@ use Tests\Support\TestIds;
  */
 final class PlanTaskPoolTest extends TestCase
 {
+    use RefreshHookDatabase;
     use StartsAgentRequests;
 
     private ActorIdentity $builder;

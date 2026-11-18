@@ -16,6 +16,7 @@ use App\Engine\Support\EngineActor;
 use App\Web\Support\OwnerAutoAssignmentAccess;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -24,6 +25,8 @@ use Tests\TestCase;
  */
 final class AutoAssignmentAccessTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private User $owner;
 
     private Agent $dispatcher;
