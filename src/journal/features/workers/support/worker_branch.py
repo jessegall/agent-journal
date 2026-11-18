@@ -31,7 +31,7 @@ REBUILD_SUBJECT = "Build the built files again on the project's branch"
 
 
 class WorkerBranch:
-    """A worker's worktree and the branch it commits on: what it left there when it ended, and its commits taken into the branch the project is on, which on a shared journal is the branch of the worker's environment's own worktree, never the main checkout's. A project that holds repositories of its own inside it, ignored by its own, gives the worker a worktree of each one recorded on its row, inside its worktree and on the worker's branch; its commits are taken in from every repository or from none. A rebase that clashes only in folders the settings name as built from the sources takes the project's side of them and builds them again. Untracked files are those the branch adds that lie untracked in the checkout, which git refuses to overwrite, never a clash a rebase could mend; the worktree is moved up to the branch its work merges into, in each repository, by the same rebase a merge makes: after a merge its own commits are in the branch already and drop out, before a job it carries them over what others merged meanwhile; the uncommitted edits the rebase's autostash set aside are put back over it with conflicts, and once the markers are gone they are plain uncommitted edits again and the autostash is dropped; git drops from its list a worktree whose folder is missing, so while a launch's worktree under .claude/worktrees is briefly away nothing is pruned and a worker's clean-up never loses it; the summary says what a worker that ended without clocking out left: commits waiting on its branch unchecked, never taken in by its end."""
+    """A worker's worktree and the branch it commits on: what it left there when it ended, and its commits taken into the branch the project is on, which on a shared journal is the branch of the worker's environment's own worktree, never the main checkout's. A project that holds repositories of its own inside it, ignored by its own, gives the worker a worktree of each one recorded on its row, inside its worktree and on the worker's branch; its commits are taken in from every repository or from none. A rebase that clashes only in folders the settings name as built from the sources takes the project's side of them and builds them again. Untracked files are those the branch adds that lie untracked in the checkout, which git refuses to overwrite, never a clash a rebase could mend; the worktree is moved up to the branch its work merges into, in each repository, by the same rebase a merge makes: after a merge its own commits are in the branch already and drop out, before a job it carries them over what others merged meanwhile; the uncommitted edits the rebase's autostash set aside are put back over it with conflicts, and once the markers are gone they are plain uncommitted edits again and the autostash is dropped; git drops from its list a worktree whose folder is missing, so while a launch's worktree under .claude/worktrees is briefly away nothing is pruned and a worker's clean-up never loses it; the checkout's skills its worktree lacks, the untracked and ignored ones a launch's worktree links, are linked into it and kept out of git; the summary says what a worker that ended without clocking out left: commits waiting on its branch unchecked, never taken in by its end."""
 
     def __init__(self, config: Config, deferred: ListenerQueue, account: TeamAccount, environments: Environments, settings: SettingRows) -> None:
         self.config, self.deferred, self.account, self.environments, self.settings = config, deferred, account, environments, settings
@@ -45,6 +45,14 @@ class WorkerBranch:
 
     def place(self, worker: Worker) -> Path:
         return self.folder(worker) if worker.worktree else self.checkout(worker)
+
+    def skills_linked(self, worker: Worker) -> None:
+        folder, tree = self.folder(worker), Worktree(self.checkout(worker), self.folder(worker).name)
+        missing = [path for path in tree.skills() if not (folder / path).is_symlink() and not (folder / path).exists()]
+        if missing:
+            tree.excluded(missing)
+        for path in missing:
+            tree.linked(folder / path, tree.root / path)
 
     def checkout(self, worker: Worker) -> Path:
         environment = self.environments.find(worker.environment_id)
