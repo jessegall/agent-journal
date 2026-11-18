@@ -7,6 +7,7 @@ namespace Domain\Memory;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Support\Domain;
+use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
 use Domain\Memory\Commands\RememberForAgent;
@@ -29,12 +30,10 @@ final class MemoryDomain extends Domain implements ProvidesCommands, ProvidesNum
         return [];
     }
 
-    /**
-     * @return list<class-string>
-     */
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [];
+        return Exports::make()
+            ->build();
     }
 
     public function numberedModels(): array

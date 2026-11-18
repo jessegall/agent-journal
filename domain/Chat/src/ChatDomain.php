@@ -9,6 +9,7 @@ use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Support\Domain;
+use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
 use App\Ui\Contracts\ProvidesNavigation;
@@ -65,22 +66,15 @@ final class ChatDomain extends Domain implements ProvidesCommands, ProvidesNavig
         return [];
     }
 
-    /**
-     * @return list<class-string>
-     */
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [
-            MessageSent::class,
-            MessageAnswered::class,
-            MessageDismissed::class,
-            ConversationReader::class,
-            SendMessage::class,
-            Conversation::class,
-            MessageView::class,
-            MessageState::class,
-            MessageBodyEmpty::class,
-        ];
+        return Exports::make()
+            ->events(MessageSent::class, MessageAnswered::class, MessageDismissed::class)
+            ->contracts(ConversationReader::class)
+            ->values(Conversation::class, MessageView::class, MessageState::class)
+            ->commands(SendMessage::class)
+            ->exceptions(MessageBodyEmpty::class)
+            ->build();
     }
 
     public function states(): array

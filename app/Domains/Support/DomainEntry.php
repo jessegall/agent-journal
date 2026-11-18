@@ -10,12 +10,15 @@ use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\MiddlewareDeclaration;
+use App\Contracts\Event;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesAssignees;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Exceptions\DomainRequiresItself;
 use App\Domains\Exceptions\NotADomain;
 use App\Domains\Exceptions\RequiredDomainTwice;
+use App\Domains\Support\Exports as ExportsCheck;
+use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
 use App\Ui\Declarations\DomainUi;
@@ -33,7 +36,6 @@ final readonly class DomainEntry
 {
     /**
      * @param  list<class-string<Domain>>  $requires
-     * @param  list<string>  $exports
      */
     private function __construct(
         public string $name,
@@ -41,7 +43,7 @@ final readonly class DomainEntry
         public string $folder,
         public Domain $domain,
         public array $requires,
-        public array $exports,
+        public Exports $exports,
     ) {}
 
     /**
@@ -70,7 +72,7 @@ final readonly class DomainEntry
             folder: dirname($file),
             domain: $domain,
             requires: self::checkedRequirements($name, $className, $domain->requires()),
-            exports: Exports::check($name, $namespace, $domain->exports()),
+            exports: ExportsCheck::check($name, $namespace, $domain->exports()),
         );
     }
 
@@ -96,21 +98,30 @@ final readonly class DomainEntry
     }
 
     /**
-     * Whether a fully written name is one of this domain's events: a private one in Events or a public one in Api\\Events.
+     * Whether a fully written name is one of this domain's events: a class of its own that implements Event, wherever
+     * it sits.
      */
     public function ownsEvent(string $name): bool
     {
         $name = ltrim($name, '\\');
 
-        return stripos($name, $this->namespace.'\\Events\\') === 0 || stripos($name, $this->namespace.'\\Api\\Events\\') === 0;
+        return $this->ownsName($name) && is_subclass_of($name, Event::class);
     }
 
     /**
-     * Whether a fully written name is on this domain's export list, compared without regard to case.
+     * Whether a fully written name is in any of this domain's export lists, compared without regard to case.
      */
     public function exportsName(string $name): bool
     {
-        return in_array(strtolower(ltrim($name, '\\')), array_map(strtolower(...), $this->exports), true);
+        return $this->exports->has($name);
+    }
+
+    /**
+     * Whether a fully written name is in this domain's exported events.
+     */
+    public function exportsEvent(string $name): bool
+    {
+        return $this->exports->hasEvent($name);
     }
 
     /**

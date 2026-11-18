@@ -9,6 +9,7 @@ use App\Domains\Concerns\HasAssignables;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Support\Domain;
+use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
 use App\Ui\Contracts\ProvidesNavigation;
@@ -71,31 +72,30 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
         return [TasksDomain::class];
     }
 
-    /**
-     * @return list<class-string>
-     */
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [
-            PlanStarted::class,
-            PlanProgressChanged::class,
-            PlanReader::class,
-            StartPlan::class,
-            AssignPlanWork::class,
-            ReassignPlanWork::class,
-            UnassignPlanWork::class,
-            PlanMissing::class,
-            StartDenied::class,
-            PlanFilters::class,
-            PlanList::class,
-            PlanSelection::class,
-            PlanCard::class,
-            AssignedPlanFilters::class,
-            AssignedPlanList::class,
-            PlanProgress::class,
-            PlanType::class,
-            PlanState::class,
-        ];
+        return Exports::make()
+            ->events(PlanStarted::class, PlanProgressChanged::class)
+            ->contracts(PlanReader::class)
+            ->values(
+                PlanFilters::class,
+                PlanList::class,
+                PlanSelection::class,
+                PlanCard::class,
+                AssignedPlanFilters::class,
+                AssignedPlanList::class,
+                PlanProgress::class,
+                PlanType::class,
+                PlanState::class,
+            )
+            ->commands(
+                StartPlan::class,
+                AssignPlanWork::class,
+                ReassignPlanWork::class,
+                UnassignPlanWork::class,
+            )
+            ->exceptions(PlanMissing::class, StartDenied::class)
+            ->build();
     }
 
     public function assignables(): array

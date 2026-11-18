@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Desk;
 
+use App\Exports\Support\Exports;
 use App\Ui\Contracts\ProvidesSections;
 use App\Ui\Declarations\Section;
 use App\Ui\Enums\SlotContextType;
@@ -24,9 +25,10 @@ final class DeskDomain extends Domain implements ProvidesSections
         return [];
     }
 
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [];
+        return Exports::make()
+            ->build();
     }
 
     public function sections(): array

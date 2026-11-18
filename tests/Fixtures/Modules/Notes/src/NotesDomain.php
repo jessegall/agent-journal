@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
+use App\Exports\Support\Exports;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Concerns\HasAssignables;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
@@ -62,12 +63,13 @@ final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesC
         return [CardsDomain::class, RulesDomain::class];
     }
 
-    /**
-     * @return list<class-string>
-     */
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [NoteReader::class, NoteValue::class, WriteNote::class];
+        return Exports::make()
+            ->contracts(NoteReader::class)
+            ->values(NoteValue::class)
+            ->commands(WriteNote::class)
+            ->build();
     }
 
     public function states(): array

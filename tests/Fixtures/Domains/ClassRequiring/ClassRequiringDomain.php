@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\ClassRequiring;
 
+use App\Exports\Support\Exports;
 use App\Domains\Support\Domain;
 use Tests\Fixtures\Domains\Tasks\TaskList;
 
@@ -20,11 +21,9 @@ final class ClassRequiringDomain extends Domain
         return [TaskList::class];
     }
 
-    /**
-     * @return list<class-string>
-     */
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [];
+        return Exports::make()
+            ->build();
     }
 }

@@ -14,6 +14,7 @@ use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\NameType;
 use Tests\Architecture\Support\NameUse;
 use Tests\Architecture\Support\ProjectRoots;
+use Tests\Architecture\Support\Violation;
 use Tests\Architecture\Support\ViolationType;
 use Tests\Fixtures\Boundary\Chat\ChatDomain;
 use Tests\Fixtures\Boundary\Plans\PlansDomain;
@@ -72,10 +73,17 @@ final class BoundaryCheckerTest extends TestCase
     {
         $uses = [
             new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 3, 'App\Actors\Contracts\Actor', NameType::Type),
-            new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 4, 'App\Hooks\Events\StateTypesRequested', NameType::Type),
+            new NameUse($this->fixtureFolder().'/Plans/Listeners/HearsStateTypes.php', 4, 'App\Hooks\Events\StateTypesRequested', NameType::Type),
         ];
 
         $this->assertSame([], $this->checker()->violations($uses));
+    }
+
+    public function test_a_domain_names_a_core_event_only_in_a_listener(): void
+    {
+        $use = new NameUse($this->fixtureFolder().'/Plans/UsesAllowed.php', 4, 'App\Hooks\Events\StateTypesRequested', NameType::Type);
+
+        $this->assertSame([ViolationType::EventOutsideListener], array_map(fn (Violation $violation) => $violation->type, $this->checker()->violations([$use])));
     }
 
     public function test_a_private_type_of_a_required_domain_is_refused(): void

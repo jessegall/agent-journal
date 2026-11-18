@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Library;
 
+use App\Exports\Support\Exports;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Declarations\ActionRoute;
@@ -29,9 +30,10 @@ final class LibraryDomain extends Domain implements ProvidesNavigation, Provides
         return [];
     }
 
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [];
+        return Exports::make()
+            ->build();
     }
 
     public function pages(): array

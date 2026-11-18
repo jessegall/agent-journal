@@ -7,6 +7,7 @@ namespace Domain\Rules;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Support\Domain;
+use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
 use App\Ui\Contracts\ProvidesNavigation;
@@ -51,25 +52,20 @@ final class RulesDomain extends Domain implements ProvidesCommands, ProvidesNavi
         return [];
     }
 
-    /**
-     * @return list<class-string>
-     */
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [
-            RuleApproved::class,
-            RuleDenied::class,
-            RuleRemoved::class,
-            RuleReader::class,
-            ApproveRule::class,
-            DenyRule::class,
-            RuleFilters::class,
-            RuleList::class,
-            RuleView::class,
-            RuleState::class,
-            RuleMissing::class,
-            RuleNotProposed::class,
-        ];
+        return Exports::make()
+            ->events(RuleApproved::class, RuleDenied::class, RuleRemoved::class)
+            ->contracts(RuleReader::class)
+            ->values(
+                RuleFilters::class,
+                RuleList::class,
+                RuleView::class,
+                RuleState::class,
+            )
+            ->commands(ApproveRule::class, DenyRule::class)
+            ->exceptions(RuleMissing::class, RuleNotProposed::class)
+            ->build();
     }
 
     /**

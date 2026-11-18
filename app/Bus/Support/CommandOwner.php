@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
+use App\Exports\Support\Exports;
+
 /**
  * One owner of commands as the registry reads it: its name, its commands, the middleware it adds, the owners it
  * requires and the classes it exports. The domain foundation builds one per domain; Core is one more.
@@ -21,7 +23,6 @@ final readonly class CommandOwner
      * @param  list<class-string>  $commands
      * @param  list<MiddlewareDeclaration>  $middleware
      * @param  list<string>  $requires  the names of the owners it requires
-     * @param  list<string>  $exports  the fully written names it exports
      */
     public function __construct(
         public string $name,
@@ -30,12 +31,17 @@ final readonly class CommandOwner
         public array $commands,
         public array $middleware,
         public array $requires,
-        public array $exports,
+        public Exports $exports,
     ) {}
 
     public function exportsClass(string $class): bool
     {
-        return in_array(strtolower($class), array_map(strtolower(...), $this->exports), true);
+        return $this->exports->has($class);
+    }
+
+    public function exportsCommand(string $class): bool
+    {
+        return $this->exports->hasCommand($class);
     }
 
     /**

@@ -19,6 +19,7 @@ use App\Bus\Support\MiddlewareDeclaration;
 use App\Bus\Support\RegisteredMiddleware;
 use App\CoreCommands;
 use App\Domains\Support\DomainRegistry;
+use App\Exports\Support\Exports;
 use Tests\Fixtures\Bus\Garden\CommandMiddleware\Fence;
 use Tests\Fixtures\Bus\Garden\Commands\Water;
 use Tests\Fixtures\Bus\Garden\Handlers\WaterHandler;
@@ -69,6 +70,21 @@ final class CommandRegistryTest extends TestCase
     public function test_the_application_starts_with_the_real_owners(): void
     {
         $this->assertFalse($this->app->make(DomainRegistry::class)->commandDeclarations(CoreCommands::owner())->has(AddItem::class));
+    }
+
+    public function test_a_command_exported_but_not_registered_by_its_owner_is_refused(): void
+    {
+        $this->expectExceptionObject(CommandDeclarationInvalid::exportedButNotRegistered('Shop', RemoveItem::class));
+
+        CommandRegistry::from([$this->shop([AddItem::class], exports: [RemoveItem::class])]);
+    }
+
+    public function test_a_registered_command_that_is_not_exported_stays_private(): void
+    {
+        $registry = CommandRegistry::from([$this->shop([AddItem::class, RemoveItem::class], exports: [AddItem::class])]);
+
+        $this->assertTrue($registry->isExported(AddItem::class));
+        $this->assertFalse($registry->isExported(RemoveItem::class));
     }
 
     public function test_a_command_listed_twice_is_refused(): void
@@ -164,11 +180,11 @@ final class CommandRegistryTest extends TestCase
     /**
      * @param  list<class-string>  $commands
      * @param  list<MiddlewareDeclaration>  $middleware
-     * @param  list<string>  $exports
+     * @param  list<class-string>  $exports  the commands it exports
      */
     private function shop(array $commands, array $middleware = [], array $exports = []): CommandOwner
     {
-        return new CommandOwner('Shop', 'Tests\\Fixtures\\Bus\\Shop', 'Tests\\Fixtures\\Bus\\Shop\\ShopDomain', $commands, $middleware, [], $exports);
+        return new CommandOwner('Shop', 'Tests\\Fixtures\\Bus\\Shop', 'Tests\\Fixtures\\Bus\\Shop\\ShopDomain', $commands, $middleware, [], Exports::make()->commands(...$exports)->build());
     }
 
     /**
@@ -177,6 +193,6 @@ final class CommandRegistryTest extends TestCase
      */
     private function garden(array $commands, array $middleware = []): CommandOwner
     {
-        return new CommandOwner('Garden', 'Tests\\Fixtures\\Bus\\Garden', 'Tests\\Fixtures\\Bus\\Garden\\GardenDomain', $commands, $middleware, ['Shop'], []);
+        return new CommandOwner('Garden', 'Tests\\Fixtures\\Bus\\Garden', 'Tests\\Fixtures\\Bus\\Garden\\GardenDomain', $commands, $middleware, ['Shop'], Exports::make()->build());
     }
 }

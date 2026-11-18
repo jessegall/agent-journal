@@ -10,6 +10,7 @@ use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Registry\AssignmentRegistry;
 use App\CoreApi;
 use App\Domains\Support\DomainRegistry;
+use App\Exports\Support\Exports;
 use App\Hooks\Contracts\ShellCommandParser;
 use Tests\Architecture\Support\BindingRules;
 use Tests\Architecture\Support\BoundaryReport;
@@ -72,8 +73,8 @@ final class BindingRulesTest extends TestCase
         $fixtures = base_path('tests/Fixtures/Bindings');
         $owners = [
             PublicOwner::core(CoreApi::exports()),
-            new PublicOwner('Plans', 'Tests\Fixtures\Bindings\Plans', []),
-            new PublicOwner('Tasks', 'Tests\Fixtures\Bindings\Tasks', []),
+            new PublicOwner('Plans', 'Tests\Fixtures\Bindings\Plans', Exports::make()->build()),
+            new PublicOwner('Tasks', 'Tests\Fixtures\Bindings\Tasks', Exports::make()->build()),
         ];
 
         $violations = (new BindingRules($owners, DomainFiles::in([$fixtures])))->violations();

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\Tasks;
 
+use App\Exports\Support\Exports;
 use App\Domains\Support\Domain;
 use Tests\Fixtures\Boundary\Chat\ChatDomain;
 
@@ -19,11 +20,10 @@ final class TasksDomain extends Domain
         return [ChatDomain::class];
     }
 
-    /**
-     * @return list<class-string>
-     */
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [Task::class];
+        return Exports::make()
+            ->values(Task::class)
+            ->build();
     }
 }

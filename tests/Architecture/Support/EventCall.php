@@ -46,9 +46,9 @@ final readonly class EventCall
     /**
      * Whether this call raises, by its class, an event whose name matches the pattern.
      */
-    public function raisesClassEventIn(string $namePattern): bool
+    public function raisesClassEvent(): bool
     {
-        return $this->raises && $this->argument === EventArgument::ClassName && preg_match($namePattern, ltrim($this->event, '\\')) === 1;
+        return $this->raises && $this->argument === EventArgument::ClassName;
     }
 
     public function raisesClassEventOf(DomainEntry $owner): bool

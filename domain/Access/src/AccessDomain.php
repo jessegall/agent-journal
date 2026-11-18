@@ -9,6 +9,7 @@ use App\Assignments\Support\AssigneeRegistration;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Contracts\ProvidesAssignees;
 use App\Domains\Support\Domain;
+use App\Exports\Support\Exports;
 use Domain\Access\Support\UserAssignees;
 
 final class AccessDomain extends Domain implements ProvidesAssignees
@@ -28,12 +29,10 @@ final class AccessDomain extends Domain implements ProvidesAssignees
         return [];
     }
 
-    /**
-     * @return list<class-string>
-     */
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [];
+        return Exports::make()
+            ->build();
     }
 
     /**

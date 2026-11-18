@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Models\Shop;
 
+use App\Exports\Support\Exports;
 use App\Domains\Support\Domain;
 
 final class ShopDomain extends Domain
@@ -18,11 +19,9 @@ final class ShopDomain extends Domain
         return [];
     }
 
-    /**
-     * @return list<class-string>
-     */
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [];
+        return Exports::make()
+            ->build();
     }
 }

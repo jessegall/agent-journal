@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Ledger;
 
+use App\Exports\Support\Exports;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Support\Domain;
@@ -37,12 +38,10 @@ final class LedgerDomain extends Domain implements ProvidesCommands, ProvidesNum
         return [];
     }
 
-    /**
-     * @return list<class-string>
-     */
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [];
+        return Exports::make()
+            ->build();
     }
 
     public function commands(): array

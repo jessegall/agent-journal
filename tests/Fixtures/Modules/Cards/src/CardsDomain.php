@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Cards;
 
+use App\Exports\Support\Exports;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Support\CommandScope;
@@ -28,12 +29,11 @@ final class CardsDomain extends Domain implements ProvidesCommandMiddleware, Pro
         return [];
     }
 
-    /**
-     * @return list<class-string>
-     */
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [DrawCard::class];
+        return Exports::make()
+            ->commands(DrawCard::class)
+            ->build();
     }
 
     public function commands(): array

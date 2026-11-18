@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
+use App\Contracts\Event;
 use App\Domains\Support\DomainEntry;
+use App\Exports\Support\Exports;
 
 /**
  * Judges name uses against the domain each file belongs to, the domains it declares it requires and what each owner
@@ -21,18 +23,13 @@ final readonly class BoundaryChecker
     private const string SHARED_PLACE = 'the core or the domain foundation';
 
     /**
-     * Core's events and extension requests: a domain hears them, only Core raises them.
-     */
-    private const string CORE_EVENTS = '/^App\\\\(?!Domains\\\\)(.+\\\\)?Events\\\\/i';
-
-    /**
      * @param  list<DomainEntry>  $entries
-     * @param  list<string>  $coreExports  CoreApi's list of the Core types a domain may use
+     * @param  Exports  $coreExports  CoreApi's exports: the Core types a domain may use
      */
     public function __construct(
         private array $entries,
         private ProjectRoots $roots,
-        private array $coreExports,
+        private Exports $coreExports,
     ) {}
 
     /**
@@ -63,6 +60,10 @@ final readonly class BoundaryChecker
                 return [new Violation($use->file, $use->line, $use->name, $userName, 'Core', ViolationType::PrivateCoreType)];
             }
 
+            if ($user !== null && $this->isCoreEvent($use->name) && ! ($user->holdsListenerFile($use->file) && $use->type->canNameAnEventToHearIt())) {
+                return [new Violation($use->file, $use->line, $use->name, $userName, 'Core', ViolationType::EventOutsideListener)];
+            }
+
             return $this->isFreeToUse($use->name) ? [] : [new Violation($use->file, $use->line, $use->name, $userName, 'no domain', ViolationType::OutsideEveryDomain)];
         }
 
@@ -75,7 +76,9 @@ final readonly class BoundaryChecker
         $violations = $this->eventViolations($use, $user, $owner);
 
         if ($user !== null && $user->requiresDomain($owner)) {
-            $isPublic = $owner->exportsName($use->name) || self::isRequirementInDescriptor($use, $user, $owner);
+            $isPublic = $owner->ownsEvent($use->name)
+                ? $owner->exportsEvent($use->name)
+                : $owner->exportsName($use->name) || self::isRequirementInDescriptor($use, $user, $owner);
 
             return $isPublic ? $violations : [...$violations, new Violation($use->file, $use->line, $use->name, $userName, $owner->name, ViolationType::PrivateType)];
         }
@@ -137,7 +140,7 @@ final readonly class BoundaryChecker
                 $violations[] = new Violation($call->file, $call->line, $call->event, $userName, $this->domainOwning($call->event)->name, ViolationType::ReRaisedEvent);
             }
 
-            if ($userName !== self::SHARED_PLACE && $call->raisesClassEventIn(self::CORE_EVENTS)) {
+            if ($userName !== self::SHARED_PLACE && $call->raisesClassEvent() && $this->isCoreEvent($call->event)) {
                 $violations[] = new Violation($call->file, $call->line, $call->event, $userName, 'Core', ViolationType::ReRaisedEvent);
             }
         }
@@ -221,7 +224,17 @@ final readonly class BoundaryChecker
     {
         $name = ltrim($name, '\\');
 
-        return stripos($name, 'App\\') === 0 && stripos($name, 'App\\Domains\\') !== 0 && self::isDeclared($name) && ! in_array(strtolower($name), array_map(strtolower(...), $this->coreExports), true);
+        return stripos($name, 'App\\') === 0 && stripos($name, 'App\\Domains\\') !== 0 && self::isDeclared($name) && ! $this->coreExports->has($name);
+    }
+
+    /**
+     * A Core class that implements Event: a domain hears it in a listener, only Core raises it.
+     */
+    private function isCoreEvent(string $name): bool
+    {
+        $name = ltrim($name, '\\');
+
+        return stripos($name, 'App\\') === 0 && stripos($name, 'App\\Domains\\') !== 0 && is_subclass_of($name, Event::class);
     }
 
     /**

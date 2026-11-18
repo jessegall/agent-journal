@@ -5,12 +5,15 @@ declare(strict_types=1);
 namespace App\Domains\Providers;
 
 use App\Bus\Support\CommandRegistry;
+use App\CoreApi;
 use App\CoreCommands;
 use App\Domains\Support\DomainRegistry;
+use App\Domains\Support\Exports as ExportsCheck;
 use App\Domains\Support\Psr4ClassNames;
 use Illuminate\Foundation\Events\DiscoverEvents;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use SplFileInfo;
 
 /**
@@ -21,6 +24,7 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        ExportsCheck::check('Core', Str::beforeLast(CoreApi::class, '\\'), CoreApi::exports());
         $registry = DomainRegistry::from($this->domainClasses());
 
         $this->app->instance(DomainRegistry::class, $registry);

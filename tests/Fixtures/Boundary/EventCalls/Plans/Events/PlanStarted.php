@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\EventCalls\Plans\Events;
 
-final readonly class PlanStarted
+use App\Contracts\Event;
+
+final readonly class PlanStarted implements Event
 {
     public function __construct(public int $planId) {}
 }

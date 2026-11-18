@@ -9,6 +9,7 @@ use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Support\Domain;
+use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
 use Domain\Sequences\Commands\StartSequence;
@@ -41,12 +42,10 @@ final class SequencesDomain extends Domain implements ProvidesCommands, Provides
         return [];
     }
 
-    /**
-     * @return list<class-string>
-     */
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [];
+        return Exports::make()
+            ->build();
     }
 
     public function states(): array

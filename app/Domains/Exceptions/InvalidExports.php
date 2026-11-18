@@ -9,23 +9,53 @@ namespace App\Domains\Exceptions;
  */
 final class InvalidExports extends DomainDeclarationError
 {
-    public static function notAList(string $owner): self
+    public static function missing(string $owner, string $list, string $name): self
     {
-        return new self("{$owner} must export a plain list of class names.");
-    }
-
-    public static function notAName(string $owner, int $position): self
-    {
-        return new self("{$owner} exports something that is not a class name at position {$position}.");
-    }
-
-    public static function listedTwice(string $owner, string $name): self
-    {
-        return new self("{$owner} exports {$name} twice.");
+        return new self("{$owner} exports {$name} under {$list}, but no such class exists; fix the name or remove it.");
     }
 
     public static function outsideOwner(string $owner, string $name, string $namespace): self
     {
-        return new self("{$owner} exports {$name}, which is not in its own namespace {$namespace}.");
+        return new self("{$owner} exports {$name}, which is not in its own namespace {$namespace}; export only its own types.");
+    }
+
+    public static function notAnEvent(string $owner, string $name): self
+    {
+        return new self("{$owner} exports {$name} under events, but it is not a final class implementing App\\Contracts\\Event; move it to the list it belongs in.");
+    }
+
+    public static function eventIsACommand(string $owner, string $name): self
+    {
+        return new self("{$owner} exports {$name} under events, but it is a command; export it under commands.");
+    }
+
+    public static function notAnInterface(string $owner, string $name): self
+    {
+        return new self("{$owner} exports {$name} under contracts, but it is not an interface; export its interface, or move it to values.");
+    }
+
+    public static function notACommand(string $owner, string $name): self
+    {
+        return new self("{$owner} exports {$name} under commands, but it is not a final class implementing App\\Bus\\Contracts\\Command; move it to the list it belongs in.");
+    }
+
+    public static function notAnException(string $owner, string $name): self
+    {
+        return new self("{$owner} exports {$name} under exceptions, but it is not a Throwable in an Exceptions namespace; move it there or to the list it belongs in.");
+    }
+
+    public static function notAValue(string $owner, string $name, string $reason): self
+    {
+        return new self("{$owner} exports {$name} under values, but {$reason}.");
+    }
+
+    public static function supportOutsideCore(string $owner, string $name): self
+    {
+        return new self("{$owner} exports {$name} under support, which only Core may use; export it under the list its type belongs in.");
+    }
+
+    public static function unknownSupport(string $name): self
+    {
+        return new self("Core exports {$name} under support, which is not one of its listed support types; give it an interface or move it to values.");
     }
 }

@@ -35,7 +35,7 @@ final class CoreCommands
     }
 
     /**
-     * Core as an owner of commands: everything on CoreApi's list is exported to the domains.
+     * Core as an owner of commands: the commands on CoreApi's commands list are exported to the domains.
      */
     public static function owner(): CommandOwner
     {

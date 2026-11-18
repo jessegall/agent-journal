@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Processes;
 
 use App\Domains\Support\Domain;
+use App\Exports\Support\Exports;
 
 final class ProcessesDomain extends Domain
 {
@@ -21,11 +22,9 @@ final class ProcessesDomain extends Domain
         return [];
     }
 
-    /**
-     * @return list<class-string>
-     */
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [];
+        return Exports::make()
+            ->build();
     }
 }

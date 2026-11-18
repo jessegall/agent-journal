@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture\Support;
 
+use App\Exports\Support\Exports;
 use App\Links\Support\LinkAccess;
 use Illuminate\Database\Eloquent\Model;
 use PhpParser\Node;
@@ -43,8 +44,10 @@ final readonly class PublicContracts
         $violations = [];
 
         foreach ($this->owners as $owner) {
-            foreach ($owner->exports as $export) {
-                array_push($violations, ...$this->violationsOf($export, $owner));
+            foreach (self::listsOf($owner->exports) as $list => $exports) {
+                foreach ($exports as $export) {
+                    array_push($violations, ...$this->violationsOf($export, $owner, $list));
+                }
             }
         }
 
@@ -52,12 +55,22 @@ final readonly class PublicContracts
     }
 
     /**
+     * Each export list by its name.
+     *
+     * @return array<string, list<class-string>>
+     */
+    private static function listsOf(Exports $exports): array
+    {
+        return ['events' => $exports->events, 'contracts' => $exports->contracts, 'values' => $exports->values, 'commands' => $exports->commands, 'exceptions' => $exports->exceptions, 'support' => $exports->support];
+    }
+
+    /**
      * @return list<Violation>
      */
-    private function violationsOf(string $export, PublicOwner $owner): array
+    private function violationsOf(string $export, PublicOwner $owner, string $list): array
     {
         if (! self::exists($export)) {
-            return [new Violation('', 0, $export, $owner->name, $owner->name, ViolationType::DisallowedCategory, 'a name that does not exist')];
+            return [new Violation('', 0, $export, $owner->name, $owner->name, ViolationType::DisallowedCategory, "a name that does not exist, under {$list}")];
         }
 
         $class = new ReflectionClass($export);
@@ -65,7 +78,7 @@ final readonly class PublicContracts
         $category = self::disallowedCategoryOf($class, $owner);
 
         if ($category !== null) {
-            return [new Violation($file, (int) $class->getStartLine(), $export, $owner->name, $owner->name, ViolationType::DisallowedCategory, $category)];
+            return [new Violation($file, (int) $class->getStartLine(), $export, $owner->name, $owner->name, ViolationType::DisallowedCategory, "{$category}, under {$list}")];
         }
 
         $violations = [];

@@ -52,6 +52,6 @@ final class DomainClassesTest extends TestCase
 
         $this->assertNotSame('', $domain->description());
         $this->assertSame($requires, $domain->requires());
-        $this->assertSame($exports, array_map(class_basename(...), $domain->exports()));
+        $this->assertEqualsCanonicalizing($exports, array_map(class_basename(...), $domain->exports()->all()));
     }
 }

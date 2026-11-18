@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Shelf;
 
+use App\Exports\Support\Exports;
 use App\Domains\Support\Domain;
 
 /**
@@ -21,8 +22,9 @@ final class ShelfDomain extends Domain
         return [];
     }
 
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [];
+        return Exports::make()
+            ->build();
     }
 }

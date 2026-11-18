@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\Events\Tasks;
 
+use App\Exports\Support\Exports;
 use App\Domains\Support\Domain;
 use Tests\Fixtures\Boundary\Events\Tasks\Events\TaskClosed;
 
@@ -19,11 +20,10 @@ final class TasksDomain extends Domain
         return [];
     }
 
-    /**
-     * @return list<class-string>
-     */
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [TaskClosed::class];
+        return Exports::make()
+            ->events(TaskClosed::class)
+            ->build();
     }
 }

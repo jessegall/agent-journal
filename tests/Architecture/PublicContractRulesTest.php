@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Architecture;
 
 use App\CoreApi;
+use App\Exports\Support\Exports;
 use PHPUnit\Framework\TestCase;
 use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\PublicContracts;
@@ -49,23 +50,24 @@ final class PublicContractRulesTest extends TestCase
     public function test_a_model_a_service_and_an_exception_outside_exceptions_cannot_be_exported(): void
     {
         $this->assertSame([
-            Plan::class.' is an Eloquent model',
-            PlanService::class.' is a class with hidden or changeable state, such as a service',
-            PlanMissing::class." is an exception outside its owner's Exceptions folder",
-            'Tests\Fixtures\PublicContracts\Plans\Gone is a name that does not exist',
+            Plan::class.' is an Eloquent model, under values',
+            PlanService::class.' is a class with hidden or changeable state, such as a service, under values',
+            PlanMissing::class." is an exception outside its owner's Exceptions folder, under values",
+            'Tests\Fixtures\PublicContracts\Plans\Gone is a name that does not exist, under values',
         ], $this->violationsOf([Plan::class, PlanService::class, PlanMissing::class, 'Tests\Fixtures\PublicContracts\Plans\Gone']));
     }
 
     /**
-     * @param  list<string>  $planExports
+     * @param  list<string>  $planExports  exported as values, where each refusal is judged; one may name no class
      * @return list<string>
      */
     private function violationsOf(array $planExports): array
     {
         $owners = [
             PublicOwner::core(CoreApi::exports()),
-            new PublicOwner('Plans', 'Tests\Fixtures\PublicContracts\Plans', $planExports),
-            new PublicOwner('Tasks', 'Tests\Fixtures\PublicContracts\Tasks', [TaskRecord::class]),
+            // @phpstan-ignore argument.type (a name that does not exist is one of the cases judged)
+            new PublicOwner('Plans', 'Tests\Fixtures\PublicContracts\Plans', Exports::make()->values(...$planExports)->build()),
+            new PublicOwner('Tasks', 'Tests\Fixtures\PublicContracts\Tasks', Exports::make()->values(TaskRecord::class)->build()),
         ];
         $roots = ProjectRoots::fromComposer(dirname(__DIR__, 2).'/composer.json');
 

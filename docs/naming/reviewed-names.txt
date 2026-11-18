@@ -944,7 +944,6 @@ constant	BindingRules::BINDING_METHODS
 constant	BindingRules::PER_REQUEST_VALUES
 constant	BindingRules::SCOPED_METHODS
 constant	BindingRules::SINGLETON_METHODS
-constant	BoundaryChecker::CORE_EVENTS
 constant	BoundaryChecker::SHARED_NAMESPACES
 constant	BoundaryChecker::SHARED_PLACE
 constant	ClaudeCodeAdapter::PROGRAM
@@ -971,6 +970,7 @@ constant	EventCallScan::EVENT_FACADES
 constant	EventCallScan::FACADE_METHODS
 constant	EventCallScan::HELPERS
 constant	EventCallScan::RECEIVER_METHODS
+constant	Exports::CORE_SUPPORT
 constant	FailedWindow::MESSAGE
 constant	FollowingSequenceStateReference::TYPE_KEY
 constant	GlobalGroup::JOURNAL
@@ -1514,6 +1514,7 @@ method	BoundaryChecker::domainHolding()
 method	BoundaryChecker::domainOwning()
 method	BoundaryChecker::eventCallViolations()
 method	BoundaryChecker::eventViolations()
+method	BoundaryChecker::isCoreEvent()
 method	BoundaryChecker::isDeclared()
 method	BoundaryChecker::isDomainName()
 method	BoundaryChecker::isFreeToUse()
@@ -1616,6 +1617,7 @@ method	CommandCatalog::effectOf()
 method	CommandCatalog::journalTypeOf()
 method	CommandCatalog::startsWithAny()
 method	CommandCatalog::typeOf()
+method	CommandDeclarationInvalid::exportedButNotRegistered()
 method	CommandDeclarationInvalid::for()
 method	CommandEffect::mayChangeFiles()
 method	CommandGrammar::__construct()
@@ -1635,11 +1637,13 @@ method	CommandNestingTooDeep::at()
 method	CommandNotRegistered::for()
 method	CommandOwner::__construct()
 method	CommandOwner::exportsClass()
+method	CommandOwner::exportsCommand()
 method	CommandOwner::holdsIn()
 method	CommandOwner::requiresOwner()
 method	CommandPart::__construct()
 method	CommandRefused::because()
 method	CommandRegistry::__construct()
+method	CommandRegistry::checkExportedCommandsAreRegistered()
 method	CommandRegistry::checkHandler()
 method	CommandRegistry::checkLifetime()
 method	CommandRegistry::checkScope()
@@ -1808,6 +1812,7 @@ method	DomainEntry::commandMiddleware()
 method	DomainEntry::commandOwner()
 method	DomainEntry::commands()
 method	DomainEntry::declaring()
+method	DomainEntry::exportsEvent()
 method	DomainEntry::exportsName()
 method	DomainEntry::fromClass()
 method	DomainEntry::holdsFile()
@@ -1859,7 +1864,7 @@ method	EmptyReason::forDecision()
 method	EventArgument::isWrittenName()
 method	EventCall::__construct()
 method	EventCall::isEventNamedByString()
-method	EventCall::raisesClassEventIn()
+method	EventCall::raisesClassEvent()
 method	EventCall::raisesClassEventOf()
 method	EventCall::raisesReceivedEvent()
 method	EventCallScan::argumentType()
@@ -1886,6 +1891,10 @@ method	ExportBuilder::values()
 method	Exports::__construct()
 method	Exports::all()
 method	Exports::check()
+method	Exports::command()
+method	Exports::contract()
+method	Exports::event()
+method	Exports::exception()
 method	Exports::has()
 method	Exports::hasCommand()
 method	Exports::hasEvent()
@@ -1893,6 +1902,10 @@ method	Exports::listHolds()
 method	Exports::make()
 method	Exports::normalized()
 method	Exports::of()
+method	Exports::ownType()
+method	Exports::reasonNotAValue()
+method	Exports::support()
+method	Exports::value()
 method	FailedWindow::__construct()
 method	FailedWindow::make()
 method	FileChange::__construct()
@@ -2056,10 +2069,16 @@ method	InvalidAssignmentPage::forRecordCount()
 method	InvalidBottomState::missing()
 method	InvalidBottomState::ofAnotherRole()
 method	InvalidBottomState::repeated()
-method	InvalidExports::listedTwice()
-method	InvalidExports::notAList()
-method	InvalidExports::notAName()
+method	InvalidExports::eventIsACommand()
+method	InvalidExports::missing()
+method	InvalidExports::notACommand()
+method	InvalidExports::notAValue()
+method	InvalidExports::notAnEvent()
+method	InvalidExports::notAnException()
+method	InvalidExports::notAnInterface()
 method	InvalidExports::outsideOwner()
+method	InvalidExports::supportOutsideCore()
+method	InvalidExports::unknownSupport()
 method	InvalidHookAnswer::for()
 method	InvalidNavigationDeclaration::nothingToOpen()
 method	InvalidNavigationDeclaration::pageMissing()
@@ -2554,6 +2573,7 @@ method	PublicContracts::disallowedCategoryOf()
 method	PublicContracts::docblockNames()
 method	PublicContracts::exists()
 method	PublicContracts::isImmutableValue()
+method	PublicContracts::listsOf()
 method	PublicContracts::memberNames()
 method	PublicContracts::privateOwnerOf()
 method	PublicContracts::projectLineageOf()
@@ -3544,6 +3564,8 @@ property	Exports::$commands
 property	Exports::$contracts
 property	Exports::$events
 property	Exports::$exceptions
+property	Exports::$namespace
+property	Exports::$owner
 property	Exports::$support
 property	Exports::$values
 property	FailedWindow::$message

@@ -13,6 +13,7 @@ use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesAssignees;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Exceptions\CapabilityWithoutTrait;
+use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 
 /**
@@ -50,12 +51,10 @@ abstract class Domain
     abstract public function requires(): array;
 
     /**
-     * The domain's public surface: every class, interface, enum or exception another domain may use, written out one by
-     * one. An empty list is a domain nothing outside may use; there is no wildcard.
-     *
-     * @return list<class-string>
+     * The domain's public surface, sorted into events, contracts, values, commands and exceptions, each name written out
+     * one by one. Empty exports are a domain nothing outside may use; there is no wildcard.
      */
-    abstract public function exports(): array;
+    abstract public function exports(): Exports;
 
     /**
      * Every step the domain's boot runs, in order: its migrations, its traits' steps, then its own.

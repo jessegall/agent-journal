@@ -70,6 +70,7 @@ final readonly class CommandRegistry
             }
         }
 
+        self::checkExportedCommandsAreRegistered($owners);
         $middleware = self::checkedMiddleware($owners, array_column($commands, 1, 0));
         $registered = [];
 
@@ -78,7 +79,7 @@ final readonly class CommandRegistry
             $registered[$command] = new RegisteredCommand(
                 handler: $handler,
                 owner: $owner->name,
-                exported: $owner->exportsClass($command),
+                exported: $owner->exportsCommand($command),
                 repeatableRead: $reflection->getAttributes(RepeatableRead::class) !== [],
                 actor: self::requiredActorOf($reflection),
                 middleware: self::orderedFor($command, $owner, $middleware, $owners),
@@ -86,6 +87,24 @@ final readonly class CommandRegistry
         }
 
         return new self($registered);
+    }
+
+    /**
+     * Every command an owner exports is one it registers itself.
+     *
+     * @param  list<CommandOwner>  $owners
+     */
+    private static function checkExportedCommandsAreRegistered(array $owners): void
+    {
+        foreach ($owners as $owner) {
+            $registered = array_map(strtolower(...), $owner->commands);
+
+            foreach ($owner->exports->commands as $exported) {
+                if (! in_array(strtolower($exported), $registered, true)) {
+                    throw CommandDeclarationInvalid::exportedButNotRegistered($owner->name, $exported);
+                }
+            }
+        }
     }
 
     public function has(string $command): bool
@@ -332,7 +351,9 @@ final readonly class CommandRegistry
             throw MiddlewareDeclarationInvalid::for($declaration->middleware, "its scope names {$scope->target}, which is no registered command");
         }
 
-        if ($commandOwner !== $owner && ! ($owner->requiresOwner($commandOwner->name) && $commandOwner->exportsClass($scope->target))) {
+        $mayName = $commandOwner->exportsCommand($scope->target) && ($commandOwner->name === CommandOwner::CORE || $owner->requiresOwner($commandOwner->name));
+
+        if ($commandOwner !== $owner && ! $mayName) {
             throw MiddlewareDeclarationInvalid::for($declaration->middleware, "its owner may not name {$scope->target}: it is neither its own nor exported by an owner it requires");
         }
     }

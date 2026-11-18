@@ -11,6 +11,7 @@ use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Support\Domain;
+use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
 use Domain\Tasks\Api\Events\TaskBlocked;
@@ -65,30 +66,33 @@ final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesC
         return [];
     }
 
-    /**
-     * @return list<class-string>
-     */
-    public function exports(): array
+    public function exports(): Exports
     {
-        return [
-            TaskStarted::class,
-            TaskFinished::class,
-            TaskBlocked::class,
-            TaskCancelled::class,
-            TaskProgressCounter::class,
-            TaskProgress::class,
-            TaskReader::class,
-            TaskSummary::class,
-            TaskMissing::class,
-            TaskAssignmentReader::class,
-            TaskAssignmentCompletion::class,
-            AssignedTaskReader::class,
-            TaskCard::class,
-            TaskFilters::class,
-            TaskList::class,
-            TaskState::class,
-            TaskWorkState::class,
-        ];
+        return Exports::make()
+            ->events(
+                TaskStarted::class,
+                TaskFinished::class,
+                TaskBlocked::class,
+                TaskCancelled::class,
+            )
+            ->contracts(
+                TaskProgressCounter::class,
+                TaskReader::class,
+                TaskAssignmentReader::class,
+                AssignedTaskReader::class,
+            )
+            ->values(
+                TaskProgress::class,
+                TaskSummary::class,
+                TaskAssignmentCompletion::class,
+                TaskCard::class,
+                TaskFilters::class,
+                TaskList::class,
+                TaskState::class,
+                TaskWorkState::class,
+            )
+            ->exceptions(TaskMissing::class)
+            ->build();
     }
 
     public function states(): array
