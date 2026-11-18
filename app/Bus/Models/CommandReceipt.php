@@ -141,15 +141,12 @@ final class CommandReceipt extends Model implements ReadableModel
     }
 
     /**
-     * Past its retention: the answer is cleared, the key and fingerprint stay so the key is refused.
+     * Expires every receipt of every caller past its retention: the answer is cleared, the key and fingerprint stay so
+     * the key is refused. Returns how many it expired.
      */
-    public function expire(): void
+    public static function expirePastRetention(CarbonImmutable $now): int
     {
-        $this->state = ReceiptState::Expired;
-        $this->result = null;
-        $this->refusal_code = null;
-        $this->refusal_message = null;
-        $this->save();
+        return self::query()->pastRetention($now)->update(['state' => ReceiptState::Expired->value, 'result' => null, 'refusal_code' => null, 'refusal_message' => null]);
     }
 
     public function isFor(object $command): bool

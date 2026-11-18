@@ -20,12 +20,7 @@ final class PruneReceiptsCommand extends Command
     {
         $now = CarbonImmutable::now();
         $pruned = CommandReceipt::query()->pastTombstone($now)->delete();
-        $expired = 0;
-
-        CommandReceipt::query()->pastRetention($now)->eachById(function (CommandReceipt $receipt) use (&$expired): void {
-            $receipt->expire();
-            $expired++;
-        });
+        $expired = CommandReceipt::expirePastRetention($now);
 
         $this->info("Expired {$expired} and removed {$pruned} command receipts.");
 

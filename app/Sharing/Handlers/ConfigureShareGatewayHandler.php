@@ -50,7 +50,7 @@ final readonly class ConfigureShareGatewayHandler implements CommandHandler
 
         $settings = new GatewaySettings($command->gatewayKey, $command->executableVersion, $command->providerHost, $command->publicOrigin, $command->listenerPort, $command->secretReferences);
         ShareInstallation::lockForAdmission();
-        $configuration = ShareGatewayConfiguration::revise($settings);
+        $configuration = ShareGatewayConfiguration::configure($settings);
 
         if ($command->makeDefault) {
             $readiness = $gateway->readiness($configuration->toConfiguration());

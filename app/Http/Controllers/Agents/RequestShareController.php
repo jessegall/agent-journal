@@ -9,16 +9,17 @@ use App\Http\Data\Sharing\ShareProposalStatusData;
 use App\Http\Requests\Agents\RequestShareRequest;
 use App\Records\Contracts\RecordReader;
 use App\Sharing\Commands\RequestShare;
+use Illuminate\Http\JsonResponse;
 
 /**
  * An agent proposes sharing a record it may read; it is answered with the proposal's number and state only.
  */
 final readonly class RequestShareController
 {
-    public function __invoke(RequestShareRequest $request, RecordReader $records, CommandBus $commands): ShareProposalStatusData
+    public function __invoke(RequestShareRequest $request, RecordReader $records, CommandBus $commands): JsonResponse
     {
         $root = $records->identify($request->reference());
 
-        return ShareProposalStatusData::fromStatus($commands->run(new RequestShare($root->type, $root->id, $request->requestKey())));
+        return new JsonResponse(ShareProposalStatusData::fromStatus($commands->run(new RequestShare($root->type, $root->id, $request->requestKey()))));
     }
 }

@@ -55,29 +55,18 @@ final class ShareGatewayConfiguration extends Model implements ReadableModel
     }
 
     /**
-     * A new configuration at its first version, not yet the default.
+     * The gateway's next settings revision, numbered after every earlier one and not yet the default; earlier
+     * revisions stay for the shares that pin them. A command calls it under the installation lock, so two revisions
+     * never take one number.
      */
     public static function configure(GatewaySettings $settings): self
     {
+        $latest = self::query()->forGateway($settings->gatewayKey)->max('configuration_version');
         $configuration = new self();
         $configuration->gateway_key = $settings->gatewayKey;
-        $configuration->configuration_version = 1;
+        $configuration->configuration_version = (is_numeric($latest) ? (int) $latest : 0) + 1;
         $configuration->settings = $settings;
         $configuration->is_default = false;
-        $configuration->save();
-
-        return $configuration;
-    }
-
-    /**
-     * The gateway's next settings revision, numbered after every earlier one; earlier revisions stay for the shares
-     * that pin them. Called under the installation lock, so two revisions never take one number.
-     */
-    public static function revise(GatewaySettings $settings): self
-    {
-        $latest = self::query()->forGateway($settings->gatewayKey)->max('configuration_version');
-        $configuration = self::configure($settings);
-        $configuration->configuration_version = (is_numeric($latest) ? (int) $latest : 0) + 1;
         $configuration->save();
 
         return $configuration;

@@ -496,6 +496,7 @@ use App\Sharing\Events\ShareRequested;
 use App\Sharing\Events\ShareRevoked;
 use App\Sharing\Events\ShareScopeChanged;
 use App\Sharing\Exceptions\ShareBudgetExceeded;
+use App\Sharing\Exceptions\SharePreviewRefused;
 use App\Sharing\Exceptions\SharingNotAllowed;
 use App\Sharing\Support\GatewayConfiguration;
 use App\Sharing\Support\GatewayEndpoint;
@@ -1114,6 +1115,7 @@ final class CoreApi
                 MiddlewareSwallowedFailure::class,
                 NestedCommandFailureIgnored::class,
                 OperationUnavailable::class,
+                SharePreviewRefused::class,
                 CommandRuleInvalid::class,
                 CommandRuleConflict::class,
                 ShellNodeMissing::class,
