@@ -23,6 +23,9 @@ from journal.providers.providers import Providers
 
 SESSIONS_SHOWN = 12
 FILL_POLL_SECONDS = 0.3
+# a launch the journal starts itself, as after a container start, may ask while the server still boots: it asks again this
+# long before it takes "no environments" for an answer, so it never starts a fresh session only because it asked too early
+LISTING_WAIT_SECONDS, LISTING_POLL_SECONDS = 300, 3
 ListedRow = TypeVar("ListedRow", EnvironmentRow, PastSessionRow)
 
 
@@ -55,6 +58,15 @@ class Menu:
     def command_environment(self) -> CommandEnvironment:
         return CommandEnvironment(JOURNAL_ROOT=str(self.root), PATH=f"{Path(sys.executable).parent}:/usr/bin:/bin:/usr/local/bin")
 
+    # every project has an environment, so an empty listing means the server did not answer yet, never that none exists
+    def listed_environments(self) -> list[EnvironmentRow]:
+        deadline = time.monotonic() + LISTING_WAIT_SECONDS
+        rows = self.environments()
+        while not rows and time.monotonic() < deadline:
+            time.sleep(LISTING_POLL_SECONDS)
+            rows = self.environments()
+        return rows
+
     def environment_rows(self, name: str, rows: list) -> list:
         if name in {row.name for row in rows}:
             return rows
@@ -70,7 +82,7 @@ class Menu:
 
     def confirmed(self, agent: str, environment: str, new: bool, stashed: bool) -> Choice:
         selection = environment or "main"
-        rows = self.environment_rows(selection, self.environments())
+        rows = self.environment_rows(selection, self.listed_environments())
         last = next((row.last_session(agent) for row in rows if row.name == selection), "")
         return Choice(selection, "" if new else last, stashed or self.remembered.read().stashed_hooks, True)
 
