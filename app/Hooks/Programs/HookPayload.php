@@ -34,7 +34,26 @@ final class HookPayload extends Data
         public readonly array|string|Optional $toolResponse = new Optional,
         public readonly bool|Optional $stopHookActive = new Optional,
         public readonly string|Optional $reason = new Optional,
+        public readonly string|Optional $agentId = new Optional,
     ) {}
+
+    /**
+     * Whether the call comes from inside a program's own native child, which carries the child's agent id.
+     */
+    public function isFromNativeChild(): bool
+    {
+        return is_string($this->agentId) && $this->agentId !== '';
+    }
+
+    /**
+     * Whether the call is about to run one of the named tools.
+     *
+     * @param  list<string>  $toolNames
+     */
+    public function callsAnyOf(array $toolNames): bool
+    {
+        return $this->hookEventName === 'PreToolUse' && is_string($this->toolName) && in_array($this->toolName, $toolNames, true);
+    }
 
     public function isSessionStart(): bool
     {

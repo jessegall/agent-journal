@@ -1,9 +1,14 @@
 package recording
 
 import (
+	"regexp"
 	"sync"
 	"time"
 )
+
+// emailAddress matches an address a program prints, such as the signed-in account on a status screen; a recording
+// keeps none (fixtures are committed evidence).
+var emailAddress = regexp.MustCompile(`[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}`)
 
 // Recorder collects the events of a running session into a fixture, safely from several goroutines.
 type Recorder struct {
@@ -26,7 +31,10 @@ func (recorder *Recorder) Output(stream string, bytes []byte) {
 	recorder.mutex.Lock()
 	defer recorder.mutex.Unlock()
 
-	recorder.fixture.Output = append(recorder.fixture.Output, OutputChunk{Offset: recorder.offset(), Stream: stream, Bytes: append([]byte(nil), bytes...)})
+	redacted := emailAddress.ReplaceAllFunc(append([]byte(nil), bytes...), func(address []byte) []byte {
+		return []byte("<redacted>")
+	})
+	recorder.fixture.Output = append(recorder.fixture.Output, OutputChunk{Offset: recorder.offset(), Stream: stream, Bytes: redacted})
 }
 
 // Input records what the person typed; secret input keeps only its length.

@@ -28,6 +28,7 @@ final class HookRequest extends FormRequest
             'source' => ['sometimes', 'string'],
             'reason' => ['sometimes', 'string'],
             'stop_hook_active' => ['sometimes', 'boolean'],
+            'agent_id' => ['sometimes', 'string'],
         ];
     }
 

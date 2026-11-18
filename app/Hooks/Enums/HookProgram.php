@@ -26,15 +26,16 @@ enum HookProgram: string
     }
 
     /**
-     * The program's own tools that start a child with no identity of its own; they stay off until one is verified.
+     * The program's own tools that start or reach another agent; they are always denied, since only the journal's
+     * helpers and workers are ever started (rule 36). The names are those plan 26's launch evidence found per build.
      *
      * @return list<string>
      */
-    public function childToolsWithoutIdentity(): array
+    public function nativeChildTools(): array
     {
         return match ($this) {
-            self::ClaudeCode => ['Agent', 'Task'],
-            self::Codex => [],
+            self::ClaudeCode => ['Agent', 'Task', 'Workflow', 'SendMessage', 'ListAgents', 'RemoteTrigger', 'Skill'],
+            self::Codex => ['collaboration.spawn_agent', 'collaboration.wait_agent', 'collaboration.send_message', 'collaboration.followup_task', 'collaboration.interrupt_agent', 'collaboration.list_agents'],
         };
     }
 
