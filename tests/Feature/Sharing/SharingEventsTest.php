@@ -12,6 +12,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Commands\ClaimGatewayOperation;
+use App\Sharing\Commands\DisableShareGateway;
 use App\Sharing\Commands\RecordGatewayOutcome;
 use App\Sharing\Commands\RevokeShare;
 use App\Sharing\Enums\GatewayOperationType;
@@ -26,10 +27,10 @@ use App\Sharing\Support\ClaimedGatewayOperation;
 use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Domain\Access\Support\AccessSettings;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
-use RuntimeException;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Sharing\FakeShareGateway;
 use Tests\Support\TestIds;
@@ -48,6 +49,21 @@ final class SharingEventsTest extends TestCase
     private const array TABLES = ['command_receipts', 'share_audits', 'share_members', 'share_gateway_operations', 'shares', 'share_gateway_endpoints', 'share_gateway_configurations', 'share_installations', 'number_groups'];
 
     private const string RUN = '01JD8X0G9M3QZ6V4K2RUN0000A';
+
+    /**
+     * Makes the disable fail after it revoked the share and raised ShareRevoked, when it writes its own audit, so its
+     * transaction rolls back with the event already raised.
+     */
+    private const string REFUSE_DISABLED_AUDIT = <<<'SQL'
+        CREATE FUNCTION refuse_disabled_audit() RETURNS trigger LANGUAGE plpgsql AS $$
+        BEGIN
+            IF NEW.reason_code = 'disabled' THEN
+                RAISE EXCEPTION 'refused for the test';
+            END IF;
+            RETURN NEW;
+        END $$;
+        CREATE TRIGGER refuse_disabled_audit BEFORE INSERT ON share_audits FOR EACH ROW EXECUTE FUNCTION refuse_disabled_audit();
+        SQL;
 
     private ShareGatewayConfiguration $configuration;
 
@@ -88,15 +104,13 @@ final class SharingEventsTest extends TestCase
 
     public function test_a_rolled_back_revoke_raises_nothing_and_a_second_revoke_raises_nothing(): void
     {
-        try {
-            DB::transaction(function (): void {
-                $this->asOwner(new RevokeShare($this->share->id, (string) Str::ulid()));
-                $this->assertSame(ShareState::Revoked, $this->share->fresh()?->state);
+        $database = $this->app->make(ConnectionInterface::class);
+        $database->unprepared(self::REFUSE_DISABLED_AUDIT);
 
-                throw new RuntimeException('rolled back');
-            });
-        } catch (RuntimeException $failure) {
-            $this->assertSame('rolled back', $failure->getMessage());
+        try {
+            $this->assertThrows(fn () => $this->asOwner(new DisableShareGateway($this->configuration->id, (string) Str::ulid())), QueryException::class, 'refused for the test');
+        } finally {
+            $database->unprepared('DROP TRIGGER refuse_disabled_audit ON share_audits; DROP FUNCTION refuse_disabled_audit();');
         }
 
         $this->assertSame([], $this->heard);
