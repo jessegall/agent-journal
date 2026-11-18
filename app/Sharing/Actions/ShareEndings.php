@@ -25,7 +25,7 @@ final readonly class ShareEndings
      */
     public function revoke(Share $share, ActorIdentity $owner): bool
     {
-        return $this->end($share, ShareState::Revoked, ShareAuditType::Revoked, $owner);
+        return $this->endAndRelease($share, ShareState::Revoked, ShareAuditType::Revoked, $owner);
     }
 
     /**
@@ -33,7 +33,35 @@ final readonly class ShareEndings
      */
     public function expire(Share $share): bool
     {
-        return $this->end($share, ShareState::Expired, ShareAuditType::Expired, ActorIdentity::system());
+        return $this->endAndRelease($share, ShareState::Expired, ShareAuditType::Expired, ActorIdentity::system());
+    }
+
+    /**
+     * Revokes every share of the configuration's gateway, all before any close is requested; the caller closes the
+     * gateway once they have ended.
+     *
+     * @param  list<Share>  $shares  locked, by id
+     */
+    public function revokeAll(array $shares, ActorIdentity $owner): void
+    {
+        foreach ($shares as $share) {
+            $this->end($share, ShareState::Revoked, ShareAuditType::Revoked, $owner);
+        }
+    }
+
+    private function endAndRelease(Share $share, ShareState $terminal, ShareAuditType $type, ActorIdentity $actor): bool
+    {
+        $wasLive = $share->state->isLive();
+
+        if (! $this->end($share, $terminal, $type, $actor)) {
+            return false;
+        }
+
+        if ($wasLive && $share->isLastLiveOfItsConfiguration()) {
+            ShareGatewayOperation::request(ShareGatewayConfiguration::query()->findOrFail($share->share_gateway_configuration_id), GatewayOperationType::Close);
+        }
+
+        return true;
     }
 
     private function end(Share $share, ShareState $terminal, ShareAuditType $type, ActorIdentity $actor): bool
@@ -42,13 +70,7 @@ final readonly class ShareEndings
             return false;
         }
 
-        $wasLive = $share->state->isLive();
         $share->end($terminal);
-
-        if ($wasLive && $share->isLastLiveOfItsConfiguration()) {
-            ShareGatewayOperation::request(ShareGatewayConfiguration::query()->findOrFail($share->share_gateway_configuration_id), GatewayOperationType::Close);
-        }
-
         ShareAudit::recordFor($share, $type, $actor, null);
 
         return true;

@@ -95,7 +95,15 @@ final class ShareGatewayOperation extends Model implements ReadableModel
      */
     public static function releaseAllButRun(string $runId): void
     {
-        self::query()->whereNull('outcome_code')->whereNotNull('run_id')->where('run_id', '!=', $runId)->update(['lease_ends_at' => CarbonImmutable::now()]);
+        self::query()->unfinished()->claimedByOtherThan($runId)->update(['lease_ends_at' => CarbonImmutable::now()]);
+    }
+
+    /**
+     * Ends every unfinished request to open the configuration's endpoint as failed: the gateway was disabled.
+     */
+    public static function cancelOpensOf(ShareGatewayConfiguration $configuration): void
+    {
+        self::query()->unfinished()->ofConfiguration($configuration->id)->ofType(GatewayOperationType::Open)->update(['outcome_code' => GatewayOutcome::Failed->value]);
     }
 
     /**
@@ -175,6 +183,42 @@ final class ShareGatewayOperation extends Model implements ReadableModel
     #[Scope]
     protected function claimable(Builder $query): void
     {
-        $query->whereNull('outcome_code')->where(fn (Builder $query) => $query->whereNull('lease_ends_at')->orWhere('lease_ends_at', '<=', CarbonImmutable::now()));
+        $query->unfinished()->where(fn (Builder $query) => $query->whereNull('lease_ends_at')->orWhere('lease_ends_at', '<=', CarbonImmutable::now()));
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function unfinished(Builder $query): void
+    {
+        $query->whereNull('outcome_code');
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofConfiguration(Builder $query, string $configurationId): void
+    {
+        $query->where('share_gateway_configuration_id', $configurationId);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofType(Builder $query, GatewayOperationType $type): void
+    {
+        $query->where('type', $type->value);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function claimedByOtherThan(Builder $query, string $runId): void
+    {
+        $query->whereNotNull('run_id')->where('run_id', '!=', $runId);
     }
 }

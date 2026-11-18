@@ -86,6 +86,14 @@ final class ShareGatewayEndpoint extends Model implements ReadableModel
     }
 
     /**
+     * Whether any endpoint version of the configuration is opening or open, under any run.
+     */
+    public static function anyRunningOf(ShareGatewayConfiguration $configuration): bool
+    {
+        return self::query()->ofConfiguration($configuration->id)->stillRunning()->exists();
+    }
+
+    /**
      * A new endpoint version of the configuration for the run, after every version it had; a closing version is never
      * opened again.
      */

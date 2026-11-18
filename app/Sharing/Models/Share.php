@@ -244,6 +244,18 @@ final class Share extends Model implements Numbered, ReadableModel
     }
 
     /**
+     * Every share the configuration's gateway serves that has not ended, whatever its deadline, by id and locked.
+     *
+     * @return list<self>
+     */
+    public static function lockUnendedOf(string $configurationId): array
+    {
+        $unended = array_map(fn (ShareState $state) => $state->value, ShareState::liveStates());
+
+        return array_values(self::query()->servedBy($configurationId)->whereIn('state', $unended)->orderBy('id')->lockForUpdate()->readLimit(self::MOST_LIVE)->get()->all());
+    }
+
+    /**
      * The configuration's pending shares, by id and locked.
      *
      * @return list<self>
