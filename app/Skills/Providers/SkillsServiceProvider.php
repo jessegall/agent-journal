@@ -20,6 +20,7 @@ use App\Skills\Console\SkillRetireCommand;
 use App\Skills\Console\SkillRevisionCommand;
 use App\Skills\Console\SkillRevisionsCommand;
 use App\Skills\Console\SkillShowCommand;
+use App\Skills\Console\SkillStatusCommand;
 use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Contracts\SkillReader;
 use App\Skills\Contracts\SkillRenderer;
@@ -27,6 +28,7 @@ use App\Skills\Contracts\SkillSource;
 use App\Skills\Models\Skill;
 use App\Skills\Readers\CatalogueOnFirstRead;
 use App\Skills\Readers\SkillCatalogue;
+use App\Skills\Readers\SkillStatusReader;
 use App\Skills\Readers\Support\SkillContextReader;
 use App\Skills\Support\CanonicalRenderer;
 use App\Skills\Support\ConditionTree;
@@ -52,7 +54,11 @@ final class SkillsServiceProvider extends ServiceProvider
     {
         $this->app->scoped(EvaluationGuard::class);
         $this->app->scoped(SkillContextReader::class);
-        $this->app->scoped(SkillContext::class, fn (Application $app) => $app->make(SkillContextReader::class)->current());
+        $this->app->scoped(SkillStatusReader::class);
+        $this->app->scoped(
+            SkillContext::class,
+            fn (Application $app) => $app->make(SkillContextReader::class)->current(),
+        );
         $this->app->bind(SkillRenderer::class, CanonicalRenderer::class);
         $this->app->bind(SkillSource::class, StoredSkillSource::class);
         $this->app->singleton(SkillTargets::class, fn () => new SkillTargets(storage_path('app/skills')));
@@ -61,13 +67,15 @@ final class SkillsServiceProvider extends ServiceProvider
             $app->make(DatabaseManager::class)->connection()->getSchemaBuilder(),
             ['skills', 'skill_revisions', 'skill_requests', 'skill_generations', 'skill_publications'],
         ));
-        $this->app->scoped(SkillReader::class, fn (Application $app) => new CatalogueOnFirstRead(fn () => SkillCatalogue::build(
-            $app->make(SkillRegistry::class),
-            $app,
-            $app->make(SkillRenderer::class),
-            $app->make(ConditionTree::class),
-            $app->make(SkillSource::class),
-        )));
+        $this->app->scoped(SkillReader::class, fn (Application $app) => new CatalogueOnFirstRead(
+            fn () => SkillCatalogue::build(
+                $app->make(SkillRegistry::class),
+                $app,
+                $app->make(SkillRenderer::class),
+                $app->make(ConditionTree::class),
+                $app->make(SkillSource::class),
+            ),
+        ));
     }
 
     public function boot(NumberedTypeRegistry $numbers): void
@@ -95,6 +103,7 @@ final class SkillsServiceProvider extends ServiceProvider
                 SkillResumeCommand::class,
                 SkillRetryCommand::class,
                 SkillPruneCommand::class,
+                SkillStatusCommand::class,
             ]);
         }
     }

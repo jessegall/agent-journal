@@ -14,6 +14,7 @@ use App\Skills\Enums\PublicationState;
 use App\Skills\Exceptions\SkillPublicationFailed;
 use App\Skills\Exceptions\SkillPublicationMissing;
 use App\Skills\Exceptions\SkillPublicationStale;
+use App\Skills\Values\PublicationStatus;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -343,6 +344,35 @@ final class SkillPublication extends Model implements ReadableModel
             ->unique('session_id');
 
         return array_values($latest->all());
+    }
+
+    /**
+     * The newest publication of every session, for a user's status.
+     *
+     * @return list<self>
+     */
+    public static function latestOfEverySession(int $limit): array
+    {
+        $latest = self::query()
+            ->orderByDesc('created_at')
+            ->readLimit($limit)
+            ->get()
+            ->unique('session_id');
+
+        return array_values($latest->all());
+    }
+
+    public function status(): PublicationStatus
+    {
+        return new PublicationStatus(
+            $this->id,
+            $this->session_id,
+            $this->state,
+            $this->generation_id,
+            $this->selection_digest,
+            $this->target,
+            $this->error,
+        );
     }
 
     /**
