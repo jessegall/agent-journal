@@ -15,6 +15,7 @@ return new class extends Migration
             $table->foreignUlid('share_gateway_configuration_id')->constrained('share_gateway_configurations')->restrictOnDelete();
             $table->unsignedInteger('configuration_version');
             $table->foreignUlid('share_gateway_endpoint_id')->nullable()->constrained('share_gateway_endpoints')->restrictOnDelete();
+            $table->unsignedInteger('endpoint_version')->nullable();
             $table->string('type');
             $table->string('run_id')->nullable();
             $table->string('lease_token', 64)->nullable();

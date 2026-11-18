@@ -234,6 +234,52 @@ final class Share extends Model implements Numbered, ReadableModel
     }
 
     /**
+     * The configuration's unexpired shares waiting for their gateway or failed on it, by id and locked.
+     *
+     * @return list<self>
+     */
+    public static function lockAwaitingGatewayOf(string $configurationId): array
+    {
+        return array_values(self::query()->servedBy($configurationId)->awaitingGateway()->orderBy('id')->lockForUpdate()->readLimit(self::MOST_LIVE)->get()->all());
+    }
+
+    /**
+     * The configuration's pending shares, by id and locked.
+     *
+     * @return list<self>
+     */
+    public static function lockPendingOf(string $configurationId): array
+    {
+        return array_values(self::query()->servedBy($configurationId)->inState(ShareState::Pending)->orderBy('id')->lockForUpdate()->readLimit(self::MOST_LIVE)->get()->all());
+    }
+
+    /**
+     * Whether any live, unexpired share is served by the configuration.
+     */
+    public static function anyLiveOn(string $configurationId): bool
+    {
+        return self::query()->liveNow()->servedBy($configurationId)->exists();
+    }
+
+    /**
+     * Its gateway serves it now.
+     */
+    public function activate(): void
+    {
+        $this->state = ShareState::Active;
+        $this->save();
+    }
+
+    /**
+     * Its gateway could not open; the owner may retry before the deadline.
+     */
+    public function failActivation(): void
+    {
+        $this->state = ShareState::Failed;
+        $this->save();
+    }
+
+    /**
      * How many unexpired proposals the installation holds now; counted under the installation lock.
      */
     public static function proposedCount(): int
@@ -420,6 +466,15 @@ final class Share extends Model implements Numbered, ReadableModel
     protected function ofRoot(Builder $query, RecordIdentity $root): void
     {
         $query->where('root_type', $root->type)->where('root_id', $root->id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function awaitingGateway(Builder $query): void
+    {
+        $query->whereIn('state', [ShareState::Pending->value, ShareState::Failed->value])->where('expires_at', '>', CarbonImmutable::now());
     }
 
     /**
