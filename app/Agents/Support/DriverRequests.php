@@ -69,6 +69,25 @@ final readonly class DriverRequests
     }
 
     /**
+     * Wakes the runtime for waiting work: a wake already open is raised instead of adding another.
+     */
+    public function wake(StackTarget $target, string $idempotencyKey): DriverReceipt
+    {
+        $open = $this->openWake($target);
+
+        if ($open !== null) {
+            $open->claimWake(($open->wake_requested ?? 1) + 1);
+
+            return $open->receipt();
+        }
+
+        $wake = $this->append($target, DriverOperation::Wake, $idempotencyKey, []);
+        $wake->claimWake(1);
+
+        return $wake->receipt();
+    }
+
+    /**
      * The open wake of the runtime, if one waits, so another wake raises its watermark instead of adding a row.
      */
     public function openWake(StackTarget $target): DriverRequest|null

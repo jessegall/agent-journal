@@ -39,6 +39,7 @@ use App\Bus\Support\MiddlewareDeclaration;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
 use App\Communication\Commands\AnswerMessage;
+use App\Communication\Commands\AskMessage;
 use App\Communication\Commands\DismissMessage;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Commands\SendMessage;
@@ -165,7 +166,7 @@ final class CoreCommands
             UnlinkRecords::class,
             PostComment::class,
             PostTextComment::class,
-            SendMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class,
+            SendMessage::class, AskMessage::class, AnswerMessage::class, DismissMessage::class, RequireMessageAnswer::class,
             SetStringSetting::class,
             SetBooleanSetting::class,
             SetIntegerSetting::class,

@@ -23,6 +23,7 @@ final class ConversationData extends Data
     public function __construct(
         public readonly string $id,
         public readonly string $sessionId,
+        public readonly string $agentId,
         #[DataCollectionOf(MessageData::class)] public readonly array $messages,
     ) {}
 
@@ -31,6 +32,7 @@ final class ConversationData extends Data
         return self::from([
             'id' => $conversation->id(),
             'sessionId' => (string) $conversation->target->sessionId,
+            'agentId' => $conversation->target->agentId,
             'messages' => MessageData::collect($conversation->messages),
         ]);
     }

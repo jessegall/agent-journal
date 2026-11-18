@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Communication\Readers;
 
+use App\Actors\Enums\ActorType;
 use App\Agents\Support\StackTarget;
 use App\Communication\Contracts\ConversationReader;
 use App\Communication\Data\Conversation;
 use App\Communication\Data\MessageView;
 use App\Communication\Exceptions\MessageMissing;
 use App\Communication\Models\Message;
+use App\Communication\Models\Scopes\MessageVisibility;
 use Illuminate\Container\Attributes\Scoped;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * The named reads of messages the Chat domain answers for: the calling agent's own, and one the journal addressed.
@@ -20,7 +23,7 @@ final readonly class MessageRecords implements ConversationReader
 {
     public function get(string $messageId): Message
     {
-        return Message::query()->forActor()->find($messageId) ?? throw MessageMissing::forId($messageId);
+        return Message::query()->find($messageId) ?? throw MessageMissing::forId($messageId);
     }
 
     /**
@@ -31,7 +34,12 @@ final readonly class MessageRecords implements ConversationReader
      */
     public function many(array $messageIds): array
     {
-        return Message::query()->forActor()->whereKey($messageIds)->readLimit(count($messageIds))->get()->keyBy('id')->all();
+        return Message::query()
+            ->whereKey($messageIds)
+            ->readLimit(count($messageIds))
+            ->get()
+            ->keyBy('id')
+            ->all();
     }
 
     /**
@@ -39,7 +47,11 @@ final readonly class MessageRecords implements ConversationReader
      */
     public function addressedTo(StackTarget $target, string $messageId): Message
     {
-        return Message::query()->ownedBy($target->agentId)->find($messageId) ?? throw MessageMissing::forId($messageId);
+        return Message::query()
+            ->withoutGlobalScope(MessageVisibility::class)
+            ->where('recipient_type', ActorType::Agent->value)
+            ->where('recipient_id', $target->agentId)
+            ->find($messageId) ?? throw MessageMissing::forId($messageId);
     }
 
     /**
@@ -47,9 +59,14 @@ final readonly class MessageRecords implements ConversationReader
      */
     public function conversationWith(StackTarget $target): Conversation
     {
-        $messages = Message::query()->visibleToUser()
-            ->where('agent_id', $target->agentId)
-            ->where('session_id', $target->sessionId)
+        $messages = Message::query()->inspectedByUser()
+            ->where(fn (Builder $either) => $either
+                ->where(fn (Builder $sent) => $sent
+                    ->where('sender_type', ActorType::Agent->value)
+                    ->where('sender_id', $target->agentId))
+                ->orWhere(fn (Builder $received) => $received
+                    ->where('recipient_type', ActorType::Agent->value)
+                    ->where('recipient_id', $target->agentId)))
             ->orderBy('id')
             ->readAll('the whole conversation, oldest first, until it is paged')
             ->get()

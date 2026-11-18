@@ -293,6 +293,7 @@ use App\Comments\Support\HasComments;
 use App\Comments\Support\PublicComment;
 use App\Comments\Support\PublicCommentPage;
 use App\Communication\Commands\AnswerMessage;
+use App\Communication\Commands\AskMessage;
 use App\Communication\Commands\DismissMessage;
 use App\Communication\Commands\RequireMessageAnswer;
 use App\Communication\Commands\SendMessage;
@@ -307,7 +308,6 @@ use App\Communication\Events\MessageSent;
 use App\Communication\Exceptions\ActorCannotSend;
 use App\Communication\Exceptions\MessageBodyEmpty;
 use App\Communication\Exceptions\MessageMissing;
-use App\Communication\Support\MessageAddress;
 use App\Contracts\CommandHandler;
 use App\Contracts\CommandRefusal;
 use App\Contracts\DomainAvailability;
@@ -1060,7 +1060,6 @@ final class CoreApi
                 TextAnchorType::class,
                 WholeRecord::class,
                 CommentType::class,
-                MessageAddress::class,
                 Conversation::class,
                 MessageView::class,
                 MessageState::class,
@@ -1373,6 +1372,7 @@ final class CoreApi
                 PostComment::class,
                 PostTextComment::class,
                 SendMessage::class,
+                AskMessage::class,
                 RequireMessageAnswer::class,
                 AnswerMessage::class,
                 DismissMessage::class,

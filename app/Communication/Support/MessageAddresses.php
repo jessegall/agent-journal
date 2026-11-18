@@ -8,70 +8,32 @@ use App\Actors\Contracts\ActorReader;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\ReceivesMessages;
 use App\Actors\Contracts\SendsMessages;
-use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Contracts\CurrentSession;
-use App\Agents\Exceptions\StackTargetRefused;
-use App\Agents\Readers\SessionRecords;
 use App\Communication\Contracts\MessageAddressReader;
 use App\Communication\Exceptions\ActorCannotSend;
 
 /**
- * Checks message addresses inside the running transaction: the recipient through the actor reader and, for an agent,
- * its locked session; the sender from the request's own actor and session.
+ * Reads the sending and the receiving actor through the actor providers: what each actor can do with messages is the
+ * capability its provider gives it, never a check of its type.
  */
 final readonly class MessageAddresses implements MessageAddressReader
 {
-    public function __construct(
-        private ActorReader $actors,
-        private CurrentActor $current,
-        private CurrentSession $session,
-        private SessionRecords $sessions,
-    ) {}
+    public function __construct(private ActorReader $actors, private CurrentActor $current) {}
 
-    public function recipient(ActorIdentity $actor, string|null $sessionId): MessageAddress
+    public function recipient(ActorIdentity $actor): ReceivesMessages
     {
-        if (! $this->actors->get($actor) instanceof ReceivesMessages) {
-            throw ActorUnavailable::forIdentity($actor);
-        }
+        $recipient = $this->actors->get($actor);
 
-        return match ($actor->type) {
-            ActorType::Agent => $this->agentAddress($actor, $sessionId),
-            ActorType::User => $sessionId === null ? MessageAddress::forUser($actor) : throw ActorUnavailable::forIdentity($actor),
-            ActorType::System, ActorType::Engine => throw ActorUnavailable::forIdentity($actor),
-        };
+        return $recipient instanceof ReceivesMessages ? $recipient : throw ActorUnavailable::forIdentity($actor);
     }
 
-    public function sender(): MessageAddress
+    public function sender(): SendsMessages
     {
         $context = $this->current->actor();
         $identity = new ActorIdentity($context->actorType(), $context->actorId());
+        $sender = $this->actors->get($identity);
 
-        if (! $this->actors->get($identity) instanceof SendsMessages) {
-            throw ActorCannotSend::forIdentity($identity);
-        }
-
-        return match ($identity->type) {
-            ActorType::Agent => MessageAddress::forAgent($identity, $this->session->sessionId()),
-            ActorType::User => MessageAddress::forUser($identity),
-            ActorType::System => MessageAddress::forSystem(),
-            ActorType::Engine => throw ActorCannotSend::forIdentity($identity),
-        };
-    }
-
-    private function agentAddress(ActorIdentity $agent, string|null $sessionId): MessageAddress
-    {
-        if ($sessionId === null) {
-            throw ActorUnavailable::forIdentity($agent);
-        }
-
-        try {
-            $this->sessions->lockEligibleSessionOf($agent->id, $sessionId);
-        } catch (StackTargetRefused) {
-            throw ActorUnavailable::forIdentity($agent);
-        }
-
-        return MessageAddress::forAgent($agent, $sessionId);
+        return $sender instanceof SendsMessages ? $sender : throw ActorCannotSend::forIdentity($identity);
     }
 }

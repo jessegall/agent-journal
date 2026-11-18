@@ -36,7 +36,7 @@ final readonly class MessageLinkRecords implements RecordProvider
 
     protected function readableRecords(): ReadBuilder
     {
-        return Message::query()->forActor();
+        return Message::query();
     }
 
     protected function cardOf(Model $record): RecordCard

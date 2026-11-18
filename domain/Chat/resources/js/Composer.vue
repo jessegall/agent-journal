@@ -15,12 +15,17 @@ import type { MessageInput } from '@generated/types/chat';
  * conversations or reloading keeps it; a send keeps the target it was sent to, even when the user switches while it
  * is on its way, and clears only that draft, only if it was not typed on since.
  */
-const props = defineProps<{ draftKey: string; session: string }>();
+const props = defineProps<{ draftKey: string; session: string; agent: string }>();
 
 const drafts = useMessageDrafts();
 const body = ref('');
 const textarea = ref<HTMLTextAreaElement | null>(null);
-const form = useForm<MessageInput>({ body: '', session: props.session });
+const form = useForm<MessageInput>({
+    body: '',
+    session: props.session,
+    agent: props.agent,
+    submissionKey: '',
+});
 const hasText = computed(() => body.value.trim() !== '');
 
 useComposerHeight(textarea, body);
@@ -46,8 +51,15 @@ function submit(): void {
         key: props.draftKey,
         body: body.value,
         session: props.session,
+        agent: props.agent,
+        submissionKey: drafts.submissionKey(props.draftKey),
     };
-    form.transform(() => ({ body: sent.body, session: sent.session })).submit(
+    form.transform(() => ({
+        body: sent.body,
+        session: sent.session,
+        agent: sent.agent,
+        submissionKey: sent.submissionKey,
+    })).submit(
         sendRoute(),
         {
             preserveScroll: true,
