@@ -4,6 +4,8 @@
 
 A plan has a type (build, fix, research or cleanup) and moves through these states: planned, reviewing, started, paused, and finally done or cancelled. Its phases hold its tasks in order.
 
+Work a started plan phase by phase, in one go: write every task of a phase before running its tests, run the tests written or touched for the phase together once at its end, fix what they find and rerun only what failed. Run the whole suite only where a checkpoint asks for it, and go straight on to the next phase without stopping to report.
+
 ## Holding plan work
 
 - `plan:assigned` lists the plans you hold. `--search` narrows by words in the title and `--state` by state; `--page` and `--per-page` page through them.

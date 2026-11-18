@@ -10,7 +10,7 @@ Every compaction of your session lowers each of your memories by one; at nought 
 
 ## Keeping memories
 
-- `memory:save "<text>" --weight <1 to 10>` keeps a memory; write what to do and when.
+- `memory:save "<text>" --weight <1 to 10>` keeps a memory; write what to do and when, not what happened, and name where it came from, such as the message or task number. A promise you cannot keep yet is kept at once and weighed high until it is done.
 - `memory:list` lists your memories with their weights and revisions.
 - `memory:edit <memory> --revision <revision>` changes its text or weight; name the revision you read, so a change made meanwhile is refused rather than overwritten.
 - `memory:remove <memory>` removes one that is done or no longer true.
