@@ -31,6 +31,7 @@ use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Commands\RetireAgent;
 use App\Agents\Contracts\AgentReader;
 use App\Agents\Contracts\CurrentSession;
+use App\Agents\Contracts\LaunchReadiness;
 use App\Agents\Contracts\SessionReader;
 use App\Agents\Events\LaunchEnded;
 use App\Agents\Exceptions\AgentContextMissing;
@@ -467,6 +468,7 @@ final class CoreApi
                 CurrentActorSetter::class,
                 AgentReader::class,
                 SessionReader::class,
+                LaunchReadiness::class,
                 AgentStack::class,
                 UserStack::class,
                 StackTransactionRunner::class,

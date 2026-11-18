@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
+use App\AgentRequests\Support\SignedCall;
+use App\Agents\Contracts\LaunchReadiness;
+use App\Agents\Support\AgentContext;
 use App\Domains\Support\DomainRegistry;
 use App\Mcp\Exceptions\McpClassInvalid;
 use App\Mcp\Exceptions\McpToolNameInvalid;
 use App\Mcp\Exceptions\McpToolNameTaken;
 use App\Mcp\Servers\JournalServer;
 use App\Mcp\Support\McpCatalogue;
+use Carbon\CarbonImmutable;
 use Laravel\Mcp\Server\Tool;
 use Tests\Fixtures\Domains\Ledger\LedgerDomain;
 use Tests\Fixtures\Domains\Ledger\Mcp\KebabLedgerTool;
@@ -28,6 +32,8 @@ final class McpCatalogueTest extends TestCase
         $catalogue = new McpCatalogue;
         DomainRegistry::from([LedgerDomain::class])->registerMcpToolsIn($catalogue);
         $this->app->instance(McpCatalogue::class, $catalogue);
+        $this->app->instance(AgentContext::class, new AgentContext('agent-1', 'session-1', 'main', new SignedCall('call-1', CarbonImmutable::now(), 'digest'), null));
+        $this->mock(LaunchReadiness::class)->shouldReceive('recordDiscovery')->once();
 
         JournalServer::tools()->assertRegistered(LedgerReadTool::class);
     }

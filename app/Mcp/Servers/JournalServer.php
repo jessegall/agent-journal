@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Servers;
 
+use App\Mcp\Methods\ListToolsAndRecordReadiness;
 use App\Mcp\Support\McpCatalogue;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
@@ -13,7 +14,7 @@ use Laravel\Mcp\Server\Contracts\Transport;
 
 /**
  * The journal's one MCP server: tools and resources only, both with a list that never changes during a connection,
- * taken from the catalogue Core and the domains fill.
+ * taken from the catalogue Core and the domains fill. Its tools/list records the caller's tool discovery.
  */
 #[Name('journal')]
 #[Version('1.0.0')]
@@ -41,5 +42,6 @@ final class JournalServer extends Server
     {
         $this->tools = $this->catalogue->toolClasses();
         $this->resources = $this->catalogue->resourceClasses();
+        $this->addMethod('tools/list', ListToolsAndRecordReadiness::class);
     }
 }

@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Response;
-use Illuminate\Testing\TestResponse;
 use Laravel\Mcp\Server\Registrar;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\SendsMcpFrames;
 use Tests\TestCase;
 
 /**
@@ -19,6 +18,7 @@ use Tests\TestCase;
 final class McpRouteTest extends TestCase
 {
     use CommitsHookRows;
+    use SendsMcpFrames;
 
     private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials'];
 
@@ -35,7 +35,7 @@ final class McpRouteTest extends TestCase
 
     public function test_a_signed_initialize_answers_with_the_journal_server_and_only_tools_and_resources(): void
     {
-        $result = $this->signed('initialize', ['protocolVersion' => '2025-11-25', 'capabilities' => (object) [], 'clientInfo' => ['name' => 'test', 'version' => '1']])
+        $result = $this->sendMcp($this->launch, 'initialize', ['protocolVersion' => '2025-11-25', 'capabilities' => (object) [], 'clientInfo' => ['name' => 'test', 'version' => '1']])
             ->assertOk()
             ->json('result');
 
@@ -48,25 +48,25 @@ final class McpRouteTest extends TestCase
 
     public function test_an_unsigned_post_gets_401(): void
     {
-        $this->call('POST', self::ROUTE, server: ['CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/json'], content: $this->frame('initialize'))
+        $this->call('POST', self::ROUTE, server: ['CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/json'], content: $this->mcpFrame('initialize'))
             ->assertUnauthorized();
     }
 
     public function test_a_300_kib_body_is_refused_before_the_server_runs(): void
     {
-        $this->assertSame(413, $this->signedBody(json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'ping', 'params' => ['filler' => str_repeat('a', 300 * 1024)]], JSON_THROW_ON_ERROR))->status());
+        $this->assertSame(413, $this->sendMcpBody($this->launch, json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'ping', 'params' => ['filler' => str_repeat('a', 300 * 1024)]], JSON_THROW_ON_ERROR))->status());
     }
 
     public function test_a_message_nested_deeper_than_32_levels_is_refused_with_400(): void
     {
         $deep = str_repeat('[', 40).str_repeat(']', 40);
 
-        $this->assertSame(400, $this->signedBody('{"jsonrpc":"2.0","id":1,"method":"ping","params":{"deep":'.$deep.'}}')->status());
+        $this->assertSame(400, $this->sendMcpBody($this->launch, '{"jsonrpc":"2.0","id":1,"method":"ping","params":{"deep":'.$deep.'}}')->status());
     }
 
     public function test_a_message_at_the_limits_is_served(): void
     {
-        $this->signed('ping')->assertOk();
+        $this->sendMcp($this->launch, 'ping')->assertOk();
     }
 
     public function test_the_server_is_a_web_route_and_has_no_stdio_handle(): void
@@ -90,13 +90,13 @@ final class McpRouteTest extends TestCase
 
     public function test_prompts_list_is_empty(): void
     {
-        $this->signed('prompts/list')->assertOk()->assertJsonPath('result.prompts', []);
+        $this->sendMcp($this->launch, 'prompts/list')->assertOk()->assertJsonPath('result.prompts', []);
     }
 
     public function test_tools_and_resources_start_empty(): void
     {
-        $this->signed('tools/list')->assertOk()->assertJsonPath('result.tools', []);
-        $this->signed('resources/list')->assertOk()->assertJsonPath('result.resources', []);
+        $this->sendMcp($this->launch, 'tools/list')->assertOk()->assertJsonPath('result.tools', []);
+        $this->sendMcp($this->launch, 'resources/list')->assertOk()->assertJsonPath('result.resources', []);
     }
 
     public function test_a_per_request_2026_07_28_request_with_its_mcp_headers_is_served(): void
@@ -104,7 +104,7 @@ final class McpRouteTest extends TestCase
         $meta = ['io.modelcontextprotocol/protocolVersion' => '2026-07-28', 'io.modelcontextprotocol/clientCapabilities' => (object) []];
         $headers = ['HTTP_MCP_PROTOCOL_VERSION' => '2026-07-28', 'HTTP_MCP_METHOD' => 'server/discover'];
 
-        $response = $this->signed('server/discover', ['_meta' => $meta], $headers)->assertOk();
+        $response = $this->sendMcp($this->launch, 'server/discover', ['_meta' => $meta], $headers)->assertOk();
 
         $this->assertSame(['2026-07-28'], $response->json('result.supportedVersions'));
         $this->assertSame(['tools', 'resources'], array_keys($response->json('result.capabilities')));
@@ -114,45 +114,15 @@ final class McpRouteTest extends TestCase
     {
         $meta = ['io.modelcontextprotocol/protocolVersion' => '2026-07-28', 'io.modelcontextprotocol/clientCapabilities' => (object) []];
 
-        $this->signed('server/discover', ['_meta' => $meta])->assertStatus(400);
+        $this->sendMcp($this->launch, 'server/discover', ['_meta' => $meta])->assertStatus(400);
     }
 
     public function test_the_121st_call_of_a_session_in_a_minute_gets_429_with_retry_after_seconds(): void
     {
         for ($call = 0; $call < 120; $call++) {
-            $this->signed('ping')->assertOk();
+            $this->sendMcp($this->launch, 'ping')->assertOk();
         }
 
-        $this->signed('ping')->assertStatus(429)->assertJsonStructure(['retry_after_seconds']);
-    }
-
-    /**
-     * @param  array<string, mixed>  $params
-     * @param  array<string, string>  $headers
-     * @return TestResponse<Response>
-     */
-    private function signed(string $method, array $params = [], array $headers = []): TestResponse
-    {
-        return $this->signedBody($this->frame($method, $params), $headers);
-    }
-
-    /**
-     * @param  array<string, string>  $headers
-     * @return TestResponse<Response>
-     */
-    private function signedBody(string $body, array $headers = []): TestResponse
-    {
-        $this->app->forgetScopedInstances();
-        $server = [...$this->launch->serverHeaders($body, 'call-'.bin2hex(random_bytes(4)), target: self::ROUTE), ...$headers];
-
-        return $this->call('POST', self::ROUTE, server: $server, content: $body);
-    }
-
-    /**
-     * @param  array<string, mixed>  $params
-     */
-    private function frame(string $method, array $params = []): string
-    {
-        return json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => $method, 'params' => (object) $params], JSON_THROW_ON_ERROR);
+        $this->sendMcp($this->launch, 'ping')->assertStatus(429)->assertJsonStructure(['retry_after_seconds']);
     }
 }
