@@ -316,6 +316,7 @@ use App\Settings\Exceptions\SettingStorageInvalid;
 use App\Settings\Exceptions\SettingsUnavailable;
 use App\Settings\Exceptions\SettingUnavailable;
 use App\Settings\Exceptions\SettingValueInvalid;
+use App\Settings\Support\CurrentSettingsReader;
 use App\Settings\Support\DisabledSettingsGroup;
 use App\Settings\Values\Choice;
 use App\Settings\Values\Decimal;
@@ -585,6 +586,7 @@ final class CoreApi
                 Choice::class,
                 SettingType::class,
                 SettingSource::class,
+                CurrentSettingsReader::class,
                 SettingTarget::class,
                 GroupAvailability::class,
                 SettingAvailability::class,
