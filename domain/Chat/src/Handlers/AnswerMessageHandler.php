@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Chat\Handlers;
 
+use App\Hooks\Contracts\StackCleanup;
 use Domain\Chat\Api\Events\MessageAnswered;
 use Domain\Chat\Commands\AnswerMessage;
 use Domain\Chat\Models\Message;
@@ -16,11 +17,12 @@ final readonly class AnswerMessageHandler
 {
     public function __construct(
         private Dispatcher $events,
+        private StackCleanup $cleanup,
     ) {}
 
     public function handle(AnswerMessage $command): void
     {
-        Message::lockedById($command->messageId)->markAnswered();
+        $this->cleanup->endWork(Message::lockedById($command->messageId), fn (Message $message) => $message->markAnswered());
         $this->events->dispatch(new MessageAnswered($command->messageId));
     }
 }

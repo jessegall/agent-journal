@@ -7,14 +7,20 @@ namespace Domain\Plans\Tests\Feature;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Contracts\CurrentSession;
 use App\Agents\Models\Agent;
+use App\Agents\Support\StackTarget;
+use App\Hooks\Contracts\CurrentState;
 use Domain\Plans\Api\PlanCard;
 use Domain\Plans\Api\PlanFilters;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Readers\PlanRecords;
+use Domain\Plans\States\Support\WorkingOnPlanStateReference;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
+use Tests\Fixtures\Hooks\FixedCurrentState;
+use Tests\Fixtures\Hooks\FixedSession;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
@@ -48,6 +54,8 @@ final class PlanRecordsTest extends TestCase
     {
         $cards = $this->records()->list(new PlanFilters)->cards;
 
+        $this->assertSame([false, false], array_map(fn (PlanCard $card) => $card->focused, $cards));
+
         $build = $this->cardOf($cards, $this->build);
         $empty = $this->cardOf($cards, $this->empty);
 
@@ -56,16 +64,17 @@ final class PlanRecordsTest extends TestCase
         $this->assertSame([0, null], [$empty->progress->total, $empty->currentPhase]);
     }
 
-    public function test_an_assigned_agent_is_named_and_the_focused_plan_comes_first(): void
+    public function test_an_assigned_agent_is_named_and_the_plan_its_stack_works_on_comes_first(): void
     {
         $agent = Agent::query()->create(['name' => 'Planner', 'role' => 'hooks.main_ready']);
-        Plan::query()->whereKey($this->build->id)->update(['focused' => true]);
+        $this->app->instance(CurrentSession::class, new FixedSession(TestIds::of(10)));
+        $this->app->instance(CurrentState::class, new FixedCurrentState(new StackTarget($agent->id, TestIds::of(10)), [WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateReference::forPlan($this->build)]));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent->id));
         $this->app->make(AssignmentWriterInTransaction::class)->assign($this->build->assignmentIdentity(), ActorIdentity::of($agent));
 
         $cards = $this->records()->list(new PlanFilters)->cards;
 
-        $this->assertSame([$this->build->id, 'Planner'], [$cards[0]->id, $cards[0]->holder->get()->name]);
+        $this->assertSame([$this->build->id, 'Planner', true], [$cards[0]->id, $cards[0]->holder->get()->name, $cards[0]->focused]);
         $this->assertTrue($cards[0]->holder->get()->actor()->isSameAs(ActorIdentity::of($agent)));
     }
 

@@ -120,16 +120,19 @@ use App\Exports\Support\ExportBuilder;
 use App\Exports\Support\Exports;
 use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Contracts\Answer;
+use App\Hooks\Contracts\CurrentState;
 use App\Hooks\Contracts\HookAnswerer;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Contracts\ReminderContribution;
 use App\Hooks\Contracts\ShellCommandParser;
+use App\Hooks\Contracts\StackCleanup;
 use App\Hooks\Contracts\StackEditor;
 use App\Hooks\Contracts\StackTransactionRunner;
 use App\Hooks\Contracts\StackTransition;
 use App\Hooks\Contracts\StateRegistration;
 use App\Hooks\Contracts\StateType;
 use App\Hooks\Contracts\UserStack;
+use App\Hooks\Contracts\WorkedOnStack;
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferenceFactory;
@@ -329,6 +332,9 @@ final class CoreApi
                 Answer::class,
                 StackTransition::class,
                 StackEditor::class,
+                StackCleanup::class,
+                CurrentState::class,
+                WorkedOnStack::class,
                 ShellCommandParser::class,
                 HookAnswerer::class,
                 HookInput::class,

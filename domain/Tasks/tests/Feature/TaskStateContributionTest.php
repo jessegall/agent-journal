@@ -10,12 +10,17 @@ use App\Hooks\Exceptions\StackAlreadyClosed;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Storage\FrameRecord;
 use Carbon\CarbonImmutable;
+use Domain\Tasks\Commands\BlockTask;
+use Domain\Tasks\Commands\CancelTask;
+use Domain\Tasks\Commands\FinishTask;
 use Domain\Tasks\Commands\StartTask;
+use Domain\Tasks\Contracts\AssignedTaskReader;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Tests\TestCase;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
 
 final class TaskStateContributionTest extends TestCase
 {
@@ -81,6 +86,49 @@ final class TaskStateContributionTest extends TestCase
         $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
 
         $this->assertSame(["tasks.working {$task->id} 2"], $this->taskFrames());
+    }
+
+    #[TimeLimit(seconds: 3, reason: 'It runs four task commands through the bus, each with its stack transaction.')]
+    public function test_finishing_a_task_in_its_command_takes_its_frame_off_and_the_task_below_is_current_again(): void
+    {
+        $first = Task::query()->create(['title' => 'Write the walk']);
+        $second = Task::query()->create(['title' => 'Fix the hook']);
+        $this->app->make(CommandBus::class)->run(new StartTask($first->id, $this->target->sessionId));
+        $this->app->make(CommandBus::class)->run(new StartTask($second->id, $this->target->sessionId));
+        $tasks = $this->app->make(AssignedTaskReader::class);
+
+        $this->assertSame($second->number, $tasks->currentForCaller()->get()->number);
+
+        $this->app->make(CommandBus::class)->run(new FinishTask($second->id));
+
+        $this->assertSame(["tasks.working {$first->id} 1"], $this->taskFrames());
+        $this->assertSame($first->number, $tasks->currentForCaller()->get()->number);
+    }
+
+    #[TimeLimit(seconds: 3, reason: 'It runs four task commands through the bus, each with its stack transaction.')]
+    public function test_blocking_or_cancelling_a_task_takes_its_frame_off_in_the_same_command(): void
+    {
+        $blocked = Task::query()->create(['title' => 'Wait for review']);
+        $cancelled = Task::query()->create(['title' => 'Drop the idea']);
+        $this->app->make(CommandBus::class)->run(new StartTask($blocked->id, $this->target->sessionId));
+        $this->app->make(CommandBus::class)->run(new StartTask($cancelled->id, $this->target->sessionId));
+
+        $this->app->make(CommandBus::class)->run(new CancelTask($cancelled->id));
+        $this->app->make(CommandBus::class)->run(new BlockTask($blocked->id));
+
+        $this->assertSame([], $this->taskFrames());
+        $this->assertTrue($this->app->make(AssignedTaskReader::class)->currentForCaller()->isEmpty());
+    }
+
+    public function test_finishing_a_task_never_started_leaves_the_stack_alone(): void
+    {
+        $started = Task::query()->create(['title' => 'Write the walk']);
+        $neverStarted = Task::query()->create(['title' => 'Someday']);
+        $this->app->make(CommandBus::class)->run(new StartTask($started->id, $this->target->sessionId));
+
+        $this->app->make(CommandBus::class)->run(new FinishTask($neverStarted->id));
+
+        $this->assertSame(["tasks.working {$started->id} 1"], $this->taskFrames());
     }
 
     /**

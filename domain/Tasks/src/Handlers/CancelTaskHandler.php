@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Handlers;
 
+use App\Hooks\Contracts\StackCleanup;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Commands\CancelTask;
 use Domain\Tasks\Models\Task;
@@ -16,11 +17,12 @@ final readonly class CancelTaskHandler
 {
     public function __construct(
         private Dispatcher $events,
+        private StackCleanup $cleanup,
     ) {}
 
     public function handle(CancelTask $command): void
     {
-        Task::lockedById($command->taskId)->cancel();
+        $this->cleanup->endWork(Task::lockedById($command->taskId), fn (Task $task) => $task->cancel());
         $this->events->dispatch(new TaskCancelled($command->taskId));
     }
 }
