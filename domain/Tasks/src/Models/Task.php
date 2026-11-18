@@ -272,7 +272,7 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
      */
     public function summary(): TaskSummary
     {
-        return new TaskSummary($this->number, $this->title);
+        return new TaskSummary($this->number, $this->title, $this->state);
     }
 
     /**

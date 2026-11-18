@@ -134,6 +134,14 @@ final readonly class PlanRecords implements PlanReader
     }
 
     /**
+     * One plan's card, with the same progress and current phase every list of plans shows.
+     */
+    public function cardOf(Plan $plan): PlanCard
+    {
+        return $this->cardsOf($plan->newCollection([$plan]), $this->focusedPlanId())[0];
+    }
+
+    /**
      * Builds the cards with a fixed number of queries: the phases, their task places, the task states, and the plans'
      * assignments with their holders' names through Core.
      *

@@ -35,24 +35,29 @@ use Domain\Plans\Api\Events\PlanCancelled;
 use Domain\Plans\Api\Events\PlanFinished;
 use Domain\Plans\Api\Events\PlanProgressChanged;
 use Domain\Plans\Api\Events\PlanStarted;
+use Domain\Plans\Api\PhaseDetails;
 use Domain\Plans\Api\PlanCard;
+use Domain\Plans\Api\PlanDetails;
 use Domain\Plans\Api\PlanFilters;
 use Domain\Plans\Api\PlanList;
+use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Api\PlanSelection;
 use Domain\Plans\Commands\AddPhase;
 use Domain\Plans\Commands\AddPhaseTasks;
+use Domain\Plans\Commands\AssignPlanWork;
 use Domain\Plans\Commands\CancelPlan;
 use Domain\Plans\Commands\CreatePlan;
 use Domain\Plans\Commands\EditPlan;
 use Domain\Plans\Commands\FinishPlan;
-use Domain\Plans\Commands\AssignPlanWork;
 use Domain\Plans\Commands\ReassignPlanWork;
 use Domain\Plans\Commands\StartPlan;
 use Domain\Plans\Commands\UnassignPlanWork;
+use Domain\Plans\Contracts\PlanDetailsReader;
 use Domain\Plans\Contracts\PlanReader;
 use Domain\Plans\Enums\PlanState;
 use Domain\Plans\Enums\PlanType;
+use Domain\Plans\Enums\PlanView;
 use Domain\Plans\Exceptions\PlanMissing;
 use Domain\Plans\Exceptions\StartDenied;
 use Domain\Plans\Http\Controllers\StartPlanController;
@@ -63,8 +68,8 @@ use Domain\Plans\Models\Phase;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Readers\OpenPlansCount;
 use Domain\Plans\Readers\PhaseWindowReader;
-use Domain\Plans\Readers\PlansWindowReader;
 use Domain\Plans\Readers\PlanWindowReader;
+use Domain\Plans\Readers\PlansWindowReader;
 use Domain\Plans\Readers\WaitingPlansCount;
 use Domain\Plans\Readers\WaitingPlansSection;
 use Domain\Plans\States\Support\WorkingOnPlanStateFactory;
@@ -97,7 +102,7 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
     {
         return Exports::make()
             ->events(PlanStarted::class, PlanFinished::class, PlanCancelled::class, PlanProgressChanged::class)
-            ->contracts(PlanReader::class)
+            ->contracts(PlanReader::class, PlanDetailsReader::class)
             ->values(
                 PlanFilters::class,
                 PlanList::class,
@@ -108,6 +113,10 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
                 PlanProgress::class,
                 PlanType::class,
                 PlanState::class,
+                PlanDetails::class,
+                PlanPhaseTasks::class,
+                PhaseDetails::class,
+                PlanView::class,
             )
             ->commands(
                 StartPlan::class,
