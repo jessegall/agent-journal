@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Agents\Support;
 
-use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Exceptions\DefaultUnavailable;
 use App\Agents\Exceptions\ModelUnavailable;
@@ -79,11 +78,11 @@ final readonly class SelectedProgram
      */
     private static function model(ModelSelection $requested, ProfileDefaults|null $profile, HookProgram $program): string
     {
-        if ($requested->type === ModelSelectionType::ProfileDefault) {
+        $model = $requested->model;
+
+        if ($model === null) {
             return $profile?->defaultModel ?? throw DefaultUnavailable::forLaunch();
         }
-
-        $model = $requested->model->get();
 
         if ($profile !== null && ! $profile->allows($model)) {
             throw ModelUnavailable::for($model, $program->value);

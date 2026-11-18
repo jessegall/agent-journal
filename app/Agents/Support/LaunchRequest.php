@@ -34,7 +34,7 @@ final readonly class LaunchRequest
             $this->selection->program->value,
             $this->selection->model,
             $this->selection->requested->type->value,
-            $this->selection->requested->model->getOrElse(null),
+            $this->selection->requested->model,
             $this->selection->source->programSource->value,
             $this->selection->source->profileKey,
             $this->selection->source->profileRevision,

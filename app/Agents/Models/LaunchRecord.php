@@ -90,7 +90,7 @@ final class LaunchRecord extends Model implements ReadableModel
             'program' => $request->selection->program->value,
             'model' => $request->selection->model,
             'requested_model_type' => $request->selection->requested->type,
-            'requested_model' => $request->selection->requested->model->getOrElse(null),
+            'requested_model' => $request->selection->requested->model,
             'program_source' => $request->selection->source->programSource,
             'profile_key' => $request->selection->source->profileKey,
             'profile_revision' => $request->selection->source->profileRevision,

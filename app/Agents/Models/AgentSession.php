@@ -103,7 +103,7 @@ final class AgentSession extends Model implements ReadableModel
         $this->program = $selection->program->value;
         $this->model = $selection->model;
         $this->requested_model_type = $selection->requested->type;
-        $this->requested_model = $selection->requested->model->getOrElse(null);
+        $this->requested_model = $selection->requested->model;
         $this->program_source = $selection->source->programSource;
         $this->profile_key = $selection->source->profileKey;
         $this->profile_revision = $selection->source->profileRevision;
@@ -243,6 +243,15 @@ final class AgentSession extends Model implements ReadableModel
      *
      * @param  Builder<self>  $query
      */
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function runningFor(Builder $query, string $agentId): void
+    {
+        $query->where('agent_id', $agentId)->whereIn('status', array_map(fn (SessionStatus $status) => $status->value, SessionStatus::running()));
+    }
+
     #[Scope]
     protected function present(Builder $query, CarbonImmutable $observedAt, PresenceWindow $window): void
     {

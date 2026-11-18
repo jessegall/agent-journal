@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Enums\ConversationModeType;
-use App\Agents\Models\AgentSession;
 
 /**
  * What a launch tells its caller: the request, the session and agent, the selection, whether the session is new,
@@ -29,20 +28,4 @@ final readonly class LaunchReceipt
         public string $actualModel,
         public array $programArguments,
     ) {}
-
-    public static function of(LaunchRequest $request, AgentSession $session, bool $newSession): self
-    {
-        $selection = $session->selection();
-
-        return new self(
-            $request->requestId,
-            $session->id,
-            $session->agent_id,
-            $selection,
-            $newSession,
-            $request->conversationMode,
-            self::ACTUAL_MODEL_NOT_REPORTED,
-            $selection->program->modelArguments($selection->model),
-        );
-    }
 }

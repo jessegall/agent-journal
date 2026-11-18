@@ -43,4 +43,14 @@ enum HookProgram: string
     {
         return "journal-hook {$this->value}";
     }
+
+    /**
+     * The arguments that start this program on the selected model.
+     *
+     * @return list<string>
+     */
+    public function modelArguments(string $model): array
+    {
+        return ['--model', $model];
+    }
 }

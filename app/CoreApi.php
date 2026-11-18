@@ -40,6 +40,7 @@ use App\Agents\Commands\ClaimLaunchGrant;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\InterruptAgent;
+use App\Agents\Commands\LaunchAgent;
 use App\Agents\Commands\OpenAgentRuntime;
 use App\Agents\Commands\OpenHostMainRuntime;
 use App\Agents\Commands\RecordHeartbeat;
@@ -81,9 +82,11 @@ use App\Agents\Enums\ProgramSourceType;
 use App\Agents\Enums\RequestOutcome;
 use App\Agents\Enums\RequestProgress;
 use App\Agents\Enums\RuntimeActivity;
+use App\Agents\Events\LaunchAccepted;
 use App\Agents\Events\LaunchEnded;
 use App\Agents\Exceptions\AccessPolicyInvalid;
 use App\Agents\Exceptions\AccountContainerUnsupported;
+use App\Agents\Exceptions\AgentBusy;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Exceptions\AgentRetirementDenied;
@@ -112,6 +115,7 @@ use App\Agents\Support\ExecutionReference;
 use App\Agents\Support\ExitReceipt;
 use App\Agents\Support\HostCapability;
 use App\Agents\Support\HostCapabilityQuery;
+use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\LaunchRecordDetails;
 use App\Agents\Support\LaunchRequest;
 use App\Agents\Support\ModelSelection;
@@ -621,7 +625,7 @@ final class CoreApi
     public static function exports(): Exports
     {
         return Exports::make()
-            ->events(LinksRemoved::class, CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, EngineTicked::class, SettingsChanged::class)
+            ->events(LinksRemoved::class, CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextWasCompacted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, LaunchAccepted::class, EngineTicked::class, SettingsChanged::class)
             ->contracts(
                 RecordProvider::class,
                 RecordReader::class,
@@ -764,6 +768,7 @@ final class CoreApi
                 ProgramSourceType::class,
                 LaunchRefusalType::class,
                 LaunchRequest::class,
+                LaunchReceipt::class,
                 LaunchRecordDetails::class,
                 LaunchOriginType::class,
                 ConversationModeType::class,
@@ -1031,6 +1036,7 @@ final class CoreApi
                 AnswerMessage::class,
                 DismissMessage::class,
                 RetireAgent::class,
+                LaunchAgent::class,
                 RecordHeartbeat::class,
                 RecordUserHeartbeat::class,
                 EnrollHost::class,
@@ -1191,6 +1197,7 @@ final class CoreApi
                 ProgramConflict::class,
                 ProgramUnsupported::class,
                 LaunchRequestConflict::class,
+                AgentBusy::class,
                 LaunchRecordMissing::class,
                 UnknownAccessType::class,
                 UnknownResourceArea::class,

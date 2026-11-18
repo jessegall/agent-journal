@@ -17,6 +17,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Models\LaunchRecord;
 use App\Agents\Readers\HostLaunchMaterial;
 use App\Agents\Support\LaunchReceipt;
+use App\Agents\Support\LaunchRequest;
 use App\Contracts\CommandHandler;
 use Illuminate\Contracts\Events\Dispatcher;
 
@@ -45,7 +46,7 @@ final readonly class LaunchAgentHandler implements CommandHandler
         $record = LaunchRecord::accept($request, ActorIdentity::of($this->actors->actor()));
 
         if ($record->session_id !== null) {
-            return LaunchReceipt::of($request, AgentSession::query()->findOrFail($record->session_id), false);
+            return self::receiptOf($request, AgentSession::query()->findOrFail($record->session_id), false);
         }
 
         if (AgentSession::query()->runningFor($request->agentId)->exists()) {
@@ -58,6 +59,22 @@ final readonly class LaunchAgentHandler implements CommandHandler
         $this->material->keep($request->requestId, $launched);
         $this->events->dispatch(new LaunchAccepted($request->requestId, $request->agentId, $launched->session->id));
 
-        return LaunchReceipt::of($request, $launched->session, true);
+        return self::receiptOf($request, $launched->session, true);
+    }
+
+    private static function receiptOf(LaunchRequest $request, AgentSession $session, bool $newSession): LaunchReceipt
+    {
+        $selection = $session->selection();
+
+        return new LaunchReceipt(
+            $request->requestId,
+            $session->id,
+            $session->agent_id,
+            $selection,
+            $newSession,
+            $request->conversationMode,
+            LaunchReceipt::ACTUAL_MODEL_NOT_REPORTED,
+            $selection->program->modelArguments($selection->model),
+        );
     }
 }

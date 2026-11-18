@@ -37,6 +37,26 @@ final readonly class LaunchSessions
      */
     public function launch(Agent $agent, SelectedProgram $selection, string $requestId, AgentSession|null $parent = null, RuntimeIntent|null $intent = null): LaunchedAgent
     {
+        $settings = $this->settingsFor($selection);
+
+        return $this->transaction->run(fn (): LaunchedAgent => $this->start($agent, $selection, $requestId, $parent, $settings, $intent));
+    }
+
+    /**
+     * The same launch inside a transaction its caller already holds, such as the LaunchAgent command's; it opens none.
+     *
+     * @throws LaunchRefused
+     */
+    public function launchInTransaction(Agent $agent, SelectedProgram $selection, string $requestId, AgentSession|null $parent = null): LaunchedAgent
+    {
+        return $this->start($agent, $selection, $requestId, $parent, $this->settingsFor($selection), null);
+    }
+
+    /**
+     * @throws LaunchRefused
+     */
+    private function settingsFor(SelectedProgram $selection): IsolatedHookSettings
+    {
         $program = $selection->program->value;
         $settings = new IsolatedHookSettings();
         $this->events->dispatch(new LaunchSettingsRequested($program, $settings));
@@ -45,15 +65,21 @@ final readonly class LaunchSessions
             throw LaunchRefused::withoutHooks($program);
         }
 
-        return $this->transaction->run(function () use ($agent, $selection, $requestId, $parent, $settings, $intent): LaunchedAgent {
-            $session = $this->sessions->start($agent, $selection, $requestId, $parent);
-            $token = $this->credentials->issue($session);
-            [$runtime, $firstRequest] = $intent === null ? [null, null] : $this->runtimes->open($session, $intent, $token);
+        return $settings;
+    }
 
-            $this->events->dispatch(new LaunchStarted($agent->id, $session->id, $agent->role));
+    /**
+     * @throws LaunchRefused
+     */
+    private function start(Agent $agent, SelectedProgram $selection, string $requestId, AgentSession|null $parent, IsolatedHookSettings $settings, RuntimeIntent|null $intent): LaunchedAgent
+    {
+        $session = $this->sessions->start($agent, $selection, $requestId, $parent);
+        $token = $this->credentials->issue($session);
+        [$runtime, $firstRequest] = $intent === null ? [null, null] : $this->runtimes->open($session, $intent, $token);
 
-            return new LaunchedAgent($session, $token, $settings->content(), $runtime, $firstRequest);
-        });
+        $this->events->dispatch(new LaunchStarted($agent->id, $session->id, $agent->role));
+
+        return new LaunchedAgent($session, $token, $settings->content(), $runtime, $firstRequest);
     }
 
     /**

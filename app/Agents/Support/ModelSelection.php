@@ -6,9 +6,6 @@ namespace App\Agents\Support;
 
 use App\Agents\Enums\ModelSelectionType;
 use App\Agents\Exceptions\ModelRequired;
-use PhpOption\None;
-use PhpOption\Option;
-use PhpOption\Some;
 
 /**
  * The model a launch asked for: a named model, or its profile's default. It is never empty.
@@ -18,11 +15,11 @@ final readonly class ModelSelection
     private const string DEFAULT_INPUT = 'default';
 
     /**
-     * @param  Option<string>  $model  the named model; none for the profile default
+     * @param  string|null  $model  the named model; null exactly when the profile default is asked for
      */
     private function __construct(
         public ModelSelectionType $type,
-        public Option $model,
+        public string|null $model,
     ) {}
 
     /**
@@ -34,12 +31,12 @@ final readonly class ModelSelection
             throw ModelRequired::forLaunch();
         }
 
-        return new self(ModelSelectionType::Named, new Some($model));
+        return new self(ModelSelectionType::Named, $model);
     }
 
     public static function profileDefault(): self
     {
-        return new self(ModelSelectionType::ProfileDefault, None::create());
+        return new self(ModelSelectionType::ProfileDefault, null);
     }
 
     /**

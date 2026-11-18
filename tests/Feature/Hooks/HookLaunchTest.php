@@ -8,9 +8,8 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
-use App\Agents\Actions\ProgramChildSessions;
 use App\Agents\Exceptions\CredentialRejected;
-use App\Agents\Exceptions\LaunchRefused;
+use App\Agents\Exceptions\ProgramUnsupported;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
@@ -103,7 +102,7 @@ final class HookLaunchTest extends TestCase
 
     public function test_a_program_without_journal_hooks_cannot_be_launched(): void
     {
-        $this->expectException(LaunchRefused::class);
+        $this->expectException(ProgramUnsupported::class);
 
         $this->launch('hooks.main_ready', 'some-other-program');
     }
@@ -130,7 +129,7 @@ final class HookLaunchTest extends TestCase
         $this->as($parent, fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id, $parent->session->id)));
         $childAgent = Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.read_only_helper_ready']);
 
-        $child = $this->app->make(ProgramChildSessions::class)->open($parent->session, $childAgent, TestSelections::of('claude-code'), TestSelections::requestId());
+        $child = $this->app->make(LaunchSessions::class)->launch($childAgent, TestSelections::of('claude-code'), TestSelections::requestId(), $parent->session);
 
         $this->assertSame($parent->session->id, $child->session->fresh()?->parent_session_id);
         $this->assertSame('{}', $this->stopAs($child, 'call-1'));
