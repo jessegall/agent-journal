@@ -12,6 +12,7 @@ use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
+use Domain\Documents\Data\DockCard;
 use Domain\Documents\Data\ReportCard;
 use Domain\Documents\Data\ReportView;
 use Domain\Documents\Enums\AttentionState;
@@ -97,6 +98,11 @@ final class Report extends Model implements Numbered, ReadableModel
             'snippet' => $this->snippetFor($words),
             'foundIn' => 'report',
         ]);
+    }
+
+    public function dockCard(): DockCard
+    {
+        return DockCard::from(['type' => 'report', 'number' => (string) $this->number, 'title' => $this->title, 'abstract' => $this->abstract, 'route' => "/documents/reports/{$this->number}"]);
     }
 
     public function view(): ReportView

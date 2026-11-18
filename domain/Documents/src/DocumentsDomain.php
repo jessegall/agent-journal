@@ -14,11 +14,14 @@ use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
+use App\Ui\Contracts\ProvidesSections;
 use App\Ui\Declarations\ActionRoute;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
+use App\Ui\Declarations\Section;
 use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
+use App\Ui\Enums\SlotContextType;
 use Domain\Documents\Api\CloseResult;
 use Domain\Documents\Api\CreatedRecord;
 use Domain\Documents\Api\DraftReference;
@@ -29,6 +32,7 @@ use Domain\Documents\Api\Events\DocumentDraftSaved;
 use Domain\Documents\Api\Events\DocumentOpened;
 use Domain\Documents\Api\Events\DocumentPublished;
 use Domain\Documents\Api\Events\RecordCommented;
+use Domain\Documents\Api\Events\RecordDockChanged;
 use Domain\Documents\Api\Events\RecordSettled;
 use Domain\Documents\Api\Events\ReportFiled;
 use Domain\Documents\Commands\ChangeDocumentDetails;
@@ -37,6 +41,10 @@ use Domain\Documents\Commands\CommentDocument;
 use Domain\Documents\Commands\CommentReport;
 use Domain\Documents\Commands\CreateDocument;
 use Domain\Documents\Commands\CreateReport;
+use Domain\Documents\Commands\DockDocument;
+use Domain\Documents\Commands\DockReport;
+use Domain\Documents\Commands\HideDocumentDock;
+use Domain\Documents\Commands\HideReportDock;
 use Domain\Documents\Commands\OpenDocument;
 use Domain\Documents\Commands\RecoverDocument;
 use Domain\Documents\Commands\ReplaceDocumentBody;
@@ -49,6 +57,9 @@ use Domain\Documents\Contracts\DraftReader;
 use Domain\Documents\Contracts\ReportReader;
 use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Data\CommentCard;
+use Domain\Documents\Data\DockCard;
+use Domain\Documents\Data\DockData;
+use Domain\Documents\Data\DockSession;
 use Domain\Documents\Data\DocumentCard;
 use Domain\Documents\Data\DocumentFilters;
 use Domain\Documents\Data\DocumentList;
@@ -88,6 +99,8 @@ use Domain\Documents\Http\Controllers\CommentDocumentPageController;
 use Domain\Documents\Http\Controllers\CommentReportPageController;
 use Domain\Documents\Http\Controllers\CreateDocumentPageController;
 use Domain\Documents\Http\Controllers\CreateReportPageController;
+use Domain\Documents\Http\Controllers\DockRecordController;
+use Domain\Documents\Http\Controllers\HideDockController;
 use Domain\Documents\Http\Controllers\OpenDocumentPageController;
 use Domain\Documents\Http\Controllers\RecoverDocumentPageController;
 use Domain\Documents\Http\Controllers\SaveDraftPageController;
@@ -98,6 +111,7 @@ use Domain\Documents\Links\ReportLinkRecords;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;
+use Domain\Documents\Readers\DocumentDockReader;
 use Domain\Documents\Readers\DocumentWindowReader;
 use Domain\Documents\Readers\LibraryWindowReader;
 use Domain\Documents\Readers\ReportWindowReader;
@@ -105,7 +119,7 @@ use Domain\Documents\Readers\RevisionWindowReader;
 use Domain\Documents\Support\CommentAnchor;
 use Domain\Documents\Support\TextSelection;
 
-final class DocumentsDomain extends Domain implements ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages
+final class DocumentsDomain extends Domain implements ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections
 {
     use HasLinkRecords, HasNumberedModels;
 
@@ -122,10 +136,10 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
     public function exports(): Exports
     {
         return Exports::make()
-            ->events(DocumentCreated::class, ReportFiled::class, DocumentOpened::class, DocumentDraftSaved::class, DocumentClosed::class, DocumentPublished::class, RecordCommented::class, RecordSettled::class)
+            ->events(DocumentCreated::class, ReportFiled::class, DocumentOpened::class, DocumentDraftSaved::class, DocumentClosed::class, DocumentPublished::class, RecordCommented::class, RecordSettled::class, RecordDockChanged::class)
             ->contracts(DraftReader::class, DocumentReader::class, ReportReader::class)
-            ->values(CloseCard::class, RecordInspection::class, SettlementCard::class, CommentCard::class, RevisionPageData::class, RecordText::class, TextSelection::class, CommentAnchor::class, EditingState::class, DraftState::class, DocumentPageData::class, RecordPageData::class, DraftView::class, RevisionCard::class, RevisionView::class, DraftReference::class, DraftTarget::class, CloseResult::class, CloseCause::class, CreatedRecord::class, AttentionState::class, AttentionFilter::class, DocumentFilters::class, DocumentCard::class, DocumentView::class, DocumentList::class, ReportCard::class, ReportView::class, ReportList::class)
-            ->commands(CreateDocument::class, CreateReport::class, OpenDocument::class, ReplaceDocumentBody::class, ReplaceDocumentSection::class, ReplaceDocumentText::class, ChangeDocumentDetails::class, CloseDocument::class, CommentDocument::class, CommentReport::class, SettleDocument::class, SettleReport::class, RecoverDocument::class)
+            ->values(DockSession::class, DockCard::class, DockData::class, CloseCard::class, RecordInspection::class, SettlementCard::class, CommentCard::class, RevisionPageData::class, RecordText::class, TextSelection::class, CommentAnchor::class, EditingState::class, DraftState::class, DocumentPageData::class, RecordPageData::class, DraftView::class, RevisionCard::class, RevisionView::class, DraftReference::class, DraftTarget::class, CloseResult::class, CloseCause::class, CreatedRecord::class, AttentionState::class, AttentionFilter::class, DocumentFilters::class, DocumentCard::class, DocumentView::class, DocumentList::class, ReportCard::class, ReportView::class, ReportList::class)
+            ->commands(CreateDocument::class, CreateReport::class, OpenDocument::class, ReplaceDocumentBody::class, ReplaceDocumentSection::class, ReplaceDocumentText::class, ChangeDocumentDetails::class, CloseDocument::class, CommentDocument::class, CommentReport::class, SettleDocument::class, SettleReport::class, RecoverDocument::class, DockDocument::class, DockReport::class, HideDocumentDock::class, HideReportDock::class)
             ->exceptions(SettlementDenied::class, StaleRead::class, AnchorMismatch::class, DraftMissing::class, SectionMissing::class, TextMatchInvalid::class, DraftHeld::class, DraftConflict::class, ContentMissing::class, ContentTooLarge::class, MarkdownInvalid::class, DocumentMissing::class, ReportMissing::class)
             ->build();
     }
@@ -142,7 +156,7 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
 
     public function commands(): array
     {
-        return [CreateDocument::class, CreateReport::class, OpenDocument::class, ReplaceDocumentBody::class, ReplaceDocumentSection::class, ReplaceDocumentText::class, ChangeDocumentDetails::class, CloseDocument::class, CommentDocument::class, CommentReport::class, SettleDocument::class, SettleReport::class, RecoverDocument::class];
+        return [CreateDocument::class, CreateReport::class, OpenDocument::class, ReplaceDocumentBody::class, ReplaceDocumentSection::class, ReplaceDocumentText::class, ChangeDocumentDetails::class, CloseDocument::class, CommentDocument::class, CommentReport::class, SettleDocument::class, SettleReport::class, RecoverDocument::class, DockDocument::class, DockReport::class, HideDocumentDock::class, HideReportDock::class];
     }
 
     public function pages(): array
@@ -173,6 +187,17 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
                 ->actions(
                     ActionRoute::post('reports/{report}/comments', CommentReportPageController::class, 'comment-report'),
                     ActionRoute::post('reports/{report}/settle', SettleReportPageController::class, 'settle-report'),
+                ),
+        ];
+    }
+
+    public function sections(): array
+    {
+        return [
+            Section::make('records', 'Documents and reports', 'chat.dock', SlotContextType::Session, DocumentDockReader::class, 'DocumentDock.vue')
+                ->actions(
+                    ActionRoute::post('dock', DockRecordController::class, 'dock-record'),
+                    ActionRoute::post('dock/hide', HideDockController::class, 'hide-dock'),
                 ),
         ];
     }

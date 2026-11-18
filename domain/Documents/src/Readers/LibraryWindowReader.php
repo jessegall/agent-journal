@@ -28,6 +28,7 @@ final readonly class LibraryWindowReader implements PageReader
             'reports' => $this->reports->list($filters),
             'sharingNotice' => self::SHARING_NOTICE,
             'query' => $filters->query,
+            'attention' => $filters->attention,
         ]);
     }
 }

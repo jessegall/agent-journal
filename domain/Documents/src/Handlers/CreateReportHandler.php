@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Domain\Documents\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Assignments\Support\RecordIdentity;
 use App\Records\Contracts\RecordLinker;
 use Domain\Documents\Api\CreatedRecord;
 use Domain\Documents\Api\Events\ReportFiled;
 use Domain\Documents\Commands\CreateReport;
 use Domain\Documents\Models\Report;
+use Domain\Documents\Support\Docking;
 use Domain\Documents\Support\LinkLimit;
 use Domain\Documents\Support\MarkdownText;
 use Illuminate\Contracts\Events\Dispatcher;
@@ -20,6 +22,7 @@ final readonly class CreateReportHandler
         private CurrentActor $actors,
         private Dispatcher $events,
         private RecordLinker $links,
+        private Docking $docks,
     ) {}
 
     public function handle(CreateReport $command): CreatedRecord
@@ -28,6 +31,7 @@ final readonly class CreateReportHandler
         LinkLimit::require($command->about, CreateReport::MOST_LINKS);
         $report = Report::file(MarkdownText::title($command->title), MarkdownText::abstract($command->abstract), MarkdownText::body($command->body), $actor);
         $this->links->linkFrom($report, $command->about);
+        $this->docks->dockInCreatorSession(new RecordIdentity(Report::LINK_TYPE, $report->id));
         $this->events->dispatch(new ReportFiled($report->id, $report->number, $actor));
 
         return new CreatedRecord($report->id, $report->number, 'report');

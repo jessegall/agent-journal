@@ -3,6 +3,7 @@ import { router } from '@inertiajs/vue3';
 import type { DocumentPageData } from '@generated/types/documents';
 import CommentsPanel from './CommentsPanel.vue';
 import LinksPanel from './LinksPanel.vue';
+import DockToSession from './DockToSession.vue';
 import DraftEditor from './DraftEditor.vue';
 import RecordStatus from './RecordStatus.vue';
 import RecoverForm from './RecoverForm.vue';
@@ -51,6 +52,7 @@ function open(): void {
                 </a>
             </template>
         </section>
+        <DockToSession type="doc" :number="data.number" :sessions="data.record.sessions" />
         <LinksPanel :source="data.record.label" :links="data.record.links" />
         <CommentsPanel
             :comments="data.record.comments"

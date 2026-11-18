@@ -13,6 +13,7 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\CloseCard;
+use Domain\Documents\Data\DockCard;
 use Domain\Documents\Data\DocumentCard;
 use Domain\Documents\Data\DocumentView;
 use Domain\Documents\Enums\AttentionState;
@@ -138,6 +139,13 @@ final class Document extends Model implements Numbered, ReadableModel
         $found = $relation === 'revisions' ? $this->revisions->sortByDesc('number')->first() : $this->currentRevision;
 
         return $found ?? $this->currentRevisionOrFail();
+    }
+
+    public function dockCard(): DockCard
+    {
+        $revision = $this->currentRevisionOrFail();
+
+        return DockCard::from(['type' => 'doc', 'number' => (string) $this->number, 'title' => $revision->title, 'abstract' => $revision->abstract, 'route' => "/documents/docs/{$this->number}"]);
     }
 
     public function view(): DocumentView
