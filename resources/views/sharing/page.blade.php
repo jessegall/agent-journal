@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow, noarchive">
     <title>{{ $page->title }}</title>
+    @if ($stylesheet !== null)
+        <link rel="stylesheet" href="/build-sharing/{{ $stylesheet }}">
+    @endif
 </head>
 <body>
 <main>

@@ -115,6 +115,24 @@ final class SharingListenerTest extends TestCase
         $this->get("/s/{$this->token}")->assertOk();
     }
 
+    public function test_a_script_and_a_javascript_link_render_inert_and_only_manifest_files_are_served(): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(9)));
+        $this->app->make(CommandBus::class)->run(new CreateDocument('Tricks', 'Inert', "<script>alert(1)</script>\n\n[run](javascript:alert(1)) [site](https://example.com) [other](/s/elsewhere)\n"));
+        $this->app->make(CurrentActorSetter::class)->clear();
+        $token = $this->activeShareOf(Document::query()->where('number', 2)->sole()->shareIdentity());
+
+        $html = (string) $this->get("/s/{$token}")->assertOk()->getContent();
+
+        $this->assertStringNotContainsString('<script', $html);
+        $this->assertStringNotContainsString('javascript:', $html);
+        $this->assertStringContainsString('<a rel="noopener noreferrer" href="https://example.com">site</a>', $html);
+        $this->assertStringNotContainsString('href="/s/elsewhere"', $html);
+        $this->get('/build/manifest.json')->assertNotFound();
+        $this->get('/build-sharing/manifest.json')->assertNotFound();
+        $this->get('/build-sharing/assets/app.js')->assertNotFound();
+    }
+
     public function test_a_failure_shows_the_fixed_page_even_with_debugging_on(): void
     {
         config(['app.debug' => true]);

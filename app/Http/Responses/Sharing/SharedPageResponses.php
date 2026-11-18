@@ -18,13 +18,15 @@ use Throwable;
  */
 final readonly class SharedPageResponses
 {
+    public function __construct(private SharingAssets $assets) {}
+
     public function page(SharedPage $page): Response
     {
         if (! $page->allowed) {
             return self::unavailable();
         }
 
-        return new Response(View::make('sharing.page', ['page' => $page, 'bodyHtml' => MarkdownText::body($page->body)->toSafeHtml()])->render(), 200);
+        return new Response(View::make('sharing.page', ['page' => $page, 'bodyHtml' => MarkdownText::publicHtmlOf($page->body), 'stylesheet' => $this->assets->stylesheet()])->render(), 200);
     }
 
     /**

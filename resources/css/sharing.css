@@ -1,0 +1,31 @@
+/* The public share reader: plain system fonts, readable width, no external resources. */
+:root {
+    color-scheme: light dark;
+    font-family: system-ui, sans-serif;
+    line-height: 1.6;
+}
+
+body {
+    margin: 0;
+}
+
+main {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+article pre {
+    overflow-x: auto;
+}
+
+blockquote {
+    margin: 0 0 0.5rem;
+    padding-left: 0.75rem;
+    border-left: 3px solid currentColor;
+    opacity: 0.8;
+}
+
+nav ul {
+    padding-left: 1.25rem;
+}

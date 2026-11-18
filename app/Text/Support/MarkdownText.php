@@ -281,6 +281,19 @@ final readonly class MarkdownText
     }
 
     /**
+     * HTML for text shown to the public through a share: safe as any body, and with every link that does not leave for
+     * an http or https address shown as its plain text, since no server-approved path stands behind it.
+     */
+    public static function publicHtmlOf(string $text): string
+    {
+        return (string) preg_replace_callback(
+            '/<a rel="noopener noreferrer" href="([^"]*)">(.*?)<\/a>/s',
+            fn (array $link) => preg_match('/^https?:\/\//i', html_entity_decode($link[1])) === 1 ? $link[0] : $link[2],
+            self::rendered($text, null),
+        );
+    }
+
+    /**
      * Renders safely; with a first line, each block is marked with its source lines after that offset. Raw HTML is
      * escaped, so an author can never write these marks.
      */
