@@ -28,7 +28,7 @@ final class ExplicitTransactionTest extends TestCase
     private const array ALLOWED = [
         // The bus's own frame step: the one place that opens a command's transaction.
         'app/Bus/CommandMiddleware/RunInTransaction.php',
-        'tests/Fixtures/Modules/Notes/Handlers/OpenTransactionNoteHandler.php',
+        'tests/Fixtures/Modules/Notes/src/Handlers/OpenTransactionNoteHandler.php',
     ];
 
     public function test_no_checked_owner_opens_a_transaction_itself(): void

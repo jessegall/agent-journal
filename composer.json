@@ -67,6 +67,8 @@
             "Domain\\Rules\\Tests\\": "domain/Rules/tests/",
             "Domain\\Sequences\\Tests\\": "domain/Sequences/tests/",
             "Domain\\Tasks\\Tests\\": "domain/Tasks/tests/",
+            "Tests\\Fixtures\\Modules\\Cards\\": "tests/Fixtures/Modules/Cards/src/",
+            "Tests\\Fixtures\\Modules\\Notes\\": "tests/Fixtures/Modules/Notes/src/",
             "Tests\\": "tests/"
         }
     },

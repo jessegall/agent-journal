@@ -127,7 +127,7 @@ final class ModuleAssignmentTest extends TestCase
      */
     private function createNotesTable(): void
     {
-        foreach (glob(base_path('tests/Fixtures/Modules/Notes/Database/Migrations/*.php')) ?: [] as $migration) {
+        foreach (glob(base_path('tests/Fixtures/Modules/Notes/database/migrations/*.php')) ?: [] as $migration) {
             (require $migration)->up();
         }
     }
