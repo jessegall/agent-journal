@@ -260,7 +260,7 @@ class WorkerCommand(Command):
     @staticmethod
     def refused_in_review(worker: Worker) -> None:
         if worker.is_delivered():
-            raise Rejection(f"worker {worker.id} waits for its merge: journal worker merge {worker.id}, or send the job to another worker")
+            raise Rejection(f"worker {worker.id} waits for its check and merge: journal worker check {worker.id} <point>, then journal worker merge {worker.id}, or send the job to another worker")
 
     def check(self, args: Namespace, caller: Caller) -> int:
         if args.short:
