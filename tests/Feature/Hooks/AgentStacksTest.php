@@ -298,7 +298,7 @@ final class AgentStacksTest extends TestCase
 
     private function insertStackThrough(Connection $connection, string $frameId, string $typeKey): void
     {
-        $frames = new FrameRecords([new FrameRecord($frameId, new StateReference($typeKey, NoSubject::None), true, 1)]);
+        $frames = new FrameRecords([new FrameRecord($frameId, new StateReference($typeKey, NoSubject::None), true, 1, CarbonImmutable::now())]);
 
         $connection->table('agent_stacks')->insert([
             'id' => strtolower((string) Str::ulid()),

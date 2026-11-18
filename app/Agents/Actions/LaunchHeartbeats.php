@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Actions;
 
-use App\Actors\Support\DatabaseClock;
+use App\Actors\Contracts\ServerClock;
 use App\Actors\Support\PresenceWindow;
 use App\Agents\Events\LaunchEnded;
 use App\Agents\Models\AgentSession;
@@ -23,7 +23,7 @@ final readonly class LaunchHeartbeats
         private LaunchCredentials $credentials,
         private Dispatcher $events,
         private PresenceWindow $window,
-        private DatabaseClock $clock,
+        private ServerClock $clock,
     ) {}
 
     /**

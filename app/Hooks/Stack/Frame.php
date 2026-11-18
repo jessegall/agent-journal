@@ -11,9 +11,11 @@ use App\Hooks\Decisions\StateReference;
 use App\Hooks\Lifecycle\LifecycleContext;
 use App\Hooks\States\AgentState;
 use App\Hooks\Storage\FrameRecord;
+use Carbon\CarbonImmutable;
 
 /**
- * One state on a stack, with the frame id it is stored under and the reference it was built from.
+ * One state on a stack, with the frame id it is stored under, the reference it was built from and the time it entered
+ * the stack, which never changes while the frame lives.
  */
 final readonly class Frame
 {
@@ -21,13 +23,14 @@ final readonly class Frame
         public string $id,
         public StateReference $reference,
         public AgentState $state,
+        public CarbonImmutable $enteredAt,
         private bool $bottom = false,
         public int $schemaVersion = 1,
     ) {}
 
     public static function restored(FrameRecord $record, AgentState $state): self
     {
-        return new self($record->id, $record->reference, $state, $record->isBottom, $record->schemaVersion);
+        return new self($record->id, $record->reference, $state, $record->enteredAt, $record->isBottom, $record->schemaVersion);
     }
 
     public function isBottom(): bool

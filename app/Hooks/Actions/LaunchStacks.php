@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Actions;
 
+use App\Actors\Contracts\ServerClock;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\NoSubject;
@@ -21,7 +22,10 @@ use Illuminate\Support\Str;
  */
 final readonly class LaunchStacks
 {
-    public function __construct(private StackTransaction $transaction) {}
+    public function __construct(
+        private StackTransaction $transaction,
+        private ServerClock $clock,
+    ) {}
 
     /**
      * Opens the stack with the bottom state of the role, or leaves the one a racing launch opened first.
@@ -31,7 +35,7 @@ final readonly class LaunchStacks
         $this->transaction->requireOpen($target);
 
         AgentStackRow::insertIfMissing($target, new FrameRecords([
-            new FrameRecord((string) Str::ulid(), new StateReference($role->value, NoSubject::None), true, $role->schemaVersion()),
+            new FrameRecord((string) Str::ulid(), new StateReference($role->value, NoSubject::None), true, $role->schemaVersion(), $this->clock->now()),
         ]));
 
         AgentStackRow::lockAuthorizedFor($target)->frames->checkBottomFor($role);

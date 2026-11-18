@@ -6,15 +6,15 @@ namespace App\Actors\Handlers;
 
 use App\Actors\Commands\RecordUserHeartbeat;
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\ServerClock;
 use App\Actors\Models\UserPresence;
-use App\Actors\Support\DatabaseClock;
 use App\Contracts\CommandHandler;
 
 final readonly class RecordUserHeartbeatHandler implements CommandHandler
 {
     public function __construct(
         private CurrentActor $actors,
-        private DatabaseClock $clock,
+        private ServerClock $clock,
     ) {}
 
     public function handle(RecordUserHeartbeat $command): void

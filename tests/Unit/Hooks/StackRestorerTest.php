@@ -19,11 +19,13 @@ use App\Hooks\Stack\StackRestorer;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
+use Carbon\CarbonImmutable;
 use Domain\Tasks\Enums\TaskWorkState;
 use Illuminate\Events\Dispatcher;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\HookInputs;
 use Tests\Fixtures\Hooks\InMemoryTaskLoader;
+use Tests\Support\FixedServerClock;
 
 final class StackRestorerTest extends TestCase
 {
@@ -114,7 +116,7 @@ final class StackRestorerTest extends TestCase
         $this->expectException(StateTypeUnknown::class);
 
         $this->restorer->restore(
-            $this->records($this->bottom(), new FrameRecord('note-1', new StateReference('notes.reading', NoSubject::None), false, 1)),
+            $this->records($this->bottom(), new FrameRecord('note-1', new StateReference('notes.reading', NoSubject::None), false, 1, CarbonImmutable::now())),
             ReadyStateType::MainAgent,
         );
     }
@@ -141,7 +143,7 @@ final class StackRestorerTest extends TestCase
         $events->listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('tasks.working', $tasks));
         $types = new StateTypes($events);
 
-        return new StackRestorer($types, new RegisteredStateFactory($types));
+        return new StackRestorer($types, new RegisteredStateFactory($types, new FixedServerClock(CarbonImmutable::parse('2026-11-18 12:00:00'))));
     }
 
     private function records(FrameRecord ...$records): FrameRecords
@@ -151,11 +153,11 @@ final class StackRestorerTest extends TestCase
 
     private function bottom(string $typeKey = 'hooks.main_ready', string $id = 'ready'): FrameRecord
     {
-        return new FrameRecord($id, new StateReference($typeKey, NoSubject::None), true, 1);
+        return new FrameRecord($id, new StateReference($typeKey, NoSubject::None), true, 1, CarbonImmutable::now());
     }
 
     private function task(string $id, int $number): FrameRecord
     {
-        return new FrameRecord($id, new StateReference('tasks.working', new SubjectReference((string) $number, 1)), false, 1);
+        return new FrameRecord($id, new StateReference('tasks.working', new SubjectReference((string) $number, 1)), false, 1, CarbonImmutable::now());
     }
 }

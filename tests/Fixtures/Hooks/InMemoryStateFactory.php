@@ -8,6 +8,7 @@ use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Stack\Frame;
 use App\Hooks\States\AgentState;
+use Carbon\CarbonImmutable;
 use Closure;
 
 /**
@@ -26,6 +27,6 @@ final class InMemoryStateFactory implements StateFactory
     {
         $this->pushedCount++;
 
-        return new Frame("pushed-{$this->pushedCount}", $reference, ($this->types[$reference->typeKey])($reference));
+        return new Frame("pushed-{$this->pushedCount}", $reference, ($this->types[$reference->typeKey])($reference), CarbonImmutable::now());
     }
 }

@@ -139,7 +139,7 @@ final class HookRetentionTest extends TestCase
     private function stack(StackTarget $target): AgentStackRow
     {
         $row = new AgentStackRow;
-        $row->startFor($target, new FrameRecords([new FrameRecord('ready', new StateReference('hooks.main_ready', NoSubject::None), true, 1)]));
+        $row->startFor($target, new FrameRecords([new FrameRecord('ready', new StateReference('hooks.main_ready', NoSubject::None), true, 1, CarbonImmutable::now())]));
 
         return $row;
     }

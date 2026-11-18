@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Actors\Support;
 
+use App\Actors\Contracts\ServerClock;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\ConnectionInterface;
 
 /**
- * The database server's own time, so every heartbeat and every freshness check reads one clock.
+ * The server clock as the database server's own time, so every stored time and every freshness check reads one clock.
  */
-final readonly class DatabaseClock
+final readonly class DatabaseClock implements ServerClock
 {
     public function __construct(private ConnectionInterface $database) {}
 

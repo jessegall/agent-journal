@@ -20,6 +20,7 @@ use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Stack\HookRewrite;
 use App\Hooks\States\AgentState;
 use App\Hooks\Storage\WalkStep;
+use Carbon\CarbonImmutable;
 use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ListedCommandParser;
@@ -112,8 +113,8 @@ final class HookRewriteTest extends TestCase
         $factory = new InMemoryStateFactory(['guide' => fn () => ScriptedState::delegating()]);
 
         return new AgentStack([
-            new Frame('ready', $noSubject($role->value), $this->bottomOf($role), bottom: true),
-            new Frame('rewriter', $noSubject('rewriter'), $rewriter),
+            new Frame('ready', $noSubject($role->value), $this->bottomOf($role), CarbonImmutable::now(), bottom: true),
+            new Frame('rewriter', $noSubject('rewriter'), $rewriter, CarbonImmutable::now()),
         ], $factory);
     }
 

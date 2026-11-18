@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Hooks\Storage;
 
 use App\Hooks\Decisions\StateReference;
+use Carbon\CarbonImmutable;
 
 /**
- * A frame as it is stored: its id, the reference its state is rebuilt from, whether it is the bottom, and the version it was stored in.
+ * A frame as it is stored: its id, the reference its state is rebuilt from, whether it is the bottom, the version it was
+ * stored in, and the server time it entered the stack.
  */
 final readonly class FrameRecord
 {
@@ -16,6 +18,7 @@ final readonly class FrameRecord
         public StateReference $reference,
         public bool $isBottom,
         public int $schemaVersion,
+        public CarbonImmutable $enteredAt,
     ) {}
 
     /**

@@ -24,6 +24,7 @@ use App\Hooks\Stack\HookAnswer;
 use App\Hooks\States\AgentState;
 use App\Hooks\States\ReadyState;
 use App\Hooks\Storage\WalkStep;
+use Carbon\CarbonImmutable;
 use Domain\Chat\Enums\MessageWorkState;
 use Domain\Chat\States\AnsweringMessageState;
 use Domain\Chat\Support\MessageWork;
@@ -76,7 +77,7 @@ final class AgentStackTest extends TestCase
         ]);
         $stack = new AgentStack([
             $this->ready(),
-            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active))),
+            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, TaskWorkState::Active)), CarbonImmutable::now()),
         ], $factory);
 
         $stack = $stack->withStateOnTop($this->reference('sequences.following', '8'));
@@ -146,7 +147,7 @@ final class AgentStackTest extends TestCase
 
     public function test_a_finished_bottom_state_is_refused_at_cleanup(): void
     {
-        $stack = $this->stack(new Frame('ready', $this->reference('ready'), new ScriptedState(Decision::allow(), finished: true), bottom: true));
+        $stack = $this->stack(new Frame('ready', $this->reference('ready'), new ScriptedState(Decision::allow(), finished: true), CarbonImmutable::now(), bottom: true));
 
         $this->expectException(BottomStateCannotFinish::class);
 
@@ -163,7 +164,7 @@ final class AgentStackTest extends TestCase
             }
         };
         $stack = $this->stack(
-            new Frame('ready', $this->reference('ready'), $delegatingBottom, bottom: true),
+            new Frame('ready', $this->reference('ready'), $delegatingBottom, CarbonImmutable::now(), bottom: true),
             $this->frame('top', ScriptedState::delegating()),
         );
 
@@ -293,8 +294,8 @@ final class AgentStackTest extends TestCase
     {
         return $this->stack(
             $this->ready(),
-            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, $taskState))),
-            new Frame('message-95', $this->reference('chat.answering', '95'), new AnsweringMessageState(new MessageWork(95, $messageState))),
+            new Frame('task-42', $this->reference('tasks.working', '42'), new WorkingOnTaskState(new TaskWork(42, 1, $taskState)), CarbonImmutable::now()),
+            new Frame('message-95', $this->reference('chat.answering', '95'), new AnsweringMessageState(new MessageWork(95, $messageState)), CarbonImmutable::now()),
         );
     }
 
@@ -305,12 +306,12 @@ final class AgentStackTest extends TestCase
 
     private function ready(): Frame
     {
-        return new Frame('ready', $this->reference('ready'), new ReadyState, bottom: true);
+        return new Frame('ready', $this->reference('ready'), new ReadyState, CarbonImmutable::now(), bottom: true);
     }
 
     private function frame(string $id, AgentState $state): Frame
     {
-        return new Frame($id, $this->reference($id), $state);
+        return new Frame($id, $this->reference($id), $state, CarbonImmutable::now());
     }
 
     private function reference(string $typeKey, string|null $subjectId = null): StateReference

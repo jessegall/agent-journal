@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actors\Support;
 
 use App\Actors\Contracts\ActiveActors;
+use App\Actors\Contracts\ServerClock;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActiveActorsUnavailable;
 use App\Actors\Values\ActiveActorsSnapshot;
@@ -21,7 +22,7 @@ final readonly class ActiveActorsReader implements ActiveActors
     public function __construct(
         private ActiveActorCounterRegistry $counters,
         private ConnectionInterface $database,
-        private DatabaseClock $clock,
+        private ServerClock $clock,
     ) {}
 
     public function snapshot(): ActiveActorsSnapshot
