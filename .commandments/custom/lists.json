@@ -497,7 +497,6 @@
         "); sum it up, start nothing: `journal dump propose",
         "--changed \"<what this round changed>\"`",
         "--on task:<m>` or `--until \"<check>\"`",
-        "__authenticate`, then `complete_authentication`; tell the user",
         "` and act on it",
         "` and prove it again if you had",
         "` from this run's output and run it",
