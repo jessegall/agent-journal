@@ -10,7 +10,8 @@ declare(strict_types=1);
  * reviewed rule change; ShellCorpusTest compares the classifier with what it wrote. Running it twice gives the same
  * bytes.
  *
- *   docker compose -p agent-journal-6 exec -T app php tools/processes/freeze-shell-classes.php
+ *   docker compose -p agent-journal-6 exec -T -e APP_ENV=testing -e DB_DATABASE=journal_hooks_test app \
+ *       php tools/processes/freeze-shell-classes.php
  */
 
 use App\Processes\Contracts\AliasReader;

@@ -23,11 +23,14 @@ use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionClass;
 use ReflectionMethod;
+use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class HookRuntimeReadinessTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const array SHELL_CALL = ['tool_input' => ['command' => 'git status'], 'tool_response' => []];
 
     private const array EVENT_FIELDS = [

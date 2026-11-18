@@ -15,6 +15,7 @@ use App\Hooks\Programs\JudgedCall;
 use App\Mcp\Support\McpCatalogue;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Support\ChecksProgramFixtures;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -25,6 +26,7 @@ use Tests\TestCase;
 final class JournalToolRecognitionTest extends TestCase
 {
     use ChecksProgramFixtures;
+    use RefreshHookDatabase;
 
     protected static function fixtureFolder(): string
     {

@@ -25,11 +25,13 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Fixtures\Hooks\ScriptedState;
 use Tests\Support\ChecksProgramFixtures;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 final class CodexTest extends TestCase
 {
     use ChecksProgramFixtures;
+    use RefreshHookDatabase;
 
     protected static function fixtureFolder(): string
     {

@@ -37,13 +37,17 @@ final class CommandFactsTest extends TestCase
     }
 
     /**
+     * The answers as the tree classifier reads each line: an alias run needs its approved proven reader, and an
+     * unknown program or a journal route this version does not have needs a reviewed rule first.
+     *
      * @return iterable<string, array{string, AnswerType, AnswerType}>
      */
     public static function linesAndRoleAnswers(): iterable
     {
-        yield 'a command alias' => ['journal run tests', AnswerType::Allow, AnswerType::Allow];
-        yield 'a command alias by its name' => ['journal tests --tail 5', AnswerType::Allow, AnswerType::Allow];
-        yield 'a journal subcommand' => ['journal task list', AnswerType::Allow, AnswerType::Allow];
+        yield 'a command alias' => ['journal run tests', AnswerType::Deny, AnswerType::Deny];
+        yield 'a command alias by its name' => ['journal tests --tail 5', AnswerType::Deny, AnswerType::Deny];
+        yield 'a journal route' => ['journal task assigned', AnswerType::Allow, AnswerType::Allow];
+        yield 'a journal route this version does not have' => ['journal task list', AnswerType::Deny, AnswerType::Deny];
         yield 'an unknown journal name' => ['journal not-saved', AnswerType::Deny, AnswerType::Deny];
         yield 'an unknown command alias' => ['journal run not-saved', AnswerType::Deny, AnswerType::Deny];
         yield 'a plain read' => ['git status', AnswerType::Allow, AnswerType::Allow];
@@ -55,7 +59,7 @@ final class CommandFactsTest extends TestCase
         yield 'a file removal' => ['rm -rf build', AnswerType::Allow, AnswerType::Deny];
         yield 'a write through a redirect' => ['echo done > notes.txt', AnswerType::Allow, AnswerType::Deny];
         yield 'a write through a redirect without spaces' => ['cat a.txt>b.txt', AnswerType::Allow, AnswerType::Deny];
-        yield 'an unknown program' => ['some-tool --flag', AnswerType::Allow, AnswerType::Deny];
+        yield 'an unknown program' => ['some-tool --flag', AnswerType::Deny, AnswerType::Deny];
         yield 'a command substitution' => ['$(echo composer) test', AnswerType::Deny, AnswerType::Deny];
         yield 'a variable' => ['cat $FILE', AnswerType::Deny, AnswerType::Deny];
         yield 'a quote left open' => ['echo "unfinished', AnswerType::Deny, AnswerType::Deny];
@@ -80,7 +84,7 @@ final class CommandFactsTest extends TestCase
         $this->assertSame(ParseOutcome::Complete, $command->outcome);
         $this->assertSame(['composer', 'tee', 'git'], array_map(fn ($part) => $part->program, $command->parts));
         $this->assertSame([PartJoin::Pipe, PartJoin::Sequence, PartJoin::End], array_map(fn ($part) => $part->join, $command->parts));
-        $this->assertSame([CommandType::Verification, CommandType::Ordinary, CommandType::Ordinary], array_map(fn ($part) => $part->type, $command->parts));
+        $this->assertSame([CommandType::Unknown, CommandType::Ordinary, CommandType::Ordinary], array_map(fn ($part) => $part->type, $command->parts));
         $this->assertSame(CommandEffect::ChangesFiles, $command->parts[1]->effect);
         $this->assertSame(['test'], $command->parts[0]->arguments);
     }

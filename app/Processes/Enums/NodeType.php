@@ -33,4 +33,18 @@ enum NodeType: string
     {
         return $this === self::SimpleCommand;
     }
+
+    /**
+     * How a list of this type joins one of its commands to the next; a node that only wraps commands joins none.
+     */
+    public function partJoin(): PartJoin|null
+    {
+        return match ($this) {
+            self::Pipeline => PartJoin::Pipe,
+            self::AndList => PartJoin::And,
+            self::OrList => PartJoin::Or,
+            self::Sequence, self::Background => PartJoin::Sequence,
+            default => null,
+        };
+    }
 }

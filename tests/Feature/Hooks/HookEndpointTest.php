@@ -77,13 +77,17 @@ final class HookEndpointTest extends TestCase
 
     public function test_the_registered_parser_decides_and_no_native_flag_can(): void
     {
-        $this->app->instance(ShellCommandParser::class, new class implements ShellCommandParser
+        $parser = new class implements ShellCommandParser
         {
             public function parse(string $line, ShellDialect $dialect): ShellCommand
             {
-                return new ShellCommand($line, $dialect, ParseOutcome::Complete, [new CommandPart('composer', ['test'], CommandEffect::ReadsOnly, CommandType::Alias)]);
+                $part = new CommandPart('composer', ['test'], CommandEffect::ReadsOnly, CommandType::Alias);
+
+                return new ShellCommand($line, $dialect, ParseOutcome::Complete, [$part]);
             }
-        });
+        };
+        // The parser is scoped to a request, so the fake is registered the same way.
+        $this->app->scoped(ShellCommandParser::class, fn () => $parser);
         $flagged = json_decode($this->bashBody('composer test'), true);
         $flagged['tool_input']['saved'] = true;
 

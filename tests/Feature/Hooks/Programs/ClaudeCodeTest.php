@@ -19,11 +19,13 @@ use App\Processes\Enums\CommandType;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Fixtures\Hooks\InMemoryStateFactory;
 use Tests\Support\ChecksProgramFixtures;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 final class ClaudeCodeTest extends TestCase
 {
     use ChecksProgramFixtures;
+    use RefreshHookDatabase;
 
     protected static function fixtureFolder(): string
     {

@@ -54,7 +54,12 @@ foreach ($chunks as $number => $chunk) {
     }
     $input = implode('', array_map(fn (array $record) => json_encode($record, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)."\n", $chunk));
     $expected = readings([ORACLE], $input);
-    $actual = readings(['docker', 'compose', '-p', 'agent-journal-6', 'exec', '-T', 'app', 'php', 'tools/processes/analyse-shell-lines.php'], $input);
+    $actual = readings([
+        'docker', 'compose', '-p', 'agent-journal-6', 'exec', '-T',
+        // Classification reads the project's stored rules, which the migrated test database holds.
+        '-e', 'APP_ENV=testing', '-e', 'DB_DATABASE=journal_hooks_test',
+        'app', 'php', 'tools/processes/analyse-shell-lines.php',
+    ], $input);
 
     $counts = ['lines' => count($chunk), 'agree' => 0, 'differ' => 0, 'outcomes' => [], 'explained' => []];
     $differences = [];
@@ -247,8 +252,12 @@ function readings(array $command, string $input): array
     $output = '';
     $offset = 0;
     while ($offset < strlen($input)) {
-        $written = fwrite($pipes[0], substr($input, $offset, 65536));
-        $offset += $written === false ? 0 : $written;
+        $written = @fwrite($pipes[0], substr($input, $offset, 65536));
+        if ($written === false) {
+            // The reader stopped taking lines: it ended early, so its exit and its error output say why.
+            break;
+        }
+        $offset += $written;
         $output .= (string) stream_get_contents($pipes[1]);
     }
     fclose($pipes[0]);

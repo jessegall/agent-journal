@@ -82,7 +82,7 @@ final class ProcessesServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(ShellCommandParser::class, ShellParser::class);
+        $this->app->scoped(ShellCommandParser::class, ShellParser::class);
         $this->app->singleton(ShellSyntax::class, TreeParser::class);
         $this->app->scoped(CommandClassifier::class, TreeClassifier::class);
         $this->app->scoped(CommandRuleReader::class, ProjectRules::class);
