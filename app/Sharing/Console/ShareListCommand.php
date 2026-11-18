@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Sharing\Console;
 
+use App\Actors\Support\ConsoleOwner;
 use App\Sharing\Enums\ShareState;
 use App\Sharing\Models\Share;
-use App\Sharing\Support\ConsoleOwner;
 use App\Sharing\Support\ShareListFilters;
 use Illuminate\Console\Command;
 

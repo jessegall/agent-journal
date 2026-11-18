@@ -14,6 +14,7 @@ use App\AgentRequests\Support\AgentClientSettings;
 use App\AgentRequests\Support\EnvironmentCredentialSource;
 use App\Agents\Console\EnrollHostCommand;
 use App\Agents\Console\RetireAgentCommand;
+use App\Agents\Console\RunKeyScriptCommand;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchMaterialReader;
@@ -78,7 +79,7 @@ final class AgentsServiceProvider extends ServiceProvider
         $actors->register(ActorType::Agent, AgentActors::class);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agents.php');
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/host.php');
-        $this->commands([RetireAgentCommand::class, EnrollHostCommand::class]);
+        $this->commands([RetireAgentCommand::class, EnrollHostCommand::class, RunKeyScriptCommand::class]);
         $assignments->registerAssignees(
             new AssigneeRegistration(ActorType::Agent, AgentAssignees::class, AgentActivity::class),
         );

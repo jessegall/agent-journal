@@ -22,6 +22,7 @@ use App\Agents\Commands\ReportRuntimeActivity;
 use App\Agents\Commands\ReportRuntimeExit;
 use App\Agents\Commands\ReportRuntimeHeartbeat;
 use App\Agents\Commands\RetireAgent;
+use App\Agents\Commands\RunKeyScript;
 use App\Agents\Commands\StopAgent;
 use App\Agents\Commands\WakeAgent;
 use App\Assignments\Commands\AssignRecord;
@@ -114,6 +115,7 @@ final class CoreCommands
             ChangeAgentEffort::class,
             InterruptAgent::class,
             StopAgent::class,
+            RunKeyScript::class,
             ClaimDriverRequests::class,
             ClaimLaunchGrant::class,
             ReportRuntimeActivity::class,

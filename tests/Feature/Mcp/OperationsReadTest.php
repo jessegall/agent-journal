@@ -20,8 +20,8 @@ use Tests\Fixtures\Mcp\CascadeResult;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsMcpFrames;
 use Tests\Support\StartsAgentRequests;
-use Tests\TestCase;
 use Tests\Support\TimeLimits\TimeLimit;
+use Tests\TestCase;
 
 /**
  * operations_read and journal://v1/operations/{request_key}: the caller's write under a key, with its outcomes page
