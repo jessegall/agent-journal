@@ -6,10 +6,10 @@ namespace App\Agents\Console;
 
 use App\Actors\Support\ActorStore;
 use App\Agents\Commands\EnrollHost;
+use App\Agents\Exceptions\HostEnrollmentInvalid;
 use App\Agents\Support\EnrolledHost;
 use App\Bus\Contracts\CommandBus;
 use Illuminate\Console\Command;
-use App\Agents\Exceptions\HostEnrollmentInvalid;
 
 /**
  * Enrolls this machine's agent host, run by whoever operates the machine; the secret is printed once.

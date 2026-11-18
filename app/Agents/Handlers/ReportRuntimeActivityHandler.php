@@ -7,8 +7,8 @@ namespace App\Agents\Handlers;
 use App\Agents\Commands\ReportRuntimeActivity;
 use App\Agents\Exceptions\HostReportRefused;
 use App\Agents\Support\HostRuntimes;
-use Carbon\CarbonImmutable;
 use App\Contracts\CommandHandler;
+use Carbon\CarbonImmutable;
 
 final readonly class ReportRuntimeActivityHandler implements CommandHandler
 {

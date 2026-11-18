@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Agents\Host;
 
 use App\Agents\Commands\ClaimDriverRequests;
-use App\Agents\Support\ClaimedRequests;
 use App\Agents\Support\HostContext;
 use App\Bus\Contracts\CommandBus;
 use Illuminate\Http\JsonResponse;

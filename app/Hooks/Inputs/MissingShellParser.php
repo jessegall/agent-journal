@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Hooks\Inputs;
 
+use App\Hooks\Exceptions\ShellParserMissing;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Enums\ShellDialect;
-use App\Hooks\Exceptions\ShellParserMissing;
 use App\Processes\Values\ShellCommand;
 
 /**
