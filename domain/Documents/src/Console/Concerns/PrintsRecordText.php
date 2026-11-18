@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Console\Concerns;
 
+use App\Text\Support\TextSelection;
 use Domain\Documents\Data\RecordText;
-use Domain\Documents\Support\TextSelection;
 
 /**
  * The read flags doc:show and report:show share, and how a bounded read is printed: the outline when no part is

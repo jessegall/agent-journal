@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
+use App\Text\Support\MarkdownText;
+use App\Text\Support\TextReading;
+use App\Text\Support\TextSelection;
 use Domain\Documents\Data\RecordText;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;
@@ -27,22 +30,6 @@ final class RecordReading
             return RecordText::from($fields);
         }
 
-        $part = $body->part($selection);
-
-        return RecordText::from([...$fields, 'text' => $part->text, 'lines' => "{$part->firstLine}-{$part->lastLine}", ...self::continuationOf($part, $selection, $revision)]);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private static function continuationOf(TextPart $part, TextSelection $selection, int $revision): array
-    {
-        if ($part->nextLine === null) {
-            return [];
-        }
-
-        $end = $selection->lastLine ?? '';
-
-        return ['continuation' => "--lines {$part->nextLine}-{$end} --at-revision {$revision}".($selection->bullets ? ' --bullets' : '').($selection->words !== null ? " --grep \"{$selection->words}\"" : '')];
+        return RecordText::from([...$fields, ...TextReading::read($body, $selection, $revision)]);
     }
 }

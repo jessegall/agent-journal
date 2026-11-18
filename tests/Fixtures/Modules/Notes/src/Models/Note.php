@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes\Models;
 
+use App\Comments\Contracts\Commentable;
+use App\Comments\Support\HasComments;
+use App\Numbers\Contracts\Numbered;
+use App\Numbers\Support\HasNumber;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Support\RecordIdentity;
 use App\Hooks\Models\Support\BelongsToOneAgent;
@@ -21,15 +25,16 @@ use Illuminate\Support\Carbon;
  *
  * @property string $id
  * @property string $agent_id
+ * @property int $number
  * @property string $text
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
 #[Fillable(['text'])]
 #[Table('module_notes')]
-final class Note extends Model implements Assignable, ReadableModel
+final class Note extends Model implements Assignable, Commentable, Numbered, ReadableModel
 {
-    use BelongsToOneAgent, HasUlids;
+    use BelongsToOneAgent, HasComments, HasNumber, HasUlids;
     use BoundedReads;
     use Linkable;
 

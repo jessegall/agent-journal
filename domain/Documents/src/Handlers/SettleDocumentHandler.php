@@ -12,7 +12,7 @@ use Domain\Documents\Exceptions\SettlementDenied;
 use Domain\Documents\Exceptions\StaleRead;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentDraft;
-use Domain\Documents\Support\MarkdownText;
+use Domain\Documents\Support\RecordFields;
 use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class SettleDocumentHandler implements CommandHandler
@@ -21,7 +21,7 @@ final readonly class SettleDocumentHandler implements CommandHandler
 
     public function handle(SettleDocument $command): void
     {
-        $reason = MarkdownText::settlementReason($command->reason);
+        $reason = RecordFields::settlementReason($command->reason);
         $document = Document::lockedForEditing($command->documentNumber);
         $current = $document->currentRevisionOrFail()->number;
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Support;
 
+use App\Text\Support\MarkdownText;
 use Domain\Documents\Models\DocumentDraft;
 
 /**
@@ -30,6 +31,6 @@ final readonly class DraftText
 
     public function withDetails(string $title, string $abstract): self
     {
-        return new self(MarkdownText::title($title), MarkdownText::abstract($abstract), $this->body);
+        return new self(RecordFields::title($title), RecordFields::abstract($abstract), $this->body);
     }
 }

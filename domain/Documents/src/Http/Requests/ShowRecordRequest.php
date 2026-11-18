@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Http\Requests;
 
 use App\Numbers\Support\RecordReference;
-use Domain\Documents\Support\TextSelection;
+use App\Text\Support\TextSelection;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**

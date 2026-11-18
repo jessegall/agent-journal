@@ -6,6 +6,7 @@ use App\Actors\Providers\ActorsServiceProvider;
 use App\Agents\Providers\AgentsServiceProvider;
 use App\Assignments\Providers\AssignmentsServiceProvider;
 use App\Bus\Providers\CommandBusServiceProvider;
+use App\Comments\Providers\CommentsServiceProvider;
 use App\Domains\Providers\DomainEventServiceProvider;
 use App\Domains\Providers\DomainServiceProvider;
 use App\Engine\Providers\EngineServiceProvider;
@@ -36,6 +37,7 @@ return [
     AgentsServiceProvider::class,
     AssignmentsServiceProvider::class,
     RecordsServiceProvider::class,
+    CommentsServiceProvider::class,
     HooksServiceProvider::class,
     CommandBusServiceProvider::class,
     EngineServiceProvider::class,

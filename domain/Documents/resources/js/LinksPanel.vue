@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { router, useForm } from '@inertiajs/vue3';
-import type { RecordCard } from '@generated/types/core';
+import type { RecordCard } from '@kit/CoreTypes';
 import Button from '@kit/Button';
 import FormErrors from '@kit/FormErrors';
 import { formSendingHooks } from '@kit/usePageChanges';

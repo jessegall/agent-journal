@@ -6,11 +6,17 @@ namespace Domain\Documents\Models;
 
 use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
+use App\Comments\Contracts\Commentable;
+use App\Comments\Support\HasComments;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
+use App\Text\Contracts\TextContent;
+use App\Text\Exceptions\TextVersionUnavailable;
+use App\Text\Support\MarkdownText;
+use App\Text\Values\TextVersion;
 use Carbon\CarbonImmutable;
 use Domain\Documents\Data\CloseCard;
 use Domain\Documents\Data\DockCard;
@@ -20,7 +26,6 @@ use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Models\Concerns\CreatedWithAttention;
 use Domain\Documents\Models\Concerns\Settles;
-use Domain\Documents\Support\MarkdownText;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -46,9 +51,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  */
 #[Fillable(['creator_type', 'creator_id', 'origin_agent_id', 'origin_session_id'])]
-final class Document extends Model implements Numbered, ReadableModel
+final class Document extends Model implements Commentable, Numbered, ReadableModel, TextContent
 {
-    use BoundedReads, CreatedWithAttention, HasNumber, HasUlids, Linkable, Settles;
+    use BoundedReads, CreatedWithAttention, HasComments, HasNumber, HasUlids, Linkable, Settles;
 
     public const string LINK_TYPE = 'documents.document';
 
@@ -243,5 +248,33 @@ final class Document extends Model implements Numbered, ReadableModel
     public function currentRevisionOrFail(): DocumentRevision
     {
         return $this->currentRevision ?? throw DocumentMissing::numbered($this->number);
+    }
+
+    /**
+     * A published revision's text: the current one, or exactly the named revision number.
+     */
+    public function textVersion(string|null $version = null): TextVersion
+    {
+        $revision = $this->publishedRevision($version);
+
+        return TextVersion::ofMarkdown((string) $revision->number, "Revision {$revision->number}", $revision->body);
+    }
+
+    /**
+     * The current revision for no version, otherwise the closed revision with that number.
+     *
+     * @throws TextVersionUnavailable
+     */
+    public function publishedRevision(string|null $version): DocumentRevision
+    {
+        if ($version === null) {
+            return $this->revisions()->whereKey($this->current_revision_id)->whereNotNull('closed_at')->first() ?? throw TextVersionUnavailable::named('current');
+        }
+
+        if (! ctype_digit($version)) {
+            throw TextVersionUnavailable::named($version);
+        }
+
+        return $this->revisions()->where('number', (int) $version)->whereNotNull('closed_at')->first() ?? throw TextVersionUnavailable::named($version);
     }
 }

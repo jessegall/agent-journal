@@ -37,7 +37,7 @@ final readonly class DraftClosing
      */
     public function recover(DraftTarget $target, Actor $user, string $reason): CloseResult
     {
-        return $this->closeTarget($target, fn () => null, CloseCause::Recovery, $user, MarkdownText::settlementReason($reason));
+        return $this->closeTarget($target, fn () => null, CloseCause::Recovery, $user, RecordFields::settlementReason($reason));
     }
 
     /**

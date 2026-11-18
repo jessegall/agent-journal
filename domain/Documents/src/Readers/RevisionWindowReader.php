@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Readers;
 
+use App\Text\Support\MarkdownText;
 use App\Ui\Contracts\PageReader;
 use Domain\Documents\Contracts\DocumentReader;
 use Domain\Documents\Data\RevisionPageData;
 use Domain\Documents\Http\Requests\RevisionPageRequest;
-use Domain\Documents\Support\MarkdownText;
 
 /**
  * One revision's page: its text as safe HTML, marked historical when a later revision exists.
@@ -28,7 +28,6 @@ final readonly class RevisionWindowReader implements PageReader
             'abstract' => $revision->abstract,
             'bodyHtml' => MarkdownText::body($revision->body)->toSafeHtml(),
             'historical' => $revision->historical,
-            'highlight' => $this->request->quote(),
         ]);
     }
 }
