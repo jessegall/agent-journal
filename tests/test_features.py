@@ -1946,20 +1946,23 @@ def test_a_worker_the_restart_cut_off_is_started_again_in_its_session(app: App, 
     workers, runner, scope = app.container.get(Workers), app.container.get(WorkerRunner), app.container.get(Scope)
     relaunched = []
     monkeypatch.setattr(WorkerActions, "relaunch", lambda self, worker, brief, dispatcher, actor, move, *rest, **named: relaunched.append((worker.id, brief)) or worker)
+    from journal.models.worker_state import WorkerState
     with scope.environment(1):
         cut = workers.save(Worker(name="Ms. Hopper", brief="the compiler", model="sonnet"), Actor.system())
+        clocked_in = workers.save(Worker(name="Mr. Babbage", brief="the engine", model="sonnet"), Actor.system())
         ended = workers.save(Worker(name="Mr. Turing", brief="the machine", model="sonnet"), Actor.system())
         workers.save(Worker(name="Ms. Lovelace", brief="the notes", model="sonnet"), Actor.system())
     gone = subprocess.Popen(["true"])
     gone.wait()
-    for worker, events in ((cut, [{"type": "assistant"}]), (ended, [{"type": "assistant"}, {"type": "result", "subtype": "success", "result": "the machine runs"}])):
+    for worker, events in ((cut, [{"type": "assistant"}]), (clocked_in, [{"type": "assistant"}]), (ended, [{"type": "assistant"}, {"type": "result", "subtype": "success", "result": "the machine runs"}])):
         output, _ = runner.outputs(worker)
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text("\n".join(j.dumps(event) for event in events) + "\n")
         workers.save(worker.running_as(gone.pid, timing.time()), Actor.system())
+    workers.save(workers.find(clocked_in.id).with_(state=WorkerState.READY), Actor.system())
     app.container.get(WorkersSeed).run()
     app.container.get(WorkerWatch).tick(timing.time())
-    assert relaunched == [(cut.id, REVIVE_BRIEF)], "only a run the restart cut off is started again in its own session; one that ended on its own, or never ran, is not"
+    assert sorted(relaunched) == sorted([(cut.id, REVIVE_BRIEF), (clocked_in.id, REVIVE_BRIEF)]), "a run the restart cut off is started again in its own session, sent its job or clocked in on it; one that ended on its own, or never ran, is not"
     assert not workers.find(ended.id).is_running(), "a run that ended on its own has its end recorded as before"
 
 
