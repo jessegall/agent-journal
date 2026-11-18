@@ -41,6 +41,9 @@ final class Exports
         'App\Reads\Support\CountsPivotLoads',
         'App\Reads\Support\BoundedReads',
         'App\Reads\Support\ReadBuilder',
+        'App\Mcp\Tools\JournalTool',
+        'App\Mcp\Tools\JournalReadTool',
+        'App\Mcp\Resources\JournalResource',
     ];
 
     /**

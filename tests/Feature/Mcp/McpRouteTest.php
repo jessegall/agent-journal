@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Response;
 use Illuminate\Testing\TestResponse;
 use Laravel\Mcp\Server\Registrar;
 use Tests\Fixtures\Agents\TestLaunch;
@@ -53,7 +54,7 @@ final class McpRouteTest extends TestCase
 
     public function test_a_300_kib_body_is_refused_before_the_server_runs(): void
     {
-        $this->assertSame(413, $this->signedBody(json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'ping', 'params' => ['filler' => str_repeat('a', 300 * 1024)]]))->status());
+        $this->assertSame(413, $this->signedBody(json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'ping', 'params' => ['filler' => str_repeat('a', 300 * 1024)]], JSON_THROW_ON_ERROR))->status());
     }
 
     public function test_a_message_nested_deeper_than_32_levels_is_refused_with_400(): void
@@ -128,6 +129,7 @@ final class McpRouteTest extends TestCase
     /**
      * @param  array<string, mixed>  $params
      * @param  array<string, string>  $headers
+     * @return TestResponse<Response>
      */
     private function signed(string $method, array $params = [], array $headers = []): TestResponse
     {
@@ -136,6 +138,7 @@ final class McpRouteTest extends TestCase
 
     /**
      * @param  array<string, string>  $headers
+     * @return TestResponse<Response>
      */
     private function signedBody(string $body, array $headers = []): TestResponse
     {

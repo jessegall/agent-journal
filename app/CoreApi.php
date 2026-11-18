@@ -235,6 +235,15 @@ use App\Links\Exceptions\UnknownLinkType;
 use App\Links\Support\Linkable;
 use App\Links\Support\LinkAccess;
 use App\Links\Support\LinkTypeRegistry;
+use App\Mcp\Contracts\CodedRefusal;
+use App\Mcp\Data\NextAction;
+use App\Mcp\Data\ToolResult as McpToolResult;
+use App\Mcp\Enums\RefusalCode;
+use App\Mcp\Resources\JournalResource;
+use App\Mcp\Support\McpCall;
+use App\Mcp\Support\ToolArguments;
+use App\Mcp\Tools\JournalReadTool;
+use App\Mcp\Tools\JournalTool;
 use App\Numbers\Commands\InstallNumbers;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Contracts\ProvidesNumberedModels;
@@ -535,8 +544,14 @@ final class CoreApi
                 ProvidesShareRecords::class,
                 ProvidesShareGateways::class,
                 SharePolicy::class,
+                CodedRefusal::class,
             )
             ->values(
+                RefusalCode::class,
+                McpToolResult::class,
+                NextAction::class,
+                ToolArguments::class,
+                McpCall::class,
                 RecordCard::class,
                 StateReferences::class,
                 StateSet::class,
@@ -873,6 +888,9 @@ final class CoreApi
                 AssignableListing::class,
                 TextSearch::class,
                 ReadsRouteNumber::class,
+                JournalTool::class,
+                JournalReadTool::class,
+                JournalResource::class,
             )
             ->build();
     }
