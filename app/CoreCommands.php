@@ -27,6 +27,7 @@ use App\Assignments\Commands\ReassignRecord;
 use App\Assignments\Commands\UnassignRecord;
 use App\Bus\Contracts\Command;
 use App\Bus\Support\CommandOwner;
+use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
@@ -69,6 +70,7 @@ use App\Sharing\Commands\RequestShare;
 use App\Sharing\Commands\RetryShare;
 use App\Sharing\Commands\RevokeShare;
 use App\Sharing\Commands\SaveSharePreview;
+use App\Skills\CommandMiddleware\RefuseWritesDuringEvaluation;
 use App\Web\Commands\RecordUserHeartbeat;
 
 /**
@@ -107,7 +109,7 @@ final class CoreCommands
      */
     public static function middleware(): array
     {
-        return [];
+        return [MiddlewareDeclaration::around(RefuseWritesDuringEvaluation::class, CommandScope::all())];
     }
 
     /**

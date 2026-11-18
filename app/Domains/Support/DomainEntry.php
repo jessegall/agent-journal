@@ -18,6 +18,7 @@ use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Exceptions\DomainRequiresItself;
 use App\Domains\Exceptions\NotADomain;
 use App\Domains\Exceptions\RequiredDomainTwice;
+use App\Domains\Exceptions\SkillConditionRefused;
 use App\Domains\Exceptions\SkillDeclarationRefused;
 use App\Domains\Support\Exports as ExportsCheck;
 use App\Exports\Support\Exports;
@@ -32,8 +33,11 @@ use App\Records\Contracts\RecordProvider;
 use App\Settings\Contracts\ProvidesSettings;
 use App\Settings\Contracts\SettingsDefinition;
 use App\Settings\Support\EmptySettingsDefinition;
+use App\Skills\Contracts\ProvidesSkillConditions;
 use App\Skills\Contracts\ProvidesSkills;
 use App\Skills\Contracts\Skill;
+use App\Skills\Contracts\SkillConditionEvaluator;
+use App\Skills\Values\SkillConditionRegistration;
 use App\Skills\Values\SkillOwner;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\NavigationItem;
@@ -41,6 +45,7 @@ use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Section;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Str;
+use Spatie\LaravelData\Data;
 use ReflectionClass;
 
 /**
@@ -51,6 +56,7 @@ final readonly class DomainEntry
     /**
      * @param  list<class-string<Domain>>  $requires
      * @param  list<class-string<Skill>>  $skills
+     * @param  list<SkillConditionRegistration>  $skillConditions
      */
     private function __construct(
         public string $name,
@@ -62,6 +68,7 @@ final readonly class DomainEntry
         private SettingsDefinition $settings,
         private bool $switchable,
         private array $skills,
+        private array $skillConditions,
     ) {}
 
     /**
@@ -94,6 +101,7 @@ final readonly class DomainEntry
             settings: $domain instanceof ProvidesSettings ? $domain->settings() : new EmptySettingsDefinition(),
             switchable: $domain->canDisable(),
             skills: $domain instanceof ProvidesSkills ? self::checkedSkills($name, $namespace, $domain->skills()) : [],
+            skillConditions: $domain instanceof ProvidesSkillConditions ? self::checkedSkillConditions($name, $domain->skillConditions()) : [],
         );
     }
 
@@ -257,6 +265,50 @@ final readonly class DomainEntry
         }
 
         return $skills;
+    }
+
+    /**
+     * Refuses a condition registration whose key lacks the domain's prefix or comes twice, or whose parameter or
+     * evaluator class is not what the contract asks.
+     *
+     * @param  list<SkillConditionRegistration>  $registrations
+     * @return list<SkillConditionRegistration>
+     */
+    private static function checkedSkillConditions(string $name, array $registrations): array
+    {
+        $prefix = Str::kebab($name).'.';
+        $seen = [];
+
+        foreach ($registrations as $registration) {
+            $key = $registration->key;
+            $reason = match (true) {
+                ! str_starts_with($key, $prefix) || preg_match('/^[a-z0-9]+(-[a-z0-9]+)*\.[a-z0-9]+(-[a-z0-9]+)*$/D', $key) !== 1 => "its key does not start with {$prefix}",
+                in_array($key, $seen, true) => 'it registers that key twice',
+                ! is_subclass_of($registration->parameters, Data::class) => 'its parameters class is no Spatie Data class',
+                ! is_subclass_of($registration->evaluator, SkillConditionEvaluator::class) => 'its evaluator does not implement App\\Skills\\Contracts\\SkillConditionEvaluator',
+                $registration->version < 1 => 'its version is below 1',
+                default => null,
+            };
+
+            if ($reason !== null) {
+                throw SkillConditionRefused::for($name, $key, $reason);
+            }
+
+            $seen[] = $key;
+        }
+
+        return $registrations;
+    }
+
+    /**
+     * The named condition types this domain registers, checked when it was registered; none without
+     * ProvidesSkillConditions.
+     *
+     * @return list<SkillConditionRegistration>
+     */
+    public function skillConditions(): array
+    {
+        return $this->skillConditions;
     }
 
     /**

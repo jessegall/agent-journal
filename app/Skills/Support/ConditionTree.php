@@ -17,20 +17,25 @@ use App\Skills\Conditions\Not;
 use App\Skills\Conditions\Profiles;
 use App\Skills\Conditions\Programs;
 use App\Skills\Conditions\Providers;
+use App\Skills\Conditions\RegisteredCondition;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Exceptions\SkillConditionInvalid;
 use App\Skills\Values\ProgramKey;
 use App\Skills\Values\ProviderKey;
 use App\Text\Support\StableKey;
 use Closure;
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Debug\ExceptionHandler;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use JsonException;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
 use ValueError;
 
 /**
  * Reads a condition from the JSON wire format into typed conditions, and checks a condition built in PHP by reading
  * what it writes, so both pass one validator. Limits are checked first, then every field; anything unknown or out of
- * shape refuses the whole tree before it is evaluated.
+ * shape refuses the whole tree before it is evaluated. A named condition is bound to its registered evaluator.
  */
 final readonly class ConditionTree
 {
@@ -41,6 +46,13 @@ final readonly class ConditionTree
     public const int MOST_PARAMETER_BYTES = 32_768;
 
     private const string NAMED_KEY = '/^[a-z0-9]+(-[a-z0-9]+)*\.[a-z0-9]+(-[a-z0-9]+)*$/D';
+
+    public function __construct(
+        private ConditionRegistry $registry,
+        private Container $container,
+        private EvaluationGuard $guard,
+        private ExceptionHandler $failures,
+    ) {}
 
     /**
      * @throws SkillConditionInvalid
@@ -190,9 +202,11 @@ final readonly class ConditionTree
     }
 
     /**
+     * A named condition: bound to its evaluator when its owner is installed, else kept as written and unavailable.
+     *
      * @param  array<array-key, mixed>  $wire
      */
-    private function named(array $wire, string $path): Named
+    private function named(array $wire, string $path): SkillCondition
     {
         $this->checkFields($wire, $path, $wire['version'], ['key', 'parameters']);
         $key = $wire['key'] ?? null;
@@ -210,7 +224,23 @@ final readonly class ConditionTree
             throw SkillConditionInvalid::field("{$path}.parameters", 'is not an object');
         }
 
-        return new Named($key, $wire['version'], $parameters);
+        if (! $this->registry->has($key)) {
+            return new Named($key, $wire['version'], $parameters);
+        }
+
+        $registration = $this->registry->registration($key);
+
+        if ($wire['version'] !== $registration->version) {
+            throw SkillConditionInvalid::field("{$path}.version", "is {$wire['version']}, but {$key} is at version {$registration->version}");
+        }
+
+        try {
+            $data = $registration->parameters::validateAndCreate($parameters);
+        } catch (ValidationException|CannotCreateData $refusal) {
+            throw SkillConditionInvalid::field("{$path}.parameters", 'does not fit '.$key.': '.$refusal->getMessage());
+        }
+
+        return new RegisteredCondition($key, $registration->version, $parameters, $data, $this->container->make($registration->evaluator), $this->guard, $this->failures);
     }
 
     /**

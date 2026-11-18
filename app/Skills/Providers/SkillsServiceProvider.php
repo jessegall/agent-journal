@@ -12,19 +12,23 @@ use App\Skills\Contracts\SkillRenderer;
 use App\Skills\CoreSkills;
 use App\Skills\Readers\SkillCatalogue;
 use App\Skills\Support\CanonicalRenderer;
+use App\Skills\Support\ConditionRegistry;
+use App\Skills\Support\EvaluationGuard;
 use App\Skills\Support\SkillRegistry;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * Keeps one registry of skill owners for the application's life, builds the checked catalogue once per request and
- * registers the skill console reads.
+ * Keeps one registry of skill owners and one of named condition types for the application's life, builds the checked
+ * catalogue and the evaluation guard once per request, and registers the skill console reads.
  */
 final class SkillsServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
         $this->app->singleton(SkillRegistry::class, fn (Application $app) => SkillRegistry::of($app->make(DomainRegistry::class)->skillDeclarations(CoreSkills::owner())));
+        $this->app->singleton(ConditionRegistry::class, fn (Application $app) => ConditionRegistry::of($app->make(DomainRegistry::class)->skillConditionDeclarations()));
+        $this->app->scoped(EvaluationGuard::class);
         $this->app->bind(SkillRenderer::class, CanonicalRenderer::class);
         $this->app->scoped(SkillReader::class, fn (Application $app) => SkillCatalogue::build($app->make(SkillRegistry::class), $app, $app->make(SkillRenderer::class)));
     }
