@@ -24,6 +24,8 @@ WAIT_ENDED_SOURCE = "tasks.wait-ended"
 TASK_TARGET_PREFIX = "tasks:"
 
 ENDED_WAITS_REASON = "Every task whose wait just ended is opened; a task many others wait on ends many waits at once."
+TASK_WAITS_REASON = "The open waits of one task, read through its index; a task waits on a handful of rows."
+TARGET_WAITS_REASON = "The open waits on one row, read through its index; a row many tasks wait on ends all their waits at once."
 KEPT_WAITS_REASON = "The open waits are read once and kept on the server, so a listener that ends waits for many targets reads no row per target."
 
 
@@ -66,11 +68,12 @@ class TaskWaits(KeptRowChanges[TaskWait]):
     def open_waits(self, task_id: int):
         return self.queries.query(TaskWait).filter(task_id=task_id).matching(IsNull("ended_at"))
 
+    # one task's open waits and one target's, each read through its index, so a save never loads every open wait
     def pending_task(self, task_id: int) -> tuple[TaskWait, ...]:
-        return tuple(wait for wait in self.pending_rows() if wait.task_id == task_id)
+        return tuple(self.pending_waits().filter(task_id=task_id).every_row(TASK_WAITS_REASON))
 
     def pending_target(self, target: str) -> tuple[TaskWait, ...]:
-        return tuple(wait for wait in self.pending_rows() if wait.target == target)
+        return tuple(self.pending_waits().filter(target=target).every_row(TARGET_WAITS_REASON))
 
     def pending_rows(self) -> tuple[TaskWait, ...]:
         waits = self.pending_waits()
