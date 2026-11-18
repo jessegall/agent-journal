@@ -27,7 +27,7 @@ final class DomainClassesTest extends TestCase
      */
     public static function domains(): iterable
     {
-        yield 'Tasks' => [TasksDomain::class, [], ['TaskStarted', 'TaskFinished', 'TaskBlocked', 'TaskCancelled', 'TaskProgressCounter', 'TaskProgress', 'TaskReader', 'TaskSummary', 'TaskMissing', 'TaskAssignmentReader', 'TaskAssignmentCompletion', 'AssignedTaskReader', 'TaskCard', 'TaskFilters', 'TaskList', 'TaskState', 'TaskWorkState', 'TaskListReader', 'TaskDetailsReader', 'TaskExecution', 'TaskDetails', 'TaskView']];
+        yield 'Tasks' => [TasksDomain::class, [], ['TaskStarted', 'TaskFinished', 'TaskBlocked', 'TaskCancelled', 'TaskProgressCounter', 'TaskProgress', 'TaskReader', 'TaskSummary', 'TaskMissing', 'TaskAssignmentReader', 'TaskAssignmentCompletion', 'AssignedTaskReader', 'TaskCard', 'TaskFilters', 'TaskList', 'TaskState', 'TaskWorkState', 'TaskListReader', 'TaskDetailsReader', 'TaskExecution', 'TaskDetails', 'TaskView', 'TaskType']];
         yield 'Plans' => [PlansDomain::class, [TasksDomain::class], ['PlanStarted', 'PlanProgressChanged', 'PlanReader', 'StartPlan', 'AssignPlanWork', 'ReassignPlanWork', 'UnassignPlanWork', 'PlanMissing', 'StartDenied', 'PlanFilters', 'PlanList', 'PlanSelection', 'PlanCard', 'AssignedPlanFilters', 'AssignedPlanList', 'PlanProgress', 'PlanType', 'PlanState', 'PlanFinished', 'PlanCancelled', 'PlanDetailsReader', 'PlanDetails', 'PlanPhaseTasks', 'PhaseDetails', 'PlanView', 'PhaseMissing']];
         yield 'Chat' => [ChatDomain::class, [], []];
         yield 'Memory' => [MemoryDomain::class, [], ['MemoryReader', 'MemoryPage', 'MemoryCard', 'MemoryUnavailable', 'MemoryInvalid', 'MemoryRevisionChanged']];

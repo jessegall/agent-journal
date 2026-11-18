@@ -79,7 +79,7 @@ final class StaleAdmissionTest extends TestCase
 
         $this->app->make(Supervisor::class)->run($events, $plan, $context);
 
-        $parts = PartRun::query()->where('process_run_id', $run->id)->orderBy('created_at')->orderBy('id')->get();
+        $parts = PartRun::query()->where('process_run_id', $run->id)->orderBy('syntax_node')->get();
         $this->assertSame(LifecycleState::Ended, $parts[0]->lifecycle);
         $this->assertSame(LifecycleState::Skipped, $parts[1]->lifecycle);
         $this->assertStringContainsString('printf was retired', $parts[1]->skip_reason);

@@ -38,7 +38,6 @@ use App\AgentRequests\Support\AgentReply;
 use App\Agents\Commands\ChangeAgentEffort;
 use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ClaimDriverRequests;
-use App\Agents\Commands\ClaimLaunchGrant;
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
@@ -176,6 +175,7 @@ use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Contracts\AutoAssigner;
+use App\Assignments\Contracts\AutoAssignmentActivity;
 use App\Assignments\Contracts\ProvidesAutoAssignments;
 use App\Assignments\Contracts\RecordVisibility;
 use App\Assignments\Enums\AssignmentOutcomeType;
@@ -196,6 +196,7 @@ use App\Assignments\Exceptions\AssignmentRootFinished;
 use App\Assignments\Exceptions\AssignmentTransactionRequired;
 use App\Assignments\Exceptions\AssignmentTypeRepeated;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
+use App\Assignments\Exceptions\AutoAssignmentSizeInvalid;
 use App\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Assignments\Exceptions\InvalidRecordIds;
@@ -214,6 +215,9 @@ use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
 use App\Assignments\Support\AssignmentSet;
 use App\Assignments\Support\AutoAssignerDefinition;
+use App\Assignments\Support\AutoAssignmentChange;
+use App\Assignments\Support\AutoAssignmentInput;
+use App\Assignments\Support\AutoAssignmentKey;
 use App\Assignments\Support\NumberedPage;
 use App\Assignments\Support\OrderedRecordIds;
 use App\Assignments\Support\Page;
@@ -426,6 +430,7 @@ use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Declarations\VerificationContract;
 use App\Processes\Enums\AssessmentOutcome;
 use App\Processes\Enums\BindingType;
+use App\Processes\Enums\ClaimedOutcome;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\CommandEffect;
 use App\Processes\Enums\CommandType;
@@ -838,6 +843,7 @@ final class CoreApi
                 RecordLinker::class,
                 CurrentSession::class,
                 ConversationVisits::class,
+                AutoAssignmentActivity::class,
                 NativeTurnRecords::class,
                 ReadableModel::class,
                 ReadMeter::class,
@@ -1113,6 +1119,7 @@ final class CoreApi
                 StreamUse::class,
                 EmptyPolicy::class,
                 Outcome::class,
+                ClaimedOutcome::class,
                 SummaryRule::class,
                 EmptySelection::class,
                 ProgressType::class,
@@ -1282,6 +1289,9 @@ final class CoreApi
                 RuntimeStatus::class,
                 EnrolledHost::class,
                 OpenedRuntime::class,
+                AutoAssignmentChange::class,
+                AutoAssignmentInput::class,
+                AutoAssignmentKey::class,
                 DriverType::class,
                 DriverReceipt::class,
                 ClaimedRequests::class,
@@ -1381,7 +1391,6 @@ final class CoreApi
                 InterruptAgent::class,
                 StopAgent::class,
                 ClaimDriverRequests::class,
-                ClaimLaunchGrant::class,
                 ReportRuntimeActivity::class,
                 ReportRequestProgress::class,
                 ReportDriverTurn::class,
@@ -1424,6 +1433,7 @@ final class CoreApi
                 ResetSettingGroup::class,
             )
             ->exceptions(
+                AutoAssignmentSizeInvalid::class,
                 SkillSourceInvalid::class,
                 EngineActorRequired::class,
                 ActiveActorCounterRepeated::class,

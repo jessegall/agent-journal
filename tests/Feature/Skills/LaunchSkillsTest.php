@@ -23,8 +23,6 @@ use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Enums\ProfileType;
-use App\Profiles\Values\ProfileDefinition;
-use App\Profiles\Values\ProfileKey;
 use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Exceptions\SkillSelectionConflict;
@@ -35,6 +33,7 @@ use App\Skills\Support\SkillPublishing;
 use App\Skills\Support\SkillTargets;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
 use Tests\TestCase;
@@ -165,15 +164,14 @@ final class LaunchSkillsTest extends TestCase
     private function activateReviewer(array $requiredSkills): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'));
-        $this->app->make(CommandBus::class)->run(new ActivateProfiles([new ProfileDefinition(
-            ProfileKey::from('journal-reviewer'),
-            'Reviewer',
-            ProfileType::ReadOnlyHelper,
-            'Review.',
-            'opus',
-            null,
-            $requiredSkills,
-        )]));
+        $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
+            TestProposals::profile(
+                'journal-reviewer',
+                ProfileType::ReadOnlyHelper,
+                'Review.',
+                requiredSkills: $requiredSkills,
+            ),
+        )));
     }
 
     /**

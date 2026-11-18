@@ -46,13 +46,13 @@ final class RequestReviewPageTest extends TestCase
     {
         $this->listPage()->assertInertia(fn (AssertableInertia $page) => $page
             ->component('processes/RequestsWindow')
-            ->where('data.requests.0.id', $this->requestId)
-            ->where('data.requests.0.state', RequestState::AwaitingSampleApproval->value));
+            ->where('page.data.requests.0.id', $this->requestId)
+            ->where('page.data.requests.0.state', RequestState::AwaitingSampleApproval->value));
 
         config(['processes.project_key' => 'another-project']);
 
         $this->listPage()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('data.requests', []));
+            ->where('page.data.requests', []));
         $this->actingAs($this->owner)->get("/processes/requests/{$this->requestId}")->assertNotFound();
     }
 
@@ -61,9 +61,9 @@ final class RequestReviewPageTest extends TestCase
         $this->actingAs($this->owner)->get("/processes/requests/{$this->requestId}")->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('processes/RequestWindow')
-                ->where('data.proposals.0.revisions.0.operation', 'acme verify')
-                ->where('data.proposals.0.revisions.0.classes', ['read'])
-                ->where('data.lineDigest', $this->request()->source_digest));
+                ->where('page.data.proposals.0.revisions.0.operation', 'acme verify')
+                ->where('page.data.proposals.0.revisions.0.classes', ['read'])
+                ->where('page.data.lineDigest', $this->request()->source_digest));
 
         $this->actingAs($this->owner)->post("/processes/requests/{$this->requestId}/sample-approval", [
             'expected_revision' => 1,
@@ -88,7 +88,7 @@ final class RequestReviewPageTest extends TestCase
 
         $this->assertSame(RequestState::Rejected, $this->request()->state);
         $this->listPage()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('data.requests.0.state', RequestState::Rejected->value));
+            ->where('page.data.requests.0.state', RequestState::Rejected->value));
     }
 
     public function test_a_waiting_module_bundle_is_activated_from_the_list(): void
@@ -98,7 +98,7 @@ final class RequestReviewPageTest extends TestCase
         $bundle = $registry->bundles()[0];
 
         $this->listPage()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('data.bundles.0.digest', $bundle->digest()));
+            ->where('page.data.bundles.0.digest', $bundle->digest()));
 
         $this->actingAs($this->owner)->post('/processes/bundles/approval', [
             'module' => $bundle->module,

@@ -12,6 +12,7 @@ use App\Processes\Enums\ShellDialect;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\ShellNode;
 use Tests\Fixtures\Processes\NoAliases;
+use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -22,6 +23,8 @@ use Tests\TestCase;
  */
 final class ShellCorpusTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     private const string CORPUS = __DIR__.'/../../Fixtures/Processes/ShellCorpus';
 
     private const int SHOWN_DIFFERENCES = 40;

@@ -76,7 +76,7 @@ final class RoleReadyTest extends TestCase
         $decision = $ready->onShellCommand($this->request($command));
 
         $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertStringContainsString($command->isFullyRead() ? 'journal run' : 'without dynamic parts', $decision->refusalReason());
+        $this->assertStringContainsString($command->isFullyRead() ? 'journal command-type explain' : 'without dynamic parts', $decision->refusalReason());
     }
 
     #[DataProvider('roles')]

@@ -11,7 +11,7 @@ use App\Processes\Enums\ShellDialect;
 use App\Processes\Events\RunChanged;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
-use App\Processes\Readers\ActivityProjection;
+use App\Processes\Readers\Support\ActivityProjection;
 use App\Processes\Support\SpoolRecorder;
 use App\Processes\Values\CapturedChunk;
 use App\Processes\Values\PartActivity;

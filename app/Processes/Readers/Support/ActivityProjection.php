@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Processes\Readers;
+namespace App\Processes\Readers\Support;
 
 use App\Processes\Enums\LifecycleState;
 use App\Processes\Models\OutputChunk;

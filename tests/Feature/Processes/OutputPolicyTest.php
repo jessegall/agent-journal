@@ -10,6 +10,7 @@ use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\OutputVerdict;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -18,6 +19,8 @@ use Tests\TestCase;
  */
 final class OutputPolicyTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_a_piped_build_is_refused_with_its_correction(): void
     {
         $verdict = $this->verdict('php artisan wayfinder:generate | tail -20');

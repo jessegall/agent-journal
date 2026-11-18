@@ -14,6 +14,7 @@ use ReflectionClass;
 use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\TypesDeclared;
 use Tests\Support\InstallsCommandModules;
+use Tests\Support\RefreshHookDatabase;
 use Tests\Support\ScanCache\ScanCache;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -28,6 +29,7 @@ use Throwable;
 final class CommandFolderTest extends TestCase
 {
     use InstallsCommandModules;
+    use RefreshHookDatabase;
 
     protected function setUp(): void
     {

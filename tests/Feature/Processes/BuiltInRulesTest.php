@@ -16,6 +16,7 @@ use App\Processes\Support\Explanations;
 use App\Processes\Values\Classification;
 use App\Processes\Values\ExecutionContext;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -23,6 +24,8 @@ use Tests\TestCase;
  */
 final class BuiltInRulesTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     /**
      * @return iterable<string, array{string, list<CommandClass>}>
      */

@@ -13,6 +13,7 @@ use App\Processes\Support\ExecutionPlanner;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\ExecutionPlan;
 use App\Processes\Values\PlanWord;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -21,6 +22,8 @@ use Tests\TestCase;
  */
 final class ExecutionPlanTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_cd_is_a_builtin_whose_context_reaches_the_next_command(): void
     {
         $root = $this->plan('cd project && pwd')->root;

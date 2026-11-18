@@ -8,6 +8,7 @@ use App\Processes\Data\ExplanationData;
 use App\Processes\Enums\AnalysisLimit;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Support\Explanations;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -15,6 +16,8 @@ use Tests\TestCase;
  */
 final class ExplanationsTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_a_command_with_an_output_redirect_shows_the_part_and_the_redirect(): void
     {
         $explanation = $this->explain('cat a > b');

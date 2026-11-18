@@ -40,6 +40,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->group('journal.agent', [AuthenticateAgent::class, ReadRequestKey::class]);
         // A message body is kept exactly as typed, its leading and trailing spaces and newlines included.
         $middleware->trimStrings(except: ['body']);
+        // A signed agent call reaches its handler exactly as it was signed: an empty string stays an empty string.
+        $middleware->convertEmptyStringsToNull(except: [fn (Request $request) => $request->is('agent/*')]);
         // A user's write is receipted under the Idempotency-Key header it carries.
         $middleware->web(append: [
             ReadIdempotencyKey::class,

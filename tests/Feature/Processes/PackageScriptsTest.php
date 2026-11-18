@@ -12,6 +12,7 @@ use App\Processes\Enums\ShellDialect;
 use App\Processes\Support\PackageScripts;
 use App\Processes\Values\Classification;
 use App\Processes\Values\ExecutionContext;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -20,6 +21,8 @@ use Tests\TestCase;
  */
 final class PackageScriptsTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_composer_lint_is_the_pint_fix_as_tests_and_checks_with_edit(): void
     {
         $classification = $this->classify('composer lint', base_path());

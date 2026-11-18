@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Models;
 
 use App\Actors\Support\ActorIdentity;
+use App\Links\Support\Linkable;
 use App\Processes\Values\PublishedResult;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -33,6 +34,7 @@ final class PhaseCheck extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     public const string CREATED_AT = 'recorded_at';
 

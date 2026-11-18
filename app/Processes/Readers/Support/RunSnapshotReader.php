@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Processes\Readers;
+namespace App\Processes\Readers\Support;
 
 use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Data\PartSnapshotData;
@@ -14,6 +14,7 @@ use App\Processes\Models\ProcessRun;
 use App\Processes\Models\ReaderPosition;
 use App\Processes\Support\ProjectKey;
 use App\Processes\Values\OutputProblem;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * The snapshot of one run of the current project that the caller may see (rule 4): every part with its lifecycle,
@@ -29,7 +30,11 @@ final readonly class RunSnapshotReader
 
     public function snapshot(string $runId): RunSnapshotData
     {
-        $run = ProcessRun::query()->where('project_key', $this->projects->current())->whereKey($runId)->firstOrFail();
+        $run = ProcessRun::query()
+            ->forActor()
+            ->where('project_key', $this->projects->current())
+            ->whereKey($runId)
+            ->first() ?? throw new NotFoundHttpException();
         $parts = $run->parts()->orderBy('syntax_node')->orderBy('attempt')->readLimit(500)->get();
 
         return new RunSnapshotData(

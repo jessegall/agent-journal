@@ -14,6 +14,7 @@ use App\Assignments\Support\AutoAssignmentKey;
 use App\Assignments\Support\AutoAssignmentPage;
 use App\Assignments\Support\Page;
 use App\Assignments\Support\PoolReference;
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Reads\Support\ReadBuilder;
@@ -45,6 +46,7 @@ use PhpOption\Option;
 final class AutoAssignment extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids;
+    use Linkable;
 
     /**
      * @return array<string, string>

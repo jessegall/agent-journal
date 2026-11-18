@@ -24,6 +24,7 @@ use App\Processes\Values\CommandClassSet;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\ProvenBranch;
 use App\Ui\Contracts\PageReader;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * One command request of the current project with everything an approval binds; a request of another project is not
@@ -38,7 +39,7 @@ final readonly class RequestWindowReader implements PageReader
         $request = CommandRequest::query()
             ->ofProject($this->projects->current())
             ->whereKey($this->page->requestId())
-            ->firstOrFail();
+            ->first() ?? throw new NotFoundHttpException();
         $proposals = RuleProposal::query()->where('command_request_id', $request->id)->readLimit(20)->get();
         $latest = $proposals->first()?->revisions()->orderByDesc('revision')->first()?->payload;
         $active = $this->activeRule($request, $latest);

@@ -22,8 +22,6 @@ use App\Hooks\Inputs\ToolResult;
 use App\Hooks\Support\ContextReminders;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Enums\ProfileType;
-use App\Profiles\Values\ProfileDefinition;
-use App\Profiles\Values\ProfileKey;
 use App\Skills\Listeners\AdmitLaunchSkills;
 use App\Skills\Listeners\RecordProvenSkillReads;
 use App\Skills\Listeners\RefreshSessionSkills;
@@ -33,6 +31,7 @@ use App\Skills\Support\SkillTargets;
 use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Agents\TestSelections;
+use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Fixtures\Skills\RecordingStack;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
@@ -113,15 +112,14 @@ final class RequiredSkillReadsTest extends TestCase
     private function launchedReviewer(): AgentSession
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
-        $this->app->make(CommandBus::class)->run(new ActivateProfiles([new ProfileDefinition(
-            ProfileKey::from('journal-reviewer'),
-            'Reviewer',
-            ProfileType::ReadOnlyHelper,
-            'Review.',
-            'opus',
-            null,
-            ['user-guide'],
-        )]));
+        $this->app->make(CommandBus::class)->run(new ActivateProfiles(TestProposals::of(
+            TestProposals::profile(
+                'journal-reviewer',
+                ProfileType::ReadOnlyHelper,
+                'Review.',
+                requiredSkills: ['user-guide'],
+            ),
+        )));
         $agent = Agent::named('Reviewer', AgentRole::ReadOnlyHelper);
         $session = new AgentSession([
             ...TestSelections::sessionColumns(),

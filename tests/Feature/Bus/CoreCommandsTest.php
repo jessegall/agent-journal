@@ -45,10 +45,36 @@ use App\CoreCommands;
 use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Numbers\Commands\InstallNumbers;
+use App\Processes\Commands\ApproveRuleBundle;
+use App\Processes\Commands\ApproveRuleProposal;
+use App\Processes\Commands\ApproveSample;
+use App\Processes\Commands\AssessPartOutput;
+use App\Processes\Commands\CleanProcessOutput;
+use App\Processes\Commands\ImportRuleProposals;
 use App\Processes\Commands\IssueEvidencePermit;
+use App\Processes\Commands\MarkRunsStale;
 use App\Processes\Commands\OpenCommandRequest;
+use App\Processes\Commands\ProposeCommandRule;
+use App\Processes\Commands\ProposeReader;
+use App\Processes\Commands\ProveReader;
+use App\Processes\Commands\ReadPartLive;
+use App\Processes\Commands\ReconcileLostRuns;
+use App\Processes\Commands\RecordEvidenceReads;
+use App\Processes\Commands\RejectRuleProposal;
+use App\Processes\Commands\ReplayAssessment;
+use App\Processes\Commands\RestoreCommandRule;
+use App\Processes\Commands\RetireCommandRule;
+use App\Processes\Commands\RetryProcessRun;
+use App\Processes\Commands\ReviseRuleProposal;
 use App\Processes\Commands\RevokeCommandPermissions;
+use App\Processes\Commands\SaveCommandRule;
+use App\Processes\Commands\SettleSample;
+use App\Processes\Commands\StartSample;
+use App\Processes\Commands\StopProcessRun;
+use App\Processes\Commands\StopSurvivors;
+use App\Processes\Commands\VerifyRestoredOutput;
 use App\Processes\Commands\WithdrawCommandRequest;
+use App\Processes\Commands\WithdrawRuleProposal;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\LaunchProfileMain;
 use App\Profiles\Commands\RevokeProfiles;
@@ -181,6 +207,32 @@ final class CoreCommandsTest extends CommandBusTestCase
             ActivateProfiles::class,
             RevokeProfiles::class,
             LaunchProfileMain::class,
+            ProposeCommandRule::class,
+            ReviseRuleProposal::class,
+            WithdrawRuleProposal::class,
+            ImportRuleProposals::class,
+            ProposeReader::class,
+            RecordEvidenceReads::class,
+            ApproveSample::class,
+            StartSample::class,
+            SettleSample::class,
+            ProveReader::class,
+            ApproveRuleProposal::class,
+            SaveCommandRule::class,
+            RejectRuleProposal::class,
+            RetireCommandRule::class,
+            RestoreCommandRule::class,
+            ApproveRuleBundle::class,
+            MarkRunsStale::class,
+            AssessPartOutput::class,
+            ReadPartLive::class,
+            ReplayAssessment::class,
+            StopProcessRun::class,
+            ReconcileLostRuns::class,
+            StopSurvivors::class,
+            RetryProcessRun::class,
+            CleanProcessOutput::class,
+            VerifyRestoredOutput::class,
             CreateSkill::class,
             ReviseSkill::class,
             RestoreSkill::class,
@@ -218,6 +270,33 @@ final class CoreCommandsTest extends CommandBusTestCase
             PruneSkillPublications::class,
             RecordSkillRead::class,
             FenceProfileRevision::class,
+            MarkRunsStale::class,
+            ReconcileLostRuns::class,
+            StopSurvivors::class,
+            ReadPartLive::class,
+            ProposeCommandRule::class,
+            ReviseRuleProposal::class,
+            WithdrawRuleProposal::class,
+            ImportRuleProposals::class,
+            ProposeReader::class,
+            RecordEvidenceReads::class,
+            ApproveSample::class,
+            StartSample::class,
+            SettleSample::class,
+            ProveReader::class,
+            ApproveRuleProposal::class,
+            SaveCommandRule::class,
+            RejectRuleProposal::class,
+            RetireCommandRule::class,
+            RestoreCommandRule::class,
+            ApproveRuleBundle::class,
+            AssessPartOutput::class,
+            ReplayAssessment::class,
+            StopProcessRun::class,
+            RetryProcessRun::class,
+            CleanProcessOutput::class,
+            VerifyRestoredOutput::class,
+            ClaimLaunchGrant::class,
         ], CoreCommands::privateCommands());
     }
 

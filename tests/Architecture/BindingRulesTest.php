@@ -51,6 +51,7 @@ final class BindingRulesTest extends TestCase
         'domain/Access/Http/Middleware/AuthenticateUser.php',
         'app/Engine/Support/EnginePass.php',
         'app/Skills/Support/SkillAuthoring.php',
+        'app/Processes/Console/ProcessReconcileCommand.php',
         'app/Skills/Support/SkillPublishing.php',
         'app/Skills/Listeners/RefreshOnSkillsChanged.php',
     ];

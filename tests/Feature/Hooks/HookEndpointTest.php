@@ -71,7 +71,7 @@ final class HookEndpointTest extends TestCase
         $admitted = $this->hook('claude-code', $this->bashBody('git status'), 'call-2')->assertOk()->json('stdout');
 
         $this->assertSame('deny', $refused['hookSpecificOutput']['permissionDecision']);
-        $this->assertStringContainsString('journal run', $refused['hookSpecificOutput']['permissionDecisionReason']);
+        $this->assertStringContainsString('journal command-type explain', $refused['hookSpecificOutput']['permissionDecisionReason']);
         $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $admitted);
     }
 

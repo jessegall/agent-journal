@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Skills\Readers;
+namespace App\Skills\Readers\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Agents\Models\AgentSession;
@@ -17,7 +17,6 @@ use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Models\SkillReceipt;
 use App\Skills\Programs\ProgramSkillAdapters;
-use App\Skills\Readers\Support\SkillContextReader;
 use App\Skills\Support\SkillSelection;
 use App\Skills\Values\SessionSkillStatus;
 use App\Skills\Values\SkillEntry;

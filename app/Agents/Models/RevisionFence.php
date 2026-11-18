@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Models;
 
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -25,6 +26,7 @@ use Illuminate\Database\Eloquent\Model;
 final class RevisionFence extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids;
+    use Linkable;
 
     /**
      * @return array<string, string>

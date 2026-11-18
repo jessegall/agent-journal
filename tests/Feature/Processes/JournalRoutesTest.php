@@ -11,6 +11,7 @@ use App\Processes\Enums\ShellDialect;
 use App\Processes\Enums\UnresolvedType;
 use App\Processes\Values\Classification;
 use App\Processes\Values\ExecutionContext;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -19,6 +20,8 @@ use Tests\TestCase;
  */
 final class JournalRoutesTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_a_read_route_reads_and_names_its_route(): void
     {
         $classification = $this->classify('journal task assigned');

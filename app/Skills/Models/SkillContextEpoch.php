@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Models;
 
+use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -25,6 +26,7 @@ use Illuminate\Support\Carbon;
 final class SkillContextEpoch extends Model implements ReadableModel
 {
     use BoundedReads, HasUlids;
+    use Linkable;
 
     /**
      * @return array<string, string>

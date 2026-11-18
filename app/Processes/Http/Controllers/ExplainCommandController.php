@@ -12,6 +12,7 @@ use App\Processes\Data\HeldPartData;
 use App\Processes\Enums\RequestHoldReason;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Support\Explanations;
+use Illuminate\Http\JsonResponse;
 
 /**
  * Explains how a line is read without running it; each part the journal will not run yet gets the command request
@@ -23,18 +24,23 @@ final readonly class ExplainCommandController
 
     public function __construct(private Explanations $explanations) {}
 
-    public function __invoke(ExplainCommandRequest $request, CommandBus $commands): ExplanationData
+    /**
+     * Answers 200 even when a held part opens its request: an explanation reads the line and starts nothing.
+     */
+    public function __invoke(ExplainCommandRequest $request, CommandBus $commands): JsonResponse
     {
         $explanation = $this->explanations->explain($request->line(), $request->dialect());
         if ($explanation->held === []) {
-            return $explanation;
+            return new JsonResponse($explanation->toArray());
         }
         $held = array_map(
             fn (HeldPartData $part): HeldPartData => $this->withRequest($part, $request, $commands),
             $explanation->held,
         );
 
-        return ExplanationData::from([...$explanation->toArray(), 'held' => $held, 'notice' => self::NOTICE]);
+        $answer = ExplanationData::from([...$explanation->toArray(), 'held' => $held, 'notice' => self::NOTICE]);
+
+        return new JsonResponse($answer->toArray());
     }
 
     private function withRequest(HeldPartData $part, ExplainCommandRequest $request, CommandBus $commands): HeldPartData

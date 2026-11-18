@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Processes\Events\RunChanged;
-use App\Processes\Readers\RunSnapshotReader;
+use App\Processes\Readers\Support\RunSnapshotReader;
 use App\Processes\Support\RunUpdates;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Event;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
@@ -35,6 +35,7 @@ final class RunUpdatesTest extends TestCase
     public function test_progress_is_throttled_and_an_end_goes_out_at_once_with_the_next_number(): void
     {
         $part = $this->normalRun(0, self::PASSED_OUTPUT);
+        $this->travel(2)->seconds();
         Event::fake([RunChanged::class]);
         $updates = $this->app->make(RunUpdates::class);
 
@@ -66,7 +67,7 @@ final class RunUpdatesTest extends TestCase
         config(['processes.project_key' => 'another-project']);
         $this->assertThrows(
             fn () => $this->app->make(RunSnapshotReader::class)->snapshot($part->process_run_id),
-            ModelNotFoundException::class,
+            NotFoundHttpException::class,
         );
     }
 }

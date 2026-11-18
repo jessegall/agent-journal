@@ -11,6 +11,7 @@ use App\Processes\Data\RunWindowData;
 use App\Processes\Models\OutputAssessment;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
+use App\Processes\Readers\Support\RunSnapshotReader;
 use App\Processes\Support\StoredOutput;
 use App\Ui\Contracts\PageReader;
 
@@ -31,7 +32,7 @@ final readonly class RunWindowReader implements PageReader
     public function read(): RunWindowData
     {
         $snapshot = $this->snapshots->snapshot($this->page->runId());
-        $run = ProcessRun::query()->whereKey($snapshot->runId)->firstOrFail();
+        $run = ProcessRun::query()->forActor()->whereKey($snapshot->runId)->firstOrFail();
         $parts = $run->parts()->readLimit(500)->get();
 
         return new RunWindowData(

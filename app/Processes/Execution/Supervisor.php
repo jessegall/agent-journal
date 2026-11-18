@@ -236,6 +236,9 @@ final readonly class Supervisor
      */
     private function builtin(PartKey $part, array $argv, ExecutionContext $context, RunState $state): StepOutcome
     {
+        if ($this->staleSkip($part, $state) !== '') {
+            return new StepOutcome(127, $context);
+        }
         $state->events->startedInside($part, gethostname() ?: 'unknown');
         $result = $this->builtins->run($argv[0], array_slice($argv, 1), $context);
         $this->capture($part, OutputStream::Stdout, $result->stdout, $state);
@@ -260,10 +263,8 @@ final readonly class Supervisor
         RunState $state,
         array $input,
     ): SpawnedProcess|string {
-        $stale = $state->events->staleReason($part);
+        $stale = $this->staleSkip($part, $state);
         if ($stale !== '') {
-            $state->events->skipped($part, $stale);
-
             return $stale;
         }
         $descriptors = [0 => $input, 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
@@ -288,6 +289,20 @@ final readonly class Supervisor
      * Ends an external part: stopped when a stop was requested, otherwise drained and ended with its own status. It
      * returns the status the next branch decides on.
      */
+    /**
+     * A part whose admission went stale while the run was going (a rule it needs was retired) is skipped, never run;
+     * the answer is why, or nothing while the admission holds.
+     */
+    private function staleSkip(PartKey $part, RunState $state): string
+    {
+        $stale = $state->events->staleReason($part);
+        if ($stale !== '') {
+            $state->events->skipped($part, $stale);
+        }
+
+        return $stale;
+    }
+
     private function finishExternal(PartKey $part, SpawnedProcess $process, RunState $state, bool $drained = true): int
     {
         if ($state->stop->isRequested() && ! $process->hasEnded()) {

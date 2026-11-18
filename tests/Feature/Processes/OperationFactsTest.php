@@ -12,6 +12,7 @@ use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Values\ExecutionContext;
+use Tests\Support\RefreshHookDatabase;
 use Tests\TestCase;
 
 /**
@@ -20,6 +21,8 @@ use Tests\TestCase;
  */
 final class OperationFactsTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     public function test_deleting_a_branch_needs_delete(): void
     {
         [$operation] = $this->operations('git branch -D main');

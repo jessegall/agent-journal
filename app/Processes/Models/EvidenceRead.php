@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Models;
 
 use App\Actors\Support\ActorIdentity;
+use App\Links\Support\Linkable;
 use App\Processes\Enums\EvidenceSource;
 use App\Processes\Values\EvidenceRange;
 use App\Reads\Contracts\ReadableModel;
@@ -45,6 +46,7 @@ final class EvidenceRead extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     public const string CREATED_AT = 'read_at';
 

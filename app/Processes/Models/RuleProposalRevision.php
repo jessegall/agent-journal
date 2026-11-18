@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Models;
 
+use App\Links\Support\Linkable;
 use App\Processes\Casts\StoredValueCast;
 use App\Processes\Casts\StoredValuesCast;
 use App\Processes\Exceptions\RevisionImmutable;
@@ -39,6 +40,7 @@ final class RuleProposalRevision extends Model implements ReadableModel
 {
     use BoundedReads;
     use HasUlids;
+    use Linkable;
 
     public const null UPDATED_AT = null;
 
