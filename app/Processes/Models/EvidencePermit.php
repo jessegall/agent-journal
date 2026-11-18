@@ -7,6 +7,8 @@ namespace App\Processes\Models;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Processes\Exceptions\EvidencePermitRefused;
+use App\Processes\Values\Classification;
+use App\Processes\Values\ExecutionContext;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -52,6 +54,34 @@ final class EvidencePermit extends Model implements ReadableModel
     protected function casts(): array
     {
         return ['approved_classes' => 'array', 'byte_cap' => 'integer', 'seconds_cap' => 'integer', 'expires_at' => 'immutable_datetime', 'consumed_at' => 'immutable_datetime'];
+    }
+
+    /**
+     * A permit for one actor to run one classified line once in one folder, within its caps and until it expires.
+     */
+    public static function issue(
+        string $workingFolder,
+        string $line,
+        Classification $classification,
+        string $classificationDigest,
+        ActorIdentity $runner,
+        int $byteCap,
+        int $secondsCap,
+        int $minutesValid,
+    ): self {
+        return self::query()->create([
+            'project_key' => ExecutionContext::inFolder($workingFolder)->projectKey(),
+            'working_folder' => $workingFolder,
+            'source_line' => $line,
+            'source_digest' => hash('sha256', $line),
+            'classification_digest' => $classificationDigest,
+            'approved_classes' => array_map(fn ($class) => $class->value, $classification->requiredClasses()->classes),
+            'runner_type' => $runner->type->value,
+            'runner_id' => $runner->id,
+            'byte_cap' => $byteCap,
+            'seconds_cap' => $secondsCap,
+            'expires_at' => CarbonImmutable::now()->addMinutes($minutesValid),
+        ]);
     }
 
     /**

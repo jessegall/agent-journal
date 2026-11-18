@@ -41,6 +41,20 @@ final class Host extends Model implements ReadableModel
     }
 
     /**
+     * A host enrolled under its installation name, holding only the hash of its secret and its launch roots.
+     *
+     * @param  list<string>  $launchRoots
+     */
+    public static function enroll(string $installationName, string $secret, array $launchRoots): self
+    {
+        return self::query()->create([
+            'installation_name' => $installationName,
+            'credential_hash' => self::hashOf($secret),
+            'launch_roots' => $launchRoots,
+        ]);
+    }
+
+    /**
      * The stored form of a host secret: its hash, so the secret itself is never kept.
      */
     public static function hashOf(string $secret): string

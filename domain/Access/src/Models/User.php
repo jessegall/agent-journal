@@ -66,6 +66,14 @@ class User extends Authenticatable implements Assignee, MustVerifyEmail, Passkey
         ];
     }
 
+    /**
+     * A new user with a name, an email and a password the hashed cast hashes.
+     */
+    public static function register(string $name, string $email, string $password): self
+    {
+        return self::query()->create(['name' => $name, 'email' => $email, 'password' => $password]);
+    }
+
     public function actorType(): ActorType
     {
         return ActorType::User;
