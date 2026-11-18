@@ -14,4 +14,5 @@ enum Icon: string
     case Plan = 'plan';
     case Rules = 'rules';
     case Docs = 'docs';
+    case Activity = 'activity';
 }

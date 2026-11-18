@@ -6,6 +6,7 @@ namespace Tests\Feature\Web;
 
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Process\Process;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -34,6 +35,7 @@ final class DomainImportsTest extends TestCase
         parent::tearDown();
     }
 
+    #[TimeLimit(3, 'It starts the node import check, whose start-up alone can pass a second under load.')]
     public function test_own_kit_generated_and_package_imports_pass(): void
     {
         File::put("{$this->root}/plans/js/Index.vue", <<<'VUE'

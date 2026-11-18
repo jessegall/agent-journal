@@ -11,9 +11,11 @@ use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
 use App\Web\Readers\HomeWindowReader;
+use App\Web\Readers\RuntimeStatusReader;
 
 /**
- * The pages Core's Web declares itself, served beside the domains' pages: Home, at /.
+ * The pages Core's Web declares itself, served beside the domains' pages: Home, at /, and the read-only runtime
+ * status, at /web/runtimes.
  */
 final class WebPages implements ProvidesPages
 {
@@ -23,6 +25,8 @@ final class WebPages implements ProvidesPages
             Page::make('home', 'Home', Icon::Home, HomeWindowReader::class, 'Home.vue')
                 ->at('')
                 ->slots(Slot::make('bar', SlotContextType::Session)),
+            Page::make('runtimes', 'Runtimes', Icon::Activity, RuntimeStatusReader::class, 'Runtimes.vue')
+                ->at('runtimes'),
         ];
     }
 

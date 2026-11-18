@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Agents\Enums;
 
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
+
 /**
  * What an agent's runtime is doing, as its host last reported it (doc 40, section 21).
  */
+#[TypeScript]
 enum RuntimeActivity: string
 {
     case Starting = 'starting';

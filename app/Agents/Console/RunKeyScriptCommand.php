@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Agents\Console;
 
-use App\Actors\Support\ConsoleOwner;
 use App\Agents\Commands\RunKeyScript;
 use App\Agents\Models\AgentSession;
 use App\Agents\Values\ScriptParameter;
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Support\ConsoleOwner;
 use Illuminate\Console\Command;
 
 /**

@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Agents\Enums;
 
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
+
 /**
  * Why a runtime or a request waits instead of going on (doc 40, section 21); None when nothing holds it.
  */
+#[TypeScript]
 enum HoldReason: string
 {
     case None = 'none';
