@@ -1,5 +1,8 @@
 from suites.coding.modules.workers.types.merger import Merger
+from datetime import timedelta
+
 from engine.actor.actor import Actor
+from engine.time.clock import Clock
 from engine.container.container import Container
 from engine.driver.program_lockdown import ProgramLockdown
 from core.modules.agents.support.agent_rows import AgentRows
@@ -26,21 +29,26 @@ from suites.coding.modules.workers.support.worker_settings import MERGER_ENABLED
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 MERGER_RETRY_REASON = "the tick retries the merger in every environment with an unread line or an open visit"
+# the merger starts on a worker's merge ask or question; the tick only retries it this long after it last ended
+RETRY_GAP = timedelta(minutes=15)
 
 
 class MergerRetry:
-    """Wakes an idle merger when the next worker can be merged or a line waits unread for it. A merger whose
+    """Wakes an idle merger, at most once every fifteen minutes after it last ended, when the next worker can be
+    merged or a line waits unread for it; a worker's merge ask or question starts it at once. A merger whose
     program is at a usage limit is left alone until the limit ends. A worker whose branch has no commit ahead
     of its base is closed as merged without the merger."""
 
     def __call__(self, container: Container) -> None:
+        self.return_unhandled_lines(container)
+        if self.ended_lately(container):
+            return
         worktrees = container.get(WorktreeQuery).all_worktrees()
         environments = tuple(dict.fromkeys(row.environment_id for row in worktrees if row.is_merge_ready))
         for environment_id in environments:
             worktree = next(row for row in worktrees if row.environment_id == environment_id and row.is_merge_ready)
             with container.get(Scopes).row_scope(worktree):
                 self.retry(container, worktree)
-        self.return_unhandled_lines(container)
         unread = container.get(Queries).query(MergerLine).matching(IsNull("read_at")).matching(IsNull("read_output_id")).matching(IsNull("outcome")).every_row(MERGER_RETRY_REASON)
         for line in dict((row.environment_id, row) for row in reversed(tuple(unread))).values():
             with container.get(Scopes).row_scope(line):
@@ -57,6 +65,11 @@ class MergerRetry:
         if not self.is_merger_idle(container):
             return
         container.get(Bus).run(StartMerger(MergerLineAvailableMessage.declared().agent_message(line=line.id), line.creation_timestamp()), Actor.core(), environment_id=line.environment_id)
+
+    @staticmethod
+    def ended_lately(container: Container) -> bool:
+        merger = container.get(Queries).query(Agent).filter(role=Merger.key).matching(IsNull("retired_at")).newest().first()
+        return merger is not None and merger.ended_at is not None and container.get(Clock).timestamp().value - merger.ended_at.value < RETRY_GAP
 
     @staticmethod
     def is_merger_idle(container: Container) -> bool:
