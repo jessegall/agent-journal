@@ -13,11 +13,9 @@ use App\Processes\Models\EvidencePermit;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Models\ReaderRevision;
-use App\Processes\Readers\DeclarativeReader;
 use App\Processes\Values\ExitBranch;
 use App\Processes\Values\OutputProblem;
 use App\Processes\Values\ProvenBranch;
-use App\Processes\Values\ReaderCheckpoint;
 
 /**
  * The journal's own proof of a draft reader (doc 21 revision 6, section 71 step 5): every run must be a complete sample
@@ -27,7 +25,7 @@ use App\Processes\Values\ReaderCheckpoint;
  */
 final readonly class ReaderProofCheck
 {
-    public function __construct(private StoredOutput $output, private ManifestCheck $manifests) {}
+    public function __construct(private ReaderReplay $replays, private ManifestCheck $manifests) {}
 
     /**
      * @param  list<string>  $runIds
@@ -103,12 +101,7 @@ final readonly class ReaderProofCheck
      */
     private function replayFailures(ReaderRevision $reader, VerificationContract $contract, PartRun $part): array
     {
-        $replay = new DeclarativeReader($reader->readerDefinition(), $contract->output, $reader->id);
-        $checkpoint = new ReaderCheckpoint();
-        foreach ($part->recordedStreams() as $stream) {
-            $checkpoint = $replay->read($checkpoint, ...$this->output->frames($part, $stream, 0));
-        }
-        $assessment = $replay->finish($checkpoint, $part->end());
+        $assessment = $this->replays->replay($reader, $contract, $part)->assessment;
         $failures = array_map(
             fn (OutputProblem $problem): string => "{$problem->code->value} at {$problem->stream?->value} bytes"
                 ." {$problem->start}-{$problem->end}: {$problem->explanation}",

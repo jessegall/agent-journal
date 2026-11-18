@@ -395,8 +395,10 @@ use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\FactOrigin;
 use App\Processes\Contracts\ProgramClassifier;
 use App\Processes\Contracts\ProvidesCommandRules;
+use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Declarations\VerificationContract;
+use App\Processes\Enums\AssessmentOutcome;
 use App\Processes\Enums\BindingType;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Enums\CommandEffect;
@@ -427,6 +429,7 @@ use App\Processes\Exceptions\CommandRuleConflict;
 use App\Processes\Exceptions\CommandRuleInvalid;
 use App\Processes\Exceptions\ShellNodeMissing;
 use App\Processes\Exceptions\VerificationContractInvalid;
+use App\Processes\Models\ResultReceipt;
 use App\Processes\Values\ArgumentGrammar;
 use App\Processes\Values\ClassFact;
 use App\Processes\Values\Classification;
@@ -1007,6 +1010,9 @@ final class CoreApi
                 JournalRouteType::class,
                 CommandRule::class,
                 RuleScope::class,
+                ResultReceipts::class,
+                ResultReceipt::class,
+                AssessmentOutcome::class,
                 ScopeType::class,
                 ProgramSpellings::class,
                 ArgumentGrammar::class,

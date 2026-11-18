@@ -41,6 +41,7 @@ use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Numbers\Commands\InstallNumbers;
 use App\Processes\Commands\ApproveRuleBundle;
+use App\Processes\Commands\AssessPartOutput;
 use App\Processes\Commands\ApproveRuleProposal;
 use App\Processes\Commands\ApproveSample;
 use App\Processes\Commands\ImportRuleProposals;
@@ -138,6 +139,7 @@ final class CoreCommands
             RestoreCommandRule::class,
             ApproveRuleBundle::class,
             MarkRunsStale::class,
+            AssessPartOutput::class,
             CreateSkill::class, ReviseSkill::class, RestoreSkill::class, RetireSkill::class, CopySkill::class,
             RefreshSkills::class, PublishSkills::class, PrepareSkillPublication::class, ActivateSkillPublication::class, FailSkillPublication::class,
         ];

@@ -16,6 +16,8 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -238,6 +240,14 @@ final class PartRun extends Model implements ReadableModel
     }
 
     /**
+     * @return HasMany<OutputAssessment, $this>
+     */
+    public function assessments(): HasMany
+    {
+        return $this->hasMany(OutputAssessment::class);
+    }
+
+    /**
      * @return HasMany<OutputChunk, $this>
      */
     public function chunks(): HasMany
@@ -258,5 +268,18 @@ final class PartRun extends Model implements ReadableModel
             throw PartTransitionRefused::between($this->lifecycle, $next);
         }
         $this->lifecycle = $next;
+    }
+
+    /**
+     * The ended parts of a run that no reader assessed yet.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function endedUnassessedOf(Builder $query, ProcessRun $run): void
+    {
+        $query->where('process_run_id', $run->id)
+            ->where('lifecycle', LifecycleState::Ended->value)
+            ->whereDoesntHave('assessments');
     }
 }

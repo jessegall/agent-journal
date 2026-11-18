@@ -27,6 +27,11 @@ final class RevisionImmutable extends LogicException
         return new self("Reader proof {$id} is never updated; prove the new revision instead.");
     }
 
+    public static function assessment(string $id): self
+    {
+        return new self("Output assessment {$id} is never updated; a replay appends a new assessment.");
+    }
+
     public static function rule(string $id): self
     {
         return new self("Approved rule revision {$id} is never updated; approve a new revision instead.");

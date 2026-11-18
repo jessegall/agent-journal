@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Values;
 
+use App\Processes\Contracts\StoredValue;
 use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\ProblemCode;
 
@@ -11,7 +12,7 @@ use App\Processes\Enums\ProblemCode;
  * Why a reader could not vouch for part of a check's output: the stable code, the stream and byte range, the reader
  * revision, a safe explanation and the next action.
  */
-final readonly class OutputProblem
+final readonly class OutputProblem implements StoredValue
 {
     public function __construct(
         public ProblemCode $code,
@@ -51,7 +52,7 @@ final readonly class OutputProblem
     }
 
     /**
-     * @param  array{code: string, stream: string|null, start: int, end: int, reader: string, explanation: string}  $fields
+     * @param  array<string, mixed>  $fields  the shape toArray writes
      */
     public static function fromArray(array $fields): self
     {

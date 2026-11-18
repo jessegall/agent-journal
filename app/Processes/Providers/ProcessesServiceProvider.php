@@ -30,12 +30,15 @@ use App\Processes\Contracts\CommandClassifier;
 use App\Processes\Contracts\CommandRuleReader;
 use App\Processes\Contracts\OutputRecorder;
 use App\Processes\Contracts\ProcessRunner;
+use App\Processes\Contracts\ResultPublisher;
+use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Models\ClassificationRule;
 use App\Processes\Models\CommandAlias;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\EvidencePermit;
+use App\Processes\Models\OutputAssessment;
 use App\Processes\Models\OutputChunk;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\PermissionRevocation;
@@ -44,6 +47,7 @@ use App\Processes\Models\ProcessRun;
 use App\Processes\Models\ReaderPosition;
 use App\Processes\Models\ReaderProof;
 use App\Processes\Models\ReaderRevision;
+use App\Processes\Models\ResultReceipt;
 use App\Processes\Models\RuleProposal;
 use App\Processes\Models\RuleRevision;
 use App\Processes\Rules\JournalClassifier;
@@ -52,7 +56,9 @@ use App\Processes\Support\CommandAliases;
 use App\Processes\Support\CommandRuleRegistry;
 use App\Processes\Support\JournalRoutes;
 use App\Processes\Support\ProgramClassifiers;
+use App\Processes\Support\ProjectReceipts;
 use App\Processes\Support\ProjectRules;
+use App\Processes\Support\ReceiptPublisher;
 use App\Processes\Support\ShellParser;
 use App\Processes\Support\SpoolRecorder;
 use App\Processes\Support\SupervisedRunner;
@@ -74,6 +80,8 @@ final class ProcessesServiceProvider extends ServiceProvider
         $this->app->scoped(CommandClassifier::class, TreeClassifier::class);
         $this->app->scoped(CommandRuleReader::class, ProjectRules::class);
         $this->app->scoped(ActiveRules::class);
+        $this->app->scoped(ResultPublisher::class, ReceiptPublisher::class);
+        $this->app->scoped(ResultReceipts::class, ProjectReceipts::class);
         $this->app->when(TreeClassifier::class)
             ->needs(CommandRuleRegistry::class)
             ->give(fn (Application $app): CommandRuleRegistry => $app->make(ActiveRules::class)->registry());
@@ -106,6 +114,8 @@ final class ProcessesServiceProvider extends ServiceProvider
             'processes.rule-revision' => RuleRevision::class,
             'processes.classification-rule' => ClassificationRule::class,
             'processes.reader-proof' => ReaderProof::class,
+            'processes.output-assessment' => OutputAssessment::class,
+            'processes.result-receipt' => ResultReceipt::class,
         ]);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/processes.php');
         $this->commands([

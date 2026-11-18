@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Processes;
 
+use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Processes\RunEventsRequest;
+use App\Processes\Commands\AssessPartOutput;
 use App\Processes\Contracts\OutputRecorder;
 use App\Processes\Enums\RunEventType;
 use App\Processes\Execution\RecordedRunEvents;
+use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
 use Illuminate\Http\JsonResponse;
 
@@ -17,8 +20,12 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class RecordRunEventsController
 {
-    public function __invoke(RunEventsRequest $request, ProcessRun $processRun, OutputRecorder $recorder): JsonResponse
-    {
+    public function __invoke(
+        RunEventsRequest $request,
+        ProcessRun $processRun,
+        OutputRecorder $recorder,
+        CommandBus $commands,
+    ): JsonResponse {
         abort_unless($processRun->acceptsEventKey($request->eventKey()), 403, 'This event key is not the run\'s.');
         $events = new RecordedRunEvents($processRun, $recorder);
         foreach ($request->events() as $event) {
@@ -28,6 +35,10 @@ final readonly class RecordRunEventsController
                 continue;
             }
             $event->applyTo($events->at($event->sequence));
+        }
+
+        foreach (PartRun::query()->endedUnassessedOf($processRun)->readLimit(100)->get() as $ended) {
+            $commands->run(new AssessPartOutput($ended->id));
         }
 
         return new JsonResponse(['accepted' => count($request->events())]);

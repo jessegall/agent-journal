@@ -7,12 +7,16 @@ namespace App\Http\Controllers\Processes;
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Processes\ReadOutputRequest;
 use App\Processes\Commands\RecordEvidenceReads;
+use App\Processes\Contracts\ResultReceipts;
 use App\Processes\Enums\EvidenceSource;
 use App\Processes\Enums\OutputStream;
+use App\Processes\Enums\RunMode;
+use App\Processes\Models\OutputAssessment;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Support\StoredOutput;
 use App\Processes\Values\EvidenceRange;
+use App\Processes\Values\OutputProblem;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -21,7 +25,11 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class ReadOutputController
 {
-    public function __construct(private StoredOutput $output, private CommandBus $commands) {}
+    public function __construct(
+        private StoredOutput $output,
+        private CommandBus $commands,
+        private ResultReceipts $receipts,
+    ) {}
 
     public function __invoke(ReadOutputRequest $request, ProcessRun $processRun): JsonResponse
     {
@@ -56,6 +64,27 @@ final readonly class ReadOutputController
         return ['bytes' => base64_encode($bytes), 'length' => strlen($bytes)];
     }
 
+    /**
+     * The part's result as the one receipt gate answers it, or why there is none.
+     */
+    private function resultOf(ProcessRun $run, PartRun $part): string
+    {
+        if ($run->mode === RunMode::Evidence) {
+            return 'evidence only';
+        }
+        $receipt = $this->receipts->forPart($part->id);
+        if ($receipt->isDefined()) {
+            return "result {$receipt->get()->outcome->value}, receipt {$receipt->get()->id}";
+        }
+        $assessment = OutputAssessment::query()->where('part_run_id', $part->id)->latest('created_at')->first();
+        if ($assessment === null) {
+            return 'result unavailable: no assessment';
+        }
+        $codes = array_map(fn (OutputProblem $problem): string => $problem->code->value, $assessment->problems);
+
+        return 'result unavailable: '.implode(', ', $codes);
+    }
+
     private function summary(ProcessRun $run): JsonResponse
     {
         $parts = $run->parts()->orderBy('syntax_node')->orderBy('attempt')->readLimit(500)->get();
@@ -75,6 +104,7 @@ final readonly class ReadOutputController
                 'code' => $part->end()->hasStatus() ? $part->end_code : null,
                 'capture' => $part->capture_state->value,
                 'bytes' => $part->stream_offsets,
+                'result' => $this->resultOf($run, $part),
             ])->all(),
         ]);
     }
