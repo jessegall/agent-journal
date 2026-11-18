@@ -45,6 +45,6 @@ final class SkillPreviewTool extends JournalReadTool
             return ToolResult::ok($this->preview->audience($skill), []);
         }
 
-        return ToolResult::ok($this->preview->forAgentId($skill, $this->skills->all(), $agentId), []);
+        return ToolResult::ok($this->preview->forAgentId($skill, $this->skills->all(), $agentId)->toArray(), []);
     }
 }

@@ -6,6 +6,7 @@ namespace App\Skills\Console;
 
 use App\Agents\Models\Agent;
 use App\Skills\Contracts\SkillReader;
+use App\Skills\Data\SkillAgentSelection;
 use App\Skills\Exceptions\SkillAgentHidden;
 use App\Skills\Exceptions\SkillConditionInvalid;
 use App\Skills\Exceptions\SkillConflict;
@@ -64,19 +65,15 @@ final class SkillPreviewCommand extends Command
         return self::SUCCESS;
     }
 
-    /**
-     * @param  array{key: string, agent: string, selected: bool, reason: string, selection: list<string>, digest: string}  $answer
-     */
-    private function printAnswer(array $answer): int
+    private function printAnswer(SkillAgentSelection $answer): int
     {
         if ($this->option('json')) {
-            $this->line(json_encode($answer, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
+            $this->line(json_encode($answer->toArray(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
 
             return self::SUCCESS;
         }
 
-        $this->line("Skill {$answer['key']} for agent {$answer['agent']}: ".($answer['selected'] ? 'selected' : "not selected ({$answer['reason']})"));
-        $this->line('Selected for this agent: '.($answer['selection'] === [] ? 'none' : implode(', ', $answer['selection'])));
+        $this->line($answer->summary());
 
         return self::SUCCESS;
     }

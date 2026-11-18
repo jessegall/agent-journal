@@ -22,6 +22,7 @@ use App\Skills\Conditions\Providers;
 use App\Skills\Conditions\RegisteredCondition;
 use App\Skills\Contracts\SkillCondition;
 use App\Skills\Exceptions\SkillConditionInvalid;
+use App\Skills\Values\ConditionNode;
 use App\Text\Support\StableKey;
 use Closure;
 use Illuminate\Contracts\Container\Container;
@@ -130,166 +131,168 @@ final readonly class ConditionTree
      */
     private function node(mixed $wire, string $path): SkillCondition
     {
-        if (! is_array($wire) || array_is_list($wire) && $wire !== []) {
-            throw SkillConditionInvalid::field($path, 'is not an object');
-        }
+        $node = ConditionNode::read($wire, $path);
 
-        $type = $wire['type'] ?? null;
-
-        if (! is_string($type)) {
-            throw SkillConditionInvalid::field("{$path}.type", 'is missing or not text');
-        }
-
-        if (! is_int($wire['version'] ?? null)) {
-            throw SkillConditionInvalid::field("{$path}.version", 'is missing or not a whole number');
-        }
-
-        return match ($type) {
-            Everyone::TYPE => $this->leaf($wire, $path, Everyone::VERSION, fn () => new Everyone()),
-            MainAgent::TYPE => $this->leaf($wire, $path, MainAgent::VERSION, fn () => new MainAgent()),
-            Profiles::TYPE => $this->keyed($wire, $path, Profiles::VERSION, fn (array $keys) => new Profiles(array_map(ProfileKey::from(...), $keys))),
-            AgentTypes::TYPE => $this->keyed($wire, $path, AgentTypes::VERSION, fn (array $keys) => new AgentTypes(array_map(ProfileType::from(...), $keys))),
-            Programs::TYPE => $this->keyed($wire, $path, Programs::VERSION, fn (array $keys) => new Programs(array_map(ProgramKey::from(...), $keys))),
-            Providers::TYPE => $this->keyed($wire, $path, Providers::VERSION, fn (array $keys) => new Providers(array_map(ProviderKey::from(...), $keys))),
-            Environments::TYPE => $this->keyed($wire, $path, Environments::VERSION, fn (array $keys) => new Environments($this->environmentKeys($keys, $path))),
-            Named::TYPE => $this->named($wire, $path),
-            AllOf::TYPE => new AllOf($this->children($wire, $path, AllOf::VERSION, 'children', 'needs at least one condition')),
-            AnyOf::TYPE => new AnyOf($this->children($wire, $path, AnyOf::VERSION, 'children', 'needs at least one condition')),
-            Not::TYPE => new Not($this->onlyChild($wire, $path)),
-            default => throw SkillConditionInvalid::field("{$path}.type", "names the unknown type {$type}"),
+        return match ($node->type) {
+            Everyone::TYPE => $this->leaf($node, Everyone::VERSION, fn () => new Everyone()),
+            MainAgent::TYPE => $this->leaf($node, MainAgent::VERSION, fn () => new MainAgent()),
+            Profiles::TYPE => $this->keyed($node, Profiles::VERSION, fn (array $keys) => new Profiles(
+                array_map(ProfileKey::from(...), $keys),
+            )),
+            AgentTypes::TYPE => $this->keyed($node, AgentTypes::VERSION, fn (array $keys) => new AgentTypes(
+                array_map(ProfileType::from(...), $keys),
+            )),
+            Programs::TYPE => $this->keyed($node, Programs::VERSION, fn (array $keys) => new Programs(
+                array_map(ProgramKey::from(...), $keys),
+            )),
+            Providers::TYPE => $this->keyed($node, Providers::VERSION, fn (array $keys) => new Providers(
+                array_map(ProviderKey::from(...), $keys),
+            )),
+            Environments::TYPE => $this->keyed($node, Environments::VERSION, fn (array $keys) => new Environments(
+                $this->environmentKeys($keys, $node->path),
+            )),
+            Named::TYPE => $this->named($node),
+            AllOf::TYPE => new AllOf($this->children($node, AllOf::VERSION, 'needs at least one condition')),
+            AnyOf::TYPE => new AnyOf($this->children($node, AnyOf::VERSION, 'needs at least one condition')),
+            Not::TYPE => new Not($this->onlyChild($node)),
+            default => throw SkillConditionInvalid::field($node->at('type'), "names the unknown type {$node->type}"),
         };
     }
 
     /**
-     * @param  array<array-key, mixed>  $wire
      * @param  Closure(): SkillCondition  $make
+     *
+     * @throws SkillConditionInvalid
      */
-    private function leaf(array $wire, string $path, int $version, Closure $make): SkillCondition
+    private function leaf(ConditionNode $node, int $version, Closure $make): SkillCondition
     {
-        $this->checkFields($wire, $path, $version, []);
+        $node->requireShape($version, []);
 
         return $make();
     }
 
     /**
-     * @param  array<array-key, mixed>  $wire
      * @param  Closure(list<string>): SkillCondition  $make
+     *
+     * @throws SkillConditionInvalid
      */
-    private function keyed(array $wire, string $path, int $version, Closure $make): SkillCondition
+    private function keyed(ConditionNode $node, int $version, Closure $make): SkillCondition
     {
-        $this->checkFields($wire, $path, $version, ['keys']);
-        $keys = $wire['keys'] ?? null;
+        $node->requireShape($version, ['keys']);
+        $keys = $node->field('keys', 'needs at least one key');
 
         if (! is_array($keys) || ! array_is_list($keys) || $keys === []) {
-            throw SkillConditionInvalid::field("{$path}.keys", 'needs at least one key');
+            throw SkillConditionInvalid::field($node->at('keys'), 'needs at least one key');
         }
 
         foreach ($keys as $index => $key) {
             if (! is_string($key)) {
-                throw SkillConditionInvalid::field("{$path}.keys[{$index}]", 'is not text');
+                throw SkillConditionInvalid::field($node->at("keys[{$index}]"), 'is not text');
             }
         }
 
         if (count(array_unique($keys)) !== count($keys)) {
-            throw SkillConditionInvalid::field("{$path}.keys", 'names a key twice');
+            throw SkillConditionInvalid::field($node->at('keys'), 'names a key twice');
         }
 
         try {
             return $make($keys);
         } catch (InvalidArgumentException|ValueError $refusal) {
-            throw SkillConditionInvalid::field("{$path}.keys", 'holds a key that is not valid: '.$refusal->getMessage());
+            $problem = 'holds a key that is not valid: '.$refusal->getMessage();
+
+            throw SkillConditionInvalid::field($node->at('keys'), $problem);
         }
     }
 
     /**
      * A named condition: bound to its evaluator when its owner is installed, else kept as written and unavailable.
      *
-     * @param  array<array-key, mixed>  $wire
+     * @throws SkillConditionInvalid
      */
-    private function named(array $wire, string $path): SkillCondition
+    private function named(ConditionNode $node): SkillCondition
     {
-        $this->checkFields($wire, $path, $wire['version'], ['key', 'parameters']);
-        $key = $wire['key'] ?? null;
-        $parameters = $wire['parameters'] ?? [];
+        $node->requireShape($node->version, ['key', 'parameters']);
+        $key = $node->field('key', 'is not an owner-prefixed key such as plans.active-plan');
+        $parameters = $node->hasField('parameters') ? $node->field('parameters', 'is not an object') : [];
 
         if (! is_string($key) || preg_match(self::NAMED_KEY, $key) !== 1) {
-            throw SkillConditionInvalid::field("{$path}.key", 'is not an owner-prefixed key such as plans.active-plan');
+            $problem = 'is not an owner-prefixed key such as plans.active-plan';
+
+            throw SkillConditionInvalid::field($node->at('key'), $problem);
         }
 
-        if ($wire['version'] < 1) {
-            throw SkillConditionInvalid::field("{$path}.version", 'is below 1');
+        if ($node->version < 1) {
+            throw SkillConditionInvalid::field($node->at('version'), 'is below 1');
         }
 
         if (! is_array($parameters) || array_is_list($parameters) && $parameters !== []) {
-            throw SkillConditionInvalid::field("{$path}.parameters", 'is not an object');
+            throw SkillConditionInvalid::field($node->at('parameters'), 'is not an object');
         }
 
         if (! $this->registry->has($key)) {
-            return new Named($key, $wire['version'], $parameters);
+            return new Named($key, $node->version, $parameters);
         }
 
         $registration = $this->registry->registration($key);
 
-        if ($wire['version'] !== $registration->version) {
-            throw SkillConditionInvalid::field("{$path}.version", "is {$wire['version']}, but {$key} is at version {$registration->version}");
+        if ($node->version !== $registration->version) {
+            $problem = "is {$node->version}, but {$key} is at version {$registration->version}";
+
+            throw SkillConditionInvalid::field($node->at('version'), $problem);
         }
 
         try {
             $data = $registration->parameters::validateAndCreate($parameters);
         } catch (ValidationException|CannotCreateData $refusal) {
-            throw SkillConditionInvalid::field("{$path}.parameters", 'does not fit '.$key.': '.$refusal->getMessage());
+            $problem = 'does not fit '.$key.': '.$refusal->getMessage();
+
+            throw SkillConditionInvalid::field($node->at('parameters'), $problem);
         }
 
-        return new RegisteredCondition($key, $registration->version, $parameters, $data, $this->container->make($registration->evaluator), $this->guard, $this->failures);
+        return new RegisteredCondition(
+            $key,
+            $registration->version,
+            $parameters,
+            $data,
+            $this->container->make($registration->evaluator),
+            $this->guard,
+            $this->failures,
+        );
     }
 
     /**
-     * @param  array<array-key, mixed>  $wire
      * @return list<SkillCondition>
+     *
+     * @throws SkillConditionInvalid
      */
-    private function children(array $wire, string $path, int $version, string $field, string $emptyProblem): array
+    private function children(ConditionNode $node, int $version, string $emptyProblem): array
     {
-        $this->checkFields($wire, $path, $version, [$field]);
-        $children = $wire[$field] ?? null;
+        $node->requireShape($version, ['children']);
+        $children = $node->field('children', $emptyProblem);
 
         if (! is_array($children) || ! array_is_list($children) || $children === []) {
-            throw SkillConditionInvalid::field("{$path}.{$field}", $emptyProblem);
+            throw SkillConditionInvalid::field($node->at('children'), $emptyProblem);
         }
 
-        return array_map(fn (mixed $child, int $index) => $this->node($child, "{$path}.{$field}[{$index}]"), $children, array_keys($children));
+        return array_map(
+            fn (mixed $child, int $index) => $this->node($child, $node->at("children[{$index}]")),
+            $children,
+            array_keys($children),
+        );
     }
 
     /**
-     * @param  array<array-key, mixed>  $wire
+     * @throws SkillConditionInvalid
      */
-    private function onlyChild(array $wire, string $path): SkillCondition
+    private function onlyChild(ConditionNode $node): SkillCondition
     {
-        $children = $this->children($wire, $path, Not::VERSION, 'children', 'needs exactly one condition');
+        $children = $this->children($node, Not::VERSION, 'needs exactly one condition');
 
         if (count($children) !== 1) {
-            throw SkillConditionInvalid::field("{$path}.children", 'needs exactly one condition');
+            throw SkillConditionInvalid::field($node->at('children'), 'needs exactly one condition');
         }
 
         return $children[0];
-    }
-
-    /**
-     * Refuses a version other than the type's, and any field the type does not take.
-     *
-     * @param  array<array-key, mixed>  $wire
-     * @param  list<string>  $fields
-     */
-    private function checkFields(array $wire, string $path, int $version, array $fields): void
-    {
-        if ($wire['version'] !== $version) {
-            throw SkillConditionInvalid::field("{$path}.version", "is {$wire['version']}, which this type does not support");
-        }
-
-        foreach (array_keys($wire) as $field) {
-            if (! in_array($field, ['type', 'version', ...$fields], true)) {
-                throw SkillConditionInvalid::field("{$path}.{$field}", 'is not a field of this type');
-            }
-        }
     }
 
     /**
