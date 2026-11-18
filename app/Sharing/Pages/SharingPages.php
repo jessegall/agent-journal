@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Pages;
 
-use App\Http\Controllers\Sharing\SharePreviewController;
+use App\Sharing\Http\Controllers\SharePreviewController;
 use App\Sharing\Readers\SharePreviewReader;
 use App\Sharing\Support\SharingOwnerCheck;
 use App\Ui\Contracts\ProvidesPages;

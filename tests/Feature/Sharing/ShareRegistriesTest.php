@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Domains\Support\DomainEntry;
+use App\Domains\Support\Domain;
 use App\Records\Exceptions\InvalidRecordIdentity;
+use App\Sharing\Contracts\ProvidesShareGateways;
+use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Enums\ShareRelationType;
 use App\Sharing\Exceptions\ShareGatewayInvalid;
 use App\Sharing\Exceptions\ShareRecordInvalid;
@@ -33,7 +35,7 @@ final class ShareRegistriesTest extends TestCase
 {
     public function test_a_booted_domain_resolves_its_alias_to_model_provider_and_relation(): void
     {
-        DomainEntry::fromClass(PamphletsDomain::class)->boot($this->app);
+        $this->registerShareDomain(new PamphletsDomain);
         $records = $this->app->make(ShareRecordRegistry::class);
         $records->checkRelations();
 
@@ -45,16 +47,16 @@ final class ShareRegistriesTest extends TestCase
 
     public function test_a_second_domain_registering_the_same_alias_stops_its_boot(): void
     {
-        DomainEntry::fromClass(PamphletsDomain::class)->boot($this->app);
+        $this->registerShareDomain(new PamphletsDomain);
 
         $this->expectExceptionObject(ShareRecordInvalid::repeated('pamphlets.pamphlet'));
 
-        DomainEntry::fromClass(LeafletsDomain::class)->boot($this->app);
+        $this->registerShareDomain(new LeafletsDomain);
     }
 
     public function test_a_relation_needing_a_capability_no_record_advertises_is_refused(): void
     {
-        DomainEntry::fromClass(FlyersDomain::class)->boot($this->app);
+        $this->registerShareDomain(new FlyersDomain);
 
         $this->expectExceptionObject(ShareRelationInvalid::unknownCapability('flyers.flyer', 'records', 'share-nothing-advertises'));
 
@@ -72,7 +74,7 @@ final class ShareRegistriesTest extends TestCase
 
     public function test_an_unknown_alias_or_relation_is_a_named_refusal(): void
     {
-        DomainEntry::fromClass(PamphletsDomain::class)->boot($this->app);
+        $this->registerShareDomain(new PamphletsDomain);
         $records = $this->app->make(ShareRecordRegistry::class);
         $records->checkRelations();
 
@@ -90,6 +92,20 @@ final class ShareRegistriesTest extends TestCase
         $this->assertSame(['tunler', 'ngrok', 'press'], $gateways->keys());
         $this->assertThrows(fn () => $gateways->register('press', PressGateway::class), ShareGatewayInvalid::class, 'already registered');
         $this->assertThrows(fn () => $gateways->register('pamphlet', Pamphlet::class), ShareGatewayInvalid::class, 'is no share gateway');
-        $this->assertThrows(fn () => $gateways->get('ngrok'), UnknownShareGateway::class);
+        $this->assertThrows(fn () => $gateways->get('carrier-pigeon'), UnknownShareGateway::class);
+    }
+
+    /**
+     * Registers a fixture domain's share records and gateways as the sharing provider does at boot.
+     */
+    private function registerShareDomain(Domain $domain): void
+    {
+        if ($domain instanceof ProvidesShareRecords) {
+            $this->app->make(ShareRecordRegistry::class)->registerFrom($domain);
+        }
+
+        if ($domain instanceof ProvidesShareGateways) {
+            $this->app->make(ShareGatewayRegistry::class)->registerFrom($domain);
+        }
     }
 }

@@ -13,7 +13,7 @@ use App\Records\Support\RecordIdentity;
  */
 trait ReadsShareRoot
 {
-    public function root(RecordReader $records): RecordIdentity
+    public function shareRoot(RecordReader $records): RecordIdentity
     {
         return $records->identify(RecordReference::parse($this->rootReference()));
     }

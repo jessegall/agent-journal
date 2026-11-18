@@ -7,7 +7,6 @@ namespace Domain\Documents;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasLinkRecords;
 use App\Domains\Concerns\HasNumberedModels;
-use App\Domains\Concerns\HasShareRecords;
 use App\Domains\Contracts\ProvidesLinkRecords;
 use App\Domains\Support\Domain;
 use App\Exports\Support\Exports;
@@ -112,7 +111,7 @@ use Domain\Documents\Support\ReportShareProvider;
 
 final class DocumentsDomain extends Domain implements ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesShareRecords
 {
-    use HasLinkRecords, HasNumberedModels, HasShareRecords;
+    use HasLinkRecords, HasNumberedModels;
 
     private const string SHARE_LINKED_RECORD = 'share-linked-record';
 

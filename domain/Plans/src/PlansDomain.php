@@ -8,7 +8,6 @@ use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Concerns\HasLinkRecords;
 use App\Domains\Concerns\HasNumberedModels;
-use App\Domains\Concerns\HasShareRecords;
 use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesLinkRecords;
@@ -69,7 +68,7 @@ use Domain\Tasks\TasksDomain;
 
 final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesShareRecords, ProvidesStates
 {
-    use HasAssignables, HasLinkRecords, HasNumberedModels, HasShareRecords, HasStates;
+    use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
     public function description(): string
     {

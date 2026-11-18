@@ -10,6 +10,7 @@ use App\Sharing\Support\SharedPage;
 use App\Text\Support\MarkdownText;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\View;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
 /**
@@ -37,6 +38,7 @@ final readonly class SharedPageResponses
     {
         return match (true) {
             $failure instanceof ShareReadLimited => self::refused(429),
+            $failure instanceof HttpExceptionInterface => self::refused($failure->getStatusCode()),
             $failure instanceof CommandRefusal => self::unavailable(),
             default => new Response(View::make('sharing.failed')->render(), 503),
         };

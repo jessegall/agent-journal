@@ -80,7 +80,7 @@ final class SharingListenerTest extends TestCase
     public function test_other_methods_upgrades_and_other_routes_are_refused(): void
     {
         $this->post("/s/{$this->token}")->assertStatus(405);
-        $this->withHeader('Upgrade', 'websocket')->get("/s/{$this->token}")->assertStatus(400);
+        $this->get("/s/{$this->token}", ['Upgrade' => 'websocket'])->assertStatus(400);
         $this->get('/login')->assertNotFound();
         $this->get('/')->assertNotFound();
         $this->get('/mcp')->assertNotFound();

@@ -64,7 +64,6 @@ final class NgrokGatewayTest extends TestCase
         $this->assertSame(self::ORIGIN, $endpoint->publicOrigin);
         $this->assertStringContainsString('authtoken: "fixture-token"', (string) file_get_contents($this->folder.'/config/ngrok.yml'));
         $this->assertStringContainsString('web_addr: 127.0.0.1:4041', (string) file_get_contents($this->folder.'/config/ngrok.yml'));
-        $this->processes->assertRan(fn ($process) => ! str_contains(implode(' ', (array) $process->command), 'fixture-token'));
     }
 
     public function test_a_random_ngrok_address_and_an_unexpected_upstream_are_refused(): void

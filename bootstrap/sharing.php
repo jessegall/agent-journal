@@ -10,6 +10,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Routing\RouteCollection;
 use Illuminate\Routing\Router;
+use Symfony\Component\HttpFoundation\Response;
 
 /*
  * The share-only application: the same Core and domains, but after every provider has booted its routes are replaced
@@ -28,5 +29,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->use([GuardShareRequest::class, SecureShareResponse::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->render(fn (Throwable $failure) => SharedPageResponses::forFailure($failure));
+        // Every failure, a refusal that renders itself included, ends as one of the fixed pages.
+        $exceptions->respond(fn (Response $response, Throwable $failure) => SharedPageResponses::forFailure($failure));
     })->create();

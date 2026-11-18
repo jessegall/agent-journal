@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sharing;
 
-use App\Domains\Support\DomainEntry;
+use App\Domains\Support\Domain;
 use App\Records\Support\RecordIdentity;
+use App\Sharing\Contracts\ProvidesShareGateways;
+use App\Sharing\Contracts\ProvidesShareRecords;
 use App\Sharing\Exceptions\ShareReadRefused;
 use App\Sharing\Exceptions\UnknownShareRelation;
 use App\Sharing\Support\ShareCursor;
 use App\Sharing\Support\ShareCursors;
+use App\Sharing\Support\ShareGatewayRegistry;
 use App\Sharing\Support\ShareReadPath;
 use App\Sharing\Support\ShareRecordRegistry;
 use Tests\Fixtures\Domains\Pamphlets\PamphletsDomain;
@@ -30,7 +33,7 @@ final class ShareReadPathTest extends TestCase
     {
         parent::setUp();
 
-        DomainEntry::fromClass(PamphletsDomain::class)->boot($this->app);
+        $this->registerShareDomain(new PamphletsDomain);
         $this->records = $this->app->make(ShareRecordRegistry::class);
         $this->records->checkRelations();
         $this->root = new RecordIdentity('pamphlets.pamphlet', TestIds::of(1));
@@ -65,5 +68,19 @@ final class ShareReadPathTest extends TestCase
         $this->assertThrows(fn () => $cursors->read($text, new ShareCursor(TestIds::of(9), 2, '', 'notes', ShareCursor::ORDER_WRITTEN_THEN_ID, '')), ShareReadRefused::class, 'older view');
         $this->assertThrows(fn () => $cursors->read($text, new ShareCursor(TestIds::of(8), 1, '', 'notes', ShareCursor::ORDER_WRITTEN_THEN_ID, '')), ShareReadRefused::class);
         $this->assertThrows(fn () => $cursors->read($text.'x', $place), ShareReadRefused::class);
+    }
+
+    /**
+     * Registers a fixture domain's share records and gateways as the sharing provider does at boot.
+     */
+    private function registerShareDomain(Domain $domain): void
+    {
+        if ($domain instanceof ProvidesShareRecords) {
+            $this->app->make(ShareRecordRegistry::class)->registerFrom($domain);
+        }
+
+        if ($domain instanceof ProvidesShareGateways) {
+            $this->app->make(ShareGatewayRegistry::class)->registerFrom($domain);
+        }
     }
 }

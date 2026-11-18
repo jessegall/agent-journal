@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Sharing;
+namespace App\Sharing\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Sharing\SaveSharePreviewRequest;
@@ -18,7 +18,7 @@ final readonly class SharePreviewController
 {
     public function __invoke(SaveSharePreviewRequest $request, RecordReader $records, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $root = $request->root($records);
+        $root = $request->shareRoot($records);
         $commands->run(new SaveSharePreview($root->type, $root->id, $request->selectedIds()));
 
         return $redirect->back(303);
