@@ -18,6 +18,7 @@ use App\Agents\Exceptions\LaunchRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\LaunchGrant;
+use App\Agents\Support\OpenedRuntime;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Profiles\Commands\ActivateProfiles;
@@ -176,7 +177,7 @@ final class LaunchSkillsTest extends TestCase
     }
 
     /**
-     * @return array{0: string, 1: \App\Agents\Support\OpenedRuntime}
+     * @return array{0: string, 1: OpenedRuntime}
      */
     private function openCodexRuntime(): array
     {
