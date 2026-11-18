@@ -13,6 +13,7 @@ use App\Settings\Declarations\IntegerSetting;
 use App\Settings\Declarations\StringSetting;
 use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Exceptions\DecimalInvalid;
+use App\Settings\Exceptions\SettingHandleUnknown;
 use App\Settings\Exceptions\SettingStorageInvalid;
 use App\Settings\Exceptions\SettingValueInvalid;
 use App\Settings\Storage\EncodedValue;
@@ -103,6 +104,7 @@ final readonly class SettingCodec
      * The native value of a stored override, of the type its declaration holds.
      *
      * @throws SettingStorageInvalid
+     * @throws SettingHandleUnknown for a declaration class outside the settings types
      */
     public function decode(string $owner, Setting $setting, EncodedValue $value): string|bool|int|Decimal|BackedEnum
     {
@@ -113,6 +115,7 @@ final readonly class SettingCodec
             $setting instanceof DecimalSetting => $this->decodeDecimal($owner, $setting, $value),
             $setting instanceof ChoiceSetting => $this->decodeChoice($owner, $setting, $value),
             $setting instanceof EnumSetting => $this->decodeEnum($owner, $setting, $value),
+            default => throw SettingHandleUnknown::for($setting::class, $setting->key()),
         };
     }
 
@@ -169,7 +172,10 @@ final readonly class SettingCodec
      */
     public function decodeChoice(string $owner, ChoiceSetting $setting, EncodedValue $value): string|int
     {
-        return $this->choiceValue($value)->filter($setting->accepts(...))->getOrThrow(SettingStorageInvalid::for($owner, $setting->key));
+        /** @var TValue $option one of the setting's own options, which accepts() just checked by exact type */
+        $option = $this->choiceValue($value)->filter($setting->accepts(...))->getOrThrow(SettingStorageInvalid::for($owner, $setting->key));
+
+        return $option;
     }
 
     /**
