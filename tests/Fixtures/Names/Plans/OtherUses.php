@@ -22,7 +22,7 @@ final class OtherUses extends Message implements Notifier
     {
         try {
             if (! $value instanceof Message) {
-                throw new ChatFailed();
+                throw new ChatFailed;
             }
 
             return true;
