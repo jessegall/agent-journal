@@ -12,12 +12,12 @@ use App\Processes\Enums\WordPlace;
 use App\Processes\Exceptions\ShellGrammarStopped;
 use App\Processes\Pipelines\ReadRedirectPipeline;
 use App\Processes\Pipelines\ReadWordPipeline;
-use App\Processes\Stages\Grammar\CommandReading;
-use App\Processes\Stages\Grammar\GrammarContext;
-use App\Processes\Stages\Grammar\SimpleCommandParts;
-use App\Processes\Stages\Grammar\WordReading;
 use App\Processes\Syntax\TokenCursor;
 use App\Processes\Syntax\UnsupportedConstructs;
+use App\Processes\Values\Grammar\CommandReading;
+use App\Processes\Values\Grammar\GrammarContext;
+use App\Processes\Values\Grammar\SimpleCommandParts;
+use App\Processes\Values\Grammar\WordReading;
 use App\Processes\Values\Redirect;
 use App\Processes\Values\SourceRange;
 

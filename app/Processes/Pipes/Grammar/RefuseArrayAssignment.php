@@ -7,7 +7,7 @@ namespace App\Processes\Pipes\Grammar;
 use App\Pipelines\Contracts\Pipe;
 use App\Processes\Enums\TokenType;
 use App\Processes\Enums\WordPlace;
-use App\Processes\Stages\Grammar\WordReading;
+use App\Processes\Values\Grammar\WordReading;
 
 /**
  * A word ending in = with a ( after it starts an array assignment, which makes its command unsupported.

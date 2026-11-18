@@ -10,7 +10,7 @@ use App\Processes\Enums\NodeType;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Exceptions\ShellGrammarStopped;
 use App\Processes\Pipelines\ShellAnalysisPipeline;
-use App\Processes\Stages\ShellLine;
+use App\Processes\Values\Lines\ShellLine;
 use App\Processes\Values\ShellNode;
 use App\Processes\Values\ShellTree;
 use App\Processes\Values\SourceRange;

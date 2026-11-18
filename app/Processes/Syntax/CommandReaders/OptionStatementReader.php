@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Processes\Syntax\CommandReaders;
 
 use App\Processes\Contracts\CommandReader;
-use App\Processes\Stages\Grammar\CommandReading;
 use App\Processes\Syntax\TokenCursor;
+use App\Processes\Values\Grammar\CommandReading;
 
 /**
  * set, shopt, setopt and unsetopt change how the shell reads what follows: read as a simple command and marked

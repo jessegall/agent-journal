@@ -9,12 +9,12 @@ use App\Pipelines\Support\Pipelines;
 use App\Processes\Enums\NodeType;
 use App\Processes\Exceptions\ShellGrammarStopped;
 use App\Processes\Pipelines\ReadListPipeline;
-use App\Processes\Stages\Grammar\GrammarContext;
-use App\Processes\Stages\Grammar\ListRead;
-use App\Processes\Stages\Grammar\ListReading;
-use App\Processes\Stages\ReadSource;
-use App\Processes\Stages\ScannedSource;
 use App\Processes\Syntax\TokenCursor;
+use App\Processes\Values\Grammar\GrammarContext;
+use App\Processes\Values\Grammar\ListRead;
+use App\Processes\Values\Grammar\ListReading;
+use App\Processes\Values\Lines\ReadSource;
+use App\Processes\Values\Lines\ScannedSource;
 use App\Processes\Values\SourceRange;
 
 /**

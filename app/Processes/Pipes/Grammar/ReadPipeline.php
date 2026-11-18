@@ -10,9 +10,9 @@ use App\Processes\Enums\NodeType;
 use App\Processes\Enums\TokenType;
 use App\Processes\Exceptions\ShellGrammarStopped;
 use App\Processes\Pipelines\ReadCommandPipeline;
-use App\Processes\Stages\Grammar\NodeRead;
-use App\Processes\Stages\Grammar\NodeReading;
 use App\Processes\Syntax\TreeDraft;
+use App\Processes\Values\Grammar\NodeRead;
+use App\Processes\Values\Grammar\NodeReading;
 use App\Processes\Values\SourceRange;
 
 /**
@@ -39,7 +39,7 @@ final readonly class ReadPipeline implements Pipe
             $cursor->skip(TokenType::Newline, TokenType::Comment);
             $commands[] = $this->command($reading);
         }
-        $pipeline = $this->join($draft, $commands);
+        $pipeline = $this->pipelineOf($draft, $commands);
         if ($negationStart === null) {
             return new NodeRead($pipeline);
         }
@@ -62,7 +62,7 @@ final readonly class ReadPipeline implements Pipe
      *
      * @param  non-empty-list<int>  $commands
      */
-    private function join(TreeDraft $draft, array $commands): int
+    private function pipelineOf(TreeDraft $draft, array $commands): int
     {
         if (count($commands) === 1) {
             return $commands[0];

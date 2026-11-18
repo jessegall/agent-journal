@@ -9,9 +9,9 @@ use App\Processes\Enums\NodeType;
 use App\Processes\Enums\TokenType;
 use App\Processes\Exceptions\ShellGrammarStopped;
 use App\Processes\Pipelines\ReadCompoundPipeline;
-use App\Processes\Stages\Grammar\CommandReading;
-use App\Processes\Stages\Grammar\CompoundReading;
-use App\Processes\Stages\Grammar\NodeRead;
+use App\Processes\Values\Grammar\CommandReading;
+use App\Processes\Values\Grammar\CompoundReading;
+use App\Processes\Values\Grammar\NodeRead;
 use App\Processes\Values\SourceRange;
 
 /**

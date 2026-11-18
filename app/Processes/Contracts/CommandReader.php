@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Processes\Contracts;
 
 use App\Processes\Exceptions\ShellGrammarStopped;
-use App\Processes\Stages\Grammar\CommandReading;
 use App\Processes\Syntax\TokenCursor;
+use App\Processes\Values\Grammar\CommandReading;
 
 /**
  * Reads one kind of shell command: a subshell, a function definition, an unsupported construct or a simple command.

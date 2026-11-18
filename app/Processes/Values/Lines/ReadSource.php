@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Processes\Stages;
+namespace App\Processes\Values\Lines;
 
 use App\Processes\Values\ShellTree;
 

@@ -10,10 +10,10 @@ use App\Processes\Enums\NodeType;
 use App\Processes\Enums\TokenType;
 use App\Processes\Exceptions\ShellGrammarStopped;
 use App\Processes\Pipelines\ReadAndOrPipeline;
-use App\Processes\Stages\Grammar\ListRead;
-use App\Processes\Stages\Grammar\ListReading;
-use App\Processes\Stages\Grammar\NodeRead;
 use App\Processes\Syntax\TokenCursor;
+use App\Processes\Values\Grammar\ListRead;
+use App\Processes\Values\Grammar\ListReading;
+use App\Processes\Values\Grammar\NodeRead;
 
 /**
  * list := and_or ((; | & | newline) and_or)*, up to the closing token of a subshell or group, or the end.

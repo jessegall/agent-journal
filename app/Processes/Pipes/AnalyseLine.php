@@ -6,8 +6,8 @@ namespace App\Processes\Pipes;
 
 use App\Pipelines\Support\PipelineAdapter;
 use App\Processes\Pipelines\AnalyseLinePipeline;
-use App\Processes\Stages\ReadSource;
-use App\Processes\Stages\ShellSource;
+use App\Processes\Values\Lines\ReadSource;
+use App\Processes\Values\Lines\ShellSource;
 
 /**
  * Reads the whole line through the line pipeline, the same one every substitution inside it runs.
@@ -26,12 +26,12 @@ final readonly class AnalyseLine extends PipelineAdapter
         return ReadSource::class;
     }
 
-    protected function into(object $stage): ShellSource
+    protected function into(object $input): ShellSource
     {
-        return $stage;
+        return $input;
     }
 
-    protected function back(object $result, object $stage): ReadSource
+    protected function back(object $result, object $input): ReadSource
     {
         return $result;
     }

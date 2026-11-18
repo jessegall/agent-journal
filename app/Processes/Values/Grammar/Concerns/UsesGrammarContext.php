@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Processes\Stages\Grammar\Concerns;
+namespace App\Processes\Values\Grammar\Concerns;
 
 use App\Processes\Syntax\TokenCursor;
 use App\Processes\Syntax\TreeDraft;
 
 /**
- * The cursor and draft of a grammar stage's context, for the stages that carry one.
+ * The cursor and draft of a grammar value's context, for the values that carry one.
  */
 trait UsesGrammarContext
 {

@@ -10,11 +10,11 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Container\Container;
 
 /**
- * Runs a pipeline definition: every pipe in turn takes the stage the one before returned, and a pipe may run another
+ * Runs a pipeline definition: every pipe in turn takes the output of the pipe before it, and a pipe may run another
  * pipeline, so pipelines nest. Each definition is resolved once per process, its pipes built by the container and the
- * stage each takes read by reflection, and kept for every later run; a pipe therefore holds only services that are the
- * same for every request, never request data. A pipe handed a stage it does not take, or a run that ends on a stage the
- * caller does not read, throws StepOutOfOrder.
+ * input each takes read by reflection, and kept for every later run; a pipe therefore holds only services that are the
+ * same for every request, never request data. A pipe handed an input it does not take, or a run that ends on an output
+ * the caller does not read, throws StepOutOfOrder.
  */
 #[Singleton]
 final class Pipelines
@@ -27,7 +27,7 @@ final class Pipelines
     public function __construct(private readonly Container $container) {}
 
     /**
-     * Runs the input through every pipe of the definition and returns the stage the last pipe produced.
+     * Runs the input through every pipe of the definition and returns the output of the last pipe.
      *
      * @template TOutput of object
      *
@@ -37,15 +37,15 @@ final class Pipelines
      */
     public function run(string $definition, object $input, string $output): object
     {
-        $stage = $input;
+        $result = $input;
         foreach ($this->resolved[$definition] ??= $this->resolve($definition) as $pipe) {
-            $stage = $pipe->handle($stage);
+            $result = $pipe->handle($result);
         }
-        if (! $stage instanceof $output) {
-            throw StepOutOfOrder::ending($definition, $output, $stage);
+        if (! $result instanceof $output) {
+            throw StepOutOfOrder::ending($definition, $output, $result);
         }
 
-        return $stage;
+        return $result;
     }
 
     /**

@@ -10,9 +10,9 @@ use App\Processes\Enums\NodeType;
 use App\Processes\Enums\TokenType;
 use App\Processes\Exceptions\ShellGrammarStopped;
 use App\Processes\Pipelines\ReadPipelinePipeline;
-use App\Processes\Stages\Grammar\NodeRead;
-use App\Processes\Stages\Grammar\NodeReading;
 use App\Processes\Syntax\TreeDraft;
+use App\Processes\Values\Grammar\NodeRead;
+use App\Processes\Values\Grammar\NodeReading;
 use App\Processes\Values\SourceRange;
 
 /**
@@ -33,7 +33,7 @@ final readonly class ReadAndOr implements Pipe
             $type = $cursor->is(TokenType::AndIf) ? NodeType::AndList : NodeType::OrList;
             $cursor->advance();
             $cursor->skip(TokenType::Newline, TokenType::Comment);
-            $left = $this->join($reading->draft(), $type, $left, $this->pipeline($reading));
+            $left = $this->chain($reading->draft(), $type, $left, $this->pipeline($reading));
         }
 
         return new NodeRead($left);
@@ -47,7 +47,7 @@ final readonly class ReadAndOr implements Pipe
         return $this->pipelines->run(ReadPipelinePipeline::class, $reading, NodeRead::class)->node;
     }
 
-    private function join(TreeDraft $draft, NodeType $type, int $left, int $right): int
+    private function chain(TreeDraft $draft, NodeType $type, int $left, int $right): int
     {
         $range = new SourceRange($draft->range($left)->start, $draft->range($right)->end);
         $joined = $draft->add($type, $range, null);

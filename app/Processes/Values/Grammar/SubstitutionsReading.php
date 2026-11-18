@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Processes\Stages\Grammar;
+namespace App\Processes\Values\Grammar;
 
-use App\Processes\Stages\Grammar\Concerns\UsesGrammarContext;
-use App\Processes\Stages\ShellSource;
+use App\Processes\Values\Grammar\Concerns\UsesGrammarContext;
+use App\Processes\Values\Lines\ShellSource;
 use App\Processes\Values\Word;
 
 /**

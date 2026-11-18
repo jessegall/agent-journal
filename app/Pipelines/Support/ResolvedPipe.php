@@ -10,12 +10,12 @@ use ReflectionMethod;
 use ReflectionNamedType;
 
 /**
- * A pipe of a resolved pipeline, with the stage class its handle method takes, read once by reflection.
+ * A pipe of a resolved pipeline, with the input class its handle method takes, read once by reflection.
  */
 final readonly class ResolvedPipe
 {
     /**
-     * @param  class-string|null  $takes  the stage class handle takes, or null when it takes any object
+     * @param  class-string|null  $takes  the input class handle takes, or null when it takes any object
      */
     private function __construct(
         private Pipe $pipe,
@@ -38,16 +38,16 @@ final readonly class ResolvedPipe
     }
 
     /**
-     * Hands the stage to the pipe and returns the stage it produces.
+     * Hands the input to the pipe and returns its output.
      *
-     * @throws StepOutOfOrder when the pipe takes another stage
+     * @throws StepOutOfOrder when the pipe takes another input
      */
-    public function handle(object $stage): object
+    public function handle(object $input): object
     {
-        if ($this->takes !== null && ! $stage instanceof $this->takes) {
-            throw StepOutOfOrder::handing($this->pipe::class, $stage);
+        if ($this->takes !== null && ! $input instanceof $this->takes) {
+            throw StepOutOfOrder::handing($this->pipe::class, $input);
         }
 
-        return $this->pipe->handle($stage);
+        return $this->pipe->handle($input);
     }
 }

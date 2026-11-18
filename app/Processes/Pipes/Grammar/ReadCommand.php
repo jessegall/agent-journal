@@ -6,9 +6,9 @@ namespace App\Processes\Pipes\Grammar;
 
 use App\Pipelines\Contracts\Pipe;
 use App\Processes\Exceptions\ShellGrammarStopped;
-use App\Processes\Stages\Grammar\CommandReading;
-use App\Processes\Stages\Grammar\NodeRead;
 use App\Processes\Syntax\CommandReaders\CommandReaderResolver;
+use App\Processes\Values\Grammar\CommandReading;
+use App\Processes\Values\Grammar\NodeRead;
 
 /**
  * Reads the command at the cursor with the reader for its kind.

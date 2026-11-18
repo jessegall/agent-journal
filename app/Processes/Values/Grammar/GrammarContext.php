@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Processes\Stages\Grammar;
+namespace App\Processes\Values\Grammar;
 
-use App\Processes\Stages\ShellSource;
 use App\Processes\Syntax\TokenCursor;
 use App\Processes\Syntax\TreeDraft;
+use App\Processes\Values\Lines\ShellSource;
 
 /**
- * What every grammar stage of one source reads with: the source, its token cursor and the draft the nodes go into.
+ * What every grammar pipe of one source reads with: the source, its token cursor and the draft the nodes go into.
  */
 final readonly class GrammarContext
 {

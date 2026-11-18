@@ -6,8 +6,8 @@ namespace App\Processes\Syntax\CommandReaders;
 
 use App\Processes\Contracts\CommandReader;
 use App\Processes\Exceptions\ShellGrammarStopped;
-use App\Processes\Stages\Grammar\CommandReading;
 use App\Processes\Syntax\TokenCursor;
+use App\Processes\Values\Grammar\CommandReading;
 
 /**
  * Words that only continue a construct make the line invalid at the start of a command, as in bash.

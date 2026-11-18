@@ -7,7 +7,7 @@ namespace App\Processes\Syntax;
 use App\Processes\Enums\NodeType;
 use App\Processes\Enums\TokenType;
 use App\Processes\Exceptions\ShellGrammarStopped;
-use App\Processes\Stages\Grammar\GrammarContext;
+use App\Processes\Values\Grammar\GrammarContext;
 use App\Processes\Values\SourceRange;
 
 /**

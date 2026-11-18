@@ -7,9 +7,9 @@ namespace App\Processes\Pipes;
 use App\Pipelines\Contracts\Pipe;
 use App\Processes\Enums\ParseOutcome;
 use App\Processes\Exceptions\ShellGrammarStopped;
-use App\Processes\Stages\ScannedSource;
-use App\Processes\Stages\ShellSource;
 use App\Processes\Syntax\ShellLexer;
+use App\Processes\Values\Lines\ScannedSource;
+use App\Processes\Values\Lines\ShellSource;
 
 /**
  * Splits a source into tokens and reads its here-document bodies; text that cannot be read stops the analysis with the

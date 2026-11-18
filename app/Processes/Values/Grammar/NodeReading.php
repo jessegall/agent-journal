@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Processes\Stages\Grammar;
+namespace App\Processes\Values\Grammar;
 
-use App\Processes\Stages\Grammar\Concerns\UsesGrammarContext;
+use App\Processes\Values\Grammar\Concerns\UsesGrammarContext;
 
 /**
  * A grammar rule to read at the cursor: an and-or chain or a pipeline.
