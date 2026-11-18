@@ -6,6 +6,7 @@ namespace App\Skills\Support;
 
 use App\Agents\Models\Agent;
 use App\Skills\Conditions\Everyone;
+use App\Skills\Data\SkillAgentSelection;
 use App\Skills\Exceptions\SkillAgentHidden;
 use App\Skills\Exceptions\SkillContextUnavailable;
 use App\Skills\Exceptions\SkillSelectionConflict;
@@ -48,34 +49,32 @@ final readonly class SkillPreview
      * The selection of the agent with this id, for an MCP tool that names the agent by id.
      *
      * @param  list<SkillEntry>  $skills
-     * @return array{key: string, agent: string, selected: bool, reason: string, selection: list<string>, digest: string}
      */
-    public function forAgentId(SkillEntry $skill, array $skills, string $agentId): array
+    public function forAgentId(SkillEntry $skill, array $skills, string $agentId): SkillAgentSelection
     {
         return $this->forAgent($skill, $skills, Agent::query()->whereKey($agentId)->firstOrFail());
     }
 
     /**
      * @param  list<SkillEntry>  $skills  the whole catalogue
-     * @return array{key: string, agent: string, selected: bool, reason: string, selection: list<string>, digest: string}
      *
      * @throws SkillAgentHidden
      * @throws SkillContextUnavailable
      * @throws SkillSelectionConflict
      */
-    public function forAgent(SkillEntry $skill, array $skills, Agent $agent): array
+    public function forAgent(SkillEntry $skill, array $skills, Agent $agent): SkillAgentSelection
     {
         $selected = $this->selection->select($skills, $this->contexts->forAgent($agent));
         $excluded = array_column(array_map(fn (ExcludedSkill $excluded) => ['key' => $excluded->key->key, 'reason' => $excluded->reason], $selected->excluded), 'reason', 'key');
 
-        return [
+        return SkillAgentSelection::from([
             'key' => $skill->key->key,
             'agent' => $agent->id,
             'selected' => in_array($skill->key->key, $selected->selectedKeys(), true),
             'reason' => $excluded[$skill->key->key] ?? 'selected',
             'selection' => $selected->selectedKeys(),
             'digest' => $selected->digest,
-        ];
+        ]);
     }
 
     /**
