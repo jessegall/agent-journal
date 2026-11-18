@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Agents\Actions;
+namespace App\Agents\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Contracts\AgentRetirement;
+use App\Agents\Actions\AgentSessions;
+use App\Agents\Actions\LaunchCredentials;
+use App\Agents\Commands\RetireAgent;
 use App\Agents\Exceptions\AgentRetirementDenied;
 use App\Agents\Lifecycle\AgentLifecycle;
 use App\Agents\Models\Agent;
@@ -17,15 +19,12 @@ use App\Assignments\Storage\AssignmentStore;
 use App\Assignments\Support\AssignmentFacts;
 use App\Assignments\Support\AssignmentResult;
 use Carbon\CarbonImmutable;
-use Illuminate\Database\ConnectionInterface;
 
 /**
- * Retires an agent in its own read-committed transaction: it takes the agent's exclusive lifecycle lock first, so it
- * waits for work given and launches in progress, and every later statement then sees what they committed. It marks the
- * agent retired, ends its usable sessions with their credentials and releases every record it held, of every type,
- * without asking any owner. It never locks a record or another actor.
+ * Retires an agent for good: it ends its sessions and releases its assignments, under the agent's exclusive lifecycle lock,
+ * inside the command's transaction.
  */
-final readonly class RetireAgent implements AgentRetirement
+final readonly class RetireAgentHandler
 {
     public function __construct(
         private CurrentActor $actors,
@@ -34,33 +33,25 @@ final readonly class RetireAgent implements AgentRetirement
         private LaunchCredentials $credentials,
         private AssignmentStore $store,
         private AssignmentFacts $facts,
-        private ConnectionInterface $database,
     ) {}
 
-    public function retire(int $agentId): AssignmentResult
+    public function handle(RetireAgent $command): AssignmentResult
     {
+        // The exclusive lifecycle lock comes first, so a launch of the same agent waits or is retried as a whole.
+        $target = $this->lifecycle->lockExclusive($command->agentId);
         $caller = ActorIdentity::of($this->actors->actor());
+        $this->requireAuthority($caller, $target);
 
-        if ($this->database->transactionLevel() > 0) {
-            throw AgentRetirementDenied::insideTransaction();
+        if ($target->isRetired()) {
+            return new AssignmentResult([], []);
         }
 
-        return $this->database->transaction(function () use ($caller, $agentId): AssignmentResult {
-            $this->database->statement('SET TRANSACTION ISOLATION LEVEL READ COMMITTED');
-            $target = $this->lifecycle->lockExclusive($agentId);
-            $this->requireAuthority($caller, $target);
+        $target->retireAt(CarbonImmutable::now());
+        $this->endSessionsOf($target);
+        $released = $this->store->releaseAll(ActorIdentity::of($target));
+        $this->facts->publish($caller, AssignmentReason::Retired, $released);
 
-            if ($target->isRetired()) {
-                return new AssignmentResult([], []);
-            }
-
-            $target->retireAt(CarbonImmutable::now());
-            $this->endSessionsOf($target);
-            $released = $this->store->releaseAll(ActorIdentity::of($target));
-            $this->facts->publish($caller, AssignmentReason::Retired, $released);
-
-            return $released;
-        });
+        return $released;
     }
 
     /**

@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use PDOException;
 use ReflectionProperty;
 use RuntimeException;
+use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -127,6 +128,6 @@ final class AssignmentFactsTest extends TestCase
 
     private function writer(): AssignmentWriter
     {
-        return $this->app->make(AssignmentWriter::class);
+        return $this->app->make(AssignmentWriterInTransaction::class);
     }
 }

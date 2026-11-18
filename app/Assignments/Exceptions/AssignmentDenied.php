@@ -6,10 +6,11 @@ namespace App\Assignments\Exceptions;
 
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Exceptions\Concerns\RendersRefusal;
+use App\Contracts\CommandRefusal;
 use RuntimeException;
 use Throwable;
 
-final class AssignmentDenied extends RuntimeException
+final class AssignmentDenied extends RuntimeException implements CommandRefusal
 {
     use RendersRefusal;
 

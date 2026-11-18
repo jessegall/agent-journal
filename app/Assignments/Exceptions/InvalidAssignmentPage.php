@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Assignments\Exceptions;
 
+use App\Contracts\CommandRefusal;
 use InvalidArgumentException;
 
-final class InvalidAssignmentPage extends InvalidArgumentException
+final class InvalidAssignmentPage extends InvalidArgumentException implements CommandRefusal
 {
     public static function forLimit(int $limit): self
     {

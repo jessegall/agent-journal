@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Assignments\Exceptions;
 
 use App\Assignments\Exceptions\Concerns\RendersRefusal;
+use App\Contracts\CommandRefusal;
 use InvalidArgumentException;
 
-final class InvalidAssignmentIdentity extends InvalidArgumentException
+final class InvalidAssignmentIdentity extends InvalidArgumentException implements CommandRefusal
 {
     use RendersRefusal;
 

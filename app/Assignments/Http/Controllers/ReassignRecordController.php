@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Assignments\Http\Controllers;
 
+use App\Assignments\Commands\ReassignRecord;
 use App\Assignments\Contracts\AssigneeReader;
-use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Http\Data\AssignmentResultData;
 use App\Assignments\Http\Requests\ReassignRecordRequest;
+use App\Bus\Contracts\CommandBus;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -15,9 +16,9 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class ReassignRecordController
 {
-    public function __invoke(ReassignRecordRequest $request, AssignmentWriter $writer, AssigneeReader $assignees): JsonResponse
+    public function __invoke(ReassignRecordRequest $request, CommandBus $commands, AssigneeReader $assignees): JsonResponse
     {
-        $result = $writer->reassign($request->record(), $request->expected(), $request->recipient());
+        $result = $commands->run(new ReassignRecord($request->record(), $request->expected(), $request->recipient()));
 
         return new JsonResponse(AssignmentResultData::of($result, $assignees->holdersOf($result->currentAssignments())));
     }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Sequences\Tests\Feature;
 
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Support\OperationDeadline;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Exceptions\StackAlreadyClosed;
 use App\Hooks\Inputs\CompactionDetails;
@@ -14,7 +15,6 @@ use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Programs\ProgramCapabilities;
 use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\HookAnswer;
-use App\Hooks\Support\OperationDeadline;
 use Carbon\CarbonImmutable;
 use Domain\Sequences\Commands\StartSequence;
 use Domain\Sequences\Enums\SequenceRunState;

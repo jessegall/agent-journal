@@ -22,14 +22,23 @@ final readonly class DatabaseAssignmentTransaction implements AssignmentTransact
 
     public function __construct(private ConnectionInterface $database) {}
 
+    public function requireOpen(): void
+    {
+        if ($this->database->transactionLevel() === 0) {
+            throw AssignmentTransactionRequired::forIsolation('none');
+        }
+
+        $isolation = (string) $this->database->scalar('SHOW transaction_isolation');
+
+        if ($isolation !== 'repeatable read') {
+            throw AssignmentTransactionRequired::forIsolation($isolation);
+        }
+    }
+
     public function run(Closure $work): mixed
     {
         if ($this->database->transactionLevel() > 0) {
-            $isolation = (string) $this->database->scalar('SHOW transaction_isolation');
-
-            if ($isolation !== 'repeatable read') {
-                throw AssignmentTransactionRequired::forIsolation($isolation);
-            }
+            $this->requireOpen();
 
             return $work();
         }

@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Assignments\Http\Controllers;
 
+use App\Assignments\Commands\UnassignRecord;
 use App\Assignments\Contracts\AssigneeReader;
-use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Http\Data\AssignmentResultData;
 use App\Assignments\Http\Requests\UnassignRecordRequest;
+use App\Bus\Contracts\CommandBus;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -15,9 +16,9 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class UnassignRecordController
 {
-    public function __invoke(UnassignRecordRequest $request, AssignmentWriter $writer, AssigneeReader $assignees): JsonResponse
+    public function __invoke(UnassignRecordRequest $request, CommandBus $commands, AssigneeReader $assignees): JsonResponse
     {
-        $result = $writer->unassign($request->record(), $request->expected());
+        $result = $commands->run(new UnassignRecord($request->record(), $request->expected()));
 
         return new JsonResponse(AssignmentResultData::of($result, $assignees->holdersOf($result->currentAssignments())));
     }

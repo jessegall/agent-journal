@@ -18,8 +18,8 @@ use App\Actors\Support\CurrentUser;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Exceptions\AgentRequestFailed;
 use App\AgentRequests\Support\AgentReply;
+use App\Agents\Commands\RetireAgent;
 use App\Agents\Contracts\AgentReader;
-use App\Agents\Contracts\AgentRetirement;
 use App\Agents\Contracts\SessionReader;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Exceptions\AgentRetirementDenied;
@@ -27,6 +27,9 @@ use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Support\AgentLabel;
 use App\Agents\Support\SessionOption;
 use App\Agents\Support\StackTarget;
+use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\ReassignRecord;
+use App\Assignments\Commands\UnassignRecord;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Contracts\AssignableProvider;
 use App\Assignments\Contracts\Assignee;
@@ -103,6 +106,7 @@ use App\Bus\Exceptions\MiddlewareListedTwice;
 use App\Bus\Exceptions\MiddlewareSkippedCommand;
 use App\Bus\Exceptions\MiddlewareSwallowedFailure;
 use App\Bus\Exceptions\NestedCommandFailureIgnored;
+use App\Bus\Exceptions\StackLockTimedOut;
 use App\Bus\Support\CommandCall;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
@@ -136,7 +140,6 @@ use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Enums\TransitionType;
 use App\Hooks\Events\ContextWasCompacted;
 use App\Hooks\Events\StateTypesRequested;
-use App\Hooks\Exceptions\StackLockTimedOut;
 use App\Hooks\Exceptions\StackTransactionRequired;
 use App\Hooks\Exceptions\StateSubjectMissing;
 use App\Hooks\Exceptions\StateTypeRepeated;
@@ -319,7 +322,10 @@ final class CoreApi
             AgentReply::class,
             AgentNotAvailable::class,
             AgentRetirementDenied::class,
-            AgentRetirement::class,
+            RetireAgent::class,
+            AssignRecord::class,
+            ReassignRecord::class,
+            UnassignRecord::class,
             AssignableListing::class,
             NumberedPage::class,
             AgentActorRequired::class,

@@ -25,4 +25,11 @@ interface AssignmentTransaction
      * @throws AssignmentRetryExhausted
      */
     public function run(Closure $work): mixed;
+
+    /**
+     * Refuses unless a repeatable-read transaction is open, as the command bus opens one for every assignment command.
+     *
+     * @throws AssignmentTransactionRequired
+     */
+    public function requireOpen(): void;
 }

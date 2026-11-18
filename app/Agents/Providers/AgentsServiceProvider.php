@@ -8,9 +8,7 @@ use App\Actors\Enums\ActorType;
 use App\AgentRequests\Actions\SendAgentRequests;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Support\AgentClientSettings;
-use App\Agents\Actions\RetireAgent;
 use App\Agents\Console\RetireAgentCommand;
-use App\Agents\Contracts\AgentRetirement;
 use App\Agents\Exceptions\AgentContextMissing;
 use App\Agents\Readers\AgentAuthorityRecords;
 use App\Agents\Support\AgentAssignees;
@@ -34,7 +32,6 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->scoped(AgentContext::class, fn () => throw AgentContextMissing::forRequest());
         $this->app->scoped(AgentAssignees::class);
         $this->app->bind(AgentAuthority::class, AgentAuthorityRecords::class);
-        $this->app->scoped(AgentRetirement::class, RetireAgent::class);
         $this->app->bindIf(LaunchTransaction::class, DatabaseLaunchTransaction::class);
         $this->app->bind(AgentClientSettings::class, fn () => AgentClientSettings::fromEnvironment(array_filter(getenv(), is_string(...))));
         $this->app->bind(AgentRequestSender::class, SendAgentRequests::class);

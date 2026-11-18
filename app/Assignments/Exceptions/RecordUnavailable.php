@@ -6,9 +6,10 @@ namespace App\Assignments\Exceptions;
 
 use App\Assignments\Exceptions\Concerns\RendersRefusal;
 use App\Assignments\Support\RecordIdentity;
+use App\Contracts\CommandRefusal;
 use RuntimeException;
 
-final class RecordUnavailable extends RuntimeException
+final class RecordUnavailable extends RuntimeException implements CommandRefusal
 {
     use RendersRefusal;
 

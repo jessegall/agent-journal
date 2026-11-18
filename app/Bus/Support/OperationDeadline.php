@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Support;
+namespace App\Bus\Support;
 
 /**
  * How long one stack operation may take, start to commit; the lock wait gets most of it and every statement fits inside it.

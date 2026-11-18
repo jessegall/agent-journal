@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Hooks\Providers;
 
 use App\Agents\Support\AgentContext;
+use App\Bus\Support\OperationDeadline;
 use App\Contracts\LaunchTransaction;
 use App\Hooks\Console\PruneHookHistoryCommand;
 use App\Hooks\Console\RelayHookCommand;
@@ -17,7 +18,6 @@ use App\Hooks\Models\Support\AgentSessionScope;
 use App\Hooks\Stack\RegisteredStateFactory;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\Support\HookRetryWindow;
-use App\Hooks\Support\OperationDeadline;
 use App\Hooks\Support\RetentionPeriods;
 use App\Hooks\Support\StackTransaction;
 use Illuminate\Console\Scheduling\Schedule;

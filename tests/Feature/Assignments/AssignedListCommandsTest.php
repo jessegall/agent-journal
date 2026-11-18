@@ -7,7 +7,6 @@ namespace Tests\Feature\Assignments;
 use App\Actors\Support\ActorIdentity;
 use App\AgentRequests\Exceptions\LaunchSettingMissing;
 use App\AgentRequests\Support\AgentClientSettings;
-use App\Assignments\Contracts\AssignmentWriter;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanType;
@@ -17,6 +16,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\Process\Process;
 use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\SendsSignedCalls;
 use Tests\Support\StartsAgentRequests;
@@ -49,7 +49,7 @@ final class AssignedListCommandsTest extends TestCase
 
     public function test_the_commands_print_what_the_launched_agent_holds(): void
     {
-        $writer = $this->app->make(AssignmentWriter::class);
+        $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $task = Task::query()->create(['title' => 'Write the client']);
         $plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $held = $writer->assign($task->assignmentIdentity(), ActorIdentity::of($this->caller->agent))->outcomes[0]->current;

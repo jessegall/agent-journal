@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
+use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
+use App\Agents\Commands\RetireAgent;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
+use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandRefused;
 use App\Bus\Exceptions\CommandReplacementRefused;
@@ -34,6 +38,7 @@ use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\CallsNextTwice;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\ChangesResult;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\LimitPlanStarts;
+use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefusesAfterRetirement;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\RefusesAll;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\ReplacesCardsCommand;
 use Tests\Fixtures\Modules\Notes\CommandMiddleware\ReplacesTasksCommand;
@@ -60,6 +65,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         Task::query()->delete();
         Message::query()->withoutGlobalScopes()->delete();
         AgentSession::query()->delete();
+        AssignmentRecord::query()->delete();
         Agent::query()->delete();
 
         parent::tearDown();
@@ -209,6 +215,24 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $this->expectException(CommandReplacementRefused::class);
 
         $this->app->make(CommandBus::class)->run(new FinishTask(Task::query()->create(['title' => 'Kept'])->id));
+    }
+
+    public function test_a_refusal_after_retirement_leaves_the_agent_unretired_with_its_assignments(): void
+    {
+        $this->installCommandModules(MiddlewareDeclaration::inside(RefusesAfterRetirement::class, CommandScope::command(RetireAgent::class)));
+        $helper = Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.read_only_helper_ready']);
+        $task = Task::query()->create(['title' => 'Held']);
+        $this->startUserRequestAs(1);
+        $bus = $this->app->make(CommandBus::class);
+        $bus->run(new AssignRecord($task->assignmentIdentity(), ActorIdentity::of($helper)));
+
+        try {
+            $bus->run(new RetireAgent($helper->id));
+            $this->fail('The refused retirement went through.');
+        } catch (CommandRefused) {
+            $this->assertFalse($helper->fresh()?->isRetired());
+            $this->assertSame(1, AssignmentRecord::query()->count());
+        }
     }
 
     public function test_a_middleware_may_not_replace_another_owners_private_command(): void

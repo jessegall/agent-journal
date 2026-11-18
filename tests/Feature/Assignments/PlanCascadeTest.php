@@ -6,7 +6,6 @@ namespace Tests\Feature\Assignments;
 
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Models\Agent;
-use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
@@ -22,6 +21,7 @@ use Domain\Plans\Models\PhaseTask;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Exceptions\TaskMissing;
 use Domain\Tasks\Models\Task;
+use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -73,7 +73,7 @@ final class PlanCascadeTest extends TestCase
 
     public function test_assigning_the_plan_alone_touches_nothing_under_it(): void
     {
-        $this->app->make(AssignmentWriter::class)->assign($this->plan->assignmentIdentity(), $this->builder);
+        $this->app->make(AssignmentWriterInTransaction::class)->assign($this->plan->assignmentIdentity(), $this->builder);
 
         $this->assertSame([Plan::LINK_TYPE], $this->heldTypes());
     }

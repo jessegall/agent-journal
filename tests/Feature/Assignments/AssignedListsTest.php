@@ -8,7 +8,6 @@ use App\Actors\Exceptions\AgentActorRequired;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
-use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Assignments\Support\NumberedPage;
 use Domain\Plans\Api\AssignedPlanFilters;
@@ -21,6 +20,7 @@ use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Models\Task;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
+use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -61,7 +61,7 @@ final class AssignedListsTest extends TestCase
 
     public function test_only_directly_held_tasks_are_listed_by_id_finished_ones_included(): void
     {
-        $writer = $this->app->make(AssignmentWriter::class);
+        $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $held = Task::query()->create(['title' => 'Write the reader']);
         $finished = Task::query()->create(['title' => 'Write the store']);
         $finished->finish();
@@ -84,7 +84,7 @@ final class AssignedListsTest extends TestCase
 
     public function test_a_held_plan_is_listed_but_holding_one_of_its_tasks_adds_no_plan(): void
     {
-        $writer = $this->app->make(AssignmentWriter::class);
+        $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $other = Plan::query()->create(['title' => 'Research', 'type' => PlanType::Research]);
         $task = Task::query()->create(['title' => 'In the research plan']);
@@ -109,7 +109,7 @@ final class AssignedListsTest extends TestCase
 
     public function test_rows_and_total_come_from_one_snapshot(): void
     {
-        $writer = $this->app->make(AssignmentWriter::class);
+        $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $writer->assign(Task::query()->create(['title' => 'First'])->assignmentIdentity(), ActorIdentity::of($this->main));
         $late = Task::query()->create(['title' => 'Assigned meanwhile']);
         $other = $this->otherConnection();

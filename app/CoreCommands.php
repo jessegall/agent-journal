@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Agents\Commands\RetireAgent;
+use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\ReassignRecord;
+use App\Assignments\Commands\UnassignRecord;
 use App\Bus\Contracts\Command;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\MiddlewareDeclaration;
@@ -18,7 +22,7 @@ final class CoreCommands
      */
     public static function commands(): array
     {
-        return [];
+        return [AssignRecord::class, ReassignRecord::class, UnassignRecord::class, RetireAgent::class];
     }
 
     /**

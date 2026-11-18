@@ -6,14 +6,14 @@ namespace Tests\Feature\Assignments;
 
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Support\ActorIdentity;
-use App\Agents\Contracts\AgentRetirement;
+use App\Agents\Commands\RetireAgent;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentReader;
 use App\Assignments\Contracts\AssignmentRegistration;
-use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\RecordUnavailable;
 use App\Assignments\Models\AssignmentRecord;
+use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainRegistry;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -23,6 +23,7 @@ use Tests\Fixtures\Modules\Cards\CardsDomain;
 use Tests\Fixtures\Modules\Notes\Models\Note;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
 use Tests\Fixtures\Modules\Notes\Providers\NotesServiceProvider;
+use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -72,7 +73,7 @@ final class ModuleAssignmentTest extends TestCase
         $this->installNotes();
         $this->startUserRequestAs($this->owner->id);
 
-        $result = $this->app->make(AssignmentWriter::class)->assign($this->note->assignmentIdentity(), ActorIdentity::of($this->writer));
+        $result = $this->app->make(AssignmentWriterInTransaction::class)->assign($this->note->assignmentIdentity(), ActorIdentity::of($this->writer));
         $set = $this->app->make(AssignmentReader::class)->assignmentsFor([$this->note->assignmentIdentity()]);
 
         $this->assertCount(1, $result->changes);
@@ -83,11 +84,11 @@ final class ModuleAssignmentTest extends TestCase
     {
         $this->installNotes();
         $this->startUserRequestAs($this->owner->id);
-        $this->app->make(AssignmentWriter::class)->assign($this->note->assignmentIdentity(), ActorIdentity::of($this->writer));
+        $this->app->make(AssignmentWriterInTransaction::class)->assign($this->note->assignmentIdentity(), ActorIdentity::of($this->writer));
 
         $this->startRequestAs($this->main->id, 1);
         $hidden = $this->app->make(AssignmentReader::class)->assignmentsFor([$this->note->assignmentIdentity()]);
-        $this->assertThrows(fn () => $this->app->make(AssignmentWriter::class)->assign($this->note->assignmentIdentity(), ActorIdentity::of($this->main)), RecordUnavailable::class);
+        $this->assertThrows(fn () => $this->app->make(AssignmentWriterInTransaction::class)->assign($this->note->assignmentIdentity(), ActorIdentity::of($this->main)), RecordUnavailable::class);
 
         $this->startRequestAs($this->writer->id, 2);
         $own = $this->app->make(AssignmentReader::class)->assignmentsFor([$this->note->assignmentIdentity()]);
@@ -106,7 +107,7 @@ final class ModuleAssignmentTest extends TestCase
 
         $this->assertThrows(fn () => $this->app->make(AssignmentReader::class)->assignmentsFor([$this->note->assignmentIdentity()]), AssignmentTypeUnavailable::class);
 
-        $result = $this->app->make(AgentRetirement::class)->retire($this->writer->id);
+        $result = $this->app->make(CommandBus::class)->run(new RetireAgent($this->writer->id));
 
         $this->assertCount(1, $result->changes);
         $this->assertSame(0, AssignmentRecord::query()->withoutGlobalScopes()->count());

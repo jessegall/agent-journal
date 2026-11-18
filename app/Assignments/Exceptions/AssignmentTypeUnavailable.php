@@ -6,9 +6,10 @@ namespace App\Assignments\Exceptions;
 
 use App\Actors\Enums\ActorType;
 use App\Assignments\Exceptions\Concerns\RendersRefusal;
+use App\Contracts\CommandRefusal;
 use RuntimeException;
 
-final class AssignmentTypeUnavailable extends RuntimeException
+final class AssignmentTypeUnavailable extends RuntimeException implements CommandRefusal
 {
     use RendersRefusal;
 

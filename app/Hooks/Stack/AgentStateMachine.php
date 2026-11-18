@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Stack;
 
+use App\Bus\Support\OperationDeadline;
 use App\Hooks\Contracts\HookInput;
 use App\Hooks\Exceptions\HookDeadlineExpired;
 use App\Hooks\Exceptions\HookDigestChanged;
@@ -17,7 +18,6 @@ use App\Hooks\Programs\ProgramCapabilities;
 use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Storage\RecordedSteps;
 use App\Hooks\Support\Compaction;
-use App\Hooks\Support\OperationDeadline;
 use App\Hooks\Support\StackAccess;
 use App\Hooks\Support\StackTransaction;
 use Closure;

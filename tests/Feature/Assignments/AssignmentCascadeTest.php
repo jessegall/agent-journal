@@ -21,6 +21,7 @@ use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanType;
 use Domain\Plans\Models\Plan;
 use Domain\Tasks\Models\Task;
+use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -130,6 +131,6 @@ final class AssignmentCascadeTest extends TestCase
 
     private function writer(): AssignmentWriter
     {
-        return $this->app->make(AssignmentWriter::class);
+        return $this->app->make(AssignmentWriterInTransaction::class);
     }
 }

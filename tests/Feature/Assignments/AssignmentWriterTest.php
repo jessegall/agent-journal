@@ -22,6 +22,7 @@ use Domain\Tasks\Models\Task;
 use Illuminate\Database\Connection;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -172,7 +173,7 @@ final class AssignmentWriterTest extends TestCase
 
     private function writer(): AssignmentWriter
     {
-        return $this->app->make(AssignmentWriter::class);
+        return $this->app->make(AssignmentWriterInTransaction::class);
     }
 
     private function otherConnection(): Connection

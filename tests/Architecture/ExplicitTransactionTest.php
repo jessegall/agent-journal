@@ -18,14 +18,18 @@ final class ExplicitTransactionTest extends TestCase
     /**
      * The folders judged: the test modules now; each later phase adds the owner it moves.
      */
-    public const array CHECKED = ['domain/Chat/src', 'domain/Plans/src', 'domain/Rules/src', 'domain/Sequences/src', 'domain/Tasks/src', 'tests/Fixtures/Modules'];
+    public const array CHECKED = ['app/Agents/Handlers', 'app/Assignments/Handlers', 'app/Bus', 'domain/Access/src', 'domain/Chat/src', 'domain/Memory/src', 'domain/Plans/src', 'domain/Processes/src', 'domain/Profiles/src', 'domain/Reminders/src', 'domain/Rules/src', 'domain/Sequences/src', 'domain/Tasks/src', 'tests/Fixtures/Modules'];
 
     private const array TRANSACTION_CALLS = ['transaction', 'beginTransaction', 'commit', 'rollBack'];
 
     /**
      * The fixture handler that opens its own transaction on purpose, so the bus's guard can be shown refusing it.
      */
-    private const array ALLOWED = ['tests/Fixtures/Modules/Notes/Handlers/OpenTransactionNoteHandler.php'];
+    private const array ALLOWED = [
+        // The bus's own frame step: the one place that opens a command's transaction.
+        'app/Bus/CommandMiddleware/RunInTransaction.php',
+        'tests/Fixtures/Modules/Notes/Handlers/OpenTransactionNoteHandler.php',
+    ];
 
     public function test_no_checked_owner_opens_a_transaction_itself(): void
     {

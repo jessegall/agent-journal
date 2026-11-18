@@ -8,7 +8,6 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Models\Agent;
-use App\Assignments\Contracts\AssignmentWriter;
 use Domain\Plans\Api\PlanCard;
 use Domain\Plans\Api\PlanFilters;
 use Domain\Plans\Enums\PlanType;
@@ -16,6 +15,7 @@ use Domain\Plans\Models\Plan;
 use Domain\Plans\Readers\PlanRecords;
 use Domain\Plans\Tests\TestCase;
 use Domain\Tasks\Models\Task;
+use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 
 final class PlanRecordsTest extends TestCase
@@ -60,7 +60,7 @@ final class PlanRecordsTest extends TestCase
         $agent = Agent::query()->create(['name' => 'Planner', 'role' => 'hooks.main_ready']);
         Plan::query()->whereKey($this->build->id)->update(['focused' => true]);
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent->id));
-        $this->app->make(AssignmentWriter::class)->assign($this->build->assignmentIdentity(), ActorIdentity::of($agent));
+        $this->app->make(AssignmentWriterInTransaction::class)->assign($this->build->assignmentIdentity(), ActorIdentity::of($agent));
 
         $cards = $this->records()->list(new PlanFilters)->cards;
 

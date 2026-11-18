@@ -6,7 +6,6 @@ namespace Tests\Feature\Assignments;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorIdentity;
-use App\Assignments\Contracts\AssignmentWriter;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanType;
@@ -14,6 +13,7 @@ use Domain\Plans\Models\Plan;
 use Domain\Tasks\Models\Task;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestLaunch;
+use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\TestCase;
@@ -47,7 +47,7 @@ final class AssignedListEndpointsTest extends TestCase
 
     public function test_the_caller_gets_only_the_tasks_and_plans_it_holds(): void
     {
-        $writer = $this->app->make(AssignmentWriter::class);
+        $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $held = Task::query()->create(['title' => 'Write the endpoint']);
         $others = Task::query()->create(['title' => 'Not mine']);
         $plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);

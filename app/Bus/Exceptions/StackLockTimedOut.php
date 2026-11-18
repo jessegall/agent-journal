@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Hooks\Exceptions;
+namespace App\Bus\Exceptions;
 
 use RuntimeException;
 use Throwable;

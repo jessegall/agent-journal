@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Hooks;
 
 use App\Bus\Contracts\CommandBus;
+use App\Bus\Support\OperationDeadline;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
@@ -13,7 +14,6 @@ use App\Hooks\Models\HookCall;
 use App\Hooks\Programs\ProgramCapabilities;
 use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Stack\HookAnswer;
-use App\Hooks\Support\OperationDeadline;
 use Domain\Memory\Models\Memory;
 use Domain\Rules\Models\Rule;
 use Domain\Sequences\Commands\StartSequence;

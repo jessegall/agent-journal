@@ -47,86 +47,80 @@ final readonly class WriteAssignments implements AssignmentWriter
 
     public function assign(RecordIdentity $record, ActorIdentity $recipient): AssignmentResult
     {
-        return $this->transaction->run(function () use ($record, $recipient): AssignmentResult {
-            $this->checkActors($recipient);
-            $this->providers->recordProvider($record->type)->requireAssignable($record);
-            $current = $this->store->lockCurrent($record);
+        $this->transaction->requireOpen();
+        $this->checkActors($recipient);
+        $this->providers->recordProvider($record->type)->requireAssignable($record);
+        $current = $this->store->lockCurrent($record);
 
-            if ($current->isDefined()) {
-                return $this->unchangedIfHeldBy($current->get(), $recipient);
-            }
+        if ($current->isDefined()) {
+            return $this->unchangedIfHeldBy($current->get(), $recipient);
+        }
 
-            return $this->changed(AssignmentReason::Assigned, $record, null, $this->store->assignIfUnheld($record, $recipient));
-        });
+        return $this->changed(AssignmentReason::Assigned, $record, null, $this->store->assignIfUnheld($record, $recipient));
     }
 
     public function reassign(RecordIdentity $record, AssignmentReference $expected, ActorIdentity $recipient): AssignmentResult
     {
-        return $this->transaction->run(function () use ($record, $expected, $recipient): AssignmentResult {
-            $this->checkActors($recipient);
-            $this->providers->recordProvider($record->type)->requireAssignable($record);
-            $current = $this->requireExpected($record, $expected);
+        $this->transaction->requireOpen();
+        $this->checkActors($recipient);
+        $this->providers->recordProvider($record->type)->requireAssignable($record);
+        $current = $this->requireExpected($record, $expected);
 
-            if ($current->holder()->isSameAs($recipient)) {
-                return $this->unchanged($current);
-            }
+        if ($current->holder()->isSameAs($recipient)) {
+            return $this->unchanged($current);
+        }
 
-            return $this->changed(AssignmentReason::Reassigned, $record, $current, $this->store->replace($current, $recipient));
-        });
+        return $this->changed(AssignmentReason::Reassigned, $record, $current, $this->store->replace($current, $recipient));
     }
 
     public function unassign(RecordIdentity $record, AssignmentReference $expected): AssignmentResult
     {
-        return $this->transaction->run(function () use ($record, $expected): AssignmentResult {
-            $this->checkActors(null);
-            $this->providers->recordProvider($record->type)->requireAssignable($record);
+        $this->transaction->requireOpen();
+        $this->checkActors(null);
+        $this->providers->recordProvider($record->type)->requireAssignable($record);
 
-            if ($this->store->lockCurrent($record)->isEmpty()) {
-                return new AssignmentResult([new AssignmentOutcome($record, null, AssignmentOutcomeType::Unchanged)], []);
-            }
+        if ($this->store->lockCurrent($record)->isEmpty()) {
+            return new AssignmentResult([new AssignmentOutcome($record, null, AssignmentOutcomeType::Unchanged)], []);
+        }
 
-            $current = $this->requireExpected($record, $expected);
-            $this->store->remove($current);
+        $current = $this->requireExpected($record, $expected);
+        $this->store->remove($current);
 
-            return $this->changed(AssignmentReason::Unassigned, $record, $current, null);
-        });
+        return $this->changed(AssignmentReason::Unassigned, $record, $current, null);
     }
 
     public function assignUnfinished(ActorIdentity $recipient, Closure $records): AssignmentResult
     {
-        return $this->transaction->run(function () use ($recipient, $records): AssignmentResult {
-            $this->checkActors($recipient);
-            [$group, $finished] = $this->checkedGroup($records);
-            $root = $this->store->lockCurrent($group->root);
+        $this->transaction->requireOpen();
+        $this->checkActors($recipient);
+        [$group, $finished] = $this->checkedGroup($records);
+        $root = $this->store->lockCurrent($group->root);
 
-            if ($root->isDefined() && ! $root->get()->holder()->isSameAs($recipient)) {
-                throw AssignmentConflict::heldByAnother($group->root);
-            }
+        if ($root->isDefined() && ! $root->get()->holder()->isSameAs($recipient)) {
+            throw AssignmentConflict::heldByAnother($group->root);
+        }
 
-            return $this->published(AssignmentReason::Assigned, $this->each($group, $finished, fn (RecordIdentity $record) => $this->batch->giveTo($record, $recipient)));
-        });
+        return $this->published(AssignmentReason::Assigned, $this->each($group, $finished, fn (RecordIdentity $record) => $this->batch->giveTo($record, $recipient)));
     }
 
     public function reassignUnfinished(AssignmentReference $expectedRoot, ActorIdentity $recipient, Closure $records): AssignmentResult
     {
-        return $this->transaction->run(function () use ($expectedRoot, $recipient, $records): AssignmentResult {
-            $this->checkActors($recipient);
-            [$group, $finished] = $this->checkedGroup($records);
-            $this->requireExpected($group->root, $expectedRoot);
+        $this->transaction->requireOpen();
+        $this->checkActors($recipient);
+        [$group, $finished] = $this->checkedGroup($records);
+        $this->requireExpected($group->root, $expectedRoot);
 
-            return $this->published(AssignmentReason::Reassigned, $this->each($group, $finished, fn (RecordIdentity $record) => $this->batch->giveTo($record, $recipient)));
-        });
+        return $this->published(AssignmentReason::Reassigned, $this->each($group, $finished, fn (RecordIdentity $record) => $this->batch->giveTo($record, $recipient)));
     }
 
     public function unassignUnfinished(AssignmentReference $expectedRoot, Closure $records): AssignmentResult
     {
-        return $this->transaction->run(function () use ($expectedRoot, $records): AssignmentResult {
-            $this->checkActors(null);
-            [$group, $finished] = $this->checkedGroup($records);
-            $this->requireExpected($group->root, $expectedRoot);
+        $this->transaction->requireOpen();
+        $this->checkActors(null);
+        [$group, $finished] = $this->checkedGroup($records);
+        $this->requireExpected($group->root, $expectedRoot);
 
-            return $this->published(AssignmentReason::Unassigned, $this->each($group, $finished, fn (RecordIdentity $record) => $this->batch->clear($record)));
-        });
+        return $this->published(AssignmentReason::Unassigned, $this->each($group, $finished, fn (RecordIdentity $record) => $this->batch->clear($record)));
     }
 
     /**

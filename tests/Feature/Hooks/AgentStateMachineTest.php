@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Hooks;
 
+use App\Bus\Support\OperationDeadline;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Enums\AnswerType;
 use App\Hooks\Enums\NoSubject;
@@ -21,7 +22,6 @@ use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Programs\ProgramToolInput;
 use App\Hooks\Stack\HookAnswer;
 use App\Hooks\Storage\WalkStep;
-use App\Hooks\Support\OperationDeadline;
 use Closure;
 use Domain\Tasks\Enums\TaskWorkState;
 use Tests\Fixtures\Hooks\TestFailure;
