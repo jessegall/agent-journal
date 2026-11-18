@@ -17,10 +17,16 @@ use App\Sharing\Support\ShareSelection;
 use App\Sharing\Support\ShareTargetRead;
 
 /**
- * Answers every pamphlet as one fixed published card with no linked or owned records.
+ * Discloses pamphlets but not their notes, and answers every pamphlet as one fixed published card with no linked
+ * or owned records.
  */
 final class PamphletShareProvider implements ShareRecordProvider
 {
+    public function mayDisclose(RecordIdentity $record): bool
+    {
+        return $record->type === 'pamphlets.pamphlet';
+    }
+
     public function preview(ShareSelection $selection, ShareBudget $budget): ShareCandidates
     {
         return new ShareCandidates($this->card($selection->root), []);

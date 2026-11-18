@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Contracts;
 
+use App\Records\Support\RecordIdentity;
 use App\Sharing\Support\ShareBudget;
 use App\Sharing\Support\ShareCandidates;
 use App\Sharing\Support\ShareContentRead;
@@ -20,6 +21,11 @@ use App\Sharing\Support\ShareTargetRead;
  */
 interface ShareRecordProvider
 {
+    /**
+     * Whether the record may be disclosed publicly now, by this record type's own policy.
+     */
+    public function mayDisclose(RecordIdentity $record): bool;
+
     public function preview(ShareSelection $selection, ShareBudget $budget): ShareCandidates;
 
     public function readTargets(ShareTargetRead $read, ShareBudget $budget): ShareRecords;

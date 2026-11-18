@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Sharing\Providers;
 
+use App\Sharing\Contracts\SharePolicy;
+use App\Sharing\Support\OwnerSharePolicy;
 use App\Sharing\Support\ShareGatewayRegistry;
 use App\Sharing\Support\ShareRecordRegistry;
 use Illuminate\Support\ServiceProvider;
 
 /**
  * Keeps one registry of shareable record types and one of share gateways for the application's life, filled by the
- * domains at boot; the record types' relations are checked once everything booted, so a wrong one stops the boot.
+ * domains at boot, and binds the owner's share policy. The record types' relations are checked once everything
+ * booted, so a wrong one stops the boot.
  */
 final class SharingServiceProvider extends ServiceProvider
 {
@@ -18,6 +21,7 @@ final class SharingServiceProvider extends ServiceProvider
     {
         $this->app->singleton(ShareRecordRegistry::class);
         $this->app->singleton(ShareGatewayRegistry::class);
+        $this->app->bind(SharePolicy::class, OwnerSharePolicy::class);
     }
 
     public function boot(): void

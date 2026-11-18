@@ -104,6 +104,16 @@ final class Share extends Model implements ReadableModel
         return new RecordIdentity($this->root_type, $this->root_id);
     }
 
+    /**
+     * Whether one of these users granted the share; a proposal was granted by nobody.
+     *
+     * @param  list<string>  $userIds
+     */
+    public function isGrantedByOneOf(array $userIds): bool
+    {
+        return $this->owner_user_id !== null && in_array($this->owner_user_id, $userIds, true);
+    }
+
     private static function forRoot(RecordIdentity $root, ShareState $state, CarbonImmutable $expiresAt): self
     {
         $share = new self;
