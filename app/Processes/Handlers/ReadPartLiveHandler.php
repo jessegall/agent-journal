@@ -1,0 +1,56 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Processes\Handlers;
+
+use App\Contracts\CommandHandler;
+use App\Processes\Commands\ReadPartLive;
+use App\Processes\Models\PartRun;
+use App\Processes\Models\ReaderPosition;
+use App\Processes\Readers\DeclarativeReader;
+use App\Processes\Support\PartAssessments;
+use App\Processes\Support\StoredOutput;
+use App\Processes\Values\OutputProblem;
+use Throwable;
+
+/**
+ * Advances the live reader of a part over its committed output. A reader that throws, overruns its time budget or
+ * meets an oversized record is marked failed on its own position; capture and the activity view go on untouched.
+ */
+final readonly class ReadPartLiveHandler implements CommandHandler
+{
+    public function __construct(private PartAssessments $assessments, private StoredOutput $output) {}
+
+    public function handle(ReadPartLive $command): string
+    {
+        $part = PartRun::query()->whereKey($command->partRunId)->sole();
+        $pairs = $this->assessments->pairOf($part);
+        if ($pairs === []) {
+            return '';
+        }
+        $position = ReaderPosition::of($part, $pairs[0]->reader);
+        if ($position->hasFailed()) {
+            return $position->interpretation->value;
+        }
+        $definition = $pairs[0]->reader->readerDefinition();
+        $reader = new DeclarativeReader($definition, $pairs[0]->contract->output, $position->reader_revision_id);
+        $checkpoint = $position->checkpoint();
+        try {
+            foreach ($part->recordedStreams() as $stream) {
+                $frames = $this->output->frames($part, $stream, $checkpoint->offsetOf($stream));
+                $checkpoint = $reader->read($checkpoint, ...$frames);
+            }
+        } catch (Throwable) {
+            $position->markFailed();
+
+            return $position->interpretation->value;
+        }
+        $position->advance($checkpoint);
+        if (array_any($checkpoint->problems, fn (OutputProblem $problem): bool => $problem->code->isReaderFailure())) {
+            $position->markFailed();
+        }
+
+        return $position->interpretation->value;
+    }
+}

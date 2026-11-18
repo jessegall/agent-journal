@@ -29,10 +29,12 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->foreignUlid('part_run_id')->constrained('part_runs')->cascadeOnDelete();
             $table->foreignUlid('reader_revision_id')->constrained('reader_revisions')->cascadeOnDelete();
+            $table->string('purpose', 16);
             $table->jsonb('checkpoint');
+            $table->string('interpretation', 16);
             $table->timestampsTz();
 
-            $table->unique(['part_run_id', 'reader_revision_id']);
+            $table->unique(['part_run_id', 'reader_revision_id', 'purpose']);
         });
     }
 

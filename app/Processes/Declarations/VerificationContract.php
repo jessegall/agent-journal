@@ -62,6 +62,16 @@ final readonly class VerificationContract
     }
 
     /**
+     * The digest of what the contract promises, apart from which reader reads it: a repaired reader keeps the digest.
+     */
+    public function digest(): string
+    {
+        $promised = array_diff_key($this->toArray(), ['reader' => true]);
+
+        return hash('sha256', json_encode($promised, JSON_THROW_ON_ERROR));
+    }
+
+    /**
      * The contract of a declared check whose reader and exits are not proven yet: plain lines, every exit an execution
      * error, no total, and a reader required before it may run normally.
      */

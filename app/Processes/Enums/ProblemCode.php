@@ -27,6 +27,14 @@ enum ProblemCode: string
     case NotNormalRun = 'not_normal_run';
 
     /**
+     * Whether the reader itself broke on the output, rather than the output being wrong.
+     */
+    public function isReaderFailure(): bool
+    {
+        return $this === self::ReaderFailed || $this === self::RecordLimit;
+    }
+
+    /**
      * The next action a person or agent takes for this problem.
      */
     public function nextAction(): string

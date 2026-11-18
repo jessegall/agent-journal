@@ -51,8 +51,10 @@ use App\Processes\Commands\OpenCommandRequest;
 use App\Processes\Commands\ProposeCommandRule;
 use App\Processes\Commands\ProposeReader;
 use App\Processes\Commands\ProveReader;
+use App\Processes\Commands\ReadPartLive;
 use App\Processes\Commands\RecordEvidenceReads;
 use App\Processes\Commands\RejectRuleProposal;
+use App\Processes\Commands\ReplayAssessment;
 use App\Processes\Commands\RestoreCommandRule;
 use App\Processes\Commands\RetireCommandRule;
 use App\Processes\Commands\ReviseRuleProposal;
@@ -140,6 +142,8 @@ final class CoreCommands
             ApproveRuleBundle::class,
             MarkRunsStale::class,
             AssessPartOutput::class,
+            ReadPartLive::class,
+            ReplayAssessment::class,
             CreateSkill::class, ReviseSkill::class, RestoreSkill::class, RetireSkill::class, CopySkill::class,
             RefreshSkills::class, PublishSkills::class, PrepareSkillPublication::class, ActivateSkillPublication::class, FailSkillPublication::class,
         ];

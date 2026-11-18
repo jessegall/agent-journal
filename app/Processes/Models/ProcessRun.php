@@ -153,6 +153,11 @@ final class ProcessRun extends Model implements ReadableModel
         $this->save();
     }
 
+    public function isRunBy(ActorIdentity $actor): bool
+    {
+        return $this->actor_type === $actor->type->value && $this->actor_id === $actor->id;
+    }
+
     public function isStale(): bool
     {
         return $this->stale_reason !== '';
