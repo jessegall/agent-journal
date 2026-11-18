@@ -13,6 +13,6 @@ final class ConstructionUse
      */
     public function messages(): array
     {
-        return [new Message(), new class extends Message {}];
+        return [new Message, new class extends Message {}];
     }
 }

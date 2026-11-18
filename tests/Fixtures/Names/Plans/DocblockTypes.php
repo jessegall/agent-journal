@@ -33,7 +33,7 @@ final class DocblockTypes
     public function first(array $shape): object|null
     {
         if ($shape['count'] < 0) {
-            throw new ChatFailed();
+            throw new ChatFailed;
         }
 
         if ($shape['count'] === 0) {
@@ -51,6 +51,6 @@ final class DocblockTypes
      */
     public function fullyWritten(): object
     {
-        return new Message();
+        return new Message;
     }
 }
