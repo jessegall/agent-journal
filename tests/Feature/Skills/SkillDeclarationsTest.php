@@ -6,7 +6,7 @@ namespace Tests\Feature\Skills;
 
 use App\Domains\Exceptions\SkillDeclarationRefused;
 use App\Domains\Support\DomainRegistry;
-use App\Skills\CoreSkills;
+use App\Skills\Support\CoreSkills;
 use App\Skills\Values\SkillOwner;
 use Tests\Fixtures\Domains\FalseSkills\FalseSkillsDomain;
 use Tests\Fixtures\Domains\StraySkills\StraySkillsDomain;

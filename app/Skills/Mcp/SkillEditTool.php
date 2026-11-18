@@ -9,7 +9,6 @@ use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalWriteTool;
 use App\Skills\Commands\ReviseSkill;
-use App\Skills\Models\SkillRevision;
 use App\Skills\Support\SkillAuthoring;
 use App\Skills\Values\SkillDraft;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -46,7 +45,7 @@ final class SkillEditTool extends JournalWriteTool
     {
         $requestId = $arguments->optionalText('request_id') ?? (string) Str::ulid();
         $skill = $this->authoring->stored($arguments->text('skill'));
-        $current = SkillRevision::currentOf($skill)->draft();
+        $current = $this->authoring->currentDraft($skill);
         $body = $arguments->optionalText('body');
         $conditions = $arguments->optionalText('conditions');
         $draft = new SkillDraft(

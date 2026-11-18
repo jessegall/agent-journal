@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use App\Links\Support\Linkable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -47,6 +48,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['session_id', 'program', 'target', 'generation_id', 'selection_digest', 'skill_keys', 'expected_previous_generation_id', 'fencing_version', 'lease_holder', 'lease_until', 'progress', 'state', 'open_key', 'manifest', 'error'])]
 final class SkillPublication extends Model implements ReadableModel
 {
+    use Linkable;
+
     use BoundedReads, HasUlids;
 
     /**

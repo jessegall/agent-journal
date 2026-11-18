@@ -9,7 +9,7 @@ use App\Skills\Conditions\Everyone;
 use App\Skills\Exceptions\SkillAgentHidden;
 use App\Skills\Exceptions\SkillContextUnavailable;
 use App\Skills\Exceptions\SkillSelectionConflict;
-use App\Skills\Readers\SkillContextReader;
+use App\Skills\Readers\Support\SkillContextReader;
 use App\Skills\Values\ExcludedSkill;
 use App\Skills\Values\SkillEntry;
 
@@ -40,6 +40,17 @@ final readonly class SkillPreview
             'condition' => $skill->condition->toArray(),
             'agents' => $rows,
         ];
+    }
+
+    /**
+     * The selection of the agent with this id, for an MCP tool that names the agent by id.
+     *
+     * @param  list<SkillEntry>  $skills
+     * @return array{key: string, agent: string, selected: bool, reason: string, selection: list<string>, digest: string}
+     */
+    public function forAgentId(SkillEntry $skill, array $skills, string $agentId): array
+    {
+        return $this->forAgent($skill, $skills, Agent::query()->whereKey($agentId)->firstOrFail());
     }
 
     /**

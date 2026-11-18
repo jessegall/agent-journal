@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Skills\Readers;
+namespace App\Skills\Readers\Support;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;

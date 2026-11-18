@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Handlers;
 
+use App\Agents\Support\HostCapacityLock;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
@@ -48,6 +49,7 @@ final readonly class LaunchAgentHandler implements CommandHandler
         private HostCapabilities $capabilities,
         private HelperImages $images,
         private HostCapacity $capacity,
+        private HostCapacityLock $capacityLock,
     ) {}
 
     /**
@@ -116,6 +118,7 @@ final readonly class LaunchAgentHandler implements CommandHandler
             throw ImageUnverified::because((string) $request->execution->imageReference);
         }
 
+        $this->capacityLock->holdUntilCommit();
         CapacityReservation::reserve($request->requestId, $request->execution->budgets, $this->capacity);
     }
 }

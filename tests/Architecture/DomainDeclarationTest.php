@@ -105,6 +105,8 @@ final class DomainDeclarationTest extends TestCase
         'Exceptions/DomainListedTwice.php',
         'Exceptions/DomainNotFound.php',
         'Exceptions/DomainRequiresItself.php',
+        'Exceptions/SkillConditionRefused.php',
+        'Exceptions/SkillDeclarationRefused.php',
         'Exceptions/InvalidExports.php',
         'Exceptions/InvalidListener.php',
         'Exceptions/InvalidNavigationDeclaration.php',

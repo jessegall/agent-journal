@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Skills\Mcp;
 
-use App\Agents\Models\Agent;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
@@ -33,19 +32,19 @@ final class SkillPreviewTool extends JournalReadTool
     {
         return [
             'key' => $schema->string()->max(64)->required(),
-            'agent_id' => $schema->string()->max(26)->description('One agent whose selection to show.'),
+            'agent' => $schema->string()->max(26)->description('One agent, by id, whose selection to show.'),
         ];
     }
 
     protected function read(ToolArguments $arguments): ToolResult
     {
         $skill = $this->skills->find(SkillKey::from($arguments->text('key')));
-        $agentId = $arguments->optionalText('agent_id');
+        $agentId = $arguments->optionalText('agent');
 
         if ($agentId === null) {
             return new ToolResult('ok', $this->preview->audience($skill), []);
         }
 
-        return new ToolResult('ok', $this->preview->forAgent($skill, $this->skills->all(), Agent::query()->whereKey($agentId)->firstOrFail()), []);
+        return new ToolResult('ok', $this->preview->forAgentId($skill, $this->skills->all(), $agentId), []);
     }
 }

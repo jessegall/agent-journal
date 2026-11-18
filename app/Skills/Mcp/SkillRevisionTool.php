@@ -7,9 +7,7 @@ namespace App\Skills\Mcp;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
-use App\Skills\Models\SkillRevision;
 use App\Skills\Support\SkillAuthoring;
-use App\Skills\Values\SkillSection;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
 use Laravel\Mcp\Server\Attributes\Name;
@@ -37,14 +35,8 @@ final class SkillRevisionTool extends JournalReadTool
 
     protected function read(ToolArguments $arguments): ToolResult
     {
-        $revision = SkillRevision::numbered($this->authoring->stored($arguments->text('skill')), $arguments->positiveInteger('revision'));
+        $skill = $this->authoring->stored($arguments->text('skill'));
 
-        return new ToolResult('ok', [
-            'revision' => $revision->revision,
-            'name' => $revision->name,
-            'description' => $revision->description,
-            'condition' => $revision->condition,
-            'sections' => array_map(fn (SkillSection $section) => ['key' => $section->key, 'heading' => $section->heading, 'markdown' => $section->content], $revision->sections),
-        ], []);
+        return new ToolResult('ok', $this->authoring->revisionFields($skill, $arguments->positiveInteger('revision')), []);
     }
 }

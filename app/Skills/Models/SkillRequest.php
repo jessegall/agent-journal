@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use App\Links\Support\Linkable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -32,6 +33,8 @@ use Illuminate\Support\Carbon;
 #[Fillable(['actor_type', 'actor_id', 'request_id', 'input_digest', 'skill_id', 'skill_revision_id'])]
 final class SkillRequest extends Model implements ReadableModel
 {
+    use Linkable;
+
     use BoundedReads, HasUlids;
 
     /**

@@ -21,6 +21,8 @@ use App\Skills\Values\SkillRevisionResult;
 use App\Text\Support\MarkdownText;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Str;
+use App\Skills\Values\SkillDraft;
+use App\Skills\Values\SkillSection;
 
 /**
  * What every skill authoring entry point shares, on the command line and over MCP: acting as the journal owner on
@@ -183,5 +185,50 @@ final readonly class SkillAuthoring
             'Availability: '.($skill->isRetired() ? 'retired' : 'available'),
             'Delivery: not yet delivered to any agent',
         ];
+    }
+
+    /**
+     * The current revision of a stored skill as a draft, the starting point of an edit.
+     */
+    public function currentDraft(Skill $skill): SkillDraft
+    {
+        return SkillRevision::currentOf($skill)->draft();
+    }
+
+    /**
+     * One numbered revision of a stored skill, as the fields a reader shows.
+     *
+     * @return array{revision: int, name: string, description: string, condition: mixed, sections: list<array{key: string, heading: string, markdown: string}>}
+     */
+    public function revisionFields(Skill $skill, int $number): array
+    {
+        $revision = SkillRevision::numbered($skill, $number);
+
+        return [
+            'revision' => $revision->revision,
+            'name' => $revision->name,
+            'description' => $revision->description,
+            'condition' => $revision->condition,
+            'sections' => array_map(
+                fn (SkillSection $section) => ['key' => $section->key, 'heading' => $section->heading, 'markdown' => $section->storedText()],
+                $revision->sections,
+            ),
+        ];
+    }
+
+    /**
+     * The latest revisions of a stored skill, newest first, as the fields a history shows.
+     *
+     * @return list<array{revision: int, name: string, author: string, copied_from: string|null, saved_at: string}>
+     */
+    public function historyFields(Skill $skill, int $rows): array
+    {
+        return array_map(fn (SkillRevision $revision) => [
+            'revision' => $revision->revision,
+            'name' => $revision->name,
+            'author' => "{$revision->author_type->value}:{$revision->author_id}",
+            'copied_from' => $revision->source_key,
+            'saved_at' => $revision->created_at->toIso8601String(),
+        ], SkillRevision::historyOf($skill, $rows));
     }
 }

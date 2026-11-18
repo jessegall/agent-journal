@@ -10,7 +10,7 @@ use App\Skills\Contracts\SkillReader;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillKeyTaken;
 use App\Skills\Models\Skill;
-use App\Skills\Readers\SkillContextReader;
+use App\Skills\Readers\Support\SkillContextReader;
 use App\Skills\Support\StoredSkillWrites;
 use App\Skills\Values\SkillKey;
 use App\Skills\Values\SkillOwner;

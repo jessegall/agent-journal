@@ -16,7 +16,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainRegistry;
 use App\Skills\Commands\CreateSkill;
 use App\Skills\Commands\RefreshSkills;
-use App\Skills\CoreSkills;
+use App\Skills\Support\CoreSkills;
 use App\Skills\Enums\GenerationState;
 use App\Skills\Enums\PublicationState;
 use App\Skills\Models\SkillGeneration;

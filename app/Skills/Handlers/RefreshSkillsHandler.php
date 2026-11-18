@@ -16,7 +16,7 @@ use App\Skills\Exceptions\SkillSelectionConflict;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Readers\SkillCatalogue;
-use App\Skills\Readers\SkillContextReader;
+use App\Skills\Readers\Support\SkillContextReader;
 use App\Skills\Support\ConditionTree;
 use App\Skills\Support\SkillRegistry;
 use App\Skills\Support\SkillSelection;

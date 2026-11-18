@@ -23,7 +23,7 @@ use App\Skills\Contracts\SkillSource;
 use App\Skills\Models\Skill;
 use App\Skills\Readers\CatalogueOnFirstRead;
 use App\Skills\Readers\SkillCatalogue;
-use App\Skills\Readers\SkillContextReader;
+use App\Skills\Readers\Support\SkillContextReader;
 use App\Skills\Support\CanonicalRenderer;
 use App\Skills\Support\ConditionTree;
 use App\Skills\Support\EvaluationGuard;

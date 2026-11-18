@@ -6,7 +6,7 @@ namespace Tests\Feature\Skills;
 
 use App\Domains\Support\DomainRegistry;
 use App\Skills\Contracts\SkillReader;
-use App\Skills\CoreSkills;
+use App\Skills\Support\CoreSkills;
 use App\Skills\Support\SkillRegistry;
 use App\Skills\Values\SkillKey;
 use App\Skills\Values\SkillOwner;

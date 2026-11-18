@@ -31,6 +31,7 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\CurrentUser;
 use App\AgentRequests\Console\Concerns\SendsSignedCalls;
+use App\AgentRequests\Console\Concerns\SendsSignedWrites;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Exceptions\AgentRequestFailed;
 use App\AgentRequests\Support\AgentReply;
@@ -728,6 +729,21 @@ use App\Ui\Enums\PageSkeleton;
 use App\Ui\Enums\SlotContextType;
 use App\Web\Commands\RecordUserHeartbeat;
 use App\Web\Contracts\CurrentUserReader;
+use App\Skills\Contracts\SkillConditionEvaluator;
+use App\Skills\Values\SkillOwner;
+use App\Skills\Enums\SkillOrigin;
+use App\Skills\Support\MarkdownParts;
+use App\Skills\Conditions\MainAgent;
+use App\Skills\Conditions\Profiles;
+use App\Skills\Conditions\AgentTypes;
+use App\Skills\Conditions\Programs;
+use App\Skills\Conditions\Providers;
+use App\Skills\Conditions\Environments;
+use App\Skills\Conditions\Named;
+use App\Skills\Conditions\AllOf;
+use App\Skills\Conditions\AnyOf;
+use App\Skills\Conditions\Not;
+use App\Skills\Exceptions\SkillSourceInvalid;
 
 /**
  * Core's public surface: every type a domain or module may use, written out one by one. Everything else in Core is
@@ -862,6 +878,7 @@ final class CoreApi
                 SkillCondition::class,
                 ProvidesSkillConditions::class,
                 SkillReader::class,
+                SkillConditionEvaluator::class,
             )
             ->values(
                 RefusalCode::class,
@@ -1191,6 +1208,19 @@ final class CoreApi
                 ActivatedProfile::class,
                 SkillKey::class,
                 ProgramKey::class,
+                SkillOwner::class,
+                SkillOrigin::class,
+                MarkdownParts::class,
+                MainAgent::class,
+                Profiles::class,
+                AgentTypes::class,
+                Programs::class,
+                Providers::class,
+                Environments::class,
+                Named::class,
+                AllOf::class,
+                AnyOf::class,
+                Not::class,
                 ProviderKey::class,
                 SkillSection::class,
                 MarkdownPart::class,
@@ -1275,6 +1305,7 @@ final class CoreApi
                 ResetSettingGroup::class,
             )
             ->exceptions(
+                SkillSourceInvalid::class,
                 EngineActorRequired::class,
                 ActiveActorCounterRepeated::class,
                 MonotonicClockWentBack::class,
@@ -1454,6 +1485,7 @@ final class CoreApi
                 JournalResource::class,
                 RendersRefusal::class,
                 SendsSignedCalls::class,
+                SendsSignedWrites::class,
             )
             ->build();
     }

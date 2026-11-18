@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Processes\Readers;
+namespace App\Processes\Readers\Support;
 
 /**
  * Applies the terminal sequences a reader supports to one line: colour and style codes are dropped, and a carriage

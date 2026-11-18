@@ -46,6 +46,7 @@ final class Exports
         'App\Mcp\Resources\JournalResource',
         'App\Bus\Exceptions\Concerns\RendersRefusal',
         'App\AgentRequests\Console\Concerns\SendsSignedCalls',
+        'App\AgentRequests\Console\Concerns\SendsSignedWrites',
     ];
 
     /**

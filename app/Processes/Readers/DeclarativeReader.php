@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Readers;
 
+use App\Processes\Readers\Support\CheckpointBuilder;
+use App\Processes\Readers\Support\LineNormalizer;
 use App\Processes\Contracts\OutputReader;
 use App\Processes\Enums\ClaimedOutcome;
 use App\Processes\Enums\FramingType;

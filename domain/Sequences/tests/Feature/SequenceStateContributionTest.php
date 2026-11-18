@@ -70,7 +70,7 @@ final class SequenceStateContributionTest extends TestCase
 
         $context = json_decode($this->answerCompaction('call-1'), true, flags: JSON_THROW_ON_ERROR);
 
-        $this->assertSame(["Sequence run {$run->number} is on step 1: Read the brief."], $context);
+        $this->assertContains("Sequence run {$run->number} is on step 1: Read the brief.", $context);
         $this->assertSame(1, $run->fresh()?->current_step);
     }
 

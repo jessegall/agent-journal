@@ -7,7 +7,6 @@ namespace App\Skills\Mcp;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
 use App\Mcp\Tools\JournalReadTool;
-use App\Skills\Models\SkillRevision;
 use App\Skills\Support\SkillAuthoring;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Server\Attributes\Description;
@@ -43,7 +42,7 @@ final class SkillRevisionsTool extends JournalReadTool
             'key' => $skill->key,
             'number' => $skill->number,
             'status' => $this->authoring->statusLines($skill),
-            'revisions' => array_map(fn (SkillRevision $revision) => ['revision' => $revision->revision, 'name' => $revision->name, 'author' => "{$revision->author_type->value}:{$revision->author_id}", 'copied_from' => $revision->source_key, 'saved_at' => $revision->created_at->toIso8601String()], SkillRevision::historyOf($skill, self::ROWS)),
+            'revisions' => $this->authoring->historyFields($skill, self::ROWS),
         ], []);
     }
 }

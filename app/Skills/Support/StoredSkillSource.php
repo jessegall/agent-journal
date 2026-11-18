@@ -7,7 +7,7 @@ namespace App\Skills\Support;
 use App\Skills\Contracts\SkillSource;
 use App\Skills\Models\Skill;
 use App\Skills\Models\SkillRevision;
-use App\Skills\Readers\SkillContextReader;
+use App\Skills\Readers\Support\SkillContextReader;
 
 /**
  * The current revision of every unretired stored skill visible in this environment, read in two queries.

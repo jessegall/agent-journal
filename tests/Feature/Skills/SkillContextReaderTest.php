@@ -19,7 +19,7 @@ use App\Skills\Conditions\Conditions;
 use App\Skills\Enums\ConditionOutcome;
 use App\Skills\Exceptions\SkillAgentHidden;
 use App\Skills\Exceptions\SkillContextUnavailable;
-use App\Skills\Readers\SkillContextReader;
+use App\Skills\Readers\Support\SkillContextReader;
 use App\Skills\Values\SkillContext;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;

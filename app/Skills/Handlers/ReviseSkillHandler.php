@@ -7,7 +7,7 @@ namespace App\Skills\Handlers;
 use App\Contracts\CommandHandler;
 use App\Skills\Commands\ReviseSkill;
 use App\Skills\Models\Skill;
-use App\Skills\Readers\SkillContextReader;
+use App\Skills\Readers\Support\SkillContextReader;
 use App\Skills\Support\StoredSkillWrites;
 use App\Skills\Values\SkillRevisionResult;
 

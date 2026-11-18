@@ -32,6 +32,11 @@ use App\Skills\Models\Skill;
 use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillRevision;
 use Illuminate\Support\ServiceProvider;
+use App\Agents\Models\CapacityReservation;
+use App\Agents\Models\ConversationVisit;
+use App\Agents\Models\ProgramConversation;
+use App\Skills\Models\SkillPublication;
+use App\Skills\Models\SkillRequest;
 
 /**
  * Loads the core that every domain and module builds on: the migrations and listeners of its agents, hooks and links.
@@ -55,6 +60,11 @@ final class CoreServiceProvider extends ServiceProvider
             'core.settings-record' => SettingsRecord::class,
             'core.user-presence' => UserPresence::class,
             'core.engine-frame-time' => EngineFrameTime::class,
+            'core.capacity-reservation' => CapacityReservation::class,
+            'core.conversation-visit' => ConversationVisit::class,
+            'core.program-conversation' => ProgramConversation::class,
+            'core.skill-publication' => SkillPublication::class,
+            'core.skill-request' => SkillRequest::class,
             Profile::LINK_TYPE => Profile::class,
             ProfileRevision::LINK_TYPE => ProfileRevision::class,
             RetainedPage::LINK_TYPE => RetainedPage::class,

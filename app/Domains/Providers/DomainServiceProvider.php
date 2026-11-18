@@ -22,7 +22,7 @@ use App\Settings\Support\EmptySettingsDefinition;
 use App\Settings\Support\SettingRegistry;
 use App\Sharing\Support\ShareGatewayRegistry;
 use App\Sharing\Support\ShareRecordRegistry;
-use App\Skills\CoreSkills;
+use App\Skills\Support\CoreSkills;
 use App\Skills\Support\ConditionRegistry;
 use App\Skills\Support\SkillRegistry;
 use Illuminate\Foundation\Events\DiscoverEvents;
