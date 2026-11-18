@@ -67,11 +67,11 @@ final class SharingSupervisor
         }
 
         $endpoint = GatewayEndpoint::forOperation($claim->operation);
-        $gateway = $this->gateways->get($claim->operation->configuration->settings->gatewayKey);
+        $gateway = $this->gateways->forOperation($claim->operation);
         $outcome = $claim->type === GatewayOperationType::Open ? $this->open($gateway, $claim->operation) : $this->close($gateway, $endpoint);
 
         try {
-            $this->asSystem(new RecordGatewayOutcome($this->runId, $claim->operation->operationId, $claim->operation->endpointVersion, $claim->operation->leaseToken, $outcome));
+            $this->asSystem(RecordGatewayOutcome::of($claim->operation, $outcome));
         } catch (GatewayLeaseRefused|GatewayRunStale $lost) {
             $gateway->close($endpoint);
 
@@ -88,7 +88,7 @@ final class SharingSupervisor
     {
         foreach (ShareGatewayEndpoint::openOfRun($this->runId) as $endpoint) {
             $this->requireNoTransaction();
-            $healthy = $this->gateways->get($endpoint->gatewayKey())->health($endpoint->toGatewayEndpoint())->isHealthy();
+            $healthy = $this->gateways->healthOf($endpoint)->isHealthy();
             $this->asSystem(new RecordGatewayHealth($this->runId, $endpoint->share_gateway_configuration_id, $endpoint->endpoint_version, $healthy));
         }
     }

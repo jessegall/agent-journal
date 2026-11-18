@@ -25,7 +25,7 @@ final class UnreadyShareGateway implements ShareGateway
 
     public function open(GatewayOperation $operation): GatewayEndpoint
     {
-        return new GatewayEndpoint($operation->runId, $operation->endpointVersion, $operation->configuration->settings->publicOrigin, self::KEY);
+        return new GatewayEndpoint($operation->runId, $operation->endpointVersion, $operation->settings()->publicOrigin, self::KEY);
     }
 
     public function health(GatewayEndpoint $endpoint): GatewayHealth
