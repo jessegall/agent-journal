@@ -12,12 +12,12 @@ use App\Ui\Declarations\Page;
 use App\Ui\Declarations\Slot;
 use App\Ui\Enums\Icon;
 use App\Ui\Enums\SlotContextType;
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 
 /**
  * A fixture domain with a list page, a record page offering a slot, an action and nested navigation.
  */
-final class LibraryDomain implements Domain, ProvidesNavigation, ProvidesPages
+final class LibraryDomain extends Domain implements ProvidesNavigation, ProvidesPages
 {
     public function description(): string
     {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\Tables\Tasks;
 
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 
-final class TasksDomain implements Domain
+final class TasksDomain extends Domain
 {
     public function description(): string
     {

@@ -4,20 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Books;
 
-use App\Domains\Bootstrappers\LoadMigrations;
-use App\Domains\Contracts\Domain;
-use App\Domains\Contracts\ProvidesBootstrappers;
+use App\Domains\Support\Domain;
 
-final class BooksDomain implements Domain, ProvidesBootstrappers
+final class BooksDomain extends Domain
 {
     public function description(): string
     {
         return 'A fixture domain with a migration of its own.';
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class];
     }
 
     public function requires(): array

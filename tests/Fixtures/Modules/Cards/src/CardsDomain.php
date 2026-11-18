@@ -8,7 +8,7 @@ use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 use Tests\Fixtures\Modules\Cards\CommandMiddleware\RecordCards;
 use Tests\Fixtures\Modules\Cards\Commands\DrawCard;
 use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck;
@@ -16,7 +16,7 @@ use Tests\Fixtures\Modules\Cards\Commands\ShuffleDeck;
 /**
  * A second test module standing in for another owner of commands: one exported, one private.
  */
-final class CardsDomain implements Domain, ProvidesCommandMiddleware, ProvidesCommands
+final class CardsDomain extends Domain implements ProvidesCommandMiddleware, ProvidesCommands
 {
     public function description(): string
     {

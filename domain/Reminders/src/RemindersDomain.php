@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Reminders;
 
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 
-final class RemindersDomain implements Domain
+final class RemindersDomain extends Domain
 {
     public function description(): string
     {

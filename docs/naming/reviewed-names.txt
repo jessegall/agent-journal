@@ -342,6 +342,7 @@ class	CallScan
 class	CallSignatureInvalid
 class	CancelTask
 class	CancelTaskHandler
+class	CapabilityWithoutTrait
 class	ChatData
 class	ChatDomain
 class	ChatServiceProvider
@@ -351,6 +352,7 @@ class	CheckPageVisibility
 class	ChoiceOption
 class	ChosenAgentData
 class	ChosenAgentSection
+class	ClassesDeclared
 class	ClaudeCodeAdapter
 class	CloseLaunchStack
 class	CodexAdapter
@@ -421,6 +423,7 @@ class	DismissMessageHandler
 class	DocblockScan
 class	DocblockTagInvalid
 class	DocblockTypeCollector
+class	Domain
 class	DomainCycle
 class	DomainDeclarationError
 class	DomainEntry
@@ -489,6 +492,7 @@ class	InstallNumbers
 class	InstallNumbersCommand
 class	InstallNumbersHandler
 class	InterfacePlacement
+class	InterfacesDeclared
 class	InvalidActorText
 class	InvalidAssignmentIdentity
 class	InvalidAssignmentPage
@@ -571,6 +575,8 @@ class	ModelTables
 class	NameOutsideEveryDomain
 class	NameScan
 class	NameUse
+class	NamesUsed
+class	NamesUsedAnywhere
 class	NavigationCountsData
 class	NavigationData
 class	NavigationItem
@@ -931,6 +937,7 @@ constant	CoreServiceProvider::AREAS
 constant	DatabaseAssignmentTransaction::ATTEMPTS
 constant	DatabaseAssignmentTransaction::RETRYABLE_STATES
 constant	DeclaredRouteKey::NAME
+constant	Domain::TRAIT_OF_CAPABILITY
 constant	DomainTypeWriter::COMPATIBILITY_FILE
 constant	EventCallScan::EVENT_FACADES
 constant	EventCallScan::FACADE_METHODS
@@ -1059,7 +1066,6 @@ interface	CountReader
 interface	CurrentActor
 interface	CurrentActorSetter
 interface	CurrentUserReader
-interface	Domain
 interface	DomainBootstrapper
 interface	Event
 interface	HookAnswerer
@@ -1076,7 +1082,6 @@ interface	ProgramAdapter
 interface	ProgramCall
 interface	ProvidesAssignables
 interface	ProvidesAssignees
-interface	ProvidesBootstrappers
 interface	ProvidesCommandMiddleware
 interface	ProvidesCommands
 interface	ProvidesNavigation
@@ -1103,7 +1108,6 @@ interface	UpdatesUserInterface
 interface	UserStack
 interface	VisibilityCheck
 method	AccessDomain::assignees()
-method	AccessDomain::bootstrappers()
 method	AccessDomain::description()
 method	AccessDomain::exports()
 method	AccessDomain::requires()
@@ -1502,8 +1506,8 @@ method	CallSignatureInvalid::missing()
 method	CancelTask::__construct()
 method	CancelTaskHandler::__construct()
 method	CancelTaskHandler::handle()
+method	CapabilityWithoutTrait::for()
 method	ChatData::__construct()
-method	ChatDomain::bootstrappers()
 method	ChatDomain::commands()
 method	ChatDomain::description()
 method	ChatDomain::exports()
@@ -1526,6 +1530,8 @@ method	ChoiceOption::make()
 method	ChosenAgentData::__construct()
 method	ChosenAgentSection::__construct()
 method	ChosenAgentSection::read()
+method	ClassesDeclared::findingsIn()
+method	ClassesDeclared::key()
 method	ClaudeCodeAdapter::__construct()
 method	ClaudeCodeAdapter::callFor()
 method	ClaudeCodeAdapter::capabilities()
@@ -1741,6 +1747,8 @@ method	DocblockTypeCollector::enterNode()
 method	DocblockTypeCollector::isClassName()
 method	DocblockTypeCollector::lineOf()
 method	DocblockTypeCollector::resolved()
+method	Domain::bootSteps()
+method	Domain::bootstrappers()
 method	Domain::description()
 method	Domain::exports()
 method	Domain::requires()
@@ -1750,7 +1758,6 @@ method	DomainEntry::__construct()
 method	DomainEntry::assignables()
 method	DomainEntry::assignees()
 method	DomainEntry::boot()
-method	DomainEntry::bootstrappers()
 method	DomainEntry::checkedRequirements()
 method	DomainEntry::className()
 method	DomainEntry::commandMiddleware()
@@ -1818,7 +1825,6 @@ method	EventCallScan::holdsOnlyStrings()
 method	EventCallScan::isEventFacadeCall()
 method	EventCallScan::listenerParameter()
 method	EventCallScan::of()
-method	ExceptionPlacement::exceptionsDeclaredIn()
 method	ExceptionPlacement::misplacedIn()
 method	ExplicitTransactionInCommand::for()
 method	Exports::check()
@@ -1880,10 +1886,13 @@ method	HandleInertiaRequests::version()
 method	HandledBy::__construct()
 method	HandlerInOtherOwner::for()
 method	HandlerServesTwoCommands::for()
+method	HasAssignables::bootstrappersHasAssignables()
 method	HasNumber::assignNumber()
 method	HasNumber::bootHasNumber()
 method	HasNumber::numberGroup()
 method	HasNumber::numberHolder()
+method	HasNumberedModels::bootstrappersHasNumberedModels()
+method	HasStates::bootstrappersHasStates()
 method	HiddenAwareDataTransformer::isPropertyHidden()
 method	HiddenAwareDataTransformer::shouldTransform()
 method	HomeData::__construct()
@@ -1967,8 +1976,9 @@ method	InspectedFrame::fromFrameRecord()
 method	InspectedSubject::__construct()
 method	InstallNumbersCommand::handle()
 method	InstallNumbersHandler::handle()
-method	InterfacePlacement::interfacesDeclaredIn()
 method	InterfacePlacement::misplacedIn()
+method	InterfacesDeclared::findingsIn()
+method	InterfacesDeclared::key()
 method	InvalidActorText::for()
 method	InvalidAssignmentIdentity::forId()
 method	InvalidAssignmentIdentity::forReference()
@@ -2106,7 +2116,6 @@ method	MainAgentReadyState::onShellCommand()
 method	Memory::casts()
 method	Memory::saveFor()
 method	MemoryCompaction::recordOnce()
-method	MemoryDomain::bootstrappers()
 method	MemoryDomain::description()
 method	MemoryDomain::exports()
 method	MemoryDomain::requires()
@@ -2173,6 +2182,11 @@ method	NameScan::typeOf()
 method	NameType::canNameAnEventToHearIt()
 method	NameType::forImportType()
 method	NameUse::__construct()
+method	NamesUsed::findingsIn()
+method	NamesUsed::key()
+method	NamesUsedAnywhere::__construct()
+method	NamesUsedAnywhere::findingsIn()
+method	NamesUsedAnywhere::key()
 method	NavigationChildren::children()
 method	NavigationCountsData::__construct()
 method	NavigationData::__construct()
@@ -2364,7 +2378,6 @@ method	PlanWindowReader::read()
 method	PlanWorkResultData::__construct()
 method	PlanWorkResultData::of()
 method	PlansDomain::assignables()
-method	PlansDomain::bootstrappers()
 method	PlansDomain::commands()
 method	PlansDomain::description()
 method	PlansDomain::exports()
@@ -2380,7 +2393,6 @@ method	PlansWindowReader::__construct()
 method	PlansWindowReader::read()
 method	PreToolBody::__construct()
 method	PreToolOutput::__construct()
-method	ProcessesDomain::bootstrappers()
 method	ProcessesDomain::description()
 method	ProcessesDomain::exports()
 method	ProcessesDomain::requires()
@@ -2432,7 +2444,6 @@ method	ProposeRule::__construct()
 method	ProposeRuleHandler::handle()
 method	ProvidesAssignables::assignables()
 method	ProvidesAssignees::assignees()
-method	ProvidesBootstrappers::bootstrappers()
 method	ProvidesCommandMiddleware::commandMiddleware()
 method	ProvidesCommands::commands()
 method	ProvidesNavigation::navigation()
@@ -2671,7 +2682,6 @@ method	RuleRemoved::__construct()
 method	RuleRowData::__construct()
 method	RuleRowData::fromRuleView()
 method	RuleView::__construct()
-method	RulesDomain::bootstrappers()
 method	RulesDomain::commands()
 method	RulesDomain::description()
 method	RulesDomain::exports()
@@ -2724,7 +2734,6 @@ method	SequenceStarted::__construct()
 method	SequenceWork::__construct()
 method	SequenceWork::currentInstruction()
 method	SequenceWork::needsWork()
-method	SequencesDomain::bootstrappers()
 method	SequencesDomain::commands()
 method	SequencesDomain::description()
 method	SequencesDomain::exports()
@@ -2967,7 +2976,6 @@ method	TaskWork::needsWork()
 method	TaskWork::unfinishedReason()
 method	TaskWorkState::needsWork()
 method	TasksDomain::assignables()
-method	TasksDomain::bootstrappers()
 method	TasksDomain::commands()
 method	TasksDomain::description()
 method	TasksDomain::exports()
@@ -3580,6 +3588,7 @@ property	NameUse::$file
 property	NameUse::$line
 property	NameUse::$name
 property	NameUse::$type
+property	NamesUsedAnywhere::$roots
 property	NavigationCountsData::$counts
 property	NavigationData::$current
 property	NavigationData::$items
@@ -4144,7 +4153,10 @@ property	WriteAssignments::$transaction
 trait	AssignableListing
 trait	BelongsToOneAgent
 trait	ComparesTypeAndId
+trait	HasAssignables
 trait	HasNumber
+trait	HasNumberedModels
+trait	HasStates
 trait	Linkable
 trait	OptionalOrMissing
 trait	PasswordValidationRules

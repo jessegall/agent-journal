@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Profiles;
 
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 
-final class ProfilesDomain implements Domain
+final class ProfilesDomain extends Domain
 {
     public function description(): string
     {

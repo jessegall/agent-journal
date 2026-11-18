@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace Domain\Tasks;
 
 use App\Bus\Contracts\ProvidesCommands;
-use App\Domains\Bootstrappers\LoadMigrations;
-use App\Domains\Bootstrappers\RegisterAssignables;
-use App\Domains\Bootstrappers\RegisterStates;
-use App\Domains\Contracts\Domain;
+use App\Domains\Concerns\HasAssignables;
+use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesAssignables;
-use App\Domains\Contracts\ProvidesBootstrappers;
 use App\Domains\Contracts\ProvidesStates;
+use App\Domains\Support\Domain;
 use Domain\Tasks\Api\Events\TaskBlocked;
 use Domain\Tasks\Api\Events\TaskCancelled;
 use Domain\Tasks\Api\Events\TaskFinished;
@@ -37,16 +35,13 @@ use Domain\Tasks\Readers\TaskAssignments;
 use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 
-final class TasksDomain implements Domain, ProvidesAssignables, ProvidesBootstrappers, ProvidesCommands, ProvidesStates
+final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesStates
 {
+    use HasAssignables, HasStates;
+
     public function description(): string
     {
         return 'A task, its state, its log and what it waits on.';
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class, RegisterAssignables::class, RegisterStates::class];
     }
 
     /**

@@ -4,16 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Notes;
 
+use App\Domains\Concerns\HasStates;
+use App\Domains\Concerns\HasAssignables;
 use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
-use App\Domains\Bootstrappers\LoadMigrations;
-use App\Domains\Bootstrappers\RegisterAssignables;
-use App\Domains\Bootstrappers\RegisterStates;
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 use App\Domains\Contracts\ProvidesAssignables;
-use App\Domains\Contracts\ProvidesBootstrappers;
 use App\Domains\Contracts\ProvidesStates;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
@@ -50,16 +48,13 @@ use Tests\Fixtures\Modules\Notes\Support\NoteAssignments;
 /**
  * A module installed outside the domain folder, registered beside the domains only in the architecture fixtures.
  */
-final class NotesDomain implements Domain, ProvidesAssignables, ProvidesBootstrappers, ProvidesCommandMiddleware, ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesStates
+final class NotesDomain extends Domain implements ProvidesAssignables, ProvidesCommandMiddleware, ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesStates
 {
+    use HasAssignables, HasStates;
+
     public function description(): string
     {
         return 'Notes an agent writes while it works: a module outside the domain folder.';
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class, RegisterAssignables::class, RegisterStates::class];
     }
 
     public function requires(): array

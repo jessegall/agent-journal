@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\TwoCycle\Orders;
 
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 use Tests\Fixtures\Domains\TwoCycle\Payments\PaymentsDomain;
 
-final class OrdersDomain implements Domain
+final class OrdersDomain extends Domain
 {
     public function description(): string
     {

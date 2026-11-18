@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Declarations\Good;
 
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 
-final class GoodDomain implements Domain
+final class GoodDomain extends Domain
 {
     public function description(): string
     {

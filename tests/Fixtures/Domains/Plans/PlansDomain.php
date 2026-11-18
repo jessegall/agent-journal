@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Plans;
 
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 use Tests\Fixtures\Domains\Tasks\TasksDomain;
 
-final class PlansDomain implements Domain
+final class PlansDomain extends Domain
 {
     public function description(): string
     {

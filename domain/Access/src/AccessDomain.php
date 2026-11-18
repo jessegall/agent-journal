@@ -6,23 +6,18 @@ namespace Domain\Access;
 
 use App\Actors\Enums\ActorType;
 use App\Assignments\Support\AssigneeRegistration;
-use App\Domains\Bootstrappers\LoadMigrations;
-use App\Domains\Bootstrappers\RegisterAssignables;
-use App\Domains\Contracts\Domain;
+use App\Domains\Concerns\HasAssignables;
 use App\Domains\Contracts\ProvidesAssignees;
-use App\Domains\Contracts\ProvidesBootstrappers;
+use App\Domains\Support\Domain;
 use Domain\Access\Support\UserAssignees;
 
-final class AccessDomain implements Domain, ProvidesAssignees, ProvidesBootstrappers
+final class AccessDomain extends Domain implements ProvidesAssignees
 {
+    use HasAssignables;
+
     public function description(): string
     {
         return 'The users who sign in, how they sign in, and which of them may use the journal.';
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class, RegisterAssignables::class];
     }
 
     /**

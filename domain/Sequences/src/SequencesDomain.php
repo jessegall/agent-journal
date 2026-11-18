@@ -5,25 +5,20 @@ declare(strict_types=1);
 namespace Domain\Sequences;
 
 use App\Bus\Contracts\ProvidesCommands;
-use App\Domains\Bootstrappers\LoadMigrations;
-use App\Domains\Bootstrappers\RegisterStates;
-use App\Domains\Contracts\Domain;
-use App\Domains\Contracts\ProvidesBootstrappers;
+use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesStates;
+use App\Domains\Support\Domain;
 use Domain\Sequences\Commands\StartSequence;
 use Domain\Sequences\States\Support\FollowingSequenceStateFactory;
 use Domain\Sequences\States\Support\FollowingSequenceStateReference;
 
-final class SequencesDomain implements Domain, ProvidesBootstrappers, ProvidesCommands, ProvidesStates
+final class SequencesDomain extends Domain implements ProvidesCommands, ProvidesStates
 {
+    use HasStates;
+
     public function description(): string
     {
         return 'Steps an agent follows one at a time.';
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class, RegisterStates::class];
     }
 
     /**

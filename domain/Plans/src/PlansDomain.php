@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Domain\Plans;
 
 use App\Bus\Contracts\ProvidesCommands;
-use App\Domains\Bootstrappers\LoadMigrations;
-use App\Domains\Bootstrappers\RegisterAssignables;
-use App\Domains\Contracts\Domain;
+use App\Domains\Concerns\HasAssignables;
 use App\Domains\Contracts\ProvidesAssignables;
-use App\Domains\Contracts\ProvidesBootstrappers;
+use App\Domains\Support\Domain;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Contracts\ProvidesSections;
@@ -51,16 +49,13 @@ use Domain\Plans\Support\PhaseAssignmentProvider;
 use Domain\Plans\Support\PlanAssignmentProvider;
 use Domain\Tasks\TasksDomain;
 
-final class PlansDomain implements Domain, ProvidesAssignables, ProvidesBootstrappers, ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesSections
+final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesSections
 {
+    use HasAssignables;
+
     public function description(): string
     {
         return 'A goal with phases and the tasks in each phase.';
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class, RegisterAssignables::class];
     }
 
     /**

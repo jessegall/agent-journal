@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Models\Shop;
 
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 
-final class ShopDomain implements Domain
+final class ShopDomain extends Domain
 {
     public function description(): string
     {

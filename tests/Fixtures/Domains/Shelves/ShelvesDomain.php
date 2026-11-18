@@ -4,20 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Shelves;
 
-use App\Domains\Bootstrappers\LoadMigrations;
-use App\Domains\Contracts\Domain;
-use App\Domains\Contracts\ProvidesBootstrappers;
+use App\Domains\Support\Domain;
 
-final class ShelvesDomain implements Domain, ProvidesBootstrappers
+final class ShelvesDomain extends Domain
 {
     public function description(): string
     {
         return 'A fixture domain with a migration and a listener.';
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class];
     }
 
     public function requires(): array

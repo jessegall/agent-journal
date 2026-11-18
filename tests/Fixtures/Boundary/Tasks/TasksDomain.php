@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\Tasks;
 
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 use Tests\Fixtures\Boundary\Chat\ChatDomain;
 
-final class TasksDomain implements Domain
+final class TasksDomain extends Domain
 {
     public function description(): string
     {

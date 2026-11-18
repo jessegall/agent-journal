@@ -4,20 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Processes;
 
-use App\Domains\Bootstrappers\LoadMigrations;
-use App\Domains\Contracts\Domain;
-use App\Domains\Contracts\ProvidesBootstrappers;
+use App\Domains\Support\Domain;
 
-final class ProcessesDomain implements Domain, ProvidesBootstrappers
+final class ProcessesDomain extends Domain
 {
     public function description(): string
     {
         return 'Shell commands run through the journal, their output, command aliases and readers.';
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class];
     }
 
     /**

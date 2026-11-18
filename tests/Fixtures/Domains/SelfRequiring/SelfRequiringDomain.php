@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\SelfRequiring;
 
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 
-final class SelfRequiringDomain implements Domain
+final class SelfRequiringDomain extends Domain
 {
     public function description(): string
     {

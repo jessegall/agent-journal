@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Modules\Ledger;
 
+use App\Domains\Concerns\HasNumberedModels;
 use App\Bus\Contracts\ProvidesCommands;
-use App\Domains\Bootstrappers\RegisterNumberedModels;
-use App\Domains\Contracts\Domain;
-use App\Domains\Contracts\ProvidesBootstrappers;
+use App\Domains\Support\Domain;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
 use Tests\Fixtures\Modules\Ledger\Bootstrappers\RegisterLedgerLinkTypes;
@@ -19,8 +18,10 @@ use Tests\Fixtures\Modules\Ledger\Models\LedgerEntry;
 /**
  * A test module of numbered records: ledgers numbered across the journal, and entries numbered within their ledger.
  */
-final class LedgerDomain implements Domain, ProvidesBootstrappers, ProvidesCommands, ProvidesNumberedModels
+final class LedgerDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels
 {
+    use HasNumberedModels;
+
     public function description(): string
     {
         return 'Ledgers and their entries: numbered records for the number allocation tests.';
@@ -28,7 +29,7 @@ final class LedgerDomain implements Domain, ProvidesBootstrappers, ProvidesComma
 
     public function bootstrappers(): array
     {
-        return [RegisterNumberedModels::class, RegisterLedgerLinkTypes::class];
+        return [RegisterLedgerLinkTypes::class];
     }
 
     public function requires(): array

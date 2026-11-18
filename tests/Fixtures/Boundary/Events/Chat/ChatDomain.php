@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Boundary\Events\Chat;
 
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 
-final class ChatDomain implements Domain
+final class ChatDomain extends Domain
 {
     public function description(): string
     {

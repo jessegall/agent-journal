@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\ThreeCycle\Agents;
 
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 use Tests\Fixtures\Domains\ThreeCycle\Chat\ChatDomain;
 
-final class AgentsDomain implements Domain
+final class AgentsDomain extends Domain
 {
     public function description(): string
     {

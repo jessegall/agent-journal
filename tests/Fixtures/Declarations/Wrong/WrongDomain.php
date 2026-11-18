@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Declarations\Wrong;
 
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 
-final class WrongDomain implements Domain
+final class WrongDomain extends Domain
 {
     public function description(): string
     {

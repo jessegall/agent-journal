@@ -7,12 +7,12 @@ namespace Tests\Fixtures\UiDeclarations\Desk;
 use App\Ui\Contracts\ProvidesSections;
 use App\Ui\Declarations\Section;
 use App\Ui\Enums\SlotContextType;
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 
 /**
  * A fixture domain that declares no page and fills the slots of the Library fixture's pages.
  */
-final class DeskDomain implements Domain, ProvidesSections
+final class DeskDomain extends Domain implements ProvidesSections
 {
     public function description(): string
     {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Nesting\Inner;
 
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 
-final class InnerDomain implements Domain
+final class InnerDomain extends Domain
 {
     public function description(): string
     {

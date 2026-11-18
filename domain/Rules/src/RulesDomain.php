@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Domain\Rules;
 
 use App\Bus\Contracts\ProvidesCommands;
-use App\Domains\Bootstrappers\LoadMigrations;
-use App\Domains\Contracts\Domain;
-use App\Domains\Contracts\ProvidesBootstrappers;
+use App\Domains\Support\Domain;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Declarations\ActionRoute;
@@ -32,16 +30,11 @@ use Domain\Rules\Http\Controllers\ApproveRuleController;
 use Domain\Rules\Http\Controllers\DenyRuleController;
 use Domain\Rules\Readers\RulesWindowReader;
 
-final class RulesDomain implements Domain, ProvidesBootstrappers, ProvidesCommands, ProvidesNavigation, ProvidesPages
+final class RulesDomain extends Domain implements ProvidesCommands, ProvidesNavigation, ProvidesPages
 {
     public function description(): string
     {
         return 'The standing project rules every agent is told.';
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class];
     }
 
     /**

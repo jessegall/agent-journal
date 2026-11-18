@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\Leaky;
 
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 use App\Actors\Contracts\Actor;
 
-final class LeakyDomain implements Domain
+final class LeakyDomain extends Domain
 {
     public function description(): string
     {

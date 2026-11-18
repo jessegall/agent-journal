@@ -10,11 +10,8 @@ use App\Bus\Contracts\ProvidesCommandMiddleware;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\MiddlewareDeclaration;
-use App\Domains\Contracts\Domain;
-use App\Domains\Contracts\DomainBootstrapper;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesAssignees;
-use App\Domains\Contracts\ProvidesBootstrappers;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Exceptions\DomainRequiresItself;
 use App\Domains\Exceptions\NotADomain;
@@ -228,21 +225,11 @@ final readonly class DomainEntry
     }
 
     /**
-     * The steps this domain runs as the application boots, in order; none when it declares no ProvidesBootstrappers.
-     *
-     * @return list<class-string<DomainBootstrapper>>
-     */
-    public function bootstrappers(): array
-    {
-        return $this->domain instanceof ProvidesBootstrappers ? $this->domain->bootstrappers() : [];
-    }
-
-    /**
      * Runs this domain's bootstrappers one by one, each built by the container.
      */
     public function boot(Container $container): void
     {
-        foreach ($this->bootstrappers() as $bootstrapper) {
+        foreach ($this->domain->bootSteps() as $bootstrapper) {
             $container->make($bootstrapper)($this);
         }
     }

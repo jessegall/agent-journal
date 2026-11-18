@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Domains\ThreeCycle\Hooks;
 
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 use Tests\Fixtures\Domains\ThreeCycle\Agents\AgentsDomain;
 
-final class HooksDomain implements Domain
+final class HooksDomain extends Domain
 {
     public function description(): string
     {

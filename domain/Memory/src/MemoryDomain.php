@@ -4,20 +4,13 @@ declare(strict_types=1);
 
 namespace Domain\Memory;
 
-use App\Domains\Bootstrappers\LoadMigrations;
-use App\Domains\Contracts\Domain;
-use App\Domains\Contracts\ProvidesBootstrappers;
+use App\Domains\Support\Domain;
 
-final class MemoryDomain implements Domain, ProvidesBootstrappers
+final class MemoryDomain extends Domain
 {
     public function description(): string
     {
         return 'The weighted memories each agent keeps past its context window.';
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class];
     }
 
     /**

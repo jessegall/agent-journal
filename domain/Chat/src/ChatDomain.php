@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Domain\Chat;
 
 use App\Bus\Contracts\ProvidesCommands;
-use App\Domains\Bootstrappers\LoadMigrations;
-use App\Domains\Bootstrappers\RegisterStates;
-use App\Domains\Contracts\Domain;
-use App\Domains\Contracts\ProvidesBootstrappers;
+use App\Domains\Concerns\HasStates;
 use App\Domains\Contracts\ProvidesStates;
+use App\Domains\Support\Domain;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
 use App\Ui\Contracts\ProvidesSections;
@@ -38,16 +36,13 @@ use Domain\Chat\Readers\ChosenAgentSection;
 use Domain\Chat\States\Support\AnsweringMessageStateFactory;
 use Domain\Chat\States\Support\AnsweringMessageStateReference;
 
-final class ChatDomain implements Domain, ProvidesBootstrappers, ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesStates
+final class ChatDomain extends Domain implements ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesSections, ProvidesStates
 {
+    use HasStates;
+
     public function description(): string
     {
         return 'Messages between the user and agents; a question is a type of message.';
-    }
-
-    public function bootstrappers(): array
-    {
-        return [LoadMigrations::class, RegisterStates::class];
     }
 
     /**

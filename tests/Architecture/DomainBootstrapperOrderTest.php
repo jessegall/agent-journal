@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Domains\Contracts\Domain;
-use App\Domains\Contracts\ProvidesBootstrappers;
+use App\Domains\Support\Domain;
 use ReflectionClass;
 use ReflectionMethod;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * A domain says what it is and what its boot runs before anything else: bootstrappers() is the method right below
- * description() (rule 35).
+ * A domain that adds boot steps of its own says what it is and what its boot runs first: bootstrappers() is the method
+ * right below description() (rule 35).
  */
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
 final class DomainBootstrapperOrderTest extends TestCase
@@ -52,7 +51,7 @@ final class DomainBootstrapperOrderTest extends TestCase
 
             $class = $namespace[1].'\\'.basename($file, '.php');
 
-            if (is_subclass_of($class, Domain::class) && is_subclass_of($class, ProvidesBootstrappers::class)) {
+            if (is_subclass_of($class, Domain::class) && (new ReflectionMethod($class, 'bootstrappers'))->getDeclaringClass()->getName() === $class) {
                 $classes[] = $class;
             }
         }

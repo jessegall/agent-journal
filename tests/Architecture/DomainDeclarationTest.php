@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 use App\Domains\Support\DomainRegistry;
 use Tests\Architecture\Support\BoundaryReport;
 use Tests\Architecture\Support\DeclarationRules;
@@ -35,10 +35,12 @@ final class DomainDeclarationTest extends TestCase
      * The fixed files of the domain foundation at the root of App\Domain, relative to its folder; each domain is a folder beside them.
      */
     private const array SHARED_PLACE_FILES = [
-        'Contracts/Domain.php',
+        'Support/Domain.php',
+        'Concerns/HasAssignables.php',
+        'Concerns/HasStates.php',
+        'Concerns/HasNumberedModels.php',
         'Contracts/ProvidesStates.php',
         'Contracts/ProvidesAssignables.php',
-        'Contracts/ProvidesBootstrappers.php',
         'Contracts/DomainBootstrapper.php',
         'Bootstrappers/LoadMigrations.php',
         'Bootstrappers/RegisterAssignables.php',
@@ -86,6 +88,7 @@ final class DomainDeclarationTest extends TestCase
         'Exceptions/FileOutsideAutoload.php',
         'Exceptions/AmbiguousDomainRoot.php',
         'Exceptions/DomainCycle.php',
+        'Exceptions/CapabilityWithoutTrait.php',
         'Exceptions/DomainDeclarationError.php',
         'Exceptions/DomainListedTwice.php',
         'Exceptions/DomainNotFound.php',

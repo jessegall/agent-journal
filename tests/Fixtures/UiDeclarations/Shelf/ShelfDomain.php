@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\UiDeclarations\Shelf;
 
-use App\Domains\Contracts\Domain;
+use App\Domains\Support\Domain;
 
 /**
  * A fixture domain for page props; the tests declare its pages and sections themselves.
  */
-final class ShelfDomain implements Domain
+final class ShelfDomain extends Domain
 {
     public function description(): string
     {
