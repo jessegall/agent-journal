@@ -45,7 +45,7 @@ final class TickCandidates
     /**
      * Sends the cursor back so the next pass starts at this candidate, which this pass had no time left for.
      */
-    public function returnFrom(TickCandidate $candidate): void
+    public function startNextPassAt(TickCandidate $candidate): void
     {
         $this->cursor = TickCursor::after($candidate->stackId, $candidate->position - 1);
     }

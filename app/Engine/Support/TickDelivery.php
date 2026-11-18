@@ -61,7 +61,7 @@ final readonly class TickDelivery
 
             foreach ($batch->candidates as $candidate) {
                 if ($this->budgetSpent($passStartNanoseconds)) {
-                    $this->candidates->returnFrom($candidate);
+                    $this->candidates->startNextPassAt($candidate);
                     $this->log->info('Engine pass deferred ticks', ['frame' => $candidate->frameId]);
 
                     break;

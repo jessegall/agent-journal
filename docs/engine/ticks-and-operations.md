@@ -51,7 +51,7 @@ last checkpoint, or its entry time) and marked approximate. A delta never goes b
 What `onTick` may do:
 
 - Read only its own restored snapshot and the context.
-- Answer at most ten commands (`TickCommands::MOST`) in the order they should run, or `TickCommands::none()`.
+- Answer at most ten commands (`TickCommands::MAXIMUM`) in the order they should run, or `TickCommands::none()`.
 - Never write a model, sleep, call the network, start a process or dispatch a job. Expensive work belongs in a command
   or a job.
 

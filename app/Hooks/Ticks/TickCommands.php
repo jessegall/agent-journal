@@ -12,7 +12,7 @@ use App\Hooks\Exceptions\TooManyTickCommands;
  */
 final readonly class TickCommands
 {
-    public const int MOST = 10;
+    public const int MAXIMUM = 10;
 
     /**
      * @param  list<Command<mixed>>  $commands
@@ -31,8 +31,8 @@ final readonly class TickCommands
      */
     public static function of(Command ...$commands): self
     {
-        if (count($commands) > self::MOST) {
-            throw TooManyTickCommands::count(count($commands), self::MOST);
+        if (count($commands) > self::MAXIMUM) {
+            throw TooManyTickCommands::count(count($commands), self::MAXIMUM);
         }
 
         return new self(array_values($commands));
