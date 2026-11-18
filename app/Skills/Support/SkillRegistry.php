@@ -40,4 +40,13 @@ final readonly class SkillRegistry
     {
         return array_values($this->owners);
     }
+
+    /**
+     * The sha256 digest of every owner and the skill classes it declares, which changes when code adds, removes or
+     * renames a declaration.
+     */
+    public function digest(): string
+    {
+        return hash('sha256', (string) json_encode(array_map(fn (SkillOwner $owner) => [$owner->name, $owner->skills], $this->owners()), JSON_THROW_ON_ERROR));
+    }
 }

@@ -29,6 +29,7 @@ use App\Sharing\Models\ShareInstallation;
 use App\Sharing\Models\ShareMember;
 use App\Sharing\Models\SharePreview;
 use App\Skills\Models\Skill;
+use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillRevision;
 use Illuminate\Support\ServiceProvider;
 
@@ -68,6 +69,7 @@ final class CoreServiceProvider extends ServiceProvider
             SharePreview::LINK_TYPE => SharePreview::class,
             Skill::LINK_TYPE => Skill::class,
             SkillRevision::LINK_TYPE => SkillRevision::class,
+            SkillGeneration::LINK_TYPE => SkillGeneration::class,
         ]);
 
         foreach (self::AREAS as $area) {

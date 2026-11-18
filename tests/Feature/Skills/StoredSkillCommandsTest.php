@@ -36,7 +36,7 @@ final class StoredSkillCommandsTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['skill_requests', 'skill_revisions', 'skills', 'number_groups', 'command_receipts'];
+    private const array TABLES = ['skill_publications', 'skill_generations', 'skill_requests', 'skill_revisions', 'skills', 'number_groups', 'command_receipts'];
 
     protected function setUp(): void
     {

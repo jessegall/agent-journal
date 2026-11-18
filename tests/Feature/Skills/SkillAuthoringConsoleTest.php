@@ -19,7 +19,7 @@ final class SkillAuthoringConsoleTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['skill_requests', 'skill_revisions', 'skills', 'number_groups', 'command_receipts'];
+    private const array TABLES = ['skill_publications', 'skill_generations', 'skill_requests', 'skill_revisions', 'skills', 'number_groups', 'command_receipts'];
 
     private const string REVIEWERS = '{"type":"profiles","version":1,"keys":["journal-reviewer"]}';
 

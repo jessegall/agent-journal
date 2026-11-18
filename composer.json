@@ -90,6 +90,7 @@
             "@php artisan key:generate",
             "@php artisan migrate --force",
             "@php artisan numbers:install",
+            "@php artisan skill:refresh",
             "npm install",
             "@types:generate",
             "npm run build"

@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Skills\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use RuntimeException;
 
 /**
  * A Markdown part or asset a skill names that cannot be read as named: outside its owner's folder, missing, or with a
  * heading path that does not lead to exactly one section.
  */
-final class SkillSourceInvalid extends RuntimeException
+final class SkillSourceInvalid extends RuntimeException implements CodedRefusal
 {
     public static function outsideFolder(string $file): self
     {
@@ -35,5 +37,10 @@ final class SkillSourceInvalid extends RuntimeException
     public static function repeatedHeading(string $selector): self
     {
         return new self("The skill source {$selector} names a heading path that is there more than once.");
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::InvalidInput;
     }
 }
