@@ -42,6 +42,38 @@ final class FolderLayoutTest extends TestCase
         $this->assertSame([], $loose, "These classes sit loose at a domain or Core area root; move each into the folder of its type, or that area's Support folder.");
     }
 
+    public function test_no_domain_keeps_an_actions_folder_but_access(): void
+    {
+        $this->assertSame([], self::actionsFoldersIn(base_path('domain')), 'A domain write is a command with a handler (doc 19); only Access keeps the Actions Fortify calls.');
+    }
+
+    public function test_an_actions_folder_in_a_domain_is_named(): void
+    {
+        $sample = sys_get_temp_dir().'/domain-with-actions';
+        @mkdir("{$sample}/Shop/src/Actions", 0777, true);
+
+        try {
+            $this->assertSame(['Shop/src/Actions'], self::actionsFoldersIn($sample));
+        } finally {
+            @rmdir("{$sample}/Shop/src/Actions");
+            @rmdir("{$sample}/Shop/src");
+            @rmdir("{$sample}/Shop");
+            @rmdir($sample);
+        }
+    }
+
+    /**
+     * Every Actions folder of a domain package, relative to the folder of the packages, except Access's.
+     *
+     * @return list<string>
+     */
+    private static function actionsFoldersIn(string $packages): array
+    {
+        $folders = array_map(fn (string $folder) => substr($folder, strlen($packages) + 1), glob("{$packages}/*/src/Actions", GLOB_ONLYDIR) ?: []);
+
+        return array_values(array_filter($folders, fn (string $folder) => $folder !== 'Access/src/Actions'));
+    }
+
     public function test_every_enum_sits_in_an_enums_folder(): void
     {
         $misplaced = [];
