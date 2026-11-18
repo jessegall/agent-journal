@@ -44,9 +44,9 @@ final class OperationFactsTest extends TestCase
         $this->assertCount(2, $this->operations('git log | head'));
     }
 
-    public function test_bash_c_and_command_substitution_are_unknown(): void
+    public function test_a_dynamic_bash_c_eval_and_command_substitution_are_unknown(): void
     {
-        foreach (['bash -c "rm -rf x"', 'echo $(whoami)'] as $line) {
+        foreach (['bash -c "$SCRIPT"', 'eval "$LINE"', 'echo $(whoami)'] as $line) {
             $unknown = array_values(array_filter($this->operations($line), fn (Operation $operation): bool => $operation->name === ShellOperations::UNKNOWN));
 
             $this->assertNotSame([], $unknown, "{$line} was placed.");
@@ -54,9 +54,16 @@ final class OperationFactsTest extends TestCase
         }
     }
 
+    public function test_a_literal_bash_c_is_read_as_the_command_it_runs(): void
+    {
+        $operations = $this->operations('bash -c "rm -rf x"');
+
+        $this->assertContains(AccessType::Delete, $operations[0]->accessTypes);
+    }
+
     public function test_a_journal_call_is_named_by_its_journal_route(): void
     {
-        [$operation] = $this->operations('journal task list');
+        [$operation] = $this->operations('journal task assigned');
 
         $this->assertStringStartsWith('shell:core.journal.', $operation->name);
     }

@@ -52,18 +52,20 @@ final readonly class ShellOperations
     {
         $words = array_map(fn (Word $word): string => $word->literal() ?? '', $node->words);
 
-        if (! $part->isKnown()) {
+        $facts = array_values(array_filter($part->facts, fn (ClassFact $fact): bool => ! $fact->origin instanceof SyntaxOrigin));
+        $name = self::nameOf($part, $facts);
+
+        if (! $part->isKnown() || $name === self::UNKNOWN) {
             return new Operation(self::SURFACE, self::UNKNOWN, [], [], $words, self::DECLARATION_REVISION);
         }
 
-        $facts = array_values(array_filter($part->facts, fn (ClassFact $fact): bool => ! $fact->origin instanceof SyntaxOrigin));
         $access = [AccessType::Execute];
 
         foreach ($facts as $fact) {
             array_push($access, ...$fact->class->accessTypes());
         }
 
-        return new Operation(self::SURFACE, self::nameOf($facts), array_values(array_unique($access, SORT_REGULAR)), self::operandsOf($node), $words, self::DECLARATION_REVISION);
+        return new Operation(self::SURFACE, $name, array_values(array_unique($access, SORT_REGULAR)), self::operandsOf($node), $words, self::DECLARATION_REVISION);
     }
 
     /**
@@ -99,9 +101,11 @@ final readonly class ShellOperations
     }
 
     /**
+     * The part's stable name: the rule that classified it, else its program; a part with neither is unknown.
+     *
      * @param  list<ClassFact>  $facts
      */
-    private static function nameOf(array $facts): string
+    private static function nameOf(PartClassification $part, array $facts): string
     {
         foreach ($facts as $fact) {
             if ($fact->origin instanceof RuleOrigin) {
@@ -109,7 +113,7 @@ final readonly class ShellOperations
             }
         }
 
-        return self::UNKNOWN;
+        return $part->program === null ? self::UNKNOWN : 'shell:'.$part->program->family;
     }
 
     /**
