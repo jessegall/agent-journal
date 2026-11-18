@@ -501,6 +501,7 @@ final class CoreApi
                 SettingsSnapshot::class,
                 EnabledSettingsGroup::class,
                 DisabledSettingsGroup::class,
+                SettingCommands::class,
             )
             ->commands(
                 RetireAgent::class,
@@ -602,7 +603,6 @@ final class CoreApi
                 NestedCommandFailureIgnored::class,
             )
             ->support(
-                SettingCommands::class,
                 BoundedReads::class,
                 ReadBuilder::class,
                 CountsLoads::class,
