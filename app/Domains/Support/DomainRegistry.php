@@ -11,6 +11,9 @@ use App\Domains\Exceptions\DomainCycle;
 use App\Domains\Exceptions\DomainListedTwice;
 use App\Domains\Exceptions\DomainNotFound;
 use App\Domains\Exceptions\RequiredDomainMissing;
+use App\Settings\Exceptions\SettingDeclarationInvalid;
+use App\Settings\Support\CoreSettings;
+use App\Settings\Support\SettingRegistry;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Support\UiDeclarations;
 
@@ -98,6 +101,25 @@ final readonly class DomainRegistry
     public function commandDeclarations(CommandOwner $core): CommandRegistry
     {
         return CommandRegistry::from([$core, ...array_map(fn (DomainEntry $entry) => $entry->commandOwner(), $this->all())]);
+    }
+
+    /**
+     * Every owner's settings, Core's first under its reserved name and then the domains in bootstrap/domains.php
+     * order, checked together; start-up stops at the first wrong declaration.
+     */
+    public function settingDeclarations(CoreSettings $core): SettingRegistry
+    {
+        $definitions = [SettingRegistry::CORE => $core];
+
+        foreach ($this->all() as $entry) {
+            if (isset($definitions[$entry->name])) {
+                throw SettingDeclarationInvalid::ownerTwice($entry->name);
+            }
+
+            $definitions[$entry->name] = $entry->settings();
+        }
+
+        return SettingRegistry::from($definitions);
     }
 
     /**

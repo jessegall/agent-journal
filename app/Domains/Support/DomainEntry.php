@@ -23,6 +23,9 @@ use App\Exports\Support\Exports;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
 use App\Records\Contracts\RecordProvider;
+use App\Settings\Contracts\ProvidesSettings;
+use App\Settings\Contracts\SettingsDefinition;
+use App\Settings\Support\EmptySettingsDefinition;
 use App\Ui\Declarations\DomainUi;
 use App\Ui\Declarations\NavigationItem;
 use App\Ui\Declarations\Page;
@@ -46,6 +49,7 @@ final readonly class DomainEntry
         public Domain $domain,
         public array $requires,
         public Exports $exports,
+        private SettingsDefinition $settings,
     ) {}
 
     /**
@@ -75,6 +79,7 @@ final readonly class DomainEntry
             domain: $domain,
             requires: self::checkedRequirements($name, $className, $domain->requires()),
             exports: ExportsCheck::check($name, $namespace, $domain->exports()),
+            settings: $domain instanceof ProvidesSettings ? $domain->settings() : new EmptySettingsDefinition,
         );
     }
 
@@ -245,6 +250,14 @@ final readonly class DomainEntry
     public function assignables(): array
     {
         return $this->domain instanceof ProvidesAssignables ? $this->domain->assignables() : [];
+    }
+
+    /**
+     * The settings this domain declares, read once when the domain is registered; none without ProvidesSettings.
+     */
+    public function settings(): SettingsDefinition
+    {
+        return $this->settings;
     }
 
     /**

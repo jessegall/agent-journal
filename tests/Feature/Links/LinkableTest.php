@@ -8,6 +8,7 @@ use App\Links\Exceptions\LinkTypeRepeated;
 use App\Links\Models\Link;
 use App\Links\Support\LinkTypeRegistry;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -20,10 +21,16 @@ final class LinkableTest extends TestCase
 {
     use RefreshHookDatabase;
 
+    /**
+     * @var array<string, class-string>
+     */
+    private array $applicationMorphMap;
+
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->applicationMorphMap = Relation::morphMap();
         $this->app->make(LinkTypeRegistry::class)->register(['fixtures.note' => Note::class, 'fixtures.label' => Label::class]);
         Schema::create('notes', function (Blueprint $table) {
             $table->ulid('id')->primary();
@@ -35,6 +42,16 @@ final class LinkableTest extends TestCase
             $table->string('name');
             $table->timestamps();
         });
+    }
+
+    /**
+     * The morph map is static, so the fixture types leave with this test instead of reaching the next one.
+     */
+    protected function tearDown(): void
+    {
+        Relation::morphMap($this->applicationMorphMap, false);
+
+        parent::tearDown();
     }
 
     public function test_two_model_types_are_linked_and_found_from_both_sides(): void

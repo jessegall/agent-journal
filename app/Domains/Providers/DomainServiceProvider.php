@@ -10,14 +10,18 @@ use App\CoreCommands;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\Exports as ExportsCheck;
 use App\Domains\Support\Psr4ClassNames;
+use App\Settings\Support\CoreSettings;
+use App\Settings\Support\EmptySettingsDefinition;
+use App\Settings\Support\SettingRegistry;
 use Illuminate\Foundation\Events\DiscoverEvents;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use SplFileInfo;
 
 /**
- * Registers the domains of bootstrap/domains.php and their registry, and boots each domain by running
- * the bootstrappers it lists.
+ * Registers the domains of bootstrap/domains.php, their registry and the commands and settings they declare, and boots
+ * each domain by running the bootstrappers it lists. Each settings definition is bound as the very object registered,
+ * so injecting it gives the handles the settings registry knows.
  */
 class DomainServiceProvider extends ServiceProvider
 {
@@ -28,15 +32,17 @@ class DomainServiceProvider extends ServiceProvider
 
         $this->app->instance(DomainRegistry::class, $registry);
         $this->app->singleton(CommandRegistry::class, fn () => $registry->commandDeclarations(CoreCommands::owner()));
+        $this->app->singleton(SettingRegistry::class, fn () => $this->settingRegistry($registry));
 
         $classNames = Psr4ClassNames::fromComposer();
         DiscoverEvents::guessClassNamesUsing(fn (SplFileInfo $file, string $basePath) => $classNames->classOf((string) $file->getRealPath()));
     }
 
     /**
-     * Asking for the command registry here makes a command declaration the application cannot start with fail the boot.
+     * Asking for the command and settings registries here makes a declaration the application cannot start with fail
+     * the boot.
      */
-    public function boot(DomainRegistry $registry, CommandRegistry $commands): void
+    public function boot(DomainRegistry $registry, CommandRegistry $commands, SettingRegistry $settings): void
     {
         foreach ($registry->all() as $entry) {
             $entry->boot($this->app);
@@ -49,5 +55,18 @@ class DomainServiceProvider extends ServiceProvider
     protected function domainClasses(): array
     {
         return require $this->app->basePath('bootstrap/domains.php');
+    }
+
+    private function settingRegistry(DomainRegistry $registry): SettingRegistry
+    {
+        $settings = $registry->settingDeclarations(new CoreSettings);
+
+        foreach ($settings->definitions() as $definition) {
+            if (! $definition instanceof EmptySettingsDefinition) {
+                $this->app->instance($definition::class, $definition);
+            }
+        }
+
+        return $settings;
     }
 }

@@ -221,6 +221,14 @@ use App\Records\Contracts\RecordProvider;
 use App\Records\Contracts\RecordReader;
 use App\Records\Data\RecordCard;
 use App\Records\Support\ProvidesModelRecords;
+use App\Settings\Contracts\ProvidesSettings;
+use App\Settings\Contracts\Setting;
+use App\Settings\Contracts\SettingsDefinition;
+use App\Settings\Declarations\SettingGroup;
+use App\Settings\Declarations\StringSetting;
+use App\Settings\Enums\SettingType;
+use App\Settings\Exceptions\SettingDeclarationInvalid;
+use App\Settings\Exceptions\SettingHandleUnknown;
 use App\Ui\Contracts\CountReader;
 use App\Ui\Contracts\NavigationChildren;
 use App\Ui\Contracts\PageOption;
@@ -315,6 +323,9 @@ final class CoreApi
                 ProvidesSections::class,
                 SectionReader::class,
                 VisibilityCheck::class,
+                ProvidesSettings::class,
+                Setting::class,
+                SettingsDefinition::class,
             )
             ->values(
                 RecordCard::class,
@@ -415,6 +426,9 @@ final class CoreApi
                 PageDestination::class,
                 PageSkeleton::class,
                 SlotContextType::class,
+                StringSetting::class,
+                SettingGroup::class,
+                SettingType::class,
             )
             ->commands(
                 RetireAgent::class,
@@ -426,6 +440,8 @@ final class CoreApi
                 UnassignRecord::class,
             )
             ->exceptions(
+                SettingDeclarationInvalid::class,
+                SettingHandleUnknown::class,
                 CommandTransactionMissing::class,
                 AgentContextMissing::class,
                 ReadPolicyMissing::class,
