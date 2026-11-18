@@ -18,4 +18,14 @@ interface LaunchTransaction
      * @return TResult
      */
     public function run(Closure $work): mixed;
+
+    /**
+     * Runs the work for one session's stack, admitted to that stack first when the stacks keep an admission.
+     *
+     * @template TResult
+     *
+     * @param  Closure(): TResult  $work
+     * @return TResult
+     */
+    public function runForSession(string $sessionId, Closure $work): mixed;
 }

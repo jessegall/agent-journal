@@ -19,4 +19,9 @@ final readonly class DatabaseLaunchTransaction implements LaunchTransaction
     {
         return $this->database->transaction($work);
     }
+
+    public function runForSession(string $sessionId, Closure $work): mixed
+    {
+        return $this->run($work);
+    }
 }

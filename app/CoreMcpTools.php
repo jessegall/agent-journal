@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Assignments\Mcp\AssigneesListTool;
-use App\Assignments\Mcp\AssignmentReadTool;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Resources\OverviewResource;
+use App\Mcp\Tools\AssigneesListTool;
+use App\Mcp\Tools\AssignmentReadTool;
 use App\Mcp\Tools\CapabilitiesReadTool;
 use App\Mcp\Tools\JournalTool;
 use App\Mcp\Tools\OverviewReadTool;

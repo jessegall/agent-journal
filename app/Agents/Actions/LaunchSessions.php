@@ -63,7 +63,7 @@ final readonly class LaunchSessions
 
     public function end(AgentSession $session): void
     {
-        $this->transaction->run(function () use ($session): void {
+        $this->transaction->runForSession($session->id, function () use ($session): void {
             $this->sessions->end($session);
             $this->credentials->revoke($session);
 

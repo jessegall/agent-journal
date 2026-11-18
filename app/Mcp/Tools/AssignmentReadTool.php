@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Assignments\Mcp;
+namespace App\Mcp\Tools;
 
 use App\Assignments\Contracts\AssigneeReader;
 use App\Assignments\Contracts\AssignmentReader;
@@ -10,7 +10,6 @@ use App\Assignments\Support\AssignmentData;
 use App\Assignments\Support\AssignmentHolder;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
-use App\Mcp\Tools\JournalReadTool;
 use App\Records\Contracts\RecordReader;
 use App\Records\Support\RecordIdentity;
 use Illuminate\Contracts\JsonSchema\JsonSchema;

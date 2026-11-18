@@ -4,13 +4,30 @@ declare(strict_types=1);
 
 namespace App\Bus\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
+use App\Contracts\CommandRefusal;
 use RuntimeException;
 use Throwable;
 
-final class StackLockTimedOut extends RuntimeException
+/**
+ * A stack operation that could not run in time: its stack stayed held by another operation, or the operation ran past
+ * its deadline and was rolled back. The caller may send it again shortly.
+ */
+final class StackLockTimedOut extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     public static function after(int $milliseconds, Throwable $cause): self
     {
         return new self("The stack operation did not finish within {$milliseconds} ms and was rolled back.", previous: $cause);
+    }
+
+    public static function held(int $milliseconds, Throwable $cause): self
+    {
+        return new self("The stack stayed busy with another operation for {$milliseconds} ms; send the call again shortly.", previous: $cause);
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::Busy;
     }
 }

@@ -6,6 +6,7 @@ namespace App\Hooks\Providers;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Agents\Support\AgentContext;
+use App\Bus\Contracts\StackAdmission;
 use App\Bus\Support\OperationDeadline;
 use App\Contracts\LaunchTransaction;
 use App\Hooks\Console\PruneHookHistoryCommand;
@@ -16,6 +17,7 @@ use App\Hooks\Inputs\MissingShellParser;
 use App\Hooks\Models\AgentStackRow;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Models\Support\AgentSessionScope;
+use App\Hooks\Stack\AdvisoryStackAdmission;
 use App\Hooks\Stack\RegisteredStateFactory;
 use App\Hooks\Stack\StateTypes;
 use App\Hooks\Support\HookRetryWindow;
@@ -36,6 +38,7 @@ final class HooksServiceProvider extends ServiceProvider
     {
         $this->app->singleton(StateTypes::class);
         $this->app->bind(LaunchTransaction::class, StackTransaction::class);
+        $this->app->scoped(StackAdmission::class, AdvisoryStackAdmission::class);
         $this->app->singleton(RetentionPeriods::class, fn () => new RetentionPeriods(
             $this->app->make('config')->integer('hooks.hook_call_days'),
             $this->app->make('config')->integer('hooks.closed_stack_days'),
