@@ -17,12 +17,6 @@ final readonly class CreatePlanHandler implements CommandHandler
     {
         $creator = $this->actors->actor();
 
-        return Plan::query()->create([
-            'title' => $command->title,
-            'brief' => $command->brief,
-            'type' => $command->type,
-            'creator_type' => $creator->type,
-            'creator_id' => $creator->id,
-        ])->id;
+        return Plan::draft($command->title, $command->brief, $command->type, $creator)->id;
     }
 }

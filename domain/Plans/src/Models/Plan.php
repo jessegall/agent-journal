@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Models;
 
+use App\Actors\Contracts\Actor;
 use App\Actors\Enums\ActorType;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Exceptions\AssignmentPoolTooLarge;
@@ -89,6 +90,20 @@ final class Plan extends Model implements Assignable, Numbered, ReadableModel, S
             'creator_type' => ActorType::class,
             'revision' => 'integer',
         ];
+    }
+
+    /**
+     * A new plan an actor drafts, with its title, brief and type.
+     */
+    public static function draft(string $title, string $brief, PlanType $type, Actor $creator): self
+    {
+        return self::query()->create([
+            'title' => $title,
+            'brief' => $brief,
+            'type' => $type,
+            'creator_type' => $creator->actorType(),
+            'creator_id' => $creator->actorId(),
+        ]);
     }
 
     /**

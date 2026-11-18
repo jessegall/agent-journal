@@ -38,6 +38,16 @@ final class Layout extends Model implements ReadableModel
     }
 
     /**
+     * A layout a user saves under a name.
+     *
+     * @param  array<string, mixed>  $shape
+     */
+    public static function saveFor(int|string $userId, string $name, array $shape): self
+    {
+        return self::query()->create(['user_id' => $userId, 'name' => $name, 'shape' => $shape]);
+    }
+
+    /**
      * Saves the layout's new name and shape.
      *
      * @param  array<string, mixed>  $shape

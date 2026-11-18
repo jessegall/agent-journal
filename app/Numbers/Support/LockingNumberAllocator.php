@@ -46,7 +46,7 @@ final readonly class LockingNumberAllocator implements NumberAllocator
         if ($group !== null) {
             return $group;
         }
-        NumberGroup::query()->create(['holder_type' => $key[0], 'holder_id' => $key[1], 'record_type' => $recordType]);
+        NumberGroup::open($key[0], $key[1], $recordType);
 
         return NumberGroup::query()->forRecords(...$key)->locked()->sole();
     }

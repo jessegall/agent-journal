@@ -6,6 +6,7 @@ namespace App\Processes\Models;
 
 use App\Links\Support\Linkable;
 use App\Processes\Enums\OutputStream;
+use App\Processes\Values\CapturedChunk;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use Carbon\CarbonImmutable;
@@ -41,5 +42,21 @@ final class OutputChunk extends Model implements ReadableModel
     protected function casts(): array
     {
         return ['stream' => OutputStream::class, 'offset' => 'integer', 'length' => 'integer', 'captured_at' => 'immutable_datetime'];
+    }
+
+    /**
+     * The record of a captured chunk written to the spool at its offset in its stream.
+     */
+    public static function record(CapturedChunk $chunk, int $offset, string $storagePath): self
+    {
+        return self::query()->create([
+            'part_run_id' => $chunk->part->id,
+            'stream' => $chunk->stream,
+            'offset' => $offset,
+            'length' => strlen($chunk->bytes),
+            'checksum' => hash('sha256', $chunk->bytes),
+            'captured_at' => $chunk->capturedAt,
+            'storage_path' => $storagePath,
+        ]);
     }
 }

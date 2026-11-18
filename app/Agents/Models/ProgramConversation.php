@@ -35,6 +35,20 @@ final class ProgramConversation extends Model implements ReadableModel
     use Linkable;
 
     /**
+     * The conversation a session first enters, under the host settings it ran with.
+     */
+    public static function begin(AgentSession $session, string $settingsIdentity, string $nativeId, string|null $context): self
+    {
+        return self::query()->create([
+            'program' => $session->program,
+            'settings_identity' => $settingsIdentity,
+            'native_id' => $nativeId,
+            'agent_id' => $session->agent_id,
+            'context_reference' => $context,
+        ]);
+    }
+
+    /**
      * Whether a session of this agent, launched for this context, may continue the conversation.
      */
     public function admits(string $agentId, string|null $contextReference): bool
