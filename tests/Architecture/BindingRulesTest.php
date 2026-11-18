@@ -32,8 +32,9 @@ final class BindingRulesTest extends TestCase
     /**
      * The files that may name the actor store or set the actor: the store, its two contracts, Core's list,
      * the two middleware that authenticate a request, the host middleware and the host enrollment command, the engine
-     * pass that signs the engine in, the provider that reads the actor and the public share bridge, which acts as the
-     * system around its one read.
+     * pass that signs the engine in, the provider that reads the actor, the public share bridge, which acts as the
+     * system around its one read, and the skill console owner, publisher and refresh listener, which act as the owner
+     * or the system the same way the sharing console owner and supervisor do.
      */
     private const array ACTOR_SITES = [
         'app/Actors/Support/ActorStore.php',
@@ -49,6 +50,9 @@ final class BindingRulesTest extends TestCase
         'app/Sharing/Support/SharingSupervisor.php',
         'domain/Access/Http/Middleware/AuthenticateUser.php',
         'app/Engine/Support/EnginePass.php',
+        'app/Skills/Support/SkillAuthoring.php',
+        'app/Skills/Support/SkillPublishing.php',
+        'app/Skills/Listeners/RefreshOnSkillsChanged.php',
     ];
 
     /**
