@@ -14,9 +14,12 @@ use App\Sharing\Support\ShareCandidates;
 use App\Sharing\Support\ShareSelectedTarget;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use PhpOption\Option;
 
 /**
  * What the owner saw and selected before sharing a root: the linked records with their links and publication
@@ -79,6 +82,16 @@ final class SharePreview extends Model implements ReadableModel
         return $preview;
     }
 
+    /**
+     * The owner's newest preview of the root that is neither used nor expired, if there is one.
+     *
+     * @return Option<self>
+     */
+    public static function openFor(string $ownerUserId, RecordIdentity $root): Option
+    {
+        return Option::fromValue(self::query()->ownedBy($ownerUserId)->ofRoot($root)->stillOpen()->orderByDesc('id')->first());
+    }
+
     public function root(): RecordIdentity
     {
         return new RecordIdentity($this->root_type, $this->root_id);
@@ -117,6 +130,33 @@ final class SharePreview extends Model implements ReadableModel
         $this->save();
 
         return $selection;
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ownedBy(Builder $query, string $ownerUserId): void
+    {
+        $query->where('owner_user_id', $ownerUserId);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofRoot(Builder $query, RecordIdentity $root): void
+    {
+        $query->where('root_type', $root->type)->where('root_id', $root->id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function stillOpen(Builder $query): void
+    {
+        $query->whereNull('consumed_at')->where('expires_at', '>', CarbonImmutable::now());
     }
 
     /**

@@ -13,9 +13,12 @@ use App\Sharing\Support\ShareToken;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use PhpOption\Option;
 
 /**
  * A public share of one root record: an agent's proposal, or the owner's grant with its bearer token kept as a
@@ -99,6 +102,16 @@ final class Share extends Model implements ReadableModel
         return $share;
     }
 
+    /**
+     * The newest live, unexpired share of the root, if it has one.
+     *
+     * @return Option<self>
+     */
+    public static function liveFor(RecordIdentity $root): Option
+    {
+        return Option::fromValue(self::query()->ofRoot($root)->liveNow()->orderByDesc('id')->first());
+    }
+
     public function root(): RecordIdentity
     {
         return new RecordIdentity($this->root_type, $this->root_id);
@@ -112,6 +125,24 @@ final class Share extends Model implements ReadableModel
     public function isGrantedByOneOf(array $userIds): bool
     {
         return $this->owner_user_id !== null && in_array($this->owner_user_id, $userIds, true);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function ofRoot(Builder $query, RecordIdentity $root): void
+    {
+        $query->where('root_type', $root->type)->where('root_id', $root->id);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function liveNow(Builder $query): void
+    {
+        $query->whereIn('state', array_map(fn (ShareState $state) => $state->value, ShareState::liveStates()))->where('expires_at', '>', CarbonImmutable::now());
     }
 
     private static function forRoot(RecordIdentity $root, ShareState $state, CarbonImmutable $expiresAt): self

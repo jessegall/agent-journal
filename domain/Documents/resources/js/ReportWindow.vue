@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { RecordPageData } from '@generated/types/documents';
 import CommentsPanel from '@kit/CommentsPanel';
+import ShareButton from '@kit/ShareButton';
 import DockToSession from './DockToSession.vue';
 import LinksPanel from './LinksPanel.vue';
 import RecordStatus from './RecordStatus.vue';
@@ -17,6 +18,7 @@ const number = props.data.label.replace('report ', '');
 <template>
     <div class="flex flex-col gap-4">
         <RecordWindow :data="data" />
+        <ShareButton :reference="data.label" />
         <RecordStatus :data="data" editing="free" :settle-action="`/documents/reports/${number}/settle`" />
         <DockToSession type="report" :number="number" :sessions="data.sessions" />
         <LinksPanel :source="data.label" :links="data.links" />

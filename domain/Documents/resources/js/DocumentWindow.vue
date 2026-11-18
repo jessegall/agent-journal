@@ -9,6 +9,7 @@ import RecordStatus from './RecordStatus.vue';
 import RecoverForm from './RecoverForm.vue';
 import RecordWindow from './RecordWindow.vue';
 import Button from '@kit/Button';
+import ShareButton from '@kit/ShareButton';
 import SwitchCase from '@kit/SwitchCase';
 import { formSendingHooks } from '@kit/usePageChanges';
 
@@ -25,6 +26,7 @@ function open(): void {
 <template>
     <div class="flex flex-col gap-4">
         <RecordWindow :data="data.record" />
+        <ShareButton :reference="data.record.label" />
         <RecordStatus :data="data.record" :editing="data.editing.state === 'free' ? 'free' : `held by ${data.editing.holder ?? 'you'}`" :settle-action="`/documents/docs/${data.number}/settle`" />
         <SwitchCase :value="data.editing.state">
             <template #yours>
