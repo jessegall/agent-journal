@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Assignments\Mcp\AssigneesListTool;
+use App\Assignments\Mcp\AssignmentReadTool;
 use App\Mcp\Contracts\McpRegistration;
 use App\Mcp\Resources\JournalResource;
 use App\Mcp\Resources\OverviewResource;
@@ -21,7 +23,7 @@ final class CoreMcpTools
      */
     public static function tools(): array
     {
-        return [OverviewReadTool::class, CapabilitiesReadTool::class];
+        return [OverviewReadTool::class, CapabilitiesReadTool::class, AssignmentReadTool::class, AssigneesListTool::class];
     }
 
     /**

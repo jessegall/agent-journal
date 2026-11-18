@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Mcp\Contracts\CodedRefusal;
-use App\Mcp\Enums\RefusalCode;
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Mcp\Exceptions\McpCallFailed;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;

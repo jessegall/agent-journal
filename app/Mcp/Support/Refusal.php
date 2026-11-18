@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mcp\Support;
 
-use App\Mcp\Enums\RefusalCode;
+use App\Bus\Enums\RefusalCode;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
 

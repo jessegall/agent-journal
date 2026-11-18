@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Mcp\Enums;
+namespace App\Bus\Enums;
 
 /**
  * The code an MCP caller reads from a refused call, to choose its recovery.

@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Assignments\Exceptions;
 
 use App\Actors\Enums\ActorType;
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Bus\Exceptions\Concerns\RendersRefusal;
 use App\Contracts\CommandRefusal;
 use RuntimeException;
 
-final class AssignmentTypeUnavailable extends RuntimeException implements CommandRefusal
+final class AssignmentTypeUnavailable extends RuntimeException implements CodedRefusal, CommandRefusal
 {
     use RendersRefusal;
 
@@ -26,5 +28,10 @@ final class AssignmentTypeUnavailable extends RuntimeException implements Comman
     protected function status(): int
     {
         return 404;
+    }
+
+    public function refusalCode(): RefusalCode
+    {
+        return RefusalCode::RecordUnavailable;
     }
 }

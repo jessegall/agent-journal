@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Mcp\Exceptions;
 
+use App\Bus\Contracts\CodedRefusal;
+use App\Bus\Enums\RefusalCode;
 use App\Contracts\CommandRefusal;
-use App\Mcp\Contracts\CodedRefusal;
-use App\Mcp\Enums\RefusalCode;
 use RuntimeException;
 
 /**

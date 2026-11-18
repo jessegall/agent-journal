@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Mcp\Contracts;
+namespace App\Bus\Contracts;
 
-use App\Mcp\Enums\RefusalCode;
+use App\Bus\Enums\RefusalCode;
 
 /**
  * A refusal an MCP caller is shown with its code; its exception message is the safe text it reads.
