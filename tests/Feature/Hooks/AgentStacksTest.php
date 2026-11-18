@@ -57,6 +57,7 @@ final class AgentStacksTest extends TestCase
         parent::setUp();
 
         DB::table('agent_stacks')->truncate();
+        DB::table('settings_records')->truncate();
         Schema::dropIfExists('domain_writes');
         Schema::create('domain_writes', fn (Blueprint $table) => $table->string('name'));
 
@@ -73,6 +74,7 @@ final class AgentStacksTest extends TestCase
         }
         Schema::dropIfExists('domain_writes');
         DB::table('agent_stacks')->truncate();
+        DB::table('settings_records')->truncate();
 
         parent::tearDown();
     }
