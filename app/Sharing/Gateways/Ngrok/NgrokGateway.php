@@ -21,6 +21,7 @@ use Illuminate\Container\Attributes\Config;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory as HttpClient;
 use Illuminate\Process\Factory as Processes;
+use Illuminate\Support\Arr;
 
 /**
  * The ngrok gateway on a fixed HTTPS origin only: the pinned ngrok program with its own configuration file (the
@@ -117,15 +118,14 @@ final readonly class NgrokGateway implements ShareGateway
     private function endpointFor(string $upstream, string $publicOrigin): GatewayAddressCheck
     {
         try {
-            $tunnels = $this->http->timeout(2)->get("http://127.0.0.1:{$this->controlPort}/api/tunnels")->json('tunnels');
+            $tunnels = $this->http->timeout(2)->get("http://127.0.0.1:{$this->controlPort}/api/tunnels")->collect('tunnels');
         } catch (ConnectionException) {
             return GatewayAddressCheck::Waiting;
         }
 
-        foreach (is_array($tunnels) ? $tunnels : [] as $tunnel) {
-            $address = is_array($tunnel) ? (string) ($tunnel['public_url'] ?? '') : '';
-            $forwardsHere = is_array($tunnel) && self::isUpstream((string) ($tunnel['config']['addr'] ?? ''), $upstream);
-            $claimsOrigin = $this->origins->accepts($address, $publicOrigin);
+        foreach ($tunnels as $tunnel) {
+            $forwardsHere = self::isUpstream(Arr::string($tunnel, 'config.addr'), $upstream);
+            $claimsOrigin = $this->origins->accepts(Arr::string($tunnel, 'public_url'), $publicOrigin);
 
             if ($forwardsHere || $claimsOrigin) {
                 return $forwardsHere && $claimsOrigin ? GatewayAddressCheck::Confirmed : GatewayAddressCheck::Unexpected;
@@ -147,15 +147,15 @@ final readonly class NgrokGateway implements ShareGateway
     private function writeConfiguration(string $authtoken): string
     {
         $file = "{$this->configFolder}/ngrok.yml";
-        $yaml = implode("\n", [
-            'version: "2"',
-            'authtoken: '.json_encode($authtoken),
-            "web_addr: 127.0.0.1:{$this->controlPort}",
-            'inspect_db_size: -1',
-            'log: false',
-            '',
-        ]);
-        file_put_contents($file, $yaml);
+        $quotedAuthtoken = json_encode($authtoken, JSON_THROW_ON_ERROR);
+        file_put_contents($file, <<<YAML
+            version: "2"
+            authtoken: {$quotedAuthtoken}
+            web_addr: 127.0.0.1:{$this->controlPort}
+            inspect_db_size: -1
+            log: false
+
+            YAML);
         chmod($file, 0600);
 
         return $file;

@@ -7,6 +7,7 @@ namespace App\Sharing\Gateways\Tunler;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Enums\GatewayAddressCheck;
 use App\Sharing\Exceptions\GatewayOpenFailed;
+use App\Sharing\Exceptions\TunlerStatusUnreadable;
 use App\Sharing\Gateways\Support\ChallengeProbe;
 use App\Sharing\Gateways\Support\GatewayChildren;
 use App\Sharing\Gateways\Support\GatewayLaunches;
@@ -19,7 +20,6 @@ use App\Sharing\Support\GatewayReadiness;
 use Illuminate\Container\Attributes\Config;
 use Illuminate\Contracts\Process\InvokedProcess;
 use Illuminate\Process\Factory as Processes;
-use JsonException;
 
 /**
  * The Tunler gateway: the pinned tunler program run with the journal's own configuration folder, opened as
@@ -65,13 +65,17 @@ final readonly class TunlerGateway implements ShareGateway
             $problems[] = "The tunler program is not version {$configuration->settings->executableVersion}.";
         }
 
-        $status = $this->status();
+        try {
+            $status = TunlerStatus::fromOutput($this->run(['status', '--json']));
+        } catch (TunlerStatusUnreadable) {
+            return new GatewayReadiness([...$problems, 'Tunler did not report its login status.']);
+        }
 
-        if (($status['logged_in'] ?? false) !== true || ($status['auth_ok'] ?? false) !== true) {
+        if (! $status->isLoggedIn) {
             $problems[] = 'The journal is not logged in to Tunler.';
         }
 
-        if (($status['host'] ?? null) !== $configuration->settings->providerHost) {
+        if ($status->host !== $configuration->settings->providerHost) {
             $problems[] = "Tunler is logged in to another host than {$configuration->settings->providerHost}.";
         }
 
@@ -143,20 +147,6 @@ final readonly class TunlerGateway implements ShareGateway
     private function isExpectedOrigin(string $address, string $publicOrigin, string $providerHost): bool
     {
         return $this->origins->accepts($address, $publicOrigin) && parse_url($address, PHP_URL_HOST) === "{$this->subdomain}.{$providerHost}";
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function status(): array
-    {
-        try {
-            $status = json_decode($this->run(['status', '--json']), true, 4, JSON_THROW_ON_ERROR);
-        } catch (JsonException) {
-            return [];
-        }
-
-        return is_array($status) ? $status : [];
     }
 
     /**

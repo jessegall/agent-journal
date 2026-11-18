@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Data\Sharing;
 
 use App\Sharing\Enums\ShareState;
+use App\Sharing\Models\Share;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -37,4 +38,33 @@ final class ShareDetailData extends Data
         public readonly ShareAuditData $audit,
         public readonly ShareRuntimeData $runtime,
     ) {}
+
+    /**
+     * @param  list<ShareMemberData>  $members
+     */
+    public static function fromShare(
+        Share $share,
+        string|null $gatewayKey,
+        array $members,
+        bool $mayReveal,
+        ShareAuditData $audit,
+        ShareRuntimeData $runtime,
+    ): self {
+        return new self(
+            $share->id,
+            $share->number,
+            $share->state,
+            $share->root_type,
+            $share->root_id,
+            $gatewayKey,
+            $share->scope_version,
+            $share->expires_at->toIso8601String(),
+            $members,
+            $mayReveal,
+            $share->state->mayRetry() && $share->expires_at->isFuture(),
+            ! $share->state->isTerminal(),
+            $audit,
+            $runtime,
+        );
+    }
 }

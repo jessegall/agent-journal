@@ -39,19 +39,11 @@ final readonly class ShareDetailReader implements PageReader
         $share = Share::byId($this->request->shareId())->getOrThrow(ShareUnavailable::for($this->request->shareId()));
         $configurationId = $share->share_gateway_configuration_id;
 
-        return new ShareDetailData(
-            $share->id,
-            $share->number,
-            $share->state,
-            $share->root_type,
-            $share->root_id,
+        return ShareDetailData::fromShare(
+            $share,
             $configurationId === null ? null : (ShareGatewayConfiguration::gatewayKeysOf([$configurationId])[$configurationId] ?? null),
-            $share->scope_version,
-            $share->expires_at->toIso8601String(),
             array_map(ShareMemberData::fromMember(...), ShareMember::currentOf($share)),
             $this->links->linkFor($this->actors->actor(), $share->id)->isDefined(),
-            $share->state->mayRetry() && $share->expires_at->isFuture(),
-            ! $share->state->isTerminal(),
             ShareAuditData::fromPage($this->audits->page($share, $this->request->auditAfter())),
             $this->runtime($share),
         );

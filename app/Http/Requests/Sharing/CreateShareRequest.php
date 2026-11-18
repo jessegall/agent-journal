@@ -6,6 +6,7 @@ namespace App\Http\Requests\Sharing;
 
 use App\Http\Requests\Sharing\Concerns\ReadsConfirmedPreview;
 use App\Http\Requests\Sharing\Concerns\ReadsIdempotencyKey;
+use App\Sharing\Commands\CreateShare;
 use App\Sharing\Support\ShareDuration;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -25,10 +26,15 @@ final class CreateShareRequest extends FormRequest
         return [...$this->confirmedPreviewRules(), ...$this->idempotencyKeyRules(), 'minutes' => ['nullable', 'integer']];
     }
 
+    public function command(): CreateShare
+    {
+        return new CreateShare($this->previewId(), $this->previewChecksum(), $this->minutesUntilExpiry(), $this->requestKey());
+    }
+
     /**
      * The minutes asked for, or seven days when the owner named none; the command checks the bounds.
      */
-    public function minutesUntilExpiry(): int
+    private function minutesUntilExpiry(): int
     {
         return $this->integer('minutes', ShareDuration::STANDARD_MINUTES);
     }

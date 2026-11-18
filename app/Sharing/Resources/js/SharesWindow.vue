@@ -10,7 +10,14 @@ import { reactive } from 'vue';
  */
 const props = defineProps<{ data: ShareListData }>();
 
-const states = ['proposed', 'pending', 'active', 'failed', 'revoked', 'expired'] as const;
+const states = [
+    'proposed',
+    'pending',
+    'active',
+    'failed',
+    'revoked',
+    'expired',
+] as const;
 
 const filters = reactive({
     state: props.data.filters.state ?? '',
@@ -19,8 +26,12 @@ const filters = reactive({
     expiresBefore: props.data.filters.expiresBefore ?? '',
 });
 
-function query(after: string | null): Partial<Record<keyof ShareFiltersData, string>> {
-    const chosen = Object.entries({ ...filters, after: after ?? '' }).filter(([, value]) => value !== '');
+function query(
+    after: string | null,
+): Partial<Record<keyof ShareFiltersData, string>> {
+    const chosen = Object.entries({ ...filters, after: after ?? '' }).filter(
+        ([, value]) => value !== '',
+    );
 
     return Object.fromEntries(chosen);
 }
@@ -30,19 +41,27 @@ function apply(): void {
 }
 
 function nextPage(): void {
-    router.get('/sharing', query(props.data.nextAfter), { preserveScroll: true });
+    router.get('/sharing', query(props.data.nextAfter), {
+        preserveScroll: true,
+    });
 }
 </script>
 
 <template>
     <div class="flex flex-col gap-4">
         <PageHeader title="Shares" />
-        <form class="flex flex-wrap items-end gap-2" aria-label="Filter shares" @submit.prevent="apply">
+        <form
+            class="flex flex-wrap items-end gap-2"
+            aria-label="Filter shares"
+            @submit.prevent="apply"
+        >
             <label class="flex flex-col">
                 <span>State</span>
                 <select v-model="filters.state">
                     <option value="">Any</option>
-                    <option v-for="state in states" :key="state" :value="state">{{ state }}</option>
+                    <template v-for="state in states" :key="state">
+                        <option :value="state">{{ state }}</option>
+                    </template>
                 </select>
             </label>
             <label class="flex flex-col">
@@ -59,27 +78,40 @@ function nextPage(): void {
             </label>
             <button type="submit">Filter</button>
         </form>
-        <p v-if="data.rows.length === 0">No share matches.</p>
-        <table v-else>
-            <thead>
-                <tr>
-                    <th>Share</th>
-                    <th>State</th>
-                    <th>Record</th>
-                    <th>Gateway</th>
-                    <th>Expires</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="row in data.rows" :key="row.id">
-                    <td><Link :href="`/sharing/shares/${row.id}`">{{ row.isProposal ? 'Proposal' : 'Share' }} {{ row.number }}</Link></td>
-                    <td>{{ row.state }}</td>
-                    <td>{{ row.rootType }}</td>
-                    <td>{{ row.gatewayKey ?? '' }}</td>
-                    <td>{{ row.expiresAt }}</td>
-                </tr>
-            </tbody>
-        </table>
-        <button v-if="data.nextAfter" type="button" @click="nextPage">Older shares</button>
+        <template v-if="data.rows.length === 0">
+            <p>No share matches.</p>
+        </template>
+        <template v-else>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Share</th>
+                        <th>State</th>
+                        <th>Record</th>
+                        <th>Gateway</th>
+                        <th>Expires</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template v-for="row in data.rows" :key="row.id">
+                        <tr>
+                            <td>
+                                <Link :href="`/sharing/shares/${row.id}`"
+                                    >{{ row.isProposal ? 'Proposal' : 'Share' }}
+                                    {{ row.number }}</Link
+                                >
+                            </td>
+                            <td>{{ row.state }}</td>
+                            <td>{{ row.rootType }}</td>
+                            <td>{{ row.gatewayKey ?? '' }}</td>
+                            <td>{{ row.expiresAt }}</td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </template>
+        <template v-if="data.nextAfter">
+            <button type="button" @click="nextPage">Older shares</button>
+        </template>
     </div>
 </template>
