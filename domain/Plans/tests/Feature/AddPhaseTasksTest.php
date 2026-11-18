@@ -33,8 +33,8 @@ final class AddPhaseTasksTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
         $phase = Plan::query()->create(['title' => 'Build', 'type' => PlanType::Build])->addPhase('Read');
-        $first = Task::query()->create(['title' => 'First'])->id;
-        $second = Task::query()->create(['title' => 'Second'])->id;
+        $first = Task::factory()->create(['title' => 'First'])->id;
+        $second = Task::factory()->create(['title' => 'Second'])->id;
 
         $this->app->make(CommandBus::class)->run(new AddPhaseTasks($phase->id, [$second, $first]));
 
@@ -45,7 +45,7 @@ final class AddPhaseTasksTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
         $phase = Plan::query()->create(['title' => 'Build', 'type' => PlanType::Build])->addPhase('Read');
-        $real = Task::query()->create(['title' => 'Real'])->id;
+        $real = Task::factory()->create(['title' => 'Real'])->id;
 
         try {
             $this->app->make(CommandBus::class)->run(new AddPhaseTasks($phase->id, [$real, TestIds::of(999999)]));
@@ -59,7 +59,7 @@ final class AddPhaseTasksTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
         $phase = Plan::query()->create(['title' => 'Build', 'type' => PlanType::Build])->addPhase('Read');
-        $task = Task::query()->create(['title' => 'Twice'])->id;
+        $task = Task::factory()->create(['title' => 'Twice'])->id;
 
         try {
             $this->app->make(CommandBus::class)->run(new AddPhaseTasks($phase->id, [$task, $task]));

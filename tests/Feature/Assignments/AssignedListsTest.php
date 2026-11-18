@@ -64,11 +64,11 @@ final class AssignedListsTest extends TestCase
     public function test_only_directly_held_tasks_are_listed_by_id_finished_ones_included(): void
     {
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
-        $held = Task::query()->create(['title' => 'Write the reader']);
-        $finished = Task::query()->create(['title' => 'Write the store']);
+        $held = Task::factory()->create(['title' => 'Write the reader']);
+        $finished = Task::factory()->create(['title' => 'Write the store']);
         $finished->finish();
-        $othersTask = Task::query()->create(['title' => 'Not mine']);
-        Task::query()->create(['title' => 'Nobody holds this']);
+        $othersTask = Task::factory()->create(['title' => 'Not mine']);
+        Task::factory()->create(['title' => 'Nobody holds this']);
         $writer->assign($finished->assignmentIdentity(), ActorIdentity::of($this->main));
         $writer->assign($held->assignmentIdentity(), ActorIdentity::of($this->main));
         $writer->assign($othersTask->assignmentIdentity(), ActorIdentity::of($this->other));
@@ -89,7 +89,7 @@ final class AssignedListsTest extends TestCase
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $other = Plan::query()->create(['title' => 'Research', 'type' => PlanType::Research]);
-        $task = Task::query()->create(['title' => 'In the research plan']);
+        $task = Task::factory()->create(['title' => 'In the research plan']);
         $other->addPhase('One')->addTasks([$task->id]);
         $writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->main));
         $writer->assign($task->assignmentIdentity(), ActorIdentity::of($this->main));
@@ -102,7 +102,7 @@ final class AssignedListsTest extends TestCase
 
     public function test_an_agent_holding_nothing_gets_an_empty_list_not_all_work(): void
     {
-        Task::query()->create(['title' => 'Someone elses']);
+        Task::factory()->create(['title' => 'Someone elses']);
 
         $list = $this->app->make(AssignedTaskReader::class)->assignedToCaller(new TaskFilters);
 
@@ -112,8 +112,8 @@ final class AssignedListsTest extends TestCase
     public function test_rows_and_total_come_from_one_snapshot(): void
     {
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
-        $writer->assign(Task::query()->create(['title' => 'First'])->assignmentIdentity(), ActorIdentity::of($this->main));
-        $late = Task::query()->create(['title' => 'Assigned meanwhile']);
+        $writer->assign(Task::factory()->create(['title' => 'First'])->assignmentIdentity(), ActorIdentity::of($this->main));
+        $late = Task::factory()->create(['title' => 'Assigned meanwhile']);
         $other = $this->otherConnection();
 
         [$before, $after] = $this->app->make(AssignmentTransaction::class)->run(function () use ($other, $late): array {

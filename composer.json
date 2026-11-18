@@ -46,6 +46,7 @@
             "Domain\\Access\\Database\\Factories\\": "domain/Access/database/factories/",
             "Domain\\Access\\Database\\Seeders\\": "domain/Access/database/seeders/",
             "Domain\\Plans\\Database\\Seeders\\": "domain/Plans/database/seeders/",
+            "Domain\\Tasks\\Database\\Factories\\": "domain/Tasks/database/factories/",
             "Domain\\Tasks\\Database\\Seeders\\": "domain/Tasks/database/seeders/",
             "Domain\\Access\\": "domain/Access/src/",
             "Domain\\Chat\\": "domain/Chat/src/",

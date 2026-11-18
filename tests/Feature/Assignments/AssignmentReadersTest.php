@@ -51,7 +51,7 @@ final class AssignmentReadersTest extends TestCase
 
     public function test_twenty_records_of_one_type_cost_one_visibility_query_and_one_assignment_query(): void
     {
-        $tasks = array_map(fn (int $number) => Task::query()->create(['title' => "Task {$number}"])->assignmentIdentity(), range(1, 20));
+        $tasks = array_map(fn (int $number) => Task::factory()->create(['title' => "Task {$number}"])->assignmentIdentity(), range(1, 20));
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $writer->assign($tasks[0], $this->helper);
         $writer->assign($tasks[5], $this->helper);
@@ -70,7 +70,7 @@ final class AssignmentReadersTest extends TestCase
 
     public function test_a_holders_record_ids_come_page_by_page_and_skip_records_that_no_longer_exist(): void
     {
-        $tasks = array_map(fn (int $number) => Task::query()->create(['title' => "Task {$number}"]), range(1, 5));
+        $tasks = array_map(fn (int $number) => Task::factory()->create(['title' => "Task {$number}"]), range(1, 5));
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
 
         foreach ($tasks as $task) {

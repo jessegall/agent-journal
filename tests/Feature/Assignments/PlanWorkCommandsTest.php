@@ -43,8 +43,8 @@ final class PlanWorkCommandsTest extends TestCase
         $this->main = TestLaunch::start('hooks.main_ready');
         $this->helper = TestLaunch::start('hooks.read_only_helper_ready');
         $this->plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
-        $open = Task::query()->create(['title' => 'Open']);
-        $finished = Task::query()->create(['title' => 'Finished']);
+        $open = Task::factory()->create(['title' => 'Open']);
+        $finished = Task::factory()->create(['title' => 'Finished']);
         $finished->finish();
         $this->plan->addPhase('Working')->addTasks([$open->id]);
         $this->plan->addPhase('Over')->addTasks([$finished->id]);

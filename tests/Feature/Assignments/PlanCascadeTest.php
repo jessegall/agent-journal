@@ -61,9 +61,9 @@ final class PlanCascadeTest extends TestCase
         $this->startUserRequestAs($owner->id);
         $this->builder = ActorIdentity::of(Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.read_only_helper_ready']));
         $this->plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
-        $this->open = Task::query()->create(['title' => 'Open']);
-        $finished = Task::query()->create(['title' => 'Finished']);
-        $cancelled = Task::query()->create(['title' => 'Cancelled']);
+        $this->open = Task::factory()->create(['title' => 'Open']);
+        $finished = Task::factory()->create(['title' => 'Finished']);
+        $cancelled = Task::factory()->create(['title' => 'Cancelled']);
         $finished->finish();
         $cancelled->cancel();
         $this->working = $this->plan->addPhase('Working');
@@ -116,7 +116,7 @@ final class PlanCascadeTest extends TestCase
     public function test_work_added_after_a_cascade_takes_no_holder_from_it(): void
     {
         $this->assignWork($this->plan->assignmentIdentity(), $this->builder);
-        $late = Task::query()->create(['title' => 'Added later']);
+        $late = Task::factory()->create(['title' => 'Added later']);
 
         $this->working->addTasks([$late->id]);
         $this->plan->addPhase('Added later');

@@ -57,8 +57,17 @@ func main() {
 		os.Exit(0)
 	}
 
+	hostCommands := map[string]func([]string) error{"enroll": enroll, "serve": serve, "attach": attach}
+	if len(os.Args) >= 2 && hostCommands[os.Args[1]] != nil {
+		if err := hostCommands[os.Args[1]](os.Args[2:]); err != nil {
+			fmt.Fprintln(os.Stderr, "journal-agent:", err)
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
 	if len(os.Args) < 2 || os.Args[1] != "record" {
-		fmt.Fprintln(os.Stderr, "usage: journal-agent record --program <claude|codex> --mode <process|terminal> --out <dir> -- <args>")
+		fmt.Fprintln(os.Stderr, "usage: journal-agent record --program <claude|codex> --mode <process|terminal> --out <dir> -- <args> | enroll --journal <url> --host <id> < secret | serve | attach --agent <id> --folder <dir> [--program claude|codex] | attach --runtime <id>")
 		os.Exit(2)
 	}
 

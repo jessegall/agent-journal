@@ -29,14 +29,14 @@ final class RepeatedReadTest extends TestCase
         parent::setUp();
 
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(1)));
-        Task::query()->create(['title' => 'First']);
-        Task::query()->create(['title' => 'Second']);
+        Task::factory()->create(['title' => 'First']);
+        Task::factory()->create(['title' => 'Second']);
     }
 
     public function test_a_loop_reading_one_task_per_item_is_refused_past_the_loop_limit(): void
     {
         foreach (range(3, 12) as $number) {
-            Task::query()->create(['title' => "Task {$number}"]);
+            Task::factory()->create(['title' => "Task {$number}"]);
         }
 
         $records = $this->app->make(TaskRecords::class);
@@ -53,7 +53,7 @@ final class RepeatedReadTest extends TestCase
     public function test_the_same_read_outside_a_measurement_or_inside_a_schedule_is_allowed(): void
     {
         foreach (range(3, 12) as $number) {
-            Task::query()->create(['title' => "Task {$number}"]);
+            Task::factory()->create(['title' => "Task {$number}"]);
         }
 
         $records = $this->app->make(TaskRecords::class);
@@ -69,7 +69,7 @@ final class RepeatedReadTest extends TestCase
     public function test_a_chunked_read_over_251_rows_runs_every_batch(): void
     {
         foreach (range(3, 251) as $number) {
-            Task::query()->create(['title' => "Task {$number}"]);
+            Task::factory()->create(['title' => "Task {$number}"]);
         }
 
         $seen = $this->app->make(ReadMeter::class)->measure('chunked', function (): int {

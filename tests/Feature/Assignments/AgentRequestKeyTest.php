@@ -41,7 +41,7 @@ final class AgentRequestKeyTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->main = TestLaunch::start('hooks.main_ready');
         $this->helper = TestLaunch::start('hooks.read_only_helper_ready');
-        $this->task = Task::query()->create(['title' => 'Keyed work']);
+        $this->task = Task::factory()->create(['title' => 'Keyed work']);
     }
 
     public function test_a_cli_assign_retried_with_the_same_request_key_returns_the_stored_result_without_a_second_change(): void
@@ -69,7 +69,7 @@ final class AgentRequestKeyTest extends TestCase
     public function test_one_key_in_two_sessions_keys_two_separate_writes(): void
     {
         $second = TestLaunch::start('hooks.main_ready');
-        $other = Task::query()->create(['title' => 'Other work']);
+        $other = Task::factory()->create(['title' => 'Other work']);
 
         $this->signed($this->main, '/agent/assignments/assign', ['recordType' => 'tasks.task', 'recordId' => $this->task->id, 'recipientType' => 'agent', 'recipientId' => $this->helper->agent->id, 'request_key' => self::KEY])->assertOk();
         $this->signed($second, '/agent/assignments/assign', ['recordType' => 'tasks.task', 'recordId' => $other->id, 'recipientType' => 'agent', 'recipientId' => $this->helper->agent->id, 'request_key' => self::KEY])->assertOk();

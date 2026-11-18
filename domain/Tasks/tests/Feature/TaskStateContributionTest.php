@@ -27,7 +27,7 @@ final class TaskStateContributionTest extends TestCase
 
     public function test_starting_a_task_commits_the_start_and_its_state_together(): void
     {
-        $task = Task::query()->create(['title' => 'Write the walk']);
+        $task = Task::factory()->create(['title' => 'Write the walk']);
 
         $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
 
@@ -39,7 +39,7 @@ final class TaskStateContributionTest extends TestCase
 
     public function test_a_failed_push_rolls_the_start_back(): void
     {
-        $task = Task::query()->create(['title' => 'Write the walk']);
+        $task = Task::factory()->create(['title' => 'Write the walk']);
         AgentStackRow::query()->sole()->closeAt(CarbonImmutable::now());
 
         try {
@@ -54,7 +54,7 @@ final class TaskStateContributionTest extends TestCase
 
     public function test_starting_a_started_task_again_keeps_one_frame_and_one_run(): void
     {
-        $task = Task::query()->create(['title' => 'Write the walk']);
+        $task = Task::factory()->create(['title' => 'Write the walk']);
 
         $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
         $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
@@ -64,7 +64,7 @@ final class TaskStateContributionTest extends TestCase
 
     public function test_the_state_reads_the_task_fresh_and_the_next_hook_removes_a_finished_run(): void
     {
-        $task = Task::query()->create(['title' => 'Write the walk']);
+        $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
 
         $held = $this->answerStop('call-1');
@@ -78,7 +78,7 @@ final class TaskStateContributionTest extends TestCase
 
     public function test_a_new_run_after_a_finished_one_gets_its_own_frame(): void
     {
-        $task = Task::query()->create(['title' => 'Write the walk']);
+        $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
         $task->finish();
 
@@ -90,8 +90,8 @@ final class TaskStateContributionTest extends TestCase
     #[TimeLimit(seconds: 3, reason: 'It runs four task commands through the bus, each with its stack transaction.')]
     public function test_finishing_a_task_in_its_command_takes_its_frame_off_and_the_task_below_is_current_again(): void
     {
-        $first = Task::query()->create(['title' => 'Write the walk']);
-        $second = Task::query()->create(['title' => 'Fix the hook']);
+        $first = Task::factory()->create(['title' => 'Write the walk']);
+        $second = Task::factory()->create(['title' => 'Fix the hook']);
         $this->app->make(CommandBus::class)->run(new StartTask($first->id, $this->target->sessionId));
         $this->app->make(CommandBus::class)->run(new StartTask($second->id, $this->target->sessionId));
         $tasks = $this->app->make(AssignedTaskReader::class);
@@ -107,8 +107,8 @@ final class TaskStateContributionTest extends TestCase
     #[TimeLimit(seconds: 3, reason: 'It runs four task commands through the bus, each with its stack transaction.')]
     public function test_blocking_or_cancelling_a_task_takes_its_frame_off_in_the_same_command(): void
     {
-        $blocked = Task::query()->create(['title' => 'Wait for review']);
-        $cancelled = Task::query()->create(['title' => 'Drop the idea']);
+        $blocked = Task::factory()->create(['title' => 'Wait for review']);
+        $cancelled = Task::factory()->create(['title' => 'Drop the idea']);
         $this->app->make(CommandBus::class)->run(new StartTask($blocked->id, $this->target->sessionId));
         $this->app->make(CommandBus::class)->run(new StartTask($cancelled->id, $this->target->sessionId));
 
@@ -121,8 +121,8 @@ final class TaskStateContributionTest extends TestCase
 
     public function test_finishing_a_task_never_started_leaves_the_stack_alone(): void
     {
-        $started = Task::query()->create(['title' => 'Write the walk']);
-        $neverStarted = Task::query()->create(['title' => 'Someday']);
+        $started = Task::factory()->create(['title' => 'Write the walk']);
+        $neverStarted = Task::factory()->create(['title' => 'Someday']);
         $this->app->make(CommandBus::class)->run(new StartTask($started->id, $this->target->sessionId));
 
         $this->app->make(CommandBus::class)->run(new FinishTask($neverStarted->id));

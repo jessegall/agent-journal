@@ -60,6 +60,12 @@ func (Codex) Arguments(launch contracts.Launch) ([]string, error) {
 	}
 
 	arguments = append(arguments, "--sandbox", "workspace-write")
+	if launch.Model != "" {
+		arguments = append(arguments, "-m", launch.Model)
+	}
+	if launch.Effort != "" {
+		arguments = append(arguments, "-c", "model_reasoning_effort="+launch.Effort)
+	}
 	if launch.Mode == contracts.ProcessMode {
 		arguments = append(arguments, "--json", "--skip-git-repo-check")
 	}

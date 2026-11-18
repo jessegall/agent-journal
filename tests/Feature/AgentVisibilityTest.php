@@ -39,7 +39,7 @@ final class AgentVisibilityTest extends TestCase
         Message::query()->create(['body' => 'Not addressed yet']);
         (new Memory(['text' => 'Kept by agent 1', 'weight' => 3]))->saveFor(new ActorIdentity(ActorType::Agent, TestIds::of(1)));
         (new Memory(['text' => 'Kept by agent 2', 'weight' => 3]))->saveFor(new ActorIdentity(ActorType::Agent, TestIds::of(2)));
-        Task::query()->create(['title' => 'Write the walk'])->start();
+        Task::factory()->create(['title' => 'Write the walk'])->start();
         Rule::query()->create(['text' => 'No phase waits on the user.']);
     }
 

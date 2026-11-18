@@ -56,7 +56,7 @@ final class RecordLinksTest extends TestCase
 
     public function test_a_task_a_plan_and_a_document_are_read_as_cards_by_their_reference(): void
     {
-        Task::query()->create(['title' => 'Write the client']);
+        Task::factory()->create(['title' => 'Write the client']);
         Plan::query()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
         $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n"));
 
@@ -111,7 +111,7 @@ final class RecordLinksTest extends TestCase
 
     public function test_doc_make_about_a_task_links_it_and_a_private_or_extra_target_creates_nothing(): void
     {
-        Task::query()->create(['title' => 'Write the client']);
+        Task::factory()->create(['title' => 'Write the client']);
         $task = $this->records()->identify(RecordReference::parse('task 1'));
 
         $this->bus()->run(new CreateDocument('Design', 'What we build', "Text\n", [$task]));

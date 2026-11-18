@@ -57,7 +57,7 @@ final class AssignmentWriterTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->main = Agent::query()->create(['name' => 'Main', 'role' => 'hooks.main_ready']);
         $this->helper = Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.read_only_helper_ready']);
-        $this->task = Task::query()->create(['title' => 'Write the reader'])->assignmentIdentity();
+        $this->task = Task::factory()->create(['title' => 'Write the reader'])->assignmentIdentity();
         $this->startUserRequestAs($this->owner->id);
     }
 
@@ -89,11 +89,11 @@ final class AssignmentWriterTest extends TestCase
         $this->writer()->assign($this->task, ActorIdentity::of($this->helper));
 
         $this->startRequestAs($this->helper->id, TestIds::of(2));
-        $this->assertThrows(fn () => $this->writer()->assign(Task::query()->create(['title' => 'Other'])->assignmentIdentity(), ActorIdentity::of($this->helper)), AssignmentDenied::class);
+        $this->assertThrows(fn () => $this->writer()->assign(Task::factory()->create(['title' => 'Other'])->assignmentIdentity(), ActorIdentity::of($this->helper)), AssignmentDenied::class);
 
         $this->main->retireAt(CarbonImmutable::now());
         $this->startRequestAs($this->main->id, TestIds::of(1));
-        $this->assertThrows(fn () => $this->writer()->assign(Task::query()->create(['title' => 'Third'])->assignmentIdentity(), ActorIdentity::of($this->helper)), AssignmentDenied::class);
+        $this->assertThrows(fn () => $this->writer()->assign(Task::factory()->create(['title' => 'Third'])->assignmentIdentity(), ActorIdentity::of($this->helper)), AssignmentDenied::class);
     }
 
     public function test_a_reassignment_needs_the_reference_it_read_even_after_a_round_trip(): void

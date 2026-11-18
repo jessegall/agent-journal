@@ -48,8 +48,8 @@ final class AssignedListEndpointsTest extends TestCase
     public function test_the_caller_gets_only_the_tasks_and_plans_it_holds(): void
     {
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
-        $held = Task::query()->create(['title' => 'Write the endpoint']);
-        $others = Task::query()->create(['title' => 'Not mine']);
+        $held = Task::factory()->create(['title' => 'Write the endpoint']);
+        $others = Task::factory()->create(['title' => 'Not mine']);
         $plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $writer->assign($held->assignmentIdentity(), ActorIdentity::of($this->caller->agent));
         $writer->assign($others->assignmentIdentity(), ActorIdentity::of($this->other->agent));

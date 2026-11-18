@@ -49,12 +49,12 @@ final class WorkListToolsTest extends TestCase
         $references = [];
 
         foreach (['Write the tool', 'Test the tool'] as $title) {
-            $task = Task::query()->create(['title' => $title]);
+            $task = Task::factory()->create(['title' => $title]);
             $references[$task->id] = $this->writer->assign($task->assignmentIdentity(), ActorIdentity::of($this->caller->agent))->outcomes[0]->current->reference->id;
         }
 
         $other = TestLaunch::start();
-        $this->writer->assign(Task::query()->create(['title' => 'Not yours'])->assignmentIdentity(), ActorIdentity::of($other->agent));
+        $this->writer->assign(Task::factory()->create(['title' => 'Not yours'])->assignmentIdentity(), ActorIdentity::of($other->agent));
 
         $result = $this->callMcpTool($this->caller, 'tasks_assigned')->assertJsonPath('result.isError', false)->json('result.structuredContent');
 
@@ -97,7 +97,7 @@ final class WorkListToolsTest extends TestCase
         $held = [];
 
         for ($number = 1; $number <= 20; $number++) {
-            $task = Task::query()->create(['title' => str_pad("Task {$number} ", 238, 'x')]);
+            $task = Task::factory()->create(['title' => str_pad("Task {$number} ", 238, 'x')]);
             $this->writer->assign($task->assignmentIdentity(), ActorIdentity::of($this->caller->agent));
             $held[] = $task->id;
         }

@@ -57,7 +57,7 @@ final class PageChangeTest extends TestCase
 
     public function test_a_finished_task_of_a_plan_moves_the_plan_and_changes_the_page(): void
     {
-        $task = Task::query()->create(['title' => 'List the plans']);
+        $task = Task::factory()->create(['title' => 'List the plans']);
         $plan = Plan::query()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
         $plan->addPhase('Read')->addTasks([$task->id]);
         $progress = [];
@@ -73,14 +73,14 @@ final class PageChangeTest extends TestCase
 
     public function test_a_task_outside_every_plan_changes_no_page(): void
     {
-        $this->app->make(CommandBus::class)->run(new CancelTask(Task::query()->create(['title' => 'Loose task'])->id));
+        $this->app->make(CommandBus::class)->run(new CancelTask(Task::factory()->create(['title' => 'Loose task'])->id));
 
         Event::assertNotDispatched(PageChanged::class);
     }
 
     public function test_a_rolled_back_change_sends_nothing(): void
     {
-        $task = Task::query()->create(['title' => 'List the plans']);
+        $task = Task::factory()->create(['title' => 'List the plans']);
         Plan::query()->create(['title' => 'Build the release page', 'type' => PlanType::Build])->addPhase('Read')->addTasks([$task->id]);
 
         try {

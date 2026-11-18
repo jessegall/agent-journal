@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Models;
 
+use App\Actors\Enums\ActorType;
 use App\Assignments\Contracts\Assignable;
 use App\Assignments\Models\Support\AssignableListing;
 use App\Hooks\Contracts\WorkedOnStack;
@@ -16,13 +17,18 @@ use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
 use Domain\Tasks\Api\TaskSummary;
+use Domain\Tasks\Database\Factories\TaskFactory;
 use Domain\Tasks\Enums\TaskState;
 use Domain\Tasks\Enums\TaskWorkState;
 use Domain\Tasks\Exceptions\TaskMissing;
+use Domain\Tasks\Exceptions\TaskTextTooLong;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
+use Domain\Tasks\Support\TaskLimits;
 use Domain\Tasks\Support\TaskWork;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\UseFactory;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use PhpOption\None;
@@ -37,15 +43,28 @@ use PhpOption\Some;
  * @property string $number_group_id
  * @property int $number
  * @property string $title
+ * @property string $brief
+ * @property ActorType $creator_type
+ * @property string $creator_id
+ * @property string|null $creator_session_id
+ * @property int $revision
  * @property TaskState $state
  * @property int $run_number
+ * @property string|null $run_session_id
+ * @property string|null $result_note
+ * @property string|null $block_reason
+ * @property string|null $cancel_reason
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['title'])]
+#[Fillable(['title', 'brief', 'creator_type', 'creator_id', 'creator_session_id', 'revision', 'run_number', 'run_session_id', 'result_note', 'block_reason', 'cancel_reason'])]
+#[UseFactory(TaskFactory::class)]
 final class Task extends Model implements Assignable, Numbered, ReadableModel, WorkedOnStack
 {
-    use AssignableListing, HasNumber, HasUlids, Linkable;
+    /**
+     * @use HasFactory<TaskFactory>
+     */
+    use AssignableListing, HasFactory, HasNumber, HasUlids, Linkable;
     use BoundedReads;
 
     /**
@@ -56,7 +75,7 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
     /**
      * @var array<string, mixed>
      */
-    protected $attributes = ['state' => 'open', 'run_number' => 0];
+    protected $attributes = ['state' => 'open', 'run_number' => 0, 'revision' => 1];
 
     /**
      * @return array<string, string>
@@ -65,6 +84,8 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
     {
         return [
             'state' => TaskState::class,
+            'creator_type' => ActorType::class,
+            'revision' => 'integer',
             'run_number' => 'integer',
         ];
     }
@@ -114,6 +135,72 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
     {
         $this->state = TaskState::Cancelled;
         $this->save();
+    }
+
+    /**
+     * Gives the task a new title and brief, as a new revision.
+     *
+     * @throws TaskTextTooLong
+     */
+    public function describe(string $title, string $brief): void
+    {
+        TaskLimits::check($title, $brief);
+        $this->title = $title;
+        $this->brief = $brief;
+        $this->revision++;
+        $this->save();
+    }
+
+    /**
+     * Starts a new run owned by the session; a task already started by that session keeps its run.
+     */
+    public function startRun(string $sessionId): void
+    {
+        if ($this->state !== TaskState::Started || $this->run_session_id !== $sessionId) {
+            $this->run_number++;
+        }
+
+        $this->state = TaskState::Started;
+        $this->run_session_id = $sessionId;
+        $this->save();
+    }
+
+    /**
+     * @throws TaskTextTooLong
+     */
+    public function finishRun(string $note): void
+    {
+        TaskLimits::checkNote($note);
+        $this->state = TaskState::Finished;
+        $this->result_note = $note;
+        $this->save();
+    }
+
+    /**
+     * @throws TaskTextTooLong
+     */
+    public function blockRun(string $reason): void
+    {
+        TaskLimits::checkNote($reason);
+        $this->state = TaskState::Blocked;
+        $this->block_reason = $reason;
+        $this->save();
+    }
+
+    /**
+     * @throws TaskTextTooLong
+     */
+    public function cancelWith(string $reason): void
+    {
+        TaskLimits::checkNote($reason);
+        $this->state = TaskState::Cancelled;
+        $this->cancel_reason = $reason;
+        $this->save();
+    }
+
+    public function isRunOwnedBy(string $sessionId): bool
+    {
+        return $this->state === TaskState::Started && $this->run_session_id === $sessionId;
     }
 
     /**

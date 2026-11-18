@@ -58,7 +58,7 @@ final class HookEndpointTest extends TestCase
 
     public function test_a_started_task_holds_the_stop_through_the_endpoint(): void
     {
-        $task = Task::query()->create(['title' => 'Write the walk']);
+        $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->asLaunchedAgent(fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->launch->session->id)));
 
         $stdout = $this->hook('claude-code', $this->stopBody())->assertOk()->json('stdout');

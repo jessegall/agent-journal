@@ -50,7 +50,7 @@ final class AssignedListCommandsTest extends TestCase
     public function test_the_commands_print_what_the_launched_agent_holds(): void
     {
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
-        $task = Task::query()->create(['title' => 'Write the client']);
+        $task = Task::factory()->create(['title' => 'Write the client']);
         $plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $held = $writer->assign($task->assignmentIdentity(), ActorIdentity::of($this->caller->agent))->outcomes[0]->current;
         $writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->caller->agent));

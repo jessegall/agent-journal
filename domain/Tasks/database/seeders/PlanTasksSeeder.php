@@ -42,6 +42,6 @@ final class PlanTasksSeeder extends Seeder
      */
     private function tasks(string ...$titles): array
     {
-        return array_map(fn (string $title) => Task::query()->create(['title' => $title])->id, array_values($titles));
+        return array_map(fn (string $title) => Task::factory()->create(['title' => $title])->id, array_values($titles));
     }
 }

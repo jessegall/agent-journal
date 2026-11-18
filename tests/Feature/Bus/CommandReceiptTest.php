@@ -110,7 +110,7 @@ final class CommandReceiptTest extends CommandBusTestCase
 
     public function test_a_repeatable_read_assignment_is_receipted_and_replayed(): void
     {
-        $task = Task::query()->create(['title' => 'Keyed']);
+        $task = Task::factory()->create(['title' => 'Keyed']);
         $bus = $this->app->make(CommandBus::class);
         $command = new AssignRecord($task->assignmentIdentity(), ActorIdentity::of($this->launch->agent));
 

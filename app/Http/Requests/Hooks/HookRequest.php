@@ -29,12 +29,22 @@ final class HookRequest extends FormRequest
             'reason' => ['sometimes', 'string'],
             'stop_hook_active' => ['sometimes', 'boolean'],
             'agent_id' => ['sometimes', 'string'],
+            'prompt_id' => ['sometimes', 'string'],
+            'turn_id' => ['sometimes', 'string'],
         ];
     }
 
     public function program(): HookProgram
     {
         return HookProgram::from((string) $this->route('program'));
+    }
+
+    /**
+     * The process generation the relay sent, or null for a program the host did not start.
+     */
+    public function processGeneration(): int|null
+    {
+        return $this->query('generation') === null ? null : $this->integer('generation');
     }
 
     public function payload(): HookPayload

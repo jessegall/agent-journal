@@ -20,6 +20,7 @@ final readonly class RelaySettings
         public ReadyStateType $role,
         public string $bypassLogPath,
         public int $timeoutSeconds = 10,
+        public int $processGeneration = 0,
     ) {}
 
     /**
@@ -36,7 +37,17 @@ final readonly class RelaySettings
             $client->token,
             ReadyStateType::forKey($launch->value('JOURNAL_ROLE')),
             $launch->value('JOURNAL_BYPASS_LOG'),
+            processGeneration: (int) ($environment['JOURNAL_PROCESS_GENERATION'] ?? 0),
         );
+    }
+
+    /**
+     * The hook path, with the process generation the host gave this program when it has one, so the server can refuse
+     * a call from an older process (doc 40, section 12).
+     */
+    public function hookPath(string $program): string
+    {
+        return $this->processGeneration > 0 ? "/hooks/{$program}?generation={$this->processGeneration}" : "/hooks/{$program}";
     }
 
     public function client(): AgentClientSettings

@@ -56,7 +56,7 @@ final class AssignmentFactsTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->helper = ActorIdentity::of(Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.read_only_helper_ready']));
-        $this->task = Task::query()->create(['title' => 'Write the reader'])->assignmentIdentity();
+        $this->task = Task::factory()->create(['title' => 'Write the reader'])->assignmentIdentity();
         $this->startUserRequestAs($this->owner->id);
         $this->useTheApplicationsTransactionManager();
         $this->app->make('events')->listen(AssignmentsChanged::class, function (AssignmentsChanged $fact): void {

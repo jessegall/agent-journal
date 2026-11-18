@@ -42,7 +42,7 @@ final class AssignableRecordsTest extends TestCase
 
     public function test_a_task_resolves_under_its_alias_and_a_missing_one_is_unavailable(): void
     {
-        $task = Task::query()->create(['title' => 'Write the reader']);
+        $task = Task::factory()->create(['title' => 'Write the reader']);
 
         $resolved = $this->registry->recordProvider(Task::LINK_TYPE)->requireAssignable($task->assignmentIdentity());
 
@@ -52,8 +52,8 @@ final class AssignableRecordsTest extends TestCase
 
     public function test_visible_records_keep_the_input_order_and_leave_out_missing_ones(): void
     {
-        $first = Task::query()->create(['title' => 'One']);
-        $second = Task::query()->create(['title' => 'Two']);
+        $first = Task::factory()->create(['title' => 'One']);
+        $second = Task::factory()->create(['title' => 'Two']);
 
         $visible = $this->registry->recordProvider(Task::LINK_TYPE)->visibleRecords([
             $second->assignmentIdentity(),
@@ -66,10 +66,10 @@ final class AssignableRecordsTest extends TestCase
 
     public function test_finished_and_cancelled_tasks_and_plans_are_over(): void
     {
-        $open = Task::query()->create(['title' => 'Open']);
-        $finished = Task::query()->create(['title' => 'Finished']);
+        $open = Task::factory()->create(['title' => 'Open']);
+        $finished = Task::factory()->create(['title' => 'Finished']);
         $finished->finish();
-        $cancelled = Task::query()->create(['title' => 'Cancelled']);
+        $cancelled = Task::factory()->create(['title' => 'Cancelled']);
         $cancelled->cancel();
         $plan = Plan::query()->create(['title' => 'Release', 'type' => PlanType::Build]);
 
@@ -86,11 +86,11 @@ final class AssignableRecordsTest extends TestCase
         $empty = $plan->addPhase('Empty');
         $allEnded = $plan->addPhase('All ended');
         $mixed = $plan->addPhase('Mixed');
-        $done = Task::query()->create(['title' => 'Done']);
+        $done = Task::factory()->create(['title' => 'Done']);
         $done->finish();
-        $dropped = Task::query()->create(['title' => 'Dropped']);
+        $dropped = Task::factory()->create(['title' => 'Dropped']);
         $dropped->cancel();
-        $running = Task::query()->create(['title' => 'Running']);
+        $running = Task::factory()->create(['title' => 'Running']);
         $allEnded->addTasks([$done->id, $dropped->id]);
         $mixed->addTasks([$running->id]);
 
@@ -101,7 +101,7 @@ final class AssignableRecordsTest extends TestCase
 
     public function test_a_missing_task_in_a_group_refuses_the_whole_read(): void
     {
-        $task = Task::query()->create(['title' => 'One']);
+        $task = Task::factory()->create(['title' => 'One']);
 
         $this->expectException(TaskMissing::class);
 

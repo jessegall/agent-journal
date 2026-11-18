@@ -45,7 +45,7 @@ final class OperationsReadTest extends TestCase
 
     public function test_a_completed_assignment_write_reads_back_with_its_outcome(): void
     {
-        $task = Task::query()->create(['title' => 'Keyed']);
+        $task = Task::factory()->create(['title' => 'Keyed']);
         $this->startRequestAs($this->launch->agent->id, $this->launch->session->id);
         $this->app->make(RequestKey::class)->set(self::KEY);
         $this->app->make(CommandBus::class)->run(new AssignRecord($task->assignmentIdentity(), ActorIdentity::of($this->launch->agent)));

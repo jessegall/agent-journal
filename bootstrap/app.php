@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\Agents\AuthenticateAgent;
+use App\Http\Middleware\Agents\AuthenticateHost;
 use App\Http\Middleware\Agents\ReadRequestKey;
 use App\Http\Middleware\MeasureReads;
 use App\Http\Middleware\Web\HandleInertiaRequests;
@@ -28,7 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // An agent call is authenticated before it is throttled: the MCP rate limit counts per agent session.
         $middleware->prependToPriorityList(before: ThrottleRequests::class, prepend: AuthenticateAgent::class);
         $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: AuthenticateUser::class);
-        $middleware->alias(['journal.user' => AuthenticateUser::class]);
+        $middleware->alias(['journal.user' => AuthenticateUser::class, 'journal.host' => AuthenticateHost::class]);
         // A signed agent call is authenticated first; its body's request_key then keys the write it carries.
         $middleware->group('journal.agent', [AuthenticateAgent::class, ReadRequestKey::class]);
         // A message body is kept exactly as typed, its leading and trailing spaces and newlines included.

@@ -90,6 +90,6 @@ final class PlanPersistenceTest extends TestCase
 
     private function task(string $title): Task
     {
-        return Task::query()->create(['title' => $title]);
+        return Task::factory()->create(['title' => $title]);
     }
 }

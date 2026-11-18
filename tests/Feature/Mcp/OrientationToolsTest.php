@@ -45,10 +45,10 @@ final class OrientationToolsTest extends TestCase
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
 
         foreach (['One', 'Two', 'Three'] as $title) {
-            $writer->assign(Task::query()->create(['title' => $title])->assignmentIdentity(), ActorIdentity::of($this->caller->agent));
+            $writer->assign(Task::factory()->create(['title' => $title])->assignmentIdentity(), ActorIdentity::of($this->caller->agent));
         }
 
-        $writer->assign(Task::query()->create(['title' => 'Not yours'])->assignmentIdentity(), ActorIdentity::of($this->other->agent));
+        $writer->assign(Task::factory()->create(['title' => 'Not yours'])->assignmentIdentity(), ActorIdentity::of($this->other->agent));
     }
 
     public function test_overview_read_counts_only_the_callers_held_tasks_with_a_next_action_to_tasks_assigned(): void

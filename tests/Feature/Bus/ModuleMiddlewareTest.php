@@ -215,14 +215,14 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
 
         $this->expectException(CommandReplacementRefused::class);
 
-        $this->app->make(CommandBus::class)->run(new FinishTask(Task::query()->create(['title' => 'Kept'])->id));
+        $this->app->make(CommandBus::class)->run(new FinishTask(Task::factory()->create(['title' => 'Kept'])->id));
     }
 
     public function test_a_refusal_after_retirement_leaves_the_agent_unretired_with_its_assignments(): void
     {
         $this->installCommandModules(MiddlewareDeclaration::inside(RefusesAfterRetirement::class, CommandScope::command(RetireAgent::class)));
         $helper = Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.read_only_helper_ready']);
-        $task = Task::query()->create(['title' => 'Held']);
+        $task = Task::factory()->create(['title' => 'Held']);
         $this->startUserRequestAs(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new AssignRecord($task->assignmentIdentity(), ActorIdentity::of($helper)));

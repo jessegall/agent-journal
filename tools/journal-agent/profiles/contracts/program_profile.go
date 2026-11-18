@@ -19,6 +19,8 @@ type Launch struct {
 	Prompt         string
 	// HookCommand, when set, is the command each native hook runs, such as the evidence harness's capture hook.
 	HookCommand string
+	Model       string
+	Effort      string
 }
 
 // SettingsFile is one file of the isolated settings folder: its name and content, or, for a login the person

@@ -4,9 +4,27 @@ declare(strict_types=1);
 
 namespace App\Agents\Contracts;
 
+use App\Agents\Exceptions\HostReportRefused;
+use App\Agents\Models\AgentSession;
+use App\Agents\Support\DriverHeartbeatSource;
+use App\Agents\Support\RuntimeEvidence;
+use App\Agents\Support\RuntimeExit;
+use Illuminate\Container\Attributes\Bind;
+
 /**
- * An agent driver sends authenticated beats of one session to POST /agent/heartbeat at least once a minute while it has
- * current liveness evidence, stops when that evidence ends, and reports a verified exit separately through
- * LaunchHeartbeats::markExited. The driver design adds the methods and the transport.
+ * Receives a driver's authenticated liveness evidence for a session and turns it into the session's heartbeat or its
+ * verified exit. The server's own clock dates both; no time the host sends is taken as truth.
  */
-interface AgentHeartbeatSource {}
+#[Bind(DriverHeartbeatSource::class)]
+interface AgentHeartbeatSource
+{
+    /**
+     * @throws HostReportRefused
+     */
+    public function record(AgentSession $session, RuntimeEvidence $evidence): void;
+
+    /**
+     * @throws HostReportRefused
+     */
+    public function recordExit(AgentSession $session, RuntimeExit $exit): void;
+}

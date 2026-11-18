@@ -47,7 +47,7 @@ final class AssignmentReadToolsTest extends TestCase
 
     public function test_assignments_read_on_a_held_task_returns_the_reference_the_show_command_prints(): void
     {
-        $task = Task::query()->create(['title' => 'Write the tool']);
+        $task = Task::factory()->create(['title' => 'Write the tool']);
         $held = $this->app->make(AssignmentWriterInTransaction::class)->assign($task->assignmentIdentity(), ActorIdentity::of($this->caller->agent))->outcomes[0]->current;
 
         $result = $this->callMcpTool($this->caller, 'assignments_read', ['record_type' => 'tasks.task', 'record_id' => $task->id])
@@ -60,7 +60,7 @@ final class AssignmentReadToolsTest extends TestCase
 
     public function test_an_unheld_task_has_no_holder(): void
     {
-        $task = Task::query()->create(['title' => 'Nobody holds this']);
+        $task = Task::factory()->create(['title' => 'Nobody holds this']);
 
         $this->callMcpTool($this->caller, 'assignments_read', ['record_type' => 'tasks.task', 'record_id' => $task->id])
             ->assertJsonPath('result.isError', false)

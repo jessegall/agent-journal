@@ -125,7 +125,7 @@ final class HookLaunchTest extends TestCase
     public function test_a_child_has_its_own_stack_so_its_stop_does_not_answer_for_the_parent(): void
     {
         $parent = $this->launch('hooks.main_ready');
-        $task = Task::query()->create(['title' => 'Write the walk']);
+        $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->as($parent, fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id, $parent->session->id)));
         $childAgent = Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.read_only_helper_ready']);
 
