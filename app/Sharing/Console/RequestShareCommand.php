@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
+use App\AgentRequests\Console\Concerns\SendsSignedWrites;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use Illuminate\Console\Command;
 
@@ -13,7 +13,7 @@ use Illuminate\Console\Command;
  */
 final class RequestShareCommand extends Command
 {
-    use SendsSignedCalls;
+    use SendsSignedWrites;
 
     protected $signature = 'share:request {alias : The word the record is named by, such as doc} {number : The record\'s number} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Agents\Console;
 
-use App\AgentRequests\Console\Concerns\SendsSignedCalls;
+use App\AgentRequests\Console\Concerns\SendsSignedWrites;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\Processes\Attributes\JournalRoute;
 use App\Processes\Enums\JournalRouteType;
@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
 #[JournalRoute(JournalRouteType::Write)]
 final class RetireAgentCommand extends Command
 {
-    use SendsSignedCalls;
+    use SendsSignedWrites;
 
     protected $signature = 'agent:retire {agent : The id of the agent to retire} {--request-key= : Send again under the key a failed attempt printed} {--json}';
 

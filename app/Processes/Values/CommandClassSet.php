@@ -59,4 +59,9 @@ final readonly class CommandClassSet
     {
         return new self(...array_filter($this->classes, fn (CommandClass $class) => ! $other->contains($class)));
     }
+
+    public function sharesAnyWith(self $other): bool
+    {
+        return array_any($this->classes, fn (CommandClass $class) => $other->contains($class));
+    }
 }

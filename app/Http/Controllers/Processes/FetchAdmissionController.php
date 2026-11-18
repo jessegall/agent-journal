@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Processes;
 
+use App\Processes\Exceptions\RunnerUnavailable;
 use App\Processes\Models\ProcessRun;
+use App\Processes\Support\RunnerCapability;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -12,8 +14,9 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class FetchAdmissionController
 {
-    public function __invoke(ProcessRun $processRun): JsonResponse
+    public function __invoke(ProcessRun $processRun, RunnerCapability $runner): JsonResponse
     {
+        abort_unless($runner->isOn(), 503, RunnerUnavailable::switchedOff()->getMessage());
         $eventKey = $processRun->consumeWithEventKey();
         if ($eventKey === '') {
             return new JsonResponse(['run_id' => $processRun->id, 'already_started' => true]);

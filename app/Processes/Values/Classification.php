@@ -93,4 +93,14 @@ final readonly class Classification
             'parts' => array_map(fn (PartClassification $part): array => $part->summary(), $this->parts),
         ];
     }
+
+    /**
+     * A part's words as an argv; a word only known when it runs is empty here.
+     *
+     * @return list<string>
+     */
+    public function argvOf(PartClassification $part): array
+    {
+        return array_map(fn (Word $word) => (string) $word->literal(), $this->tree->node($part->node)->words);
+    }
 }
