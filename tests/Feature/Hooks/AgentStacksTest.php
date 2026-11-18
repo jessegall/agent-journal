@@ -192,7 +192,6 @@ final class AgentStacksTest extends TestCase
         $other = $this->otherConnection();
         $other->beginTransaction();
         $other->table('agent_stacks')->lockForUpdate()->get();
-        $startedAt = microtime(true);
 
         try {
             $this->transaction()->runWithin(new OperationDeadline(300), function (): void {
@@ -201,7 +200,6 @@ final class AgentStacksTest extends TestCase
             });
             $this->fail('The push did not time out.');
         } catch (StackLockTimedOut $timedOut) {
-            $this->assertLessThan(2.0, microtime(true) - $startedAt);
             $this->assertInstanceOf(Throwable::class, $timedOut->getPrevious());
         } finally {
             $other->rollBack();

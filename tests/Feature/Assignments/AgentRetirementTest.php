@@ -38,6 +38,11 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 5, reason: 'Retirement waits out locks another connection holds.')]
 final class AgentRetirementTest extends TestCase
 {
+    /**
+     * How often the forked child looks for the waiting retirement before it gives up and commits anyway.
+     */
+    private const int WAIT_CHECKS = 100_000;
+
     use CommitsHookRows;
     use StartsAgentRequests;
 
@@ -103,13 +108,14 @@ final class AgentRetirementTest extends TestCase
     {
         $task = Task::query()->create(['title' => 'Given while retirement waits']);
         DB::disconnect();
+        [$parentEnd, $childEnd] = $this->handshake();
         $child = pcntl_fork();
 
         if ($child === 0) {
-            $this->giveWorkWhileHoldingTheSharedLock($task->id);
+            $this->giveWorkWhileHoldingTheSharedLock($task->id, $childEnd);
         }
 
-        usleep(300_000);
+        fgets($parentEnd);
         DB::reconnect();
         $result = $this->app->make(CommandBus::class)->run(new RetireAgent($this->helper->id));
         pcntl_waitpid($child, $status);
@@ -140,13 +146,14 @@ final class AgentRetirementTest extends TestCase
     public function test_a_launch_committed_while_retirement_waits_is_ended_by_it(): void
     {
         DB::disconnect();
+        [$parentEnd, $childEnd] = $this->handshake();
         $child = pcntl_fork();
 
         if ($child === 0) {
-            $this->launchWhileHoldingTheSharedLock();
+            $this->launchWhileHoldingTheSharedLock($childEnd);
         }
 
-        usleep(300_000);
+        fgets($parentEnd);
         DB::reconnect();
         $this->app->make(CommandBus::class)->run(new RetireAgent($this->helper->id));
         pcntl_waitpid($child, $status);
@@ -158,15 +165,18 @@ final class AgentRetirementTest extends TestCase
 
     /**
      * The forked process: it writes what a launch writes, a session under the shared lifecycle lock and its
-     * credential, then holds on a moment so the retirement is already waiting for the lock, commits and leaves.
+     * credential, tells the parent it holds the lock, waits until the retirement is seen waiting for it, commits and
+     * leaves.
+     *
+     * @param  resource  $parent
      */
-    private function launchWhileHoldingTheSharedLock(): never
+    private function launchWhileHoldingTheSharedLock($parent): never
     {
         DB::reconnect();
-        DB::transaction(function (): void {
+        DB::transaction(function () use ($parent): void {
             $session = $this->app->make(AgentSessions::class)->start($this->helper);
             $this->app->make(LaunchCredentials::class)->issue($session);
-            usleep(800_000);
+            $this->holdUntilTheRetirementWaits($parent);
         });
         DB::disconnect();
 
@@ -175,18 +185,56 @@ final class AgentRetirementTest extends TestCase
 
     /**
      * The forked process: it takes the helper's shared lifecycle lock as the writer does, gives it a task, holds on a
-     * moment so the retirement is already waiting, then commits and leaves.
+     * lock until the retirement is seen waiting for it, then commits and leaves.
+     *
+     * @param  resource  $parent
      */
-    private function giveWorkWhileHoldingTheSharedLock(string $taskId): never
+    private function giveWorkWhileHoldingTheSharedLock(string $taskId, $parent): never
     {
         DB::reconnect();
-        DB::transaction(function () use ($taskId): void {
+        DB::transaction(function () use ($taskId, $parent): void {
             DB::select('SELECT id FROM agents WHERE id = ? FOR SHARE', [$this->helper->id]);
             DB::table('assignments')->insert(['id' => strtolower((string) Str::ulid()), 'record_type' => 'tasks.task', 'record_id' => $taskId, 'holder_type' => 'agent', 'holder_id' => $this->helper->id, 'created_at' => now(), 'updated_at' => now()]);
-            usleep(800_000);
+            $this->holdUntilTheRetirementWaits($parent);
         });
         DB::disconnect();
 
         exit(0);
+    }
+
+    /**
+     * Tells the parent the lock is held, then waits until another connection is waiting for a lock: the order of the
+     * two processes comes from the database's state, never from a delay.
+     *
+     * @param  resource  $parent
+     */
+    private function holdUntilTheRetirementWaits($parent): void
+    {
+        fwrite($parent, "locked\n");
+
+        for ($attempt = 0; $attempt < self::WAIT_CHECKS; $attempt++) {
+            // Inside a transaction Postgres keeps one activity snapshot; clear it so each check sees the other session.
+            DB::select('SELECT pg_stat_clear_snapshot()');
+
+            if ((int) DB::scalar("SELECT count(*) FROM pg_stat_activity WHERE wait_event_type = 'Lock' AND datname = current_database() AND pid <> pg_backend_pid()") > 0) {
+                return;
+            }
+        }
+    }
+
+    /**
+     * Two connected ends: the forked child writes on one, the parent reads on the other.
+     *
+     * @return array{resource, resource}
+     */
+    private function handshake(): array
+    {
+        $ends = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+
+        if ($ends === false) {
+            $this->fail('No socket pair for the handshake.');
+        }
+
+        return [$ends[0], $ends[1]];
     }
 }
