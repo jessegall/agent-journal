@@ -71,6 +71,7 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel, W
      * @use HasFactory<TaskFactory>
      */
     use AssignableListing, HasFactory, HasNumber, HasUlids, Linkable;
+
     use BoundedReads;
 
     /**

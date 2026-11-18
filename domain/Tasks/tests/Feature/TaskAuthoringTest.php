@@ -6,8 +6,8 @@ namespace Domain\Tasks\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
 use App\Bus\Contracts\CommandBus;
 use Domain\Tasks\Commands\CreateTask;
 use Domain\Tasks\Commands\EditTask;

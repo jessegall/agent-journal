@@ -12,6 +12,7 @@ use App\Bus\Exceptions\RequestKeyMissing;
 use App\Bus\Models\CommandReceipt;
 use App\Bus\Support\RequestKey;
 use App\Http\Middleware\Web\ReadIdempotencyKey;
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -101,7 +102,7 @@ final class OwnerReceiptTest extends CommandBusTestCase
         $bus->run(new KeepNote('kept'));
 
         $this->travel(32)->days();
-        $this->artisan('bus:prune-receipts')->assertSuccessful();
+        $this->prune();
 
         $receipt = CommandReceipt::query()->sole();
         $this->assertSame(ReceiptState::Expired, $receipt->state);
@@ -109,7 +110,7 @@ final class OwnerReceiptTest extends CommandBusTestCase
         $this->assertThrows(fn () => $bus->run(new KeepNote('kept')), RequestKeyExpired::class);
 
         $this->travel(334)->days();
-        $this->artisan('bus:prune-receipts')->assertSuccessful();
+        $this->prune();
 
         $this->assertSame(0, CommandReceipt::query()->count());
     }
@@ -120,7 +121,7 @@ final class OwnerReceiptTest extends CommandBusTestCase
         $this->app->make(CommandBus::class)->run(new WriteNote('standard'));
 
         $this->travel(31)->days();
-        $this->artisan('bus:prune-receipts')->assertSuccessful();
+        $this->prune();
 
         $this->assertSame(0, CommandReceipt::query()->count());
     }
@@ -147,5 +148,10 @@ final class OwnerReceiptTest extends CommandBusTestCase
         $this->app->make(ReadIdempotencyKey::class)->handle($request, fn () => new Response);
 
         $this->assertSame(self::KEY, $this->app->make(RequestKey::class)->key());
+    }
+
+    private function prune(): void
+    {
+        $this->assertSame(0, $this->app->make(Kernel::class)->call('bus:prune-receipts'));
     }
 }

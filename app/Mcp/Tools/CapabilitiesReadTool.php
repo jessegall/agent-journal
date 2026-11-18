@@ -20,7 +20,7 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 #[IsReadOnly]
 final class CapabilitiesReadTool extends JournalReadTool
 {
-    protected ?array $meta = ['anthropic/alwaysLoad' => true];
+    protected array|null $meta = ['anthropic/alwaysLoad' => true];
 
     public function __construct(private readonly CapabilitiesReader $capabilities) {}
 

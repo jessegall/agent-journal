@@ -78,7 +78,7 @@ final class CommandReceipt extends Model implements ReadableModel
 
     protected static function booted(): void
     {
-        static::addGlobalScope('caller', static fn (Builder $query) => Container::getInstance()->make(ReceiptCallers::class)->current()->limit($query));
+        self::addGlobalScope('caller', static fn (Builder $query) => Container::getInstance()->make(ReceiptCallers::class)->current()->limit($query));
     }
 
     /**
