@@ -40,9 +40,42 @@ final readonly class ExecutableBinding
         return new self(BindingType::ModulePackage, $family, $folders, '', 0);
     }
 
-    public static function projectContent(string $family, string $relativePath, string $contentDigest, int $configurationRevision): self
+    public static function projectContent(
+        string $family,
+        string $relativePath,
+        string $contentDigest,
+        int $configurationRevision,
+    ): self
     {
         return new self(BindingType::ProjectContent, $family, [$relativePath], $contentDigest, $configurationRevision);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'type' => $this->type->value,
+            'family' => $this->family,
+            'locations' => $this->locations,
+            'content_digest' => $this->contentDigest,
+            'configuration_revision' => $this->configurationRevision,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $fields  the shape toArray writes
+     */
+    public static function fromArray(array $fields): self
+    {
+        return new self(
+            BindingType::from($fields['type']),
+            $fields['family'],
+            $fields['locations'],
+            $fields['content_digest'],
+            $fields['configuration_revision'],
+        );
     }
 
     public function trustsContent(): bool

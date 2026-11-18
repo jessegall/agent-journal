@@ -17,6 +17,7 @@ use App\Processes\Contracts\OutputRecorder;
 use App\Processes\Contracts\ProcessRunner;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Contracts\ShellSyntax;
+use App\Processes\Models\ClassificationRule;
 use App\Processes\Models\CommandAlias;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\EvidencePermit;
@@ -27,6 +28,8 @@ use App\Processes\Models\ProcessEvent;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Models\ReaderPosition;
 use App\Processes\Models\ReaderRevision;
+use App\Processes\Models\RuleProposal;
+use App\Processes\Models\RuleRevision;
 use App\Processes\Rules\JournalClassifier;
 use App\Processes\Support\CommandAliases;
 use App\Processes\Support\JournalRoutes;
@@ -53,7 +56,10 @@ final class ProcessesServiceProvider extends ServiceProvider
         $this->app->scoped(AliasReader::class, CommandAliases::class);
         $this->app->scoped(OutputRecorder::class, SpoolRecorder::class);
         $this->app->scoped(ProcessRunner::class, SupervisedRunner::class);
-        $this->app->singleton(JournalRoutes::class, fn (Application $app) => JournalRoutes::fromCommands($app->make(ConsoleKernel::class)->all()));
+        $this->app->singleton(
+            JournalRoutes::class,
+            fn (Application $app) => JournalRoutes::fromCommands($app->make(ConsoleKernel::class)->all()),
+        );
         $this->app->scoped(ProgramClassifiers::class, fn (Application $app) => new ProgramClassifiers([
             new JournalClassifier($app->make(JournalRoutes::class), $app->basePath('bin/journal')),
         ]));
@@ -61,8 +67,28 @@ final class ProcessesServiceProvider extends ServiceProvider
 
     public function boot(LinkTypeRegistry $links): void
     {
-        $links->register(['processes.command-alias' => CommandAlias::class, 'processes.process-run' => ProcessRun::class, 'processes.part-run' => PartRun::class, 'processes.process-event' => ProcessEvent::class, 'processes.output-chunk' => OutputChunk::class, 'processes.permission-revocation' => PermissionRevocation::class, 'processes.evidence-permit' => EvidencePermit::class, 'processes.command-request' => CommandRequest::class, 'processes.reader-revision' => ReaderRevision::class, 'processes.reader-position' => ReaderPosition::class]);
+        $links->register([
+            'processes.command-alias' => CommandAlias::class,
+            'processes.process-run' => ProcessRun::class,
+            'processes.part-run' => PartRun::class,
+            'processes.process-event' => ProcessEvent::class,
+            'processes.output-chunk' => OutputChunk::class,
+            'processes.permission-revocation' => PermissionRevocation::class,
+            'processes.evidence-permit' => EvidencePermit::class,
+            'processes.command-request' => CommandRequest::class,
+            'processes.reader-revision' => ReaderRevision::class,
+            'processes.reader-position' => ReaderPosition::class,
+            'processes.rule-proposal' => RuleProposal::class,
+            'processes.rule-revision' => RuleRevision::class,
+            'processes.classification-rule' => ClassificationRule::class,
+        ]);
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/processes.php');
-        $this->commands([ExplainCommandTypeCommand::class, RunProcessCommand::class, OutputReadCommand::class, ProcessShowCommand::class, ProcessExportCommand::class]);
+        $this->commands([
+            ExplainCommandTypeCommand::class,
+            RunProcessCommand::class,
+            OutputReadCommand::class,
+            ProcessShowCommand::class,
+            ProcessExportCommand::class,
+        ]);
     }
 }

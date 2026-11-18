@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Values;
 
+use App\Processes\Contracts\StoredValue;
 use App\Processes\Declarations\VerificationContract;
 use App\Processes\Enums\CommandType;
 use App\Processes\Enums\OutputRequirement;
@@ -16,7 +17,7 @@ use App\Processes\Exceptions\CommandRuleInvalid;
  * covers, the words it accepts, the classes it emits, its purpose and output requirement, the executable it trusts,
  * and who owns it at which revision. A project rule may replace exactly one other rule revision.
  */
-final readonly class CommandRule
+final readonly class CommandRule implements StoredValue
 {
     /**
      * @param  list<string>  $subcommands
@@ -60,7 +61,19 @@ final readonly class CommandRule
             throw CommandRuleInvalid::contractMissing($id);
         }
 
-        return new self($id, RuleScope::core(), $program, $subcommands, $arguments, $classes, $purpose, $purpose->outputRequirement(), self::usualBinding($program), 1, []);
+        return new self(
+            $id,
+            RuleScope::core(),
+            $program,
+            $subcommands,
+            $arguments,
+            $classes,
+            $purpose,
+            $purpose->outputRequirement(),
+            self::usualBinding($program),
+            1,
+            [],
+        );
     }
 
     /**
@@ -88,7 +101,88 @@ final readonly class CommandRule
         $binding = self::usualBinding($program);
         $contract = VerificationContract::unproven(implode(' ', [$program->family, ...$subcommands]), $tool, $binding);
 
-        return new self($id, RuleScope::core(), $program, $subcommands, $arguments, $classes, $purpose, OutputRequirement::Full, $binding, 1, [], [$contract]);
+        return new self(
+            $id,
+            RuleScope::core(),
+            $program,
+            $subcommands,
+            $arguments,
+            $classes,
+            $purpose,
+            OutputRequirement::Full,
+            $binding,
+            1,
+            [],
+            [$contract],
+        );
+    }
+
+    /**
+     * The rule as a proposal or an approved revision stores it, after the boundary validated it.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'scope' => $this->scope->toArray(),
+            'program' => $this->program->toArray(),
+            'subcommands' => $this->subcommands,
+            'arguments' => $this->arguments->toArray(),
+            'classes' => $this->classes->toArray(),
+            'purpose' => $this->purpose->value,
+            'output_requirement' => $this->outputRequirement->value,
+            'binding' => $this->binding->toArray(),
+            'revision' => $this->revision,
+            'replaces' => array_map(fn (RuleReference $replaced): array => $replaced->toArray(), $this->replaces),
+            'contracts' => array_map(fn (VerificationContract $item): array => $item->toArray(), $this->contracts),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $fields  the shape toArray writes
+     */
+    public static function fromArray(array $fields): self
+    {
+        return new self(
+            $fields['id'],
+            RuleScope::fromArray($fields['scope']),
+            ProgramSpellings::fromArray($fields['program']),
+            $fields['subcommands'],
+            ArgumentGrammar::fromArray($fields['arguments']),
+            CommandClassSet::fromArray($fields['classes']),
+            CommandType::from($fields['purpose']),
+            OutputRequirement::from($fields['output_requirement']),
+            ExecutableBinding::fromArray($fields['binding']),
+            $fields['revision'],
+            array_map(RuleReference::fromArray(...), $fields['replaces']),
+            array_map(VerificationContract::fromArray(...), $fields['contracts']),
+        );
+    }
+
+    /**
+     * The digest of the stored rule, which binds a proposal's request id and an approved revision to this payload.
+     */
+    public function digest(): string
+    {
+        return hash('sha256', json_encode($this->toArray(), JSON_THROW_ON_ERROR));
+    }
+
+    /**
+     * The canonical operation the rule covers: its program family and subcommands, such as git branch.
+     */
+    public function operation(): string
+    {
+        return implode(' ', [$this->program->family, ...$this->subcommands]);
+    }
+
+    /**
+     * Whether the rule's purpose carries a verification contract, so its approval names a proven reader.
+     */
+    public function hasContract(): bool
+    {
+        return $this->outputRequirement === OutputRequirement::Full;
     }
 
     private static function usualBinding(ProgramSpellings $program): ExecutableBinding
@@ -98,12 +192,12 @@ final readonly class CommandRule
 
     public function ownedBy(RuleScope $scope, int $revision): self
     {
-        return new self($this->id, $scope, $this->program, $this->subcommands, $this->arguments, $this->classes, $this->purpose, $this->outputRequirement, $this->binding, $revision, $this->replaces, $this->contracts);
+        return $this->changed($scope, $this->binding, $revision, $this->replaces);
     }
 
     public function boundTo(ExecutableBinding $binding): self
     {
-        return new self($this->id, $this->scope, $this->program, $this->subcommands, $this->arguments, $this->classes, $this->purpose, $this->outputRequirement, $binding, $this->revision, $this->replaces, $this->contracts);
+        return $this->changed($this->scope, $binding, $this->revision, $this->replaces);
     }
 
     /**
@@ -115,7 +209,30 @@ final readonly class CommandRule
             throw CommandRuleInvalid::replacementOutsideProject($this->id);
         }
 
-        return new self($this->id, $this->scope, $this->program, $this->subcommands, $this->arguments, $this->classes, $this->purpose, $this->outputRequirement, $this->binding, $this->revision, [$replaced], $this->contracts);
+        return $this->changed($this->scope, $this->binding, $this->revision, [$replaced]);
+    }
+
+    /**
+     * This rule with another owner, binding, revision or replacement, and everything else the same.
+     *
+     * @param  list<RuleReference>  $replaces
+     */
+    private function changed(RuleScope $scope, ExecutableBinding $binding, int $revision, array $replaces): self
+    {
+        return new self(
+            $this->id,
+            $scope,
+            $this->program,
+            $this->subcommands,
+            $this->arguments,
+            $this->classes,
+            $this->purpose,
+            $this->outputRequirement,
+            $binding,
+            $revision,
+            $replaces,
+            $this->contracts,
+        );
     }
 
     public function reference(): RuleReference

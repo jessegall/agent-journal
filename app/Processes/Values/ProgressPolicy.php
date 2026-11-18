@@ -16,7 +16,11 @@ final readonly class ProgressPolicy
     /**
      * @param  list<string>  $listing  the listing operation's name, for an exact total
      */
-    private function __construct(public ProgressType $type, public array $listing, public string $selectionFingerprint) {}
+    private function __construct(
+        public ProgressType $type,
+        public array $listing,
+        public string $selectionFingerprint,
+    ) {}
 
     /**
      * @throws VerificationContractInvalid
@@ -24,10 +28,33 @@ final readonly class ProgressPolicy
     public static function exactTotal(string $listingOperation, string $selectionFingerprint): self
     {
         if (trim($listingOperation) === '' || trim($selectionFingerprint) === '') {
-            throw VerificationContractInvalid::field('progress', 'an exact total names its listing operation and the selection it must match');
+            throw VerificationContractInvalid::field(
+                'progress',
+                'an exact total names its listing operation and the selection it must match',
+            );
         }
 
         return new self(ProgressType::ExactTotal, [$listingOperation], $selectionFingerprint);
+    }
+
+    /**
+     * @return array{type: string, listing: list<string>, selection_fingerprint: string}
+     */
+    public function toArray(): array
+    {
+        return [
+            'type' => $this->type->value,
+            'listing' => $this->listing,
+            'selection_fingerprint' => $this->selectionFingerprint,
+        ];
+    }
+
+    /**
+     * @param  array{type: string, listing: list<string>, selection_fingerprint: string}  $fields
+     */
+    public static function fromArray(array $fields): self
+    {
+        return new self(ProgressType::from($fields['type']), $fields['listing'], $fields['selection_fingerprint']);
     }
 
     public static function toolPercent(): self

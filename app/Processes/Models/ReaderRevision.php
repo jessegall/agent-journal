@@ -7,7 +7,7 @@ namespace App\Processes\Models;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Processes\Exceptions\ReaderDefinitionInvalid;
-use App\Processes\Exceptions\ReaderRevisionImmutable;
+use App\Processes\Exceptions\RevisionImmutable;
 use App\Processes\Values\ReaderDefinition;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -36,7 +36,12 @@ final class ReaderRevision extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
-    public static function write(string $operation, string $contractLabel, ReaderDefinition $definition, ActorIdentity $author): self
+    public static function write(
+        string $operation,
+        string $contractLabel,
+        ReaderDefinition $definition,
+        ActorIdentity $author,
+    ): self
     {
         return self::query()->create([
             'operation' => $operation,
@@ -65,6 +70,6 @@ final class ReaderRevision extends Model implements ReadableModel
 
     protected static function booted(): void
     {
-        self::updating(fn (self $revision) => throw ReaderRevisionImmutable::forRevision($revision->id));
+        self::updating(fn (self $revision) => throw RevisionImmutable::reader($revision->id));
     }
 }

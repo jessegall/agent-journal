@@ -16,6 +16,22 @@ final readonly class ExitBranch
     private function __construct(public int $status, public Outcome $outcome, public string $requires) {}
 
     /**
+     * @return array{status: int, outcome: string, requires: string}
+     */
+    public function toArray(): array
+    {
+        return ['status' => $this->status, 'outcome' => $this->outcome->value, 'requires' => $this->requires];
+    }
+
+    /**
+     * @param  array{status: int, outcome: string, requires: string}  $fields
+     */
+    public static function fromArray(array $fields): self
+    {
+        return new self($fields['status'], Outcome::from($fields['outcome']), $fields['requires']);
+    }
+
+    /**
      * @throws VerificationContractInvalid
      */
     public static function of(int $status, Outcome $outcome, string $requires): self
@@ -24,7 +40,10 @@ final readonly class ExitBranch
             throw VerificationContractInvalid::field("exits.{$status}", 'an exit status is a number from 0 to 255');
         }
         if (trim($requires) === '') {
-            throw VerificationContractInvalid::field("exits.{$status}.requires", 'each exit names the output evidence it requires');
+            throw VerificationContractInvalid::field(
+                "exits.{$status}.requires",
+                'each exit names the output evidence it requires',
+            );
         }
 
         return new self($status, $outcome, $requires);

@@ -28,6 +28,26 @@ final readonly class OptionGrammar
         return new self(array_values($names), [$type], false);
     }
 
+    /**
+     * @return array{names: list<string>, value: list<string>, required: bool}
+     */
+    public function toArray(): array
+    {
+        return [
+            'names' => $this->names,
+            'value' => array_map(fn (OperandType $type): string => $type->value, $this->value),
+            'required' => $this->isRequired,
+        ];
+    }
+
+    /**
+     * @param  array{names: list<string>, value: list<string>, required: bool}  $fields
+     */
+    public static function fromArray(array $fields): self
+    {
+        return new self($fields['names'], array_map(OperandType::from(...), $fields['value']), $fields['required']);
+    }
+
     public function required(): self
     {
         return new self($this->names, $this->value, true);
@@ -47,7 +67,10 @@ final readonly class OptionGrammar
             return true;
         }
 
-        return $this->takesValue() && array_any($this->names, fn (string $name): bool => str_starts_with($name, '--') && str_starts_with($word, "{$name}="));
+        return $this->takesValue() && array_any(
+            $this->names,
+            fn (string $name): bool => str_starts_with($name, '--') && str_starts_with($word, "{$name}="),
+        );
     }
 
     /**

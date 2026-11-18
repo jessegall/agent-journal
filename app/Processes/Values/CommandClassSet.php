@@ -19,12 +19,31 @@ final readonly class CommandClassSet
 
     private function __construct(CommandClass ...$classes)
     {
-        $this->classes = array_values(array_filter(CommandClass::cases(), fn (CommandClass $class) => in_array($class, $classes, true)));
+        $this->classes = array_values(array_filter(
+            CommandClass::cases(),
+            fn (CommandClass $class) => in_array($class, $classes, true),
+        ));
     }
 
     public static function of(CommandClass ...$classes): self
     {
         return new self(...$classes);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function toArray(): array
+    {
+        return array_map(fn (CommandClass $class): string => $class->value, $this->classes);
+    }
+
+    /**
+     * @param  list<string>  $values
+     */
+    public static function fromArray(array $values): self
+    {
+        return new self(...array_map(CommandClass::from(...), $values));
     }
 
     public static function empty(): self
