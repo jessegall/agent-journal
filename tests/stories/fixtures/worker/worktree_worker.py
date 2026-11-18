@@ -8,7 +8,7 @@ from tests.stories.fixtures.state_fixture import StateFixture
 
 
 class WorktreeWorker(StateFixture):
-    """The project is a throwaway git repository in the story's own temp folder; the agent sent a worker with a worktree of its own on the briefed task and it clocked in: story.agents.workers.first()."""
+    """The project is a throwaway git repository in the story's own temp folder; the agent sent a worker with a worktree of its own on the briefed task and it clocked in, its worktree linking the checkout's untracked journal skill: story.agents.workers.first()."""
 
     stack = (Ready, ExternalWait)
 
@@ -23,3 +23,4 @@ class WorktreeWorker(StateFixture):
     def expected(self, story) -> None:
         story.expect_worker(self.workers.first, state=WorkerState.READY)
         story.expect_stack(story.agents.workers.first(), Void, WorkingTask)
+        story.expect_worker_worktree_links(self.workers.first, ".claude/skills/journal")

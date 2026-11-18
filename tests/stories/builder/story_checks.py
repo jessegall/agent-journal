@@ -1,6 +1,7 @@
 from tests.stories.builder.step_checks import HOOK_DURATION
 from journal.features.shell.support.output_view import OutputView
 import json
+import subprocess
 import re
 from enum import Enum
 
@@ -95,6 +96,13 @@ class StoryChecks:
         text = file.read_text() if file.is_file() else ""
         missing = [part for part in parts if part not in text]
         assert file.is_file() and not missing, f"{path} does not hold {missing}: {text[:400]!r}"
+
+    def expect_worker_worktree_links(self, worker: int, path: str) -> None:
+        folder = next((self.app.config.home / "worktrees").glob(f"{worker}-*"))
+        place, target = folder / path, self.app.config.root / path
+        assert place.is_symlink() and place.resolve() == target.resolve(), f"{path} in worker {worker}'s worktree is not a link to the checkout's"
+        status = subprocess.run(["git", "status", "--porcelain", "--", path], cwd=folder, capture_output=True, text=True, timeout=30).stdout
+        assert not status.strip(), f"git would commit the link {path} with worker {worker}'s work: {status}"
 
     def expect_runtime_file(self, name: str, text: str) -> None:
         file = self.app.config.home / "runtime" / name
