@@ -30,6 +30,12 @@ JOURNAL_ENV=(env -i PATH=/usr/local/bin:/usr/bin:/bin HOME=/data/home USER=journ
     GITHUB_TOKEN="${GITHUB_TOKEN:-}" GH_TOKEN="${GITHUB_TOKEN:-}"
     CLAUDE_CODE_OAUTH_TOKEN="${CLAUDE_CODE_OAUTH_TOKEN:-}" ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}"
     DOCKER_HOST="${DOCKER_HOST:-}" DOCKER_TLS_VERIFY="${DOCKER_TLS_VERIFY:-}" DOCKER_CERT_PATH="${DOCKER_CERT_PATH:-}")
+# The project's own tooling may need more tokens than these, as Composer needs GITLAB_TOKEN for private GitLab packages: it
+# reaches the agents when it is set, and so does every variable JOURNAL_PASS_ENV names (space-separated), each only when set.
+for name in GITLAB_TOKEN ${JOURNAL_PASS_ENV:-}; do
+    [[ $name =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || { echo "JOURNAL_PASS_ENV: not a variable name: $name" >&2; exit 1; }
+    [ -z "${!name:-}" ] || JOURNAL_ENV+=("$name=${!name}")
+done
 AS_JOURNAL=(setpriv --reuid journal --regid journal --init-groups --no-new-privs "${JOURNAL_ENV[@]}")
 
 # A record sent by send-journal.sh is handed to the journal user, which takes it in itself.
