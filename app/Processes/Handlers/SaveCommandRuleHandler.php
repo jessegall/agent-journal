@@ -12,10 +12,10 @@ use App\Processes\Enums\ProposalState;
 use App\Processes\Exceptions\ApprovalRefused;
 use App\Processes\Models\RuleProposal;
 use App\Processes\Models\RuleRevision;
+use App\Processes\Support\ProjectKey;
 use App\Processes\Support\ProposalChecks;
 use App\Processes\Support\RuleApprovals;
 use App\Processes\Values\ApprovalReceipt;
-use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\OwnerApproval;
 
 final readonly class SaveCommandRuleHandler implements CommandHandler
@@ -24,6 +24,7 @@ final readonly class SaveCommandRuleHandler implements CommandHandler
         private CurrentActor $actors,
         private ProposalChecks $checks,
         private RuleApprovals $approvals,
+        private ProjectKey $projects,
     ) {}
 
     /**
@@ -37,7 +38,7 @@ final readonly class SaveCommandRuleHandler implements CommandHandler
             throw ApprovalRefused::checkWithoutRequest($rule->id);
         }
         $this->checks->check($rule, false);
-        $projectKey = ExecutionContext::inFolder($command->workingFolder)->projectKey();
+        $projectKey = $this->projects->current();
         $proposal = RuleProposal::open($projectKey, $owner, $command->requestId, $command->proposed, null);
         if ($proposal->state === ProposalState::Approved) {
             $declaration = $proposal->revisions()->where('revision', $proposal->current_revision)->sole();

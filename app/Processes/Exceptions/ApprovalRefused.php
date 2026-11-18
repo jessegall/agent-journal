@@ -46,6 +46,11 @@ final class ApprovalRefused extends RuntimeException implements CommandRefusal
         return new self("The rule {$ruleId} is a check: propose it for a request so its reader is proven.");
     }
 
+    public static function bundleChanged(string $module): self
+    {
+        return new self("The rule bundle of {$module} is not installed with that version and digest; review it again.");
+    }
+
     protected function status(): int
     {
         return 409;

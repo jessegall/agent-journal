@@ -12,9 +12,9 @@ use App\Processes\Declarations\RuleDeclarations;
 use App\Processes\Exceptions\DeclarationInvalid;
 use App\Processes\Exceptions\RuleProposalRefused;
 use App\Processes\Models\RuleProposal;
+use App\Processes\Support\ProjectKey;
 use App\Processes\Support\ProposalChecks;
 use App\Processes\Values\DeclaredProposal;
-use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\ProposalReceipt;
 
 /**
@@ -27,6 +27,7 @@ final readonly class ImportRuleProposalsHandler implements CommandHandler
         private CurrentActor $actors,
         private RuleDeclarations $declarations,
         private ProposalChecks $checks,
+        private ProjectKey $projects,
     ) {}
 
     /**
@@ -38,7 +39,7 @@ final readonly class ImportRuleProposalsHandler implements CommandHandler
     public function handle(ImportRuleProposals $command): array
     {
         $actor = ActorIdentity::of($this->actors->actor());
-        $projectKey = ExecutionContext::inFolder($command->workingFolder)->projectKey();
+        $projectKey = $this->projects->current();
         $declared = $this->declarations->read($command->declarations);
         foreach ($declared as $declaration) {
             $this->checks->check($declaration->proposed->rule, false);

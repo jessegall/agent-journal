@@ -18,5 +18,5 @@ use App\Processes\Values\ProposalReceipt;
 #[HandledBy(ImportRuleProposalsHandler::class)]
 final readonly class ImportRuleProposals implements Command
 {
-    public function __construct(public string $workingFolder, public string $declarations) {}
+    public function __construct(public string $declarations) {}
 }

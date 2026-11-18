@@ -144,7 +144,7 @@ final class RuleApprovalTest extends TestCase
 
     public function test_saving_a_check_without_a_request_is_refused(): void
     {
-        $save = new SaveCommandRule(sys_get_temp_dir(), 'save-1', AcmeDeclarations::proposedVerify(), 0, 'trusted');
+        $save = new SaveCommandRule('save-1', AcmeDeclarations::proposedVerify(), 0, 'trusted');
 
         $this->assertThrows(fn () => $this->asUser($save), ApprovalRefused::class);
         $this->assertThrows(
@@ -186,7 +186,7 @@ final class RuleApprovalTest extends TestCase
         )->ownedBy(RuleScope::project(), 1);
         $proposed = AcmeDeclarations::proposed($rule);
 
-        $save = new SaveCommandRule(sys_get_temp_dir(), $requestId, $proposed, $expectedActive, 'reviewed');
+        $save = new SaveCommandRule($requestId, $proposed, $expectedActive, 'reviewed');
 
         return $this->asUser($save);
     }

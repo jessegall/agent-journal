@@ -17,6 +17,7 @@ use App\Processes\Console\ReaderSampleRunCommand;
 use App\Processes\Console\RunProcessCommand;
 use App\Processes\Contracts\AliasReader;
 use App\Processes\Contracts\CommandClassifier;
+use App\Processes\Contracts\CommandRuleReader;
 use App\Processes\Contracts\OutputRecorder;
 use App\Processes\Contracts\ProcessRunner;
 use App\Processes\Contracts\ShellCommandParser;
@@ -36,9 +37,12 @@ use App\Processes\Models\ReaderRevision;
 use App\Processes\Models\RuleProposal;
 use App\Processes\Models\RuleRevision;
 use App\Processes\Rules\JournalClassifier;
+use App\Processes\Support\ActiveRules;
 use App\Processes\Support\CommandAliases;
+use App\Processes\Support\CommandRuleRegistry;
 use App\Processes\Support\JournalRoutes;
 use App\Processes\Support\ProgramClassifiers;
+use App\Processes\Support\ProjectRules;
 use App\Processes\Support\ShellParser;
 use App\Processes\Support\SpoolRecorder;
 use App\Processes\Support\SupervisedRunner;
@@ -58,6 +62,11 @@ final class ProcessesServiceProvider extends ServiceProvider
         $this->app->singleton(ShellCommandParser::class, ShellParser::class);
         $this->app->singleton(ShellSyntax::class, TreeParser::class);
         $this->app->scoped(CommandClassifier::class, TreeClassifier::class);
+        $this->app->scoped(CommandRuleReader::class, ProjectRules::class);
+        $this->app->scoped(ActiveRules::class);
+        $this->app->when(TreeClassifier::class)
+            ->needs(CommandRuleRegistry::class)
+            ->give(fn (Application $app): CommandRuleRegistry => $app->make(ActiveRules::class)->registry());
         $this->app->scoped(AliasReader::class, CommandAliases::class);
         $this->app->scoped(OutputRecorder::class, SpoolRecorder::class);
         $this->app->scoped(ProcessRunner::class, SupervisedRunner::class);

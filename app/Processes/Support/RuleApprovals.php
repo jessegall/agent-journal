@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Support;
 
 use App\Actors\Support\ActorIdentity;
-use App\Processes\Enums\ClassificationState;
+use App\Processes\Contracts\CommandRuleReader;
 use App\Processes\Events\RuleActivated;
 use App\Processes\Exceptions\ApprovalRefused;
 use App\Processes\Exceptions\ClassificationRuleRefused;
@@ -33,7 +33,11 @@ use Illuminate\Contracts\Events\Dispatcher;
  */
 final readonly class RuleApprovals
 {
-    public function __construct(private CommandRuleRegistry $rules, private Dispatcher $events) {}
+    public function __construct(
+        private CommandRuleRegistry $rules,
+        private CommandRuleReader $projectRules,
+        private Dispatcher $events,
+    ) {}
 
     /**
      * @throws RuleProposalRefused
@@ -46,7 +50,7 @@ final readonly class RuleApprovals
         $proposal->checkReviewable($approval->expectedRevision);
         $declaration = $proposal->revisions()->where('revision', $proposal->current_revision)->sole();
         $rule = $declaration->payload;
-        $this->checkConflicts($proposal->project_key, $rule);
+        $this->checkConflicts($rule);
         $this->checkReaders($rule, $declaration, $approval->readers);
         $request = $proposal->commandRequest()->lockForUpdate()->first();
 
@@ -75,18 +79,11 @@ final readonly class RuleApprovals
      *
      * @throws ApprovalRefused
      */
-    private function checkConflicts(string $projectKey, CommandRule $rule): void
+    private function checkConflicts(CommandRule $rule): void
     {
-        $others = ClassificationRule::query()
-            ->ofProject($projectKey)
-            ->where('state', ClassificationState::Active->value)
-            ->with('activeRevision')
-            ->readLimit(1_000)
-            ->get()
-            ->map(fn (ClassificationRule $active): CommandRule => $active->activeRevision->payload)
-            ->reject(fn (CommandRule $active): bool => $active->isSameRuleAs($rule))
-            ->values()
-            ->all();
+        $revisions = $this->projectRules->activeRevisions();
+        $active = array_map(fn (RuleRevision $revision): CommandRule => $revision->payload, $revisions);
+        $others = array_values(array_filter($active, fn (CommandRule $other): bool => ! $other->isSameRuleAs($rule)));
         try {
             $this->rules->withRules(...[...$others, $rule]);
         } catch (CommandRuleConflict $conflict) {

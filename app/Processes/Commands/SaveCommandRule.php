@@ -23,7 +23,6 @@ use App\Processes\Values\ProposedRule;
 final readonly class SaveCommandRule implements Command
 {
     public function __construct(
-        public string $workingFolder,
         public string $requestId,
         public ProposedRule $proposed,
         public int $expectedActiveRevision,

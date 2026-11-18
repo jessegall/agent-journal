@@ -9,6 +9,7 @@ use App\Processes\Exceptions\CommandRuleConflict;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\ProgramIdentity;
 use App\Processes\Values\ProgramSpellings;
+use App\Processes\Values\RuleBundle;
 use App\Processes\Values\UnresolvedFact;
 use App\Processes\Values\Word;
 
@@ -28,10 +29,11 @@ final readonly class CommandRuleRegistry
 
     /**
      * @param  list<CommandRule>  $rules
+     * @param  list<CommandRule>  $approved  module rules whose bundle the project owner activated
      *
      * @throws CommandRuleConflict
      */
-    public static function from(array $rules): self
+    public static function from(array $rules, array $approved = []): self
     {
         usort(
             $rules,
@@ -44,7 +46,7 @@ final readonly class CommandRuleRegistry
         $active = [];
         $held = [];
         foreach ($standing as $rule) {
-            if ($rule->scope->type->isActiveUnreviewed()) {
+            if ($rule->scope->type->isActiveUnreviewed() || in_array($rule, $approved, true)) {
                 $active[$rule->program->family][] = $rule;
             } else {
                 $held[] = $rule;
@@ -61,7 +63,50 @@ final readonly class CommandRuleRegistry
      */
     public function withRules(CommandRule ...$rules): self
     {
-        return self::from([...array_merge(...array_values($this->active)), ...$this->held, ...array_values($rules)]);
+        $active = $this->activeRules();
+
+        return self::from([...$active, ...$this->held, ...array_values($rules)], $active);
+    }
+
+    /**
+     * This registry with the rules of the bundles the project owner activated taken out of review.
+     *
+     * @throws CommandRuleConflict
+     */
+    public function withApprovedBundles(RuleBundle ...$bundles): self
+    {
+        $active = $this->activeRules();
+        $approved = array_merge([], ...array_map(fn (RuleBundle $bundle): array => $bundle->rules, $bundles));
+
+        return self::from([...$active, ...$this->held], [...$active, ...$approved]);
+    }
+
+    /**
+     * The rules waiting for review, one bundle per module and version.
+     *
+     * @return list<RuleBundle>
+     */
+    public function bundles(): array
+    {
+        $rules = [];
+        foreach ($this->held as $rule) {
+            $rules[$rule->scope->name()][] = $rule;
+        }
+
+        return array_values(array_map(
+            fn (array $owned): RuleBundle => new RuleBundle($owned[0]->scope->owner, $owned[0]->scope->version, $owned),
+            $rules,
+        ));
+    }
+
+    /**
+     * Every rule an owner declares, active or waiting for review.
+     *
+     * @return list<CommandRule>
+     */
+    public function declaredRules(): array
+    {
+        return [...$this->activeRules(), ...$this->held];
     }
 
     /**
@@ -126,6 +171,14 @@ final readonly class CommandRuleRegistry
     public function awaitingReview(): array
     {
         return $this->held;
+    }
+
+    /**
+     * @return list<CommandRule>
+     */
+    private function activeRules(): array
+    {
+        return array_merge([], ...array_values($this->active));
     }
 
     /**

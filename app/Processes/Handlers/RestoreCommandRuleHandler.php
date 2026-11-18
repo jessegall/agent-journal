@@ -14,6 +14,7 @@ use App\Processes\Models\ClassificationRule;
 use App\Processes\Models\RuleProposal;
 use App\Processes\Models\RuleProposalRevision;
 use App\Processes\Models\RuleRevision;
+use App\Processes\Support\ProjectKey;
 use App\Processes\Values\ProposalReceipt;
 use App\Processes\Values\ProposedRule;
 
@@ -23,7 +24,10 @@ use App\Processes\Values\ProposedRule;
  */
 final readonly class RestoreCommandRuleHandler implements CommandHandler
 {
-    public function __construct(private CurrentActor $actors) {}
+    public function __construct(
+        private CurrentActor $actors,
+        private ProjectKey $projects,
+    ) {}
 
     /**
      * @throws ClassificationRuleRefused
@@ -31,7 +35,11 @@ final readonly class RestoreCommandRuleHandler implements CommandHandler
      */
     public function handle(RestoreCommandRule $command): ProposalReceipt
     {
-        $rule = ClassificationRule::query()->whereKey($command->classificationRuleId)->lockForUpdate()->sole();
+        $rule = ClassificationRule::query()
+            ->ofProject($this->projects->current())
+            ->whereKey($command->classificationRuleId)
+            ->lockForUpdate()
+            ->sole();
         if ($rule->active_revision !== $command->expectedRevision) {
             throw ClassificationRuleRefused::stale($rule->rule_id, $command->expectedRevision, $rule->active_revision);
         }

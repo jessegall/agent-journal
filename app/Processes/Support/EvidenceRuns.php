@@ -41,6 +41,7 @@ final readonly class EvidenceRuns
         private ExecutionPlanner $planner,
         private OutputPolicy $outputs,
         private CommandPermissionReader $permissions,
+        private ProjectKey $projects,
     ) {}
 
     /**
@@ -156,7 +157,7 @@ final readonly class EvidenceRuns
         Classification $classification,
     ): array {
         return [
-            'project_key' => ExecutionContext::inFolder($workingFolder)->projectKey(),
+            'project_key' => $this->projects->current(),
             'working_folder' => $workingFolder,
             'source_line' => $line,
             'source_digest' => hash('sha256', $line),

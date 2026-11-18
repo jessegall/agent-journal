@@ -162,6 +162,15 @@ final class ClassificationRule extends Model implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
+    protected function active(Builder $query): void
+    {
+        $query->where('state', ClassificationState::Active->value);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
     protected function ofRule(Builder $query, RuleScope $scope, string $ruleId): void
     {
         $query->where('scope_type', $scope->type->value)

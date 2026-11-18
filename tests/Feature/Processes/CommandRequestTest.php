@@ -38,9 +38,13 @@ final class CommandRequestTest extends TestCase
     public function test_another_project_or_another_agent_gets_its_own_request(): void
     {
         $first = $this->open('agent-1', '/projects/acme');
-
-        $this->assertNotSame($first, $this->open('agent-1', '/projects/other'));
         $this->assertNotSame($first, $this->open('agent-2', '/projects/acme'));
+
+        config(['processes.project_key' => 'other-project']);
+
+        $this->assertNotSame($first, $this->open('agent-1', '/projects/acme'));
+        $other = CommandRequest::query()->findOrFail($this->open('agent-1', '/projects/acme'));
+        $this->assertSame('other-project', $other->project_key);
     }
 
     public function test_a_withdrawn_request_stays_readable_and_a_new_attempt_opens_a_new_one(): void

@@ -9,16 +9,25 @@ use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\ApproveRuleProposal;
 use App\Processes\Models\RuleProposal;
+use App\Processes\Support\ProjectKey;
 use App\Processes\Support\RuleApprovals;
 use App\Processes\Values\ApprovalReceipt;
 
 final readonly class ApproveRuleProposalHandler implements CommandHandler
 {
-    public function __construct(private CurrentActor $actors, private RuleApprovals $approvals) {}
+    public function __construct(
+        private CurrentActor $actors,
+        private RuleApprovals $approvals,
+        private ProjectKey $projects,
+    ) {}
 
     public function handle(ApproveRuleProposal $command): ApprovalReceipt
     {
-        $proposal = RuleProposal::query()->whereKey($command->proposalId)->lockForUpdate()->sole();
+        $proposal = RuleProposal::query()
+            ->ofProject($this->projects->current())
+            ->whereKey($command->proposalId)
+            ->lockForUpdate()
+            ->sole();
 
         return $this->approvals->approve($proposal, $command->approval, ActorIdentity::of($this->actors->actor()));
     }

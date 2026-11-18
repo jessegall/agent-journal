@@ -10,11 +10,15 @@ use App\Processes\Events\RuleRejected;
 use App\Processes\Exceptions\RequestTransitionRefused;
 use App\Processes\Exceptions\RuleProposalRefused;
 use App\Processes\Models\RuleProposal;
+use App\Processes\Support\ProjectKey;
 use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class RejectRuleProposalHandler implements CommandHandler
 {
-    public function __construct(private Dispatcher $events) {}
+    public function __construct(
+        private Dispatcher $events,
+        private ProjectKey $projects,
+    ) {}
 
     /**
      * @throws RuleProposalRefused
@@ -22,7 +26,11 @@ final readonly class RejectRuleProposalHandler implements CommandHandler
      */
     public function handle(RejectRuleProposal $command): string
     {
-        $proposal = RuleProposal::query()->whereKey($command->proposalId)->lockForUpdate()->sole();
+        $proposal = RuleProposal::query()
+            ->ofProject($this->projects->current())
+            ->whereKey($command->proposalId)
+            ->lockForUpdate()
+            ->sole();
         $proposal->reject();
         $request = $proposal->commandRequest()->lockForUpdate()->first();
         if ($request !== null) {

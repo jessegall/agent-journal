@@ -162,7 +162,7 @@ final class RuleProposalCommandsTest extends TestCase
             'rule' => AcmeDeclarations::verify()->toArray(),
         ]]], JSON_THROW_ON_ERROR);
 
-        $receipts = $this->runAs('agent-1', new ImportRuleProposals(self::FOLDER, $file));
+        $receipts = $this->runAs('agent-1', new ImportRuleProposals($file));
 
         $this->assertCount(1, $receipts);
         $this->assertSame(ProposalState::Pending, $receipts[0]->state);
@@ -181,7 +181,7 @@ final class RuleProposalCommandsTest extends TestCase
         $file = json_encode(['declarations' => [$declaration]]);
 
         try {
-            $this->runAs('agent-1', new ImportRuleProposals(self::FOLDER, (string) $file));
+            $this->runAs('agent-1', new ImportRuleProposals((string) $file));
             $this->fail('The broken file was imported.');
         } catch (DeclarationInvalid $refusal) {
             $this->assertCount(2, $refusal->fields);
