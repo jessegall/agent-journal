@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Actors;
 
-use App\Actors\Commands\RecordUserHeartbeat;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\InvalidActorText;
@@ -16,6 +15,7 @@ use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\EngineNotAllowed;
 use App\Engine\Support\EngineActor;
+use App\Web\Commands\RecordUserHeartbeat;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;

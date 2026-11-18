@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Access\Providers;
 
-use App\Actors\Support\ActiveActorCounterRegistry;
+use App\Actors\Contracts\ActiveActorRegistration;
 use App\Web\Contracts\CurrentUserReader;
 use App\Web\Contracts\JournalAccessPolicy;
 use Domain\Access\Actions\CreateNewUser;
@@ -44,7 +44,7 @@ class AccessServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(ActiveActorCounterRegistry $presentActors): void
+    public function boot(ActiveActorRegistration $presentActors): void
     {
         $presentActors->register(PresentUserCounter::class);
         $this->configureActions();

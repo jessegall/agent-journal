@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Actors\Commands\RecordUserHeartbeat;
-use App\Agents\Commands\MarkSilentSessions;
 use App\Agents\Commands\RecordHeartbeat;
 use App\Agents\Commands\RetireAgent;
 use App\Assignments\Commands\AssignRecord;
@@ -16,10 +14,12 @@ use App\Bus\Support\CommandOwner;
 use App\Bus\Support\MiddlewareDeclaration;
 use App\Comments\Commands\PostComment;
 use App\Comments\Commands\PostTextComment;
+use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Commands\SettleFrameTimes;
 use App\Numbers\Commands\InstallNumbers;
 use App\Records\Commands\LinkRecords;
 use App\Records\Commands\UnlinkRecords;
+use App\Web\Commands\RecordUserHeartbeat;
 
 /**
  * Core's own commands and middleware, read at start-up beside the domains' (doc 19, section 6.1).

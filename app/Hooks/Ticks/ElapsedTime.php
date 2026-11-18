@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Engine\Values;
+namespace App\Hooks\Ticks;
 
-use App\Engine\Exceptions\MonotonicClockWentBack;
+use App\Hooks\Exceptions\MonotonicClockWentBack;
 
 /**
  * How much time passed, held in whole nanoseconds; approximate when it was not measured on one monotonic clock.

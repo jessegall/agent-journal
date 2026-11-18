@@ -11,7 +11,6 @@ use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Support\AgentClientSettings;
 use App\Agents\Console\RetireAgentCommand;
 use App\Agents\Exceptions\AgentContextMissing;
-use App\Agents\Listeners\MarkSilentSessionsOnTick;
 use App\Agents\Readers\AgentAuthorityRecords;
 use App\Agents\Support\AgentAssignees;
 use App\Agents\Support\AgentContext;
@@ -21,12 +20,11 @@ use App\Assignments\Contracts\AgentAuthority;
 use App\Assignments\Contracts\AssignmentRegistration;
 use App\Assignments\Support\AssigneeRegistration;
 use App\Contracts\LaunchTransaction;
-use App\Engine\Support\EngineListenerSet;
 use Illuminate\Support\ServiceProvider;
 
 /**
  * Gives each request its own agent context, which only the agent middleware fills; without it, asking for one fails. A launch runs in a plain transaction until another domain supplies a bounded one. Agents are registered as holders of
- * assigned work, and their present sessions are counted for ActiveActors; each engine pass sweeps for silent sessions.
+ * assigned work, and their present sessions are counted for ActiveActors.
  */
 final class AgentsServiceProvider extends ServiceProvider
 {
@@ -40,12 +38,11 @@ final class AgentsServiceProvider extends ServiceProvider
         $this->app->bind(AgentRequestSender::class, SendAgentRequests::class);
     }
 
-    public function boot(AssignmentRegistration $assignments, ActiveActorCounterRegistry $presentActors, EngineListenerSet $engineListeners): void
+    public function boot(AssignmentRegistration $assignments, ActiveActorCounterRegistry $presentActors): void
     {
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agents.php');
         $this->commands([RetireAgentCommand::class]);
         $assignments->registerAssignees(new AssigneeRegistration(ActorType::Agent, AgentAssignees::class));
         $presentActors->register(AgentSessionCounter::class);
-        $engineListeners->add(MarkSilentSessionsOnTick::class);
     }
 }

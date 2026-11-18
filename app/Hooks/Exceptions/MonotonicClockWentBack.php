@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Engine\Exceptions;
+namespace App\Hooks\Exceptions;
 
 use LogicException;
 

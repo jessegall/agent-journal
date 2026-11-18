@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace App\Actors\Providers;
 
+use App\Actors\Contracts\ActiveActorRegistration;
 use App\Actors\Contracts\ActiveActors;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\ServerClock;
+use App\Actors\Contracts\UserPresences;
 use App\Actors\Support\ActiveActorCounterRegistry;
 use App\Actors\Support\ActiveActorsReader;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\DatabaseClock;
 use App\Actors\Support\PresenceWindow;
+use App\Actors\Support\UserPresenceRecords;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
@@ -33,6 +36,8 @@ final class ActorsServiceProvider extends ServiceProvider
         ));
         $this->app->bind(ServerClock::class, DatabaseClock::class);
         $this->app->singleton(ActiveActorCounterRegistry::class);
+        $this->app->bind(ActiveActorRegistration::class, ActiveActorCounterRegistry::class);
+        $this->app->bind(UserPresences::class, UserPresenceRecords::class);
         $this->app->bind(ActiveActors::class, ActiveActorsReader::class);
     }
 

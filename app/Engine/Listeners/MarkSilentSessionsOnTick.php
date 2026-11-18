@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Agents\Listeners;
+namespace App\Engine\Listeners;
 
-use App\Agents\Commands\MarkSilentSessions;
 use App\Bus\Contracts\CommandBus;
+use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Contracts\EngineListener;
 use App\Engine\Events\EngineTicked;
 

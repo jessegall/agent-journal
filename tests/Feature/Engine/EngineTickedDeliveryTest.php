@@ -9,7 +9,7 @@ use App\Engine\Exceptions\EngineAccessRefused;
 use App\Engine\Support\EngineAccess;
 use App\Engine\Support\EngineListenerSet;
 use App\Engine\Support\EngineTickedDelivery;
-use App\Engine\Values\ElapsedTime;
+use App\Hooks\Ticks\ElapsedTime;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;

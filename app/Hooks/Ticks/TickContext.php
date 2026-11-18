@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Hooks\Ticks;
 
 use App\Agents\Support\StackTarget;
-use App\Engine\Values\ElapsedTime;
 use Carbon\CarbonImmutable;
 
 /**

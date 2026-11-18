@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Actors\Support;
 
 use App\Actors\Contracts\ActiveActorCounter;
+use App\Actors\Contracts\ActiveActorRegistration;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActiveActorCounterMissing;
 use App\Actors\Exceptions\ActiveActorCounterRepeated;
@@ -14,7 +15,7 @@ use Illuminate\Contracts\Container\Container;
  * The one counter of present actors for each actor type. It keeps class names only and builds a counter when one is
  * asked for, so a counter is never kept beyond its call.
  */
-final class ActiveActorCounterRegistry
+final class ActiveActorCounterRegistry implements ActiveActorRegistration
 {
     /**
      * @var array<string, class-string<ActiveActorCounter>>

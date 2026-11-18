@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Engine\Events;
 
 use App\Contracts\Event;
-use App\Engine\Values\ElapsedTime;
+use App\Hooks\Ticks\ElapsedTime;
 use Carbon\CarbonImmutable;
 
 /**

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Agents\Handlers;
+namespace App\Engine\Handlers;
 
 use App\Agents\Actions\LaunchHeartbeats;
-use App\Agents\Commands\MarkSilentSessions;
 use App\Contracts\CommandHandler;
+use App\Engine\Commands\MarkSilentSessions;
 use App\Engine\Support\EngineAccess;
 
 /**

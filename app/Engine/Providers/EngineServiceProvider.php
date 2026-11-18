@@ -9,6 +9,7 @@ use App\Engine\Contracts\EngineLock;
 use App\Engine\Contracts\MonotonicClock;
 use App\Engine\Contracts\Sleeper;
 use App\Engine\Contracts\Watchdog;
+use App\Engine\Listeners\MarkSilentSessionsOnTick;
 use App\Engine\Support\AdvisoryEngineLock;
 use App\Engine\Support\AlarmWatchdog;
 use App\Engine\Support\EngineAccess;
@@ -28,7 +29,7 @@ use Illuminate\Support\ServiceProvider;
 
 /**
  * The engine's settings, read once from config/engine.php, its one lock for the life of the process, and what it may
- * address in the current operation; areas add their engine listeners to EngineListenerSet.
+ * address in the current operation; areas add their engine listeners to EngineListenerSet, and the engine adds the launch silence sweep.
  */
 final class EngineServiceProvider extends ServiceProvider
 {
@@ -56,8 +57,9 @@ final class EngineServiceProvider extends ServiceProvider
         $this->app->scoped(TickDelivery::class);
     }
 
-    public function boot(SelfMeasuredCommands $selfMeasured): void
+    public function boot(SelfMeasuredCommands $selfMeasured, EngineListenerSet $listeners): void
     {
+        $listeners->add(MarkSilentSessionsOnTick::class);
         $selfMeasured->add('engine:tick');
         $this->commands([TickCommand::class]);
     }

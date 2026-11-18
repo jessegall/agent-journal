@@ -9,7 +9,7 @@ use App\Engine\Contracts\MonotonicClock;
 use App\Engine\Contracts\Sleeper;
 use App\Engine\Contracts\Watchdog;
 use App\Engine\Events\EngineTicked;
-use App\Engine\Values\ElapsedTime;
+use App\Hooks\Ticks\ElapsedTime;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Database\DatabaseManager;
