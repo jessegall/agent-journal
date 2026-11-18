@@ -151,6 +151,9 @@ use App\Agents\Values\ResourceRequest;
 use App\Agents\Values\StopCondition;
 use App\Agents\Values\StopConditions;
 use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Commands\ConfigureAutoAssignment;
+use App\Assignments\Commands\DisableAutoAssignment;
+use App\Assignments\Commands\EnableAutoAssignment;
 use App\Assignments\Commands\ReassignRecord;
 use App\Assignments\Commands\UnassignRecord;
 use App\Assignments\Contracts\Assignable;
@@ -772,7 +775,28 @@ final class CoreApi
     public static function exports(): Exports
     {
         return Exports::make()
-            ->events(LinksRemoved::class, CommentPosted::class, MessageSent::class, MessageAnswered::class, MessageDismissed::class, ContextStarted::class, StateTypesRequested::class, AssignmentsChanged::class, LaunchEnded::class, LaunchAccepted::class, EngineTicked::class, SettingsChanged::class, ShareRequested::class, ShareCreated::class, ShareActivated::class, ShareFailed::class, ShareScopeChanged::class, ShareRevoked::class, ShareExpired::class, ShareGatewayChanged::class)
+            ->events(
+                LinksRemoved::class,
+                CommentPosted::class,
+                MessageSent::class,
+                MessageAnswered::class,
+                MessageDismissed::class,
+                ContextStarted::class,
+                StateTypesRequested::class,
+                AssignmentsChanged::class,
+                LaunchEnded::class,
+                LaunchAccepted::class,
+                EngineTicked::class,
+                SettingsChanged::class,
+                ShareRequested::class,
+                ShareCreated::class,
+                ShareActivated::class,
+                ShareFailed::class,
+                ShareScopeChanged::class,
+                ShareRevoked::class,
+                ShareExpired::class,
+                ShareGatewayChanged::class,
+            )
             ->contracts(
                 RecordProvider::class,
                 RecordReader::class,
@@ -1322,6 +1346,9 @@ final class CoreApi
                 LinkRecords::class,
                 UnlinkRecords::class,
                 AssignRecord::class,
+                EnableAutoAssignment::class,
+                ConfigureAutoAssignment::class,
+                DisableAutoAssignment::class,
                 ReassignRecord::class,
                 UnassignRecord::class,
                 SetStringSetting::class,
