@@ -10,7 +10,9 @@ use App\Reads\Support\BoundedReads;
 use App\Reads\Support\CountsPivotLoads;
 use App\Reads\Values\ReadOrder;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
@@ -52,5 +54,20 @@ final class PhaseTask extends Pivot implements ReadableModel
     public function defaultReadOrder(): ReadOrder
     {
         return ReadOrder::by(['phase_tasks.phase_id', 'phase_tasks.position'], 'phase_tasks.id');
+    }
+
+    /**
+     * The places of one plan's tasks, phase by phase and in each phase's order, the place's id last.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function inPlanOrder(Builder $query, string $planId): void
+    {
+        $query->join('phases', 'phases.id', '=', 'phase_tasks.phase_id')
+            ->where('phases.plan_id', $planId)
+            ->orderBy('phases.number')
+            ->orderBy('phase_tasks.position')
+            ->orderBy('phase_tasks.id');
     }
 }

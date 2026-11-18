@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Plans;
 
+use App\Assignments\Contracts\ProvidesAutoAssignments;
+use App\Assignments\Support\PoolDefinition;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasAssignables;
 use App\Domains\Concerns\HasLinkRecords;
@@ -44,6 +46,7 @@ use Domain\Plans\Api\PlanList;
 use Domain\Plans\Api\PlanPhaseTasks;
 use Domain\Plans\Api\PlanProgress;
 use Domain\Plans\Api\PlanSelection;
+use Domain\Plans\Assignments\PlanTaskPoolFactory;
 use Domain\Plans\Commands\AddPhase;
 use Domain\Plans\Commands\AddPhaseTasks;
 use Domain\Plans\Commands\AssignPlanWork;
@@ -82,9 +85,22 @@ use Domain\Plans\Support\PhaseRecords;
 use Domain\Plans\Support\PlanAssignmentProvider;
 use Domain\Plans\Support\PlanRecords;
 use Domain\Plans\Support\PlanShareProvider;
+use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\TasksDomain;
 
-final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesCommands, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesShareRecords, ProvidesSkills, ProvidesStates
+final class PlansDomain extends Domain implements
+    ProvidesAssignables,
+    ProvidesAutoAssignments,
+    ProvidesCommands,
+    ProvidesLinkRecords,
+    ProvidesMcpTools,
+    ProvidesNavigation,
+    ProvidesNumberedModels,
+    ProvidesPages,
+    ProvidesSections,
+    ProvidesShareRecords,
+    ProvidesSkills,
+    ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 
@@ -139,6 +155,23 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
         ];
     }
 
+    public function autoAssigners(): array
+    {
+        return [];
+    }
+
+    public function assignmentPools(): array
+    {
+        return [
+            new PoolDefinition(
+                PlanTaskPoolFactory::KEY,
+                TaskType::VALUE,
+                PlanTaskPoolFactory::class,
+                'Tasks in a started plan',
+            ),
+        ];
+    }
+
     /**
      * A plan may be shared as a summary root; it is never selected as a linked record of another share.
      */
@@ -160,7 +193,18 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
      */
     public function commands(): array
     {
-        return [StartPlan::class, CreatePlan::class, EditPlan::class, FinishPlan::class, CancelPlan::class, AddPhase::class, AddPhaseTasks::class, AssignPlanWork::class, ReassignPlanWork::class, UnassignPlanWork::class];
+        return [
+            StartPlan::class,
+            CreatePlan::class,
+            EditPlan::class,
+            FinishPlan::class,
+            CancelPlan::class,
+            AddPhase::class,
+            AddPhaseTasks::class,
+            AssignPlanWork::class,
+            ReassignPlanWork::class,
+            UnassignPlanWork::class,
+        ];
     }
 
     public function skills(): array
@@ -187,7 +231,14 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
     public function sections(): array
     {
         return [
-            Section::make('waiting', 'Waiting for review', 'chat.dock', SlotContextType::Session, WaitingPlansSection::class, 'WaitingPlansSection.vue'),
+            Section::make(
+                'waiting',
+                'Waiting for review',
+                'chat.dock',
+                SlotContextType::Session,
+                WaitingPlansSection::class,
+                'WaitingPlansSection.vue',
+            ),
         ];
     }
 
@@ -195,8 +246,10 @@ final class PlansDomain extends Domain implements ProvidesAssignables, ProvidesC
     {
         return [
             NavigationItem::page('list', 'Plans', Icon::Plan, position: 20)->children([
-                NavigationItem::page('open', 'Open', page: 'list', query: ['state' => 'open'])->count(OpenPlansCount::class),
-                NavigationItem::page('waiting', 'Waiting', page: 'list', query: ['state' => 'waiting'])->count(WaitingPlansCount::class),
+                NavigationItem::page('open', 'Open', page: 'list', query: ['state' => 'open'])
+                    ->count(OpenPlansCount::class),
+                NavigationItem::page('waiting', 'Waiting', page: 'list', query: ['state' => 'waiting'])
+                    ->count(WaitingPlansCount::class),
                 NavigationItem::page('closed', 'Closed', page: 'list', query: ['state' => 'closed']),
             ]),
         ];
