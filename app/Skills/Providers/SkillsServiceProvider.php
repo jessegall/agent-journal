@@ -14,6 +14,7 @@ use App\Skills\Readers\SkillCatalogue;
 use App\Skills\Readers\SkillContextReader;
 use App\Skills\Support\CanonicalRenderer;
 use App\Skills\Support\ConditionRegistry;
+use App\Skills\Support\ConditionTree;
 use App\Skills\Support\EvaluationGuard;
 use App\Skills\Support\SkillRegistry;
 use App\Skills\Values\SkillContext;
@@ -34,7 +35,7 @@ final class SkillsServiceProvider extends ServiceProvider
         $this->app->scoped(SkillContextReader::class);
         $this->app->scoped(SkillContext::class, fn (Application $app) => $app->make(SkillContextReader::class)->current());
         $this->app->bind(SkillRenderer::class, CanonicalRenderer::class);
-        $this->app->scoped(SkillReader::class, fn (Application $app) => SkillCatalogue::build($app->make(SkillRegistry::class), $app, $app->make(SkillRenderer::class)));
+        $this->app->scoped(SkillReader::class, fn (Application $app) => SkillCatalogue::build($app->make(SkillRegistry::class), $app, $app->make(SkillRenderer::class), $app->make(ConditionTree::class)));
     }
 
     public function boot(): void

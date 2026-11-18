@@ -8,8 +8,10 @@ use App\Skills\Contracts\Skill;
 use App\Skills\Contracts\SkillReader;
 use App\Skills\Contracts\SkillRenderer;
 use App\Skills\Enums\SkillOrigin;
+use App\Skills\Exceptions\SkillConditionInvalid;
 use App\Skills\Exceptions\SkillConflict;
 use App\Skills\Exceptions\SkillMissing;
+use App\Skills\Support\ConditionTree;
 use App\Skills\Support\SkillRegistry;
 use App\Skills\Values\SkillEntry;
 use App\Skills\Values\SkillKey;
@@ -17,7 +19,7 @@ use Illuminate\Contracts\Container\Container;
 
 /**
  * The checked catalogue of one request: every declared skill built through the container, its key checked against its
- * owner and every other key, and rendered.
+ * owner and every other key, its condition checked as a tree, and rendered.
  */
 final readonly class SkillCatalogue implements SkillReader
 {
@@ -30,8 +32,9 @@ final readonly class SkillCatalogue implements SkillReader
 
     /**
      * @throws SkillConflict when two owners declare one key
+     * @throws SkillConditionInvalid when a skill's condition is not a valid tree
      */
-    public static function build(SkillRegistry $registry, Container $container, SkillRenderer $renderer): self
+    public static function build(SkillRegistry $registry, Container $container, SkillRenderer $renderer, ConditionTree $conditions): self
     {
         $entries = [];
 
@@ -46,7 +49,7 @@ final readonly class SkillCatalogue implements SkillReader
                     throw SkillConflict::between($key->key, $entries[$key->key]->owner, $owner->name);
                 }
 
-                $entries[$key->key] = new SkillEntry($key, $skill->name(), $owner->name, SkillOrigin::Shipped, $skill->description(), $renderer->render($skill, $owner));
+                $entries[$key->key] = new SkillEntry($key, $skill->name(), $owner->name, SkillOrigin::Shipped, $skill->description(), $conditions->check($skill->condition()), $renderer->render($skill, $owner));
             }
         }
 

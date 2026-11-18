@@ -11,6 +11,7 @@ use App\Skills\Exceptions\SkillConflict;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Readers\SkillCatalogue;
 use App\Skills\Support\CanonicalRenderer;
+use App\Skills\Support\ConditionTree;
 use App\Skills\Support\MarkdownParts;
 use App\Skills\Support\SkillRegistry;
 use App\Skills\Values\SkillKey;
@@ -84,6 +85,6 @@ final class SkillCatalogueTest extends TestCase
 
     private function catalogue(SkillRegistry $registry): SkillCatalogue
     {
-        return SkillCatalogue::build($registry, $this->app, new CanonicalRenderer(new MarkdownParts()));
+        return SkillCatalogue::build($registry, $this->app, new CanonicalRenderer(new MarkdownParts()), $this->app->make(ConditionTree::class));
     }
 }
