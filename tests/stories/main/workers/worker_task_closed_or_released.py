@@ -1,5 +1,6 @@
 from journal.features.tasks.states.ready import Ready
 from journal.features.workers.workers_nudges import WorkersNudges
+from journal.models.plan_state import PlanState
 from journal.models.task_state import TaskState
 from journal.models.worker_state import WorkerState
 from journal.features.workers.workers_options import BUILDER_MODE
@@ -35,6 +36,16 @@ def test_releasing_a_worker_still_out_waits_for_its_stop_and_then_opens_its_queu
     result.expect_command_passed()
     story.expect_task(story.tasks.second, state=TaskState.OPEN, delegated=False)
     story.expect_worker(story.agents.workers.first(), state=WorkerState.RELEASED)
+    story.expect_stack(story.agents.subject, Ready)
+
+
+@story(PlanWorker, mode=BUILDER_MODE, subject=AgentRole.MAIN)
+def test_a_plan_handed_whole_to_a_worker_that_is_released_comes_back_paused_to_the_agent(story):
+    story.agent_runs(story.agents.subject, f"worker stop {story.agents.workers.first()}")
+    story.agent_runs(story.agents.subject, f"worker release {story.agents.workers.first()}")
+    story.expect_plan(story.plans.first, state=PlanState.PAUSED)
+    story.expect_task(story.tasks.first, delegated=False)
+    story.expect_task(story.tasks.second, delegated=False)
     story.expect_stack(story.agents.subject, Ready)
 
 
