@@ -358,6 +358,7 @@ class	AssignRecordCommand
 class	AssignRecordController
 class	AssignRecordHandler
 class	AssignRecordRequest
+class	AuditPruning
 class	AuthenticateAgent
 class	AvailableListener
 class	BindingRegistration
@@ -583,6 +584,7 @@ class	GatewayOpenFailed
 class	GatewayOperation
 class	GatewayReadiness
 class	GatewayRevisionData
+class	GatewayRuns
 class	GatewayRunStale
 class	GatewaySecretRefused
 class	GatewaySecrets
@@ -810,6 +812,8 @@ class	PrunedHistory
 class	PruneHookHistory
 class	PruneHookHistoryCommand
 class	PruneReceiptsCommand
+class	PruneShareAudit
+class	PruneShareAuditHandler
 class	Psr4ClassNames
 class	PublicAddresses
 class	PublicContracts
@@ -911,6 +915,8 @@ class	RelationRead
 class	RelationReadUndeclared
 class	RelayHookCommand
 class	RelaySettings
+class	ReopenSharedGateways
+class	ReopenSharedGatewaysHandler
 class	RepeatableRead
 class	RepeatedCommandRewrite
 class	RepeatedReadRefused
@@ -1121,11 +1127,13 @@ class	ShareToken
 class	ShareUnavailable
 class	ShareUrlCommand
 class	SharingAssetController
+class	SharingHealthCommand
 class	SharingNotAllowed
 class	SharingOwnerCheck
 class	SharingOwnerMissing
 class	SharingPages
 class	SharingServiceProvider
+class	SharingSupervisor
 class	ShellCommand
 class	ShellCommandRequested
 class	ShellParserMissing
@@ -1189,6 +1197,8 @@ class	StringSetting
 class	StringValueData
 class	SubjectReference
 class	SubmissionKeyConflict
+class	SuperviseSharingCommand
+class	SupervisorInsideTransaction
 class	SupplyHookSettings
 class	SystemActor
 class	SystemActorRequired
@@ -1387,6 +1397,7 @@ constant	PostCommentRequest::ANCHOR_FIELDS
 constant	PostCommentRequest::FIELDS_OF_TYPE
 constant	ProbeChallenges::SECONDS
 constant	ProgramReplies::REWRITE_REFUSAL
+constant	PruneShareAuditHandler::MOST_PER_RUN
 constant	PublicContracts::CORE_ELOQUENT_ADAPTERS
 constant	PublicContracts::PRIVATE_RELATION_RESULTS
 constant	PublicOwner::CORE
@@ -1424,7 +1435,9 @@ constant	Share::LINK_TYPE
 constant	Share::MOST_LIVE
 constant	Share::MOST_PROPOSED
 constant	Share::PROPOSAL_DAYS
+constant	ShareAudit::LIFECYCLE_DAYS
 constant	ShareAudit::LINK_TYPE
+constant	ShareAudit::READ_DAYS
 constant	ShareAudit::UPDATED_AT
 constant	ShareAuditReader::ROWS
 constant	ShareCursor::ORDER_WRITTEN_THEN_ID
@@ -1455,6 +1468,7 @@ constant	ShareRecordCard::QUOTE_NOT_IN_VERSION
 constant	ShareScope::TARGET_BATCH
 constant	ShareToken::RANDOM_BYTES
 constant	ShareToken::SHAPE
+constant	SharingHealthCommand::CONNECT_SECONDS
 constant	SignedCall::ID_HEADER
 constant	SignedCall::ISSUED_AT_HEADER
 constant	SignedCall::PROTOCOL
@@ -1468,6 +1482,7 @@ constant	StateReferences::MAXIMUM
 constant	StoredFrame::TIME_FORMAT
 constant	StoredFrames::CURRENT_VERSION
 constant	StringSetting::LONGEST
+constant	SuperviseSharingCommand::LISTENER_GRACE_SECONDS
 constant	SystemActor::ID
 constant	SystemSleeper::NANOSECONDS_PER_MICROSECOND
 constant	TableChecker::ROOT_MIGRATIONS
@@ -2033,6 +2048,7 @@ method	AssignRecordController::__invoke()
 method	AssignRecordHandler::__construct()
 method	AssignRecordHandler::handle()
 method	AssignRecordRequest::rules()
+method	AuditPruning::__construct()
 method	AuthenticateAgent::__construct()
 method	AuthenticateAgent::handle()
 method	AuthenticateAgent::refreshHeartbeatOf()
@@ -2157,6 +2173,7 @@ method	ChunkedRead::readBatches()
 method	ChunkedRead::run()
 method	ClaimedGatewayOperation::__construct()
 method	ClaimGatewayOperation::__construct()
+method	ClaimGatewayOperationHandler::__construct()
 method	ClaimGatewayOperationHandler::handle()
 method	ClassesDeclared::findingsIn()
 method	ClassesDeclared::key()
@@ -2840,6 +2857,8 @@ method	GatewayChildren::keep()
 method	GatewayChildren::stop()
 method	GatewayConfiguration::__construct()
 method	GatewayEndpoint::__construct()
+method	GatewayEndpoint::forOperation()
+method	GatewayEndpoint::referenceOf()
 method	GatewayHealth::__construct()
 method	GatewayHealth::healthy()
 method	GatewayHealth::isHealthy()
@@ -2858,6 +2877,7 @@ method	GatewayReadiness::__construct()
 method	GatewayReadiness::isReady()
 method	GatewayReadiness::ready()
 method	GatewayRevisionData::__construct()
+method	GatewayRuns::hold()
 method	GatewayRunStale::for()
 method	GatewayRunStale::status()
 method	GatewaySecretRefused::forReference()
@@ -3566,6 +3586,7 @@ method	PruneHookHistory::deleteInBatches()
 method	PruneHookHistory::prune()
 method	PruneHookHistoryCommand::handle()
 method	PruneReceiptsCommand::handle()
+method	PruneShareAuditHandler::handle()
 method	Psr4ClassNames::__construct()
 method	Psr4ClassNames::classOf()
 method	Psr4ClassNames::fromComposer()
@@ -3903,6 +3924,9 @@ method	RelaySettings::fromEnvironment()
 method	ReminderContribution::add()
 method	RendersRefusal::render()
 method	RendersRefusal::status()
+method	ReopenSharedGateways::__construct()
+method	ReopenSharedGatewaysHandler::__construct()
+method	ReopenSharedGatewaysHandler::handle()
 method	RepeatedCommandRewrite::for()
 method	RepeatedReadRefused::at()
 method	ReplayFound::answeredBefore()
@@ -4247,7 +4271,10 @@ method	Share::approveAs()
 method	Share::awaitingGateway()
 method	Share::byId()
 method	Share::casts()
+method	Share::configurationsToReopen()
+method	Share::countPruned()
 method	Share::end()
+method	Share::endedBefore()
 method	Share::expiringBefore()
 method	Share::fact()
 method	Share::failActivation()
@@ -4299,11 +4326,13 @@ method	ShareActivated::__construct()
 method	ShareAudit::casts()
 method	ShareAudit::entry()
 method	ShareAudit::fact()
+method	ShareAudit::lockPastRetention()
 method	ShareAudit::ofShare()
 method	ShareAudit::olderThan()
 method	ShareAudit::pageOf()
 method	ShareAudit::recordFor()
 method	ShareAudit::recordForInstallation()
+method	ShareAudit::removeAll()
 method	ShareAudit::shownActor()
 method	ShareAuditData::__construct()
 method	ShareAuditData::fromPage()
@@ -4313,6 +4342,7 @@ method	ShareAuditEntryData::fromEntry()
 method	ShareAuditPage::__construct()
 method	ShareAuditReader::page()
 method	ShareAuditType::isRead()
+method	ShareAuditType::readTypes()
 method	ShareBudget::chargeLinks()
 method	ShareBudget::chargeMetadata()
 method	ShareBudget::chargeRecords()
@@ -4396,6 +4426,7 @@ method	ShareGatewayConfiguration::usable()
 method	ShareGatewayConfiguration::usableDefault()
 method	ShareGatewayEndpoint::anyRunningOf()
 method	ShareGatewayEndpoint::casts()
+method	ShareGatewayEndpoint::gatewayKey()
 method	ShareGatewayEndpoint::isHealthy()
 method	ShareGatewayEndpoint::isVersion()
 method	ShareGatewayEndpoint::lockById()
@@ -4408,9 +4439,11 @@ method	ShareGatewayEndpoint::ofConfiguration()
 method	ShareGatewayEndpoint::ofRun()
 method	ShareGatewayEndpoint::openFor()
 method	ShareGatewayEndpoint::openNextFor()
+method	ShareGatewayEndpoint::openOfRun()
 method	ShareGatewayEndpoint::recordHealthy()
 method	ShareGatewayEndpoint::stillRunning()
 method	ShareGatewayEndpoint::stopAllButRun()
+method	ShareGatewayEndpoint::toGatewayEndpoint()
 method	ShareGatewayInvalid::notAGateway()
 method	ShareGatewayInvalid::repeated()
 method	ShareGatewayOperation::cancelOpensOf()
@@ -4420,6 +4453,7 @@ method	ShareGatewayOperation::claimedByOtherThan()
 method	ShareGatewayOperation::claimFor()
 method	ShareGatewayOperation::finish()
 method	ShareGatewayOperation::hasOutcome()
+method	ShareGatewayOperation::hasUnfinishedOpenFor()
 method	ShareGatewayOperation::isClaimable()
 method	ShareGatewayOperation::isHeldBy()
 method	ShareGatewayOperation::leaseIsLive()
@@ -4615,6 +4649,7 @@ method	ShareUnavailable::for()
 method	ShareUnavailable::status()
 method	ShareUrlCommand::handle()
 method	SharingAssetController::__invoke()
+method	SharingHealthCommand::handle()
 method	SharingNotAllowed::forActor()
 method	SharingNotAllowed::status()
 method	SharingOwnerCheck::__construct()
@@ -4624,6 +4659,17 @@ method	SharingPages::declarations()
 method	SharingPages::pages()
 method	SharingServiceProvider::boot()
 method	SharingServiceProvider::register()
+method	SharingSupervisor::__construct()
+method	SharingSupervisor::asSystem()
+method	SharingSupervisor::begin()
+method	SharingSupervisor::checkHealth()
+method	SharingSupervisor::close()
+method	SharingSupervisor::expire()
+method	SharingSupervisor::open()
+method	SharingSupervisor::pruneAudit()
+method	SharingSupervisor::requireNoTransaction()
+method	SharingSupervisor::stopAll()
+method	SharingSupervisor::work()
 method	ShellCommand::__construct()
 method	ShellCommand::isFullyRead()
 method	ShellCommand::mayChangeFiles()
@@ -4799,6 +4845,11 @@ method	StringSetting::type()
 method	StringValueData::__construct()
 method	SubjectReference::__construct()
 method	SubmissionKeyConflict::for()
+method	SuperviseSharingCommand::handle()
+method	SuperviseSharingCommand::listenerEnvironment()
+method	SuperviseSharingCommand::runTimers()
+method	SuperviseSharingCommand::workAll()
+method	SupervisorInsideTransaction::atLevel()
 method	SupplyHookSettings::handle()
 method	SystemActor::actorId()
 method	SystemActor::actorType()
@@ -5223,6 +5274,8 @@ property	AssignRecord::$record
 property	AssignRecordCommand::$description
 property	AssignRecordCommand::$signature
 property	AssignRecordHandler::$writer
+property	AuditPruning::$hasMore
+property	AuditPruning::$pruned
 property	AuthenticateAgent::$actors
 property	AuthenticateAgent::$commands
 property	AuthenticateAgent::$container
@@ -5279,6 +5332,7 @@ property	ClaimedGatewayOperation::$operation
 property	ClaimedGatewayOperation::$type
 property	ClaimGatewayOperation::$operationId
 property	ClaimGatewayOperation::$runId
+property	ClaimGatewayOperationHandler::$runs
 property	ClaudeCodeAdapter::$parser
 property	CloseLaunchStack::$stacks
 property	CodexAdapter::$parser
@@ -6149,6 +6203,8 @@ property	RelaySettings::$journalUrl
 property	RelaySettings::$role
 property	RelaySettings::$timeoutSeconds
 property	RelaySettings::$token
+property	ReopenSharedGateways::$runId
+property	ReopenSharedGatewaysHandler::$runs
 property	ReportShareProvider::$comments
 property	RequestSession::$container
 property	RequestShare::$requestKey
@@ -6555,7 +6611,14 @@ property	ShareToken::$digest
 property	ShareToken::$token
 property	ShareUrlCommand::$description
 property	ShareUrlCommand::$signature
+property	SharingHealthCommand::$description
+property	SharingHealthCommand::$signature
 property	SharingOwnerCheck::$policy
+property	SharingSupervisor::$actors
+property	SharingSupervisor::$commands
+property	SharingSupervisor::$database
+property	SharingSupervisor::$gateways
+property	SharingSupervisor::$runId
 property	ShellCommand::$dialect
 property	ShellCommand::$outcome
 property	ShellCommand::$parts
@@ -6654,6 +6717,9 @@ property	StringValueData::$type
 property	StringValueData::$value
 property	SubjectReference::$id
 property	SubjectReference::$runNumber
+property	SuperviseSharingCommand::$description
+property	SuperviseSharingCommand::$signature
+property	SuperviseSharingCommand::$stopping
 property	TableChecker::$creations
 property	TableChecker::$entries
 property	TableChecker::$owners

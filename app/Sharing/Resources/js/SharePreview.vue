@@ -6,6 +6,7 @@ import FormErrors from '@kit/FormErrors';
 import PageHeader from '@kit/PageHeader';
 import { formSendingHooks } from '@kit/usePageChanges';
 import { ref } from 'vue';
+import UpdateLiveShareButton from './UpdateLiveShareButton.vue';
 
 /**
  * The owner's preview of sharing one record: select which linked records go with it, read what the gateway provider
@@ -14,10 +15,19 @@ import { ref } from 'vue';
  */
 const props = defineProps<{ data: SharePreviewData }>();
 
-const form = useForm({ selected: props.data.savedPreview?.selectedIds ?? props.data.candidates.filter((candidate) => candidate.shared).map((candidate) => candidate.id) });
+const form = useForm({
+    selected:
+        props.data.savedPreview?.selectedIds ??
+        props.data.candidates
+            .filter((candidate) => candidate.shared)
+            .map((candidate) => candidate.id),
+});
 
 function save(): void {
-    form.post(`/sharing/${encodeURIComponent(props.data.rootReference)}/previews`, { preserveScroll: true, ...formSendingHooks() });
+    form.post(
+        `/sharing/${encodeURIComponent(props.data.rootReference)}/previews`,
+        { preserveScroll: true, ...formSendingHooks() },
+    );
 }
 
 const durations = [
@@ -41,7 +51,10 @@ function confirmTo(url: string): void {
     confirm.previewId = saved.id;
     confirm.previewChecksum = saved.checksum;
     confirm.minutes = minutes.value;
-    confirm.post(url, { headers: { 'Idempotency-Key': crypto.randomUUID() }, preserveScroll: true });
+    confirm.post(url, {
+        headers: { 'Idempotency-Key': crypto.randomUUID() },
+        preserveScroll: true,
+    });
 }
 </script>
 
@@ -49,36 +62,107 @@ function confirmTo(url: string): void {
     <div class="flex flex-col gap-4">
         <PageHeader :title="`Share ${data.rootTitle}`" />
         <section class="flex flex-col gap-2" aria-label="Linked records">
-            <p v-if="data.candidates.length === 0">No linked record can be shared with it.</p>
-            <label v-for="candidate in data.candidates" :key="candidate.id" class="flex items-center gap-2">
-                <input v-model="form.selected" type="checkbox" :value="candidate.id" />
-                <span>{{ candidate.title }}</span>
-                <span class="text-muted">Linked</span>
-                <span v-if="!candidate.shared" class="text-muted">Not shared yet</span>
-            </label>
+            <template v-if="data.candidates.length === 0">
+                <p>No linked record can be shared with it.</p>
+            </template>
+            <template v-for="candidate in data.candidates" :key="candidate.id">
+                <label class="flex items-center gap-2">
+                    <input
+                        v-model="form.selected"
+                        type="checkbox"
+                        :value="candidate.id"
+                    />
+                    <span>{{ candidate.title }}</span>
+                    <span class="text-muted">Linked</span>
+                    <template v-if="!candidate.shared">
+                        <span class="text-muted">Not shared yet</span>
+                    </template>
+                </label>
+            </template>
         </section>
         <section class="flex flex-col gap-1" aria-label="Before you share">
-            <p>The gateway provider can see the public address and everything this share shows.</p>
-            <p>Turning off traffic inspection does not hide the content from the provider.</p>
-            <p>This machine and the share service must keep running for the link to work.</p>
+            <p>
+                The gateway provider can see the public address and everything
+                this share shows.
+            </p>
+            <p>
+                Turning off traffic inspection does not hide the content from
+                the provider.
+            </p>
+            <p>
+                This machine and the share service must keep running for the
+                link to work.
+            </p>
         </section>
-        <p v-if="data.savedPreview">Preview saved; it can be confirmed until {{ data.savedPreview.expiresAt }}.</p>
-        <section v-if="data.savedPreview" class="flex flex-col gap-2" aria-label="Confirm">
-            <label v-if="data.liveShare === null" class="flex items-center gap-2">
-                <span>Share for</span>
-                <select v-model.number="minutes">
-                    <option v-for="duration in durations" :key="duration.minutes" :value="duration.minutes">{{ duration.label }}</option>
-                </select>
-            </label>
-            <div class="flex flex-wrap gap-2">
-                <Button v-if="data.liveShare === null" type="button" :disabled="confirm.processing" @click="confirmTo(`/sharing/${encodeURIComponent(data.rootReference)}/shares`)">Share</Button>
-                <Button v-else type="button" :disabled="confirm.processing" @click="confirmTo(`/sharing/shares/${data.liveShare.id}/scope`)">Update share {{ data.liveShare.number }}</Button>
-                <Button v-for="proposal in data.openProposals" :key="proposal.id" type="button" :disabled="confirm.processing" @click="confirmTo(`/sharing/shares/${proposal.id}/approval`)">Approve proposal {{ proposal.number }}</Button>
-            </div>
-            <FormErrors :errors="confirm.errors" />
-        </section>
+        <template v-if="data.savedPreview">
+            <p>
+                Preview saved; it can be confirmed until
+                {{ data.savedPreview.expiresAt }}.
+            </p>
+        </template>
+        <template v-if="data.savedPreview">
+            <section class="flex flex-col gap-2" aria-label="Confirm">
+                <template v-if="data.liveShare === null">
+                    <label class="flex items-center gap-2">
+                        <span>Share for</span>
+                        <select v-model.number="minutes">
+                            <template
+                                v-for="duration in durations"
+                                :key="duration.minutes"
+                            >
+                                <option :value="duration.minutes">
+                                    {{ duration.label }}
+                                </option>
+                            </template>
+                        </select>
+                    </label>
+                </template>
+                <div class="flex flex-wrap gap-2">
+                    <template v-if="data.liveShare === null">
+                        <Button
+                            type="button"
+                            :disabled="confirm.processing"
+                            @click="
+                                confirmTo(
+                                    `/sharing/${encodeURIComponent(data.rootReference)}/shares`,
+                                )
+                            "
+                            >Share</Button
+                        >
+                    </template>
+                    <template v-else>
+                        <UpdateLiveShareButton
+                            :live-share="data.liveShare"
+                            :processing="confirm.processing"
+                            @confirm-to="confirmTo"
+                        />
+                    </template>
+                    <template
+                        v-for="proposal in data.openProposals"
+                        :key="proposal.id"
+                    >
+                        <Button
+                            type="button"
+                            :disabled="confirm.processing"
+                            @click="
+                                confirmTo(
+                                    `/sharing/shares/${proposal.id}/approval`,
+                                )
+                            "
+                            >Approve proposal {{ proposal.number }}</Button
+                        >
+                    </template>
+                </div>
+                <FormErrors :errors="confirm.errors" />
+            </section>
+        </template>
         <form class="flex gap-2" @submit.prevent="save">
-            <Button type="submit" :pending="form.processing" :disabled="form.processing">Save preview</Button>
+            <Button
+                type="submit"
+                :pending="form.processing"
+                :disabled="form.processing"
+                >Save preview</Button
+            >
             <FormErrors :errors="form.errors" />
         </form>
     </div>

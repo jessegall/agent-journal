@@ -8,6 +8,7 @@ use App\Sharing\Contracts\ProvidesShareGateways;
 use App\Sharing\Contracts\ShareGateway;
 use App\Sharing\Exceptions\ShareGatewayInvalid;
 use App\Sharing\Exceptions\UnknownShareGateway;
+use App\Sharing\Models\ShareGatewayConfiguration;
 use Illuminate\Contracts\Container\Container;
 
 /**
@@ -63,7 +64,21 @@ final class ShareGatewayRegistry
      */
     public function get(string $key): ShareGateway
     {
-        return $this->container->make($this->gatewayClasses[$key] ?? throw UnknownShareGateway::forKey($key));
+        if (! $this->has($key)) {
+            throw UnknownShareGateway::forKey($key);
+        }
+
+        return $this->container->make($this->gatewayClasses[$key]);
+    }
+
+    /**
+     * What the configuration's gateway says is missing before it can open; a read only.
+     *
+     * @throws UnknownShareGateway
+     */
+    public function readinessOf(ShareGatewayConfiguration $configuration): GatewayReadiness
+    {
+        return $this->get($configuration->gateway_key)->readiness($configuration->toConfiguration());
     }
 
     /**

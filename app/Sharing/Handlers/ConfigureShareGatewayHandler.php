@@ -12,6 +12,7 @@ use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Enums\ShareAuditType;
 use App\Sharing\Exceptions\GatewayNotReady;
 use App\Sharing\Exceptions\GatewaySecretRefused;
+use App\Sharing\Exceptions\UnknownShareGateway;
 use App\Sharing\Gateways\Support\GatewaySecrets;
 use App\Sharing\Models\ShareAudit;
 use App\Sharing\Models\ShareGatewayConfiguration;
@@ -40,7 +41,10 @@ final readonly class ConfigureShareGatewayHandler implements CommandHandler
     {
         $owner = $this->actors->actor();
         $this->policy->requireManager($owner);
-        $gateway = $this->gateways->get($command->gatewayKey);
+
+        if (! $this->gateways->has($command->gatewayKey)) {
+            throw UnknownShareGateway::forKey($command->gatewayKey);
+        }
 
         foreach ($command->secretReferences as $reference) {
             if (! $this->secrets->has($reference)) {
@@ -53,7 +57,7 @@ final readonly class ConfigureShareGatewayHandler implements CommandHandler
         $configuration = ShareGatewayConfiguration::configure($settings);
 
         if ($command->makesDefault) {
-            $readiness = $gateway->readiness($configuration->toConfiguration());
+            $readiness = $this->gateways->readinessOf($configuration);
 
             if (! $readiness->isReady()) {
                 throw GatewayNotReady::forDefault($command->gatewayKey, $readiness->problems);

@@ -100,11 +100,13 @@ final readonly class RecordGatewayOutcomeHandler implements CommandHandler
         $endpoint->moveTo(GatewayEndpointState::Closed);
 
         foreach ($shares as $share) {
-            if ($share->state === ShareState::Pending) {
-                $share->failActivation();
-                ShareAudit::recordFor($share, ShareAuditType::ActivationFailed, ActorIdentity::system(), 'gateway_open_failed');
-                $this->events->dispatch(new ShareFailed($share->fact()));
+            if ($share->state !== ShareState::Pending) {
+                continue;
             }
+
+            $share->failActivation();
+            ShareAudit::recordFor($share, ShareAuditType::ActivationFailed, ActorIdentity::system(), 'gateway_open_failed');
+            $this->events->dispatch(new ShareFailed($share->fact()));
         }
     }
 }

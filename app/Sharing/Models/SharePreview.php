@@ -10,6 +10,7 @@ use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Casts\SelectedTargetsCast;
 use App\Sharing\Exceptions\SharePreviewRefused;
+use App\Sharing\Models\Support\BelongsToOneRoot;
 use App\Sharing\Support\ShareCandidates;
 use App\Sharing\Support\ShareSelectedTarget;
 use Carbon\CarbonImmutable;
@@ -42,7 +43,7 @@ use PhpOption\Option;
 #[Fillable(['owner_user_id', 'root_type', 'root_id', 'selection', 'configuration_version', 'checksum', 'expires_at', 'consumed_at'])]
 final class SharePreview extends Model implements ReadableModel
 {
-    use BoundedReads, HasUlids, Linkable;
+    use BelongsToOneRoot, BoundedReads, HasUlids, Linkable;
 
     public const string LINK_TYPE = 'core.share-preview';
 
@@ -159,15 +160,6 @@ final class SharePreview extends Model implements ReadableModel
     protected function ownedBy(Builder $query, string $ownerUserId): void
     {
         $query->where('owner_user_id', $ownerUserId);
-    }
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofRoot(Builder $query, RecordIdentity $root): void
-    {
-        $query->where('root_type', $root->type)->where('root_id', $root->id);
     }
 
     /**

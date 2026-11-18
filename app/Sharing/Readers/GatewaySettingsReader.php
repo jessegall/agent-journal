@@ -33,21 +33,11 @@ final readonly class GatewaySettingsReader implements PageReader
 
     private function revision(ShareGatewayConfiguration $configuration): GatewayRevisionData
     {
-        $settings = $configuration->settings;
         $usable = ! $configuration->isDisabled() && $this->gateways->has($configuration->gateway_key);
 
-        return new GatewayRevisionData(
-            $configuration->id,
-            $configuration->gateway_key,
-            $configuration->configuration_version,
-            $settings->executableVersion,
-            $settings->providerHost,
-            $settings->publicOrigin,
-            $settings->listenerPort,
-            $settings->secretReferences,
-            $configuration->is_default,
-            $configuration->isDisabled(),
-            $usable ? $this->gateways->get($configuration->gateway_key)->readiness($configuration->toConfiguration())->problems : [],
+        return GatewayRevisionData::fromConfiguration(
+            $configuration,
+            $usable ? $this->gateways->readinessOf($configuration)->problems : [],
             ShareGatewayEndpoint::newestRunningOf($configuration)->map(fn (ShareGatewayEndpoint $endpoint) => $endpoint->isHealthy())->getOrElse(null),
             array_map(RootShareData::fromShare(...), Share::unendedOf($configuration->id)),
         );

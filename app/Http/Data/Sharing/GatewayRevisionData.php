@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Sharing;
 
+use App\Sharing\Models\ShareGatewayConfiguration;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -37,4 +38,33 @@ final class GatewayRevisionData extends Data
         #[DataCollectionOf(RootShareData::class)]
         public readonly array $dependentShares,
     ) {}
+
+    /**
+     * @param  list<string>  $readinessProblems
+     * @param  list<RootShareData>  $dependentShares
+     */
+    public static function fromConfiguration(
+        ShareGatewayConfiguration $configuration,
+        array $readinessProblems,
+        bool|null $isHealthy,
+        array $dependentShares,
+    ): self {
+        $settings = $configuration->settings;
+
+        return new self(
+            $configuration->id,
+            $configuration->gateway_key,
+            $configuration->configuration_version,
+            $settings->executableVersion,
+            $settings->providerHost,
+            $settings->publicOrigin,
+            $settings->listenerPort,
+            $settings->secretReferences,
+            $configuration->is_default,
+            $configuration->isDisabled(),
+            $readinessProblems,
+            $isHealthy,
+            $dependentShares,
+        );
+    }
 }

@@ -6,7 +6,6 @@ namespace App\Sharing\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Sharing\ApproveProposalRequest;
-use App\Sharing\Commands\ApproveShareRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 
@@ -17,7 +16,7 @@ final readonly class ApproveShareRequestController
 {
     public function __invoke(ApproveProposalRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
     {
-        $summary = $commands->run(new ApproveShareRequest($request->shareId(), $request->previewId(), $request->previewChecksum(), $request->minutesUntilExpiry(), $request->requestKey()));
+        $summary = $commands->run($request->command());
 
         return $redirect->to("/sharing/shares/{$summary->shareId}", 303);
     }

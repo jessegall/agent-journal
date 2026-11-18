@@ -7,6 +7,7 @@ namespace App\Http\Requests\Sharing;
 use App\Http\Requests\Sharing\Concerns\ReadsConfirmedPreview;
 use App\Http\Requests\Sharing\Concerns\ReadsIdempotencyKey;
 use App\Http\Requests\Sharing\Concerns\ReadsShareId;
+use App\Sharing\Commands\ApproveShareRequest;
 use App\Sharing\Support\ShareDuration;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -26,7 +27,12 @@ final class ApproveProposalRequest extends FormRequest
         return [...$this->confirmedPreviewRules(), ...$this->idempotencyKeyRules(), 'minutes' => ['nullable', 'integer']];
     }
 
-    public function minutesUntilExpiry(): int
+    public function command(): ApproveShareRequest
+    {
+        return new ApproveShareRequest($this->shareId(), $this->previewId(), $this->previewChecksum(), $this->minutesUntilExpiry(), $this->requestKey());
+    }
+
+    private function minutesUntilExpiry(): int
     {
         return $this->integer('minutes', ShareDuration::STANDARD_MINUTES);
     }

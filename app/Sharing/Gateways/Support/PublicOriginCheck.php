@@ -12,16 +12,14 @@ final readonly class PublicOriginCheck
 {
     public function accepts(string $address, string $publicOrigin): bool
     {
-        $parts = parse_url($address);
-        $expected = parse_url($publicOrigin);
+        $host = parse_url($publicOrigin, PHP_URL_HOST);
 
-        return is_array($parts) && is_array($expected)
-            && ($parts['scheme'] ?? null) === 'https'
-            && ($expected['scheme'] ?? null) === 'https'
-            && ($parts['host'] ?? null) === ($expected['host'] ?? false)
-            && in_array($parts['path'] ?? '', ['', '/'], true)
-            && ! isset($parts['port'])
-            && ! isset($parts['query'])
-            && ! isset($parts['user']);
+        if (! is_string($host)) {
+            return false;
+        }
+
+        $origin = "https://{$host}";
+
+        return in_array($publicOrigin, [$origin, "{$origin}/"], true) && in_array($address, [$origin, "{$origin}/"], true);
     }
 }

@@ -14,6 +14,7 @@ use App\Reads\Support\BoundedReads;
 use App\Records\Support\RecordIdentity;
 use App\Sharing\Enums\ShareState;
 use App\Sharing\Exceptions\ShareGatewayUnavailable;
+use App\Sharing\Models\Support\BelongsToOneRoot;
 use App\Sharing\Exceptions\ShareProposalUnavailable;
 use App\Sharing\Exceptions\ShareRetryRefused;
 use App\Sharing\Exceptions\ShareUnavailable;
@@ -65,7 +66,7 @@ use PhpOption\Option;
 #[Hidden(['token_digest', 'token_ciphertext'])]
 final class Share extends Model implements Numbered, ReadableModel
 {
-    use BoundedReads, HasNumber, HasUlids, Linkable;
+    use BelongsToOneRoot, BoundedReads, HasNumber, HasUlids, Linkable;
 
     public const string LINK_TYPE = 'core.share';
 
@@ -198,7 +199,11 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public function gatewayConfiguration(): ShareGatewayConfiguration
     {
-        return ShareGatewayConfiguration::usable($this->share_gateway_configuration_id ?? throw ShareGatewayUnavailable::forProposal($this->id));
+        if ($this->share_gateway_configuration_id === null) {
+            throw ShareGatewayUnavailable::forProposal($this->id);
+        }
+
+        return ShareGatewayConfiguration::usable($this->share_gateway_configuration_id);
     }
 
     /**
@@ -521,15 +526,6 @@ final class Share extends Model implements Numbered, ReadableModel
     public function isGrantedByOneOf(array $userIds): bool
     {
         return $this->owner_user_id !== null && in_array($this->owner_user_id, $userIds, true);
-    }
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function ofRoot(Builder $query, RecordIdentity $root): void
-    {
-        $query->where('root_type', $root->type)->where('root_id', $root->id);
     }
 
     /**
