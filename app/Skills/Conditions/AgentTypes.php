@@ -27,11 +27,13 @@ final readonly class AgentTypes implements SkillCondition
 
     public function evaluate(SkillContext $context): ConditionResult
     {
-        if ($context->profile->snapshot === null) {
+        if ($context->profile->isProfileFree()) {
             return ConditionResult::noMatch('profile-free');
         }
 
-        return in_array($context->profile->snapshot->type, $this->types, true) ? ConditionResult::match('agent-type-listed') : ConditionResult::noMatch('agent-type-not-listed');
+        return $context->profile->hasTypeIn($this->types)
+            ? ConditionResult::match('agent-type-listed')
+            : ConditionResult::noMatch('agent-type-not-listed');
     }
 
     public function toArray(): array

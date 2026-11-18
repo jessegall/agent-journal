@@ -32,7 +32,7 @@ use PhpOption\Option;
 use PhpOption\Some;
 
 /**
- * The stored stack of one agent in one journal session. The agent and session are set only through startFor, never mass assigned.
+ * The stored stack of one agent in one journal session; its agent and session are set only through startFor.
  *
  * @property string $id
  * @property string $agent_id
@@ -40,8 +40,7 @@ use PhpOption\Some;
  * @property int $version
  * @property FrameRecords $frames
  * @property StackStatus $status
- * @property bool $has_ticking_frames derived from the frames on every save; a change to a type's ticking mark needs
- *                                    migrate:fresh in development, since stored rows are never backfilled
+ * @property bool $has_ticking_frames derived from the frames on every save
  * @property CarbonImmutable|null $closed_at
  * @property CarbonImmutable|null $held_at
  * @property Carbon|null $created_at
@@ -68,6 +67,14 @@ final class AgentStackRow extends Model implements ReadableModel
             'closed_at' => 'immutable_datetime',
             'held_at' => 'immutable_datetime',
         ];
+    }
+
+    /**
+     * The agent and session whose stack this is.
+     */
+    public function target(): StackTarget
+    {
+        return new StackTarget($this->agent_id, $this->session_id);
     }
 
     public function startFor(StackTarget $target, FrameRecords $frames, TickingTypes $ticking): void

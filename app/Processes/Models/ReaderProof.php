@@ -50,6 +50,14 @@ final class ReaderProof extends Model implements ReadableModel
     public const null UPDATED_AT = null;
 
     /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['proven_branches' => StoredValuesCast::class.':'.ProvenBranch::class];
+    }
+
+    /**
      * @param  list<ProvenBranch>  $branches
      */
     public static function record(
@@ -67,14 +75,6 @@ final class ReaderProof extends Model implements ReadableModel
             'actor_type' => $prover->type->value,
             'actor_id' => $prover->id,
         ]);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return ['proven_branches' => StoredValuesCast::class.':'.ProvenBranch::class];
     }
 
     protected static function booted(): void

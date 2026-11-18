@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Data\Sharing;
 
 use App\Sharing\Models\ShareGatewayConfiguration;
+use App\Sharing\Support\ShareGatewayRegistry;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -40,14 +41,11 @@ final class GatewayRevisionData extends Data
     ) {}
 
     /**
-     * @param  list<string>  $readinessProblems
-     * @param  list<RootShareData>  $dependentShares
+     * The revision as the owner sees it, its readiness asked of its gateway in the registry.
      */
     public static function fromConfiguration(
         ShareGatewayConfiguration $configuration,
-        array $readinessProblems,
-        bool|null $isHealthy,
-        array $dependentShares,
+        ShareGatewayRegistry $gateways,
     ): self {
         $settings = $configuration->settings;
 
@@ -62,9 +60,9 @@ final class GatewayRevisionData extends Data
             $settings->secretReferences,
             $configuration->is_default,
             $configuration->isDisabled(),
-            $readinessProblems,
-            $isHealthy,
-            $dependentShares,
+            $gateways->readinessProblemsOf($configuration),
+            $configuration->endpointHealth(),
+            array_map(RootShareData::fromShare(...), $configuration->unendedShares()),
         );
     }
 }

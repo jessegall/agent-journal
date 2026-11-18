@@ -6,7 +6,6 @@ namespace App\Assignments\Readers;
 
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\RecordVisibility;
-use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Records\Support\RecordIdentity;
 
 /**
@@ -19,12 +18,10 @@ final readonly class VisibleRecords implements RecordVisibility
 
     public function isVisible(RecordIdentity $record): bool
     {
-        try {
-            $provider = $this->providers->recordProvider($record->type);
-        } catch (AssignmentTypeUnavailable) {
+        if (! $this->providers->hasRecordProvider($record->type)) {
             return false;
         }
 
-        return in_array($record, $provider->visibleRecords([$record]));
+        return in_array($record, $this->providers->recordProvider($record->type)->visibleRecords([$record]));
     }
 }

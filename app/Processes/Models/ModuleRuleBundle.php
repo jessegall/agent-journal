@@ -38,6 +38,14 @@ final class ModuleRuleBundle extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['approved_at' => 'datetime'];
+    }
+
     public static function approve(string $projectKey, RuleBundle $bundle, ActorIdentity $approver): self
     {
         $identity = [
@@ -58,14 +66,6 @@ final class ModuleRuleBundle extends Model implements ReadableModel
         return $this->module === $bundle->module
             && $this->version === $bundle->version
             && $this->digest === $bundle->digest();
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return ['approved_at' => 'datetime'];
     }
 
     /**

@@ -1,0 +1,26 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Actors\Models\Support;
+
+use App\Actors\Support\ActorIdentity;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
+
+/**
+ * A model whose rows name the actor that made them in actor_type and actor_id columns.
+ */
+trait HasActorColumns
+{
+    /**
+     * The rows one actor made.
+     *
+     * @param  Builder<static>  $query
+     */
+    #[Scope]
+    protected function byActor(Builder $query, ActorIdentity $actor): void
+    {
+        $query->where('actor_type', $actor->type->value)->where('actor_id', $actor->id);
+    }
+}

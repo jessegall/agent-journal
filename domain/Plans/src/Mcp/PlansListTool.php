@@ -43,12 +43,12 @@ final class PlansListTool extends JournalReadTool
         return $this->pages->answer(
             $this->name(),
             $arguments,
-            fn (ToolArguments $first): array => [
+            fn (ToolArguments $first) => [
                 'search' => $first->textOr('search', ''),
                 'states' => $first->enumValues('states', PlanState::class),
                 'page' => $first->positiveIntegerOr('page', 1),
             ],
-            fn (array $filters): ListedPage => $this->page(new PlanFilters(
+            fn (array $filters) => $this->page(new PlanFilters(
                 search: $filters['search'],
                 page: $filters['page'],
                 states: array_values(array_map(PlanState::from(...), $filters['states'])),

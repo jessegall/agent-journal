@@ -54,6 +54,14 @@ final class ReaderRevision extends Model implements ReadableModel
     public const null UPDATED_AT = null;
 
     /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['definition' => 'array', 'declaration_revision' => 'integer'];
+    }
+
+    /**
      * A draft reader for the request's operation, written for one declaration revision and its output contract.
      */
     public static function propose(
@@ -102,14 +110,6 @@ final class ReaderRevision extends Model implements ReadableModel
     public function commandRequest(): BelongsTo
     {
         return $this->belongsTo(CommandRequest::class);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return ['definition' => 'array', 'declaration_revision' => 'integer'];
     }
 
     protected static function booted(): void

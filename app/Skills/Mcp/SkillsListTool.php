@@ -33,6 +33,6 @@ final class SkillsListTool extends JournalReadTool
 
     protected function read(ToolArguments $arguments): ToolResult
     {
-        return new ToolResult('ok', ['skills' => array_map(fn (SkillEntry $skill) => ['key' => $skill->key->key, 'name' => $skill->name, 'owner' => $skill->owner, 'source' => $skill->origin->value, 'revision' => $skill->revision, 'digest' => $skill->rendered->digest], $this->skills->all())], []);
+        return ToolResult::ok(['skills' => array_map(fn (SkillEntry $skill) => ['key' => $skill->key->key, 'name' => $skill->name, 'owner' => $skill->owner, 'source' => $skill->origin->value, 'revision' => $skill->revision, 'digest' => $skill->rendered->digest], $this->skills->all())], []);
     }
 }

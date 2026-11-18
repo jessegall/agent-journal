@@ -82,25 +82,15 @@ final readonly class StoredEnabledSettingsGroup implements EnabledSettingsGroup
     }
 
     /**
-     * @param  ChoiceSetting<string>  $setting
+     * @template TValue of string|int
+     *
+     * @param  ChoiceSetting<TValue>  $setting
+     * @return TValue
      *
      * @throws SettingUnavailable
      * @throws SettingStorageInvalid
      */
-    public function stringChoice(ChoiceSetting $setting): string
-    {
-        $this->requireMember($setting);
-
-        return $this->stored->choice($setting);
-    }
-
-    /**
-     * @param  ChoiceSetting<int>  $setting
-     *
-     * @throws SettingUnavailable
-     * @throws SettingStorageInvalid
-     */
-    public function integerChoice(ChoiceSetting $setting): int
+    public function choice(ChoiceSetting $setting): string|int
     {
         $this->requireMember($setting);
 

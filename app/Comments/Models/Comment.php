@@ -187,11 +187,6 @@ final class Comment extends Model implements ReadableModel, Shareable
     }
 
     /**
-     * The comment an author left in one session under one submission key.
-     *
-     * @param  Builder<self>  $query
-     */
-    /**
      * The comments on one record, oldest first by written time and then id.
      *
      * @param  Builder<self>  $query

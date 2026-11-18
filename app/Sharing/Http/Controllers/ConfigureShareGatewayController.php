@@ -6,7 +6,6 @@ namespace App\Sharing\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
 use App\Http\Requests\Sharing\ConfigureShareGatewayRequest;
-use App\Sharing\Commands\ConfigureShareGateway;
 use App\Sharing\Gateways\Support\GatewaySecrets;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
@@ -17,19 +16,14 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class ConfigureShareGatewayController
 {
-    public function __invoke(ConfigureShareGatewayRequest $request, GatewaySecrets $secrets, CommandBus $commands, Redirector $redirect): RedirectResponse
-    {
+    public function __invoke(
+        ConfigureShareGatewayRequest $request,
+        GatewaySecrets $secrets,
+        CommandBus $commands,
+        Redirector $redirect,
+    ): RedirectResponse {
         $request->storeTypedSecrets($secrets);
-        $commands->run(new ConfigureShareGateway(
-            $request->gatewayKey(),
-            $request->executableVersion(),
-            $request->providerHost(),
-            $request->publicOrigin(),
-            $request->listenerPort(),
-            $request->secretReferences(),
-            $request->makesDefault(),
-            $request->requestKey(),
-        ));
+        $commands->run($request->command());
 
         return $redirect->back(303);
     }

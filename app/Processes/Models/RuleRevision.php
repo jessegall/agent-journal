@@ -72,6 +72,21 @@ final class RuleRevision extends Model implements ReadableModel
     public const null UPDATED_AT = null;
 
     /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'scope' => RuleScopeCast::class,
+            'revision' => 'integer',
+            'payload' => StoredValueCast::class.':'.CommandRule::class,
+            'script_bindings' => StoredValuesCast::class.':'.ScriptBinding::class,
+            'reader_approvals' => StoredValuesCast::class.':'.ReaderApproval::class,
+            'approved_at' => 'datetime',
+        ];
+    }
+
+    /**
      * Writes the approved revision of a proposal's revision as the rule's next revision in its scope.
      *
      * @param  list<ReaderApproval>  $readers  one for a rule with a verification contract, none otherwise
@@ -121,21 +136,6 @@ final class RuleRevision extends Model implements ReadableModel
         return $this->project_key === $rule->project_key
             && $this->scope->isSameOwner($rule->scope)
             && $this->rule_id === $rule->rule_id;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'scope' => RuleScopeCast::class,
-            'revision' => 'integer',
-            'payload' => StoredValueCast::class.':'.CommandRule::class,
-            'script_bindings' => StoredValuesCast::class.':'.ScriptBinding::class,
-            'reader_approvals' => StoredValuesCast::class.':'.ReaderApproval::class,
-            'approved_at' => 'datetime',
-        ];
     }
 
     protected static function booted(): void

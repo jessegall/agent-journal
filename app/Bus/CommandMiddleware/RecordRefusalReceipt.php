@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Bus\CommandMiddleware;
 
-use App\Actors\Exceptions\ActorContextMissing;
 use App\Bus\Contracts\AnswersFromReceipt;
 use App\Bus\Contracts\CodedRefusal;
 use App\Bus\Contracts\CommandMiddleware;
@@ -37,7 +36,7 @@ final readonly class RecordRefusalReceipt implements CommandMiddleware
             } catch (Throwable $failure) {
                 if ($key !== null && $this->isFirstRefusal($failure)) {
                     $code = $failure instanceof CodedRefusal ? $failure->refusalCode() : RefusalCode::StateBlocked;
-                    $caller = $this->callers->of($call->actor() ?? throw ActorContextMissing::forRequest());
+                    $caller = $this->callers->of($call->actor());
                     CommandReceipt::recordRefusal($caller, $key, $call->command(), $this->registry->retentionOf($call->name()), $code, $failure->getMessage());
                 }
 

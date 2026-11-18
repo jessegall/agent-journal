@@ -17,14 +17,16 @@ final readonly class GuardShareRequest
 {
     private const array METHODS = ['GET', 'HEAD'];
 
+    public function __construct(private SharedPageResponses $responses) {}
+
     public function handle(Request $request, Closure $next): Response
     {
         if (! in_array($request->getMethod(), self::METHODS, true)) {
-            return SharedPageResponses::refused(405);
+            return $this->responses->refused(405);
         }
 
         if ($request->headers->has('Upgrade')) {
-            return SharedPageResponses::refused(400);
+            return $this->responses->refused(400);
         }
 
         $request->cookies->replace([]);

@@ -28,6 +28,14 @@ final class ShareCandidateData extends Data
      */
     public static function fromCandidate(ShareLinkedCandidate $candidate, array $approvedLinkIds): self
     {
-        return new self($candidate->card->record->type, $candidate->card->record->id, $candidate->card->title, $candidate->card->publicationVersion, in_array($candidate->linkId, $approvedLinkIds, true));
+        $card = $candidate->card;
+
+        return new self(
+            $card->record->type,
+            $card->record->id,
+            $card->title,
+            $card->publicationVersion,
+            $candidate->isApprovedAmong($approvedLinkIds),
+        );
     }
 }

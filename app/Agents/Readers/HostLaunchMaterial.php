@@ -22,7 +22,7 @@ final class HostLaunchMaterial implements LaunchMaterialReader
 
     public function keep(string $requestId, LaunchedAgent $launched): void
     {
-        $this->materials[$requestId] = new LaunchMaterial($launched->session->id, $launched->token, $launched->settings);
+        $this->materials[$requestId] = $launched->material();
     }
 
     public function material(string $requestId): LaunchMaterial

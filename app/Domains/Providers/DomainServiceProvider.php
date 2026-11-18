@@ -44,10 +44,10 @@ class DomainServiceProvider extends ServiceProvider
 
         $this->app->instance(DomainRegistry::class, $registry);
         $this->app->singleton(CommandRegistry::class, fn () => $registry->commandDeclarations(CoreCommands::owner()));
-        $this->app->singleton(McpCatalogue::class, fn (): McpCatalogue => $this->mcpCatalogue($registry));
+        $this->app->singleton(McpCatalogue::class, fn () => $this->mcpCatalogue($registry));
         $this->app->singleton(CommandRuleRegistry::class, fn (): CommandRuleRegistry => $registry->commandRules(new CoreRules()->all()));
-        $this->app->singleton(SkillRegistry::class, fn (): SkillRegistry => SkillRegistry::of($registry->skillDeclarations(CoreSkills::owner())));
-        $this->app->singleton(ConditionRegistry::class, fn (): ConditionRegistry => ConditionRegistry::of($registry->skillConditionDeclarations()));
+        $this->app->singleton(SkillRegistry::class, fn () => SkillRegistry::of($registry->skillDeclarations(CoreSkills::owner())));
+        $this->app->singleton(ConditionRegistry::class, fn () => ConditionRegistry::of($registry->skillConditionDeclarations()));
         $this->app->singleton(DomainSwitches::class, fn () => $registry->domainSwitches());
         $this->app->singleton(SettingRegistry::class, fn () => $this->settingRegistry($registry, $this->app->make(DomainSwitches::class)));
         $this->app->scoped(DomainAvailability::class, SettingsDomainAvailability::class);

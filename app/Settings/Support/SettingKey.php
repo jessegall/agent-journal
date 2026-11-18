@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Settings\Support;
 
 use App\Settings\Exceptions\SettingDeclarationInvalid;
+use App\Settings\Exceptions\SettingReferenceInvalid;
 
 /**
  * The one check of a setting's or group's key and label: a key is lowercase letters, digits and underscores, starts
@@ -31,6 +32,22 @@ final class SettingKey
 
         if (! self::labelFits($label)) {
             throw SettingDeclarationInvalid::labelTooLong($key, self::LABEL_CHARACTERS);
+        }
+    }
+
+    /**
+     * Refuses an address of a setting or group whose owner is empty or whose key is not a valid key.
+     *
+     * @throws SettingReferenceInvalid
+     */
+    public static function requireAddress(string $owner, string $key): void
+    {
+        if (trim($owner) === '') {
+            throw SettingReferenceInvalid::emptyOwner();
+        }
+
+        if (! self::isValidKey($key)) {
+            throw SettingReferenceInvalid::badKey($owner);
         }
     }
 

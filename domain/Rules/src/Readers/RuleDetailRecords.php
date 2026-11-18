@@ -25,7 +25,7 @@ final readonly class RuleDetailRecords implements RuleDetailsReader
         $rule = Rule::query()->find($ruleId) ?? throw RuleMissing::withId($ruleId);
         $replaced = $rule->replaces_rule_id === null ? null : Rule::query()->find($rule->replaces_rule_id);
 
-        return new RuleDetails($rule->id, $rule->number, $rule->text, $rule->state, $rule->reason, $rule->proposer_type, $rule->proposer_id, $replaced?->number);
+        return $rule->details($replaced?->number);
     }
 
     public function activeCount(): int

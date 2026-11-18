@@ -37,4 +37,12 @@ final readonly class LaunchedAgent
 
         return new OpenedRuntime($this->session->id, $runtime->id, $this->firstRequest?->id);
     }
+
+    /**
+     * What the host needs to start this launch: the session, its token and its isolated settings.
+     */
+    public function material(): LaunchMaterial
+    {
+        return new LaunchMaterial($this->session->id, $this->token, $this->settings);
+    }
 }

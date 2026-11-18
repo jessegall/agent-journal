@@ -13,5 +13,11 @@ const canShare = computed(() => page.props.canShare === true);
 </script>
 
 <template>
-    <Button v-if="canShare" variant="bordered" :href="`/sharing/${encodeURIComponent(props.reference)}`">Share</Button>
+    <template v-if="canShare">
+        <Button
+            variant="bordered"
+            :href="`/sharing/${encodeURIComponent(props.reference)}`"
+            >Share</Button
+        >
+    </template>
 </template>

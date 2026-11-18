@@ -50,6 +50,19 @@ final class EvidenceRead extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'source' => EvidenceSource::class,
+            'first_byte' => 'integer',
+            'end_byte' => 'integer',
+            'read_at' => 'datetime',
+        ];
+    }
+
     public static function record(ProcessRun $run, ActorIdentity $reader, EvidenceRange $range): self
     {
         return self::query()->create([
@@ -62,19 +75,6 @@ final class EvidenceRead extends Model implements ReadableModel
             'first_byte' => $range->firstByte,
             'end_byte' => $range->endByte,
         ]);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'source' => EvidenceSource::class,
-            'first_byte' => 'integer',
-            'end_byte' => 'integer',
-            'read_at' => 'datetime',
-        ];
     }
 
     /**

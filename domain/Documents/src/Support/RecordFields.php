@@ -25,15 +25,7 @@ final class RecordFields
      */
     public static function settlementReason(string $reason): string
     {
-        if (trim($reason) === '') {
-            throw ContentMissing::field('reason');
-        }
-
-        if (mb_strlen($reason) > self::SETTLEMENT_REASON_CHARACTERS) {
-            throw ContentTooLarge::field('reason', self::SETTLEMENT_REASON_CHARACTERS.' characters');
-        }
-
-        return trim($reason);
+        return self::text('reason', $reason, self::SETTLEMENT_REASON_CHARACTERS);
     }
 
     /**
@@ -57,14 +49,24 @@ final class RecordFields
      */
     private static function line(string $field, string $value, int $maximum): string
     {
+        if (str_contains(trim($value), "\n") || str_contains(trim($value), "\r")) {
+            throw ContentTooLarge::lineBreak($field);
+        }
+
+        return self::text($field, $value, $maximum);
+    }
+
+    /**
+     * The trimmed text: not empty and at most the maximum number of characters long.
+     *
+     * @throws ContentMissing|ContentTooLarge
+     */
+    private static function text(string $field, string $value, int $maximum): string
+    {
         $value = trim($value);
 
         if ($value === '') {
             throw ContentMissing::field($field);
-        }
-
-        if (str_contains($value, "\n") || str_contains($value, "\r")) {
-            throw ContentTooLarge::lineBreak($field);
         }
 
         if (mb_strlen($value) > $maximum) {

@@ -65,6 +65,19 @@ final class RuleProposal extends Model implements ReadableModel
     use HasUlids, Linkable;
 
     /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'scope' => RuleScopeCast::class,
+            'state' => ProposalState::class,
+            'replaces' => StoredValuesCast::class.':'.RuleReference::class,
+            'current_revision' => 'integer',
+        ];
+    }
+
+    /**
      * The proposal this author's request id opened in the project: the same one again when the payload is the same,
      * a new one with its first revision when the request id is new.
      *
@@ -181,19 +194,6 @@ final class RuleProposal extends Model implements ReadableModel
     public function revisions(): HasMany
     {
         return $this->hasMany(RuleProposalRevision::class);
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'scope' => RuleScopeCast::class,
-            'state' => ProposalState::class,
-            'replaces' => StoredValuesCast::class.':'.RuleReference::class,
-            'current_revision' => 'integer',
-        ];
     }
 
     /**

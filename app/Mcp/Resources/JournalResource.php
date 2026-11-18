@@ -33,7 +33,7 @@ abstract class JournalResource extends Resource
 
     final public function handle(Request $request, McpCall $call): Response
     {
-        return $call->answerResource($this->uri(), fn (): Response => $this->read($request));
+        return $call->answerResource($this->uri(), fn () => $this->read($request));
     }
 
     abstract protected function read(Request $request): Response;

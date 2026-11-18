@@ -22,7 +22,9 @@ const number = props.data.label.replace('report ', '');
         <RecordStatus :data="data" editing="free" :settle-action="`/documents/reports/${number}/settle`" />
         <DockToSession type="report" :number="number" :sessions="data.sessions" />
         <LinksPanel :source="data.label" :links="data.links" />
-        <p v-if="data.publiclyShared" class="text-text-3">This report is shared publicly: a comment you leave here will be public.</p>
+        <template v-if="data.publiclyShared">
+            <p class="text-text-3">This report is shared publicly: a comment you leave here will be public.</p>
+        </template>
         <CommentsPanel :comments="data.comments" :target="data.label" version="1" />
     </div>
 </template>

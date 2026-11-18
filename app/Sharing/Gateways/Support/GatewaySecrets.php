@@ -38,28 +38,37 @@ final readonly class GatewaySecrets
      */
     public function store(string $reference, string $secret): void
     {
-        if (! self::isReference($reference)) {
-            throw GatewaySecretRefused::forReference($reference);
-        }
+        $path = $this->path($reference);
 
         if (! is_dir($this->folder)) {
             mkdir($this->folder, 0700, true);
         }
 
-        file_put_contents($this->path($reference), $secret, LOCK_EX);
-        chmod($this->path($reference), 0600);
+        file_put_contents($path, $secret, LOCK_EX);
+        chmod($path, 0600);
     }
 
     /**
      * The secret's value; read only after has() said it is there.
+     *
+     * @throws GatewaySecretRefused when the reference names no secret
      */
     public function read(string $reference): string
     {
         return trim((string) file_get_contents($this->path($reference)));
     }
 
+    /**
+     * Where the secret of a reference is kept; a text that cannot name a secret never becomes a path.
+     *
+     * @throws GatewaySecretRefused when the reference names no secret
+     */
     private function path(string $reference): string
     {
+        if (! self::isReference($reference)) {
+            throw GatewaySecretRefused::forReference($reference);
+        }
+
         return "{$this->folder}/{$reference}";
     }
 }

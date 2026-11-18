@@ -39,7 +39,7 @@ final readonly class LaunchSessions
     {
         $settings = $this->settingsFor($selection);
 
-        return $this->transaction->run(fn (): LaunchedAgent => $this->start($agent, $selection, $requestId, $parent, $settings, $intent));
+        return $this->transaction->run(fn () => $this->start($agent, $selection, $requestId, $parent, $settings, $intent));
     }
 
     /**

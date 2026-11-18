@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Domain\Plans\Http\Controllers;
 
 use App\Bus\Contracts\CommandBus;
-use Domain\Plans\Http\Requests\FinishPlanRequest;
+use Domain\Plans\Http\Requests\EndPlanRequest;
 use Illuminate\Http\JsonResponse;
 
 /**
- * Runs FinishPlan for a signed agent call and answers the plan id.
+ * Runs FinishPlan or CancelPlan for a signed agent call, as the route's end type says, and answers the plan id.
  */
-final readonly class FinishPlanController
+final readonly class EndPlanController
 {
-    public function __invoke(FinishPlanRequest $request, CommandBus $commands): JsonResponse
+    public function __invoke(EndPlanRequest $request, CommandBus $commands): JsonResponse
     {
         $command = $request->command();
         $commands->run($command);

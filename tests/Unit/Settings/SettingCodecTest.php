@@ -60,11 +60,11 @@ final class SettingCodecTest extends TestCase
         }
 
         foreach (['short', 'long'] as $style) {
-            $this->assertSame($style, $this->codec->decode('Reviews', $settings->summaryStyle, $this->codec->encodeChoice('Reviews', $settings->summaryStyle, $style)));
+            $this->assertSame($style, $this->codec->decode('Reviews', $settings->summaryStyle, $this->codec->encodeOption('Reviews', $settings->summaryStyle, $style)));
         }
 
         foreach ([0, 1] as $priority) {
-            $this->assertSame($priority, $this->codec->decode('Reviews', $settings->priority, $this->codec->encodeChoice('Reviews', $settings->priority, $priority)));
+            $this->assertSame($priority, $this->codec->decode('Reviews', $settings->priority, $this->codec->encodeOption('Reviews', $settings->priority, $priority)));
         }
 
         foreach (ReviewMode::cases() as $mode) {
@@ -80,8 +80,8 @@ final class SettingCodecTest extends TestCase
     {
         $setting = ChoiceSetting::make('code', 'Code', '01', [Choice::make('01', 'Zero one'), Choice::make('1', 'One')]);
 
-        $this->assertSame('01', $this->codec->decode('Reviews', $setting, $this->codec->encodeChoice('Reviews', $setting, '01')));
-        $this->assertSame('1', $this->codec->decode('Reviews', $setting, $this->codec->encodeChoice('Reviews', $setting, '1')));
+        $this->assertSame('01', $this->codec->decode('Reviews', $setting, $this->codec->encodeOption('Reviews', $setting, '01')));
+        $this->assertSame('1', $this->codec->decode('Reviews', $setting, $this->codec->encodeOption('Reviews', $setting, '1')));
     }
 
     public function test_an_int_backed_enum_is_stored_as_its_number_and_read_as_its_case(): void
@@ -149,8 +149,8 @@ final class SettingCodecTest extends TestCase
             'a decimal past its scale' => [fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeDecimal('Reviews', $settings->weight, Decimal::parse('0.501')), 'weight'],
             'a decimal past its digits' => [fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeDecimal('Reviews', $settings->weight, Decimal::parse('1000')), 'weight'],
             'text shorter than allowed' => [fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeString('Reviews', $settings->title, ''), 'title'],
-            'a choice not among the options' => [fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeChoice('Reviews', $settings->priority, 2), 'priority'],
-            'a choice of the other type' => [fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeChoice('Reviews', $settings->priority, '1'), 'priority'],
+            'a choice not among the options' => [fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeOption('Reviews', $settings->priority, 2), 'priority'],
+            'a choice of the other type' => [fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeOption('Reviews', $settings->priority, '1'), 'priority'],
             'a case of another enum' => [fn (SettingCodec $codec, ReviewSettings $settings) => $codec->encodeEnum('Reviews', $settings->reviewLevel, ReviewMode::Quick), 'review_level'],
         ];
     }

@@ -30,6 +30,10 @@ final readonly class HeldPlansOverview implements OverviewContribution
         $held = $this->plans->assignedToCaller(new AssignedPlanFilters(states: $states, page: new NumberedPage(1, 1)))->total;
         $stateNames = array_map(fn (PlanState $state): string => $state->value, $states);
 
-        return new OverviewSection('Plans you hold', ['held' => $held], new NextAction('plans_assigned', ['states' => $stateNames]));
+        return OverviewSection::from([
+            'title' => 'Plans you hold',
+            'counts' => ['held' => $held],
+            'nextAction' => new NextAction('plans_assigned', ['states' => $stateNames]),
+        ]);
     }
 }

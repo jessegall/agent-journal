@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Bus\CommandMiddleware;
 
 use App\Actors\Enums\ActorType;
-use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Exceptions\SystemNotAllowed;
 use App\Bus\Contracts\CommandMiddleware;
 use App\Bus\Exceptions\EngineNotAllowed;
@@ -24,7 +23,7 @@ final readonly class CheckActor implements CommandMiddleware
 
     public function handle(CommandCall $call, Closure $next): mixed
     {
-        $actor = $call->actor() ?? throw ActorContextMissing::forRequest();
+        $actor = $call->actor();
         $required = $this->registry->requiredActor($call->name());
 
         if ($actor->type === ActorType::Engine && ! $this->registry->allowsEngine($call->name())) {

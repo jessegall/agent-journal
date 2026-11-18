@@ -26,6 +26,10 @@ final class ProposalListRequest extends FormRequest
      */
     public function states(): array
     {
-        return $this->filled('state') ? [ProposalState::from($this->string('state')->toString())] : ProposalState::cases();
+        if (! $this->filled('state')) {
+            return ProposalState::cases();
+        }
+
+        return [ProposalState::from($this->string('state')->toString())];
     }
 }

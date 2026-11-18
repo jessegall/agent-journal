@@ -42,6 +42,18 @@ final class RuleProposalRevision extends Model implements ReadableModel
 
     public const null UPDATED_AT = null;
 
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'revision' => 'integer',
+            'payload' => StoredValueCast::class.':'.CommandRule::class,
+            'examples' => StoredValuesCast::class.':'.RuleExample::class,
+        ];
+    }
+
     public function proposedRule(): ProposedRule
     {
         return new ProposedRule($this->payload, $this->evidence, $this->examples);
@@ -53,18 +65,6 @@ final class RuleProposalRevision extends Model implements ReadableModel
     public function proposal(): BelongsTo
     {
         return $this->belongsTo(RuleProposal::class, 'rule_proposal_id');
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'revision' => 'integer',
-            'payload' => StoredValueCast::class.':'.CommandRule::class,
-            'examples' => StoredValuesCast::class.':'.RuleExample::class,
-        ];
     }
 
     protected static function booted(): void

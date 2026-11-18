@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Processes\Models;
 
 use App\Actors\Enums\ActorType;
+use App\Actors\Models\Support\HasActorColumns;
 use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Processes\Enums\EvidenceSource;
@@ -62,7 +63,7 @@ use Illuminate\Support\Carbon;
 final class CommandRequest extends Model implements ReadableModel
 {
     use BoundedReads;
-    use HasUlids, Linkable;
+    use HasActorColumns, HasUlids, Linkable;
 
     public const int EXCERPT_LENGTH = 200;
 
@@ -283,15 +284,6 @@ final class CommandRequest extends Model implements ReadableModel
     protected function ofProject(Builder $query, string $projectKey): void
     {
         $query->where('project_key', $projectKey);
-    }
-
-    /**
-     * @param  Builder<self>  $query
-     */
-    #[Scope]
-    protected function openedBy(Builder $query, ActorIdentity $actor): void
-    {
-        $query->where('actor_type', $actor->type->value)->where('actor_id', $actor->id);
     }
 
     /**

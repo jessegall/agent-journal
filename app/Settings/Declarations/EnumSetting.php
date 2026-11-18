@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace App\Settings\Declarations;
 
+use App\Settings\Contracts\CatalogueConstraints;
+use App\Settings\Contracts\CatalogueValue;
 use App\Settings\Contracts\ChoiceLabel;
-use App\Settings\Contracts\Setting;
+use App\Settings\Contracts\OptionSetting;
 use App\Settings\Enums\SettingType;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Support\ChoiceOptions;
 use App\Settings\Support\SettingKey;
 use App\Settings\Values\Choice;
+use App\Settings\Values\Decimal;
 use BackedEnum;
 use Illuminate\Support\Str;
 use ReflectionEnum;
+use Spatie\LaravelData\Optional;
 
 /**
  * A setting that holds one case of a backed enum; its options are the cases in order, labelled by the enum when it
@@ -21,7 +25,7 @@ use ReflectionEnum;
  *
  * @template TEnum of BackedEnum
  */
-final readonly class EnumSetting implements Setting
+final readonly class EnumSetting implements OptionSetting
 {
     /**
      * @param  class-string<TEnum>  $enum
@@ -111,5 +115,20 @@ final readonly class EnumSetting implements Setting
     private static function choiceOf(BackedEnum $case): Choice
     {
         return Choice::make($case->value, $case instanceof ChoiceLabel ? $case->label() : Str::headline($case->name));
+    }
+
+    public function defaultValue(): BackedEnum
+    {
+        return $this->default;
+    }
+
+    public function catalogueValue(string|bool|int|Decimal|BackedEnum $value): CatalogueValue
+    {
+        return ChoiceOptions::valueData($value instanceof BackedEnum ? $value->value : $value);
+    }
+
+    public function catalogueConstraints(): CatalogueConstraints|Optional
+    {
+        return ChoiceOptions::constraintsData($this->options());
     }
 }

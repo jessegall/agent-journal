@@ -86,7 +86,7 @@ final class EngineLoopTest extends TestCase
         $this->assertSame([1000, 1000, 1000], array_map(fn ($event) => $event->sincePrevious->milliseconds(), $listener->heard));
         $this->assertSame(3, $this->watchdog->armings);
         $this->assertFalse($this->watchdog->armed);
-        $this->assertFalse($this->app->make(EngineLock::class)->owns());
+        $this->assertFalse($this->app->make(EngineLock::class)->isHeld());
     }
 
     public function test_a_lost_lock_ends_the_engine_with_a_failing_exit_code_before_the_next_pass(): void

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Bus\Support;
 
+use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\Command;
 use App\Bus\Exceptions\CommandReplacedWithOtherClass;
@@ -74,9 +75,14 @@ final readonly class CommandCall
         return $this->repeatableRead;
     }
 
-    public function actor(): ActorContext|null
+    /**
+     * The actor the command runs for.
+     *
+     * @throws ActorContextMissing for a command run with no actor
+     */
+    public function actor(): ActorContext
     {
-        return $this->actor;
+        return $this->actor ?? throw ActorContextMissing::forRequest();
     }
 
     /**

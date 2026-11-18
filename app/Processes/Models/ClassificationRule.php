@@ -42,6 +42,18 @@ final class ClassificationRule extends Model implements ReadableModel
     use HasUlids, Linkable;
 
     /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'scope' => RuleScopeCast::class,
+            'active_revision' => 'integer',
+            'state' => ClassificationState::class,
+        ];
+    }
+
+    /**
      * The rule a revision belongs to, or a new rule with no active revision yet that its first activation saves.
      */
     public static function forRevision(RuleRevision $revision): self
@@ -106,18 +118,6 @@ final class ClassificationRule extends Model implements ReadableModel
     public function activeRevision(): BelongsTo
     {
         return $this->belongsTo(RuleRevision::class, 'active_revision_id');
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'scope' => RuleScopeCast::class,
-            'active_revision' => 'integer',
-            'state' => ClassificationState::class,
-        ];
     }
 
     private function point(RuleRevision $revision, string $reason): void

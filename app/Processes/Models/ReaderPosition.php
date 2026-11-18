@@ -33,6 +33,14 @@ final class ReaderPosition extends Model implements ReadableModel
     use HasUlids, Linkable;
 
     /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['checkpoint' => 'array'];
+    }
+
+    /**
      * The position of a reader in a part, started empty the first time.
      */
     public static function of(PartRun $part, ReaderRevision $revision): self
@@ -52,13 +60,5 @@ final class ReaderPosition extends Model implements ReadableModel
     {
         $this->checkpoint = $checkpoint->toArray();
         $this->save();
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return ['checkpoint' => 'array'];
     }
 }
