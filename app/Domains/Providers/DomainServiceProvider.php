@@ -8,11 +8,13 @@ use App\Bus\Support\CommandRegistry;
 use App\Contracts\DomainAvailability;
 use App\CoreApi;
 use App\CoreCommands;
+use App\CoreMcpTools;
 use App\Domains\Support\DomainRegistry;
 use App\Domains\Support\DomainSwitches;
 use App\Domains\Support\Exports as ExportsCheck;
 use App\Domains\Support\Psr4ClassNames;
 use App\Domains\Support\SettingsDomainAvailability;
+use App\Mcp\Support\McpCatalogue;
 use App\Settings\Support\CoreSettings;
 use App\Settings\Support\EmptySettingsDefinition;
 use App\Settings\Support\SettingRegistry;
@@ -35,6 +37,7 @@ class DomainServiceProvider extends ServiceProvider
 
         $this->app->instance(DomainRegistry::class, $registry);
         $this->app->singleton(CommandRegistry::class, fn () => $registry->commandDeclarations(CoreCommands::owner()));
+        $this->app->singleton(McpCatalogue::class, fn (): McpCatalogue => $this->mcpCatalogue($registry));
         $this->app->singleton(DomainSwitches::class, fn () => $registry->domainSwitches());
         $this->app->singleton(SettingRegistry::class, fn () => $this->settingRegistry($registry, $this->app->make(DomainSwitches::class)));
         $this->app->scoped(DomainAvailability::class, SettingsDomainAvailability::class);
@@ -44,10 +47,10 @@ class DomainServiceProvider extends ServiceProvider
     }
 
     /**
-     * Asking for the command and settings registries here makes a declaration the application cannot start with fail
-     * the boot.
+     * Asking for the command and settings registries and the MCP catalogue here makes a declaration the application
+     * cannot start with fail the boot.
      */
-    public function boot(DomainRegistry $registry, CommandRegistry $commands, SettingRegistry $settings): void
+    public function boot(DomainRegistry $registry, CommandRegistry $commands, SettingRegistry $settings, McpCatalogue $mcp): void
     {
         foreach ($registry->all() as $entry) {
             $entry->boot($this->app);
@@ -60,6 +63,18 @@ class DomainServiceProvider extends ServiceProvider
     protected function domainClasses(): array
     {
         return require $this->app->basePath('bootstrap/domains.php');
+    }
+
+    /**
+     * Core's MCP tools and resources first, then each domain's in bootstrap/domains.php order.
+     */
+    private function mcpCatalogue(DomainRegistry $registry): McpCatalogue
+    {
+        $catalogue = new McpCatalogue;
+        CoreMcpTools::registerIn($catalogue);
+        $registry->registerMcpToolsIn($catalogue);
+
+        return $catalogue;
     }
 
     private function settingRegistry(DomainRegistry $registry, DomainSwitches $switches): SettingRegistry

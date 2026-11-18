@@ -12,6 +12,7 @@ use App\Domains\Exceptions\DomainCycle;
 use App\Domains\Exceptions\DomainListedTwice;
 use App\Domains\Exceptions\DomainNotFound;
 use App\Domains\Exceptions\RequiredDomainMissing;
+use App\Mcp\Contracts\McpRegistration;
 use App\Settings\Declarations\ToggleGroup;
 use App\Settings\Exceptions\SettingDeclarationInvalid;
 use App\Settings\Support\CoreSettings;
@@ -107,6 +108,16 @@ final readonly class DomainRegistry
     public function commandDeclarations(CommandOwner $core): CommandRegistry
     {
         return CommandRegistry::from([$core, ...array_map(fn (DomainEntry $entry) => $entry->commandOwner(), $this->all())]);
+    }
+
+    /**
+     * Adds every domain's MCP tools and resources to the registration, in bootstrap/domains.php order.
+     */
+    public function registerMcpToolsIn(McpRegistration $registration): void
+    {
+        foreach ($this->all() as $entry) {
+            $entry->registerMcpToolsIn($registration);
+        }
     }
 
     /**

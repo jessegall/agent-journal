@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Mcp\Servers;
 
+use App\Mcp\Support\McpCatalogue;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Attributes\Version;
+use Laravel\Mcp\Server\Contracts\Transport;
 
 /**
- * The journal's one MCP server: tools and resources only, both with a list that never changes during a connection.
+ * The journal's one MCP server: tools and resources only, both with a list that never changes during a connection,
+ * taken from the catalogue Core and the domains fill.
  */
 #[Name('journal')]
 #[Version('1.0.0')]
@@ -22,5 +25,21 @@ final class JournalServer extends Server
         self::CAPABILITY_RESOURCES => ['listChanged' => false],
     ];
 
+    /**
+     * Twenty tool definitions keep one tools/list page under 16 KiB, so a client may not ask for more.
+     */
+    public int $maxPaginationLength = 20;
+
     public int $defaultPaginationLength = 20;
+
+    public function __construct(Transport $transport, private readonly McpCatalogue $catalogue)
+    {
+        parent::__construct($transport);
+    }
+
+    protected function boot(): void
+    {
+        $this->tools = $this->catalogue->toolClasses();
+        $this->resources = $this->catalogue->resourceClasses();
+    }
 }

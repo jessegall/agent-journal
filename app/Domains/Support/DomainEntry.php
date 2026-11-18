@@ -14,12 +14,14 @@ use App\Contracts\Event;
 use App\Domains\Contracts\ProvidesAssignables;
 use App\Domains\Contracts\ProvidesAssignees;
 use App\Domains\Contracts\ProvidesLinkRecords;
+use App\Domains\Contracts\ProvidesMcpTools;
 use App\Domains\Contracts\ProvidesStates;
 use App\Domains\Exceptions\DomainRequiresItself;
 use App\Domains\Exceptions\NotADomain;
 use App\Domains\Exceptions\RequiredDomainTwice;
 use App\Domains\Support\Exports as ExportsCheck;
 use App\Exports\Support\Exports;
+use App\Mcp\Contracts\McpRegistration;
 use App\Numbers\Contracts\ProvidesNumberedModels;
 use App\Numbers\Support\NumberedModel;
 use App\Records\Contracts\RecordProvider;
@@ -264,6 +266,24 @@ final readonly class DomainEntry
     public function assignables(): array
     {
         return $this->domain instanceof ProvidesAssignables ? $this->domain->assignables() : [];
+    }
+
+    /**
+     * Adds this domain's MCP tools and resources to the registration; none without ProvidesMcpTools.
+     */
+    public function registerMcpToolsIn(McpRegistration $registration): void
+    {
+        if (! $this->domain instanceof ProvidesMcpTools) {
+            return;
+        }
+
+        foreach ($this->domain->mcpTools() as $tool) {
+            $registration->registerTool($tool);
+        }
+
+        foreach ($this->domain->mcpResources() as $resource) {
+            $registration->registerResource($resource);
+        }
     }
 
     /**
