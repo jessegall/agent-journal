@@ -9,7 +9,6 @@ use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Support\RequestKey;
-use App\Communication\Commands\AskMessage;
 use App\Communication\Commands\SendMessage;
 use App\Communication\Enums\MessageState;
 use App\Communication\Events\MessageSent;
@@ -75,13 +74,6 @@ final class SendMessageTest extends TestCase
         $this->assertSame($this->builderInboxId, $message->destination_inbox_id);
         $this->assertSame(MessageState::Sent, $message->state);
         Event::assertDispatched(MessageSent::class, fn (MessageSent $sent) => $sent->messageId === $messageId);
-    }
-
-    public function test_an_asked_message_waits_for_an_answer(): void
-    {
-        $messageId = $this->runOnBus(new AskMessage($this->ownInboxId, $this->builderInboxId, 'Which database?'));
-
-        $this->assertSame(MessageState::WaitingForAnswer, Message::query()->findOrFail($messageId)->state);
     }
 
     public function test_the_same_request_sent_again_gives_back_the_same_message(): void

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Hooks;
+namespace Tests\Feature\Hooks;
 
 use App\Hooks\Exceptions\IncomingWorkFailed;
 use App\Hooks\Exceptions\IncomingWorkRepeated;
 use App\Hooks\Support\IncomingWorkList;
 use Illuminate\Container\Container;
-use PHPUnit\Framework\TestCase;
 use Tests\Fixtures\Domains\Reviews\Work\ReviewInbox;
 use Tests\Fixtures\Hooks\FailingIncomingWork;
+use Tests\TestCase;
 
 /**
  * Every hook accepts each registered piece of incoming work, built fresh; a piece registered twice is refused at

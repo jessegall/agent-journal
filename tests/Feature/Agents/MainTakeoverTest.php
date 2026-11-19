@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Desks;
+namespace Tests\Feature\Agents;
 
 use App\Agents\Contracts\MainSeatTakeover;
 use App\Agents\Models\Agent;
