@@ -14,7 +14,7 @@ use App\Agents\Exceptions\NavigationRaiseRefused;
 use App\Agents\Support\ClaimedRequest;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Values\DriverRequestPayload;
-use App\Agents\Values\NavigationGoal;
+use App\Agents\Values\ScriptGoal;
 use App\Agents\Values\ScriptParameter;
 use App\Agents\Values\ScriptProgress;
 use App\Links\Support\Linkable;
@@ -267,13 +267,13 @@ final class DriverRequest extends Model implements ReadableModel
      *
      * @throws NavigationRaiseRefused
      */
-    public function scriptGoal(): NavigationGoal
+    public function scriptGoal(): ScriptGoal
     {
         if ($this->script_id === null || $this->script_version === null) {
             throw NavigationRaiseRefused::notAKeyScript($this->id);
         }
 
-        return new NavigationGoal($this->script_id, $this->script_version, $this->script_parameters);
+        return new ScriptGoal($this->script_id, $this->script_version, $this->script_parameters);
     }
 
     /**

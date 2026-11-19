@@ -31,32 +31,47 @@ const (
 	ChooseEntry Action = "choose-entry"
 )
 
-// Expectation is the screen a step needs before it acts: a kind and, for a menu, its family; or Shows, words that
-// must appear together on one row of whatever screen is drawn, such as a typed command's echo or a confirmation.
-// A word may name a parameter in braces, such as "set effort level to {effort}"; case does not count.
+// Expectation is the screen a step needs before it acts: a kind and, for a menu, its family; or a stable screen
+// whose fingerprint is Fingerprint, as a library entry's step expects; or Shows, words that must appear together on
+// one row of whatever screen is drawn, such as a typed command's echo or a confirmation. A word may name a
+// parameter in braces, such as "set effort level to {effort}"; case does not count.
 type Expectation struct {
-	Kind  screen.Kind
-	Menu  string
-	Shows []string
+	Kind        screen.Kind
+	Menu        string
+	Shows       []string
+	Fingerprint string
 }
 
 // AnyScreen is the expectation of a step that may act on whatever stable screen it finds.
 var AnyScreen = Expectation{}
 
-// matches is whether a reading is the expected screen: a stable one of its kind, or one showing its words.
+// isAny is whether the expectation takes whatever stable screen is drawn.
+func (expectation Expectation) isAny() bool {
+	return expectation.Kind == "" && expectation.Menu == "" && expectation.Fingerprint == ""
+}
+
+// matches is whether a reading is the expected screen: a stable one of its kind or with its fingerprint, or one
+// showing its words. The live fingerprint is read only for an expectation that names one.
 func (expectation Expectation) matches(
 	reading screen.Classification,
 	rows func() []string,
+	fingerprint func(reading screen.Classification) string,
 	values map[string]string,
 ) bool {
 	if len(expectation.Shows) > 0 {
 		return showsTogether(rows(), expectation.Shows, values)
 	}
-	if expectation.Kind == "" {
-		return reading.Stable
+	if !reading.Stable {
+		return false
+	}
+	if expectation.Fingerprint != "" {
+		return fingerprint(reading) == expectation.Fingerprint
+	}
+	if expectation.isAny() {
+		return true
 	}
 
-	return reading.Stable && reading.Kind == expectation.Kind && reading.Menu == expectation.Menu
+	return reading.Kind == expectation.Kind && reading.Menu == expectation.Menu
 }
 
 // showsTogether is whether one row holds every word, each with its parameters filled in, in any case.

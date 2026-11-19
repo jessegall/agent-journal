@@ -10,9 +10,9 @@ use App\Agents\Enums\NavigationCompletion;
 use App\Agents\Enums\NavigationReason;
 use App\Agents\Enums\NavigationState;
 use App\Agents\Exceptions\NavigationTransitionRefused;
-use App\Agents\Values\NavigationGoal;
 use App\Agents\Values\NavigationScreen;
 use App\Agents\Values\NavigationUncertainty;
+use App\Agents\Values\ScriptGoal;
 use App\Assignments\Contracts\Assignable;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
@@ -133,9 +133,9 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
     /**
      * The key script the request navigates for, with its version and parameters.
      */
-    public function goal(): NavigationGoal
+    public function goal(): ScriptGoal
     {
-        return new NavigationGoal($this->goal_script, $this->goal_version, $this->goal_parameters);
+        return new ScriptGoal($this->goal_script, $this->goal_version, $this->goal_parameters);
     }
 
     public function isAtRowVersion(int $rowVersion): bool

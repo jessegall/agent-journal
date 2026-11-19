@@ -18,6 +18,8 @@ const (
 	NoProof UncertaintyReason = "no-proof"
 	// StaleEntry is a library entry whose replay failed a check.
 	StaleEntry UncertaintyReason = "stale-entry"
+	// NextFingerprint is a library entry's step whose screen, by its fingerprint, did not come.
+	NextFingerprint UncertaintyReason = "next-fingerprint"
 )
 
 // Uncertainty is where a run stopped because it could not be certain, as the main agent is asked about it: why, at

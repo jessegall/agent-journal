@@ -5,22 +5,14 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Enums\NavigationCompletion;
-use App\Agents\Enums\NavigationReason;
 use App\Agents\Enums\NavigationState;
 use App\Agents\Exceptions\NavigationTransitionRefused;
-use App\Agents\Models\DriverRequest;
 use App\Agents\Models\NavigationRequest;
-use App\Agents\Support\OpenedRuntime;
-use App\Agents\Values\NavigationScreen;
-use App\Agents\Values\NavigationUncertainty;
-use Carbon\CarbonImmutable;
 use Illuminate\Database\UniqueConstraintViolationException;
-use Tests\Support\Agents\OpensLedgerRuntimes;
+use Tests\Support\Agents\RaisesNavigationRequests;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
 use Tests\TestCase;
@@ -32,7 +24,7 @@ use Tests\TestCase;
 final class NavigationRequestTest extends TestCase
 {
     use CommitsHookRows;
-    use OpensLedgerRuntimes;
+    use RaisesNavigationRequests;
     use RunsTrustedCommands;
 
     private const array TABLES = [
@@ -155,40 +147,5 @@ final class NavigationRequestTest extends TestCase
 
         $setter->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));
         $this->assertSame($navigation->id, NavigationRequest::query()->open()->firstOrFail()->id);
-    }
-
-    /**
-     * A ChangeModel key script the host has started on a newly opened runtime.
-     */
-    private function stalledScript(): DriverRequest
-    {
-        [, $opened] = $this->openRuntime();
-
-        return $this->scriptRequestOf($opened);
-    }
-
-    private function scriptRequestOf(OpenedRuntime $opened): DriverRequest
-    {
-        $receipt = $this->asOwner($this->keyScript($opened, 'ChangeModel', ['model' => 'GPT-6']));
-
-        return DriverRequest::query()->findOrFail($receipt->requestId);
-    }
-
-    private function raise(DriverRequest $stalled, string $operationKey): NavigationRequest
-    {
-        $uncertainty = new NavigationUncertainty(
-            NavigationReason::LabelMissing,
-            2,
-            'fp1:'.str_repeat('a', 64),
-            new NavigationScreen(['Model: GPT-5', '❯ GPT-6'], 1, 7),
-        );
-
-        return NavigationRequest::raised(
-            $stalled,
-            new ActorIdentity(ActorType::User, 'owner'),
-            $uncertainty,
-            $operationKey,
-            CarbonImmutable::now()->addMinutes(30),
-        );
     }
 }

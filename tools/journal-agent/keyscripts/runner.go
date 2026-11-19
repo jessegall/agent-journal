@@ -232,6 +232,11 @@ func (runner *Runner) uncertainty(
 	}
 }
 
+// fingerprint is the live screen's fingerprint, read as the reading names its menu.
+func (runner *Runner) fingerprint(reading screen.Classification) string {
+	return screen.Fingerprint(runner.program.Layout, runner.program.Name, runner.screen.Snapshot(), reading.Menu)
+}
+
 // waitFor reads the screen until it is the expected one or the deadline passes; it never sleeps without reading.
 func (runner *Runner) waitFor(
 	expect Expectation,
@@ -242,7 +247,7 @@ func (runner *Runner) waitFor(
 
 	for {
 		seen := runner.screen.Classify(runner.clock.Now())
-		if expect.matches(seen, runner.view.Rows, values) {
+		if expect.matches(seen, runner.view.Rows, runner.fingerprint, values) {
 			return seen, true
 		}
 		if !runner.clock.Now().Before(until) {
