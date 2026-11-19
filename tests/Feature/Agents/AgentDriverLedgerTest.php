@@ -468,6 +468,26 @@ final class AgentDriverLedgerTest extends TestCase
         $this->assertSame(RequestProgress::Applied, $stop->fresh()?->progress);
     }
 
+    public function test_a_host_report_of_unavailable_leaves_the_request_unavailable_and_a_failure_stays_failed(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $unavailable = $this->deliver($opened, 'host-restarted', 'Hello');
+        $failed = $this->deliver($opened, 'host-refused', 'Hello again');
+        $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+        $this->reportProgress($host->hostId, $unavailable->requestId, RequestProgress::Unavailable);
+        $this->reportProgress($host->hostId, $failed->requestId, RequestProgress::Failed);
+
+        $request = DriverRequest::query()->findOrFail($unavailable->requestId);
+
+        $this->assertSame(RequestProgress::Unavailable, $request->progress);
+        $this->assertSame(RequestOutcome::EntryUnavailable, $request->outcome);
+        $this->assertSame(RequestProgress::Failed, DriverRequest::query()->findOrFail($failed->requestId)->progress);
+
+        $this->asOwner(new RetryDriverRequest($request->id, $request->row_version, 'the runtime is back'));
+
+        $this->assertSame(RequestProgress::Accepted, $request->fresh()?->progress);
+    }
+
     public function test_retrying_a_failed_request_starts_a_new_attempt_and_refuses_reports_of_the_old_one(): void
     {
         [$host, $opened] = $this->openRuntime();
@@ -854,6 +874,15 @@ final class AgentDriverLedgerTest extends TestCase
      * @param  Command<TResult>  $command
      * @return TResult
      */
+    private function reportProgress(string $hostId, string $requestId, RequestProgress $progress): void
+    {
+        $request = DriverRequest::query()->findOrFail($requestId);
+
+        $this->asSystem(new ReportRequestProgress(
+            $hostId, $request->id, $request->attempt_version, $progress, null, RequestOutcome::EntryUnavailable,
+        ));
+    }
+
     private function asOwner(Command $command): mixed
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));

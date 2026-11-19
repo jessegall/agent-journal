@@ -14,7 +14,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One request on a runtime's ledger as stored: its place, progress and outcome, the timing expected when it was
- * accepted and the time it last changed, and why it is held.
+ * accepted and the time it last changed, why it is held, and the recoveries a person may run on it now, with the
+ * row version they must name.
  */
 #[TypeScript]
 final class DriverRequestStatus extends Data
@@ -31,6 +32,12 @@ final class DriverRequestStatus extends Data
         public readonly string|null $script = null,
         public readonly int|null $scriptStep = null,
         public readonly string|null $scriptEvidence = null,
+        public readonly int $rowVersion = 0,
+        public readonly bool $canRetry = false,
+        public readonly bool $canCancel = false,
+        public readonly bool $canResolve = false,
+        public readonly bool $canResumeScript = false,
+        public readonly bool $canCancelScript = false,
     ) {}
 
 }
