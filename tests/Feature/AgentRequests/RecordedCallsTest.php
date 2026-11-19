@@ -6,7 +6,6 @@ namespace Tests\Feature\AgentRequests;
 
 use App\AgentRequests\Exceptions\StateBlocked;
 use App\AgentRequests\Pipelines\RunSignedCallPipeline;
-use App\AgentRequests\Support\CallKey;
 use App\AgentRequests\Values\CallToSend;
 use App\AgentRequests\Values\CommandReport;
 use App\Pipelines\Support\Pipelines;
@@ -52,6 +51,6 @@ final class RecordedCallsTest extends TestCase
 
     private function noteCall(): WriteNoteCall
     {
-        return new WriteNoteCall('book-1', 'Hi.', new CallKey('key-1'));
+        return WriteNoteCall::from(['notebookId' => 'book-1', 'text' => 'Hi.', 'request_key' => 'key-1']);
     }
 }

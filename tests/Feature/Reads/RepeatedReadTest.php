@@ -11,6 +11,7 @@ use App\Reads\Exceptions\RepeatedReadRefused;
 use App\Reads\Support\ScopedReadMeter;
 use Domain\Tasks\Models\Task;
 use Domain\Tasks\Resolvers\TaskRecords;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestActors;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -35,9 +36,10 @@ final class RepeatedReadTest extends TestCase
 
     public function test_a_loop_reading_one_task_per_item_is_refused_past_the_loop_limit(): void
     {
-        foreach (range(3, 12) as $number) {
-            Task::factory()->create(['title' => "Task {$number}"]);
-        }
+        Task::factory()
+            ->count(10)
+            ->sequence(fn (Sequence $sequence) => ['title' => 'Task '.($sequence->index + 3)])
+            ->create();
 
         $records = $this->app->make(TaskRecords::class);
         $numbers = Task::query()->readLimit(12)->pluck('number')->all();
@@ -52,9 +54,10 @@ final class RepeatedReadTest extends TestCase
 
     public function test_the_same_read_outside_a_measurement_or_inside_a_schedule_is_allowed(): void
     {
-        foreach (range(3, 12) as $number) {
-            Task::factory()->create(['title' => "Task {$number}"]);
-        }
+        Task::factory()
+            ->count(10)
+            ->sequence(fn (Sequence $sequence) => ['title' => 'Task '.($sequence->index + 3)])
+            ->create();
 
         $records = $this->app->make(TaskRecords::class);
         $numbers = Task::query()->readLimit(12)->pluck('number')->all();
@@ -74,9 +77,10 @@ final class RepeatedReadTest extends TestCase
     #[TimeLimit(seconds: 5, reason: 'It files 249 tasks one by one, each numbered, before the chunked read it checks.')]
     public function test_a_chunked_read_over_251_rows_runs_every_batch(): void
     {
-        foreach (range(3, 251) as $number) {
-            Task::factory()->create(['title' => "Task {$number}"]);
-        }
+        Task::factory()
+            ->count(249)
+            ->sequence(fn (Sequence $sequence) => ['title' => 'Task '.($sequence->index + 3)])
+            ->create();
 
         $seen = $this->app->make(ReadMeter::class)->measure('chunked', function (): int {
             $count = 0;
