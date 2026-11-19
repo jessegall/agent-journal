@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Documents\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Contracts\CommandHandler;
 use App\Records\Contracts\RecordLinker;
 use App\Text\Support\MarkdownText;
@@ -19,16 +18,20 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class CreateDocumentHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private Dispatcher $events,
         private RecordLinker $links,
     ) {}
 
     public function handle(CreateDocument $command): CreatedRecord
     {
-        $actor = $this->actors->actor();
+        $actor = $command->dispatchedBy();
         LinkLimit::require($command->about, CreateDocument::MOST_LINKS);
-        $document = Document::publish(RecordFields::title($command->title), RecordFields::abstract($command->abstract), MarkdownText::body($command->body), $actor);
+        $document = Document::publish(
+            RecordFields::title($command->title),
+            RecordFields::abstract($command->abstract),
+            MarkdownText::body($command->body),
+            $actor,
+        );
         $this->links->linkFrom($document, $command->about);
         $this->events->dispatch(new DocumentCreated($document->id, $document->number, $actor));
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Contracts\CommandHandler;
 use Domain\Plans\Api\Events\PlanFinished;
 use Domain\Plans\Commands\FinishPlan;
@@ -17,7 +16,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 
 final readonly class FinishPlanHandler implements CommandHandler
 {
-    public function __construct(private TaskProgressCounter $progress, private CurrentActor $actors, private Dispatcher $events) {}
+    public function __construct(private TaskProgressCounter $progress, private Dispatcher $events) {}
 
     /**
      * @throws PlanRevisionChanged
@@ -42,6 +41,6 @@ final readonly class FinishPlanHandler implements CommandHandler
         }
 
         $plan->finish($command->note);
-        $this->events->dispatch(new PlanFinished($plan->id, $this->actors->actor()));
+        $this->events->dispatch(new PlanFinished($plan->id, $command->dispatchedBy()));
     }
 }

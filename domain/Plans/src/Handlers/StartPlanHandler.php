@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Handlers;
 
-use App\Actors\Contracts\CurrentActor;
 use App\Contracts\CommandHandler;
 use App\Hooks\Contracts\ActorWorkStacks;
 use Domain\Plans\Api\Events\PlanStarted;
@@ -22,20 +21,20 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class StartPlanHandler implements CommandHandler
 {
     public function __construct(
-        private CurrentActor $actors,
         private Dispatcher $events,
         private ActorWorkStacks $workStacks,
     ) {}
 
     public function handle(StartPlan $command): void
     {
-        $plan = Plan::query()->whereKey($command->planId)->lockForUpdate()->first() ?? throw PlanMissing::withId($command->planId);
+        $plan = Plan::query()->whereKey($command->planId)->lockForUpdate()->first()
+            ?? throw PlanMissing::withId($command->planId);
 
         if (! $plan->startOnce()) {
             return;
         }
 
         $this->workStacks->push(WorkingOnPlanStateReference::forPlan($plan));
-        $this->events->dispatch(new PlanStarted($plan->id, $this->actors->actor()));
+        $this->events->dispatch(new PlanStarted($plan->id, $command->dispatchedBy()));
     }
 }
