@@ -1,4 +1,5 @@
 import shlex
+from functools import partial
 from argparse import Namespace
 from pathlib import Path
 
@@ -11,7 +12,10 @@ from journal.features.plugins.plugins_options import PluginsOptions
 from journal.support.time_source import TimeSource
 from journal.features.workers.support.worker_branch import REBASE_STEPS, WorkerBranch
 from journal.features.workers.support.affected_tests import AffectedTests
+from journal.features.workers.support.clock_out_run import ClockOutRun
 from journal.features.workers.support.clock_outs_running import ClockOutsRunning
+from journal.features.workers.support.worker_actions import WorkerActions
+from journal.features.workers.workers_options import WorkersOptions
 from journal.features.workers.support.test_selection import TestSelection
 from journal.features.workers.support.test_turns import TestTurns
 from journal.features.workers.support.worker_reports import WorkerReports
@@ -24,6 +28,7 @@ from journal.repositories.setting_rows import SettingRows
 from journal.repositories.task_logs import TaskLogs
 from journal.repositories.tasks import Tasks
 from journal.repositories.workers import Workers
+from journal.support.actor import Actor
 from journal.support.caller import Caller
 from journal.support.rejection import Rejection
 from journal.features.workers.support.worker_stacks import WorkerStacks
@@ -31,15 +36,18 @@ from journal.features.workers.support.worker_stacks import WorkerStacks
 
 TESTING_REFUSAL = "your clock-out was held by a plugin before the journal rebased your work and ran your tests; fix what it found, then clock out again"
 DELIVERY_REFUSAL = "your tests passed, but a plugin held your work before it reaches the agent that sent you; fix what it found, then clock out again, and the journal runs your tests again"
+CONTINUES = "your clock-out continues on the journal{turn}: the journal hands your work in when the tests pass and tells you if they fail; end your turn now, do not retry it or declare yourself stuck"
+SENT_BACK = "Your clock-out, which went on in the journal after it answered you, did not stand. Fix what it found, then clock out again:"
+UNSENT = "its clock-out did not stand and it could not be sent back ({reason}): {refusal}"
 
 class DepartureCommand(Command):
-    """journal clock-out "<report>": a worker's one report, accepted only once every point of its task's brief has a valid proof, its worktree has no uncommitted file and its branch has been moved up to the branch its work merges into, a clash there sent back to it at once with the files that clash, and, while the journal runs the tests, the tests it names have passed in its worktree, a failing run sent back to it at once with its failing lines. A worker with a task still queued may not clock out: the journal hands it the next as it proves the last point of this one, and it clocks out once, when its queue is done, a blocked task next in the queue or a point proved not done ending the queue there. A worktree whose branch adds no commit and changes no file is handed in without a test run. A second clock-out of a worker whose clock-out still runs is refused at once."""
+    """journal clock-out "<report>": a worker's one report, accepted only once every point of its task's brief has a valid proof, its worktree has no uncommitted file and its branch has been moved up to the branch its work merges into, a clash there sent back to it at once with the files that clash, and, while the journal runs the tests, the tests it names have passed in its worktree, a failing run sent back to it at once with its failing lines. A worker with a task still queued may not clock out: the journal hands it the next as it proves the last point of this one, and it clocks out once, when its queue is done, a blocked task next in the queue or a point proved not done ending the queue there. A worktree whose branch adds no commit and changes no file is handed in without a test run. A clock-out still waiting for or running its tests when the setting's seconds have passed answers the worker that it goes on in the journal by itself, and the worker may end its turn: the work is handed in once the tests pass, and a refusal sends the worker back in its last session with it, or, where it cannot be sent back, ends the worker unfinished, which tells the agent that sent it. A second clock-out of a worker whose clock-out still runs is refused at once."""
 
     noun = "clock-out"
     default_verb = "record"
 
-    def __init__(self, workers: Workers, tasks: Tasks, reports: WorkerReports, branch: WorkerBranch, turns: TestTurns, settings: SettingRows, logs: TaskLogs, events: CommandEvents, time_source: TimeSource, affected: AffectedTests, advance: QueueAdvance, stacks: WorkerStacks, running: ClockOutsRunning) -> None:
-        self.advance, self.stacks, self.running = advance, stacks, running
+    def __init__(self, workers: Workers, tasks: Tasks, reports: WorkerReports, branch: WorkerBranch, turns: TestTurns, settings: SettingRows, logs: TaskLogs, events: CommandEvents, time_source: TimeSource, affected: AffectedTests, advance: QueueAdvance, stacks: WorkerStacks, running: ClockOutsRunning, actions: WorkerActions) -> None:
+        self.advance, self.stacks, self.running, self.actions = advance, stacks, running, actions
         self.workers, self.tasks, self.reports, self.branch = workers, tasks, reports, branch
         self.turns, self.settings, self.logs, self.events, self.time_source, self.affected = turns, settings, logs, events, time_source, affected
 
@@ -50,13 +58,25 @@ class DepartureCommand(Command):
 
     def record(self, args: Namespace, caller: Caller) -> int:
         worker = self.workers.find(caller.worker_number)
-        with self.running.held(worker.id, lambda: self.still_running(worker)):
-            return self.recorded(args, caller, worker)
+        run = ClockOutRun(partial(self.recorded, args, caller, worker), partial(self.continued, worker, caller), partial(self.sent_back, worker.id))
+        code = self.running.answered(worker.id, partial(self.continues, worker), run, self.settings.integer(WorkersOptions.CLOCK_OUT_FOREGROUND_SECONDS))
+        if code is None:
+            print(self.continues(worker))
+            return 0
+        return code
 
-    def still_running(self, worker: Worker) -> str:
+    def continued(self, worker: Worker, caller: Caller) -> None:
+        self.workers.clock_out_continued(worker.id, self.time_source.seconds(), caller.actor)
+
+    def continues(self, worker: Worker) -> str:
         turn = self.turns.held_turn(worker)
-        held = f", its test turn {turn.id} is {turn.state.value}" if turn is not None else ""
-        return f"your earlier clock-out still runs{held}, so this is not stuck: wait a few minutes, then clock out again; a clock-out after it has ended runs your tests and hands your work in again"
+        return CONTINUES.format(turn=f": its test turn {turn.id} is {turn.state.value}" if turn is not None else "")
+
+    def sent_back(self, worker: int, refusal: str) -> None:
+        try:
+            self.actions.redo(worker, f"{SENT_BACK}\n{refusal}", Actor.system())
+        except Rejection as unsent:
+            self.workers.save(self.workers.find(worker).unfinished(self.time_source.seconds(), UNSENT.format(reason=unsent, refusal=refusal)), Actor.system())
 
     def recorded(self, args: Namespace, caller: Caller, worker: Worker) -> int:
         holdings = self.tasks.holder_task_ids(Ref(Worker.table(), worker.id))

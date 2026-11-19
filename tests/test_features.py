@@ -1957,7 +1957,7 @@ def test_a_worker_the_restart_cut_off_is_started_again_in_its_session(app: App, 
     import json as j
     import subprocess
     import time as timing
-    from journal.features.workers.jobs.worker_watch import REVIVE_BRIEF, WorkerWatch
+    from journal.features.workers.jobs.worker_watch import CLOCK_OUT_AGAIN_BRIEF, REVIVE_BRIEF, WorkerWatch
     from journal.features.workers.seeds.workers_seed import WorkersSeed
     from journal.features.workers.support.worker_actions import WorkerActions
     from journal.features.workers.support.worker_runner import WorkerRunner
@@ -1987,9 +1987,12 @@ def test_a_worker_the_restart_cut_off_is_started_again_in_its_session(app: App, 
     stale_output.write_text(j.dumps({"type": "assistant"}) + "\n")
     os.utime(stale_output, (timing.time() - 5 * 3600, timing.time() - 5 * 3600))
     workers.save(workers.find(stale.id).running_as(gone.pid, timing.time()).with_(state=WorkerState.READY), Actor.system())
+    with scope.environment(1):
+        clocking = workers.save(Worker(name="Ms. Noether", brief="the rings", model="sonnet"), Actor.system())
+    workers.save(workers.find(clocking.id).running_as(gone.pid, timing.time()).with_(state=WorkerState.CLOCKING_OUT), Actor.system())
     app.container.get(WorkersSeed).run()
     app.container.get(WorkerWatch).tick(timing.time())
-    assert sorted(relaunched) == sorted([(cut.id, REVIVE_BRIEF), (clocked_in.id, REVIVE_BRIEF)]), "a run the restart cut off is started again in its own session, sent its job or clocked in on it; one that ended on its own, never ran, or whose process had been gone for hours, is not"
+    assert sorted(relaunched) == sorted([(cut.id, REVIVE_BRIEF), (clocked_in.id, REVIVE_BRIEF), (clocking.id, CLOCK_OUT_AGAIN_BRIEF)]), "a run the restart cut off is started again in its own session, sent its job, clocked in on it or clocking out, the last told to clock out again; one that ended on its own, never ran, or whose process had been gone for hours, is not"
     assert not workers.find(ended.id).is_running(), "a run that ended on its own has its end recorded as before"
 
 

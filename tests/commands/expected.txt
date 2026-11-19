@@ -1371,6 +1371,7 @@ workers.test_runs = 3
 workers.test_waiting = ''
 workers.tests_per_run = 20
 workers.test_run_minutes = 10
+workers.clock_out_foreground_seconds = 45
 workers.failing_runs = 3
 workers.test_command = ''
 workers.affected_tests_command = ''
