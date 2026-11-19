@@ -14,7 +14,7 @@ enum MenuStaleReason: string
 {
     case NextFingerprint = 'next-fingerprint';
     case LabelMissing = 'label-missing';
-    case LabelTwice = 'label-twice';
+    case Ambiguous = 'ambiguous';
     case HighlightWrong = 'highlight-wrong';
     case NoProof = 'no-proof';
 }

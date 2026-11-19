@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"strings"
 	"sync"
 	"testing"
 
@@ -308,5 +309,171 @@ func TestAGuardedEntryThatFailsIsDeclinedAndTheJournalAskedAgain(t *testing.T) {
 	if declined := journal.raises[1].DeclinedEntries; len(declined) != 1 || declined[0] != "entry-1" ||
 		len(journal.replayed) != 0 {
 		t.Fatalf("the second raise declined %v and the host replayed %v", declined, journal.replayed)
+	}
+}
+
+// twoStepEntryAnswer names a library entry that presses a key, then chooses a label.
+func twoStepEntryAnswer() raiseReply {
+	entry := `{"id":"entry-2","program":"codex","goal":{"script":"ChangeModel","version":2,"parameters":[]},` +
+		`"steps":[{"fingerprint":"fp1:a","choose":null,"key":"down","proof":null},` +
+		`{"fingerprint":"fp1:b","choose":"GPT-6","key":null,"proof":null}],"completes":"goal",` +
+		`"nextStep":null,"proof":"GPT-6"}`
+	return raiseReply{answer: client.NavigationAnswer{Answer: client.NavigationEntry, Entry: []byte(entry)}}
+}
+
+// replayLoop runs a key script that stalls, is answered with the two-step entry and replays it to the given end.
+func replayLoop(t *testing.T, replay keyscripts.ReplayResult) *fakeJournal {
+	t.Helper()
+	return replayLoopAnswered(t, twoStepEntryAnswer(), replay, 2)
+}
+
+// replayLoopAnswered runs a key script that stalls, is answered with the entry and replays it to the given end,
+// until the journal heard the given number of raises.
+func replayLoopAnswered(t *testing.T, entry raiseReply, replay keyscripts.ReplayResult, raises int) *fakeJournal {
+	t.Helper()
+	journal := &fakeJournal{answers: []raiseReply{entry}}
+	runtime := newScriptRuntime()
+	runtime.replay = replay
+	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
+	loop.raiseRetryDelay = 0
+	uncertainty := keyscripts.Uncertainty{Reason: keyscripts.NoEntry, Step: 1, Fingerprint: "fp1:a"}
+	runtime.release <- keyscripts.Result{Outcome: keyscripts.NavigationNeeded, Step: 1, Uncertainty: &uncertainty}
+	loop.Take(context.Background(), []client.ClaimedRequest{keyScriptClaim("script", nil)})
+	waitFor(t, func() bool { return journal.raiseCount() == raises })
+
+	return journal
+}
+
+func TestAReplayThatFailsAfterItsFirstStepIsReportedStaleAndRaisesAStaleEntryRequest(t *testing.T) {
+	live := &keyscripts.Uncertainty{Fingerprint: "fp1:c", Rows: []string{"Pick a model", "> GPT-7"}, Highlight: 1}
+	cases := map[keyscripts.UncertaintyReason]int{
+		keyscripts.NextFingerprint: 1,
+		keyscripts.LabelMissing:    1,
+		keyscripts.NoProof:         2,
+	}
+	for reason, step := range cases {
+		journal := replayLoop(t, keyscripts.ReplayResult{
+			Outcome: keyscripts.Stale, Step: step, Reason: reason, Uncertainty: live,
+		})
+
+		journal.mutex.Lock()
+		report, reported := journal.stale["entry-2"]
+		raise := journal.raises[1]
+		journal.mutex.Unlock()
+		if !reported || report.Reason != string(reason) || report.Step != step || report.Build != "0.165.0" ||
+			len(report.Rows) != 2 || len(journal.stale) != 1 {
+			t.Fatalf("%s: the stale report was %+v (%v)", reason, report, reported)
+		}
+		if raise.Reason != string(keyscripts.StaleEntry) || raise.StaleEntry != "entry-2" ||
+			raise.Fingerprint != "fp1:c" || len(raise.SentSteps) == 0 || raise.SentSteps[0] != "step 1: key down" {
+			t.Fatalf("%s: the stale raise was %+v", reason, raise)
+		}
+		if step == 2 && (len(raise.SentSteps) != 2 || raise.SentSteps[1] != "step 2: choose") {
+			t.Fatalf("%s: the sent steps were %v", reason, raise.SentSteps)
+		}
+	}
+}
+
+func TestAReplayThatFailsAtItsFirstStepDeclinesTheEntryAndReportsNothingStale(t *testing.T) {
+	journal := replayLoop(t, keyscripts.ReplayResult{
+		Outcome: keyscripts.Stale, Step: 0, Reason: keyscripts.Ambiguous,
+		Uncertainty: &keyscripts.Uncertainty{Fingerprint: "fp1:a"},
+	})
+
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	raise := journal.raises[1]
+	if len(journal.stale) != 0 || raise.Reason != string(keyscripts.NoEntry) || raise.StaleEntry != "" ||
+		len(raise.DeclinedEntries) != 1 || raise.DeclinedEntries[0] != "entry-2" || len(raise.SentSteps) != 0 {
+		t.Fatalf("a first-step failure reported %v stale and raised %+v", journal.stale, raise)
+	}
+}
+
+// guardedEntryAnswer is the two-step entry answered as proven on another build only.
+func guardedEntryAnswer() raiseReply {
+	reply := twoStepEntryAnswer()
+	reply.answer.Guarded = true
+	return reply
+}
+
+func TestAGuardedEntryThatPassesEveryCheckIsReportedReplayedWithNoRequest(t *testing.T) {
+	journal := replayLoopAnswered(t, guardedEntryAnswer(), keyscripts.ReplayResult{Outcome: keyscripts.Proven}, 1)
+	waitFor(t, func() bool { return len(journal.reportsOf("script")) == 4 })
+
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	if len(journal.replayed) != 1 || journal.replayed[0] != "entry-2" || len(journal.raises) != 1 ||
+		len(journal.stale) != 0 {
+		t.Fatalf("a guarded replay was reported %v after %d raises, stale %v", journal.replayed, len(journal.raises),
+			journal.stale)
+	}
+}
+
+func TestAGuardedEntryThatFailsAfterItsFirstStepIsDeclinedAndNeverReportedStale(t *testing.T) {
+	failed := keyscripts.ReplayResult{
+		Outcome: keyscripts.Stale, Step: 1, Reason: keyscripts.LabelMissing,
+		Uncertainty: &keyscripts.Uncertainty{Fingerprint: "fp1:c"},
+	}
+	journal := replayLoopAnswered(t, guardedEntryAnswer(), failed, 2)
+
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	raise := journal.raises[1]
+	if len(journal.stale) != 0 || raise.StaleEntry != "" || raise.Reason != string(keyscripts.NoEntry) ||
+		len(raise.DeclinedEntries) != 1 || raise.DeclinedEntries[0] != "entry-2" {
+		t.Fatalf("a guarded entry's failure reported %v stale and raised %+v", journal.stale, raise)
+	}
+}
+
+func TestAStepRunByAnOlderBuildsScriptSaysWhichBuildItWas(t *testing.T) {
+	journal := &fakeJournal{}
+	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return newScriptRuntime(), nil })
+	runtime := &liveRuntime{id: "runtime-1", driver: newScriptRuntime(), build: "0.166.0"}
+	progress := keyscripts.Progress{Step: 0, Name: "open", Profile: "codex@0.165.0"}
+
+	loop.reportStep(context.Background(), runtime, keyScriptClaim("script", nil), progress)
+	progress.Profile = "codex@0.166.0"
+	loop.reportStep(context.Background(), runtime, keyScriptClaim("script", nil), progress)
+
+	reports := journal.reportsOf("script")
+	if len(reports) != 2 || !strings.Contains(reports[0].Script.Evidence, "(script of codex@0.165.0)") ||
+		strings.Contains(reports[1].Script.Evidence, "script of") {
+		t.Fatalf("the step evidence was %+v", reports)
+	}
+}
+
+func TestAWaitingRuntimeAsksAgainUnderANewKeyAndItsOwnReplayFinishesTheScript(t *testing.T) {
+	retry := 0
+	wait := raiseReply{answer: client.NavigationAnswer{Answer: client.NavigationWait, RetryAfterSeconds: &retry}}
+	journal := &fakeJournal{answers: []raiseReply{wait, twoStepEntryAnswer()}}
+	runtime := newScriptRuntime()
+	runtime.replay = keyscripts.ReplayResult{Outcome: keyscripts.Proven}
+	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return runtime, nil })
+	loop.raiseRetryDelay = 0
+	uncertainty := keyscripts.Uncertainty{Reason: keyscripts.NoEntry, Step: 1, Fingerprint: "fp1:a"}
+	runtime.release <- keyscripts.Result{Outcome: keyscripts.NavigationNeeded, Step: 1, Uncertainty: &uncertainty}
+
+	loop.Take(context.Background(), []client.ClaimedRequest{keyScriptClaim("script", nil)})
+	waitFor(t, func() bool { return len(journal.reportsOf("script")) == 4 })
+
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	if len(journal.raises) != 2 || journal.raises[1].OperationKey != journal.raises[0].OperationKey+":ask:1" ||
+		len(journal.replayed) != 1 || journal.reports[len(journal.reports)-1].Progress != "applied" {
+		t.Fatalf("after a wait the host raised %+v and replayed %v", journal.raises, journal.replayed)
+	}
+}
+
+func TestAWaitEndsWhenTheRuntimeIsNoLongerHeld(t *testing.T) {
+	journal := &fakeJournal{}
+	loop := NewLoop(journal, func(string, client.Grant) (Runtime, error) { return newScriptRuntime(), nil })
+	runtime := &liveRuntime{id: "runtime-1", driver: newScriptRuntime(), hold: contracts.HoldNone}
+	loop.runtimes[runtime.id] = runtime
+
+	loop.askAgainAfter(context.Background(), runtime, keyScriptClaim("script", nil), keyscripts.Uncertainty{},
+		raiseState{}, 0)
+
+	if journal.raiseCount() != 0 {
+		t.Fatalf("a runtime no longer held raised again")
 	}
 }

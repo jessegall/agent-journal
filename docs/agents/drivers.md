@@ -14,7 +14,8 @@ How a running agent program is driven, for a reader of the code. The design is d
 | Scheduler | `tools/journal-agent/host/scheduler.go` | Per runtime: control first, settings staged in front of content, a batch of deliveries or a wake as one turn, nothing while held |
 | Drivers | `tools/journal-agent/drivers` | `AgentDriver` (`drivers/contracts/agent_driver.go`): Deliver, Wake, ChangeModel, ChangeEffort, Interrupt, Stop. `ProcessDriver` runs one child per turn; `TerminalDriver` types into one persistent program |
 | Profiles | `tools/journal-agent/profiles` | Per program: the pinned build, its arguments, settings files, hooks and the screens it shows |
-| Key scripts | `tools/journal-agent/keyscripts` | Registered maintenance scripts for the terminal; `config/agents.php` lists what an operator may run |
+| Key scripts | `tools/journal-agent/keyscripts` | Maintenance scripts for the terminal; the host registers them per program build (`keyscripts/registry.go`, `keyscripts/scripts`) and runs no other |
+| Navigation and the menu library | `app/Agents/Models/NavigationRequest.php`, `app/Agents/Models/MenuEntry.php`, `DriverOperation::Navigate`, the navigation and menu-entry routes in `app/Agents/Routes/host.php`, `tools/journal-agent/keyscripts/entry.go`, `path.go`, `navigation.go` | A key script that is not certain of a menu asks the journal; the main agent finds the way, and the proven way is kept as a library entry the host replays |
 
 ## How a request travels
 
@@ -57,11 +58,50 @@ still be watched.
   epoch is a restarted host. The answer says `live`, `ended` with the last frame, or `restarted` once when the agent
   moved to a new runtime or generation.
 
+## Unknown menus
+
+A key script selects a menu entry only by its label, never by counting key presses. When it cannot be certain of a
+menu (its label is missing or shown twice, the highlight is not on it, or the screen is not the one it expects), it
+sends no key, stops at that step, resumable, and the host asks the journal what to do. The runtime is held
+`navigation_needed` meanwhile, so nothing else types into the menu.
+
+- The journal answers with the user's current library entry for that program, menu and goal, or opens a navigation
+  request and assigns it to the occupant of the main desk.
+- The main agent answers in rounds, each a `Navigate` driver request of the stalled runtime: press keys, choose a
+  label it has seen, confirm the highlighted label, or say it is done with a proof. A menu entry is confirmed only
+  through the label, never with a raw Enter.
+- The host checks the proof on screen with the one lossless checker (`tools/journal-agent/screen/proof.go`) and
+  refuses a proof the screen already showed when the request was raised.
+- The proven path is saved once as a library entry, with a proof for each step and the builds it was proven on. Later
+  runs ask the journal first and replay the entry with the same runner, every check on.
+- A replay that fails after its first step marks the entry stale for that build, and the next request replaces it. A
+  failure at the first step only declines the entry, since two menus can share a fingerprint.
+- An entry proven on another build is reused only when every check passes; the build is then added to the entry.
+- A second runtime that raises the same open menu waits and asks again; once the first request is proven, it
+  replays the entry itself.
+- A screen that asks for a secret never leaves the host: the run stops and nothing is exported.
+
+Limit: the main agent's own terminal keeps its hold for the person and raises no request, and helpers and workers on
+a process driver have no terminal to navigate.
+
+| State | Meaning |
+| --- | --- |
+| open | Raised and waiting for the main agent |
+| answering | The main agent is sending rounds |
+| proving | The host is looking for the proof the main agent named |
+| proven | The proof showed; the path is saved as a library entry and the key script goes on |
+| abandoned | The main agent gave up, saying why; the runtime keeps its hold for the person |
+| interrupted | The person typed, or the screen changed with no round sent |
+| cancelled | The driver request was cancelled, the runtime stopped or the session ended |
+| expired | Nobody answered in time |
+
 ## Status words (doc 40, section 21)
 
 Progress: accepted, staged, applying, applied, superseded, cancelled, failed, unavailable, delivery uncertain.
+Outcomes of a key script: entry_unavailable when it stopped on a menu without the entry it needs, unconfirmed when it
+ran to its end but did not prove its result on screen.
 Holds: interrupted, compacting, human input, permission, trust, onboarding, login, update, usage limit, unknown or
-unreadable screen, needs attention. A person releases only an interrupt or a call for attention.
+unreadable screen, navigation_needed, needs attention. A person releases only an interrupt or a call for attention.
 
 ## Adding a program build
 

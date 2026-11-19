@@ -23,6 +23,8 @@ type fakeJournal struct {
 	interrupts []string
 	// replayed are the library entries the host reported it replayed.
 	replayed []string
+	// stale are the library entries the host reported stale, by entry id.
+	stale map[string]client.EntryStaleReport
 	// answers are the replies to the raises in turn; past the last one a raise is opened.
 	answers []raiseReply
 }
@@ -37,6 +39,16 @@ func (journal *fakeJournal) ReportReplayed(_ context.Context, entryID, _, _ stri
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	journal.replayed = append(journal.replayed, entryID)
+	return nil
+}
+
+func (journal *fakeJournal) ReportStale(_ context.Context, entryID string, report client.EntryStaleReport) error {
+	journal.mutex.Lock()
+	defer journal.mutex.Unlock()
+	if journal.stale == nil {
+		journal.stale = map[string]client.EntryStaleReport{}
+	}
+	journal.stale[entryID] = report
 	return nil
 }
 
@@ -67,7 +79,7 @@ func (journal *fakeJournal) StartGrant(context.Context, string) (client.Grant, e
 	journal.mutex.Lock()
 	defer journal.mutex.Unlock()
 	journal.grants++
-	return client.Grant{Token: "token"}, nil
+	return client.Grant{Token: "token", Runtime: client.RuntimeStart{ProgramBuild: "0.165.0"}}, nil
 }
 
 func (journal *fakeJournal) ReportRequest(_ context.Context, report client.RequestReport) error {

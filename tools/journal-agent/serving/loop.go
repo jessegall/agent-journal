@@ -26,6 +26,7 @@ type Journal interface {
 	ReportActivity(ctx context.Context, report client.ActivityReport) error
 	ReportExit(ctx context.Context, report client.LivenessReport) error
 	ReportReplayed(ctx context.Context, entryID, runtimeID, operationKey string) error
+	ReportStale(ctx context.Context, entryID string, report client.EntryStaleReport) error
 	RaiseNavigation(ctx context.Context, runtimeID string, raise client.NavigationRaise) (client.NavigationAnswer, error)
 	InterruptNavigation(ctx context.Context, navigationID string) error
 }
@@ -59,8 +60,10 @@ type Loop struct {
 // liveRuntime is a runtime the host runs: its driver, the turns it started, the requests of the running turn and
 // why it is held, if it is.
 type liveRuntime struct {
-	id      string
-	driver  Runtime
+	id     string
+	driver Runtime
+	// build is the program build the journal granted the runtime, which a stale library entry is marked on.
+	build   string
 	turns   int
 	running []client.ClaimedRequest
 	staged  []client.ClaimedRequest
@@ -271,7 +274,7 @@ func (loop *Loop) runScript(ctx context.Context, runtime *liveRuntime, request c
 func (loop *Loop) settleScript(ctx context.Context, runtime *liveRuntime, request client.ClaimedRequest) {
 	result, err := loop.scriptResult(ctx, runtime, request)
 	if err == nil && result.Hold == contracts.HoldNavigationNeeded {
-		loop.raiseNavigation(ctx, runtime, request, *result.Script.Uncertainty, nil)
+		loop.raiseNavigation(ctx, runtime, request, *result.Script.Uncertainty, raiseState{})
 		return
 	}
 	loop.reportResult(ctx, request, result, err)
@@ -316,15 +319,19 @@ func (loop *Loop) raiseNavigation(
 	runtime *liveRuntime,
 	request client.ClaimedRequest,
 	uncertainty keyscripts.Uncertainty,
-	declined []string,
+	state raiseState,
 ) {
 	loop.holdRuntime(runtime)
 	for attempt := 1; ; attempt++ {
 		raise := raiseOf(request, uncertainty)
-		raise.DeclinedEntries = declined
+		if state.ask > 0 {
+			raise.OperationKey = fmt.Sprintf("%s:ask:%d", raise.OperationKey, state.ask)
+		}
+		raise.DeclinedEntries = state.declined
+		raise.SentSteps = state.sent
 		answer, err := loop.journal.RaiseNavigation(ctx, runtime.id, raise)
 		if err == nil {
-			loop.answerNavigation(ctx, runtime, request, uncertainty, answer, declined)
+			loop.answerNavigation(ctx, runtime, request, uncertainty, answer, state)
 			return
 		}
 		if errors.Is(err, client.ErrRefused) {
@@ -347,6 +354,19 @@ func (loop *Loop) raiseNavigation(
 	}
 }
 
+// raiseState is what a raise carries beyond its screen: the entries whose replay failed here, the steps a stale
+// entry's replay already sent, and how often the host asked again after a wait, which names each ask apart.
+type raiseState struct {
+	declined []string
+	sent     []string
+	ask      int
+}
+
+// declining is the state of the next raise once the entry's replay failed: the entry declined, nothing sent.
+func (state raiseState) declining(entryID string) raiseState {
+	return raiseState{declined: append(append([]string{}, state.declined...), entryID)}
+}
+
 // screenRereader is a driver that reads a stalled key script's screen afresh.
 type screenRereader interface {
 	Reread(stalled keyscripts.Uncertainty) (keyscripts.Uncertainty, bool)
@@ -361,11 +381,11 @@ func (loop *Loop) answerNavigation(
 	request client.ClaimedRequest,
 	uncertainty keyscripts.Uncertainty,
 	answer client.NavigationAnswer,
-	declined []string,
+	state raiseState,
 ) {
 	switch answer.Answer {
 	case client.NavigationEntry:
-		loop.replayEntry(ctx, runtime, request, uncertainty, answer, declined)
+		loop.replayEntry(ctx, runtime, request, uncertainty, answer, state)
 	case client.NavigationOpened:
 		report := client.RequestReport{
 			RequestID: request.RequestID,
@@ -377,7 +397,7 @@ func (loop *Loop) answerNavigation(
 			log.Printf("the stop of request %s for navigation could not be reported: %v", request.RequestID, err)
 		}
 	case client.NavigationWait:
-		log.Printf("request %s waits behind another runtime's navigation of the same menu", request.RequestID)
+		go loop.askAgainAfter(ctx, runtime, request, uncertainty, state, waitOf(answer))
 	default:
 		loop.endForNavigation(ctx, runtime, request, uncertainty)
 	}
@@ -389,15 +409,18 @@ type entryReplayer interface {
 }
 
 // replayEntry replays the library entry the journal answered with: proven, the replay is counted, the runtime goes
-// on and the script ends or resumes after the entry's step; any other end raises again with the entry declined, so
-// the journal asks the main agent instead.
+// on and the script ends or resumes after the entry's step. A replay that failed after its first step reports the
+// entry stale on this build and raises a stale-entry request naming the steps it already sent; an entry proven only on
+// another build (guarded) is right for its own build, so its failure is never reported stale. Any other end, such
+// as a first step that fails because two menus share a fingerprint, raises again with the entry declined and leaves
+// the entry current, so the journal asks the main agent instead.
 func (loop *Loop) replayEntry(
 	ctx context.Context,
 	runtime *liveRuntime,
 	request client.ClaimedRequest,
 	uncertainty keyscripts.Uncertainty,
 	answer client.NavigationAnswer,
-	declined []string,
+	state raiseState,
 ) {
 	var entry keyscripts.Entry
 	replayer, replays := runtime.driver.(entryReplayer)
@@ -406,8 +429,16 @@ func (loop *Loop) replayEntry(
 		return
 	}
 	result, err := replayer.ReplayEntry(entry)
+	if err == nil && !answer.Guarded && isStale(result) {
+		loop.reportStale(ctx, runtime, request, entry, result)
+		stale := staleUncertainty(uncertainty, result, entry.ID)
+		next := state.declining(entry.ID)
+		next.sent = sentSteps(entry, result.Step)
+		loop.raiseNavigation(ctx, runtime, request, stale, next)
+		return
+	}
 	if err != nil || result.Outcome != keyscripts.Proven {
-		loop.raiseNavigation(ctx, runtime, request, uncertainty, append(declined, entry.ID))
+		loop.raiseNavigation(ctx, runtime, request, uncertainty, state.declining(entry.ID))
 		return
 	}
 
@@ -423,6 +454,124 @@ func (loop *Loop) replayEntry(
 	}
 	applied := contracts.OperationResult{Progress: contracts.ProgressApplied, Outcome: contracts.OutcomeConfirmed}
 	loop.report(ctx, request, applied)
+}
+
+// isStale is a replay that matched its first step and then failed a check, or whose proof never showed: the entry no
+// longer fits this build. A failure at the first step is not stale, since two menus can share a fingerprint.
+func isStale(result keyscripts.ReplayResult) bool {
+	return result.Outcome == keyscripts.Stale && (result.Step > 0 || result.Reason == keyscripts.NoProof)
+}
+
+// reportStale marks the entry stale on the runtime's build, with the step and reason it failed at and the redacted
+// screen it failed on, under a key of the replay so a repeated report is the same one.
+func (loop *Loop) reportStale(
+	ctx context.Context,
+	runtime *liveRuntime,
+	request client.ClaimedRequest,
+	entry keyscripts.Entry,
+	result keyscripts.ReplayResult,
+) {
+	report := client.EntryStaleReport{
+		RuntimeID:    runtime.id,
+		OperationKey: fmt.Sprintf("%s:%d:stale:%s", request.RequestID, request.Attempt, entry.ID),
+		Reason:       string(result.Reason),
+		Step:         result.Step,
+		Build:        runtime.build,
+		Rows:         []string{},
+	}
+	if result.Uncertainty != nil {
+		report.Rows = result.Uncertainty.Rows
+	}
+	if err := loop.journal.ReportStale(ctx, entry.ID, report); err != nil {
+		log.Printf("the stale replay of entry %s could not be reported: %v", entry.ID, err)
+	}
+}
+
+// staleUncertainty is the stalled script's raise on the screen the stale replay stopped on, named stale-entry with
+// the entry it replaces.
+func staleUncertainty(
+	stalled keyscripts.Uncertainty,
+	result keyscripts.ReplayResult,
+	entryID string,
+) keyscripts.Uncertainty {
+	stale := stalled
+	if live := result.Uncertainty; live != nil {
+		stale.Fingerprint = live.Fingerprint
+		stale.Rows = live.Rows
+		stale.Highlight = live.Highlight
+		stale.Generation = live.Generation
+		stale.Epoch = live.Epoch
+		stale.HostRows = live.HostRows
+	}
+	stale.Reason = keyscripts.StaleEntry
+	stale.StaleEntry = entryID
+
+	return stale
+}
+
+// sentSteps names the entry's steps the replay sent before the one it failed at: a key by its name, a chosen entry
+// only as a choice, since its label is screen text.
+func sentSteps(entry keyscripts.Entry, failedAt int) []string {
+	sent := []string{}
+	for index := 0; index < failedAt && index < len(entry.Steps); index++ {
+		if key := entry.Steps[index].Key; key != nil {
+			sent = append(sent, fmt.Sprintf("step %d: key %s", index+1, *key))
+			continue
+		}
+		sent = append(sent, fmt.Sprintf("step %d: choose", index+1))
+	}
+
+	return sent
+}
+
+// askAgainAfter waits out the journal's wait while another runtime's request on the same menu is open, then reads the
+// screen afresh and raises again under a new key. No key is sent meanwhile and the runtime stays held; a stop, an
+// exit or the person taking over ends the wait, since the runtime is then no longer held for this navigation.
+func (loop *Loop) askAgainAfter(
+	ctx context.Context,
+	runtime *liveRuntime,
+	request client.ClaimedRequest,
+	uncertainty keyscripts.Uncertainty,
+	state raiseState,
+	wait time.Duration,
+) {
+	timer := time.NewTimer(wait)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return
+	case <-timer.C:
+	}
+	if !loop.heldForNavigation(runtime) {
+		return
+	}
+	if rereader, rereads := runtime.driver.(screenRereader); rereads {
+		fresh, readable := rereader.Reread(uncertainty)
+		if !readable {
+			log.Printf("the screen of request %s may no longer leave the host; the runtime stays held", request.RequestID)
+			return
+		}
+		uncertainty = fresh
+	}
+	state.ask++
+	loop.raiseNavigation(ctx, runtime, request, uncertainty, state)
+}
+
+// heldForNavigation is whether the runtime is still open on this host and held for its navigation.
+func (loop *Loop) heldForNavigation(runtime *liveRuntime) bool {
+	loop.mutex.Lock()
+	defer loop.mutex.Unlock()
+
+	return loop.runtimes[runtime.id] == runtime && runtime.hold == contracts.HoldNavigationNeeded
+}
+
+// waitOf is how long the journal asked the host to wait before it asks again, five seconds when it named no time.
+func waitOf(answer client.NavigationAnswer) time.Duration {
+	if answer.RetryAfterSeconds == nil {
+		return 5 * time.Second
+	}
+
+	return time.Duration(*answer.RetryAfterSeconds) * time.Second
 }
 
 // releaseRuntime ends the runtime's navigation hold, so its queue runs again.
@@ -446,6 +595,7 @@ func raiseOf(request client.ClaimedRequest, uncertainty keyscripts.Uncertainty) 
 		Rows:         uncertainty.Rows,
 		Highlight:    uncertainty.Highlight,
 		Generation:   uncertainty.Generation,
+		StaleEntry:   uncertainty.StaleEntry,
 	}
 }
 
@@ -600,6 +750,9 @@ func (loop *Loop) reportStep(
 	if progress.Seen.Menu != "" {
 		evidence += " " + progress.Seen.Menu
 	}
+	if _, build, _ := strings.Cut(progress.Profile, "@"); build != "" && build != runtime.build {
+		evidence += " (script of " + progress.Profile + ")"
+	}
 	report := client.RequestReport{
 		RequestID: request.RequestID,
 		Attempt:   request.Attempt,
@@ -660,7 +813,7 @@ func (loop *Loop) runtimeOf(ctx context.Context, runtimeID string) (*liveRuntime
 	if err != nil {
 		return nil, err
 	}
-	runtime := &liveRuntime{id: runtimeID, driver: driver, hold: contracts.HoldNone}
+	runtime := &liveRuntime{id: runtimeID, driver: driver, build: grant.Runtime.ProgramBuild, hold: contracts.HoldNone}
 	loop.runtimes[runtimeID] = runtime
 
 	return runtime, nil

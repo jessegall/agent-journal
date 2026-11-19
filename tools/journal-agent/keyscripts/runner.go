@@ -45,6 +45,9 @@ type Progress struct {
 	Step int
 	Name string
 	Seen screen.Classification
+	// Profile is the program build whose script ran, which differs from the runtime's own build when the registry
+	// fell back to an older build's script.
+	Profile string
 }
 
 // Screen is what the runner reads a program's screen with.
@@ -132,7 +135,7 @@ func (runner *Runner) from(script KeyScript, first int, values map[string]string
 		if unproven, stopped := runner.proofMissing(index, step, values); stopped {
 			return unproven, nil
 		}
-		runner.report(Progress{Step: index, Name: step.Name, Seen: seen})
+		runner.report(Progress{Step: index, Name: step.Name, Seen: seen, Profile: script.Profile})
 	}
 
 	return Result{Outcome: Finished, Step: len(script.Steps), Proven: script.ProvesResult()}, nil

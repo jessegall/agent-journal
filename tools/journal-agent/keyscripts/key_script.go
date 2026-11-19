@@ -1,5 +1,11 @@
 // Package keyscripts drives a program's menus with recorded, declarative key scripts: one key at a time, each only
-// after the screen it expects is read, and never a key past a screen it did not expect.
+// after the screen it expects is read, and never a key past a screen it did not expect. A script selects a menu entry
+// by its label only. At a point it cannot be certain of, the run ends NavigationNeeded with an Uncertainty
+// (uncertainty.go), sends no key and stays resumable at that step (runner.go). A library entry (entry.go) is a key
+// script the same Runner replays, with a fingerprint expectation and a proof check per step; a failed check stops
+// before its key. Runner.Navigate (navigation.go) takes the main agent's rounds through the input gate and checks the
+// proof on screen; path.go turns a proven request's rounds into an entry's steps. Registry.Find falls back to the
+// newest registered build of the program.
 package keyscripts
 
 import (

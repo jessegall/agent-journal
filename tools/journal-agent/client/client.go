@@ -135,6 +135,21 @@ type NavigationRaise struct {
 	Generation   uint64   `json:"generation"`
 	// DeclinedEntries are library entries whose replay failed here, which the journal must not answer again.
 	DeclinedEntries []string `json:"declined_entries,omitempty"`
+	// StaleEntry is the library entry this raise replaces, whose replay failed after its first step.
+	StaleEntry string `json:"stale_entry,omitempty"`
+	// SentSteps are the steps the stale entry's replay already sent, by name, never with screen text.
+	SentSteps []string `json:"sent_steps,omitempty"`
+}
+
+// EntryStaleReport mirrors App\Http\Data\Agents\MenuEntryStaleData: a library entry's replay failed a check on
+// the runtime's build, at a step after its first, with the redacted screen it failed on when that may leave the host.
+type EntryStaleReport struct {
+	RuntimeID    string   `json:"runtime_id"`
+	OperationKey string   `json:"operation_key"`
+	Reason       string   `json:"reason"`
+	Step         int      `json:"step"`
+	Build        string   `json:"build"`
+	Rows         []string `json:"rows"`
 }
 
 // The answers to a raise, as App\Agents\Enums\NavigationRaiseOutcome names them.
@@ -325,6 +340,11 @@ func (client *Client) RaiseNavigation(
 func (client *Client) ReportReplayed(ctx context.Context, entryID, runtimeID, operationKey string) error {
 	body := map[string]string{"runtime_id": runtimeID, "operation_key": operationKey}
 	return client.call(ctx, "/host/menu-entries/"+entryID+"/replayed", body, nil)
+}
+
+// ReportStale reports that the replay of a library entry failed a check on the runtime's build, under the replay's key.
+func (client *Client) ReportStale(ctx context.Context, entryID string, report EntryStaleReport) error {
+	return client.call(ctx, "/host/menu-entries/"+entryID+"/stale", report, nil)
 }
 
 // InterruptNavigation reports that the person took over a runtime whose navigation request was open.
