@@ -102,7 +102,9 @@ use App\Processes\Commands\WithdrawRuleProposal;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\InstallBuiltInProfiles;
 use App\Profiles\Commands\LaunchProfileMain;
+use App\Profiles\Commands\RenameAccount;
 use App\Profiles\Commands\RevokeProfiles;
+use App\Profiles\Commands\SwitchAccount;
 use App\Records\Commands\LinkRecords;
 use App\Records\Commands\UnlinkRecords;
 use App\Settings\Commands\DisableSettingGroup;
@@ -243,6 +245,8 @@ final class CoreCommands
             InstallBuiltInProfiles::class,
             RevokeProfiles::class,
             LaunchProfileMain::class,
+            SwitchAccount::class,
+            RenameAccount::class,
             ProposeCommandRule::class,
             ReviseRuleProposal::class,
             WithdrawRuleProposal::class,

@@ -666,13 +666,19 @@ use App\Processes\Values\Word;
 use App\Processes\Values\WordSegment;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\LaunchProfileMain;
+use App\Profiles\Commands\RenameAccount;
 use App\Profiles\Commands\RevokeProfiles;
+use App\Profiles\Commands\SwitchAccount;
 use App\Profiles\Contracts\ProfileResolver;
 use App\Profiles\Contracts\ProfileSelections;
 use App\Profiles\Enums\AuthorizationType;
 use App\Profiles\Enums\PolicyOriginType;
 use App\Profiles\Enums\ProfileChangeType;
+use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Events\ProfileRevisionRevoked;
+use App\Profiles\Exceptions\AccountLabelInvalid;
+use App\Profiles\Exceptions\AccountLabelTaken;
+use App\Profiles\Exceptions\AccountMissing;
 use App\Profiles\Exceptions\BuiltInProfileMissing;
 use App\Profiles\Exceptions\ProfileCannotCoordinate;
 use App\Profiles\Exceptions\ProfileFieldUnknown;
@@ -1010,6 +1016,7 @@ final class CoreApi
                 LaunchUnavailable::class,
                 ProgramFailed::class,
                 AccountUseChanged::class,
+                AccountsChanged::class,
                 EngineTicked::class,
                 SettingsChanged::class,
                 ShareRequested::class,
@@ -1644,6 +1651,8 @@ final class CoreApi
                 ActivateProfiles::class,
                 RevokeProfiles::class,
                 LaunchProfileMain::class,
+                SwitchAccount::class,
+                RenameAccount::class,
                 HoldAccountUses::class,
                 CancelAccountUses::class,
                 SettleAccountUses::class,
@@ -1849,6 +1858,9 @@ final class CoreApi
                 AccountUnavailable::class,
                 AccountUseMissing::class,
                 AccountUsesRemain::class,
+                AccountMissing::class,
+                AccountLabelTaken::class,
+                AccountLabelInvalid::class,
                 SharingNotAllowed::class,
                 InvalidAssignmentPage::class,
                 InvalidRecordIds::class,
