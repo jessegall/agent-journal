@@ -4,18 +4,25 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
+use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Data\ScreenFrameData;
 use App\Agents\Enums\DriverType;
+use App\Agents\Exceptions\TerminalViewRefused;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
 use App\Agents\Support\RuntimeScreen;
+use App\Agents\Support\TerminalFrames;
+use App\Http\Responses\Agents\TerminalViewResponses;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TestActors;
+use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
 
 /**
@@ -68,9 +75,8 @@ final class TerminalViewRoutesTest extends TestCase
         $this->assertRefusal('01jzzzzzzzzzzzzzzzzzzzzzzz', 403, 'You may not inspect this agent');
 
         $stranger = User::factory()->create();
-        $this->actingAs($stranger)->postJson("/agents/{$process->session->agent_id}/terminal")
-            ->assertForbidden()
-            ->assertJson(['message' => 'You may not inspect this agent']);
+        $this->actingAs($stranger)->postJson("/agents/{$process->session->agent_id}/terminal")->assertForbidden();
+        $this->assertSame(0, TerminalView::query()->acrossActors()->count());
     }
 
     public function test_too_many_views_answers_429(): void
@@ -104,10 +110,22 @@ final class TerminalViewRoutesTest extends TestCase
     {
         $runtime = $this->runtimeOn('host-1');
         $agentId = $runtime->session->agent_id;
-        $stranger = User::factory()->create();
-        $view = TerminalView::open($this->viewerOf($stranger), $runtime, 500, CarbonImmutable::now());
+        $viewer = TestActors::agentIdentity(9);
+        $view = TerminalView::open($viewer, $runtime, 500, CarbonImmutable::now());
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($viewer->id),
+            TestLaunchAuthority::forAgent($viewer->id),
+        );
+        $frames = $this->app->make(TerminalFrames::class);
 
-        $this->actingAs($stranger)->getJson("/agents/{$agentId}/terminal")->assertForbidden();
+        $this->assertThrows(
+            fn () => $this->app->make(TerminalViewResponses::class)->answer(
+                $agentId,
+                fn (): Response => $frames->after($agentId, '', 0)->getOrCall(fn (): Response => new Response()),
+            ),
+            TerminalViewRefused::class,
+            'You may not inspect this agent',
+        );
 
         $this->assertFalse($view->refresh()->isLive());
     }

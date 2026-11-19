@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Agents;
 
+use App\Actors\Contracts\ServerClock;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\TerminalView;
 use App\Agents\Support\EnrolledHost;
@@ -11,6 +12,7 @@ use App\Agents\Support\RuntimeScreen;
 use Carbon\CarbonImmutable;
 use Illuminate\Testing\TestResponse;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\FakeServerClock;
 use Tests\Support\OpensTerminalRuntimes;
 use Tests\Support\RunsTrustedCommands;
 use Tests\Support\SendsHostCalls;
@@ -79,7 +81,7 @@ final class ScreenReportRouteTest extends TestCase
     {
         $host = $this->enrolledHost();
         $runtime = $this->watchedRuntimeOn($host);
-        $this->freezeSecond();
+        $this->app->instance(ServerClock::class, new FakeServerClock(CarbonImmutable::parse('2026-11-19 12:00:00')));
 
         foreach (range(1, 4) as $sequence) {
             $this->report($host, $runtime, $sequence)->assertExactJson(['status' => 'stored']);
@@ -88,11 +90,6 @@ final class ScreenReportRouteTest extends TestCase
         $this->report($host, $runtime, 5)->assertExactJson(['status' => 'refused', 'reason' => 'too_fast']);
         $this->report($host, $runtime, 6)->assertExactJson(['status' => 'refused', 'reason' => 'too_fast']);
         $this->assertSame(4, $this->app->make(RuntimeScreen::class)->latest($runtime->id)?->frame->sequence);
-    }
-
-    private function freezeSecond(): void
-    {
-        $this->travelTo(CarbonImmutable::now()->startOfSecond());
     }
 
     private function watchedRuntimeOn(EnrolledHost $host): AgentRuntime

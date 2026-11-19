@@ -23,12 +23,12 @@ final class TerminalFrameRequest extends FormRequest
         ];
     }
 
-    public function epoch(): string
+    public function heldEpoch(): string
     {
         return $this->string('epoch')->toString();
     }
 
-    public function after(): int
+    public function heldSequence(): int
     {
         return $this->integer('after');
     }
