@@ -1,0 +1,21 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "php",
+    "find": {
+        "select": "line",
+        "where": [
+            {
+                "lineLonger": 120
+            },
+            {
+                "fileMatches": "^(app|domain|tests|config)/"
+            }
+        ]
+    },
+    "sin": {
+        "description": "A line of PHP code wider than 120 characters.",
+        "name": "line-too-wide",
+        "rule": "No PHP line goes past 120 characters: break a long call one argument per line, or name its argument first (rule 38).",
+        "skill": "line-width"
+    }
+}
