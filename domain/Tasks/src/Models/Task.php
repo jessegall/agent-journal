@@ -98,6 +98,16 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
     public const string LINK_TYPE = TaskType::VALUE;
 
     /**
+     * The most characters a task's title holds.
+     */
+    public const int TITLE_CHARACTERS = 240;
+
+    /**
+     * The most characters a task's brief, result note, block reason or cancel reason holds.
+     */
+    public const int NOTE_CHARACTERS = 8000;
+
+    /**
      * @var array<string, mixed>
      */
     protected $attributes = ['state' => 'open', 'run_number' => 0, 'revision' => 1];
@@ -233,12 +243,9 @@ final class Task extends Model implements Assignable, Numbered, ReadableModel
 
     /**
      * Gives the task a new title and brief, as a new revision.
-     *
-     * @throws TaskTextTooLong
      */
     public function describe(string $title, string $brief): void
     {
-        TaskLimits::check($title, $brief);
         $this->title = $title;
         $this->brief = $brief;
         $this->revision++;
