@@ -8,7 +8,6 @@ use App\Contracts\CommandHandler;
 use App\Profiles\Commands\BeginSignIn;
 use App\Profiles\Events\AccountsChanged;
 use App\Profiles\Jobs\SignInDeadline;
-use App\Profiles\Models\Account;
 use App\Profiles\Models\ActiveAccount;
 use App\Profiles\Models\SignInAttempt;
 use App\Profiles\Values\AccountLabel;
@@ -21,7 +20,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\Str;
 
 /**
- * Starts or rejoins a sign-in under the program's selection lock, then the account's: one attempt at a time writes a
+ * Starts or rejoins a new account's sign-in under the program's selection lock: one attempt at a time writes a new
  * folder. The attempt and its deadline are saved before its deadline job is queued, after commit, with ids only.
  */
 final readonly class BeginSignInHandler implements CommandHandler
@@ -42,34 +41,19 @@ final readonly class BeginSignInHandler implements CommandHandler
 
         $program = HookProgram::from($command->program);
         ActiveAccount::lockedFor($program);
-        $account = $command->accountId === null ? null : Account::lockedForChange($command->accountId);
-        $running = SignInAttempt::liveFor($program, $account);
+        $running = SignInAttempt::liveFor($program, null);
 
         if ($running !== null) {
             return new SignInStarted($running->id, true);
         }
 
-        $attempt = $this->begin($program, $account, $command);
+        $expiresAt = CarbonImmutable::now()->addMinutes($this->config->integer('accounts.sign_in_minutes'));
+        $label = AccountLabel::from($command->label);
+        $directory = $this->config->string('accounts.root').'/'.Str::lower((string) Str::ulid());
+        $attempt = SignInAttempt::forNewAccount($program, $label, $directory, $command->requestKey, $expiresAt);
         $this->jobs->dispatch(new SignInDeadline($attempt->id)->afterCommit()->delay($attempt->expires_at));
-        $this->events->dispatch(new AccountsChanged($program->value, $account->id ?? $attempt->id));
+        $this->events->dispatch(new AccountsChanged($program->value, $attempt->id));
 
         return new SignInStarted($attempt->id, false);
-    }
-
-    private function begin(HookProgram $program, Account|null $account, BeginSignIn $command): SignInAttempt
-    {
-        $expiresAt = CarbonImmutable::now()->addMinutes($this->config->integer('accounts.sign_in_minutes'));
-
-        if ($account === null) {
-            $label = AccountLabel::from((string) $command->label);
-            $directory = $this->config->string('accounts.root').'/'.Str::lower((string) Str::ulid());
-
-            return SignInAttempt::forNewAccount($program, $label, $directory, $command->requestKey, $expiresAt);
-        }
-
-        $attempt = SignInAttempt::forAccount($account, $command->requestKey, $expiresAt);
-        $attempt->writeFolderOf($account);
-
-        return $attempt;
     }
 }

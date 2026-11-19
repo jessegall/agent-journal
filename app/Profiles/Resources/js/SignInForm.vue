@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { SignInAttemptData } from '@generated/types/accounts';
-import { cancelSignIn, startSignIn, submitCode } from '@generated/routes/accounts';
+import { cancelSignIn, signInAgain, startSignIn, submitCode } from '@generated/routes/accounts';
 import { useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
+import ConfirmAction from '@kit/ConfirmAction';
 import FormErrors from '@kit/FormErrors';
 import TextField from '@kit/TextField';
 import { formSendingHooks } from '@kit/usePageChanges';
@@ -11,7 +12,8 @@ import { codeDirection, readChallenge } from './signIn';
 import type { SignInChallenge } from './signIn';
 
 /**
- * Signs in a new account of a program under a name, or an account again. While its sign-in runs the form shows the
+ * Signs in a new account of a program under a name, or a saved account again once the owner confirmed that no new
+ * launch uses it meanwhile and its running work must end first. While its sign-in runs the form shows the
  * challenge read over its own no-store request: Claude Code's address with a field for the code the provider gives
  * back, or Codex's code to enter on the provider's page. A typed code lives only in this form and is cleared once
  * sent, cancelled or left; the sign-in completes on the host, so closing the page loses nothing.
@@ -23,6 +25,7 @@ const props = defineProps<{
 }>();
 
 const start = useForm({ label: '' });
+const again = useForm({});
 const cancelling = useForm({});
 const codeForm = useForm({ code: '' });
 const challenge = ref<SignInChallenge>({ address: null, code: null });
@@ -34,10 +37,15 @@ function begin(): void {
         .transform((fields) => ({
             program: props.program,
             request_key: crypto.randomUUID(),
-            label: props.accountId === null ? fields.label : null,
-            account_id: props.accountId,
+            label: fields.label,
         }))
         .submit(startSignIn(), { preserveScroll: true, ...formSendingHooks() });
+}
+
+function beginAgain(accountId: string): void {
+    again
+        .transform(() => ({ request_key: crypto.randomUUID() }))
+        .submit(signInAgain({ account: accountId }), { preserveScroll: true, ...formSendingHooks() });
 }
 
 async function pollChallenge(attemptId: string): Promise<void> {
@@ -93,22 +101,28 @@ function cancel(): void {
 <template>
     <div class="flex flex-col gap-2 px-4 py-3">
         <form
-            v-if="running === undefined"
+            v-if="running === undefined && accountId === null"
             class="flex items-end gap-2"
             @submit.prevent="begin"
         >
             <TextField
-                v-if="accountId === null"
                 :id="`new-account-${program}`"
                 v-model="start.label"
                 label="Account name"
                 :maxlength="80"
                 :error="start.errors.label"
             />
-            <Button type="submit" variant="primary" size="small" :pending="start.processing">{{
-                accountId === null ? 'Sign in' : 'Sign in again'
-            }}</Button>
+            <Button type="submit" variant="primary" size="small" :pending="start.processing">Sign in</Button>
         </form>
+        <div v-else-if="running === undefined && accountId !== null">
+            <ConfirmAction
+                label="Sign in again"
+                question="New launches wait and work running on this account must end first. Sign in again?"
+                confirm-label="Sign in again"
+                :pending="again.processing"
+                @confirm="beginAgain(accountId)"
+            />
+        </div>
         <template v-else>
             <p v-if="challenge.address === null" class="text-small text-text-3">Starting the sign-in…</p>
             <template v-else>
@@ -141,5 +155,6 @@ function cancel(): void {
             </div>
         </template>
         <FormErrors :errors="start.errors" />
+        <FormErrors :errors="again.errors" />
     </div>
 </template>

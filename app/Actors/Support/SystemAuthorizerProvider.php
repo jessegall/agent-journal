@@ -11,6 +11,7 @@ use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\Policy;
 use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Values\TrustedEntryAuthority;
+use App\Agents\Policies\AgentPolicy;
 
 /**
  * The journal itself acts as the system through several trusted entries; each entry may act only on the subjects of
@@ -33,6 +34,7 @@ final readonly class SystemAuthorizerProvider implements AuthorizerProvider
         'built-in profiles' => [],
         'number install' => [],
         'desk install' => [],
+        'account reconciliation' => [AgentPolicy::class],
     ];
 
     public function __construct(private CurrentActor $actors) {}

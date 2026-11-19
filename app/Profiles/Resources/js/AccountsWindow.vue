@@ -61,7 +61,13 @@ const programs = computed(() => {
                         <AccountRow
                             :account="row"
                             :is-chosen="isChosen(selections, row.program, row.id)"
-                        />
+                        >
+                            <SignInForm
+                                :program="program"
+                                :account-id="row.id"
+                                :running="attemptToRejoin(data.attempts, program, row.id)"
+                            />
+                        </AccountRow>
                     </template>
                 </ul>
             </section>

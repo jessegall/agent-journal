@@ -80,5 +80,6 @@ function saveName(): void {
             >
             <Button size="small" @click="isRenaming = false">Cancel</Button>
         </form>
+        <slot />
     </li>
 </template>

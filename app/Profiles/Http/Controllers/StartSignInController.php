@@ -24,7 +24,6 @@ final readonly class StartSignInController
             $request->program(),
             $request->requestKey(),
             $request->label(),
-            $request->accountId(),
         ));
 
         return $redirect->back(303);

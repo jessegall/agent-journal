@@ -38,6 +38,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $process_reference
  * @property string|null $login_reference
  * @property bool $cleanup_pending
+ * @property bool $waits_for_uses
  * @property CarbonImmutable $expires_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -64,6 +65,7 @@ final class SignInAttempt extends Model implements ReadableModel
             'state' => SignInState::class,
             'generation' => 'integer',
             'cleanup_pending' => 'boolean',
+            'waits_for_uses' => 'boolean',
             'expires_at' => 'immutable_datetime',
         ];
     }
@@ -86,7 +88,8 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     /**
-     * A new attempt to sign an existing account in again, in the sign-in generation the account is in.
+     * A new attempt to sign an existing account in again, in the sign-in generation the account is in. No host takes
+     * it while a process may still run on the account's folder.
      */
     public static function forAccount(Account $account, string $requestKey, CarbonImmutable $expiresAt): self
     {
@@ -94,6 +97,7 @@ final class SignInAttempt extends Model implements ReadableModel
         $attempt->account_id = $account->id;
         $attempt->generation = $account->sign_in_generation;
         $attempt->directory = $account->directory;
+        $attempt->waits_for_uses = true;
         $attempt->begin($requestKey, $expiresAt);
 
         return $attempt;
@@ -235,6 +239,7 @@ final class SignInAttempt extends Model implements ReadableModel
         $attempt = self::query()
             ->withoutGlobalScope(HumanAccounts::class)
             ->where('state', SignInState::Starting->value)
+            ->where('waits_for_uses', false)
             ->whereNull('process_reference')
             ->where('expires_at', '>', $now)
             ->orderBy('created_at')
@@ -292,15 +297,43 @@ final class SignInAttempt extends Model implements ReadableModel
     }
 
     /**
-     * Ends the attempt and lets go of the account folder it wrote, so a later attempt may write it.
+     * Ends the attempt and lets go of the account folder it wrote, so a later attempt may write it; an account signed
+     * in again that may have changed is checked before launches use it again.
      */
     public function finish(SignInState $state): void
     {
         $this->end($state);
 
         if ($this->account_id !== null) {
-            Account::lockedForJournal($this->account_id)->releaseWriter($this);
+            Account::lockedForJournal($this->account_id)->endSignInAgain($this);
         }
+    }
+
+    /**
+     * Every process on the account's folder ended: a host may now take the attempt.
+     */
+    public function releaseForHost(): void
+    {
+        $this->waits_for_uses = false;
+        $this->save();
+    }
+
+    /**
+     * The live attempts to sign an account in again that still wait for the account's processes to end.
+     *
+     * @return list<string>
+     */
+    public static function waitingForUsesIds(int $limit): array
+    {
+        $ids = self::query()
+            ->withoutGlobalScope(HumanAccounts::class)
+            ->where('waits_for_uses', true)
+            ->whereIn('state', array_map(fn (SignInState $state) => $state->value, SignInState::live()))
+            ->orderBy('created_at')
+            ->readLimit($limit)
+            ->pluck('id');
+
+        return array_values(array_map(strval(...), $ids->all()));
     }
 
     /**

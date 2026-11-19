@@ -53,6 +53,7 @@ return new class extends Migration
             $table->string('process_reference')->nullable();
             $table->string('login_reference')->nullable();
             $table->boolean('cleanup_pending')->default(false);
+            $table->boolean('waits_for_uses')->default(false);
             $table->timestampTz('expires_at');
             $table->timestampsTz();
 

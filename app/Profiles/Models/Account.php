@@ -157,15 +157,45 @@ final class Account extends Model implements ReadableModel
     }
 
     /**
-     * The account signed in again by the attempt that holds its folder: signed in, checked now, its writer released.
+     * The account signed in by the attempt that holds its folder: signed in, checked now, its writer released. Signed
+     * in again, it starts a new sign-in generation, so a report or check from before is out of date, and launches may
+     * use it again.
      */
     public function signedInAgain(SignInAttempt $attempt, string|null $identity, CarbonImmutable $checkedAt): void
     {
+        if ($this->live_writer_attempt_id === $attempt->id) {
+            $this->sign_in_generation++;
+            $this->maintenance = false;
+            $this->check_requested_generation = null;
+        }
+
         $this->state = AccountState::SignedIn;
         $this->identity = $identity;
         $this->checked_at = $checkedAt;
         $this->save();
         $this->releaseWriter($attempt);
+    }
+
+    /**
+     * A sign-in again ended without success. A signed-in account stays held until the host checks it in its current
+     * generation, as the attempt may have changed its folder; one that needed a sign-in is simply let go. An older
+     * attempt's end changes nothing of a newer writer's hold.
+     */
+    public function endSignInAgain(SignInAttempt $attempt): void
+    {
+        if ($this->live_writer_attempt_id !== $attempt->id) {
+            return;
+        }
+
+        $this->live_writer_attempt_id = null;
+
+        if ($this->state === AccountState::SignedIn) {
+            $this->check_requested_generation = $this->sign_in_generation;
+        } else {
+            $this->maintenance = false;
+        }
+
+        $this->save();
     }
 
     /**
@@ -199,12 +229,23 @@ final class Account extends Model implements ReadableModel
 
     /**
      * Applies the host's check made in the given generation, and answers whether it showed the account signed out;
-     * a check of an older generation changes nothing, and only a definite sign-out needs a new sign-in.
+     * a check of an older generation changes nothing, only a definite sign-out needs a new sign-in, and an account
+     * held for its check after a sign-in again stays held until the answer is certain.
      */
     public function applyCheck(int $generation, AccountCheckResult $result, CarbonImmutable $now): bool
     {
         if (! $this->isGeneration($generation)) {
             return false;
+        }
+
+        $isHeldForCheck = $this->isHeldForCheck();
+
+        if ($isHeldForCheck && $result === AccountCheckResult::Unknown) {
+            return false;
+        }
+
+        if ($isHeldForCheck) {
+            $this->maintenance = false;
         }
 
         $this->check_requested_generation = null;
@@ -362,6 +403,18 @@ final class Account extends Model implements ReadableModel
 
         $this->maintenance = true;
         $this->save();
+    }
+
+    /**
+     * Whether launches wait for the host's check after a sign-in again that did not finish: only a certain answer
+     * lets them go.
+     */
+    public function isHeldForCheck(): bool
+    {
+        return $this->maintenance
+            && $this->live_writer_attempt_id === null
+            && $this->state === AccountState::SignedIn
+            && $this->check_requested_generation !== null;
     }
 
     public function hasLiveWriter(): bool

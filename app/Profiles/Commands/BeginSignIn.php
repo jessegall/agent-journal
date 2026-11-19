@@ -15,8 +15,8 @@ use App\Profiles\Policies\AccountPolicy;
 use App\Profiles\Values\SignInStarted;
 
 /**
- * The owner starts signing in a new account of a program under a name, or the named account again. A repeat of the
- * same request, or a second start while one runs, rejoins the attempt already running.
+ * The owner starts signing in a new account of a program under a name; a saved account is signed in again with
+ * BeginSignInAgain. A repeat of the same request, or a second start while one runs, rejoins the attempt running.
  *
  * @extends Command<SignInStarted>
  */
@@ -27,8 +27,7 @@ final readonly class BeginSignIn extends Command implements HasAuthorizationSubj
     public function __construct(
         public string $program,
         public string $requestKey,
-        public string|null $label = null,
-        public string|null $accountId = null,
+        public string $label,
     ) {}
 
     /**

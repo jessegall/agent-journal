@@ -20,8 +20,7 @@ final class StartSignInRequest extends FormRequest
         return [
             'program' => ['required', 'string', 'max:64'],
             'request_key' => ['required', 'string', 'max:128'],
-            'label' => ['nullable', 'string', 'max:200'],
-            'account_id' => ['nullable', 'string', 'max:64'],
+            'label' => ['required', 'string', 'max:200'],
         ];
     }
 
@@ -35,13 +34,8 @@ final class StartSignInRequest extends FormRequest
         return $this->string('request_key')->toString();
     }
 
-    public function label(): string|null
+    public function label(): string
     {
-        return $this->filled('label') ? $this->string('label')->toString() : null;
-    }
-
-    public function accountId(): string|null
-    {
-        return $this->filled('account_id') ? $this->string('account_id')->toString() : null;
+        return $this->string('label')->toString();
     }
 }

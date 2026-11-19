@@ -8,6 +8,7 @@ use App\Profiles\Http\Controllers\ActivateAccountController;
 use App\Profiles\Http\Controllers\CancelSignInController;
 use App\Profiles\Http\Controllers\DismissAccountNoticeController;
 use App\Profiles\Http\Controllers\RenameAccountController;
+use App\Profiles\Http\Controllers\SignInAgainController;
 use App\Profiles\Http\Controllers\SignInChallengeController;
 use App\Profiles\Http\Controllers\StartSignInController;
 use App\Profiles\Http\Controllers\SubmitSignInCodeController;
@@ -41,6 +42,7 @@ final class ProfilesPages implements ProvidesNavigation, ProvidesPages, Provides
                     ActionRoute::post('{account}/activate', ActivateAccountController::class, 'activate'),
                     ActionRoute::patch('{account}', RenameAccountController::class, 'rename'),
                     ActionRoute::post('sign-ins', StartSignInController::class, 'start-sign-in'),
+                    ActionRoute::post('{account}/sign-in-again', SignInAgainController::class, 'sign-in-again'),
                     ActionRoute::post('notices/{notice}/dismiss', DismissAccountNoticeController::class, 'dismiss'),
                     ActionRoute::post('sign-ins/{attempt}/challenge', SignInChallengeController::class, 'challenge'),
                     ActionRoute::post('sign-ins/{attempt}/code', SubmitSignInCodeController::class, 'submit-code'),

@@ -668,6 +668,7 @@ use App\Processes\Values\Word;
 use App\Processes\Values\WordSegment;
 use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\BeginSignIn;
+use App\Profiles\Commands\BeginSignInAgain;
 use App\Profiles\Commands\CancelSignIn;
 use App\Profiles\Commands\DismissAccountNotice;
 use App\Profiles\Commands\LaunchProfileMain;
@@ -1669,6 +1670,7 @@ final class CoreApi
                 MaintainAccount::class,
                 DismissAccountNotice::class,
                 BeginSignIn::class,
+                BeginSignInAgain::class,
                 CancelSignIn::class,
                 SubmitSignInCode::class,
                 HoldAccountUses::class,

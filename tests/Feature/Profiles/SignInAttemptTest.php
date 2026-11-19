@@ -11,6 +11,7 @@ use App\Bus\Contracts\CommandBus;
 use App\Bus\Enums\CommandEntry;
 use App\Bus\Support\EntryDispatchers;
 use App\Profiles\Commands\BeginSignIn;
+use App\Profiles\Commands\BeginSignInAgain;
 use App\Profiles\Commands\CancelSignIn;
 use App\Profiles\Commands\CompleteSignIn;
 use App\Profiles\Commands\ReconcileAccounts;
@@ -96,8 +97,8 @@ final class SignInAttemptTest extends TestCase
     {
         $account = $this->chooseActiveAccounts()['codex'];
         $this->actAsOwner();
-        $again = $this->bus()->run(new BeginSignIn('codex', 'request-again', accountId: $account->id));
-        $rejoined = $this->bus()->run(new BeginSignIn('codex', 'request-other', accountId: $account->id));
+        $again = $this->bus()->run(new BeginSignInAgain($account->id, 'request-again'));
+        $rejoined = $this->bus()->run(new BeginSignInAgain($account->id, 'request-other'));
 
         $this->assertSame($again->attemptId, $rejoined->attemptId);
         $this->assertSame($again->attemptId, $account->refresh()->live_writer_attempt_id);
