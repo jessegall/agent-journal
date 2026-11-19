@@ -8,6 +8,7 @@ from core.modules.voices.commands.voice_show.voice_show_subcommand import VoiceS
 from core.modules.voices.listeners.voice_change_listener import VoiceChangeListener
 from core.modules.voices.listeners.voice_compaction_listener import VoiceCompactionListener
 from core.modules.voices.listeners.voice_start_listener import VoiceStartListener
+from core.modules.voices.listeners.voice_git_name_listener import VoiceGitNameListener
 from core.modules.voices.support.voices_settings import VOICES_SETTINGS
 
 
@@ -24,4 +25,4 @@ class VoicesModule(Module):
     settings = VOICES_SETTINGS
     subcommands = [VoiceListSubcommand, ChooseVoiceSubcommand, SetVoiceAddressSubcommand, VoiceShowSubcommand]
     handlers = [SetVoiceAddressHandler]
-    listeners = [VoiceStartListener, VoiceCompactionListener, VoiceChangeListener]
+    listeners = [VoiceStartListener, VoiceCompactionListener, VoiceChangeListener, VoiceGitNameListener]

@@ -28,7 +28,7 @@ class ChildProcess:
         return self.process.wait(limit_seconds)
 
     # writes the input, reads both outputs to their end and waits for the program, within the limit when one is given;
-    # a quick run of the door in a handler is the shell-command-under-the-write-lock rule's to judge, not this guard's
+    # the door refuses a run under the write turn before it starts the program
     def communicate(self, text: Any = None, limit_seconds: float | None = None) -> tuple[Any, Any]:
         return self.process.communicate(text, timeout=limit_seconds)
 

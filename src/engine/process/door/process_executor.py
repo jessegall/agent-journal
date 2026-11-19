@@ -10,12 +10,14 @@ from engine.process.door.execution_request import ExecutionRequest
 from engine.process.door.placed_run import PlacedRun
 from engine.process.door.run_placement import RunPlacement
 from engine.process.door.runner_program import RunnerProgram
+from engine.time.thread_turn_count import THREAD_TURN_COUNT
 
 TIME_LIMIT_EXIT_CODE = 124
 
 
 class ProcessExecutor:
-    """The one door every program the journal runs goes through: the queue admits it as its row, the gate
+    """The one door every program the journal runs goes through, never while the thread holds the database's
+    write turn, since every other write would wait on the program: the queue admits it as its row, the gate
     holds it while the server starts or updates and refuses it for a paused agent, the run takes its
     ticket, the runner runs it, and its end is recorded, also when it fails or passes its time limit."""
 
@@ -23,6 +25,7 @@ class ProcessExecutor:
         self.placement, self.runner, self.gate, self.errors, self.start_check = placement, runner, gate, errors, start_check
 
     def execute(self, request: ExecutionRequest) -> Execution:
+        THREAD_TURN_COUNT.refuse_wait(f"the run of {request.text}")
         placed = self.placement.placed(request)
         try:
             placed.refuse_hook_wait()

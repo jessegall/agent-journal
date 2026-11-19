@@ -7,8 +7,6 @@ from core.modules.approvals.models.approval_request import ApprovalRequest
 
 @dataclass(frozen=True)
 class MoveApproval(Command[ApprovalRequest]):
-    lock = True
-
     row_id: int
     move: Move
     failure: str | None = None
