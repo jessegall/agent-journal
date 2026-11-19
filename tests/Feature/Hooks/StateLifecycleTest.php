@@ -26,7 +26,6 @@ use App\Hooks\Storage\FrameRecord;
 use App\Hooks\Storage\FrameRecords;
 use App\Hooks\Support\StackTransaction;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use RuntimeException;
 use Tests\Fixtures\Hooks\Lifecycle\LifecycleLog;
@@ -55,7 +54,7 @@ final class StateLifecycleTest extends TestCase
     {
         parent::setUp();
 
-        DB::table('agent_stacks')->truncate();
+        AgentStackRow::query()->truncate();
         $this->target = TestActors::stack(1, 10);
         $this->app->instance(
             AgentContext::class,
@@ -82,7 +81,7 @@ final class StateLifecycleTest extends TestCase
 
     protected function tearDown(): void
     {
-        DB::table('agent_stacks')->truncate();
+        AgentStackRow::query()->truncate();
 
         parent::tearDown();
     }
@@ -189,7 +188,7 @@ final class StateLifecycleTest extends TestCase
 
     public function test_cleanup_of_a_stack_that_does_not_exist_is_refused(): void
     {
-        DB::table('agent_stacks')->truncate();
+        AgentStackRow::query()->truncate();
 
         $this->expectException(StackMissing::class);
 

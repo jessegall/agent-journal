@@ -24,9 +24,9 @@ use Tests\Fixtures\Hooks\Ticks\ScriptedTickingLoader;
 use Tests\Fixtures\Hooks\Ticks\UnreadLoader;
 use Tests\Support\BuildsTickingStacks;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\FakeMonotonicClock;
 use Tests\Support\FakeServerClock;
-use Tests\Support\SimulatedFailure;
 use Tests\TestCase;
 
 /**

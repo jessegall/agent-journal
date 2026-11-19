@@ -54,7 +54,9 @@ final class DomainFiles
     {
         $files = [];
 
-        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder, RecursiveDirectoryIterator::SKIP_DOTS)) as $entry) {
+        foreach (new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($folder, RecursiveDirectoryIterator::SKIP_DOTS),
+        ) as $entry) {
             if ($entry instanceof SplFileInfo && $entry->isFile()) {
                 $files[] = $entry->getPathname();
             }

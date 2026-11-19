@@ -27,6 +27,7 @@ use Domain\Tasks\Models\TaskRun;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -60,6 +61,7 @@ final class DispatchReplyInboxTest extends TestCase
         'capacity_reservations',
     ];
 
+    #[TimeLimit(seconds: 5, reason: 'It launches two agent sessions and seats a desk before it dispatches.')]
     public function test_a_run_keeps_mains_inbox_after_mains_occupant_changes(): void
     {
         $owner = User::factory()->create();
@@ -94,6 +96,7 @@ final class DispatchReplyInboxTest extends TestCase
         $this->assertSame($main->inbox_id, $run->refresh()->replyInboxId()->get());
     }
 
+    #[TimeLimit(seconds: 5, reason: 'It launches two agent sessions and seats a desk before it dispatches.')]
     public function test_a_helper_launch_keeps_mains_inbox_after_mains_occupant_changes(): void
     {
         $owner = User::factory()->create();
@@ -104,7 +107,10 @@ final class DispatchReplyInboxTest extends TestCase
         $helper = Agent::named('Researcher', 'read-only-helper');
         $this->startUserRequestAs($owner->id);
         $seat = $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(SeatingWriter::class)->seat($main->id, ActorIdentity::of($first->agent()->firstOrFail())),
+            fn () => $this->app->make(DeskSeating::class)->seat(
+                $main->id,
+                ActorIdentity::of($first->agent()->firstOrFail()),
+            ),
         );
         $this->startRequestAs($first->agent_id, $first->id);
         $request = new LaunchRequest(
@@ -124,8 +130,13 @@ final class DispatchReplyInboxTest extends TestCase
         $this->assertSame($main->inbox_id, $record->replyInboxId()->get());
 
         $this->startUserRequestAs($owner->id);
-        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(SeatingWriter::class)->replace(
-            new SeatChange($main->id, $seat->seatId, $seat->reference, ActorIdentity::of($second->agent()->firstOrFail())),
+        $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(DeskSeating::class)->replace(
+            new SeatChange(
+                $main->id,
+                $seat->seatId,
+                $seat->reference,
+                ActorIdentity::of($second->agent()->firstOrFail()),
+            ),
         ));
 
         $this->assertSame($main->inbox_id, $record->refresh()->replyInboxId()->get());

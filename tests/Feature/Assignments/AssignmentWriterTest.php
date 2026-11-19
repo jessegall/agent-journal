@@ -19,15 +19,14 @@ use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Tasks\Models\Task;
-use Illuminate\Database\Connection;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\AssignmentWriterInTransaction;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
+use Tests\Support\UsesSecondConnection;
 use Tests\TestCase;
 
 /**
@@ -39,6 +38,7 @@ final class AssignmentWriterTest extends TestCase
 {
     use CommitsHookRows;
     use StartsAgentRequests;
+    use UsesSecondConnection;
 
     private const array TABLES = ['users', 'agents', 'tasks', 'assignments'];
 
@@ -60,15 +60,6 @@ final class AssignmentWriterTest extends TestCase
         $this->helper = Agent::named('Helper', 'read-only-helper');
         $this->task = Task::factory()->create(['title' => 'Write the reader'])->assignmentIdentity();
         $this->startUserRequestAs($this->owner->id);
-    }
-
-    protected function tearDown(): void
-    {
-        if ($this->app->make('config')->has('database.connections.writer_other')) {
-            DB::connection('writer_other')->disconnect();
-        }
-
-        parent::tearDown();
     }
 
     public function test_the_owner_assigns_once_and_the_same_holder_is_unchanged_while_another_conflicts(): void
@@ -226,16 +217,5 @@ final class AssignmentWriterTest extends TestCase
     private function writer(): AssignmentWriter
     {
         return $this->app->make(AssignmentWriterInTransaction::class);
-    }
-
-    private function otherConnection(): Connection
-    {
-        $config = $this->app->make('config');
-        $config->set(
-            'database.connections.writer_other',
-            $config->get('database.connections.'.$config->get('database.default')),
-        );
-
-        return DB::connection('writer_other');
     }
 }

@@ -36,7 +36,8 @@ final class ConditionTreeTest extends TestCase
 {
     use RefreshHookDatabase;
 
-    private const string SECTION_6_JSON = '{"type":"all","version":1,"children":[{"type":"profiles","version":1,"keys":["journal-reviewer"]},{"type":"programs","version":1,"keys":["codex"]}]}';
+    private const string SECTION_6_JSON = '{"type":"all","version":1,"children":[{"type":"profiles","version":1,'
+        .'"keys":["journal-reviewer"]},{"type":"programs","version":1,"keys":["codex"]}]}';
 
     public function test_the_php_condition_and_the_section_6_json_agree_for_the_same_context(): void
     {

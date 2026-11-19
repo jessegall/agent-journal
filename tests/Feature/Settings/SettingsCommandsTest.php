@@ -9,12 +9,10 @@ use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
-use App\Domains\Support\DomainRegistry;
 use App\Profiles\Values\ProfileBase;
 use App\Settings\Commands\EnableSettingGroup;
 use App\Settings\Commands\SetIntegerSetting;
 use App\Settings\Contracts\EnabledSettingsGroup;
-use App\Settings\Contracts\SettingCommands;
 use App\Settings\Contracts\SettingsResolver;
 use App\Settings\Enums\SettingsOutcome;
 use App\Settings\Enums\SettingTarget;
@@ -30,22 +28,16 @@ use App\Settings\Storage\EncodedSetting;
 use App\Settings\Storage\EncodedToggle;
 use App\Settings\Storage\EncodedValue;
 use App\Settings\Storage\SettingsDocument;
-use App\Settings\Support\CoreSettings;
-use App\Settings\Support\RegisteredSettingCommands;
-use App\Settings\Support\SettingRegistry;
 use App\Settings\Values\GroupReference;
 use App\Settings\Values\SettingReference;
 use App\Settings\Values\SettingsChange;
 use Closure;
-use Domain\Access\Support\AccessSettings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use RuntimeException;
-use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
-use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
-use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SimulatedFailure;
+use Tests\Support\Exceptions\SimulatedFailure;
+use Tests\Support\Settings\UsesReviewsSettings;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TestLaunchAuthority;
@@ -59,32 +51,13 @@ use Throwable;
  */
 final class SettingsCommandsTest extends TestCase
 {
-    use ActsAsActors;
     use CommitsHookRows;
+    use UsesReviewsSettings;
 
     /**
      * The bus commits the settings commands for real, so this table is emptied around each test.
      */
     private const array TABLES = ['settings_records'];
-
-    private ReviewSettings $reviews;
-
-    private SettingCommands $commands;
-
-    private string $ownerId;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $registry = DomainRegistry::from([ReviewsDomain::class])->settingDeclarations(new CoreSettings());
-        $this->app->instance(SettingRegistry::class, $registry);
-        $this->reviews = $registry->definition('Reviews');
-        $this->commands = new RegisteredSettingCommands($registry);
-        $this->ownerId = TestIds::of(7);
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->ownerId));
-        $this->actAs(ActorContext::forUser($this->ownerId));
-    }
 
     public function test_the_owner_changes_a_setting_once_and_the_same_command_again_changes_nothing(): void
     {

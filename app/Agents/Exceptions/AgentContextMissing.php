@@ -13,6 +13,8 @@ final class AgentContextMissing extends LogicException
 {
     public static function forRequest(): self
     {
-        return new self('This request has no authenticated agent; only requests through the agent middleware have one.');
+        return new self(
+            'This request has no authenticated agent; only requests through the agent middleware have one.',
+        );
     }
 }

@@ -14,7 +14,8 @@ final class SettingDeclarationInvalid extends LogicException
     public static function badKey(string $key, int $longest): self
     {
         return new self(
-            "The setting key {$key} is not lowercase letters, digits and underscores starting with a letter, at most {$longest} characters.",
+            "The setting key {$key} is not lowercase letters, digits and underscores starting with a letter, at most "
+                ."{$longest} characters.",
         );
     }
 
@@ -87,7 +88,8 @@ final class SettingDeclarationInvalid extends LogicException
     public static function badDigits(string $key, int $mostDigits, int $mostFractionalDigits): self
     {
         return new self(
-            "The setting {$key} declares digits outside 1 to {$mostDigits}, fractional digits outside 0 to {$mostFractionalDigits}, or more fractional digits than digits.",
+            "The setting {$key} declares digits outside 1 to {$mostDigits}, fractional digits outside 0 to "
+                ."{$mostFractionalDigits}, or more fractional digits than digits.",
         );
     }
 

@@ -63,7 +63,13 @@ final readonly class TickDelivery
         $checkpoints = EngineFrameTime::settledAtFor(
             array_map(fn (TickCandidate $candidate) => $candidate->frameId, $batch->candidates),
         );
-        $settled = ScopedReadMeter::ofCurrentScope()->withinSchedule('engine ticks', function () use ($batch, $passStartNanoseconds, $passNow, $passNowReading, $checkpoints): array {
+        $settled = ScopedReadMeter::ofCurrentScope()->withinSchedule('engine ticks', function () use (
+            $batch,
+            $passStartNanoseconds,
+            $passNow,
+            $passNowReading,
+            $checkpoints,
+        ): array {
             $anyTicked = false;
             $settled = [];
 

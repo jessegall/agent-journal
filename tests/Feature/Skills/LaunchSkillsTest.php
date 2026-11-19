@@ -27,15 +27,13 @@ use App\Skills\Exceptions\SkillSelectionConflict;
 use App\Skills\Listeners\AdmitLaunchSkills;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Support\HostSkillPublisher;
-use App\Skills\Support\SkillPublishing;
-use App\Skills\Support\SkillTargets;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
 use Tests\Support\RunsTrustedCommands;
-use Tests\Support\UsesTemporaryFolder;
+use Tests\Support\Skills\PublishesSkills;
 use Tests\TestCase;
 
 /**
@@ -47,8 +45,8 @@ final class LaunchSkillsTest extends TestCase
 {
     use CommitsHookRows;
     use InstallsBuiltInProfiles;
+    use PublishesSkills;
     use RunsTrustedCommands;
-    use UsesTemporaryFolder;
 
     private const array TABLES = [
         'skill_publications',
@@ -68,15 +66,6 @@ final class LaunchSkillsTest extends TestCase
     ];
 
     private const string FOLDER = '/work/project';
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->makeTemporaryFolder('journal-skills');
-        $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
-        $this->app->make(SkillPublishing::class)->refresh();
-    }
 
     public function test_a_codex_launch_gets_its_set_written_before_spawn_and_records_the_generation(): void
     {

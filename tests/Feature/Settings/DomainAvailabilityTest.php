@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Settings;
 
-use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorContext;
-use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
 use App\Contracts\DomainAvailability;
 use App\Domains\Exceptions\DomainNotFound;
@@ -19,12 +16,11 @@ use App\Settings\Models\SettingsRecord;
 use App\Settings\Storage\EncodedToggle;
 use App\Settings\Storage\EncodedValue;
 use App\Settings\Values\GroupReference;
-use Domain\Access\Support\AccessSettings;
 use Tests\Support\ActsAsActors;
+use Tests\Support\ActsAsTestOwner;
 use Tests\Support\AssertsReadBudget;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestActors;
-use Tests\Support\TestIds;
 use Tests\TestCase;
 
 /**
@@ -34,6 +30,7 @@ use Tests\TestCase;
 final class DomainAvailabilityTest extends TestCase
 {
     use ActsAsActors;
+    use ActsAsTestOwner;
     use AssertsReadBudget;
     use CommitsHookRows;
 
@@ -43,15 +40,6 @@ final class DomainAvailabilityTest extends TestCase
     private const array TABLES = ['settings_records'];
 
     private int $revision = 0;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $ownerId = TestIds::of(7);
-        $this->app->instance(AccessSettings::class, new AccessSettings($ownerId));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($ownerId), new OwnerAuthority('test'));
-    }
 
     public function test_switching_tasks_off_makes_plans_unavailable_while_its_own_switch_stays_on_and_back(): void
     {

@@ -50,7 +50,17 @@ final class DraftsTest extends TestCase
         'number_groups',
     ];
 
-    private const string BODY = "# Goal\nShip it.\n\n## Steps\nOne.\n\n## Risks\nNone.\n";
+    private const string BODY = <<<'TEXT'
+        # Goal
+        Ship it.
+
+        ## Steps
+        One.
+
+        ## Risks
+        None.
+
+        TEXT;
 
     protected function setUp(): void
     {
@@ -73,14 +83,26 @@ final class DraftsTest extends TestCase
     public function test_two_saves_close_into_exactly_one_next_revision(): void
     {
         $draft = $this->bus()->run(new OpenDocument(1));
-        $draft = $this->bus()->run(new ReplaceDocumentSection($this->target($draft), '3', "## Risks\nLate.\n"));
+        $draft = $this->bus()->run(new ReplaceDocumentSection($this->target($draft), '3', <<<'TEXT'
+            ## Risks
+            Late.
+
+            TEXT));
         $draft = $this->bus()->run(new ChangeDocumentDetails($this->target($draft), 'Design', 'What we build next'));
         $closed = $this->bus()->run(new CloseDocument($this->target($draft)));
 
         $this->assertSame(3, $draft->version);
         $this->assertSame([2, true], [$closed->revisionNumber, $closed->published]);
-        $this->assertStringContainsString("## Risks\nLate.\n", $this->documents()->show(1)->body);
-        $this->assertStringContainsString("## Steps\nOne.\n", $this->documents()->show(1)->body);
+        $this->assertStringContainsString(<<<'TEXT'
+            ## Risks
+            Late.
+
+            TEXT, $this->documents()->show(1)->body);
+        $this->assertStringContainsString(<<<'TEXT'
+            ## Steps
+            One.
+
+            TEXT, $this->documents()->show(1)->body);
         $this->assertSame(self::BODY, $this->documents()->revision(1, 1)->body);
         $this->assertTrue($this->documents()->revision(1, 1)->historical);
         $this->assertCount(2, $this->documents()->revisions(1, 1));
@@ -138,7 +160,11 @@ final class DraftsTest extends TestCase
         $refusals = [
             [new ReplaceDocumentText($this->target($draft), '.', '!'), TextMatchInvalid::class],
             [
-                new ReplaceDocumentSection($this->target($draft), 'Missing', "## Missing\nText.\n"),
+                new ReplaceDocumentSection($this->target($draft), 'Missing', <<<'TEXT'
+                    ## Missing
+                    Text.
+
+                    TEXT),
                 SectionMissing::class,
             ],
         ];

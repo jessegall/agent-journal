@@ -62,7 +62,6 @@ final class CommandActorTest extends CommandBusTestCase
             string $line,
             array $context,
         ) => $line === 'Command WriteNote done'
-
                 && $context['owner'] === 'Notes'
                 && $context['actor'] === 'user:'.TestIds::of(1)
                 && ! str_contains((string) json_encode($context), 'private text'));

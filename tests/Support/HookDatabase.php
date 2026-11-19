@@ -7,6 +7,7 @@ namespace Tests\Support;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Testing\ParallelTesting;
+use Tests\Support\Exceptions\HookDatabaseRefused;
 
 /**
  * Checks that a test runs on a dedicated Postgres test database, or on the worker's own copy of it in a parallel run,

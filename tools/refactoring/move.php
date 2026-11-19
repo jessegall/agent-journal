@@ -772,17 +772,14 @@ function importing(string $body, string $onward): string
  * namespace the class is being taken from.
  *
  * @param  list<string>  $files
- */
-/**
+ *
  * The one file declaring this class. A name that several files declare is REFUSED rather than guessed
  * at: picking the first renamed a class nobody asked about — and because every reference to the one
  * that WAS asked about had been repointed, `No dangling references` still reported clean.
  *
  * A fully-qualified name settles it, and so does `--namespace=`.
- *
  * @param  list<string>  $files
- */
-/**
+ *
  * The body with every mention of the bare short name renamed.
  *
  * Three things it must not touch. A member reached through `::` — `Tag::Surface` is an enum case that
@@ -1157,8 +1154,7 @@ function declaredUnder(string $namespace): array
  * @param  list<string>  $was
  * @param  list<string>  $files
  * @return array<string, list<string>>
- */
-/**
+ *
  * Whether `$source` names the class `$qualified`, and not one whose name merely BEGINS with it. A
  * plain `str_contains` reported every file naming `WorkflowProblemsLoader` as still naming the
  * `WorkflowProblems` it was renamed from — a dangling reference that was not there, on a move that
@@ -1244,10 +1240,8 @@ function cases(): array
  * tool exists to make impossible.
  *
  * @return list<array{0: string, 1: string, 2: string, 3: bool}>
- */
-/**
- * What repointing the FULL name must and must not touch.
  *
+ * What repointing the FULL name must and must not touch.
  * @return list<array{0: string, 1: string, 2: string, 3: string, 4: string}>
  */
 function repoints(): array
@@ -1320,8 +1314,6 @@ function scopes(): array
  * proving it still says no.
  *
  * @return list<array{0: string, 1: string, 2: bool}>
- */
-/**
  * @return list<array{0: string, 1: string, 2: string, 3: bool}>
  */
 function naming(): array

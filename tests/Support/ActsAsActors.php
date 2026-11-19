@@ -27,6 +27,22 @@ trait ActsAsActors
         return $this->app->make(CommandBus::class)->run($command);
     }
 
+    private function actAsAgent(string $agentId): void
+    {
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($agentId),
+            TestLaunchAuthority::forAgent($agentId),
+        );
+    }
+
+    private function runAsAgentId(string $agentId, object $command): mixed
+    {
+        $this->app->forgetScopedInstances();
+        $this->actAsAgent($agentId);
+
+        return $this->app->make(CommandBus::class)->run($command);
+    }
+
     private function asUser(object $command): mixed
     {
         return $this->runAs(TestActors::user(7), $command);

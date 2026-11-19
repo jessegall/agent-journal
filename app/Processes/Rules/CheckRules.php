@@ -194,8 +194,14 @@ final readonly class CheckRules
                 '-c',
                 '--configuration',
             ),
-            OptionGrammar::flag('--parallel'), OptionGrammar::flag('--recreate-databases'), OptionGrammar::flag('--compact'), OptionGrammar::flag('--stop-on-failure'),
-            OptionGrammar::flag('--testdox'), OptionGrammar::flag('--coverage'), OptionGrammar::flag('--display-errors'), OptionGrammar::flag('--no-coverage'),
+            OptionGrammar::flag('--parallel'),
+            OptionGrammar::flag('--recreate-databases'),
+            OptionGrammar::flag('--compact'),
+            OptionGrammar::flag('--stop-on-failure'),
+            OptionGrammar::flag('--testdox'),
+            OptionGrammar::flag('--coverage'),
+            OptionGrammar::flag('--display-errors'),
+            OptionGrammar::flag('--no-coverage'),
             OptionGrammar::flag('--teamcity'),
         );
     }

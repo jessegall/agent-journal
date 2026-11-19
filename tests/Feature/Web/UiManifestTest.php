@@ -52,7 +52,12 @@ final class UiManifestTest extends TestCase
         );
         $this->assertStringContainsString('tests/Fixtures/UiDeclarations/Shelf/Resources/js/Index.vue', $components);
 
-        foreach (['resources/js/generated/ui-manifest.ts', 'tsconfig.domains.json', 'vite.domains.ts', 'resources/css/generated/domain-sources.css'] as $file) {
+        foreach ([
+            'resources/js/generated/ui-manifest.ts',
+            'tsconfig.domains.json',
+            'vite.domains.ts',
+            'resources/css/generated/domain-sources.css',
+        ] as $file) {
             $this->assertStringContainsString($hash, File::get("{$this->root}/{$file}"), $file);
         }
 

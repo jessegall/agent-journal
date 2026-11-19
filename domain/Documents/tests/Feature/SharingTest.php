@@ -61,7 +61,11 @@ final class SharingTest extends TestCase
         'number_groups',
     ];
 
-    private const string BODY = "# Goal\nShip it.\n";
+    private const string BODY = <<<'TEXT'
+        # Goal
+        Ship it.
+
+        TEXT;
 
     private Document $document;
 
@@ -77,12 +81,20 @@ final class SharingTest extends TestCase
         );
         $bus = $this->app->make(CommandBus::class);
         $bus->run(new CreateDocument('Design', 'What we build', self::BODY));
-        $bus->run(new CreateReport('Check', 'What we found', "# Found\nAll good.\n"));
+        $bus->run(new CreateReport('Check', 'What we found', <<<'TEXT'
+            # Found
+            All good.
+
+            TEXT));
         $draft = $bus->run(new OpenDocument(1));
         $bus->run(
             new ReplaceDocumentBody(
                 new DraftTarget($draft->documentNumber, $draft->token, $draft->version),
-                "# Draft\nNot yet.\n",
+                <<<'TEXT'
+                    # Draft
+                    Not yet.
+
+                    TEXT,
             ),
         );
         $this->document = Document::query()->where('number', 1)->sole();
@@ -124,7 +136,11 @@ final class SharingTest extends TestCase
             $this->budget(),
         );
 
-        $this->assertSame("# Found\nAll good.\n", $content->body);
+        $this->assertSame(<<<'TEXT'
+            # Found
+            All good.
+
+            TEXT, $content->body);
         $this->assertSame(['Check', '1'], [$content->card->title, $content->card->publicationVersion]);
     }
 

@@ -15,13 +15,13 @@ use App\Assignments\Support\Page;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
-use Illuminate\Database\Connection;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\StartsAgentRequests;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
+use Tests\Support\UsesSecondConnection;
 use Tests\TestCase;
 
 /**
@@ -34,6 +34,7 @@ final class AssigneesTest extends TestCase
 {
     use CommitsHookRows;
     use StartsAgentRequests;
+    use UsesSecondConnection;
 
     private const array TABLES = ['users', 'agents'];
 
@@ -49,15 +50,6 @@ final class AssigneesTest extends TestCase
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->builder = Agent::named('Builder', 'main-agent');
         $this->startUserRequestAs($this->owner->id);
-    }
-
-    protected function tearDown(): void
-    {
-        if ($this->app->make('config')->has('database.connections.assignees_other')) {
-            DB::connection('assignees_other')->disconnect();
-        }
-
-        parent::tearDown();
     }
 
     public function test_the_owner_and_an_agent_with_the_same_id_are_different_holders(): void
@@ -129,7 +121,7 @@ final class AssigneesTest extends TestCase
 
     public function test_the_shared_lifecycle_lock_holds_off_retirement_until_it_commits(): void
     {
-        $other = $this->otherConnection();
+        $other = $this->otherConnection('1s');
 
         DB::transaction(function () use ($other): void {
             $this->app->make(AgentLifecycle::class)->lockShared($this->builder->id);
@@ -148,7 +140,7 @@ final class AssigneesTest extends TestCase
 
     public function test_the_exclusive_lifecycle_lock_holds_off_new_work_and_a_retired_agent_is_refused(): void
     {
-        $other = $this->otherConnection();
+        $other = $this->otherConnection('1s');
 
         DB::transaction(function () use ($other): void {
             $this->app->make(AgentLifecycle::class)->lockExclusive($this->builder->id);
@@ -165,19 +157,5 @@ final class AssigneesTest extends TestCase
             fn () => $this->app->make(AgentLifecycle::class)->lockShared($this->builder->id),
             AgentNotAvailable::class,
         );
-    }
-
-    private function otherConnection(): Connection
-    {
-        $config = $this->app->make('config');
-        $config->set(
-            'database.connections.assignees_other',
-            $config->get('database.connections.'.$config->get('database.default')),
-        );
-
-        $other = DB::connection('assignees_other');
-        $other->statement("SET lock_timeout = '1s'");
-
-        return $other;
     }
 }

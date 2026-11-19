@@ -11,34 +11,7 @@ declare(strict_types=1);
 
 const LIMIT = 120;
 
-/**
- * The PHP files under the given paths.
- *
- * @param  list<string>  $paths
- * @return list<string>
- */
-function phpFiles(array $paths): array
-{
-    $files = [];
-
-    foreach ($paths as $path) {
-        if (is_file($path)) {
-            $files[] = $path;
-
-            continue;
-        }
-
-        $entries = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS));
-
-        foreach ($entries as $entry) {
-            if ($entry->isFile() && str_ends_with($entry->getFilename(), '.php')) {
-                $files[] = $entry->getPathname();
-            }
-        }
-    }
-
-    return $files;
-}
+require_once __DIR__.'/php-files.php';
 
 /**
  * The tokens of the source with the line each starts on.
@@ -57,13 +30,13 @@ function tokensOf(string $source): array
 }
 
 /**
- * Whether the line is one the script leaves alone: a condition, a comment, or a line made long by a string.
+ * Whether the line is one the script leaves alone: a comment, or a line that continues a condition.
  */
 function isLeftForAPerson(string $line): bool
 {
     $trimmed = ltrim($line);
 
-    return preg_match('/^(if|elseif|} elseif|while|foreach|for|\*|\/\/|\/\*|&&|\|\||\?|:)/', $trimmed) === 1;
+    return preg_match('/^(\*|\/\/|\/\*|&&|\|\||\?|:)/', $trimmed) === 1;
 }
 
 /**

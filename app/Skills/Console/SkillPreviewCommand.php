@@ -51,7 +51,17 @@ final class SkillPreviewCommand extends Command
             }
 
             $audience = $preview->audience($skill);
-        } catch (SkillKeyInvalid|SkillMissing|SkillSourceInvalid|SkillConflict|SkillDeclarationInvalid|SkillConditionInvalid|SkillAgentHidden|SkillContextUnavailable|SkillSelectionConflict $failure) {
+        } catch (
+            SkillKeyInvalid
+            |SkillMissing
+            |SkillSourceInvalid
+            |SkillConflict
+            |SkillDeclarationInvalid
+            |SkillConditionInvalid
+            |SkillAgentHidden
+            |SkillContextUnavailable
+            |SkillSelectionConflict $failure
+        ) {
             $this->error($failure->getMessage());
 
             return self::FAILURE;

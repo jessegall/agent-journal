@@ -19,6 +19,7 @@ final readonly class HiddenOutput
 
     public function reason(): string
     {
-        return "{$this->operator} hides the {$this->lost} of a part whose full output is needed: run {$this->correction} and read or search its stored output afterwards with journal output read.";
+        return "{$this->operator} hides the {$this->lost} of a part whose full output is needed: run "
+            ."{$this->correction} and read or search its stored output afterwards with journal output read.";
     }
 }

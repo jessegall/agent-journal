@@ -7,7 +7,19 @@ namespace App\Processes\Values;
 use App\Processes\Enums\OutputStream;
 
 /**
- * @phpstan-type CheckpointFields array{offsets: array<string, int>, pending: array<string, string>, records: list<array{stream: string, start: int, end: int, role: string, captures: array<string, string>}>, problems: list<array{code: string, stream: string|null, start: int, end: int, reader: string, explanation: string}>}
+ * @phpstan-type CheckpointFields array{
+ *   offsets: array<string, int>,
+ *   pending: array<string, string>,
+ *   records: list<array{stream: string, start: int, end: int, role: string, captures: array<string, string>}>,
+ *   problems: list<array{
+ *     code: string,
+ *     stream: string|null,
+ *     start: int,
+ *     end: int,
+ *     reader: string,
+ *     explanation: string,
+ *   }>,
+ * }
  *
  * Where a reader stands in a part's output: per stream the next offset it expects and the unfinished line it holds,
  * and the provisional records and problems so far. A reader resumes from it after every committed chunk.

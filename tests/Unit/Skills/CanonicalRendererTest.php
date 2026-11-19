@@ -131,7 +131,20 @@ final class CanonicalRendererTest extends TestCase
         File::makeDirectory($root.'/resources/skills', recursive: true);
         File::put(
             $root.'/resources/skills/guide.md',
-            "# Guide\n\n## Failure\n\n### Retry\n\nOne.\n\n### Retry\n\nTwo.\n",
+            <<<'TEXT'
+                # Guide
+
+                ## Failure
+
+                ### Retry
+
+                One.
+
+                ### Retry
+
+                Two.
+
+                TEXT,
         );
 
         try {

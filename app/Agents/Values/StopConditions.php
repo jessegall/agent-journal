@@ -52,7 +52,9 @@ final readonly class StopConditions
             $keys[] = $condition->key;
         }
 
-        if (array_sum(array_map(fn (StopCondition $condition): int => $condition->timeoutSeconds, $conditions)) > $attemptSeconds) {
+        if (array_sum(
+            array_map(fn (StopCondition $condition): int => $condition->timeoutSeconds, $conditions),
+        ) > $attemptSeconds) {
             throw StopConditionsInvalid::overAttempt($attemptSeconds);
         }
 

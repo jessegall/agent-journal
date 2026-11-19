@@ -13,14 +13,13 @@ use App\Skills\Models\SkillGeneration;
 use App\Skills\Models\SkillPublication;
 use App\Skills\Support\HostSkillPublisher;
 use App\Skills\Support\SkillPublishing;
-use App\Skills\Support\SkillTargets;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\File;
 use Tests\Fixtures\Skills\FullDiskPublisher;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\RunsTrustedCommands;
+use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\TestIds;
-use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
 /**
@@ -30,18 +29,10 @@ use Tests\TestCase;
 final class SkillPublishingTest extends TestCase
 {
     use CommitsHookRows;
+    use HasSkillTargets;
     use RunsTrustedCommands;
-    use UsesTemporaryFolder;
 
     private const array TABLES = ['skill_publications', 'skill_generations', 'command_receipts'];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->makeTemporaryFolder('journal-skills');
-        $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
-    }
 
     public function test_a_pending_publication_ends_delivered_with_skill_files_and_a_manifest_at_the_target(): void
     {
@@ -51,9 +42,19 @@ final class SkillPublishingTest extends TestCase
 
         $target = $this->target();
         $this->assertTrue(is_link($target));
-        $this->assertSame("# Journal\n\nFirst text.\n", File::get("{$target}/skills/journal/SKILL.md"));
+        $this->assertSame(<<<'TEXT'
+            # Journal
+
+            First text.
+
+            TEXT, File::get("{$target}/skills/journal/SKILL.md"));
         $manifest = json_decode(File::get("{$target}/manifest.json"), true, flags: JSON_THROW_ON_ERROR);
-        $this->assertSame(hash('sha256', "# Journal\n\nFirst text.\n"), $manifest['files']['skills/journal/SKILL.md']);
+        $this->assertSame(hash('sha256', <<<'TEXT'
+            # Journal
+
+            First text.
+
+            TEXT), $manifest['files']['skills/journal/SKILL.md']);
         $this->assertSame(PublicationState::Delivered, $publication->refresh()->state);
         $plugin = json_decode(File::get("{$target}/.claude-plugin/plugin.json"), true, flags: JSON_THROW_ON_ERROR);
         $this->assertSame('journal-session-skills', $plugin['name']);
@@ -102,7 +103,12 @@ final class SkillPublishingTest extends TestCase
 
     private function intend(string $text): SkillPublication
     {
-        $markdown = "# Journal\n\n{$text}\n";
+        $markdown = <<<TEXT
+            # Journal
+
+            {$text}
+
+            TEXT;
         $generation = SkillGeneration::ready(
             hash('sha256', $text),
             str_repeat('e', 64),

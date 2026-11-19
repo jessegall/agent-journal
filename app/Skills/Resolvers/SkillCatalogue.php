@@ -36,7 +36,8 @@ final readonly class SkillCatalogue implements SkillResolver
 
     /**
      * @throws SkillConflict when two owners declare one key
-     * @throws SkillDeclarationInvalid when a shipped skill's condition, sections or text are invalid, naming its owner and key
+     * @throws SkillDeclarationInvalid when a shipped skill's condition, sections or text are invalid, naming its owner
+     *                                 and key
      */
     public static function build(
         SkillRegistry $registry,

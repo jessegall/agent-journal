@@ -6,11 +6,11 @@ namespace App;
 
 use App\Agents\Commands\ClaimLaunchGrant;
 use App\Agents\Commands\FenceProfileRevision;
+use App\Autoload\Support\FolderClasses;
 use App\Bus\Contracts\Command;
 use App\Bus\Support\CommandOwner;
 use App\Bus\Support\CommandScope;
 use App\Bus\Support\MiddlewareDeclaration;
-use App\Autoload\Support\FolderClasses;
 use App\Engine\CommandMiddleware\GuardTickOrigin;
 use App\Processes\Commands\ApproveRuleBundle;
 use App\Processes\Commands\ApproveRuleProposal;

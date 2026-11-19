@@ -79,7 +79,11 @@ final class ReadShareTest extends TestCase
 
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
-        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
+        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
+            # Goal
+            Ship it.
+
+            TEXT));
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
         $this->plan = Plan::factory()->create(['title' => 'Version 6', 'type' => PlanType::Build]);
@@ -97,7 +101,11 @@ final class ReadShareTest extends TestCase
 
         $this->assertTrue($page->allowed);
         $this->assertSame(
-            ['Design', '1', "# Goal\nShip it.\n"],
+            ['Design', '1', <<<'TEXT'
+                # Goal
+                Ship it.
+
+                TEXT],
             [$page->title, $page->publicationVersion, $page->body],
         );
         $this->assertSame([ShareAuditType::ReadAllowed], $this->auditTypes());
@@ -171,7 +179,11 @@ final class ReadShareTest extends TestCase
     public function test_a_linked_record_whose_disclosure_is_withdrawn_is_denied_while_its_sibling_still_reads(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
-        $this->app->make(CommandBus::class)->run(new CreateDocument('Notes', 'What we learned', "# Notes\nKeep it.\n"));
+        $this->app->make(CommandBus::class)->run(new CreateDocument('Notes', 'What we learned', <<<'TEXT'
+            # Notes
+            Keep it.
+
+            TEXT));
         $this->app->make(CurrentActorSetter::class)->clear();
         $sibling = Document::query()->where('number', 2)->sole();
         $this->plan->linkTo($sibling);

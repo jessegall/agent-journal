@@ -33,10 +33,13 @@ final class DomainEventRulesTest extends TestCase
 
         yield 'a listener importing a declared domain event' => ['Plans/Listeners/StartNextTask.php', []];
         yield 'a listener with an alias import' => ['Plans/Listeners/AliasListener.php', []];
-        yield 'a listener with a group import, naming a descriptor outside its own descriptor' => ['Plans/Listeners/GroupListener.php', [
-            '7 uses Tests\Fixtures\Boundary\Events\Tasks\TasksDomain'.$notExported,
-            '13 uses Tests\Fixtures\Boundary\Events\Tasks\TasksDomain'.$notExported,
-        ]];
+        yield 'a listener with a group import, naming a descriptor outside its own descriptor' => [
+            'Plans/Listeners/GroupListener.php',
+            [
+                '7 uses Tests\Fixtures\Boundary\Events\Tasks\TasksDomain'.$notExported,
+                '13 uses Tests\Fixtures\Boundary\Events\Tasks\TasksDomain'.$notExported,
+            ],
+        ];
         yield 'the owner raising its own event' => ['Tasks/Actions/CloseTask.php', []];
         yield 'a listener building another domain event' => ['Plans/Listeners/RaisesTaskClosed.php', [
             '13 names '.self::TASK_CLOSED.$onlyAListener,

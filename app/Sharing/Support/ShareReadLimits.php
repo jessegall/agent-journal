@@ -50,9 +50,9 @@ final readonly class ShareReadLimits
      */
     public function countInvalid(string|null $source): void
     {
-        $admitted = $this->admits('share-invalid:all', self::INVALID_IN_ALL)
-
-                    && ($source === null || $this->admits('share-invalid:'.hash('sha256', $source), self::INVALID_FROM_ONE_SOURCE));
+        $sourceAdmitted = $source === null
+            || $this->admits('share-invalid:'.hash('sha256', $source), self::INVALID_FROM_ONE_SOURCE);
+        $admitted = $this->admits('share-invalid:all', self::INVALID_IN_ALL) && $sourceAdmitted;
 
         if (! $admitted) {
             throw ShareReadLimited::forInvalidLinks();

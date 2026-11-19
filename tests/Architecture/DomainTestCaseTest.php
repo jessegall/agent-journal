@@ -46,7 +46,9 @@ final class DomainTestCaseTest extends TestCase
     {
         $classes = [];
 
-        foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($folder, \FilesystemIterator::SKIP_DOTS)) as $file) {
+        foreach (new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($folder, \FilesystemIterator::SKIP_DOTS),
+        ) as $file) {
             if ($file instanceof \SplFileInfo && str_ends_with($file->getFilename(), 'Test.php')) {
                 $classes[] = $namespace.'\\'.str_replace(
                     '/',

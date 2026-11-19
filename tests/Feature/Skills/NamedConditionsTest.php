@@ -101,7 +101,12 @@ final class NamedConditionsTest extends TestCase
             ConditionRegistry::of(
                 [
                     'Notes' => [
-                        new SkillConditionRegistration('notes.writes', 1, NoParameters::class, WritesDuringEvaluation::class),
+                        new SkillConditionRegistration(
+                            'notes.writes',
+                            1,
+                            NoParameters::class,
+                            WritesDuringEvaluation::class,
+                        ),
                     ],
                 ],
             ),

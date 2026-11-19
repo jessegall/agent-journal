@@ -12,7 +12,6 @@ use App\Engine\Commands\SettleFrameTimes;
 use App\Engine\Exceptions\EngineAccessRefused;
 use App\Engine\Models\EngineFrameTime;
 use App\Engine\Support\EngineAccess;
-use App\Engine\Support\EnginePass;
 use App\Engine\Values\FrameSettlement;
 use App\Hooks\Actions\PruneHookHistory;
 use App\Hooks\Models\AgentStackRow;
@@ -22,6 +21,7 @@ use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Engine\RunsEnginePasses;
 use Tests\TestCase;
 
 /**
@@ -31,6 +31,7 @@ use Tests\TestCase;
 final class SettleFrameTimesTest extends TestCase
 {
     use CommitsHookRows;
+    use RunsEnginePasses;
 
     private const array TABLES = [
         'agents',
@@ -131,8 +132,4 @@ final class SettleFrameTimesTest extends TestCase
     /**
      * @param  Closure(): void  $work
      */
-    private function pass(Closure $work): void
-    {
-        $this->app->make(EnginePass::class)->run($work);
-    }
 }

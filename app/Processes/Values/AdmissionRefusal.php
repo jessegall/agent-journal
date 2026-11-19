@@ -26,8 +26,13 @@ final readonly class AdmissionRefusal
         public string $next,
     ) {}
 
-    public static function of(AdmissionRefusalCode $code, int $node, string $source, string $reason, string $correction): self
-    {
+    public static function of(
+        AdmissionRefusalCode $code,
+        int $node,
+        string $source,
+        string $reason,
+        string $correction,
+    ): self {
         return new self($code, $node, self::redacted($source), $reason, $correction, '', '');
     }
 

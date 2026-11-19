@@ -53,11 +53,14 @@ final class OrientationToolsTest extends TestCase
         $this->startUserRequestAs($owner->id);
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
 
-        foreach (['One', 'Two', 'Three'] as $title) {
-            $writer->assign(
-                Task::factory()->create(['title' => $title])->assignmentIdentity(),
-                AssigneeIdentity::of($this->caller->agent),
-            );
+        $tasks = Task::factory()->count(3)->sequence(
+            ['title' => 'One'],
+            ['title' => 'Two'],
+            ['title' => 'Three'],
+        )->create();
+
+        foreach ($tasks as $task) {
+            $writer->assign($task->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent));
         }
 
         $writer->assign(

@@ -57,7 +57,12 @@ final class LibraryReadCostTest extends TestCase
                 new CreateDocument(
                     "Design {$number}",
                     "What design {$number} says",
-                    "# Design {$number}\n\n{$phrase}\n",
+                    <<<TEXT
+                        # Design {$number}
+
+                        {$phrase}
+
+                        TEXT,
                 ),
             );
         }
@@ -67,7 +72,12 @@ final class LibraryReadCostTest extends TestCase
                 new CreateReport(
                     "Check {$number}",
                     "What check {$number} found",
-                    "# Check {$number}\n\nThe retention window held.\n",
+                    <<<TEXT
+                        # Check {$number}
+
+                        The retention window held.
+
+                        TEXT,
                 ),
             );
         }

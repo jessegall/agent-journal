@@ -21,8 +21,20 @@ final class ScanCacheTest extends TestCase
         mkdir($folder);
         $first = "{$folder}/First.php";
         $second = "{$folder}/Second.php";
-        file_put_contents($first, "<?php\n// run {$run}\nnamespace Cached;\ninterface First {}\n");
-        file_put_contents($second, "<?php\n// run {$run}\nnamespace Cached;\ninterface Second {}\n");
+        file_put_contents($first, <<<TEXT
+            <?php
+            // run {$run}
+            namespace Cached;
+            interface First {}
+
+            TEXT);
+        file_put_contents($second, <<<TEXT
+            <?php
+            // run {$run}
+            namespace Cached;
+            interface Second {}
+
+            TEXT);
         $scan = new InterfacesDeclared();
 
         $before = ScanCache::parsedFiles();
@@ -35,7 +47,13 @@ final class ScanCacheTest extends TestCase
         $this->assertSame($afterFirstScan, ScanCache::parsedFiles());
         $this->assertSame(2, $afterFirstScan - $before);
 
-        file_put_contents($second, "<?php\n// run {$run}\nnamespace Cached;\ninterface Changed {}\n");
+        file_put_contents($second, <<<TEXT
+            <?php
+            // run {$run}
+            namespace Cached;
+            interface Changed {}
+
+            TEXT);
 
         $this->assertSame(['Cached\\First', 'Cached\\Changed'], ScanCache::findings($scan, [$first, $second]));
         $this->assertSame($afterFirstScan + 1, ScanCache::parsedFiles());

@@ -67,7 +67,12 @@ final class CallGroups
             array_keys($groups),
             $groups,
         ));
-        $constructor = $groups === [] ? '' : "\n    public function __construct({$properties}\n    ) {}\n";
+        $constructor = $groups === [] ? '' : <<<TEXT
+
+                public function __construct({$properties}
+                ) {}
+
+            TEXT;
 
         return <<<PHP
         <?php

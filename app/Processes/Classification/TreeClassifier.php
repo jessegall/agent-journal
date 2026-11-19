@@ -50,8 +50,23 @@ final readonly class TreeClassifier implements CommandClassifier
      * Assignments that change which program runs or how a shell starts; any of them leaves the part unresolved.
      */
     private const array CONTEXT_ASSIGNMENTS = [
-        'PATH', 'BASH_ENV', 'ENV', 'IFS', 'SHELLOPTS', 'BASHOPTS', 'PROMPT_COMMAND', 'LD_PRELOAD', 'LD_LIBRARY_PATH', 'LD_AUDIT',
-        'DYLD_INSERT_LIBRARIES', 'DYLD_LIBRARY_PATH', 'GIT_EXEC_PATH', 'GIT_DIR', 'GIT_CONFIG', 'GIT_CONFIG_GLOBAL', 'PERL5LIB',
+        'PATH',
+        'BASH_ENV',
+        'ENV',
+        'IFS',
+        'SHELLOPTS',
+        'BASHOPTS',
+        'PROMPT_COMMAND',
+        'LD_PRELOAD',
+        'LD_LIBRARY_PATH',
+        'LD_AUDIT',
+        'DYLD_INSERT_LIBRARIES',
+        'DYLD_LIBRARY_PATH',
+        'GIT_EXEC_PATH',
+        'GIT_DIR',
+        'GIT_CONFIG',
+        'GIT_CONFIG_GLOBAL',
+        'PERL5LIB',
         'PYTHONPATH', 'NODE_OPTIONS',
     ];
 
@@ -286,7 +301,11 @@ final readonly class TreeClassifier implements CommandClassifier
             $option = (string) $words[$index]->literal();
             if (in_array($option, ['-C', '--git-dir', '--work-tree', '--namespace'], true)) {
                 $index += 2;
-            } elseif (in_array($option, ['--no-pager', '--no-optional-locks', '--bare', '--literal-pathspecs', '-P'], true)
+            } elseif (in_array(
+                $option,
+                ['--no-pager', '--no-optional-locks', '--bare', '--literal-pathspecs', '-P'],
+                true,
+            )
                 || preg_match('/^--(git-dir|work-tree|namespace)=/', $option) === 1) {
                 $index++;
             } else {

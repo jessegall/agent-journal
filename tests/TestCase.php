@@ -12,7 +12,7 @@ use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Http;
 use Laravel\Fortify\Features;
-use Tests\Support\DatabaseUsedWithoutHookDatabase;
+use Tests\Support\Exceptions\DatabaseUsedWithoutHookDatabase;
 use Tests\Support\RefreshHookDatabase;
 
 abstract class TestCase extends BaseTestCase

@@ -155,7 +155,11 @@ final class ContinuationTest extends TestCase
     public function test_a_10000_character_line_continues_by_character_offset_without_splitting_a_character(): void
     {
         $line = str_repeat('aé€😀', 2500);
-        $text = "first line\n{$line}\nlast line";
+        $text = <<<TEXT
+            first line
+            {$line}
+            last line
+            TEXT;
         $read = '';
         $chunk = TextChunk::of($text, 2, 0);
 

@@ -88,7 +88,11 @@ final class ShareEntriesTest extends TestCase
             ActorContext::forUser($this->owner->id),
             new OwnerAuthority('test'),
         );
-        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
+        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
+            # Goal
+            Ship it.
+
+            TEXT));
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
         $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
@@ -177,7 +181,15 @@ final class ShareEntriesTest extends TestCase
     {
         $registry = $this->app->make(CommandRegistry::class);
 
-        foreach ([CreateShare::class, RequestShare::class, ApproveShareRequest::class, RefreshShareScope::class, RevokeShare::class, RetryShare::class, SaveSharePreview::class] as $command) {
+        foreach ([
+            CreateShare::class,
+            RequestShare::class,
+            ApproveShareRequest::class,
+            RefreshShareScope::class,
+            RevokeShare::class,
+            RetryShare::class,
+            SaveSharePreview::class,
+        ] as $command) {
             $this->assertTrue($registry->isExported($command), "{$command} is not exported.");
         }
 

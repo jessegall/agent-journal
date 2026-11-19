@@ -18,7 +18,12 @@ final readonly class ReportRuntimeActivityHandler implements CommandHandler
     {
         $runtime = $this->runtimes->lockedFor($command->hostId, $command->runtimeId);
 
-        if (! $runtime->recordObservation($command->activity, $command->hold, $command->processGeneration, CarbonImmutable::now())) {
+        if (! $runtime->recordObservation(
+            $command->activity,
+            $command->hold,
+            $command->processGeneration,
+            CarbonImmutable::now(),
+        )) {
             throw HostReportRefused::staleGeneration(
                 $runtime->id,
                 $command->processGeneration,

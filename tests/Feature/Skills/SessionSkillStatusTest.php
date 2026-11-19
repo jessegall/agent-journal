@@ -21,7 +21,6 @@ use App\Skills\Listeners\RecordProvenSkillReads;
 use App\Skills\Listeners\RefreshSessionSkills;
 use App\Skills\Resolvers\Support\SkillStatusResolver;
 use App\Skills\Support\SkillPublishing;
-use App\Skills\Support\SkillTargets;
 use App\Skills\Values\SessionSkillStatus;
 use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Agents\TestSelections;
@@ -29,8 +28,8 @@ use Tests\Fixtures\Skills\RecordingStack;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\InstallsBuiltInProfiles;
+use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\TestActors;
-use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
 /**
@@ -41,8 +40,8 @@ final class SessionSkillStatusTest extends TestCase
 {
     use ActsAsActors;
     use CommitsHookRows;
+    use HasSkillTargets;
     use InstallsBuiltInProfiles;
-    use UsesTemporaryFolder;
 
     private const array TABLES = [
         'skill_receipts',
@@ -61,14 +60,17 @@ final class SessionSkillStatusTest extends TestCase
     {
         parent::setUp();
 
-        $this->makeTemporaryFolder('journal-skills');
-        $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
         $this->app->instance(AgentStack::class, new RecordingStack());
         $this->artisan('skill:make', [
             'key' => 'user-guide',
             '--description' => 'The guide',
-            '--body' => "# Guide\n\nFirst text.\n",
+            '--body' => <<<'TEXT'
+                # Guide
+
+                First text.
+
+                TEXT,
         ])->assertSuccessful();
         $this->app->make(SkillPublishing::class)->refresh();
     }
@@ -93,7 +95,12 @@ final class SessionSkillStatusTest extends TestCase
         $this->artisan('skill:edit', [
             'number' => 'user-guide',
             '--expected-revision' => 1,
-            '--body' => "# Guide\n\nSecond text.\n",
+            '--body' => <<<'TEXT'
+                # Guide
+
+                Second text.
+
+                TEXT,
         ])->assertSuccessful();
         $this->boundary($session);
 

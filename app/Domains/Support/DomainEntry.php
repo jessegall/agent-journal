@@ -284,7 +284,7 @@ final readonly class DomainEntry
             }
 
             if (! is_subclass_of($class, Skill::class)) {
-                throw SkillDeclarationRefused::for($name, $class, 'it does not implement App\\Skills\\Contracts\\Skill');
+                throw SkillDeclarationRefused::for($name, $class, 'it does not implement '.Skill::class);
             }
 
             if (stripos(ltrim($class, '\\'), $namespace.'\\') !== 0) {

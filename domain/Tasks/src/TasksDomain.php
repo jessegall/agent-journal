@@ -66,7 +66,17 @@ use Domain\Tasks\Skills\TasksSkill;
 use Domain\Tasks\States\Support\WorkingOnTaskStateFactory;
 use Domain\Tasks\States\Support\WorkingOnTaskStateReference;
 
-final class TasksDomain extends Domain implements ProvidesAssignables, ProvidesAutoAssignments, ProvidesCommands, ProvidesInternalAssignables, ProvidesLinkRecords, ProvidesMcpTools, ProvidesNumberedModels, ProvidesPolicies, ProvidesSkills, ProvidesStates
+final class TasksDomain extends Domain implements
+    ProvidesAssignables,
+    ProvidesAutoAssignments,
+    ProvidesCommands,
+    ProvidesInternalAssignables,
+    ProvidesLinkRecords,
+    ProvidesMcpTools,
+    ProvidesNumberedModels,
+    ProvidesPolicies,
+    ProvidesSkills,
+    ProvidesStates
 {
     use HasAssignables, HasLinkRecords, HasNumberedModels, HasStates;
 

@@ -9,12 +9,10 @@ use App\Processes\Enums\RequestState;
 use App\Processes\Models\ModuleRuleBundle;
 use App\Processes\Models\RuleProposal;
 use App\Processes\Support\CommandRuleRegistry;
-use Domain\Access\Models\User;
-use Domain\Access\Support\AccessSettings;
 use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia;
 use Tests\Fixtures\Modules\Notes\NotesDomain;
-use Tests\Support\Processes\RunsAcmeRequests;
+use Tests\Support\Processes\OpensAcmeRequestAsOwner;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
 use Tests\TestCase;
@@ -26,21 +24,9 @@ use Tests\TestCase;
  */
 final class RequestReviewPageTest extends TestCase
 {
+    use OpensAcmeRequestAsOwner;
     use RefreshHookDatabase;
-    use RunsAcmeRequests;
     use SendsSignedCalls;
-
-    private User $owner;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->withoutVite();
-        $this->owner = User::factory()->create();
-        $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->openAcmeRequest();
-    }
 
     public function test_the_list_shows_the_projects_requests_and_nothing_of_another_project(): void
     {

@@ -51,7 +51,13 @@ final readonly class WindowResults implements ReadsWindowResults
             }
 
             return ReadyWindow::of($data->toArray());
-        } catch (AuthenticationException|TokenMismatchException|ValidationException|HttpResponseException|HttpExceptionInterface $control) {
+        } catch (
+            AuthenticationException
+            |TokenMismatchException
+            |ValidationException
+            |HttpResponseException
+            |HttpExceptionInterface $control
+        ) {
             throw $control;
         } catch (Throwable $failure) {
             $this->log->error(

@@ -61,15 +61,17 @@ final class ExternalModulePagesTest extends TestCase
             ->component('notes/Index')
             ->where('page.state', 'ready')
             ->where('page.data.texts', ['Check the lock order'])
-            ->where('navigation.items', fn ($items) => collect($items)->contains(fn ($item) => $item['key'] === 'notes.index'
-                && $item['children'][0]['children'][0]['url'] === "/notes/collections/{$month}")));
+            ->where('navigation.items', fn ($items) => collect($items)->contains(
+                fn ($item) => $item['key'] === 'notes.index'
+                    && $item['children'][0]['children'][0]['url'] === "/notes/collections/{$month}",
+            )));
 
         $this->actingAs($this->owner)->get(
             "/notes/collections/{$month}",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-                    ->component('notes/Collection')
-                    ->where('page.data.collection', $month)
-                    ->where('page.data.texts', ['Check the lock order']));
+            ->component('notes/Collection')
+            ->where('page.data.collection', $month)
+            ->where('page.data.texts', ['Check the lock order']));
         $this->actingAs($this->owner)->get('/notes/collections/not-a-month')->assertNotFound();
     }
 

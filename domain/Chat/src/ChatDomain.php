@@ -39,7 +39,13 @@ use Domain\Chat\Resolvers\HistoryPageResolver;
 use Domain\Chat\Resolvers\InboxPageResolver;
 use Domain\Chat\Skills\ChatSkill;
 
-final class ChatDomain extends Domain implements ProvidesCommands, ProvidesNavigation, ProvidesPages, ProvidesPolicies, ProvidesSections, ProvidesSkills
+final class ChatDomain extends Domain implements
+    ProvidesCommands,
+    ProvidesNavigation,
+    ProvidesPages,
+    ProvidesPolicies,
+    ProvidesSections,
+    ProvidesSkills
 {
     public function description(): string
     {

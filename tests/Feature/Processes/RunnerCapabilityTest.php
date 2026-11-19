@@ -43,7 +43,12 @@ final class RunnerCapabilityTest extends TestCase
         $this->runCommandsAs($this->launch);
         $this->folder = sys_get_temp_dir().'/runner-'.bin2hex(random_bytes(4));
         mkdir($this->folder);
-        file_put_contents($this->folder.'/data.txt', "x one\ny two\nx three\n");
+        file_put_contents($this->folder.'/data.txt', <<<'TEXT'
+            x one
+            y two
+            x three
+
+            TEXT);
     }
 
     public function test_with_the_capability_off_nothing_starts(): void

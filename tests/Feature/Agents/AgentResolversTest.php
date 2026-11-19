@@ -156,14 +156,6 @@ final class AgentResolversTest extends TestCase
     /**
      * Acts as the agent under the profile it launches with, as a real agent call does.
      */
-    private function actAsAgent(string $agentId): void
-    {
-        $this->app->make(CurrentActorSetter::class)->set(
-            ActorContext::forAgent($agentId),
-            TestLaunchAuthority::forAgent($agentId),
-        );
-    }
-
     private function sessions(): SessionResolver
     {
         return $this->app->make(SessionResolver::class);

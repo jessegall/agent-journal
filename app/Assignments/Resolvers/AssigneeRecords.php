@@ -32,7 +32,10 @@ final readonly class AssigneeRecords implements AssigneeResolver
     {
         $names = [];
 
-        foreach (array_unique(array_map(fn (AssigneeIdentity $actor) => $actor->type, $actors), SORT_REGULAR) as $type) {
+        foreach (array_unique(
+            array_map(fn (AssigneeIdentity $actor) => $actor->type, $actors),
+            SORT_REGULAR,
+        ) as $type) {
             array_push(
                 $names,
                 ...$this->providers->assigneeProvider($type)->names(

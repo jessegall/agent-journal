@@ -89,9 +89,18 @@ final class SharingValuesTest extends TestCase
     {
         foreach ([
             ShareRelation::class, ShareRelationSet::class, ShareRecordRegistration::class, ShareRecordCard::class,
-            ShareRecords::class, ShareCandidates::class, ShareLinkedCandidate::class, ShareSelection::class, ShareTargetRead::class,
+            ShareRecords::class,
+            ShareCandidates::class,
+            ShareLinkedCandidate::class,
+            ShareSelection::class,
+            ShareTargetRead::class,
             ShareRelationRead::class, ShareContentRead::class, SharedContent::class, GatewayConfiguration::class,
-            GatewayOperation::class, GatewayEndpoint::class, GatewayReadiness::class, GatewayHealth::class, GatewaySettings::class, ShareSelectedTarget::class,
+            GatewayOperation::class,
+            GatewayEndpoint::class,
+            GatewayReadiness::class,
+            GatewayHealth::class,
+            GatewaySettings::class,
+            ShareSelectedTarget::class,
         ] as $class) {
             yield class_basename($class) => [$class];
         }

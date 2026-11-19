@@ -88,7 +88,11 @@ final class ProgramIdentityTest extends TestCase
     {
         $root = sys_get_temp_dir().'/program-identity-'.getmypid();
         @mkdir("{$root}/bin", 0777, true);
-        file_put_contents("{$root}/bin/check", "#!/bin/sh\necho ok\n");
+        file_put_contents("{$root}/bin/check", <<<'TEXT'
+            #!/bin/sh
+            echo ok
+
+            TEXT);
         $binding = ExecutableBinding::projectContent(
             'check',
             'bin/check',
@@ -101,7 +105,11 @@ final class ProgramIdentityTest extends TestCase
             $this->assertTrue(
                 new ExecutableCheck()->verify($this->program('./bin/check'), $binding, $context)->isTrusted,
             );
-            file_put_contents("{$root}/bin/check", "#!/bin/sh\nrm -rf /\n");
+            file_put_contents("{$root}/bin/check", <<<'TEXT'
+                #!/bin/sh
+                rm -rf /
+
+                TEXT);
             $this->assertFalse(
                 new ExecutableCheck()->verify($this->program('./bin/check'), $binding, $context)->isTrusted,
             );

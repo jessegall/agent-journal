@@ -24,15 +24,14 @@ use App\Skills\Listeners\RecordProvenSkillReads;
 use App\Skills\Listeners\RefreshSessionSkills;
 use App\Skills\Listeners\RemindRequiredSkills;
 use App\Skills\Support\SkillPublishing;
-use App\Skills\Support\SkillTargets;
 use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
 use Tests\Fixtures\Skills\RecordingStack;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Skills\HasSkillTargets;
 use Tests\Support\TestActors;
-use Tests\Support\UsesTemporaryFolder;
 use Tests\TestCase;
 
 /**
@@ -43,7 +42,7 @@ final class RequiredSkillReadsTest extends TestCase
 {
     use ActsAsActors;
     use CommitsHookRows;
-    use UsesTemporaryFolder;
+    use HasSkillTargets;
 
     private const array TABLES = [
         'skill_receipts',
@@ -66,14 +65,17 @@ final class RequiredSkillReadsTest extends TestCase
     {
         parent::setUp();
 
-        $this->makeTemporaryFolder('journal-skills');
-        $this->app->instance(SkillTargets::class, new SkillTargets($this->root));
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
         $this->app->instance(AgentStack::class, new RecordingStack());
         $this->artisan('skill:make', [
             'key' => 'user-guide',
             '--description' => 'The review guide',
-            '--body' => "# Guide\n\nFirst text.\n",
+            '--body' => <<<'TEXT'
+                # Guide
+
+                First text.
+
+                TEXT,
         ])->assertSuccessful();
         $this->app->make(SkillPublishing::class)->refresh();
     }
@@ -93,7 +95,12 @@ final class RequiredSkillReadsTest extends TestCase
         $this->artisan('skill:edit', [
             'number' => 'user-guide',
             '--expected-revision' => 1,
-            '--body' => "# Guide\n\nSecond text.\n",
+            '--body' => <<<'TEXT'
+                # Guide
+
+                Second text.
+
+                TEXT,
         ])->assertSuccessful();
         $this->assertReminded($this->boundary($session));
     }

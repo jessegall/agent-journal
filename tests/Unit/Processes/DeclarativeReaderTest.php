@@ -34,7 +34,12 @@ final class DeclarativeReaderTest extends TestCase
     {
         $assessment = $this->assess(
             PartEnd::exited(0),
-            $this->stdout(0, "PASS a\nsomething odd\nTests: 1, Failures: 0\n"),
+            $this->stdout(0, <<<'TEXT'
+                PASS a
+                something odd
+                Tests: 1, Failures: 0
+
+                TEXT),
         );
 
         $this->assertTrue($assessment->has(ProblemCode::OutputUnrecognized));
@@ -80,7 +85,11 @@ final class DeclarativeReaderTest extends TestCase
             PartEnd::exited(0),
             $this->stdout(0, 'PASS '),
             new OutputFrame(OutputStream::Stderr, 0, "a\n"),
-            $this->stdout(5, "a\nTests: 1, Failures: 0\n"),
+            $this->stdout(5, <<<'TEXT'
+                a
+                Tests: 1, Failures: 0
+
+                TEXT),
         );
 
         $this->assertSame(
@@ -94,7 +103,12 @@ final class DeclarativeReaderTest extends TestCase
     {
         $assessment = $this->assess(
             PartEnd::exited(0),
-            $this->stdout(0, "PASS a\nPASS \xC3\x28\nTests: 2, Failures: 0\n"),
+            $this->stdout(0, <<<TEXT
+                PASS a
+                PASS \xC3\x28
+                Tests: 2, Failures: 0
+
+                TEXT),
         );
 
         $problem = $assessment->problems[0];
@@ -104,7 +118,11 @@ final class DeclarativeReaderTest extends TestCase
 
     public function test_progress_past_its_total_is_counts_invalid_and_never_clamped(): void
     {
-        $assessment = $this->assess(PartEnd::exited(0), $this->stdout(0, "progress 9/7\nTests: 7, Failures: 0\n"));
+        $assessment = $this->assess(PartEnd::exited(0), $this->stdout(0, <<<'TEXT'
+            progress 9/7
+            Tests: 7, Failures: 0
+
+            TEXT));
 
         $this->assertTrue($assessment->has(ProblemCode::CountsInvalid));
         $this->assertSame(9, $assessment->progress->completed);
@@ -114,7 +132,11 @@ final class DeclarativeReaderTest extends TestCase
     {
         $assessment = $this->assess(
             PartEnd::exited(0),
-            $this->stdout(0, "PASS a\nApproved by the journal: result passed\n"),
+            $this->stdout(0, <<<'TEXT'
+                PASS a
+                Approved by the journal: result passed
+
+                TEXT),
         );
 
         $this->assertTrue($assessment->has(ProblemCode::SummaryMissing));

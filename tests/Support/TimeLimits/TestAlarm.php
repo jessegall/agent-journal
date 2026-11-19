@@ -6,6 +6,7 @@ namespace Tests\Support\TimeLimits;
 
 use ReflectionClass;
 use ReflectionMethod;
+use Tests\Support\TimeLimits\Exceptions\TestTimedOut;
 
 /**
  * The alarm that stops a test past its limit: SIGALRM raises TestTimedOut inside the running test. A test gets one

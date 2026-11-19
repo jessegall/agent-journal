@@ -23,7 +23,7 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Foundation\Application;
 use Tests\Support\CommitsHookRows;
-use Tests\Support\SimulatedFailure;
+use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\TestActors;
 use Tests\Support\TestIds;
 use Tests\Support\TimeLimits\TimeLimit;
@@ -77,7 +77,11 @@ final class SharingListenerTest extends TestCase
 
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
-        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
+        $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', <<<'TEXT'
+            # Goal
+            Ship it.
+
+            TEXT));
         $this->app->make(CurrentActorSetter::class)->clear();
         $configuration = ShareGatewayConfiguration::configure(
             new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
@@ -158,7 +162,11 @@ final class SharingListenerTest extends TestCase
             new CreateDocument(
                 'Tricks',
                 'Inert',
-                "<script>alert(1)</script>\n\n[run](javascript:alert(1)) [site](https://example.com) "
+                <<<'TEXT'
+                    <script>alert(1)</script>
+
+                    [run](javascript:alert(1)) [site](https://example.com) 
+                    TEXT
                     ."[other](/s/elsewhere)\n",
             ),
         );
@@ -208,7 +216,8 @@ final class SharingListenerTest extends TestCase
                 END IF;
                 RETURN NEW;
             END $$;
-            CREATE TRIGGER refuse_read_audit BEFORE INSERT ON share_audits FOR EACH ROW EXECUTE FUNCTION refuse_read_audit();
+            CREATE TRIGGER refuse_read_audit BEFORE INSERT ON share_audits
+                FOR EACH ROW EXECUTE FUNCTION refuse_read_audit();
             SQL);
 
         try {

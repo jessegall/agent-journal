@@ -102,7 +102,11 @@ final readonly class RedirectFacts
             RedirectType::Input => [CommandClass::Read],
             RedirectType::Output, RedirectType::Append, RedirectType::Clobber => [CommandClass::Write],
             RedirectType::ReadWrite => [CommandClass::Read, CommandClass::Write],
-            RedirectType::DuplicateInput, RedirectType::DuplicateOutput, RedirectType::Close, RedirectType::HereDocument, RedirectType::HereString => [],
+            RedirectType::DuplicateInput,
+            RedirectType::DuplicateOutput,
+            RedirectType::Close,
+            RedirectType::HereDocument,
+            RedirectType::HereString => [],
         };
     }
 

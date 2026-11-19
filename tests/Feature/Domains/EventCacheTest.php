@@ -6,6 +6,7 @@ namespace Tests\Feature\Domains;
 
 use App\Domains\Exceptions\InvalidListener;
 use App\Domains\Providers\DomainEventServiceProvider;
+use Tests\Support\SetsEventCachePath;
 use Tests\TestCase;
 
 /**
@@ -14,6 +15,8 @@ use Tests\TestCase;
  */
 final class EventCacheTest extends TestCase
 {
+    use SetsEventCachePath;
+
     private string $cachePath;
 
     protected function setUp(): void
@@ -44,19 +47,5 @@ final class EventCacheTest extends TestCase
         $this->expectExceptionMessage(DomainEventServiceProvider::class);
 
         new DomainEventServiceProvider($this->app)->getEvents();
-    }
-
-    private function useEventCachePath(string|null $path): void
-    {
-        if ($path === null) {
-            unset($_SERVER['APP_EVENTS_CACHE'], $_ENV['APP_EVENTS_CACHE']);
-            putenv('APP_EVENTS_CACHE');
-
-            return;
-        }
-
-        $_SERVER['APP_EVENTS_CACHE'] = $path;
-        $_ENV['APP_EVENTS_CACHE'] = $path;
-        putenv("APP_EVENTS_CACHE={$path}");
     }
 }

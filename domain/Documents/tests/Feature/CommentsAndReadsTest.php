@@ -74,7 +74,14 @@ final class CommentsAndReadsTest extends TestCase
             new OwnerAuthority('test'),
         );
         $this->bus()->run(
-            new CreateDocument('Design', 'What we build', "# Goal\nShip the editor.\n\n## Risks\nNone.\n"),
+            new CreateDocument('Design', 'What we build', <<<'TEXT'
+                # Goal
+                Ship the editor.
+
+                ## Risks
+                None.
+
+                TEXT),
         );
     }
 
@@ -98,7 +105,18 @@ final class CommentsAndReadsTest extends TestCase
             new CreateDocument(
                 'Sections',
                 'Three parts',
-                "# One\nFirst.\n\n# Two\nSecond.\n\n# Three\nThird part.\nStill third.\n",
+                <<<'TEXT'
+                    # One
+                    First.
+
+                    # Two
+                    Second.
+
+                    # Three
+                    Third part.
+                    Still third.
+
+                    TEXT,
             ),
         );
         $section = $this->bus()->run(
@@ -180,7 +198,11 @@ final class CommentsAndReadsTest extends TestCase
     public function test_a_read_without_flags_gives_the_outline_and_a_long_section_is_cut_with_its_continuation(): void
     {
         $lines = implode("\n", array_map(fn (int $line) => "Line {$line}.", range(1, 300)));
-        $this->bus()->run(new CreateDocument('Long', 'Many lines', "# Long\n{$lines}\n"));
+        $this->bus()->run(new CreateDocument('Long', 'Many lines', <<<TEXT
+            # Long
+            {$lines}
+
+            TEXT));
 
         $outline = $this->documents()->read(2, new TextSelection());
         $part = $this->documents()->read(2, new TextSelection(section: '1'));

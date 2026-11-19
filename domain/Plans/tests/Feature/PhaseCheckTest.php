@@ -47,7 +47,7 @@ final class PhaseCheckTest extends TestCase
     {
         $receipt = $this->receiptOf(0, self::PASSED_OUTPUT);
 
-        $this->asAgent(new RecordPhaseCheck($this->phase->id, $receipt));
+        $this->runAsAgent(new RecordPhaseCheck($this->phase->id, $receipt));
 
         $check = PhaseCheck::query()->ofPhase($this->phase)->sole();
         $this->assertSame('passed', $check->outcome);
@@ -57,13 +57,13 @@ final class PhaseCheckTest extends TestCase
     public function test_a_run_without_a_result_and_a_superseded_receipt_are_refused(): void
     {
         $part = $this->normalRun(0, self::PASSED_OUTPUT);
-        $first = $this->asAgent(new AssessPartOutput($part->id));
-        $this->asAgent(new AssessPartOutput($part->id));
+        $first = $this->runAsAgent(new AssessPartOutput($part->id));
+        $this->runAsAgent(new AssessPartOutput($part->id));
 
         $superseded = new RecordPhaseCheck($this->phase->id, $first);
-        $this->assertThrows(fn () => $this->asAgent($superseded), PhaseCheckRefused::class);
+        $this->assertThrows(fn () => $this->runAsAgent($superseded), PhaseCheckRefused::class);
         $this->assertThrows(
-            fn () => $this->asAgent(new RecordPhaseCheck($this->phase->id, 'no-receipt-for-an-evidence-run')),
+            fn () => $this->runAsAgent(new RecordPhaseCheck($this->phase->id, 'no-receipt-for-an-evidence-run')),
             PhaseCheckRefused::class,
         );
         $this->assertSame(0, PhaseCheck::query()->count());
@@ -75,11 +75,11 @@ final class PhaseCheckTest extends TestCase
         Task::query()->whereKey($this->task->id)->update(['updated_at' => now()->addMinute()]);
 
         $stale = new RecordPhaseCheck($this->phase->id, $receipt);
-        $this->assertThrows(fn () => $this->asAgent($stale), PhaseCheckRefused::class);
+        $this->assertThrows(fn () => $this->runAsAgent($stale), PhaseCheckRefused::class);
     }
 
     private function receiptOf(int $status, string $output): string
     {
-        return $this->asAgent(new AssessPartOutput($this->normalRun($status, $output)->id));
+        return $this->runAsAgent(new AssessPartOutput($this->normalRun($status, $output)->id));
     }
 }

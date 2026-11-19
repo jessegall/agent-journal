@@ -3,7 +3,9 @@
 @if ($checks !== [])
 import type { {!! implode(', ', $dataTypes) !!} } from './types/page-props';
 
-type Accepts<Given, Component> = Component extends abstract new (...args: never) => { $props: infer Props } ? (Given extends Props ? true : false) : false;
+type Accepts<Given, Component> = Component extends abstract new (...args: never) => { $props: infer Props }
+    ? (Given extends Props ? true : false)
+    : false;
 @foreach ($checks as $name => $check)
 
 export const {!! $name !!}: Accepts<{!! $check['type'] !!}, typeof import('{!! $check['path'] !!}').default> = true;
