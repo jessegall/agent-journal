@@ -54,7 +54,7 @@ RUN composer dump-autoload --optimize && npm run build
 
 EXPOSE 8000
 
-CMD ["php", "artisan", "octane:frankenphp", "--host=0.0.0.0", "--port=8000"]
+CMD ["php", "artisan", "octane:frankenphp", "--host=0.0.0.0", "--port=8000", "--caddyfile=.docker/app/Caddyfile"]
 
 # The share service: the same application with the pinned gateway programs, run by the sharing supervisor as its first
 # process. It publishes no port; a gateway reaches the share-only listener on loopback.
