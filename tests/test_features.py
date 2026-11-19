@@ -7510,6 +7510,46 @@ def test_a_worker_cut_from_main_before_its_brief_named_a_branch_keeps_merging_in
     assert "main-only.php" not in git_run(root / "platform", "ls-tree", "--name-only", "feature/payroll-v2").stdout, "main is not poured into feature/payroll-v2"
 
 
+def test_a_worker_that_cut_its_own_branch_from_a_base_in_its_worktree_is_rebased_and_merged_onto_that_base_not_main(app: App, monkeypatch):
+    """On the hosted journal (19 Nov) workers made their own branches from feature/payroll-framework-v2 in their worktrees, and
+    every clock-out rebased them onto main: all of v2 replayed one clash at a time, and the workers ended stuck."""
+    root = workspace_made(app, ("platform",))
+    git_run(root / "platform", "checkout", "-qb", "feature/payroll-v2")
+    committed(root / "platform", "payroll.php", "<?php\n// v2\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    committed(root / "platform", "main-only.php", "<?php\n")
+    base = app.config.home / "bases" / "platform" / "feature--payroll-v2"
+    base.parent.mkdir(parents=True, exist_ok=True)
+    git_run(root / "platform", "worktree", "add", "-q", str(base), "feature/payroll-v2")
+    _, folder, caller = worktree_worker(app, monkeypatch, "Repositories: platform. Payroll totals")
+    git_run(folder / "platform", "checkout", "-qb", "feature/v2-totals", "feature/payroll-v2")
+    committed(folder / "platform", "totals.php", "<?php\n")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    merged = checked_and_merged(app)
+    assert merged.code == 0, merged.error
+    assert not (root / "platform" / "payroll.php").exists() and not (root / "platform" / "totals.php").exists(), "main gets neither v2 nor the work"
+    assert (base / "totals.php").is_file() and not (base / "main-only.php").exists(), "the work lands on feature/payroll-v2, and main is not poured into it"
+
+
+def test_a_rebase_stopped_onto_main_for_a_worker_cut_from_a_base_is_given_up_and_redone_onto_the_base(app: App, monkeypatch):
+    root = workspace_made(app, ("platform",))
+    git_run(root / "platform", "checkout", "-qb", "feature/payroll-v2")
+    committed(root / "platform", "payroll.php", "<?php\n// v2\n")
+    git_run(root / "platform", "checkout", "-q", "main")
+    committed(root / "platform", "payroll.php", "<?php\n// main\n")
+    base = app.config.home / "bases" / "platform" / "feature--payroll-v2"
+    base.parent.mkdir(parents=True, exist_ok=True)
+    git_run(root / "platform", "worktree", "add", "-q", str(base), "feature/payroll-v2")
+    _, folder, caller = worktree_worker(app, monkeypatch, "Repositories: platform. Payroll totals")
+    git_run(folder / "platform", "checkout", "-qb", "feature/v2-totals", "feature/payroll-v2")
+    committed(folder / "platform", "totals.php", "<?php\n")
+    assert git_run(folder / "platform", "rebase", "main").returncode != 0, "replaying v2 onto main clashes in payroll.php"
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    merged = checked_and_merged(app)
+    assert merged.code == 0, merged.error
+    assert (base / "totals.php").is_file() and "v2" in (base / "payroll.php").read_text(), "the rebase onto main was given up and the work merged into v2"
+
+
 def test_a_brief_branch_is_checked_out_from_a_checkout_cloned_with_main_only(app: App, monkeypatch):
     """The hosted journal's checkouts fetch main only: git refused to track a branch fetched by hand ("is not a branch") and no base was made (19 Nov)."""
     root = workspace_made(app, ("platform",))
