@@ -6,7 +6,6 @@ from suites.coding.modules.workers.commands.merge_worker.merge_worker import Mer
 from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
 from suites.coding.modules.workers.commands.merge_next_worker.merge_next_worker import MergeNextWorker
 from suites.coding.modules.workers.commands.merger.require_merger import require_merger
-from suites.coding.modules.workers.queries.worker_operation_query import WorkerOperationQuery
 from suites.coding.modules.workers.support.merger_visits import MergerVisits
 from engine.query.queries import Queries
 from engine.repository.repository import Repository
@@ -19,18 +18,18 @@ from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 class MergeNextWorkerHandler(Handler[MergeNextWorker, MergeOutcome]):
     """Merges a worker after the merger reviews its logs: its whole worktree, or the part up to the last task its
-    waiting ask named, read by task id at the merge so a rebase since the ask changes nothing."""
+    waiting ask named, read by task id at the merge so a rebase since the ask changes nothing. Whether the worker is
+    free is asked once, by the request that queued this merge as the worker's operation."""
 
     command = MergeNextWorker
 
-    def __init__(self, agents: AgentRows, bus: Bus, operations: WorkerOperationQuery, visits: MergerVisits, queries: Queries, repository: Repository, worktrees: WorktreeQuery) -> None:
-        self.agents, self.bus, self.operations, self.visits = agents, bus, operations, visits
+    def __init__(self, agents: AgentRows, bus: Bus, visits: MergerVisits, queries: Queries, repository: Repository, worktrees: WorktreeQuery) -> None:
+        self.agents, self.bus, self.visits = agents, bus, visits
         self.queries, self.repository, self.worktrees = queries, repository, worktrees
 
     def handle(self, command: MergeNextWorker, context: Context) -> MergeOutcome:
         require_merger(self.agents, context)
         self.visits.close_newest(context)
-        self.operations.check_available(command.worker_id)
         part_request = self.part_ask(command.worker_id)
         if part_request is None:
             return self.bus.dispatch(MergeWorker(command.worker_id, command.read_important), context)

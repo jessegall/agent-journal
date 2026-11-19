@@ -6,9 +6,8 @@ from suites.coding.modules.workers.support.merge_outcome import MergeOutcome
 
 @dataclass(frozen=True)
 class MergeNextWorker(Command[MergeOutcome]):
-    """The merger takes a worker's work into the branch, answering its important lines if it has any."""
-
-    lock = True
+    """The merger takes a worker's work into the branch, answering its important lines if it has any. It takes no
+    lock, as the merge runs git."""
 
     worker_id: int
     read_important: str = ""
