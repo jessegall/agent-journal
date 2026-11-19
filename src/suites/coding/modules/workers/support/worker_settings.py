@@ -41,6 +41,7 @@ INACTIVE_HELPER_GRACE_MINUTES = f"{MODULE_KEY}.quiet-helper-grace-minutes"
 WORKER_BATCH_SIZE = f"{MODULE_KEY}.worker-batch-size"
 WORKER_IDLE_HOURS = f"{MODULE_KEY}.worker-idle-hours"
 WORKER_PHASE_TEST_RUNS = f"{MODULE_KEY}.worker-phase-test-runs"
+WORKERS_RUN_ANY_COMMAND = f"{MODULE_KEY}.workers-run-any-command"
 WORKER_RUN_WAIT = f"{MODULE_KEY}.worker-run-wait-seconds"
 MOST_RUN_WAIT_SECONDS = 100
 MERGER_ENABLED = f"{MODULE_KEY}.merger-on"
@@ -78,6 +79,7 @@ WORKER_SETTING_VALUES = [
     SettingValue("most-open-tasks", "Tasks a worker may hold started at once", "Most tasks a worker may have started before it commits some of them.", SettingType.NUMBER, default=5, person_set=True, screen="helper-type.workers", section="How a worker works"),
     SettingValue("strongest-model-least-complexity", "Least complexity for the strongest model", "Tasks sent alone, not as a plan or phase, to the strongest model are refused below this complexity; agents may skip it.", SettingType.NUMBER, default=3, person_set=True, screen="helper-type.workers", section="How a worker works"),
     SettingValue("worker-phase-test-runs", "A worker's test runs between two commits", "Test commands a worker may run itself between two commits before it asks the main agent.", SettingType.NUMBER, default=3, person_set=True, screen="tests", section="A worker's own runs"),
+    SettingValue("workers-run-any-command", "Workers run any command", "A worker runs any command itself, tests too: no named test command, no limit between commits and no grant to ask for.", SettingType.FLAG, default=False, person_set=True, screen="tests", section="A worker's own runs"),
     SettingValue("silent-agent-minutes", "Silent agent minutes", "Minutes without tool use or a running command before an agent with unfinished work is resumed.", SettingType.NUMBER, default=3, person_set=True, screen="advanced", section="Silent agents"),
     SettingValue("affected-tests-command", "Affected tests command", "Find tests for changed files, one argument per line. Set the project test command too.", SettingType.TEXT, default="", person_set=True, screen="tests", section="Test commands"),
     SettingValue("project-test-command", "Project test command", "Run selected test arguments. Set the affected tests command too.", SettingType.TEXT, default="", person_set=True, screen="tests", section="Test commands"),

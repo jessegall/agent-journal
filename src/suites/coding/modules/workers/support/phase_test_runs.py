@@ -18,6 +18,8 @@ from suites.coding.modules.workers.support.worker_steps import WorkerSteps
 from suites.coding.modules.workers.support.worker_test_names import WorkerTestNames
 
 from suites.coding.modules.workers.support.phase_test_answer import PhaseTestAnswer
+from engine.setting.setting_values import SettingValues
+from suites.coding.modules.workers.support.worker_settings import WORKERS_RUN_ANY_COMMAND
 PHASE_TESTS_KEY = "workers.phase-tests"
 
 
@@ -27,8 +29,9 @@ class PhaseTestRuns:
     while tests of its work have failed its runs are free until its next commit. Read once a hook, so the
     refusal, the lines and the count agree."""
 
-    def __init__(self, queries: Queries, commands: BackgroundCommands, worktrees: WorktreeQuery, window: CommitWindow, steps: WorkerSteps, request_values: RequestValues) -> None:
+    def __init__(self, queries: Queries, commands: BackgroundCommands, worktrees: WorktreeQuery, window: CommitWindow, steps: WorkerSteps, request_values: RequestValues, settings: SettingValues) -> None:
         self.queries, self.commands, self.worktrees, self.window, self.steps, self.request_values = queries, commands, worktrees, window, steps, request_values
+        self.settings = settings
 
     def answer(self, event: HookEvent, agent_id: int) -> PhaseTestAnswer:
         # read once a hook whatever changes meanwhile: the runs it counts are what the next read finds spent
@@ -36,7 +39,7 @@ class PhaseTestRuns:
 
     def counted(self, event: HookEvent, agent_id: int) -> PhaseTestAnswer:
         tool = event.tool
-        if tool is None or tool.shell is None:
+        if tool is None or tool.shell is None or self.settings.flag(WORKERS_RUN_ANY_COMMAND):
             return PhaseTestAnswer()
         test_part_count = sum(self.is_test_part(part, tool.shell) for part in tool.shell.parts)
         if not test_part_count:

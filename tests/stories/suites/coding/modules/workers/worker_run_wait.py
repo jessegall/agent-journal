@@ -8,7 +8,7 @@ from core.modules.processes.support.runner_binary import RunnerBinary
 from core.modules.processes.support.runner_line import QUEUE_WAIT_VARIABLE
 from engine.testing.examples.hook_samples import HookSamples
 from engine.testing.examples.shell_part import ShellPart
-from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_WAIT
+from suites.coding.modules.workers.support.worker_settings import WORKER_RUN_WAIT, WORKERS_RUN_ANY_COMMAND
 from suites.coding.modules.workers.support.worker_test_launch import WorkerTestLaunch
 from tests.stories.core.support.coding_fixtures import OrchestratorWithPerson
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import repository_environment
@@ -98,6 +98,12 @@ def test_a_named_test_launches_and_holds_the_call_with_the_settings_queue_wait(w
     worker.story.run_listeners()
     expect_value_with(launches[1], f"{QUEUE_WAIT_VARIABLE}=90")
     expect_value(worker.story.clock.slept_seconds - start_seconds, 90)
+
+
+def test_with_workers_running_any_command_a_workers_own_test_line_is_let_through(worker, launches):
+    worker.story.expect_success(f"setting set {WORKERS_RUN_ANY_COMMAND} true --environment main", actor=worker.story.user)
+    answer = worker.story.hook(worker.session, TEST_SHELL)
+    expect_value(answer.refusal, "")
 
 
 def test_a_workers_own_test_line_is_refused_and_starts_no_run(worker, launches):
