@@ -9,6 +9,7 @@ use App\Hooks\Enums\SessionEndReason;
 use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Enums\ToolOutcome;
 use App\Hooks\Exceptions\UnreadablePayload;
+use App\Hooks\Inputs\ProtectedFileRead;
 use App\Hooks\Inputs\SessionStartDetails;
 use Spatie\LaravelData\Attributes\MapInputName;
 use Spatie\LaravelData\Data;
@@ -41,6 +42,7 @@ final class HookPayload extends Data
         public readonly string|Optional $turnId = new Optional(),
         public readonly string|Optional $error = new Optional(),
         public readonly string|Optional $transcriptPath = new Optional(),
+        public readonly string|Optional $cwd = new Optional(),
     ) {}
 
     /**
@@ -87,6 +89,36 @@ final class HookPayload extends Data
         $transcriptPath = is_string($this->transcriptPath) ? $this->transcriptPath : null;
 
         return new SessionStartDetails($this->sessionId, $this->startSource(), $transcriptPath);
+    }
+
+    /**
+     * The folder the program works in, against which a tool's relative paths are read; the file system root when the
+     * program named none, so nothing relative is read as safe.
+     */
+    public function workFolder(): string
+    {
+        return is_string($this->cwd) ? $this->cwd : '/';
+    }
+
+    /**
+     * The files a native read, list or search tool names: its file or folder and, for a search, where its pattern
+     * starts.
+     */
+    public function fileRead(): ProtectedFileRead
+    {
+        $arguments = $this->toolArguments();
+        $folder = $this->workFolder();
+        $named = array_values(array_filter(
+            [$arguments['file_path'] ?? null, $arguments['path'] ?? null],
+            is_string(...),
+        ));
+        $searched = ProtectedFileRead::resolve($folder, $named[0] ?? '.');
+        $pattern = $arguments['pattern'] ?? null;
+        $patternFolder = is_string($pattern) && strcspn($pattern, '*?[{') < strlen($pattern)
+            ? [ProtectedFileRead::patternFolder($searched, $pattern)]
+            : [];
+
+        return ProtectedFileRead::inFolder($folder, [$searched, ...$patternFolder]);
     }
 
     public function isSessionStart(): bool

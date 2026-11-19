@@ -10,10 +10,12 @@ use App\AgentRequests\Support\LaunchProfilePin;
 use App\Agents\Enums\OfflineReplyMode;
 use App\Agents\Exceptions\OfflineReplySealInvalid;
 use App\Agents\Support\OfflineReplySeal;
+use App\Hooks\Support\ProtectedAccounts;
 
 /**
  * What the relay of one launch needs, given to the program's environment by the launch: where the journal
- * answers, the launch token, the sealed offline reply and the host's bypass file.
+ * answers, the launch token, the sealed offline reply, the host's bypass file and the account folders it refuses on
+ * its own while the journal is away.
  */
 final readonly class RelaySettings
 {
@@ -25,6 +27,7 @@ final readonly class RelaySettings
         public string $bypassLogPath,
         public int $timeoutSeconds = 10,
         public int $processGeneration = 0,
+        public ProtectedAccounts $accounts = new ProtectedAccounts([]),
     ) {}
 
     /**
@@ -48,6 +51,11 @@ final readonly class RelaySettings
             $mode->passesOutages(),
             $launch->value('JOURNAL_BYPASS_LOG'),
             processGeneration: (int) ($environment['JOURNAL_PROCESS_GENERATION'] ?? 0),
+            accounts: new ProtectedAccounts(array_values(array_filter([
+                $environment['JOURNAL_ACCOUNTS_ROOT'] ?? '',
+                $environment['CLAUDE_CONFIG_DIR'] ?? '',
+                $environment['CODEX_HOME'] ?? '',
+            ], fn (string $folder) => $folder !== ''))),
         );
     }
 

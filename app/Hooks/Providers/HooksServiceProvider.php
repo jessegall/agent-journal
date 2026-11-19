@@ -11,11 +11,13 @@ use App\Agents\Support\AgentContext;
 use App\Bus\Contracts\StackAdmission;
 use App\Bus\Support\OperationDeadline;
 use App\Contracts\LaunchTransaction;
+use App\Hooks\Actions\CheckProtectedResources;
 use App\Hooks\Console\PruneHookHistoryCommand;
 use App\Hooks\Console\RelayHookCommand;
 use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\IncomingWorkRegistration;
 use App\Hooks\Contracts\InspectsStacks;
+use App\Hooks\Contracts\ProtectedResources;
 use App\Hooks\Contracts\ResolvesStateTypes;
 use App\Hooks\Contracts\RunsStackTransactions;
 use App\Hooks\Contracts\StateFactory;
@@ -31,11 +33,13 @@ use App\Hooks\Support\AgentWorkStack;
 use App\Hooks\Support\ContextBudget;
 use App\Hooks\Support\HookRetryWindow;
 use App\Hooks\Support\IncomingWorkList;
+use App\Hooks\Support\ProtectedAccounts;
 use App\Hooks\Support\RetentionPeriods;
 use App\Hooks\Support\StackTransaction;
 use App\Hooks\Support\WorkStackPushes;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Container\Container;
+use Illuminate\Contracts\Config\Repository;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
 
@@ -54,6 +58,10 @@ final class HooksServiceProvider extends ServiceProvider
         $this->app->singleton(IncomingWorkRegistration::class, IncomingWorkList::class);
         $this->app->singleton(StateTypes::class);
         $this->app->bind(LaunchTransaction::class, StackTransaction::class);
+        $this->app->singleton(ProtectedAccounts::class, fn ($app) => new ProtectedAccounts([
+            $app->make(Repository::class)->string('accounts.root'),
+        ]));
+        $this->app->bind(ProtectedResources::class, CheckProtectedResources::class);
         $this->app->scoped(StackAdmission::class, AdvisoryStackAdmission::class);
         $this->app->scoped(ActorWorkStacks::class, WorkStackPushes::class);
         $this->app->singleton(RetentionPeriods::class, fn () => new RetentionPeriods(

@@ -43,6 +43,8 @@ final class AccountLaunchSettings
 
     private string $arrangement = '';
 
+    private string $protectionSettings = '';
+
     public function setVariable(string $name, string $value): void
     {
         $this->environment[] = new LaunchSetting($name, $value);
@@ -66,6 +68,14 @@ final class AccountLaunchSettings
     public function keepAccountSetting(string $name, string $value): void
     {
         $this->accountSettings[] = new LaunchSetting($name, $value);
+    }
+
+    /**
+     * The program's private protection settings, which the host writes into a file of this launch alone.
+     */
+    public function protectWith(string $settings): void
+    {
+        $this->protectionSettings = $settings;
     }
 
     public function holdFor(string $version, string $binaryDigest, string $arrangement): void
@@ -93,6 +103,7 @@ final class AccountLaunchSettings
             $this->build,
             $this->binaryDigest,
             $this->arrangement,
+            $this->protectionSettings,
         );
     }
 }

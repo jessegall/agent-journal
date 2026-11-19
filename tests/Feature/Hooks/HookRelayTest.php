@@ -14,6 +14,7 @@ use App\Hooks\Programs\ProgramReply;
 use App\Hooks\Relay\CallbackEnvelope;
 use App\Hooks\Relay\HookRelay;
 use App\Hooks\Relay\RelaySettings;
+use App\Hooks\Support\ProtectedAccounts;
 use App\Hooks\Support\StackTransaction;
 use App\Programs\Enums\HookProgram;
 use Carbon\CarbonImmutable;
@@ -49,6 +50,9 @@ final class HookRelayTest extends TestCase
     private const string STOP = '{"session_id":"session-1","hook_event_name":"Stop","stop_hook_active":false}';
 
     private const string SHELL = '{"session_id":"session-1","hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"git status"}}';
+
+    private const string ACCOUNT_READ = '{"session_id":"session-1","hook_event_name":"PreToolUse","tool_name":"Read",'
+        .'"cwd":"/work","tool_input":{"file_path":"../journal/accounts/a/projects/-work/other.jsonl"}}';
 
     private TestLaunch $launch;
 
@@ -100,6 +104,16 @@ final class HookRelayTest extends TestCase
             '"nativeEvent":"PreToolUse","failure":"unreachable"',
             (string) file_get_contents($this->bypassLog),
         );
+    }
+
+    public function test_during_an_outage_a_main_agent_is_still_refused_saved_accounts_and_logs_no_bypass(): void
+    {
+        Http::fake(fn () => throw JournalUnreachable::now());
+
+        $reply = $this->relay(self::ACCOUNT_READ);
+
+        $this->assertEquals(OutageReply::protectedRefusal('PreToolUse'), $reply);
+        $this->assertFileDoesNotExist($this->bypassLog);
     }
 
     public function test_a_gateway_failure_counts_as_an_outage(): void
@@ -236,6 +250,7 @@ final class HookRelayTest extends TestCase
             $this->launch->pin(),
             $passesOutages,
             $this->bypassLog,
+            accounts: new ProtectedAccounts(['/journal/accounts']),
         );
 
         return $this->app->make(HookRelay::class)->relay(HookProgram::ClaudeCode, $payload, $settings);

@@ -125,7 +125,11 @@ final class ProcessStart extends Model implements ReadableModel
      */
     public static function lockedCurrentOf(string $sessionId): self|null
     {
-        return self::supervised()->unresolved()->where('session_id', $sessionId)->orderByDesc('created_at')->lockForUpdate()
+        return self::supervised()
+            ->unresolved()
+            ->where('session_id', $sessionId)
+            ->orderByDesc('created_at')
+            ->lockForUpdate()
             ->first();
     }
 

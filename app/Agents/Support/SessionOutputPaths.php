@@ -42,7 +42,7 @@ final readonly class SessionOutputPaths
     }
 
     /**
-     * Whether the path is the transcript itself or lies inside the conversation's own output folder.
+     * Whether the path is the transcript itself, the conversation's own output folder or lies inside it.
      */
     public function contains(string $path): bool
     {
@@ -51,6 +51,7 @@ final readonly class SessionOutputPaths
         }
 
         return $path === $this->transcriptPath
+            || $path === $this->outputDirectory
             || ($this->outputDirectory !== null && str_starts_with($path, $this->outputDirectory.'/'));
     }
 }

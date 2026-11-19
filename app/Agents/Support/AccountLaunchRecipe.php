@@ -7,8 +7,8 @@ namespace App\Agents\Support;
 /**
  * What the host does to run a claimed start on its account, as the program's adapter checked it for the pinned build:
  * the environment it sets, the variables it points at a new empty folder, the variables it removes so no other
- * credential is used, the flags it passes, the entries it keeps in the account's own configuration, and the build
- * and arrangement the recipe holds for.
+ * credential is used, the flags it passes, the entries it keeps in the account's own configuration, the build and
+ * arrangement the recipe holds for, and the private protection settings the host writes for the launch alone.
  */
 final readonly class AccountLaunchRecipe
 {
@@ -28,5 +28,6 @@ final readonly class AccountLaunchRecipe
         public string $programVersion,
         public string $binaryDigest,
         public string $arrangement,
+        public string $protectionSettings,
     ) {}
 }

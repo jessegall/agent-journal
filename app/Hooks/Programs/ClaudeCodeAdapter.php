@@ -7,6 +7,7 @@ namespace App\Hooks\Programs;
 use App\Hooks\Actions\RecordProgramFailure;
 use App\Hooks\Contracts\ProgramAdapter;
 use App\Hooks\Contracts\ProgramCall;
+use App\Hooks\Contracts\ProtectedResources;
 use App\Hooks\Enums\ClaudeCodeTool;
 use App\Hooks\Enums\RewriteSupport;
 use App\Hooks\Enums\SessionStartSource;
@@ -20,6 +21,7 @@ use App\Hooks\Inputs\FileEditRequested;
 use App\Hooks\Inputs\HookIdentity;
 use App\Hooks\Inputs\PromptDetails;
 use App\Hooks\Inputs\PromptSubmitted;
+use App\Hooks\Inputs\ProtectedFileRead;
 use App\Hooks\Inputs\SessionEndDetails;
 use App\Hooks\Inputs\SessionEnded;
 use App\Hooks\Inputs\SessionStarted;
@@ -40,10 +42,14 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
 {
     private const string PROGRAM = 'Claude Code';
 
+    private const string PROTECTED_REFUSAL = 'Saved program accounts, their sign-ins and other sessions\' history '
+        .'are private: only this session\'s own saved outputs can be read.';
+
     public function __construct(
         private ShellCommandParser $parser,
         private JournalTools $journalTools,
         private RecordProgramFailure $failures,
+        private ProtectedResources $protection,
     ) {}
 
     public function capabilities(): ProgramCapabilities
@@ -162,6 +168,16 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
             return JournalToolCall::starting();
         }
 
+        if ($tool->readsFiles()) {
+            $isRefused = $this->protection->refusesRead($hook->sessionId, $payload->fileRead());
+
+            return new UnjudgedCall($isRefused ? self::protectedRefusal() : ProgramReplies::allowTool([]));
+        }
+
+        if ($tool === ClaudeCodeTool::Bash && $this->protection->refusesCommand($payload->argument('command'))) {
+            return new UnjudgedCall(self::protectedRefusal());
+        }
+
         if ($tool === ClaudeCodeTool::Bash) {
             $original = new ProgramToolInput($payload->toolArguments());
             $command = $this->parser->parse($payload->argument('command'), ShellDialect::Bash);
@@ -175,11 +191,21 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
         if ($tool->changesFiles()) {
             $original = new ProgramToolInput($payload->toolArguments());
             $path = $payload->argument('file_path', 'notebook_path');
+
+            if ($this->protection->refusesChange(ProtectedFileRead::resolve($payload->workFolder(), $path))) {
+                return new UnjudgedCall(self::protectedRefusal());
+            }
+
             $edit = new FileEditRequested($hook, new FileChanges([new FileChange($path, $tool->fileOperation())]));
 
             return new JudgedCall($edit, fn (HookAnswer $answer) => $this->renderShell($answer, $original));
         }
 
         return new UnjudgedCall(ProgramReplies::allowTool([]));
+    }
+
+    private static function protectedRefusal(): ProgramReply
+    {
+        return ProgramReplies::denyTool(self::PROTECTED_REFUSAL, []);
     }
 }

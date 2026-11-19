@@ -111,6 +111,10 @@ final class HostStartsTest extends TestCase
         $this->assertContains('ANTHROPIC_API_KEY', $recipe['removedVariables']);
         $this->assertContains('--restricted', $recipe['launchFlags']);
         $this->assertSame(['2.1.323', 'direct-processes'], [$recipe['programVersion'], $recipe['arrangement']]);
+        $this->assertStringContainsString(
+            'Read(//journal/accounts/claude-code/.credentials.json)',
+            $recipe['protectionSettings'],
+        );
     }
 
     public function test_the_host_claims_a_start_once_and_reports_its_execution_and_exit(): void

@@ -10,6 +10,7 @@ use App\Hooks\Contracts\ProgramCompatibilities;
 use App\Hooks\Programs\ClaudeAccountSettings;
 use App\Hooks\Programs\CodexAccountSettings;
 use App\Programs\Enums\HookProgram;
+use Illuminate\Contracts\Config\Repository;
 
 /**
  * Fills in a claimed start's account settings for a program the journal runs, from its pinned compatibility; a build
@@ -17,7 +18,10 @@ use App\Programs\Enums\HookProgram;
  */
 final class SupplyAccountSettings implements Listener
 {
-    public function __construct(private ProgramCompatibilities $compatibilities) {}
+    public function __construct(
+        private ProgramCompatibilities $compatibilities,
+        private Repository $config,
+    ) {}
 
     public function handle(AccountSettingsRequested $event): void
     {
@@ -39,6 +43,7 @@ final class SupplyAccountSettings implements Listener
             HookProgram::ClaudeCode => ClaudeAccountSettings::fill(
                 $event->settings,
                 $event->directory,
+                $this->config->string('accounts.root'),
                 $compatibility->launchFlags,
             ),
             HookProgram::Codex => CodexAccountSettings::fill(
