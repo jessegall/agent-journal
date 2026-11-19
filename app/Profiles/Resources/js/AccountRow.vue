@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { AccountRowData } from '@generated/types/accounts';
-import { remove, rename, retryCleanup } from '@generated/routes/accounts';
+import { accountLaunch, remove, rename, retryCleanup } from '@generated/routes/accounts';
+import { Link } from '@inertiajs/vue3';
 import { useForm } from '@inertiajs/vue3';
 import Button from '@kit/Button';
 import ConfirmAction from '@kit/ConfirmAction';
@@ -111,6 +112,17 @@ function saveName(): void {
             >
             <Button size="small" @click="isRenaming = false">Cancel</Button>
         </form>
+        <ul
+            v-if="account.recentLaunches.length > 0"
+            class="flex flex-wrap gap-2 text-small"
+            aria-label="Recent launches"
+        >
+            <li v-for="launch in account.recentLaunches" :key="launch.sessionId">
+                <Link :href="accountLaunch({ session: launch.sessionId }).url" class="text-brand-text underline"
+                    >{{ launch.isRunning ? 'Running since' : 'Launched' }} {{ launch.startedAt }}</Link
+                >
+            </li>
+        </ul>
         <slot v-if="!isLeaving" />
     </li>
 </template>

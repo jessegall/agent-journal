@@ -17,6 +17,7 @@ use App\Profiles\Http\Controllers\StartSignInController;
 use App\Profiles\Http\Controllers\SubmitSignInCodeController;
 use App\Profiles\Resolvers\AccountNoticesSection;
 use App\Profiles\Resolvers\AccountsWindowResolver;
+use App\Profiles\Resolvers\LaunchAccountWindowResolver;
 use App\Profiles\Support\AccountOwnerCheck;
 use App\Ui\Contracts\ProvidesNavigation;
 use App\Ui\Contracts\ProvidesPages;
@@ -58,6 +59,15 @@ final class ProfilesPages implements ProvidesNavigation, ProvidesPages, Provides
                     ActionRoute::post('sign-ins/{attempt}/code', SubmitSignInCodeController::class, 'submit-code'),
                     ActionRoute::post('sign-ins/{attempt}/cancel', CancelSignInController::class, 'cancel-sign-in'),
                 ),
+            Page::make(
+                'account-launch',
+                'Launch account',
+                Icon::Accounts,
+                LaunchAccountWindowResolver::class,
+                'LaunchAccountWindow.vue',
+            )
+                ->at('launches/{session}')
+                ->visibleWhen(AccountOwnerCheck::class),
         ];
     }
 

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Data\Profiles;
 
+use App\Agents\Support\AccountUse;
 use App\Profiles\Enums\AccountState;
 use App\Profiles\Enums\CleanupProblem;
 use App\Profiles\Models\Account;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -17,6 +19,9 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript]
 final class AccountRowData extends Data
 {
+    /**
+     * @param  list<AccountLaunchData>  $recentLaunches
+     */
     public function __construct(
         public readonly string $id,
         public readonly string $program,
@@ -28,9 +33,14 @@ final class AccountRowData extends Data
         public readonly string|null $checkedAt,
         public readonly CleanupProblem|null $cleanupProblem,
         public readonly bool $awaitsCleanupRetry,
+        #[DataCollectionOf(AccountLaunchData::class)]
+        public readonly array $recentLaunches,
     ) {}
 
-    public static function fromAccount(Account $account, bool $isActive, int $runningCount): self
+    /**
+     * @param  list<AccountUse>  $recentUses
+     */
+    public static function fromAccount(Account $account, bool $isActive, int $runningCount, array $recentUses): self
     {
         return new self(
             $account->id,
@@ -43,6 +53,7 @@ final class AccountRowData extends Data
             $account->checked_at?->toIso8601String(),
             $account->cleanup_problem,
             $account->awaitsCleanupRetry(),
+            array_map(AccountLaunchData::fromUse(...), $recentUses),
         );
     }
 }

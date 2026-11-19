@@ -22,6 +22,8 @@ use Carbon\CarbonImmutable;
  */
 final readonly class AccountsWindowResolver implements PageResolver
 {
+    private const int RECENT_LAUNCHES = 5;
+
     public function __construct(private AccountUses $uses) {}
 
     public function read(): AccountListData
@@ -36,6 +38,7 @@ final readonly class AccountsWindowResolver implements PageResolver
                 $account,
                 in_array($account->id, $chosen, true),
                 $counts->runningFor($account->recordIdentity()),
+                $this->uses->history($account->recordIdentity(), self::RECENT_LAUNCHES),
             ), $accounts),
             array_map(AccountSelectionData::fromSelection(...), $selections),
             array_map(SignInAttemptData::fromAttempt(...), SignInAttempt::recentFor(CarbonImmutable::now())),
