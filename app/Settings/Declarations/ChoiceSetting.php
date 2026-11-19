@@ -28,7 +28,12 @@ final readonly class ChoiceSetting implements OptionSetting
      * @param  TValue  $default
      * @param  ChoiceOptions<TValue>  $options
      */
-    private function __construct(public string $key, public string $label, public string|int $default, public ChoiceOptions $options) {}
+    private function __construct(
+        public string $key,
+        public string $label,
+        public string|int $default,
+        public ChoiceOptions $options,
+    ) {}
 
     /**
      * @template TOption of string|int

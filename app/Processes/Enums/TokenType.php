@@ -47,7 +47,11 @@ enum TokenType: string
      */
     public function isCommandSeparator(): bool
     {
-        return in_array($this, [self::Newline, self::Semicolon, self::AndIf, self::OrIf, self::Pipe, self::PipeBoth, self::Background], true);
+        return in_array(
+            $this,
+            [self::Newline, self::Semicolon, self::AndIf, self::OrIf, self::Pipe, self::PipeBoth, self::Background],
+            true,
+        );
     }
 
     /**

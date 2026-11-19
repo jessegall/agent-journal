@@ -50,7 +50,10 @@ final readonly class TestLaunch
         $context = new AgentContext($this->agent->id, $this->session->id, $call, null);
         $app->forgetScopedInstances();
         $app->instance(AgentContext::class, $context);
-        $app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agent->id), TestLaunchAuthority::forAgent($this->agent->id));
+        $app->make(CurrentActorSetter::class)->set(
+ActorContext::forAgent($this->agent->id),
+ TestLaunchAuthority::forAgent($this->agent->id),
+);
     }
 
     /**
@@ -75,7 +78,14 @@ final readonly class TestLaunch
     /**
      * @return array<string, string>
      */
-    public function serverHeaders(string $body, string $callId = 'call-1', int|null $issuedAt = null, string|null $signingToken = null, string $method = 'POST', string $target = '/'): array
+    public function serverHeaders(
+string $body,
+ string $callId = 'call-1',
+ int|null $issuedAt = null,
+ string|null $signingToken = null,
+ string $method = 'POST',
+ string $target = '/',
+): array
     {
         $issuedAt ??= time();
         $pin = $this->pin();

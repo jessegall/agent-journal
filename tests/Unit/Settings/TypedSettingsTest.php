@@ -40,16 +40,34 @@ final class TypedSettingsTest extends TestCase
     {
         yield 'an integer default outside its bounds' => [fn () => IntegerSetting::make('weight', 'Weight', 11, 0, 10)];
         yield 'a minimum above the maximum' => [fn () => IntegerSetting::make('weight', 'Weight', 5, 10, 0)];
-        yield 'a bound past the largest exact number' => [fn () => IntegerSetting::make('weight', 'Weight', 0, 0, IntegerSetting::LARGEST + 1)];
-        yield 'too many digits' => [fn () => DecimalSetting::make('weight', 'Weight', Decimal::parse('1'), DecimalSetting::MOST_DIGITS + 1, 2)];
-        yield 'too many fractional digits' => [fn () => DecimalSetting::make('weight', 'Weight', Decimal::parse('1'), 20, DecimalSetting::MOST_FRACTIONAL_DIGITS + 1)];
-        yield 'more fractional digits than digits' => [fn () => DecimalSetting::make('weight', 'Weight', Decimal::parse('1'), 2, 3)];
-        yield 'a decimal default with digits past the scale' => [fn () => DecimalSetting::make('weight', 'Weight', Decimal::parse('0.555'), 5, 2)];
-        yield 'a choice default not among the options' => [fn () => ChoiceSetting::make('weight', 'Weight', 2, [Choice::make(0, 'Low'), Choice::make(1, 'High')])];
-        yield 'text and whole-number options mixed' => [fn () => ChoiceSetting::make('weight', 'Weight', 'a', [Choice::make('a', 'A'), Choice::make(1, 'One')])];
+        yield 'a bound past the largest exact number' => [
+            fn () => IntegerSetting::make('weight', 'Weight', 0, 0, IntegerSetting::LARGEST + 1),
+        ];
+        yield 'too many digits' => [
+            fn () => DecimalSetting::make('weight', 'Weight', Decimal::parse('1'), DecimalSetting::MOST_DIGITS + 1, 2),
+        ];
+        yield 'too many fractional digits' => [
+            fn () => DecimalSetting::make('weight', 'Weight', Decimal::parse('1'), 20, DecimalSetting::MOST_FRACTIONAL_DIGITS + 1),
+        ];
+        yield 'more fractional digits than digits' => [
+            fn () => DecimalSetting::make('weight', 'Weight', Decimal::parse('1'), 2, 3),
+        ];
+        yield 'a decimal default with digits past the scale' => [
+            fn () => DecimalSetting::make('weight', 'Weight', Decimal::parse('0.555'), 5, 2),
+        ];
+        yield 'a choice default not among the options' => [
+            fn () => ChoiceSetting::make('weight', 'Weight', 2, [Choice::make(0, 'Low'), Choice::make(1, 'High')]),
+        ];
+        yield 'text and whole-number options mixed' => [
+            fn () => ChoiceSetting::make('weight', 'Weight', 'a', [Choice::make('a', 'A'), Choice::make(1, 'One')]),
+        ];
         yield 'no options' => [fn () => ChoiceSetting::make('weight', 'Weight', 'a', [])];
-        yield 'one value twice' => [fn () => ChoiceSetting::make('weight', 'Weight', 'a', [Choice::make('a', 'A'), Choice::make('a', 'Again')])];
-        yield 'a default of another enum' => [fn () => EnumSetting::make('weight', 'Weight', ReviewMode::class, ReviewLevel::FirstPass)];
+        yield 'one value twice' => [
+            fn () => ChoiceSetting::make('weight', 'Weight', 'a', [Choice::make('a', 'A'), Choice::make('a', 'Again')]),
+        ];
+        yield 'a default of another enum' => [
+            fn () => EnumSetting::make('weight', 'Weight', ReviewMode::class, ReviewLevel::FirstPass),
+        ];
     }
 
     /**
@@ -70,7 +88,12 @@ final class TypedSettingsTest extends TestCase
     {
         $this->expectException(TypeError::class);
 
-        EnumSetting::make('weight', 'Weight', SettingTypeUnit::class, SettingTypeUnit::One); // @phpstan-ignore argument.type, argument.templateType
+        EnumSetting::make(
+            'weight',
+            'Weight',
+            SettingTypeUnit::class,
+            SettingTypeUnit::One,
+        ); // @phpstan-ignore argument.type, argument.templateType
     }
 
     public function test_a_boolean_default_must_be_a_boolean(): void
@@ -82,7 +105,12 @@ final class TypedSettingsTest extends TestCase
 
     public function test_string_choices_compare_exactly(): void
     {
-        $setting = ChoiceSetting::make('code', 'Code', '01', [Choice::make('01', 'Zero one'), Choice::make('1', 'One')]);
+        $setting = ChoiceSetting::make(
+            'code',
+            'Code',
+            '01',
+            [Choice::make('01', 'Zero one'), Choice::make('1', 'One')],
+        );
 
         $this->assertCount(2, $setting->options());
         $this->assertTrue($setting->accepts('1'));
@@ -95,9 +123,15 @@ final class TypedSettingsTest extends TestCase
         $level = EnumSetting::make('level', 'Level', ReviewLevel::class, ReviewLevel::FirstPass);
 
         $this->assertSame(SettingType::String, $mode->backing);
-        $this->assertSame([['quick', 'A quick look'], ['thorough', 'A thorough review']], array_map(fn (Choice $choice) => [$choice->value, $choice->label], $mode->options()));
+        $this->assertSame(
+            [['quick', 'A quick look'], ['thorough', 'A thorough review']],
+            array_map(fn (Choice $choice) => [$choice->value, $choice->label], $mode->options()),
+        );
         $this->assertSame(SettingType::Integer, $level->backing);
-        $this->assertSame([[1, 'First Pass'], [2, 'Second Pass']], array_map(fn (Choice $choice) => [$choice->value, $choice->label], $level->options()));
+        $this->assertSame(
+            [[1, 'First Pass'], [2, 'Second Pass']],
+            array_map(fn (Choice $choice) => [$choice->value, $choice->label], $level->options()),
+        );
         $this->assertSame(ReviewLevel::SecondPass, $level->caseOf(2));
     }
 

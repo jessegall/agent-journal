@@ -68,7 +68,11 @@ final readonly class MarkdownParts
                 throw SkillSourceInvalid::headingWithoutKey($file, $heading->heading);
             }
 
-            $sections[] = SkillSection::markdown($key, $heading->heading, MarkdownPart::heading($file, [$name, $heading->heading]));
+            $sections[] = SkillSection::markdown(
+                $key,
+                $heading->heading,
+                MarkdownPart::heading($file, [$name, $heading->heading]),
+            );
         }
 
         return $sections;
@@ -95,7 +99,9 @@ final readonly class MarkdownParts
         $title = $outline[0] ?? null;
         $textBeforeTitle = array_filter(
             $markdown->sections,
-            fn (Section $section) => $section->level === 0 && trim($markdown->lines($section->firstLine, $section->lastLine)) !== '',
+            fn (Section $section) => $section->level === 0 && trim(
+                $markdown->lines($section->firstLine, $section->lastLine),
+            ) !== '',
         );
 
         if ($title === null || $title->level !== 1 || $textBeforeTitle !== []) {
@@ -108,7 +114,11 @@ final readonly class MarkdownParts
             throw SkillSourceInvalid::secondTitle($file, $secondTitle->heading);
         }
 
-        return $title->heading === $name ? $title : throw SkillSourceInvalid::titleDiffers($file, $title->heading, $name);
+        return $title->heading === $name ? $title : throw SkillSourceInvalid::titleDiffers(
+            $file,
+            $title->heading,
+            $name,
+        );
     }
 
     /**
@@ -130,7 +140,10 @@ final readonly class MarkdownParts
      */
     private function pathOf(string $file, SkillOwner $owner): string
     {
-        $isRelative = $file !== '' && ! str_starts_with($file, '/') && ! str_starts_with($file, '\\') && preg_match('#^[A-Za-z]:|://#', $file) !== 1;
+        $isRelative = $file !== '' && ! str_starts_with($file, '/') && ! str_starts_with($file, '\\') && preg_match(
+            '#^[A-Za-z]:|://#',
+            $file,
+        ) !== 1;
         $stepsUp = in_array('..', preg_split('#[/\\\\]#', $file) ?: [], true);
 
         if (! $isRelative || $stepsUp) {

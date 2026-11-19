@@ -42,7 +42,10 @@ final class StartPlanTest extends TestCase
 
         Event::fake([PlanStarted::class]);
         $this->plan = Plan::factory()->create(['title' => 'Build the plans page', 'type' => PlanType::Build]);
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(7)),
+            new OwnerAuthority('test'),
+        );
     }
 
     public function test_a_planned_plan_starts_once_and_says_who_started_it(): void
@@ -51,7 +54,10 @@ final class StartPlanTest extends TestCase
 
         $this->assertSame(PlanState::Started, $this->plan->fresh()?->state);
         Event::assertDispatchedTimes(PlanStarted::class, 1);
-        Event::assertDispatched(PlanStarted::class, fn (PlanStarted $event) => $event->planId === $this->plan->id && $event->startedBy->type === ActorType::User);
+        Event::assertDispatched(
+            PlanStarted::class,
+            fn (PlanStarted $event) => $event->planId === $this->plan->id && $event->startedBy->type === ActorType::User,
+        );
     }
 
     public function test_starting_a_started_plan_again_changes_nothing_and_raises_nothing(): void
@@ -100,7 +106,10 @@ final class StartPlanTest extends TestCase
             $canStart[$card->id] = $card->canStart;
         }
 
-        $this->assertSame([$this->plan->id => true, $paused->id => false], [$this->plan->id => $canStart[$this->plan->id], $paused->id => $canStart[$paused->id]]);
+        $this->assertSame(
+            [$this->plan->id => true, $paused->id => false],
+            [$this->plan->id => $canStart[$this->plan->id], $paused->id => $canStart[$paused->id]],
+        );
     }
 
     public function test_a_request_without_an_actor_cannot_start(): void

@@ -13,6 +13,8 @@ final class HookIdentityExpired extends RuntimeException
 {
     public static function forCall(string $callId, int $windowSeconds): self
     {
-        return new self("The hook call {$callId} was issued more than {$windowSeconds} seconds from now and is refused.");
+        return new self(
+            "The hook call {$callId} was issued more than {$windowSeconds} seconds from now and is refused.",
+        );
     }
 }

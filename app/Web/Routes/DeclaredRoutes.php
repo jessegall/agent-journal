@@ -24,11 +24,17 @@ final readonly class DeclaredRoutes
     {
         $router->middleware(['web', 'auth', 'journal.user'])->group(function () use ($router): void {
             foreach ($this->declarations->pages() as $page) {
-                $this->requireVisibility($router->get($page->address(), PageController::class)->name($page->routeName()), $page->key);
+                $this->requireVisibility(
+                    $router->get($page->address(), PageController::class)->name($page->routeName()),
+                    $page->key,
+                );
             }
 
             foreach ($this->declarations->actions() as $action) {
-                $this->requireVisibility($router->match([$action->action->method->value], $action->uri, $action->action->controller)->name($action->routeName), $action->guard->key);
+                $this->requireVisibility(
+                    $router->match([$action->action->method->value], $action->uri, $action->action->controller)->name($action->routeName),
+                    $action->guard->key,
+                );
             }
         });
     }
@@ -46,7 +52,9 @@ final readonly class DeclaredRoutes
                 continue;
             }
 
-            $taken = array_values(array_intersect([explode('/', $route->uri())[0], explode('.', (string) $route->getName())[0]], array_keys($prefixes)));
+            $taken = array_values(
+                array_intersect([explode('/', $route->uri())[0], explode('.', (string) $route->getName())[0]], array_keys($prefixes)),
+            );
 
             if ($taken !== [] && ! $this->ownedBy($route, $prefixes[$taken[0]])) {
                 throw UiPrefixUnavailable::usedByRoute($taken[0], $route->uri());

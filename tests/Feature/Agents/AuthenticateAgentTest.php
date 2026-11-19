@@ -24,7 +24,10 @@ final class AuthenticateAgentTest extends TestCase
 
     private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials'];
 
-    private const array UNAUTHENTICATED = ['code' => 'unauthenticated', 'message' => 'The call could not be authenticated with this launch credential.'];
+    private const array UNAUTHENTICATED = [
+        'code' => 'unauthenticated',
+        'message' => 'The call could not be authenticated with this launch credential.',
+    ];
 
     public function test_an_unknown_credential_gets_the_unauthenticated_body(): void
     {
@@ -33,7 +36,12 @@ final class AuthenticateAgentTest extends TestCase
         $headers = $launch->serverHeaders($content, signingToken: 'not-the-token', target: '/agent/heartbeat');
         $headers['HTTP_AUTHORIZATION'] = 'Bearer not-a-launch-token';
 
-        $this->call('POST', '/agent/heartbeat', server: $headers, content: $content)->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED);
+        $this->call(
+            'POST',
+            '/agent/heartbeat',
+            server: $headers,
+            content: $content,
+        )->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED);
     }
 
     public function test_a_revoked_credential_gets_the_unauthenticated_body(): void
@@ -41,7 +49,11 @@ final class AuthenticateAgentTest extends TestCase
         $launch = TestLaunch::start();
         new LaunchCredentials()->revoke($launch->session);
 
-        $this->signed($launch, '/agent/heartbeat', ['request_key' => bin2hex(random_bytes(8))])->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED);
+        $this->signed(
+            $launch,
+            '/agent/heartbeat',
+            ['request_key' => bin2hex(random_bytes(8))],
+        )->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED);
     }
 
     public function test_an_ended_session_gets_the_unauthenticated_body(): void
@@ -49,7 +61,11 @@ final class AuthenticateAgentTest extends TestCase
         $launch = TestLaunch::start();
         $this->app->make(AgentSessions::class)->end($launch->session);
 
-        $this->signed($launch, '/agent/heartbeat', ['request_key' => bin2hex(random_bytes(8))])->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED);
+        $this->signed(
+            $launch,
+            '/agent/heartbeat',
+            ['request_key' => bin2hex(random_bytes(8))],
+        )->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED);
     }
 
     public function test_a_retired_agent_gets_the_unauthenticated_body(): void
@@ -57,7 +73,11 @@ final class AuthenticateAgentTest extends TestCase
         $launch = TestLaunch::start();
         $launch->agent->retireAt(CarbonImmutable::now());
 
-        $this->signed($launch, '/agent/heartbeat', ['request_key' => bin2hex(random_bytes(8))])->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED)->assertDontSee($launch->token);
+        $this->signed(
+            $launch,
+            '/agent/heartbeat',
+            ['request_key' => bin2hex(random_bytes(8))],
+        )->assertUnauthorized()->assertExactJson(self::UNAUTHENTICATED)->assertDontSee($launch->token);
     }
 
     public function test_after_a_request_the_container_no_longer_resolves_its_agent_context(): void

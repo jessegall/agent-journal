@@ -44,7 +44,10 @@ trait BoundedReads
      */
     protected function mutateAttribute($key, $value): mixed
     {
-        return ScopedReadMeter::ofCurrentScope()->withoutQueries(static::class."::{$key} accessor", fn () => parent::mutateAttribute($key, $value));
+        return ScopedReadMeter::ofCurrentScope()->withoutQueries(
+            static::class."::{$key} accessor",
+            fn () => parent::mutateAttribute($key, $value),
+        );
     }
 
     /**
@@ -52,7 +55,10 @@ trait BoundedReads
      */
     protected function mutateAttributeMarkedAttribute($key, $value): mixed
     {
-        return ScopedReadMeter::ofCurrentScope()->withoutQueries(static::class."::{$key} accessor", fn () => parent::mutateAttributeMarkedAttribute($key, $value));
+        return ScopedReadMeter::ofCurrentScope()->withoutQueries(
+            static::class."::{$key} accessor",
+            fn () => parent::mutateAttributeMarkedAttribute($key, $value),
+        );
     }
 
     /**

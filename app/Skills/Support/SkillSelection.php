@@ -46,7 +46,10 @@ final readonly class SkillSelection
 
         foreach ($context->profile->requiredSkills() as $required) {
             if (! in_array($required, array_map(fn (SkillEntry $skill) => $skill->key->key, $selected), true)) {
-                throw SkillSelectionConflict::requiredNotSelected($required, isset($excluded[$required]) ? $excluded[$required]->reason : 'not-in-catalogue');
+                throw SkillSelectionConflict::requiredNotSelected(
+                    $required,
+                    isset($excluded[$required]) ? $excluded[$required]->reason : 'not-in-catalogue',
+                );
             }
         }
 

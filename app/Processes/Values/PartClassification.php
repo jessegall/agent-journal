@@ -54,7 +54,10 @@ final readonly class PartClassification
             'program' => $this->program?->family,
             'purpose' => $this->purpose->value,
             'unresolved' => array_map(fn (UnresolvedFact $fact): string => $fact->type->value, $this->unresolved),
-            'tools' => array_map(fn (VerificationContract $contract): string => $contract->tool->value, $this->contracts),
+            'tools' => array_map(
+                fn (VerificationContract $contract): string => $contract->tool->value,
+                $this->contracts,
+            ),
         ]);
     }
 }

@@ -27,7 +27,10 @@ final class PublicContractTest extends TestCase
             ...array_map(PublicOwner::fromDomain(...), $this->app->make(DomainRegistry::class)->all()),
         ];
 
-        $violations = new PublicContracts($owners, ProjectRoots::fromComposer(base_path('composer.json')))->violations();
+        $violations = new PublicContracts(
+            $owners,
+            ProjectRoots::fromComposer(base_path('composer.json')),
+        )->violations();
 
         $this->assertSame([], $violations, BoundaryReport::of($violations, base_path()));
     }

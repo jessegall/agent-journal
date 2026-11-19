@@ -101,12 +101,17 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
 
         $this->app->make(CommandBus::class)->run(new WriteNote('ordered'));
 
-        $this->assertSame(['cards around all', 'notes around all', 'notes around write', 'notes inside'], $trail->steps);
+        $this->assertSame(
+            ['cards around all', 'notes around all', 'notes around write', 'notes inside'],
+            $trail->steps,
+        );
     }
 
     public function test_a_replacement_reaches_the_handler_and_a_refusal_writes_nothing(): void
     {
-        $this->installCommandModules(MiddlewareDeclaration::around(UppercasesText::class, CommandScope::command(WriteNote::class)));
+        $this->installCommandModules(
+            MiddlewareDeclaration::around(UppercasesText::class, CommandScope::command(WriteNote::class)),
+        );
         $this->startTestUserRequest(1);
 
         $this->assertSame('LOUD', $this->rowText($this->app->make(CommandBus::class)->run(new WriteNote('loud'))));
@@ -132,8 +137,10 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
      * @param  class-string<\Throwable>  $refusal
      */
     #[DataProvider('misbehavingMiddleware')]
-    public function test_a_middleware_that_breaks_its_contract_is_refused_by_name(string $middleware, string $refusal): void
-    {
+    public function test_a_middleware_that_breaks_its_contract_is_refused_by_name(
+        string $middleware,
+        string $refusal,
+    ): void {
         $this->installCommandModules(MiddlewareDeclaration::around($middleware, CommandScope::all()));
         $this->startTestUserRequest(1);
 
@@ -162,10 +169,15 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $this->startTestUserRequest(1);
         $bus = $this->app->make(CommandBus::class);
 
-        $bus->run(new ApproveRule(Rule::proposed('Every phase ends with its tests.', 'Phases ended untested.', null, ActorContext::forAgent(TestIds::of(10)))->id));
+        $bus->run(
+            new ApproveRule(Rule::proposed('Every phase ends with its tests.', 'Phases ended untested.', null, ActorContext::forAgent(TestIds::of(10)))->id),
+        );
         $bus->run(new WriteNote('not a rules command'));
 
-        $this->assertSame(1, $this->app->make(ConnectionInterface::class)->table('module_command_rows')->where('text', 'audit ApproveRule')->count());
+        $this->assertSame(
+            1,
+            $this->app->make(ConnectionInterface::class)->table('module_command_rows')->where('text', 'audit ApproveRule')->count(),
+        );
         $this->assertSame(1, count(array_keys($trail->steps, 'notes audits rules', true)));
     }
 
@@ -179,18 +191,28 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
             $this->app->make(CommandBus::class)->run(new ApproveRule($settled->id));
             $this->fail('A settled rule was approved.');
         } catch (RuleNotProposed) {
-            $this->assertSame(0, $this->app->make(ConnectionInterface::class)->table('module_command_rows')->where('text', 'audit ApproveRule')->count());
+            $this->assertSame(
+                0,
+                $this->app->make(ConnectionInterface::class)->table('module_command_rows')->where('text', 'audit ApproveRule')->count(),
+            );
         }
     }
 
     private function launchedSession(): AgentSession
     {
-        return $this->app->make(LaunchSessions::class)->launch(Agent::named('Reader', 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        return $this->app->make(LaunchSessions::class)->launch(
+            Agent::named('Reader', 'main-agent'),
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        )->session;
     }
 
     public function test_notes_limits_plan_starts_and_nothing_is_written(): void
     {
-        $trail = $this->installCommandModulesRequiring(['Plans'], MiddlewareDeclaration::around(LimitPlanStarts::class, CommandScope::command(StartPlan::class)));
+        $trail = $this->installCommandModulesRequiring(
+            ['Plans'],
+            MiddlewareDeclaration::around(LimitPlanStarts::class, CommandScope::command(StartPlan::class)),
+        );
         $this->startTestUserRequest(1);
         $plan = Plan::factory()->create(['title' => 'Quota', 'type' => PlanType::Build]);
 
@@ -207,7 +229,10 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
 
     public function test_the_send_handler_gets_the_trimmed_body(): void
     {
-        $this->installCommandModulesRequiring(['Chat'], MiddlewareDeclaration::around(TrimMessages::class, CommandScope::command(SendMessage::class)));
+        $this->installCommandModulesRequiring(
+            ['Chat'],
+            MiddlewareDeclaration::around(TrimMessages::class, CommandScope::command(SendMessage::class)),
+        );
         $session = $this->launchedSession();
         $this->startTestUserRequest(1);
 
@@ -252,12 +277,16 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
 
         $this->expectException(CommandReplacementRefused::class);
 
-        $this->app->make(CommandBus::class)->run(new FinishTask(Task::factory()->create(['title' => 'Kept'])->id, 0, 'Done.'));
+        $this->app->make(CommandBus::class)->run(
+            new FinishTask(Task::factory()->create(['title' => 'Kept'])->id, 0, 'Done.'),
+        );
     }
 
     public function test_a_refusal_after_retirement_leaves_the_agent_unretired_with_its_assignments(): void
     {
-        $this->installCommandModules(MiddlewareDeclaration::inside(RefusesAfterRetirement::class, CommandScope::command(RetireAgent::class)));
+        $this->installCommandModules(
+            MiddlewareDeclaration::inside(RefusesAfterRetirement::class, CommandScope::command(RetireAgent::class)),
+        );
         $helper = Agent::named('Helper', 'read-only-helper');
         $task = Task::factory()->create(['title' => 'Held']);
         $this->startTestUserRequest(1);

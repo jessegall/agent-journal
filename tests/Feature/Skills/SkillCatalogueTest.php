@@ -35,12 +35,17 @@ final class SkillCatalogueTest extends TestCase
     public function test_the_catalogue_lists_a_registered_module_skill_with_its_owner(): void
     {
         $domainClasses = DomainRegistry::installedClasses(base_path());
-        $registry = SkillRegistry::of(DomainRegistry::from([...$domainClasses, CardsDomain::class, NotesDomain::class])->skillDeclarations(CoreSkills::owner()));
+        $registry = SkillRegistry::of(
+            DomainRegistry::from([...$domainClasses, CardsDomain::class, NotesDomain::class])->skillDeclarations(CoreSkills::owner()),
+        );
         $entry = $this->catalogue($registry)->find(SkillKey::from('notes-writing'));
 
         $this->assertSame('Notes', $entry->owner);
         $this->assertSame('Notes', $entry->name);
-        $this->assertStringContainsString("## Notes\n\nA note keeps what an agent learned while it works.\n", $entry->rendered->markdown);
+        $this->assertStringContainsString(
+            "## Notes\n\nA note keeps what an agent learned while it works.\n",
+            $entry->rendered->markdown,
+        );
     }
 
     public function test_two_owners_with_one_key_stop_the_catalogue_naming_both(): void
@@ -48,16 +53,25 @@ final class SkillCatalogueTest extends TestCase
         $this->expectException(SkillConflict::class);
         $this->expectExceptionMessage('Guide and Copy both declare the skill key journal-guide');
 
-        $this->catalogue(SkillRegistry::of([$this->guide('Guide', [GuideSkill::class]), $this->guide('Copy', [RenamedGuideSkill::class])]));
+        $this->catalogue(
+            SkillRegistry::of([$this->guide('Guide', [GuideSkill::class]), $this->guide('Copy', [RenamedGuideSkill::class])]),
+        );
     }
 
     public function test_renaming_a_skill_class_keeps_its_key_and_digest(): void
     {
-        $before = $this->catalogue(SkillRegistry::of([$this->guide('Guide', [GuideSkill::class])]))->find(SkillKey::from('journal-guide'));
-        $after = $this->catalogue(SkillRegistry::of([$this->guide('Guide', [RenamedGuideSkill::class])]))->find(SkillKey::from('journal-guide'));
+        $before = $this->catalogue(
+            SkillRegistry::of([$this->guide('Guide', [GuideSkill::class])]),
+        )->find(SkillKey::from('journal-guide'));
+        $after = $this->catalogue(
+            SkillRegistry::of([$this->guide('Guide', [RenamedGuideSkill::class])]),
+        )->find(SkillKey::from('journal-guide'));
 
         $this->assertSame($before->rendered->digest, $after->rendered->digest);
-        $this->assertCount(1, $this->catalogue(SkillRegistry::of([$this->guide('Guide', [RenamedGuideSkill::class])]))->all());
+        $this->assertCount(
+            1,
+            $this->catalogue(SkillRegistry::of([$this->guide('Guide', [RenamedGuideSkill::class])]))->all(),
+        );
     }
 
     public function test_a_module_may_not_declare_a_journal_key(): void
@@ -65,7 +79,9 @@ final class SkillCatalogueTest extends TestCase
         $this->expectException(SkillDeclarationInvalid::class);
         $this->expectExceptionMessage('Guide declares the skill key journal-guide, whose prefix it does not own');
 
-        $this->catalogue(SkillRegistry::of([new SkillOwner('Guide', base_path('tests/Fixtures/Skills/Guide'), [GuideSkill::class], false)]));
+        $this->catalogue(
+            SkillRegistry::of([new SkillOwner('Guide', base_path('tests/Fixtures/Skills/Guide'), [GuideSkill::class], false)]),
+        );
     }
 
     public function test_each_request_scope_builds_its_own_catalogue(): void
@@ -88,6 +104,12 @@ final class SkillCatalogueTest extends TestCase
 
     private function catalogue(SkillRegistry $registry): SkillCatalogue
     {
-        return SkillCatalogue::build($registry, $this->app, new CanonicalRenderer(new MarkdownParts()), $this->app->make(ConditionTree::class), $this->app->make(SkillSource::class));
+        return SkillCatalogue::build(
+            $registry,
+            $this->app,
+            new CanonicalRenderer(new MarkdownParts()),
+            $this->app->make(ConditionTree::class),
+            $this->app->make(SkillSource::class),
+        );
     }
 }

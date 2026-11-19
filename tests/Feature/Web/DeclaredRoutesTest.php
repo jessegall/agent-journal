@@ -108,7 +108,10 @@ final class DeclaredRoutesTest extends TestCase
     {
         $this->expectExceptionObject(UiPrefixUnavailable::usedByPublicFile('library'));
 
-        $this->declaredRoutes()->refuseTakenPrefixes(new RouteCollection(), dirname(__DIR__, 2).'/Fixtures/UiDeclarations/PublicFolder');
+        $this->declaredRoutes()->refuseTakenPrefixes(
+            new RouteCollection(),
+            dirname(__DIR__, 2).'/Fixtures/UiDeclarations/PublicFolder',
+        );
     }
 
     public function test_the_declared_routes_themselves_take_no_prefix(): void
@@ -136,7 +139,14 @@ final class DeclaredRoutesTest extends TestCase
                 ->actions(ActionRoute::post('hidden/books', AddBook::class, 'add-hidden')),
         ]);
         $desk = DomainEntry::fromClass(DeskDomain::class)->declaring(sections: [
-            Section::make('draft', 'Draft', 'library.aside', SlotContextType::Nothing, NotesResolver::class, 'Notes.vue')
+            Section::make(
+                'draft',
+                'Draft',
+                'library.aside',
+                SlotContextType::Nothing,
+                NotesResolver::class,
+                'Notes.vue',
+            )
                 ->visibleWhen(NobodySees::class)
                 ->actions(ActionRoute::post('drafts', SaveDraft::class, 'save')),
         ]);

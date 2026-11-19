@@ -23,7 +23,13 @@ final class CoreSettings implements SettingsDefinition
      */
     public function __construct(private readonly array $domainSwitches = [])
     {
-        $this->displayName = StringSetting::make(key: 'display_name', label: 'Journal name', default: 'Journal', minimumLength: 1, maximumLength: 200);
+        $this->displayName = StringSetting::make(
+            key: 'display_name',
+            label: 'Journal name',
+            default: 'Journal',
+            minimumLength: 1,
+            maximumLength: 200,
+        );
         $this->general = SettingGroup::make('general', 'General', [$this->displayName]);
     }
 

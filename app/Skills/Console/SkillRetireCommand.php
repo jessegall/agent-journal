@@ -33,7 +33,10 @@ final class SkillRetireCommand extends Command
             $skill = $console->stored((string) $this->argument('number'));
             $result = $commands->run(new RetireSkill($skill->id, (int) $this->option('expected-revision'), $requestId));
 
-            return ["Skill {$result->number} ({$skill->key}) is retired.", ...$console->statusLines(Skill::query()->whereKey($skill->id)->firstOrFail())];
+            return [
+                "Skill {$result->number} ({$skill->key}) is retired.",
+                ...$console->statusLines(Skill::query()->whereKey($skill->id)->firstOrFail()),
+            ];
         });
     }
 }

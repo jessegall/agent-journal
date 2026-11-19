@@ -44,8 +44,12 @@ final class ConversationVisit extends Model implements ReadableModel
      * Appends the next visit of the session to the conversation, once per event: the same event id finds the visit
      * already kept.
      */
-    public static function appendOnce(AgentSession $session, ProgramConversation $conversation, string $eventId, CarbonImmutable $observedAt): self
-    {
+    public static function appendOnce(
+        AgentSession $session,
+        ProgramConversation $conversation,
+        string $eventId,
+        CarbonImmutable $observedAt,
+    ): self {
         $existing = self::query()->where('session_id', $session->id)->where('event_id', $eventId)->first();
 
         if ($existing !== null) {
@@ -54,6 +58,8 @@ final class ConversationVisit extends Model implements ReadableModel
 
         $next = (int) self::query()->where('session_id', $session->id)->max('sequence_number') + 1;
 
-        return self::query()->create(['session_id' => $session->id, 'conversation_id' => $conversation->id, 'sequence_number' => $next, 'event_id' => $eventId, 'observed_at' => $observedAt]);
+        return self::query()->create(
+            ['session_id' => $session->id, 'conversation_id' => $conversation->id, 'sequence_number' => $next, 'event_id' => $eventId, 'observed_at' => $observedAt],
+        );
     }
 }

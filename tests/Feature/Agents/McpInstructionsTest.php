@@ -36,7 +36,10 @@ final class McpInstructionsTest extends TestCase
     {
         $context = $this->startAs();
 
-        $this->assertSame(1, count(array_filter($context, fn (string $line): bool => str_starts_with($line, 'Use the journal MCP tools'))));
+        $this->assertSame(
+            1,
+            count(array_filter($context, fn (string $line): bool => str_starts_with($line, 'Use the journal MCP tools'))),
+        );
         $this->assertStringContainsString('helper dispatch (journal helper)', implode("\n", $context));
     }
 
@@ -55,7 +58,10 @@ final class McpInstructionsTest extends TestCase
             $instructions = new McpInstructions(new FixedCurrentAuthorizer($granted))->forCaller();
 
             $this->assertLessThan(1500, mb_strlen($instructions));
-            $this->assertStringNotContainsString('/', str_replace(['journal output, journal reader'], '', $instructions));
+            $this->assertStringNotContainsString(
+                '/',
+                str_replace(['journal output, journal reader'], '', $instructions),
+            );
             $this->assertStringNotContainsStringIgnoringCase('token', $instructions);
         }
     }
@@ -67,11 +73,27 @@ final class McpInstructionsTest extends TestCase
     {
         $this->callAs('call-1', hash('sha256', 'call-1'));
         $this->app->instance(CurrentAuthorizer::class, new FixedCurrentAuthorizer([AssignmentAbility::Dispatch]));
-        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), hash('sha256', 'call-1')), null));
-        $start = new SessionStarted(TestActors::hookIdentity(1, 10, 'call-1', hash('sha256', 'call-1')), new SessionStartDetails('native-1', SessionStartSource::Startup));
-        $capabilities = new ProgramCapabilities('Test program', 'session starts', ['onSessionStart'], RewriteSupport::WithoutApproval);
+        $this->app->instance(
+            AgentContext::class,
+            new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), hash('sha256', 'call-1')), null),
+        );
+        $start = new SessionStarted(
+            TestActors::hookIdentity(1, 10, 'call-1', hash('sha256', 'call-1')),
+            new SessionStartDetails('native-1', SessionStartSource::Startup),
+        );
+        $capabilities = new ProgramCapabilities(
+            'Test program',
+            'session starts',
+            ['onSessionStart'],
+            RewriteSupport::WithoutApproval,
+        );
 
-        $reply = $this->machine()->answer($start, $capabilities, new OperationDeadline(3000), fn (HookAnswer $answer) => new ProgramReply((string) json_encode($answer->context), '', 0));
+        $reply = $this->machine()->answer(
+            $start,
+            $capabilities,
+            new OperationDeadline(3000),
+            fn (HookAnswer $answer) => new ProgramReply((string) json_encode($answer->context), '', 0),
+        );
 
         return json_decode($reply->stdout, true, flags: JSON_THROW_ON_ERROR);
     }

@@ -59,7 +59,10 @@ final readonly class NavigationRecords implements RecordsNavigation
             try {
                 $counts[$item->key] = $this->container->make((string) $item->item->count)->count();
             } catch (Throwable $failure) {
-                $this->log->error("The count of {$item->key} failed: {$failure->getMessage()}", ['key' => $item->key, 'exception' => $failure]);
+                $this->log->error(
+                    "The count of {$item->key} failed: {$failure->getMessage()}",
+                    ['key' => $item->key, 'exception' => $failure],
+                );
             }
         }
 
@@ -123,7 +126,10 @@ final readonly class NavigationRecords implements RecordsNavigation
 
         $resolver = $this->container->make($item->item->childrenResolver);
 
-        return [...$item->children, ...($resolver instanceof NavigationChildren ? $this->declarations->childrenOf($item, $resolver->children()) : [])];
+        return [
+            ...$item->children,
+            ...($resolver instanceof NavigationChildren ? $this->declarations->childrenOf($item, $resolver->children()) : []),
+        ];
     }
 
     private function urlOf(RegisteredNavigation $item): string

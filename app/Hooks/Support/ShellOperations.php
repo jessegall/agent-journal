@@ -52,7 +52,9 @@ final readonly class ShellOperations
     {
         $words = array_map(fn (Word $word): string => $word->literal() ?? '', $node->words);
 
-        $facts = array_values(array_filter($part->facts, fn (ClassFact $fact): bool => ! $fact->origin instanceof SyntaxOrigin));
+        $facts = array_values(
+            array_filter($part->facts, fn (ClassFact $fact): bool => ! $fact->origin instanceof SyntaxOrigin),
+        );
         $name = self::nameOf($part, $facts);
 
         if (! $part->isKnown() || $name === self::UNKNOWN) {
@@ -65,7 +67,14 @@ final readonly class ShellOperations
             array_push($access, ...$fact->class->accessTypes());
         }
 
-        return new Operation(self::SURFACE, $name, array_values(array_unique($access, SORT_REGULAR)), self::operandsOf($node), $words, self::DECLARATION_REVISION);
+        return new Operation(
+            self::SURFACE,
+            $name,
+            array_values(array_unique($access, SORT_REGULAR)),
+            self::operandsOf($node),
+            $words,
+            self::DECLARATION_REVISION,
+        );
     }
 
     /**
@@ -80,7 +89,14 @@ final readonly class ShellOperations
             $target = $redirect->target instanceof Word ? $redirect->target->literal() : null;
 
             if ($access !== [] && $target !== null) {
-                $operations[] = new Operation(self::SURFACE, "shell:redirect.{$redirect->type->value}", $access, [new ResourceRequest(ResourceAreaType::Workspace, $target)], [$target], self::DECLARATION_REVISION);
+                $operations[] = new Operation(
+                    self::SURFACE,
+                    "shell:redirect.{$redirect->type->value}",
+                    $access,
+                    [new ResourceRequest(ResourceAreaType::Workspace, $target)],
+                    [$target],
+                    self::DECLARATION_REVISION,
+                );
             }
         }
 

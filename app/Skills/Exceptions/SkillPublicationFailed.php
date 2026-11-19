@@ -27,7 +27,9 @@ final class SkillPublicationFailed extends RuntimeException implements CodedRefu
 
     public static function collision(string $target): self
     {
-        return new self("The skill target {$target} holds files the journal did not create; move them before publishing there.");
+        return new self(
+            "The skill target {$target} holds files the journal did not create; move them before publishing there.",
+        );
     }
 
     public static function escape(string $path): self

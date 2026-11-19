@@ -35,14 +35,21 @@ final readonly class RegisterStates implements DomainBootstrapper
             throw InvalidListener::privateEvent(self::class, '__invoke', StateTypesRequested::class, 'Core');
         }
 
-        $availability = static fn (): DomainAvailability => ContainerInstance::getInstance()->make(DomainAvailability::class);
+        $availability = static fn (): DomainAvailability => ContainerInstance::getInstance()->make(
+            DomainAvailability::class,
+        );
 
-        $this->events->listen(StateTypesRequested::class, function (StateTypesRequested $event) use ($domain, $availability): void {
+        $this->events->listen(StateTypesRequested::class, function (
+            StateTypesRequested $event,
+        ) use ($domain, $availability): void {
             $switchable = $this->container->make(DomainRegistry::class)->has($domain->name);
 
             foreach ($domain->states() as $typeKey => $factory) {
                 $loader = $this->container->make($factory);
-                $event->registry->register($typeKey, $switchable ? $this->domainStateType($domain, $loader, $availability) : $loader);
+                $event->registry->register(
+                    $typeKey,
+                    $switchable ? $this->domainStateType($domain, $loader, $availability) : $loader,
+                );
             }
         });
     }

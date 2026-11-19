@@ -55,7 +55,11 @@ final class DirectRunTest extends TestCase
 
     public function test_a_lost_admission_answer_asked_again_under_its_key_starts_the_run_once(): void
     {
-        $runId = $this->signed($this->launch, '/agent/processes/admit', $this->line('cat composer.json'))->json('run_id');
+        $runId = $this->signed(
+            $this->launch,
+            '/agent/processes/admit',
+            $this->line('cat composer.json'),
+        )->json('run_id');
         $path = "/agent/processes/admissions/{$runId}";
 
         $first = $this->signed($this->launch, $path, ['request_key' => 'take-1'])->json();

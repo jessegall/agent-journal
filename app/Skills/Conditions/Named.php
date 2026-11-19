@@ -33,6 +33,11 @@ final readonly class Named implements SkillCondition
 
     public function toArray(): array
     {
-        return ['type' => self::TYPE, 'version' => $this->version, 'key' => $this->key, 'parameters' => $this->parameters];
+        return [
+            'type' => self::TYPE,
+            'version' => $this->version,
+            'key' => $this->key,
+            'parameters' => $this->parameters,
+        ];
     }
 }

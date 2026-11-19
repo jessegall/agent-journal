@@ -16,7 +16,10 @@ use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
  */
 final class ReviewState extends AgentState implements ConditionalState
 {
-    public function __construct(private readonly EnabledSettingsGroup|DisabledSettingsGroup $review, private readonly ReviewSettings $settings) {}
+    public function __construct(
+private readonly EnabledSettingsGroup|DisabledSettingsGroup $review,
+ private readonly ReviewSettings $settings,
+) {}
 
     public function isEnabled(): bool
     {

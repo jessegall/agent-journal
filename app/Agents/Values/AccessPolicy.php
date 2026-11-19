@@ -69,11 +69,17 @@ final readonly class AccessPolicy
         }
 
         if ($operation->touches(ResourceAreaType::Protected)) {
-            return AccessDecision::refused(AccessRuleType::ProtectedArea, "{$operation->name} reaches a protected resource, which no policy grants.");
+            return AccessDecision::refused(
+                AccessRuleType::ProtectedArea,
+                "{$operation->name} reaches a protected resource, which no policy grants.",
+            );
         }
 
         if ($operation->accessTypes === []) {
-            return AccessDecision::refused(AccessRuleType::Unclassified, "{$operation->name} declares no access, so it cannot be granted.");
+            return AccessDecision::refused(
+                AccessRuleType::Unclassified,
+                "{$operation->name} declares no access, so it cannot be granted.",
+            );
         }
 
         if (array_any($this->operationGrants, fn (OperationGrant $grant): bool => $grant->covers($operation))) {
@@ -83,12 +89,18 @@ final readonly class AccessPolicy
         foreach ($operation->resources as $resource) {
             foreach ($operation->accessTypes as $access) {
                 if (! $this->grants($access, $resource->area)) {
-                    return AccessDecision::refused(AccessRuleType::NotGranted, "{$operation->name} needs {$access->value} on {$resource->area->value}, which this policy does not grant.");
+                    return AccessDecision::refused(
+                        AccessRuleType::NotGranted,
+                        "{$operation->name} needs {$access->value} on {$resource->area->value}, which this policy does not grant.",
+                    );
                 }
             }
         }
 
-        return AccessDecision::allowed(AccessRuleType::ClassGrant, "Every access {$operation->name} needs is granted on the areas it touches.");
+        return AccessDecision::allowed(
+            AccessRuleType::ClassGrant,
+            "Every access {$operation->name} needs is granted on the areas it touches.",
+        );
     }
 
     public function grants(AccessType $access, ResourceAreaType $area): bool

@@ -47,7 +47,10 @@ final readonly class TransactionalRecordLinker implements RecordLinker
         $to = $this->records->requireReadable($target);
         $this->transaction->requireRunning($from->getConnection());
         $ordered = [$from, $to];
-        usort($ordered, fn (Model $one, Model $other) => [$one->getMorphClass(), (string) $one->getKey()] <=> [$other->getMorphClass(), (string) $other->getKey()]);
+        usort(
+            $ordered,
+            fn (Model $one, Model $other) => [$one->getMorphClass(), (string) $one->getKey()] <=> [$other->getMorphClass(), (string) $other->getKey()],
+        );
 
         self::lock($ordered[0]);
         self::lock($ordered[1]);

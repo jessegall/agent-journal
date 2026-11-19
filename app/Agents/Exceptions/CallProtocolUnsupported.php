@@ -13,6 +13,8 @@ final class CallProtocolUnsupported extends RuntimeException
 {
     public static function version(string $version): self
     {
-        return new self("The call speaks signed protocol {$version}; this journal reads protocol 2 only, so upgrade the client.");
+        return new self(
+            "The call speaks signed protocol {$version}; this journal reads protocol 2 only, so upgrade the client.",
+        );
     }
 }

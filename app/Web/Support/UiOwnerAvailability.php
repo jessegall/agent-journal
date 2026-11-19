@@ -20,6 +20,8 @@ final readonly class UiOwnerAvailability implements ChecksUiOwnerAvailability
 
     public function isAvailable(DomainUi $owner): bool
     {
-        return ! $this->domains->has($owner->name) || $this->container->make(DomainAvailability::class)->isEnabled($owner->name);
+        return ! $this->domains->has($owner->name) || $this->container->make(
+            DomainAvailability::class,
+        )->isEnabled($owner->name);
     }
 }

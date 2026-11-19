@@ -16,8 +16,11 @@ use Illuminate\Routing\Redirector;
  */
 final readonly class DisableShareGatewayController
 {
-    public function __invoke(GatewayActionRequest $request, CommandBus $commands, Redirector $redirect): RedirectResponse
-    {
+    public function __invoke(
+        GatewayActionRequest $request,
+        CommandBus $commands,
+        Redirector $redirect,
+    ): RedirectResponse {
         $commands->run(new DisableShareGateway($request->configurationId(), $request->requestKey()));
 
         return $redirect->back(303);

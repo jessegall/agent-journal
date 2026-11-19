@@ -72,7 +72,10 @@ final class DomainServiceProviderTest extends TestCase
 
         $events = new DomainEventServiceProvider($this->app)->discoverEvents();
 
-        $this->assertEqualsCanonicalizing([CountActivatedShare::class.'@handle', BroadcastPageChange::class.'@handle'], $events[ShareActivated::class]);
+        $this->assertEqualsCanonicalizing(
+            [CountActivatedShare::class.'@handle', BroadcastPageChange::class.'@handle'],
+            $events[ShareActivated::class],
+        );
     }
 
     public function test_the_discovery_paths_are_the_domain_listener_folders(): void

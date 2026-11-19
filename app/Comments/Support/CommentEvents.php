@@ -35,6 +35,9 @@ final readonly class CommentEvents
 
     private function logFailure(CommentPosted $event, Throwable $failure): void
     {
-        $this->log->error('A listener of CommentPosted failed.', ['comment' => $event->commentId, 'listener_failure' => $failure::class]);
+        $this->log->error(
+            'A listener of CommentPosted failed.',
+            ['comment' => $event->commentId, 'listener_failure' => $failure::class],
+        );
     }
 }

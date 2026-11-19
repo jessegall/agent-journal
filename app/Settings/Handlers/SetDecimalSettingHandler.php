@@ -18,12 +18,20 @@ use App\Settings\Values\SettingsChange;
  */
 final readonly class SetDecimalSettingHandler implements CommandHandler
 {
-    public function __construct(private SettingTargets $targets, private SettingCodec $codec, private SettingsWriter $writer) {}
+    public function __construct(
+        private SettingTargets $targets,
+        private SettingCodec $codec,
+        private SettingsWriter $writer,
+    ) {}
 
     public function handle(SetDecimalSetting $command): SettingsChange
     {
         $setting = $this->targets->setting($command->setting, DecimalSetting::class, SettingType::Decimal);
 
-        return $this->writer->setValue($setting, $this->codec->encodeDecimal($command->setting->owner, $setting, $command->value), $command->expectedRevision);
+        return $this->writer->setValue(
+            $setting,
+            $this->codec->encodeDecimal($command->setting->owner, $setting, $command->value),
+            $command->expectedRevision,
+        );
     }
 }

@@ -34,7 +34,9 @@ final class CallDeadlineTest extends TestCase
     {
         $this->signedSecondsAgo(18);
 
-        $milliseconds = $this->throughMiddleware(fn (): int => $this->app->make(OperationDeadline::class)->milliseconds);
+        $milliseconds = $this->throughMiddleware(
+            fn (): int => $this->app->make(OperationDeadline::class)->milliseconds,
+        );
 
         $this->assertGreaterThan(800, $milliseconds);
         $this->assertLessThanOrEqual(1000, $milliseconds);
@@ -45,7 +47,10 @@ final class CallDeadlineTest extends TestCase
         $default = $this->app->make(OperationDeadline::class);
         $this->signedSecondsAgo(0);
 
-        $this->assertSame(15_000, $this->throughMiddleware(fn (): int => $this->app->make(OperationDeadline::class)->milliseconds));
+        $this->assertSame(
+            15_000,
+            $this->throughMiddleware(fn (): int => $this->app->make(OperationDeadline::class)->milliseconds),
+        );
         $this->assertSame($default, $this->app->make(OperationDeadline::class));
     }
 
@@ -54,7 +59,9 @@ final class CallDeadlineTest extends TestCase
         $this->signedSecondsAgo(14);
 
         [$lockTimeout, $deadline] = $this->throughMiddleware(fn () => [
-            $this->app->make(StackTransaction::class)->run(fn (): mixed => $this->app->make(ConnectionInterface::class)->scalar("SELECT current_setting('lock_timeout')")),
+            $this->app->make(StackTransaction::class)->run(
+                fn (): mixed => $this->app->make(ConnectionInterface::class)->scalar("SELECT current_setting('lock_timeout')"),
+            ),
             $this->app->make(OperationDeadline::class),
         ]);
 
@@ -76,7 +83,10 @@ final class CallDeadlineTest extends TestCase
 
     private function signedSecondsAgo(int $seconds): void
     {
-        $this->app->instance(AgentContext::class, new AgentContext('agent-1', 'session-1', new SignedCall('call-1', CarbonImmutable::now()->subSeconds($seconds), 'digest'), null));
+        $this->app->instance(
+            AgentContext::class,
+            new AgentContext('agent-1', 'session-1', new SignedCall('call-1', CarbonImmutable::now()->subSeconds($seconds), 'digest'), null),
+        );
     }
 
     /**
@@ -88,7 +98,10 @@ final class CallDeadlineTest extends TestCase
     private function throughMiddleware(Closure $inside): mixed
     {
         $seen = null;
-        $this->app->make(SetCallDeadline::class)->handle(Request::create('/agent/mcp/v1', 'POST'), function () use ($inside, &$seen): Response {
+        $this->app->make(SetCallDeadline::class)->handle(Request::create(
+            '/agent/mcp/v1',
+            'POST',
+        ), function () use ($inside, &$seen): Response {
             $seen = $inside();
 
             return new Response();

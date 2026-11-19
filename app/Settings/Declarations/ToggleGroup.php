@@ -17,7 +17,12 @@ final readonly class ToggleGroup implements GroupDeclaration
     /**
      * @param  list<Setting>  $settings
      */
-    private function __construct(public string $key, public string $label, public bool $defaultEnabled, public array $settings) {}
+    private function __construct(
+        public string $key,
+        public string $label,
+        public bool $defaultEnabled,
+        public array $settings,
+    ) {}
 
     /**
      * @param  list<Setting>  $settings

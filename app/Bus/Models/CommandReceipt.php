@@ -50,7 +50,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['author_type', 'author_id', 'session_id', 'contract_major', 'request_key', 'command', 'fingerprint', 'state', 'result', 'refusal_code', 'refusal_message', 'answers_until', 'refuses_until'])]
+#[Fillable(
+    ['author_type', 'author_id', 'session_id', 'contract_major', 'request_key', 'command', 'fingerprint', 'state', 'result', 'refusal_code', 'refusal_message', 'answers_until', 'refuses_until'],
+)]
 final class CommandReceipt extends Model implements ReadableModel
 {
     use BoundedReads;
@@ -79,7 +81,10 @@ final class CommandReceipt extends Model implements ReadableModel
 
     protected static function booted(): void
     {
-        self::addGlobalScope('caller', static fn (Builder $query) => Container::getInstance()->make(ReceiptCallers::class)->current()->limitReadable($query));
+        self::addGlobalScope(
+            'caller',
+            static fn (Builder $query) => Container::getInstance()->make(ReceiptCallers::class)->current()->limitReadable($query),
+        );
     }
 
     /**
@@ -92,23 +97,38 @@ final class CommandReceipt extends Model implements ReadableModel
         $query = self::query()->withoutGlobalScope('caller');
         $caller->limit($query);
 
-        return $query->where('command', $command)->where('contract_major', self::CONTRACT_MAJOR)->where('request_key', $requestKey)->lockForUpdate()->first();
+        return $query->where('command', $command)->where(
+            'contract_major',
+            self::CONTRACT_MAJOR,
+        )->where('request_key', $requestKey)->lockForUpdate()->first();
     }
 
     /**
      * Takes the key for a command that is about to run.
      */
-    public static function take(ReceiptCaller $caller, string $requestKey, object $command, ReceiptRetention $retention): self
-    {
-        return self::query()->create([...self::keyColumns($caller, $requestKey, $command, $retention), 'state' => ReceiptState::Taken]);
+    public static function take(
+        ReceiptCaller $caller,
+        string $requestKey,
+        object $command,
+        ReceiptRetention $retention,
+    ): self {
+        return self::query()->create(
+            [...self::keyColumns($caller, $requestKey, $command, $retention), 'state' => ReceiptState::Taken],
+        );
     }
 
     /**
      * Stores the refusal a write got after its transaction rolled back; when the write ran inside a transaction it
      * joined, nothing rolled back, so the key it took is marked refused instead.
      */
-    public static function recordRefusal(ReceiptCaller $caller, string $requestKey, object $command, ReceiptRetention $retention, RefusalCode $code, string $message): void
-    {
+    public static function recordRefusal(
+        ReceiptCaller $caller,
+        string $requestKey,
+        object $command,
+        ReceiptRetention $retention,
+        RefusalCode $code,
+        string $message,
+    ): void {
         $refusal = ['state' => ReceiptState::Refused, 'refusal_code' => $code->value, 'refusal_message' => $message];
         $taken = self::lockedFor($caller, $command::class, $requestKey);
 
@@ -127,8 +147,12 @@ final class CommandReceipt extends Model implements ReadableModel
     /**
      * @return array<string, mixed>
      */
-    private static function keyColumns(ReceiptCaller $caller, string $requestKey, object $command, ReceiptRetention $retention): array
-    {
+    private static function keyColumns(
+        ReceiptCaller $caller,
+        string $requestKey,
+        object $command,
+        ReceiptRetention $retention,
+    ): array {
         $now = CarbonImmutable::now();
 
         return [
@@ -155,7 +179,9 @@ final class CommandReceipt extends Model implements ReadableModel
      */
     public static function expirePastRetention(CarbonImmutable $now): int
     {
-        return self::query()->pastRetention($now)->update(['state' => ReceiptState::Expired->value, 'result' => null, 'refusal_code' => null, 'refusal_message' => null]);
+        return self::query()->pastRetention($now)->update(
+            ['state' => ReceiptState::Expired->value, 'result' => null, 'refusal_code' => null, 'refusal_message' => null],
+        );
     }
 
     /**
@@ -223,7 +249,10 @@ final class CommandReceipt extends Model implements ReadableModel
     #[Scope]
     protected function pastRetention(Builder $query, CarbonImmutable $now): void
     {
-        $query->withoutGlobalScope('caller')->where('answers_until', '<', $now)->whereNot('state', ReceiptState::Expired->value);
+        $query->withoutGlobalScope('caller')->where('answers_until', '<', $now)->whereNot(
+            'state',
+            ReceiptState::Expired->value,
+        );
     }
 
     /**

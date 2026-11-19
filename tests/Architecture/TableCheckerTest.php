@@ -63,10 +63,19 @@ final class TableCheckerTest extends TestCase
 
     public function test_migrations_are_judged_across_domains_and_the_root_folder(): void
     {
-        $reasons = array_map(fn (Violation $violation) => $violation->reason(), $this->checker()->migrationViolations());
+        $reasons = array_map(
+            fn (Violation $violation) => $violation->reason(),
+            $this->checker()->migrationViolations(),
+        );
 
-        $this->assertContains('creates table notes, which '.$this->folder('Chat/Database/Migrations/2026_01_01_000000_create_tasks_table.php').' also creates', $reasons);
-        $this->assertContains('has the migration file name 2026_01_01_000000_create_tasks_table.php, as does '.$this->folder('Chat/Database/Migrations/2026_01_01_000000_create_tasks_table.php'), $reasons);
+        $this->assertContains(
+            'creates table notes, which '.$this->folder('Chat/Database/Migrations/2026_01_01_000000_create_tasks_table.php').' also creates',
+            $reasons,
+        );
+        $this->assertContains(
+            'has the migration file name 2026_01_01_000000_create_tasks_table.php, as does '.$this->folder('Chat/Database/Migrations/2026_01_01_000000_create_tasks_table.php'),
+            $reasons,
+        );
         $this->assertContains('changes table tasks of Tasks from database/migrations', $reasons);
         $this->assertCount(3, $reasons);
     }
@@ -90,7 +99,10 @@ final class TableCheckerTest extends TestCase
 
     private function checker(): TableChecker
     {
-        $owners = [TableOwner::core(dirname(__DIR__, 2).'/app'), ...array_map(TableOwner::fromDomain(...), $this->registry()->all())];
+        $owners = [
+            TableOwner::core(dirname(__DIR__, 2).'/app'),
+            ...array_map(TableOwner::fromDomain(...), $this->registry()->all()),
+        ];
 
         return TableChecker::for($owners, $this->folder('RootMigrations'));
     }

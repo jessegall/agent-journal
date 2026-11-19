@@ -48,7 +48,9 @@ class ReadyState extends AgentState
 
         $paths = implode(', ', $input->changes->paths());
 
-        return Decision::deny("Your profile grants no changes to workspace files, so this edit of {$paths} is refused.");
+        return Decision::deny(
+            "Your profile grants no changes to workspace files, so this edit of {$paths} is refused.",
+        );
     }
 
     public function onStop(StopRequested $input): Decision

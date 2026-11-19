@@ -17,7 +17,9 @@ final class AssignmentConflict extends RuntimeException implements CodedRefusal,
 
     public static function heldByAnother(RecordIdentity $record): self
     {
-        return new self("{$record->type} {$record->id} is held by someone else; read its assignment and reassign it deliberately.");
+        return new self(
+            "{$record->type} {$record->id} is held by someone else; read its assignment and reassign it deliberately.",
+        );
     }
 
     public static function staleReference(RecordIdentity $record): self

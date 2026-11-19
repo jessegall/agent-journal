@@ -76,9 +76,18 @@ final class GatewayDefaultAndDisableTest extends TestCase
         $second = $this->configure();
         $later = $this->createShare($this->preview());
 
-        $this->assertSame($first->configurationId, Share::query()->findOrFail($earlier->shareId)->share_gateway_configuration_id);
-        $this->assertSame([$second->configurationId, 2], [Share::query()->findOrFail($later->shareId)->share_gateway_configuration_id, Share::query()->findOrFail($later->shareId)->configuration_version]);
-        $this->assertSame([$second->configurationId], ShareGatewayConfiguration::query()->where('is_default', true)->pluck('id')->all());
+        $this->assertSame(
+            $first->configurationId,
+            Share::query()->findOrFail($earlier->shareId)->share_gateway_configuration_id,
+        );
+        $this->assertSame(
+            [$second->configurationId, 2],
+            [Share::query()->findOrFail($later->shareId)->share_gateway_configuration_id, Share::query()->findOrFail($later->shareId)->configuration_version],
+        );
+        $this->assertSame(
+            [$second->configurationId],
+            ShareGatewayConfiguration::query()->where('is_default', true)->pluck('id')->all(),
+        );
     }
 
     public function test_disabling_a_gateway_revokes_its_three_shares_before_one_close(): void
@@ -93,9 +102,15 @@ final class GatewayDefaultAndDisableTest extends TestCase
 
         $this->asOwner(new DisableShareGateway($configuration->id, (string) Str::ulid()));
 
-        $this->assertSame([ShareState::Revoked], array_values(array_unique(Share::query()->readAll('three shares')->get()->map(fn (Share $share) => $share->state)->all(), SORT_REGULAR)));
+        $this->assertSame(
+            [ShareState::Revoked],
+            array_values(array_unique(Share::query()->readAll('three shares')->get()->map(fn (Share $share) => $share->state)->all(), SORT_REGULAR)),
+        );
         $this->assertSame(3, ShareAudit::query()->where('type', ShareAuditType::Revoked->value)->count());
-        $this->assertSame([GatewayOperationType::Close], ShareGatewayOperation::query()->readAll('one close')->get()->map(fn (ShareGatewayOperation $operation) => $operation->type)->all());
+        $this->assertSame(
+            [GatewayOperationType::Close],
+            ShareGatewayOperation::query()->readAll('one close')->get()->map(fn (ShareGatewayOperation $operation) => $operation->type)->all(),
+        );
         $disabled = ShareGatewayConfiguration::query()->findOrFail($configuration->id);
         $this->assertNotNull($disabled->disabled_at);
         $this->assertFalse($disabled->is_default);
@@ -133,7 +148,10 @@ final class GatewayDefaultAndDisableTest extends TestCase
     {
         $key = (string) Str::ulid();
 
-        return $this->asOwner(new ConfigureShareGateway(FakeShareGateway::KEY, '1.0.0', 'fake.test', FakeShareGateway::PUBLIC_ORIGIN, 8100, [], true, $key), $key);
+        return $this->asOwner(
+            new ConfigureShareGateway(FakeShareGateway::KEY, '1.0.0', 'fake.test', FakeShareGateway::PUBLIC_ORIGIN, 8100, [], true, $key),
+            $key,
+        );
     }
 
     private function preview(): SavedSharePreview
@@ -145,7 +163,10 @@ final class GatewayDefaultAndDisableTest extends TestCase
     {
         $key = (string) Str::ulid();
 
-        return $this->asOwner(new CreateShare($saved->previewId, $saved->checksum, ShareDuration::STANDARD_MINUTES, $key), $key);
+        return $this->asOwner(
+            new CreateShare($saved->previewId, $saved->checksum, ShareDuration::STANDARD_MINUTES, $key),
+            $key,
+        );
     }
 
     /**

@@ -60,7 +60,10 @@ final class RepeatedReadTest extends TestCase
         $numbers = Task::query()->readLimit(12)->pluck('number')->all();
         array_map(fn (int $number) => $records->identityOf($number), $numbers);
 
-        $identities = $this->app->make(ReadMeter::class)->measure('a declared schedule', fn () => ScopedReadMeter::ofCurrentScope()->withinSchedule('test batches', fn () => array_map(fn (int $number) => $records->identityOf($number), $numbers)));
+        $identities = $this->app->make(ReadMeter::class)->measure(
+            'a declared schedule',
+            fn () => ScopedReadMeter::ofCurrentScope()->withinSchedule('test batches', fn () => array_map(fn (int $number) => $records->identityOf($number), $numbers)),
+        );
 
         $this->assertCount(12, $identities->value);
     }

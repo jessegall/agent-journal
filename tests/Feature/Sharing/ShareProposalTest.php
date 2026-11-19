@@ -49,13 +49,37 @@ use Tests\TestCase;
  * a share itself. The owner approves the proposal from a fresh preview into a pending grant. Open proposals are
  * capped at 100, and an expired one frees its slot at once. The requester is kept as an actor, never by session.
  */
-#[TimeLimit(seconds: 10, reason: 'It commits a document and a hundred proposals, and empties the sharing and agent tables around each test.')]
+#[TimeLimit(
+    seconds: 10,
+    reason: 'It commits a document and a hundred proposals, and empties the sharing and agent tables around each test.',
+)]
 final class ShareProposalTest extends TestCase
 {
     use CommitsHookRows;
     use StartsAgentRequests;
 
-    private const array TABLES = ['command_receipts', 'share_audits', 'share_members', 'share_gateway_operations', 'shares', 'share_previews', 'share_gateway_configurations', 'share_installations', 'users', 'links', 'comments', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'number_groups', 'launch_credentials', 'agent_sessions', 'agents'];
+    private const array TABLES = [
+        'command_receipts',
+        'share_audits',
+        'share_members',
+        'share_gateway_operations',
+        'shares',
+        'share_previews',
+        'share_gateway_configurations',
+        'share_installations',
+        'users',
+        'links',
+        'comments',
+        'document_closes',
+        'document_drafts',
+        'reports',
+        'document_revisions',
+        'documents',
+        'number_groups',
+        'launch_credentials',
+        'agent_sessions',
+        'agents',
+    ];
 
     private const int BULK_NUMBERS = 1_000_000;
 
@@ -73,7 +97,10 @@ final class ShareProposalTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser($this->owner->id),
+            new OwnerAuthority('test'),
+        );
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->root = Document::query()->where('number', 1)->sole()->shareIdentity();
@@ -90,7 +117,10 @@ final class ShareProposalTest extends TestCase
         $this->assertSame(['number', 'state'], array_keys(get_object_vars($status)));
         $this->assertNull($proposal->token_digest);
         $this->assertNull($proposal->owner_user_id);
-        $this->assertSame([ActorType::Agent, $this->launch->agent->id], [$proposal->requester_type, $proposal->requester_id]);
+        $this->assertSame(
+            [ActorType::Agent, $this->launch->agent->id],
+            [$proposal->requester_type, $proposal->requester_id],
+        );
         $this->assertSame(0, ShareGatewayOperation::query()->count());
         $audit = ShareAudit::query()->readAll('one audit')->sole();
         $this->assertSame([ShareAuditType::Created, ActorType::Agent], [$audit->type, $audit->actor_type]);
@@ -110,7 +140,10 @@ final class ShareProposalTest extends TestCase
         $this->startRequestAs($this->launch->agent->id, $this->launch->session->id);
         $this->app->make(RequestKey::class)->set('01JD8X0G9M3QZ6V4K2PROPOSE2');
 
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new CreateShare(TestIds::of(1), str_repeat('0', 64), ShareDuration::STANDARD_MINUTES, '01JD8X0G9M3QZ6V4K2PROPOSE2')), ActorNotAllowed::class);
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new CreateShare(TestIds::of(1), str_repeat('0', 64), ShareDuration::STANDARD_MINUTES, '01JD8X0G9M3QZ6V4K2PROPOSE2')),
+            ActorNotAllowed::class,
+        );
         $this->assertSame(0, Share::query()->count());
     }
 
@@ -123,19 +156,33 @@ final class ShareProposalTest extends TestCase
         $this->startUserRequestAs($this->owner->id);
         $saved = $this->preview();
         $this->app->make(RequestKey::class)->set('01JD8X0G9M3QZ6V4K2APPROVE1');
-        $summary = $this->app->make(CommandBus::class)->run(new ApproveShareRequest($proposal->id, $saved->previewId, $saved->checksum, 60, '01JD8X0G9M3QZ6V4K2APPROVE1'));
+        $summary = $this->app->make(CommandBus::class)->run(
+            new ApproveShareRequest($proposal->id, $saved->previewId, $saved->checksum, 60, '01JD8X0G9M3QZ6V4K2APPROVE1'),
+        );
         $granted = Share::query()->findOrFail($proposal->id);
 
         $this->assertSame([$proposal->id, ShareState::Pending], [$summary->shareId, $summary->state]);
         $this->assertSame($this->owner->id, $granted->owner_user_id);
         $this->assertSame(Share::FIRST_SCOPE_VERSION, $granted->scope_version);
         $this->assertNotNull($granted->token_digest);
-        $this->assertEqualsWithDelta(CarbonImmutable::now()->addHour()->getTimestamp(), $granted->expires_at->getTimestamp(), 5);
-        $this->assertSame(GatewayOperationType::Open, ShareGatewayOperation::query()->readAll('one operation')->sole()->type);
-        $this->assertTrue(ShareAudit::query()->readAll('two audits')->get()->contains(fn (ShareAudit $audit) => $audit->type === ShareAuditType::Approved));
+        $this->assertEqualsWithDelta(
+            CarbonImmutable::now()->addHour()->getTimestamp(),
+            $granted->expires_at->getTimestamp(),
+            5,
+        );
+        $this->assertSame(
+            GatewayOperationType::Open,
+            ShareGatewayOperation::query()->readAll('one operation')->sole()->type,
+        );
+        $this->assertTrue(
+            ShareAudit::query()->readAll('two audits')->get()->contains(fn (ShareAudit $audit) => $audit->type === ShareAuditType::Approved),
+        );
 
         $this->startRequestAs($this->launch->agent->id, $this->launch->session->id);
-        $this->assertEquals([new ShareProposalStatus($granted->number, ShareState::Pending)], $this->app->make(ProposalStatusResolver::class)->ownProposals());
+        $this->assertEquals(
+            [new ShareProposalStatus($granted->number, ShareState::Pending)],
+            $this->app->make(ProposalStatusResolver::class)->ownProposals(),
+        );
     }
 
     public function test_an_agent_never_sees_another_agents_proposal(): void
@@ -172,7 +219,9 @@ final class ShareProposalTest extends TestCase
 
     private function preview(): SavedSharePreview
     {
-        return $this->app->make(CommandBus::class)->run(new SaveSharePreview($this->root->type, $this->root->id, [], $this->configuration->id));
+        return $this->app->make(CommandBus::class)->run(
+            new SaveSharePreview($this->root->type, $this->root->id, [], $this->configuration->id),
+        );
     }
 
     /**
@@ -181,7 +230,11 @@ final class ShareProposalTest extends TestCase
      */
     private function proposeMany(int $count): void
     {
-        $first = Share::propose($this->root, new ActorIdentity(ActorType::Agent, $this->launch->agent->id), CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS));
+        $first = Share::propose(
+            $this->root,
+            new ActorIdentity(ActorType::Agent, $this->launch->agent->id),
+            CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
+        );
         $now = CarbonImmutable::now();
         $rows = [];
 

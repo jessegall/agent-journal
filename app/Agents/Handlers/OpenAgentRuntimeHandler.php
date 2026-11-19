@@ -45,14 +45,35 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         }
 
         $parent = $this->parentSessionFor($command);
-        $intent = new RuntimeIntent($host->id, $command->folder, $command->program, $command->programBuild, $command->profile, $command->driverType, $command->model, $command->effort, $command->firstMessage);
+        $intent = new RuntimeIntent(
+            $host->id,
+            $command->folder,
+            $command->program,
+            $command->programBuild,
+            $command->profile,
+            $command->driverType,
+            $command->model,
+            $command->effort,
+            $command->firstMessage,
+        );
 
-        $selection = SelectedProgram::resolve($command->program, ModelSelection::fromInput($command->model), null, null);
+        $selection = SelectedProgram::resolve(
+            $command->program,
+            ModelSelection::fromInput($command->model),
+            null,
+            null,
+        );
 
         $agent = Agent::query()->findOrFail($command->agentId);
         $this->sessions->lockForLaunch($agent);
         $account = $this->accounts->forLaunch($selection->program->value);
-        $launched = $this->launches->launch($agent, $selection, (string) Str::ulid(), $parent, $intent);
+        $launched = $this->launches->launch(
+            $agent,
+            $selection,
+            (string) Str::ulid(),
+            $parent,
+            $intent,
+        );
         $this->starts->register($launched->session, $account);
 
         return $launched->opened();

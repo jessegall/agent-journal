@@ -55,7 +55,9 @@ final class SaveSharePreviewTest extends TestCase
         $this->app->instance(AccessSettings::class, TestActors::accessSettings(9));
         $this->publications = new BinderPublications();
         $this->app->instance(BinderPublications::class, $this->publications);
-        $this->configuration = ShareGatewayConfiguration::configure(new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []));
+        $this->configuration = ShareGatewayConfiguration::configure(
+            new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
+        );
         $this->root = TestActors::record('binders.binder', 1);
 
         foreach ([101, 102, 103] as $number) {
@@ -70,7 +72,10 @@ final class SaveSharePreviewTest extends TestCase
 
         $this->assertCount(3, $saved->candidates->linked);
         $this->assertSame($preview->checksum, $saved->checksum);
-        $this->assertSame([TestIds::of(101), TestIds::of(103)], array_map(fn (ShareSelectedTarget $target) => $target->record->id, $preview->selection));
+        $this->assertSame(
+            [TestIds::of(101), TestIds::of(103)],
+            array_map(fn (ShareSelectedTarget $target) => $target->record->id, $preview->selection),
+        );
         $this->assertSame($this->configuration->configuration_version, $preview->configuration_version);
     }
 
@@ -81,7 +86,9 @@ final class SaveSharePreviewTest extends TestCase
 
         $this->expectException(SharingNotAllowed::class);
 
-        $this->app->make(CommandBus::class)->run(new SaveSharePreview($this->root->type, $this->root->id, [], $this->configuration->id));
+        $this->app->make(CommandBus::class)->run(
+            new SaveSharePreview($this->root->type, $this->root->id, [], $this->configuration->id),
+        );
     }
 
     public function test_without_a_default_gateway_a_preview_names_one(): void
@@ -99,7 +106,11 @@ final class SaveSharePreviewTest extends TestCase
         $preview = SharePreview::query()->findOrFail($saved->previewId);
 
         $this->assertCount(1, $preview->consumeFor(TestIds::of(9), $saved->checksum, $this->current()));
-        $this->assertThrows(fn () => $preview->consumeFor(TestIds::of(9), $saved->checksum, $this->current()), SharePreviewRefused::class, 'used already');
+        $this->assertThrows(
+            fn () => $preview->consumeFor(TestIds::of(9), $saved->checksum, $this->current()),
+            SharePreviewRefused::class,
+            'used already',
+        );
     }
 
     public function test_a_changed_publication_version_a_wrong_checksum_and_another_owner_are_refused(): void
@@ -107,12 +118,24 @@ final class SaveSharePreviewTest extends TestCase
         $saved = $this->save([TestIds::of(101), TestIds::of(102)]);
         $preview = SharePreview::query()->findOrFail($saved->previewId);
 
-        $this->assertThrows(fn () => $preview->consumeFor(TestIds::of(8), $saved->checksum, $this->current()), SharePreviewRefused::class, 'another owner');
-        $this->assertThrows(fn () => $preview->consumeFor(TestIds::of(9), str_repeat('0', 64), $this->current()), SharePreviewRefused::class, 'has changed');
+        $this->assertThrows(
+            fn () => $preview->consumeFor(TestIds::of(8), $saved->checksum, $this->current()),
+            SharePreviewRefused::class,
+            'another owner',
+        );
+        $this->assertThrows(
+            fn () => $preview->consumeFor(TestIds::of(9), str_repeat('0', 64), $this->current()),
+            SharePreviewRefused::class,
+            'has changed',
+        );
 
         $this->publications->publish(TestIds::of(102), '2');
 
-        $this->assertThrows(fn () => $preview->consumeFor(TestIds::of(9), $saved->checksum, $this->current()), SharePreviewRefused::class, 'has changed');
+        $this->assertThrows(
+            fn () => $preview->consumeFor(TestIds::of(9), $saved->checksum, $this->current()),
+            SharePreviewRefused::class,
+            'has changed',
+        );
     }
 
     /**
@@ -122,11 +145,16 @@ final class SaveSharePreviewTest extends TestCase
     {
         $this->startTestUserRequest(9);
 
-        return $this->app->make(CommandBus::class)->run(new SaveSharePreview($this->root->type, $this->root->id, $selectedIds, $this->configuration->id));
+        return $this->app->make(CommandBus::class)->run(
+            new SaveSharePreview($this->root->type, $this->root->id, $selectedIds, $this->configuration->id),
+        );
     }
 
     private function current(): ShareCandidates
     {
-        return $this->app->make(ShareScope::class)->discover($this->root, MeteredShareBudget::forPreview($this->app->make(ReadMeter::class)));
+        return $this->app->make(ShareScope::class)->discover(
+            $this->root,
+            MeteredShareBudget::forPreview($this->app->make(ReadMeter::class)),
+        );
     }
 }

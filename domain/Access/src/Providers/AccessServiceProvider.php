@@ -45,7 +45,9 @@ class AccessServiceProvider extends ServiceProvider
         $this->app->bind(JournalAdmission::class, OwnerAdmission::class);
         $this->app->bind(AdmittedRecipients::class, AdmittedUsers::class);
         // The owner's row is read on the first use of the settings, never while a service that holds them is built.
-        $this->app->singleton(AccessSettings::class, fn (): AccessSettings => new ReflectionClass(AccessSettings::class)->newLazyGhost(function (AccessSettings $settings): void {
+        $this->app->singleton(AccessSettings::class, fn (): AccessSettings => new ReflectionClass(AccessSettings::class)->newLazyGhost(function (
+            AccessSettings $settings,
+        ): void {
             $ownerEmail = $this->app->make('config')->get('access.owner_email');
             $settings->__construct(is_string($ownerEmail) ? User::ownerIdFor($ownerEmail) : null);
         }));
@@ -96,7 +98,9 @@ class AccessServiceProvider extends ServiceProvider
 
         RateLimiter::for('passkeys', function (Request $request) {
             return Limit::perMinute(10)->by(
-                $request->string('credential.id')->whenEmpty(fn () => str($request->session()->getId())).'|'.$request->ip(),
+                $request->string('credential.id')->whenEmpty(
+                    fn () => str($request->session()->getId()),
+                ).'|'.$request->ip(),
             );
         });
     }

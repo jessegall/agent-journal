@@ -120,7 +120,9 @@ final class ShellGrammarTest extends TestCase
     {
         $tooLong = $this->parse(str_repeat('a', AnalysisLimit::SourceBytes->value + 1));
         $tooMany = $this->parse(implode(';', array_fill(0, AnalysisLimit::ExecutableParts->value + 1, 'true')));
-        $tooDeep = $this->parse(str_repeat('( ', AnalysisLimit::Depth->value + 1).'true'.str_repeat(' )', AnalysisLimit::Depth->value + 1));
+        $tooDeep = $this->parse(
+            str_repeat('( ', AnalysisLimit::Depth->value + 1).'true'.str_repeat(' )', AnalysisLimit::Depth->value + 1),
+        );
 
         foreach ([$tooLong, $tooMany, $tooDeep] as $tree) {
             $this->assertSame(ParseOutcome::LimitExceeded, $tree->outcome);

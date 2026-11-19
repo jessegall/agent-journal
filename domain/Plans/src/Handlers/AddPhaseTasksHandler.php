@@ -22,6 +22,9 @@ final readonly class AddPhaseTasksHandler implements CommandHandler
     {
         $this->tasks->requireAllVisible($command->taskIds);
 
-        Phase::query()->findOrFail($command->phaseId)->addTasksAtRevision($command->expectedRevision, $command->taskIds);
+        Phase::query()->findOrFail($command->phaseId)->addTasksAtRevision(
+            $command->expectedRevision,
+            $command->taskIds,
+        );
     }
 }

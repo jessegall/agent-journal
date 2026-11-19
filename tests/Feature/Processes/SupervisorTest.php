@@ -104,7 +104,12 @@ final class SupervisorTest extends TestCase
 
     public function test_a_killed_child_is_signalled_with_no_status_code(): void
     {
-        $process = SpawnedProcess::start(['sleep', '5'], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $this->folder, ['PATH' => (string) getenv('PATH')]);
+        $process = SpawnedProcess::start(
+            ['sleep', '5'],
+            [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],
+            $this->folder,
+            ['PATH' => (string) getenv('PATH')],
+        );
         $this->assertInstanceOf(SpawnedProcess::class, $process);
 
         $process->kill(9);
@@ -116,12 +121,24 @@ final class SupervisorTest extends TestCase
 
     private function supervise(string $line): StepOutcome
     {
-        $context = new ExecutionContext(ShellDialect::Bash, $this->folder, $this->folder, ['PATH' => (string) getenv('PATH')]);
+        $context = new ExecutionContext(
+            ShellDialect::Bash,
+            $this->folder,
+            $this->folder,
+            ['PATH' => (string) getenv('PATH')],
+        );
         $tree = $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash);
-        $plan = $this->app->make(ExecutionPlanner::class)->plan($tree, $this->app->make(CommandClassifier::class)->classify($tree, $context));
+        $plan = $this->app->make(ExecutionPlanner::class)->plan(
+            $tree,
+            $this->app->make(CommandClassifier::class)->classify($tree, $context),
+        );
         $this->processRun = ProcessRun::admit(ActorIdentity::system(), TestRunAdmissions::of(line: $line, plan: $plan));
 
-        return $this->app->make(Supervisor::class)->run(new RecordedRunEvents($this->processRun, $this->output), $plan, $context);
+        return $this->app->make(Supervisor::class)->run(
+            new RecordedRunEvents($this->processRun, $this->output),
+            $plan,
+            $context,
+        );
     }
 
     /**

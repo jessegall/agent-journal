@@ -8,7 +8,11 @@ declare(strict_types=1);
  */
 $body = (string) file_get_contents('php://input');
 $headers = array_change_key_case(getallheaders(), CASE_LOWER);
-file_put_contents((string) getenv('RELAY_SERVER_LOG'), json_encode(['body' => $body, 'headers' => $headers])."\n", FILE_APPEND);
+file_put_contents(
+(string) getenv('RELAY_SERVER_LOG'),
+ json_encode(['body' => $body, 'headers' => $headers])."\n",
+ FILE_APPEND,
+);
 $frame = json_decode($body, true);
 header('Content-Type: application/json');
 

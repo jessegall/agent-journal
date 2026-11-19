@@ -37,7 +37,17 @@ final class SharingSupervisorTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['command_receipts', 'share_audits', 'share_members', 'share_gateway_operations', 'shares', 'share_gateway_endpoints', 'share_gateway_configurations', 'share_installations', 'number_groups'];
+    private const array TABLES = [
+        'command_receipts',
+        'share_audits',
+        'share_members',
+        'share_gateway_operations',
+        'shares',
+        'share_gateway_endpoints',
+        'share_gateway_configurations',
+        'share_installations',
+        'number_groups',
+    ];
 
     private FakeShareGateway $gateway;
 
@@ -99,7 +109,10 @@ final class SharingSupervisorTest extends TestCase
 
         $this->assertSame(ShareState::Active, Share::query()->findOrFail($share->id)->state);
         $this->assertSame($digest, Share::query()->findOrFail($share->id)->token_digest);
-        $this->assertSame($link, $this->app->make(ShareLinkResolver::class)->linkFor(TestActors::user(9), $share->id)->get());
+        $this->assertSame(
+            $link,
+            $this->app->make(ShareLinkResolver::class)->linkFor(TestActors::user(9), $share->id)->get(),
+        );
         $this->assertCount(2, $this->gateway->opened);
         $reopened = ShareGatewayEndpoint::query()->where('run_id', $restarted->runId)->sole();
         $this->assertSame(2, $reopened->endpoint_version);
@@ -108,7 +121,11 @@ final class SharingSupervisorTest extends TestCase
 
     public function test_proposals_and_ended_shares_never_open_a_tunnel(): void
     {
-        Share::propose(TestActors::record('binders.binder', 1), TestActors::agentIdentity(5), CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS));
+        Share::propose(
+            TestActors::record('binders.binder', 1),
+            TestActors::agentIdentity(5),
+            CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
+        );
         $revoked = TestShares::grantForADay(TestActors::record('binders.binder', 2), $this->configuration);
         $revoked->end(ShareState::Revoked);
 

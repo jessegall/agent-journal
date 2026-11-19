@@ -20,7 +20,9 @@ final class ExecutionBudgetInvalid extends InvalidArgumentException implements C
 
     public static function swapDiffers(int $memoryBytes, int $memorySwapBytes): self
     {
-        return new self("Memory and swap are limited alike: {$memorySwapBytes} bytes of swap differs from {$memoryBytes} bytes of memory.");
+        return new self(
+            "Memory and swap are limited alike: {$memorySwapBytes} bytes of swap differs from {$memoryBytes} bytes of memory.",
+        );
     }
 
     public static function aboveHost(string $budget, int $value, int $most): self

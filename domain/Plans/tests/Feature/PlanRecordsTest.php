@@ -41,7 +41,10 @@ final class PlanRecordsTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(7)),
+            new OwnerAuthority('test'),
+        );
 
         $this->build = Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
         $read = $this->build->addPhase('Read');
@@ -70,23 +73,41 @@ final class PlanRecordsTest extends TestCase
     {
         $agent = Agent::named('Planner', 'main-agent');
         $this->app->instance(CurrentSession::class, new FixedSession(TestIds::of(10)));
-        $this->app->instance(CurrentState::class, new FixedCurrentState(new StackTarget($agent->id, TestIds::of(10)), [WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateReference::forPlan($this->build)]));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent->id), TestLaunchAuthority::forAgent($agent->id));
-        $this->app->make(AssignmentWriterInTransaction::class)->assign($this->build->assignmentIdentity(), AssigneeIdentity::of($agent));
+        $this->app->instance(
+            CurrentState::class,
+            new FixedCurrentState(new StackTarget($agent->id, TestIds::of(10)), [WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateReference::forPlan($this->build)]),
+        );
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($agent->id),
+            TestLaunchAuthority::forAgent($agent->id),
+        );
+        $this->app->make(AssignmentWriterInTransaction::class)->assign(
+            $this->build->assignmentIdentity(),
+            AssigneeIdentity::of($agent),
+        );
 
         $cards = $this->records()->list(new PlanFilters())->cards;
 
-        $this->assertSame([$this->build->id, 'Planner', true], [$cards[0]->id, $cards[0]->holder->get()->name, $cards[0]->focused]);
+        $this->assertSame(
+            [$this->build->id, 'Planner', true],
+            [$cards[0]->id, $cards[0]->holder->get()->name, $cards[0]->focused],
+        );
         $this->assertTrue($cards[0]->holder->get()->holder()->isSameAs(AssigneeIdentity::of($agent)));
     }
 
     public function test_the_search_filters_and_an_empty_result_keeps_its_filters(): void
     {
-        $this->assertSame([$this->build->id], array_map(fn (PlanCard $card) => $card->id, $this->records()->list(new PlanFilters(search: 'RELEASE'))->cards));
+        $this->assertSame(
+            [$this->build->id],
+            array_map(fn (PlanCard $card) => $card->id, $this->records()->list(new PlanFilters(search: 'RELEASE'))->cards),
+        );
 
         $empty = $this->records()->list(new PlanFilters(search: 'nothing like this'));
 
-        $this->assertSame([[], 'nothing like this', 0, 1], [$empty->cards, $empty->filters->search, $empty->total, $empty->page]);
+        $this->assertSame(
+            [[], 'nothing like this', 0, 1],
+            [$empty->cards, $empty->filters->search, $empty->total, $empty->page],
+        );
     }
 
     public function test_a_page_past_the_end_becomes_the_last_page(): void
@@ -98,8 +119,12 @@ final class PlanRecordsTest extends TestCase
 
     public function test_a_selected_plan_stays_readable_outside_the_filter_and_says_so(): void
     {
-        $inside = $this->records()->list(new PlanFilters(search: 'release', selectedPlanId: $this->build->id))->selection;
-        $outside = $this->records()->list(new PlanFilters(search: 'release', selectedPlanId: $this->empty->id))->selection;
+        $inside = $this->records()->list(
+            new PlanFilters(search: 'release', selectedPlanId: $this->build->id),
+        )->selection;
+        $outside = $this->records()->list(
+            new PlanFilters(search: 'release', selectedPlanId: $this->empty->id),
+        )->selection;
 
         $this->assertSame([$this->build->id, true], [$inside->card?->id, $inside->isInsideFilter]);
         $this->assertSame([$this->empty->id, false], [$outside->card?->id, $outside->isInsideFilter]);

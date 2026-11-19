@@ -57,7 +57,12 @@ final class SkillReceipt extends Model implements ReadableModel
         ReadEvidence $evidence,
     ): self {
         return self::query()->firstOrCreate(
-            ['session_id' => $sessionId, 'context_epoch' => $epoch, 'skill_key' => $skillKey, 'content_digest' => $digest],
+            [
+                'session_id' => $sessionId,
+                'context_epoch' => $epoch,
+                'skill_key' => $skillKey,
+                'content_digest' => $digest,
+            ],
             ['evidence' => $evidence],
         );
     }

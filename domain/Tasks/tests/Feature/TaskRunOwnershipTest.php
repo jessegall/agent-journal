@@ -92,7 +92,10 @@ final class TaskRunOwnershipTest extends TestCase
 
         $this->bus()->run(new FinishTask($this->task->id, $run, 'Built and tested.'));
 
-        $this->assertSame([TaskState::Finished, 'Built and tested.'], [$this->task->fresh()?->state, $this->task->fresh()?->result_note]);
+        $this->assertSame(
+            [TaskState::Finished, 'Built and tested.'],
+            [$this->task->fresh()?->state, $this->task->fresh()?->result_note],
+        );
         $this->assertTrue($this->app->make(AssignedTaskResolver::class)->currentForCaller()->isEmpty());
     }
 
@@ -102,13 +105,22 @@ final class TaskRunOwnershipTest extends TestCase
         $run = $this->bus()->run(new StartTask($this->task->id));
 
         $this->actAs($this->second);
-        $this->assertThrows(fn () => $this->bus()->run(new FinishTask($this->task->id, $run, 'Not mine.')), ActorNotAllowed::class);
+        $this->assertThrows(
+            fn () => $this->bus()->run(new FinishTask($this->task->id, $run, 'Not mine.')),
+            ActorNotAllowed::class,
+        );
 
         $this->actAs($this->first);
-        $this->assertThrows(fn () => $this->bus()->run(new BlockTask($this->task->id, $run + 1, 'Wrong run.')), TaskRunNotYours::class);
+        $this->assertThrows(
+            fn () => $this->bus()->run(new BlockTask($this->task->id, $run + 1, 'Wrong run.')),
+            TaskRunNotYours::class,
+        );
         $this->bus()->run(new BlockTask($this->task->id, $run, 'Waits on review.'));
 
-        $this->assertSame([TaskState::Blocked, 'Waits on review.'], [$this->task->fresh()?->state, $this->task->fresh()?->block_reason]);
+        $this->assertSame(
+            [TaskState::Blocked, 'Waits on review.'],
+            [$this->task->fresh()?->state, $this->task->fresh()?->block_reason],
+        );
     }
 
     public function test_another_agent_cannot_cancel_a_run_and_its_holder_can(): void
@@ -120,12 +132,18 @@ final class TaskRunOwnershipTest extends TestCase
         $this->bus()->run(new StartTask($this->task->id));
 
         $this->actAs($this->second);
-        $this->assertThrows(fn () => $this->bus()->run(new CancelTask($this->task->id, 'Not mine.')), ActorNotAllowed::class);
+        $this->assertThrows(
+            fn () => $this->bus()->run(new CancelTask($this->task->id, 'Not mine.')),
+            ActorNotAllowed::class,
+        );
 
         $this->actAs($this->second);
         $this->bus()->run(new CancelTask($helperTask->id, 'Superseded.'));
 
-        $this->assertSame([TaskState::Started, TaskState::Cancelled, 'Superseded.'], [$this->task->fresh()?->state, $helperTask->fresh()?->state, $helperTask->fresh()?->cancel_reason]);
+        $this->assertSame(
+            [TaskState::Started, TaskState::Cancelled, 'Superseded.'],
+            [$this->task->fresh()?->state, $helperTask->fresh()?->state, $helperTask->fresh()?->cancel_reason],
+        );
     }
 
     public function test_an_ended_task_is_not_started_again(): void
@@ -141,15 +159,25 @@ final class TaskRunOwnershipTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->clear();
 
-        return $this->app->make(LaunchSessions::class)->launch(Agent::named($name, $profileKey), TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        return $this->app->make(LaunchSessions::class)->launch(
+            Agent::named($name, $profileKey),
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        )->session;
     }
 
     private function actAs(AgentSession $session): void
     {
         $this->app->forgetScopedInstances();
         $agent = $session->agent()->firstOrFail();
-        $this->app->instance(AgentContext::class, new AgentContext($agent->id, $session->id, new SignedCall('call-'.bin2hex(random_bytes(4)), CarbonImmutable::now(), 'digest'), null));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent->id), TestLaunchAuthority::forAgent($agent->id));
+        $this->app->instance(
+            AgentContext::class,
+            new AgentContext($agent->id, $session->id, new SignedCall('call-'.bin2hex(random_bytes(4)), CarbonImmutable::now(), 'digest'), null),
+        );
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($agent->id),
+            TestLaunchAuthority::forAgent($agent->id),
+        );
     }
 
     private function bus(): CommandBus

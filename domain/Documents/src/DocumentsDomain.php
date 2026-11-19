@@ -134,7 +134,11 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
 
     public function numberedModels(): array
     {
-        return [NumberedModel::global(Document::class), NumberedModel::within(DocumentRevision::class, Document::class), NumberedModel::global(Report::class)];
+        return [
+            NumberedModel::global(Document::class),
+            NumberedModel::within(DocumentRevision::class, Document::class),
+            NumberedModel::global(Report::class),
+        ];
     }
 
     public function linkRecords(): array
@@ -148,8 +152,18 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
     public function shareRecords(): array
     {
         return [
-            new ShareRecordRegistration(Document::LINK_TYPE, Document::class, DocumentShareProvider::class, [self::SHARE_LINKED_RECORD]),
-            new ShareRecordRegistration(Report::LINK_TYPE, Report::class, ReportShareProvider::class, [self::SHARE_LINKED_RECORD]),
+            new ShareRecordRegistration(
+                Document::LINK_TYPE,
+                Document::class,
+                DocumentShareProvider::class,
+                [self::SHARE_LINKED_RECORD],
+            ),
+            new ShareRecordRegistration(
+                Report::LINK_TYPE,
+                Report::class,
+                ReportShareProvider::class,
+                [self::SHARE_LINKED_RECORD],
+            ),
         ];
     }
 
@@ -165,7 +179,19 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
 
     public function commands(): array
     {
-        return [CreateDocument::class, CreateReport::class, OpenDocument::class, ReplaceDocumentBody::class, ReplaceDocumentSection::class, ReplaceDocumentText::class, ChangeDocumentDetails::class, CloseDocument::class, SettleDocument::class, SettleReport::class, RecoverDocument::class];
+        return [
+            CreateDocument::class,
+            CreateReport::class,
+            OpenDocument::class,
+            ReplaceDocumentBody::class,
+            ReplaceDocumentSection::class,
+            ReplaceDocumentText::class,
+            ChangeDocumentDetails::class,
+            CloseDocument::class,
+            SettleDocument::class,
+            SettleReport::class,
+            RecoverDocument::class,
+        ];
     }
 
     public function pages(): array

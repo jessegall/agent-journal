@@ -26,8 +26,14 @@ final readonly class AliasLookup
     /**
      * @param  list<string>  $arguments
      */
-    public static function found(string $id, string $name, string $body, int $revision, string $digest, array $arguments): self
-    {
+    public static function found(
+        string $id,
+        string $name,
+        string $body,
+        int $revision,
+        string $digest,
+        array $arguments,
+    ): self {
         return new self(true, $name, $id, $body, $revision, $digest, $arguments);
     }
 

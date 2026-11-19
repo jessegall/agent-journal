@@ -24,7 +24,13 @@ final readonly class TaskProgress
 
     public function plus(self $other): self
     {
-        return new self($this->done + $other->done, $this->started + $other->started, $this->blocked + $other->blocked, $this->total + $other->total, $this->cancelled + $other->cancelled);
+        return new self(
+            $this->done + $other->done,
+            $this->started + $other->started,
+            $this->blocked + $other->blocked,
+            $this->total + $other->total,
+            $this->cancelled + $other->cancelled,
+        );
     }
 
     /**

@@ -16,10 +16,15 @@ use Illuminate\Http\JsonResponse;
  */
 final readonly class AssignRecordController
 {
-    public function __invoke(AssignRecordRequest $request, CommandBus $commands, AssigneeResolver $assignees): JsonResponse
-    {
+    public function __invoke(
+        AssignRecordRequest $request,
+        CommandBus $commands,
+        AssigneeResolver $assignees,
+    ): JsonResponse {
         $result = $commands->run(new AssignRecord($request->record(), $request->recipient()));
 
-        return new JsonResponse(AssignmentResultData::of($result, $assignees->holdersOf($result->currentAssignments())));
+        return new JsonResponse(
+            AssignmentResultData::of($result, $assignees->holdersOf($result->currentAssignments())),
+        );
     }
 }

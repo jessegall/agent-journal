@@ -45,7 +45,10 @@ enum RewriteSupport: string
     public function reply(HookAnswer $answer, ProgramToolInput $original): ProgramReply
     {
         return match ($this) {
-            self::WithoutApproval => ProgramReplies::rewriteTool($original->withCommand($answer->decision->replacementLine()), $answer->context),
+            self::WithoutApproval => ProgramReplies::rewriteTool(
+                $original->withCommand($answer->decision->replacementLine()),
+                $answer->context,
+            ),
             self::NeedsApproval => ProgramReplies::denyTool(ProgramReplies::REWRITE_REFUSAL, $answer->context),
         };
     }

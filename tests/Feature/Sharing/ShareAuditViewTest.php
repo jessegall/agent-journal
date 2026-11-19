@@ -49,24 +49,37 @@ final class ShareAuditViewTest extends TestCase
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
         $this->configuration = ShareGatewayConfiguration::configure(FakeShareGateway::settings());
-        $this->share = Share::grant(TestActors::record('binders.binder', 1), $this->owner->id, $this->configuration, ShareToken::generate(), CarbonImmutable::now()->addDay());
-        ShareAudit::recordFor($this->share, ShareAuditType::Created, new ActorIdentity(ActorType::User, $this->owner->id), null);
+        $this->share = Share::grant(
+            TestActors::record('binders.binder', 1),
+            $this->owner->id,
+            $this->configuration,
+            ShareToken::generate(),
+            CarbonImmutable::now()->addDay(),
+        );
+        ShareAudit::recordFor(
+            $this->share,
+            ShareAuditType::Created,
+            new ActorIdentity(ActorType::User, $this->owner->id),
+            null,
+        );
         ShareAudit::recordFor($this->share, ShareAuditType::ReadAllowed, ActorIdentity::system(), null);
         ShareAudit::recordFor($this->share, ShareAuditType::ReadDenied, ActorIdentity::system(), 'rate_limited');
     }
 
     public function test_reads_show_an_unknown_visitor_apart_from_the_lifecycle(): void
     {
-        $this->actingAs($this->owner)->get("/sharing/shares/{$this->share->id}")->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->has('page.data.audit.entries', 3)
-            ->where('page.data.audit.entries.0.type', 'read_denied')
-            ->where('page.data.audit.entries.0.actor', 'visitor')
-            ->where('page.data.audit.entries.0.isRead', true)
-            ->where('page.data.audit.entries.0.reasonCode', 'rate_limited')
-            ->where('page.data.audit.entries.2.type', 'created')
-            ->where('page.data.audit.entries.2.actor', 'owner')
-            ->where('page.data.audit.entries.2.isRead', false)
-            ->where('page.data.audit.nextAfter', null));
+        $this->actingAs($this->owner)->get(
+            "/sharing/shares/{$this->share->id}",
+        )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+                    ->has('page.data.audit.entries', 3)
+                    ->where('page.data.audit.entries.0.type', 'read_denied')
+                    ->where('page.data.audit.entries.0.actor', 'visitor')
+                    ->where('page.data.audit.entries.0.isRead', true)
+                    ->where('page.data.audit.entries.0.reasonCode', 'rate_limited')
+                    ->where('page.data.audit.entries.2.type', 'created')
+                    ->where('page.data.audit.entries.2.actor', 'owner')
+                    ->where('page.data.audit.entries.2.isRead', false)
+                    ->where('page.data.audit.nextAfter', null));
     }
 
     public function test_the_audit_pages_on_and_carries_the_pruned_totals(): void
@@ -92,23 +105,29 @@ final class ShareAuditViewTest extends TestCase
 
     public function test_the_runtime_panel_is_offline_without_a_service_and_stale_45_seconds_after_the_last_health(): void
     {
-        $this->actingAs($this->owner)->get("/sharing/shares/{$this->share->id}")->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.runtime.isOffline', true)
-            ->where('page.data.runtime.endpointVersion', null));
+        $this->actingAs($this->owner)->get(
+            "/sharing/shares/{$this->share->id}",
+        )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+                    ->where('page.data.runtime.isOffline', true)
+                    ->where('page.data.runtime.endpointVersion', null));
 
         ShareInstallation::lockForAdmission()->holdFor(self::RUN);
         $endpoint = ShareGatewayEndpoint::openFor($this->configuration, 1, self::RUN);
         $endpoint->moveTo(GatewayEndpointState::Open);
         $endpoint->recordHealthy();
 
-        $this->actingAs($this->owner)->get("/sharing/shares/{$this->share->id}")->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.runtime.isOffline', false)
-            ->where('page.data.runtime.endpointVersion', 1)
-            ->where('page.data.runtime.isHealthy', true));
+        $this->actingAs($this->owner)->get(
+            "/sharing/shares/{$this->share->id}",
+        )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+                    ->where('page.data.runtime.isOffline', false)
+                    ->where('page.data.runtime.endpointVersion', 1)
+                    ->where('page.data.runtime.isHealthy', true));
 
         $this->travel(46)->seconds();
 
-        $this->actingAs($this->owner)->get("/sharing/shares/{$this->share->id}")->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.runtime.isHealthy', false));
+        $this->actingAs($this->owner)->get(
+            "/sharing/shares/{$this->share->id}",
+        )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+                    ->where('page.data.runtime.isHealthy', false));
     }
 }

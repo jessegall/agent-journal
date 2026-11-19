@@ -41,8 +41,12 @@ final class BinderShareProvider implements ShareRecordProvider
     public function readTargets(ShareTargetRead $read, ShareBudget $budget): ShareRecords
     {
         DB::select('select 1');
-        $eligible = array_values(array_filter($read->targets, fn (RecordIdentity $target) => $this->mayDisclose($target)));
-        $ineligible = array_values(array_filter($read->targets, fn (RecordIdentity $target) => ! $this->mayDisclose($target)));
+        $eligible = array_values(
+array_filter($read->targets, fn (RecordIdentity $target) => $this->mayDisclose($target)),
+);
+        $ineligible = array_values(
+array_filter($read->targets, fn (RecordIdentity $target) => ! $this->mayDisclose($target)),
+);
 
         return new ShareRecords(array_map($this->card(...), $eligible), $ineligible, null);
     }

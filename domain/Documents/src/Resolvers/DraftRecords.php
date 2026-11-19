@@ -24,7 +24,10 @@ final readonly class DraftRecords implements DraftResolver
 
     public function current(int $documentNumber): DraftView
     {
-        $document = Document::query()->sharedPublished()->with('draft')->where('number', $documentNumber)->first() ?? throw DraftMissing::forDocument($documentNumber);
+        $document = Document::query()->sharedPublished()->with('draft')->where(
+            'number',
+            $documentNumber,
+        )->first() ?? throw DraftMissing::forDocument($documentNumber);
         $draft = $document->draft ?? throw DraftMissing::forDocument($documentNumber);
 
         try {
@@ -38,7 +41,10 @@ final readonly class DraftRecords implements DraftResolver
 
     public function stateOf(int $documentNumber): DraftState
     {
-        $document = Document::query()->sharedPublished()->with('draft')->where('number', $documentNumber)->first() ?? throw DraftMissing::forDocument($documentNumber);
+        $document = Document::query()->sharedPublished()->with('draft')->where(
+            'number',
+            $documentNumber,
+        )->first() ?? throw DraftMissing::forDocument($documentNumber);
         $draft = $document->draft;
 
         if ($draft === null) {
@@ -53,7 +59,11 @@ final readonly class DraftRecords implements DraftResolver
             $held = ['state' => EditingState::Held, 'holder' => $draft->holderLabel()];
 
             $administer = [DocumentAbility::Administer];
-            $administers = $this->authorizer->filterActions(DocumentAdministrationPolicy::class, Document::class, $administer) !== [];
+            $administers = $this->authorizer->filterActions(
+                DocumentAdministrationPolicy::class,
+                Document::class,
+                $administer,
+            ) !== [];
 
             return DraftState::from($administers ? [...$held, 'held' => $draft->view($document)] : $held);
         }

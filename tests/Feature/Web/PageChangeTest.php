@@ -61,7 +61,10 @@ final class PageChangeTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser($this->owner->id),
+            new OwnerAuthority('test'),
+        );
         Event::fake([PageChanged::class]);
     }
 
@@ -100,7 +103,9 @@ final class PageChangeTest extends TestCase
 
     public function test_a_task_outside_every_plan_changes_no_page(): void
     {
-        $this->app->make(CommandBus::class)->run(new CancelTask(Task::factory()->create(['title' => 'Loose task'])->id, 'Dropped.'));
+        $this->app->make(CommandBus::class)->run(
+            new CancelTask(Task::factory()->create(['title' => 'Loose task'])->id, 'Dropped.'),
+        );
 
         Event::assertNotDispatched(PageChanged::class);
     }
@@ -108,7 +113,9 @@ final class PageChangeTest extends TestCase
     public function test_a_rolled_back_change_sends_nothing(): void
     {
         $task = Task::factory()->create(['title' => 'List the plans']);
-        Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build])->addPhase('Read')->addTasks([$task->id]);
+        Plan::factory()->create(
+            ['title' => 'Build the release page', 'type' => PlanType::Build],
+        )->addPhase('Read')->addTasks([$task->id]);
 
         try {
             $this->app->make(ConnectionInterface::class)->transaction(function () use ($task): void {

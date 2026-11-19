@@ -41,7 +41,10 @@ final class AgentVisibilityTest extends TestCase
     {
         $this->startTestAgentRequest(1, 10);
 
-        $this->assertSame(['Run of agent 1', 'Run of agent 1'], SequenceRun::query()->orderBy('id')->pluck('name')->all());
+        $this->assertSame(
+            ['Run of agent 1', 'Run of agent 1'],
+            SequenceRun::query()->orderBy('id')->pluck('name')->all(),
+        );
         $this->assertSame(['Kept by agent 1'], Memory::query()->pluck('text')->all());
 
         $this->app->forgetScopedInstances();
@@ -56,10 +59,16 @@ final class AgentVisibilityTest extends TestCase
         $this->startTestAgentRequest(2, 20);
         $agentOne = TestActors::stack(1, 10);
 
-        $run = $this->app->make(SequenceRecords::class)->followedBy($agentOne, $this->idOf(SequenceRun::query()->ownedBy(TestActors::agentIdentity(1))));
+        $run = $this->app->make(SequenceRecords::class)->followedBy(
+            $agentOne,
+            $this->idOf(SequenceRun::query()->ownedBy(TestActors::agentIdentity(1))),
+        );
 
         $this->assertSame(TestIds::of(1), $run->actor_id);
-        $this->assertSame(['Kept by agent 1'], Memory::query()->ownedBy(TestActors::agentIdentity(1))->pluck('text')->all());
+        $this->assertSame(
+            ['Kept by agent 1'],
+            Memory::query()->ownedBy(TestActors::agentIdentity(1))->pluck('text')->all(),
+        );
     }
 
     public function test_every_agent_reads_every_task_and_rule(): void
@@ -97,7 +106,10 @@ final class AgentVisibilityTest extends TestCase
         $this->startTestUserRequest(7);
 
         $this->assertSame(3, SequenceRun::query()->acrossOwners()->count());
-        $this->assertSame(['Kept by agent 1', 'Kept by agent 2'], Memory::query()->acrossOwners()->orderBy('id')->pluck('text')->all());
+        $this->assertSame(
+            ['Kept by agent 1', 'Kept by agent 2'],
+            Memory::query()->acrossOwners()->orderBy('id')->pluck('text')->all(),
+        );
     }
 
     public function test_an_agent_cannot_use_the_user_read(): void

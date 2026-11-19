@@ -10,6 +10,8 @@ final class NonBottomStateAllowed extends LogicException
 {
     public static function for(string $stateType, string $hookMethod): self
     {
-        return new self("The state {$stateType} allowed {$hookMethod}; only the bottom state may allow, others delegate.");
+        return new self(
+            "The state {$stateType} allowed {$hookMethod}; only the bottom state may allow, others delegate.",
+        );
     }
 }

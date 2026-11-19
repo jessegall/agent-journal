@@ -40,7 +40,9 @@ final class ListenerPolicyTest extends TestCase
     {
         $policy = $this->policyFor([EventCallsTasksDomain::class, EventCallsPlansDomain::class]);
 
-        $this->expectExceptionObject(InvalidListener::privateEvent(QuietListener::class.'@handle', 'handle', TaskClosed::class, 'Tasks'));
+        $this->expectExceptionObject(
+            InvalidListener::privateEvent(QuietListener::class.'@handle', 'handle', TaskClosed::class, 'Tasks'),
+        );
 
         $policy->check([TaskClosed::class => [QuietListener::class.'@handle']]);
     }
@@ -49,14 +51,20 @@ final class ListenerPolicyTest extends TestCase
     {
         $policy = $this->policyFor([TasksDomain::class, ChatDomain::class, PlansDomain::class]);
 
-        $this->expectExceptionObject(InvalidListener::notRequired(HearsMessage::class.'@handle', MessageSent::class, 'Chat'));
+        $this->expectExceptionObject(
+            InvalidListener::notRequired(HearsMessage::class.'@handle', MessageSent::class, 'Chat'),
+        );
 
         $policy->check([MessageSent::class => [HearsMessage::class.'@handle']]);
     }
 
     public function test_a_listener_of_the_user_interface_marker_hears_each_exported_ui_event_instead(): void
     {
-        $policy = new ListenerPolicy($this->app->make(DomainRegistry::class), CoreApi::exports(), CoreApi::listenerFolders());
+        $policy = new ListenerPolicy(
+            $this->app->make(DomainRegistry::class),
+            CoreApi::exports(),
+            CoreApi::listenerFolders(),
+        );
 
         $expanded = $policy->expand([UpdatesUserInterface::class => [BroadcastPageChange::class.'@handle']]);
 

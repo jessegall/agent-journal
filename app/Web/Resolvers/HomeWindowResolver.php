@@ -25,8 +25,13 @@ final readonly class HomeWindowResolver implements PageResolver
 
     public function read(): HomeData
     {
-        $windows = array_values(array_filter($this->declarations->pages(), fn (RegisteredPage $page) => $page->page->homePosition !== null));
-        usort($windows, fn (RegisteredPage $one, RegisteredPage $other) => [$one->page->homePosition, $one->key] <=> [$other->page->homePosition, $other->key]);
+        $windows = array_values(
+            array_filter($this->declarations->pages(), fn (RegisteredPage $page) => $page->page->homePosition !== null),
+        );
+        usort(
+            $windows,
+            fn (RegisteredPage $one, RegisteredPage $other) => [$one->page->homePosition, $one->key] <=> [$other->page->homePosition, $other->key],
+        );
         $owners = array_count_values(array_map(fn (RegisteredPage $page) => $page->owner->key, $windows));
 
         return HomeData::from([
@@ -42,7 +47,10 @@ final readonly class HomeWindowResolver implements PageResolver
             ]), $windows),
             'barProps' => array_values(array_map(
                 fn (RegisteredSection $section) => $section->propName,
-                array_filter($this->declarations->sections(), fn (RegisteredSection $section) => $section->host->isHome()),
+                array_filter(
+                    $this->declarations->sections(),
+                    fn (RegisteredSection $section) => $section->host->isHome(),
+                ),
             )),
         ]);
     }

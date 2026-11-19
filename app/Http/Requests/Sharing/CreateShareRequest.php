@@ -23,12 +23,21 @@ final class CreateShareRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [...$this->confirmedPreviewRules(), ...$this->idempotencyKeyRules(), 'minutes' => ['nullable', 'integer']];
+        return [
+            ...$this->confirmedPreviewRules(),
+            ...$this->idempotencyKeyRules(),
+            'minutes' => ['nullable', 'integer'],
+        ];
     }
 
     public function command(): CreateShare
     {
-        return new CreateShare($this->previewId(), $this->previewChecksum(), $this->minutesUntilExpiry(), $this->requestKey());
+        return new CreateShare(
+            $this->previewId(),
+            $this->previewChecksum(),
+            $this->minutesUntilExpiry(),
+            $this->requestKey(),
+        );
     }
 
     /**

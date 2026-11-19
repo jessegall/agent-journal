@@ -42,7 +42,10 @@ final class TeamRoster
     {
         return array_keys(array_filter(
             $this->members,
-            fn (array $members) => array_any($members, fn (InboxMembership $member) => $member->actor->isSameAs($actor)),
+            fn (array $members) => array_any(
+$members,
+ fn (InboxMembership $member) => $member->actor->isSameAs($actor),
+),
         ));
     }
 }

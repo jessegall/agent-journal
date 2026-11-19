@@ -35,7 +35,13 @@ final readonly class SkillReads
             return false;
         }
 
-        SkillReceipt::record($sessionId, SkillContextEpoch::currentOf($sessionId), $skillKey, $entry['digest'], $evidence);
+        SkillReceipt::record(
+            $sessionId,
+            SkillContextEpoch::currentOf($sessionId),
+            $skillKey,
+            $entry['digest'],
+            $evidence,
+        );
 
         return true;
     }

@@ -42,7 +42,9 @@ final class HostCapabilitiesTest extends TestCase
     {
         foreach (HostCapabilityType::cases() as $capability) {
             foreach (HookProgram::cases() as $program) {
-                $this->assertRecorded($this->capabilityQuery($capability, $program, ExecutionModeType::RequiredContainer));
+                $this->assertRecorded(
+                    $this->capabilityQuery($capability, $program, ExecutionModeType::RequiredContainer),
+                );
             }
         }
     }
@@ -51,58 +53,88 @@ final class HostCapabilitiesTest extends TestCase
     {
         $capabilities = $this->app->make(HostCapabilities::class);
 
-        $this->assertSame(CapabilityStatusType::Unverified, $capabilities->capability($this->capabilityQuery(HostCapabilityType::AccountTransport, HookProgram::ClaudeCode, ExecutionModeType::RequiredContainer))->status);
-        $this->assertSame(CapabilityStatusType::Unsupported, $capabilities->capability($this->capabilityQuery(HostCapabilityType::AccountTransport, HookProgram::Codex, ExecutionModeType::RequiredContainer))->status);
+        $this->assertSame(
+            CapabilityStatusType::Unverified,
+            $capabilities->capability($this->capabilityQuery(HostCapabilityType::AccountTransport, HookProgram::ClaudeCode, ExecutionModeType::RequiredContainer))->status,
+        );
+        $this->assertSame(
+            CapabilityStatusType::Unsupported,
+            $capabilities->capability($this->capabilityQuery(HostCapabilityType::AccountTransport, HookProgram::Codex, ExecutionModeType::RequiredContainer))->status,
+        );
 
         foreach (HostCapabilityType::cases() as $capability) {
             foreach (HookProgram::cases() as $program) {
-                $this->assertNotSame(CapabilityStatusType::Supported, $capabilities->capability($this->capabilityQuery($capability, $program, ExecutionModeType::RequiredContainer))->status);
+                $this->assertNotSame(
+                    CapabilityStatusType::Supported,
+                    $capabilities->capability($this->capabilityQuery($capability, $program, ExecutionModeType::RequiredContainer))->status,
+                );
             }
         }
     }
 
     public function test_a_launch_of_an_unproven_account_transport_is_refused_as_account_container_unsupported(): void
     {
-        $capability = $this->app->make(HostCapabilities::class)->capability($this->capabilityQuery(HostCapabilityType::AccountTransport, HookProgram::Codex, ExecutionModeType::RequiredContainer));
+        $capability = $this->app->make(HostCapabilities::class)->capability(
+            $this->capabilityQuery(HostCapabilityType::AccountTransport, HookProgram::Codex, ExecutionModeType::RequiredContainer),
+        );
 
         try {
             $capability->requireSupported();
             $this->fail('An unproven combination was admitted.');
         } catch (AccountContainerUnsupported $refusal) {
             $this->assertSame(LaunchRefusalType::AccountContainerUnsupported, $refusal->reason());
-            $this->assertStringStartsWith('The journal cannot launch account-transport for codex with a subscription account in required_container mode: ', $refusal->getMessage());
+            $this->assertStringStartsWith(
+                'The journal cannot launch account-transport for codex with a subscription account in required_container mode: ',
+                $refusal->getMessage(),
+            );
             $this->assertStringEndsWith('Nothing was launched.', $refusal->getMessage());
         }
     }
 
     public function test_a_stop_guarantee_without_a_proven_stop_deadline_is_refused_before_work(): void
     {
-        $capability = $this->app->make(HostCapabilities::class)->capability($this->capabilityQuery(HostCapabilityType::StopDeadline, HookProgram::ClaudeCode, ExecutionModeType::RequiredContainer));
+        $capability = $this->app->make(HostCapabilities::class)->capability(
+            $this->capabilityQuery(HostCapabilityType::StopDeadline, HookProgram::ClaudeCode, ExecutionModeType::RequiredContainer),
+        );
 
         try {
             $capability->requireSupported();
             $this->fail('An unproven stop guarantee was admitted.');
         } catch (HostCapabilityUnsupported $refusal) {
             $this->assertSame(LaunchRefusalType::CapabilityUnsupported, $refusal->reason());
-            $this->assertStringStartsWith('The journal cannot guarantee stop-deadline for claude-code with a subscription account in required_container mode: ', $refusal->getMessage());
+            $this->assertStringStartsWith(
+                'The journal cannot guarantee stop-deadline for claude-code with a subscription account in required_container mode: ',
+                $refusal->getMessage(),
+            );
         }
     }
 
     public function test_a_supported_row_admits_and_a_missing_row_is_unverified(): void
     {
-        $capabilities = new RecordedHostCapabilities($this->matrix([['capability' => 'account-transport', 'program' => 'codex', 'account_mode' => 'subscription', 'execution_mode' => 'protected_host', 'status' => 'supported', 'evidence' => 'docs/x.md', 'reason' => 'Proven.']]));
+        $capabilities = new RecordedHostCapabilities(
+            $this->matrix([['capability' => 'account-transport', 'program' => 'codex', 'account_mode' => 'subscription', 'execution_mode' => 'protected_host', 'status' => 'supported', 'evidence' => 'docs/x.md', 'reason' => 'Proven.']]),
+        );
 
-        $capabilities->capability($this->capabilityQuery(HostCapabilityType::AccountTransport, HookProgram::Codex, ExecutionModeType::ProtectedHost))->requireSupported();
-        $this->assertSame(CapabilityStatusType::Unverified, $capabilities->capability($this->capabilityQuery(HostCapabilityType::AccountTransport, HookProgram::ClaudeCode, ExecutionModeType::ProtectedHost))->status);
+        $capabilities->capability(
+            $this->capabilityQuery(HostCapabilityType::AccountTransport, HookProgram::Codex, ExecutionModeType::ProtectedHost),
+        )->requireSupported();
+        $this->assertSame(
+            CapabilityStatusType::Unverified,
+            $capabilities->capability($this->capabilityQuery(HostCapabilityType::AccountTransport, HookProgram::ClaudeCode, ExecutionModeType::ProtectedHost))->status,
+        );
     }
 
     public function test_a_row_with_an_unknown_status_is_refused_by_name(): void
     {
-        $capabilities = new RecordedHostCapabilities($this->matrix([['capability' => 'account-transport', 'program' => 'codex', 'account_mode' => 'subscription', 'execution_mode' => 'protected_host', 'status' => 'maybe', 'evidence' => 'docs/x.md', 'reason' => 'Unsure.']]));
+        $capabilities = new RecordedHostCapabilities(
+            $this->matrix([['capability' => 'account-transport', 'program' => 'codex', 'account_mode' => 'subscription', 'execution_mode' => 'protected_host', 'status' => 'maybe', 'evidence' => 'docs/x.md', 'reason' => 'Unsure.']]),
+        );
 
         $this->expectExceptionObject(CapabilityMatrixInvalid::row($this->matrixPath, 0, 'status'));
 
-        $capabilities->capability($this->capabilityQuery(HostCapabilityType::AccountTransport, HookProgram::Codex, ExecutionModeType::ProtectedHost));
+        $capabilities->capability(
+            $this->capabilityQuery(HostCapabilityType::AccountTransport, HookProgram::Codex, ExecutionModeType::ProtectedHost),
+        );
     }
 
     private function assertRecorded(HostCapabilityQuery $query): void
@@ -113,8 +145,11 @@ final class HostCapabilitiesTest extends TestCase
         $this->assertFileExists(base_path(strtok($capability->evidence, '#')));
     }
 
-    private function capabilityQuery(HostCapabilityType $capability, HookProgram $program, ExecutionModeType $mode): HostCapabilityQuery
-    {
+    private function capabilityQuery(
+        HostCapabilityType $capability,
+        HookProgram $program,
+        ExecutionModeType $mode,
+    ): HostCapabilityQuery {
         return new HostCapabilityQuery($capability, $program, AccountModeType::Subscription, $mode);
     }
 

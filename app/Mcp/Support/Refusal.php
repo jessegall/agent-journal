@@ -33,9 +33,15 @@ final readonly class Refusal
      */
     public function toolResponse(): ResponseFactory
     {
-        $structured = ['code' => $this->code->value, 'message' => $this->message, 'retryable' => $this->code->isRetryable()];
+        $structured = [
+            'code' => $this->code->value,
+            'message' => $this->message,
+            'retryable' => $this->code->isRetryable(),
+        ];
 
-        return Response::make(Response::error(json_encode($structured, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)))
+        return Response::make(
+            Response::error(json_encode($structured, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)),
+        )
             ->withStructuredContent($structured);
     }
 

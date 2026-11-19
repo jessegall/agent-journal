@@ -37,8 +37,12 @@ final class ProgramConversation extends Model implements ReadableModel
     /**
      * The conversation a session first enters, under the host settings it ran with.
      */
-    public static function begin(AgentSession $session, string $settingsIdentity, string $nativeId, string|null $context): self
-    {
+    public static function begin(
+        AgentSession $session,
+        string $settingsIdentity,
+        string $nativeId,
+        string|null $context,
+    ): self {
         return self::query()->create([
             'program' => $session->program,
             'settings_identity' => $settingsIdentity,
@@ -71,6 +75,9 @@ final class ProgramConversation extends Model implements ReadableModel
     #[Scope]
     protected function native(Builder $query, string $program, string $settingsIdentity, string $nativeId): void
     {
-        $query->where('program', $program)->where('settings_identity', $settingsIdentity)->where('native_id', $nativeId);
+        $query->where('program', $program)->where(
+            'settings_identity',
+            $settingsIdentity,
+        )->where('native_id', $nativeId);
     }
 }

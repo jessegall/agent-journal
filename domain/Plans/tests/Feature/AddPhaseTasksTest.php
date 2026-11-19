@@ -32,7 +32,10 @@ final class AddPhaseTasksTest extends TestCase
 
     public function test_tasks_join_a_phase_in_order_once_tasks_confirmed_them(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(7)),
+            new OwnerAuthority('test'),
+        );
         $phase = Plan::factory()->create(['title' => 'Build', 'type' => PlanType::Build])->addPhase('Read');
         $first = Task::factory()->create(['title' => 'First'])->id;
         $second = Task::factory()->create(['title' => 'Second'])->id;
@@ -44,7 +47,10 @@ final class AddPhaseTasksTest extends TestCase
 
     public function test_one_missing_task_refuses_the_whole_addition(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(7)),
+            new OwnerAuthority('test'),
+        );
         $phase = Plan::factory()->create(['title' => 'Build', 'type' => PlanType::Build])->addPhase('Read');
         $real = Task::factory()->create(['title' => 'Real'])->id;
 
@@ -58,7 +64,10 @@ final class AddPhaseTasksTest extends TestCase
 
     public function test_a_task_named_twice_is_refused_before_anything_is_written(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(7)),
+            new OwnerAuthority('test'),
+        );
         $phase = Plan::factory()->create(['title' => 'Build', 'type' => PlanType::Build])->addPhase('Read');
         $task = Task::factory()->create(['title' => 'Twice'])->id;
 

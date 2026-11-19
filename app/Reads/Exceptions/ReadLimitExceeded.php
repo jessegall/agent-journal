@@ -13,6 +13,8 @@ final class ReadLimitExceeded extends RuntimeException
 {
     public static function forRelation(string $relation, int $max): self
     {
-        return new self("The relation {$relation} holds more than its declared {$max} rows; page it or read it in chunks.");
+        return new self(
+            "The relation {$relation} holds more than its declared {$max} rows; page it or read it in chunks.",
+        );
     }
 }

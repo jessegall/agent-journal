@@ -36,7 +36,12 @@ final class SuperviseSharingCommand extends Command
         #[Config('sharing.timers.expiry_seconds')] int $expirySeconds,
         #[Config('sharing.timers.audit_prune_seconds')] int $auditPruneSeconds,
     ): int {
-        $listener = SpawnedProcess::start([PHP_BINARY, '-q', '-S', "{$host}:{$port}", base_path('bootstrap/sharing-server.php')], [0 => ['file', '/dev/null', 'r'], 1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']], base_path(), $this->listenerEnvironment());
+        $listener = SpawnedProcess::start(
+            [PHP_BINARY, '-q', '-S', "{$host}:{$port}", base_path('bootstrap/sharing-server.php')],
+            [0 => ['file', '/dev/null', 'r'], 1 => ['file', '/dev/null', 'w'], 2 => ['file', '/dev/null', 'w']],
+            base_path(),
+            $this->listenerEnvironment(),
+        );
 
         if (is_string($listener)) {
             $this->error("The share-only listener could not start: {$listener}");

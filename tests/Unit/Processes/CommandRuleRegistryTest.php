@@ -44,7 +44,10 @@ final class CommandRuleRegistryTest extends TestCase
         $forward = CommandRuleRegistry::from([$this->branchList(), $this->branchDelete()]);
         $backward = CommandRuleRegistry::from([$this->branchDelete(), $this->branchList()]);
 
-        $this->assertSame($this->match($forward, 'git branch -D x')->id, $this->match($backward, 'git branch -D x')->id);
+        $this->assertSame(
+            $this->match($forward, 'git branch -D x')->id,
+            $this->match($backward, 'git branch -D x')->id,
+        );
     }
 
     public function test_words_no_rule_accepts_are_unresolved_and_never_pass(): void
@@ -69,7 +72,13 @@ final class CommandRuleRegistryTest extends TestCase
 
     public function test_overlapping_rules_of_one_command_stop_start_up(): void
     {
-        $alsoList = CommandRule::forProgram('core.git.branch-show', new ProgramSpellings('git'), ['branch'], ArgumentGrammar::options(['--list']), CommandClassSet::of(CommandClass::Read));
+        $alsoList = CommandRule::forProgram(
+            'core.git.branch-show',
+            new ProgramSpellings('git'),
+            ['branch'],
+            ArgumentGrammar::options(['--list']),
+            CommandClassSet::of(CommandClass::Read),
+        );
 
         $this->expectException(CommandRuleConflict::class);
 
@@ -79,10 +88,17 @@ final class CommandRuleRegistryTest extends TestCase
     public function test_a_project_replaces_a_module_rule_only_by_its_exact_owner_id_and_revision(): void
     {
         $module = $this->branchList()->ownedBy(RuleScope::module('acme', '2.0'), 3);
-        $exact = $this->branchList()->ownedBy(RuleScope::project(), 1)->replacing(new RuleReference(RuleScope::module('acme', '2.0'), 'core.git.branch-list', 3));
-        $stale = $this->branchList()->ownedBy(RuleScope::project(), 1)->replacing(new RuleReference(RuleScope::module('acme', '2.0'), 'core.git.branch-list', 2));
+        $exact = $this->branchList()->ownedBy(RuleScope::project(), 1)->replacing(
+            new RuleReference(RuleScope::module('acme', '2.0'), 'core.git.branch-list', 3),
+        );
+        $stale = $this->branchList()->ownedBy(RuleScope::project(), 1)->replacing(
+            new RuleReference(RuleScope::module('acme', '2.0'), 'core.git.branch-list', 2),
+        );
 
-        $this->assertSame('project', $this->match(CommandRuleRegistry::from([$module, $exact]), 'git branch')->scope->owner);
+        $this->assertSame(
+            'project',
+            $this->match(CommandRuleRegistry::from([$module, $exact]), 'git branch')->scope->owner,
+        );
 
         $this->expectException(CommandRuleConflict::class);
         CommandRuleRegistry::from([$module, $stale]);
@@ -98,12 +114,24 @@ final class CommandRuleRegistryTest extends TestCase
 
     private function branchList(): CommandRule
     {
-        return CommandRule::forProgram('core.git.branch-list', new ProgramSpellings('git'), ['branch'], ArgumentGrammar::options(['--list', '--show-current']), CommandClassSet::of(CommandClass::Read, CommandClass::VersionControl));
+        return CommandRule::forProgram(
+            'core.git.branch-list',
+            new ProgramSpellings('git'),
+            ['branch'],
+            ArgumentGrammar::options(['--list', '--show-current']),
+            CommandClassSet::of(CommandClass::Read, CommandClass::VersionControl),
+        );
     }
 
     private function branchDelete(): CommandRule
     {
-        return CommandRule::forProgram('core.git.branch-delete', new ProgramSpellings('git'), ['branch'], ArgumentGrammar::optionWithOperands('-D', OperandType::Branch), CommandClassSet::of(CommandClass::Read, CommandClass::Delete, CommandClass::VersionControl));
+        return CommandRule::forProgram(
+            'core.git.branch-delete',
+            new ProgramSpellings('git'),
+            ['branch'],
+            ArgumentGrammar::optionWithOperands('-D', OperandType::Branch),
+            CommandClassSet::of(CommandClass::Read, CommandClass::Delete, CommandClass::VersionControl),
+        );
     }
 
     private function match(CommandRuleRegistry $registry, string $line): CommandRule
@@ -129,6 +157,10 @@ final class CommandRuleRegistryTest extends TestCase
         $container->instance(ContainerContract::class, $container);
         $part = $container->make(TreeParser::class)->parse($line, ShellDialect::Bash)->executableParts()[0];
 
-        return $registry->match(new ProgramIdentity((string) $part->words[0]->literal(), (string) $part->words[0]->literal()), array_slice($part->words, 1), $part->id);
+        return $registry->match(
+            new ProgramIdentity((string) $part->words[0]->literal(), (string) $part->words[0]->literal()),
+            array_slice($part->words, 1),
+            $part->id,
+        );
     }
 }

@@ -12,6 +12,8 @@ final readonly class InboxHistoryController
 {
     public function __invoke(InboxHistoryRequest $request, ConversationResolver $conversations): JsonResponse
     {
-        return new JsonResponse($conversations->history($request->inboxId(), $request->olderCursor(), $request->limit()));
+        return new JsonResponse(
+            $conversations->history($request->inboxId(), $request->olderCursor(), $request->limit()),
+        );
     }
 }

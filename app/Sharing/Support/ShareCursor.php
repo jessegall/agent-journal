@@ -27,6 +27,12 @@ final readonly class ShareCursor
     public function belongsTo(self $expected): bool
     {
         return [$this->shareId, $this->scopeVersion, $this->path, $this->relation, $this->ordering]
-            === [$expected->shareId, $expected->scopeVersion, $expected->path, $expected->relation, $expected->ordering];
+            === [
+                $expected->shareId,
+                $expected->scopeVersion,
+                $expected->path,
+                $expected->relation,
+                $expected->ordering,
+            ];
     }
 }

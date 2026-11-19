@@ -21,7 +21,9 @@ final class RefusalExceptionsTest extends TestCase
 {
     public function test_every_shared_refusal_code_maps_to_its_own_class(): void
     {
-        $shared = array_values(array_filter(RefusalCode::cases(), fn (RefusalCode $code) => ! $code->belongsToItsCalls()));
+        $shared = array_values(
+            array_filter(RefusalCode::cases(), fn (RefusalCode $code) => ! $code->belongsToItsCalls()),
+        );
         $classes = array_map(fn (RefusalCode $code) => RefusalExceptions::classOf($code->value, []), $shared);
 
         $this->assertCount(count($shared), array_unique($classes));

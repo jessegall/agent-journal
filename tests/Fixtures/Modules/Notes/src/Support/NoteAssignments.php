@@ -20,7 +20,9 @@ final readonly class NoteAssignments implements AssignableProvider
 {
     public function requireAssignable(RecordIdentity $record): Assignable
     {
-        return Note::query()->forActor()->whereKey($record->id)->lock('for key share')->first() ?? throw RecordUnavailable::for($record);
+        return Note::query()->forActor()->whereKey(
+$record->id,
+)->lock('for key share')->first() ?? throw RecordUnavailable::for($record);
     }
 
     /**
@@ -29,7 +31,9 @@ final readonly class NoteAssignments implements AssignableProvider
      */
     public function visibleRecords(array $records): array
     {
-        $found = Note::query()->forActor()->whereKey(array_map(fn (RecordIdentity $record) => $record->id, $records))->pluck('id')->all();
+        $found = Note::query()->forActor()->whereKey(
+array_map(fn (RecordIdentity $record) => $record->id, $records),
+)->pluck('id')->all();
 
         return array_values(array_filter($records, fn (RecordIdentity $record) => in_array($record->id, $found, true)));
     }

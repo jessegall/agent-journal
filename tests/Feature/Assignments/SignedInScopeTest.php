@@ -26,7 +26,10 @@ final class SignedInScopeTest extends TestCase
     {
         parent::setUp();
 
-        AssignmentRecord::insertUnlessHeld(TestActors::record('tasks.task', 1), new AssigneeIdentity(ActorType::Agent->value, TestIds::of(2)));
+        AssignmentRecord::insertUnlessHeld(
+            TestActors::record('tasks.task', 1),
+            new AssigneeIdentity(ActorType::Agent->value, TestIds::of(2)),
+        );
     }
 
     public function test_a_signed_in_user_and_agent_see_assignments_and_the_system_sees_none(): void

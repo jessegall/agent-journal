@@ -47,14 +47,20 @@ final class EngineStackTest extends TestCase
 
         $this->log = new LifecycleLog();
         $this->tasks = new RecordingStateLoader($this->log);
-        Event::listen(StateTypesRequested::class, fn (StateTypesRequested $event) => $event->registry->register('test.tasks', $this->tasks));
+        Event::listen(
+            StateTypesRequested::class,
+            fn (StateTypesRequested $event) => $event->registry->register('test.tasks', $this->tasks),
+        );
     }
 
     public function test_the_engine_pushes_onto_its_granted_target_and_the_frame_enters_once(): void
     {
         $launched = $this->launch();
 
-        $this->asEngineFor($this->targetOf($launched), fn () => $this->app->make(EngineStack::class)->push($this->targetOf($launched), $this->task('A')));
+        $this->asEngineFor(
+            $this->targetOf($launched),
+            fn () => $this->app->make(EngineStack::class)->push($this->targetOf($launched), $this->task('A')),
+        );
 
         $this->assertSame(['enter:A'], $this->log->calls);
         $this->assertSame(['A'], $this->storedSubjects($launched));
@@ -65,7 +71,10 @@ final class EngineStackTest extends TestCase
         $granted = $this->launch();
         $other = $this->launch();
 
-        $this->assertThrows(fn () => $this->asEngineFor($this->targetOf($granted), fn () => $this->app->make(EngineStack::class)->push($this->targetOf($other), $this->task('B'))), EngineAccessRefused::class);
+        $this->assertThrows(
+            fn () => $this->asEngineFor($this->targetOf($granted), fn () => $this->app->make(EngineStack::class)->push($this->targetOf($other), $this->task('B'))),
+            EngineAccessRefused::class,
+        );
 
         $this->assertSame([], $this->storedSubjects($other));
     }
@@ -75,7 +84,10 @@ final class EngineStackTest extends TestCase
         $launched = $this->launch();
         $launched->session->endAt(CarbonImmutable::now());
 
-        $this->assertThrows(fn () => $this->asEngineFor($this->targetOf($launched), fn () => $this->app->make(EngineStack::class)->push($this->targetOf($launched), $this->task('A'))), StackTargetRefused::class);
+        $this->assertThrows(
+            fn () => $this->asEngineFor($this->targetOf($launched), fn () => $this->app->make(EngineStack::class)->push($this->targetOf($launched), $this->task('A'))),
+            StackTargetRefused::class,
+        );
 
         $this->assertSame([], $this->log->calls);
     }
@@ -108,13 +120,23 @@ final class EngineStackTest extends TestCase
      */
     private function storedSubjects(LaunchedAgent $launched): array
     {
-        $frames = array_slice(AgentStackRow::query()->authorizedFor($this->targetOf($launched))->sole()->frames->all(), 1);
+        $frames = array_slice(
+            AgentStackRow::query()->authorizedFor($this->targetOf($launched))->sole()->frames->all(),
+            1,
+        );
 
-        return array_map(fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : '', $frames);
+        return array_map(
+            fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : '',
+            $frames,
+        );
     }
 
     private function launch(): LaunchedAgent
     {
-        return $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId());
+        return $this->app->make(LaunchSessions::class)->launch(
+            Agent::named('Test agent', 'main-agent'),
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        );
     }
 }

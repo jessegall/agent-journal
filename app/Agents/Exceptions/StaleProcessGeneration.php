@@ -13,6 +13,8 @@ final class StaleProcessGeneration extends RuntimeException
 {
     public static function of(int $called, int $current): self
     {
-        return new self("A hook call of process generation {$called} is older than the runtime's generation {$current}.");
+        return new self(
+            "A hook call of process generation {$called} is older than the runtime's generation {$current}.",
+        );
     }
 }

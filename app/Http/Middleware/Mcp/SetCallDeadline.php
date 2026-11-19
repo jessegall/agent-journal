@@ -37,7 +37,10 @@ final readonly class SetCallDeadline
     public function handle(Request $request, Closure $next): Response
     {
         $issuedAt = $this->container->make(AgentContext::class)->call->issuedAt;
-        $signedLeft = (int) CarbonImmutable::now()->diffInMilliseconds($issuedAt->addMilliseconds(self::SIGNED_MILLISECONDS), false);
+        $signedLeft = (int) CarbonImmutable::now()->diffInMilliseconds(
+            $issuedAt->addMilliseconds(self::SIGNED_MILLISECONDS),
+            false,
+        );
         $deadline = new OperationDeadline(min(self::ENTRY_MILLISECONDS, $signedLeft));
 
         if ($deadline->hasRunOut()) {
@@ -65,7 +68,10 @@ final readonly class SetCallDeadline
             'error' => [
                 'code' => self::SERVER_ERROR,
                 'message' => 'The call reached the journal after its deadline and was not run; send it again.',
-                'data' => ['code' => RefusalCode::DeadlineExpired->value, 'retryable' => RefusalCode::DeadlineExpired->isRetryable()],
+                'data' => [
+                    'code' => RefusalCode::DeadlineExpired->value,
+                    'retryable' => RefusalCode::DeadlineExpired->isRetryable(),
+                ],
             ],
         ], Response::HTTP_REQUEST_TIMEOUT);
     }

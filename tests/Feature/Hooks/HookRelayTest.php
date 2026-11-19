@@ -32,7 +32,19 @@ final class HookRelayTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'launch_bypasses', 'agent_stacks', 'hook_calls', 'links', 'process_events', 'part_runs', 'process_runs', 'command_requests'];
+    private const array TABLES = [
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'launch_bypasses',
+        'agent_stacks',
+        'hook_calls',
+        'links',
+        'process_events',
+        'part_runs',
+        'process_runs',
+        'command_requests',
+    ];
 
     private const string STOP = '{"session_id":"session-1","hook_event_name":"Stop","stop_hook_active":false}';
 
@@ -84,7 +96,10 @@ final class HookRelayTest extends TestCase
         $reply = $this->relay(self::SHELL);
 
         $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $reply->stdout);
-        $this->assertStringContainsString('"nativeEvent":"PreToolUse","failure":"unreachable"', (string) file_get_contents($this->bypassLog));
+        $this->assertStringContainsString(
+            '"nativeEvent":"PreToolUse","failure":"unreachable"',
+            (string) file_get_contents($this->bypassLog),
+        );
     }
 
     public function test_a_gateway_failure_counts_as_an_outage(): void
@@ -156,7 +171,11 @@ final class HookRelayTest extends TestCase
     {
         $sent = [];
         Http::fake(function (Request $request) use (&$sent) {
-            $sent[] = [$request->header(SignedCall::ID_HEADER)[0], $request->header(SignedCall::ISSUED_AT_HEADER)[0], hash('sha256', $request->body())];
+            $sent[] = [
+                $request->header(SignedCall::ID_HEADER)[0],
+                $request->header(SignedCall::ISSUED_AT_HEADER)[0],
+                hash('sha256', $request->body()),
+            ];
             $response = $this->forward($request);
 
             if (count($sent) === 1) {
@@ -211,7 +230,13 @@ final class HookRelayTest extends TestCase
 
     private function relay(string $payload, bool $passesOutages = true, string|null $token = null): ProgramReply
     {
-        $settings = new RelaySettings('http://journal.test', $token ?? $this->launch->token, $this->launch->pin(), $passesOutages, $this->bypassLog);
+        $settings = new RelaySettings(
+            'http://journal.test',
+            $token ?? $this->launch->token,
+            $this->launch->pin(),
+            $passesOutages,
+            $this->bypassLog,
+        );
 
         return $this->app->make(HookRelay::class)->relay(HookProgram::ClaudeCode, $payload, $settings);
     }
@@ -239,7 +264,12 @@ final class HookRelayTest extends TestCase
         $server['CONTENT_TYPE'] = 'application/json';
         $this->app->forgetScopedInstances();
 
-        $response = $this->call('POST', (string) parse_url($request->url(), PHP_URL_PATH), server: $server, content: $request->body());
+        $response = $this->call(
+            'POST',
+            (string) parse_url($request->url(), PHP_URL_PATH),
+            server: $server,
+            content: $request->body(),
+        );
 
         return Http::response((string) $response->getContent(), $response->getStatusCode());
     }

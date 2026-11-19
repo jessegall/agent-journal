@@ -76,7 +76,10 @@ final class PlanCascadeTest extends TestCase
 
     public function test_assigning_the_plan_alone_touches_nothing_under_it(): void
     {
-        $this->app->make(AssignmentWriterInTransaction::class)->assign($this->plan->assignmentIdentity(), $this->builder);
+        $this->app->make(AssignmentWriterInTransaction::class)->assign(
+            $this->plan->assignmentIdentity(),
+            $this->builder,
+        );
 
         $this->assertSame([Plan::LINK_TYPE], $this->heldTypes());
     }
@@ -91,7 +94,9 @@ final class PlanCascadeTest extends TestCase
             [Phase::LINK_TYPE, $this->working->id],
             [Phase::LINK_TYPE, $this->empty->id],
             ['tasks.task', $this->open->id],
-        ], AssignmentRecord::query()->get()->map(fn (AssignmentRecord $row) => [$row->record_type, $row->record_id])->all());
+        ], AssignmentRecord::query()->get()->map(
+            fn (AssignmentRecord $row) => [$row->record_type, $row->record_id],
+        )->all());
     }
 
     public function test_a_phase_cascade_covers_that_phase_and_its_tasks_only_and_releasing_it_clears_them(): void
@@ -107,9 +112,14 @@ final class PlanCascadeTest extends TestCase
 
     public function test_a_task_that_vanished_from_a_phase_aborts_the_cascade(): void
     {
-        PhaseTask::query()->insert(['id' => strtolower((string) Str::ulid()), 'phase_id' => $this->working->id, 'task_id' => TestIds::of(99999), 'position' => 2]);
+        PhaseTask::query()->insert(
+            ['id' => strtolower((string) Str::ulid()), 'phase_id' => $this->working->id, 'task_id' => TestIds::of(99999), 'position' => 2],
+        );
 
-        $this->assertThrows(fn () => $this->assignWork($this->plan->assignmentIdentity(), $this->builder), TaskMissing::class);
+        $this->assertThrows(
+            fn () => $this->assignWork($this->plan->assignmentIdentity(), $this->builder),
+            TaskMissing::class,
+        );
 
         $this->assertSame(0, AssignmentRecord::query()->count());
     }
@@ -123,7 +133,9 @@ final class PlanCascadeTest extends TestCase
         $this->plan->addPhase('Added later');
 
         $this->assertSame(4, AssignmentRecord::query()->count());
-        $this->assertFalse(AssignmentRecord::query()->where('record_type', 'tasks.task')->where('record_id', $late->id)->exists());
+        $this->assertFalse(
+            AssignmentRecord::query()->where('record_type', 'tasks.task')->where('record_id', $late->id)->exists(),
+        );
     }
 
     /**

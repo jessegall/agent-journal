@@ -39,7 +39,10 @@ final class CommandBusServiceProvider extends ServiceProvider
         $this->app->bind(MapsRefusals::class, RefusalMapper::class);
         $this->app->scoped(AcceptedReceipt::class);
         $this->app->scoped(CommandTransaction::class, RunningCommandTransaction::class);
-        $this->app->scoped(CommandBus::class, fn ($app): CommandBus => LaravelCommandBus::forRequest($app, $app->make(CommandRegistry::class)));
+        $this->app->scoped(
+            CommandBus::class,
+            fn ($app): CommandBus => LaravelCommandBus::forRequest($app, $app->make(CommandRegistry::class)),
+        );
     }
 
     /**
@@ -51,14 +54,19 @@ final class CommandBusServiceProvider extends ServiceProvider
         $this->commands([PruneReceiptsCommand::class]);
         $this->callAfterResolving(ExceptionHandler::class, self::renderSignedCallRefusals(...));
         self::refuseExplicitTransactionsOn($databases->connection());
-        $events->listen(ConnectionEstablished::class, static fn (ConnectionEstablished $event) => self::refuseExplicitTransactionsOn($event->connection));
+        $events->listen(
+            ConnectionEstablished::class,
+            static fn (ConnectionEstablished $event) => self::refuseExplicitTransactionsOn($event->connection),
+        );
         $events->listen(CommandFinished::class, static fn () => self::finishConsoleOwner());
     }
 
     private static function refuseExplicitTransactionsOn(Connection $connection): void
     {
         // Resolved on each call, never captured: under Octane each request has its own RunningCommand.
-        $connection->beforeStartingTransaction(static fn () => Container::getInstance()->make(RunningCommand::class)->refuseExplicitTransaction());
+        $connection->beforeStartingTransaction(
+            static fn () => Container::getInstance()->make(RunningCommand::class)->refuseExplicitTransaction(),
+        );
     }
 
     /**
@@ -75,7 +83,9 @@ final class CommandBusServiceProvider extends ServiceProvider
     private static function renderSignedCallRefusals(ExceptionHandler $handler): void
     {
         if ($handler instanceof Handler) {
-            $handler->renderable(fn (Throwable $failure, Request $request) => SignedCallRefusal::render($failure, $request));
+            $handler->renderable(
+                fn (Throwable $failure, Request $request) => SignedCallRefusal::render($failure, $request),
+            );
         }
     }
 }

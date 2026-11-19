@@ -44,8 +44,15 @@ final readonly class DecimalSetting implements Setting
     /**
      * @throws SettingDeclarationInvalid
      */
-    public static function make(string $key, string $label, Decimal $default, int $precision, int $scale, Decimal|null $minimum = null, Decimal|null $maximum = null): self
-    {
+    public static function make(
+        string $key,
+        string $label,
+        Decimal $default,
+        int $precision,
+        int $scale,
+        Decimal|null $minimum = null,
+        Decimal|null $maximum = null,
+    ): self {
         SettingKey::require($key, $label);
 
         if ($precision < 1 || $precision > self::MOST_DIGITS || $scale < 0 || $scale > self::MOST_FRACTIONAL_DIGITS || $scale > $precision) {

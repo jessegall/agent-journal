@@ -37,9 +37,15 @@ final readonly class DomainTypeWriter implements Writer
             array_push($files, ...new FlatModuleWriter($path)->output($types, $transformedCollection));
         }
 
-        $exports = array_map(fn (string $path) => "export * from '../../".preg_replace('/\/index\.ts$/', '', $path)."';", array_keys($byPath));
+        $exports = array_map(
+            fn (string $path) => "export * from '../../".preg_replace('/\/index\.ts$/', '', $path)."';",
+            array_keys($byPath),
+        );
 
-        return [...$files, new WriteableFile(self::COMPATIBILITY_FILE, "// Generated; re-exports every owner's types for the pages that still import this file.\n".implode("\n", $exports)."\n")];
+        return [
+            ...$files,
+            new WriteableFile(self::COMPATIBILITY_FILE, "// Generated; re-exports every owner's types for the pages that still import this file.\n".implode("\n", $exports)."\n"),
+        ];
     }
 
     public function resolveReference(Transformed $transformed): ModuleImportResolvedReference
@@ -50,7 +56,9 @@ final readonly class DomainTypeWriter implements Writer
     private function pathOf(Transformed $transformed): string
     {
         $reference = $transformed->getReference();
-        $owner = $reference instanceof ClassStringReference ? $this->owners->ownerOf($reference->classString) : 'shared';
+        $owner = $reference instanceof ClassStringReference ? $this->owners->ownerOf(
+            $reference->classString,
+        ) : 'shared';
 
         return "generated/types/{$owner}/index.ts";
     }

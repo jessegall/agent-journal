@@ -76,7 +76,10 @@ final class AdvisoryEngineLockTest extends TestCase
 
     private function rivalTakesTheLock(): bool
     {
-        return (bool) $this->rival()->scalar('select pg_try_advisory_lock(?)', [$this->app->make(EngineSettings::class)->lockKey]);
+        return (bool) $this->rival()->scalar(
+            'select pg_try_advisory_lock(?)',
+            [$this->app->make(EngineSettings::class)->lockKey],
+        );
     }
 
     /**

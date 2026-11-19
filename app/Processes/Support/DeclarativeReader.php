@@ -62,7 +62,10 @@ final readonly class DeclarativeReader implements OutputReader
             $this->readLastLine($builder, OutputStream::from($stream));
         }
         if (! $end->hasEnded()) {
-            $builder->problemOfWholeOutput(ProblemCode::OutputIncomplete, 'The part has not ended, so its output is not whole.');
+            $builder->problemOfWholeOutput(
+                ProblemCode::OutputIncomplete,
+                'The part has not ended, so its output is not whole.',
+            );
         }
         $checkpoint = $builder->build();
         $summaries = $this->recordsOf($checkpoint, RecordRole::Summary);
@@ -81,7 +84,13 @@ final readonly class DeclarativeReader implements OutputReader
     {
         if ($frame->stream === OutputStream::Merged && $this->contract->streams === StreamUse::Separate) {
             $explanation = 'Merged output arrived although the contract keeps stdout and stderr apart.';
-            $builder->problem(ProblemCode::OutputAmbiguous, $frame->stream, $frame->offset, $frame->end(), $explanation);
+            $builder->problem(
+                ProblemCode::OutputAmbiguous,
+                $frame->stream,
+                $frame->offset,
+                $frame->end(),
+                $explanation,
+            );
 
             return;
         }
@@ -112,7 +121,13 @@ final readonly class DeclarativeReader implements OutputReader
         $rest = substr($bytes, $lineStart);
         if (strlen($rest) > $this->definition->maxRecordBytes) {
             $explanation = 'A record is longer than the reader allows.';
-            $builder->problem(ProblemCode::RecordLimit, $stream, $start + $lineStart, $start + strlen($bytes), $explanation);
+            $builder->problem(
+                ProblemCode::RecordLimit,
+                $stream,
+                $start + $lineStart,
+                $start + strlen($bytes),
+                $explanation,
+            );
             $rest = '';
         }
         $builder->holdUntilMore($stream, $rest, $start + strlen($bytes));
@@ -139,7 +154,13 @@ final readonly class DeclarativeReader implements OutputReader
     {
         $end = $start + strlen($bytes);
         if (strlen($bytes) > $this->definition->maxRecordBytes) {
-            $builder->problem(ProblemCode::RecordLimit, $stream, $start, $end, 'A record is longer than the reader allows.');
+            $builder->problem(
+                ProblemCode::RecordLimit,
+                $stream,
+                $start,
+                $end,
+                'A record is longer than the reader allows.',
+            );
 
             return;
         }
@@ -154,7 +175,13 @@ final readonly class DeclarativeReader implements OutputReader
         }
         $rule = $this->normalizer->hasUnsupportedControl($line) ? null : $this->definition->ruleFor($line);
         if ($rule === null) {
-            $builder->problem(ProblemCode::OutputUnrecognized, $stream, $start, $end, 'No reader rule accounts for this line.');
+            $builder->problem(
+                ProblemCode::OutputUnrecognized,
+                $stream,
+                $start,
+                $end,
+                'No reader rule accounts for this line.',
+            );
 
             return;
         }
@@ -217,15 +244,21 @@ final readonly class DeclarativeReader implements OutputReader
         if ($total !== null && isset($counts[$total])) {
             $parts = array_sum(array_intersect_key($counts, array_flip($this->definition->countFields)));
             if ($parts !== $counts[$total]) {
-                $builder->problemOfWholeOutput(ProblemCode::CountsInvalid, 'The summary counts do not add up to its total.');
+                $builder->problemOfWholeOutput(
+                    ProblemCode::CountsInvalid,
+                    'The summary counts do not add up to its total.',
+                );
             }
         }
 
         return $counts;
     }
 
-    private function progressOf(CheckpointBuilder $builder, ReaderCheckpoint $checkpoint, OutputRecord|null $summary): ReadProgress
-    {
+    private function progressOf(
+        CheckpointBuilder $builder,
+        ReaderCheckpoint $checkpoint,
+        OutputRecord|null $summary,
+    ): ReadProgress {
         $records = $this->recordsOf($checkpoint, RecordRole::Progress);
         if ($records === []) {
             return ReadProgress::none();
@@ -237,7 +270,10 @@ final readonly class DeclarativeReader implements OutputReader
         }
         $summaryTotal = $this->definition->totalField === null ? null : $summary?->count($this->definition->totalField);
         if ($progress->total !== null && $summaryTotal !== null && $progress->total !== $summaryTotal) {
-            $builder->problemOfWholeOutput(ProblemCode::ProgressTotalStale, 'The progress total differs from the summary.');
+            $builder->problemOfWholeOutput(
+                ProblemCode::ProgressTotalStale,
+                'The progress total differs from the summary.',
+            );
         }
 
         return $progress;
@@ -272,6 +308,8 @@ final readonly class DeclarativeReader implements OutputReader
      */
     private function recordsOf(ReaderCheckpoint $checkpoint, RecordRole $role): array
     {
-        return array_values(array_filter($checkpoint->records, fn (OutputRecord $record): bool => $record->role === $role));
+        return array_values(
+            array_filter($checkpoint->records, fn (OutputRecord $record): bool => $record->role === $role),
+        );
     }
 }

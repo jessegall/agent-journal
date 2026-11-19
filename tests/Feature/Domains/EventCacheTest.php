@@ -19,7 +19,10 @@ final class EventCacheTest extends TestCase
     protected function setUp(): void
     {
         $this->cachePath = (string) tempnam(sys_get_temp_dir(), 'events-cache-').'.php';
-        file_put_contents($this->cachePath, '<?php return '.var_export([DomainEventServiceProvider::class => []], true).';');
+        file_put_contents(
+            $this->cachePath,
+            '<?php return '.var_export([DomainEventServiceProvider::class => []], true).';',
+        );
         $this->useEventCachePath($this->cachePath);
 
         parent::setUp();

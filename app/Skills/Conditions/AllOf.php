@@ -37,6 +37,10 @@ final readonly class AllOf implements SkillCondition
 
     public function toArray(): array
     {
-        return ['type' => self::TYPE, 'version' => self::VERSION, 'children' => array_map(fn (SkillCondition $child) => $child->toArray(), $this->children)];
+        return [
+            'type' => self::TYPE,
+            'version' => self::VERSION,
+            'children' => array_map(fn (SkillCondition $child) => $child->toArray(), $this->children),
+        ];
     }
 }

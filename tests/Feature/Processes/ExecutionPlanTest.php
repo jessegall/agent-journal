@@ -57,7 +57,10 @@ final class ExecutionPlanTest extends TestCase
     {
         $echo = $this->plan('echo "a b" c $(git rev-parse HEAD)')->root;
 
-        $this->assertSame([['echo'], ['a b'], ['c']], array_map(fn (PlanWord $word) => $word->pieces, array_slice($echo->argv, 0, 3)));
+        $this->assertSame(
+            [['echo'], ['a b'], ['c']],
+            array_map(fn (PlanWord $word) => $word->pieces, array_slice($echo->argv, 0, 3)),
+        );
         $this->assertSame(StepType::Substitution, $echo->children[0]->type);
         $this->assertSame([$echo->children[0]->node], $echo->argv[3]->pieces);
         $this->assertNotSame($echo->context, $echo->children[0]->context);
@@ -66,7 +69,10 @@ final class ExecutionPlanTest extends TestCase
     private function plan(string $line): ExecutionPlan
     {
         $tree = $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash);
-        $classification = $this->app->make(CommandClassifier::class)->classify($tree, new ExecutionContext(ShellDialect::Bash, '/work', '/work'));
+        $classification = $this->app->make(CommandClassifier::class)->classify(
+            $tree,
+            new ExecutionContext(ShellDialect::Bash, '/work', '/work'),
+        );
 
         return $this->app->make(ExecutionPlanner::class)->plan($tree, $classification);
     }

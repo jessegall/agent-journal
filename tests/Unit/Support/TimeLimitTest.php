@@ -16,7 +16,10 @@ final class TimeLimitTest extends TestCase
 {
     public function test_a_test_gets_one_second_unless_it_says_otherwise(): void
     {
-        $this->assertSame(1, TestAlarm::secondsFor(self::class, 'test_a_test_gets_one_second_unless_it_says_otherwise'));
+        $this->assertSame(
+            1,
+            TestAlarm::secondsFor(self::class, 'test_a_test_gets_one_second_unless_it_says_otherwise'),
+        );
         $this->assertSame(3, TestAlarm::secondsFor(self::class, 'test_a_test_past_its_limit_is_stopped_by_name'));
     }
 
@@ -34,7 +37,10 @@ final class TimeLimitTest extends TestCase
                 usleep(10_000);
             }
         } catch (TestTimedOut $stopped) {
-            $this->assertStringContainsString('test_a_test_gets_one_second_unless_it_says_otherwise', $stopped->getMessage());
+            $this->assertStringContainsString(
+                'test_a_test_gets_one_second_unless_it_says_otherwise',
+                $stopped->getMessage(),
+            );
         } finally {
             TestAlarm::armForTest(self::class, __FUNCTION__);
         }

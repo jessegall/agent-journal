@@ -27,7 +27,9 @@ return new class extends Migration
             $table->timestampTz('refuses_until')->nullable();
             $table->timestampsTz();
 
-            $table->unique(['author_type', 'author_id', 'session_id', 'command', 'contract_major', 'request_key'])->nullsNotDistinct();
+            $table->unique(
+                ['author_type', 'author_id', 'session_id', 'command', 'contract_major', 'request_key'],
+            )->nullsNotDistinct();
             $table->index('answers_until');
             $table->index('refuses_until');
         });

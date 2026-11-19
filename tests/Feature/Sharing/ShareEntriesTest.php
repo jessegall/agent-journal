@@ -39,13 +39,37 @@ use Tests\TestCase;
  * never shown an address; the owner lists, creates, revokes and deliberately prints an address from the command line;
  * Core exports the entry commands and keeps the System ones private.
  */
-#[TimeLimit(seconds: 10, reason: 'It commits a document through the bus, runs console commands and empties nineteen tables around each test.')]
+#[TimeLimit(
+    seconds: 10,
+    reason: 'It commits a document through the bus, runs console commands and empties nineteen tables around each test.',
+)]
 final class ShareEntriesTest extends TestCase
 {
     use CommitsHookRows;
     use SendsSignedCalls;
 
-    private const array TABLES = ['command_receipts', 'share_audits', 'share_members', 'share_gateway_operations', 'shares', 'share_previews', 'share_gateway_configurations', 'share_installations', 'users', 'links', 'comments', 'document_closes', 'document_drafts', 'reports', 'document_revisions', 'documents', 'number_groups', 'launch_credentials', 'agent_sessions', 'agents'];
+    private const array TABLES = [
+        'command_receipts',
+        'share_audits',
+        'share_members',
+        'share_gateway_operations',
+        'shares',
+        'share_previews',
+        'share_gateway_configurations',
+        'share_installations',
+        'users',
+        'links',
+        'comments',
+        'document_closes',
+        'document_drafts',
+        'reports',
+        'document_revisions',
+        'documents',
+        'number_groups',
+        'launch_credentials',
+        'agent_sessions',
+        'agents',
+    ];
 
     private User $owner;
 
@@ -59,7 +83,10 @@ final class ShareEntriesTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser($this->owner->id),
+            new OwnerAuthority('test'),
+        );
         $this->app->make(CommandBus::class)->run(new CreateDocument('Design', 'What we build', "# Goal\nShip it.\n"));
         $this->app->make(CurrentActorSetter::class)->clear();
         $this->document = Document::query()->where('number', 1)->sole();
@@ -70,7 +97,11 @@ final class ShareEntriesTest extends TestCase
     {
         $launch = TestLaunch::start();
 
-        $request = $this->signed($launch, '/agent/sharing/request', ['alias' => 'doc', 'number' => '1', 'request_key' => '01JD8X0G9M3QZ6V4K2AGENT0001'])->assertOk();
+        $request = $this->signed(
+            $launch,
+            '/agent/sharing/request',
+            ['alias' => 'doc', 'number' => '1', 'request_key' => '01JD8X0G9M3QZ6V4K2AGENT0001'],
+        )->assertOk();
         $this->assertSame(['number', 'state'], array_keys((array) $request->json()));
         $this->assertSame('proposed', $request->json('state'));
 
@@ -99,23 +130,41 @@ final class ShareEntriesTest extends TestCase
 
     public function test_the_owner_lists_creates_revokes_and_prints_an_address_from_the_cli(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser($this->owner->id), new OwnerAuthority('test'));
-        $this->app->make(CommandBus::class)->run(new SaveSharePreview($this->document->shareIdentity()->type, $this->document->id, [], $this->configuration->id));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser($this->owner->id),
+            new OwnerAuthority('test'),
+        );
+        $this->app->make(CommandBus::class)->run(
+            new SaveSharePreview($this->document->shareIdentity()->type, $this->document->id, [], $this->configuration->id),
+        );
         $this->app->make(CurrentActorSetter::class)->clear();
         $preview = SharePreview::query()->sole();
 
-        $this->artisan('share:create', ['preview' => $preview->id, '--minutes' => '60'])->expectsOutputToContain('is pending')->assertExitCode(0);
+        $this->artisan(
+            'share:create',
+            ['preview' => $preview->id, '--minutes' => '60'],
+        )->expectsOutputToContain('is pending')->assertExitCode(0);
         $share = Share::query()->sole();
-        $this->artisan('share:list')->expectsOutputToContain($share->id)->doesntExpectOutputToContain(FakeShareGateway::PUBLIC_ORIGIN)->assertExitCode(0);
+        $this->artisan('share:list')->expectsOutputToContain($share->id)->doesntExpectOutputToContain(
+            FakeShareGateway::PUBLIC_ORIGIN,
+        )->assertExitCode(0);
         $this->artisan('share:url', ['share' => $share->id])->assertExitCode(1);
 
         $share->state = ShareState::Active;
         $share->save();
-        $this->artisan('share:url', ['share' => $share->id])->expectsOutputToContain(FakeShareGateway::PUBLIC_ORIGIN.'/s/')->assertExitCode(0);
+        $this->artisan('share:url', ['share' => $share->id])->expectsOutputToContain(
+            FakeShareGateway::PUBLIC_ORIGIN.'/s/',
+        )->assertExitCode(0);
 
-        $this->artisan('share:revoke', ['share' => $share->id])->expectsOutputToContain('is revoked')->assertExitCode(0);
+        $this->artisan(
+            'share:revoke',
+            ['share' => $share->id],
+        )->expectsOutputToContain('is revoked')->assertExitCode(0);
         $this->artisan('share:url', ['share' => $share->id])->assertExitCode(1);
-        $this->assertStringNotContainsString(FakeShareGateway::PUBLIC_ORIGIN, (string) json_encode($this->app->make(ConnectionInterface::class)->table('command_receipts')->get()->all()));
+        $this->assertStringNotContainsString(
+            FakeShareGateway::PUBLIC_ORIGIN,
+            (string) json_encode($this->app->make(ConnectionInterface::class)->table('command_receipts')->get()->all()),
+        );
     }
 
     public function test_core_exports_the_entry_commands_and_keeps_the_system_ones_private(): void

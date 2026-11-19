@@ -13,6 +13,8 @@ final class AbilityNotRegistered extends RuntimeException
     {
         $name = $ability::class.'::'.$ability->name;
 
-        return new self("No available policy {$policy} grants the ability {$name}; register the policy, or grant another.");
+        return new self(
+            "No available policy {$policy} grants the ability {$name}; register the policy, or grant another.",
+        );
     }
 }

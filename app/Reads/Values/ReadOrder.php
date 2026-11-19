@@ -32,6 +32,8 @@ final readonly class ReadOrder
      */
     public static function by(array $columns, string $key): self
     {
-        return new self([...array_map(fn (string $column) => ['column' => $column, 'direction' => 'asc'], $columns), ['column' => $key, 'direction' => 'asc']]);
+        return new self(
+            [...array_map(fn (string $column) => ['column' => $column, 'direction' => 'asc'], $columns), ['column' => $key, 'direction' => 'asc']],
+        );
     }
 }

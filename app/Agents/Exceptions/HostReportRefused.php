@@ -19,7 +19,9 @@ final class HostReportRefused extends RuntimeException implements CommandRefusal
 
     public static function staleGeneration(string $runtimeId, int $reported, int $current): self
     {
-        return new self("A report of process generation {$reported} is older than generation {$current} of runtime {$runtimeId}.");
+        return new self(
+            "A report of process generation {$reported} is older than generation {$current} of runtime {$runtimeId}.",
+        );
     }
 
     public static function staleAttempt(string $requestId, int $reported, int $current): self

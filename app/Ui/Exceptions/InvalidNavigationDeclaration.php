@@ -26,11 +26,15 @@ final class InvalidNavigationDeclaration extends UiDeclarationError
 
     public static function routeValuesMismatch(string $item, string $page, string $path): self
     {
-        return new self("Navigation item {$item} must give a route value for exactly each parameter of the path '{$path}' of page {$page}.");
+        return new self(
+            "Navigation item {$item} must give a route value for exactly each parameter of the path '{$path}' of page {$page}.",
+        );
     }
 
     public static function rootOnlyOnChild(string $item, string $child): self
     {
-        return new self("Navigation item {$item} has the child {$child} with a group or at the foot; only a root item has either.");
+        return new self(
+            "Navigation item {$item} has the child {$child} with a group or at the foot; only a root item has either.",
+        );
     }
 }

@@ -68,7 +68,9 @@ final class DeskPlanAssignmentTest extends TestCase
         );
 
         foreach ([$plan, $phase, ...$tasks] as $record) {
-            $held = AssignmentRecord::query()->forRecord($record->assignmentIdentity())->sole()->toAssignment()->holder();
+            $held = AssignmentRecord::query()->forRecord(
+                $record->assignmentIdentity(),
+            )->sole()->toAssignment()->holder();
             $this->assertTrue($held->isSameAs($main->assigneeIdentity()));
         }
 

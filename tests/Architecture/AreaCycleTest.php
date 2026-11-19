@@ -24,8 +24,14 @@ final class AreaCycleTest extends TestCase
             'Domain\\Plans' => ['Domain\\Tasks' => 'd'],
         ]);
 
-        $this->assertSame(['App\\Agents, App\\Hooks, App\\Links: App\\Agents -> App\\Hooks (a); App\\Hooks -> App\\Links (b); App\\Links -> App\\Agents (c)'], $cycle->cycles());
-        $this->assertSame([], AreaCycles::ofEdges(['Domain\\Plans' => ['Domain\\Tasks' => 'd'], 'Domain\\Tasks' => ['App\\Hooks' => 'e']])->cycles());
+        $this->assertSame(
+            ['App\\Agents, App\\Hooks, App\\Links: App\\Agents -> App\\Hooks (a); App\\Hooks -> App\\Links (b); App\\Links -> App\\Agents (c)'],
+            $cycle->cycles(),
+        );
+        $this->assertSame(
+            [],
+            AreaCycles::ofEdges(['Domain\\Plans' => ['Domain\\Tasks' => 'd'], 'Domain\\Tasks' => ['App\\Hooks' => 'e']])->cycles(),
+        );
     }
 
     public function test_no_areas_of_the_core_or_the_domains_reach_each_other(): void

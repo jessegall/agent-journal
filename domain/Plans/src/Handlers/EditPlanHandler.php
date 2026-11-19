@@ -22,7 +22,11 @@ final readonly class EditPlanHandler implements CommandHandler
             throw PlanRevisionChanged::for($plan->number, $command->expectedRevision, $plan->revision);
         }
 
-        $plan->describe($command->title ?? $plan->title, $command->brief ?? $plan->brief, $command->type ?? $plan->type);
+        $plan->describe(
+            $command->title ?? $plan->title,
+            $command->brief ?? $plan->brief,
+            $command->type ?? $plan->type,
+        );
 
         return $plan->revision;
     }

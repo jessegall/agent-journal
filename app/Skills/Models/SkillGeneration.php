@@ -62,7 +62,9 @@ final class SkillGeneration extends Model implements ReadableModel
      */
     public static function ready(string $catalogueDigest, string $registrationDigest, array $entries): self
     {
-        return self::query()->create(['catalogue_digest' => $catalogueDigest, 'registration_digest' => $registrationDigest, 'entries' => $entries, 'state' => GenerationState::Ready]);
+        return self::query()->create(
+            ['catalogue_digest' => $catalogueDigest, 'registration_digest' => $registrationDigest, 'entries' => $entries, 'state' => GenerationState::Ready],
+        );
     }
 
     /**
@@ -70,7 +72,9 @@ final class SkillGeneration extends Model implements ReadableModel
      */
     public static function failed(string $registrationDigest, string $reason): self
     {
-        return self::query()->create(['catalogue_digest' => '', 'registration_digest' => $registrationDigest, 'entries' => [], 'state' => GenerationState::Failed, 'error_reason' => $reason]);
+        return self::query()->create(
+            ['catalogue_digest' => '', 'registration_digest' => $registrationDigest, 'entries' => [], 'state' => GenerationState::Failed, 'error_reason' => $reason],
+        );
     }
 
     /**

@@ -76,14 +76,27 @@ final class OwnerSharePolicyTest extends TestCase
         $this->assertFalse($policy->mayManage(TestActors::user(2)));
         $this->assertFalse($policy->mayManage(ActorContext::forAgent($this->ownerId)));
         $this->assertThrows(fn () => $policy->requireManager(TestActors::user(2)), SharingNotAllowed::class);
-        $this->assertThrows(fn () => $policy->requireManager(ActorContext::forAgent(TestIds::of(3))), SharingNotAllowed::class);
+        $this->assertThrows(
+            fn () => $policy->requireManager(ActorContext::forAgent(TestIds::of(3))),
+            SharingNotAllowed::class,
+        );
     }
 
     public function test_an_owner_change_ends_earlier_grants_and_the_new_owner_still_manages(): void
     {
         $policy = $this->app->make(OwnerSharePolicy::class);
-        $share = Share::grant(TestActors::record('pamphlets.pamphlet', 4), $this->ownerId, $this->configuration(), ShareToken::generate(), CarbonImmutable::now()->addDays(7));
-        $proposal = Share::propose(TestActors::record('pamphlets.pamphlet', 4), TestActors::agentIdentity(5), CarbonImmutable::now()->addDays(7));
+        $share = Share::grant(
+            TestActors::record('pamphlets.pamphlet', 4),
+            $this->ownerId,
+            $this->configuration(),
+            ShareToken::generate(),
+            CarbonImmutable::now()->addDays(7),
+        );
+        $proposal = Share::propose(
+            TestActors::record('pamphlets.pamphlet', 4),
+            TestActors::agentIdentity(5),
+            CarbonImmutable::now()->addDays(7),
+        );
 
         $this->assertTrue($policy->grantHolds($share));
         $this->assertFalse($policy->grantHolds($proposal));
@@ -107,6 +120,8 @@ final class OwnerSharePolicyTest extends TestCase
 
     private function configuration(): ShareGatewayConfiguration
     {
-        return ShareGatewayConfiguration::configure(new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []));
+        return ShareGatewayConfiguration::configure(
+            new GatewaySettings('press', '1.0.0', 'example.test', 'https://share.example.test', 8100, []),
+        );
     }
 }

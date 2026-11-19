@@ -77,7 +77,10 @@ final class BindingRulesTest extends TestCase
             ...array_map(PublicOwner::fromDomain(...), $this->app->make(DomainRegistry::class)->all()),
         ];
 
-        $violations = new BindingRules($owners, DomainFiles::in([app_path(), ...DomainFiles::domainCode()]))->violations();
+        $violations = new BindingRules(
+            $owners,
+            DomainFiles::in([app_path(), ...DomainFiles::domainCode()]),
+        )->violations();
 
         $this->assertSame([], $violations, BoundaryReport::of($violations, base_path()));
     }
@@ -98,7 +101,10 @@ final class BindingRulesTest extends TestCase
             'PlansServiceProvider.php:17 binds Tests\Fixtures\Bindings\Tasks\Contracts\TaskResolver, but Tasks owns it; only Core\'s public contracts are filled by another owner',
             'PlansServiceProvider.php:18 binds Tests\Fixtures\Bindings\Plans\Contracts\PlanCounter, but the target Tests\Fixtures\Bindings\Tasks\TaskList belongs to Tasks',
             'PlanCounts.php:11 binds Tests\Fixtures\Bindings\Plans\PlanCounts, but the singleton Tests\Fixtures\Bindings\Plans\PlanCounts keeps the per-request App\Actors\Contracts\CurrentActor beyond its request',
-        ], array_map(fn (Violation $violation) => basename($violation->file).":{$violation->line} {$violation->reason()}", $violations));
+        ], array_map(
+            fn (Violation $violation) => basename($violation->file).":{$violation->line} {$violation->reason()}",
+            $violations,
+        ));
     }
 
     public function test_cores_parser_comes_from_processes(): void
@@ -112,10 +118,17 @@ final class BindingRulesTest extends TestCase
         $uses = DomainFiles::usesIn(DomainFiles::in([app_path(), base_path('bootstrap'), base_path('routes')]), $roots);
         $sites = array_map(base_path(...), self::ACTOR_SITES);
 
-        $outside = array_filter($uses, fn (NameUse $use) => in_array(ltrim($use->name, '\\'), [CurrentActorSetter::class, ActorStore::class], true)
+        $outside = array_filter($uses, fn (NameUse $use) => in_array(
+            ltrim($use->name, '\\'),
+            [CurrentActorSetter::class, ActorStore::class],
+            true,
+        )
             && ! in_array($use->file, $sites, true));
 
-        $this->assertSame([], array_values(array_map(fn (NameUse $use) => "{$use->file}:{$use->line} {$use->name}", $outside)));
+        $this->assertSame(
+            [],
+            array_values(array_map(fn (NameUse $use) => "{$use->file}:{$use->line} {$use->name}", $outside)),
+        );
     }
 
     public function test_only_the_composition_sites_register_assignable_types_and_actor_types(): void
@@ -124,9 +137,16 @@ final class BindingRulesTest extends TestCase
         $uses = DomainFiles::usesIn(DomainFiles::in([app_path(), base_path('bootstrap'), base_path('routes')]), $roots);
         $sites = array_map(base_path(...), self::ASSIGNMENT_REGISTRATION_SITES);
 
-        $outside = array_filter($uses, fn (NameUse $use) => in_array(ltrim($use->name, '\\'), [AssignmentRegistration::class, AssignmentRegistry::class], true)
+        $outside = array_filter($uses, fn (NameUse $use) => in_array(
+            ltrim($use->name, '\\'),
+            [AssignmentRegistration::class, AssignmentRegistry::class],
+            true,
+        )
             && ! in_array($use->file, $sites, true));
 
-        $this->assertSame([], array_values(array_map(fn (NameUse $use) => "{$use->file}:{$use->line} {$use->name}", $outside)));
+        $this->assertSame(
+            [],
+            array_values(array_map(fn (NameUse $use) => "{$use->file}:{$use->line} {$use->name}", $outside)),
+        );
     }
 }

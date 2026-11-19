@@ -14,8 +14,12 @@ use Illuminate\Routing\Redirector;
 
 final readonly class UnlinkRecordsController
 {
-    public function __invoke(LinkRecordsRequest $request, CommandBus $commands, RecordResolver $records, Redirector $redirect): JsonResponse|RedirectResponse
-    {
+    public function __invoke(
+        LinkRecordsRequest $request,
+        CommandBus $commands,
+        RecordResolver $records,
+        Redirector $redirect,
+    ): JsonResponse|RedirectResponse {
         $commands->run(new UnlinkRecords($request->source($records), $request->target($records)));
 
         if (! $request->expectsJson()) {

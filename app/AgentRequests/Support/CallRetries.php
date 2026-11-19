@@ -35,8 +35,12 @@ final class CallRetries
      *
      * @throws CallDeadlinePassed
      */
-    public static function within(CallEffect $effect, CarbonImmutable $deadline, string $callId, Closure $attempt): mixed
-    {
+    public static function within(
+        CallEffect $effect,
+        CarbonImmutable $deadline,
+        string $callId,
+        Closure $attempt,
+    ): mixed {
         for ($number = 1; ; $number++) {
             try {
                 return $attempt(self::attemptDeadline($deadline));

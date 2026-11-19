@@ -41,7 +41,9 @@ final class InMemoryTaskLoader implements StateLoader
 
         $subject = $reference->subject;
 
-        return new WorkingOnTaskState(new TaskWork((int) $subject->id, $subject->runNumber, $this->tasks[$subject->id]));
+        return new WorkingOnTaskState(
+new TaskWork((int) $subject->id, $subject->runNumber, $this->tasks[$subject->id]),
+);
     }
 
     public function schemaVersion(): int

@@ -30,7 +30,14 @@ final readonly class CallbackEnvelope
 
     public static function forCallback(string $program, string $body, CarbonImmutable $now): self
     {
-        return new self((string) Str::ulid(), $program, $body, hash('sha256', $body), $now->getTimestamp(), $now->getTimestamp() + self::DEADLINE_SECONDS);
+        return new self(
+            (string) Str::ulid(),
+            $program,
+            $body,
+            hash('sha256', $body),
+            $now->getTimestamp(),
+            $now->getTimestamp() + self::DEADLINE_SECONDS,
+        );
     }
 
     /**
@@ -40,7 +47,14 @@ final readonly class CallbackEnvelope
     {
         $fields = json_decode($json, true, 4, JSON_THROW_ON_ERROR);
 
-        return new self($fields['id'], $fields['program'], $fields['body'], $fields['bodyDigest'], $fields['issuedAt'], $fields['deadlineAt']);
+        return new self(
+            $fields['id'],
+            $fields['program'],
+            $fields['body'],
+            $fields['bodyDigest'],
+            $fields['issuedAt'],
+            $fields['deadlineAt'],
+        );
     }
 
     public function deadline(): CarbonImmutable

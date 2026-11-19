@@ -145,7 +145,10 @@ final class SignedCallRulesTest extends TestCase
     {
         $calls = [];
 
-        $files = [...glob(app_path('*/Calls/*Call.php')) ?: [], ...glob(base_path('domain/*/src/Calls/*Call.php')) ?: []];
+        $files = [
+            ...glob(app_path('*/Calls/*Call.php')) ?: [],
+            ...glob(base_path('domain/*/src/Calls/*Call.php')) ?: [],
+        ];
 
         foreach ($files as $file) {
             $class = self::classOf($file);

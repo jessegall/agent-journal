@@ -50,7 +50,11 @@ final class ClassificationTest extends TestCase
     {
         $tree = $this->parse('cat a && rm a');
         [$cat, $rm] = $tree->executableParts();
-        $classification = new Classification($tree, [$this->part($cat->id, CommandClass::Read), $this->part($rm->id, CommandClass::Delete)], []);
+        $classification = new Classification(
+            $tree,
+            [$this->part($cat->id, CommandClass::Read), $this->part($rm->id, CommandClass::Delete)],
+            [],
+        );
 
         $this->assertSame([CommandClass::Read, CommandClass::Delete], $classification->requiredClasses()->classes);
         $this->assertTrue($classification->isKnown());
@@ -61,7 +65,12 @@ final class ClassificationTest extends TestCase
     {
         $tree = $this->parse('frobnicate --all');
         $node = $tree->executableParts()[0]->id;
-        $unknown = new PartClassification($node, [], [new UnresolvedFact(UnresolvedType::UnknownProgram, $node, 'no rule names frobnicate')], CommandType::Unknown);
+        $unknown = new PartClassification(
+            $node,
+            [],
+            [new UnresolvedFact(UnresolvedType::UnknownProgram, $node, 'no rule names frobnicate')],
+            CommandType::Unknown,
+        );
         $classification = new Classification($tree, [$unknown], []);
 
         $this->assertFalse($classification->isKnown());
@@ -78,13 +87,24 @@ final class ClassificationTest extends TestCase
         $this->assertFalse($granted->contains(CommandClass::Write));
         $this->assertSame([CommandClass::Write], $wanted->missingFrom($granted)->classes);
         $this->assertSame('Tests and checks', CommandClass::Verification->label());
-        $this->assertSame(OutputRequirement::Full, new PartClassification(0, [], [], CommandType::Verification)->outputRequirement());
-        $this->assertSame(OutputRequirement::Ordinary, new PartClassification(0, [], [], CommandType::Ordinary)->outputRequirement());
+        $this->assertSame(
+            OutputRequirement::Full,
+            new PartClassification(0, [], [], CommandType::Verification)->outputRequirement(),
+        );
+        $this->assertSame(
+            OutputRequirement::Ordinary,
+            new PartClassification(0, [], [], CommandType::Ordinary)->outputRequirement(),
+        );
     }
 
     private function part(int $node, CommandClass $class): PartClassification
     {
-        return new PartClassification($node, [new ClassFact($class, $node, new RuleOrigin('fixture', 1), 'declared')], [], CommandType::Ordinary);
+        return new PartClassification(
+            $node,
+            [new ClassFact($class, $node, new RuleOrigin('fixture', 1), 'declared')],
+            [],
+            CommandType::Ordinary,
+        );
     }
 
     private function parse(string $line): ShellTree

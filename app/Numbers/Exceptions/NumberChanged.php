@@ -14,6 +14,8 @@ final class NumberChanged extends LogicException
 {
     public static function for(Model $record): self
     {
-        return new self('The number of '.$record->getMorphClass().' '.$record->getKey().' cannot change once it is saved.');
+        return new self(
+            'The number of '.$record->getMorphClass().' '.$record->getKey().' cannot change once it is saved.',
+        );
     }
 }

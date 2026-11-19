@@ -30,8 +30,18 @@ final class PamphletsDomain extends Domain implements ProvidesShareGateways, Pro
     public function shareRecords(): array
     {
         return [
-            new ShareRecordRegistration('pamphlets.pamphlet', Pamphlet::class, PamphletShareProvider::class, ['share-linked-record']),
-            new ShareRecordRegistration('pamphlets.note', PamphletNote::class, PamphletShareProvider::class, ['share-note']),
+            new ShareRecordRegistration(
+'pamphlets.pamphlet',
+ Pamphlet::class,
+ PamphletShareProvider::class,
+ ['share-linked-record'],
+),
+            new ShareRecordRegistration(
+'pamphlets.note',
+ PamphletNote::class,
+ PamphletShareProvider::class,
+ ['share-note'],
+),
         ];
     }
 

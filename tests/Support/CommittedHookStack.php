@@ -74,7 +74,9 @@ trait CommittedHookStack
         $this->tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
         $this->app->scoped(ShellCommandParser::class, fn () => new ListedCommandParser());
         $tasks = $this->tasks;
-        $this->app->make(Dispatcher::class)->listen(StateTypesRequested::class, function (StateTypesRequested $event) use ($tasks): void {
+        $this->app->make(Dispatcher::class)->listen(StateTypesRequested::class, function (
+            StateTypesRequested $event,
+        ) use ($tasks): void {
             $event->registry->register('test.tasks', $tasks);
             $event->registry->register('guide', new ClosureStateLoader(fn () => ScriptedState::delegating()));
             $event->registry->register('test.rewriting', new ClosureStateLoader(fn () => new RewritingState(
@@ -83,7 +85,9 @@ trait CommittedHookStack
             )));
         });
         $this->callAs('call-1');
-        $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target));
+        $this->app->make(StackTransaction::class)->run(
+            fn () => $this->app->make(LaunchStacks::class)->open($this->target),
+        );
     }
 
     /**
@@ -92,7 +96,9 @@ trait CommittedHookStack
      */
     private function launchedTarget(): StackTarget
     {
-        $agent = Agent::query()->find(TestIds::of(1)) ?? new Agent(['name' => 'Hook agent', 'profile_key' => 'main-agent']);
+        $agent = Agent::query()->find(TestIds::of(1)) ?? new Agent(
+            ['name' => 'Hook agent', 'profile_key' => 'main-agent'],
+        );
         $agent->id = TestIds::of(1);
         $agent->save();
         $session = AgentSession::query()->find(TestIds::of(10)) ?? new AgentSession(TestSelections::sessionColumns());
@@ -135,18 +141,31 @@ trait CommittedHookStack
     {
         $this->callAs($callId);
 
-        return $this->machine()->answer($this->stop(), $this->capabilities(), new OperationDeadline(3000), fn (HookAnswer $answer) => ProgramReplies::stop($answer))->stdout;
+        return $this->machine()->answer(
+            $this->stop(),
+            $this->capabilities(),
+            new OperationDeadline(3000),
+            fn (HookAnswer $answer) => ProgramReplies::stop($answer),
+        )->stdout;
     }
 
     protected function callAs(string $callId, string|null $inputDigest = null): void
     {
-        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall($callId, CarbonImmutable::now(), $inputDigest ?? self::inputDigest()), null));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(1)), TestLaunchAuthority::forAgent(TestIds::of(1)));
+        $this->app->instance(
+            AgentContext::class,
+            new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall($callId, CarbonImmutable::now(), $inputDigest ?? self::inputDigest()), null),
+        );
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent(TestIds::of(1)),
+            TestLaunchAuthority::forAgent(TestIds::of(1)),
+        );
     }
 
     protected function pushState(StateReference $state): void
     {
-        $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(AgentStacks::class)->push($this->target, $state));
+        $this->app->make(StackTransaction::class)->run(
+            fn () => $this->app->make(AgentStacks::class)->push($this->target, $state),
+        );
     }
 
     protected function task(int $number): StateReference
@@ -161,7 +180,12 @@ trait CommittedHookStack
 
     protected function capabilities(RewriteSupport $rewrites = RewriteSupport::WithoutApproval): ProgramCapabilities
     {
-        return new ProgramCapabilities('Test program', 'pre-tool and stop replies', ['onShellCommand', 'onStop'], $rewrites);
+        return new ProgramCapabilities(
+            'Test program',
+            'pre-tool and stop replies',
+            ['onShellCommand', 'onStop'],
+            $rewrites,
+        );
     }
 
     protected function stop(): StopRequested
@@ -171,7 +195,10 @@ trait CommittedHookStack
 
     protected function shell(string $line): ShellCommandRequested
     {
-        return new ShellCommandRequested($this->hookIdentity(), new ListedCommandParser()->parse($line, ShellDialect::Bash));
+        return new ShellCommandRequested(
+            $this->hookIdentity(),
+            new ListedCommandParser()->parse($line, ShellDialect::Bash),
+        );
     }
 
     /**
@@ -195,7 +222,28 @@ trait CommittedHookStack
      */
     private static function committedTables(): array
     {
-        return ['agent_stacks', 'hook_calls', 'links', 'tasks', 'messages', 'sequence_runs', 'memories', 'rules', 'users', 'agents', 'agent_sessions', 'launch_credentials', 'launch_bypasses', 'command_aliases', 'program_conversations', 'conversation_visits', 'agent_runtimes', 'process_runs', 'part_runs', 'command_requests'];
+        return [
+            'agent_stacks',
+            'hook_calls',
+            'links',
+            'tasks',
+            'messages',
+            'sequence_runs',
+            'memories',
+            'rules',
+            'users',
+            'agents',
+            'agent_sessions',
+            'launch_credentials',
+            'launch_bypasses',
+            'command_aliases',
+            'program_conversations',
+            'conversation_visits',
+            'agent_runtimes',
+            'process_runs',
+            'part_runs',
+            'command_requests',
+        ];
     }
 
     private function hookIdentity(): HookIdentity

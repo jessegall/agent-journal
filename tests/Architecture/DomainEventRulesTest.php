@@ -70,7 +70,11 @@ final class DomainEventRulesTest extends TestCase
 
         return array_map(
             fn (Violation $violation) => "{$violation->line} {$violation->reason()}",
-            new BoundaryChecker($registry->all(), $roots, CoreApi::exports())->violations(DomainFiles::usesIn([$file], $roots)),
+            new BoundaryChecker(
+                $registry->all(),
+                $roots,
+                CoreApi::exports(),
+            )->violations(DomainFiles::usesIn([$file], $roots)),
         );
     }
 }

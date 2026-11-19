@@ -13,9 +13,15 @@ use Illuminate\Routing\Redirector;
 
 final readonly class CreateDocumentPageController
 {
-    public function __invoke(CreateRecordRequest $request, CommandBus $commands, RecordResolver $records, Redirector $redirect): RedirectResponse
-    {
-        $commands->run(new CreateDocument($request->title(), $request->abstract(), $request->body(), $request->about($records)));
+    public function __invoke(
+        CreateRecordRequest $request,
+        CommandBus $commands,
+        RecordResolver $records,
+        Redirector $redirect,
+    ): RedirectResponse {
+        $commands->run(
+            new CreateDocument($request->title(), $request->abstract(), $request->body(), $request->about($records)),
+        );
 
         return $redirect->back(303);
     }

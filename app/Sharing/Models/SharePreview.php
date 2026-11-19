@@ -40,7 +40,9 @@ use PhpOption\Option;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['owner_user_id', 'root_type', 'root_id', 'selection', 'configuration_version', 'checksum', 'expires_at', 'consumed_at'])]
+#[Fillable(
+    ['owner_user_id', 'root_type', 'root_id', 'selection', 'configuration_version', 'checksum', 'expires_at', 'consumed_at'],
+)]
 final class SharePreview extends Model implements ReadableModel
 {
     use BelongsToOneRoot, BoundedReads, HasUlids, Linkable;
@@ -67,8 +69,12 @@ final class SharePreview extends Model implements ReadableModel
      *
      * @param  list<ShareSelectedTarget>  $selection
      */
-    public static function createFor(string $ownerUserId, RecordIdentity $root, array $selection, ShareGatewayConfiguration $configuration): self
-    {
+    public static function createFor(
+        string $ownerUserId,
+        RecordIdentity $root,
+        array $selection,
+        ShareGatewayConfiguration $configuration,
+    ): self {
         $preview = new self();
         $preview->owner_user_id = $ownerUserId;
         $preview->root_type = $root->type;
@@ -110,7 +116,9 @@ final class SharePreview extends Model implements ReadableModel
      */
     public static function openFor(string $ownerUserId, RecordIdentity $root): Option
     {
-        return Option::fromValue(self::query()->ownedBy($ownerUserId)->ofRoot($root)->stillOpen()->orderByDesc('id')->first());
+        return Option::fromValue(
+            self::query()->ownedBy($ownerUserId)->ofRoot($root)->stillOpen()->orderByDesc('id')->first(),
+        );
     }
 
     public function root(): RecordIdentity
@@ -140,7 +148,9 @@ final class SharePreview extends Model implements ReadableModel
             throw SharePreviewRefused::expired($this->id);
         }
 
-        $selection = $current->selection(array_map(fn (ShareSelectedTarget $target) => $target->record->id, $this->selection));
+        $selection = $current->selection(
+            array_map(fn (ShareSelectedTarget $target) => $target->record->id, $this->selection),
+        );
         $configuration = ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id);
 
         if ($checksum !== $this->checksum || self::checksumOf($ownerUserId, $this->root(), $selection, $configuration) !== $this->checksum) {
@@ -174,10 +184,20 @@ final class SharePreview extends Model implements ReadableModel
     /**
      * @param  list<ShareSelectedTarget>  $selection
      */
-    private static function checksumOf(string $ownerUserId, RecordIdentity $root, array $selection, ShareGatewayConfiguration $configuration): string
-    {
-        $targets = array_map(fn (ShareSelectedTarget $target) => [$target->record->type, $target->record->id, $target->linkId, $target->publicationVersion], $selection);
+    private static function checksumOf(
+        string $ownerUserId,
+        RecordIdentity $root,
+        array $selection,
+        ShareGatewayConfiguration $configuration,
+    ): string {
+        $targets = array_map(
+            fn (ShareSelectedTarget $target) => [$target->record->type, $target->record->id, $target->linkId, $target->publicationVersion],
+            $selection,
+        );
 
-        return hash('sha256', json_encode([$ownerUserId, $root->type, $root->id, $targets, $configuration->id, $configuration->configuration_version], JSON_THROW_ON_ERROR));
+        return hash(
+            'sha256',
+            json_encode([$ownerUserId, $root->type, $root->id, $targets, $configuration->id, $configuration->configuration_version], JSON_THROW_ON_ERROR),
+        );
     }
 }

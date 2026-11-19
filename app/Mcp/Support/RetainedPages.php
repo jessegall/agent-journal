@@ -24,7 +24,11 @@ final readonly class RetainedPages
      */
     public function keep(array $references): string
     {
-        return RetainedPage::keep($this->agent, $references, CarbonImmutable::now()->addMinutes(Continuations::LIFETIME_MINUTES))->id;
+        return RetainedPage::keep(
+            $this->agent,
+            $references,
+            CarbonImmutable::now()->addMinutes(Continuations::LIFETIME_MINUTES),
+        )->id;
     }
 
     /**
@@ -40,7 +44,11 @@ final readonly class RetainedPages
      */
     public function resolve(string $retainedPageId, int $offset, Closure $read): RetainedEntries
     {
-        $page = RetainedPage::query()->whereKey($retainedPageId)->where('expires_at', '>=', CarbonImmutable::now())->first()
+        $page = RetainedPage::query()->whereKey($retainedPageId)->where(
+            'expires_at',
+            '>=',
+            CarbonImmutable::now(),
+        )->first()
             ?? throw ContinuationStale::expired();
         $references = array_slice($page->references, $offset);
         $found = $read($references);

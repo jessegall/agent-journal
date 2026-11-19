@@ -43,7 +43,10 @@ final class ExplanationsTest extends TestCase
 
     public function test_a_line_past_the_size_limit_names_the_limit(): void
     {
-        $this->assertSame('limit_exceeded', $this->explain(str_repeat('a', AnalysisLimit::SourceBytes->value + 1))->outcome);
+        $this->assertSame(
+            'limit_exceeded',
+            $this->explain(str_repeat('a', AnalysisLimit::SourceBytes->value + 1))->outcome,
+        );
     }
 
     public function test_a_here_document_body_is_left_out(): void

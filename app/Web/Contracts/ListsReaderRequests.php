@@ -18,7 +18,13 @@ interface ListsReaderRequests
     /**
      * @param  array<string, mixed>  $query
      */
-    public function pageReader(string $key, ResolverDefinition $resolver, Request $current, array $query, Route|null $route = null): PageResolver;
+    public function pageReader(
+        string $key,
+        ResolverDefinition $resolver,
+        Request $current,
+        array $query,
+        Route|null $route = null,
+    ): PageResolver;
 
     /**
      * A section reads the page's plain query.

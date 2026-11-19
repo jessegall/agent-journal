@@ -10,7 +10,9 @@ final class PolicyRegistrationConflict extends RuntimeException
 {
     public static function forModel(string $model, string $firstOwner, string $secondOwner): self
     {
-        return new self("{$firstOwner} and {$secondOwner} both register a policy for {$model}; one model has one policy.");
+        return new self(
+            "{$firstOwner} and {$secondOwner} both register a policy for {$model}; one model has one policy.",
+        );
     }
 
     public static function forPolicy(string $policy, string $firstOwner, string $secondOwner): self

@@ -15,7 +15,11 @@ use App\Processes\Values\Word;
  */
 final readonly class PackageScripts
 {
-    private const array PACKAGE_FILES = ['composer' => 'composer.json', 'npm' => 'package.json', 'pnpm' => 'package.json'];
+    private const array PACKAGE_FILES = [
+        'composer' => 'composer.json',
+        'npm' => 'package.json',
+        'pnpm' => 'package.json',
+    ];
 
     /**
      * Composer callbacks that only adjust Composer itself and run nothing.
@@ -59,7 +63,9 @@ final readonly class PackageScripts
             return [];
         }
 
-        return [new ScriptBody(new ScriptBinding($file, $name, hash('sha256', json_encode($lines, JSON_THROW_ON_ERROR))), $lines)];
+        return [
+            new ScriptBody(new ScriptBinding($file, $name, hash('sha256', json_encode($lines, JSON_THROW_ON_ERROR))), $lines),
+        ];
     }
 
     public function isHarmlessCallback(string $line): bool

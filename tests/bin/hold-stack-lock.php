@@ -11,7 +11,12 @@ declare(strict_types=1);
 $environment = static fn (string $name): string => (string) getenv($name);
 
 $database = new PDO(
-    sprintf('pgsql:host=%s;port=%s;dbname=%s', $environment('LOCK_DB_HOST'), $environment('LOCK_DB_PORT'), $environment('LOCK_DB_DATABASE')),
+    sprintf(
+        'pgsql:host=%s;port=%s;dbname=%s',
+        $environment('LOCK_DB_HOST'),
+        $environment('LOCK_DB_PORT'),
+        $environment('LOCK_DB_DATABASE'),
+    ),
     $environment('LOCK_DB_USERNAME'),
     $environment('LOCK_DB_PASSWORD'),
     [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION],

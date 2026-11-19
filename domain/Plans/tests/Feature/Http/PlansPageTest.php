@@ -61,17 +61,21 @@ final class PlansPageTest extends TestCase
 
     public function test_the_search_and_selection_survive_in_the_query_and_the_start_is_offered_by_the_domain_rule(): void
     {
-        $this->actingAs($this->owner)->get("/plans?q=release&plan={$this->release->number}")->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.filters.q', 'release')
-            ->where('page.data.filters.plan', (string) $this->release->number)
-            ->count('page.data.rows', 1)
-            ->where('page.data.selected.card.title', 'Build the release page')
-            ->where('page.data.selected.insideResults', true)
-            ->where('page.data.selected.start.planId', (string) $this->release->id));
+        $this->actingAs($this->owner)->get(
+            "/plans?q=release&plan={$this->release->number}",
+        )->assertInertia(fn (AssertableInertia $page) => $page
+                    ->where('page.data.filters.q', 'release')
+                    ->where('page.data.filters.plan', (string) $this->release->number)
+                    ->count('page.data.rows', 1)
+                    ->where('page.data.selected.card.title', 'Build the release page')
+                    ->where('page.data.selected.insideResults', true)
+                    ->where('page.data.selected.start.planId', (string) $this->release->id));
 
-        $this->actingAs($this->owner)->get("/plans?q=release&plan={$this->paused->number}")->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('page.data.selected.insideResults', false)
-            ->missing('page.data.selected.start'));
+        $this->actingAs($this->owner)->get(
+            "/plans?q=release&plan={$this->paused->number}",
+        )->assertInertia(fn (AssertableInertia $page) => $page
+                    ->where('page.data.selected.insideResults', false)
+                    ->missing('page.data.selected.start'));
     }
 
     public function test_a_selection_that_cannot_be_read_shows_no_title(): void
@@ -92,7 +96,9 @@ final class PlansPageTest extends TestCase
     {
         $this->actingAs($this->owner)->get('/plans', [
             'X-Inertia' => 'true',
-            'X-Inertia-Version' => (string) $this->app->make(HandleInertiaRequests::class)->version(Request::create('/plans')),
+            'X-Inertia-Version' => (string) $this->app->make(
+                HandleInertiaRequests::class,
+            )->version(Request::create('/plans')),
             'X-Inertia-Partial-Component' => 'plans/PlansWindow',
             'X-Inertia-Partial-Data' => 'name',
         ])->assertOk()->assertJsonMissingPath('props.page');
@@ -113,26 +119,32 @@ final class PlansPageTest extends TestCase
 
     public function test_a_plan_has_its_own_record_page_and_opens_in_the_inspector(): void
     {
-        $this->actingAs($this->owner)->get("/plans/{$this->release->number}")->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('plans/PlanWindow')
-            ->where('page.state', 'ready')
-            ->where('page.data.card.title', 'Build the release page'));
+        $this->actingAs($this->owner)->get(
+            "/plans/{$this->release->number}",
+        )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+                    ->component('plans/PlanWindow')
+                    ->where('page.state', 'ready')
+                    ->where('page.data.card.title', 'Build the release page'));
 
-        $this->actingAs($this->owner)->get("/plans?inspect=plans.plan&plan={$this->release->number}")->assertInertia(fn (AssertableInertia $page) => $page
-            ->reloadOnly('inspector', fn (AssertableInertia $reload) => $reload->where('inspector.data.card.title', 'Build the release page')));
+        $this->actingAs($this->owner)->get(
+            "/plans?inspect=plans.plan&plan={$this->release->number}",
+        )->assertInertia(fn (AssertableInertia $page) => $page
+                    ->reloadOnly('inspector', fn (AssertableInertia $reload) => $reload->where('inspector.data.card.title', 'Build the release page')));
     }
 
     public function test_a_phase_has_its_own_page_within_its_plan(): void
     {
         $task = Task::query()->where('title', 'List the plans')->firstOrFail();
 
-        $this->actingAs($this->owner)->get("/plans/{$this->release->number}/phases/1")->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-            ->component('plans/PhaseWindow')
-            ->where('page.data.planNumber', (string) $this->release->number)
-            ->where('page.data.number', '1')
-            ->where('page.data.title', 'Read')
-            ->where('page.data.tasks.0.number', (string) $task->number)
-            ->where('page.data.tasks.0.title', 'List the plans'));
+        $this->actingAs($this->owner)->get(
+            "/plans/{$this->release->number}/phases/1",
+        )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+                    ->component('plans/PhaseWindow')
+                    ->where('page.data.planNumber', (string) $this->release->number)
+                    ->where('page.data.number', '1')
+                    ->where('page.data.title', 'Read')
+                    ->where('page.data.tasks.0.number', (string) $task->number)
+                    ->where('page.data.tasks.0.title', 'List the plans'));
 
         $this->actingAs($this->owner)->get("/plans/{$this->paused->number}/phases/1")->assertNotFound();
         $this->actingAs($this->owner)->get("/plans/{$this->release->number}/phases/2")->assertNotFound();

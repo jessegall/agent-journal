@@ -29,6 +29,10 @@ final class TestDatabaseTraitTest extends TestCase
             [base_path('tests/Fixtures'), base_path('tests/Support/RefreshHookDatabase.php')],
         );
 
-        $this->assertSame([], $offenders, 'These test files use a Laravel database trait; use Tests\Support\RefreshHookDatabase instead.');
+        $this->assertSame(
+            [],
+            $offenders,
+            'These test files use a Laravel database trait; use Tests\Support\RefreshHookDatabase instead.',
+        );
     }
 }

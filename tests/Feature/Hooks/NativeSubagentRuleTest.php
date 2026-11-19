@@ -28,7 +28,17 @@ final class NativeSubagentRuleTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['agents', 'agent_sessions', 'launch_credentials', 'agent_stacks', 'hook_calls', 'process_events', 'part_runs', 'process_runs', 'command_requests'];
+    private const array TABLES = [
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'agent_stacks',
+        'hook_calls',
+        'process_events',
+        'part_runs',
+        'process_runs',
+        'command_requests',
+    ];
 
     private TestLaunch $launch;
 
@@ -37,8 +47,13 @@ final class NativeSubagentRuleTest extends TestCase
         parent::setUp();
 
         $this->launch = TestLaunch::start('main-agent');
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->launch->agent->id), TestLaunchAuthority::forAgent($this->launch->agent->id));
-        $this->app->make(StackTransaction::class)->run(fn () => $this->app->make(LaunchStacks::class)->open($this->target()));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($this->launch->agent->id),
+            TestLaunchAuthority::forAgent($this->launch->agent->id),
+        );
+        $this->app->make(StackTransaction::class)->run(
+            fn () => $this->app->make(LaunchStacks::class)->open($this->target()),
+        );
     }
 
     public function test_rule_36_every_program_launch_denies_each_native_child_tool(): void
@@ -57,14 +72,18 @@ final class NativeSubagentRuleTest extends TestCase
 
     public function test_rule_36_a_call_to_a_native_child_tool_is_refused_before_the_stack(): void
     {
-        $body = (string) json_encode(['session_id' => 'session-redacted', 'hook_event_name' => 'PreToolUse', 'tool_name' => 'collaboration.spawn_agent', 'tool_input' => []]);
+        $body = (string) json_encode(
+            ['session_id' => 'session-redacted', 'hook_event_name' => 'PreToolUse', 'tool_name' => 'collaboration.spawn_agent', 'tool_input' => []],
+        );
 
         $this->assertDenied($this->hook('codex', $body));
     }
 
     public function test_rule_36_a_call_from_inside_a_native_child_is_refused_before_the_stack(): void
     {
-        $body = (string) json_encode(['session_id' => 'session-redacted', 'hook_event_name' => 'PreToolUse', 'tool_name' => 'Bash', 'tool_input' => ['command' => 'ls'], 'agent_id' => 'child-1', 'agent_type' => 'general-purpose']);
+        $body = (string) json_encode(
+            ['session_id' => 'session-redacted', 'hook_event_name' => 'PreToolUse', 'tool_name' => 'Bash', 'tool_input' => ['command' => 'ls'], 'agent_id' => 'child-1', 'agent_type' => 'general-purpose'],
+        );
 
         $this->assertDenied($this->hook('claude-code', $body));
     }
@@ -80,7 +99,12 @@ final class NativeSubagentRuleTest extends TestCase
     {
         $this->app->forgetScopedInstances();
 
-        return $this->call('POST', "/hooks/{$program}", server: $this->launch->serverHeaders($body, 'call-1', target: "/hooks/{$program}"), content: $body);
+        return $this->call(
+            'POST',
+            "/hooks/{$program}",
+            server: $this->launch->serverHeaders($body, 'call-1', target: "/hooks/{$program}"),
+            content: $body,
+        );
     }
 
     private function target(): StackTarget

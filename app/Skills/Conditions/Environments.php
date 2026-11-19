@@ -26,7 +26,11 @@ final readonly class Environments implements SkillCondition
 
     public function evaluate(SkillContext $context): ConditionResult
     {
-        return in_array($context->environment, $this->keys, true) ? ConditionResult::match('environment-listed') : ConditionResult::noMatch('environment-not-listed');
+        return in_array(
+            $context->environment,
+            $this->keys,
+            true,
+        ) ? ConditionResult::match('environment-listed') : ConditionResult::noMatch('environment-not-listed');
     }
 
     public function toArray(): array

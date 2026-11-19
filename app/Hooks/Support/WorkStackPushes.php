@@ -57,6 +57,9 @@ final readonly class WorkStackPushes implements ActorWorkStacks
     {
         $actorId = $this->actors->actor()->actorId();
 
-        return array_map(fn (string $sessionId) => new StackTarget($actorId, $sessionId), $this->workStacks->sessionsToAdmit());
+        return array_map(
+            fn (string $sessionId) => new StackTarget($actorId, $sessionId),
+            $this->workStacks->sessionsToAdmit(),
+        );
     }
 }

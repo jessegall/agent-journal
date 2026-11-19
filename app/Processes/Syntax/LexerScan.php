@@ -151,7 +151,14 @@ final class LexerScan
             $operators += ['|&' => TokenType::PipeBoth, '&>>' => TokenType::Redirect, '&>' => TokenType::Redirect];
         }
 
-        return $operators + [';' => TokenType::Semicolon, '&' => TokenType::Background, '|' => TokenType::Pipe, '!' => TokenType::Bang, '(' => TokenType::OpenParen, ')' => TokenType::CloseParen];
+        return $operators + [
+            ';' => TokenType::Semicolon,
+            '&' => TokenType::Background,
+            '|' => TokenType::Pipe,
+            '!' => TokenType::Bang,
+            '(' => TokenType::OpenParen,
+            ')' => TokenType::CloseParen,
+        ];
     }
 
     private function readRedirect(int $start, int $digits): bool
@@ -199,7 +206,11 @@ final class LexerScan
     {
         $last = $this->tokens[array_key_last($this->tokens) ?? -1] ?? null;
 
-        return $last === null || in_array($last->type, [TokenType::Newline, TokenType::Semicolon, TokenType::Background, TokenType::AndIf, TokenType::OrIf, TokenType::Pipe, TokenType::PipeBoth, TokenType::Bang, TokenType::OpenParen, TokenType::OpenBrace], true);
+        return $last === null || in_array(
+            $last->type,
+            [TokenType::Newline, TokenType::Semicolon, TokenType::Background, TokenType::AndIf, TokenType::OrIf, TokenType::Pipe, TokenType::PipeBoth, TokenType::Bang, TokenType::OpenParen, TokenType::OpenBrace],
+            true,
+        );
     }
 
     /**
@@ -221,7 +232,11 @@ final class LexerScan
                 $this->position = $index + 1;
                 $range = new SourceRange($start, $this->position);
                 $text = substr($this->source, $start, $this->position - $start);
-                $this->tokens[] = new Token(TokenType::Word, $range, word: new Word([new WordSegment(WordSegmentType::Literal, $text, $range)], $range));
+                $this->tokens[] = new Token(
+                    TokenType::Word,
+                    $range,
+                    word: new Word([new WordSegment(WordSegmentType::Literal, $text, $range)], $range),
+                );
 
                 return;
             }
@@ -232,7 +247,12 @@ final class LexerScan
 
     private function emitRedirect(RedirectType $type, int $descriptor, int $start): void
     {
-        $this->tokens[] = new Token(TokenType::Redirect, new SourceRange($start, $this->position), redirect: $type, descriptor: $descriptor);
+        $this->tokens[] = new Token(
+            TokenType::Redirect,
+            new SourceRange($start, $this->position),
+            redirect: $type,
+            descriptor: $descriptor,
+        );
     }
 
     private function readWordToken(): void
@@ -274,7 +294,10 @@ final class LexerScan
             $character = $this->source[$this->position];
 
             if ($extended && ($character === '<' || $character === '>') && $this->at($this->position + 1) === '(' && $this->position === $start) {
-                $word->add($this->position, $this->readBalanced($this->position, $this->position + 2, 'a process substitution'));
+                $word->add(
+                    $this->position,
+                    $this->readBalanced($this->position, $this->position + 2, 'a process substitution'),
+                );
 
                 continue;
             }
@@ -305,7 +328,10 @@ final class LexerScan
         }
         $escapeStart = $this->position;
         $this->position += min(2, strlen($this->source) - $this->position);
-        $word->add($escapeStart, new WordSegment(WordSegmentType::Escaped, substr($this->source, $escapeStart + 1, $this->position - $escapeStart - 1), new SourceRange($escapeStart, $this->position)));
+        $word->add(
+            $escapeStart,
+            new WordSegment(WordSegmentType::Escaped, substr($this->source, $escapeStart + 1, $this->position - $escapeStart - 1), new SourceRange($escapeStart, $this->position)),
+        );
     }
 
     /**
@@ -317,7 +343,11 @@ final class LexerScan
         if ($close === false) {
             throw ShellLineUnreadable::unfinished('a single-quoted string', $this->position);
         }
-        $segment = new WordSegment(WordSegmentType::SingleQuoted, substr($this->source, $this->position + 1, $close - $this->position - 1), new SourceRange($this->position, $close + 1));
+        $segment = new WordSegment(
+            WordSegmentType::SingleQuoted,
+            substr($this->source, $this->position + 1, $close - $this->position - 1),
+            new SourceRange($this->position, $close + 1),
+        );
         $this->position = $close + 1;
 
         return $segment;
@@ -372,13 +402,21 @@ final class LexerScan
 
                 continue;
             }
-            $closes = $character === ']' && $this->at($index + 1) === ']' && in_array($this->source[$index - 1], [' ', "\t"], true)
+            $closes = $character === ']' && $this->at($index + 1) === ']' && in_array(
+                $this->source[$index - 1],
+                [' ', "\t"],
+                true,
+            )
                 && in_array($this->at($index + 2), ['', ' ', "\t", "\n", ';', '&', '|', ')'], true);
             if ($closes) {
                 $this->position = $index + 2;
                 $range = new SourceRange($start, $this->position);
                 $text = substr($this->source, $start, $this->position - $start);
-                $this->tokens[] = new Token(TokenType::Word, $range, word: new Word([new WordSegment(WordSegmentType::Literal, $text, $range)], $range));
+                $this->tokens[] = new Token(
+                    TokenType::Word,
+                    $range,
+                    word: new Word([new WordSegment(WordSegmentType::Literal, $text, $range)], $range),
+                );
 
                 return;
             }
@@ -425,7 +463,11 @@ final class LexerScan
             $expansion = $startsExpansion ? $this->readExpansion() : null;
             if ($expansion !== null) {
                 if ($text !== '') {
-                    $segments[] = new WordSegment(WordSegmentType::DoubleQuoted, $text, new SourceRange($textStart, $expansion->range->start));
+                    $segments[] = new WordSegment(
+                        WordSegmentType::DoubleQuoted,
+                        $text,
+                        new SourceRange($textStart, $expansion->range->start),
+                    );
                 }
                 $segments[] = $expansion;
                 $text = '';
@@ -438,7 +480,11 @@ final class LexerScan
         }
 
         if ($text !== '' || $segments === []) {
-            $segments[] = new WordSegment(WordSegmentType::DoubleQuoted, $text, new SourceRange($segments === [] ? $open : $textStart, $this->position + 1));
+            $segments[] = new WordSegment(
+                WordSegmentType::DoubleQuoted,
+                $text,
+                new SourceRange($segments === [] ? $open : $textStart, $this->position + 1),
+            );
         }
         $this->position++;
 
@@ -467,7 +513,11 @@ final class LexerScan
             }
             $this->position = $close + 1;
 
-            return new WordSegment(WordSegmentType::Expansion, substr($this->source, $start + 1, $close - $start - 1), new SourceRange($start, $this->position));
+            return new WordSegment(
+                WordSegmentType::Expansion,
+                substr($this->source, $start + 1, $close - $start - 1),
+                new SourceRange($start, $this->position),
+            );
         }
 
         $next = $this->at($start + 1);
@@ -475,7 +525,11 @@ final class LexerScan
             $close = $this->closingQuote("'", $start + 2, $start, 'an ANSI-C quoted string');
             $this->position = $close + 1;
 
-            return new WordSegment(WordSegmentType::SingleQuoted, stripcslashes(substr($this->source, $start + 2, $close - $start - 2)), new SourceRange($start, $this->position));
+            return new WordSegment(
+                WordSegmentType::SingleQuoted,
+                stripcslashes(substr($this->source, $start + 2, $close - $start - 2)),
+                new SourceRange($start, $this->position),
+            );
         }
         if ($next === '(') {
             return $this->readBalanced($start, $start + 2, 'a command substitution');
@@ -488,9 +542,17 @@ final class LexerScan
             }
             $this->position = $this->closingBrace($start) + 1;
 
-            return new WordSegment(WordSegmentType::Expansion, substr($this->source, $start, $this->position - $start), new SourceRange($start, $this->position));
+            return new WordSegment(
+                WordSegmentType::Expansion,
+                substr($this->source, $start, $this->position - $start),
+                new SourceRange($start, $this->position),
+            );
         }
-        $nameLength = strspn($this->source, 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_', $start + 1);
+        $nameLength = strspn(
+            $this->source,
+            'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_',
+            $start + 1,
+        );
         if ($nameLength === 0 && $next !== '' && str_contains('@*#?$!-0123456789', $next)) {
             $nameLength = 1;
         }
@@ -499,7 +561,11 @@ final class LexerScan
         }
         $this->position = $start + 1 + $nameLength;
 
-        return new WordSegment(WordSegmentType::Expansion, substr($this->source, $start, $this->position - $start), new SourceRange($start, $this->position));
+        return new WordSegment(
+            WordSegmentType::Expansion,
+            substr($this->source, $start, $this->position - $start),
+            new SourceRange($start, $this->position),
+        );
     }
 
     /**
@@ -560,7 +626,11 @@ final class LexerScan
             } elseif ($character === ')' && --$depth === 0) {
                 $this->position = $index + 1;
 
-                return new WordSegment(WordSegmentType::Expansion, substr($this->source, $contentStart, $index - $contentStart), new SourceRange($start, $this->position));
+                return new WordSegment(
+                    WordSegmentType::Expansion,
+                    substr($this->source, $contentStart, $index - $contentStart),
+                    new SourceRange($start, $this->position),
+                );
             }
             $index++;
         }
@@ -760,8 +830,14 @@ final class LexerScan
         foreach ($this->hereDocuments->takeWaiting() as $waiting) {
             $redirectIndex = $waiting->redirect;
             $stripsTabs = $waiting->stripsTabs;
-            $delimiterWord = $this->tokens[$redirectIndex + 1]->word ?? throw ShellLineUnreadable::unfinished('a here-document without a delimiter', $this->tokens[$redirectIndex]->range->start);
-            $isQuoted = array_any($delimiterWord->segments, fn (WordSegment $segment) => $segment->type !== WordSegmentType::Literal);
+            $delimiterWord = $this->tokens[$redirectIndex + 1]->word ?? throw ShellLineUnreadable::unfinished(
+                'a here-document without a delimiter',
+                $this->tokens[$redirectIndex]->range->start,
+            );
+            $isQuoted = array_any(
+                $delimiterWord->segments,
+                fn (WordSegment $segment) => $segment->type !== WordSegmentType::Literal,
+            );
             $delimiter = implode('', array_map(fn (WordSegment $segment) => $segment->text, $delimiterWord->segments));
 
             $bodyStart = $this->position;
@@ -787,7 +863,10 @@ final class LexerScan
                 $lineStart = $lineEnd + 1;
             }
             if (! $found) {
-                throw ShellLineUnreadable::unfinished("the here-document ended by {$delimiter}", $this->tokens[$redirectIndex]->range->start);
+                throw ShellLineUnreadable::unfinished(
+                    "the here-document ended by {$delimiter}",
+                    $this->tokens[$redirectIndex]->range->start,
+                );
             }
 
             $body = new SourceRange($bodyStart, $bodyEnd);
@@ -815,7 +894,9 @@ final class LexerScan
 
                 continue;
             }
-            $expansion = ($character === '`' || ($character === '$' && $this->at($this->position + 1) === '(')) ? $this->readExpansion() : null;
+            $expansion = ($character === '`' || ($character === '$' && $this->at(
+                $this->position + 1,
+            ) === '(')) ? $this->readExpansion() : null;
             if ($expansion !== null) {
                 $segments[] = $expansion;
 

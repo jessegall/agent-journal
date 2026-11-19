@@ -65,8 +65,12 @@ final class ShareAudit extends Model implements ReadableModel
     /**
      * Appends a fact about one share.
      */
-    public static function recordFor(Share $share, ShareAuditType $type, ActorIdentity $actor, string|null $reasonCode): self
-    {
+    public static function recordFor(
+        Share $share,
+        ShareAuditType $type,
+        ActorIdentity $actor,
+        string|null $reasonCode,
+    ): self {
         $audit = self::fact($type, $actor, $reasonCode);
         $audit->share_id = $share->id;
         $audit->save();
@@ -77,8 +81,11 @@ final class ShareAudit extends Model implements ReadableModel
     /**
      * Appends a fact about the installation's sharing as a whole, such as a gateway change.
      */
-    public static function recordForInstallation(ShareAuditType $type, ActorIdentity $actor, string|null $reasonCode): self
-    {
+    public static function recordForInstallation(
+        ShareAuditType $type,
+        ActorIdentity $actor,
+        string|null $reasonCode,
+    ): self {
         $audit = self::fact($type, $actor, $reasonCode);
         $audit->save();
 

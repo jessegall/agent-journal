@@ -35,8 +35,14 @@ final class MarkdownPartsSectionsTest extends TestCase
 
         $sections = $this->sections('Shell');
 
-        $this->assertSame(['purpose', 'running-commands', 'reading-output'], array_map(fn (SkillSection $section) => $section->key, $sections));
-        $this->assertSame(['Purpose', 'Running commands', 'Reading output'], array_map(fn (SkillSection $section) => $section->heading, $sections));
+        $this->assertSame(
+            ['purpose', 'running-commands', 'reading-output'],
+            array_map(fn (SkillSection $section) => $section->key, $sections),
+        );
+        $this->assertSame(
+            ['Purpose', 'Running commands', 'Reading output'],
+            array_map(fn (SkillSection $section) => $section->heading, $sections),
+        );
         $this->assertSame("Commands run through the journal.\n\nThey keep their output.", $sections[0]->content);
         $this->assertSame('Run.', $sections[1]->body(new MarkdownParts(), $this->owner()));
         $this->assertSame('Read.', $sections[2]->body(new MarkdownParts(), $this->owner()));
@@ -46,7 +52,10 @@ final class MarkdownPartsSectionsTest extends TestCase
     {
         $this->write("# Shell\n\n## Running commands\n\nRun.\n");
 
-        $this->assertSame(['running-commands'], array_map(fn (SkillSection $section) => $section->key, $this->sections('Shell')));
+        $this->assertSame(
+            ['running-commands'],
+            array_map(fn (SkillSection $section) => $section->key, $this->sections('Shell')),
+        );
     }
 
     public function test_a_title_with_no_heading_and_no_purpose_gives_no_sections(): void
@@ -63,7 +72,10 @@ final class MarkdownPartsSectionsTest extends TestCase
         $sections = $this->sections('Shell');
 
         $this->assertSame(['failure', 'done'], array_map(fn (SkillSection $section) => $section->key, $sections));
-        $this->assertStringContainsString("### Retry\n\nAgain.", $sections[0]->body(new MarkdownParts(), $this->owner()));
+        $this->assertStringContainsString(
+            "### Retry\n\nAgain.",
+            $sections[0]->body(new MarkdownParts(), $this->owner()),
+        );
         $this->assertStringContainsString('## Not a heading', $sections[0]->body(new MarkdownParts(), $this->owner()));
         $this->assertSame('', $sections[1]->body(new MarkdownParts(), $this->owner()));
     }
@@ -107,8 +119,14 @@ final class MarkdownPartsSectionsTest extends TestCase
     public static function brokenFiles(): iterable
     {
         yield 'no title' => ["## States\n\nText.\n", 'has no # title before its first ## heading'];
-        yield 'text before the title' => ["Intro.\n\n# Shell\n\n## States\n", 'has no # title before its first ## heading'];
-        yield 'a deeper heading first' => ["### States\n\n# Shell\n\n## One\n", 'has no # title before its first ## heading'];
+        yield 'text before the title' => [
+            "Intro.\n\n# Shell\n\n## States\n",
+            'has no # title before its first ## heading',
+        ];
+        yield 'a deeper heading first' => [
+            "### States\n\n# Shell\n\n## One\n",
+            'has no # title before its first ## heading',
+        ];
         yield 'no heading at all' => ["Just text.\n", 'has no # title before its first ## heading'];
         yield 'second title' => ["# Shell\n\n## States\n\n# Notes\n", 'has a second # title, Notes'];
         yield 'title differs' => ["# Shells\n\n## States\n", 'has the # title Shells, but the skill is named Shell'];
@@ -116,8 +134,10 @@ final class MarkdownPartsSectionsTest extends TestCase
     }
 
     #[DataProvider('brokenFiles')]
-    public function test_a_broken_file_is_refused_naming_the_file_and_the_heading(string $markdown, string $message): void
-    {
+    public function test_a_broken_file_is_refused_naming_the_file_and_the_heading(
+        string $markdown,
+        string $message,
+    ): void {
         $this->write($markdown);
 
         $this->expectException(SkillSourceInvalid::class);

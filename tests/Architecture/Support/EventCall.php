@@ -55,7 +55,11 @@ final readonly class EventCall
         return match ($this->argument) {
             EventArgument::ClassName => $roots->startsWithProjectNamespace($this->event),
             EventArgument::String => str_contains($this->event, '*') && ! $this->namesModelLifecycle(),
-            EventArgument::Other => in_array($this->call, ['subscribe(Dispatcher)', '$listen', '$subscribe'], true) || str_ends_with($this->call, 'subscribe()'),
+            EventArgument::Other => in_array(
+                $this->call,
+                ['subscribe(Dispatcher)', '$listen', '$subscribe'],
+                true,
+            ) || str_ends_with($this->call, 'subscribe()'),
             default => false,
         };
     }

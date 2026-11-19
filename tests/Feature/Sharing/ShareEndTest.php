@@ -66,7 +66,9 @@ final class ShareEndTest extends TestCase
         $this->assertNotNull($revoked->terminal_at);
         $close = ShareGatewayOperation::query()->readAll('one close')->sole();
         $this->assertSame([GatewayOperationType::Close, null], [$close->type, $close->run_id]);
-        $this->assertTrue($this->app->make(ShareLinkResolver::class)->linkFor(TestActors::user(9), $share->id)->isEmpty());
+        $this->assertTrue(
+            $this->app->make(ShareLinkResolver::class)->linkFor(TestActors::user(9), $share->id)->isEmpty(),
+        );
         $this->assertSame([ShareAuditType::Revoked], $this->auditTypes());
     }
 
@@ -87,7 +89,11 @@ final class ShareEndTest extends TestCase
 
     public function test_a_revoke_dismisses_a_proposal_without_a_close(): void
     {
-        $proposal = Share::propose(TestActors::record('binders.binder', 1), TestActors::agentIdentity(5), CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS));
+        $proposal = Share::propose(
+            TestActors::record('binders.binder', 1),
+            TestActors::agentIdentity(5),
+            CarbonImmutable::now()->addDays(Share::PROPOSAL_DAYS),
+        );
 
         $this->assertSame(ShareState::Revoked, $this->revoke($proposal, '01JD8X0G9M3QZ6V4K2REVOKE01')->state);
         $this->assertSame(0, ShareGatewayOperation::query()->count());
@@ -106,7 +112,11 @@ final class ShareEndTest extends TestCase
     public function test_expire_shares_run_twice_audits_each_expiry_once(): void
     {
         $overdue = $this->activeShare(CarbonImmutable::now()->subMinute());
-        $proposal = Share::propose(TestActors::record('binders.binder', 2), TestActors::agentIdentity(5), CarbonImmutable::now()->subMinute());
+        $proposal = Share::propose(
+            TestActors::record('binders.binder', 2),
+            TestActors::agentIdentity(5),
+            CarbonImmutable::now()->subMinute(),
+        );
         $current = $this->activeShare(CarbonImmutable::now()->addDay());
 
         $this->assertEquals(new ShareExpiry(2, false), $this->expire());
@@ -123,7 +133,11 @@ final class ShareEndTest extends TestCase
     public function test_expire_shares_takes_at_most_a_hundred_and_says_more_wait(): void
     {
         for ($index = 0; $index <= 100; $index++) {
-            Share::propose(TestActors::record('binders.binder', 1000 + $index), TestActors::agentIdentity(5), CarbonImmutable::now()->subMinute());
+            Share::propose(
+                TestActors::record('binders.binder', 1000 + $index),
+                TestActors::agentIdentity(5),
+                CarbonImmutable::now()->subMinute(),
+            );
         }
 
         $this->assertEquals(new ShareExpiry(100, true), $this->expire());
@@ -134,12 +148,21 @@ final class ShareEndTest extends TestCase
     {
         $this->startTestUserRequest(9);
 
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new ExpireShares()), CommandNotRegistered::class);
+        $this->assertThrows(
+            fn () => $this->app->make(CommandBus::class)->run(new ExpireShares()),
+            CommandNotRegistered::class,
+        );
     }
 
     private function activeShare(CarbonImmutable $expiresAt): Share
     {
-        $share = Share::grant(TestActors::record('binders.binder', 1), TestIds::of(9), $this->configuration, ShareToken::generate(), $expiresAt);
+        $share = Share::grant(
+            TestActors::record('binders.binder', 1),
+            TestIds::of(9),
+            $this->configuration,
+            ShareToken::generate(),
+            $expiresAt,
+        );
         $share->state = ShareState::Active;
         $share->save();
 
@@ -167,6 +190,8 @@ final class ShareEndTest extends TestCase
      */
     private function auditTypes(): array
     {
-        return array_values(ShareAudit::query()->orderBy('id')->readAll('a few audits')->get()->map(fn (ShareAudit $audit) => $audit->type)->all());
+        return array_values(
+            ShareAudit::query()->orderBy('id')->readAll('a few audits')->get()->map(fn (ShareAudit $audit) => $audit->type)->all(),
+        );
     }
 }

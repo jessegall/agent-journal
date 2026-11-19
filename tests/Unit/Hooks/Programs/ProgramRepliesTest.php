@@ -49,9 +49,15 @@ final class ProgramRepliesTest extends TestCase
 
     public function test_a_rewrite_keeps_every_other_tool_argument_when_the_program_takes_it(): void
     {
-        $original = new ProgramToolInput(['command' => 'composer test', 'description' => 'Run the tests', 'timeout' => 120]);
+        $original = new ProgramToolInput(
+            ['command' => 'composer test', 'description' => 'Run the tests', 'timeout' => 120],
+        );
 
-        $reply = ProgramReplies::shell($this->answer(Decision::rewrite('journal run tests')), $original, RewriteSupport::WithoutApproval);
+        $reply = ProgramReplies::shell(
+            $this->answer(Decision::rewrite('journal run tests')),
+            $original,
+            RewriteSupport::WithoutApproval,
+        );
 
         $this->assertSame(['hookSpecificOutput' => [
             'hookEventName' => 'PreToolUse',
@@ -61,18 +67,30 @@ final class ProgramRepliesTest extends TestCase
 
     public function test_a_rewrite_the_program_cannot_take_without_approval_is_refused_with_the_journal_command(): void
     {
-        $reply = ProgramReplies::shell($this->answer(Decision::rewrite('journal run tests')), new ProgramToolInput(['command' => 'composer test']), RewriteSupport::NeedsApproval);
+        $reply = ProgramReplies::shell(
+            $this->answer(Decision::rewrite('journal run tests')),
+            new ProgramToolInput(['command' => 'composer test']),
+            RewriteSupport::NeedsApproval,
+        );
 
         $this->assertSame('deny', json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecision']);
-        $this->assertStringContainsString('journal run', json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecisionReason']);
+        $this->assertStringContainsString(
+            'journal run',
+            json_decode($reply->stdout, true)['hookSpecificOutput']['permissionDecisionReason'],
+        );
         $this->assertArrayNotHasKey('updatedInput', json_decode($reply->stdout, true)['hookSpecificOutput']);
     }
 
     public function test_a_held_stop_blocks_with_one_reason_followed_by_the_context(): void
     {
-        $reply = ProgramReplies::stop($this->answer(Decision::deny('Task 42 still needs work.'), ['Run the phase tests.']));
+        $reply = ProgramReplies::stop(
+            $this->answer(Decision::deny('Task 42 still needs work.'), ['Run the phase tests.']),
+        );
 
-        $this->assertSame(['decision' => 'block', 'reason' => "Task 42 still needs work.\nRun the phase tests."], json_decode($reply->stdout, true));
+        $this->assertSame(
+            ['decision' => 'block', 'reason' => "Task 42 still needs work.\nRun the phase tests."],
+            json_decode($reply->stdout, true),
+        );
     }
 
     public function test_an_allowed_stop_is_an_empty_object(): void
@@ -99,7 +117,11 @@ final class ProgramRepliesTest extends TestCase
         $replies = [
             $this->shell(Decision::allow(), ['context']),
             $this->shell(Decision::deny('No.')),
-            ProgramReplies::shell($this->answer(Decision::rewrite('journal run tests')), new ProgramToolInput(['command' => 'x']), RewriteSupport::WithoutApproval),
+            ProgramReplies::shell(
+                $this->answer(Decision::rewrite('journal run tests')),
+                new ProgramToolInput(['command' => 'x']),
+                RewriteSupport::WithoutApproval,
+            ),
             ProgramReplies::stop($this->answer(Decision::allow())),
             ProgramReplies::stop($this->answer(Decision::deny('Wait.'))),
         ];
@@ -114,7 +136,11 @@ final class ProgramRepliesTest extends TestCase
      */
     private function shell(Decision $decision, array $context = []): ProgramReply
     {
-        return ProgramReplies::shell($this->answer($decision, $context), new ProgramToolInput(['command' => 'git status']), RewriteSupport::WithoutApproval);
+        return ProgramReplies::shell(
+            $this->answer($decision, $context),
+            new ProgramToolInput(['command' => 'git status']),
+            RewriteSupport::WithoutApproval,
+        );
     }
 
     /**

@@ -48,6 +48,8 @@ final class DocumentsServiceProvider extends ServiceProvider
         ]);
 
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/agent.php');
-        $this->commands([DocMakeCommand::class, DocListCommand::class, DocShowCommand::class, DocOpenCommand::class, DocEditCommand::class, DocCloseCommand::class, DocRevisionsCommand::class, DocRevisionCommand::class, DocCommentsCommand::class, ReportCommentsCommand::class, DocSettleCommand::class, ReportSettleCommand::class, DocInspectCommand::class, ReportInspectCommand::class, ReportEditCommand::class, ReportMakeCommand::class, ReportListCommand::class, ReportShowCommand::class]);
+        $this->commands(
+            [DocMakeCommand::class, DocListCommand::class, DocShowCommand::class, DocOpenCommand::class, DocEditCommand::class, DocCloseCommand::class, DocRevisionsCommand::class, DocRevisionCommand::class, DocCommentsCommand::class, ReportCommentsCommand::class, DocSettleCommand::class, ReportSettleCommand::class, DocInspectCommand::class, ReportInspectCommand::class, ReportEditCommand::class, ReportMakeCommand::class, ReportListCommand::class, ReportShowCommand::class],
+        );
     }
 }

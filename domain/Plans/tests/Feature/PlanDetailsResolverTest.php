@@ -33,7 +33,10 @@ final class PlanDetailsResolverTest extends TestCase
     {
         parent::setUp();
 
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)), new OwnerAuthority('test'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forUser(TestIds::of(7)),
+            new OwnerAuthority('test'),
+        );
     }
 
     public function test_progress_equals_the_web_lists_and_a_finishing_task_shows_on_the_next_read(): void
@@ -85,7 +88,10 @@ final class PlanDetailsResolverTest extends TestCase
     public function test_a_phase_read_lists_its_task_references_in_order(): void
     {
         $plan = Plan::factory()->create();
-        [$first, $second] = [Task::factory()->create(['title' => 'First']), Task::factory()->create(['title' => 'Second'])];
+        [$first, $second] = [
+            Task::factory()->create(['title' => 'First']),
+            Task::factory()->create(['title' => 'Second']),
+        ];
         $phase = $plan->addPhase('Work');
         $phase->addTasks([$second->id, $first->id]);
 

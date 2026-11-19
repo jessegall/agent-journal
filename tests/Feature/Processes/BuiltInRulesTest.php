@@ -41,22 +41,49 @@ final class BuiltInRulesTest extends TestCase
         yield 'curl saving' => ['curl -o f https://example.com', [CommandClass::Write, CommandClass::Network]];
         yield 'curl fetching' => ['curl -fsSL https://example.com', [CommandClass::Network]];
         yield 'kill' => ['kill -9 123', [CommandClass::ProcessControl]];
-        yield 'npm install' => ['npm install', [CommandClass::Read, CommandClass::Write, CommandClass::Delete, CommandClass::Network, CommandClass::PackageInstall]];
+        yield 'npm install' => [
+            'npm install',
+            [CommandClass::Read, CommandClass::Write, CommandClass::Delete, CommandClass::Network, CommandClass::PackageInstall],
+        ];
         yield 'pint fixes' => ['vendor/bin/pint', [CommandClass::Read, CommandClass::Edit, CommandClass::Verification]];
         yield 'vite build' => ['vite build', [CommandClass::Read, CommandClass::Write, CommandClass::Build]];
         yield 'npx waits for task 770' => ['npx vite build', []];
         yield 'git status --short' => ['git status --short', [CommandClass::Read, CommandClass::VersionControl]];
-        yield 'git -C dir log' => ['git -C sub --no-pager log --oneline -5', [CommandClass::Read, CommandClass::VersionControl]];
+        yield 'git -C dir log' => [
+            'git -C sub --no-pager log --oneline -5',
+            [CommandClass::Read, CommandClass::VersionControl],
+        ];
         yield 'git branch --list' => ['git branch --list', [CommandClass::Read, CommandClass::VersionControl]];
-        yield 'git branch topic' => ['git branch topic', [CommandClass::Read, CommandClass::Write, CommandClass::VersionControl]];
-        yield 'git branch -D topic' => ['git branch -D topic', [CommandClass::Read, CommandClass::Delete, CommandClass::VersionControl]];
+        yield 'git branch topic' => [
+            'git branch topic',
+            [CommandClass::Read, CommandClass::Write, CommandClass::VersionControl],
+        ];
+        yield 'git branch -D topic' => [
+            'git branch -D topic',
+            [CommandClass::Read, CommandClass::Delete, CommandClass::VersionControl],
+        ];
         yield 'git diff --ext-diff' => ['git diff --ext-diff', []];
         yield 'git -c is unresolved' => ['git -c core.pager=less log', []];
-        yield 'git fetch' => ['git fetch --all --prune', [CommandClass::Read, CommandClass::Write, CommandClass::Network, CommandClass::VersionControl]];
-        yield 'git push --force' => ['git push --force origin main', [CommandClass::Read, CommandClass::Write, CommandClass::Network, CommandClass::VersionControl]];
-        yield 'git push --delete' => ['git push --delete origin old', [CommandClass::Read, CommandClass::Write, CommandClass::Delete, CommandClass::Network, CommandClass::VersionControl]];
-        yield 'git ls-remote' => ['git ls-remote origin', [CommandClass::Read, CommandClass::Network, CommandClass::VersionControl]];
-        yield 'git reset --hard' => ['git reset --hard HEAD~1', [CommandClass::Read, CommandClass::Write, CommandClass::Edit, CommandClass::Delete, CommandClass::VersionControl]];
+        yield 'git fetch' => [
+            'git fetch --all --prune',
+            [CommandClass::Read, CommandClass::Write, CommandClass::Network, CommandClass::VersionControl],
+        ];
+        yield 'git push --force' => [
+            'git push --force origin main',
+            [CommandClass::Read, CommandClass::Write, CommandClass::Network, CommandClass::VersionControl],
+        ];
+        yield 'git push --delete' => [
+            'git push --delete origin old',
+            [CommandClass::Read, CommandClass::Write, CommandClass::Delete, CommandClass::Network, CommandClass::VersionControl],
+        ];
+        yield 'git ls-remote' => [
+            'git ls-remote origin',
+            [CommandClass::Read, CommandClass::Network, CommandClass::VersionControl],
+        ];
+        yield 'git reset --hard' => [
+            'git reset --hard HEAD~1',
+            [CommandClass::Read, CommandClass::Write, CommandClass::Edit, CommandClass::Delete, CommandClass::VersionControl],
+        ];
     }
 
     /**
@@ -102,8 +129,13 @@ final class BuiltInRulesTest extends TestCase
 
     public function test_explain_shows_a_check_as_tests_and_checks_with_its_contract_and_reader_state(): void
     {
-        $explanation = $this->app->make(Explanations::class)->explain('vendor/bin/phpstan analyse --no-progress', ShellDialect::Bash);
-        $part = array_values(array_filter($explanation->nodes, fn (ExplainedNodeData $node): bool => $node->purpose !== ''))[0];
+        $explanation = $this->app->make(Explanations::class)->explain(
+            'vendor/bin/phpstan analyse --no-progress',
+            ShellDialect::Bash,
+        );
+        $part = array_values(
+            array_filter($explanation->nodes, fn (ExplainedNodeData $node): bool => $node->purpose !== ''),
+        )[0];
 
         $this->assertSame('Tests and checks', $part->purpose);
         $this->assertContains('tool phpstan', $part->contract);
@@ -128,6 +160,9 @@ final class BuiltInRulesTest extends TestCase
     {
         $tree = $this->app->make(ShellSyntax::class)->parse($line, ShellDialect::Bash);
 
-        return $this->app->make(CommandClassifier::class)->classify($tree, new ExecutionContext(ShellDialect::Bash, base_path(), base_path()));
+        return $this->app->make(CommandClassifier::class)->classify(
+            $tree,
+            new ExecutionContext(ShellDialect::Bash, base_path(), base_path()),
+        );
     }
 }

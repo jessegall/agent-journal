@@ -33,7 +33,15 @@ final class AssignedListCommandsTest extends TestCase
     use SendsSignedCalls;
     use StartsAgentRequests;
 
-    private const array TABLES = ['users', 'agents', 'agent_sessions', 'launch_credentials', 'tasks', 'plans', 'assignments'];
+    private const array TABLES = [
+        'users',
+        'agents',
+        'agent_sessions',
+        'launch_credentials',
+        'tasks',
+        'plans',
+        'assignments',
+    ];
 
     private TestLaunch $caller;
 
@@ -52,13 +60,22 @@ final class AssignedListCommandsTest extends TestCase
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $task = Task::factory()->create(['title' => 'Write the client']);
         $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
-        $held = $writer->assign($task->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent))->outcomes[0]->current;
+        $held = $writer->assign(
+            $task->assignmentIdentity(),
+            AssigneeIdentity::of($this->caller->agent),
+        )->outcomes[0]->current;
         $writer->assign($plan->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent));
         $this->runCommandsAs($this->caller);
 
         $this->artisan('task:assigned')
             ->expectsTable(['Id', 'Title', 'State', 'Holder', 'Reference'], [
-                [$task->id, 'Write the client', 'open', "agent {$this->caller->agent->id} Test agent", $held->reference->id],
+                [
+                    $task->id,
+                    'Write the client',
+                    'open',
+                    "agent {$this->caller->agent->id} Test agent",
+                    $held->reference->id,
+                ],
             ])
             ->expectsOutputToContain('Page 1: 1 of 1')
             ->assertExitCode(0);
@@ -80,7 +97,10 @@ final class AssignedListCommandsTest extends TestCase
         $this->artisan('task:assigned')->expectsOutputToContain('The journal refused the call (unauthenticated)')->doesntExpectOutputToContain('not-a-launch-token')->assertExitCode(1);
 
         $this->runCommandsAs($this->caller);
-        $this->artisan('plan:assigned', ['--per-page' => 101])->expectsOutputToContain('(invalid_input)')->assertExitCode(1);
+        $this->artisan(
+            'plan:assigned',
+            ['--per-page' => 101],
+        )->expectsOutputToContain('(invalid_input)')->assertExitCode(1);
 
         Http::fake(fn () => throw new ConnectionException('Connection refused'));
         $this->artisan('task:assigned')->expectsOutputToContain('did not answer')->assertExitCode(1);
@@ -90,7 +110,11 @@ final class AssignedListCommandsTest extends TestCase
     {
         $this->assertThrows(fn () => new EnvironmentCredentialSource([])->forThisLaunch(), LaunchSettingMissing::class);
 
-        $process = new Process([base_path('bin/journal'), 'task', 'assigned'], base_path(), ['JOURNAL_URL' => false, 'JOURNAL_LAUNCH_TOKEN' => false]);
+        $process = new Process(
+            [base_path('bin/journal'), 'task', 'assigned'],
+            base_path(),
+            ['JOURNAL_URL' => false, 'JOURNAL_LAUNCH_TOKEN' => false],
+        );
         $process->run();
 
         $this->assertNotSame(0, $process->getExitCode());

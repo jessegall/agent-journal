@@ -111,7 +111,9 @@ final class AgentStackRow extends Model implements ReadableModel
      */
     public static function lockFor(StackTarget $target): self
     {
-        $row = self::query()->forTarget($target)->lockForUpdate()->first() ?? throw StackMissing::forTarget($target->description());
+        $row = self::query()->forTarget($target)->lockForUpdate()->first() ?? throw StackMissing::forTarget(
+            $target->description(),
+        );
 
         if (! $row->isActive()) {
             throw StackAlreadyClosed::forTarget($target->description());
@@ -149,7 +151,9 @@ final class AgentStackRow extends Model implements ReadableModel
      */
     public static function lockAuthorizedFor(StackTarget $target): self
     {
-        $row = self::query()->authorizedFor($target)->lockForUpdate()->first() ?? throw StackMissing::forTarget($target->description());
+        $row = self::query()->authorizedFor($target)->lockForUpdate()->first() ?? throw StackMissing::forTarget(
+            $target->description(),
+        );
 
         if (! $row->isActive()) {
             throw StackAlreadyClosed::forTarget($target->description());

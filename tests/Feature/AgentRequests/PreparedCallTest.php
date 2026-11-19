@@ -31,7 +31,12 @@ final class PreparedCallTest extends TestCase
     {
         Http::fake(['journal.test/*' => Http::sequence()->pushStatus(502)->push(['ok' => true])]);
         $client = $this->app->make(AgentRequestClient::class);
-        $call = $client->prepare($this->settings(), '/agent/mcp/v1', self::BODY, CarbonImmutable::now()->getTimestamp());
+        $call = $client->prepare(
+            $this->settings(),
+            '/agent/mcp/v1',
+            self::BODY,
+            CarbonImmutable::now()->getTimestamp(),
+        );
         $deadline = CarbonImmutable::now()->addSeconds(20);
 
         $client->sendPrepared($call, ['Mcp-Method' => 'ping'], $deadline);
@@ -56,7 +61,11 @@ final class PreparedCallTest extends TestCase
         Http::fake(['journal.test/*' => Http::response('{"message":"broken"}', 500)]);
         $client = $this->app->make(AgentRequestClient::class);
 
-        $reply = $client->sendPrepared($client->prepare($this->settings(), '/agent/mcp/v1', self::BODY, CarbonImmutable::now()->getTimestamp()), [], CarbonImmutable::now()->addSeconds(20));
+        $reply = $client->sendPrepared(
+            $client->prepare($this->settings(), '/agent/mcp/v1', self::BODY, CarbonImmutable::now()->getTimestamp()),
+            [],
+            CarbonImmutable::now()->addSeconds(20),
+        );
 
         $this->assertSame(500, $reply->status);
         $this->assertSame('{"message":"broken"}', $reply->body);
@@ -67,10 +76,23 @@ final class PreparedCallTest extends TestCase
     {
         Http::fake(fn () => throw new ConnectionException('Connection refused'));
         $client = $this->app->make(AgentRequestClient::class);
-        $call = $client->prepare($this->settings(), '/agent/mcp/v1', self::BODY, CarbonImmutable::now()->getTimestamp());
+        $call = $client->prepare(
+            $this->settings(),
+            '/agent/mcp/v1',
+            self::BODY,
+            CarbonImmutable::now()->getTimestamp(),
+        );
 
-        $this->assertThrows(fn () => $client->sendPrepared($call, [], CarbonImmutable::now()->addSeconds(20)), JournalUnreachable::class, 'did not answer');
-        $this->assertThrows(fn () => $client->sendPrepared($call, [], CarbonImmutable::now()->subSecond()), CallDeadlinePassed::class, 'deadline');
+        $this->assertThrows(
+            fn () => $client->sendPrepared($call, [], CarbonImmutable::now()->addSeconds(20)),
+            JournalUnreachable::class,
+            'did not answer',
+        );
+        $this->assertThrows(
+            fn () => $client->sendPrepared($call, [], CarbonImmutable::now()->subSecond()),
+            CallDeadlinePassed::class,
+            'deadline',
+        );
     }
 
     public function test_post_signs_the_same_envelope_as_before(): void
@@ -83,7 +105,15 @@ final class PreparedCallTest extends TestCase
             $callId = $request->header(SignedCall::ID_HEADER)[0];
             $issuedAt = (int) $request->header(SignedCall::ISSUED_AT_HEADER)[0];
             $pin = new LaunchProfilePin('main-agent', 1);
-            $signature = SignedCall::agentSignatureFor('launch-token', 'POST', $request->url(), $callId, $issuedAt, self::BODY, $pin);
+            $signature = SignedCall::agentSignatureFor(
+                'launch-token',
+                'POST',
+                $request->url(),
+                $callId,
+                $issuedAt,
+                self::BODY,
+                $pin,
+            );
 
             return $request->body() === self::BODY
                 && $request->header(SignedCall::SIGNATURE_HEADER) === [$signature]
@@ -96,7 +126,10 @@ final class PreparedCallTest extends TestCase
         Http::fake();
 
         foreach (['', '${JOURNAL_LAUNCH_TOKEN}', '<token>'] as $token) {
-            $this->assertThrows(fn () => new EnvironmentCredentialSource(['JOURNAL_URL' => 'http://127.0.0.1:8000', 'JOURNAL_LAUNCH_TOKEN' => $token])->forThisLaunch(), LaunchCredentialRefused::class);
+            $this->assertThrows(
+                fn () => new EnvironmentCredentialSource(['JOURNAL_URL' => 'http://127.0.0.1:8000', 'JOURNAL_LAUNCH_TOKEN' => $token])->forThisLaunch(),
+                LaunchCredentialRefused::class,
+            );
         }
 
         Http::assertNothingSent();
@@ -104,15 +137,28 @@ final class PreparedCallTest extends TestCase
 
     public function test_a_journal_off_this_machine_needs_https(): void
     {
-        $this->assertThrows(fn () => new EnvironmentCredentialSource(['JOURNAL_URL' => 'http://journal.example', 'JOURNAL_LAUNCH_TOKEN' => 'launch-token'])->forThisLaunch(), LaunchCredentialRefused::class);
+        $this->assertThrows(
+            fn () => new EnvironmentCredentialSource(['JOURNAL_URL' => 'http://journal.example', 'JOURNAL_LAUNCH_TOKEN' => 'launch-token'])->forThisLaunch(),
+            LaunchCredentialRefused::class,
+        );
 
-        $this->assertSame('https://journal.example', new EnvironmentCredentialSource(['JOURNAL_URL' => 'https://journal.example/', 'JOURNAL_LAUNCH_TOKEN' => 'launch-token', ...self::PIN])->forThisLaunch()->journalUrl);
-        $this->assertSame('http://localhost:8000', new EnvironmentCredentialSource(['JOURNAL_URL' => 'http://localhost:8000', 'JOURNAL_LAUNCH_TOKEN' => 'launch-token', ...self::PIN])->forThisLaunch()->journalUrl);
+        $this->assertSame(
+            'https://journal.example',
+            new EnvironmentCredentialSource(['JOURNAL_URL' => 'https://journal.example/', 'JOURNAL_LAUNCH_TOKEN' => 'launch-token', ...self::PIN])->forThisLaunch()->journalUrl,
+        );
+        $this->assertSame(
+            'http://localhost:8000',
+            new EnvironmentCredentialSource(['JOURNAL_URL' => 'http://localhost:8000', 'JOURNAL_LAUNCH_TOKEN' => 'launch-token', ...self::PIN])->forThisLaunch()->journalUrl,
+        );
     }
 
     public function test_a_missing_setting_is_named(): void
     {
-        $this->assertThrows(fn () => new EnvironmentCredentialSource(['JOURNAL_URL' => 'https://journal.example'])->forThisLaunch(), LaunchSettingMissing::class, 'JOURNAL_LAUNCH_TOKEN');
+        $this->assertThrows(
+            fn () => new EnvironmentCredentialSource(['JOURNAL_URL' => 'https://journal.example'])->forThisLaunch(),
+            LaunchSettingMissing::class,
+            'JOURNAL_LAUNCH_TOKEN',
+        );
     }
 
     private const array PIN = ['JOURNAL_PROFILE' => 'main-agent', 'JOURNAL_PROFILE_REVISION' => '1'];

@@ -33,7 +33,11 @@ final class ReadinessDiscoveryTest extends TestCase
 
     public function test_an_initialize_alone_records_nothing(): void
     {
-        $this->sendMcp($this->launch, 'initialize', ['protocolVersion' => '2025-11-25', 'capabilities' => (object) [], 'clientInfo' => ['name' => 'test', 'version' => '1']])->assertOk();
+        $this->sendMcp(
+            $this->launch,
+            'initialize',
+            ['protocolVersion' => '2025-11-25', 'capabilities' => (object) [], 'clientInfo' => ['name' => 'test', 'version' => '1']],
+        )->assertOk();
         $this->sendMcp($this->launch, 'ping')->assertOk();
 
         $this->assertNull($this->launch->session->fresh()?->discovered_at);

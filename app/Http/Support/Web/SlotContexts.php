@@ -28,7 +28,9 @@ final readonly class SlotContexts
         return match ($slot->takes) {
             SlotContextType::Nothing => Some::create(SlotContext::nothing()),
             SlotContextType::Session => $this->idIn($request->chosenSession())->map(SlotContext::session(...)),
-            SlotContextType::Record => $this->idIn($request->route((string) $slot->recordParameter))->map(SlotContext::record(...)),
+            SlotContextType::Record => $this->idIn(
+                $request->route((string) $slot->recordParameter),
+            )->map(SlotContext::record(...)),
         };
     }
 

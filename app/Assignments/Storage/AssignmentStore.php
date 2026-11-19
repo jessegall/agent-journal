@@ -100,8 +100,14 @@ final readonly class AssignmentStore implements AssignmentStorage
         $released = array_values($rows->map(fn (AssignmentRecord $row) => $row->toAssignment())->all());
 
         return new AssignmentResult(
-            array_map(fn (Assignment $assignment) => new AssignmentOutcome($assignment->record, null, AssignmentOutcomeType::Changed), $released),
-            array_map(fn (Assignment $assignment) => new AssignmentChange($assignment->record, $assignment, null), $released),
+            array_map(
+                fn (Assignment $assignment) => new AssignmentOutcome($assignment->record, null, AssignmentOutcomeType::Changed),
+                $released,
+            ),
+            array_map(
+                fn (Assignment $assignment) => new AssignmentChange($assignment->record, $assignment, null),
+                $released,
+            ),
         );
     }
 

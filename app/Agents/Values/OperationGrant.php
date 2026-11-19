@@ -24,6 +24,9 @@ final readonly class OperationGrant
             return false;
         }
 
-        return $this->resources === [] || array_all($operation->resources, fn (ResourceRequest $resource): bool => in_array($resource, $this->resources));
+        return $this->resources === [] || array_all(
+            $operation->resources,
+            fn (ResourceRequest $resource): bool => in_array($resource, $this->resources),
+        );
     }
 }

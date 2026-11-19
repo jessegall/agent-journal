@@ -36,7 +36,10 @@ trait ProvidesModelRecords
 
     public function identityOf(int $number): RecordIdentity
     {
-        $record = $this->readableRecords()->where('number', $number)->first() ?? throw RecordUnavailable::numbered($this->referenceWord(), $number);
+        $record = $this->readableRecords()->where('number', $number)->first() ?? throw RecordUnavailable::numbered(
+            $this->referenceWord(),
+            $number,
+        );
 
         return new RecordIdentity($this->linkType(), (string) $record->getKey());
     }
@@ -70,7 +73,9 @@ trait ProvidesModelRecords
 
     public function visibleCards(array $records): array
     {
-        $found = $this->readableRecords()->whereKey(array_map(fn (RecordIdentity $record) => $record->id, $records))->readLimit(count($records))->get()->keyBy(fn (Model $model) => (string) $model->getKey());
+        $found = $this->readableRecords()->whereKey(
+            array_map(fn (RecordIdentity $record) => $record->id, $records),
+        )->readLimit(count($records))->get()->keyBy(fn (Model $model) => (string) $model->getKey());
         $cards = [];
 
         foreach ($records as $record) {

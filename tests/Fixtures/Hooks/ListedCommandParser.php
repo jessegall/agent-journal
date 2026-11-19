@@ -20,9 +20,24 @@ final class ListedCommandParser implements ShellCommandParser
     public function parse(string $line, ShellDialect $dialect): ShellCommand
     {
         $part = match ($line) {
-            'composer test' => new CommandPart('composer', ['test'], CommandEffect::ChangesFiles, CommandType::Verification),
-            'journal run tests' => new CommandPart('journal', ['run', 'tests'], CommandEffect::ReadsOnly, CommandType::Alias),
-            'journal run tests --write' => new CommandPart('journal', ['run', 'tests', '--write'], CommandEffect::ChangesFiles, CommandType::Alias),
+            'composer test' => new CommandPart(
+'composer',
+ ['test'],
+ CommandEffect::ChangesFiles,
+ CommandType::Verification,
+),
+            'journal run tests' => new CommandPart(
+'journal',
+ ['run', 'tests'],
+ CommandEffect::ReadsOnly,
+ CommandType::Alias,
+),
+            'journal run tests --write' => new CommandPart(
+'journal',
+ ['run', 'tests', '--write'],
+ CommandEffect::ChangesFiles,
+ CommandType::Alias,
+),
             'git status' => new CommandPart('git', ['status'], CommandEffect::ReadsOnly, CommandType::Ordinary),
             default => null,
         };

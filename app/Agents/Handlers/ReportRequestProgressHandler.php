@@ -29,8 +29,12 @@ final readonly class ReportRequestProgressHandler implements CommandHandler
             RequestProgress::Applying => $request->beginApplying($command->attempt),
             RequestProgress::Applied => $request->markApplied((string) $command->actualBinding, $command->outcome),
             RequestProgress::DeliveryUncertain => $request->markUncertain(),
-            RequestProgress::Failed, RequestProgress::Unavailable => $request->fail($command->outcome ?? RequestOutcome::Refused),
-            RequestProgress::Accepted, RequestProgress::Staged, RequestProgress::Superseded, RequestProgress::Cancelled => $request->hold($request->hold_reason),
+            RequestProgress::Failed, RequestProgress::Unavailable => $request->fail(
+                $command->outcome ?? RequestOutcome::Refused,
+            ),
+            RequestProgress::Accepted, RequestProgress::Staged, RequestProgress::Superseded, RequestProgress::Cancelled => $request->hold(
+                $request->hold_reason,
+            ),
         };
 
         if ($command->script !== null) {

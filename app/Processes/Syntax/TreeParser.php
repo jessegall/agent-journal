@@ -27,11 +27,22 @@ final readonly class TreeParser implements ShellSyntax
     public function parse(string $line, ShellDialect $dialect): ShellTree
     {
         try {
-            return $this->pipelines->run(BuildShellTreePipeline::class, new ShellLine($line, $dialect), ShellTree::class);
+            return $this->pipelines->run(
+                BuildShellTreePipeline::class,
+                new ShellLine($line, $dialect),
+                ShellTree::class,
+            );
         } catch (ShellGrammarStopped $stopped) {
             $root = new ShellNode(0, NodeType::Sequence, new SourceRange(0, strlen($line)), true, 0);
 
-            return new ShellTree($line, $dialect, $stopped->outcome, [0 => $root], 0, new TreeDiagnostic($stopped->position, $stopped->getMessage()));
+            return new ShellTree(
+                $line,
+                $dialect,
+                $stopped->outcome,
+                [0 => $root],
+                0,
+                new TreeDiagnostic($stopped->position, $stopped->getMessage()),
+            );
         }
     }
 }

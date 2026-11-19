@@ -27,7 +27,10 @@ final class TypeScriptServiceProvider extends TypeScriptTransformerApplicationSe
     public function register(): void
     {
         parent::register();
-        $this->app->singleton(TypeOwners::class, fn () => TypeOwners::of($this->app->make(DomainRegistry::class), $this->app->make(UiDeclarations::class)));
+        $this->app->singleton(
+            TypeOwners::class,
+            fn () => TypeOwners::of($this->app->make(DomainRegistry::class), $this->app->make(UiDeclarations::class)),
+        );
     }
 
     protected function configure(TypeScriptTransformerConfigFactory $config): void
@@ -49,7 +52,10 @@ final class TypeScriptServiceProvider extends TypeScriptTransformerApplicationSe
      */
     private function sourceFolders(DomainRegistry $registry): array
     {
-        $outside = array_filter(array_map(fn (DomainEntry $entry) => $entry->folder, $registry->all()), fn (string $folder) => ! str_starts_with($folder, app_path()));
+        $outside = array_filter(
+            array_map(fn (DomainEntry $entry) => $entry->folder, $registry->all()),
+            fn (string $folder) => ! str_starts_with($folder, app_path()),
+        );
 
         return array_values(array_unique([app_path(), ...$outside]));
     }

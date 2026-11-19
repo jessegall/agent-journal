@@ -22,6 +22,10 @@ final readonly class ReassignPlanWorkHandler implements CommandHandler
 
     public function handle(ReassignPlanWork $command): AssignmentResult
     {
-        return $this->writer->reassignUnfinished($command->expectedRoot, $command->recipient, fn () => $this->groups->for($command->root));
+        return $this->writer->reassignUnfinished(
+            $command->expectedRoot,
+            $command->recipient,
+            fn () => $this->groups->for($command->root),
+        );
     }
 }

@@ -70,9 +70,15 @@ final class ReadMeterTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $twice = $this->meter()->measure('twice', fn () => [User::query()->find($user->id), User::query()->find($user->id)]);
+        $twice = $this->meter()->measure(
+            'twice',
+            fn () => [User::query()->find($user->id), User::query()->find($user->id)],
+        );
         $plucked = $this->meter()->measure('pluck', fn () => User::query()->pluck('id'));
-        $quiet = $this->meter()->measure('without events', fn () => User::withoutEvents(fn () => User::query()->find($user->id)));
+        $quiet = $this->meter()->measure(
+            'without events',
+            fn () => User::withoutEvents(fn () => User::query()->find($user->id)),
+        );
 
         $this->assertSame(2, $twice->counts->modelsLoaded);
         $this->assertSame([User::class => 2], $twice->counts->modelsByClass);

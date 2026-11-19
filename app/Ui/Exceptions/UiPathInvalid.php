@@ -11,7 +11,9 @@ final class UiPathInvalid extends UiDeclarationError
 {
     public static function notNormalised(string $declaration, string $path): self
     {
-        return new self("{$declaration} declares the path '{$path}'; write lower-case segments or {name} parameters joined by single slashes, with no slash at either end.");
+        return new self(
+            "{$declaration} declares the path '{$path}'; write lower-case segments or {name} parameters joined by single slashes, with no slash at either end.",
+        );
     }
 
     public static function parameterTwice(string $declaration, string $path): self

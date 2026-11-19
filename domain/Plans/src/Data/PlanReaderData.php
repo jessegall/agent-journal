@@ -35,7 +35,9 @@ final class PlanReaderData extends Data
         return self::from([
             'card' => PlanCardData::fromPlanCard($card),
             'insideResults' => $selection->isInsideFilter,
-            'start' => $card->canStart ? StartPlanData::from(['planId' => (string) $card->id, 'planNumber' => (string) $card->number]) : Optional::create(),
+            'start' => $card->canStart ? StartPlanData::from(
+                ['planId' => (string) $card->id, 'planNumber' => (string) $card->number],
+            ) : Optional::create(),
         ]);
     }
 }

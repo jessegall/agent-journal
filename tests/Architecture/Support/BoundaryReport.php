@@ -16,7 +16,10 @@ final class BoundaryReport
     {
         $count = count($violations);
         $lines = implode("\n", array_map(
-            fn (Violation $violation) => '  '.self::relative($violation->file, $projectRoot).":{$violation->line} {$violation->reason()}",
+            fn (Violation $violation) => '  '.self::relative(
+                $violation->file,
+                $projectRoot,
+            ).":{$violation->line} {$violation->reason()}",
             $violations,
         ));
 

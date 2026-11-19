@@ -115,8 +115,15 @@ final class RecordHeartbeatTest extends TestCase
 
     private function launch(): LaunchedAgent
     {
-        $launched = $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', 'main-agent'), TestSelections::of('claude-code'), TestSelections::requestId());
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id), TestLaunchAuthority::forAgent($launched->session->agent_id));
+        $launched = $this->app->make(LaunchSessions::class)->launch(
+            Agent::named('Test agent', 'main-agent'),
+            TestSelections::of('claude-code'),
+            TestSelections::requestId(),
+        );
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent($launched->session->agent_id),
+            TestLaunchAuthority::forAgent($launched->session->agent_id),
+        );
 
         return $launched;
     }
@@ -128,6 +135,8 @@ final class RecordHeartbeatTest extends TestCase
 
     private function startedSecondsAgo(AgentSession $session, int $seconds): void
     {
-        DB::table('agent_sessions')->where('id', $session->id)->update(['created_at' => $this->app->make(DatabaseClock::class)->now()->subSeconds($seconds)]);
+        DB::table('agent_sessions')->where('id', $session->id)->update(
+            ['created_at' => $this->app->make(DatabaseClock::class)->now()->subSeconds($seconds)],
+        );
     }
 }

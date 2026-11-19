@@ -20,6 +20,10 @@ final readonly class PublicOriginCheck
 
         $origin = "https://{$host}";
 
-        return in_array($publicOrigin, [$origin, "{$origin}/"], true) && in_array($address, [$origin, "{$origin}/"], true);
+        return in_array(
+            $publicOrigin,
+            [$origin, "{$origin}/"],
+            true,
+        ) && in_array($address, [$origin, "{$origin}/"], true);
     }
 }

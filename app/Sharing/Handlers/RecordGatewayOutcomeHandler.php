@@ -75,8 +75,11 @@ final readonly class RecordGatewayOutcomeHandler implements CommandHandler
     /**
      * @param  list<Share>  $shares
      */
-    private function opened(ShareGatewayEndpoint $endpoint, ShareGatewayConfiguration $configuration, array $shares): void
-    {
+    private function opened(
+        ShareGatewayEndpoint $endpoint,
+        ShareGatewayConfiguration $configuration,
+        array $shares,
+    ): void {
         $endpoint->moveTo(GatewayEndpointState::Open);
 
         foreach ($shares as $share) {
@@ -105,7 +108,12 @@ final readonly class RecordGatewayOutcomeHandler implements CommandHandler
             }
 
             $share->failActivation();
-            ShareAudit::recordFor($share, ShareAuditType::ActivationFailed, ActorIdentity::system(), 'gateway_open_failed');
+            ShareAudit::recordFor(
+                $share,
+                ShareAuditType::ActivationFailed,
+                ActorIdentity::system(),
+                'gateway_open_failed',
+            );
             $this->events->dispatch(new ShareFailed($share->fact()));
         }
     }

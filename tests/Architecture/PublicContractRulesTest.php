@@ -54,7 +54,9 @@ final class PublicContractRulesTest extends TestCase
             PlanService::class.' is a class with hidden or changeable state, such as a service, under values',
             PlanMissing::class." is an exception outside its owner's Exceptions folder, under values",
             'Tests\Fixtures\PublicContracts\Plans\Gone is a name that does not exist, under values',
-        ], $this->violationsOf([Plan::class, PlanService::class, PlanMissing::class, 'Tests\Fixtures\PublicContracts\Plans\Gone']));
+        ], $this->violationsOf(
+            [Plan::class, PlanService::class, PlanMissing::class, 'Tests\Fixtures\PublicContracts\Plans\Gone'],
+        ));
     }
 
     /**
@@ -65,15 +67,26 @@ final class PublicContractRulesTest extends TestCase
     {
         $owners = [
             PublicOwner::core(CoreApi::exports()),
-            // @phpstan-ignore argument.type (a name that does not exist is one of the cases judged)
-            new PublicOwner('Plans', 'Tests\Fixtures\PublicContracts\Plans', Exports::make()->values(...$planExports)->build()),
-            new PublicOwner('Tasks', 'Tests\Fixtures\PublicContracts\Tasks', Exports::make()->values(TaskRecord::class)->build()),
+            new PublicOwner(
+                'Plans',
+                'Tests\Fixtures\PublicContracts\Plans',
+                // @phpstan-ignore argument.type (a name that does not exist is one of the cases judged)
+                Exports::make()->values(...$planExports)->build(),
+            ),
+            new PublicOwner(
+                'Tasks',
+                'Tests\Fixtures\PublicContracts\Tasks',
+                Exports::make()->values(TaskRecord::class)->build(),
+            ),
         ];
         $roots = ProjectRoots::fromComposer(dirname(__DIR__, 2).'/composer.json');
 
         return array_values(array_map(
             fn (Violation $violation) => self::describe($violation),
-            array_filter(new PublicContracts($owners, $roots)->violations(), fn (Violation $violation) => $violation->usingDomain === 'Plans'),
+            array_filter(
+                new PublicContracts($owners, $roots)->violations(),
+                fn (Violation $violation) => $violation->usingDomain === 'Plans',
+            ),
         ));
     }
 

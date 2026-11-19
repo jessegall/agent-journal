@@ -37,7 +37,16 @@ final class PlanFinishCancelTest extends TestCase
 {
     use CommitsHookRows;
 
-    private const array TABLES = ['users', 'plans', 'phases', 'phase_tasks', 'tasks', 'assignments', 'agents', 'command_receipts'];
+    private const array TABLES = [
+        'users',
+        'plans',
+        'phases',
+        'phase_tasks',
+        'tasks',
+        'assignments',
+        'agents',
+        'command_receipts',
+    ];
 
     private User $owner;
 
@@ -56,7 +65,11 @@ final class PlanFinishCancelTest extends TestCase
     {
         $plan = $this->startedPlan([TaskState::Finished, TaskState::Open, TaskState::Blocked]);
 
-        $this->assertThrows(fn () => $this->bus()->run(new FinishPlan($plan->id, 1, 'Done.')), PlanHasUnfinishedTasks::class, '2 unfinished tasks');
+        $this->assertThrows(
+            fn () => $this->bus()->run(new FinishPlan($plan->id, 1, 'Done.')),
+            PlanHasUnfinishedTasks::class,
+            '2 unfinished tasks',
+        );
         $this->assertSame(PlanState::Started, $plan->fresh()?->state);
         Event::assertNotDispatched(PlanFinished::class);
     }
@@ -67,20 +80,32 @@ final class PlanFinishCancelTest extends TestCase
 
         $this->bus()->run(new FinishPlan($plan->id, 1, 'Shipped.'));
 
-        $this->assertSame([PlanState::Done, 'Shipped.', 2], [$plan->fresh()?->state, $plan->fresh()?->finish_note, $plan->fresh()?->revision]);
+        $this->assertSame(
+            [PlanState::Done, 'Shipped.', 2],
+            [$plan->fresh()?->state, $plan->fresh()?->finish_note, $plan->fresh()?->revision],
+        );
         Event::assertDispatchedTimes(PlanFinished::class, 1);
     }
 
     public function test_cancelling_keeps_every_task_and_assignment(): void
     {
         $plan = $this->startedPlan([TaskState::Open, TaskState::Started]);
-        $this->app->make(AssignmentWriterInTransaction::class)->assign($plan->assignmentIdentity(), new AssigneeIdentity(ActorType::User->value, $this->owner->id));
+        $this->app->make(AssignmentWriterInTransaction::class)->assign(
+            $plan->assignmentIdentity(),
+            new AssigneeIdentity(ActorType::User->value, $this->owner->id),
+        );
         $assignments = AssignmentRecord::query()->withoutGlobalScopes()->count();
 
         $this->bus()->run(new CancelPlan($plan->id, 1, 'Superseded.'));
 
-        $this->assertSame([PlanState::Cancelled, 'Superseded.'], [$plan->fresh()?->state, $plan->fresh()?->cancel_reason]);
-        $this->assertSame([TaskState::Open, TaskState::Started], Task::query()->whereKey($plan->taskIds())->orderBy('number')->pluck('state')->all());
+        $this->assertSame(
+            [PlanState::Cancelled, 'Superseded.'],
+            [$plan->fresh()?->state, $plan->fresh()?->cancel_reason],
+        );
+        $this->assertSame(
+            [TaskState::Open, TaskState::Started],
+            Task::query()->whereKey($plan->taskIds())->orderBy('number')->pluck('state')->all(),
+        );
         $this->assertSame($assignments, AssignmentRecord::query()->withoutGlobalScopes()->count());
         Event::assertDispatchedTimes(PlanCancelled::class, 1);
     }
@@ -102,7 +127,9 @@ final class PlanFinishCancelTest extends TestCase
     {
         $plan = Plan::factory()->create();
         $plan->startOnce();
-        $plan->addPhase('Work')->addTasks(array_map(fn (TaskState $state): string => $this->taskIn($state)->id, $states));
+        $plan->addPhase('Work')->addTasks(
+            array_map(fn (TaskState $state): string => $this->taskIn($state)->id, $states),
+        );
 
         return $plan;
     }

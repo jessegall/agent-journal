@@ -17,6 +17,9 @@ final readonly class ReplaceDocumentBodyHandler implements CommandHandler
 
     public function handle(ReplaceDocumentBody $command): DraftReference
     {
-        return $this->drafts->saveEdit($command->draft, fn (DraftText $text) => $text->withBody(MarkdownText::body($command->body)));
+        return $this->drafts->saveEdit(
+            $command->draft,
+            fn (DraftText $text) => $text->withBody(MarkdownText::body($command->body)),
+        );
     }
 }

@@ -22,7 +22,9 @@ final class RequestKeyInvalid extends InvalidArgumentException implements CodedR
     {
         $shown = mb_strimwidth($key, 0, 40, '...');
 
-        return new self("A request_key is a UUID or ULID of at most 128 letters, digits and dashes; {$shown} is not one.");
+        return new self(
+            "A request_key is a UUID or ULID of at most 128 letters, digits and dashes; {$shown} is not one.",
+        );
     }
 
     public function refusalCode(): RefusalCode

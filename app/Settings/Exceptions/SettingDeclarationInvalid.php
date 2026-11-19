@@ -13,7 +13,9 @@ final class SettingDeclarationInvalid extends LogicException
 {
     public static function badKey(string $key, int $longest): self
     {
-        return new self("The setting key {$key} is not lowercase letters, digits and underscores starting with a letter, at most {$longest} characters.");
+        return new self(
+            "The setting key {$key} is not lowercase letters, digits and underscores starting with a letter, at most {$longest} characters.",
+        );
     }
 
     public static function emptyLabel(string $key): self
@@ -28,7 +30,9 @@ final class SettingDeclarationInvalid extends LogicException
 
     public static function badLengths(string $key, int $longest): self
     {
-        return new self("The setting {$key} declares lengths outside 0 to {$longest} bytes, or a shortest above its longest.");
+        return new self(
+            "The setting {$key} declares lengths outside 0 to {$longest} bytes, or a shortest above its longest.",
+        );
     }
 
     public static function defaultOutOfBounds(string $key): self
@@ -43,7 +47,9 @@ final class SettingDeclarationInvalid extends LogicException
 
     public static function ownerTwice(string $owner): self
     {
-        return new self("The settings owner {$owner} is registered twice, or under a name that differs from another only in case.");
+        return new self(
+            "The settings owner {$owner} is registered twice, or under a name that differs from another only in case.",
+        );
     }
 
     public static function definitionTwice(string $owner, string $definition): self
@@ -73,12 +79,16 @@ final class SettingDeclarationInvalid extends LogicException
 
     public static function badBounds(string $key): self
     {
-        return new self("The setting {$key} declares a minimum above its maximum, or a bound past the largest exact number.");
+        return new self(
+            "The setting {$key} declares a minimum above its maximum, or a bound past the largest exact number.",
+        );
     }
 
     public static function badDigits(string $key, int $mostDigits, int $mostFractionalDigits): self
     {
-        return new self("The setting {$key} declares digits outside 1 to {$mostDigits}, fractional digits outside 0 to {$mostFractionalDigits}, or more fractional digits than digits.");
+        return new self(
+            "The setting {$key} declares digits outside 1 to {$mostDigits}, fractional digits outside 0 to {$mostFractionalDigits}, or more fractional digits than digits.",
+        );
     }
 
     public static function badChoiceLabel(int $longest): self

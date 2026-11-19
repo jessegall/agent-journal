@@ -38,10 +38,23 @@ final readonly class AgentRequestClient implements SendsAgentRequests
     /**
      * The same call under an id and issue time its caller keeps, so a retry reaches the journal as the same call.
      */
-    public function prepareWithId(AgentClientSettings $settings, string $path, string $body, string $callId, int $issuedAt): PreparedAgentCall
-    {
+    public function prepareWithId(
+        AgentClientSettings $settings,
+        string $path,
+        string $body,
+        string $callId,
+        int $issuedAt,
+    ): PreparedAgentCall {
         $url = $settings->journalUrl.$path;
-        $signature = SignedCall::agentSignatureFor($settings->token, 'POST', $url, $callId, $issuedAt, $body, $settings->profile);
+        $signature = SignedCall::agentSignatureFor(
+            $settings->token,
+            'POST',
+            $url,
+            $callId,
+            $issuedAt,
+            $body,
+            $settings->profile,
+        );
 
         return new PreparedAgentCall($settings, $path, $body, $callId, $issuedAt, $signature);
     }

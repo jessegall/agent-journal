@@ -56,14 +56,18 @@ final readonly class CommentLinkRecords implements RecordProvider
 
     public function visibleCards(array $records): array
     {
-        $targets = Comment::query()->whereKey(array_map(fn (RecordIdentity $record) => $record->id, $records))->readLimit(count($records))->get(['id', 'target_type', 'target_id']);
+        $targets = Comment::query()->whereKey(
+            array_map(fn (RecordIdentity $record) => $record->id, $records),
+        )->readLimit(count($records))->get(['id', 'target_type', 'target_id']);
         $visibleTargets = [];
 
         foreach ($this->records->visibleCards(array_values($targets->map(fn (Comment $comment) => $comment->target())->unique(fn (RecordIdentity $target) => $target->type.' '.$target->id)->all())) as $card) {
             $visibleTargets["{$card->type} {$card->id}"] = $card;
         }
 
-        $shown = $targets->filter(fn (Comment $comment) => isset($visibleTargets[$comment->target_type.' '.$comment->target_id]))->pluck('id')->all();
+        $shown = $targets->filter(
+            fn (Comment $comment) => isset($visibleTargets[$comment->target_type.' '.$comment->target_id]),
+        )->pluck('id')->all();
         $comments = Comment::query()->whereKey($shown)->readLimit(max(1, count($shown)))->get()->keyBy('id');
         $cards = [];
 

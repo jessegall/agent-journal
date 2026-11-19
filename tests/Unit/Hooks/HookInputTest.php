@@ -20,7 +20,16 @@ final class HookInputTest extends TestCase
      */
     public static function inputs(): iterable
     {
-        $methods = ['session start' => 'onSessionStart', 'prompt' => 'onPrompt', 'shell command' => 'onShellCommand', 'file edit' => 'onFileEdit', 'stop' => 'onStop', 'compaction' => 'onCompaction', 'tool finished' => 'onToolFinished', 'session end' => 'onSessionEnd'];
+        $methods = [
+            'session start' => 'onSessionStart',
+            'prompt' => 'onPrompt',
+            'shell command' => 'onShellCommand',
+            'file edit' => 'onFileEdit',
+            'stop' => 'onStop',
+            'compaction' => 'onCompaction',
+            'tool finished' => 'onToolFinished',
+            'session end' => 'onSessionEnd',
+        ];
 
         foreach (HookInputs::all() as $name => $input) {
             yield $name => [$input, $methods[$name]];

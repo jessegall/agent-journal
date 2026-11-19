@@ -23,7 +23,10 @@ final readonly class NamespacesDeclared implements FileScan
     public function findingsIn(ParsedFile $file): array
     {
         return array_values(array_map(
-            fn (Namespace_ $namespace) => ['name' => $namespace->name?->toString() ?? '', 'line' => $namespace->getStartLine()],
+            fn (Namespace_ $namespace) => [
+                'name' => $namespace->name?->toString() ?? '',
+                'line' => $namespace->getStartLine(),
+            ],
             new NodeFinder()->findInstanceOf($file->statements, Namespace_::class),
         ));
     }

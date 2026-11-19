@@ -57,8 +57,14 @@ final class StateLifecycleTest extends TestCase
 
         DB::table('agent_stacks')->truncate();
         $this->target = TestActors::stack(1, 10);
-        $this->app->instance(AgentContext::class, new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null));
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(1)), TestLaunchAuthority::forAgent(TestIds::of(1)));
+        $this->app->instance(
+            AgentContext::class,
+            new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null),
+        );
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent(TestIds::of(1)),
+            TestLaunchAuthority::forAgent(TestIds::of(1)),
+        );
         $this->log = new LifecycleLog();
         $this->tasks = new RecordingStateLoader($this->log);
         $plans = new RecordingStateLoader($this->log);
@@ -198,7 +204,10 @@ final class StateLifecycleTest extends TestCase
         $this->tasks->finished = ['C'];
 
         $this->assertSame('A', $current->of($this->target, 'test.tasks')->get()->subject->id);
-        $this->assertSame([], array_values(array_filter($this->log->calls, fn (string $call) => ! str_starts_with($call, 'enter:'))));
+        $this->assertSame(
+            [],
+            array_values(array_filter($this->log->calls, fn (string $call) => ! str_starts_with($call, 'enter:'))),
+        );
     }
 
     public function test_restoring_keeps_finished_frames_and_refuses_a_stack_past_the_limit(): void
@@ -211,7 +220,9 @@ final class StateLifecycleTest extends TestCase
         $this->assertCount(2, $restorer->restore($row->frames)->frames());
 
         $records = $row->frames->all();
-        $tooMany = new FrameRecords([$records[0], ...array_map(fn (int $number) => new FrameRecord("frame-{$number}", $this->task((string) $number), false, 1, CarbonImmutable::now()), range(1, 100))]);
+        $tooMany = new FrameRecords(
+            [$records[0], ...array_map(fn (int $number) => new FrameRecord("frame-{$number}", $this->task((string) $number), false, 1, CarbonImmutable::now()), range(1, 100))],
+        );
 
         $this->expectException(StackTooDeep::class);
 
@@ -231,12 +242,16 @@ final class StateLifecycleTest extends TestCase
 
     private function push(string $subject): void
     {
-        $this->transaction()->run(fn () => $this->app->make(AgentStacks::class)->push($this->target, $this->task($subject)));
+        $this->transaction()->run(
+            fn () => $this->app->make(AgentStacks::class)->push($this->target, $this->task($subject)),
+        );
     }
 
     private function pushPlan(string $subject): void
     {
-        $this->transaction()->run(fn () => $this->app->make(AgentStacks::class)->push($this->target, new StateReference('test.plans', new SubjectReference($subject, 1))));
+        $this->transaction()->run(
+            fn () => $this->app->make(AgentStacks::class)->push($this->target, new StateReference('test.plans', new SubjectReference($subject, 1))),
+        );
     }
 
     private function task(string $subject): StateReference
@@ -251,7 +266,9 @@ final class StateLifecycleTest extends TestCase
     {
         $frames = AgentStackRow::query()->forTarget($this->target)->sole()->frames->all();
 
-        return array_values(array_map(fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : '', array_slice($frames, 1)));
+        return array_values(
+            array_map(fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : '', array_slice($frames, 1)),
+        );
     }
 
     /**
@@ -271,7 +288,10 @@ final class StateLifecycleTest extends TestCase
         $frames = array_slice(AgentStackRow::query()->forTarget($this->target)->sole()->frames->all(), 1);
 
         return array_combine(
-            array_map(fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : '', $frames),
+            array_map(
+                fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : '',
+                $frames,
+            ),
             array_map(fn (FrameRecord $frame) => $frame->enteredAt, $frames),
         );
     }

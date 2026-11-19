@@ -69,7 +69,11 @@ final class HookPayload extends Data
      */
     public function callsAnyOf(array $toolNames): bool
     {
-        return $this->hookEventName === 'PreToolUse' && is_string($this->toolName) && in_array($this->toolName, $toolNames, true);
+        return $this->hookEventName === 'PreToolUse' && is_string($this->toolName) && in_array(
+            $this->toolName,
+            $toolNames,
+            true,
+        );
     }
 
     public function isSessionStart(): bool

@@ -44,7 +44,12 @@ final class NamedConditionsTest extends TestCase
 
     private const array TABLES = ['number_groups'];
 
-    private const array HAS_TWO_NOTES = ['type' => 'named', 'version' => 1, 'key' => 'notes.has-notes', 'parameters' => ['atLeast' => 2]];
+    private const array HAS_TWO_NOTES = [
+        'type' => 'named',
+        'version' => 1,
+        'key' => 'notes.has-notes',
+        'parameters' => ['atLeast' => 2],
+    ];
 
     protected function setUp(): void
     {
@@ -92,11 +97,18 @@ final class NamedConditionsTest extends TestCase
             $reported[] = $failure;
         });
         $this->app->instance(ExceptionHandler::class, $handler);
-        $this->useRegistry(ConditionRegistry::of(['Notes' => [new SkillConditionRegistration('notes.writes', 1, NoParameters::class, WritesDuringEvaluation::class)]]));
+        $this->useRegistry(
+            ConditionRegistry::of(['Notes' => [new SkillConditionRegistration('notes.writes', 1, NoParameters::class, WritesDuringEvaluation::class)]]),
+        );
         $groups = NumberGroup::query()->count();
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent('evaluating-agent'), TestLaunchAuthority::forAgent('evaluating-agent'));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent('evaluating-agent'),
+            TestLaunchAuthority::forAgent('evaluating-agent'),
+        );
 
-        $result = $this->app->make(ConditionTree::class)->hydrate(['type' => 'named', 'version' => 1, 'key' => 'notes.writes', 'parameters' => []])->evaluate($this->context());
+        $result = $this->app->make(ConditionTree::class)->hydrate(
+            ['type' => 'named', 'version' => 1, 'key' => 'notes.writes', 'parameters' => []],
+        )->evaluate($this->context());
 
         $this->assertSame(ConditionOutcome::Unavailable, $result->outcome);
         $this->assertSame('condition-failed', $result->reason);
@@ -111,14 +123,18 @@ final class NamedConditionsTest extends TestCase
         $this->expectException(SkillConditionInvalid::class);
         $this->expectExceptionMessage('condition.parameters does not fit notes.has-notes');
 
-        $this->app->make(ConditionTree::class)->hydrate(['type' => 'named', 'version' => 1, 'key' => 'notes.has-notes', 'parameters' => ['atLeast' => 'many']]);
+        $this->app->make(ConditionTree::class)->hydrate(
+            ['type' => 'named', 'version' => 1, 'key' => 'notes.has-notes', 'parameters' => ['atLeast' => 'many']],
+        );
     }
 
     private function installedRegistry(): ConditionRegistry
     {
         $domainClasses = DomainRegistry::installedClasses(base_path());
 
-        return ConditionRegistry::of(DomainRegistry::from([...$domainClasses, CardsDomain::class, NotesDomain::class])->skillConditionDeclarations());
+        return ConditionRegistry::of(
+            DomainRegistry::from([...$domainClasses, CardsDomain::class, NotesDomain::class])->skillConditionDeclarations(),
+        );
     }
 
     private function useRegistry(ConditionRegistry $registry): void
@@ -134,6 +150,13 @@ final class NamedConditionsTest extends TestCase
 
     private function context(): SkillContext
     {
-        return new SkillContext(TestActors::agentIdentity(5), TestIds::of(6), 'main', LaunchProfile::profileFree(), ProgramKey::from('codex'), ProviderKey::from('openai'));
+        return new SkillContext(
+            TestActors::agentIdentity(5),
+            TestIds::of(6),
+            'main',
+            LaunchProfile::profileFree(),
+            ProgramKey::from('codex'),
+            ProviderKey::from('openai'),
+        );
     }
 }

@@ -60,7 +60,10 @@ final class DispatchReplyInboxTest extends TestCase
         $task = Task::factory()->create();
         $this->startUserRequestAs($owner->id);
         $seat = $this->app->make(AssignmentTransaction::class)->run(
-            fn () => $this->app->make(SeatingWriter::class)->seat($main->id, ActorIdentity::of($first->agent()->firstOrFail())),
+            fn () => $this->app->make(SeatingWriter::class)->seat(
+                $main->id,
+                ActorIdentity::of($first->agent()->firstOrFail()),
+            ),
         );
         $this->startRequestAs($first->agent_id, $first->id);
         $this->app->make(CommandBus::class)->run(new StartTask($task->id));
@@ -70,7 +73,12 @@ final class DispatchReplyInboxTest extends TestCase
 
         $this->startUserRequestAs($owner->id);
         $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(SeatingWriter::class)->replace(
-            new SeatChange($main->id, $seat->seatId, $seat->reference, ActorIdentity::of($second->agent()->firstOrFail())),
+            new SeatChange(
+                $main->id,
+                $seat->seatId,
+                $seat->reference,
+                ActorIdentity::of($second->agent()->firstOrFail()),
+            ),
         ));
 
         $this->assertSame($main->inbox_id, $run->refresh()->replyInboxId()->get());

@@ -133,7 +133,10 @@ final class ProfilePolicyTest extends TestCase
 
     public function test_an_agent_cannot_activate(): void
     {
-        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(9)), TestLaunchAuthority::forAgent(TestIds::of(9)));
+        $this->app->make(CurrentActorSetter::class)->set(
+            ActorContext::forAgent(TestIds::of(9)),
+            TestLaunchAuthority::forAgent(TestIds::of(9)),
+        );
 
         $this->expectException(ActorNotAllowed::class);
 

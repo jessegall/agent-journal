@@ -26,8 +26,11 @@ final readonly class AssignmentWriterInTransaction implements AssignmentWriter
         return $this->transaction->run(fn () => $this->writer->assign($record, $recipient));
     }
 
-    public function reassign(RecordIdentity $record, AssignmentReference $expected, AssigneeIdentity $recipient): AssignmentResult
-    {
+    public function reassign(
+        RecordIdentity $record,
+        AssignmentReference $expected,
+        AssigneeIdentity $recipient,
+    ): AssignmentResult {
         return $this->transaction->run(fn () => $this->writer->reassign($record, $expected, $recipient));
     }
 
@@ -41,8 +44,11 @@ final readonly class AssignmentWriterInTransaction implements AssignmentWriter
         return $this->transaction->run(fn () => $this->writer->assignUnfinished($recipient, $records));
     }
 
-    public function reassignUnfinished(AssignmentReference $expectedRoot, AssigneeIdentity $recipient, Closure $records): AssignmentResult
-    {
+    public function reassignUnfinished(
+        AssignmentReference $expectedRoot,
+        AssigneeIdentity $recipient,
+        Closure $records,
+    ): AssignmentResult {
         return $this->transaction->run(fn () => $this->writer->reassignUnfinished($expectedRoot, $recipient, $records));
     }
 

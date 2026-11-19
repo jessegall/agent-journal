@@ -74,7 +74,10 @@ final readonly class ShareRelationSet
      */
     public function linkedCapabilities(): array
     {
-        $linked = array_filter($this->relations, fn (ShareRelation $relation) => $relation->type === ShareRelationType::Linked);
+        $linked = array_filter(
+            $this->relations,
+            fn (ShareRelation $relation) => $relation->type === ShareRelationType::Linked,
+        );
 
         return array_values(array_unique(array_map(fn (ShareRelation $relation) => $relation->capability, $linked)));
     }

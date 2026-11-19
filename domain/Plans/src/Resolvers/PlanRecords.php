@@ -60,7 +60,15 @@ final readonly class PlanRecords implements PlanResolver
         $page = min(max(1, $filters->page), $lastPage);
         $plans = $this->listed($filters)->listOrder($focused)->forPage($page, self::PER_PAGE)->get();
 
-        return new PlanList($this->cardsOf($plans, $focused), $filters, $page, self::PER_PAGE, $lastPage, $total, $this->selection($filters, $focused));
+        return new PlanList(
+            $this->cardsOf($plans, $focused),
+            $filters,
+            $page,
+            self::PER_PAGE,
+            $lastPage,
+            $total,
+            $this->selection($filters, $focused),
+        );
     }
 
     /**
@@ -70,7 +78,10 @@ final readonly class PlanRecords implements PlanResolver
      */
     private function listed(PlanFilters $filters): Builder
     {
-        return Plan::query()->matching($filters->search)->when($filters->states !== [], fn (Builder $query) => $query->inStates($filters->states));
+        return Plan::query()->matching($filters->search)->when(
+            $filters->states !== [],
+            fn (Builder $query) => $query->inStates($filters->states),
+        );
     }
 
     public function assignedToCaller(AssignedPlanFilters $filters): AssignedPlanList
@@ -140,16 +151,29 @@ final readonly class PlanRecords implements PlanResolver
      */
     private function cardsOf(EloquentCollection $plans, Option $focused): array
     {
-        $phases = Phase::query()->whereIn('plan_id', $plans->modelKeys())->readAll('every phase of the listed plans')->orderBy('number')->get();
+        $phases = Phase::query()->whereIn(
+            'plan_id',
+            $plans->modelKeys(),
+        )->readAll('every phase of the listed plans')->orderBy('number')->get();
         $phasesOfPlan = $phases->groupBy('plan_id');
-        $taskIdsOfPhase = PhaseTask::query()->whereIn('phase_id', $phases->modelKeys())->readAll('plan progress counts every task of the plan')->orderBy('position')->get()
+        $taskIdsOfPhase = PhaseTask::query()->whereIn(
+            'phase_id',
+            $phases->modelKeys(),
+        )->readAll('plan progress counts every task of the plan')->orderBy('position')->get()
             ->groupBy('phase_id')
             ->map(fn (Collection $places) => array_map(strval(...), array_values($places->pluck('task_id')->all())));
-        $progressOfPhase = array_map(self::planProgressOf(...), $this->taskCounts->progressByGroup($taskIdsOfPhase->all()));
-        $holders = $this->assignees->holdersOfRecords(array_values($plans->map(fn (Plan $plan) => $plan->assignmentIdentity())->all()));
+        $progressOfPhase = array_map(
+            self::planProgressOf(...),
+            $this->taskCounts->progressByGroup($taskIdsOfPhase->all()),
+        );
+        $holders = $this->assignees->holdersOfRecords(
+            array_values($plans->map(fn (Plan $plan) => $plan->assignmentIdentity())->all()),
+        );
 
         return array_values($plans->map(fn (Plan $plan) => $plan->card(
-            $phasesOfPlan->get($plan->id, new Collection())->mapWithKeys(fn (Phase $phase) => [$phase->number => $progressOfPhase[$phase->id] ?? PlanProgress::none()])->all(),
+            $phasesOfPlan->get($plan->id, new Collection())->mapWithKeys(
+                fn (Phase $phase) => [$phase->number => $progressOfPhase[$phase->id] ?? PlanProgress::none()],
+            )->all(),
             $holders->forRecord($plan->assignmentIdentity()),
             $focused->getOrElse(null) === $plan->id,
         ))->all());

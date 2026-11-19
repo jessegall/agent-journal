@@ -20,7 +20,9 @@ final class ExportsTest extends TestCase
 {
     public function test_each_list_keeps_the_order_its_names_were_added_in(): void
     {
-        $exports = Exports::make()->events(PlanStarted::class)->events(PlanProgressChanged::class)->values(stdClass::class)->build();
+        $exports = Exports::make()->events(PlanStarted::class)->events(
+            PlanProgressChanged::class,
+        )->values(stdClass::class)->build();
 
         $this->assertSame([PlanStarted::class, PlanProgressChanged::class], $exports->events);
         $this->assertSame([PlanStarted::class, PlanProgressChanged::class, stdClass::class], $exports->all());

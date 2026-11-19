@@ -40,6 +40,9 @@ final class IsolatedHookSettings
 
     public function content(): string
     {
-        return (string) json_encode(IsolatedSettingsFile::of($this->hookCommands, $this->deniedTools), JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        return (string) json_encode(
+            IsolatedSettingsFile::of($this->hookCommands, $this->deniedTools),
+            JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES,
+        );
     }
 }

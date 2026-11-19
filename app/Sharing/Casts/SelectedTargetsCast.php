@@ -32,7 +32,11 @@ final class SelectedTargetsCast implements CastsAttributes
     {
         try {
             return array_map(
-                fn (array $target) => new ShareSelectedTarget(new RecordIdentity($target['type'], $target['id']), $target['link_id'], $target['publication_version']),
+                fn (array $target) => new ShareSelectedTarget(
+                    new RecordIdentity($target['type'], $target['id']),
+                    $target['link_id'],
+                    $target['publication_version'],
+                ),
                 array_values(json_decode((string) $value, true, 3, JSON_THROW_ON_ERROR)),
             );
         } catch (JsonException|InvalidArgumentException|ErrorException|Error $failure) {

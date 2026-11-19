@@ -34,8 +34,22 @@ final class DeskDomain extends Domain implements ProvidesSections
     public function sections(): array
     {
         return [
-            Section::make('notes', 'Notes', 'library.book-inspector', SlotContextType::Record, NotesResolver::class, 'Notes.vue'),
-            Section::make('draft', 'Draft', 'library.aside', SlotContextType::Session, NotesResolver::class, 'Notes.vue'),
+            Section::make(
+'notes',
+ 'Notes',
+ 'library.book-inspector',
+ SlotContextType::Record,
+ NotesResolver::class,
+ 'Notes.vue',
+),
+            Section::make(
+'draft',
+ 'Draft',
+ 'library.aside',
+ SlotContextType::Session,
+ NotesResolver::class,
+ 'Notes.vue',
+),
         ];
     }
 }

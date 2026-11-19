@@ -112,6 +112,10 @@ final class DomainEventCallTest extends TestCase
 
     private function checker(DomainRegistry $registry): BoundaryChecker
     {
-        return new BoundaryChecker($registry->all(), ProjectRoots::fromComposer(base_path('composer.json')), CoreApi::exports());
+        return new BoundaryChecker(
+            $registry->all(),
+            ProjectRoots::fromComposer(base_path('composer.json')),
+            CoreApi::exports(),
+        );
     }
 }

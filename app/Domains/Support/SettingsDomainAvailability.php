@@ -50,7 +50,10 @@ final readonly class SettingsDomainAvailability implements DomainAvailability
             return new DomainStatus($owner, true, true, []);
         }
 
-        return $this->statusIn($this->currentSettings->resolver()->snapshot($this->settings->definition(SettingRegistry::CORE)), $this->domains->get($owner));
+        return $this->statusIn(
+            $this->currentSettings->resolver()->snapshot($this->settings->definition(SettingRegistry::CORE)),
+            $this->domains->get($owner),
+        );
     }
 
     private function statusIn(SettingsSnapshot $snapshot, DomainEntry $domain): DomainStatus

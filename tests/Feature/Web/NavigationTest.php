@@ -59,16 +59,25 @@ final class NavigationTest extends TestCase
         $books = $this->item($tree->items, 'library.books');
 
         $this->assertSame('/library', $books->url);
-        $this->assertSame(['library.first-book', 'library.shelves'], array_map(fn (NavigationItemData $child) => $child->key, $books->children));
+        $this->assertSame(
+            ['library.first-book', 'library.shelves'],
+            array_map(fn (NavigationItemData $child) => $child->key, $books->children),
+        );
         $this->assertSame('/library/1', $books->children[0]->url);
         $shelves = $books->children[1];
-        $this->assertSame(['library.shelf-1'], array_map(fn (NavigationItemData $child) => $child->key, $shelves->children));
+        $this->assertSame(
+            ['library.shelf-1'],
+            array_map(fn (NavigationItemData $child) => $child->key, $shelves->children),
+        );
         $this->assertSame('/library/7', $shelves->url);
     }
 
     public function test_the_current_item_comes_with_its_ancestors(): void
     {
-        $this->assertSame(['library.books', 'library.first-book'], $this->navigation()->tree($this->requestTo('/library/1'))->current);
+        $this->assertSame(
+            ['library.books', 'library.first-book'],
+            $this->navigation()->tree($this->requestTo('/library/1'))->current,
+        );
         $this->assertSame(['library.books'], $this->navigation()->tree($this->requestTo('/library'))->current);
         $this->assertSame([], $this->navigation()->tree($this->requestTo('/shelf/5'))->current);
     }
@@ -78,7 +87,10 @@ final class NavigationTest extends TestCase
         $tree = $this->navigation()->tree($this->requestTo('/shelf'));
         $counts = $this->navigation()->counts();
 
-        $this->assertSame(['library.books', 'shelf.open'], array_map(fn (NavigationItemData $item) => $item->key, $tree->items));
+        $this->assertSame(
+            ['library.books', 'shelf.open'],
+            array_map(fn (NavigationItemData $item) => $item->key, $tree->items),
+        );
         $this->assertSame([], $this->calls->readers);
         $this->assertArrayNotHasKey('shelf.secret', $counts->counts);
     }
@@ -130,7 +142,14 @@ final class NavigationTest extends TestCase
             Page::make('shelves', 'Shelves', Icon::Docs, ShelfResolver::class, 'Shelf.vue')->at(''),
             Page::make('shelf', 'Shelf', Icon::Docs, ShelfResolver::class, 'Record/Reader.vue')->at('{shelf}'),
         ], navigation: [
-            NavigationItem::page('open', 'Open', Icon::Docs, page: 'shelves', group: 'Work', position: 200)->count(BrokenCount::class),
+            NavigationItem::page(
+                'open',
+                'Open',
+                Icon::Docs,
+                page: 'shelves',
+                group: 'Work',
+                position: 200,
+            )->count(BrokenCount::class),
             NavigationItem::page('secret', 'Secret', Icon::Docs, page: 'shelves', group: 'Work', position: 300)
                 ->visibleWhen(NobodySees::class)
                 ->childrenFrom(ShelfChildren::class)

@@ -25,7 +25,11 @@ final class RecordedCallsTest extends TestCase
     {
         $calls = RecordedCalls::bind()->answer(WriteNoteCall::class, new NoteAnswer('note-1'));
 
-        $report = $this->app->make(Pipelines::class)->run(RunSignedCallPipeline::class, new CallToSend($this->noteCall(), true), CommandReport::class);
+        $report = $this->app->make(Pipelines::class)->run(
+            RunSignedCallPipeline::class,
+            new CallToSend($this->noteCall(), true),
+            CommandReport::class,
+        );
 
         $calls->assertSent(WriteNoteCall::class);
         $this->assertSame('{"noteId":"note-1"}', $report->lines[0]->text);
@@ -39,7 +43,11 @@ final class RecordedCallsTest extends TestCase
 
         $this->expectException(StateBlocked::class);
 
-        $this->app->make(Pipelines::class)->run(RunSignedCallPipeline::class, new CallToSend($this->noteCall()), CommandReport::class);
+        $this->app->make(Pipelines::class)->run(
+            RunSignedCallPipeline::class,
+            new CallToSend($this->noteCall()),
+            CommandReport::class,
+        );
     }
 
     private function noteCall(): WriteNoteCall

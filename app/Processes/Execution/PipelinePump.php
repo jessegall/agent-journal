@@ -40,8 +40,12 @@ final class PipelinePump
         }
         $waiting = array_fill(0, count($commands), '');
         while ($readers !== [] && ! $stop->isRequested()) {
-            $read = array_values(array_filter($readers, fn ($pipe, string $key) => ! str_ends_with($key, ':1') || strlen($waiting[(int) $key]) < self::WAITING_BYTES, ARRAY_FILTER_USE_BOTH));
-            $write = array_values(array_filter($inputs, fn ($pipe, int $index) => $waiting[$index - 1] !== '', ARRAY_FILTER_USE_BOTH));
+            $read = array_values(
+                array_filter($readers, fn ($pipe, string $key) => ! str_ends_with($key, ':1') || strlen($waiting[(int) $key]) < self::WAITING_BYTES, ARRAY_FILTER_USE_BOTH),
+            );
+            $write = array_values(
+                array_filter($inputs, fn ($pipe, int $index) => $waiting[$index - 1] !== '', ARRAY_FILTER_USE_BOTH),
+            );
             $except = null;
             if (($read !== [] || $write !== []) && @stream_select($read, $write, $except, 0, 200_000) === false) {
                 break;

@@ -224,7 +224,12 @@ final readonly class CommandRule implements StoredValue
      */
     private function changed(RuleScope $scope, ExecutableBinding $binding, int $revision, array $replaces): self
     {
-        return clone ($this, ['scope' => $scope, 'binding' => $binding, 'revision' => $revision, 'replaces' => $replaces]);
+        return clone ($this, [
+            'scope' => $scope,
+            'binding' => $binding,
+            'revision' => $revision,
+            'replaces' => $replaces,
+        ]);
     }
 
     /**

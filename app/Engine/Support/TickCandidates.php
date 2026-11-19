@@ -42,7 +42,10 @@ final class TickCandidates
     public function next(int $limit): TickBatch
     {
         $selected = $this->examineAfter($this->progress, $limit);
-        $restored = ScopedReadMeter::ofCurrentScope()->withinSchedule('engine ticks', fn () => $this->restore($selected));
+        $restored = ScopedReadMeter::ofCurrentScope()->withinSchedule(
+            'engine ticks',
+            fn () => $this->restore($selected),
+        );
 
         return new TickBatch($restored);
     }
@@ -145,7 +148,9 @@ final class TickCandidates
             }
 
             foreach (array_chunk($indexes, StateReferences::MAXIMUM) as $batch) {
-                $states = $type->statesFor(new StateReferences(array_map(fn (int $index) => $selected[$index]->record->reference, $batch)));
+                $states = $type->statesFor(
+                    new StateReferences(array_map(fn (int $index) => $selected[$index]->record->reference, $batch)),
+                );
 
                 foreach ($batch as $position => $index) {
                     $frame = $selected[$index];

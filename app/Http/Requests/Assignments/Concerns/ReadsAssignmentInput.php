@@ -58,19 +58,28 @@ trait ReadsAssignmentInput
 
     public function record(): RecordIdentity
     {
-        return new RecordIdentity($this->string('recordType')->toString(), $this->string('recordId')->lower()->toString());
+        return new RecordIdentity(
+            $this->string('recordType')->toString(),
+            $this->string('recordId')->lower()->toString(),
+        );
     }
 
     public function recipient(): AssigneeIdentity
     {
-        return new AssigneeIdentity($this->string('recipientType')->toString(), $this->string('recipientId')->lower()->toString());
+        return new AssigneeIdentity(
+            $this->string('recipientType')->toString(),
+            $this->string('recipientId')->lower()->toString(),
+        );
     }
 
     public function expected(): AssignmentReference
     {
         return new AssignmentReference(
             $this->string('assignmentId')->lower()->toString(),
-            new AssigneeIdentity($this->string('holderType')->toString(), $this->string('holderId')->lower()->toString()),
+            new AssigneeIdentity(
+                $this->string('holderType')->toString(),
+                $this->string('holderId')->lower()->toString(),
+            ),
         );
     }
 }

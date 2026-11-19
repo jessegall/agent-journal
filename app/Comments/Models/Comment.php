@@ -92,8 +92,14 @@ final class Comment extends Model implements ReadableModel, Shareable
     /**
      * A comment about the whole record.
      */
-    public static function postOnRecord(Model $target, ActorIdentity $author, string|null $sessionId, string $body, string $key, string $hash): self
-    {
+    public static function postOnRecord(
+        Model $target,
+        ActorIdentity $author,
+        string|null $sessionId,
+        string $body,
+        string $key,
+        string $hash,
+    ): self {
         $comment = self::draft($target, $author, $sessionId, $body, $key, $hash);
         $comment->save();
 
@@ -103,8 +109,15 @@ final class Comment extends Model implements ReadableModel, Shareable
     /**
      * A comment about an exact place in one version of the record's text.
      */
-    public static function postOnText(Model $target, ActorIdentity $author, string|null $sessionId, string $body, TextAnchor $anchor, string $key, string $hash): self
-    {
+    public static function postOnText(
+        Model $target,
+        ActorIdentity $author,
+        string|null $sessionId,
+        string $body,
+        TextAnchor $anchor,
+        string $key,
+        string $hash,
+    ): self {
         $comment = self::draft($target, $author, $sessionId, $body, $key, $hash);
         $comment->version_id = $anchor->versionId;
         $comment->version_label = $anchor->versionLabel;
@@ -127,7 +140,17 @@ final class Comment extends Model implements ReadableModel, Shareable
      */
     public function subject(): WholeRecord|TextAnchor
     {
-        $columns = [$this->version_id, $this->version_label, $this->anchor_type, $this->section_number, $this->first_line, $this->last_line, $this->quote, $this->start_offset, $this->end_offset];
+        $columns = [
+            $this->version_id,
+            $this->version_label,
+            $this->anchor_type,
+            $this->section_number,
+            $this->first_line,
+            $this->last_line,
+            $this->quote,
+            $this->start_offset,
+            $this->end_offset,
+        ];
 
         if (array_filter($columns, fn (mixed $column) => $column !== null) === []) {
             return WholeRecord::Record;
@@ -191,7 +214,14 @@ final class Comment extends Model implements ReadableModel, Shareable
      */
     public function details(): CommentDetails
     {
-        return new CommentDetails($this->id, $this->author_type, $this->author_id, (string) $this->created_at?->toIso8601String(), $this->body, MarkdownText::safeHtmlOf($this->body));
+        return new CommentDetails(
+            $this->id,
+            $this->author_type,
+            $this->author_id,
+            (string) $this->created_at?->toIso8601String(),
+            $this->body,
+            MarkdownText::safeHtmlOf($this->body),
+        );
     }
 
     /**
@@ -247,7 +277,10 @@ final class Comment extends Model implements ReadableModel, Shareable
     #[Scope]
     protected function submittedAs(Builder $query, ActorIdentity $author, string|null $sessionId, string $key): void
     {
-        $query->where('author_type', $author->type->value)->where('author_id', $author->id)->where('author_session_id', $sessionId)->where('submission_key', $key);
+        $query->where(
+            'author_type',
+            $author->type->value,
+        )->where('author_id', $author->id)->where('author_session_id', $sessionId)->where('submission_key', $key);
     }
 
     protected static function booted(): void
@@ -257,8 +290,14 @@ final class Comment extends Model implements ReadableModel, Shareable
         });
     }
 
-    private static function draft(Model $target, ActorIdentity $author, string|null $sessionId, string $body, string $key, string $hash): self
-    {
+    private static function draft(
+        Model $target,
+        ActorIdentity $author,
+        string|null $sessionId,
+        string $body,
+        string $key,
+        string $hash,
+    ): self {
         $comment = new self(['body' => $body, 'submission_key' => $key, 'submission_hash' => $hash]);
         $comment->target_type = $target->getMorphClass();
         $comment->target_id = (string) $target->getKey();

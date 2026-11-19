@@ -37,11 +37,16 @@ final class GatewayLaunchesTest extends TestCase
         $child = $this->start();
         $looks = 0;
 
-        $endpoint = $this->app->make(GatewayLaunches::class)->open('fake', $this->operation(), $child, function () use (&$looks): GatewayAddressCheck {
+        $endpoint = $this->app->make(
+            GatewayLaunches::class,
+        )->open('fake', $this->operation(), $child, function () use (&$looks): GatewayAddressCheck {
             return ++$looks < 2 ? GatewayAddressCheck::Waiting : GatewayAddressCheck::Confirmed;
         });
 
-        $this->assertSame(['run-1:3', FakeShareGateway::PUBLIC_ORIGIN], [$endpoint->processReference, $endpoint->publicOrigin]);
+        $this->assertSame(
+            ['run-1:3', FakeShareGateway::PUBLIC_ORIGIN],
+            [$endpoint->processReference, $endpoint->publicOrigin],
+        );
         $this->assertFalse($child->hasReceivedSignal(15));
 
         $this->app->make(GatewayChildren::class)->stop('run-1:3');
@@ -53,7 +58,11 @@ final class GatewayLaunchesTest extends TestCase
     {
         $child = $this->start();
 
-        $this->assertThrows(fn () => $this->app->make(GatewayLaunches::class)->open('fake', $this->operation(), $child, fn () => GatewayAddressCheck::Unexpected), GatewayOpenFailed::class, 'other than its fixed public origin');
+        $this->assertThrows(
+            fn () => $this->app->make(GatewayLaunches::class)->open('fake', $this->operation(), $child, fn () => GatewayAddressCheck::Unexpected),
+            GatewayOpenFailed::class,
+            'other than its fixed public origin',
+        );
         $this->assertTrue($child->hasReceivedSignal(15));
     }
 
@@ -61,7 +70,11 @@ final class GatewayLaunchesTest extends TestCase
     {
         $child = $this->start();
 
-        $this->assertThrows(fn () => $this->app->make(GatewayLaunches::class)->open('fake', $this->operation(), $child, fn () => GatewayAddressCheck::Waiting), GatewayOpenFailed::class, 'no public address');
+        $this->assertThrows(
+            fn () => $this->app->make(GatewayLaunches::class)->open('fake', $this->operation(), $child, fn () => GatewayAddressCheck::Waiting),
+            GatewayOpenFailed::class,
+            'no public address',
+        );
         $this->assertFalse($child->hasReceivedSignal(15));
     }
 
@@ -75,6 +88,13 @@ final class GatewayLaunchesTest extends TestCase
 
     private function operation(): GatewayOperation
     {
-        return new GatewayOperation('operation-1', 'run-1', 3, str_repeat('a', 64), time() + 90, new GatewayConfiguration('configuration-1', 1, FakeShareGateway::settings()));
+        return new GatewayOperation(
+            'operation-1',
+            'run-1',
+            3,
+            str_repeat('a', 64),
+            time() + 90,
+            new GatewayConfiguration('configuration-1', 1, FakeShareGateway::settings()),
+        );
     }
 }

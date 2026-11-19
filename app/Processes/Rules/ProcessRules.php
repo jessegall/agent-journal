@@ -25,11 +25,28 @@ final readonly class ProcessRules
         $control = CommandClassSet::of(CommandClass::ProcessControl);
 
         return [
-            CommandRule::forProgram('core.kill', new ProgramSpellings('kill'), [], ArgumentGrammar::operands(OperandType::Text)->repeating()->acceptingNumericOptions()->withOptions(
-                OptionGrammar::valued(OperandType::Text, '-s'), OptionGrammar::flag('-l'), OptionGrammar::flag('-TERM'), OptionGrammar::flag('-KILL'), OptionGrammar::flag('-INT'), OptionGrammar::flag('-HUP'),
+            CommandRule::forProgram('core.kill', new ProgramSpellings('kill'), [], ArgumentGrammar::operands(
+                OperandType::Text,
+            )->repeating()->acceptingNumericOptions()->withOptions(
+                OptionGrammar::valued(
+                    OperandType::Text,
+                    '-s',
+                ), OptionGrammar::flag('-l'), OptionGrammar::flag('-TERM'), OptionGrammar::flag('-KILL'), OptionGrammar::flag('-INT'), OptionGrammar::flag('-HUP'),
             ), $control),
-            CommandRule::forProgram('core.wait', new ProgramSpellings('wait'), [], ArgumentGrammar::operands(OperandType::Text)->repeating(), $control),
-            CommandRule::forProgram('core.jobs', new ProgramSpellings('jobs'), [], ArgumentGrammar::options(['-l', '-p']), $control),
+            CommandRule::forProgram(
+                'core.wait',
+                new ProgramSpellings('wait'),
+                [],
+                ArgumentGrammar::operands(OperandType::Text)->repeating(),
+                $control,
+            ),
+            CommandRule::forProgram(
+                'core.jobs',
+                new ProgramSpellings('jobs'),
+                [],
+                ArgumentGrammar::options(['-l', '-p']),
+                $control,
+            ),
         ];
     }
 }

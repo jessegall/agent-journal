@@ -58,7 +58,9 @@ final class ShareRegistriesTest extends TestCase
     {
         $this->registerShareDomain(FlyersDomain::class);
 
-        $this->expectExceptionObject(ShareRelationInvalid::unknownCapability('flyers.flyer', 'records', 'share-nothing-advertises'));
+        $this->expectExceptionObject(
+            ShareRelationInvalid::unknownCapability('flyers.flyer', 'records', 'share-nothing-advertises'),
+        );
 
         $this->app->make(ShareRecordRegistry::class)->checkRelations();
     }
@@ -67,9 +69,20 @@ final class ShareRegistriesTest extends TestCase
     {
         $records = $this->app->make(ShareRecordRegistry::class);
 
-        $this->assertThrows(fn () => $records->register(new ShareRecordRegistration('tests.thing', PamphletShareProvider::class, PamphletShareProvider::class, [])), ShareRecordInvalid::class, 'does not implement Shareable');
-        $this->assertThrows(fn () => $records->register(new ShareRecordRegistration('tests.thing', Pamphlet::class, Pamphlet::class, [])), ShareRecordInvalid::class, 'is no share record provider');
-        $this->assertThrows(fn () => $records->register(new ShareRecordRegistration('Tests\\Thing', Pamphlet::class, PamphletShareProvider::class, [])), InvalidRecordIdentity::class);
+        $this->assertThrows(
+            fn () => $records->register(new ShareRecordRegistration('tests.thing', PamphletShareProvider::class, PamphletShareProvider::class, [])),
+            ShareRecordInvalid::class,
+            'does not implement Shareable',
+        );
+        $this->assertThrows(
+            fn () => $records->register(new ShareRecordRegistration('tests.thing', Pamphlet::class, Pamphlet::class, [])),
+            ShareRecordInvalid::class,
+            'is no share record provider',
+        );
+        $this->assertThrows(
+            fn () => $records->register(new ShareRecordRegistration('Tests\\Thing', Pamphlet::class, PamphletShareProvider::class, [])),
+            InvalidRecordIdentity::class,
+        );
     }
 
     public function test_an_unknown_alias_or_relation_is_a_named_refusal(): void
@@ -79,8 +92,14 @@ final class ShareRegistriesTest extends TestCase
         $records->checkRelations();
 
         $this->assertFalse($records->has('Tests\\Fixtures\\Domains\\Pamphlets\\Pamphlet'));
-        $this->assertThrows(fn () => $records->get('Tests\\Fixtures\\Domains\\Pamphlets\\Pamphlet'), UnknownShareRecordType::class);
-        $this->assertThrows(fn () => $records->relation('pamphlets.pamphlet', 'shareRelations'), UnknownShareRelation::class);
+        $this->assertThrows(
+            fn () => $records->get('Tests\\Fixtures\\Domains\\Pamphlets\\Pamphlet'),
+            UnknownShareRecordType::class,
+        );
+        $this->assertThrows(
+            fn () => $records->relation('pamphlets.pamphlet', 'shareRelations'),
+            UnknownShareRelation::class,
+        );
         $this->assertThrows(fn () => $records->relation('pamphlets.note', 'notes'), UnknownShareRelation::class);
     }
 
@@ -90,8 +109,16 @@ final class ShareRegistriesTest extends TestCase
         $gateways->register('press', PressGateway::class);
 
         $this->assertSame(['tunler', 'ngrok', 'press'], $gateways->keys());
-        $this->assertThrows(fn () => $gateways->register('press', PressGateway::class), ShareGatewayInvalid::class, 'already registered');
-        $this->assertThrows(fn () => $gateways->register('pamphlet', Pamphlet::class), ShareGatewayInvalid::class, 'is no share gateway');
+        $this->assertThrows(
+            fn () => $gateways->register('press', PressGateway::class),
+            ShareGatewayInvalid::class,
+            'already registered',
+        );
+        $this->assertThrows(
+            fn () => $gateways->register('pamphlet', Pamphlet::class),
+            ShareGatewayInvalid::class,
+            'is no share gateway',
+        );
         $this->assertThrows(fn () => $gateways->get('carrier-pigeon'), UnknownShareGateway::class);
     }
 }

@@ -24,7 +24,13 @@ use App\Processes\Values\ShellTree;
  */
 final readonly class OutputPolicy
 {
-    private const array HIDING_REDIRECTS = [RedirectType::Output, RedirectType::Append, RedirectType::Clobber, RedirectType::ReadWrite, RedirectType::Close];
+    private const array HIDING_REDIRECTS = [
+        RedirectType::Output,
+        RedirectType::Append,
+        RedirectType::Clobber,
+        RedirectType::ReadWrite,
+        RedirectType::Close,
+    ];
 
     public function check(Classification $classification): OutputVerdict
     {
@@ -51,7 +57,12 @@ final readonly class OutputPolicy
             foreach ($node->redirects as $redirect) {
                 $lost = $this->lostBy($redirect, $part);
                 if ($lost !== []) {
-                    $hidden[] = new HiddenOutput($part->node, implode(' and ', $lost), $tree->textOf($redirect->range), $correction);
+                    $hidden[] = new HiddenOutput(
+                        $part->node,
+                        implode(' and ', $lost),
+                        $tree->textOf($redirect->range),
+                        $correction,
+                    );
                 }
             }
             if ($node->isRoot) {
@@ -85,7 +96,9 @@ final readonly class OutputPolicy
 
     private function isBeforeTheLastCommand(ShellTree $tree, ShellNode $pipeline, ShellNode $command): bool
     {
-        $commands = array_values(array_filter($tree->children($pipeline->id), fn (ShellNode $child) => ! in_array($child->type, [NodeType::Comment, NodeType::Redirect], true)));
+        $commands = array_values(
+            array_filter($tree->children($pipeline->id), fn (ShellNode $child) => ! in_array($child->type, [NodeType::Comment, NodeType::Redirect], true)),
+        );
 
         return $commands !== [] && $commands[array_key_last($commands)]->id !== $command->id;
     }

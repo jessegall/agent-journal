@@ -8,6 +8,8 @@ final class AlwaysOnDomainRequiresSwitchable extends DomainDeclarationError
 {
     public static function for(string $domainName, string $requiredName): self
     {
-        return new self("{$domainName} can never be switched off but requires {$requiredName}, which can; switching {$requiredName} off would leave {$domainName} without it.");
+        return new self(
+            "{$domainName} can never be switched off but requires {$requiredName}, which can; switching {$requiredName} off would leave {$domainName} without it.",
+        );
     }
 }

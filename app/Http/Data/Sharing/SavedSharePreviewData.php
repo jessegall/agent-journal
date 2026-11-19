@@ -31,6 +31,11 @@ final class SavedSharePreviewData extends Data
 
     public static function fromPreview(SharePreview $preview): self
     {
-        return new self($preview->id, $preview->checksum, array_map(fn (ShareSelectedTarget $target) => $target->record->id, $preview->selection), $preview->expires_at->toIso8601String());
+        return new self(
+            $preview->id,
+            $preview->checksum,
+            array_map(fn (ShareSelectedTarget $target) => $target->record->id, $preview->selection),
+            $preview->expires_at->toIso8601String(),
+        );
     }
 }
