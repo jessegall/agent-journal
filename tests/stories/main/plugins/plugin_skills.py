@@ -40,3 +40,13 @@ def test_setup_brings_back_a_plugin_skill_and_a_journal_skill_lost_from_their_fo
         story.expect_project_file(f"{home}/{SKILL}/SKILL.md", f"plugin: {story.plugins.first}")
         story.expect_project_file(f"{home}/{JOURNAL_SKILL}/SKILL.md")
     story.expect_stack(story.agents.subject, Ready)
+
+
+@story(InstalledPlugin, mode=BUILDER_MODE, subject=AgentRole.MAIN)
+def test_setup_replaces_a_dangling_link_where_a_plugin_skill_belongs(story):
+    for home in HOMES:
+        story.project_link_dangling(f"{home}/{SKILL}")
+    story.user_types("setup")
+    for home in HOMES:
+        story.expect_project_file(f"{home}/{SKILL}/SKILL.md", f"plugin: {story.plugins.first}")
+    story.expect_stack(story.agents.subject, Ready)

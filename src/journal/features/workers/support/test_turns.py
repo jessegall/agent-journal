@@ -8,7 +8,8 @@ from pathlib import Path
 from journal.features.shell.support.output_files import OutputFiles
 from journal.features.shell.support.readers import Readers
 from journal.features.shell.support.shell_request import ShellRequest
-from journal.features.shell.support.shell_runner import EXIT, ShellRunner
+from journal.features.shell.support.restart_queue import RestartQueue
+from journal.features.shell.support.shell_runner import EXIT, RESTART_HOLD, ShellRunner
 from journal.features.workers.support.test_run_result import TestRunResult
 from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.features.workers.workers_options import WorkersOptions
@@ -33,12 +34,12 @@ PASSED_COUNT = re.compile(r"\b(\d+) passed\b")
 
 
 class TestTurns:
-    """The test budget: a worker's turn to run tests is a row, started through the shell runner in the worker's own worktree as soon as fewer runs go than the budget allows and it is first of those that wait, else it waits in order; one that would wait when the waiting cap is full is refused. A run past the time limit is stopped and reported to its worker as timed out; a worker that ends takes out its turns, waiting or running; turns waiting at a restart start again in order. Its result is what the project's reader for the command picks, and the turn ends when the run does, or, for a run moved to the background, when its output ends; either way how the run ended is kept on its worker, its failed runs in a row counted and a passed one ending the count. A run the shell runner moved to the background is waited for until the foreground limit has passed since it began, so a turn's result is handed back in the foreground."""
+    """The test budget: a worker's turn to run tests is a row, started through the shell runner in the worker's own worktree as soon as fewer runs go than the budget allows and it is first of those that wait, else it waits in order; one that would wait when the waiting cap is full is refused, and while a restart of its journal waits none starts: the turn is taken out and refused, so the restart never waits on a run started after it was asked. A run past the time limit is stopped and reported to its worker as timed out; a worker that ends takes out its turns, waiting or running; turns waiting at a restart start again in order. Its result is what the project's reader for the command picks, and the turn ends when the run does, or, for a run moved to the background, when its output ends; either way how the run ended is kept on its worker, its failed runs in a row counted and a passed one ending the count. A run the shell runner moved to the background is waited for until the foreground limit has passed since it began, so a turn's result is handed back in the foreground."""
 
     __test__ = False
 
-    def __init__(self, turns: TurnRows, runner: ShellRunner, branch: WorkerBranch, readers: Readers, settings: SettingRows, outputs: CommandOutputs, scope: Scope, workers: Workers, environments: Environments, time_source: TimeSource) -> None:
-        self.time_source = time_source
+    def __init__(self, turns: TurnRows, runner: ShellRunner, branch: WorkerBranch, readers: Readers, settings: SettingRows, outputs: CommandOutputs, scope: Scope, workers: Workers, environments: Environments, time_source: TimeSource, restarts: RestartQueue) -> None:
+        self.time_source, self.restarts = time_source, restarts
         self.turns, self.runner, self.branch, self.readers, self.settings, self.outputs = turns, runner, branch, readers, settings, outputs
         self.scope, self.workers, self.environments = scope, workers, environments
         self.lock = threading.Lock()
@@ -127,6 +128,9 @@ class TestTurns:
             with self.lock:
                 if self.turns.find(turn.id).state != TestTurnState.WAITING:
                     return False
+                if self.restarts.is_waiting(turn.environment_id):
+                    self.turns.save(self.turns.find(turn.id).ended(), Actor.system())
+                    raise Rejection(RESTART_HOLD)
                 open_runs = self.running()
                 free = [row for row in self.turns.waiting() if row.folder not in {run.folder for run in open_runs}]
                 if free and free[0].id == turn.id and len(open_runs) < self.budget():
