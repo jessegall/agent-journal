@@ -48,6 +48,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property NavigationReason $reason
  * @property NavigationScreen $screen
  * @property list<string> $raise_rows
+ * @property list<string> $sent_steps
  * @property NavigationState $state
  * @property NavigationCompletion|null $completes
  * @property int|null $next_step
@@ -82,6 +83,7 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
             'reason' => NavigationReason::class,
             'screen' => NavigationScreen::class,
             'raise_rows' => 'array',
+            'sent_steps' => 'array',
             'state' => NavigationState::class,
             'completes' => NavigationCompletion::class,
             'expires_at' => 'immutable_datetime',
@@ -123,6 +125,8 @@ final class NavigationRequest extends Model implements Assignable, ReadableModel
         $navigation->reason = $uncertainty->reason;
         $navigation->screen = $uncertainty->screen;
         $navigation->raise_rows = $uncertainty->screen->rows;
+        $navigation->stale_entry_id = $uncertainty->staleEntryId;
+        $navigation->sent_steps = $uncertainty->sentSteps;
         $navigation->state = NavigationState::Open;
         $navigation->expires_at = $expiresAt;
         $navigation->belongTo($owner);

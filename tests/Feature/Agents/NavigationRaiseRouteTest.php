@@ -12,6 +12,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Contracts\MainSeatTakeover;
 use App\Agents\Enums\HoldReason;
+use App\Agents\Enums\MenuEntryState;
 use App\Agents\Enums\NavigationCompletion;
 use App\Agents\Enums\NavigationReason;
 use App\Agents\Models\Agent;
@@ -20,6 +21,7 @@ use App\Agents\Models\DriverRequest;
 use App\Agents\Models\MenuEntry;
 use App\Agents\Models\NavigationRequest;
 use App\Agents\Support\EnrolledHost;
+use App\Agents\Support\NavigationLibrary;
 use App\Agents\Support\OpenedRuntime;
 use App\Agents\Values\MenuStep;
 use App\Agents\Values\NavigationScreen;
@@ -189,6 +191,52 @@ final class NavigationRaiseRouteTest extends TestCase
         $this->assertSame('opened', $answer->json('answer'));
     }
 
+    public function test_a_stale_report_marks_one_build_only_and_a_repeat_changes_nothing(): void
+    {
+        $entry = $this->libraryEntry('2.1.323');
+        $entry->provenOn('2.1.400');
+        [$host, $opened] = $this->openRuntime();
+        $report = fn (string $reason) => $this->hostCall($host, "/host/menu-entries/{$entry->id}/stale", [
+            'runtime_id' => $opened->runtimeId,
+            'operation_key' => 'stale-1',
+            'reason' => $reason,
+            'step' => 1,
+            'build' => '2.1.323',
+            'rows' => ['Model: <redacted>'],
+        ]);
+
+        $report('label-missing')->assertNoContent();
+        $report('no-proof')->assertNoContent();
+
+        $entry = MenuEntry::query()->acrossActors()->findOrFail($entry->id);
+        $this->assertFalse($entry->isCurrentOn('2.1.323'));
+        $this->assertTrue($entry->isCurrentOn('2.1.400'));
+        $this->assertSame('label-missing at step 1', $entry->builds()['2.1.323']->staleReason);
+        $this->assertSame(['Model: <redacted>'], $entry->builds()['2.1.323']->staleScreen);
+    }
+
+    public function test_a_stale_entry_raise_keeps_its_hint_and_the_proven_path_supersedes_it(): void
+    {
+        $this->seat(Agent::named('Main', 'main-agent'));
+        $stale = $this->libraryEntry('2.1.323');
+        $stale->markStaleOn('2.1.323', 'label-missing at step 1', []);
+        [$host, $opened, $request] = $this->stalledScript();
+
+        $answer = $this->raise($host, $opened, $request, stale: [
+            'stale_entry' => $stale->id,
+            'sent_steps' => ['choose GPT-6'],
+        ])->assertOk();
+
+        $navigation = NavigationRequest::query()->acrossActors()->findOrFail($answer->json('requestId'));
+        $this->assertSame([$stale->id, ['choose GPT-6']], [$navigation->stale_entry_id, $navigation->sent_steps]);
+        $navigation->answer();
+        $navigation->prove(NavigationCompletion::Goal, null, 'GPT-6');
+        $saved = $this->app->make(AssignmentTransaction::class)->run(fn () => $this->app->make(NavigationLibrary::class)
+            ->save($navigation, [new MenuStep(self::FINGERPRINT, 'GPT-7', null, null)]));
+        $this->assertSame(MenuEntryState::Superseded, $stale->fresh()?->state);
+        $this->assertSame(MenuEntryState::Current, $saved->state);
+    }
+
     public function test_the_replayed_report_counts_once_and_lists_the_build(): void
     {
         $entry = $this->libraryEntry('2.1.300');
@@ -239,6 +287,7 @@ final class NavigationRaiseRouteTest extends TestCase
      *
      * @param  list<string>  $rows
      * @param  list<string>  $declined
+     * @param  array<string, mixed>  $stale  the stale entry and the steps its replay already sent
      */
     private function raise(
         EnrolledHost $host,
@@ -246,6 +295,7 @@ final class NavigationRaiseRouteTest extends TestCase
         DriverRequest $request,
         array $rows = ['Model: GPT-5', '❯ GPT-6'],
         array $declined = [],
+        array $stale = [],
     ): TestResponse {
         return $this->hostCall($host, "/host/runtimes/{$opened->runtimeId}/navigation", [
             'operation_key' => "{$request->id}:{$request->attempt_version}:2",
@@ -258,6 +308,7 @@ final class NavigationRaiseRouteTest extends TestCase
             'highlight' => 1,
             'generation' => 7,
             ...($declined === [] ? [] : ['declined_entries' => $declined]),
+            ...$stale,
         ]);
     }
 

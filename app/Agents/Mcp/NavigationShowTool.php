@@ -7,8 +7,10 @@ namespace App\Agents\Mcp;
 use App\Agents\Exceptions\NavigationRaiseRefused;
 use App\Agents\Models\AgentRuntime;
 use App\Agents\Models\DriverRequest;
+use App\Agents\Models\MenuEntry;
 use App\Agents\Models\NavigationRequest;
 use App\Agents\Support\NavigationAnswering;
+use App\Agents\Values\MenuStep;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Mcp\Data\ToolResult;
 use App\Mcp\Support\ToolArguments;
@@ -66,7 +68,8 @@ final class NavigationShowTool extends JournalReadTool
             'state' => $navigation->state->value,
             'version' => $navigation->row_version,
             'generation' => $screen->generation,
-            'stale_entry' => $navigation->stale_entry_id,
+            'stale_entry' => $this->staleHint($navigation),
+            'sent_steps' => $navigation->sent_steps,
             'rounds' => $rounds->map(fn (DriverRequest $round) => [
                 'id' => $round->id,
                 'progress' => $round->progress->value,
@@ -81,5 +84,20 @@ final class NavigationShowTool extends JournalReadTool
                 .'confirm "<label>" of the highlighted entry, never a raw enter; when the goal shows, call '
                 .'navigation_done with a proof the screen did not show before.',
         ], []);
+    }
+
+    /**
+     * The stale entry the request replaces, as a hint: its steps beside the live screen; none without one.
+     *
+     * @return array{id: string, steps: list<array<string, string|null>>}|null
+     */
+    private function staleHint(NavigationRequest $navigation): array|null
+    {
+        if ($navigation->stale_entry_id === null) {
+            return null;
+        }
+        $entry = MenuEntry::query()->acrossActors()->findOrFail($navigation->stale_entry_id);
+
+        return ['id' => $entry->id, 'steps' => array_map(fn (MenuStep $step) => $step->toStored(), $entry->steps())];
     }
 }

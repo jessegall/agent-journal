@@ -193,7 +193,14 @@ final readonly class RaiseNavigationHandler implements CommandHandler
         $highlight = $command->highlight >= 0 ? $command->highlight : null;
         $screen = new NavigationScreen($command->rows, $highlight, $command->generation);
 
-        return new NavigationUncertainty($command->reason, $command->step, $command->fingerprint, $screen);
+        return new NavigationUncertainty(
+            $command->reason,
+            $command->step,
+            $command->fingerprint,
+            $screen,
+            $command->staleEntry,
+            array_map(fn (string $step) => mb_substr($step, 0, 200), array_slice($command->sentSteps, 0, 20)),
+        );
     }
 
     /**

@@ -35,6 +35,8 @@ final readonly class RaiseNavigationController
             $raise->highlight,
             $raise->generation,
             $raise->declinedEntries,
+            $raise->staleEntry,
+            $raise->sentSteps,
         ));
 
         return new JsonResponse($answer);

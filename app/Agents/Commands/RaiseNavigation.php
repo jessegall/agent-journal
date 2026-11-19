@@ -26,6 +26,7 @@ final readonly class RaiseNavigation extends Command
     /**
      * @param  list<string>  $rows
      * @param  list<string>  $declinedEntries
+     * @param  list<string>  $sentSteps
      */
     public function __construct(
         public string $hostId,
@@ -40,5 +41,7 @@ final readonly class RaiseNavigation extends Command
         public int $highlight,
         public int $generation,
         public array $declinedEntries = [],
+        public string|null $staleEntry = null,
+        public array $sentSteps = [],
     ) {}
 }

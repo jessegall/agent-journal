@@ -34,6 +34,7 @@ return new class extends Migration
             $table->string('proof', 200)->nullable();
             $table->string('abandon_reason', 500)->nullable();
             $table->ulid('stale_entry_id')->nullable();
+            $table->json('sent_steps');
             $table->ulid('library_entry_id')->nullable();
             $table->timestampTz('expires_at');
             $table->unsignedInteger('row_version')->default(1);
