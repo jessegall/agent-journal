@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 use App\Processes\Handlers\RestoreCommandRuleHandler;
 use App\Processes\Values\ProposalReceipt;
@@ -18,7 +16,6 @@ use App\Processes\Values\ProposalReceipt;
  * @implements Command<ProposalReceipt>
  */
 #[HandledBy(RestoreCommandRuleHandler::class)]
-#[RequiresActor(ActorType::User)]
 final readonly class RestoreCommandRule implements Command
 {
     public function __construct(

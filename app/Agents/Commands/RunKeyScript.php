@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Agents\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Agents\Handlers\RunKeyScriptHandler;
 use App\Agents\Support\DriverReceipt;
 use App\Agents\Support\StackTarget;
 use App\Agents\Values\ScriptParameter;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 
 /**
@@ -20,7 +18,6 @@ use App\Bus\Contracts\Command;
  * @implements Command<DriverReceipt>
  */
 #[HandledBy(RunKeyScriptHandler::class)]
-#[RequiresActor(ActorType::User)]
 final readonly class RunKeyScript implements Command
 {
     /**

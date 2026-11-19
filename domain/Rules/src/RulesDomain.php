@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Rules;
 
+use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Values\PolicyRegistration;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasNumberedModels;
 use App\Domains\Support\Domain;
@@ -31,6 +33,7 @@ use Domain\Rules\Commands\ProposeRule;
 use Domain\Rules\Commands\RemoveRule;
 use Domain\Rules\Contracts\RuleDetailsResolver;
 use Domain\Rules\Contracts\RuleResolver;
+use Domain\Rules\Enums\RuleAbility;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Exceptions\RuleNotProposed;
@@ -38,10 +41,11 @@ use Domain\Rules\Http\Controllers\ApproveRuleController;
 use Domain\Rules\Http\Controllers\DenyRuleController;
 use Domain\Rules\Mcp\ActiveRulesOverview;
 use Domain\Rules\Models\Rule;
+use Domain\Rules\Policies\RulePolicy;
 use Domain\Rules\Resolvers\RulesWindowResolver;
 use Domain\Rules\Skills\RulesSkill;
 
-final class RulesDomain extends Domain implements ProvidesCommands, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSkills
+final class RulesDomain extends Domain implements ProvidesCommands, ProvidesMcpTools, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesPolicies, ProvidesSkills
 {
     use HasNumberedModels;
 
@@ -73,6 +77,13 @@ final class RulesDomain extends Domain implements ProvidesCommands, ProvidesMcpT
             ->commands(ApproveRule::class, DenyRule::class)
             ->exceptions(RuleMissing::class, RuleNotProposed::class)
             ->build();
+    }
+
+    public function policies(): array
+    {
+        $review = [RuleAbility::Approve, RuleAbility::Deny, RuleAbility::Remove];
+
+        return [new PolicyRegistration(Rule::class, RulePolicy::class, RuleAbility::class, ownerOnly: $review)];
     }
 
     /**

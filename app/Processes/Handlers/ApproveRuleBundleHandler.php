@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\Processes\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\ApproveRuleBundle;
+use App\Processes\Enums\ProcessAbility;
 use App\Processes\Events\BundleActivated;
 use App\Processes\Exceptions\ApprovalRefused;
+use App\Processes\Models\CommandRequest;
 use App\Processes\Models\ModuleRuleBundle;
+use App\Processes\Policies\ProcessAdministrationPolicy;
 use App\Processes\Support\CommandRuleRegistry;
 use App\Processes\Support\ProjectKey;
 use App\Processes\Values\RuleBundle;
@@ -23,6 +27,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class ApproveRuleBundleHandler implements CommandHandler
 {
     public function __construct(
+        private CurrentAuthorizer $administration,
         private CurrentActor $actors,
         private CommandRuleRegistry $rules,
         private ProjectKey $projects,
@@ -34,6 +39,7 @@ final readonly class ApproveRuleBundleHandler implements CommandHandler
      */
     public function handle(ApproveRuleBundle $command): string
     {
+        $this->administration->authorize(ProcessAdministrationPolicy::class, CommandRequest::class, ProcessAbility::Administer);
         $installed = array_values(array_filter(
             $this->rules->bundles(),
             fn (RuleBundle $bundle): bool => $bundle->module === $command->module

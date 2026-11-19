@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace App\Sharing\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Sharing\Commands\RetryShare;
 use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\ShareAuditType;
+use App\Sharing\Enums\SharingAbility;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
 use App\Sharing\Models\ShareGatewayOperation;
+use App\Sharing\Policies\SharingPolicy;
 use App\Sharing\Support\ShareSummary;
 
 /**
@@ -22,10 +25,15 @@ use App\Sharing\Support\ShareSummary;
  */
 final readonly class RetryShareHandler implements CommandHandler
 {
-    public function __construct(private CurrentActor $actors, private SharePolicy $policy) {}
+    public function __construct(
+        private CurrentAuthorizer $authorizer,
+        private CurrentActor $actors,
+        private SharePolicy $policy,
+    ) {}
 
     public function handle(RetryShare $command): ShareSummary
     {
+        $this->authorizer->authorize(SharingPolicy::class, Share::class, SharingAbility::Administer);
         $owner = $this->actors->actor();
         $this->policy->requireManager($owner);
         $share = Share::lockForChange($command->shareId);

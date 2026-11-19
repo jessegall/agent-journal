@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Agents;
 
-use App\Actors\Values\OwnerAuthority;
+use Tests\Support\TestLaunchAuthority;
 use Illuminate\Container\Container;
 use App\AgentRequests\Support\LaunchProfilePin;
 use App\Agents\Enums\AgentRole;
@@ -51,7 +51,7 @@ final readonly class TestLaunch
         $context = new AgentContext($this->agent->id, $this->session->id, $this->agent->role, $call, null);
         $app->forgetScopedInstances();
         $app->instance(AgentContext::class, $context);
-        $app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agent->id), new OwnerAuthority('test'));
+        $app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agent->id), TestLaunchAuthority::forAgent($this->agent->id));
     }
 
     /**

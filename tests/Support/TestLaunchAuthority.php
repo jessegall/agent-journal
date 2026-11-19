@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Values\PolicyRegistration;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Profiles\Enums\ProfileType;
@@ -33,7 +34,16 @@ final class TestLaunchAuthority
 
     public static function of(ProfileType $type = ProfileType::MainAgent): LaunchProfileAuthority
     {
-        $registrations = Container::getInstance()->make(PolicyCatalogue::class)->grantable();
+        return self::granting($type, Container::getInstance()->make(PolicyCatalogue::class)->grantable());
+    }
+
+    /**
+     * The authority of a profile of the kind granting only the given policies' abilities; none grants nothing.
+     *
+     * @param  list<PolicyRegistration>  $registrations
+     */
+    public static function granting(ProfileType $type, array $registrations): LaunchProfileAuthority
+    {
 
         return new LaunchProfileAuthority(ProfileSnapshot::from([
             'key' => ProfileKey::from(str_replace('_', '-', $type->value)),

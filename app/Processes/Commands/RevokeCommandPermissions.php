@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 use App\Processes\Enums\CommandClass;
 use App\Processes\Handlers\RevokeCommandPermissionsHandler;
@@ -19,7 +17,6 @@ use App\Processes\Values\CommandPattern;
  * @implements Command<string>
  */
 #[HandledBy(RevokeCommandPermissionsHandler::class)]
-#[RequiresActor(ActorType::User)]
 final readonly class RevokeCommandPermissions implements Command
 {
     /**

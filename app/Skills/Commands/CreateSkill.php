@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 use App\Skills\Handlers\CreateSkillHandler;
 use App\Skills\Values\SkillDraft;
@@ -19,7 +17,6 @@ use App\Skills\Values\SkillRevisionResult;
  * @implements Command<SkillRevisionResult>
  */
 #[HandledBy(CreateSkillHandler::class)]
-#[RequiresActor(ActorType::User)]
 final readonly class CreateSkill implements Command
 {
     public function __construct(

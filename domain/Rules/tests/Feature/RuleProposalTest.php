@@ -6,7 +6,7 @@ namespace Domain\Rules\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
-use App\Actors\Exceptions\UserActorRequired;
+use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
@@ -57,9 +57,9 @@ final class RuleProposalTest extends TestCase
         $this->startRequestAs($launch->agent->id, $launch->session->id);
         $bus = $this->app->make(CommandBus::class);
 
-        $this->assertThrows(fn () => $bus->run(new RemoveRule($active->id)), UserActorRequired::class);
-        $this->assertThrows(fn () => $bus->run(new ApproveRule($proposed->id)), UserActorRequired::class);
-        $this->assertThrows(fn () => $bus->run(new DenyRule($proposed->id)), UserActorRequired::class);
+        $this->assertThrows(fn () => $bus->run(new RemoveRule($active->id)), ActorNotAllowed::class);
+        $this->assertThrows(fn () => $bus->run(new ApproveRule($proposed->id)), ActorNotAllowed::class);
+        $this->assertThrows(fn () => $bus->run(new DenyRule($proposed->id)), ActorNotAllowed::class);
 
         $this->assertSame([RuleState::Active, RuleState::Proposed], [$active->fresh()?->state, $proposed->fresh()?->state]);
     }

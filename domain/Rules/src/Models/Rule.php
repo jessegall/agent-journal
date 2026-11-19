@@ -6,6 +6,7 @@ namespace Domain\Rules\Models;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
+use App\Actors\Support\ActorIdentity;
 use App\Links\Support\Linkable;
 use App\Numbers\Contracts\Numbered;
 use App\Numbers\Support\HasNumber;
@@ -16,6 +17,7 @@ use Domain\Rules\Api\RuleDetails;
 use Domain\Rules\Enums\RuleState;
 use Domain\Rules\Exceptions\RuleMissing;
 use Domain\Rules\Exceptions\RuleNotProposed;
+use Domain\Rules\Exceptions\RuleSelfApproval;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
@@ -98,8 +100,19 @@ final class Rule extends Model implements Numbered, ReadableModel
         return self::query()->whereKey($ruleId)->lockForUpdate()->first() ?? throw RuleMissing::withId($ruleId);
     }
 
-    public function approve(): void
+    /**
+     * Makes the proposal hold, approved by an actor other than the one who proposed it.
+     *
+     * @throws RuleSelfApproval
+     */
+    public function approveBy(ActorIdentity $approver): void
     {
+        $proposer = $this->proposer_type === null ? null : new ActorIdentity($this->proposer_type, (string) $this->proposer_id);
+
+        if ($proposer !== null && $proposer->isSameAs($approver)) {
+            throw RuleSelfApproval::forRule();
+        }
+
         $this->closeProposal(RuleState::Active);
     }
 

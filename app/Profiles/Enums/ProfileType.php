@@ -39,4 +39,12 @@ enum ProfileType: string
             self::WritingHelper => AgentRole::WritingHelper,
         };
     }
+
+    /**
+     * Whether profiles of this kind may do what only the main agent may.
+     */
+    public function isMainAgent(): bool
+    {
+        return $this === self::MainAgent;
+    }
 }

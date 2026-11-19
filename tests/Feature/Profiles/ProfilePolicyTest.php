@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Profiles;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\UserActorRequired;
+use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Models\RevisionFence;
@@ -141,7 +141,7 @@ final class ProfilePolicyTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(9)), TestLaunchAuthority::forAgent(TestIds::of(9)));
 
-        $this->expectException(UserActorRequired::class);
+        $this->expectException(ActorNotAllowed::class);
 
         $this->activate(['profiles' => ['journal-worker' => self::WORKER]]);
     }

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 use App\Processes\Handlers\RetireCommandRuleHandler;
 
@@ -16,7 +14,6 @@ use App\Processes\Handlers\RetireCommandRuleHandler;
  * @implements Command<string>
  */
 #[HandledBy(RetireCommandRuleHandler::class)]
-#[RequiresActor(ActorType::User)]
 final readonly class RetireCommandRule implements Command
 {
     public function __construct(

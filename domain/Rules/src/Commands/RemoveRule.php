@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 use Domain\Rules\Handlers\RemoveRuleHandler;
 
@@ -16,7 +14,6 @@ use Domain\Rules\Handlers\RemoveRuleHandler;
  * @implements Command<null>
  */
 #[HandledBy(RemoveRuleHandler::class)]
-#[RequiresActor(ActorType::User)]
 final readonly class RemoveRule implements Command
 {
     public function __construct(public string $ruleId) {}

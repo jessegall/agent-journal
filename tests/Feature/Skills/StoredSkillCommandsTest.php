@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\UserActorRequired;
+use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\Command;
@@ -93,7 +93,7 @@ final class StoredSkillCommandsTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), TestLaunchAuthority::forAgent(TestIds::of(3)));
 
-        $this->assertRefused(UserActorRequired::class, new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
+        $this->assertRefused(ActorNotAllowed::class, new CreateSkill('user-review-notes', 'create-1', $this->draft('First.')));
         $this->assertSame(0, Skill::query()->count());
     }
 

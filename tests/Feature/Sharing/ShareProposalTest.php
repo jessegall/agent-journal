@@ -6,7 +6,7 @@ namespace Tests\Feature\Sharing;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
-use App\Actors\Exceptions\UserActorRequired;
+use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
@@ -110,7 +110,7 @@ final class ShareProposalTest extends TestCase
         $this->startRequestAs($this->launch->agent->id, $this->launch->session->id);
         $this->app->make(RequestKey::class)->set('01JD8X0G9M3QZ6V4K2PROPOSE2');
 
-        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new CreateShare(TestIds::of(1), str_repeat('0', 64), ShareDuration::STANDARD_MINUTES, '01JD8X0G9M3QZ6V4K2PROPOSE2')), UserActorRequired::class);
+        $this->assertThrows(fn () => $this->app->make(CommandBus::class)->run(new CreateShare(TestIds::of(1), str_repeat('0', 64), ShareDuration::STANDARD_MINUTES, '01JD8X0G9M3QZ6V4K2PROPOSE2')), ActorNotAllowed::class);
         $this->assertSame(0, Share::query()->count());
     }
 

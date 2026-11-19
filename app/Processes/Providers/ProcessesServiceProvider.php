@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Processes\Providers;
 
+use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Values\PolicyRegistration;
 use App\Links\Support\LinkTypeRegistry;
 use App\Processes\Admission\LineAdmission;
 use App\Processes\Classification\TreeClassifier;
@@ -39,6 +41,7 @@ use App\Processes\Contracts\ShellAdmission;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Contracts\ShellSyntax;
 use App\Processes\Contracts\VerificationTiming;
+use App\Processes\Enums\ProcessAbility;
 use App\Processes\Models\ClassificationRule;
 use App\Processes\Models\CommandAlias;
 use App\Processes\Models\CommandRequest;
@@ -55,6 +58,7 @@ use App\Processes\Models\ReaderRevision;
 use App\Processes\Models\ResultReceipt;
 use App\Processes\Models\RuleProposal;
 use App\Processes\Models\RuleRevision;
+use App\Processes\Policies\ProcessAdministrationPolicy;
 use App\Processes\Rules\JournalClassifier;
 use App\Processes\Support\ActiveRules;
 use App\Processes\Support\CommandAliases;
@@ -105,8 +109,14 @@ final class ProcessesServiceProvider extends ServiceProvider
         ]));
     }
 
-    public function boot(LinkTypeRegistry $links): void
+    public function boot(LinkTypeRegistry $links, PolicyCatalogue $policies): void
     {
+        $policies->register('Core', new PolicyRegistration(
+            CommandRequest::class,
+            ProcessAdministrationPolicy::class,
+            ProcessAbility::class,
+            ownerOnly: [ProcessAbility::Administer],
+        ));
         RequiredServices::check($this->app);
         $this->callAfterResolving(
             Schedule::class,

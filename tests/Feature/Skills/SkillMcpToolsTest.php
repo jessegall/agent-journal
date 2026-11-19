@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Skills;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\UserActorRequired;
+use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
@@ -64,7 +64,7 @@ final class SkillMcpToolsTest extends TestCase
         try {
             $this->app->make(CommandBus::class)->run(new ReviseSkill($created->skillId, 1, 'revise-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Other.')], '')));
             $this->fail('The bus let an agent revise a skill.');
-        } catch (UserActorRequired $refusal) {
+        } catch (ActorNotAllowed $refusal) {
             $busMessage = $refusal->getMessage();
         }
 

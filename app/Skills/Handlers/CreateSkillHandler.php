@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Skills\Handlers;
 
+use App\Actors\Contracts\CurrentAuthorizer;
 use App\Contracts\CommandHandler;
 use App\Skills\Commands\CreateSkill;
+use App\Skills\Enums\SkillAbility;
 use App\Skills\Exceptions\SkillDeclarationInvalid;
 use App\Skills\Exceptions\SkillKeyTaken;
 use App\Skills\Models\Skill;
+use App\Skills\Policies\SkillAuthoringPolicy;
 use App\Skills\Resolvers\Support\SkillContextResolver;
 use App\Skills\Support\StoredSkillWrites;
 use App\Skills\Values\SkillKey;
@@ -18,11 +21,13 @@ use App\Skills\Values\SkillRevisionResult;
 final readonly class CreateSkillHandler implements CommandHandler
 {
     public function __construct(
+        private CurrentAuthorizer $administration,
         private StoredSkillWrites $writes,
     ) {}
 
     public function handle(CreateSkill $command): SkillRevisionResult
     {
+        $this->administration->authorize(SkillAuthoringPolicy::class, Skill::class, SkillAbility::Administer);
         $key = SkillKey::from($command->key);
 
         return $this->writes->once($command->requestId, hash('sha256', $key->key.'|'.$command->draft->digest()), function () use ($key, $command) {

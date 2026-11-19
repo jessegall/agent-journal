@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 use App\Processes\Handlers\ApproveSampleHandler;
 
@@ -17,7 +15,6 @@ use App\Processes\Handlers\ApproveSampleHandler;
  * @implements Command<string>
  */
 #[HandledBy(ApproveSampleHandler::class)]
-#[RequiresActor(ActorType::User)]
 final readonly class ApproveSample implements Command
 {
     public function __construct(

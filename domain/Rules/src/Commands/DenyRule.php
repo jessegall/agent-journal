@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Rules\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 use Domain\Rules\Handlers\DenyRuleHandler;
 
@@ -16,7 +14,6 @@ use Domain\Rules\Handlers\DenyRuleHandler;
  * @implements Command<null>
  */
 #[HandledBy(DenyRuleHandler::class)]
-#[RequiresActor(ActorType::User)]
 final readonly class DenyRule implements Command
 {
     public function __construct(public string $ruleId) {}

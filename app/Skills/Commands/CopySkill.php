@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 use App\Skills\Handlers\CopySkillHandler;
 use App\Skills\Values\SkillRevisionResult;
@@ -18,7 +16,6 @@ use App\Skills\Values\SkillRevisionResult;
  * @implements Command<SkillRevisionResult>
  */
 #[HandledBy(CopySkillHandler::class)]
-#[RequiresActor(ActorType::User)]
 final readonly class CopySkill implements Command
 {
     public function __construct(

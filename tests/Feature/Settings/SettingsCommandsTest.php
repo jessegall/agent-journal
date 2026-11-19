@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Tests\Feature\Settings;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\UserActorRequired;
+use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\Command;
 use App\Bus\Contracts\CommandBus;
 use App\Domains\Support\DomainRegistry;
+use App\Profiles\Enums\ProfileType;
 use App\Settings\Commands\EnableSettingGroup;
 use App\Settings\Commands\SetIntegerSetting;
 use App\Settings\Contracts\EnabledSettingsGroup;
@@ -45,6 +46,7 @@ use Tests\Fixtures\Domains\Reviews\ReviewsDomain;
 use Tests\Fixtures\Domains\Reviews\Settings\ReviewSettings;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\TestIds;
+use Tests\Support\TestLaunchAuthority;
 use Tests\TestCase;
 use Throwable;
 
@@ -179,8 +181,9 @@ final class SettingsCommandsTest extends TestCase
     {
         $command = new SetIntegerSetting(new SettingReference('Reviews', 'retry_limit'), 4, 0);
 
-        $this->actAs(ActorContext::forAgent(TestIds::of(3)));
-        $this->assertRefused(UserActorRequired::class, $command);
+        $agent = TestIds::of(3);
+        $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent), TestLaunchAuthority::granting(ProfileType::MainAgent, []));
+        $this->assertRefused(ActorNotAllowed::class, $command);
 
         $this->actAs(ActorContext::forUser(TestIds::of(8)));
         $this->assertRefused(SettingsAccessDenied::class, $command);

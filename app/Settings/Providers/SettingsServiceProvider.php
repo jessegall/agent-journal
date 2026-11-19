@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Settings\Providers;
 
+use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Values\PolicyRegistration;
 use App\Settings\Contracts\SettingsAccessPolicy;
 use App\Settings\Contracts\SettingsCatalogue;
 use App\Settings\Contracts\SettingsResolver;
+use App\Settings\Enums\SettingAbility;
+use App\Settings\Models\SettingsRecord;
+use App\Settings\Policies\SettingPolicy;
 use App\Settings\Support\DatabaseSettingsCatalogue;
 use App\Settings\Support\DatabaseSettingsResolver;
 use App\Settings\Support\DenyAllSettingsAccess;
@@ -26,5 +31,15 @@ final class SettingsServiceProvider extends ServiceProvider
         $this->app->scoped(DatabaseSettingsResolver::class);
         $this->app->alias(DatabaseSettingsResolver::class, SettingsResolver::class);
         $this->app->scoped(SettingsCatalogue::class, DatabaseSettingsCatalogue::class);
+    }
+
+    public function boot(PolicyCatalogue $policies): void
+    {
+        $policies->register('Core', new PolicyRegistration(
+            SettingsRecord::class,
+            SettingPolicy::class,
+            SettingAbility::class,
+            ownerOnly: [SettingAbility::Administer],
+        ));
     }
 }

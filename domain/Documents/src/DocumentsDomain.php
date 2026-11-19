@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Domain\Documents;
 
+use App\Actors\Contracts\ProvidesPolicies;
+use App\Actors\Values\PolicyRegistration;
 use App\Bus\Contracts\ProvidesCommands;
 use App\Domains\Concerns\HasLinkRecords;
 use App\Domains\Concerns\HasNumberedModels;
@@ -78,6 +80,7 @@ use Domain\Documents\Data\SettlementCard;
 use Domain\Documents\Enums\AttentionFilter;
 use Domain\Documents\Enums\AttentionState;
 use Domain\Documents\Enums\CloseCause;
+use Domain\Documents\Enums\DocumentAbility;
 use Domain\Documents\Enums\EditingState;
 use Domain\Documents\Exceptions\DocumentMissing;
 use Domain\Documents\Exceptions\DraftConflict;
@@ -101,6 +104,7 @@ use Domain\Documents\Links\ReportLinkRecords;
 use Domain\Documents\Models\Document;
 use Domain\Documents\Models\DocumentRevision;
 use Domain\Documents\Models\Report;
+use Domain\Documents\Policies\DocumentRecoveryPolicy;
 use Domain\Documents\Resolvers\DocumentDockResolver;
 use Domain\Documents\Resolvers\DocumentWindowResolver;
 use Domain\Documents\Resolvers\LibraryWindowResolver;
@@ -109,7 +113,7 @@ use Domain\Documents\Resolvers\RevisionWindowResolver;
 use Domain\Documents\Support\DocumentShareProvider;
 use Domain\Documents\Support\ReportShareProvider;
 
-final class DocumentsDomain extends Domain implements ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesSections, ProvidesShareRecords
+final class DocumentsDomain extends Domain implements ProvidesCommands, ProvidesLinkRecords, ProvidesNavigation, ProvidesNumberedModels, ProvidesPages, ProvidesPolicies, ProvidesSections, ProvidesShareRecords
 {
     use HasLinkRecords, HasNumberedModels;
 
@@ -155,6 +159,16 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
             new ShareRecordRegistration(Document::LINK_TYPE, Document::class, DocumentShareProvider::class, [self::SHARE_LINKED_RECORD]),
             new ShareRecordRegistration(Report::LINK_TYPE, Report::class, ReportShareProvider::class, [self::SHARE_LINKED_RECORD]),
         ];
+    }
+
+    public function policies(): array
+    {
+        return [new PolicyRegistration(
+            Document::class,
+            DocumentRecoveryPolicy::class,
+            DocumentAbility::class,
+            ownerOnly: [DocumentAbility::Administer],
+        )];
     }
 
     public function commands(): array

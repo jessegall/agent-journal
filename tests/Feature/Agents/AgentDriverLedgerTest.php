@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Agents;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\UserActorRequired;
+use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
@@ -413,7 +413,7 @@ final class AgentDriverLedgerTest extends TestCase
         [, $opened] = $this->openRuntime();
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agentIdOf($opened)), TestLaunchAuthority::forAgent($this->agentIdOf($opened)));
 
-        $this->expectException(UserActorRequired::class);
+        $this->expectException(ActorNotAllowed::class);
         $this->app->make(CommandBus::class)->run($this->keyScript($opened, 'LoginMcp', ['server' => 'journal']));
     }
 

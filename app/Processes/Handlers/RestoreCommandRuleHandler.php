@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace App\Processes\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\RestoreCommandRule;
+use App\Processes\Enums\ProcessAbility;
 use App\Processes\Exceptions\ClassificationRuleRefused;
 use App\Processes\Exceptions\RuleProposalRefused;
 use App\Processes\Models\ClassificationRule;
+use App\Processes\Models\CommandRequest;
 use App\Processes\Models\RuleProposal;
 use App\Processes\Models\RuleProposalRevision;
 use App\Processes\Models\RuleRevision;
+use App\Processes\Policies\ProcessAdministrationPolicy;
 use App\Processes\Support\ProjectKey;
 use App\Processes\Values\ProposalReceipt;
 use App\Processes\Values\ProposedRule;
@@ -25,6 +29,7 @@ use App\Processes\Values\ProposedRule;
 final readonly class RestoreCommandRuleHandler implements CommandHandler
 {
     public function __construct(
+        private CurrentAuthorizer $administration,
         private CurrentActor $actors,
         private ProjectKey $projects,
     ) {}
@@ -35,6 +40,7 @@ final readonly class RestoreCommandRuleHandler implements CommandHandler
      */
     public function handle(RestoreCommandRule $command): ProposalReceipt
     {
+        $this->administration->authorize(ProcessAdministrationPolicy::class, CommandRequest::class, ProcessAbility::Administer);
         $rule = ClassificationRule::query()
             ->ofProject($this->projects->current())
             ->whereKey($command->classificationRuleId)

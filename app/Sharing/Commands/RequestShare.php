@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sharing\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Attributes\RequiresRequestKey;
 use App\Bus\Contracts\Command;
 use App\Sharing\Handlers\RequestShareHandler;
@@ -19,7 +17,6 @@ use App\Sharing\Support\ShareProposalStatus;
  * @implements Command<ShareProposalStatus>
  */
 #[HandledBy(RequestShareHandler::class)]
-#[RequiresActor(ActorType::Agent)]
 #[RequiresRequestKey(retentionDays: 31, tombstoneDays: 365)]
 final readonly class RequestShare implements Command
 {

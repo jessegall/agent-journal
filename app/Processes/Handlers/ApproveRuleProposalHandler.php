@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace App\Processes\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Processes\Commands\ApproveRuleProposal;
+use App\Processes\Enums\ProcessAbility;
+use App\Processes\Models\CommandRequest;
 use App\Processes\Models\RuleProposal;
+use App\Processes\Policies\ProcessAdministrationPolicy;
 use App\Processes\Support\ProjectKey;
 use App\Processes\Support\RuleApprovals;
 use App\Processes\Values\ApprovalReceipt;
@@ -16,6 +20,7 @@ use App\Processes\Values\ApprovalReceipt;
 final readonly class ApproveRuleProposalHandler implements CommandHandler
 {
     public function __construct(
+        private CurrentAuthorizer $administration,
         private CurrentActor $actors,
         private RuleApprovals $approvals,
         private ProjectKey $projects,
@@ -23,6 +28,7 @@ final readonly class ApproveRuleProposalHandler implements CommandHandler
 
     public function handle(ApproveRuleProposal $command): ApprovalReceipt
     {
+        $this->administration->authorize(ProcessAdministrationPolicy::class, CommandRequest::class, ProcessAbility::Administer);
         $proposal = RuleProposal::query()
             ->ofProject($this->projects->current())
             ->whereKey($command->proposalId)

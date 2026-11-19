@@ -6,8 +6,10 @@ namespace App\Agents\Providers;
 
 use App\Actors\Contracts\ActorProviderRegistration;
 use App\Actors\Contracts\AuthorizerProviderRegistration;
+use App\Actors\Contracts\PolicyCatalogue;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActiveActorCounterRegistry;
+use App\Actors\Values\PolicyRegistration;
 use App\AgentRequests\Actions\SendAgentRequests;
 use App\AgentRequests\Contracts\AgentRequestSender;
 use App\AgentRequests\Contracts\LaunchCredentialSource;
@@ -21,7 +23,10 @@ use App\Agents\Contracts\HostCapabilities;
 use App\Agents\Contracts\LaunchMaterialResolver;
 use App\Agents\Contracts\LaunchRecordResolver;
 use App\Agents\Contracts\ProgramConversationResolver;
+use App\Agents\Enums\KeyScriptAbility;
 use App\Agents\Exceptions\AgentContextMissing;
+use App\Agents\Models\AgentRuntime;
+use App\Agents\Policies\KeyScriptPolicy;
 use App\Agents\Resolvers\AgentAuthorityRecords;
 use App\Agents\Resolvers\AgentLabels;
 use App\Agents\Resolvers\HostLaunchMaterial;
@@ -84,7 +89,14 @@ final class AgentsServiceProvider extends ServiceProvider
         ActorProviderRegistration $actors,
         ActiveActorCounterRegistry $presentActors,
         AuthorizerProviderRegistration $authorizers,
+        PolicyCatalogue $policies,
     ): void {
+        $policies->register('Core', new PolicyRegistration(
+            AgentRuntime::class,
+            KeyScriptPolicy::class,
+            KeyScriptAbility::class,
+            ownerOnly: [KeyScriptAbility::Administer],
+        ));
         $actors->register(ActorType::Agent, AgentActors::class);
         $actors->registerLabels(ActorType::Agent, AgentLabels::class);
         $actors->registerVisibility(ActorType::Agent, AgentVisibility::class);

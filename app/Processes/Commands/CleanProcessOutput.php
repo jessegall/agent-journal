@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 use App\Processes\Handlers\CleanProcessOutputHandler;
 use App\Processes\Values\CleanPreview;
@@ -18,7 +16,6 @@ use App\Processes\Values\CleanPreview;
  * @implements Command<CleanPreview>
  */
 #[HandledBy(CleanProcessOutputHandler::class)]
-#[RequiresActor(ActorType::User)]
 final readonly class CleanProcessOutput implements Command
 {
     /**

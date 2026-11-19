@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 use App\Profiles\Handlers\RevokeProfilesHandler;
 use App\Profiles\Values\ProfileKey;
@@ -18,7 +16,6 @@ use App\Profiles\Values\ProfileKey;
  * @implements Command<int>
  */
 #[HandledBy(RevokeProfilesHandler::class)]
-#[RequiresActor(ActorType::User)]
 final readonly class RevokeProfiles implements Command
 {
     /**

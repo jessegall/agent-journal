@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Profiles\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 use App\Profiles\Handlers\ActivateProfilesHandler;
 use App\Profiles\Support\ProfileProposal;
@@ -19,7 +17,6 @@ use App\Profiles\Values\ProfileActivation;
  * @implements Command<ProfileActivation>
  */
 #[HandledBy(ActivateProfilesHandler::class)]
-#[RequiresActor(ActorType::User)]
 final readonly class ActivateProfiles implements Command
 {
     public function __construct(

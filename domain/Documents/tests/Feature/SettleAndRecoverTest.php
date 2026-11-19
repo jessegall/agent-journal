@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Documents\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\UserActorRequired;
+use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
@@ -140,7 +140,7 @@ final class SettleAndRecoverTest extends TestCase
     public function test_an_agent_cannot_recover_a_draft(): void
     {
         $this->actAsAgent(9, 90);
-        $this->expectException(UserActorRequired::class);
+        $this->expectException(ActorNotAllowed::class);
 
         $this->bus()->run(new RecoverDocument(new DraftTarget(1, 'any', 1), 'Mine now.'));
     }

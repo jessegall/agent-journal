@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 use App\Processes\Handlers\SaveCommandRuleHandler;
 use App\Processes\Values\ApprovalReceipt;
@@ -19,7 +17,6 @@ use App\Processes\Values\ProposedRule;
  * @implements Command<ApprovalReceipt>
  */
 #[HandledBy(SaveCommandRuleHandler::class)]
-#[RequiresActor(ActorType::User)]
 final readonly class SaveCommandRule implements Command
 {
     public function __construct(

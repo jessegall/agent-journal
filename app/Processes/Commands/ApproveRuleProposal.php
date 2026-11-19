@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Processes\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 use App\Processes\Handlers\ApproveRuleProposalHandler;
 use App\Processes\Values\ApprovalReceipt;
@@ -18,7 +16,6 @@ use App\Processes\Values\OwnerApproval;
  * @implements Command<ApprovalReceipt>
  */
 #[HandledBy(ApproveRuleProposalHandler::class)]
-#[RequiresActor(ActorType::User)]
 final readonly class ApproveRuleProposal implements Command
 {
     public function __construct(public string $proposalId, public OwnerApproval $approval) {}

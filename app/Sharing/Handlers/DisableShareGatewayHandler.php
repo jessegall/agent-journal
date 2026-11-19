@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Sharing\Handlers;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Contracts\CurrentAuthorizer;
 use App\Actors\Support\ActorIdentity;
 use App\Contracts\CommandHandler;
 use App\Sharing\Actions\ShareEndings;
@@ -12,12 +13,14 @@ use App\Sharing\Commands\DisableShareGateway;
 use App\Sharing\Contracts\SharePolicy;
 use App\Sharing\Enums\GatewayOperationType;
 use App\Sharing\Enums\ShareAuditType;
+use App\Sharing\Enums\SharingAbility;
 use App\Sharing\Models\Share;
 use App\Sharing\Models\ShareAudit;
 use App\Sharing\Models\ShareGatewayConfiguration;
 use App\Sharing\Models\ShareGatewayEndpoint;
 use App\Sharing\Models\ShareGatewayOperation;
 use App\Sharing\Models\ShareInstallation;
+use App\Sharing\Policies\SharingPolicy;
 use App\Sharing\Support\GatewayConfiguration;
 use Illuminate\Contracts\Events\Dispatcher;
 
@@ -29,6 +32,7 @@ use Illuminate\Contracts\Events\Dispatcher;
 final readonly class DisableShareGatewayHandler implements CommandHandler
 {
     public function __construct(
+        private CurrentAuthorizer $authorizer,
         private CurrentActor $actors,
         private SharePolicy $policy,
         private ShareEndings $endings,
@@ -37,6 +41,7 @@ final readonly class DisableShareGatewayHandler implements CommandHandler
 
     public function handle(DisableShareGateway $command): GatewayConfiguration
     {
+        $this->authorizer->authorize(SharingPolicy::class, Share::class, SharingAbility::Administer);
         $owner = $this->actors->actor();
         $this->policy->requireManager($owner);
         ShareInstallation::lockForAdmission();

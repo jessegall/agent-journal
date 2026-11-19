@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Rules\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\UserActorRequired;
+use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
@@ -68,12 +68,12 @@ final class RuleCommandsTest extends TestCase
     public function test_a_main_agent_may_not_approve_a_rule_and_it_stays_proposed(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), TestLaunchAuthority::forAgent(TestIds::of(3)));
-        $rule = Rule::proposed('No phase waits on the user.', 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)));
+        $rule = Rule::proposed('No phase waits on the user.', 'Agents keep forgetting it.', null, ActorContext::forAgent(TestIds::of(70)));
 
         try {
             $this->app->make(CommandBus::class)->run(new ApproveRule($rule->id));
             $this->fail('An agent approved a rule.');
-        } catch (UserActorRequired) {
+        } catch (ActorNotAllowed) {
             $this->assertSame(RuleState::Proposed, $rule->fresh()?->state);
         }
     }
@@ -81,7 +81,7 @@ final class RuleCommandsTest extends TestCase
     public function test_an_agent_asking_to_approve_is_answered_403(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent(TestIds::of(3)), TestLaunchAuthority::forAgent(TestIds::of(3)));
-        $rule = Rule::proposed('No phase waits on the user.', 'Agents keep forgetting it.', null, ActorContext::forUser(TestIds::of(7)));
+        $rule = Rule::proposed('No phase waits on the user.', 'Agents keep forgetting it.', null, ActorContext::forAgent(TestIds::of(70)));
         Route::post('/rules-test/approve', fn (CommandBus $commands) => $commands->run(new ApproveRule($rule->id)));
 
         $this->postJson('/rules-test/approve')->assertForbidden();

@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Settings\Handlers;
 
+use App\Actors\Contracts\CurrentAuthorizer;
 use App\Contracts\CommandHandler;
 use App\Settings\Commands\SetBooleanSetting;
 use App\Settings\Declarations\BooleanSetting;
+use App\Settings\Enums\SettingAbility;
 use App\Settings\Enums\SettingType;
+use App\Settings\Models\SettingsRecord;
+use App\Settings\Policies\SettingPolicy;
 use App\Settings\Support\SettingCodec;
 use App\Settings\Support\SettingsWriter;
 use App\Settings\Support\SettingTargets;
@@ -18,10 +22,11 @@ use App\Settings\Values\SettingsChange;
  */
 final readonly class SetBooleanSettingHandler implements CommandHandler
 {
-    public function __construct(private SettingTargets $targets, private SettingCodec $codec, private SettingsWriter $writer) {}
+    public function __construct(private CurrentAuthorizer $administration, private SettingTargets $targets, private SettingCodec $codec, private SettingsWriter $writer) {}
 
     public function handle(SetBooleanSetting $command): SettingsChange
     {
+        $this->administration->authorize(SettingPolicy::class, SettingsRecord::class, SettingAbility::Administer);
         $setting = $this->targets->setting($command->setting, BooleanSetting::class, SettingType::Boolean);
 
         return $this->writer->setValue($setting, $this->codec->encodeBoolean($command->value), $command->expectedRevision);

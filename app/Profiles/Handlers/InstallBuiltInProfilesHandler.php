@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Profiles\Handlers;
 
 use App\Contracts\CommandHandler;
-use App\Profiles\Commands\ActivateProfiles;
 use App\Profiles\Commands\InstallBuiltInProfiles;
 use App\Profiles\Exceptions\ProfilePolicyRefused;
 use App\Profiles\Support\ProfileProposal;
@@ -27,6 +26,6 @@ final readonly class InstallBuiltInProfilesHandler implements CommandHandler
     {
         $proposal = ProfileProposal::fromConfiguration((array) $this->config->get('profiles', []))->withBuiltIns();
 
-        return $this->activation->handle(new ActivateProfiles($proposal));
+        return $this->activation->activate($proposal);
     }
 }

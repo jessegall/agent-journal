@@ -77,6 +77,7 @@ final class AssignmentsServiceProvider extends ServiceProvider
             AssignmentRecord::class,
             AssignmentPolicy::class,
             AssignmentAbility::class,
+            mainAgentOnly: [AssignmentAbility::Dispatch, AssignmentAbility::Unassign],
         ));
         $this->loadRoutesFrom(dirname(__DIR__).'/Routes/assignments.php');
         $this->commands([

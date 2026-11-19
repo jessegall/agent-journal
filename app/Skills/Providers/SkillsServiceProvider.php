@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Skills\Providers;
 
+use App\Actors\Contracts\PolicyCatalogue;
+use App\Actors\Values\PolicyRegistration;
 use App\Numbers\Support\NumberedModel;
 use App\Numbers\Support\NumberedTypeRegistry;
 use App\Skills\Console\SkillCopyCommand;
@@ -25,7 +27,9 @@ use App\Skills\Contracts\SkillPublisher;
 use App\Skills\Contracts\SkillRenderer;
 use App\Skills\Contracts\SkillResolver;
 use App\Skills\Contracts\SkillSource;
+use App\Skills\Enums\SkillAbility;
 use App\Skills\Models\Skill;
+use App\Skills\Policies\SkillAuthoringPolicy;
 use App\Skills\Resolvers\CatalogueOnFirstRead;
 use App\Skills\Resolvers\SkillCatalogue;
 use App\Skills\Resolvers\Support\SkillContextResolver;
@@ -78,8 +82,14 @@ final class SkillsServiceProvider extends ServiceProvider
         ));
     }
 
-    public function boot(NumberedTypeRegistry $numbers): void
+    public function boot(NumberedTypeRegistry $numbers, PolicyCatalogue $policies): void
     {
+        $policies->register('Core', new PolicyRegistration(
+            Skill::class,
+            SkillAuthoringPolicy::class,
+            SkillAbility::class,
+            ownerOnly: [SkillAbility::Administer],
+        ));
         $numbers->register(NumberedModel::global(Skill::class));
 
         $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {

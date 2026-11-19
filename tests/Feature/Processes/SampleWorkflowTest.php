@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Exceptions\UserActorRequired;
+use App\Actors\Exceptions\ActorNotAllowed;
 use App\Actors\Support\ActorContext;
 use App\Actors\Values\OwnerAuthority;
 use App\Bus\Contracts\CommandBus;
@@ -77,7 +77,7 @@ final class SampleWorkflowTest extends TestCase
 
     public function test_an_agent_cannot_approve_a_sample(): void
     {
-        $this->assertThrows(fn () => $this->asAgent($this->approval()), UserActorRequired::class);
+        $this->assertThrows(fn () => $this->asAgent($this->approval()), ActorNotAllowed::class);
         $this->assertSame(0, EvidencePermit::query()->count());
     }
 

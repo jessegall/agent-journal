@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Settings\Handlers;
 
+use App\Actors\Contracts\CurrentAuthorizer;
 use App\Contracts\CommandHandler;
 use App\Settings\Commands\SetDecimalSetting;
 use App\Settings\Declarations\DecimalSetting;
+use App\Settings\Enums\SettingAbility;
 use App\Settings\Enums\SettingType;
+use App\Settings\Models\SettingsRecord;
+use App\Settings\Policies\SettingPolicy;
 use App\Settings\Support\SettingCodec;
 use App\Settings\Support\SettingsWriter;
 use App\Settings\Support\SettingTargets;
@@ -18,10 +22,11 @@ use App\Settings\Values\SettingsChange;
  */
 final readonly class SetDecimalSettingHandler implements CommandHandler
 {
-    public function __construct(private SettingTargets $targets, private SettingCodec $codec, private SettingsWriter $writer) {}
+    public function __construct(private CurrentAuthorizer $administration, private SettingTargets $targets, private SettingCodec $codec, private SettingsWriter $writer) {}
 
     public function handle(SetDecimalSetting $command): SettingsChange
     {
+        $this->administration->authorize(SettingPolicy::class, SettingsRecord::class, SettingAbility::Administer);
         $setting = $this->targets->setting($command->setting, DecimalSetting::class, SettingType::Decimal);
 
         return $this->writer->setValue($setting, $this->codec->encodeDecimal($command->setting->owner, $setting, $command->value), $command->expectedRevision);

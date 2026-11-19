@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Skills\Commands;
 
-use App\Actors\Enums\ActorType;
 use App\Bus\Attributes\HandledBy;
-use App\Bus\Attributes\RequiresActor;
 use App\Bus\Contracts\Command;
 use App\Skills\Handlers\RetireSkillHandler;
 use App\Skills\Values\SkillRevisionResult;
@@ -17,7 +15,6 @@ use App\Skills\Values\SkillRevisionResult;
  * @implements Command<SkillRevisionResult>
  */
 #[HandledBy(RetireSkillHandler::class)]
-#[RequiresActor(ActorType::User)]
 final readonly class RetireSkill implements Command
 {
     public function __construct(
