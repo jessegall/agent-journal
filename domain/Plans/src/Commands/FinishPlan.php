@@ -12,6 +12,8 @@ use Domain\Plans\Enums\PlanAbility;
 use Domain\Plans\Handlers\FinishPlanHandler;
 use Domain\Plans\Models\Plan;
 use Domain\Plans\Policies\PlanPolicy;
+use Spatie\LaravelData\Attributes\Validation\Max;
+use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
  * Finishes a started plan whose tasks are all finished or cancelled, with a note of what it achieved.
@@ -25,7 +27,7 @@ final readonly class FinishPlan extends Command implements HasAuthorizationSubje
     public function __construct(
         public string $planId,
         public int $expectedRevision,
-        public string $note,
+        #[Required, Max(Plan::NOTE_CHARACTERS)] public string $note,
     ) {}
 
     /**

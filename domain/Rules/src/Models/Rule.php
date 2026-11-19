@@ -48,6 +48,16 @@ final class Rule extends Model implements Numbered, ReadableModel
     use HasNumber, HasUlids, Linkable;
 
     /**
+     * The most characters a rule's text holds.
+     */
+    public const int TEXT_CHARACTERS = 2000;
+
+    /**
+     * The most characters the reason given with a rule holds.
+     */
+    public const int REASON_CHARACTERS = 2000;
+
+    /**
      * @var array<string, mixed>
      */
     protected $attributes = ['state' => 'active'];
