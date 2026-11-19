@@ -12,6 +12,9 @@ use Domain\Memory\Enums\MemoryAbility;
 use Domain\Memory\Handlers\EditMemoryHandler;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Policies\MemoryPolicy;
+use Spatie\LaravelData\Attributes\Validation\Between;
+use Spatie\LaravelData\Attributes\Validation\Filled;
+use Spatie\LaravelData\Attributes\Validation\RequiredWithout;
 
 /**
  * Rewrites the text, the weight or both of one of the calling actor's memories at the revision the caller read, and
@@ -23,7 +26,12 @@ use Domain\Memory\Policies\MemoryPolicy;
 #[Authorize(MemoryPolicy::class, MemoryAbility::Work)]
 final readonly class EditMemory implements Command, HasAuthorizationSubject
 {
-    public function __construct(public string $memoryId, public int $expectedRevision, public string|null $text, public int|null $weight) {}
+    public function __construct(
+        public string $memoryId,
+        public int $expectedRevision,
+        #[Filled, RequiredWithout('weight')] public string|null $text,
+        #[Between(Memory::LIGHTEST, Memory::HEAVIEST)] public int|null $weight,
+    ) {}
 
     /**
      * @return class-string

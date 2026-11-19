@@ -20,14 +20,17 @@ use Domain\Memory\Commands\RemoveMemory;
 use Domain\Memory\Commands\SaveMemory;
 use Domain\Memory\Contracts\MemoryResolver;
 use Domain\Memory\Enums\MemoryAbility;
-use Domain\Memory\Exceptions\MemoryInvalid;
 use Domain\Memory\Exceptions\MemoryRevisionChanged;
 use Domain\Memory\Exceptions\MemoryUnavailable;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Policies\MemoryPolicy;
 use Domain\Memory\Skills\MemorySkill;
 
-final class MemoryDomain extends Domain implements ProvidesCommands, ProvidesNumberedModels, ProvidesPolicies, ProvidesSkills
+final class MemoryDomain extends Domain implements
+    ProvidesCommands,
+    ProvidesNumberedModels,
+    ProvidesPolicies,
+    ProvidesSkills
 {
     use HasNumberedModels;
 
@@ -49,7 +52,7 @@ final class MemoryDomain extends Domain implements ProvidesCommands, ProvidesNum
         return Exports::make()
             ->contracts(MemoryResolver::class)
             ->values(MemoryPage::class, MemoryCard::class)
-            ->exceptions(MemoryUnavailable::class, MemoryInvalid::class, MemoryRevisionChanged::class)
+            ->exceptions(MemoryUnavailable::class, MemoryRevisionChanged::class)
             ->build();
     }
 

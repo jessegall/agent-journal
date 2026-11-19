@@ -12,6 +12,8 @@ use Domain\Memory\Enums\MemoryAbility;
 use Domain\Memory\Handlers\SaveMemoryHandler;
 use Domain\Memory\Models\Memory;
 use Domain\Memory\Policies\MemoryPolicy;
+use Spatie\LaravelData\Attributes\Validation\Between;
+use Spatie\LaravelData\Attributes\Validation\Required;
 
 /**
  * Keeps a memory for the calling actor at a weight and answers its id; sent again under the same request key, the
@@ -23,7 +25,10 @@ use Domain\Memory\Policies\MemoryPolicy;
 #[Authorize(MemoryPolicy::class, MemoryAbility::Work)]
 final readonly class SaveMemory implements Command, HasAuthorizationSubject
 {
-    public function __construct(public string $text, public int $weight) {}
+    public function __construct(
+        #[Required] public string $text,
+        #[Between(Memory::LIGHTEST, Memory::HEAVIEST)] public int $weight,
+    ) {}
 
     /**
      * @return class-string
