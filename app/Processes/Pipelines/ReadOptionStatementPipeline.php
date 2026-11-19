@@ -7,7 +7,7 @@ namespace App\Processes\Pipelines;
 use App\Pipelines\Contracts\PipelineDefinition;
 use App\Processes\Contracts\CommandReader;
 use App\Processes\Pipes\Grammar\NoteOptionStatement;
-use App\Processes\Pipes\Grammar\ReadOptionStatement;
+use App\Processes\Pipes\Grammar\ParseOptionStatement;
 use App\Processes\Syntax\TokenCursor;
 
 /**
@@ -27,7 +27,7 @@ final readonly class ReadOptionStatementPipeline implements CommandReader, Pipel
     {
         return [
             NoteOptionStatement::class,
-            ReadOptionStatement::class,
+            ParseOptionStatement::class,
         ];
     }
 }

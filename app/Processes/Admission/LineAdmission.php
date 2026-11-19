@@ -21,6 +21,7 @@ use App\Processes\Enums\RunMode;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Exceptions\ClassificationUnavailable;
 use App\Processes\Exceptions\CommandRuleConflict;
+use App\Processes\Exceptions\ExecutionPlanRefused;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Models\RuleRevision;
@@ -97,7 +98,13 @@ final readonly class LineAdmission implements ShellAdmission
             return Admission::refused($refusal);
         }
 
-        return $this->admitted($tree, $classification, $context, $actor, $requestKey);
+        try {
+            return $this->admitted($tree, $classification, $context, $actor, $requestKey);
+        } catch (ExecutionPlanRefused $refused) {
+            $correction = 'Write the line without words that are only known when it runs.';
+
+            return $this->refused(RefusalCode::SyntaxUnsupported, $tree, $refused->getMessage(), $correction);
+        }
     }
 
     /**
@@ -173,11 +180,12 @@ final readonly class LineAdmission implements ShellAdmission
         PartClassification $part,
     ): AdmissionRefusal|null {
         $argv = $classification->argvOf($part);
-        if ($permissions->admits($part->classes(), $argv)) {
+        $classes = $classification->classesOf($part);
+        if ($permissions->admits($classes, $argv)) {
             return null;
         }
         $code = $permissions->deniedPatterns->matchesAny($argv) ? RefusalCode::CommandDenied : RefusalCode::ClassDenied;
-        $classes = implode(', ', $part->classes()->toArray());
+        $classes = implode(', ', $classes->toArray());
 
         $reason = "Your permissions do not admit {$classes}.";
 

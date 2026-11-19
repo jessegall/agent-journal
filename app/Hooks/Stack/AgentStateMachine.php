@@ -42,6 +42,7 @@ final readonly class AgentStateMachine
         private StateTypes $types,
         private SessionStartStep $sessionStart,
         private FinishedToolCalls $toolCalls,
+        private HookShellAdmission $admission,
     ) {}
 
     /**
@@ -77,8 +78,7 @@ final readonly class AgentStateMachine
                 $this->lifecycle->refuseChangeDuringCallbacks($this->access->target());
                 $stackBefore = $this->restorer->restore($row->frames, $this->access->role());
                 $baseline = $stackBefore->withoutInactiveFrames();
-                $settled = $capabilities->finalAnswer($this->walk($baseline, $input), $baseline);
-                $answer = $settled->withRemindersFirst($reminders);
+                $answer = $this->settle($baseline, $input, $capabilities)->withRemindersFirst($reminders);
                 $this->lifecycle->settle($this->access->target(), $stackBefore, $answer->stack);
                 $reply = $render($answer);
 
@@ -105,13 +105,19 @@ final readonly class AgentStateMachine
         return $this->context->collectReminders($this->access->target(), $input);
     }
 
-    private function walk(AgentStack $stack, HookInput $input): HookAnswer
+    /**
+     * The final answer as the program can take it. A shell line walks with its rewrite, and whatever the frames
+     * answered, Core's mandatory admission then decides whether it runs.
+     */
+    private function settle(AgentStack $stack, HookInput $input, ProgramCapabilities $capabilities): HookAnswer
     {
         if ($input instanceof ShellCommandRequested) {
-            return $this->rewrite->answer($stack, $input);
+            $answer = $capabilities->finalAnswer($this->rewrite->answer($stack, $input), $stack);
+
+            return $this->admission->admit($input, $answer, $stack, $capabilities);
         }
 
-        return $stack->answer($input);
+        return $capabilities->finalAnswer($stack->answer($input), $stack);
     }
 
     private function replay(HookCall $recorded, HookIdentity $identity): ProgramReply

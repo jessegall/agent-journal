@@ -20,6 +20,17 @@ enum RewriteSupport: string
     case NeedsApproval = 'needs_approval';
 
     /**
+     * Whether the program runs a rewritten command line without asking anyone first.
+     */
+    public function canRewrite(): bool
+    {
+        return match ($this) {
+            self::WithoutApproval => true,
+            self::NeedsApproval => false,
+        };
+    }
+
+    /**
      * A rewrite this program cannot take becomes a refusal on the stack from before the walk, so the rewrite's own pushes are dropped.
      */
     public function finalAnswer(HookAnswer $answer, AgentStack $stackBefore): HookAnswer

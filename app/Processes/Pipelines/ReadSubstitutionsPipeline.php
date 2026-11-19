@@ -6,10 +6,10 @@ namespace App\Processes\Pipelines;
 
 use App\Pipelines\Contracts\PipelineDefinition;
 use App\Pipelines\Support\Step;
+use App\Processes\Pipes\Grammar\CompleteSubstitutions;
 use App\Processes\Pipes\Grammar\FindNextSubstitution;
-use App\Processes\Pipes\Grammar\FinishSubstitutions;
-use App\Processes\Pipes\Grammar\ReadFoundSubstitution;
-use App\Processes\Pipes\Grammar\StartSubstitutions;
+use App\Processes\Pipes\Grammar\ParseFoundSubstitution;
+use App\Processes\Pipes\Grammar\QueueWordSegments;
 use App\Processes\Values\Grammar\SubstitutionQueue;
 
 /**
@@ -20,12 +20,12 @@ final readonly class ReadSubstitutionsPipeline implements PipelineDefinition
     public function pipes(): array
     {
         return [
-            StartSubstitutions::class,
+            QueueWordSegments::class,
             FindNextSubstitution::class,
-            Step::repeated([ReadFoundSubstitution::class, FindNextSubstitution::class],
+            Step::repeated([ParseFoundSubstitution::class, FindNextSubstitution::class],
                 while: fn (SubstitutionQueue $queue) => $queue->hasFound()
             ),
-            FinishSubstitutions::class,
+            CompleteSubstitutions::class,
         ];
     }
 }

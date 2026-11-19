@@ -7,7 +7,7 @@ namespace App\Processes\Pipelines;
 use App\Pipelines\Contracts\PipelineDefinition;
 use App\Processes\Contracts\CommandReader;
 use App\Processes\Enums\TokenType;
-use App\Processes\Pipes\Grammar\ReadFunctionBody;
+use App\Processes\Pipes\Grammar\ParseFunctionBody;
 use App\Processes\Pipes\Grammar\SkipKeywordFunctionHeader;
 use App\Processes\Syntax\TokenCursor;
 
@@ -25,7 +25,7 @@ final readonly class ReadKeywordFunctionPipeline implements CommandReader, Pipel
     {
         return [
             SkipKeywordFunctionHeader::class,
-            ReadFunctionBody::class,
+            ParseFunctionBody::class,
         ];
     }
 }

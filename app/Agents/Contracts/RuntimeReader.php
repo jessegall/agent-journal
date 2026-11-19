@@ -28,6 +28,13 @@ interface RuntimeReader
     public function forSession(string $sessionId): RuntimeStatus;
 
     /**
+     * The folder the session's runtime works in, as its host registered it.
+     *
+     * @throws StackTargetRefused
+     */
+    public function folderOf(string $sessionId): string;
+
+    /**
      * The newest requests of a session's runtime, newest first.
      *
      * @return list<DriverRequestStatus>

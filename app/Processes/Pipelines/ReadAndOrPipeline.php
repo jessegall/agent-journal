@@ -6,10 +6,10 @@ namespace App\Processes\Pipelines;
 
 use App\Pipelines\Contracts\PipelineDefinition;
 use App\Pipelines\Support\Step;
-use App\Processes\Pipes\Grammar\FinishAndOr;
-use App\Processes\Pipes\Grammar\ReadFirstAndOrPart;
-use App\Processes\Pipes\Grammar\ReadLinkedAndOrPart;
-use App\Processes\Pipes\Grammar\StepPastAndOr;
+use App\Processes\Pipes\Grammar\CompleteAndOrChain;
+use App\Processes\Pipes\Grammar\ParseFirstAndOrOperand;
+use App\Processes\Pipes\Grammar\ParseNextAndOrOperand;
+use App\Processes\Pipes\Grammar\SkipAndOrOperator;
 use App\Processes\Values\Grammar\AndOrChain;
 
 /**
@@ -20,11 +20,11 @@ final readonly class ReadAndOrPipeline implements PipelineDefinition
     public function pipes(): array
     {
         return [
-            ReadFirstAndOrPart::class,
-            Step::repeated([StepPastAndOr::class, ReadLinkedAndOrPart::class],
+            ParseFirstAndOrOperand::class,
+            Step::repeated([SkipAndOrOperator::class, ParseNextAndOrOperand::class],
                 while: fn (AndOrChain $chain) => $chain->isAtAndOr()
             ),
-            FinishAndOr::class,
+            CompleteAndOrChain::class,
         ];
     }
 }

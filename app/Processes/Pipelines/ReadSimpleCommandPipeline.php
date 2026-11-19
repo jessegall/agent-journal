@@ -7,12 +7,12 @@ namespace App\Processes\Pipelines;
 use App\Pipelines\Contracts\PipelineDefinition;
 use App\Pipelines\Support\Step;
 use App\Processes\Contracts\CommandReader;
-use App\Processes\Pipes\Grammar\FinishSimpleCommand;
-use App\Processes\Pipes\Grammar\OpenSimpleCommand;
-use App\Processes\Pipes\Grammar\ReadSimpleCommandRedirect;
-use App\Processes\Pipes\Grammar\ReadSimpleCommandWord;
+use App\Processes\Pipes\Grammar\AttachRedirectToSimpleCommand;
+use App\Processes\Pipes\Grammar\AttachWordToSimpleCommand;
+use App\Processes\Pipes\Grammar\CloseSimpleCommandNode;
+use App\Processes\Pipes\Grammar\OpenSimpleCommandNode;
 use App\Processes\Syntax\TokenCursor;
-use App\Processes\Values\Grammar\SimpleCommandReading;
+use App\Processes\Values\Grammar\SimpleCommandBeingRead;
 
 /**
  * simple := (assignment | word | redirect)+; each word runs through the word pipeline and each redirect through the
@@ -29,15 +29,15 @@ final readonly class ReadSimpleCommandPipeline implements CommandReader, Pipelin
     public function pipes(): array
     {
         return [
-            OpenSimpleCommand::class,
+            OpenSimpleCommandNode::class,
             Step::repeated(
-                Step::chosen(fn (SimpleCommandReading $command) => $command->isAtRedirect(),
-                    then: ReadSimpleCommandRedirect::class,
-                    else: ReadSimpleCommandWord::class
+                Step::chosen(fn (SimpleCommandBeingRead $command) => $command->isAtRedirect(),
+                    then: AttachRedirectToSimpleCommand::class,
+                    else: AttachWordToSimpleCommand::class
                 ),
-                while: fn (SimpleCommandReading $command) => $command->continues()
+                while: fn (SimpleCommandBeingRead $command) => $command->continues()
             ),
-            FinishSimpleCommand::class,
+            CloseSimpleCommandNode::class,
         ];
     }
 }

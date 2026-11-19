@@ -47,6 +47,11 @@ final readonly class HookAnswer
         return $this->decision->answerType() === AnswerType::Rewrite;
     }
 
+    public function isDenied(): bool
+    {
+        return $this->decision->answerType() === AnswerType::Deny;
+    }
+
     public function isAllowed(): bool
     {
         return $this->decision->answerType() === AnswerType::Allow;

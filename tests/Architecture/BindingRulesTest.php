@@ -19,6 +19,7 @@ use Tests\Architecture\Support\NameUse;
 use Tests\Architecture\Support\ProjectRoots;
 use Tests\Architecture\Support\PublicOwner;
 use Tests\Architecture\Support\Violation;
+use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
@@ -29,6 +30,8 @@ use Tests\TestCase;
 #[TimeLimit(seconds: 15, reason: 'It parses every PHP file of the project.')]
 final class BindingRulesTest extends TestCase
 {
+    use RefreshHookDatabase;
+
     /**
      * The files that may name the actor store or set the actor: the store, its two contracts, Core's list,
      * the two middleware that authenticate a request, the host middleware and the host enrollment command, the engine

@@ -119,6 +119,31 @@ final readonly class Classification
     }
 
     /**
+     * The facts of one part: its own, and those of the syntax inside it, such as a redirect that writes a file.
+     *
+     * @return list<ClassFact>
+     */
+    public function factsOf(PartClassification $part): array
+    {
+        $syntaxFacts = array_filter(
+            $this->syntaxFacts,
+            fn (ClassFact $fact): bool => $this->isWithin($fact->node, $part->node),
+        );
+
+        return [...$part->facts, ...array_values($syntaxFacts)];
+    }
+
+    /**
+     * The classes one part needs, its syntax included.
+     */
+    public function classesOf(PartClassification $part): CommandClassSet
+    {
+        $classes = array_map(fn (ClassFact $fact): CommandClass => $fact->class, $this->factsOf($part));
+
+        return CommandClassSet::of(...$classes);
+    }
+
+    /**
      * A part's words as an argv; a word only known when it runs is empty here.
      *
      * @return list<string>
@@ -126,5 +151,15 @@ final readonly class Classification
     public function argvOf(PartClassification $part): array
     {
         return array_map(fn (Word $word) => (string) $word->literal(), $this->tree->node($part->node)->words);
+    }
+
+    private function isWithin(int $nodeId, int $ancestorId): bool
+    {
+        $node = $this->tree->node($nodeId);
+        while ($node->id !== $ancestorId && ! $node->isRoot) {
+            $node = $this->tree->node($node->parent);
+        }
+
+        return $node->id === $ancestorId;
     }
 }

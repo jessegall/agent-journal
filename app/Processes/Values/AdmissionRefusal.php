@@ -34,6 +34,20 @@ final readonly class AdmissionRefusal
     /**
      * This refusal with the command request that now holds the work and its next allowed step.
      */
+    /**
+     * The refusal as an agent reads it: what was refused and why, how to correct it, and the request that holds the
+     * work with its next step.
+     */
+    public function message(): string
+    {
+        $message = "{$this->code->value}: {$this->reason} ".self::NOTICE." Correction: {$this->correction}";
+        if ($this->requestId === '') {
+            return $message;
+        }
+
+        return "{$message} Request {$this->requestId}. Next: {$this->next}";
+    }
+
     public function heldIn(string $requestId, string $next): self
     {
         return new self($this->code, $this->node, $this->excerpt, $this->reason, $this->correction, $requestId, $next);

@@ -5,11 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Processes;
 
 use App\Hooks\Enums\AnswerType;
-use App\Hooks\Inputs\HookIdentity;
-use App\Hooks\Inputs\ShellCommandRequested;
-use App\Hooks\States\MainAgentReadyState;
-use App\Hooks\States\ReadOnlyHelperReadyState;
-use App\Hooks\States\ReadyState;
+use App\Processes\Contracts\ShellAdmission;
 use App\Processes\Contracts\ShellCommandParser;
 use App\Processes\Enums\CommandEffect;
 use App\Processes\Enums\CommandType;
@@ -18,11 +14,13 @@ use App\Processes\Enums\PartJoin;
 use App\Processes\Enums\ShellDialect;
 use App\Processes\Models\CommandAlias;
 use App\Processes\Support\ShellParser;
+use App\Processes\Values\CommandPart;
 use App\Processes\Values\ExecutionContext;
 use App\Processes\Values\ShellCommand;
+use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TestIds;
 use Tests\TestCase;
 
 final class CommandFactsTest extends TestCase
@@ -37,8 +35,9 @@ final class CommandFactsTest extends TestCase
     }
 
     /**
-     * The answers as the tree classifier reads each line: an alias run needs its approved proven reader, and an
-     * unknown program or a journal route this version does not have needs a reviewed rule first.
+     * The answers Core's admission gives each role, read through the tree classifier: an alias run needs its approved
+     * proven reader, an unknown program or a journal route this version does not have needs a reviewed rule first, and
+     * a read-only helper never changes a file.
      *
      * @return iterable<string, array{string, AnswerType, AnswerType}>
      */
@@ -66,10 +65,10 @@ final class CommandFactsTest extends TestCase
     }
 
     #[DataProvider('linesAndRoleAnswers')]
-    public function test_the_parsed_facts_decide_each_role_answer(string $line, AnswerType $mainAgent, AnswerType $readOnlyHelper): void
+    public function test_the_admission_decides_each_role_answer(string $line, AnswerType $mainAgent, AnswerType $readOnlyHelper): void
     {
-        $this->assertSame($mainAgent, $this->answer(new MainAgentReadyState(), $line));
-        $this->assertSame($readOnlyHelper, $this->answer(new ReadOnlyHelperReadyState(), $line));
+        $this->assertSame($mainAgent, $this->answer('hooks.main_ready', $line));
+        $this->assertSame($readOnlyHelper, $this->answer('hooks.read_only_helper_ready', $line));
     }
 
     public function test_the_app_reads_shell_commands_with_the_processes_parser(): void
@@ -101,7 +100,8 @@ final class CommandFactsTest extends TestCase
     public function test_a_comment_or_a_flag_does_not_make_a_check_saved(): void
     {
         foreach (['composer test --saved', 'SAVED=1 composer test', 'composer test # journal'] as $line) {
-            $this->assertTrue($this->parse($line)->needsAlias(), $line);
+            $parts = $this->parse($line)->parts;
+            $this->assertTrue(array_any($parts, fn (CommandPart $part): bool => $part->type->needsAlias()), $line);
         }
     }
 
@@ -110,8 +110,13 @@ final class CommandFactsTest extends TestCase
         return $this->app->make(ShellCommandParser::class)->parse($line, ShellDialect::Bash);
     }
 
-    private function answer(ReadyState $ready, string $line): AnswerType
+    private function answer(string $role, string $line): AnswerType
     {
-        return new ShellCommandRequested(new HookIdentity(TestIds::of(1), TestIds::of(10), 'call-1', 'digest'), $this->parse($line))->answerBy($ready)->answerType();
+        config(['processes.runner' => true]);
+        TestLaunch::start($role)->startRequest($this->app);
+        $context = ExecutionContext::inFolder(base_path());
+        $admission = $this->app->make(ShellAdmission::class)->admit($line, ShellDialect::Bash, $context, Str::ulid()->toString());
+
+        return $admission->isAllowed() ? AnswerType::Allow : AnswerType::Deny;
     }
 }

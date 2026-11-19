@@ -43,67 +43,35 @@ final class RoleReadyTest extends TestCase
     }
 
     /**
+     * Every kind of shell line, including those Core's admission refuses: the ready states leave each to it.
+     *
      * @return iterable<string, array{ReadyState, ShellCommand}>
      */
-    public static function commandsWithoutAlias(): iterable
+    public static function rolesAndLines(): iterable
     {
         foreach (self::roles() as $role => [$ready]) {
+            yield "{$role}, a command alias" => [$ready, self::line([self::part(CommandType::Alias)])];
+            yield "{$role}, an ordinary read" => [$ready, self::line([self::part(CommandType::Ordinary)])];
             yield "{$role}, a test run" => [$ready, self::line([self::part(CommandType::Verification)])];
             yield "{$role}, a build" => [$ready, self::line([self::part(CommandType::Build)])];
             yield "{$role}, an unnamed program" => [$ready, self::line([self::part(CommandType::Unknown)])];
-            yield "{$role}, a test run piped behind a read" => [$ready, self::line([
-                self::part(CommandType::Ordinary, join: PartJoin::Pipe),
-                self::part(CommandType::Verification),
-            ])];
+            yield "{$role}, a write" => [$ready, self::line([self::part(CommandType::Ordinary, CommandEffect::ChangesFiles)])];
             yield "{$role}, a dynamic expansion" => [$ready, self::line([self::part(CommandType::Ordinary)], ParseOutcome::DynamicExpansion)];
             yield "{$role}, an unparsed line" => [$ready, self::line([], ParseOutcome::Unparsed)];
         }
     }
 
-    /**
-     * @return iterable<string, array{ShellCommand}>
-     */
-    public static function helperWrites(): iterable
+    #[DataProvider('rolesAndLines')]
+    public function test_each_role_leaves_every_shell_line_to_cores_admission(ReadyState $ready, ShellCommand $command): void
     {
-        yield 'a command alias that writes' => [self::line([self::part(CommandType::Alias, CommandEffect::ChangesFiles)])];
-        yield 'an ordinary write' => [self::line([self::part(CommandType::Ordinary, CommandEffect::ChangesFiles)])];
-        yield 'an unknown effect' => [self::line([self::part(CommandType::Ordinary, CommandEffect::Unknown)])];
+        $this->assertSame(AnswerType::Allow, $ready->onShellCommand($this->request($command))->answerType());
     }
 
-    #[DataProvider('commandsWithoutAlias')]
-    public function test_each_role_refuses_a_command_that_must_be_saved_or_cannot_be_read_and_says_how_to_write_it(ReadyState $ready, ShellCommand $command): void
+    public function test_the_main_agent_may_edit_files(): void
     {
-        $decision = $ready->onShellCommand($this->request($command));
+        $edit = $this->edit(['app/Domains/Contracts/Domain.php']);
 
-        $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertStringContainsString($command->isFullyRead() ? 'journal command-type explain' : 'without dynamic parts', $decision->refusalReason());
-    }
-
-    #[DataProvider('roles')]
-    public function test_each_role_allows_a_command_alias_and_an_ordinary_read(ReadyState $ready): void
-    {
-        $saved = self::line([self::part(CommandType::Alias)]);
-        $read = self::line([self::part(CommandType::Ordinary)]);
-
-        $this->assertSame(AnswerType::Allow, $ready->onShellCommand($this->request($saved))->answerType());
-        $this->assertSame(AnswerType::Allow, $ready->onShellCommand($this->request($read))->answerType());
-    }
-
-    public function test_the_main_agent_may_run_a_write_and_edit_files(): void
-    {
-        $write = self::line([self::part(CommandType::Ordinary, CommandEffect::ChangesFiles)]);
-
-        $this->assertSame(AnswerType::Allow, new MainAgentReadyState()->onShellCommand($this->request($write))->answerType());
-        $this->assertSame(AnswerType::Allow, new MainAgentReadyState()->onFileEdit($this->edit(['app/Domains/Contracts/Domain.php']))->answerType());
-    }
-
-    #[DataProvider('helperWrites')]
-    public function test_a_read_only_helper_refuses_any_command_that_may_change_files(ShellCommand $command): void
-    {
-        $decision = new ReadOnlyHelperReadyState()->onShellCommand($this->request($command));
-
-        $this->assertInstanceOf(Denied::class, $decision->answer);
-        $this->assertStringContainsString('changes no files', $decision->refusalReason());
+        $this->assertSame(AnswerType::Allow, new MainAgentReadyState()->onFileEdit($edit)->answerType());
     }
 
     public function test_a_read_only_helper_refuses_an_edit_and_names_every_path(): void

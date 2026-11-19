@@ -6,11 +6,11 @@ namespace App\Processes\Pipelines;
 
 use App\Pipelines\Contracts\PipelineDefinition;
 use App\Pipelines\Support\Step;
-use App\Processes\Pipes\Grammar\JoinPipedCommands;
-use App\Processes\Pipes\Grammar\ReadFirstPipedCommand;
-use App\Processes\Pipes\Grammar\ReadNegation;
-use App\Processes\Pipes\Grammar\ReadNextPipedCommand;
-use App\Processes\Pipes\Grammar\StepPastPipeSymbol;
+use App\Processes\Pipes\Grammar\AddPipedCommandsNode;
+use App\Processes\Pipes\Grammar\NoteNegation;
+use App\Processes\Pipes\Grammar\ParseFirstPipedCommand;
+use App\Processes\Pipes\Grammar\ParseNextPipedCommand;
+use App\Processes\Pipes\Grammar\SkipPipeSymbol;
 use App\Processes\Values\Grammar\PipedCommands;
 
 /**
@@ -21,12 +21,12 @@ final readonly class ReadPipedCommandsPipeline implements PipelineDefinition
     public function pipes(): array
     {
         return [
-            ReadNegation::class,
-            ReadFirstPipedCommand::class,
-            Step::repeated([StepPastPipeSymbol::class, ReadNextPipedCommand::class],
+            NoteNegation::class,
+            ParseFirstPipedCommand::class,
+            Step::repeated([SkipPipeSymbol::class, ParseNextPipedCommand::class],
                 while: fn (PipedCommands $commands) => $commands->isAtPipeSymbol()
             ),
-            JoinPipedCommands::class,
+            AddPipedCommandsNode::class,
         ];
     }
 }

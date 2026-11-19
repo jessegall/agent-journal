@@ -6,11 +6,11 @@ namespace App\Processes\Pipelines;
 
 use App\Pipelines\Contracts\PipelineDefinition;
 use App\Pipelines\Support\Step;
-use App\Processes\Pipes\Grammar\CloseCompound;
-use App\Processes\Pipes\Grammar\FinishCompound;
-use App\Processes\Pipes\Grammar\OpenCompound;
-use App\Processes\Pipes\Grammar\ReadCompoundList;
-use App\Processes\Pipes\Grammar\ReadCompoundRedirect;
+use App\Processes\Pipes\Grammar\AttachRedirectToCompound;
+use App\Processes\Pipes\Grammar\CloseCompoundNode;
+use App\Processes\Pipes\Grammar\OpenCompoundNode;
+use App\Processes\Pipes\Grammar\ParseCompoundList;
+use App\Processes\Pipes\Grammar\SkipCompoundClosingToken;
 use App\Processes\Values\Grammar\CompoundParts;
 
 /**
@@ -21,13 +21,13 @@ final readonly class ReadCompoundPipeline implements PipelineDefinition
     public function pipes(): array
     {
         return [
-            OpenCompound::class,
-            ReadCompoundList::class,
-            CloseCompound::class,
-            Step::repeated(ReadCompoundRedirect::class,
+            OpenCompoundNode::class,
+            ParseCompoundList::class,
+            SkipCompoundClosingToken::class,
+            Step::repeated(AttachRedirectToCompound::class,
                 while: fn (CompoundParts $parts) => $parts->isAtRedirect()
             ),
-            FinishCompound::class,
+            CloseCompoundNode::class,
         ];
     }
 }

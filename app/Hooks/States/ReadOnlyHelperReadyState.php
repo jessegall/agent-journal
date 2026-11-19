@@ -6,22 +6,13 @@ namespace App\Hooks\States;
 
 use App\Hooks\Decisions\Decision;
 use App\Hooks\Inputs\FileEditRequested;
-use App\Hooks\Inputs\ShellCommandRequested;
 
 /**
- * The bottom state of a read-only helper: every main agent rule holds, and nothing it runs or edits may change a file.
+ * The bottom state of a read-only helper: it edits no file. What its shell lines may run is Core's admission to
+ * decide, by the role's ceiling.
  */
 class ReadOnlyHelperReadyState extends HelperReadyState
 {
-    public function onShellCommand(ShellCommandRequested $input): Decision
-    {
-        if ($input->command->isFullyRead() && $input->command->mayChangeFiles()) {
-            return Decision::deny('A read-only helper changes no files: run only commands that read.');
-        }
-
-        return parent::onShellCommand($input);
-    }
-
     public function onFileEdit(FileEditRequested $input): Decision
     {
         $paths = implode(', ', $input->changes->paths());

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Processes\Pipelines;
 
 use App\Pipelines\Contracts\PipelineDefinition;
-use App\Processes\Pipes\FinishSequence;
+use App\Processes\Pipes\AddSequenceNode;
 use App\Processes\Pipes\GuardDepth;
+use App\Processes\Pipes\RequireEndOfSource;
 use App\Processes\Pipes\ScanTokens;
-use App\Processes\Pipes\StartSequence;
 
 /**
  * One source, the whole line or a substitution inside it: its depth checked, its tokens scanned and its list read
@@ -21,9 +21,9 @@ final readonly class ReadSourcePipeline implements PipelineDefinition
         return [
             GuardDepth::class,
             ScanTokens::class,
-            StartSequence::class,
+            AddSequenceNode::class,
             ReadListPipeline::class,
-            FinishSequence::class,
+            RequireEndOfSource::class,
         ];
     }
 }

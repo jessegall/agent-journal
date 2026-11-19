@@ -35,6 +35,11 @@ final readonly class RuntimeRecords implements RuntimeReader
         return $this->visibleRuntimeOf($sessionId)->status(CarbonImmutable::now());
     }
 
+    public function folderOf(string $sessionId): string
+    {
+        return $this->visibleRuntimeOf($sessionId)->canonical_folder;
+    }
+
     public function requestsOf(string $sessionId, int $limit): array
     {
         return array_values(DriverRequest::query()

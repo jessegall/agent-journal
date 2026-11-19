@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Processes\Pipelines;
 
 use App\Pipelines\Contracts\PipelineDefinition;
+use App\Processes\Pipes\Grammar\ParseWordSubstitutions;
 use App\Processes\Pipes\Grammar\PlaceWord;
-use App\Processes\Pipes\Grammar\ReadWordSubstitutions;
 use App\Processes\Pipes\Grammar\RefuseArrayAssignment;
 
 /**
@@ -19,7 +19,7 @@ final readonly class ReadWordPipeline implements PipelineDefinition
         return [
             RefuseArrayAssignment::class,
             PlaceWord::class,
-            ReadWordSubstitutions::class,
+            ParseWordSubstitutions::class,
         ];
     }
 }

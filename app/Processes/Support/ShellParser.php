@@ -70,7 +70,7 @@ final readonly class ShellParser implements ShellCommandParser
         return new CommandPart(
             $part->program === null ? '' : $part->program->original,
             array_slice($argv, 1),
-            $this->effectOf($tree, $classification, $part),
+            $this->effectOf($classification, $part),
             $part->isKnown() ? $part->purpose : CommandType::Unknown,
             $this->joinAfter($tree, $tree->node($part->node)),
         );
@@ -95,48 +95,25 @@ final readonly class ShellParser implements ShellCommandParser
     }
 
     /**
-     * An unknown part may do anything; a known one changes files when its own classes do, or when the syntax around it
+     * An unknown part may do anything; a known one changes files when its own classes do, or when the syntax inside it
      * does, such as a redirect that writes.
      */
-    private function effectOf(ShellTree $tree, Classification $classification, PartClassification $part): CommandEffect
+    private function effectOf(Classification $classification, PartClassification $part): CommandEffect
     {
         if (! $part->isKnown()) {
             return CommandEffect::Unknown;
         }
 
         $changesFiles = array_any(
-            [...$part->facts, ...$this->syntaxFactsOf($tree, $classification, $part)],
+            $classification->factsOf($part),
             fn (ClassFact $fact): bool => $fact->class->isFileChange(),
         );
 
         return $changesFiles ? CommandEffect::ChangesFiles : CommandEffect::ReadsOnly;
     }
 
-    /**
-     * The syntax facts that belong to the part: those of its own node or of a node inside it.
-     *
-     * @return list<ClassFact>
-     */
-    private function syntaxFactsOf(ShellTree $tree, Classification $classification, PartClassification $part): array
-    {
-        return array_values(array_filter(
-            $classification->syntaxFacts,
-            fn (ClassFact $fact): bool => $this->isWithin($tree, $fact->node, $part->node),
-        ));
-    }
-
     private function isLastChild(ShellNode $parent, ShellNode $node): bool
     {
         return $parent->children !== [] && $parent->children[count($parent->children) - 1] === $node->id;
-    }
-
-    private function isWithin(ShellTree $tree, int $nodeId, int $ancestorId): bool
-    {
-        $node = $tree->node($nodeId);
-        while ($node->id !== $ancestorId && ! $node->isRoot) {
-            $node = $tree->node($node->parent);
-        }
-
-        return $node->id === $ancestorId;
     }
 }

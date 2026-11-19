@@ -82,6 +82,16 @@ final class LineAdmissionTest extends TestCase
         $this->assertStringContainsString('task 447, task 448', $refusal->reason);
     }
 
+    public function test_a_read_only_helper_writing_a_file_is_refused_by_its_ceiling(): void
+    {
+        $this->launch = TestLaunch::start('hooks.read_only_helper_ready');
+
+        $refusal = $this->refusalOf($this->admit('cat composer.json > copy.json', 'key-1'));
+
+        $this->assertSame(RefusalCode::ClassDenied, $refusal->code);
+        $this->assertSame(0, ProcessRun::query()->withoutGlobalScopes()->count());
+    }
+
     public function test_a_switched_off_runner_and_a_broken_rule_store_refuse_before_anything_starts(): void
     {
         config(['processes.runner' => false]);

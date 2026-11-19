@@ -7,12 +7,15 @@ namespace Tests\Fixtures\Agents;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
+use App\Agents\Actions\AgentRuntimes;
 use App\Agents\Actions\AgentSessions;
 use App\Agents\Actions\LaunchCredentials;
+use App\Agents\Enums\DriverType;
 use App\Agents\Lifecycle\AgentLifecycle;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
+use App\Agents\Support\RuntimeIntent;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Application;
 
@@ -45,6 +48,25 @@ final readonly class TestLaunch
         $app->forgetScopedInstances();
         $app->instance(AgentContext::class, $context);
         $app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($this->agent->id));
+    }
+
+    /**
+     * Opens the session's runtime in the project folder, so a line Core admits has a runner to run in.
+     */
+    public function openRuntime(Application $app): void
+    {
+        $intent = new RuntimeIntent(
+            'host-1',
+            base_path(),
+            'claude',
+            '1.0.0',
+            'default',
+            DriverType::Process,
+            null,
+            null,
+            null,
+        );
+        $app->make(AgentRuntimes::class)->open($this->session, $intent, 'launch-token');
     }
 
     /**

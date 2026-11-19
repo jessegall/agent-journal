@@ -27,6 +27,7 @@ use Domain\Tasks\Enums\TaskWorkState;
 use Tests\Fixtures\Hooks\TestFailure;
 use Tests\Support\CommittedHookStack;
 use Tests\Support\TestIds;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 final class AgentStateMachineTest extends TestCase
@@ -58,17 +59,20 @@ final class AgentStateMachineTest extends TestCase
         $this->assertSame(['hooks.main_ready'], $this->storedTypeKeys());
     }
 
+    #[TimeLimit(seconds: 5, reason: 'It runs Core\'s real admission, which classifies the line against the stored rules.')]
     public function test_a_supported_rewrite_keeps_the_child_it_pushed(): void
     {
         $this->pushState(new StateReference('test.rewriting', NoSubject::None));
 
         $reply = $this->machine()->answer($this->shell('composer test'), $this->capabilities(), new OperationDeadline(3000), $this->shellReply(RewriteSupport::WithoutApproval));
 
-        $this->assertSame('journal run tests', json_decode($reply->stdout, true)['hookSpecificOutput']['updatedInput']['command']);
+        $command = json_decode($reply->stdout, true)['hookSpecificOutput']['updatedInput']['command'];
+        $this->assertStringStartsWith('journal process run --admission ', $command);
         $this->assertSame(['hooks.main_ready', 'test.rewriting', 'guide'], $this->storedTypeKeys());
         $this->assertSame(AnswerType::Rewrite, HookCall::query()->sole()->answer->type);
     }
 
+    #[TimeLimit(seconds: 5, reason: 'It runs Core\'s real admission, which classifies the line against the stored rules.')]
     public function test_a_rewrite_the_program_cannot_take_is_refused_and_its_child_is_dropped(): void
     {
         $this->pushState(new StateReference('test.rewriting', NoSubject::None));

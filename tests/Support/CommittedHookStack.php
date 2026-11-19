@@ -7,9 +7,12 @@ namespace Tests\Support;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
+use App\Agents\Actions\AgentRuntimes;
+use App\Agents\Enums\DriverType;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
+use App\Agents\Support\RuntimeIntent;
 use App\Agents\Support\StackTarget;
 use App\Bus\Support\OperationDeadline;
 use App\Hooks\Actions\AgentStacks;
@@ -66,7 +69,9 @@ trait CommittedHookStack
     protected function setUpCommittedHookStack(): void
     {
         $this->emptyTables(...self::committedTables());
+        config(['processes.runner' => true]);
         $this->target = $this->launchedTarget();
+        $this->openRuntime();
         $this->tasks = new InMemoryTaskLoader([42 => TaskWorkState::Active, 43 => TaskWorkState::Active]);
         $this->app->scoped(ShellCommandParser::class, fn () => new ListedCommandParser());
         $tasks = $this->tasks;
@@ -74,7 +79,7 @@ trait CommittedHookStack
             $event->registry->register('test.tasks', $tasks);
             $event->registry->register('guide', new ClosureStateLoader(fn () => ScriptedState::delegating()));
             $event->registry->register('test.rewriting', new ClosureStateLoader(fn () => new RewritingState(
-                ['composer test' => 'journal run tests'],
+                ['composer test' => 'git status', 'make docs' => 'acme publish --docs'],
                 new StateReference('guide', NoSubject::None),
             )));
         });
@@ -97,6 +102,26 @@ trait CommittedHookStack
         $session->save();
 
         return new StackTarget($agent->id, $session->id);
+    }
+
+    /**
+     * The launched session's runtime, working in the project folder, so an admitted line has a runner to run in.
+     */
+    private function openRuntime(): void
+    {
+        $session = AgentSession::query()->findOrFail($this->target->sessionId);
+        $intent = new RuntimeIntent(
+            TestIds::of(30),
+            base_path(),
+            'claude',
+            '1.0.0',
+            'default',
+            DriverType::Process,
+            null,
+            null,
+            null,
+        );
+        $this->app->make(AgentRuntimes::class)->open($session, $intent, 'launch-token');
     }
 
     protected function tearDownCommittedHookStack(): void
@@ -171,7 +196,7 @@ trait CommittedHookStack
      */
     private static function committedTables(): array
     {
-        return ['agent_stacks', 'hook_calls', 'links', 'tasks', 'messages', 'sequence_runs', 'memories', 'rules', 'users', 'agents', 'agent_sessions', 'launch_credentials', 'launch_bypasses', 'command_aliases', 'program_conversations', 'conversation_visits'];
+        return ['agent_stacks', 'hook_calls', 'links', 'tasks', 'messages', 'sequence_runs', 'memories', 'rules', 'users', 'agents', 'agent_sessions', 'launch_credentials', 'launch_bypasses', 'command_aliases', 'program_conversations', 'conversation_visits', 'agent_runtimes', 'process_runs', 'part_runs', 'command_requests'];
     }
 
     private function hookIdentity(): HookIdentity

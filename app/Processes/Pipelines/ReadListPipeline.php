@@ -6,11 +6,11 @@ namespace App\Processes\Pipelines;
 
 use App\Pipelines\Contracts\PipelineDefinition;
 use App\Pipelines\Support\Step;
-use App\Processes\Pipes\Grammar\FinishList;
-use App\Processes\Pipes\Grammar\PlaceListItem;
-use App\Processes\Pipes\Grammar\ReadListItem;
-use App\Processes\Pipes\Grammar\StartList;
-use App\Processes\Pipes\Grammar\StepPastListSeparator;
+use App\Processes\Pipes\Grammar\AttachListItem;
+use App\Processes\Pipes\Grammar\CollectListItems;
+use App\Processes\Pipes\Grammar\CompleteList;
+use App\Processes\Pipes\Grammar\ParseListItem;
+use App\Processes\Pipes\Grammar\SkipListSeparator;
 use App\Processes\Values\Grammar\ListItems;
 
 /**
@@ -21,12 +21,12 @@ final readonly class ReadListPipeline implements PipelineDefinition
     public function pipes(): array
     {
         return [
-            StartList::class,
-            StepPastListSeparator::class,
-            Step::repeated([ReadListItem::class, PlaceListItem::class, StepPastListSeparator::class],
+            CollectListItems::class,
+            SkipListSeparator::class,
+            Step::repeated([ParseListItem::class, AttachListItem::class, SkipListSeparator::class],
                 while: fn (ListItems $items) => ! $items->reading->isAtItsEnd()
             ),
-            FinishList::class,
+            CompleteList::class,
         ];
     }
 }

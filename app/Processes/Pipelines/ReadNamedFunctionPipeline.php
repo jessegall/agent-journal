@@ -7,7 +7,7 @@ namespace App\Processes\Pipelines;
 use App\Pipelines\Contracts\PipelineDefinition;
 use App\Processes\Contracts\CommandReader;
 use App\Processes\Enums\TokenType;
-use App\Processes\Pipes\Grammar\ReadFunctionBody;
+use App\Processes\Pipes\Grammar\ParseFunctionBody;
 use App\Processes\Pipes\Grammar\SkipNamedFunctionHeader;
 use App\Processes\Syntax\TokenCursor;
 
@@ -27,7 +27,7 @@ final readonly class ReadNamedFunctionPipeline implements CommandReader, Pipelin
     {
         return [
             SkipNamedFunctionHeader::class,
-            ReadFunctionBody::class,
+            ParseFunctionBody::class,
         ];
     }
 }

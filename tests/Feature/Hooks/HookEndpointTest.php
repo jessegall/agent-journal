@@ -15,13 +15,7 @@ use App\Hooks\Actions\LaunchStacks;
 use App\Hooks\Enums\ReadyStateType;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Support\StackTransaction;
-use App\Processes\Contracts\ShellCommandParser;
-use App\Processes\Enums\CommandEffect;
-use App\Processes\Enums\CommandType;
-use App\Processes\Enums\ParseOutcome;
-use App\Processes\Enums\ShellDialect;
-use App\Processes\Values\CommandPart;
-use App\Processes\Values\ShellCommand;
+use App\Processes\Values\AdmissionRefusal;
 use Carbon\CarbonImmutable;
 use Domain\Tasks\Commands\StartTask;
 use Domain\Tasks\Models\Task;
@@ -29,6 +23,7 @@ use Illuminate\Http\Response;
 use Illuminate\Testing\TestResponse;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 final class HookEndpointTest extends TestCase
@@ -43,7 +38,9 @@ final class HookEndpointTest extends TestCase
     {
         parent::setUp();
 
+        config(['processes.runner' => true]);
         $this->launch = TestLaunch::start('hooks.main_ready');
+        $this->launch->openRuntime($this->app);
         $this->asLaunchedAgent(fn () => $this->app->make(StackTransaction::class)->run(
             fn () => $this->app->make(LaunchStacks::class)->open($this->target(), ReadyStateType::MainAgent),
         ));
@@ -65,35 +62,26 @@ final class HookEndpointTest extends TestCase
         $this->assertStringContainsString("Task {$task->number} still needs work", (string) $stdout);
     }
 
-    public function test_the_parsed_facts_refuse_an_unsaved_check_and_admit_a_read(): void
+    #[TimeLimit(seconds: 5, reason: 'It runs Core\'s real admission, which classifies the line against the stored rules.')]
+    public function test_cores_admission_refuses_an_unsaved_check_and_sends_a_read_to_the_runner(): void
     {
         $refused = json_decode((string) $this->hook('claude-code', $this->bashBody('composer test'), 'call-1')->assertOk()->json('stdout'), true);
-        $admitted = $this->hook('claude-code', $this->bashBody('git status'), 'call-2')->assertOk()->json('stdout');
+        $admitted = json_decode((string) $this->hook('claude-code', $this->bashBody('git status'), 'call-2')->assertOk()->json('stdout'), true);
 
         $this->assertSame('deny', $refused['hookSpecificOutput']['permissionDecision']);
-        $this->assertStringContainsString('journal command-type explain', $refused['hookSpecificOutput']['permissionDecisionReason']);
-        $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $admitted);
+        $this->assertStringContainsString(AdmissionRefusal::NOTICE, $refused['hookSpecificOutput']['permissionDecisionReason']);
+        $runnerLine = $admitted['hookSpecificOutput']['updatedInput']['command'];
+        $this->assertStringStartsWith('journal process run --admission ', $runnerLine);
     }
 
-    public function test_the_registered_parser_decides_and_no_native_flag_can(): void
+    public function test_no_native_flag_makes_a_line_admitted(): void
     {
-        $parser = new class implements ShellCommandParser
-        {
-            public function parse(string $line, ShellDialect $dialect): ShellCommand
-            {
-                $part = new CommandPart('composer', ['test'], CommandEffect::ReadsOnly, CommandType::Alias);
-
-                return new ShellCommand($line, $dialect, ParseOutcome::Complete, [$part]);
-            }
-        };
-        // The parser is scoped to a request, so the fake is registered the same way.
-        $this->app->scoped(ShellCommandParser::class, fn () => $parser);
         $flagged = json_decode($this->bashBody('composer test'), true);
         $flagged['tool_input']['saved'] = true;
 
-        $stdout = $this->hook('claude-code', (string) json_encode($flagged))->assertOk()->json('stdout');
+        $stdout = json_decode((string) $this->hook('claude-code', (string) json_encode($flagged))->assertOk()->json('stdout'), true);
 
-        $this->assertSame('{"hookSpecificOutput":{"hookEventName":"PreToolUse"}}', $stdout);
+        $this->assertSame('deny', $stdout['hookSpecificOutput']['permissionDecision']);
     }
 
     public function test_a_retry_gets_exactly_the_recorded_bytes(): void

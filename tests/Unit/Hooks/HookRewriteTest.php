@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Hooks;
 
 use App\Hooks\Contracts\StateLoader;
+use App\Hooks\Decisions\Decision;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\StateReferences;
 use App\Hooks\Enums\AnswerType;
@@ -30,14 +31,6 @@ use Tests\Support\TestIds;
 
 final class HookRewriteTest extends TestCase
 {
-    public function test_without_the_rewrite_the_main_agent_refuses_the_unsaved_check(): void
-    {
-        $answer = $this->rewrite()->answer($this->stack(ReadyStateType::MainAgent, new RewritingState([])), $this->command('composer test'));
-
-        $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
-        $this->assertSame(['rewriter delegate keep', 'ready deny keep'], $this->stepsOf($answer));
-    }
-
     public function test_the_main_agent_admits_a_rewrite_to_a_command_alias(): void
     {
         $rewriter = new RewritingState(['composer test' => 'journal run tests']);
@@ -50,23 +43,23 @@ final class HookRewriteTest extends TestCase
         $this->assertSame(2, $rewriter->askedCount);
     }
 
-    public function test_a_read_only_helper_refuses_a_replacement_that_writes(): void
+    public function test_a_replacement_a_lower_frame_refuses_is_denied(): void
     {
         $rewriter = new RewritingState(['composer test' => 'journal run tests --write']);
 
-        $answer = $this->rewrite()->answer($this->stack(ReadyStateType::ReadOnlyHelper, $rewriter), $this->command('composer test'));
+        $answer = $this->rewrite()->answer($this->refusingStack($rewriter), $this->command('composer test'));
 
         $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
-        $this->assertStringContainsString('changes no files', $answer->decision->refusalReason());
-        $this->assertSame(['rewriter rewrite keep', 'rewriter delegate keep', 'ready deny keep'], $this->stepsOf($answer));
+        $this->assertSame('The replacement is refused.', $answer->decision->refusalReason());
+        $steps = ['rewriter rewrite keep', 'rewriter delegate keep', 'ready deny keep'];
+        $this->assertSame($steps, $this->stepsOf($answer));
     }
 
     public function test_a_refused_replacement_leaves_no_child_the_rewrite_pushed(): void
     {
         $rewriter = new RewritingState(['composer test' => 'journal run tests --write'], $this->guide());
-        $stack = $this->stack(ReadyStateType::ReadOnlyHelper, $rewriter);
 
-        $answer = $this->rewrite()->answer($stack, $this->command('composer test'));
+        $answer = $this->rewrite()->answer($this->refusingStack($rewriter), $this->command('composer test'));
 
         $this->assertSame(AnswerType::Deny, $answer->decision->answerType());
         $this->assertSame(['ready', 'rewriter'], $answer->stack->frameIds());
@@ -109,11 +102,24 @@ final class HookRewriteTest extends TestCase
 
     private function stack(ReadyStateType $role, RewritingState $rewriter): AgentStack
     {
+        return $this->stackOn($role->value, $this->bottomOf($role), $rewriter);
+    }
+
+    /**
+     * A stack whose bottom frame refuses every line, so only a rewrite above it answers the original line.
+     */
+    private function refusingStack(RewritingState $rewriter): AgentStack
+    {
+        return $this->stackOn('refusing', new ScriptedState(Decision::deny('The replacement is refused.')), $rewriter);
+    }
+
+    private function stackOn(string $bottomTypeKey, AgentState $bottom, RewritingState $rewriter): AgentStack
+    {
         $noSubject = fn (string $typeKey) => new StateReference($typeKey, NoSubject::None);
         $factory = new InMemoryStateFactory(['guide' => fn () => ScriptedState::delegating()]);
 
         return new AgentStack([
-            new Frame('ready', $noSubject($role->value), $this->bottomOf($role), CarbonImmutable::now(), bottom: true),
+            new Frame('ready', $noSubject($bottomTypeKey), $bottom, CarbonImmutable::now(), bottom: true),
             new Frame('rewriter', $noSubject('rewriter'), $rewriter, CarbonImmutable::now()),
         ], $factory);
     }
