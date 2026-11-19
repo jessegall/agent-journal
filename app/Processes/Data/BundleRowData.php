@@ -7,10 +7,12 @@ namespace App\Processes\Data;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\RuleBundle;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One installed module's rule bundle waiting for the owner, with the exact digest an approval binds.
  */
+#[TypeScript]
 final class BundleRowData extends Data
 {
     /**

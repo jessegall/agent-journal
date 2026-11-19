@@ -10,11 +10,13 @@ use App\Processes\Models\ReaderPosition;
 use App\Processes\Values\OutputProblem;
 use App\Processes\Values\PartActivity;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One part of a run as a snapshot shows it: the four observations kept apart (lifecycle with its own end, capture,
  * the reader's live reading, the assessment and its receipt), with its activity.
  */
+#[TypeScript]
 final class PartSnapshotData extends Data
 {
     /**

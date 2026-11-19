@@ -217,8 +217,7 @@ final readonly class SkillAuthoring
     /**
      * One numbered revision of a stored skill, as the fields a reader shows.
      *
-     * @return array{revision: int, name: string, description: string, condition: mixed, sections: list<array{key:
-     *   string, heading: string, markdown: string}>}
+     * @return array{revision: int, name: string, description: string, condition: mixed, sections: list<array{key: string, heading: string, markdown: string}>}
      */
     public function revisionFields(Skill $skill, int $number): array
     {

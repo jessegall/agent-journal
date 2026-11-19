@@ -167,7 +167,7 @@ final class Document extends Model implements Commentable, Numbered, ReadableMod
     /**
      * The document as a search found it: its card with a snippet of the revision that holds the words.
      */
-    public function hit(string $words, DocumentRevision $found): DocumentCard
+    public function searchResult(string $words, DocumentRevision $found): DocumentCard
     {
         $revision = $this->currentRevisionOrFail();
 

@@ -70,7 +70,7 @@ final readonly class DocumentRecords implements DocumentResolver
         return DocumentList::from([
             'rows' => array_values(
                 $page->map(
-                    fn (Document $document) => $filters->searches() ? $document->hit(
+                    fn (Document $document) => $filters->searches() ? $document->searchResult(
                         $filters->query,
                         $document->foundRevision($searched),
                     ) : $document->card(),

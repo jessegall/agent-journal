@@ -6,11 +6,13 @@ namespace App\Processes\Data;
 
 use App\Processes\Models\CommandRequest;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One part of an explained line the journal will not run yet: its node, the stable code of why, the canonical
  * operation, and, once explain opened it, the command request that holds it with its state and next allowed command.
  */
+#[TypeScript]
 final class HeldPartData extends Data
 {
     public function __construct(

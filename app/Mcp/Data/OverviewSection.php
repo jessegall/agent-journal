@@ -21,8 +21,7 @@ final class OverviewSection extends Data
     ) {}
 
     /**
-     * @return array{title: string, counts: array<string, int>, next_action: array{tool: string, arguments:
-     *   array<string, mixed>}}
+     * @return array{title: string, counts: array<string, int>, next_action: array{tool: string, arguments: array<string, mixed>}}
      */
     public function structuredContent(): array
     {

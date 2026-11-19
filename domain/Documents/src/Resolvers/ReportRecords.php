@@ -45,7 +45,7 @@ final readonly class ReportRecords implements ReportResolver
         return ReportList::from([
             'rows' => array_values(
                 $page->map(
-                    fn (Report $report) => $filters->searches() ? $report->hit($filters->query) : $report->card(),
+                    fn (Report $report) => $filters->searches() ? $report->searchResult($filters->query) : $report->card(),
                 )->all(),
             ),
             'page' => $filters->page,

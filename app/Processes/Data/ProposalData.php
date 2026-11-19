@@ -6,10 +6,12 @@ namespace App\Processes\Data;
 
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One proposal answering the request: its state, author and every revision, newest first.
  */
+#[TypeScript]
 final class ProposalData extends Data
 {
     /**
