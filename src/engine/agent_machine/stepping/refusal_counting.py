@@ -14,6 +14,7 @@ from engine.agent_machine.record.refusal_counts import RefusalCounts
 from engine.enums.condition_outcome import ConditionOutcome
 from engine.enums.decision_class import DecisionClass
 from engine.enums.escalation_type import EscalationType
+from engine.enums.hook_event_name import HookEventName
 from engine.enums.state_end import StateEnd
 from engine.enums.question_type import QuestionType
 from engine.enums.responder import Responder
@@ -26,8 +27,8 @@ PROGRESS_ENDS = (StateEnd.SATISFIED, StateEnd.CLOSED, StateEnd.SUBMITTED, StateE
 
 class RefusalCounting:
     """The stops and the tool calls refused by blocks in a row after a step, and the escalation that opens or
-    is joined when a count reaches its limit (doc 1310 section 4.6): progress sets both back to 0, a
-    policy's refusal counts nothing, and a limit of 0 is off."""
+    is joined when a count reaches its limit (doc 1310 section 4.6). Progress resets both counts. A completed
+    tool use resets the stop count alone. A policy's refusal counts nothing, and a limit of 0 is off."""
 
     def after(self, decision: Decision, question: Question, view: AgentView, built: BuiltStack, reasons: list[Reason]) -> RefusalCounts:
         if self.is_progress(decision, question, built.moves):
@@ -35,6 +36,8 @@ class RefusalCounting:
         counts = view.counts
         if question.is_stop() and not decision.admits():
             counts = replace(counts, stop_refusals=counts.stop_refusals + 1)
+        if question.event is not None and question.event.event in (HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE):
+            counts = replace(counts, stop_refusals=0)
         if question.is_tool_call() and decision.decision_class is DecisionClass.BLOCK:
             counts = replace(counts, tool_refusals=counts.tool_refusals + 1)
         return replace(counts, escalation=self.escalation(counts, view, built.stack, reasons))
