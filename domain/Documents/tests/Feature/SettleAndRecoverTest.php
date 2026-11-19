@@ -40,6 +40,7 @@ use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\Exceptions\SimulatedFailure;
 use Tests\Support\TestIds;
 use Tests\Support\TestStartAuthority;
 
@@ -230,7 +231,7 @@ final class SettleAndRecoverTest extends TestCase
             DB::transaction(function (): void {
                 $this->endSession(9, 90);
 
-                throw new RuntimeException('The ending failed.');
+                throw SimulatedFailure::of('The ending failed.');
             });
             $this->fail('The ending did not fail.');
         } catch (RuntimeException) {
