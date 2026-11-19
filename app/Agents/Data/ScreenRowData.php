@@ -27,6 +27,6 @@ final class ScreenRowData extends Data
      */
     public static function fromRuns(array $runs): self
     {
-        return new self(ScreenRunData::collect($runs));
+        return new self(array_values(ScreenRunData::collect($runs)));
     }
 }

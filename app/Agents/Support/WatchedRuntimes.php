@@ -20,7 +20,7 @@ final readonly class WatchedRuntimes
      */
     public function forHost(string $hostId): array
     {
-        return TerminalView::query()
+        return array_values(TerminalView::query()
             ->acrossActors()
             ->watchedOnHost($hostId)
             ->get()
@@ -28,7 +28,7 @@ final readonly class WatchedRuntimes
                 $view->agent_runtime_id,
                 $view->interval_ms,
             ))
-            ->all();
+            ->all());
     }
 
     /**

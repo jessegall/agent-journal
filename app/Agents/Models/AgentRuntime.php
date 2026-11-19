@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * The running program behind one agent session on one host: its driver, activity and hold, the requested, staged
@@ -48,6 +49,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $start_grant
  * @property int $process_generation
  * @property CarbonImmutable|null $last_observed_at
+ * @property Carbon $updated_at
  * @property int $row_version
  */
 #[Fillable(['agent_session_id', 'host_id', 'driver_type', 'program', 'program_build', 'profile', 'canonical_folder'])]
@@ -150,7 +152,7 @@ final class AgentRuntime extends Model implements ReadableModel
     public function watcherCount(): int
     {
         if (! array_key_exists('watchers', $this->getAttributes())) {
-            $this->loadCount(['terminalViews as watchers' => fn (Builder $views) => $views->acrossActors()->live()]);
+            $this->loadCount(['terminalViews as watchers' => self::liveViews(...)]);
         }
 
         return (int) $this->getAttribute('watchers');
@@ -164,7 +166,17 @@ final class AgentRuntime extends Model implements ReadableModel
     #[Scope]
     protected function withWatchers(Builder $query): void
     {
-        $query->withCount(['terminalViews as watchers' => fn (Builder $views) => $views->acrossActors()->live()]);
+        $query->withCount(['terminalViews as watchers' => self::liveViews(...)]);
+    }
+
+    /**
+     * The live terminal views of any viewer, which is what a runtime's watcher count counts.
+     *
+     * @param  Builder<TerminalView>  $views
+     */
+    private static function liveViews(Builder $views): void
+    {
+        $views->acrossActors()->live();
     }
 
     /**
