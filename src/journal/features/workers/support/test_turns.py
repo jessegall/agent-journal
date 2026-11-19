@@ -11,6 +11,7 @@ from journal.features.shell.support.shell_request import ShellRequest
 from journal.features.shell.support.restart_queue import RestartQueue
 from journal.features.shell.support.shell_runner import EXIT, RESTART_HOLD, ShellRunner
 from journal.features.workers.support.test_run_result import TestRunResult
+from journal.features.workers.support.test_selection import TestSelection
 from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.features.workers.workers_options import WorkersOptions
 from journal.models.test_turn import TestTurn
@@ -47,7 +48,10 @@ class TestTurns:
 
     def run_batches(self, worker: Worker, ids: str, caller: Caller) -> str:
         folder, runs = str(self.branch.place(worker)), []
-        for batch in self.batches(ids):
+        selection = TestSelection.parsed(ids)
+        project = shlex.join(selection.project(Path(folder)))
+        for batch in self.batches(shlex.join(selection.tests(Path(folder)))):
+            batch = f"{project} {batch}".strip()
             turn = self.open_turn(worker, batch, f"{self.command(folder)} {batch}", folder)
             if not self.waited(turn):
                 return "your turn was taken back: nothing ran"

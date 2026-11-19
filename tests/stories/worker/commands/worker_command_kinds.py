@@ -79,6 +79,26 @@ def test_a_worker_queueing_a_folder_of_tests_is_refused(story):
 
 
 @story(WorkingWorker, mode=BUILDER_MODE, subject=AgentRole.WORKER)
+@setting(WorkersOptions.TEST_COMMAND, "./run_tests.sh")
+def test_a_worker_queues_a_test_led_by_the_project_folder_it_is_in_and_is_shown_its_result(story):
+    story.project_script_holding("run_tests.sh", TEST_SCRIPT)
+    story.project_file_holding("parser-lib/tests/test_parser.py", "")
+    result = story.agent_runs(story.agents.subject, "tests turn parser-lib tests/test_parser.py::test_passing")
+    result.expect_command_passed()
+    result.expect_command_text("1 passed")
+    story.expect_stack(story.agents.subject, Void, WorkingTask)
+
+
+@story(WorkingWorker, mode=BUILDER_MODE, subject=AgentRole.WORKER)
+def test_a_worker_queueing_a_folder_of_tests_inside_a_project_folder_is_refused(story):
+    story.project_file_holding("parser-lib/tests/stories/a_story.py", "")
+    result = story.agent_runs(story.agents.subject, "tests turn parser-lib tests/stories")
+    result.expect_command_refused()
+    result.expect_command_text("never a folder or a glob: tests/stories")
+    story.expect_stack(story.agents.subject, Void, WorkingTask)
+
+
+@story(WorkingWorker, mode=BUILDER_MODE, subject=AgentRole.WORKER)
 @setting(WorkersOptions.BUILD_COMMAND, "./build.sh")
 def test_a_worker_queues_a_build_and_the_journal_runs_the_projects_build_command(story):
     story.project_script_holding("build.sh", BUILD_SCRIPT)

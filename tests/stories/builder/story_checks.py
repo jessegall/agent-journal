@@ -264,6 +264,10 @@ class StoryChecks:
     def expect_worker(self, n: int, **fields) -> None:
         self.expect_row("workers", n, fields)
 
+    def expect_reviewer_brief_holding(self, reviewer: StoryAgent, part: str) -> None:
+        brief = self.api_row("reviewers", reviewer.number)["brief"]
+        assert part in brief, f"reviewer {reviewer.number}'s brief does not hold {part!r}: {brief}"
+
     def expect_plan(self, n: int, **fields) -> None:
         self.expect_row("plans", n, fields)
 

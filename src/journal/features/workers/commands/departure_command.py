@@ -98,6 +98,7 @@ class DepartureCommand(Command):
         turn, run_lines = self.turns.checked(worker, self.with_affected(worker, tests.strip(), folder), caller)
         if not turn.has_passed():
             raise Rejection(f"your tests did not pass, so your clock-out does not stand: fix them and clock out again\n{run_lines}")
+        print(f"your tests passed, and the agent checking your proofs is handed this result:\n{run_lines}")
         self.logs.save(TaskLog.build(task, f"tests passed at clock-out: {turn.command}", self.time_source.moment().timestamp()), caller.actor)
 
     def with_affected(self, worker: Worker, tests: str, folder: Path) -> str:
