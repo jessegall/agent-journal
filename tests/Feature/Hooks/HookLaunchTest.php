@@ -54,7 +54,10 @@ final class HookLaunchTest extends TestCase
         $settings = json_decode($this->launch('main-agent')->settings, true, flags: JSON_THROW_ON_ERROR);
 
         $this->assertSame(['hooks', 'permissions'], array_keys($settings));
-        $this->assertSame(['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop', 'SessionEnd'], array_keys($settings['hooks']));
+        $this->assertSame(
+            ['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop', 'StopFailure', 'SessionEnd'],
+            array_keys($settings['hooks']),
+        );
         $this->assertSame([['hooks' => [['type' => 'command', 'command' => 'journal-hook claude-code']]]], $settings['hooks']['Stop']);
         $this->assertSame(['deny' => HookProgram::ClaudeCode->nativeChildTools()], $settings['permissions']);
     }

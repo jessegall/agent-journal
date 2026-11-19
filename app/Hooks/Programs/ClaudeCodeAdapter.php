@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Programs;
 
+use App\Hooks\Actions\RecordProgramFailure;
 use App\Hooks\Contracts\ProgramAdapter;
 use App\Hooks\Contracts\ProgramCall;
 use App\Hooks\Enums\ClaudeCodeTool;
@@ -12,6 +13,7 @@ use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Exceptions\UnsupportedHook;
 use App\Hooks\Inputs\CompactionDetails;
 use App\Hooks\Inputs\ContextCompacted;
+use App\Hooks\Inputs\FailureDetails;
 use App\Hooks\Inputs\FileChange;
 use App\Hooks\Inputs\FileChanges;
 use App\Hooks\Inputs\FileEditRequested;
@@ -41,6 +43,7 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
     public function __construct(
         private ShellCommandParser $parser,
         private JournalTools $journalTools,
+        private RecordProgramFailure $failures,
     ) {}
 
     public function capabilities(): ProgramCapabilities
@@ -89,6 +92,11 @@ final readonly class ClaudeCodeAdapter implements ProgramAdapter
             'Stop' => new JudgedCall(
                 new StopRequested($hook, new StopDetails($hook->hookId, $payload->isStopContinuation())),
                 fn (HookAnswer $answer) => ProgramReplies::stop($answer),
+            ),
+            'StopFailure' => new NotificationCall(
+                $hook,
+                new FailureDetails(HookProgram::ClaudeCode->value, $payload->programFailure()),
+                $this->failures,
             ),
             'SessionEnd' => new JudgedCall(
                 new SessionEnded($hook, new SessionEndDetails($payload->endReason())),

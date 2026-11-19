@@ -40,6 +40,7 @@ final class HookRuntimeReadinessTest extends TestCase
             'PreToolUse' => ['tool_name' => 'Bash', ...self::SHELL_CALL],
             'PostToolUse' => ['tool_name' => 'Bash', ...self::SHELL_CALL],
             'Stop' => ['stop_hook_active' => false],
+            'StopFailure' => ['error' => 'rate_limit'],
             'SessionEnd' => ['reason' => 'other'],
         ],
         'codex' => [

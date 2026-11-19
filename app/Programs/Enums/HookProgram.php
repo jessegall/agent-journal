@@ -23,7 +23,15 @@ enum HookProgram: string
     public function nativeEvents(): array
     {
         return match ($this) {
-            self::ClaudeCode => ['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop', 'SessionEnd'],
+            self::ClaudeCode => [
+                'SessionStart',
+                'UserPromptSubmit',
+                'PreToolUse',
+                'PostToolUse',
+                'Stop',
+                'StopFailure',
+                'SessionEnd',
+            ],
             self::Codex => ['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop', 'SessionEnd'],
         };
     }

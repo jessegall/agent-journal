@@ -10,6 +10,7 @@
         "file read": "untouched",
         "tool finished": "onToolFinished",
         "stop": "onStop",
+        "stop failure": "reported",
         "session end": "onSessionEnd",
         "pre-compaction": "unsupported",
         "subagent stop": "unsupported",

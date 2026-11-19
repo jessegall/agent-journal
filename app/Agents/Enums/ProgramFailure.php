@@ -19,6 +19,14 @@ enum ProgramFailure: string
     case Unknown = 'unknown';
 
     /**
+     * The failure a program's checked error code names; a code outside the checked vocabulary is Unknown.
+     */
+    public static function fromCheckedCode(string $code): self
+    {
+        return self::tryFrom($code) ?? self::Unknown;
+    }
+
+    /**
      * Only a rejected sign-in asks for a private check of the account; one such failure alone never signs it out.
      */
     public function needsAccountCheck(): bool

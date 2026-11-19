@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Hooks\Programs;
 
+use App\Agents\Enums\ProgramFailure;
 use App\Hooks\Enums\SessionEndReason;
 use App\Hooks\Enums\SessionStartSource;
 use App\Hooks\Enums\ToolOutcome;
@@ -37,6 +38,7 @@ final class HookPayload extends Data
         public readonly string|Optional $agentId = new Optional(),
         public readonly string|Optional $promptId = new Optional(),
         public readonly string|Optional $turnId = new Optional(),
+        public readonly string|Optional $error = new Optional(),
     ) {}
 
     /**
@@ -73,6 +75,14 @@ final class HookPayload extends Data
     public function isSessionStart(): bool
     {
         return $this->hookEventName === 'SessionStart';
+    }
+
+    /**
+     * Why a request failed, from the error code of a failure notification; its error details are never read.
+     */
+    public function programFailure(): ProgramFailure
+    {
+        return is_string($this->error) ? ProgramFailure::fromCheckedCode($this->error) : ProgramFailure::Unknown;
     }
 
     public function promptText(): string

@@ -17,6 +17,7 @@ use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Contracts\IncomingWorkRegistration;
 use App\Hooks\Contracts\StateFactory;
 use App\Hooks\Models\AgentStackRow;
+use App\Hooks\Models\FailureReceipt;
 use App\Hooks\Models\HookCall;
 use App\Hooks\Models\Support\AgentSessionScope;
 use App\Hooks\Stack\AdvisoryStackAdmission;
@@ -70,7 +71,7 @@ final class HooksServiceProvider extends ServiceProvider
             static fn () => Container::getInstance()->make(AgentContext::class),
         );
 
-        foreach ([AgentStackRow::class, HookCall::class] as $model) {
+        foreach ([AgentStackRow::class, HookCall::class, FailureReceipt::class] as $model) {
             $events->listen("eloquent.booted: {$model}", fn () => $model::addGlobalScope($scope));
         }
     }

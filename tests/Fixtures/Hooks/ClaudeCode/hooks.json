@@ -1,5 +1,5 @@
 {
-    "source": "Captured from Claude Code 2.1.323 on 2026-11-17 under isolated settings (claude -p, --setting-sources local), redacted; notification is still the documented shape, since a headless run raises none",
+    "source": "Captured from Claude Code 2.1.323 on 2026-11-17 under isolated settings (claude -p, --setting-sources local), redacted; notification and stop failure are still the documented shape, since a headless run raises neither",
     "payloads": {
         "session start": {
             "session_id": "session-redacted",
@@ -134,6 +134,15 @@
             "last_assistant_message": "done",
             "background_tasks": [],
             "session_crons": []
+        },
+        "stop failure": {
+            "session_id": "session-redacted",
+            "transcript_path": "/redacted/transcript.jsonl",
+            "cwd": "/redacted",
+            "hook_event_name": "StopFailure",
+            "error": "rate_limit",
+            "error_details": "redacted",
+            "last_assistant_message": ""
         },
         "session end": {
             "session_id": "session-redacted",

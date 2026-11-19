@@ -109,6 +109,7 @@ A program that exits or is killed without an end hook is handled by `LaunchHeart
 | PreToolUse, Read, Glob, Grep, LS, WebFetch, WebSearch, TodoWrite | not judged: the neutral reply, so Claude Code's own permissions decide |
 | PostToolUse | onToolFinished |
 | Stop | onStop |
+| StopFailure | not judged: its checked `error` code is kept once per callback id and published as `ProgramFailed`; `error_details` is never read; the empty reply |
 | SessionEnd | onSessionEnd |
 | PreCompact, SubagentStop, Notification, any other callback or tool, `Agent` among them | refused by name (`UnsupportedHook`) |
 | onCompaction | not mapped yet: the compaction signal and its correlation are plan 2, task 71 |
