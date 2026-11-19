@@ -345,9 +345,9 @@ class WorkerBranch:
         return self.rebase_conflicts(repository, self.git("rebase", "--autostash", *self.own_commits_onto(repository, head), cwd=repository.worktree))
 
     def own_commits_onto(self, repository: WorkerRepository, head: str) -> tuple[str, ...]:
-        """The rebase arguments that replay only the worker's own commits onto head: those on no other branch, so commits other tasks landed that the worker's branch holds under other hashes are not replayed."""
+        """The rebase arguments that replay only the worker's own commits onto head: those on no other branch or remote, the worker's own branch and its pushed copies aside, so commits other tasks landed that the worker's branch holds under other hashes are not replayed."""
         branch = self.git("rev-parse", "--abbrev-ref", "HEAD", cwd=repository.worktree).stdout.strip()
-        own = self.git("rev-list", "HEAD", "--not", head, f"--exclude={branch}", "--branches", "--remotes", cwd=repository.worktree).stdout.split()
+        own = self.git("rev-list", "HEAD", "--not", head, f"--exclude={branch}", "--branches", f"--exclude=*/{branch}", "--remotes", cwd=repository.worktree).stdout.split()
         return ("--onto", head, f"{own[-1]}^") if own else (head,)
 
     def unresolved_conflicts(self, repository: WorkerRepository) -> str:

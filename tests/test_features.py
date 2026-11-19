@@ -6874,6 +6874,32 @@ def test_a_rebase_replays_only_the_workers_own_commits_not_foreign_ones_its_bran
     assert [line for line in replayed if line] == ["the totals.php"], "only the worker's own commit lies beyond the project's branch"
 
 
+def test_a_push_of_the_workers_branch_does_not_make_its_own_commits_foreign(app: App, monkeypatch):
+    root = workspace_made(app, ("platform",))
+    _, folder, caller = worktree_worker(app, monkeypatch, "platform totals")
+    committed(folder / "platform", "totals.php", "<?php\n// totals\n")
+    branch = git_run(folder / "platform", "rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+    git_run(folder / "platform", "update-ref", f"refs/remotes/origin/{branch}", "HEAD")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    committed(root / "platform", "notes.md", "a later note\n")
+    ordered = app.console().run(["worker", "rebase"], AGENT)
+    assert ordered.code == 0, ordered.error
+    assert (folder / "platform/totals.php").is_file() and (folder / "platform/notes.md").is_file(), "the pushed copy of its own branch keeps the worker's commit and takes the project's"
+
+
+def test_a_rebase_stopped_after_repeated_clashes_is_given_up_with_a_clear_message(app: App, monkeypatch):
+    root = workspace_made(app, ("platform",))
+    worker, folder, _ = worktree_worker(app, monkeypatch, "platform totals")
+    committed(folder / "platform", "app.php", "<?php\n// the worker's line\n")
+    committed(root / "platform", "app.php", "<?php\n// the user's line\n")
+    assert git_run(folder / "platform", "rebase", "main").returncode != 0
+    branch = app.container.get(WorkerBranch)
+    repository = branch.repositories(worker)[-1]
+    assert branch.has_stopped_rebase(repository)
+    said = branch.rebased(repository, worker.with_(clashes=5))
+    assert "given up" in said and "5 times in a row" in said and not branch.has_stopped_rebase(repository), said
+
+
 def test_a_long_run_whose_progress_showed_only_in_its_last_lines_is_flagged_and_one_counting_as_it_went_is_not():
     from datetime import datetime, timedelta, timezone
     from types import SimpleNamespace
