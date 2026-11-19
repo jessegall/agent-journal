@@ -7,6 +7,7 @@ namespace Tests\Feature\Actors;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\InvalidActorText;
+use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\TrustedEntryAuthority;
@@ -14,7 +15,6 @@ use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Models\AssignmentRecord;
 use App\Bus\Contracts\CommandBus;
-use App\Actors\Exceptions\UserActorRequired;
 use App\Engine\Support\EngineActor;
 use App\Web\Commands\RecordUserHeartbeat;
 use Domain\Access\Models\User;
@@ -65,7 +65,7 @@ final class EngineActorTypeTest extends TestCase
     {
         $this->expectException(AssignmentTypeUnavailable::class);
 
-        $this->app->make(AssignmentProviders::class)->assigneeProvider(ActorType::Engine);
+        $this->app->make(AssignmentProviders::class)->assigneeProvider(ActorType::Engine->value);
     }
 
     public function test_a_command_for_users_refuses_the_engine(): void

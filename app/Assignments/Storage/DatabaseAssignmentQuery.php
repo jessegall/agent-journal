@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Assignments\Storage;
 
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentQuery;
 use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Support\AssigneeIdentity;
 use Illuminate\Database\Query\Builder;
 
 /**
@@ -15,7 +15,7 @@ use Illuminate\Database\Query\Builder;
  */
 final readonly class DatabaseAssignmentQuery implements AssignmentQuery
 {
-    public function heldIds(string $type, ActorIdentity $holder): Builder
+    public function heldIds(string $type, AssigneeIdentity $holder): Builder
     {
         return AssignmentRecord::query()->heldRecordIds($type, $holder)->toBase();
     }

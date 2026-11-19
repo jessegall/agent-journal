@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Domain\Plans\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Contracts\AssignmentResolver;
 use App\Assignments\Contracts\AssignmentTransaction;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Decisions\StateReference;
 use App\Hooks\Decisions\SubjectReference;
@@ -75,7 +75,7 @@ final readonly class PlanRecords implements PlanResolver
 
     public function assignedToCaller(AssignedPlanFilters $filters): AssignedPlanList
     {
-        $holder = ActorIdentity::of($this->actors->actor());
+        $holder = AssigneeIdentity::of($this->actors->actor());
         $focused = $this->focusedPlanId();
 
         return $this->transaction->run(function () use ($filters, $holder, $focused): AssignedPlanList {

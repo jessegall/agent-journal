@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands;
 
-use App\Actors\Support\ActorIdentity;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentResult;
 use App\Bus\Attributes\Authorize;
 use App\Bus\Attributes\HandledBy;
@@ -29,7 +29,7 @@ final readonly class AssignPlanWork implements Command, HasAuthorizationSubject
 {
     public function __construct(
         public RecordIdentity $root,
-        public ActorIdentity $recipient,
+        public AssigneeIdentity $recipient,
     ) {}
 
     /**

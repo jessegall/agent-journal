@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Commands\AssignRecord;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Models\CommandReceipt;
 use App\Bus\Support\ReceiptCaller;
@@ -51,7 +51,7 @@ final class OperationsReadTest extends TestCase
         $task = Task::factory()->create(['title' => 'Keyed']);
         $this->startRequestAs($this->launch->agent->id, $this->launch->session->id);
         $this->app->make(RequestKey::class)->set(self::KEY);
-        $this->app->make(CommandBus::class)->run(new AssignRecord($task->assignmentIdentity(), ActorIdentity::of($this->launch->agent)));
+        $this->app->make(CommandBus::class)->run(new AssignRecord($task->assignmentIdentity(), AssigneeIdentity::of($this->launch->agent)));
 
         $result = $this->callMcpTool($this->launch, 'operations_read', ['request_key' => self::KEY])->assertJsonPath('result.isError', false)->json('result.structuredContent');
 

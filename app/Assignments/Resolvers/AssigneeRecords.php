@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Assignments\Resolvers;
 
 use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AssignmentResolver;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssigneeList;
 use App\Assignments\Support\AssigneeName;
 use App\Assignments\Support\Assignment;
@@ -26,15 +26,15 @@ final readonly class AssigneeRecords implements AssigneeResolver
     public function __construct(private AssignmentProviders $providers, private AssignmentResolver $assignments) {}
 
     /**
-     * @param  list<ActorIdentity>  $actors
+     * @param  list<AssigneeIdentity>  $actors
      * @return list<AssigneeName>
      */
     public function names(array $actors): array
     {
         $names = [];
 
-        foreach (array_unique(array_map(fn (ActorIdentity $actor) => $actor->type, $actors), SORT_REGULAR) as $type) {
-            array_push($names, ...$this->providers->assigneeProvider($type)->names(array_values(array_filter($actors, fn (ActorIdentity $actor) => $actor->type === $type))));
+        foreach (array_unique(array_map(fn (AssigneeIdentity $actor) => $actor->type, $actors), SORT_REGULAR) as $type) {
+            array_push($names, ...$this->providers->assigneeProvider($type)->names(array_values(array_filter($actors, fn (AssigneeIdentity $actor) => $actor->type === $type))));
         }
 
         return $names;
@@ -42,7 +42,7 @@ final readonly class AssigneeRecords implements AssigneeResolver
 
     public function eligible(ActorType $type, Page $page): AssigneeList
     {
-        return $this->providers->assigneeProvider($type)->eligible($page);
+        return $this->providers->assigneeProvider($type->value)->eligible($page);
     }
 
     /**
@@ -60,7 +60,7 @@ final readonly class AssigneeRecords implements AssigneeResolver
 
         foreach ($assignments->assignments as $assignment) {
             foreach ($names as $name) {
-                if ($name->actor->isSameAs($assignment->holder())) {
+                if ($name->assignee->isSameAs($assignment->holder())) {
                     $holders[] = new AssignmentHolder($assignment, $name->name);
                 }
             }

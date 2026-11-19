@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Lifecycle\AgentLifecycle;
 use App\Agents\Models\Agent;
 use App\Assignments\Exceptions\AssigneeUnavailable;
 use App\Assignments\Registry\AssignmentRegistry;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Page;
 use Carbon\CarbonImmutable;
 use Domain\Access\Models\User;
@@ -67,8 +67,8 @@ final class AssigneesTest extends TestCase
         $sameId = $this->owner->id;
         Agent::query()->whereKey($this->builder->id)->update(['id' => $sameId]);
 
-        $user = $registry->assigneeProvider(ActorType::User)->requireEligible(new ActorIdentity(ActorType::User, $sameId));
-        $agent = $registry->assigneeProvider(ActorType::Agent)->requireEligible(new ActorIdentity(ActorType::Agent, $sameId));
+        $user = $registry->assigneeProvider(ActorType::User->value)->requireEligible(new AssigneeIdentity(ActorType::User->value, $sameId));
+        $agent = $registry->assigneeProvider(ActorType::Agent->value)->requireEligible(new AssigneeIdentity(ActorType::Agent->value, $sameId));
 
         $this->assertInstanceOf(User::class, $user);
         $this->assertInstanceOf(Agent::class, $agent);
@@ -80,9 +80,9 @@ final class AssigneesTest extends TestCase
         $stranger = User::factory()->create();
         $this->builder->retireAt(CarbonImmutable::now());
 
-        $this->assertThrows(fn () => $registry->assigneeProvider(ActorType::User)->requireEligible(ActorIdentity::of($stranger)), AssigneeUnavailable::class);
-        $this->assertThrows(fn () => $registry->assigneeProvider(ActorType::Agent)->requireEligible(ActorIdentity::of($this->builder)), AssigneeUnavailable::class);
-        $this->assertThrows(fn () => $registry->assigneeProvider(ActorType::Agent)->requireEligible(new ActorIdentity(ActorType::Agent, TestIds::of(999999))), AssigneeUnavailable::class);
+        $this->assertThrows(fn () => $registry->assigneeProvider(ActorType::User->value)->requireEligible(AssigneeIdentity::of($stranger)), AssigneeUnavailable::class);
+        $this->assertThrows(fn () => $registry->assigneeProvider(ActorType::Agent->value)->requireEligible(AssigneeIdentity::of($this->builder)), AssigneeUnavailable::class);
+        $this->assertThrows(fn () => $registry->assigneeProvider(ActorType::Agent->value)->requireEligible(new AssigneeIdentity(ActorType::Agent->value, TestIds::of(999999))), AssigneeUnavailable::class);
     }
 
     public function test_eligible_lists_page_by_id_and_names_keep_a_retired_agent_and_show_no_email(): void
@@ -92,14 +92,14 @@ final class AssigneesTest extends TestCase
         $retired = Agent::named('Gone', AgentRole::ReadOnlyHelper);
         $retired->retireAt(CarbonImmutable::now());
 
-        $firstPage = $registry->assigneeProvider(ActorType::Agent)->eligible(new Page(null, 1));
-        $secondPage = $registry->assigneeProvider(ActorType::Agent)->eligible(new Page($firstPage->nextAfterId, 1));
-        $names = $registry->assigneeProvider(ActorType::Agent)->names([ActorIdentity::of($retired), ActorIdentity::of($this->builder)]);
-        $users = $registry->assigneeProvider(ActorType::User)->eligible(new Page());
+        $firstPage = $registry->assigneeProvider(ActorType::Agent->value)->eligible(new Page(null, 1));
+        $secondPage = $registry->assigneeProvider(ActorType::Agent->value)->eligible(new Page($firstPage->nextAfterId, 1));
+        $names = $registry->assigneeProvider(ActorType::Agent->value)->names([AssigneeIdentity::of($retired), AssigneeIdentity::of($this->builder)]);
+        $users = $registry->assigneeProvider(ActorType::User->value)->eligible(new Page());
 
         $this->assertSame(['Builder'], array_map(fn ($name) => $name->name, $firstPage->assignees));
         $this->assertSame(['Reviewer'], array_map(fn ($name) => $name->name, $secondPage->assignees));
-        $this->assertSame($second->id, $secondPage->assignees[0]->actor->id);
+        $this->assertSame($second->id, $secondPage->assignees[0]->assignee->id);
         $this->assertNull($secondPage->nextAfterId);
         $this->assertSame(['Builder', 'Gone'], array_map(fn ($name) => $name->name, $names));
         $this->assertSame(['Jesse'], array_map(fn ($name) => $name->name, $users->assignees));

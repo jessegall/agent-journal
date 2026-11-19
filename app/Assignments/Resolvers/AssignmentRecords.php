@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Assignments\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Contracts\AssignmentResolver;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentSet;
 use App\Assignments\Support\Page;
 use App\Assignments\Support\RecordIds;
@@ -66,7 +66,7 @@ final readonly class AssignmentRecords implements AssignmentResolver
         return new AssignmentSet(array_values($rows->map(fn (AssignmentRecord $row) => $row->toAssignment())->all()));
     }
 
-    public function recordIdsFor(string $type, ActorIdentity $holder, Page $page): RecordIds
+    public function recordIdsFor(string $type, AssigneeIdentity $holder, Page $page): RecordIds
     {
         $this->actors->actor();
         $ids = [];
@@ -112,7 +112,7 @@ final readonly class AssignmentRecords implements AssignmentResolver
     /**
      * @return list<string>
      */
-    public function allRecordIdsFor(string $type, ActorIdentity $holder): array
+    public function allRecordIdsFor(string $type, AssigneeIdentity $holder): array
     {
         $ids = [];
         $afterId = null;

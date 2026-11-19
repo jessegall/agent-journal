@@ -9,6 +9,7 @@ use App\Actors\Support\ActorIdentity;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Exceptions\AssignmentGroupTooLarge;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentGroup;
 use App\Assignments\Support\AssignmentOutcome;
@@ -96,7 +97,7 @@ final class AssignmentValuesTest extends TestCase
     public function test_a_set_finds_a_records_assignment_or_answers_none(): void
     {
         $task = new RecordIdentity('tasks.task', TestIds::of(12));
-        $assignment = new Assignment($task, new AssignmentReference(TestIds::of(42), new ActorIdentity(ActorType::Agent, TestIds::of(7))));
+        $assignment = new Assignment($task, new AssignmentReference(TestIds::of(42), new AssigneeIdentity(ActorType::Agent->value, TestIds::of(7))));
         $set = new AssignmentSet([$assignment]);
 
         $this->assertSame($assignment, $set->forRecord(new RecordIdentity('tasks.task', TestIds::of(12)))->get());

@@ -12,6 +12,7 @@ use App\Assignments\Contracts\AutoAssignmentResolver;
 use App\Assignments\Contracts\AutoAssignmentWriter;
 use App\Assignments\Enums\AutoAssignmentState;
 use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentTotals;
 use App\Assignments\Support\AutoAssignmentInput;
 use App\Assignments\Support\AutoAssignmentKey;
@@ -180,7 +181,7 @@ final class AutoAssignmentStatusTest extends TestCase
     private function hold(TaskState $state): void
     {
         $task = Task::factory()->create(['state' => $state]);
-        AssignmentRecord::holding($task->assignmentIdentity(), $this->key->actor);
+        AssignmentRecord::holding($task->assignmentIdentity(), AssigneeIdentity::ofActorIdentity($this->key->actor));
     }
 
     private function currentStatus(): AutoAssignmentStatus

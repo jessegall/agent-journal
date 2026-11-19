@@ -6,9 +6,8 @@ namespace App\Assignments\Models;
 
 use App\Actors\Contracts\ActorVisibility;
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Models\Support\SignedInScope;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentReference;
 use App\Links\Support\Linkable;
@@ -33,7 +32,7 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $record_type
  * @property string $record_id
- * @property ActorType $holder_type
+ * @property string $holder_type
  * @property string $holder_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -57,14 +56,14 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
      */
     protected function casts(): array
     {
-        return ['holder_type' => ActorType::class];
+        return [];
     }
 
     /**
      * Gives an unheld record to the holder in one insert that does nothing when the record already has a holder, so
      * the unique record key decides between two writers without aborting the transaction.
      */
-    public static function insertUnlessHeld(RecordIdentity $record, ActorIdentity $holder): void
+    public static function insertUnlessHeld(RecordIdentity $record, AssigneeIdentity $holder): void
     {
         $now = CarbonImmutable::now();
 
@@ -72,14 +71,14 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
             'id' => new self()->newUniqueId(),
             'record_type' => $record->type,
             'record_id' => $record->id,
-            'holder_type' => $holder->type->value,
+            'holder_type' => $holder->type,
             'holder_id' => $holder->id,
             'created_at' => $now,
             'updated_at' => $now,
         ]);
     }
 
-    public static function holding(RecordIdentity $record, ActorIdentity $holder): self
+    public static function holding(RecordIdentity $record, AssigneeIdentity $holder): self
     {
         return self::query()->create([
             'record_type' => $record->type,
@@ -93,7 +92,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
     {
         return new Assignment(
             new RecordIdentity($this->record_type, $this->record_id),
-            new AssignmentReference($this->id, new ActorIdentity($this->holder_type, $this->holder_id)),
+            new AssignmentReference($this->id, new AssigneeIdentity($this->holder_type, $this->holder_id)),
         );
     }
 
@@ -123,7 +122,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function heldRecordIds(Builder $query, string $type, ActorIdentity $holder): void
+    protected function heldRecordIds(Builder $query, string $type, AssigneeIdentity $holder): void
     {
         $query->withoutGlobalScope(SignedInScope::class)
             ->select('record_id')
@@ -153,7 +152,7 @@ final class AssignmentRecord extends MorphPivot implements ReadableModel
      * @param  Builder<self>  $query
      */
     #[Scope]
-    protected function heldForRetirement(Builder $query, ActorIdentity $holder): void
+    protected function heldForRetirement(Builder $query, AssigneeIdentity $holder): void
     {
         $query->withoutGlobalScope(SignedInScope::class)
             ->where('holder_type', $holder->type)

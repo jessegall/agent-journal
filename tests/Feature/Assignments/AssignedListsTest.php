@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\NumberedPage;
 use Domain\Plans\Api\AssignedPlanFilters;
 use Domain\Plans\Contracts\PlanResolver;
@@ -69,9 +69,9 @@ final class AssignedListsTest extends TestCase
         $finished->finish();
         $othersTask = Task::factory()->create(['title' => 'Not mine']);
         Task::factory()->create(['title' => 'Nobody holds this']);
-        $writer->assign($finished->assignmentIdentity(), ActorIdentity::of($this->main));
-        $writer->assign($held->assignmentIdentity(), ActorIdentity::of($this->main));
-        $writer->assign($othersTask->assignmentIdentity(), ActorIdentity::of($this->other));
+        $writer->assign($finished->assignmentIdentity(), AssigneeIdentity::of($this->main));
+        $writer->assign($held->assignmentIdentity(), AssigneeIdentity::of($this->main));
+        $writer->assign($othersTask->assignmentIdentity(), AssigneeIdentity::of($this->other));
 
         $list = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters());
         $finishedOnly = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters(states: [TaskState::Finished]));
@@ -91,8 +91,8 @@ final class AssignedListsTest extends TestCase
         $other = Plan::factory()->create(['title' => 'Research', 'type' => PlanType::Research]);
         $task = Task::factory()->create(['title' => 'In the research plan']);
         $other->addPhase('One')->addTasks([$task->id]);
-        $writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->main));
-        $writer->assign($task->assignmentIdentity(), ActorIdentity::of($this->main));
+        $writer->assign($plan->assignmentIdentity(), AssigneeIdentity::of($this->main));
+        $writer->assign($task->assignmentIdentity(), AssigneeIdentity::of($this->main));
 
         $list = $this->app->make(PlanResolver::class)->assignedToCaller(new AssignedPlanFilters());
 
@@ -112,7 +112,7 @@ final class AssignedListsTest extends TestCase
     public function test_rows_and_total_come_from_one_snapshot(): void
     {
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
-        $writer->assign(Task::factory()->create(['title' => 'First'])->assignmentIdentity(), ActorIdentity::of($this->main));
+        $writer->assign(Task::factory()->create(['title' => 'First'])->assignmentIdentity(), AssigneeIdentity::of($this->main));
         $late = Task::factory()->create(['title' => 'Assigned meanwhile']);
         $other = $this->otherConnection();
 

@@ -228,6 +228,7 @@ use App\Assignments\Exceptions\InvalidAssignmentIdentity;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
 use App\Assignments\Exceptions\InvalidRecordIds;
 use App\Assignments\Models\Support\AssignableListing;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssigneeList;
 use App\Assignments\Support\AssigneeName;
 use App\Assignments\Support\AssigneeRegistration;
@@ -1230,6 +1231,7 @@ final class CoreApi
                 ToolOutcome::class,
                 ActorIdentity::class,
                 PolicyRegistration::class,
+                AssigneeIdentity::class,
                 InboxMembership::class,
                 InboxMembers::class,
                 ActorLabelSet::class,

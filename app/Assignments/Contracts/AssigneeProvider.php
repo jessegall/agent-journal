@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Assignments\Contracts;
 
-use App\Actors\Support\ActorIdentity;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssigneeList;
 use App\Assignments\Support\AssigneeName;
 use App\Assignments\Support\Page;
@@ -18,13 +18,13 @@ interface AssigneeProvider
     /**
      * The recipient, under a shared lock on its row, when it exists, may be seen and may receive work now.
      */
-    public function requireEligible(ActorIdentity $recipient): Assignee;
+    public function requireEligible(AssigneeIdentity $recipient): Assignee;
 
     /**
-     * @param  list<ActorIdentity>  $actors
+     * @param  list<AssigneeIdentity>  $assignees
      * @return list<AssigneeName>
      */
-    public function names(array $actors): array;
+    public function names(array $assignees): array;
 
     public function eligible(Page $page): AssigneeList;
 }

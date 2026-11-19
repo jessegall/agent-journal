@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Mcp;
 
 use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssigneeResolver;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssigneeList;
 use App\Assignments\Support\AssigneeName;
 use App\Assignments\Support\Page;
@@ -48,7 +48,7 @@ final class AssignmentReadToolsTest extends TestCase
     public function test_assignments_read_on_a_held_task_returns_the_reference_the_show_command_prints(): void
     {
         $task = Task::factory()->create(['title' => 'Write the tool']);
-        $held = $this->app->make(AssignmentWriterInTransaction::class)->assign($task->assignmentIdentity(), ActorIdentity::of($this->caller->agent))->outcomes[0]->current;
+        $held = $this->app->make(AssignmentWriterInTransaction::class)->assign($task->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent))->outcomes[0]->current;
 
         $result = $this->callMcpTool($this->caller, 'assignments_read', ['record_type' => 'tasks.task', 'record_id' => $task->id])
             ->assertJsonPath('result.isError', false)
@@ -83,7 +83,7 @@ final class AssignmentReadToolsTest extends TestCase
         $resolver = Mockery::mock(AssigneeResolver::class);
         $resolver->shouldReceive('eligible')->once()
             ->withArgs(fn (ActorType $type, Page $page): bool => $type === ActorType::Agent && $page->afterId === $afterId && $page->limit === 20)
-            ->andReturn(new AssigneeList([new AssigneeName(new ActorIdentity(ActorType::Agent, $nextAfterId), 'Worker')], $nextAfterId));
+            ->andReturn(new AssigneeList([new AssigneeName(new AssigneeIdentity(ActorType::Agent->value, $nextAfterId), 'Worker')], $nextAfterId));
         $resolver->shouldReceive('eligible')->once()
             ->withArgs(fn (ActorType $type, Page $page): bool => $type === ActorType::Agent && $page->afterId === $nextAfterId && $page->limit === 20)
             ->andReturn(new AssigneeList([], null));

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Assignments\Contracts;
 
-use App\Actors\Contracts\Actor;
+use App\Assignments\Support\AssigneeIdentity;
 
 /**
- * An actor that can hold responsibility for a record: a user or an agent. A context object is an Actor only; the
- * persisted user or agent is the Assignee.
+ * Something that can hold assigned work, an actor or a desk alike, named by its assignee identity.
  */
-interface Assignee extends Actor {}
+interface Assignee
+{
+    public function assigneeIdentity(): AssigneeIdentity;
+}

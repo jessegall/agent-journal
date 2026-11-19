@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Assignments\Commands;
 
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Enums\AssignmentAbility;
 use App\Assignments\Handlers\ReassignRecordHandler;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Policies\AssignmentPolicy;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
 use App\Bus\Attributes\Authorize;
@@ -31,7 +31,7 @@ final readonly class ReassignRecord implements Command, HasAuthorizationSubject
     public function __construct(
         public RecordIdentity $record,
         public AssignmentReference $expected,
-        public ActorIdentity $recipient,
+        public AssigneeIdentity $recipient,
     ) {}
 
     /**

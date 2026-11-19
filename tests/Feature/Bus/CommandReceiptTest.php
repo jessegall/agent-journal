@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Bus;
 
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Commands\AssignRecord;
 use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Contracts\OperationResolver;
 use App\Bus\Enums\ReceiptState;
@@ -112,7 +112,7 @@ final class CommandReceiptTest extends CommandBusTestCase
     {
         $task = Task::factory()->create(['title' => 'Keyed']);
         $bus = $this->app->make(CommandBus::class);
-        $command = new AssignRecord($task->assignmentIdentity(), ActorIdentity::of($this->launch->agent));
+        $command = new AssignRecord($task->assignmentIdentity(), AssigneeIdentity::of($this->launch->agent));
 
         $first = $bus->run($command);
         $repeat = $bus->run($command);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Commands;
 
-use App\Actors\Support\ActorIdentity;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
 use App\Bus\Attributes\Authorize;
@@ -31,7 +31,7 @@ final readonly class ReassignPlanWork implements Command, HasAuthorizationSubjec
     public function __construct(
         public RecordIdentity $root,
         public AssignmentReference $expectedRoot,
-        public ActorIdentity $recipient,
+        public AssigneeIdentity $recipient,
     ) {}
 
     /**

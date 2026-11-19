@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Domain\Tasks\Resolvers;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Contracts\AssignmentResolver;
 use App\Assignments\Contracts\AssignmentTransaction;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Hooks\Contracts\ActorWorkStacks;
 use App\Hooks\Decisions\StateReference;
 use Domain\Tasks\Api\TaskCard;
@@ -43,7 +43,7 @@ final readonly class AssignedTasks implements AssignedTaskResolver
 
     public function assignedToCaller(TaskFilters $filters): TaskList
     {
-        $holder = ActorIdentity::of($this->actors->actor());
+        $holder = AssigneeIdentity::of($this->actors->actor());
 
         return $this->transaction->run(function () use ($filters, $holder): TaskList {
             $heldIds = $this->assignments->allRecordIdsFor(Task::LINK_TYPE, $holder);

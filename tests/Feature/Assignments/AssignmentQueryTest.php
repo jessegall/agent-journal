@@ -6,7 +6,6 @@ namespace Tests\Feature\Assignments;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignedWorkProvider;
 use App\Assignments\Contracts\AssignedWorkResolver;
 use App\Assignments\Contracts\AssignmentQuery;
@@ -15,6 +14,7 @@ use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Registry\AssignmentRegistry;
 use App\Assignments\Resolvers\RegisteredAssignedWork;
 use App\Assignments\Storage\DatabaseAssignmentQuery;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Domains\Bootstrappers\RegisterAssignables;
 use App\Domains\Support\DomainEntry;
 use App\Records\Support\RecordIdentity;
@@ -37,16 +37,16 @@ final class AssignmentQueryTest extends TestCase
     use RefreshHookDatabase;
     use StartsAgentRequests;
 
-    private ActorIdentity $builder;
+    private AssigneeIdentity $builder;
 
-    private ActorIdentity $reviewer;
+    private AssigneeIdentity $reviewer;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->builder = new ActorIdentity(ActorType::Agent, TestIds::of(7));
-        $this->reviewer = new ActorIdentity(ActorType::Agent, TestIds::of(8));
+        $this->builder = new AssigneeIdentity(ActorType::Agent->value, TestIds::of(7));
+        $this->reviewer = new AssigneeIdentity(ActorType::Agent->value, TestIds::of(8));
         $this->startUserRequestAs(TestIds::of(1));
     }
 
@@ -112,7 +112,7 @@ final class AssignmentQueryTest extends TestCase
         $resolver = new RegisteredAssignedWork($registry);
         $this->app->scoped(ErrandWork::class, fn () => new class implements AssignedWorkProvider
         {
-            public function countFor(ActorIdentity $holder): int
+            public function countFor(AssigneeIdentity $holder): int
             {
                 return $holder->id === TestIds::of(7) ? 3 : throw new RuntimeException('The count failed.');
             }
@@ -139,7 +139,7 @@ final class AssignmentQueryTest extends TestCase
         return array_map(fn () => Task::factory()->create()->id, range(1, $count));
     }
 
-    private function hold(string $taskId, ActorIdentity $holder): AssignmentRecord
+    private function hold(string $taskId, AssigneeIdentity $holder): AssignmentRecord
     {
         return AssignmentRecord::holding(new RecordIdentity(Task::LINK_TYPE, $taskId), $holder);
     }

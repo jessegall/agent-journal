@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
 use App\Bus\Contracts\CommandBus;
@@ -41,7 +41,7 @@ final class PlanCascadeTest extends TestCase
 
     private const array TABLES = ['users', 'agents', 'tasks', 'plans', 'phases', 'phase_tasks', 'assignments'];
 
-    private ActorIdentity $builder;
+    private AssigneeIdentity $builder;
 
     private Plan $plan;
 
@@ -60,7 +60,7 @@ final class PlanCascadeTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
-        $this->builder = ActorIdentity::of(Agent::named('Builder', AgentRole::ReadOnlyHelper));
+        $this->builder = AssigneeIdentity::of(Agent::named('Builder', AgentRole::ReadOnlyHelper));
         $this->plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $this->open = Task::factory()->create(['title' => 'Open']);
         $finished = Task::factory()->create(['title' => 'Finished']);
@@ -134,7 +134,7 @@ final class PlanCascadeTest extends TestCase
         return array_values(AssignmentRecord::query()->pluck('record_type')->all());
     }
 
-    private function assignWork(RecordIdentity $root, ActorIdentity $recipient): AssignmentResult
+    private function assignWork(RecordIdentity $root, AssigneeIdentity $recipient): AssignmentResult
     {
         return $this->app->make(CommandBus::class)->run(new AssignPlanWork($root, $recipient));
     }

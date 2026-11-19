@@ -31,7 +31,7 @@ interface AssignmentProviders
      * @throws AssignmentTypeUnavailable
      * @throws AssignmentProviderInvalid
      */
-    public function assigneeProvider(ActorType $type): AssigneeProvider;
+    public function assigneeProvider(string $type): AssigneeProvider;
 
     /**
      * Whether actors of the type may take work automatically now, as their owner answers it.

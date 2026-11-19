@@ -6,12 +6,12 @@ namespace Domain\Plans\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Agents\Contracts\CurrentSession;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Support\StackTarget;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Hooks\Contracts\CurrentState;
 use Domain\Plans\Api\PlanCard;
 use Domain\Plans\Api\PlanFilters;
@@ -73,12 +73,12 @@ final class PlanRecordsTest extends TestCase
         $this->app->instance(CurrentSession::class, new FixedSession(TestIds::of(10)));
         $this->app->instance(CurrentState::class, new FixedCurrentState(new StackTarget($agent->id, TestIds::of(10)), [WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateReference::forPlan($this->build)]));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent->id), TestLaunchAuthority::forAgent($agent->id));
-        $this->app->make(AssignmentWriterInTransaction::class)->assign($this->build->assignmentIdentity(), ActorIdentity::of($agent));
+        $this->app->make(AssignmentWriterInTransaction::class)->assign($this->build->assignmentIdentity(), AssigneeIdentity::of($agent));
 
         $cards = $this->records()->list(new PlanFilters())->cards;
 
         $this->assertSame([$this->build->id, 'Planner', true], [$cards[0]->id, $cards[0]->holder->get()->name, $cards[0]->focused]);
-        $this->assertTrue($cards[0]->holder->get()->actor()->isSameAs(ActorIdentity::of($agent)));
+        $this->assertTrue($cards[0]->holder->get()->holder()->isSameAs(AssigneeIdentity::of($agent)));
     }
 
     public function test_the_search_filters_and_an_empty_result_keeps_its_filters(): void

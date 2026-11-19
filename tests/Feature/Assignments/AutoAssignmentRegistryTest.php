@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignedWorkProvider;
 use App\Assignments\Exceptions\AssignmentProviderInvalid;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\AutoAssignmentDeclarationRefused;
 use App\Assignments\Registry\AssignmentRegistry;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AutoAssignerDefinition;
 use App\Assignments\Support\PoolDefinition;
 use App\Domains\Bootstrappers\RegisterAssignables;
@@ -70,7 +70,7 @@ final class AutoAssignmentRegistryTest extends TestCase
     {
         $other = new class implements AssignedWorkProvider
         {
-            public function countFor(ActorIdentity $holder): int
+            public function countFor(AssigneeIdentity $holder): int
             {
                 return 7;
             }

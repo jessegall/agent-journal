@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Actors\Exceptions\ActorNotAllowed;
-use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\AgentSessions;
 use App\Agents\Actions\LaunchCredentials;
 use App\Agents\Actions\LaunchSessions;
@@ -18,6 +17,7 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\CredentialLookup;
 use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandTransactionMismatch;
 use Domain\Access\Models\User;
@@ -72,8 +72,8 @@ final class AgentRetirementTest extends TestCase
     {
         $session = $this->app->make(LaunchSessions::class)->launch($this->helper, TestSelections::of('claude-code'), TestSelections::requestId())->session;
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
-        $writer->assign(Task::factory()->create(['title' => 'One'])->assignmentIdentity(), ActorIdentity::of($this->helper));
-        $writer->assign(Task::factory()->create(['title' => 'Two'])->assignmentIdentity(), ActorIdentity::of($this->helper));
+        $writer->assign(Task::factory()->create(['title' => 'One'])->assignmentIdentity(), AssigneeIdentity::of($this->helper));
+        $writer->assign(Task::factory()->create(['title' => 'Two'])->assignmentIdentity(), AssigneeIdentity::of($this->helper));
 
         $result = $this->app->make(CommandBus::class)->run(new RetireAgent($this->helper->id));
 
@@ -139,7 +139,7 @@ final class AgentRetirementTest extends TestCase
     public function test_ending_a_session_keeps_the_agents_work(): void
     {
         $launched = $this->app->make(LaunchSessions::class)->launch($this->helper, TestSelections::of('claude-code'), TestSelections::requestId());
-        $this->app->make(AssignmentWriterInTransaction::class)->assign(Task::factory()->create(['title' => 'Kept'])->assignmentIdentity(), ActorIdentity::of($this->helper));
+        $this->app->make(AssignmentWriterInTransaction::class)->assign(Task::factory()->create(['title' => 'Kept'])->assignmentIdentity(), AssigneeIdentity::of($this->helper));
 
         $this->app->make(LaunchSessions::class)->end($launched->session);
 

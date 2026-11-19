@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Assignments\Contracts;
 
-use App\Actors\Support\ActorIdentity;
+use App\Assignments\Support\AssigneeIdentity;
 use Illuminate\Database\Query\Builder;
 
 /**
@@ -15,7 +15,7 @@ interface AssignmentQuery
     /**
      * The ids of the records of the type the holder holds.
      */
-    public function heldIds(string $type, ActorIdentity $holder): Builder;
+    public function heldIds(string $type, AssigneeIdentity $holder): Builder;
 
     /**
      * The ids of the records of the type anyone holds.

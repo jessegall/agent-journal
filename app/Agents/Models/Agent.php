@@ -9,6 +9,7 @@ use App\Actors\Contracts\SendsMessages;
 use App\Actors\Enums\ActorType;
 use App\Agents\Enums\AgentRole;
 use App\Assignments\Contracts\Assignee;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -59,6 +60,11 @@ final class Agent extends Model implements Assignee, ReadableModel, ReceivesMess
         $agents = self::query()->whereKey($agentIds)->readLimit(max(1, count($agentIds)))->get();
 
         return $agents->keyBy('id')->all();
+    }
+
+    public function assigneeIdentity(): AssigneeIdentity
+    {
+        return AssigneeIdentity::of($this);
     }
 
     public function actorType(): ActorType

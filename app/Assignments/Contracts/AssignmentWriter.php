@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Assignments\Contracts;
 
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Exceptions\AssigneeUnavailable;
 use App\Assignments\Exceptions\AssignmentConflict;
 use App\Assignments\Exceptions\AssignmentDenied;
 use App\Assignments\Exceptions\AssignmentRootFinished;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentGroup;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
@@ -32,9 +32,13 @@ interface AssignmentWriter
     /**
      * Gives an unheld record to the recipient; the same holder is unchanged, another holder is a conflict.
      */
-    public function assign(RecordIdentity $record, ActorIdentity $recipient): AssignmentResult;
+    public function assign(RecordIdentity $record, AssigneeIdentity $recipient): AssignmentResult;
 
-    public function reassign(RecordIdentity $record, AssignmentReference $expected, ActorIdentity $recipient): AssignmentResult;
+    public function reassign(
+        RecordIdentity $record,
+        AssignmentReference $expected,
+        AssigneeIdentity $recipient,
+    ): AssignmentResult;
 
     /**
      * Releases the record; a record nobody holds is unchanged.
@@ -48,12 +52,16 @@ interface AssignmentWriter
      *
      * @param  Closure(): AssignmentGroup  $records
      */
-    public function assignUnfinished(ActorIdentity $recipient, Closure $records): AssignmentResult;
+    public function assignUnfinished(AssigneeIdentity $recipient, Closure $records): AssignmentResult;
 
     /**
      * @param  Closure(): AssignmentGroup  $records
      */
-    public function reassignUnfinished(AssignmentReference $expectedRoot, ActorIdentity $recipient, Closure $records): AssignmentResult;
+    public function reassignUnfinished(
+        AssignmentReference $expectedRoot,
+        AssigneeIdentity $recipient,
+        Closure $records,
+    ): AssignmentResult;
 
     /**
      * @param  Closure(): AssignmentGroup  $records

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Actors\Support\ActorIdentity;
 use App\AgentRequests\Exceptions\LaunchSettingMissing;
 use App\AgentRequests\Support\EnvironmentCredentialSource;
+use App\Assignments\Support\AssigneeIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanType;
@@ -52,8 +52,8 @@ final class AssignedListCommandsTest extends TestCase
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
         $task = Task::factory()->create(['title' => 'Write the client']);
         $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
-        $held = $writer->assign($task->assignmentIdentity(), ActorIdentity::of($this->caller->agent))->outcomes[0]->current;
-        $writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->caller->agent));
+        $held = $writer->assign($task->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent))->outcomes[0]->current;
+        $writer->assign($plan->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent));
         $this->runCommandsAs($this->caller);
 
         $this->artisan('task:assigned')

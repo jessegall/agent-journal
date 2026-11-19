@@ -7,9 +7,9 @@ namespace Domain\Plans\Tests\Feature;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\CommandBus;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -74,7 +74,7 @@ final class PlanFinishCancelTest extends TestCase
     public function test_cancelling_keeps_every_task_and_assignment(): void
     {
         $plan = $this->startedPlan([TaskState::Open, TaskState::Started]);
-        $this->app->make(AssignmentWriterInTransaction::class)->assign($plan->assignmentIdentity(), new ActorIdentity(ActorType::User, $this->owner->id));
+        $this->app->make(AssignmentWriterInTransaction::class)->assign($plan->assignmentIdentity(), new AssigneeIdentity(ActorType::User->value, $this->owner->id));
         $assignments = AssignmentRecord::query()->withoutGlobalScopes()->count();
 
         $this->bus()->run(new CancelPlan($plan->id, 1, 'Superseded.'));

@@ -6,7 +6,6 @@ namespace Domain\Tasks\Tests\Feature;
 
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
-use App\Actors\Support\ActorIdentity;
 use App\Actors\Values\OwnerAuthority;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
@@ -14,6 +13,7 @@ use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\NumberedPage;
 use App\Bus\Contracts\CommandBus;
 use Carbon\CarbonImmutable;
@@ -63,14 +63,14 @@ final class TaskDetailsResolverTest extends TestCase
         $runner = $this->launch('Runner');
         $task = Task::factory()->create(['title' => 'Split work', 'brief' => 'Held by one, run by another.']);
         $this->asUser();
-        $this->app->make(AssignmentWriterInTransaction::class)->assign($task->assignmentIdentity(), ActorIdentity::of($holder));
+        $this->app->make(AssignmentWriterInTransaction::class)->assign($task->assignmentIdentity(), AssigneeIdentity::of($holder));
         $this->actAs($runner);
         $this->app->make(CommandBus::class)->run(new StartTask($task->id));
         $this->asUser();
 
         $details = $this->app->make(TaskDetailsResolver::class)->details($task->id, TaskView::Context);
 
-        $this->assertSame($holder->id, $details->holder->get()->actor()->id);
+        $this->assertSame($holder->id, $details->holder->get()->holder()->id);
         $this->assertSame([$runner->agent_id, 'Runner', 1, TaskWorkState::Active], [$details->execution?->actorId, $details->execution?->actorLabel, $details->execution?->runNumber, $details->execution?->workState]);
         $this->assertSame('Held by one, run by another.', $details->brief);
         $this->assertNull($this->app->make(TaskDetailsResolver::class)->details($task->id, TaskView::Summary)->brief);

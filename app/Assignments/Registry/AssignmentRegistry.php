@@ -214,10 +214,9 @@ final class AssignmentRegistry implements AssignmentProviders, AssignmentRegistr
      * @throws AssignmentTypeUnavailable
      * @throws AssignmentProviderInvalid
      */
-    public function assigneeProvider(ActorType $type): AssigneeProvider
+    public function assigneeProvider(string $type): AssigneeProvider
     {
-        $providerClass = $this->assigneeProviders[$type->value]
-            ?? throw AssignmentTypeUnavailable::forActorType($type);
+        $providerClass = $this->assigneeProviders[$type] ?? throw AssignmentTypeUnavailable::forType($type);
 
         return $this->build($providerClass, AssigneeProvider::class);
     }

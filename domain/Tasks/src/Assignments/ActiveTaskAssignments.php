@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Tasks\Assignments;
 
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignedWorkProvider;
 use App\Assignments\Contracts\AssignmentQuery;
+use App\Assignments\Support\AssigneeIdentity;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Models\Task;
 use Illuminate\Container\Attributes\Scoped;
@@ -19,7 +19,7 @@ final readonly class ActiveTaskAssignments implements AssignedWorkProvider
 {
     public function __construct(private AssignmentQuery $assignments) {}
 
-    public function countFor(ActorIdentity $holder): int
+    public function countFor(AssigneeIdentity $holder): int
     {
         return Task::query()
             ->unfinished()

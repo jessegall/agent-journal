@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Actors\Support\ActorIdentity;
+use App\Assignments\Support\AssigneeIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanType;
@@ -50,11 +50,11 @@ final class WorkListToolsTest extends TestCase
 
         foreach (['Write the tool', 'Test the tool'] as $title) {
             $task = Task::factory()->create(['title' => $title]);
-            $references[$task->id] = $this->writer->assign($task->assignmentIdentity(), ActorIdentity::of($this->caller->agent))->outcomes[0]->current->reference->id;
+            $references[$task->id] = $this->writer->assign($task->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent))->outcomes[0]->current->reference->id;
         }
 
         $other = TestLaunch::start();
-        $this->writer->assign(Task::factory()->create(['title' => 'Not yours'])->assignmentIdentity(), ActorIdentity::of($other->agent));
+        $this->writer->assign(Task::factory()->create(['title' => 'Not yours'])->assignmentIdentity(), AssigneeIdentity::of($other->agent));
 
         $result = $this->callMcpTool($this->caller, 'tasks_assigned')->assertJsonPath('result.isError', false)->json('result.structuredContent');
 
@@ -75,7 +75,7 @@ final class WorkListToolsTest extends TestCase
     public function test_a_held_plan_appears_in_plans_assigned_with_its_state_and_progress(): void
     {
         $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
-        $this->writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->caller->agent));
+        $this->writer->assign($plan->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent));
 
         $card = $this->callMcpTool($this->caller, 'plans_assigned')->json('result.structuredContent.cards.0');
 
@@ -98,7 +98,7 @@ final class WorkListToolsTest extends TestCase
 
         for ($number = 1; $number <= 20; $number++) {
             $task = Task::factory()->create(['title' => str_pad("Task {$number} ", 238, 'x')]);
-            $this->writer->assign($task->assignmentIdentity(), ActorIdentity::of($this->caller->agent));
+            $this->writer->assign($task->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent));
             $held[] = $task->id;
         }
 

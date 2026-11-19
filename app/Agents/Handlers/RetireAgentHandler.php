@@ -18,6 +18,7 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Policies\AgentPolicy;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Storage\AssignmentStore;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentFacts;
 use App\Assignments\Support\AssignmentResult;
 use App\Contracts\CommandHandler;
@@ -52,7 +53,7 @@ final readonly class RetireAgentHandler implements CommandHandler
 
         $target->retireAt(CarbonImmutable::now());
         $this->endSessionsOf($target);
-        $released = $this->store->releaseAll(ActorIdentity::of($target));
+        $released = $this->store->releaseAll(AssigneeIdentity::of($target));
         $this->facts->publish($caller, AssignmentReason::Retired, $released);
 
         return $released;

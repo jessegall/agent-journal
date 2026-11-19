@@ -8,6 +8,7 @@ use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentPool;
 use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\PoolMembers;
 use Domain\Tasks\Api\TaskType;
 use Domain\Tasks\Assignments\ActiveTaskAssignments;
@@ -57,7 +58,7 @@ final class TaskAssignerTest extends TestCase
         $this->hold($this->task(TaskState::Finished), $this->builder);
         $this->hold($this->task(TaskState::Open), $this->reviewer);
 
-        $this->assertSame(2, $this->app->make(ActiveTaskAssignments::class)->countFor($this->builder));
+        $this->assertSame(2, $this->app->make(ActiveTaskAssignments::class)->countFor(AssigneeIdentity::ofActorIdentity($this->builder)));
     }
 
     public function test_an_all_pool_gives_the_lowest_id_open_task_nobody_holds(): void
@@ -139,7 +140,10 @@ final class TaskAssignerTest extends TestCase
 
     private function hold(string $taskId, ActorIdentity $holder): void
     {
-        AssignmentRecord::holding(Task::query()->findOrFail($taskId)->assignmentIdentity(), $holder);
+        AssignmentRecord::holding(
+            Task::query()->findOrFail($taskId)->assignmentIdentity(),
+            AssigneeIdentity::ofActorIdentity($holder),
+        );
     }
 
     private static function pool(PoolMembers $members): AssignmentPool

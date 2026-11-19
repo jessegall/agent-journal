@@ -8,6 +8,7 @@ use App\Actors\Contracts\ReceivesMessages;
 use App\Actors\Contracts\SendsMessages;
 use App\Actors\Enums\ActorType;
 use App\Assignments\Contracts\Assignee;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -72,6 +73,11 @@ class User extends Authenticatable implements Assignee, MustVerifyEmail, Passkey
     public static function register(string $name, string $email, string $password): self
     {
         return self::query()->create(['name' => $name, 'email' => $email, 'password' => $password]);
+    }
+
+    public function assigneeIdentity(): AssigneeIdentity
+    {
+        return AssigneeIdentity::of($this);
     }
 
     public function actorType(): ActorType

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Assignments\Enums;
 
-use App\Actors\Support\ActorIdentity;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\DeclaresClassLevelAbilities;
 
 /**
@@ -21,7 +21,7 @@ enum AssignmentAbility: string implements DeclaresClassLevelAbilities
      * The ability a write needs: taking a record for oneself acquires it, giving it to another dispatches it, and
      * no recipient lets it go.
      */
-    public static function forRecipient(ActorIdentity $caller, ActorIdentity|null $recipient): self
+    public static function forRecipient(AssigneeIdentity $caller, AssigneeIdentity|null $recipient): self
     {
         if ($recipient === null) {
             return self::Unassign;

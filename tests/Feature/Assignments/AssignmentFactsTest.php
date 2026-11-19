@@ -12,6 +12,7 @@ use App\Assignments\Contracts\AssignmentWriter;
 use App\Assignments\Enums\AssignmentReason;
 use App\Assignments\Events\AssignmentsChanged;
 use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Records\Support\RecordIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -46,7 +47,7 @@ final class AssignmentFactsTest extends TestCase
 
     private User $owner;
 
-    private ActorIdentity $helper;
+    private AssigneeIdentity $helper;
 
     private RecordIdentity $task;
 
@@ -56,7 +57,7 @@ final class AssignmentFactsTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->helper = ActorIdentity::of(Agent::named('Helper', AgentRole::ReadOnlyHelper));
+        $this->helper = AssigneeIdentity::of(Agent::named('Helper', AgentRole::ReadOnlyHelper));
         $this->task = Task::factory()->create(['title' => 'Write the reader'])->assignmentIdentity();
         $this->startUserRequestAs($this->owner->id);
         $this->useTheApplicationsTransactionManager();

@@ -15,6 +15,7 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Assignments\Commands\AssignRecord;
 use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Bus\Contracts\CommandBus;
 use App\Bus\Exceptions\CommandRefused;
 use App\Bus\Exceptions\CommandReplacementRefused;
@@ -229,7 +230,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
         $task = Task::factory()->create(['title' => 'Held']);
         $this->startUserRequestAs(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);
-        $bus->run(new AssignRecord($task->assignmentIdentity(), ActorIdentity::of($helper)));
+        $bus->run(new AssignRecord($task->assignmentIdentity(), AssigneeIdentity::of($helper)));
 
         try {
             $bus->run(new RetireAgent($helper->id));

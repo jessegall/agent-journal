@@ -12,6 +12,7 @@ use App\Assignments\Exceptions\AssignmentDenied;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\AutoAssignmentDenied;
 use App\Assignments\Exceptions\AutoAssignmentPoolUnknown;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AutoAssignmentInput;
 use App\Assignments\Support\AutoAssignmentKey;
 use App\Assignments\Support\PoolDefinition;
@@ -38,7 +39,8 @@ final readonly class AutoAssignmentAdmission
     public function admitKey(AutoAssignmentKey $key): void
     {
         $this->access->requireWrite($this->actors->actor(), $key->actor);
-        $this->providers->assigneeProvider($key->actor->type)->requireEligible($key->actor);
+        $assignee = AssigneeIdentity::ofActorIdentity($key->actor);
+        $this->providers->assigneeProvider($assignee->type)->requireEligible($assignee);
     }
 
     /**

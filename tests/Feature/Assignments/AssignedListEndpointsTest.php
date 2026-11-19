@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Actors\Contracts\CurrentActorSetter;
-use App\Actors\Support\ActorIdentity;
+use App\Assignments\Support\AssigneeIdentity;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
 use Domain\Plans\Enums\PlanType;
@@ -51,9 +51,9 @@ final class AssignedListEndpointsTest extends TestCase
         $held = Task::factory()->create(['title' => 'Write the endpoint']);
         $others = Task::factory()->create(['title' => 'Not mine']);
         $plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
-        $writer->assign($held->assignmentIdentity(), ActorIdentity::of($this->caller->agent));
-        $writer->assign($others->assignmentIdentity(), ActorIdentity::of($this->other->agent));
-        $writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->caller->agent));
+        $writer->assign($held->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent));
+        $writer->assign($others->assignmentIdentity(), AssigneeIdentity::of($this->other->agent));
+        $writer->assign($plan->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent));
 
         $tasks = $this->listAs($this->caller, '/agent/tasks/assigned', ['perPage' => 10]);
         $plans = $this->listAs($this->caller, '/agent/plans/assigned', []);

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Domain\Plans\Http\Requests\Concerns;
 
 use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentReference;
 use App\Records\Support\RecordIdentity;
 use Domain\Plans\Models\Phase;
@@ -59,16 +59,16 @@ trait ReadsPlanWorkInput
         return new RecordIdentity($this->string('rootType')->toString(), $this->string('rootId')->lower()->toString());
     }
 
-    public function recipient(): ActorIdentity
+    public function recipient(): AssigneeIdentity
     {
-        return new ActorIdentity(ActorType::from($this->string('recipientType')->toString()), $this->string('recipientId')->lower()->toString());
+        return new AssigneeIdentity($this->string('recipientType')->toString(), $this->string('recipientId')->lower()->toString());
     }
 
     public function expectedRoot(): AssignmentReference
     {
         return new AssignmentReference(
             $this->string('assignmentId')->lower()->toString(),
-            new ActorIdentity(ActorType::from($this->string('holderType')->toString()), $this->string('holderId')->lower()->toString()),
+            new AssigneeIdentity($this->string('holderType')->toString(), $this->string('holderId')->lower()->toString()),
         );
     }
 }

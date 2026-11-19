@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\ActorStore;
 use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Records\Support\RecordIdentity;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\StartsAgentRequests;
@@ -26,7 +26,7 @@ final class SignedInScopeTest extends TestCase
     {
         parent::setUp();
 
-        AssignmentRecord::insertUnlessHeld(new RecordIdentity('tasks.task', TestIds::of(1)), new ActorIdentity(ActorType::Agent, TestIds::of(2)));
+        AssignmentRecord::insertUnlessHeld(new RecordIdentity('tasks.task', TestIds::of(1)), new AssigneeIdentity(ActorType::Agent->value, TestIds::of(2)));
     }
 
     public function test_a_signed_in_user_and_agent_see_assignments_and_the_system_sees_none(): void

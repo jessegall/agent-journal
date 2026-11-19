@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Assignments\Support;
 
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Exceptions\InvalidAssignmentIdentity;
 use Illuminate\Support\Str;
 
@@ -19,7 +18,7 @@ final readonly class AssignmentReference
      */
     public function __construct(
         public string $id,
-        public ActorIdentity $holder,
+        public AssigneeIdentity $holder,
     ) {
         if (! Str::isUlid($id)) {
             throw InvalidAssignmentIdentity::forReference($id);

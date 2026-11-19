@@ -8,10 +8,10 @@ use App\Actors\Contracts\AdmittedRecipients;
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\JournalAdmission;
 use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\Assignee;
 use App\Assignments\Contracts\AssigneeProvider;
 use App\Assignments\Exceptions\AssigneeUnavailable;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssigneeList;
 use App\Assignments\Support\AssigneeName;
 use App\Assignments\Support\Page;
@@ -32,7 +32,7 @@ final readonly class UserAssignees implements AssigneeProvider
     /**
      * @throws AssigneeUnavailable
      */
-    public function requireEligible(ActorIdentity $recipient): Assignee
+    public function requireEligible(AssigneeIdentity $recipient): Assignee
     {
         $this->actors->actor();
         $user = User::query()->whereKey($recipient->id)->sharedLock()->first()
@@ -46,16 +46,16 @@ final readonly class UserAssignees implements AssigneeProvider
     }
 
     /**
-     * @param  list<ActorIdentity>  $actors
+     * @param  list<AssigneeIdentity>  $actors
      * @return list<AssigneeName>
      */
     public function names(array $actors): array
     {
         $this->actors->actor();
-        $ids = array_values(array_unique(array_map(fn (ActorIdentity $actor) => $actor->id, $actors)));
+        $ids = array_values(array_unique(array_map(fn (AssigneeIdentity $actor) => $actor->id, $actors)));
 
         return array_values(User::query()->whereKey($ids)->readLimit(count($ids))->orderBy('id')->get()
-            ->map(fn (User $user) => new AssigneeName(ActorIdentity::of($user), $user->name))
+            ->map(fn (User $user) => new AssigneeName(AssigneeIdentity::of($user), $user->name))
             ->all());
     }
 
@@ -67,7 +67,7 @@ final readonly class UserAssignees implements AssigneeProvider
         $shownIds = array_slice($ids, 0, $page->limit);
 
         return new AssigneeList(
-            $this->names(array_map(fn (string $id) => new ActorIdentity(ActorType::User, $id), $shownIds)),
+            $this->names(array_map(fn (string $id) => new AssigneeIdentity(ActorType::User->value, $id), $shownIds)),
             $this->nextAfterId($shownIds, count($ids) > $page->limit),
         );
     }

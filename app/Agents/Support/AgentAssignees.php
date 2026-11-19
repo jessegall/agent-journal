@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Actors\Contracts\CurrentActor;
-use App\Actors\Support\ActorIdentity;
 use App\Agents\Exceptions\AgentNotAvailable;
 use App\Agents\Lifecycle\AgentLifecycle;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\Assignee;
 use App\Assignments\Contracts\AssigneeProvider;
 use App\Assignments\Exceptions\AssigneeUnavailable;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssigneeList;
 use App\Assignments\Support\AssigneeName;
 use App\Assignments\Support\Page;
@@ -30,7 +30,7 @@ final readonly class AgentAssignees implements AssigneeProvider
     /**
      * @throws AssigneeUnavailable
      */
-    public function requireEligible(ActorIdentity $recipient): Assignee
+    public function requireEligible(AssigneeIdentity $recipient): Assignee
     {
         $this->actors->actor();
 
@@ -42,16 +42,16 @@ final readonly class AgentAssignees implements AssigneeProvider
     }
 
     /**
-     * @param  list<ActorIdentity>  $actors
+     * @param  list<AssigneeIdentity>  $actors
      * @return list<AssigneeName>
      */
     public function names(array $actors): array
     {
         $this->actors->actor();
-        $ids = array_values(array_unique(array_map(fn (ActorIdentity $actor) => $actor->id, $actors)));
+        $ids = array_values(array_unique(array_map(fn (AssigneeIdentity $actor) => $actor->id, $actors)));
 
         return array_values(Agent::query()->whereKey($ids)->readLimit(count($ids))->orderBy('id')->get()
-            ->map(fn (Agent $agent) => new AssigneeName(ActorIdentity::of($agent), $agent->name))
+            ->map(fn (Agent $agent) => new AssigneeName(AssigneeIdentity::of($agent), $agent->name))
             ->all());
     }
 
@@ -66,7 +66,7 @@ final readonly class AgentAssignees implements AssigneeProvider
         $shown = $agents->take($page->limit);
 
         return new AssigneeList(
-            array_values($shown->map(fn (Agent $agent) => new AssigneeName(ActorIdentity::of($agent), $agent->name))->all()),
+            array_values($shown->map(fn (Agent $agent) => new AssigneeName(AssigneeIdentity::of($agent), $agent->name))->all()),
             $agents->count() > $page->limit ? $shown->last()?->id : null,
         );
     }

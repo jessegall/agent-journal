@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Assignments\Support;
 
-use App\Actors\Support\ActorIdentity;
-
 /**
  * Who holds a record, as a card shows it: the assignment, whose reference a deliberate change must name, and the
  * holder's display name.
@@ -17,7 +15,7 @@ final readonly class AssignmentHolder
         public string $name,
     ) {}
 
-    public function actor(): ActorIdentity
+    public function holder(): AssigneeIdentity
     {
         return $this->assignment->holder();
     }

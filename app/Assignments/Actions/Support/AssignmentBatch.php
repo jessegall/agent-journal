@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Assignments\Actions\Support;
 
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentProviders;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Storage\AssignmentStore;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentChange;
 use App\Assignments\Support\AssignmentGroup;
 use App\Assignments\Support\AssignmentOutcome;
@@ -62,7 +62,7 @@ final readonly class AssignmentBatch
     /**
      * Gives the record to the recipient: fills it when unheld, replaces another holder, leaves the same holder.
      */
-    public function giveTo(RecordIdentity $record, ActorIdentity $recipient): AssignmentResult
+    public function giveTo(RecordIdentity $record, AssigneeIdentity $recipient): AssignmentResult
     {
         $current = $this->store->lockCurrent($record);
 

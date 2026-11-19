@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Domain\Plans\Tests\Feature;
 
-use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Support\OpenTiming;
 use App\Processes\Values\TimingVerdict;
@@ -50,7 +50,7 @@ final class PhaseTimingTest extends TestCase
         $plan->addPhase('Build')->addTasks(array_map(fn (Task $task): string => $task->id, $this->tasks));
         $this->startUserRequestAs(TestIds::of(7));
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
-        $writer->assign($plan->assignmentIdentity(), ActorIdentity::of($this->agent));
+        $writer->assign($plan->assignmentIdentity(), AssigneeIdentity::of($this->agent));
     }
 
     public function test_the_plans_domain_fills_the_timing_seam(): void

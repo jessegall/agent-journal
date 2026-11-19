@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Assignments\Support;
 
-use App\Actors\Support\ActorIdentity;
 use App\Records\Support\RecordIdentity;
 
 /**
@@ -17,7 +16,7 @@ final readonly class Assignment
         public AssignmentReference $reference,
     ) {}
 
-    public function holder(): ActorIdentity
+    public function holder(): AssigneeIdentity
     {
         return $this->reference->holder;
     }

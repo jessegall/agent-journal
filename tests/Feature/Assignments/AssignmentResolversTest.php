@@ -6,13 +6,13 @@ namespace Tests\Feature\Assignments;
 
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorContextMissing;
-use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssigneeResolver;
 use App\Assignments\Contracts\AssignmentResolver;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\InvalidAssignmentPage;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Page;
 use App\Records\Support\RecordIdentity;
 use Domain\Access\Models\User;
@@ -38,7 +38,7 @@ final class AssignmentResolversTest extends TestCase
 
     private User $owner;
 
-    private ActorIdentity $helper;
+    private AssigneeIdentity $helper;
 
     protected function setUp(): void
     {
@@ -46,7 +46,7 @@ final class AssignmentResolversTest extends TestCase
 
         $this->owner = User::factory()->create(['name' => 'Jesse']);
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->helper = ActorIdentity::of(Agent::named('Helper', AgentRole::ReadOnlyHelper));
+        $this->helper = AssigneeIdentity::of(Agent::named('Helper', AgentRole::ReadOnlyHelper));
         $this->startUserRequestAs($this->owner->id);
     }
 
@@ -101,7 +101,7 @@ final class AssignmentResolversTest extends TestCase
 
     public function test_names_come_from_each_actor_types_owner(): void
     {
-        $names = $this->app->make(AssigneeResolver::class)->names([$this->helper, ActorIdentity::of($this->owner)]);
+        $names = $this->app->make(AssigneeResolver::class)->names([$this->helper, AssigneeIdentity::of($this->owner)]);
         $users = $this->app->make(AssigneeResolver::class)->eligible(ActorType::User, new Page());
 
         $this->assertEqualsCanonicalizing(['Helper', 'Jesse'], array_map(fn ($name) => $name->name, $names));

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Assignments\Support;
 
-use App\Actors\Enums\ActorType;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -16,7 +15,7 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class AssignmentData extends Data
 {
     public function __construct(
-        public readonly ActorType $type,
+        public readonly string $type,
         public readonly string $id,
         public readonly string $name,
         public readonly string $reference,
@@ -25,8 +24,8 @@ final class AssignmentData extends Data
     public static function ofHolder(AssignmentHolder $holder): self
     {
         return self::from([
-            'type' => $holder->actor()->type,
-            'id' => (string) $holder->actor()->id,
+            'type' => $holder->holder()->type,
+            'id' => (string) $holder->holder()->id,
             'name' => $holder->name,
             'reference' => (string) $holder->reference()->id,
         ]);
@@ -37,6 +36,6 @@ final class AssignmentData extends Data
      */
     public function label(): string
     {
-        return "{$this->type->value} {$this->id} {$this->name}";
+        return "{$this->type} {$this->id} {$this->name}";
     }
 }

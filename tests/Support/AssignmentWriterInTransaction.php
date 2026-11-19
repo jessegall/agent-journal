@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Actions\WriteAssignments;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentReference;
 use App\Assignments\Support\AssignmentResult;
 use App\Records\Support\RecordIdentity;
@@ -21,12 +21,12 @@ final readonly class AssignmentWriterInTransaction implements AssignmentWriter
 {
     public function __construct(private WriteAssignments $writer, private AssignmentTransaction $transaction) {}
 
-    public function assign(RecordIdentity $record, ActorIdentity $recipient): AssignmentResult
+    public function assign(RecordIdentity $record, AssigneeIdentity $recipient): AssignmentResult
     {
         return $this->transaction->run(fn () => $this->writer->assign($record, $recipient));
     }
 
-    public function reassign(RecordIdentity $record, AssignmentReference $expected, ActorIdentity $recipient): AssignmentResult
+    public function reassign(RecordIdentity $record, AssignmentReference $expected, AssigneeIdentity $recipient): AssignmentResult
     {
         return $this->transaction->run(fn () => $this->writer->reassign($record, $expected, $recipient));
     }
@@ -36,12 +36,12 @@ final readonly class AssignmentWriterInTransaction implements AssignmentWriter
         return $this->transaction->run(fn () => $this->writer->unassign($record, $expected));
     }
 
-    public function assignUnfinished(ActorIdentity $recipient, Closure $records): AssignmentResult
+    public function assignUnfinished(AssigneeIdentity $recipient, Closure $records): AssignmentResult
     {
         return $this->transaction->run(fn () => $this->writer->assignUnfinished($recipient, $records));
     }
 
-    public function reassignUnfinished(AssignmentReference $expectedRoot, ActorIdentity $recipient, Closure $records): AssignmentResult
+    public function reassignUnfinished(AssignmentReference $expectedRoot, AssigneeIdentity $recipient, Closure $records): AssignmentResult
     {
         return $this->transaction->run(fn () => $this->writer->reassignUnfinished($expectedRoot, $recipient, $records));
     }

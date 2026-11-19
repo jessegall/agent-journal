@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Mcp;
 
-use App\Actors\Support\ActorIdentity;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Mcp\Support\CapabilitiesResolver;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -45,10 +45,10 @@ final class OrientationToolsTest extends TestCase
         $writer = $this->app->make(AssignmentWriterInTransaction::class);
 
         foreach (['One', 'Two', 'Three'] as $title) {
-            $writer->assign(Task::factory()->create(['title' => $title])->assignmentIdentity(), ActorIdentity::of($this->caller->agent));
+            $writer->assign(Task::factory()->create(['title' => $title])->assignmentIdentity(), AssigneeIdentity::of($this->caller->agent));
         }
 
-        $writer->assign(Task::factory()->create(['title' => 'Not yours'])->assignmentIdentity(), ActorIdentity::of($this->other->agent));
+        $writer->assign(Task::factory()->create(['title' => 'Not yours'])->assignmentIdentity(), AssigneeIdentity::of($this->other->agent));
     }
 
     public function test_overview_read_counts_only_the_callers_held_tasks_with_a_next_action_to_tasks_assigned(): void

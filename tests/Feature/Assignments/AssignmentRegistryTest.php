@@ -88,7 +88,7 @@ final class AssignmentRegistryTest extends TestCase
             new AssigneeRegistration(ActorType::User, $provider::class, UserActivity::class),
         );
 
-        $this->assertSame($provider, $this->registry->assigneeProvider(ActorType::User));
+        $this->assertSame($provider, $this->registry->assigneeProvider(ActorType::User->value));
         $this->expectException(AssigneeTypeRepeated::class);
 
         $this->registry->registerAssignees(
@@ -100,7 +100,7 @@ final class AssignmentRegistryTest extends TestCase
     {
         $this->assertThrows(fn () => $this->registry->recordProvider('tests.record'), AssignmentTypeUnavailable::class);
         $this->assertThrows(
-            fn () => $this->registry->assigneeProvider(ActorType::Agent),
+            fn () => $this->registry->assigneeProvider(ActorType::Agent->value),
             AssignmentTypeUnavailable::class,
         );
     }

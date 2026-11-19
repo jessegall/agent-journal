@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assignments;
 
-use App\Actors\Support\ActorIdentity;
 use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentWriter;
@@ -13,6 +12,7 @@ use App\Assignments\Exceptions\AssignmentConflict;
 use App\Assignments\Exceptions\AssignmentGroupTooLarge;
 use App\Assignments\Exceptions\AssignmentRootFinished;
 use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentGroup;
 use App\Assignments\Support\AssignmentReference;
 use App\Records\Exceptions\RecordUnavailable;
@@ -39,9 +39,9 @@ final class AssignmentCascadeTest extends TestCase
 
     private const array TABLES = ['users', 'agents', 'tasks', 'plans', 'assignments'];
 
-    private ActorIdentity $builder;
+    private AssigneeIdentity $builder;
 
-    private ActorIdentity $other;
+    private AssigneeIdentity $other;
 
     private Plan $plan;
 
@@ -58,8 +58,8 @@ final class AssignmentCascadeTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
-        $this->builder = ActorIdentity::of(Agent::named('Builder', AgentRole::ReadOnlyHelper));
-        $this->other = ActorIdentity::of(Agent::named('Other', AgentRole::ReadOnlyHelper));
+        $this->builder = AssigneeIdentity::of(Agent::named('Builder', AgentRole::ReadOnlyHelper));
+        $this->other = AssigneeIdentity::of(Agent::named('Other', AgentRole::ReadOnlyHelper));
         $this->plan = Plan::factory()->create(['title' => 'Release', 'type' => PlanType::Build]);
         $this->open = Task::factory()->create(['title' => 'Open']);
         $this->finished = Task::factory()->create(['title' => 'Finished']);
@@ -124,7 +124,7 @@ final class AssignmentCascadeTest extends TestCase
         ]);
     }
 
-    private function holderOf(RecordIdentity $record): ActorIdentity
+    private function holderOf(RecordIdentity $record): AssigneeIdentity
     {
         $row = AssignmentRecord::query()->where('record_type', $record->type)->where('record_id', $record->id)->sole();
 

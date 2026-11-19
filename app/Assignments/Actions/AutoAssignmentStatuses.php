@@ -15,6 +15,7 @@ use App\Assignments\Exceptions\AssignmentPoolUnavailable;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
 use App\Assignments\Exceptions\AutoAssignmentPoolUnreadable;
 use App\Assignments\Models\AutoAssignment;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssignmentTotals;
 use App\Assignments\Support\AutoAssignmentFact;
 use App\Assignments\Support\AutoAssignmentStatus;
@@ -84,7 +85,7 @@ final readonly class AutoAssignmentStatuses
             return $this->status($fact, AutoAssignmentState::TooLarge, $pool, None::create());
         }
 
-        $held = $this->work->count($fact->key->assignableType, $actor);
+        $held = $this->work->count($fact->key->assignableType, AssigneeIdentity::ofActorIdentity($actor));
         $room = min($fact->size, max(0, $this->room->available($fact, $held)));
         $totals = $this->access->mayReadTotals($this->actors->actor(), $actor)
             ? Some::create(new AssignmentTotals($held, $room))

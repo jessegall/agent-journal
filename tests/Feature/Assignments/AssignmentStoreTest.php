@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Exceptions\AssignmentRetryExhausted;
 use App\Assignments\Exceptions\AssignmentTransactionRequired;
 use App\Assignments\Models\AssignmentRecord;
 use App\Assignments\Storage\AssignmentStore;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Records\Support\RecordIdentity;
 use Exception;
 use Illuminate\Database\Connection;
@@ -38,17 +38,17 @@ final class AssignmentStoreTest extends TestCase
 
     private RecordIdentity $task;
 
-    private ActorIdentity $builder;
+    private AssigneeIdentity $builder;
 
-    private ActorIdentity $reviewer;
+    private AssigneeIdentity $reviewer;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->task = new RecordIdentity('tasks.task', TestIds::of(12));
-        $this->builder = new ActorIdentity(ActorType::Agent, TestIds::of(7));
-        $this->reviewer = new ActorIdentity(ActorType::Agent, TestIds::of(8));
+        $this->builder = new AssigneeIdentity(ActorType::Agent->value, TestIds::of(7));
+        $this->reviewer = new AssigneeIdentity(ActorType::Agent->value, TestIds::of(8));
         $this->startUserRequestAs(TestIds::of(1));
     }
 

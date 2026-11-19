@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Assignments\Contracts;
 
 use App\Actors\Enums\ActorType;
-use App\Actors\Support\ActorIdentity;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\AssigneeList;
 use App\Assignments\Support\AssigneeName;
 use App\Assignments\Support\AssignmentHolders;
@@ -19,7 +19,7 @@ use App\Records\Support\RecordIdentity;
 interface AssigneeResolver
 {
     /**
-     * @param  list<ActorIdentity>  $actors
+     * @param  list<AssigneeIdentity>  $actors
      * @return list<AssigneeName>
      */
     public function names(array $actors): array;

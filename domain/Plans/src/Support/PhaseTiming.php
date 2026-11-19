@@ -6,8 +6,8 @@ namespace Domain\Plans\Support;
 
 use App\Actors\Contracts\CurrentActor;
 use App\Actors\Contracts\WorkStacks;
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Contracts\AssignmentResolver;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Values\TimingVerdict;
 use Domain\Plans\Enums\PlanState;
@@ -36,7 +36,7 @@ final readonly class PhaseTiming implements VerificationTiming
         }
 
         $caller = $this->actors->actor();
-        $heldIds = $this->assignments->allRecordIdsFor(Plan::LINK_TYPE, ActorIdentity::of($caller));
+        $heldIds = $this->assignments->allRecordIdsFor(Plan::LINK_TYPE, AssigneeIdentity::of($caller));
         $started = Plan::query()->amongIds($heldIds)->inStates([PlanState::Started])->readLimit(500)->get();
         foreach ($started as $plan) {
             $verdict = $this->verdictOf($plan);

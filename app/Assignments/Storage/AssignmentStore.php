@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Assignments\Storage;
 
-use App\Actors\Support\ActorIdentity;
 use App\Assignments\Enums\AssignmentOutcomeType;
 use App\Assignments\Exceptions\AssignmentTransactionRequired;
 use App\Assignments\Models\AssignmentRecord;
+use App\Assignments\Support\AssigneeIdentity;
 use App\Assignments\Support\Assignment;
 use App\Assignments\Support\AssignmentChange;
 use App\Assignments\Support\AssignmentOutcome;
@@ -44,7 +44,7 @@ final readonly class AssignmentStore
      * another transaction made first. The unique record key decides the winner without aborting this transaction; a
      * winner this snapshot cannot see raises a serialization failure, and the transaction runs again.
      */
-    public function assignIfUnheld(RecordIdentity $record, ActorIdentity $holder): Assignment
+    public function assignIfUnheld(RecordIdentity $record, AssigneeIdentity $holder): Assignment
     {
         $this->requireTransaction();
         AssignmentRecord::insertUnlessHeld($record, $holder);
@@ -55,7 +55,7 @@ final readonly class AssignmentStore
     /**
      * Replaces the record's assignment with a new row for the holder, so the old reference no longer matches.
      */
-    public function replace(Assignment $current, ActorIdentity $holder): Assignment
+    public function replace(Assignment $current, AssigneeIdentity $holder): Assignment
     {
         $this->requireTransaction();
         AssignmentRecord::query()->whereKey($current->reference->id)->delete();
@@ -73,7 +73,7 @@ final readonly class AssignmentStore
      * Removes every assignment the actor holds, of every record type, without asking any owner, for Core's retirement
      * of that actor.
      */
-    public function releaseAll(ActorIdentity $holder): AssignmentResult
+    public function releaseAll(AssigneeIdentity $holder): AssignmentResult
     {
         $this->requireTransaction();
         $rows = AssignmentRecord::query()->heldForRetirement($holder)->readAll('every assignment the retiring holder holds is released')->orderBy('id')->lockForUpdate()->get();
