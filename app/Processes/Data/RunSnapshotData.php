@@ -6,11 +6,13 @@ namespace App\Processes\Data;
 
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * The whole current state of one run with the number of the last live update it includes; a client that missed an
  * update starts again from a snapshot.
  */
+#[TypeScript]
 final class RunSnapshotData extends Data
 {
     /**

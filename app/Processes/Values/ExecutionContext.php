@@ -17,7 +17,8 @@ final readonly class ExecutionContext
      * @param  array<string, string>  $environment  the trusted environment variables
      * @param  array<string, string>  $programs  program name => resolved executable path
      * @param  list<string>  $positional  $1, $2 ... in order
-     * @param  list<string>  $aliases  the ids of the saved aliases whose bodies this command runs inside, outermost first
+     * @param  list<string>  $aliases  the ids of the saved aliases whose bodies this command runs inside, outermost
+     *   first
      * @param  bool  $pipefail  whether a pipeline fails when any member fails, not only the last
      * @param  int  $lastStatus  the status $? reads
      */

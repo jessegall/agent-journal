@@ -118,7 +118,16 @@ final class AgentDriverLedgerTest extends TestCase
         $this->expectExceptionMessage('/elsewhere');
 
         $this->asOwner(
-            new OpenAgentRuntime($this->agent()->id, $host->hostId, '/elsewhere', 'claude-code', '2.1.323', 'claude', DriverType::Process, 'claude-opus-5-5'),
+            new OpenAgentRuntime(
+                $this->agent()->id,
+                $host->hostId,
+                '/elsewhere',
+                'claude-code',
+                '2.1.323',
+                'claude',
+                DriverType::Process,
+                'claude-opus-5-5',
+            ),
         );
     }
 
@@ -330,7 +339,13 @@ final class AgentDriverLedgerTest extends TestCase
 
         try {
             $this->asSystem(
-                new ReportRuntimeActivity($host->hostId, $opened->runtimeId, RuntimeActivity::Idle, HoldReason::None, 1),
+                new ReportRuntimeActivity(
+                    $host->hostId,
+                    $opened->runtimeId,
+                    RuntimeActivity::Idle,
+                    HoldReason::None,
+                    1,
+                ),
             );
             $this->fail('A stale report was applied.');
         } catch (HostReportRefused) {
@@ -451,6 +466,26 @@ final class AgentDriverLedgerTest extends TestCase
 
         $this->assertSame(SessionStatus::Ended, AgentSession::query()->findOrFail($opened->sessionId)->status);
         $this->assertSame(RequestProgress::Applied, $stop->fresh()?->progress);
+    }
+
+    public function test_a_host_report_of_unavailable_leaves_the_request_unavailable_and_a_failure_stays_failed(): void
+    {
+        [$host, $opened] = $this->openRuntime();
+        $unavailable = $this->deliver($opened, 'host-restarted', 'Hello');
+        $failed = $this->deliver($opened, 'host-refused', 'Hello again');
+        $this->asSystem(new ClaimDriverRequests($host->hostId, 10));
+        $this->reportProgress($host->hostId, $unavailable->requestId, RequestProgress::Unavailable);
+        $this->reportProgress($host->hostId, $failed->requestId, RequestProgress::Failed);
+
+        $request = DriverRequest::query()->findOrFail($unavailable->requestId);
+
+        $this->assertSame(RequestProgress::Unavailable, $request->progress);
+        $this->assertSame(RequestOutcome::EntryUnavailable, $request->outcome);
+        $this->assertSame(RequestProgress::Failed, DriverRequest::query()->findOrFail($failed->requestId)->progress);
+
+        $this->asOwner(new RetryDriverRequest($request->id, $request->row_version, 'the runtime is back'));
+
+        $this->assertSame(RequestProgress::Accepted, $request->fresh()?->progress);
     }
 
     public function test_retrying_a_failed_request_starts_a_new_attempt_and_refuses_reports_of_the_old_one(): void
@@ -749,7 +784,15 @@ final class AgentDriverLedgerTest extends TestCase
 
         $attempt = $request->attempt_version;
         $this->asSystem(
-            new ReportRequestProgress($host->hostId, $request->id, $attempt, RequestProgress::Applying, null, null, $progress),
+            new ReportRequestProgress(
+                $host->hostId,
+                $request->id,
+                $attempt,
+                RequestProgress::Applying,
+                null,
+                null,
+                $progress,
+            ),
         );
 
         $request->refresh();
@@ -765,7 +808,17 @@ final class AgentDriverLedgerTest extends TestCase
     {
         $host = $this->enrollHost();
         $opened = $this->asOwner(
-            new OpenAgentRuntime($this->agent()->id, $host->hostId, self::FOLDER, 'claude-code', '2.1.323', 'claude', DriverType::Process, 'claude-opus-5-5', firstMessage: $firstMessage),
+            new OpenAgentRuntime(
+                $this->agent()->id,
+                $host->hostId,
+                self::FOLDER,
+                'claude-code',
+                '2.1.323',
+                'claude',
+                DriverType::Process,
+                'claude-opus-5-5',
+                firstMessage: $firstMessage,
+            ),
         );
 
         return [$host, $opened];
@@ -821,6 +874,15 @@ final class AgentDriverLedgerTest extends TestCase
      * @param  Command<TResult>  $command
      * @return TResult
      */
+    private function reportProgress(string $hostId, string $requestId, RequestProgress $progress): void
+    {
+        $request = DriverRequest::query()->findOrFail($requestId);
+
+        $this->asSystem(new ReportRequestProgress(
+            $hostId, $request->id, $request->attempt_version, $progress, null, RequestOutcome::EntryUnavailable,
+        ));
+    }
+
     private function asOwner(Command $command): mixed
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'), new OwnerAuthority('test'));

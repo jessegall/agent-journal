@@ -155,7 +155,12 @@ final class SharingListenerTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->set(TestActors::user(9), new OwnerAuthority('test'));
         $this->app->make(CommandBus::class)->run(
-            new CreateDocument('Tricks', 'Inert', "<script>alert(1)</script>\n\n[run](javascript:alert(1)) [site](https://example.com) [other](/s/elsewhere)\n"),
+            new CreateDocument(
+                'Tricks',
+                'Inert',
+                "<script>alert(1)</script>\n\n[run](javascript:alert(1)) [site](https://example.com) "
+                    ."[other](/s/elsewhere)\n",
+            ),
         );
         $this->app->make(CurrentActorSetter::class)->clear();
         $token = $this->activeShareOf(Document::query()->where('number', 2)->sole()->shareIdentity());

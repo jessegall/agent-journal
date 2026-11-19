@@ -206,7 +206,8 @@ final class Comment extends Model implements ReadableModel, Shareable
     {
         $subject = $this->subject();
 
-        return $subject instanceof TextAnchor ? "on {$subject->versionLabel}, lines {$subject->firstLine}-{$subject->lastLine}" : 'on the whole record';
+        return $subject instanceof TextAnchor
+            ? "on {$subject->versionLabel}, lines {$subject->firstLine}-{$subject->lastLine}" : 'on the whole record';
     }
 
     /**

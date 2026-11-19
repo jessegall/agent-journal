@@ -111,7 +111,12 @@ final class DockTest extends TestCase
         );
         $this->app->instance(
             AgentContext::class,
-            new AgentContext($session->agent_id, $session->id, new SignedCall(TestIds::of(501), CarbonImmutable::now(), str_repeat('0', 64)), null),
+            new AgentContext(
+                $session->agent_id,
+                $session->id,
+                new SignedCall(TestIds::of(501), CarbonImmutable::now(), str_repeat('0', 64)),
+                null,
+            ),
         );
     }
 

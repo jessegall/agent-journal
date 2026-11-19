@@ -38,10 +38,30 @@ final readonly class DocumentRecords implements DocumentResolver
         $searched = $filters->revisions ? 'revisions' : 'currentRevision';
         $matching = fn (Builder|HasOneOrMany $revisions) => self::closedMatching($revisions, $filters->query);
         $documents = Document::query()->sharedPublished()->inAttention($filters->attention->state())
-            ->with(['currentRevision' => fn (BelongsTo $revision) => $revision->when(! $filters->searches(), fn (Builder $card) => $card->forCards())])
-            ->when($filters->searches() && $filters->revisions, fn (Builder $query) => $query->whereHas('revisions', $matching)->with(['revisions' => $matching]))
-            ->when($filters->searches() && ! $filters->revisions, fn (Builder $query) => $query->whereIn('current_revision_id', DocumentRevision::query()->whereNotNull('closed_at')->matchingText($filters->query)->select('id')))
-            ->when($filters->after !== '', fn (Builder $query) => $query->where('id', '<', $filters->after), fn (Builder $query) => $query->offset(($filters->page - 1) * $size))
+            ->with(
+                [
+                    'currentRevision' => fn (BelongsTo $revision) => $revision->when(
+                        ! $filters->searches(),
+                        fn (Builder $card) => $card->forCards(),
+                    ),
+                ],
+            )
+            ->when(
+                $filters->searches() && $filters->revisions,
+                fn (Builder $query) => $query->whereHas('revisions', $matching)->with(['revisions' => $matching]),
+            )
+            ->when(
+                $filters->searches() && ! $filters->revisions,
+                fn (Builder $query) => $query->whereIn(
+                    'current_revision_id',
+                    DocumentRevision::query()->whereNotNull('closed_at')->matchingText($filters->query)->select('id'),
+                ),
+            )
+            ->when(
+                $filters->after !== '',
+                fn (Builder $query) => $query->where('id', '<', $filters->after),
+                fn (Builder $query) => $query->offset(($filters->page - 1) * $size),
+            )
             ->orderByDesc('id')
             ->limit($size + 1)
             ->get();
@@ -49,7 +69,12 @@ final readonly class DocumentRecords implements DocumentResolver
 
         return DocumentList::from([
             'rows' => array_values(
-                $page->map(fn (Document $document) => $filters->searches() ? $document->hit($filters->query, $document->foundRevision($searched)) : $document->card())->all(),
+                $page->map(
+                    fn (Document $document) => $filters->searches() ? $document->searchResult(
+                        $filters->query,
+                        $document->foundRevision($searched),
+                    ) : $document->card(),
+                )->all(),
             ),
             'page' => $filters->page,
             'hasNextPage' => $documents->count() > $size,
@@ -102,9 +127,7 @@ final readonly class DocumentRecords implements DocumentResolver
 
     public function show(int $number): DocumentView
     {
-        $document = self::findPublished($number);
-
-        return $document?->view() ?? throw DocumentMissing::numbered($number);
+        return self::published($number)->view();
     }
 
     /**
@@ -139,15 +162,16 @@ final readonly class DocumentRecords implements DocumentResolver
     }
 
     /**
-     * The published document with that number, with its current revision; none when it is missing or hidden.
+     * The published document with that number, with its current revision; refused when it is missing or hidden.
+     *
+     * @throws DocumentMissing
      */
-    private static function findPublished(int $number): Document|null
-    {
-        return Document::query()->sharedPublished()->with('currentRevision')->where('number', $number)->first();
-    }
-
     private static function published(int $number): Document
     {
-        return self::findPublished($number) ?? throw DocumentMissing::numbered($number);
+        return Document::query()
+            ->sharedPublished()
+            ->with('currentRevision')
+            ->where('number', $number)
+            ->firstOr(fn () => throw DocumentMissing::numbered($number));
     }
 }

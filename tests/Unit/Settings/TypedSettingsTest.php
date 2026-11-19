@@ -47,7 +47,13 @@ final class TypedSettingsTest extends TestCase
             fn () => DecimalSetting::make('weight', 'Weight', Decimal::parse('1'), DecimalSetting::MOST_DIGITS + 1, 2),
         ];
         yield 'too many fractional digits' => [
-            fn () => DecimalSetting::make('weight', 'Weight', Decimal::parse('1'), 20, DecimalSetting::MOST_FRACTIONAL_DIGITS + 1),
+            fn () => DecimalSetting::make(
+                'weight',
+                'Weight',
+                Decimal::parse('1'),
+                20,
+                DecimalSetting::MOST_FRACTIONAL_DIGITS + 1,
+            ),
         ];
         yield 'more fractional digits than digits' => [
             fn () => DecimalSetting::make('weight', 'Weight', Decimal::parse('1'), 2, 3),

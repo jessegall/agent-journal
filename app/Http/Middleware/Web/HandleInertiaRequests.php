@@ -65,9 +65,14 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             ...SharedData::from(
-                ['name' => $this->appName, 'currentUser' => CurrentUserData::from($user->get()), 'canShare' => $this->sharing->mayManage(ActorContext::forUser($user->get()->id))],
+                [
+                    'name' => $this->appName,
+                    'currentUser' => CurrentUserData::from($user->get()),
+                    'canShare' => $this->sharing->mayManage(ActorContext::forUser($user->get()->id)),
+                ],
             )->toArray(),
-            // The navigation the signed-in user may see, and its counts after the page, so a slow count never holds it up.
+            // The navigation the signed-in user may see, and its counts after the page, so a slow count never holds it
+            // up.
             'navigation' => fn () => $this->navigation->tree($request),
             'navigationCounts' => $this->inertia->defer(fn () => $this->navigation->counts(), 'navigation-counts'),
         ];

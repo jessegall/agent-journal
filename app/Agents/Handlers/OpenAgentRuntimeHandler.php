@@ -84,7 +84,9 @@ final readonly class OpenAgentRuntimeHandler implements CommandHandler
         $parent = AgentSession::query()->findOrFail($sessionId);
         $parentRuntime = AgentRuntime::query()->where('agent_session_id', $parent->id)->first();
 
-        if ($parentRuntime === null || $parentRuntime->host_id !== $command->hostId || ! str_starts_with($command->folder, rtrim($parentRuntime->canonical_folder, '/'))) {
+        if ($parentRuntime === null
+            || $parentRuntime->host_id !== $command->hostId
+            || ! str_starts_with($command->folder, rtrim($parentRuntime->canonical_folder, '/'))) {
             throw LaunchRootRefused::foreignToAgent();
         }
 

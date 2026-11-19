@@ -36,7 +36,11 @@ final class ReadinessDiscoveryTest extends TestCase
         $this->sendMcp(
             $this->launch,
             'initialize',
-            ['protocolVersion' => '2025-11-25', 'capabilities' => (object) [], 'clientInfo' => ['name' => 'test', 'version' => '1']],
+            [
+                'protocolVersion' => '2025-11-25',
+                'capabilities' => (object) [],
+                'clientInfo' => ['name' => 'test', 'version' => '1'],
+            ],
         )->assertOk();
         $this->sendMcp($this->launch, 'ping')->assertOk();
 

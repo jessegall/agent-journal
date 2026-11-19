@@ -106,7 +106,10 @@ final readonly class ShareScope
         array $seen,
     ): array {
         $links = $budget->run(
-            fn () => Link::query()->touchingKey($source->type, $source->id)->orderBy('id')->readLimit($budget->mostLinks + 1)->get(),
+            fn () => Link::query()->touchingKey(
+                $source->type,
+                $source->id,
+            )->orderBy('id')->readLimit($budget->mostLinks + 1)->get(),
         );
         $budget->chargeLinks($links->count());
         $budget->chargeRecords($links->count());
@@ -116,7 +119,9 @@ final readonly class ShareScope
             [$type, $id] = $link->otherSideFromKey($source->type, $source->id);
             $target = new RecordIdentity($type, $id);
 
-            if (! in_array($this->key($target), $seen, true) && $this->records->has($type) && $this->records->get($type)->advertisesAnyOf($capabilities)) {
+            if (! in_array($this->key($target), $seen, true)
+                && $this->records->has($type)
+                && $this->records->get($type)->advertisesAnyOf($capabilities)) {
                 $linkOfTarget[$type][$id] = $link->id;
             }
         }

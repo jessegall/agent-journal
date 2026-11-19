@@ -18,7 +18,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
  * skills_list: the skill catalogue, as skill:list shows it.
  */
 #[Name('skills_list')]
-#[Description('Every skill of the catalogue: key, name, owner, source (shipped or stored), current revision of a stored skill and the digest of its text.')]
+#[Description('Every skill of the catalogue: key, name, owner, source (shipped or stored), current revision of a '
+    .'stored skill and the digest of its text.')]
 #[IsReadOnly]
 final class SkillsListTool extends JournalReadTool
 {
@@ -34,7 +35,19 @@ final class SkillsListTool extends JournalReadTool
     protected function read(ToolArguments $arguments): ToolResult
     {
         return ToolResult::ok(
-            ['skills' => array_map(fn (SkillEntry $skill) => ['key' => $skill->key->key, 'name' => $skill->name, 'owner' => $skill->owner, 'source' => $skill->origin->value, 'revision' => $skill->revision, 'digest' => $skill->rendered->digest], $this->skills->all())],
+            [
+                'skills' => array_map(
+                    fn (SkillEntry $skill) => [
+                        'key' => $skill->key->key,
+                        'name' => $skill->name,
+                        'owner' => $skill->owner,
+                        'source' => $skill->origin->value,
+                        'revision' => $skill->revision,
+                        'digest' => $skill->rendered->digest,
+                    ],
+                    $this->skills->all(),
+                ),
+            ],
             [],
         );
     }

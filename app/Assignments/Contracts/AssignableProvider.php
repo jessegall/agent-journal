@@ -18,7 +18,8 @@ interface AssignableProvider
     public function requireAssignable(RecordIdentity $record): Assignable;
 
     /**
-     * The visible ones of at most 100 records, in the order given; a hidden or missing record is left out without saying
+     * The visible ones of at most 100 records, in the order given; a hidden or missing record is left out without
+     * saying
      * why.
      *
      * @param  list<RecordIdentity>  $records

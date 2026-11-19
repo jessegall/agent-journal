@@ -357,7 +357,10 @@ final class CoreCommandsTest extends CommandBusTestCase
             array_map(fn ($entry) => $entry->middlewareClass(), $registry->middlewareFor($command)),
             true,
         ) && count(
-            array_filter($registry->middlewareFor($command), fn ($entry) => $entry->middlewareClass() === RecordAll::class),
+            array_filter(
+                $registry->middlewareFor($command),
+                fn ($entry) => $entry->middlewareClass() === RecordAll::class,
+            ),
         ) === 2));
 
         sort($covered);

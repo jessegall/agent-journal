@@ -20,7 +20,8 @@ use Laravel\Mcp\Server\Attributes\Name;
  * skills_edit: saves a new revision of a stored skill against the revision read, as skill:edit does.
  */
 #[Name('skills_edit')]
-#[Description('Save a new revision of a stored skill against the revision you read; what you leave out stays as it was. A stale expected_revision is refused naming the latest.')]
+#[Description('Save a new revision of a stored skill against the revision you read; what you leave out stays as it '
+    .'was. A stale expected_revision is refused naming the latest.')]
 final class SkillEditTool extends JournalWriteTool
 {
     public function __construct(
@@ -56,7 +57,12 @@ final class SkillEditTool extends JournalWriteTool
         );
 
         return ToolResult::ok(
-            $this->authoring->receipt($this->commands->run(new ReviseSkill($skill->id, $arguments->positiveInteger('expected_revision'), $requestId, $draft)), $requestId),
+            $this->authoring->receipt(
+                $this->commands->run(
+                    new ReviseSkill($skill->id, $arguments->positiveInteger('expected_revision'), $requestId, $draft),
+                ),
+                $requestId,
+            ),
             [],
         );
     }

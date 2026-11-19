@@ -54,7 +54,10 @@ final class PlanWorkingStateTest extends TestCase
         $this->assertSame([WorkingOnPlanStateReference::TYPE_KEY], $this->frameTypes());
         $this->assertSame(
             $plan->id,
-            $this->app->make(CurrentState::class)->of($this->target, WorkingOnPlanStateReference::TYPE_KEY)->get()->subject->id,
+            $this->app->make(CurrentState::class)->of(
+                $this->target,
+                WorkingOnPlanStateReference::TYPE_KEY,
+            )->get()->subject->id,
         );
     }
 

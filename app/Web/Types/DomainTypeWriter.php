@@ -44,7 +44,13 @@ final readonly class DomainTypeWriter implements Writer
 
         return [
             ...$files,
-            new WriteableFile(self::COMPATIBILITY_FILE, "// Generated; re-exports every owner's types for the pages that still import this file.\n".implode("\n", $exports)."\n"),
+            new WriteableFile(
+                self::COMPATIBILITY_FILE,
+                "// Generated; re-exports every owner's types for the pages that still import this file.\n".implode(
+                    "\n",
+                    $exports,
+                )."\n",
+            ),
         ];
     }
 

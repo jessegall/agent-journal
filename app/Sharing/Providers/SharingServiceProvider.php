@@ -62,7 +62,17 @@ final class SharingServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->commands(
-                [RequestShareCommand::class, ShareStatusCommand::class, ShareListCommand::class, ShareCreateCommand::class, ShareRevokeCommand::class, ShareUrlCommand::class, ConfigureShareGatewayCommand::class, SuperviseSharingCommand::class, SharingHealthCommand::class],
+                [
+                    RequestShareCommand::class,
+                    ShareStatusCommand::class,
+                    ShareListCommand::class,
+                    ShareCreateCommand::class,
+                    ShareRevokeCommand::class,
+                    ShareUrlCommand::class,
+                    ConfigureShareGatewayCommand::class,
+                    SuperviseSharingCommand::class,
+                    SharingHealthCommand::class,
+                ],
             );
         }
     }

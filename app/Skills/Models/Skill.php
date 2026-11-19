@@ -169,7 +169,12 @@ final class Skill extends Model implements Numbered, ReadableModel
     public static function activeIn(string $environment, int $limit): array
     {
         return array_values(
-            self::query()->visibleIn($environment)->whereNull('retired_at')->orderBy('key')->readLimit($limit)->get()->all(),
+            self::query()->visibleIn($environment)
+                ->whereNull('retired_at')
+                ->orderBy('key')
+                ->readLimit($limit)
+                ->get()
+                ->all(),
         );
     }
 

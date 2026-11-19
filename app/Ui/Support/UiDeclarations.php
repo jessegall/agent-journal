@@ -245,7 +245,8 @@ final readonly class UiDeclarations
     }
 
     /**
-     * Refuses a page key that is also an action name, and two routes of one domain that answer the same method and URLs.
+     * Refuses a page key that is also an action name, and two routes of one domain that answer the same method and
+     * URLs.
      */
     private function refuseRepeatedRoutes(): void
     {
@@ -281,7 +282,8 @@ final readonly class UiDeclarations
     }
 
     /**
-     * Refuses two windows or sections whose flat browser prop names come out the same once dots and dashes become underscores.
+     * Refuses two windows or sections whose flat browser prop names come out the same once dots and dashes become
+     * underscores.
      */
     private function refuseRepeatedPropNames(): void
     {

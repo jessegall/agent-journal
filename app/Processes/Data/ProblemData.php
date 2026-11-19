@@ -6,11 +6,13 @@ namespace App\Processes\Data;
 
 use App\Processes\Values\OutputProblem;
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One problem of a part's output as a person reads it: stable code, stream and byte range, the reader revision, the
  * explanation and the next action.
  */
+#[TypeScript]
 final class ProblemData extends Data
 {
     public function __construct(

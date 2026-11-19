@@ -70,17 +70,28 @@ final class ShareRegistriesTest extends TestCase
         $records = $this->app->make(ShareRecordRegistry::class);
 
         $this->assertThrows(
-            fn () => $records->register(new ShareRecordRegistration('tests.thing', PamphletShareProvider::class, PamphletShareProvider::class, [])),
+            fn () => $records->register(
+                new ShareRecordRegistration(
+                    'tests.thing',
+                    PamphletShareProvider::class,
+                    PamphletShareProvider::class,
+                    [],
+                ),
+            ),
             ShareRecordInvalid::class,
             'does not implement Shareable',
         );
         $this->assertThrows(
-            fn () => $records->register(new ShareRecordRegistration('tests.thing', Pamphlet::class, Pamphlet::class, [])),
+            fn () => $records->register(
+                new ShareRecordRegistration('tests.thing', Pamphlet::class, Pamphlet::class, []),
+            ),
             ShareRecordInvalid::class,
             'is no share record provider',
         );
         $this->assertThrows(
-            fn () => $records->register(new ShareRecordRegistration('Tests\\Thing', Pamphlet::class, PamphletShareProvider::class, [])),
+            fn () => $records->register(
+                new ShareRecordRegistration('Tests\\Thing', Pamphlet::class, PamphletShareProvider::class, []),
+            ),
             InvalidRecordIdentity::class,
         );
     }

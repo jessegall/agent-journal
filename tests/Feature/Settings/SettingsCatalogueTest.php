@@ -101,7 +101,7 @@ final class SettingsCatalogueTest extends TestCase
         $this->assertSame('integerChoice', $catalogue['groups'][0]['settings'][1]['constraints']['type']);
     }
 
-    public function test_an_invalid_stored_value_shows_as_invalid_and_a_reset_at_the_shown_revision_restores_the_default(): void
+    public function test_an_invalid_stored_value_shows_invalid_and_a_reset_at_its_revision_restores_the_default(): void
     {
         $this->storeDirectly('Reviews', fn (SettingsDocument $document) => $document
             ->withSetting(new EncodedSetting('retry_limit', EncodedValue::of('secret text')))
@@ -134,7 +134,9 @@ final class SettingsCatalogueTest extends TestCase
     {
         $this->storeDirectly(
             'Core',
-            fn (SettingsDocument $document) => $document->withSetting(new EncodedSetting('display_name', EncodedValue::of([1, 2]))),
+            fn (SettingsDocument $document) => $document->withSetting(
+                new EncodedSetting('display_name', EncodedValue::of([1, 2])),
+            ),
         );
 
         $core = $this->catalogue('Core');
@@ -158,7 +160,9 @@ final class SettingsCatalogueTest extends TestCase
 
         $this->storeDirectly(
             'Reviews',
-            fn (SettingsDocument $document) => $document->withToggle(new EncodedToggle('review', EncodedValue::of('off'))),
+            fn (SettingsDocument $document) => $document->withToggle(
+                new EncodedToggle('review', EncodedValue::of('off')),
+            ),
         );
 
         $review = $this->catalogue('Reviews')['groups'][1];
@@ -173,7 +177,9 @@ final class SettingsCatalogueTest extends TestCase
     {
         $this->storeDirectly(
             'Reviews',
-            fn (SettingsDocument $document) => $document->withSetting(new EncodedSetting('retry_limit', EncodedValue::of(6))),
+            fn (SettingsDocument $document) => $document->withSetting(
+                new EncodedSetting('retry_limit', EncodedValue::of(6)),
+            ),
         );
 
         $this->assertSame(1, $this->readCounts(fn () => $this->catalogue('Reviews'))->queriesRun);

@@ -87,13 +87,22 @@ final readonly class BindingRules
 
         if ($concreteOwner !== $userOwner) {
             return [
-                $registration->violation($userOwner, $concreteOwner, "the target {$registration->concrete} belongs to {$concreteOwner}"),
+                $registration->violation(
+                    $userOwner,
+                    $concreteOwner,
+                    "the target {$registration->concrete} belongs to {$concreteOwner}",
+                ),
             ];
         }
 
-        if ($abstractOwner !== $userOwner && ! ($abstractOwner === 'Core' && $this->isCoreExport($registration->abstract))) {
+        if ($abstractOwner !== $userOwner
+            && ! ($abstractOwner === 'Core' && $this->isCoreExport($registration->abstract))) {
             return [
-                $registration->violation($userOwner, $abstractOwner, "{$abstractOwner} owns it; only Core's public contracts are filled by another owner"),
+                $registration->violation(
+                    $userOwner,
+                    $abstractOwner,
+                    "{$abstractOwner} owns it; only Core's public contracts are filled by another owner",
+                ),
             ];
         }
 
@@ -112,7 +121,9 @@ final readonly class BindingRules
             ...self::PER_REQUEST_VALUES,
             ...array_map(
                 fn (BindingRegistration $registration) => $registration->abstract,
-                array_values(array_filter($registrations, fn (BindingRegistration $registration) => $registration->isScoped)),
+                array_values(
+                    array_filter($registrations, fn (BindingRegistration $registration) => $registration->isScoped),
+                ),
             ),
         ];
         $class = $singleton->concrete ?? $singleton->abstract;
@@ -123,7 +134,11 @@ final readonly class BindingRules
         }
 
         return [
-            $singleton->violation($this->ownerNameOf($singleton->file), $this->ownerNameOfClass($captured), "the singleton {$class} keeps the per-request {$captured} beyond its request"),
+            $singleton->violation(
+                $this->ownerNameOf($singleton->file),
+                $this->ownerNameOfClass($captured),
+                "the singleton {$class} keeps the per-request {$captured} beyond its request",
+            ),
         ];
     }
 
@@ -147,7 +162,9 @@ final readonly class BindingRules
             $dependency = $type->getName();
             $target = self::bindTargetOf($dependency) ?? $dependency;
 
-            if (in_array($dependency, $scoped, true) || in_array($target, $scoped, true) || self::isScopedClass($target)) {
+            if (in_array($dependency, $scoped, true)
+                || in_array($target, $scoped, true)
+                || self::isScopedClass($target)) {
                 return $dependency;
             }
 
@@ -162,7 +179,8 @@ final readonly class BindingRules
     }
 
     /**
-     * Every binding the owners state: #[Bind], #[Scoped] and #[Singleton] attributes, and class-string calls in providers.
+     * Every binding the owners state: #[Bind], #[Scoped] and #[Singleton] attributes, and class-string calls in
+     * providers.
      *
      * @return list<BindingRegistration>
      */
@@ -257,7 +275,10 @@ final readonly class BindingRules
 
     private static function classStringOf(Node|null $argument): string|null
     {
-        if (! $argument instanceof ClassConstFetch || ! $argument->class instanceof Name || ! $argument->name instanceof Node\Identifier || $argument->name->toString() !== 'class') {
+        if (! $argument instanceof ClassConstFetch
+            || ! $argument->class instanceof Name
+            || ! $argument->name instanceof Node\Identifier
+            || $argument->name->toString() !== 'class') {
             return null;
         }
 

@@ -63,7 +63,16 @@ use PhpOption\Option;
  * @property Carbon|null $updated_at
  */
 #[Fillable(
-    ['state', 'root_type', 'root_id', 'owner_user_id', 'configuration_version', 'scope_version', 'expires_at', 'terminal_at'],
+    [
+        'state',
+        'root_type',
+        'root_id',
+        'owner_user_id',
+        'configuration_version',
+        'scope_version',
+        'expires_at',
+        'terminal_at',
+    ],
 )]
 #[Hidden(['token_digest', 'token_ciphertext'])]
 final class Share extends Model implements Numbered, ReadableModel
@@ -277,7 +286,8 @@ final class Share extends Model implements Numbered, ReadableModel
     public function isLastLiveOfItsConfiguration(): bool
     {
         return $this->share_gateway_configuration_id !== null
-            && ! self::query()->liveNow()->servedBy($this->share_gateway_configuration_id)->whereKeyNot($this->id)->exists();
+
+                    && ! self::query()->liveNow()->servedBy($this->share_gateway_configuration_id)->whereKeyNot($this->id)->exists();
     }
 
     /**
@@ -288,7 +298,9 @@ final class Share extends Model implements Numbered, ReadableModel
     public static function lockAwaitingGatewayOf(string $configurationId): array
     {
         return array_values(
-            self::query()->servedBy($configurationId)->awaitingGateway()->orderBy('id')->lockForUpdate()->readLimit(self::MOST_LIVE)->get()->all(),
+            self::query()->servedBy($configurationId)->awaitingGateway()->orderBy('id')->lockForUpdate()->readLimit(
+                self::MOST_LIVE,
+            )->get()->all(),
         );
     }
 
@@ -324,7 +336,14 @@ final class Share extends Model implements Numbered, ReadableModel
     public static function configurationsToReopen(): array
     {
         return array_values(
-            array_unique(array_map(strval(...), self::query()->liveNow()->whereNotNull('share_gateway_configuration_id')->readLimit(self::MOST_LIVE)->pluck('share_gateway_configuration_id')->all())),
+            array_unique(
+                array_map(
+                    strval(...),
+                    self::query()->liveNow()->whereNotNull('share_gateway_configuration_id')->readLimit(
+                        self::MOST_LIVE,
+                    )->pluck('share_gateway_configuration_id')->all(),
+                ),
+            ),
         );
     }
 
@@ -337,7 +356,9 @@ final class Share extends Model implements Numbered, ReadableModel
     public static function unendedOf(string $configurationId): array
     {
         return array_values(
-            self::query()->servedBy($configurationId)->unended()->orderBy('id')->readLimit(self::MOST_LIVE)->get()->all(),
+            self::query()->servedBy($configurationId)->unended()->orderBy('id')->readLimit(
+                self::MOST_LIVE,
+            )->get()->all(),
         );
     }
 
@@ -349,7 +370,9 @@ final class Share extends Model implements Numbered, ReadableModel
     public static function lockUnendedOf(string $configurationId): array
     {
         return array_values(
-            self::query()->servedBy($configurationId)->unended()->orderBy('id')->lockForUpdate()->readLimit(self::MOST_LIVE)->get()->all(),
+            self::query()->servedBy($configurationId)->unended()->orderBy('id')->lockForUpdate()->readLimit(
+                self::MOST_LIVE,
+            )->get()->all(),
         );
     }
 
@@ -361,7 +384,9 @@ final class Share extends Model implements Numbered, ReadableModel
     public static function lockPendingOf(string $configurationId): array
     {
         return array_values(
-            self::query()->servedBy($configurationId)->inState(ShareState::Pending)->orderBy('id')->lockForUpdate()->readLimit(self::MOST_LIVE)->get()->all(),
+            self::query()->servedBy($configurationId)->inState(
+                ShareState::Pending,
+            )->orderBy('id')->lockForUpdate()->readLimit(self::MOST_LIVE)->get()->all(),
         );
     }
 
@@ -406,7 +431,8 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public static function lockProposal(string $id): self
     {
-        return self::query()->whereKey($id)->proposedNow()->lockForUpdate()->first() ?? throw ShareProposalUnavailable::for($id);
+        return self::query()->whereKey($id)->proposedNow()->lockForUpdate()->first()
+            ?? throw ShareProposalUnavailable::for($id);
     }
 
     /**
@@ -492,7 +518,9 @@ final class Share extends Model implements Numbered, ReadableModel
     public static function openProposalsFor(RecordIdentity $root): array
     {
         return array_values(
-            self::query()->ofRoot($root)->proposedNow()->orderByDesc('id')->readLimit(self::MOST_PROPOSED)->get()->all(),
+            self::query()->ofRoot($root)->proposedNow()->orderByDesc('id')->readLimit(
+                self::MOST_PROPOSED,
+            )->get()->all(),
         );
     }
 
@@ -544,12 +572,16 @@ final class Share extends Model implements Numbered, ReadableModel
      */
     public function ownerUrl(): Option
     {
-        if (! $this->isReadableNow() || $this->token_ciphertext === null || $this->share_gateway_configuration_id === null) {
+        if (! $this->isReadableNow()
+            || $this->token_ciphertext === null
+            || $this->share_gateway_configuration_id === null) {
             return None::create();
         }
 
         return Option::fromValue(
-            ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id)->shareUrl($this->token_ciphertext),
+            ShareGatewayConfiguration::query()->findOrFail(
+                $this->share_gateway_configuration_id,
+            )->shareUrl($this->token_ciphertext),
         );
     }
 

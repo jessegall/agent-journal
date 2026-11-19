@@ -38,7 +38,15 @@ final readonly class ListedTasks implements TaskListResolver
 
         return new TaskList(
             array_values(
-                $tasks->map(fn (Task $task) => new TaskCard($task->id, $task->title, $task->state, $holders->forRecord($task->assignmentIdentity()), $executions[$task->id]))->all(),
+                $tasks->map(
+                    fn (Task $task) => new TaskCard(
+                        $task->id,
+                        $task->title,
+                        $task->state,
+                        $holders->forRecord($task->assignmentIdentity()),
+                        $executions[$task->id],
+                    ),
+                )->all(),
             ),
             $filters->page,
             $total,

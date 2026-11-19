@@ -97,7 +97,10 @@ final class AssignmentStoreTest extends TestCase
         $this->inTransaction(fn (AssignmentStore $store) => $store->assignIfUnheld($this->task, $this->builder));
         $this->inTransaction(fn (AssignmentStore $store) => $store->assignIfUnheld($plan, $this->builder));
         $kept = $this->inTransaction(
-            fn (AssignmentStore $store) => $store->assignIfUnheld(TestActors::record('tasks.task', 13), $this->reviewer),
+            fn (AssignmentStore $store) => $store->assignIfUnheld(
+                TestActors::record('tasks.task', 13),
+                $this->reviewer,
+            ),
         );
 
         $result = $this->inTransaction(fn (AssignmentStore $store) => $store->releaseAll($this->builder));
@@ -107,7 +110,7 @@ final class AssignmentStoreTest extends TestCase
         $this->assertSame([$kept->reference->id], AssignmentRecord::query()->pluck('id')->all());
     }
 
-    public function test_the_store_refuses_work_outside_a_transaction_and_the_transaction_refuses_another_isolation(): void
+    public function test_the_store_refuses_work_outside_a_transaction_or_in_another_isolation(): void
     {
         $this->assertThrows(
             fn () => $this->app->make(AssignmentStore::class)->lockCurrent($this->task),
@@ -134,7 +137,15 @@ final class AssignmentStoreTest extends TestCase
 
             if ($attempts === 1) {
                 $other->table('assignments')->insert(
-                    ['id' => strtolower((string) Str::ulid()), 'record_type' => 'tasks.task', 'record_id' => $this->task->id, 'holder_type' => 'agent', 'holder_id' => $this->reviewer->id, 'created_at' => now(), 'updated_at' => now()],
+                    [
+                        'id' => strtolower((string) Str::ulid()),
+                        'record_type' => 'tasks.task',
+                        'record_id' => $this->task->id,
+                        'holder_type' => 'agent',
+                        'holder_id' => $this->reviewer->id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ],
                 );
             }
 

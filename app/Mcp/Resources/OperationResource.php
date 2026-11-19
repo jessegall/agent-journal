@@ -18,7 +18,8 @@ use Laravel\Mcp\Support\UriTemplate;
  * next outcomes.
  */
 #[Name('operation')]
-#[Description('What became of your write sent with this request_key, and its outcomes; add ?continuation= for the next ones.')]
+#[Description('What became of your write sent with this request_key, and its outcomes; add ?continuation= for the '
+    .'next ones.')]
 #[MimeType('application/json')]
 final class OperationResource extends JournalResource implements HasUriTemplate
 {
@@ -39,7 +40,10 @@ final class OperationResource extends JournalResource implements HasUriTemplate
         $continuation = is_string($query['continuation'] ?? null) ? $query['continuation'] : null;
 
         return Response::text(
-            json_encode($this->operations->read($requestKey, $continuation)->structuredContent(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            json_encode(
+                $this->operations->read($requestKey, $continuation)->structuredContent(),
+                JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
+            ),
         );
     }
 }

@@ -71,7 +71,11 @@ final readonly class FileRules
             ),
             $this->rule(
                 'touch',
-                $this->paths()->withOptions(OptionGrammar::valued(OperandType::Text, '-t'), OptionGrammar::valued(OperandType::Text, '-d', '--date'), OptionGrammar::valued(OperandType::Path, '-r', '--reference')),
+                $this->paths()->withOptions(
+                    OptionGrammar::valued(OperandType::Text, '-t'),
+                    OptionGrammar::valued(OperandType::Text, '-d', '--date'),
+                    OptionGrammar::valued(OperandType::Path, '-r', '--reference'),
+                ),
                 $write,
                 '-a',
                 '-m',
@@ -79,7 +83,10 @@ final readonly class FileRules
             ),
             $this->rule(
                 'chmod',
-                ArgumentGrammar::operands(OperandType::Text, OperandType::Path)->repeating()->endingOptionsAtDoubleDash(),
+                ArgumentGrammar::operands(
+                    OperandType::Text,
+                    OperandType::Path,
+                )->repeating()->endingOptionsAtDoubleDash(),
                 $write,
                 '-R',
                 '-v',
@@ -131,14 +138,21 @@ final readonly class FileRules
                 'core.sed.print',
                 new ProgramSpellings('sed'),
                 [],
-                ArgumentGrammar::operands(OperandType::Pattern, OperandType::Path)->repeating()->endingOptionsAtDoubleDash()->withOptions(...$sedOptions),
+                ArgumentGrammar::operands(
+                    OperandType::Pattern,
+                    OperandType::Path,
+                )->repeating()->endingOptionsAtDoubleDash()->withOptions(...$sedOptions),
                 CommandClassSet::of(CommandClass::Read),
             ),
             CommandRule::forProgram(
                 'core.sed.in-place',
                 new ProgramSpellings('sed'),
                 [],
-                ArgumentGrammar::optionWithOperands('-i', OperandType::Pattern, OperandType::Path)->repeating()->endingOptionsAtDoubleDash()->withOptions(...$sedOptions),
+                ArgumentGrammar::optionWithOperands(
+                    '-i',
+                    OperandType::Pattern,
+                    OperandType::Path,
+                )->repeating()->endingOptionsAtDoubleDash()->withOptions(...$sedOptions),
                 CommandClassSet::of(CommandClass::Read, CommandClass::Edit),
             ),
         ];

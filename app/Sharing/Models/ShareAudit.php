@@ -120,8 +120,19 @@ final class ShareAudit extends Model implements ReadableModel
         return array_values(self::query()
             ->whereNotNull('share_id')
             ->where(fn (Builder $query) => $query
-                ->where(fn (Builder $reads_) => $reads_->whereIn('type', $reads)->where('created_at', '<', $now->subDays(self::READ_DAYS)))
-                ->orWhere(fn (Builder $lifecycle) => $lifecycle->whereNotIn('type', $reads)->whereIn('share_id', $endedLongAgo)))
+                ->where(
+                    fn (Builder $reads_) => $reads_->whereIn('type', $reads)->where(
+                        'created_at',
+                        '<',
+                        $now->subDays(self::READ_DAYS),
+                    ),
+                )
+                ->orWhere(
+                    fn (Builder $lifecycle) => $lifecycle->whereNotIn('type', $reads)->whereIn(
+                        'share_id',
+                        $endedLongAgo,
+                    ),
+                ))
             ->orderBy('id')->lockForUpdate()->readLimit($most)->get()->all());
     }
 
@@ -136,7 +147,8 @@ final class ShareAudit extends Model implements ReadableModel
     }
 
     /**
-     * The row as the share's owner reads it: a public read shows an unknown visitor, any other step its actor's role: the
+     * The row as the share's owner reads it: a public read shows an unknown visitor, any other step its actor's role:
+     * the
      * owner, the requesting agent or the system.
      */
     public function entry(): ShareAuditEntry

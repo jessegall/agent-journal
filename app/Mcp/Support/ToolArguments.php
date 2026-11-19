@@ -87,7 +87,8 @@ final readonly class ToolArguments
         $value = $this->arguments[$name] ?? null;
 
         if (! is_int($value) || $value < 1 || $value > $largest) {
-            throw ToolArgumentInvalid::for($name, $largest === PHP_INT_MAX ? 'a whole number of at least 1' : "a whole number from 1 to {$largest}");
+            throw ToolArgumentInvalid::for($name, $largest === PHP_INT_MAX ? 'a whole number of at least 1' : 'a '
+                ."whole number from 1 to {$largest}");
         }
 
         return $value;

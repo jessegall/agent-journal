@@ -27,7 +27,8 @@ final readonly class SettingRegistry
     /**
      * @param  array<string, SettingsDefinition>  $definitions
      * @param  array<int, SettingAddress>  $addresses  keyed by the object id of each registered setting and group
-     * @param  array<int, GroupDeclaration>  $groups  the group of each registered setting, keyed by the setting's object id
+     * @param  array<int, GroupDeclaration>  $groups  the group of each registered setting, keyed by the setting's
+     *   object id
      */
     private function __construct(private array $definitions, private array $addresses, private array $groups) {}
 
@@ -104,7 +105,8 @@ final readonly class SettingRegistry
      */
     public function ownerOf(Setting|GroupDeclaration $handle): SettingAddress
     {
-        return $this->addresses[spl_object_id($handle)] ?? throw SettingHandleUnknown::for($handle::class, $handle->key());
+        return $this->addresses[spl_object_id($handle)]
+            ?? throw SettingHandleUnknown::for($handle::class, $handle->key());
     }
 
     /**
@@ -114,7 +116,8 @@ final readonly class SettingRegistry
      */
     public function groupOf(Setting $setting): GroupDeclaration
     {
-        return $this->groups[spl_object_id($setting)] ?? throw SettingHandleUnknown::for($setting::class, $setting->key());
+        return $this->groups[spl_object_id($setting)]
+            ?? throw SettingHandleUnknown::for($setting::class, $setting->key());
     }
 
     /**

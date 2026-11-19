@@ -68,7 +68,9 @@ final readonly class SkillAuthoring
 
         return $this->container->make(
             SkillResolver::class,
-        )->find($key)->origin === SkillOrigin::Shipped ? throw ShippedSkillReadOnly::for($key->key) : throw SkillMissing::for($key);
+        )->find($key)->origin === SkillOrigin::Shipped
+            ? throw ShippedSkillReadOnly::for($key->key)
+            : throw SkillMissing::for($key);
     }
 
     /**
@@ -99,7 +101,13 @@ final readonly class SkillAuthoring
             fn ($section) => new SectionDraft(
                 Str::slug($section->heading),
                 $section->heading,
-                trim($section->lastLine > $section->firstLine ? $text->lines($section->firstLine + 1, $section->lastLine) : '', "\n"),
+                trim(
+                    $section->lastLine > $section->firstLine ? $text->lines(
+                        $section->firstLine + 1,
+                        $section->lastLine,
+                    ) : '',
+                    "\n",
+                ),
             ),
             array_filter($headings, fn ($section) => $section->level === $top),
         ));

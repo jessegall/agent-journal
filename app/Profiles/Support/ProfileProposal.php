@@ -5,20 +5,23 @@ declare(strict_types=1);
 namespace App\Profiles\Support;
 
 use App\Agents\Enums\ExecutionModeType;
-use App\Agents\Values\ResourceRequest;
-use App\Agents\Values\StopCondition;
-use App\Operations\Enums\AccessType;
-use App\Operations\Enums\ResourceAreaType;
+use App\Profiles\Data\PolicyOverrideData;
+use App\Profiles\Data\ProfileConfigurationData;
+use App\Profiles\Data\ProposedProfileData;
+use App\Profiles\Data\ProposedStopConditionData;
 use App\Profiles\Exceptions\ProfileProposalRefused;
 use App\Profiles\Values\ProfileBase;
 use App\Profiles\Values\ProfileKey;
 use App\Programs\Enums\HookProgram;
+use Spatie\LaravelData\Exceptions\CannotCastEnum;
+use Spatie\LaravelData\Exceptions\CannotCreateData;
 use TypeError;
 use ValueError;
 
 /**
  * The validated, typed form of a proposed profile configuration such as config/profiles.php: its revision, the
- * project's overrides per built-in base, and each profile. A proposal is not live authority until an owner activates it. No
+ * project's overrides per built-in base, and each profile. A proposal is not live authority until an owner activates
+ * it. No
  * untyped value passes beyond this class.
  */
 final readonly class ProfileProposal
@@ -48,20 +51,24 @@ final readonly class ProfileProposal
     public static function fromConfiguration(array $configuration): self
     {
         try {
+            $written = ProfileConfigurationData::from($configuration);
             $overrides = [];
 
-            foreach ($configuration['base_overrides'] ?? [] as $base => $override) {
-                $overrides[] = new BaseOverride(ProfileBase::of((string) $base), self::override($override));
+            foreach ($written->baseOverrides as $base => $override) {
+                $overrides[] = new BaseOverride(
+                    ProfileBase::of((string) $base),
+                    PolicyOverrideData::from($override)->toPolicyOverride(),
+                );
             }
 
             $profiles = [];
 
-            foreach ($configuration['profiles'] ?? [] as $key => $profile) {
+            foreach ($written->profiles as $key => $profile) {
                 $profiles[] = self::profile((string) $key, $profile);
             }
 
-            return new self((int) ($configuration['revision'] ?? 0), $overrides, $profiles);
-        } catch (TypeError|ValueError $failure) {
+            return new self($written->revision, $overrides, $profiles);
+        } catch (TypeError|ValueError|CannotCreateData|CannotCastEnum $failure) {
             throw ProfileProposalRefused::unreadable($failure);
         }
     }
@@ -102,69 +109,25 @@ final readonly class ProfileProposal
             }
         }
 
-        $program = $profile['program'] ?? null;
-        $container = $profile['container'] ?? null;
+        $fields = ProposedProfileData::from($profile);
 
         return new ProposedProfile(
             ProfileKey::from($key),
-            (string) ($profile['label'] ?? $key),
-            ProfileBase::of((string) $profile['base']),
-            (string) ($profile['instructions'] ?? ''),
-            (string) $profile['model'],
-            $program === null ? null : HookProgram::from((string) $program),
-            (bool) ($profile['program_pinned'] ?? false),
-            self::texts($profile['allowed_models'] ?? []),
-            array_key_exists('skill_allowlist', $profile) ? self::texts($profile['skill_allowlist']) : null,
-            self::texts($profile['required_skills'] ?? []),
-            $container === null ? null : self::executionMode((string) $container),
-            self::override($profile),
-            array_map(self::stopCondition(...), array_values($profile['stop_conditions'] ?? [])),
-        );
-    }
-
-    /**
-     * @param  array<string, mixed>  $override
-     */
-    private static function override(array $override): PolicyOverride
-    {
-        return new PolicyOverride(
-            array_map(ClassRule::parse(...), self::texts($override['allow_classes'] ?? [])),
-            array_map(ClassRule::parse(...), self::texts($override['remove_classes'] ?? [])),
-            array_map(self::operationRule(...), array_values($override['allow_operations'] ?? [])),
-            self::texts($override['remove_operations'] ?? []),
-            self::texts($override['deny_operations'] ?? []),
-        );
-    }
-
-    /**
-     * @param  array<string, mixed>  $rule
-     */
-    private static function operationRule(array $rule): OperationRule
-    {
-        return new OperationRule((string) $rule['name'], array_map(
-            fn (array $resource) => new ResourceRequest(
-                ResourceAreaType::from((string) $resource['area']),
-                (string) $resource['target'],
+            $fields->label ?? $key,
+            ProfileBase::of($fields->base),
+            $fields->instructions,
+            $fields->model,
+            $fields->program === null ? null : HookProgram::from($fields->program),
+            $fields->programPinned,
+            $fields->allowedModels,
+            $fields->skillAllowlist,
+            $fields->requiredSkills,
+            $fields->container === null ? null : self::executionMode($fields->container),
+            PolicyOverrideData::from($profile)->toPolicyOverride(),
+            array_map(
+                fn (ProposedStopConditionData $condition) => $condition->toStopCondition(),
+                $fields->stopConditions,
             ),
-            array_values($rule['resources'] ?? []),
-        ));
-    }
-
-    /**
-     * @param  array<string, mixed>  $condition
-     */
-    private static function stopCondition(array $condition): StopCondition
-    {
-        return new StopCondition(
-            (string) $condition['key'],
-            (string) ($condition['label'] ?? $condition['key']),
-            (string) $condition['executable'],
-            self::texts($condition['arguments'] ?? []),
-            array_map(AccessType::from(...), self::texts($condition['access'] ?? ['read', 'execute'])),
-            (string) ($condition['directory'] ?? 'workspace'),
-            (int) ($condition['timeout_seconds'] ?? StopCondition::DEFAULT_SECONDS),
-            (int) ($condition['output_bytes'] ?? StopCondition::OUTPUT_BYTES),
-            (string) ($condition['guidance'] ?? ''),
         );
     }
 
@@ -180,14 +143,5 @@ final readonly class ProfileProposal
             'host' => ExecutionModeType::ProtectedHost,
             default => ExecutionModeType::from($container),
         };
-    }
-
-    /**
-     * @param  array<array-key, mixed>  $values
-     * @return list<string>
-     */
-    private static function texts(array $values): array
-    {
-        return array_values(array_map(strval(...), $values));
     }
 }

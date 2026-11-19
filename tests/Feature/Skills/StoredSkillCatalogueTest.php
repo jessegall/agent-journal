@@ -34,7 +34,12 @@ final class StoredSkillCatalogueTest extends TestCase
         $author = TestActors::userIdentity(7);
         $skill = Skill::start(SkillKey::from('user-review-notes'), $author, null);
         $skill->appendRevision(
-            new SkillDraft('Review notes', 'Read before reviewing.', [new SectionDraft('notes', 'Notes', self::MARKDOWN)], '{"type":"everyone","version":1}'),
+            new SkillDraft(
+                'Review notes',
+                'Read before reviewing.',
+                [new SectionDraft('notes', 'Notes', self::MARKDOWN)],
+                '{"type":"everyone","version":1}',
+            ),
             Conditions::everyone(),
             $author,
         );

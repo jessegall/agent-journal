@@ -46,7 +46,11 @@ final class RetireAndCopySkillTest extends TestCase
     {
         $created = $this->as(
             7,
-            new CreateSkill('user-review-notes', 'create-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], '')),
+            new CreateSkill(
+                'user-review-notes',
+                'create-1',
+                new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], ''),
+            ),
         );
         $this->as(7, new RetireSkill($created->skillId, 1, 'retire-1'));
 
@@ -62,7 +66,11 @@ final class RetireAndCopySkillTest extends TestCase
     {
         $created = $this->as(
             7,
-            new CreateSkill('user-review-notes', 'create-1', new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], '')),
+            new CreateSkill(
+                'user-review-notes',
+                'create-1',
+                new SkillDraft('Review notes', 'Read.', [new SectionDraft('notes', 'Notes', 'Text.')], ''),
+            ),
         );
 
         $this->expectException(SkillOwnerRequired::class);

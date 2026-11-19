@@ -80,7 +80,10 @@ final class DueWorkOnTickTest extends TestCase
         });
         Event::listen(
             StateTypesRequested::class,
-            fn (StateTypesRequested $event) => $event->registry->register('test.plain', new ClosureStateLoader(fn () => ScriptedState::delegating())),
+            fn (StateTypesRequested $event) => $event->registry->register(
+                'test.plain',
+                new ClosureStateLoader(fn () => ScriptedState::delegating()),
+            ),
         );
         $this->bootModules(QuestionRemindersDomain::class);
         $this->asked = CarbonImmutable::parse('2026-11-18 12:00:00');
@@ -122,7 +125,7 @@ final class DueWorkOnTickTest extends TestCase
         $this->assertNull($question->refresh()->reminded_at);
     }
 
-    public function test_an_answer_that_lands_before_the_reminder_runs_sends_none_and_removes_the_frame_in_that_command(): void
+    public function test_an_answer_before_the_reminder_sends_none_and_removes_the_frame_in_that_command(): void
     {
         $question = Question::ask('Which database?');
         $stack = $this->tickingStack(AwaitingAnswerLoader::TYPE_KEY, [$question->id], $this->asked);
@@ -140,7 +143,10 @@ final class DueWorkOnTickTest extends TestCase
         $this->assertNull($question->refresh()->reminded_at);
         $this->assertNotContains(
             $question->id,
-            array_map(fn (FrameRecord $frame) => $frame->id, AgentStackRow::query()->authorizedFor($target)->sole()->frames->all()),
+            array_map(
+                fn (FrameRecord $frame) => $frame->id,
+                AgentStackRow::query()->authorizedFor($target)->sole()->frames->all(),
+            ),
         );
     }
 

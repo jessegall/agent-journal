@@ -23,19 +23,23 @@ final class TableCheckerTest extends TestCase
     public function test_queries_pass_on_own_tables_and_fail_on_every_other_owners_even_a_required_one(): void
     {
         $this->assertSame([
-            '21 uses table messages of Core; only Core reads, joins, keys or changes its tables, so use what Core exports',
+            '21 uses table messages of Core; only Core reads, joins, keys or changes its tables, so use what Core '
+                .'exports',
             '22 uses table users, which no domain owns',
             '23 uses table links of Core; only Core reads, joins, keys or changes its tables, so use what Core exports',
             '24 names a table with $name; write the table name out',
             '25 names a table with self::TABLE; write the table name out',
-            '27 uses table messages of Core; only Core reads, joins, keys or changes its tables, so use what Core exports',
-            '20 uses table tasks of Tasks; only Tasks reads, joins, keys or changes its tables, so use what Tasks exports',
+            '27 uses table messages of Core; only Core reads, joins, keys or changes its tables, so use what Core '
+                .'exports',
+            '20 uses table tasks of Tasks; only Tasks reads, joins, keys or changes its tables, so use what Tasks '
+                .'exports',
         ], $this->violationLines('Plans/Queries.php'));
     }
 
     public function test_a_migration_neither_keys_nor_changes_another_owners_table(): void
     {
-        $keysTasks = ' uses table tasks of Tasks; only Tasks reads, joins, keys or changes its tables, so use what Tasks exports';
+        $keysTasks = ' uses table tasks of Tasks; only Tasks reads, joins, keys or changes its tables, so use what '
+            .'Tasks exports';
 
         $this->assertSame(
             ['26 changes table tasks, which Tasks owns', '15'.$keysTasks, '19'.$keysTasks],
@@ -46,7 +50,9 @@ final class TableCheckerTest extends TestCase
     public function test_an_omitted_pivot_fails_and_a_written_own_pivot_passes(): void
     {
         $this->assertSame(
-            ['20 leaves the pivot table of $this->belongsToMany(\\Tests\\Fixtures\\Boundary\\Tables\\Tasks\\Models\\Task::class) to Laravel; write it out'],
+            ['20 leaves the pivot table of '
+                .'$this->belongsToMany(\\Tests\\Fixtures\\Boundary\\Tables\\Tasks\\Models\\Task::class) to Laravel; '
+                .'write it out'],
             $this->violationLines('Plans/Models/Plan.php'),
         );
     }

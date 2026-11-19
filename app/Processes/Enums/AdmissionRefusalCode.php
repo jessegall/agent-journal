@@ -7,7 +7,7 @@ namespace App\Processes\Enums;
 /**
  * Why a shell line was refused before anything started (doc 21 revision 6, section 10), as a stable code.
  */
-enum RefusalCode: string
+enum AdmissionRefusalCode: string
 {
     case SyntaxInvalid = 'syntax-invalid';
     case SyntaxUnsupported = 'syntax-unsupported';

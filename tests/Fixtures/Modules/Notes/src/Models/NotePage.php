@@ -20,7 +20,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * A page of notes with text in one version, which takes comments about the whole page or a place in its text. Its text has one version, 1.
+ * A page of notes with text in one version, which takes comments about the whole page or a place in its text. Its text
+ * has one version, 1.
  *
  * @property string $id
  * @property int $number

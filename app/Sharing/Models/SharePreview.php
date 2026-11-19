@@ -41,7 +41,16 @@ use PhpOption\Option;
  * @property Carbon|null $updated_at
  */
 #[Fillable(
-    ['owner_user_id', 'root_type', 'root_id', 'selection', 'configuration_version', 'checksum', 'expires_at', 'consumed_at'],
+    [
+        'owner_user_id',
+        'root_type',
+        'root_id',
+        'selection',
+        'configuration_version',
+        'checksum',
+        'expires_at',
+        'consumed_at',
+    ],
 )]
 final class SharePreview extends Model implements ReadableModel
 {
@@ -106,7 +115,8 @@ final class SharePreview extends Model implements ReadableModel
      */
     public static function lockFor(string $previewId): self
     {
-        return self::query()->whereKey($previewId)->lockForUpdate()->first() ?? throw SharePreviewRefused::unknown($previewId);
+        return self::query()->whereKey($previewId)->lockForUpdate()->first()
+            ?? throw SharePreviewRefused::unknown($previewId);
     }
 
     /**
@@ -153,7 +163,8 @@ final class SharePreview extends Model implements ReadableModel
         );
         $configuration = ShareGatewayConfiguration::query()->findOrFail($this->share_gateway_configuration_id);
 
-        if ($checksum !== $this->checksum || self::checksumOf($ownerUserId, $this->root(), $selection, $configuration) !== $this->checksum) {
+        if ($checksum !== $this->checksum
+            || self::checksumOf($ownerUserId, $this->root(), $selection, $configuration) !== $this->checksum) {
             throw SharePreviewRefused::changed($this->id);
         }
 
@@ -191,13 +202,28 @@ final class SharePreview extends Model implements ReadableModel
         ShareGatewayConfiguration $configuration,
     ): string {
         $targets = array_map(
-            fn (ShareSelectedTarget $target) => [$target->record->type, $target->record->id, $target->linkId, $target->publicationVersion],
+            fn (ShareSelectedTarget $target) => [
+                $target->record->type,
+                $target->record->id,
+                $target->linkId,
+                $target->publicationVersion,
+            ],
             $selection,
         );
 
         return hash(
             'sha256',
-            json_encode([$ownerUserId, $root->type, $root->id, $targets, $configuration->id, $configuration->configuration_version], JSON_THROW_ON_ERROR),
+            json_encode(
+                [
+                    $ownerUserId,
+                    $root->type,
+                    $root->id,
+                    $targets,
+                    $configuration->id,
+                    $configuration->configuration_version,
+                ],
+                JSON_THROW_ON_ERROR,
+            ),
         );
     }
 }

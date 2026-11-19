@@ -206,6 +206,9 @@ final readonly class TickDelivery
 
     private function budgetSpent(int $passStartNanoseconds): bool
     {
-        return $this->clock->nanoseconds() - $passStartNanoseconds >= $this->settings->passBudgetMilliseconds * self::NANOSECONDS_PER_MILLISECOND;
+        return $this->clock
+            ->nanoseconds() - $passStartNanoseconds >= $this
+            ->settings
+            ->passBudgetMilliseconds * self::NANOSECONDS_PER_MILLISECOND;
     }
 }

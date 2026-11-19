@@ -79,7 +79,13 @@ final class CapacityReservation extends Model implements ReadableModel
         }
 
         return self::query()->create(
-            ['launch_request_id' => $launchRequestId, 'cpu_cores' => $budgets->cpuCores, 'memory_bytes' => $budgets->memoryBytes, 'disk_bytes' => $budgets->workspaceBytes, 'state' => ReservationState::Reserved],
+            [
+                'launch_request_id' => $launchRequestId,
+                'cpu_cores' => $budgets->cpuCores,
+                'memory_bytes' => $budgets->memoryBytes,
+                'disk_bytes' => $budgets->workspaceBytes,
+                'state' => ReservationState::Reserved,
+            ],
         );
     }
 }

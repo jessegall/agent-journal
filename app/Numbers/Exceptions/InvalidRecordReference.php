@@ -14,7 +14,8 @@ final class InvalidRecordReference extends InvalidArgumentException
     public static function number(string $text): self
     {
         return new self(
-            "{$text} is no record number: write a positive whole number such as 12, without sign, leading zeros or spaces.",
+            "{$text} is no record number: write a positive whole number such as 12, without sign, leading zeros or "
+                .'spaces.',
         );
     }
 

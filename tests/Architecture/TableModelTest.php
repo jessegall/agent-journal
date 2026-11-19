@@ -58,7 +58,9 @@ final class TableModelTest extends TestCase
     {
         $tables = [];
 
-        foreach (DomainFiles::in([...(glob(app_path('*/Database/Migrations'), GLOB_ONLYDIR) ?: []), ...(glob(base_path('domain/*/database/migrations'), GLOB_ONLYDIR) ?: [])]) as $migration) {
+        foreach (DomainFiles::in([...(glob(app_path('*/Database/Migrations'), GLOB_ONLYDIR)
+            ?: []), ...(glob(base_path('domain/*/database/migrations'), GLOB_ONLYDIR)
+            ?: [])]) as $migration) {
             preg_match_all("/Schema::create\\('([a-z_]+)'/", (string) file_get_contents($migration), $created);
             array_push($tables, ...$created[1]);
         }
@@ -80,7 +82,9 @@ final class TableModelTest extends TestCase
             fn (string $type) => in_array(substr($type, 0, -5).'_id', $references, true),
         );
 
-        return count($references) === 2 && count($matchedTypes) === count($types) && count($references) + count($types) === count($columns);
+        return count($references) === 2
+            && count($matchedTypes) === count($types)
+            && count($references) + count($types) === count($columns);
     }
 
     /**
@@ -91,13 +95,16 @@ final class TableModelTest extends TestCase
         $models = [];
 
         foreach (DomainFiles::in([app_path(), ...DomainFiles::domainCode()]) as $file) {
-            if (! str_contains($file, '/Models/') || preg_match('/^namespace ([^;]+);/m', (string) file_get_contents($file), $namespace) !== 1) {
+            if (! str_contains($file, '/Models/')
+                || preg_match('/^namespace ([^;]+);/m', (string) file_get_contents($file), $namespace) !== 1) {
                 continue;
             }
 
             $class = $namespace[1].'\\'.basename($file, '.php');
 
-            if (class_exists($class) && is_subclass_of($class, Model::class) && ! new ReflectionClass($class)->isAbstract()) {
+            if (class_exists($class)
+                && is_subclass_of($class, Model::class)
+                && ! new ReflectionClass($class)->isAbstract()) {
                 $models[new $class()->getTable()] = $class;
             }
         }

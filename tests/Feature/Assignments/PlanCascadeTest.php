@@ -84,7 +84,7 @@ final class PlanCascadeTest extends TestCase
         $this->assertSame([Plan::LINK_TYPE], $this->heldTypes());
     }
 
-    public function test_a_plan_cascade_gives_the_plan_its_unfinished_phases_and_tasks_and_skips_a_phase_whose_work_is_over(): void
+    public function test_a_plan_cascade_gives_its_unfinished_phases_and_tasks_and_skips_a_finished_phase(): void
     {
         $result = $this->assignWork($this->plan->assignmentIdentity(), $this->builder);
 
@@ -113,7 +113,12 @@ final class PlanCascadeTest extends TestCase
     public function test_a_task_that_vanished_from_a_phase_aborts_the_cascade(): void
     {
         PhaseTask::query()->insert(
-            ['id' => strtolower((string) Str::ulid()), 'phase_id' => $this->working->id, 'task_id' => TestIds::of(99999), 'position' => 2],
+            [
+                'id' => strtolower((string) Str::ulid()),
+                'phase_id' => $this->working->id,
+                'task_id' => TestIds::of(99999),
+                'position' => 2,
+            ],
         );
 
         $this->assertThrows(

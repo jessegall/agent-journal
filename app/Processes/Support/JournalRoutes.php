@@ -20,7 +20,8 @@ final readonly class JournalRoutes
     private function __construct(private array $routes) {}
 
     /**
-     * @param  array<string, \Symfony\Component\Console\Command\Command>  $commands  the registered console commands by name
+     * @param  array<string, \Symfony\Component\Console\Command\Command>  $commands  the registered console commands by
+     *   name
      */
     public static function fromCommands(array $commands): self
     {

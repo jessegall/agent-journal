@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Agents\Support;
 
 use App\Agents\Enums\ExecutionModeType;
+use App\Agents\Stored\StoredAccessPolicy;
+use App\Agents\Stored\StoredExecutionPolicy;
+use App\Agents\Stored\StoredStopConditions;
 use App\Agents\Values\AccessPolicy;
 use App\Agents\Values\StopConditions;
 use App\Processes\Values\ProcessGrants;
@@ -56,9 +59,9 @@ final readonly class LaunchPolicy
     public function digest(): string
     {
         return hash('sha256', json_encode([
-            StoredPolicies::accessToArray($this->access),
-            StoredPolicies::stopConditionsToArray($this->stopConditions),
-            StoredPolicies::executionToArray($this->execution),
+            StoredAccessPolicy::fromAccessPolicy($this->access),
+            StoredStopConditions::fromStopConditions($this->stopConditions),
+            StoredExecutionPolicy::fromExecutionPolicy($this->execution),
             $this->profileKey,
             $this->profileRevision,
             $this->configurationHash,

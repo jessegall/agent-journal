@@ -115,7 +115,12 @@ final class SharingEventsTest extends TestCase
         $this->assertInstanceOf(ShareActivated::class, $this->heard[0]);
         $this->assertSame(
             [$this->share->id, $this->configuration->id, ShareState::Active, Share::FIRST_SCOPE_VERSION],
-            [$this->heard[0]->share->shareId, $this->heard[0]->share->configurationId, $this->heard[0]->share->state, $this->heard[0]->share->scopeVersion],
+            [
+                $this->heard[0]->share->shareId,
+                $this->heard[0]->share->configurationId,
+                $this->heard[0]->share->state,
+                $this->heard[0]->share->scopeVersion,
+            ],
         );
         $this->assertStringNotContainsString(
             (string) $this->share->fresh()?->token_ciphertext,
@@ -135,7 +140,8 @@ final class SharingEventsTest extends TestCase
                 'refused for the test',
             );
         } finally {
-            $database->unprepared('DROP TRIGGER refuse_disabled_audit ON share_audits; DROP FUNCTION refuse_disabled_audit();');
+            $database->unprepared('DROP TRIGGER refuse_disabled_audit ON share_audits; DROP FUNCTION '
+                .'refuse_disabled_audit();');
         }
 
         $this->assertSame([], $this->heard);

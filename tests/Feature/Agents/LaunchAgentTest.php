@@ -6,7 +6,6 @@ namespace Tests\Feature\Agents;
 
 use App\Agents\Commands\LaunchAgent;
 use App\Agents\Commands\RetireAgent;
-use App\Agents\Contracts\LaunchMaterialResolver;
 use App\Agents\Enums\ConversationModeType;
 use App\Agents\Enums\LaunchDisposition;
 use App\Agents\Enums\LaunchOriginType;
@@ -16,6 +15,7 @@ use App\Agents\Exceptions\LaunchRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Models\LaunchRecord;
+use App\Agents\Resolvers\HostLaunchMaterial;
 use App\Agents\Support\LaunchPolicy;
 use App\Agents\Support\LaunchReceipt;
 use App\Agents\Support\LaunchRequest;
@@ -57,7 +57,14 @@ final class LaunchAgentTest extends TestCase
         $this->expectException(QueryException::class);
 
         DB::table('agent_sessions')->insert(
-            ['id' => (string) Str::ulid(), 'agent_id' => $this->agent->id, 'program' => 'claude-code', 'status' => 'active', 'profile_key' => 'main-agent', 'profile_revision' => 1],
+            [
+                'id' => (string) Str::ulid(),
+                'agent_id' => $this->agent->id,
+                'program' => 'claude-code',
+                'status' => 'active',
+                'profile_key' => 'main-agent',
+                'profile_revision' => 1,
+            ],
         );
     }
 
@@ -98,7 +105,7 @@ final class LaunchAgentTest extends TestCase
         $request = $this->request();
 
         $receipt = $this->launch($request);
-        $material = $this->app->make(LaunchMaterialResolver::class)->material($request->requestId);
+        $material = $this->app->make(HostLaunchMaterial::class)->material($request->requestId);
 
         $this->assertSame($receipt->sessionId, $material->sessionId);
         $this->assertStringNotContainsString($material->token, serialize($receipt));

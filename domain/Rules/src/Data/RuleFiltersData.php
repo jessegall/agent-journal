@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Domain\Rules\Data;
 
 use Domain\Rules\Api\RuleFilters;
+use Spatie\LaravelData\Attributes\MapName;
 use Spatie\LaravelData\Attributes\Validation\Ulid;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
@@ -18,7 +19,8 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 final class RuleFiltersData extends Data
 {
     public function __construct(
-        public readonly string $q = '',
+        #[MapName('q')]
+        public readonly string $search = '',
         public readonly int $page = 1,
         #[Ulid] public readonly string|Optional $rule = new Optional(),
     ) {}
@@ -57,6 +59,6 @@ final class RuleFiltersData extends Data
 
     public function toDomain(): RuleFilters
     {
-        return new RuleFilters($this->q, $this->page, $this->rule instanceof Optional ? null : (string) $this->rule);
+        return new RuleFilters($this->search, $this->page, $this->rule instanceof Optional ? null : (string) $this->rule);
     }
 }

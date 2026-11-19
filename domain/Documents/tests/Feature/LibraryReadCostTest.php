@@ -54,13 +54,21 @@ final class LibraryReadCostTest extends TestCase
         foreach (range(1, 12) as $number) {
             $phrase = $number % 3 === 0 ? 'The retention window is thirty days.' : 'Nothing to find here.';
             $bus->run(
-                new CreateDocument("Design {$number}", "What design {$number} says", "# Design {$number}\n\n{$phrase}\n"),
+                new CreateDocument(
+                    "Design {$number}",
+                    "What design {$number} says",
+                    "# Design {$number}\n\n{$phrase}\n",
+                ),
             );
         }
 
         foreach (range(1, 4) as $number) {
             $bus->run(
-                new CreateReport("Check {$number}", "What check {$number} found", "# Check {$number}\n\nThe retention window held.\n"),
+                new CreateReport(
+                    "Check {$number}",
+                    "What check {$number} found",
+                    "# Check {$number}\n\nThe retention window held.\n",
+                ),
             );
         }
     }
@@ -157,7 +165,10 @@ final class LibraryReadCostTest extends TestCase
         DB::disableQueryLog();
 
         return array_values(
-            array_map(fn (array $query) => ['query' => (string) $query['query'], 'bindings' => (array) $query['bindings']], DB::getQueryLog()),
+            array_map(
+                fn (array $query) => ['query' => (string) $query['query'], 'bindings' => (array) $query['bindings']],
+                DB::getQueryLog(),
+            ),
         );
     }
 }

@@ -22,7 +22,8 @@ final class ContinuationStale extends RuntimeException implements CodedRefusal, 
     public static function revisionChanged(int $issued, int $current): self
     {
         return new self(
-            "The continuation reads revision {$issued}, but the record is now at revision {$current}; start the read again.",
+            "The continuation reads revision {$issued}, but the record is now at revision {$current}; start the read "
+                .'again.',
         );
     }
 

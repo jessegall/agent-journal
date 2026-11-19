@@ -106,7 +106,11 @@ final class SkillPreviewTest extends TestCase
     {
         $agent = Agent::named($name, $profileKey);
         $session = new AgentSession(
-            [...TestSelections::sessionColumns(), 'profile_key' => $profileRevision === null ? 'main-agent' : 'journal-reviewer', 'profile_revision' => $profileRevision ?? 1],
+            [
+                ...TestSelections::sessionColumns(),
+                'profile_key' => $profileRevision === null ? 'main-agent' : 'journal-reviewer',
+                'profile_revision' => $profileRevision ?? 1,
+            ],
         );
         $session->agent_id = $agent->id;
         $session->status = SessionStatus::Active;

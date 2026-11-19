@@ -60,7 +60,9 @@ enum FolderType: string
             self::Providers => $class->isSubclassOf(ServiceProvider::class),
             self::Commands => $class->isFinal() && $class->isReadOnly()
                 && $class->isSubclassOf(Command::class),
-            self::Handlers => $class->isFinal() && $class->hasMethod('handle') && $class->getMethod('handle')->isPublic(),
+            self::Handlers => $class->isFinal()
+                && $class->hasMethod('handle')
+                && $class->getMethod('handle')->isPublic(),
             self::CommandMiddleware => $class->implementsInterface(CommandMiddlewareContract::class),
         };
 

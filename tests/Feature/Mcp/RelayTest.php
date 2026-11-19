@@ -43,7 +43,7 @@ final class RelayTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_initialize_tools_list_and_a_tool_call_come_back_as_their_own_answers_and_a_notification_prints_nothing(): void
+    public function test_initialize_list_and_call_each_get_their_answer_and_a_notification_prints_nothing(): void
     {
         $this->startServer();
 
@@ -95,7 +95,10 @@ final class RelayTest extends TestCase
         $this->assertSame([1], array_column($lines, 'id'));
         $this->assertSame(
             ['slow'],
-            array_map(fn (array $call): mixed => json_decode((string) $call['body'], true)['method'], $this->serverCalls()),
+            array_map(
+                fn (array $call): mixed => json_decode((string) $call['body'], true)['method'],
+                $this->serverCalls(),
+            ),
         );
     }
 

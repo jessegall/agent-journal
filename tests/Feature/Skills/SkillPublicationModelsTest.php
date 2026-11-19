@@ -57,7 +57,14 @@ final class SkillPublicationModelsTest extends TestCase
         $publication->recordProgress($fence, 1);
         $publication->deliver(
             $fence,
-            new PublicationManifest('generation', $publication->id, 'session', 'claude', 'selection', ['journal/SKILL.md' => str_repeat('b', 64)]),
+            new PublicationManifest(
+                'generation',
+                $publication->id,
+                'session',
+                'claude',
+                'selection',
+                ['journal/SKILL.md' => str_repeat('b', 64)],
+            ),
         );
 
         $this->assertSame(PublicationState::Delivered, $publication->state);
@@ -126,7 +133,15 @@ final class SkillPublicationModelsTest extends TestCase
         return SkillGeneration::ready(
             str_repeat('d', 64),
             str_repeat('e', 64),
-            [['key' => 'journal', 'owner' => 'Core', 'revision' => null, 'markdown' => "# Journal\n", 'digest' => hash('sha256', "# Journal\n")]],
+            [
+                [
+                    'key' => 'journal',
+                    'owner' => 'Core',
+                    'revision' => null,
+                    'markdown' => "# Journal\n",
+                    'digest' => hash('sha256', "# Journal\n"),
+                ],
+            ],
         );
     }
 }

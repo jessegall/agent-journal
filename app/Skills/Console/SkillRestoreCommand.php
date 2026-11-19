@@ -18,7 +18,9 @@ final class SkillRestoreCommand extends Command
 {
     use PrintsSkillRefusals;
 
-    protected $signature = 'skill:restore {number : The skill number or key} {--revision= : The revision to restore} {--expected-revision= : The revision you read} {--request-id= : Send again under the id a failed attempt printed}';
+    protected $signature = 'skill:restore {number : The skill number or key} {--revision= : The revision to restore} '
+        .'{--expected-revision= : The revision you read} {--request-id= : Send again under the id a failed attempt '
+        .'printed}';
 
     protected $description = 'Restore an earlier revision of a stored skill';
 
@@ -32,7 +34,14 @@ final class SkillRestoreCommand extends Command
             $skill = $console->stored((string) $this->argument('number'));
 
             return $console->savedLines(
-                $commands->run(new RestoreSkill($skill->id, (int) $this->option('revision'), (int) $this->option('expected-revision'), $requestId)),
+                $commands->run(
+                    new RestoreSkill(
+                        $skill->id,
+                        (int) $this->option('revision'),
+                        (int) $this->option('expected-revision'),
+                        $requestId,
+                    ),
+                ),
             );
         });
     }

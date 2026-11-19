@@ -35,12 +35,18 @@ final readonly class TextRecords implements TextResolver
     public function sections(RecordIdentity $target, string $version, int $afterSection, PageSize $size): TextSections
     {
         $after = array_values(
-            array_filter($this->textVersion($target, $version)->sections, fn ($section) => $section->number > $afterSection),
+            array_filter(
+                $this->textVersion($target, $version)->sections,
+                fn ($section) => $section->number > $afterSection,
+            ),
         );
         $page = array_slice($after, 0, $size->rows);
 
         return TextSections::from(
-            ['items' => $page, 'nextAfterSection' => count($after) > $size->rows ? $page[$size->rows - 1]->number : null],
+            [
+                'items' => $page,
+                'nextAfterSection' => count($after) > $size->rows ? $page[$size->rows - 1]->number : null,
+            ],
         );
     }
 
@@ -61,6 +67,8 @@ final readonly class TextRecords implements TextResolver
     {
         $record = $this->records->requireReadable($target);
 
-        return $record instanceof TextContent ? $record->textVersion($version) : throw TargetHasNoText::for($target->type);
+        return $record instanceof TextContent
+            ? $record->textVersion($version)
+            : throw TargetHasNoText::for($target->type);
     }
 }

@@ -26,7 +26,8 @@ final class IsolatedHookSettings
     }
 
     /**
-     * Turns off a tool the journal cannot follow safely in this program, such as a native child with no identity of its own.
+     * Turns off a tool the journal cannot follow safely in this program, such as a native child with no identity of its
+     * own.
      */
     public function denyTool(string $toolName): void
     {

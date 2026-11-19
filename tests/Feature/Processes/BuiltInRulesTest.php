@@ -43,7 +43,13 @@ final class BuiltInRulesTest extends TestCase
         yield 'kill' => ['kill -9 123', [CommandClass::ProcessControl]];
         yield 'npm install' => [
             'npm install',
-            [CommandClass::Read, CommandClass::Write, CommandClass::Delete, CommandClass::Network, CommandClass::PackageInstall],
+            [
+                CommandClass::Read,
+                CommandClass::Write,
+                CommandClass::Delete,
+                CommandClass::Network,
+                CommandClass::PackageInstall,
+            ],
         ];
         yield 'pint fixes' => ['vendor/bin/pint', [CommandClass::Read, CommandClass::Edit, CommandClass::Verification]];
         yield 'vite build' => ['vite build', [CommandClass::Read, CommandClass::Write, CommandClass::Build]];
@@ -74,7 +80,13 @@ final class BuiltInRulesTest extends TestCase
         ];
         yield 'git push --delete' => [
             'git push --delete origin old',
-            [CommandClass::Read, CommandClass::Write, CommandClass::Delete, CommandClass::Network, CommandClass::VersionControl],
+            [
+                CommandClass::Read,
+                CommandClass::Write,
+                CommandClass::Delete,
+                CommandClass::Network,
+                CommandClass::VersionControl,
+            ],
         ];
         yield 'git ls-remote' => [
             'git ls-remote origin',
@@ -82,7 +94,13 @@ final class BuiltInRulesTest extends TestCase
         ];
         yield 'git reset --hard' => [
             'git reset --hard HEAD~1',
-            [CommandClass::Read, CommandClass::Write, CommandClass::Edit, CommandClass::Delete, CommandClass::VersionControl],
+            [
+                CommandClass::Read,
+                CommandClass::Write,
+                CommandClass::Edit,
+                CommandClass::Delete,
+                CommandClass::VersionControl,
+            ],
         ];
     }
 

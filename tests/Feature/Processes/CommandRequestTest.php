@@ -87,7 +87,13 @@ final class CommandRequestTest extends TestCase
     {
         return $this->runAs(
             $agentId,
-            new OpenCommandRequest('acme verify', str_repeat('a', 64), 'acme verify --all', $folder, RequestHoldReason::UnknownCommand),
+            new OpenCommandRequest(
+                'acme verify',
+                str_repeat('a', 64),
+                'acme verify --all',
+                $folder,
+                RequestHoldReason::UnknownCommand,
+            ),
         );
     }
 

@@ -34,7 +34,8 @@ final class LaunchSelectionTest extends TestCase
             } catch (ModelRequired $refusal) {
                 $this->assertSame(LaunchRefusalType::ModelRequired, $refusal->reason());
                 $this->assertSame(
-                    'Name a model: use --model <model> or --model default with a configured profile default. Nothing was launched.',
+                    'Name a model: use --model <model> or --model default with a configured profile default. Nothing '
+                        .'was launched.',
                     $refusal->getMessage(),
                 );
             }
@@ -116,13 +117,23 @@ final class LaunchSelectionTest extends TestCase
             ProgramConflict::class,
             LaunchRefusalType::ProgramConflict,
             'Profile journal-researcher cannot run on claude-code. Choose a permitted program or profile.',
-            fn () => SelectedProgram::resolve('claude-code', ModelSelection::named('m'), $this->profile(pinned: true), null),
+            fn () => SelectedProgram::resolve(
+                'claude-code',
+                ModelSelection::named('m'),
+                $this->profile(pinned: true),
+                null,
+            ),
         );
         $this->assertRefused(
             ModelUnavailable::class,
             LaunchRefusalType::ModelUnavailable,
             'Model gpt-4 is not allowed for codex with this profile. Name an allowed model. Nothing was launched.',
-            fn () => SelectedProgram::resolve(null, ModelSelection::named('gpt-4'), $this->profile(allowedModels: ['gpt-5-codex']), null),
+            fn () => SelectedProgram::resolve(
+                null,
+                ModelSelection::named('gpt-4'),
+                $this->profile(allowedModels: ['gpt-5-codex']),
+                null,
+            ),
         );
         $this->assertRefused(
             ProgramUnsupported::class,

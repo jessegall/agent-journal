@@ -59,23 +59,23 @@ final class PlansPageTest extends TestCase
             ->missing('page.data.selected'));
     }
 
-    public function test_the_search_and_selection_survive_in_the_query_and_the_start_is_offered_by_the_domain_rule(): void
+    public function test_search_and_selection_survive_in_the_query_and_the_domain_rule_offers_the_start(): void
     {
         $this->actingAs($this->owner)->get(
             "/plans?q=release&plan={$this->release->number}",
         )->assertInertia(fn (AssertableInertia $page) => $page
-                    ->where('page.data.filters.q', 'release')
-                    ->where('page.data.filters.plan', (string) $this->release->number)
-                    ->count('page.data.rows', 1)
-                    ->where('page.data.selected.card.title', 'Build the release page')
-                    ->where('page.data.selected.insideResults', true)
-                    ->where('page.data.selected.start.planId', (string) $this->release->id));
+            ->where('page.data.filters.q', 'release')
+            ->where('page.data.filters.plan', (string) $this->release->number)
+            ->count('page.data.rows', 1)
+            ->where('page.data.selected.card.title', 'Build the release page')
+            ->where('page.data.selected.insideResults', true)
+            ->where('page.data.selected.start.planId', (string) $this->release->id));
 
         $this->actingAs($this->owner)->get(
             "/plans?q=release&plan={$this->paused->number}",
         )->assertInertia(fn (AssertableInertia $page) => $page
-                    ->where('page.data.selected.insideResults', false)
-                    ->missing('page.data.selected.start'));
+            ->where('page.data.selected.insideResults', false)
+            ->missing('page.data.selected.start'));
     }
 
     public function test_a_selection_that_cannot_be_read_shows_no_title(): void
@@ -114,7 +114,10 @@ final class PlansPageTest extends TestCase
             ->where('page.data.rows.0.title', 'Compare chat layouts')
             ->where('navigation.current', ['plans.list', 'plans.waiting'])
             ->loadDeferredProps('navigation-counts', fn (AssertableInertia $counts) => $counts
-                ->where('navigationCounts.counts', fn ($counts) => $counts['plans.open'] === 1 && $counts['plans.waiting'] === 1)));
+                ->where(
+                    'navigationCounts.counts',
+                    fn ($counts) => $counts['plans.open'] === 1 && $counts['plans.waiting'] === 1,
+                )));
     }
 
     public function test_a_plan_has_its_own_record_page_and_opens_in_the_inspector(): void
@@ -122,14 +125,17 @@ final class PlansPageTest extends TestCase
         $this->actingAs($this->owner)->get(
             "/plans/{$this->release->number}",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-                    ->component('plans/PlanWindow')
-                    ->where('page.state', 'ready')
-                    ->where('page.data.card.title', 'Build the release page'));
+            ->component('plans/PlanWindow')
+            ->where('page.state', 'ready')
+            ->where('page.data.card.title', 'Build the release page'));
 
         $this->actingAs($this->owner)->get(
             "/plans?inspect=plans.plan&plan={$this->release->number}",
         )->assertInertia(fn (AssertableInertia $page) => $page
-                    ->reloadOnly('inspector', fn (AssertableInertia $reload) => $reload->where('inspector.data.card.title', 'Build the release page')));
+            ->reloadOnly(
+                'inspector',
+                fn (AssertableInertia $reload) => $reload->where('inspector.data.card.title', 'Build the release page'),
+            ));
     }
 
     public function test_a_phase_has_its_own_page_within_its_plan(): void
@@ -139,12 +145,12 @@ final class PlansPageTest extends TestCase
         $this->actingAs($this->owner)->get(
             "/plans/{$this->release->number}/phases/1",
         )->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
-                    ->component('plans/PhaseWindow')
-                    ->where('page.data.planNumber', (string) $this->release->number)
-                    ->where('page.data.number', '1')
-                    ->where('page.data.title', 'Read')
-                    ->where('page.data.tasks.0.number', (string) $task->number)
-                    ->where('page.data.tasks.0.title', 'List the plans'));
+            ->component('plans/PhaseWindow')
+            ->where('page.data.planNumber', (string) $this->release->number)
+            ->where('page.data.number', '1')
+            ->where('page.data.title', 'Read')
+            ->where('page.data.tasks.0.number', (string) $task->number)
+            ->where('page.data.tasks.0.title', 'List the plans'));
 
         $this->actingAs($this->owner)->get("/plans/{$this->paused->number}/phases/1")->assertNotFound();
         $this->actingAs($this->owner)->get("/plans/{$this->release->number}/phases/2")->assertNotFound();

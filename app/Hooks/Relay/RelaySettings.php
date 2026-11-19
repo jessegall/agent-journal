@@ -64,9 +64,9 @@ final readonly class RelaySettings
 
     public function hookPath(string $program): string
     {
-        return $this->processGeneration > 0
-            ? "/hooks/{$program}?generation={$this->processGeneration}"
-            : "/hooks/{$program}";
+        $query = $this->processGeneration > 0 ? ['generation' => $this->processGeneration] : [];
+
+        return route('hooks.answer', ['program' => $program, ...$query], false);
     }
 
     public function client(): AgentClientSettings

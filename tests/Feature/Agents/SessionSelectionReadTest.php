@@ -58,11 +58,20 @@ final class SessionSelectionReadTest extends TestCase
 
         $this->assertSame(
             [HookProgram::ClaudeCode, 'claude-sonnet-5-5', ModelSelectionType::ProfileDefault, null],
-            [$option->selection->program, $option->selection->model, $option->selection->requested->type, $option->selection->requested->model],
+            [
+                $option->selection->program,
+                $option->selection->model,
+                $option->selection->requested->type,
+                $option->selection->requested->model,
+            ],
         );
         $this->assertSame(
             [ProgramSourceType::Profile, 'journal-researcher', 4],
-            [$option->selection->source->programSource, $option->selection->source->profileKey, $option->selection->source->profileRevision],
+            [
+                $option->selection->source->programSource,
+                $option->selection->source->profileKey,
+                $option->selection->source->profileRevision,
+            ],
         );
         $this->assertSame(LaunchReceipt::ACTUAL_MODEL_NOT_REPORTED, $option->actualModel);
         $this->assertSame([null, 0], [$option->conversationNativeId, $option->visitCount]);

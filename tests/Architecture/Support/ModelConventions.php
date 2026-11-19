@@ -121,7 +121,8 @@ final class ModelConventions
 
         foreach (self::modelsIn($files) as $path => $models) {
             foreach ($models as $line => $class) {
-                if (! is_subclass_of($class, ReadableModel::class) || ! in_array(BoundedReads::class, class_uses_recursive($class), true)) {
+                if (! is_subclass_of($class, ReadableModel::class)
+                    || ! in_array(BoundedReads::class, class_uses_recursive($class), true)) {
                     $violations[] = new Violation(
                         $path,
                         $line,

@@ -88,7 +88,11 @@ final class StackInspectionTest extends TestCase
         $this->call(
             'GET',
             '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10),
-            server: $agent->serverHeaders('', method: 'GET', target: '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10)),
+            server: $agent->serverHeaders(
+                '',
+                method: 'GET',
+                target: '/hooks/stacks/'.TestIds::of(1).'/'.TestIds::of(10),
+            ),
         )->assertUnauthorized();
     }
 }

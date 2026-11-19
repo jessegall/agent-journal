@@ -20,7 +20,9 @@ final class TestAlarm
 
     public static function isAvailable(): bool
     {
-        return function_exists('pcntl_alarm') && function_exists('pcntl_signal') && function_exists('pcntl_async_signals');
+        return function_exists('pcntl_alarm')
+            && function_exists('pcntl_signal')
+            && function_exists('pcntl_async_signals');
     }
 
     public static function armForPreparation(string $test): void

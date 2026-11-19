@@ -21,7 +21,10 @@ final class SkillEditCommand extends Command
 {
     use PrintsSkillRefusals, ReadsAudienceOptions;
 
-    protected $signature = 'skill:edit {number : The skill number or key} {--expected-revision= : The revision you read} {--name=} {--description=} {--body= : The Markdown body, - to read it from standard input} {--conditions= : The condition as JSON} {--profile=*} {--base=*} {--program=*} {--provider=*} {--ability=*} {--request-id= : Send again under the id a failed attempt printed}';
+    protected $signature = 'skill:edit {number : The skill number or key} {--expected-revision= : The revision you '
+        .'read} {--name=} {--description=} {--body= : The Markdown body, - to read it from standard input} '
+        .'{--conditions= : The condition as JSON} {--profile=*} {--base=*} {--program=*} {--provider=*} '
+        .'{--ability=*} {--request-id= : Send again under the id a failed attempt printed}';
 
     protected $description = 'Save a new revision of a stored skill';
 
@@ -47,7 +50,9 @@ final class SkillEditCommand extends Command
             );
 
             return $console->savedLines(
-                $commands->run(new ReviseSkill($skill->id, (int) $this->option('expected-revision'), $requestId, $draft)),
+                $commands->run(
+                    new ReviseSkill($skill->id, (int) $this->option('expected-revision'), $requestId, $draft),
+                ),
             );
         });
     }

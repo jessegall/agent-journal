@@ -68,7 +68,9 @@ final readonly class AuthenticateHost
         $issuedAt = (int) $this->header($request, SignedCall::ISSUED_AT_HEADER);
         $signature = $this->header($request, SignedCall::SIGNATURE_HEADER);
 
-        if (! hash_equals(SignedCall::signatureFor($secret, $request->getMethod(), $request->getRequestUri(), $callId, $issuedAt, $request->getContent()), $signature)) {
+        if (! hash_equals(SignedCall::signatureFor($secret, $request->getMethod(), $request
+            ->getRequestUri(), $callId, $issuedAt, $request
+            ->getContent()), $signature)) {
             throw CallSignatureInvalid::mismatched($callId);
         }
 
@@ -84,7 +86,11 @@ final readonly class AuthenticateHost
 
         return new HostContext(
             $host->id,
-            new SignedCall($callId, CarbonImmutable::createFromTimestamp($issuedAt), SignedCall::digestOf($request->getContent())),
+            new SignedCall(
+                $callId,
+                CarbonImmutable::createFromTimestamp($issuedAt),
+                SignedCall::digestOf($request->getContent()),
+            ),
         );
     }
 

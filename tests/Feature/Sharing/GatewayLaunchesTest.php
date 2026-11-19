@@ -59,7 +59,12 @@ final class GatewayLaunchesTest extends TestCase
         $child = $this->start();
 
         $this->assertThrows(
-            fn () => $this->app->make(GatewayLaunches::class)->open('fake', $this->operation(), $child, fn () => GatewayAddressCheck::Unexpected),
+            fn () => $this->app->make(GatewayLaunches::class)->open(
+                'fake',
+                $this->operation(),
+                $child,
+                fn () => GatewayAddressCheck::Unexpected,
+            ),
             GatewayOpenFailed::class,
             'other than its fixed public origin',
         );
@@ -71,7 +76,12 @@ final class GatewayLaunchesTest extends TestCase
         $child = $this->start();
 
         $this->assertThrows(
-            fn () => $this->app->make(GatewayLaunches::class)->open('fake', $this->operation(), $child, fn () => GatewayAddressCheck::Waiting),
+            fn () => $this->app->make(GatewayLaunches::class)->open(
+                'fake',
+                $this->operation(),
+                $child,
+                fn () => GatewayAddressCheck::Waiting,
+            ),
             GatewayOpenFailed::class,
             'no public address',
         );

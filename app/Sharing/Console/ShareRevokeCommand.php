@@ -14,7 +14,8 @@ use Illuminate\Console\Command;
  */
 final class ShareRevokeCommand extends Command
 {
-    protected $signature = 'share:revoke {share : The id of the share} {--request-key= : Send again under the key a failed attempt printed}';
+    protected $signature = 'share:revoke {share : The id of the share} {--request-key= : Send again under the key a '
+        .'failed attempt printed}';
 
     protected $description = 'Revoke a share or dismiss a proposal';
 

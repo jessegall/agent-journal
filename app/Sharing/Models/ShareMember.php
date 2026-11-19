@@ -78,7 +78,8 @@ final class ShareMember extends Model implements ReadableModel
     public static function currentOf(Share $share): array
     {
         return array_values(
-            self::query()->ofScope($share)->stillApproved()->orderBy('id')->readAll('a share scope holds at most the preview limit of members')->get()->all(),
+            self::query()->ofScope($share)->stillApproved()->orderBy('id')->readAll('a share scope holds at most the '
+                .'preview limit of members')->get()->all(),
         );
     }
 
@@ -109,7 +110,11 @@ final class ShareMember extends Model implements ReadableModel
     public static function approvedLinkIdsOf(Share $share): array
     {
         return array_values(
-            array_map(strval(...), self::query()->ofScope($share)->stillApproved()->readAll('a share scope holds at most the preview limit of members')->pluck('link_id')->all()),
+            array_map(
+                strval(...),
+                self::query()->ofScope($share)->stillApproved()->readAll('a share scope holds at most the preview '
+                    .'limit of members')->pluck('link_id')->all(),
+            ),
         );
     }
 
@@ -133,7 +138,13 @@ final class ShareMember extends Model implements ReadableModel
      */
     public static function approvesOverLiveLink(Share $share, RecordIdentity $source, RecordIdentity $target): bool
     {
-        $linkIds = self::query()->ofScope($share)->stillApproved()->fromSource($source)->targeting($target)->readLimit(1)->pluck('link_id')->all();
+        $linkIds = self::query()->ofScope($share)
+            ->stillApproved()
+            ->fromSource($source)
+            ->targeting($target)
+            ->readLimit(1)
+            ->pluck('link_id')
+            ->all();
 
         return $linkIds !== [] && Link::query()->whereKey($linkIds)->exists();
     }
@@ -147,7 +158,8 @@ final class ShareMember extends Model implements ReadableModel
     {
         $grouped = [];
 
-        foreach (self::query()->ofScope($share)->stillApproved()->fromSource($source)->readAll('a share scope holds at most the preview limit of members')->get(['target_type', 'target_id']) as $member) {
+        foreach (self::query()->ofScope($share)->stillApproved()->fromSource($source)->readAll('a share scope holds '
+            .'at most the preview limit of members')->get(['target_type', 'target_id']) as $member) {
             $grouped[$member->target_type][] = $member->target();
         }
 

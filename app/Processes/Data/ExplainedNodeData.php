@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Processes\Data;
 
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One node of an explained shell line: its id, type, parent, a safe snippet of its source and its redirects in order.
  */
+#[TypeScript]
 final class ExplainedNodeData extends Data
 {
     /**

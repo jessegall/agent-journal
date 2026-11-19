@@ -124,7 +124,10 @@ final class ShellCorpusTest extends TestCase
     {
         usort(
             $parts,
-            fn (ShellNode $first, ShellNode $second) => [$first->range->start, $first->range->end] <=> [$second->range->start, $second->range->end],
+            fn (ShellNode $first, ShellNode $second) => [$first->range->start, $first->range->end] <=> [
+                $second->range->start,
+                $second->range->end,
+            ],
         );
 
         return $parts;
@@ -153,7 +156,8 @@ final class ShellCorpusTest extends TestCase
     }
 
     /**
-     * @return list<array{id: string, source: string, dialect: string, origins: list<array<string, mixed>>, expected: array<string, mixed>}>
+     * @return list<array{id: string, source: string, dialect: string, origins: list<array<string, mixed>>, expected:
+     *   array<string, mixed>}>
      */
     private function cases(): array
     {

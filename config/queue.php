@@ -63,7 +63,8 @@ return [
             'queue' => env('REDIS_QUEUE', 'default'),
             'retry_after' => (int) env('REDIS_QUEUE_RETRY_AFTER', 90),
             'block_for' => null,
-            // A job or broadcast queued inside a transaction is pushed only once it commits, never for rolled-back work.
+            // A job or broadcast queued inside a transaction is pushed only once it commits, never for rolled-back
+            // work.
             'after_commit' => true,
         ],
 

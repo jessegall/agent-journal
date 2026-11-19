@@ -60,7 +60,9 @@ final class CallDeadlineTest extends TestCase
 
         [$lockTimeout, $deadline] = $this->throughMiddleware(fn () => [
             $this->app->make(StackTransaction::class)->run(
-                fn (): mixed => $this->app->make(ConnectionInterface::class)->scalar("SELECT current_setting('lock_timeout')"),
+                fn (): mixed => $this->app->make(
+                    ConnectionInterface::class,
+                )->scalar("SELECT current_setting('lock_timeout')"),
             ),
             $this->app->make(OperationDeadline::class),
         ]);
@@ -85,7 +87,12 @@ final class CallDeadlineTest extends TestCase
     {
         $this->app->instance(
             AgentContext::class,
-            new AgentContext('agent-1', 'session-1', new SignedCall('call-1', CarbonImmutable::now()->subSeconds($seconds), 'digest'), null),
+            new AgentContext(
+                'agent-1',
+                'session-1',
+                new SignedCall('call-1', CarbonImmutable::now()->subSeconds($seconds), 'digest'),
+                null,
+            ),
         );
     }
 

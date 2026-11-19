@@ -92,7 +92,12 @@ final class SharingSupervisor
             $this->requireNoTransaction();
             $healthy = $this->gateways->healthOf($endpoint)->isHealthy();
             $this->asSystem(
-                new RecordGatewayHealth($this->runId, $endpoint->share_gateway_configuration_id, $endpoint->endpoint_version, $healthy),
+                new RecordGatewayHealth(
+                    $this->runId,
+                    $endpoint->share_gateway_configuration_id,
+                    $endpoint->endpoint_version,
+                    $healthy,
+                ),
             );
         }
     }

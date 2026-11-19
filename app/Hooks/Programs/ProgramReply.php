@@ -53,7 +53,10 @@ final readonly class ProgramReply
     public static function json(Data $body): self
     {
         return new self(
-            json_encode((object) $body->toArray(), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
+            json_encode(
+                (object) $body->toArray(),
+                JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE,
+            ),
             '',
             0,
         );

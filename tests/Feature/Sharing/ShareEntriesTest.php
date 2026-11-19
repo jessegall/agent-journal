@@ -41,7 +41,8 @@ use Tests\TestCase;
  */
 #[TimeLimit(
     seconds: 10,
-    reason: 'It commits a document through the bus, runs console commands and empties nineteen tables around each test.',
+    reason: 'It commits a document through the bus, runs console commands and empties nineteen tables around each '
+        .'test.',
 )]
 final class ShareEntriesTest extends TestCase
 {
@@ -135,7 +136,12 @@ final class ShareEntriesTest extends TestCase
             new OwnerAuthority('test'),
         );
         $this->app->make(CommandBus::class)->run(
-            new SaveSharePreview($this->document->shareIdentity()->type, $this->document->id, [], $this->configuration->id),
+            new SaveSharePreview(
+                $this->document->shareIdentity()->type,
+                $this->document->id,
+                [],
+                $this->configuration->id,
+            ),
         );
         $this->app->make(CurrentActorSetter::class)->clear();
         $preview = SharePreview::query()->sole();

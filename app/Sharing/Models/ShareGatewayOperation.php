@@ -141,7 +141,8 @@ final class ShareGatewayOperation extends Model implements ReadableModel
      */
     public function isClaimable(): bool
     {
-        return $this->outcome_code === null && ($this->run_id === null || $this->lease_ends_at === null || ! $this->lease_ends_at->isFuture());
+        return $this->outcome_code === null
+            && ($this->run_id === null || $this->lease_ends_at === null || ! $this->lease_ends_at->isFuture());
     }
 
     /**
@@ -206,7 +207,11 @@ final class ShareGatewayOperation extends Model implements ReadableModel
     protected function claimable(Builder $query): void
     {
         $query->unfinished()->where(
-            fn (Builder $query) => $query->whereNull('lease_ends_at')->orWhere('lease_ends_at', '<=', CarbonImmutable::now()),
+            fn (Builder $query) => $query->whereNull('lease_ends_at')->orWhere(
+                'lease_ends_at',
+                '<=',
+                CarbonImmutable::now(),
+            ),
         );
     }
 

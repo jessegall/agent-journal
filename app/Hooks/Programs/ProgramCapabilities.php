@@ -10,8 +10,10 @@ use App\Hooks\Stack\AgentStack;
 use App\Hooks\Stack\HookAnswer;
 
 /**
- * What the journal's contract with one program covers: the reply schema it was written against, the hooks it maps and how it takes a rewrite.
- * It records the contract, not a claim that a program version was tested; docs/hooks/program-capabilities.md holds the evidence.
+ * What the journal's contract with one program covers: the reply schema it was written against, the hooks it maps and
+ * how it takes a rewrite.
+ * It records the contract, not a claim that a program version was tested; docs/hooks/program-capabilities.md holds the
+ * evidence.
  */
 final readonly class ProgramCapabilities
 {
@@ -28,7 +30,8 @@ final readonly class ProgramCapabilities
     ) {}
 
     /**
-     * The final answer as this program can take it: a rewrite it cannot take becomes a refusal on the stack from before the walk.
+     * The final answer as this program can take it: a rewrite it cannot take becomes a refusal on the stack from before
+     * the walk.
      */
     public function finalAnswer(HookAnswer $answer, AgentStack $stackBefore): HookAnswer
     {

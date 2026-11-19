@@ -22,7 +22,8 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
  * assignees_list: the actors of one type work may be given to, in id order, after an id and at most 100 at a time.
  */
 #[Name('assignees_list')]
-#[Description('The agents or users work may be given to, in id order: give type, and after_id and limit (1 to 100, 20 unless given), or type and the continuation a result gave. There is no page number.')]
+#[Description('The agents or users work may be given to, in id order: give type, and after_id and limit (1 to 100, 20 '
+    .'unless given), or type and the continuation a result gave. There is no page number.')]
 #[IsReadOnly]
 final class AssigneesListTool extends JournalReadTool
 {
@@ -50,13 +51,19 @@ final class AssigneesListTool extends JournalReadTool
         $type = $arguments->enum('type', ActorType::class);
         $cursor = $arguments->continuation();
         $filters = $cursor === null
-            ? ['after_id' => $arguments->optionalText('after_id'), 'limit' => $arguments->positiveIntegerOr('limit', self::DEFAULT_LIMIT, Page::LARGEST_LIMIT)]
+
+                    ? ['after_id' => $arguments->optionalText('after_id'), 'limit' => $arguments->positiveIntegerOr('limit', self::DEFAULT_LIMIT, Page::LARGEST_LIMIT)]
             : $this->continuations->open($cursor, $this->name(), $type->value)->filters;
         $list = $this->assignees->eligible($type->value, new Page($filters['after_id'], $filters['limit']));
         $nextActions = $list->nextAfterId === null ? [] : [new NextAction($this->name(), [
             'type' => $type->value,
             'continuation' => $this->continuations->issue(
-                new Continuation($this->name(), $type->value, ['after_id' => $list->nextAfterId, 'limit' => $filters['limit']], 0),
+                new Continuation(
+                    $this->name(),
+                    $type->value,
+                    ['after_id' => $list->nextAfterId, 'limit' => $filters['limit']],
+                    0,
+                ),
             ),
         ])];
 

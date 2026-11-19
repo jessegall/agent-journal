@@ -59,7 +59,12 @@ final class StateLifecycleTest extends TestCase
         $this->target = TestActors::stack(1, 10);
         $this->app->instance(
             AgentContext::class,
-            new AgentContext(TestIds::of(1), TestIds::of(10), new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)), null),
+            new AgentContext(
+                TestIds::of(1),
+                TestIds::of(10),
+                new SignedCall('call-1', CarbonImmutable::now(), str_repeat('a', 64)),
+                null,
+            ),
         );
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent(TestIds::of(1)),
@@ -92,7 +97,7 @@ final class StateLifecycleTest extends TestCase
         $this->assertSame(['A', 'B'], $this->storedSubjects());
     }
 
-    public function test_a_push_over_a_finished_top_exits_it_and_enters_the_new_frame_without_resuming_the_parent(): void
+    public function test_a_push_over_a_finished_top_exits_it_and_enters_the_new_frame_not_the_parent(): void
     {
         $this->push('A');
         $this->push('B');
@@ -221,7 +226,19 @@ final class StateLifecycleTest extends TestCase
 
         $records = $row->frames->all();
         $tooMany = new FrameRecords(
-            [$records[0], ...array_map(fn (int $number) => new FrameRecord("frame-{$number}", $this->task((string) $number), false, 1, CarbonImmutable::now()), range(1, 100))],
+            [
+                $records[0],
+                ...array_map(
+                    fn (int $number) => new FrameRecord(
+                        "frame-{$number}",
+                        $this->task((string) $number),
+                        false,
+                        1,
+                        CarbonImmutable::now(),
+                    ),
+                    range(1, 100),
+                ),
+            ],
         );
 
         $this->expectException(StackTooDeep::class);
@@ -250,7 +267,10 @@ final class StateLifecycleTest extends TestCase
     private function pushPlan(string $subject): void
     {
         $this->transaction()->run(
-            fn () => $this->app->make(AgentStacks::class)->push($this->target, new StateReference('test.plans', new SubjectReference($subject, 1))),
+            fn () => $this->app->make(AgentStacks::class)->push(
+                $this->target,
+                new StateReference('test.plans', new SubjectReference($subject, 1)),
+            ),
         );
     }
 
@@ -267,7 +287,12 @@ final class StateLifecycleTest extends TestCase
         $frames = AgentStackRow::query()->forTarget($this->target)->sole()->frames->all();
 
         return array_values(
-            array_map(fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : '', array_slice($frames, 1)),
+            array_map(
+                fn (
+                    FrameRecord $frame,
+                ) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : '',
+                array_slice($frames, 1),
+            ),
         );
     }
 
@@ -289,7 +314,9 @@ final class StateLifecycleTest extends TestCase
 
         return array_combine(
             array_map(
-                fn (FrameRecord $frame) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : '',
+                fn (
+                    FrameRecord $frame,
+                ) => $frame->reference->subject instanceof SubjectReference ? $frame->reference->subject->id : '',
                 $frames,
             ),
             array_map(fn (FrameRecord $frame) => $frame->enteredAt, $frames),

@@ -69,7 +69,7 @@ final class TaskRunOwnershipTest extends TestCase
         $this->task = Task::factory()->create(['title' => 'Owned work']);
     }
 
-    public function test_two_sessions_starting_one_task_leave_one_owner_and_the_winners_keyed_retry_gets_the_same_run(): void
+    public function test_two_sessions_starting_one_task_leave_one_owner_and_a_keyed_retry_gets_the_same_run(): void
     {
         $this->actAs($this->first);
         $this->app->make(RequestKey::class)->set('01JD8X0G9M3QZ6V4K2STARTKEY1');
@@ -172,7 +172,12 @@ final class TaskRunOwnershipTest extends TestCase
         $agent = $session->agent()->firstOrFail();
         $this->app->instance(
             AgentContext::class,
-            new AgentContext($agent->id, $session->id, new SignedCall('call-'.bin2hex(random_bytes(4)), CarbonImmutable::now(), 'digest'), null),
+            new AgentContext(
+                $agent->id,
+                $session->id,
+                new SignedCall('call-'.bin2hex(random_bytes(4)), CarbonImmutable::now(), 'digest'),
+                null,
+            ),
         );
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($agent->id),

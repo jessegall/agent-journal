@@ -54,25 +54,34 @@ final readonly class UiManifest
             ]),
             'tsconfig.domains.json' => $this->typeScriptConfig($hash, $folders),
             'vite.domains.ts' => $this->render('vite.domains.ts', [
-                                'hash' => $hash,
-                                'aliases' => $this->aliases($folders),
-                                'vendorRoots' => array_values(
-                                    array_filter($folders, fn (string $path) => str_starts_with($path, 'vendor/')),
-                                ),
-                            ]),
+                'hash' => $hash,
+                'aliases' => $this->aliases($folders),
+                'vendorRoots' => array_values(
+                    array_filter($folders, fn (string $path) => str_starts_with($path, 'vendor/')),
+                ),
+            ]),
             'resources/css/generated/domain-sources.css' => $this->render('domain-sources.css', [
-                                                'hash' => $hash,
-                                                'sources' => array_map(fn (string $path) => '../../../'.$path, array_values($folders)),
-                                            ]),
+                'hash' => $hash,
+                'sources' => array_map(
+                    fn (string $path) => '../../../'.$path,
+                    array_values($folders),
+                ),
+            ]),
             'resources/js/generated/types/page-props.ts' => $this->render('page-props.ts', [
-                                                'hash' => $hash,
-                                                'imports' => $this->propTypes->imports(),
-                                                'pages' => $this->propTypes->pageProps(),
-                                                'windows' => $this->propTypes->windowProps(),
-                                            ]),
+                'hash' => $hash,
+                'imports' => $this->propTypes->imports(),
+                'pages' => $this->propTypes->pageProps(),
+                'windows' => $this->propTypes->windowProps(),
+            ]),
             'resources/js/generated/ui-prop-checks.ts' => $this->render(
                 'ui-prop-checks.ts',
-                ['hash' => $hash, 'checks' => $this->propChecks($root), 'dataTypes' => array_values(array_unique(array_map($this->propTypes->dataTypeOf(...), $this->declarations->pages())))],
+                [
+                    'hash' => $hash,
+                    'checks' => $this->propChecks($root),
+                    'dataTypes' => array_values(
+                        array_unique(array_map($this->propTypes->dataTypeOf(...), $this->declarations->pages())),
+                    ),
+                ],
             ),
             'resources/js/generated/domain-roots.json' => json_encode(
                 ['hash' => $hash, 'owners' => $folders],
@@ -82,7 +91,9 @@ final readonly class UiManifest
         ];
 
         foreach ($artifacts as $path => $content) {
-            if (trim($content) === '' || ! str_contains($content, $hash) && $path !== 'bootstrap/cache/ui-components.php') {
+            if (trim($content) === ''
+                || ! str_contains($content, $hash)
+                && $path !== 'bootstrap/cache/ui-components.php') {
                 throw UiManifestInvalid::emptyOrUnmarked($path);
             }
         }

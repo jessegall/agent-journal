@@ -24,7 +24,8 @@ final class TestDatabaseTraits
     ];
 
     /**
-     * The files under these folders that use one of Laravel's database traits, leaving out the skipped files and folders.
+     * The files under these folders that use one of Laravel's database traits, leaving out the skipped files and
+     * folders.
      *
      * @param  list<string>  $folders
      * @param  list<string>  $skipped

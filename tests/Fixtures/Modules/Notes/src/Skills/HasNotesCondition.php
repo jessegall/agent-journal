@@ -23,6 +23,8 @@ final readonly class HasNotesCondition implements SkillConditionEvaluator
     {
         $written = Note::query()->ownedBy($context->actor)->count();
 
-        return $written >= $parameters->atLeast ? ConditionResult::match('notes-written') : ConditionResult::noMatch('too-few-notes');
+        return $written >= $parameters->atLeast
+            ? ConditionResult::match('notes-written')
+            : ConditionResult::noMatch('too-few-notes');
     }
 }

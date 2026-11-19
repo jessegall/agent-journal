@@ -15,7 +15,8 @@ use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
- * Every domain and core model lists its fillable attributes with #[Fillable([...])] only, is never open to mass assignment,
+ * Every domain and core model lists its fillable attributes with #[Fillable([...])] only, is never open to mass
+ * assignment,
  * is keyed by a ULID and can be linked.
  */
 #[TimeLimit(seconds: 15, reason: 'It parses the project files it judges.')]
@@ -64,7 +65,9 @@ final class DomainModelConventionTest extends TestCase
 
         $this->assertSame(
             ['IntegerKeyModel', 'UnlinkedModel'],
-            array_values(array_unique(array_map(fn (Violation $violation) => class_basename($violation->used), $violations))),
+            array_values(
+                array_unique(array_map(fn (Violation $violation) => class_basename($violation->used), $violations)),
+            ),
         );
     }
 

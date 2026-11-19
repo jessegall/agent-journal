@@ -52,7 +52,7 @@ final class AgentRequestKeyTest extends TestCase
         $this->task = Task::factory()->create(['title' => 'Keyed work']);
     }
 
-    public function test_a_cli_assign_retried_with_the_same_request_key_returns_the_stored_result_without_a_second_change(): void
+    public function test_a_cli_assign_retried_with_its_request_key_returns_the_stored_result_unchanged(): void
     {
         $this->runCommandsAs($this->main);
         $arguments = [
@@ -71,7 +71,14 @@ final class AgentRequestKeyTest extends TestCase
         $this->signed(
             $this->main,
             '/agent/assignments/unassign',
-            ['record_type' => 'tasks.task', 'record_id' => $this->task->id, 'assignment_id' => $reference, 'holder_type' => 'agent', 'holder_id' => $this->helper->agent->id, 'request_key' => '01JD8X0G9M3QZ6V4K2CLIKEY002'],
+            [
+                'record_type' => 'tasks.task',
+                'record_id' => $this->task->id,
+                'assignment_id' => $reference,
+                'holder_type' => 'agent',
+                'holder_id' => $this->helper->agent->id,
+                'request_key' => '01JD8X0G9M3QZ6V4K2CLIKEY002',
+            ],
         )->assertOk();
 
         $this->artisan('assignment:assign', $arguments)->expectsOutputToContain('"changed":1')->assertExitCode(0);
@@ -85,7 +92,12 @@ final class AgentRequestKeyTest extends TestCase
 
         $this->artisan(
             'assignment:assign',
-            ['type' => 'tasks.task', 'id' => $this->task->id, '--to' => "agent:{$this->main->agent->id}", '--request-key' => self::KEY],
+            [
+                'type' => 'tasks.task',
+                'id' => $this->task->id,
+                '--to' => "agent:{$this->main->agent->id}",
+                '--request-key' => self::KEY,
+            ],
         )
             ->expectsOutputToContain('--request-key='.self::KEY)
             ->assertExitCode(1);
@@ -99,12 +111,24 @@ final class AgentRequestKeyTest extends TestCase
         $this->signed(
             $this->main,
             '/agent/assignments/assign',
-            ['record_type' => 'tasks.task', 'record_id' => $this->task->id, 'recipient_type' => 'agent', 'recipient_id' => $this->helper->agent->id, 'request_key' => self::KEY],
+            [
+                'record_type' => 'tasks.task',
+                'record_id' => $this->task->id,
+                'recipient_type' => 'agent',
+                'recipient_id' => $this->helper->agent->id,
+                'request_key' => self::KEY,
+            ],
         )->assertOk();
         $this->signed(
             $second,
             '/agent/assignments/assign',
-            ['record_type' => 'tasks.task', 'record_id' => $other->id, 'recipient_type' => 'agent', 'recipient_id' => $this->helper->agent->id, 'request_key' => self::KEY],
+            [
+                'record_type' => 'tasks.task',
+                'record_id' => $other->id,
+                'recipient_type' => 'agent',
+                'recipient_id' => $this->helper->agent->id,
+                'request_key' => self::KEY,
+            ],
         )->assertOk();
 
         $authors = $this->app->make(
@@ -119,7 +143,13 @@ final class AgentRequestKeyTest extends TestCase
         $this->signed(
             $this->main,
             '/agent/assignments/assign',
-            ['record_type' => 'tasks.task', 'record_id' => $this->task->id, 'recipient_type' => 'agent', 'recipient_id' => $this->helper->agent->id, 'request_key' => 'not a key!'],
+            [
+                'record_type' => 'tasks.task',
+                'record_id' => $this->task->id,
+                'recipient_type' => 'agent',
+                'recipient_id' => $this->helper->agent->id,
+                'request_key' => 'not a key!',
+            ],
         )
             ->assertUnprocessable();
     }

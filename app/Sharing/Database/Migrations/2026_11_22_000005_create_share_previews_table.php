@@ -16,7 +16,9 @@ return new class extends Migration
             $table->string('root_type');
             $table->string('root_id');
             $table->json('selection');
-            $table->foreignUlid('share_gateway_configuration_id')->constrained('share_gateway_configurations')->restrictOnDelete();
+            $table->foreignUlid('share_gateway_configuration_id')
+                ->constrained('share_gateway_configurations')
+                ->restrictOnDelete();
             $table->unsignedInteger('configuration_version');
             $table->char('checksum', 64);
             $table->timestampTz('expires_at');

@@ -58,7 +58,8 @@ trait BelongsToOneActor
     }
 
     /**
-     * The explicit read of one actor's rows, for the journal's own work on that actor; it lifts the current-actor limit.
+     * The explicit read of one actor's rows, for the journal's own work on that actor; it lifts the current-actor
+     * limit.
      *
      * @param  Builder<static>  $query
      */
@@ -86,6 +87,7 @@ trait BelongsToOneActor
     public static function lockedForActorOrUnheld(string $id): static|null
     {
         return static::query()->forActor()->whereKey($id)->lockForUpdate()->first()
-            ?? static::query()->withoutGlobalScope(static::ownerScope())->whereNull('actor_id')->whereKey($id)->lockForUpdate()->first();
+
+                    ?? static::query()->withoutGlobalScope(static::ownerScope())->whereNull('actor_id')->whereKey($id)->lockForUpdate()->first();
     }
 }

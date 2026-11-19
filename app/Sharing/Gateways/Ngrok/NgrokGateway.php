@@ -57,7 +57,8 @@ final readonly class NgrokGateway implements ShareGateway
         $settings = $configuration->settings;
         $problems = [];
 
-        if (! str_starts_with($settings->publicOrigin, 'https://') || ! $this->origins->accepts($settings->publicOrigin, $settings->publicOrigin)) {
+        if (! str_starts_with($settings->publicOrigin, 'https://')
+            || ! $this->origins->accepts($settings->publicOrigin, $settings->publicOrigin)) {
             $problems[] = 'No fixed HTTPS address is configured for ngrok; a random address is never used.';
         }
 
@@ -96,7 +97,16 @@ final readonly class NgrokGateway implements ShareGateway
         $configFile = $this->writeConfiguration($this->secrets->read($reference));
         $upstream = "127.0.0.1:{$settings->listenerPort}";
         $child = $this->processes->newPendingProcess()->timeout(0)->env(['HOME' => $this->configFolder])
-            ->start([$this->binary, 'http', $upstream, "--url={$settings->publicOrigin}", "--config={$configFile}", '--log=false']);
+            ->start(
+                [
+                    $this->binary,
+                    'http',
+                    $upstream,
+                    "--url={$settings->publicOrigin}",
+                    "--config={$configFile}",
+                    '--log=false',
+                ],
+            );
 
         return $this->launches->open(
             self::KEY,
@@ -137,7 +147,10 @@ final readonly class NgrokGateway implements ShareGateway
             $claimsOrigin = $this->origins->accepts(Arr::string($tunnel, 'public_url'), $publicOrigin);
 
             if ($forwardsHere || $claimsOrigin) {
-                return $forwardsHere && $claimsOrigin ? GatewayAddressCheck::Confirmed : GatewayAddressCheck::Unexpected;
+                return $forwardsHere
+                    && $claimsOrigin
+                    ? GatewayAddressCheck::Confirmed
+                    : GatewayAddressCheck::Unexpected;
             }
         }
 

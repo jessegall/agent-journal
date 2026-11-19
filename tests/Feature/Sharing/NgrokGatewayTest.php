@@ -47,7 +47,10 @@ final class NgrokGatewayTest extends TestCase
         ]);
         $this->processes = new Processes();
         $this->processes->fake(
-            ['*version*' => 'ngrok version 3.20.0', '*http 127.0.0.1:8090*' => $this->processes->describe()->output('started')->iterations(3)],
+            [
+                '*version*' => 'ngrok version 3.20.0',
+                '*http 127.0.0.1:8090*' => $this->processes->describe()->output('started')->iterations(3),
+            ],
         );
         $this->app->instance(Processes::class, $this->processes);
         $this->http = new HttpClient();
@@ -130,7 +133,11 @@ final class NgrokGatewayTest extends TestCase
             1,
             'lease',
             time() + 90,
-            new GatewayConfiguration('configuration-1', 1, new GatewaySettings('ngrok', '3.20.0', 'ngrok.com', $origin, 8090, ['ngrok-authtoken'])),
+            new GatewayConfiguration(
+                'configuration-1',
+                1,
+                new GatewaySettings('ngrok', '3.20.0', 'ngrok.com', $origin, 8090, ['ngrok-authtoken']),
+            ),
         );
     }
 }

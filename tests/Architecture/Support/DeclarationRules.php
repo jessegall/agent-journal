@@ -34,7 +34,8 @@ final readonly class DeclarationRules
 
         foreach (ScanCache::findingsByFile(new ClassesDeclared(), $files) as $path => $classes) {
             foreach ($classes as $name) {
-                if (! is_subclass_of($name, Domain::class) || ($reflection = new ReflectionClass($name))->isAbstract()) {
+                if (! is_subclass_of($name, Domain::class)
+                    || ($reflection = new ReflectionClass($name))->isAbstract()) {
                     continue;
                 }
 
@@ -55,7 +56,8 @@ final readonly class DeclarationRules
     }
 
     /**
-     * Files of the application folder that lie in no domain, in none of the shared places and not on the starter-kit list.
+     * Files of the application folder that lie in no domain, in none of the shared places and not on the starter-kit
+     * list.
      *
      * @param  list<string>  $files
      * @param  list<string>  $sharedFolders
@@ -67,7 +69,9 @@ final readonly class DeclarationRules
         $violations = [];
 
         foreach ($files as $path) {
-            if ($this->isInADomain($path) || $this->liesIn($path, $sharedFolders) || in_array($path, $starterKitFiles, true)) {
+            if ($this->isInADomain($path)
+                || $this->liesIn($path, $sharedFolders)
+                || in_array($path, $starterKitFiles, true)) {
                 continue;
             }
 

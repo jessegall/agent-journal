@@ -98,7 +98,9 @@ final readonly class DomainUi
      */
     public function componentFile(string $declaration, string $component): string
     {
-        if (! str_ends_with($component, '.vue') || str_starts_with($component, '/') || in_array('..', explode('/', $component), true)) {
+        if (! str_ends_with($component, '.vue')
+            || str_starts_with($component, '/')
+            || in_array('..', explode('/', $component), true)) {
             throw UiComponentMissing::outsideOwner($declaration, $component);
         }
 

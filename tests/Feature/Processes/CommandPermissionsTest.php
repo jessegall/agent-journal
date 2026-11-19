@@ -33,7 +33,10 @@ final class CommandPermissionsTest extends TestCase
         );
         $this->assertFalse($helper->admits(CommandClassSet::of(CommandClass::Write), ['touch', 'a']));
         $this->assertFalse(
-            $helper->admits(CommandClassSet::of(CommandClass::Read, CommandClass::Verification), ['phpstan', 'analyse']),
+            $helper->admits(
+                CommandClassSet::of(CommandClass::Read, CommandClass::Verification),
+                ['phpstan', 'analyse'],
+            ),
         );
     }
 
@@ -47,7 +50,10 @@ final class CommandPermissionsTest extends TestCase
         $this->assertTrue($helper->admits($network, ['curl', '--head', 'https://example.org/']));
         $this->assertFalse($helper->admits($network, ['curl', '--head', 'https://example.com/']));
         $this->assertFalse(
-            $helper->admits(CommandClassSet::of(CommandClass::Network, CommandClass::Write), ['curl', '-o', 'page', 'https://example.org/']),
+            $helper->admits(
+                CommandClassSet::of(CommandClass::Network, CommandClass::Write),
+                ['curl', '-o', 'page', 'https://example.org/'],
+            ),
         );
     }
 

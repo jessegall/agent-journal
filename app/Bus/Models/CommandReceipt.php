@@ -51,7 +51,21 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(
-    ['author_type', 'author_id', 'session_id', 'contract_major', 'request_key', 'command', 'fingerprint', 'state', 'result', 'refusal_code', 'refusal_message', 'answers_until', 'refuses_until'],
+    [
+        'author_type',
+        'author_id',
+        'session_id',
+        'contract_major',
+        'request_key',
+        'command',
+        'fingerprint',
+        'state',
+        'result',
+        'refusal_code',
+        'refusal_message',
+        'answers_until',
+        'refuses_until',
+    ],
 )]
 final class CommandReceipt extends Model implements ReadableModel
 {
@@ -83,7 +97,9 @@ final class CommandReceipt extends Model implements ReadableModel
     {
         self::addGlobalScope(
             'caller',
-            static fn (Builder $query) => Container::getInstance()->make(ReceiptCallers::class)->current()->limitReadable($query),
+            static fn (Builder $query) => Container::getInstance()->make(
+                ReceiptCallers::class,
+            )->current()->limitReadable($query),
         );
     }
 
@@ -180,7 +196,12 @@ final class CommandReceipt extends Model implements ReadableModel
     public static function expirePastRetention(CarbonImmutable $now): int
     {
         return self::query()->pastRetention($now)->update(
-            ['state' => ReceiptState::Expired->value, 'result' => null, 'refusal_code' => null, 'refusal_message' => null],
+            [
+                'state' => ReceiptState::Expired->value,
+                'result' => null,
+                'refusal_code' => null,
+                'refusal_message' => null,
+            ],
         );
     }
 

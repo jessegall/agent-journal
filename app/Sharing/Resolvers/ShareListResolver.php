@@ -27,7 +27,11 @@ final readonly class ShareListResolver implements PageResolver
         $found = Share::listPage($filters->toFilters(), self::ROWS);
         $rows = array_slice($found, 0, self::ROWS);
         $gatewayKeys = ShareGatewayConfiguration::gatewayKeysOf(
-            array_values(array_unique(array_filter(array_map(fn (Share $share) => $share->share_gateway_configuration_id, $rows)))),
+            array_values(
+                array_unique(
+                    array_filter(array_map(fn (Share $share) => $share->share_gateway_configuration_id, $rows)),
+                ),
+            ),
         );
         $last = $rows === [] ? null : $rows[array_key_last($rows)];
 

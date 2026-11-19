@@ -41,7 +41,10 @@ final class AffectedTestsTest extends TestCase
     {
         $this->assertSame(
             AffectedTests::EVERYTHING,
-            $this->affectedBy('domain/Rules/src/Handlers/ApproveRuleHandler.php', 'app/Bus/Support/CommandRegistry.php'),
+            $this->affectedBy(
+                'domain/Rules/src/Handlers/ApproveRuleHandler.php',
+                'app/Bus/Support/CommandRegistry.php',
+            ),
         );
     }
 

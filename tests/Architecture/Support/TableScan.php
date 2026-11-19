@@ -128,7 +128,8 @@ final readonly class TableScan implements FileScan
     }
 
     /**
-     * A closure or a query builder given to from or join is a subquery; its own table calls are found where they are written.
+     * A closure or a query builder given to from or join is a subquery; its own table calls are found where they are
+     * written.
      *
      * @return list<TableUse>
      */
@@ -136,7 +137,10 @@ final readonly class TableScan implements FileScan
     {
         $table = self::argument($call, 0);
 
-        if ($table instanceof Expr\Closure || $table instanceof Expr\ArrowFunction || $table instanceof MethodCall || $table instanceof StaticCall) {
+        if ($table instanceof Expr\Closure
+            || $table instanceof Expr\ArrowFunction
+            || $table instanceof MethodCall
+            || $table instanceof StaticCall) {
             return [];
         }
 

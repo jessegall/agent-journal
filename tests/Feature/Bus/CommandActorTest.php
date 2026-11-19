@@ -62,7 +62,10 @@ final class CommandActorTest extends CommandBusTestCase
             string $line,
             array $context,
         ) => $line === 'Command WriteNote done'
-            && $context['owner'] === 'Notes' && $context['actor'] === 'user:'.TestIds::of(1) && ! str_contains((string) json_encode($context), 'private text'));
+
+                && $context['owner'] === 'Notes'
+                && $context['actor'] === 'user:'.TestIds::of(1)
+                && ! str_contains((string) json_encode($context), 'private text'));
     }
 
     public function test_the_engine_outside_a_tick_is_refused_an_application_command(): void

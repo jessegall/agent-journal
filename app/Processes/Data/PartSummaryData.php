@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Processes\Data;
 
 use Spatie\LaravelData\Data;
+use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
 /**
  * One classified part as plain data: its program family, purpose, unresolved reasons and contract tools. It is what
  * the corpus freezes and what an evidence digest hashes.
  */
+#[TypeScript]
 final class PartSummaryData extends Data
 {
     /**

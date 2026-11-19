@@ -125,7 +125,15 @@ final class AssignedListsTest extends TestCase
         [$before, $after] = $this->app->make(AssignmentTransaction::class)->run(function () use ($other, $late): array {
             $before = $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters());
             $other->table('assignments')->insert(
-                ['id' => strtolower((string) Str::ulid()), 'record_type' => 'tasks.task', 'record_id' => $late->id, 'holder_type' => 'agent', 'holder_id' => $this->main->id, 'created_at' => now(), 'updated_at' => now()],
+                [
+                    'id' => strtolower((string) Str::ulid()),
+                    'record_type' => 'tasks.task',
+                    'record_id' => $late->id,
+                    'holder_type' => 'agent',
+                    'holder_id' => $this->main->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
             );
 
             return [$before, $this->app->make(AssignedTaskResolver::class)->assignedToCaller(new TaskFilters())];

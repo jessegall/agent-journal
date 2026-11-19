@@ -100,7 +100,12 @@ final class TaskDetailsResolverTest extends TestCase
         $this->assertSame($desk->id, $details->holder->get()->holder()->id);
         $this->assertSame(
             [$runner->agent_id, 'Runner', 1, TaskWorkState::Active],
-            [$details->execution?->actorId, $details->execution?->actorLabel, $details->execution?->runNumber, $details->execution?->workState],
+            [
+                $details->execution?->actorId,
+                $details->execution?->actorLabel,
+                $details->execution?->runNumber,
+                $details->execution?->workState,
+            ],
         );
         $this->assertSame('Held by one, run by another.', $details->brief);
         $this->assertNull($this->app->make(TaskDetailsResolver::class)->details($task->id, TaskView::Summary)->brief);
@@ -157,7 +162,12 @@ final class TaskDetailsResolverTest extends TestCase
         $this->app->forgetScopedInstances();
         $this->app->instance(
             AgentContext::class,
-            new AgentContext($session->agent_id, $session->id, new SignedCall('call-'.bin2hex(random_bytes(4)), CarbonImmutable::now(), 'digest'), null),
+            new AgentContext(
+                $session->agent_id,
+                $session->id,
+                new SignedCall('call-'.bin2hex(random_bytes(4)), CarbonImmutable::now(), 'digest'),
+                null,
+            ),
         );
         $this->app->make(CurrentActorSetter::class)->set(
             ActorContext::forAgent($session->agent_id),

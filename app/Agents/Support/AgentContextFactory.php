@@ -14,7 +14,8 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 
 /**
- * Builds the context of one agent request from its launch credential and signed call; ids in the body or other headers count for nothing.
+ * Builds the context of one agent request from its launch credential and signed call; ids in the body or other headers
+ * count for nothing.
  */
 final readonly class AgentContextFactory
 {

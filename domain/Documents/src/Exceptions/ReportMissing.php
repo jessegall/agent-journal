@@ -8,7 +8,8 @@ use App\Contracts\CommandRefusal;
 use RuntimeException;
 
 /**
- * A report number that no readable report has. A number outside the reader's scope answers the same, so it reveals nothing.
+ * A report number that no readable report has. A number outside the reader's scope answers the same, so it reveals
+ * nothing.
  */
 final class ReportMissing extends RuntimeException implements CommandRefusal
 {

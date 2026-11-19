@@ -48,7 +48,9 @@ final class ConditionTreeTest extends TestCase
 
         $this->assertSame(json_decode(self::SECTION_6_JSON, true), $php->toArray());
 
-        foreach ([$this->reviewerOn('codex'), $this->reviewerOn('claude-code'), $this->mainAgentOn('codex')] as $context) {
+        foreach ([$this->reviewerOn('codex'), $this
+            ->reviewerOn('claude-code'), $this
+            ->mainAgentOn('codex')] as $context) {
             $this->assertSame($php->evaluate($context)->outcome, $json->evaluate($context)->outcome);
         }
 
@@ -137,7 +139,11 @@ final class ConditionTreeTest extends TestCase
             'condition.children needs at least one condition',
         ];
         yield 'not with two children' => [
-            ['type' => 'not', 'version' => 1, 'children' => [['type' => 'everyone', 'version' => 1], ['type' => 'everyone', 'version' => 1]]],
+            [
+                'type' => 'not',
+                'version' => 1,
+                'children' => [['type' => 'everyone', 'version' => 1], ['type' => 'everyone', 'version' => 1]],
+            ],
             'condition.children needs exactly one condition',
         ];
         yield 'unknown type' => [
@@ -171,7 +177,12 @@ final class ConditionTreeTest extends TestCase
             'more than 256 nodes',
         ];
         yield 'large parameters' => [
-            ['type' => 'named', 'version' => 1, 'key' => 'notes.big', 'parameters' => ['text' => str_repeat('a', 32_768)]],
+            [
+                'type' => 'named',
+                'version' => 1,
+                'key' => 'notes.big',
+                'parameters' => ['text' => str_repeat('a', 32_768)],
+            ],
             'more than 32768 bytes',
         ];
     }

@@ -32,7 +32,11 @@ final readonly class ReportRecords implements ReportResolver
         $size = $filters->pageSize()->rows;
         $reports = Report::query()->sharedPublished()->inAttention($filters->attention->state())
             ->when($filters->searches(), fn (Builder $query) => $query->matchingText($filters->query))
-            ->when($filters->after !== '', fn (Builder $query) => $query->where('id', '<', $filters->after), fn (Builder $query) => $query->offset(($filters->page - 1) * $size))
+            ->when(
+                $filters->after !== '',
+                fn (Builder $query) => $query->where('id', '<', $filters->after),
+                fn (Builder $query) => $query->offset(($filters->page - 1) * $size),
+            )
             ->orderByDesc('id')
             ->limit($size + 1)
             ->get();
@@ -40,7 +44,9 @@ final readonly class ReportRecords implements ReportResolver
 
         return ReportList::from([
             'rows' => array_values(
-                $page->map(fn (Report $report) => $filters->searches() ? $report->hit($filters->query) : $report->card())->all(),
+                $page->map(
+                    fn (Report $report) => $filters->searches() ? $report->searchResult($filters->query) : $report->card(),
+                )->all(),
             ),
             'page' => $filters->page,
             'hasNextPage' => $reports->count() > $size,
@@ -57,9 +63,7 @@ final readonly class ReportRecords implements ReportResolver
 
     public function show(int $number): ReportView
     {
-        $report = self::findPublished($number);
-
-        return $report?->view() ?? throw ReportMissing::numbered($number);
+        return self::published($number)->view();
     }
 
     public function inspect(int $number): RecordInspection
@@ -84,15 +88,15 @@ final readonly class ReportRecords implements ReportResolver
     }
 
     /**
-     * The published report with that number; none when it is missing or hidden.
+     * The published report with that number; refused when it is missing or hidden.
+     *
+     * @throws ReportMissing
      */
-    private static function findPublished(int $number): Report|null
-    {
-        return Report::query()->sharedPublished()->where('number', $number)->first();
-    }
-
     private static function published(int $number): Report
     {
-        return self::findPublished($number) ?? throw ReportMissing::numbered($number);
+        return Report::query()
+            ->sharedPublished()
+            ->where('number', $number)
+            ->firstOr(fn () => throw ReportMissing::numbered($number));
     }
 }

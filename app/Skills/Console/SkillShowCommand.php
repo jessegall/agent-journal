@@ -34,7 +34,16 @@ final class SkillShowCommand extends Command
 
         if ($this->option('json')) {
             $this->line(
-                json_encode(['key' => $skill->key->key, 'owner' => $skill->owner, 'source' => $skill->origin->value, 'digest' => $skill->rendered->digest, 'markdown' => $skill->rendered->markdown], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES),
+                json_encode(
+                    [
+                        'key' => $skill->key->key,
+                        'owner' => $skill->owner,
+                        'source' => $skill->origin->value,
+                        'digest' => $skill->rendered->digest,
+                        'markdown' => $skill->rendered->markdown,
+                    ],
+                    JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES,
+                ),
             );
 
             return self::SUCCESS;

@@ -31,7 +31,8 @@ final readonly class EnvironmentCredentialSource implements LaunchCredentialSour
         $journalUrl = rtrim($this->usable($launch, 'JOURNAL_URL'), '/');
         $token = $this->usable($launch, 'JOURNAL_LAUNCH_TOKEN');
 
-        if (parse_url($journalUrl, PHP_URL_SCHEME) !== 'https' && ! in_array(parse_url($journalUrl, PHP_URL_HOST), self::LOOPBACK_HOSTS, true)) {
+        if (parse_url($journalUrl, PHP_URL_SCHEME) !== 'https'
+            && ! in_array(parse_url($journalUrl, PHP_URL_HOST), self::LOOPBACK_HOSTS, true)) {
             throw LaunchCredentialRefused::insecureUrl($journalUrl);
         }
 

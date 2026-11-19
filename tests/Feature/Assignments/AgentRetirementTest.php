@@ -164,7 +164,11 @@ final class AgentRetirementTest extends TestCase
         Agent::query()->whereKey($this->helper->id)->update(['retired_at' => now()]);
 
         $this->assertThrows(
-            fn () => $this->app->make(LaunchSessions::class)->launch($this->helper->refresh(), TestSelections::of('claude-code'), TestSelections::requestId()),
+            fn () => $this->app->make(LaunchSessions::class)->launch(
+                $this->helper->refresh(),
+                TestSelections::of('claude-code'),
+                TestSelections::requestId(),
+            ),
             LaunchRefused::class,
         );
         $this->assertThrows(
@@ -246,7 +250,15 @@ final class AgentRetirementTest extends TestCase
         DB::transaction(function () use ($taskId, $parent): void {
             DB::select('SELECT id FROM agents WHERE id = ? FOR SHARE', [$this->helper->id]);
             DB::table('assignments')->insert(
-                ['id' => strtolower((string) Str::ulid()), 'record_type' => 'tasks.task', 'record_id' => $taskId, 'holder_type' => 'agent', 'holder_id' => $this->helper->id, 'created_at' => now(), 'updated_at' => now()],
+                [
+                    'id' => strtolower((string) Str::ulid()),
+                    'record_type' => 'tasks.task',
+                    'record_id' => $taskId,
+                    'holder_type' => 'agent',
+                    'holder_id' => $this->helper->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
             );
             $this->holdUntilTheRetirementWaits($parent);
         });
@@ -269,7 +281,8 @@ final class AgentRetirementTest extends TestCase
             // Inside a transaction Postgres keeps one activity snapshot; clear it so each check sees the other session.
             DB::select('SELECT pg_stat_clear_snapshot()');
 
-            if ((int) DB::scalar("SELECT count(*) FROM pg_stat_activity WHERE wait_event_type = 'Lock' AND datname = current_database() AND pid <> pg_backend_pid()") > 0) {
+            if ((int) DB::scalar("SELECT count(*) FROM pg_stat_activity WHERE wait_event_type = 'Lock' AND datname = "
+                .'current_database() AND pid <> pg_backend_pid()') > 0) {
                 return;
             }
         }

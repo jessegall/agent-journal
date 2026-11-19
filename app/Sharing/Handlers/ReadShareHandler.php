@@ -66,7 +66,9 @@ final readonly class ReadShareHandler implements CommandHandler
         $share = Share::lockForRead($permit->shareId);
         $root = $share->root();
 
-        if (! $share->isReadableNow() || ! $this->policy->grantHolds($share) || ! $this->records->provider($root->type)->mayDisclose($root)) {
+        if (! $share->isReadableNow()
+            || ! $this->policy->grantHolds($share)
+            || ! $this->records->provider($root->type)->mayDisclose($root)) {
             return $this->deny($share, 'share');
         }
 
@@ -97,7 +99,8 @@ final readonly class ReadShareHandler implements CommandHandler
         foreach ($path->hops as $hop) {
             $relation = $this->records->relation($from->type, $hop->relation);
 
-            if ($relation->type !== ShareRelationType::Linked || ! ShareMember::approvesOverLiveLink($share, $from, $hop->target)) {
+            if ($relation->type !== ShareRelationType::Linked
+                || ! ShareMember::approvesOverLiveLink($share, $from, $hop->target)) {
                 return false;
             }
 
@@ -175,7 +178,10 @@ final readonly class ReadShareHandler implements CommandHandler
         ShareBudget $budget,
     ): array {
         $owned = array_values(
-            array_filter($this->records->relations($target->type)->relations, fn ($relation) => $relation->type === ShareRelationType::Owned),
+            array_filter(
+                $this->records->relations($target->type)->relations,
+                fn ($relation) => $relation->type === ShareRelationType::Owned,
+            ),
         );
 
         if ($owned === []) {
@@ -194,10 +200,20 @@ final readonly class ReadShareHandler implements CommandHandler
         $continuation = $cursor === null ? null : $this->cursors->read($cursor, $place)->continuation;
         $provider = $this->records->provider($target->type);
         $page = $budget->run(
-            fn () => $provider->readRelated(new ShareRelationRead($target, $relation, self::CHILDREN_PAGE, $continuation), $budget),
+            fn () => $provider->readRelated(
+                new ShareRelationRead($target, $relation, self::CHILDREN_PAGE, $continuation),
+                $budget,
+            ),
         );
         $next = $page->continuation === null ? null : $this->cursors->write(
-            new ShareCursor($share->id, $share->scope_version, $path->text, $relation, ShareCursor::ORDER_WRITTEN_THEN_ID, $page->continuation),
+            new ShareCursor(
+                $share->id,
+                $share->scope_version,
+                $path->text,
+                $relation,
+                ShareCursor::ORDER_WRITTEN_THEN_ID,
+                $page->continuation,
+            ),
         );
 
         return [array_map(SharedPageItem::fromCard(...), $page->eligible), $next];

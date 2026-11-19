@@ -13,7 +13,8 @@ final class BindersDomain extends Domain implements ProvidesShareRecords
 {
     public function description(): string
     {
-        return 'A fixture domain whose binders link to sheets, cards and tabs, three shareable types, and to memos, which are not linkable for sharing.';
+        return 'A fixture domain whose binders link to sheets, cards and tabs, three shareable types, and to memos, '
+            .'which are not linkable for sharing.';
     }
 
     public function requires(): array

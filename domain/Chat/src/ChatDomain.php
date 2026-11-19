@@ -46,7 +46,8 @@ final class ChatDomain extends Domain implements ProvidesCommands, ProvidesNavig
 {
     public function description(): string
     {
-        return 'The conversation product: the chat window, composer, chosen agent and docked records, built on Core messaging.';
+        return 'The conversation product: the chat window, composer, chosen agent and docked records, built on Core '
+            .'messaging.';
     }
 
     /**
@@ -110,7 +111,14 @@ final class ChatDomain extends Domain implements ProvidesCommands, ProvidesNavig
     public function sections(): array
     {
         return [
-            Section::make('agent', 'Agent', 'web.bar', SlotContextType::Session, ChosenAgentSection::class, 'ChosenAgent.vue'),
+            Section::make(
+                'agent',
+                'Agent',
+                'web.bar',
+                SlotContextType::Session,
+                ChosenAgentSection::class,
+                'ChosenAgent.vue',
+            ),
         ];
     }
 

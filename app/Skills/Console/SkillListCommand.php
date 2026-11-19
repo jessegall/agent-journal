@@ -21,10 +21,10 @@ final class SkillListCommand extends Command
 
     protected $description = 'List the skills of the catalogue';
 
-    public function handle(SkillResolver $skills): int
+    public function handle(SkillResolver $resolver): int
     {
         try {
-            $skills = $skills->all();
+            $skills = $resolver->all();
         } catch (SkillSourceInvalid|SkillConflict|SkillDeclarationInvalid $failure) {
             $this->error($failure->getMessage());
 
@@ -32,7 +32,14 @@ final class SkillListCommand extends Command
         }
 
         $rows = array_map(
-            fn (SkillEntry $skill) => ['key' => $skill->key->key, 'name' => $skill->name, 'owner' => $skill->owner, 'source' => $skill->origin->value, 'revision' => $skill->revision, 'digest' => $skill->rendered->digest],
+            fn (SkillEntry $skill) => [
+                'key' => $skill->key->key,
+                'name' => $skill->name,
+                'owner' => $skill->owner,
+                'source' => $skill->origin->value,
+                'revision' => $skill->revision,
+                'digest' => $skill->rendered->digest,
+            ],
             $skills,
         );
 

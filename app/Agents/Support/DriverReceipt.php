@@ -10,7 +10,8 @@ use App\Agents\Enums\RequestProgress;
 
 /**
  * What an accepted driver request answers its caller: which request, its place in order, where it stands and when it
- * is expected to land, judged from the runtime's last observation, whose time travels as ISO 8601 text (an advisory, doc 40 section 14).
+ * is expected to land, judged from the runtime's last observation, whose time travels as ISO 8601 text (an advisory,
+ * doc 40 section 14).
  */
 final readonly class DriverReceipt
 {

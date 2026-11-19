@@ -216,7 +216,11 @@ final class ReadShareTest extends TestCase
             $this->assertThrows(fn () => $this->read($token), StackLockTimedOut::class);
 
             $revoker->table('shares')->where('id', $shareId)->update(
-                ['state' => ShareState::Revoked->value, 'token_ciphertext' => null, 'terminal_at' => CarbonImmutable::now()],
+                [
+                    'state' => ShareState::Revoked->value,
+                    'token_ciphertext' => null,
+                    'terminal_at' => CarbonImmutable::now(),
+                ],
             );
             $revoker->commit();
         } finally {
@@ -257,7 +261,9 @@ final class ReadShareTest extends TestCase
     private function auditTypes(): array
     {
         return array_values(
-            ShareAudit::query()->orderBy('created_at')->orderBy('id')->get()->map(fn (ShareAudit $audit) => $audit->type)->all(),
+            ShareAudit::query()->orderBy('created_at')->orderBy('id')->get()->map(
+                fn (ShareAudit $audit) => $audit->type,
+            )->all(),
         );
     }
 

@@ -61,11 +61,14 @@ final class PlanBuilder
         if (StepType::isControl($node->type)) {
             $control = StepType::ofControl($node->type);
             $children = array_map(
-                fn (ShellNode $child) => $this->step($child->id, $control->hasSeparateChildContexts() ? ++$this->contexts : $context),
+                fn (ShellNode $child) => $this->step(
+                    $child->id,
+                    $control->hasSeparateChildContexts() ? ++$this->contexts : $context,
+                ),
                 $runnable,
             );
 
-            return new PlanStep($control, $node->id, $context, children: $children);
+            return PlanStep::from(['type' => $control, 'node' => $node->id, 'context' => $context, 'children' => $children]);
         }
         if ($node->type !== NodeType::SimpleCommand) {
             throw ExecutionPlanRefused::unsupportedNode($node->type->value, $node->id);
@@ -77,15 +80,36 @@ final class PlanBuilder
     private function command(ShellNode $node, int $context): PlanStep
     {
         $substitutions = array_values(
-            array_filter($this->tree->children($node->id), fn (ShellNode $child) => in_array($child->type, [NodeType::CommandSubstitution, NodeType::ProcessSubstitution], true)),
+            array_filter(
+                $this->tree->children($node->id),
+                fn (ShellNode $child) => in_array(
+                    $child->type,
+                    [NodeType::CommandSubstitution, NodeType::ProcessSubstitution],
+                    true,
+                ),
+            ),
         );
         $children = array_map(
-            fn (ShellNode $substitution) => new PlanStep(StepType::Substitution, $substitution->id, ++$this->contexts, children: array_map(fn (ShellNode $inner) => $this->step($inner->id, $this->contexts), $this->runnableChildren($substitution))),
+            fn (ShellNode $substitution) => PlanStep::from([
+                'type' => StepType::Substitution,
+                'node' => $substitution->id,
+                'context' => ++$this->contexts,
+                'children' => array_map(
+                    fn (ShellNode $inner) => $this->step($inner->id, $this->contexts),
+                    $this->runnableChildren($substitution),
+                ),
+            ]),
             $substitutions,
         );
         $argv = array_map(fn (Word $word) => $this->planWord($word, $node, $substitutions), $node->words);
         $redirects = array_map(
-            fn ($redirect) => new PlanRedirect($redirect->descriptor, $redirect->type, $redirect->target instanceof HereDocument ? new PlanWord([$this->hereDocumentText($redirect->target)]) : $this->planWord($redirect->target, $node, $substitutions)),
+            fn ($redirect) => new PlanRedirect(
+                $redirect->descriptor,
+                $redirect->type,
+                $redirect->target instanceof HereDocument ? new PlanWord(
+                    [$this->hereDocumentText($redirect->target)],
+                ) : $this->planWord($redirect->target, $node, $substitutions),
+            ),
             $node->redirects,
         );
         $assignments = $this->assignments($node, $substitutions);
@@ -95,7 +119,15 @@ final class PlanBuilder
         }
         $type = in_array($program, self::BUILTINS, true) ? StepType::Builtin : StepType::Command;
 
-        return new PlanStep($type, $node->id, $context, $argv, $redirects, $assignments, $children);
+        return PlanStep::from([
+            'type' => $type,
+            'node' => $node->id,
+            'context' => $context,
+            'argv' => $argv,
+            'redirects' => $redirects,
+            'assignments' => $assignments,
+            'children' => $children,
+        ]);
     }
 
     /**
@@ -126,17 +158,16 @@ final class PlanBuilder
         }
         $child = new self($inner, $this->syntax, array_slice($arguments, 1))->root();
 
-        return new PlanStep(
-            StepType::Shell,
-            $node->id,
-            $context,
-            $argv,
-            $redirects,
-            [],
-            [...$substitutions, $child],
-            $arguments[0] ?? '',
-            array_slice($arguments, 1),
-        );
+        return PlanStep::from([
+            'type' => StepType::Shell,
+            'node' => $node->id,
+            'context' => $context,
+            'argv' => $argv,
+            'redirects' => $redirects,
+            'children' => [...$substitutions, $child],
+            'zero' => $arguments[0] ?? '',
+            'positional' => array_slice($arguments, 1),
+        ]);
     }
 
     /**
@@ -178,7 +209,10 @@ final class PlanBuilder
                 continue;
             }
             $substitution = array_values(
-                array_filter($substitutions, fn (ShellNode $candidate) => $candidate->range->start === $segment->range->start),
+                array_filter(
+                    $substitutions,
+                    fn (ShellNode $candidate) => $candidate->range->start === $segment->range->start,
+                ),
             );
             if ($substitution === []) {
                 throw ExecutionPlanRefused::dynamicWord($node->id);
@@ -200,7 +234,14 @@ final class PlanBuilder
     private function runnableChildren(ShellNode $node): array
     {
         return array_values(
-            array_filter($this->tree->children($node->id), fn (ShellNode $child) => ! in_array($child->type, [NodeType::Comment, NodeType::Redirect, NodeType::Assignment, NodeType::HereDocument], true)),
+            array_filter(
+                $this->tree->children($node->id),
+                fn (ShellNode $child) => ! in_array(
+                    $child->type,
+                    [NodeType::Comment, NodeType::Redirect, NodeType::Assignment, NodeType::HereDocument],
+                    true,
+                ),
+            ),
         );
     }
 }

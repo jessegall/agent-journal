@@ -17,7 +17,8 @@ final readonly class SecureShareResponse
     private const array HEADERS = [
         'Cache-Control' => 'no-store',
         'Referrer-Policy' => 'no-referrer',
-        'Content-Security-Policy' => "default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+        'Content-Security-Policy' => "default-src 'none'; style-src 'self'; img-src 'self'; base-uri 'none'; "
+            ."form-action 'none'; frame-ancestors 'none'",
         'X-Frame-Options' => 'DENY',
         'X-Robots-Tag' => 'noindex, nofollow, noarchive',
         'X-Content-Type-Options' => 'nosniff',

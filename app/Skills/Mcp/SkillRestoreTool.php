@@ -19,7 +19,8 @@ use Laravel\Mcp\Server\Attributes\Name;
  * skills_restore: saves an earlier revision's content as a new revision, as skill:restore does.
  */
 #[Name('skills_restore')]
-#[Description('Save an earlier revision of a stored skill as its newest revision, checked against today\'s rules; history stays.')]
+#[Description('Save an earlier revision of a stored skill as its newest revision, checked against today\'s rules; '
+    .'history stays.')]
 final class SkillRestoreTool extends JournalWriteTool
 {
     public function __construct(
@@ -42,7 +43,12 @@ final class SkillRestoreTool extends JournalWriteTool
         $requestId = $arguments->optionalText('request_id') ?? (string) Str::ulid();
         $skill = $this->authoring->stored($arguments->text('skill'));
         $result = $this->commands->run(
-            new RestoreSkill($skill->id, $arguments->positiveInteger('revision'), $arguments->positiveInteger('expected_revision'), $requestId),
+            new RestoreSkill(
+                $skill->id,
+                $arguments->positiveInteger('revision'),
+                $arguments->positiveInteger('expected_revision'),
+                $requestId,
+            ),
         );
 
         return ToolResult::ok($this->authoring->receipt($result, $requestId), []);

@@ -124,11 +124,68 @@ final class DocumentsDomain extends Domain implements ProvidesCommands, Provides
     public function exports(): Exports
     {
         return Exports::make()
-            ->events(DocumentCreated::class, ReportFiled::class, DocumentOpened::class, DocumentDraftSaved::class, DocumentClosed::class, DocumentPublished::class, RecordSettled::class)
+            ->events(
+                DocumentCreated::class,
+                ReportFiled::class,
+                DocumentOpened::class,
+                DocumentDraftSaved::class,
+                DocumentClosed::class,
+                DocumentPublished::class,
+                RecordSettled::class,
+            )
             ->contracts(DraftResolver::class, DocumentResolver::class, ReportResolver::class)
-            ->values(DockCard::class, DockData::class, CloseCard::class, RecordInspection::class, SettlementCard::class, RevisionPageData::class, RecordText::class, EditingState::class, DraftState::class, DocumentPageData::class, RecordPageData::class, DraftView::class, RevisionCard::class, RevisionView::class, DraftReference::class, DraftTarget::class, CloseResult::class, CloseCause::class, CreatedRecord::class, AttentionState::class, AttentionFilter::class, DocumentFilters::class, DocumentCard::class, DocumentView::class, DocumentList::class, ReportCard::class, ReportView::class, ReportList::class)
-            ->commands(CreateDocument::class, CreateReport::class, OpenDocument::class, ReplaceDocumentBody::class, ReplaceDocumentSection::class, ReplaceDocumentText::class, ChangeDocumentDetails::class, CloseDocument::class, SettleDocument::class, SettleReport::class, RecoverDocument::class)
-            ->exceptions(SettlementDenied::class, StaleRead::class, DraftMissing::class, DraftHeld::class, DraftConflict::class, DocumentMissing::class, ReportMissing::class)
+            ->values(
+                DockCard::class,
+                DockData::class,
+                CloseCard::class,
+                RecordInspection::class,
+                SettlementCard::class,
+                RevisionPageData::class,
+                RecordText::class,
+                EditingState::class,
+                DraftState::class,
+                DocumentPageData::class,
+                RecordPageData::class,
+                DraftView::class,
+                RevisionCard::class,
+                RevisionView::class,
+                DraftReference::class,
+                DraftTarget::class,
+                CloseResult::class,
+                CloseCause::class,
+                CreatedRecord::class,
+                AttentionState::class,
+                AttentionFilter::class,
+                DocumentFilters::class,
+                DocumentCard::class,
+                DocumentView::class,
+                DocumentList::class,
+                ReportCard::class,
+                ReportView::class,
+                ReportList::class,
+            )
+            ->commands(
+                CreateDocument::class,
+                CreateReport::class,
+                OpenDocument::class,
+                ReplaceDocumentBody::class,
+                ReplaceDocumentSection::class,
+                ReplaceDocumentText::class,
+                ChangeDocumentDetails::class,
+                CloseDocument::class,
+                SettleDocument::class,
+                SettleReport::class,
+                RecoverDocument::class,
+            )
+            ->exceptions(
+                SettlementDenied::class,
+                StaleRead::class,
+                DraftMissing::class,
+                DraftHeld::class,
+                DraftConflict::class,
+                DocumentMissing::class,
+                ReportMissing::class,
+            )
             ->build();
     }
 

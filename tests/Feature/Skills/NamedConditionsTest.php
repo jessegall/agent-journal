@@ -98,7 +98,13 @@ final class NamedConditionsTest extends TestCase
         });
         $this->app->instance(ExceptionHandler::class, $handler);
         $this->useRegistry(
-            ConditionRegistry::of(['Notes' => [new SkillConditionRegistration('notes.writes', 1, NoParameters::class, WritesDuringEvaluation::class)]]),
+            ConditionRegistry::of(
+                [
+                    'Notes' => [
+                        new SkillConditionRegistration('notes.writes', 1, NoParameters::class, WritesDuringEvaluation::class),
+                    ],
+                ],
+            ),
         );
         $groups = NumberGroup::query()->count();
         $this->app->make(CurrentActorSetter::class)->set(
@@ -133,7 +139,9 @@ final class NamedConditionsTest extends TestCase
         $domainClasses = DomainRegistry::installedClasses(base_path());
 
         return ConditionRegistry::of(
-            DomainRegistry::from([...$domainClasses, CardsDomain::class, NotesDomain::class])->skillConditionDeclarations(),
+            DomainRegistry::from(
+                [...$domainClasses, CardsDomain::class, NotesDomain::class],
+            )->skillConditionDeclarations(),
         );
     }
 

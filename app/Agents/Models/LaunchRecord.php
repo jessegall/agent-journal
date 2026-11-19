@@ -49,7 +49,26 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 #[Fillable(
-    ['request_id', 'agent_id', 'actor_type', 'actor_id', 'program', 'model', 'requested_model_type', 'requested_model', 'program_source', 'profile_key', 'profile_revision', 'origin_type', 'owner_reference', 'context_reference', 'conversation_mode', 'payload_digest', 'disposition', 'session_id'],
+    [
+        'request_id',
+        'agent_id',
+        'actor_type',
+        'actor_id',
+        'program',
+        'model',
+        'requested_model_type',
+        'requested_model',
+        'program_source',
+        'profile_key',
+        'profile_revision',
+        'origin_type',
+        'owner_reference',
+        'context_reference',
+        'conversation_mode',
+        'payload_digest',
+        'disposition',
+        'session_id',
+    ],
 )]
 final class LaunchRecord extends Model implements ReadableModel
 {

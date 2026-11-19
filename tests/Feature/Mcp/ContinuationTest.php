@@ -41,7 +41,9 @@ final class ContinuationTest extends TestCase
         $continuations = $this->app->make(Continuations::class);
 
         $continuation = $continuations->open(
-            $continuations->issue(new Continuation('docs_read', '16', ['view' => 'body'], 33, characterOffset: 3072, revision: 2)),
+            $continuations->issue(
+                new Continuation('docs_read', '16', ['view' => 'body'], 33, characterOffset: 3072, revision: 2),
+            ),
             'docs_read',
             '16',
         );

@@ -65,17 +65,30 @@ final readonly class RedirectFacts
     private function factsOfRedirect(ShellNode $node, Redirect $redirect): array
     {
         $endpoint = $this->endpoint($redirect);
-        if ($endpoint === null || ! $this->touchesFiles($redirect) || $this->isHarmless($endpoint) || $this->isUnknownDevice($endpoint)) {
+        if ($endpoint === null
+            || ! $this->touchesFiles($redirect)
+            || $this->isHarmless($endpoint)
+            || $this->isUnknownDevice($endpoint)) {
             return [];
         }
         if (str_starts_with($endpoint, '/dev/tcp/') || str_starts_with($endpoint, '/dev/udp/')) {
             return [
-                new ClassFact(CommandClass::Network, $node->id, new SyntaxOrigin('redirect'), "The redirect to {$endpoint} opens a network connection."),
+                new ClassFact(
+                    CommandClass::Network,
+                    $node->id,
+                    new SyntaxOrigin('redirect'),
+                    "The redirect to {$endpoint} opens a network connection.",
+                ),
             ];
         }
 
         return array_map(
-            fn (CommandClass $class) => new ClassFact($class, $node->id, new SyntaxOrigin('redirect'), "The {$redirect->type->value} redirect uses {$endpoint}."),
+            fn (CommandClass $class) => new ClassFact(
+                $class,
+                $node->id,
+                new SyntaxOrigin('redirect'),
+                "The {$redirect->type->value} redirect uses {$endpoint}.",
+            ),
             $this->classesOf($redirect->type),
         );
     }

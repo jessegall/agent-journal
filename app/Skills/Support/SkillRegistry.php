@@ -49,7 +49,10 @@ final readonly class SkillRegistry
     {
         return hash(
             'sha256',
-            (string) json_encode(array_map(fn (SkillOwner $owner) => [$owner->name, $owner->skills], $this->owners()), JSON_THROW_ON_ERROR),
+            (string) json_encode(
+                array_map(fn (SkillOwner $owner) => [$owner->name, $owner->skills], $this->owners()),
+                JSON_THROW_ON_ERROR,
+            ),
         );
     }
 }

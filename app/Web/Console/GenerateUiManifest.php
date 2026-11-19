@@ -14,7 +14,8 @@ final class GenerateUiManifest extends Command
 {
     protected $signature = 'journal:ui-manifest';
 
-    protected $description = 'Write the UI manifest, TypeScript and Vite configuration and Tailwind sources of the installed domains';
+    protected $description = 'Write the UI manifest, TypeScript and Vite configuration and Tailwind sources of the '
+        .'installed domains';
 
     public function handle(UiManifest $manifest): int
     {

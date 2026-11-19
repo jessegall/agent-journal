@@ -37,7 +37,6 @@ use App\Agents\Console\RunKeyScriptCommand;
 use App\Agents\Contracts\ActorRuntimeResolver;
 use App\Agents\Contracts\HelperImages;
 use App\Agents\Contracts\HostCapabilities;
-use App\Agents\Contracts\LaunchMaterialResolver;
 use App\Agents\Contracts\LaunchRecordResolver;
 use App\Agents\Contracts\ProgramConversationResolver;
 use App\Agents\Contracts\RecordsLaunchHeartbeats;
@@ -110,7 +109,6 @@ final class AgentsServiceProvider extends ServiceProvider
             $this->app->make('config')->integer('agents.host_capacity.disk_bytes'),
         ));
         $this->app->scoped(HostLaunchMaterial::class);
-        $this->app->bind(LaunchMaterialResolver::class, HostLaunchMaterial::class);
         $this->app->bind(
             HostCapabilities::class,
             fn () => new RecordedHostCapabilities(base_path('docs/accounts/container-capabilities.json')),

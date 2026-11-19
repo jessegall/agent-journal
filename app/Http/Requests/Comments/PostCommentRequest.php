@@ -66,10 +66,12 @@ final class PostCommentRequest extends RecordTargetRequest
     public function after(): array
     {
         return [function (Validator $validator): void {
-            if ($this->givenAnchorFields() !== [] && ! in_array($this->givenAnchorFields(), self::FIELDS_OF_TYPE, true)) {
+            if ($this->givenAnchorFields() !== []
+                && ! in_array($this->givenAnchorFields(), self::FIELDS_OF_TYPE, true)) {
                 $validator->errors()->add(
                     'version',
-                    'Point at the whole record (no place), or at one section, one span of lines, or one quote with its version.',
+                    'Point at the whole record (no place), or at one section, one span of lines, or one quote with '
+                        .'its version.',
                 );
             }
         }];
@@ -100,7 +102,9 @@ final class PostCommentRequest extends RecordTargetRequest
         return new PostTextComment(
             $target,
             $this->body(),
-            $this->range(TextAnchorType::from((string) array_search($this->givenAnchorFields(), self::FIELDS_OF_TYPE, true))),
+            $this->range(
+                TextAnchorType::from((string) array_search($this->givenAnchorFields(), self::FIELDS_OF_TYPE, true)),
+            ),
             $this->submissionKey(),
         );
     }

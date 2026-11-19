@@ -115,7 +115,14 @@ final class CodexTest extends TestCase
         $capabilities = $this->adapter()->capabilities();
         $stackBefore = new AgentStack([], new InMemoryStateFactory());
         $stackAfter = new AgentStack(
-            [new Frame('guide', new StateReference('guide', NoSubject::None), ScriptedState::delegating(), CarbonImmutable::now())],
+            [
+                new Frame(
+                    'guide',
+                    new StateReference('guide', NoSubject::None),
+                    ScriptedState::delegating(),
+                    CarbonImmutable::now(),
+                ),
+            ],
             new InMemoryStateFactory(),
         );
         $rewrite = new HookAnswer(Decision::rewrite('journal run tests'), [], [], $stackAfter);

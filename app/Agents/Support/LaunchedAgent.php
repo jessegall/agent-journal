@@ -10,7 +10,8 @@ use App\Agents\Models\AgentSession;
 use App\Agents\Models\DriverRequest;
 
 /**
- * What the host needs to start one launched program: its journal session, its token, handed out once, and its isolated settings.
+ * What the host needs to start one launched program: its journal session, its token, handed out once, and its isolated
+ * settings.
  */
 final readonly class LaunchedAgent
 {

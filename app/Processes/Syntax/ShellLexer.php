@@ -12,7 +12,8 @@ use App\Processes\Values\TreeDiagnostic;
 
 /**
  * Splits one shell line into tokens without running anything (doc 21 revision 3, section 5). Quoting is decided here:
- * a quoted separator is data, an escaped $ is literal, single quotes expand nothing. Here-document bodies are read after
+ * a quoted separator is data, an escaped $ is literal, single quotes expand nothing. Here-document bodies are read
+ * after
  * the line that names them, in order. It keeps no state between calls; every call runs its own LexerScan.
  */
 final class ShellLexer
