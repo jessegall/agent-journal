@@ -25,6 +25,7 @@ from journal.repositories.tasks import Tasks
 from journal.repositories.workers import Workers
 from journal.support.caller import Caller
 from journal.support.rejection import Rejection
+from journal.features.workers.support.worker_stacks import WorkerStacks
 
 
 TESTING_REFUSAL = "your clock-out was held by a plugin before the journal rebased your work and ran your tests; fix what it found, then clock out again"
@@ -36,8 +37,8 @@ class DepartureCommand(Command):
     noun = "clock-out"
     default_verb = "record"
 
-    def __init__(self, workers: Workers, tasks: Tasks, reports: WorkerReports, branch: WorkerBranch, turns: TestTurns, settings: SettingRows, logs: TaskLogs, events: CommandEvents, time_source: TimeSource, affected: AffectedTests, advance: QueueAdvance) -> None:
-        self.advance = advance
+    def __init__(self, workers: Workers, tasks: Tasks, reports: WorkerReports, branch: WorkerBranch, turns: TestTurns, settings: SettingRows, logs: TaskLogs, events: CommandEvents, time_source: TimeSource, affected: AffectedTests, advance: QueueAdvance, stacks: WorkerStacks) -> None:
+        self.advance, self.stacks = advance, stacks
         self.workers, self.tasks, self.reports, self.branch = workers, tasks, reports, branch
         self.turns, self.settings, self.logs, self.events, self.time_source, self.affected = turns, settings, logs, events, time_source, affected
 
@@ -77,11 +78,17 @@ class DepartureCommand(Command):
             print(f"the journal committed your work and rebased it onto the project's branch, at {self.branch.project_heads(worker)}")
         if worker.rebase_due:
             self.workers.save(self.workers.find(worker.id).rebased(f"its worktree rebased onto the project's branch at its clock-out, at {self.branch.project_heads(worker)}", self.time_source.moment().timestamp()), caller.actor)
+        left = self.stacks.running(self.branch.place(worker)) if worker.worktree else []
+        if left:
+            raise Rejection(f"your Docker stacks still run: {', '.join(left)}; take them down with their volumes before you clock out ({self.stacks.command(left)}), then clock out again")
         if self.turns.has_command(str(self.branch.place(worker))):
             self.tested(worker, task, args.tests, caller)
         self.plugin_check(WorkerDelivering, worker, task, DELIVERY_REFUSAL)
         self.reports.delivered(worker, args.report, caller.actor)
         print(f"worker {worker.id} clocked out of task {task.id}; the agent that sent you checks each proof")
+        started = self.stacks.running(self.branch.place(worker)) if worker.worktree else []
+        if started:
+            print(f"the journal took down the Docker stacks its test run started: {', '.join(self.stacks.taken_down(started))}")
         return 0
 
     def plugin_check(self, event_class: type[WorkerMerging], worker: Worker, task: Task, refusal_heading: str) -> None:
