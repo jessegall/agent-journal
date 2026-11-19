@@ -12,8 +12,12 @@ use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Facades\Http;
 use Laravel\Fortify\Features;
+use PDO;
 use Tests\Support\Exceptions\DatabaseUsedWithoutHookDatabase;
 use Tests\Support\RefreshHookDatabase;
+use Tests\Support\TimeLimits\Exceptions\TestTimedOut;
+use Tests\Support\TimeLimits\TestAlarm;
+use Throwable;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -30,6 +34,25 @@ abstract class TestCase extends BaseTestCase
         Http::preventStrayRequests();
         $this->withoutVite();
         $this->app->make(NumberingOutsideCommands::class)->allow();
+        $this->beforeApplicationDestroyed(fn () => $this->closeConnections());
+    }
+
+    /**
+     * Rolls back what a test left open on any connection and closes each, after Laravel's own rollback: a failed
+     * test's exception keeps its connection alive through the trace, and an open transaction there would hold the
+     * locks the next test's table cleanup waits for.
+     */
+    protected function closeConnections(): void
+    {
+        foreach ($this->app->make(DatabaseManager::class)->getConnections() as $connection) {
+            $pdo = $connection->getRawPdo();
+
+            if ($pdo instanceof PDO && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+
+            $connection->disconnect();
+        }
     }
 
     /**
@@ -40,6 +63,19 @@ abstract class TestCase extends BaseTestCase
         Relation::morphMap($this->applicationMorphMap, false);
 
         parent::tearDown();
+    }
+
+    /**
+     * A test that ran out of time fails as the timeout, even when its own code caught the timeout and failed on
+     * something else, such as an assertThrows that expected another exception.
+     */
+    protected function onNotSuccessfulTest(Throwable $failure): never
+    {
+        if (TestAlarm::hasRung() && ! $failure instanceof TestTimedOut) {
+            TestAlarm::throwTimeout();
+        }
+
+        parent::onNotSuccessfulTest($failure);
     }
 
     /**

@@ -49,7 +49,7 @@ final class NgrokGatewayTest extends TestCase
         $this->processes->fake(
             [
                 '*version*' => 'ngrok version 3.20.0',
-                '*http 127.0.0.1:8090*' => $this->processes->describe()->output('started')->iterations(3),
+                '*http 127.0.0.1:8090*' => $this->processes->describe()->output('started')->iterations(1),
             ],
         );
         $this->app->instance(Processes::class, $this->processes);
