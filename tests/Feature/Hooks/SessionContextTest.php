@@ -38,7 +38,7 @@ final class SessionContextTest extends TestCase
     {
         parent::setUp();
 
-        $this->rule = Rule::query()->create(['text' => 'No phase waits on the user.']);
+        $this->rule = Rule::holding('No phase waits on the user.');
         new Memory(['text' => 'Use plain words.', 'weight' => 3])->saveFor(new ActorIdentity(ActorType::Agent, TestIds::of(1)));
     }
 

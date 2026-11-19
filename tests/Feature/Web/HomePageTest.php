@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Web;
 
 use App\Agents\Actions\LaunchSessions;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Communication\Models\Message;
@@ -39,7 +40,7 @@ final class HomePageTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $agent = Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']);
+        $agent = Agent::named('Builder', AgentRole::MainAgent);
         $this->session = $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())->session;
         Plan::factory()->create(['title' => 'Build the release page', 'type' => PlanType::Build]);
     }
@@ -72,8 +73,8 @@ final class HomePageTest extends TestCase
 
     public function test_the_rules_window_reads_its_own_search_and_page_beside_the_plans_window(): void
     {
-        Rule::query()->create(['text' => 'Every phase ends with its tests.']);
-        Rule::query()->create(['text' => 'Write all code in plain English.']);
+        Rule::holding('Every phase ends with its tests.');
+        Rule::holding('Write all code in plain English.');
 
         $this->actingAs($this->owner)->get('/?window[plans.list][q]=release&window[rules.list][q]=phase')->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
             ->missing('page.data.rules')

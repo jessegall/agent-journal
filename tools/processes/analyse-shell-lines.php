@@ -39,6 +39,6 @@ while (($line = fgets($input)) !== false) {
     $parts = $tree->outcome === ParseOutcome::Complete
         ? array_map(fn (ShellNode $node) => ['start' => $node->range->start, 'end' => $node->range->end], $tree->executableParts())
         : [];
-    $classification = $tree->outcome === ParseOutcome::Complete ? $classifier->classify($tree, $context)->summary() : null;
+    $classification = $tree->outcome === ParseOutcome::Complete ? $classifier->classify($tree, $context)->summary()->toArray() : null;
     fwrite($output, json_encode(['id' => $record['id'], 'outcome' => $tree->outcome->value, 'parts' => $parts, 'classification' => $classification], JSON_THROW_ON_ERROR)."\n");
 }

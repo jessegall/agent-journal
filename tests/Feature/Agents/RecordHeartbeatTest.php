@@ -11,6 +11,7 @@ use App\Agents\Actions\LaunchCredentials;
 use App\Agents\Actions\LaunchHeartbeats;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Commands\RecordHeartbeat;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\SessionStatus;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Models\Agent;
@@ -114,7 +115,7 @@ final class RecordHeartbeatTest extends TestCase
 
     private function launch(): LaunchedAgent
     {
-        $launched = $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Test agent', 'role' => 'hooks.main_ready']), TestSelections::of('claude-code'), TestSelections::requestId());
+        $launched = $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId());
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($launched->session->agent_id));
 
         return $launched;

@@ -1,0 +1,76 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "php",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "create",
+                    "make",
+                    "forceCreate",
+                    "firstOrCreate",
+                    "updateOrCreate"
+                ]
+            },
+            {
+                "argument": {
+                    "at": 0,
+                    "kind": "Expr_Array"
+                }
+            },
+            {
+                "any": [
+                    {
+                        "of": "receiver",
+                        "all": [
+                            {
+                                "name": "query"
+                            },
+                            {
+                                "of": "child:class",
+                                "isA": "Illuminate\\Database\\Eloquent\\Model"
+                            }
+                        ]
+                    },
+                    {
+                        "of": "child:class",
+                        "isA": "Illuminate\\Database\\Eloquent\\Model"
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "type-declaration"
+                        },
+                        {
+                            "extendsAny": "Illuminate\\Database\\Eloquent\\Model"
+                        }
+                    ]
+                }
+            },
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "type-declaration"
+                        },
+                        {
+                            "extendsAny": "Illuminate\\Database\\Eloquent\\Factories\\Factory"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "sin": {
+        "description": "A row built from a column array outside its own model: Model::create([...]) or ->query()->create([...]) at a call site.",
+        "name": "column-array-outside-model",
+        "rule": "A model makes its own rows: call its named static constructor, which takes values and objects and maps them to its columns (rule 40).",
+        "skill": "php/laravel-idioms"
+    }
+}

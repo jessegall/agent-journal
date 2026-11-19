@@ -38,7 +38,7 @@ foreach (file(CORPUS.'/cases.jsonl', FILE_IGNORE_NEW_LINES) ?: [] as $line) {
     $case = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
     unset($case['expected']['classification']);
     if ($case['expected']['outcome'] === 'complete') {
-        $summary = $classifier->classify($syntax->parse($case['source'], ShellDialect::from($case['dialect'])), $context)->summary();
+        $summary = $classifier->classify($syntax->parse($case['source'], ShellDialect::from($case['dialect'])), $context)->summary()->toArray();
         $case['expected']['classification'] = $summary;
         $known += $summary['known'] ? 1 : 0;
     }

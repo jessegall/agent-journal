@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -55,8 +56,8 @@ final class DockTest extends TestCase
         parent::setUp();
 
         $launch = $this->app->make(LaunchSessions::class);
-        $this->builderSession = $launch->launch(Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']), TestSelections::of('claude-code'), TestSelections::requestId())->session;
-        $this->reviewerSession = $launch->launch(Agent::query()->create(['name' => 'Reviewer', 'role' => 'hooks.main_ready']), TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        $this->builderSession = $launch->launch(Agent::named('Builder', AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        $this->reviewerSession = $launch->launch(Agent::named('Reviewer', AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId())->session;
     }
 
     public function test_an_agents_new_report_docks_once_in_its_own_session_and_a_users_creation_docks_nothing(): void

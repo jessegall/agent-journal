@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Engine;
 
 use App\Agents\Actions\LaunchSessions;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Support\LaunchedAgent;
@@ -111,7 +112,7 @@ final class EngineStackTest extends TestCase
 
     private function launch(): LaunchedAgent
     {
-        return $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Test agent', 'role' => 'hooks.main_ready']), TestSelections::of('claude-code'), TestSelections::requestId());
+        return $this->app->make(LaunchSessions::class)->launch(Agent::named('Test agent', AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId());
     }
 
     private function targetOf(LaunchedAgent $launched): StackTarget

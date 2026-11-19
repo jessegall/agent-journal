@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Support\Processes;
 
-use Tests\Support\TestRunAdmissions;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Enums\ActorType;
 use App\Actors\Support\ActorContext;
@@ -22,7 +21,6 @@ use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\RecordRole;
 use App\Processes\Enums\RequestHoldReason;
 use App\Processes\Enums\RunMode;
-use App\Processes\Enums\ShellDialect;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
@@ -31,6 +29,7 @@ use App\Processes\Support\SpoolRecorder;
 use App\Processes\Values\CapturedChunk;
 use App\Processes\Values\OwnerApproval;
 use App\Processes\Values\PartEnd;
+use App\Processes\Values\PartKey;
 use App\Processes\Values\ReaderApproval;
 use App\Processes\Values\ReaderDefinition;
 use App\Processes\Values\RecordRule;
@@ -39,6 +38,7 @@ use Illuminate\Support\Facades\Storage;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Fixtures\Processes\AcmeDeclarations;
 use Tests\Support\TestIds;
+use Tests\Support\TestRunAdmissions;
 
 /**
  * Walks an acme verify command request through its workflow in a test: an agent's request and declaration,
@@ -89,13 +89,7 @@ trait RunsAcmeRequests
     {
         $permit = $this->asUser(new ApproveSample($this->requestId, 1, $this->request()->source_digest));
         $runId = $this->asAgent(new StartSample($this->requestId, $permit, "sample-{$status}"));
-        $part = PartRun::query()->create([
-            'process_run_id' => $runId,
-            'syntax_node' => 1,
-            'part_id' => 'node-1',
-            'attempt' => 1,
-            'operation' => 'acme verify',
-        ]);
+        $part = PartRun::queue(ProcessRun::query()->withoutGlobalScopes()->findOrFail($runId), new PartKey(1, 1, 'acme verify'));
         $part->start(1, 'host');
         $recorder = $this->app->make(SpoolRecorder::class);
         $recorder->append(new CapturedChunk($part, OutputStream::Stdout, $output, CarbonImmutable::now()));
@@ -148,13 +142,7 @@ trait RunsAcmeRequests
         $actor = new ActorIdentity(ActorType::Agent, $this->launch->agent->id);
         $projectKey = (string) config('processes.project_key');
         $run = ProcessRun::admit($actor, TestRunAdmissions::of(mode: $mode, projectKey: $projectKey));
-        $part = PartRun::query()->create([
-            'process_run_id' => $run->id,
-            'syntax_node' => 1,
-            'part_id' => 'node-1',
-            'attempt' => 1,
-            'operation' => 'acme verify',
-        ]);
+        $part = PartRun::queue($run, new PartKey(1, 1, 'acme verify'));
         $part->start(1, 'host');
         $recorder = $this->app->make(SpoolRecorder::class);
         $recorder->append(new CapturedChunk($part, OutputStream::Stdout, $output, CarbonImmutable::now()));

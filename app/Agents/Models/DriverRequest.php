@@ -231,6 +231,28 @@ final class DriverRequest extends Model implements ReadableModel
     }
 
     /**
+     * The next request of the runtime, for the operation and its payload, not accepted yet.
+     */
+    public static function queued(
+        AgentRuntime $runtime,
+        DriverOperation $operation,
+        string $idempotencyKey,
+        DriverRequestPayload $payload,
+    ): self {
+        $request = new self();
+        $request->agent_runtime_id = $runtime->id;
+        $request->sequence = (int) self::query()->where('agent_runtime_id', $runtime->id)->max('sequence') + 1;
+        $request->operation = $operation;
+        $request->idempotency_key = $idempotencyKey;
+        $request->payload_digest = $payload->digestFor($operation->value);
+        $request->expected_timing = $runtime->activity->expectedTiming();
+        $request->expected_observed_at = $runtime->last_observed_at;
+        $request->carry($payload);
+
+        return $request;
+    }
+
+    /**
      * Takes the payload's typed columns: its message, model, effort or key script.
      */
     public function carry(DriverRequestPayload $payload): void

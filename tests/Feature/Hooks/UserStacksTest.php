@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Exceptions\UserActorRequired;
 use App\Actors\Support\ActorContext;
 use App\Agents\Actions\LaunchSessions;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Support\LaunchedAgent;
@@ -121,7 +122,7 @@ final class UserStacksTest extends TestCase
 
     private function launch(): LaunchedAgent
     {
-        $agent = Agent::query()->create(['name' => 'Test agent', 'role' => 'hooks.main_ready']);
+        $agent = Agent::named('Test agent', AgentRole::MainAgent);
 
         return $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId());
     }

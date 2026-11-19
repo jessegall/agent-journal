@@ -128,12 +128,7 @@ final class LinkableTest extends TestCase
      */
     private function insertRawLink(Model $source, Model $target): void
     {
-        Link::query()->create([
-            'source_type' => $source->getMorphClass(),
-            'source_id' => (string) $source->getKey(),
-            'target_type' => $target->getMorphClass(),
-            'target_id' => (string) $target->getKey(),
-        ]);
+        Link::recorded($source->getMorphClass(), (string) $source->getKey(), $target->getMorphClass(), (string) $target->getKey());
     }
 
     public function test_a_link_name_registered_for_another_model_is_refused(): void

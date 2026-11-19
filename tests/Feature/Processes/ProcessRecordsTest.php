@@ -8,12 +8,12 @@ use App\Actors\Support\ActorIdentity;
 use App\Processes\Enums\LifecycleState;
 use App\Processes\Enums\PartEndType;
 use App\Processes\Enums\RunMode;
-use App\Processes\Enums\ShellDialect;
 use App\Processes\Exceptions\PartTransitionRefused;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessEvent;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Values\PartEnd;
+use App\Processes\Values\PartKey;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestRunAdmissions;
@@ -98,6 +98,6 @@ final class ProcessRecordsTest extends TestCase
     {
         $run = $this->admittedRun(RunMode::Normal, "admission-{$partId}");
 
-        return PartRun::query()->create(['process_run_id' => $run->id, 'syntax_node' => 1, 'part_id' => $partId, 'attempt' => 1, 'operation' => 'core.ls']);
+        return PartRun::queue($run, new PartKey(1, 1, 'core.ls'));
     }
 }

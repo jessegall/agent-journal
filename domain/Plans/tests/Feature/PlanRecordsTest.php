@@ -8,6 +8,7 @@ use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Contracts\CurrentSession;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Support\StackTarget;
 use App\Hooks\Contracts\CurrentState;
@@ -66,7 +67,7 @@ final class PlanRecordsTest extends TestCase
 
     public function test_an_assigned_agent_is_named_and_the_plan_its_stack_works_on_comes_first(): void
     {
-        $agent = Agent::query()->create(['name' => 'Planner', 'role' => 'hooks.main_ready']);
+        $agent = Agent::named('Planner', AgentRole::MainAgent);
         $this->app->instance(CurrentSession::class, new FixedSession(TestIds::of(10)));
         $this->app->instance(CurrentState::class, new FixedCurrentState(new StackTarget($agent->id, TestIds::of(10)), [WorkingOnPlanStateReference::TYPE_KEY => WorkingOnPlanStateReference::forPlan($this->build)]));
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forAgent($agent->id));

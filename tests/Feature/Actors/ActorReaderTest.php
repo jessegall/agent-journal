@@ -12,6 +12,7 @@ use App\Actors\Exceptions\ActorUnavailable;
 use App\Actors\Support\ActorIdentity;
 use App\Actors\Support\SystemActor;
 use App\Actors\Support\SystemActors;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use Domain\Access\Models\User;
 use Domain\Access\Support\AccessSettings;
@@ -33,7 +34,7 @@ final class ActorReaderTest extends TestCase
     {
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $agent = Agent::query()->create(['name' => 'Writer', 'role' => 'hooks.read_only_helper_ready']);
+        $agent = Agent::named('Writer', AgentRole::ReadOnlyHelper);
         $reader = $this->app->make(ActorReader::class);
 
         $this->assertSame($owner->id, $reader->get(ActorIdentity::of($owner))->actorId());
@@ -46,7 +47,7 @@ final class ActorReaderTest extends TestCase
         $owner = User::factory()->create();
         $stranger = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
-        $retired = Agent::query()->create(['name' => 'Gone', 'role' => 'hooks.read_only_helper_ready']);
+        $retired = Agent::named('Gone', AgentRole::ReadOnlyHelper);
         $retired->forceFill(['retired_at' => now()])->save();
         $reader = $this->app->make(ActorReader::class);
 

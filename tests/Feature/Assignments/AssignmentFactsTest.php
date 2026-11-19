@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AssignmentWriter;
@@ -55,7 +56,7 @@ final class AssignmentFactsTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->helper = ActorIdentity::of(Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.read_only_helper_ready']));
+        $this->helper = ActorIdentity::of(Agent::named('Helper', AgentRole::ReadOnlyHelper));
         $this->task = Task::factory()->create(['title' => 'Write the reader'])->assignmentIdentity();
         $this->startUserRequestAs($this->owner->id);
         $this->useTheApplicationsTransactionManager();

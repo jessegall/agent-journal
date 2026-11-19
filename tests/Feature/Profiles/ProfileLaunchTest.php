@@ -46,7 +46,7 @@ final class ProfileLaunchTest extends TestCase
         $owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $this->startUserRequestAs($owner->id);
-        $this->main = Agent::query()->create(['name' => 'Main', 'role' => AgentRole::MainAgent->value]);
+        $this->main = Agent::named('Main', AgentRole::MainAgent);
     }
 
     public function test_default_resolves_to_the_profiles_model_and_revision(): void

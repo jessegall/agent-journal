@@ -7,6 +7,7 @@ namespace Domain\Tasks\Tests\Feature;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Agents\Actions\LaunchSessions;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Bus\Contracts\CommandBus;
@@ -76,7 +77,7 @@ final class TaskCommandsTest extends TestCase
     public function test_a_start_for_a_session_the_actor_may_not_see_is_refused_and_the_task_stays_unstarted(): void
     {
         $task = $this->task('Start');
-        $session = $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']), TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        $session = $this->app->make(LaunchSessions::class)->launch(Agent::named('Builder', AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId())->session;
 
         try {
             $this->app->make(CommandBus::class)->run(new StartTask($task->id, TestIds::of(999999)));

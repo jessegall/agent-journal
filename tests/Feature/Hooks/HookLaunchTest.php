@@ -9,6 +9,7 @@ use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Actions\RecordConversationVisit;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\CredentialRejected;
 use App\Agents\Exceptions\ProgramUnsupported;
 use App\Agents\Models\Agent;
@@ -113,7 +114,7 @@ final class HookLaunchTest extends TestCase
         $parent = $this->launch('hooks.main_ready');
         $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->as($parent, fn () => $this->app->make(CommandBus::class)->run(new StartTask($task->id, $parent->session->id)));
-        $childAgent = Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.read_only_helper_ready']);
+        $childAgent = Agent::named('Helper', AgentRole::ReadOnlyHelper);
 
         $child = $this->app->make(LaunchSessions::class)->launch($childAgent, TestSelections::of('claude-code'), TestSelections::requestId(), $parent->session);
 
@@ -135,7 +136,10 @@ final class HookLaunchTest extends TestCase
 
     private function launch(string $role, string $program = 'claude-code'): LaunchedAgent
     {
-        $agent = Agent::query()->create(['name' => 'Test agent', 'role' => $role]);
+        $agent = Agent::named('Test agent', AgentRole::MainAgent);
+        // A stored role is only ever unknown through data written outside the journal, as this test writes it.
+        $agent->role = $role;
+        $agent->save();
 
         return $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of($program), TestSelections::requestId());
     }

@@ -20,10 +20,12 @@ use App\Processes\Exceptions\SampleRefused;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\EvidencePermit;
 use App\Processes\Models\PartRun;
+use App\Processes\Models\ProcessRun;
 use App\Processes\Support\SpoolRecorder;
 use App\Processes\Values\CapturedChunk;
 use App\Processes\Values\CommandRule;
 use App\Processes\Values\PartEnd;
+use App\Processes\Values\PartKey;
 use App\Processes\Values\SampleOutcome;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
@@ -155,13 +157,7 @@ final class SampleWorkflowTest extends TestCase
 
     private function part(string $runId): PartRun
     {
-        return PartRun::query()->create([
-            'process_run_id' => $runId,
-            'syntax_node' => 1,
-            'part_id' => 'node-1',
-            'attempt' => 1,
-            'operation' => 'acme verify',
-        ]);
+        return PartRun::queue(ProcessRun::query()->withoutGlobalScopes()->findOrFail($runId), new PartKey(1, 1, 'acme verify'));
     }
 
     private function request(): CommandRequest

@@ -16,6 +16,7 @@ use App\Processes\Models\ProcessRun;
 use App\Processes\Models\ReaderPosition;
 use App\Processes\Models\ResultReceipt;
 use App\Processes\Readers\Support\ActivityProjection;
+use App\Processes\Values\PartKey;
 use Tests\Support\Processes\RunsAcmeRequests;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\SendsSignedCalls;
@@ -82,13 +83,7 @@ final class ReaderReplayTest extends TestCase
         $evidence = $this->normalRun(0, self::PASSED_OUTPUT, RunMode::Evidence);
         $this->assertThrows(fn () => $this->asUser(new ReplayAssessment($evidence->id)), ReplayRefused::class);
 
-        $running = PartRun::query()->create([
-            'process_run_id' => $evidence->process_run_id,
-            'syntax_node' => 2,
-            'part_id' => 'node-2',
-            'attempt' => 1,
-            'operation' => 'acme verify',
-        ]);
+        $running = PartRun::queue(ProcessRun::query()->withoutGlobalScopes()->findOrFail($evidence->process_run_id), new PartKey(2, 1, 'acme verify'));
         $this->assertThrows(fn () => $this->asUser(new ReplayAssessment($running->id)), ReplayRefused::class);
     }
 

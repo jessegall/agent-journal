@@ -39,16 +39,7 @@ final readonly class DriverRequests
             throw DriverRequestRefused::stopping($target);
         }
 
-        $request = DriverRequest::query()->make([
-            'agent_runtime_id' => $runtime->id,
-            'sequence' => (int) DriverRequest::query()->where('agent_runtime_id', $runtime->id)->max('sequence') + 1,
-            'operation' => $operation,
-            'idempotency_key' => $idempotencyKey,
-            'payload_digest' => $digest,
-            'expected_timing' => $runtime->activity->expectedTiming(),
-            'expected_observed_at' => $runtime->last_observed_at,
-        ]);
-        $request->carry($payload);
+        $request = DriverRequest::queued($runtime, $operation, $idempotencyKey, $payload);
         $request->accept();
 
         return $request;

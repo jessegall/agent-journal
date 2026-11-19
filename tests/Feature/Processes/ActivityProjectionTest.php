@@ -6,8 +6,6 @@ namespace Tests\Feature\Processes;
 
 use App\Actors\Support\ActorIdentity;
 use App\Processes\Enums\OutputStream;
-use App\Processes\Enums\RunMode;
-use App\Processes\Enums\ShellDialect;
 use App\Processes\Events\RunChanged;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
@@ -16,6 +14,7 @@ use App\Processes\Support\SpoolRecorder;
 use App\Processes\Values\CapturedChunk;
 use App\Processes\Values\PartActivity;
 use App\Processes\Values\PartEnd;
+use App\Processes\Values\PartKey;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
@@ -41,13 +40,7 @@ final class ActivityProjectionTest extends TestCase
         Storage::fake(SpoolRecorder::DISK);
         Event::fake([RunChanged::class]);
         $run = ProcessRun::admit(ActorIdentity::system(), TestRunAdmissions::of());
-        $this->part = PartRun::query()->create([
-            'process_run_id' => $run->id,
-            'syntax_node' => 1,
-            'part_id' => 'node-1',
-            'attempt' => 1,
-            'operation' => 'acme verify',
-        ]);
+        $this->part = PartRun::queue($run, new PartKey(1, 1, 'acme verify'));
         $this->part->start(1, 'host');
         $bytes = "first\n\x1b[31mlatest line\n";
         $chunk = new CapturedChunk($this->part, OutputStream::Stdout, $bytes, CarbonImmutable::now());

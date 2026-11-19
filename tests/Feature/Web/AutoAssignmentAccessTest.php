@@ -41,8 +41,8 @@ final class AutoAssignmentAccessTest extends TestCase
 
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->dispatcher = Agent::query()->create(['name' => 'Main', 'role' => AgentRole::MainAgent->value]);
-        $this->worker = Agent::query()->create(['name' => 'Worker', 'role' => 'hooks.writing_helper_ready']);
+        $this->dispatcher = Agent::named('Main', AgentRole::MainAgent);
+        $this->worker = Agent::named('Worker', AgentRole::WritingHelper);
         $this->access = $this->app->make(AutoAssignmentAccess::class);
     }
 
@@ -92,7 +92,7 @@ final class AutoAssignmentAccessTest extends TestCase
 
     public function test_a_worker_writes_nobody_and_reads_only_its_own_without_totals(): void
     {
-        $other = Agent::query()->create(['name' => 'Other', 'role' => 'hooks.writing_helper_ready']);
+        $other = Agent::named('Other', AgentRole::WritingHelper);
 
         $this->access->requireRead($this->worker, ActorIdentity::of($this->worker));
 

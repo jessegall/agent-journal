@@ -123,6 +123,6 @@ final class ShareScopeTest extends TestCase
 
     private function link(RecordIdentity $root, RecordIdentity $target): Link
     {
-        return Link::query()->create(['source_type' => $root->type, 'source_id' => $root->id, 'target_type' => $target->type, 'target_id' => $target->id]);
+        return Link::recorded($root->type, $root->id, $target->type, $target->id);
     }
 }

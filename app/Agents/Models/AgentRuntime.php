@@ -9,6 +9,7 @@ use App\Agents\Data\RuntimeStatus;
 use App\Agents\Enums\DriverType;
 use App\Agents\Enums\HoldReason;
 use App\Agents\Enums\RuntimeActivity;
+use App\Agents\Support\RuntimeIntent;
 use App\Links\Support\Linkable;
 use App\Reads\Contracts\ReadableModel;
 use App\Reads\Support\BoundedReads;
@@ -70,6 +71,25 @@ final class AgentRuntime extends Model implements ReadableModel
             'settings_observed_at' => 'immutable_datetime',
             'last_observed_at' => 'immutable_datetime',
         ];
+    }
+
+    /**
+     * The runtime a session opens on a host, as its intent describes it, not saved yet.
+     */
+    public static function forIntent(AgentSession $session, RuntimeIntent $intent): self
+    {
+        $runtime = new self();
+        $runtime->agent_session_id = $session->id;
+        $runtime->host_id = $intent->hostId;
+        $runtime->driver_type = $intent->driverType;
+        $runtime->program = $intent->program;
+        $runtime->program_build = $intent->programBuild;
+        $runtime->profile = $intent->profile;
+        $runtime->canonical_folder = $intent->folder;
+        $runtime->requested_model = $intent->model;
+        $runtime->requested_effort = $intent->effort;
+
+        return $runtime;
     }
 
     /**

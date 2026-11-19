@@ -7,8 +7,6 @@ namespace Tests\Feature\Processes;
 use App\Actors\Support\ActorIdentity;
 use App\Processes\Enums\CaptureState;
 use App\Processes\Enums\OutputStream;
-use App\Processes\Enums\RunMode;
-use App\Processes\Enums\ShellDialect;
 use App\Processes\Exceptions\OutputStorageFailed;
 use App\Processes\Execution\SpawnedProcess;
 use App\Processes\Models\OutputChunk;
@@ -18,11 +16,12 @@ use App\Processes\Support\ManifestCheck;
 use App\Processes\Support\SpoolRecorder;
 use App\Processes\Values\CapturedChunk;
 use App\Processes\Values\PartEnd;
+use App\Processes\Values\PartKey;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
 use Tests\Support\RefreshHookDatabase;
-use Tests\Support\TimeLimits\TimeLimit;
 use Tests\Support\TestRunAdmissions;
+use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
 
 /**
@@ -111,7 +110,7 @@ final class OutputCaptureTest extends TestCase
     private function part(): PartRun
     {
         $run = ProcessRun::admit(ActorIdentity::system(), TestRunAdmissions::of());
-        $part = PartRun::query()->create(['process_run_id' => $run->id, 'syntax_node' => 1, 'part_id' => 'node-1', 'attempt' => 1, 'operation' => 'head']);
+        $part = PartRun::queue($run, new PartKey(1, 1, 'head'));
         $part->start(1, 'host');
         $part->finishProcess(PartEnd::exited(0));
 

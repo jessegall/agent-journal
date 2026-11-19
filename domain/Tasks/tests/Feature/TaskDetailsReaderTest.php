@@ -9,6 +9,7 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\AgentRequests\Support\SignedCall;
 use App\Agents\Actions\LaunchSessions;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\AgentContext;
@@ -56,7 +57,7 @@ final class TaskDetailsReaderTest extends TestCase
 
     public function test_a_task_held_by_one_agent_and_run_by_another_session_shows_both_separately(): void
     {
-        $holder = Agent::query()->create(['name' => 'Holder', 'role' => 'hooks.main_ready']);
+        $holder = Agent::named('Holder', AgentRole::MainAgent);
         $runner = $this->launch('Runner');
         $task = Task::factory()->create(['title' => 'Split work', 'brief' => 'Held by one, run by another.']);
         $this->asUser();
@@ -106,7 +107,7 @@ final class TaskDetailsReaderTest extends TestCase
     {
         $this->app->make(CurrentActorSetter::class)->clear();
 
-        return $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => $name, 'role' => 'hooks.main_ready']), TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        return $this->app->make(LaunchSessions::class)->launch(Agent::named($name, AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId())->session;
     }
 
     private function actAs(AgentSession $session): void

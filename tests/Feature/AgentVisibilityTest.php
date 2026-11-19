@@ -36,11 +36,11 @@ final class AgentVisibilityTest extends TestCase
         $this->giveWorkTo(1, 10);
         $this->giveWorkTo(1, 11);
         $this->giveWorkTo(2, 20);
-        Message::query()->create(['body' => 'Not addressed yet']);
+        Message::write('Not addressed yet');
         new Memory(['text' => 'Kept by agent 1', 'weight' => 3])->saveFor(new ActorIdentity(ActorType::Agent, TestIds::of(1)));
         new Memory(['text' => 'Kept by agent 2', 'weight' => 3])->saveFor(new ActorIdentity(ActorType::Agent, TestIds::of(2)));
         Task::factory()->create(['title' => 'Write the walk'])->start();
-        Rule::query()->create(['text' => 'No phase waits on the user.']);
+        Rule::holding('No phase waits on the user.');
     }
 
     public function test_an_agent_sees_its_own_messages_runs_and_memories_in_every_session(): void
@@ -160,8 +160,8 @@ final class AgentVisibilityTest extends TestCase
     private function giveWorkTo(int $agent, int $session): void
     {
         $target = new StackTarget(TestIds::of($agent), TestIds::of($session));
-        Message::query()->create(['body' => "For agent {$agent}"])->requireAnswerFrom($target);
-        SequenceRun::query()->create(['name' => "Run of agent {$agent}", 'steps' => ['Read the brief.']])->startFor($target->actorIdentity());
+        Message::write("For agent {$agent}")->requireAnswerFrom($target);
+        SequenceRun::written("Run of agent {$agent}", ['Read the brief.'])->startFor($target->actorIdentity());
     }
 
     /**

@@ -7,6 +7,7 @@ namespace Domain\Plans\Tests\Feature;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Processes\Contracts\VerificationTiming;
 use App\Processes\Support\OpenTiming;
@@ -42,7 +43,7 @@ final class PhaseTimingTest extends TestCase
     {
         parent::setUp();
 
-        $this->agent = Agent::query()->create(['name' => 'Worker', 'role' => 'hooks.writing_helper_ready']);
+        $this->agent = Agent::named('Worker', AgentRole::WritingHelper);
         $plan = Plan::factory()->create(['title' => 'Phase timing']);
         Plan::query()->whereKey($plan->id)->update(['state' => PlanState::Started->value]);
         $this->tasks = [Task::factory()->create(['title' => 'First']), Task::factory()->create(['title' => 'Second'])];

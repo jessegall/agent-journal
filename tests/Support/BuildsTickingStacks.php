@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StackTarget;
@@ -28,7 +29,7 @@ trait BuildsTickingStacks
      */
     private function tickingStack(string $tickingType, array $subjects, CarbonImmutable $enteredAt, string $plainType = 'test.plain'): AgentStackRow
     {
-        $agent = Agent::query()->create(['name' => 'Ticking agent', 'role' => 'hooks.main_ready']);
+        $agent = Agent::named('Ticking agent', AgentRole::MainAgent);
         $session = new AgentSession();
         $session->startFor($agent, null, TestSelections::of(), TestSelections::requestId());
         $records = [

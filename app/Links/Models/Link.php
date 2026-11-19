@@ -61,6 +61,21 @@ final class Link extends MorphPivot implements ReadableModel
     }
 
     /**
+     * A link stored as given, between two records named by their link type and id.
+     */
+    public static function recorded(string $sourceType, string $sourceId, string $targetType, string $targetId): self
+    {
+        $link = new self();
+        $link->source_type = $sourceType;
+        $link->source_id = $sourceId;
+        $link->target_type = $targetType;
+        $link->target_id = $targetId;
+        $link->save();
+
+        return $link;
+    }
+
+    /**
      * Removes every link to or from the given models, which are about to be deleted.
      *
      * @param  list<Model>  $models

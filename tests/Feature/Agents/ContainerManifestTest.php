@@ -125,7 +125,7 @@ final class ContainerManifestTest extends TestCase
 
     private function containerRequest(): LaunchRequest
     {
-        $agent = Agent::query()->create(['name' => 'Builder', 'role' => AgentRole::WritingHelper->value]);
+        $agent = Agent::named('Builder', AgentRole::WritingHelper);
 
         return new LaunchRequest(TestSelections::requestId(), $agent->id, TestSelections::of(), LaunchOriginType::OwnerRequest, 'helpers.job 1', null, ConversationModeType::New, null, $this->policy());
     }

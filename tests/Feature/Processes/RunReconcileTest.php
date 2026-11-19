@@ -19,6 +19,7 @@ use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Models\ResultReceipt;
 use App\Processes\Values\ExecutionContext;
+use App\Processes\Values\PartKey;
 use Tests\Fixtures\Agents\TestLaunch;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestIds;
@@ -50,13 +51,7 @@ final class RunReconcileTest extends TestCase
         $admission = $admissions->admit('cat composer.json', ShellDialect::Bash, $context, 'key-1');
         $this->run = ProcessRun::query()->withoutGlobalScopes()->findOrFail($admission->runId);
         $this->run->consumeWithEventKey();
-        $this->part = PartRun::query()->create([
-            'process_run_id' => $this->run->id,
-            'syntax_node' => 1,
-            'part_id' => 'node-1',
-            'attempt' => 1,
-            'operation' => 'cat',
-        ]);
+        $this->part = PartRun::queue($this->run, new PartKey(1, 1, 'cat'));
         $this->part->start(1, 'host');
     }
 

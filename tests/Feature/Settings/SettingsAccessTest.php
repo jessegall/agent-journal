@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Settings;
 
 use App\Actors\Contracts\Actor;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Settings\Contracts\SettingsAccessPolicy;
 use App\Settings\Exceptions\SettingsAccessDenied;
@@ -60,7 +61,7 @@ final class SettingsAccessTest extends TestCase
     public function test_only_the_configured_owner_user_is_let_in(): void
     {
         $owner = User::factory()->create();
-        $agent = Agent::query()->create(['name' => 'Planner', 'role' => 'hooks.main_ready']);
+        $agent = Agent::named('Planner', AgentRole::MainAgent);
         $this->app->instance(AccessSettings::class, new AccessSettings($owner->id));
         $policy = $this->app->make(SettingsAccessPolicy::class);
 

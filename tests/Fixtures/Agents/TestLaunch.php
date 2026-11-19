@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures\Agents;
 
+use App\Agents\Enums\AgentRole;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\AgentRequests\Support\SignedCall;
@@ -32,7 +33,7 @@ final readonly class TestLaunch
 
     public static function start(string $role = 'hooks.main_ready'): self
     {
-        $agent = Agent::query()->create(['name' => 'Test agent', 'role' => $role]);
+        $agent = Agent::named('Test agent', AgentRole::from($role));
         $session = new AgentSessions(new AgentLifecycle())->start($agent, TestSelections::of(), TestSelections::requestId());
 
         return new self($agent, $session, new LaunchCredentials()->issue($session));

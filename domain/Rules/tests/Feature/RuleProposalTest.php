@@ -37,7 +37,7 @@ final class RuleProposalTest extends TestCase
     public function test_a_proposal_stores_its_reason_replaced_rule_and_proposer_and_is_not_enforced(): void
     {
         $launch = TestLaunch::start();
-        $old = Rule::query()->create(['text' => 'Old rule.']);
+        $old = Rule::holding('Old rule.');
         $this->startRequestAs($launch->agent->id, $launch->session->id);
 
         $id = $this->app->make(CommandBus::class)->run(new ProposeRule('New rule.', 'The old one is too vague.', $old->id));
@@ -51,7 +51,7 @@ final class RuleProposalTest extends TestCase
     public function test_an_agent_is_refused_removal_approval_and_denial(): void
     {
         $launch = TestLaunch::start();
-        $active = Rule::query()->create(['text' => 'Held rule.']);
+        $active = Rule::holding('Held rule.');
         $proposed = Rule::proposed('Proposed rule.', 'A reason.', null, ActorContext::forUser(TestIds::of(7)));
         $this->startRequestAs($launch->agent->id, $launch->session->id);
         $bus = $this->app->make(CommandBus::class);
@@ -65,7 +65,7 @@ final class RuleProposalTest extends TestCase
 
     public function test_the_user_removes_a_rule(): void
     {
-        $active = Rule::query()->create(['text' => 'Held rule.']);
+        $active = Rule::holding('Held rule.');
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
 
         $this->app->make(CommandBus::class)->run(new RemoveRule($active->id));

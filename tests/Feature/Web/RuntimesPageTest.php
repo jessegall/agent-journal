@@ -9,6 +9,7 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorStore;
 use App\Agents\Commands\EnrollHost;
 use App\Agents\Commands\OpenAgentRuntime;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Enums\DriverType;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentRuntime;
@@ -66,7 +67,7 @@ final class RuntimesPageTest extends TestCase
         $host = $this->app->make(ActorStore::class)->actAsSystem(
             fn () => $this->app->make(CommandBus::class)->run(new EnrollHost('test host', ['/work/project'])),
         );
-        $agent = Agent::query()->create(['name' => 'Driven agent', 'role' => 'hooks.main_ready']);
+        $agent = Agent::named('Driven agent', AgentRole::MainAgent);
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser('owner'));
         $this->app->make(CommandBus::class)->run(new OpenAgentRuntime(
             $agent->id,

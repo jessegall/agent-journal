@@ -23,7 +23,7 @@ final class MessageStateContributionTest extends TestCase
 
     public function test_asking_for_an_answer_commits_the_request_and_its_state_together(): void
     {
-        $message = Message::query()->create(['body' => 'Which database?']);
+        $message = Message::write('Which database?');
 
         $this->app->make(CommandBus::class)->run(new RequireMessageAnswer($message->id, $this->target->sessionId));
 
@@ -33,7 +33,7 @@ final class MessageStateContributionTest extends TestCase
 
     public function test_a_failed_push_rolls_the_request_back(): void
     {
-        $message = Message::query()->create(['body' => 'Which database?']);
+        $message = Message::write('Which database?');
         AgentStackRow::query()->sole()->closeAt(CarbonImmutable::now());
 
         try {
@@ -48,7 +48,7 @@ final class MessageStateContributionTest extends TestCase
     {
         $task = Task::factory()->create(['title' => 'Write the walk']);
         $this->app->make(CommandBus::class)->run(new StartTask($task->id, $this->target->sessionId));
-        $message = Message::query()->create(['body' => 'Which database?']);
+        $message = Message::write('Which database?');
         $this->app->make(CommandBus::class)->run(new RequireMessageAnswer($message->id, $this->target->sessionId));
 
         $whileWaiting = $this->answerStop('call-1');
@@ -62,7 +62,7 @@ final class MessageStateContributionTest extends TestCase
 
     public function test_a_dismissed_message_also_leaves_on_the_next_hook(): void
     {
-        $message = Message::query()->create(['body' => 'Which database?']);
+        $message = Message::write('Which database?');
         $this->app->make(CommandBus::class)->run(new RequireMessageAnswer($message->id, $this->target->sessionId));
 
         $message->dismiss();

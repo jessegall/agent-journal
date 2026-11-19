@@ -7,6 +7,7 @@ namespace Tests\Feature\Assignments;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Commands\RetireAgent;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentReader;
 use App\Assignments\Exceptions\AssignmentTypeUnavailable;
@@ -53,8 +54,8 @@ final class ModuleAssignmentTest extends TestCase
         $this->createNotesTables();
         $this->owner = User::factory()->create();
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->main = Agent::query()->create(['name' => 'Main', 'role' => 'hooks.main_ready']);
-        $this->writer = Agent::query()->create(['name' => 'Writer', 'role' => 'hooks.read_only_helper_ready']);
+        $this->main = Agent::named('Main', AgentRole::MainAgent);
+        $this->writer = Agent::named('Writer', AgentRole::ReadOnlyHelper);
     }
 
     protected function tearDown(): void

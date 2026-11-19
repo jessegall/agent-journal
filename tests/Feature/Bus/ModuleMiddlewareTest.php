@@ -8,6 +8,7 @@ use App\Actors\Support\ActorContext;
 use App\Actors\Support\ActorIdentity;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Commands\RetireAgent;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -153,7 +154,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     {
         $this->installCommandModules();
         $this->startUserRequestAs(TestIds::of(1));
-        $settled = Rule::query()->create(['text' => 'Already active.']);
+        $settled = Rule::holding('Already active.');
 
         try {
             $this->app->make(CommandBus::class)->run(new ApproveRule($settled->id));
@@ -165,7 +166,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
 
     private function launchedSession(): AgentSession
     {
-        return $this->app->make(LaunchSessions::class)->launch(Agent::query()->create(['name' => 'Reader', 'role' => 'hooks.main_ready']), TestSelections::of('claude-code'), TestSelections::requestId())->session;
+        return $this->app->make(LaunchSessions::class)->launch(Agent::named('Reader', AgentRole::MainAgent), TestSelections::of('claude-code'), TestSelections::requestId())->session;
     }
 
     public function test_notes_limits_plan_starts_and_nothing_is_written(): void
@@ -223,7 +224,7 @@ final class ModuleMiddlewareTest extends CommandBusTestCase
     public function test_a_refusal_after_retirement_leaves_the_agent_unretired_with_its_assignments(): void
     {
         $this->installCommandModules(MiddlewareDeclaration::inside(RefusesAfterRetirement::class, CommandScope::command(RetireAgent::class)));
-        $helper = Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.read_only_helper_ready']);
+        $helper = Agent::named('Helper', AgentRole::ReadOnlyHelper);
         $task = Task::factory()->create(['title' => 'Held']);
         $this->startUserRequestAs(TestIds::of(1));
         $bus = $this->app->make(CommandBus::class);

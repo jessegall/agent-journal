@@ -144,7 +144,7 @@ final class RecordLinksTest extends TestCase
 
     private function messageFor(int $agent): Message
     {
-        $message = Message::query()->create(['body' => "Private plan\nDetails."]);
+        $message = Message::write("Private plan\nDetails.");
         $message->requireAnswerFrom(new StackTarget(TestIds::of($agent), TestIds::of($agent * 10)));
 
         return $message;

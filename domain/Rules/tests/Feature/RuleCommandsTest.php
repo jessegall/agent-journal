@@ -55,7 +55,7 @@ final class RuleCommandsTest extends TestCase
     public function test_removing_a_rule_raises_its_fact(): void
     {
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));
-        $rule = Rule::query()->create(['text' => 'Old rule.']);
+        $rule = Rule::holding('Old rule.');
 
         $this->app->make(CommandBus::class)->run(new RemoveRule($rule->id));
 

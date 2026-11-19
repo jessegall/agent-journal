@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Web;
 
+use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Domains\Support\DomainRegistry;
 use App\Ui\Support\UiDeclarations;
@@ -52,7 +53,7 @@ final class ExternalModulePagesTest extends TestCase
     public function test_the_modules_page_and_record_page_are_served_and_listed_like_any_domains(): void
     {
         $this->installNotes();
-        $writer = Agent::query()->create(['name' => 'Writer', 'role' => 'hooks.read_only_helper_ready']);
+        $writer = Agent::named('Writer', AgentRole::ReadOnlyHelper);
         $note = new Note(['text' => 'Check the lock order']);
         $note->saveFor($writer->id);
         $month = $note->created_at?->format('Y-m');

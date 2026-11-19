@@ -7,6 +7,7 @@ namespace Tests\Feature\Communication;
 use App\Actors\Contracts\CurrentActorSetter;
 use App\Actors\Support\ActorContext;
 use App\Agents\Actions\LaunchSessions;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Support\StackTarget;
@@ -46,7 +47,7 @@ final class SendMessageTest extends TestCase
         parent::setUp();
 
         Event::fake([MessageSent::class, MessageAnswered::class, MessageDismissed::class]);
-        $agent = Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']);
+        $agent = Agent::named('Builder', AgentRole::MainAgent);
         $session = $this->app->make(LaunchSessions::class)->launch($agent, TestSelections::of('claude-code'), TestSelections::requestId())->session;
         $this->target = new StackTarget($session->agent_id, $session->id);
         $this->app->make(CurrentActorSetter::class)->set(ActorContext::forUser(TestIds::of(7)));

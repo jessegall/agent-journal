@@ -13,7 +13,6 @@ use App\Processes\Enums\OutputStream;
 use App\Processes\Enums\RequestHoldReason;
 use App\Processes\Enums\RequestState;
 use App\Processes\Enums\RunMode;
-use App\Processes\Enums\ShellDialect;
 use App\Processes\Models\CommandRequest;
 use App\Processes\Models\PartRun;
 use App\Processes\Models\ProcessRun;
@@ -21,6 +20,7 @@ use App\Processes\Models\ReaderRevision;
 use App\Processes\Support\SpoolRecorder;
 use App\Processes\Values\CapturedChunk;
 use App\Processes\Values\PartEnd;
+use App\Processes\Values\PartKey;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
@@ -154,13 +154,7 @@ final class ReaderProposalTest extends TestCase
     private function sampleRun(): ProcessRun
     {
         $run = ProcessRun::admit(new ActorIdentity(ActorType::Agent, $this->launch->agent->id), TestRunAdmissions::of(admissionId: 'sample', mode: RunMode::Evidence, projectKey: $this->request->project_key));
-        $part = PartRun::query()->create([
-            'process_run_id' => $run->id,
-            'syntax_node' => 1,
-            'part_id' => 'node-1',
-            'attempt' => 1,
-            'operation' => 'acme verify',
-        ]);
+        $part = PartRun::queue($run, new PartKey(1, 1, 'acme verify'));
         $part->start(1, 'host');
         $recorder = $this->app->make(SpoolRecorder::class);
         $now = CarbonImmutable::now();

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Assignments;
 
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Assignments\Contracts\AutoAssignmentReader;
@@ -82,7 +83,7 @@ final class AutoAssignmentStatusTest extends TestCase
 
     public function test_an_agent_without_a_running_session_is_inactive(): void
     {
-        $idle = Agent::query()->create(['name' => 'Idle', 'role' => 'hooks.writing_helper_ready']);
+        $idle = Agent::named('Idle', AgentRole::WritingHelper);
         $this->key = new AutoAssignmentKey(ActorIdentity::of($idle), TaskType::VALUE);
         $this->enable(self::open(), 2);
 

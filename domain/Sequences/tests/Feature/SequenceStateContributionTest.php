@@ -94,7 +94,7 @@ final class SequenceStateContributionTest extends TestCase
 
     private function newRun(): SequenceRun
     {
-        return SequenceRun::query()->create(['name' => 'Close a task', 'steps' => ['Read the brief.', 'Run the phase tests.']]);
+        return SequenceRun::written('Close a task', ['Read the brief.', 'Run the phase tests.']);
     }
 
     /**

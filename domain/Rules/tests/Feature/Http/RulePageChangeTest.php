@@ -57,7 +57,7 @@ final class RulePageChangeTest extends TestCase
 
     public function test_a_removed_rule_changes_the_page_too(): void
     {
-        $this->app->make(CommandBus::class)->run(new RemoveRule(Rule::query()->create(['text' => 'Old rule.'])->id));
+        $this->app->make(CommandBus::class)->run(new RemoveRule(Rule::holding('Old rule.')->id));
 
         Event::assertDispatchedTimes(PageChanged::class, 1);
     }
@@ -66,7 +66,7 @@ final class RulePageChangeTest extends TestCase
     {
         $this->app->instance(AccessSettings::class, new AccessSettings(null));
 
-        $this->app->make(CommandBus::class)->run(new RemoveRule(Rule::query()->create(['text' => 'Old rule.'])->id));
+        $this->app->make(CommandBus::class)->run(new RemoveRule(Rule::holding('Old rule.')->id));
 
         Event::assertNotDispatched(PageChanged::class);
     }

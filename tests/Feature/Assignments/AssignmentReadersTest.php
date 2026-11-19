@@ -7,6 +7,7 @@ namespace Tests\Feature\Assignments;
 use App\Actors\Enums\ActorType;
 use App\Actors\Exceptions\ActorContextMissing;
 use App\Actors\Support\ActorIdentity;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssigneeReader;
 use App\Assignments\Contracts\AssignmentReader;
@@ -45,7 +46,7 @@ final class AssignmentReadersTest extends TestCase
 
         $this->owner = User::factory()->create(['name' => 'Jesse']);
         $this->app->instance(AccessSettings::class, new AccessSettings($this->owner->id));
-        $this->helper = ActorIdentity::of(Agent::query()->create(['name' => 'Helper', 'role' => 'hooks.read_only_helper_ready']));
+        $this->helper = ActorIdentity::of(Agent::named('Helper', AgentRole::ReadOnlyHelper));
         $this->startUserRequestAs($this->owner->id);
     }
 

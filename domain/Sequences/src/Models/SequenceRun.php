@@ -60,6 +60,21 @@ final class SequenceRun extends Model implements Numbered, ReadableModel
     }
 
     /**
+     * A run of the named steps, not started yet.
+     *
+     * @param  list<string>  $steps
+     */
+    public static function written(string $name, array $steps): self
+    {
+        $run = new self();
+        $run->name = $name;
+        $run->steps = $steps;
+        $run->save();
+
+        return $run;
+    }
+
+    /**
      * The run read under its row lock, among those the actor may see, for a change that must happen once.
      */
     public static function lockedById(string $id): self

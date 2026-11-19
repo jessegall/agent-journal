@@ -10,6 +10,7 @@ use App\Actors\Support\ActorContext;
 use App\Agents\Actions\LaunchSessions;
 use App\Agents\Contracts\AgentReader;
 use App\Agents\Contracts\SessionReader;
+use App\Agents\Enums\AgentRole;
 use App\Agents\Exceptions\StackTargetRefused;
 use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
@@ -43,8 +44,8 @@ final class AgentReadersTest extends TestCase
     {
         parent::setUp();
 
-        $this->builder = Agent::query()->create(['name' => 'Builder', 'role' => 'hooks.main_ready']);
-        $this->reviewer = Agent::query()->create(['name' => 'Reviewer', 'role' => 'hooks.main_ready']);
+        $this->builder = Agent::named('Builder', AgentRole::MainAgent);
+        $this->reviewer = Agent::named('Reviewer', AgentRole::MainAgent);
         $launch = $this->app->make(LaunchSessions::class);
         $this->running = $launch->launch($this->builder, TestSelections::of('claude-code'), TestSelections::requestId())->session;
         $this->ended = $launch->launch($this->builder, TestSelections::of('claude-code'), TestSelections::requestId())->session;

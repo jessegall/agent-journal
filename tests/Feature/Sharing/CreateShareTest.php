@@ -72,7 +72,7 @@ final class CreateShareTest extends TestCase
         $this->root = new RecordIdentity('binders.binder', TestIds::of(1));
 
         foreach ([101, 102] as $number) {
-            Link::query()->create(['source_type' => $this->root->type, 'source_id' => $this->root->id, 'target_type' => 'binders.sheet', 'target_id' => TestIds::of($number)]);
+            Link::recorded($this->root->type, $this->root->id, 'binders.sheet', TestIds::of($number));
         }
 
         $this->startUserRequestAs(TestIds::of(9));
