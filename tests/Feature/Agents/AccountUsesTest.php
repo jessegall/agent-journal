@@ -120,7 +120,7 @@ final class AccountUsesTest extends TestCase
         $running = $this->sessionOn($first);
         $this->sessionOn($second);
         $ended->endAt(CarbonImmutable::now());
-        ProcessStart::stopProven([$this->starts[$ended->id]->start_key]);
+        $this->starts[$ended->id]->stopWithProof();
 
         $counts = $this->uses()->counts([$first, $second, $unused]);
         $history = $this->uses()->history($first, 10);
@@ -173,7 +173,7 @@ final class AccountUsesTest extends TestCase
         } catch (AccountUsesRemain) {
             $claimed->endAt(CarbonImmutable::now());
             $this->assertSame(1, $this->uses()->counts([$account])->runningFor($account));
-            ProcessStart::stopProven([$this->starts[$claimed->id]->start_key]);
+            $this->starts[$claimed->id]->stopWithProof();
         }
 
         $this->bus()->run(new SettleAccountUses($account));

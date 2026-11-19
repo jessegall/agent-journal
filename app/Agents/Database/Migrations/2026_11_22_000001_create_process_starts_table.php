@@ -14,6 +14,7 @@ return new class extends Migration
             $table->ulid('id')->primary();
             $table->ulid('agent_id');
             $table->ulid('session_id');
+            $table->ulid('host_id')->nullable();
             $table->string('start_key', 64)->unique();
             $table->string('account_type', 64);
             $table->ulid('account_id');

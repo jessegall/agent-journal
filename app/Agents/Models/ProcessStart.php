@@ -6,6 +6,7 @@ namespace App\Agents\Models;
 
 use App\Agents\Enums\AccountProcessRole;
 use App\Agents\Enums\ProcessStartState;
+use App\Agents\Exceptions\ProcessStartUnknown;
 use App\Agents\Models\Support\ProcessStartScope;
 use App\Agents\Support\SelectedAccount;
 use App\Reads\Contracts\ReadableModel;
@@ -29,6 +30,7 @@ use Illuminate\Support\Str;
  * @property string $id
  * @property string $agent_id
  * @property string $session_id
+ * @property string|null $host_id
  * @property string $start_key
  * @property string $account_type
  * @property string $account_id
@@ -85,6 +87,108 @@ final class ProcessStart extends Model implements ReadableModel
         $start->save();
 
         return $start;
+    }
+
+    /**
+     * The pending start of the session, taken by the host that will make its process; none when it was cancelled or
+     * taken already. A start whose session ended is cancelled instead, so no process starts for it.
+     */
+    public static function claimFor(string $hostId, string $sessionId): self|null
+    {
+        $start = self::supervised()
+            ->where('session_id', $sessionId)
+            ->where('state', ProcessStartState::Pending->value)
+            ->lockForUpdate()
+            ->first();
+
+        if ($start === null) {
+            return null;
+        }
+
+        if (! AgentSession::query()->findOrFail($sessionId)->isActive()) {
+            $start->state = ProcessStartState::Cancelled;
+            $start->ended_at = CarbonImmutable::now();
+            $start->save();
+
+            return null;
+        }
+
+        $start->host_id = $hostId;
+        $start->claim();
+
+        return $start;
+    }
+
+    /**
+     * The start the host claimed, by its key, locked; another host's start is as unknown as a missing one.
+     *
+     * @throws ProcessStartUnknown
+     */
+    public static function claimedBy(string $hostId, string $startKey): self
+    {
+        $start = self::supervised()
+            ->where('host_id', $hostId)
+            ->where('start_key', $startKey)
+            ->lockForUpdate()
+            ->first();
+
+        if ($start === null) {
+            throw ProcessStartUnknown::for($startKey);
+        }
+
+        return $start;
+    }
+
+    /**
+     * The keys of the host's starts that may still have a process, for its restart reconciliation.
+     *
+     * @return list<string>
+     */
+    public static function unresolvedKeysOf(string $hostId): array
+    {
+        $keys = self::supervised()
+            ->where('host_id', $hostId)
+            ->unresolved()
+            ->orderBy('created_at')
+            ->readAll('a host reconciles every start it may still run')
+            ->pluck('start_key');
+
+        return array_values(array_map(strval(...), $keys->all()));
+    }
+
+    /**
+     * The host made the start's process and reports its execution identity; reporting it again changes nothing.
+     */
+    public function recordRunning(string $executionId): void
+    {
+        if ($this->state !== ProcessStartState::Starting) {
+            return;
+        }
+
+        $this->state = ProcessStartState::Running;
+        $this->execution_id = $executionId;
+        $this->save();
+    }
+
+    /**
+     * The host proved the start's process exited, or that none was made; reporting it again changes nothing.
+     */
+    public function stopWithProof(): bool
+    {
+        if (! in_array($this->state, ProcessStartState::unresolved(), true)) {
+            return false;
+        }
+
+        $this->state = ProcessStartState::Stopped;
+        $this->ended_at = CarbonImmutable::now();
+        $this->save();
+
+        return true;
+    }
+
+    public function accountIdentity(): RecordIdentity
+    {
+        return new RecordIdentity($this->account_type, $this->account_id);
     }
 
     /**
@@ -145,9 +249,10 @@ final class ProcessStart extends Model implements ReadableModel
      * @param  list<string>  $startKeys
      * @return list<RecordIdentity>
      */
-    public static function stopProven(array $startKeys): array
+    public static function stopProven(string $hostId, array $startKeys): array
     {
         $starts = self::supervised()
+            ->where('host_id', $hostId)
             ->whereIn('start_key', $startKeys)
             ->unresolved()
             ->lockForUpdate()
@@ -156,10 +261,8 @@ final class ProcessStart extends Model implements ReadableModel
         $accounts = [];
 
         foreach ($starts as $start) {
-            $start->state = ProcessStartState::Stopped;
-            $start->ended_at = CarbonImmutable::now();
-            $start->save();
-            $account = new RecordIdentity($start->account_type, $start->account_id);
+            $start->stopWithProof();
+            $account = $start->accountIdentity();
             $accounts["{$account->type} {$account->id}"] = $account;
         }
 

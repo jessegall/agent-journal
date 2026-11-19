@@ -25,5 +25,8 @@ final readonly class ReconcileStarts extends Command
     /**
      * @param  list<string>  $stoppedStartKeys
      */
-    public function __construct(public array $stoppedStartKeys) {}
+    public function __construct(
+        public string $hostId,
+        public array $stoppedStartKeys,
+    ) {}
 }

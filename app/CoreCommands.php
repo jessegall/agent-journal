@@ -11,6 +11,7 @@ use App\Agents\Commands\ChangeAgentEffort;
 use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ClaimDriverRequests;
 use App\Agents\Commands\ClaimLaunchGrant;
+use App\Agents\Commands\ClaimStart;
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
@@ -27,10 +28,13 @@ use App\Agents\Commands\RecordRuntime;
 use App\Agents\Commands\ReleaseAgentHold;
 use App\Agents\Commands\RepairDriverSettings;
 use App\Agents\Commands\ReportDriverTurn;
+use App\Agents\Commands\ReportFailure;
 use App\Agents\Commands\ReportRequestProgress;
+use App\Agents\Commands\ReportRunning;
 use App\Agents\Commands\ReportRuntimeActivity;
 use App\Agents\Commands\ReportRuntimeExit;
 use App\Agents\Commands\ReportRuntimeHeartbeat;
+use App\Agents\Commands\ReportStopped;
 use App\Agents\Commands\ResolveDriverDelivery;
 use App\Agents\Commands\ResumeKeyScript;
 use App\Agents\Commands\RetireAgent;
@@ -173,6 +177,10 @@ final class CoreCommands
             HoldAccountUses::class,
             CancelAccountUses::class,
             SettleAccountUses::class,
+            ClaimStart::class,
+            ReportRunning::class,
+            ReportStopped::class,
+            ReportFailure::class,
             ReconcileStarts::class,
             FenceProfileRevision::class,
             LaunchAgent::class,
@@ -323,6 +331,10 @@ final class CoreCommands
             PruneSkillPublications::class,
             RecordSkillRead::class,
             FenceProfileRevision::class,
+            ClaimStart::class,
+            ReportRunning::class,
+            ReportStopped::class,
+            ReportFailure::class,
             ReconcileStarts::class,
             CompleteSignIn::class,
             ExpireSignInAttempt::class,

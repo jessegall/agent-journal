@@ -19,7 +19,7 @@ final readonly class ReconcileStartsHandler implements CommandHandler
 
     public function handle(ReconcileStarts $command): int
     {
-        $accounts = ProcessStart::stopProven($command->stoppedStartKeys);
+        $accounts = ProcessStart::stopProven($command->hostId, $command->stoppedStartKeys);
 
         foreach ($accounts as $account) {
             $this->events->dispatch(new AccountUseChanged($account));
