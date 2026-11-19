@@ -13,6 +13,7 @@ use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ClaimDriverRequests;
 use App\Agents\Commands\ClaimLaunchGrant;
 use App\Agents\Commands\ClaimStart;
+use App\Agents\Commands\ContinueLaunch;
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
@@ -192,6 +193,7 @@ final class CoreCommands
             ReconcileStarts::class,
             FenceProfileRevision::class,
             LaunchAgent::class,
+            ContinueLaunch::class,
             CreateAgent::class,
             EnrollHost::class,
             OpenAgentRuntime::class,
@@ -395,10 +397,25 @@ final class CoreCommands
     {
         return [
             MiddlewareDeclaration::around(RefuseWritesDuringEvaluation::class, CommandScope::all()),
-            MiddlewareDeclaration::around(AnnounceUnavailableLaunch::class, CommandScope::command(LaunchAgent::class)),
-            MiddlewareDeclaration::around(AnnounceUnavailableLaunch::class, CommandScope::command(OpenAgentRuntime::class)),
+            ...self::launchRefusalAnnouncements(),
             MiddlewareDeclaration::inside(GuardTickOrigin::class, CommandScope::all()),
         ];
+    }
+
+    /**
+     * Around each launch command's transaction, a launch no account can run is announced to its owner.
+     *
+     * @return list<MiddlewareDeclaration>
+     */
+    private static function launchRefusalAnnouncements(): array
+    {
+        return array_map(
+            fn (string $launch) => MiddlewareDeclaration::around(
+                AnnounceUnavailableLaunch::class,
+                CommandScope::command($launch),
+            ),
+            [LaunchAgent::class, OpenAgentRuntime::class, ContinueLaunch::class],
+        );
     }
 
     /**

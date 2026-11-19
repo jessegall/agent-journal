@@ -12,6 +12,7 @@ use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ClaimDriverRequests;
 use App\Agents\Commands\ClaimLaunchGrant;
 use App\Agents\Commands\ClaimStart;
+use App\Agents\Commands\ContinueLaunch;
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
@@ -201,6 +202,7 @@ final class CoreCommandsTest extends CommandBusTestCase
             ReconcileStarts::class,
             FenceProfileRevision::class,
             LaunchAgent::class,
+            ContinueLaunch::class,
             CreateAgent::class,
             EnrollHost::class,
             OpenAgentRuntime::class,

@@ -108,6 +108,7 @@ use App\Agents\Commands\CancelKeyScript;
 use App\Agents\Commands\ChangeAgentEffort;
 use App\Agents\Commands\ChangeAgentModel;
 use App\Agents\Commands\ClaimDriverRequests;
+use App\Agents\Commands\ContinueLaunch;
 use App\Agents\Commands\CreateAgent;
 use App\Agents\Commands\DeliverAgent;
 use App\Agents\Commands\EnrollHost;
@@ -1691,6 +1692,7 @@ final class CoreApi
                 DismissMessage::class,
                 RetireAgent::class,
                 LaunchAgent::class,
+                ContinueLaunch::class,
                 CreateAgent::class,
                 RecordHeartbeat::class,
                 RecordUserHeartbeat::class,

@@ -19,6 +19,11 @@ final class LaunchRefused extends RuntimeException
         return new self("No domain supplies hooks for {$program}, so it cannot be launched under the journal.");
     }
 
+    public static function withoutPredecessor(string $sessionId): self
+    {
+        return new self("No launch of session {$sessionId} of this agent can be continued.");
+    }
+
     public static function withoutAccountSettings(string $program): self
     {
         return new self("No adapter prepares an account launch of {$program}, so it is not claimed.");

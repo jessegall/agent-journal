@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\AgentRequests\Support\CallRoutes;
 use App\Agents\Http\Controllers\Calls;
+use App\Http\Controllers\Agents\ContinueLaunchController;
 use App\Http\Controllers\Agents\LaunchAgentController;
 use App\Http\Controllers\Agents\RetireAgentController;
 use Illuminate\Container\Container;
@@ -16,6 +17,10 @@ Route::post('/agents/retire', RetireAgentController::class)
 Route::post('/agents/{agent}/launch', LaunchAgentController::class)
     ->middleware(['web', 'auth', 'journal.user'])
     ->name('agents.launch');
+
+Route::post('/agents/sessions/{session}/continue', ContinueLaunchController::class)
+    ->middleware(['web', 'auth', 'journal.user'])
+    ->name('agents.continue');
 
 Route::middleware('journal.agent')
     ->prefix('agent')
