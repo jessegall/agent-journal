@@ -198,10 +198,9 @@ final class ConditionTreeTest extends TestCase
 
     public function test_a_16_deep_tree_is_accepted(): void
     {
-        $this->assertSame(
-            ConditionOutcome::Match,
-            $this->tree()->hydrate(self::nested(16))->evaluate($this->mainAgentOn('codex'))->outcome,
-        );
+        $deepest = $this->tree()->hydrate(self::nested(16));
+
+        $this->assertSame(ConditionOutcome::Match, $deepest->evaluate($this->mainAgentOn('codex'))->outcome);
     }
 
     /**

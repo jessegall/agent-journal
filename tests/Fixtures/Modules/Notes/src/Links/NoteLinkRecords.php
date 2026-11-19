@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Fixtures\Modules\Notes\Links;
 
 use App\Actors\Contracts\CurrentActor;
+use App\Actors\Support\ActorIdentity;
 use App\Reads\Support\ReadBuilder;
 use App\Records\Contracts\RecordProvider;
 use App\Records\Data\RecordCard;
@@ -54,9 +55,11 @@ final readonly class NoteLinkRecords implements RecordProvider
         ]);
     }
 
+    /**
+     * @param  Note  $record
+     */
     protected function mayChange(Model $record): bool
     {
-        return $record->actor_type === $this->actors->actor()->actorType()->value
-            && $record->actor_id === $this->actors->actor()->actorId();
+        return $record->isWrittenBy(ActorIdentity::of($this->actors->actor()));
     }
 }

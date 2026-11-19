@@ -10,7 +10,6 @@ use App\Agents\Models\Agent;
 use App\Agents\Models\AgentSession;
 use App\Agents\Support\StackTarget;
 use App\Bus\Contracts\CommandBus;
-use App\Hooks\Contracts\AgentStack;
 use App\Hooks\Enums\ContextStartType;
 use App\Hooks\Events\ContextStarted;
 use App\Hooks\Support\ContextReminders;
@@ -20,14 +19,13 @@ use App\Skills\Listeners\AdmitStartSkills;
 use App\Skills\Listeners\RefreshSessionSkills;
 use App\Skills\Listeners\RemindRequiredSkills;
 use App\Skills\Support\SkillPublishing;
-use Domain\Access\Support\AccessSettings;
 use Tests\Fixtures\Agents\TestSelections;
 use Tests\Fixtures\Profiles\TestProposals;
-use Tests\Fixtures\Skills\RecordingStack;
 use Tests\Support\ActsAsActors;
 use Tests\Support\CommitsHookRows;
 use Tests\Support\Skills\FinishesToolCalls;
 use Tests\Support\Skills\HasSkillTargets;
+use Tests\Support\Skills\MakesUserGuideSkill;
 use Tests\Support\TestActors;
 use Tests\TestCase;
 
@@ -41,6 +39,7 @@ final class RequiredSkillReadsTest extends TestCase
     use CommitsHookRows;
     use FinishesToolCalls;
     use HasSkillTargets;
+    use MakesUserGuideSkill;
 
     private const array TABLES = [
         'skill_receipts',
@@ -58,25 +57,6 @@ final class RequiredSkillReadsTest extends TestCase
     ];
 
     private const string REMINDER = 'Read the required skill user-guide';
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->app->instance(AccessSettings::class, TestActors::accessSettings(7));
-        $this->app->instance(AgentStack::class, new RecordingStack());
-        $this->artisan('skill:make', [
-            'key' => 'user-guide',
-            '--description' => 'The review guide',
-            '--body' => <<<'TEXT'
-            # Guide
-
-            First text.
-
-            TEXT,
-        ])->assertSuccessful();
-        $this->app->make(SkillPublishing::class)->refresh();
-    }
 
     public function test_an_edited_required_skill_is_asked_for_again_and_reading_it_clears_the_reminder(): void
     {

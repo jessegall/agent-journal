@@ -98,10 +98,12 @@ final readonly class AffectedTests
             $current = array_pop($waiting);
 
             foreach ($this->registry->all() as $entry) {
-                if (! isset($found[$entry->name]) && $entry->requiresDomain($current)) {
-                    $found[$entry->name] = $entry;
-                    $waiting[] = $entry;
+                if (isset($found[$entry->name]) || ! $entry->requiresDomain($current)) {
+                    continue;
                 }
+
+                $found[$entry->name] = $entry;
+                $waiting[] = $entry;
             }
         }
 

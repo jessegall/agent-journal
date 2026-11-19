@@ -45,7 +45,7 @@ final class ConfigureShareGatewayCommand extends Command
         ));
 
         $this->line(
-            "The {$configuration->settings->gatewayKey} gateway is at version {$configuration->configurationVersion}.",
+            "The {$configuration->gatewayKey()} gateway is at version {$configuration->configurationVersion}.",
         );
 
         return self::SUCCESS;

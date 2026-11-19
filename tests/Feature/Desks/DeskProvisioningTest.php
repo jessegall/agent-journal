@@ -10,13 +10,10 @@ use App\Agents\Commands\RetireAgent;
 use App\Agents\Models\Agent;
 use App\Assignments\Contracts\AssignmentTransaction;
 use App\Bus\Contracts\CommandBus;
-use App\Bus\Enums\CommandEntry;
-use App\Bus\Support\EntryDispatchers;
 use App\Bus\Support\RequestKey;
 use App\Communication\Contracts\Inbox;
 use App\Communication\Contracts\InboxResolver;
 use App\Communication\Models\InboxRecord;
-use App\Desks\Commands\InstallDesks;
 use App\Desks\Commands\RestoreActorDesk;
 use App\Desks\Contracts\ActorDesks;
 use App\Desks\Models\DeskRecord;
@@ -26,6 +23,7 @@ use App\Desks\Support\SeatChange;
 use App\Desks\Support\SeatChangeResult;
 use Closure;
 use Tests\Support\CommitsHookRows;
+use Tests\Support\RunsDeskInstall;
 use Tests\Support\StartsOwnerRequest;
 use Tests\TestCase;
 
@@ -37,6 +35,7 @@ use Tests\TestCase;
 final class DeskProvisioningTest extends TestCase
 {
     use CommitsHookRows;
+    use RunsDeskInstall;
     use StartsOwnerRequest;
 
     private const array TABLES = [
@@ -54,8 +53,8 @@ final class DeskProvisioningTest extends TestCase
 
     public function test_installing_twice_creates_main_and_the_source_desks_once(): void
     {
-        $this->install();
-        $this->install();
+        $this->installDesks();
+        $this->installDesks();
 
         $main = $this->deskOf($this->app->make(InboxResolver::class)->named('main'));
         $inboxes = $this->app->make(InboxResolver::class);
@@ -138,11 +137,5 @@ final class DeskProvisioningTest extends TestCase
     private function deskOf(Inbox $inbox): DeskRecord
     {
         return DeskRecord::query()->where('inbox_id', $inbox->inboxId())->sole();
-    }
-
-    private function install(): void
-    {
-        $this->app->make(EntryDispatchers::class)
-            ->runAsJournal(CommandEntry::HostControl, 'desk install', new InstallDesks());
     }
 }

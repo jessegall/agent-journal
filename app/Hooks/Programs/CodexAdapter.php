@@ -65,8 +65,9 @@ final readonly class CodexAdapter implements ProgramAdapter
 
     public function callFor(HookPayload $payload, HookIdentity $hook): ProgramCall
     {
-        $event = $payload->event()
-            ?? throw UnsupportedHook::for(self::PROGRAM, $payload->hookEventName);
+        $event = $payload->event()->getOrCall(
+            static fn () => throw UnsupportedHook::for(self::PROGRAM, $payload->hookEventName),
+        );
 
         return match ($event) {
             HookEvent::SessionStart => new JudgedCall(

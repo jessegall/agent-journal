@@ -14,7 +14,7 @@ use App\Processes\Models\ProcessEvent;
 use App\Processes\Models\ProcessRun;
 use App\Processes\Values\PartEnd;
 use App\Processes\Values\PartKey;
-use Illuminate\Support\Facades\Schema;
+use Tests\Support\ChecksSchemaTables;
 use Tests\Support\RefreshHookDatabase;
 use Tests\Support\TestRunAdmissions;
 use Tests\TestCase;
@@ -25,13 +25,12 @@ use Tests\TestCase;
  */
 final class ProcessRecordsTest extends TestCase
 {
+    use ChecksSchemaTables;
     use RefreshHookDatabase;
 
-    public function test_the_four_tables_exist(): void
+    protected static function storedTables(): array
     {
-        foreach (['process_runs', 'part_runs', 'process_events', 'output_chunks'] as $table) {
-            $this->assertTrue(Schema::hasTable($table), "{$table} is missing");
-        }
+        return ['process_runs', 'part_runs', 'process_events', 'output_chunks'];
     }
 
     public function test_a_part_moves_queued_running_draining_ended_and_never_skips_to_ended(): void

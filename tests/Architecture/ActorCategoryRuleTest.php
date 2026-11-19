@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Architecture;
 
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use SplFileInfo;
 use Tests\Architecture\Support\ActorCategoryScan;
+use Tests\Architecture\Support\DomainFiles;
 use Tests\Architecture\Support\ParsedFile;
 use Tests\Support\TimeLimits\TimeLimit;
 use Tests\TestCase;
@@ -33,7 +31,7 @@ final class ActorCategoryRuleTest extends TestCase
         $findings = [];
 
         foreach ([...glob("{$root}/domain/*/src") ?: [], "{$root}/app"] as $folder) {
-            foreach (self::phpFilesIn($folder) as $path) {
+            foreach (DomainFiles::in([$folder]) as $path) {
                 $relative = substr($path, strlen($root) + 1);
 
                 if (array_key_exists($relative, self::ALLOWED)) {
@@ -55,21 +53,5 @@ final class ActorCategoryRuleTest extends TestCase
 
         $this->assertCount(1, $findings);
         $this->assertStringContainsString('chooses behaviour by an ActorType case', $findings[0]);
-    }
-
-    /**
-     * @return list<string>
-     */
-    private static function phpFilesIn(string $folder): array
-    {
-        $paths = [];
-
-        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($folder)) as $entry) {
-            if ($entry instanceof SplFileInfo && $entry->getExtension() === 'php') {
-                $paths[] = $entry->getPathname();
-            }
-        }
-
-        return $paths;
     }
 }
